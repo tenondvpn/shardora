@@ -34,13 +34,7 @@ public:
     void SetFinalVss(uint64_t vss_random) {
         epoch_random_ = vss_random;
     }
-
-    std::shared_ptr<ElectItem> elect_item() {
-        return elect_item_[elect_valid_index_];
-    }
    
-    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
-
 private:
     // just two period and consensus with time block can also guarantee safety
     void ClearAll();

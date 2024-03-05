@@ -208,16 +208,6 @@ void BlsDkg::HandleBlsMessage(const transport::MessagePtr& msg_ptr) try {
     BLS_ERROR("catch error: %s", e.what());
 }
 
-bool BlsDkg::CheckBlsMessageValid(transport::MessagePtr& msg_ptr) {
-    std::string msg_hash;
-    if (!IsSignValid(msg_ptr, &msg_hash)) {
-        BLS_ERROR("sign verify failed!");
-        return false;
-    }
-
-    return true;
-}
-
 bool BlsDkg::IsSignValid(const transport::MessagePtr& msg_ptr, std::string* content_to_hash) {
 #ifdef ZJC_UNITTEST
     return true;
@@ -228,11 +218,7 @@ bool BlsDkg::IsSignValid(const transport::MessagePtr& msg_ptr, std::string* cont
             *content_to_hash,
             pubkey,
             msg_ptr->header.sign()) != security::kSecuritySuccess) {
-        BLS_INFO("bls create IsSignValid error block elect_height: %lu, pk: %s, sign: %s, hash: %s",
-            elect_hegiht_,
-            common::Encode::HexEncode(pubkey).c_str(),
-            common::Encode::HexEncode(msg_ptr->header.sign()).c_str(),
-            common::Encode::HexEncode(*content_to_hash).c_str());
+        BLS_INFO("bls create IsSignValid error block elect_height: %lu", elect_hegiht_);
         return false;
     }
 
@@ -1016,7 +1002,7 @@ void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
     }
 
     msg.set_type(common::kBlsMessage);
-    msg.set_broadcast(true);
+    auto broad_param = msg.mutable_broadcast();
     bls_msg.set_elect_height(elect_hegiht_);
     bls_msg.set_index(local_member_index_);
     transport::TcpTransport::Instance()->SetMessageHash(msg, msg_ptr->thread_idx);
@@ -1030,10 +1016,6 @@ void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
     }
 
     msg.set_sign(sign_out);
-    ZJC_DEBUG("broadcast bls message pk: %s, sign: %s, hash: %s",
-        common::Encode::HexEncode(security_->GetPublicKey()).c_str(),
-        common::Encode::HexEncode(sign_out).c_str(),
-        common::Encode::HexEncode(message_hash).c_str());
 }
 
 };  // namespace bls

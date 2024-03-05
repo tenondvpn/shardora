@@ -73,7 +73,7 @@ protected:
             common::Encode::HexEncode(tx_info.gid()).c_str(),
             tx_info.has_contract_code(), tx_info.amount(),
             common::Encode::HexEncode(tx_info.contract_from()).c_str());
-
+		
         if (tx_info.has_contract_code()) {
             block_tx->set_contract_code(tx_info.contract_code());
         }

@@ -47,7 +47,6 @@ public:
         const libff::alt_bn128_G2 local_publick_key,
         const libff::alt_bn128_G2 common_public_key,
         std::shared_ptr<db::Db>& db);
-    bool CheckBlsMessageValid(transport::MessagePtr& msg_ptr);
     void OnNewElectionBlock(
         uint64_t elect_height,
         common::MembersPtr& members,

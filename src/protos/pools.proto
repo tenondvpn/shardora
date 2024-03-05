@@ -78,14 +78,14 @@ message AreaInfo {
 
 message PoolStatisticItem {
     repeated uint32 tx_count = 1;
-    repeated uint64 stakes = 2;
+    repeated uint64 stokes = 2;
     optional uint64 elect_height = 3;
     repeated AreaInfo area_point = 4;
 }
 
 message JoinElectNode {
     optional bytes pubkey = 1;
-    optional uint64 stake = 2;
+    optional uint64 stoke = 2;
     optional uint32 shard = 3;
     optional int32 elect_pos = 4;
 }
@@ -102,12 +102,6 @@ message CrossShardStatistic {
     optional uint64 elect_height = 2;
 }
 
-message ElectStatisticItem {
-    optional uint64 gas_sum = 1;
-    optional uint64 stake = 2;
-    optional AreaInfo area_point = 4;
-}
-
 message ElectStatistic {
     repeated PoolStatisticItem statistics = 1;
     optional StatisticTxItem heights = 2;
@@ -117,7 +111,6 @@ message ElectStatistic {
     repeated uint32 lof_leaders = 6;
     optional CrossShardStatistic cross = 7;
     optional uint64 elect_height = 8;
-    repeated ElectStatisticItem elect_info = 9;
 }
 
 message SyncPoolsMaxHeight {

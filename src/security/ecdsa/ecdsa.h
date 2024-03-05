@@ -12,6 +12,7 @@ namespace zjchain {
 
 namespace security {
 
+
 class Ecdsa : public Security {
 public:
     Ecdsa() : pubkey_(curve_) {}

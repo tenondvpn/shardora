@@ -158,7 +158,7 @@ struct CrossStatisticItem {
 struct HeightStatisticInfo {
     HeightStatisticInfo() : elect_height(0), all_gas_amount(0), all_gas_for_root(0) {}
     std::unordered_map<std::string, StatisticMemberInfoItem> node_tx_count_map;
-    std::unordered_map<std::string, uint64_t> node_stake_map;
+    std::unordered_map<std::string, uint64_t> node_stoke_map;
     std::unordered_map<std::string, uint32_t> node_shard_map;
     std::unordered_map<uint32_t, std::unordered_map<uint64_t, uint32_t>> pool_cross_shard_heights;
     uint64_t elect_height;
@@ -210,18 +210,6 @@ struct PoolsTmPrioItem {
     }
 };
 
-struct StaticCreditInfo {
-    StaticCreditInfo() : elect_height(common::kInvalidUint64) {
-        memset(leaders_gas_sum, 0, sizeof(leaders_gas_sum));
-        memset(max_height, 0, sizeof(max_height));
-    }
-
-    uint64_t leaders_gas_sum[common::kEachShardMaxNodeCount];
-    uint64_t elect_height;
-    uint64_t max_height[common::kInvalidPoolIndex];
-    std::unordered_set<uint64_t> heights;
-};
-
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {
     std::string message;
     message.reserve(tx_info.ByteSizeLong());
@@ -260,6 +248,7 @@ static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_
     }
 
     ZJC_DEBUG("message: %s", common::Encode::HexEncode(message).c_str());
+    std::cout << common::Encode::HexEncode(common::Hash::keccak256(message)) << " : " << common::Encode::HexEncode(message) << std::endl;
     return common::Hash::keccak256(message);
 }
 

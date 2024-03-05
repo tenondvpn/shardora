@@ -51,7 +51,7 @@ message ElectBlock {
 message WaitingNodesMessage {
     repeated uint64 nodes_filter = 1;
     optional uint32 waiting_shard_id = 2;
-    optional bytes stake_hash = 3;
+    optional bytes stoke_hash = 3;
 }
 
 message WaitingNodeHeartbeat {
@@ -95,6 +95,6 @@ message ElectMessage {
     optional bytes sign_res = 6;
     optional WaitingNodeHeartbeat waiting_heartbeat = 7;
     optional LeaderRotationMessage leader_rotation = 8;
-    optional SyncNodeStokeRequest sync_stake_req = 9;
-    optional SyncNodeStokeResponse sync_stake_res = 10;
+    optional SyncNodeStokeRequest sync_stoke_req = 9;
+    optional SyncNodeStokeResponse sync_stoke_res = 10;
 }

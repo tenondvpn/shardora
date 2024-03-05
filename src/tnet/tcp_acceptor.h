@@ -1,8 +1,7 @@
 #pragma once
 
 #include <atomic>
-#include <memory>
-#include <unordered_map>
+#include<unordered_map>
 
 #include "common/spin_mutex.h"
 #include "tnet/tnet_utils.h"
@@ -28,7 +27,7 @@ public:
             uint32_t send_buff_size,
             PacketHandler pakcet_handler,
             ConnectionHandler conn_handler,
-            std::shared_ptr<PacketFactory> packet_factory,
+            PacketFactory* packet_factory,
             EventLoop& event_loop,
             const std::vector<EventLoop*>& event_loops);
     virtual ~TcpAcceptor();
@@ -51,7 +50,7 @@ private:
     uint32_t send_buff_size_{ 0 };
     PacketHandler pakcet_handler_;
     ConnectionHandler conn_handler_;
-    std::shared_ptr<PacketFactory> packet_factory_{ nullptr };
+    PacketFactory* packet_factory_{ nullptr };
     EventLoop& event_loop_;
     std::vector<EventLoop*> event_loops_;
     std::atomic<uint32_t> destroy_{ 0 };

@@ -1,5 +1,5 @@
 #include "init/network_init.h"
-
+#include <common/log.h>
 #include <functional>
 #include <protos/pools.pb.h>
 
@@ -91,12 +91,6 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
-
-    if (net_handler_.Init(db_, security_) != transport::kTransportSuccess) {
-        INIT_ERROR("init net handdler failed!");
-        return kInitError;
-    }
-
     common::Ip::Instance();
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     // 随机数
@@ -106,10 +100,15 @@ int NetworkInit::Init(int argc, char** argv) {
         common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
         db_);
     zjcvm::Execution::Instance()->Init(db_);
+    
     InitLocalNetworkId();
     ZJC_DEBUG("id: %s, init sharding id: %u",
         common::Encode::HexEncode(security_->GetAddress()).c_str(),
         common::GlobalInfo::Instance()->network_id());
+    if (net_handler_.Init(db_) != transport::kTransportSuccess) {
+        return kInitError;
+    }
+
     int transport_res = transport::TcpTransport::Instance()->Init(
         common::GlobalInfo::Instance()->config_local_ip() + ":" +
         std::to_string(common::GlobalInfo::Instance()->config_local_port()),
@@ -140,8 +139,7 @@ int NetworkInit::Init(int argc, char** argv) {
         nullptr);
     kv_sync_->Init(
         block_mgr_,
-        db_,
-        security_);
+        db_);
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(
         security_, db_, kv_sync_,
         std::bind(&NetworkInit::RotationLeaderCallback, this, std::placeholders::_1, std::placeholders::_2));
@@ -192,7 +190,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
-    tm_block_mgr_->Init(vss_mgr_, account_mgr_);
+    tm_block_mgr_->Init(vss_mgr_,account_mgr_);
     if (elect_mgr_->Init() != elect::kElectSuccess) {
         INIT_ERROR("init elect manager failed!");
         return kInitError;
@@ -211,7 +209,6 @@ int NetworkInit::Init(int argc, char** argv) {
 
     block_mgr_->LoadLatestBlocks(common::GlobalInfo::Instance()->message_handler_thread_count());
     shard_statistic_->Init();
-    RegisterFirewallCheck();
     transport::TcpTransport::Instance()->Start(false);
     if (InitHttpServer() != kInitSuccess) {
         INIT_ERROR("InitHttpServer failed!");
@@ -226,36 +223,9 @@ int NetworkInit::Init(int argc, char** argv) {
     }
 
     inited_ = true;
+    
     cmd_.Run();
     return kInitSuccess;
-}
-
-void NetworkInit::RegisterFirewallCheck() {
-    net_handler_.AddFirewallCheckCallback(
-        common::kVssMessage,
-        std::bind(&vss::VssManager::FirewallCheckMessage, vss_mgr_.get(), std::placeholders::_1));
-    net_handler_.AddFirewallCheckCallback(
-        common::kBlsMessage,
-        std::bind(&bls::BlsManager::FirewallCheckMessage, bls_mgr_.get(), std::placeholders::_1));
-    net_handler_.AddFirewallCheckCallback(
-        common::kConsensusMessage,
-        std::bind(&consensus::BftManager::FirewallCheckMessage, bft_mgr_.get(), std::placeholders::_1));
-    net_handler_.AddFirewallCheckCallback(
-        common::kBlockMessage,
-        std::bind(&block::BlockManager::FirewallCheckMessage, block_mgr_.get(), std::placeholders::_1));
-    net_handler_.AddFirewallCheckCallback(
-        common::kSyncMessage,
-        std::bind(&sync::KeyValueSync::FirewallCheckMessage, kv_sync_.get(), std::placeholders::_1));
-    net_handler_.AddFirewallCheckCallback(
-        common::kPoolsMessage,
-        std::bind(&pools::TxPoolManager::FirewallCheckMessage, pools_mgr_.get(), std::placeholders::_1));
-    net_handler_.AddFirewallCheckCallback(
-        common::kInitMessage,
-        std::bind(&NetworkInit::FirewallCheckMessage, this, std::placeholders::_1));
-}
-
-int NetworkInit::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
-    return transport::kFirewallCheckSuccess;
 }
 
 void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
@@ -276,7 +246,6 @@ void NetworkInit::BroadcastInvalidPools(
         uint8_t thread_idx,
         std::shared_ptr<LeaderRotationInfo> rotation,
         int32_t mod_num) {
-    return;
     auto net_id = common::GlobalInfo::Instance()->network_id();
     if (net_id < network::kRootCongressNetworkId || net_id >= network::kConsensusShardEndNetworkId) {
         return;
@@ -316,8 +285,7 @@ void NetworkInit::BroadcastInvalidPools(
     pools->set_mod_num(mod_num);
     pools->set_leader_idx(leader_idx);
     pools->set_version(rotation->rotations[mod_num].version);
-    msg_ptr->header.set_broadcast(true);
-    msg_ptr->header.set_pubkey(security_->GetPublicKey());
+    msg_ptr->header.mutable_broadcast();
     transport::TcpTransport::Instance()->SetMessageHash(
         msg_ptr->header,
         msg_ptr->thread_idx);
@@ -617,8 +585,8 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     // if (common::GlobalInfo::Instance()->for_ck_server()) {
     //     return;
     // }
-
-    if (common::GlobalInfo::Instance()->network_id() < network::kConsensusShardEndNetworkId) {
+    
+    if (common::GlobalInfo::Instance()->network_id() < network::kConsensusShardBeginNetworkId) {
         return;
     }
 
@@ -638,7 +606,8 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     msg.set_src_sharding_id(des_sharding_id_);
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kPoolsMessage);
-    msg.set_broadcast(true);
+    msg.set_hop_count(0);
+    auto broadcast = msg.mutable_broadcast();
     auto new_tx = msg.mutable_tx_proto();
     std::string gid = common::Hash::keccak256(
         std::to_string(tm_block_mgr_->LatestTimestamp()) + security_->GetAddress());
@@ -652,7 +621,7 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     uint32_t pos = common::kInvalidUint32;
     prefix_db_->GetLocalElectPos(security_->GetAddress(), &pos);
     join_info.set_member_idx(pos);
-
+    
     if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
             join_info.set_shard_id(
                 common::GlobalInfo::Instance()->network_id() -
@@ -660,7 +629,7 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     } else {
         join_info.set_shard_id(common::GlobalInfo::Instance()->network_id());
     }
-
+    
     if (pos == common::kInvalidUint32) {
         auto* req = join_info.mutable_g2_req();
         auto res = prefix_db_->GetBlsVerifyG2(security_->GetAddress(), req);
@@ -680,6 +649,7 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
 
     msg.set_sign(sign);
     msg_ptr->thread_idx = thread_idx;
+    // msg_ptr->msg_hash = tx_hash; // TxPoolmanager::HandleElectTx 接收端计算了，这里不必传输
     network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("success send join elect request transaction: %u, join: %u, gid: %s, "
         "hash64: %lu, tx hash: %s, pk: %s sign: %s",
@@ -728,9 +698,11 @@ void NetworkInit::CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_
 int NetworkInit::InitSecurity() {
     std::string prikey;
     if (!conf_.Get("zjchain", "prikey", prikey)) {
-        prikey = common::Random::RandomString(32);
-        INIT_WARN("get private key from config failed use random string!");
+        INIT_ERROR("get private key from config failed!");
+        return kInitError;
     }
+    ZJC_DEBUG("prikey1: %s", prikey.c_str());
+    ZJC_DEBUG("prikey2: %s", common::Encode::HexEncode(common::Encode::HexDecode(prikey)).c_str());
 
     security_ = std::make_shared<security::Ecdsa>();
     if (security_->SetPrivateKey(
@@ -974,7 +946,7 @@ int NetworkInit::ParseParams(int argc, char** argv, common::ParserArgs& parser_a
     parser_arg.AddArgType('V', "vpn_vip_level", common::kNoValue);
     parser_arg.AddArgType('U', "gen_root", common::kNoValue);
     parser_arg.AddArgType('S', "gen_shard", common::kMaybeValue);
-    // parser_arg.AddArgType('1', "root_nodes", common::kMaybeValue);
+    // parser_arg.AddArgType('1', "root_nodes", common::kMaybeValue);    
 
     for (uint32_t arg_i = network::kConsensusShardBeginNetworkId-1; arg_i < network::kConsensusShardEndNetworkId; arg_i++) {
         std::string arg_shard = std::to_string(arg_i);
@@ -1005,7 +977,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
     if (!parser_arg.Has("U") && !parser_arg.Has("S")) {
         return -1;
     }
-
+    
     std::set<uint32_t> valid_net_ids_set;
     std::string valid_arg_i_value;
     YAML::Node genesis_config = YAML::LoadFile("./genesis.yml");
@@ -1021,7 +993,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         if (valid_net_ids_set.size() == 0) {
             return kInitError;
         }
-
+        
         auto db = std::make_shared<db::Db>();
         if (!db->Init("./root_db")) {
             INIT_ERROR("init db failed!");
@@ -1032,7 +1004,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
         genesis_block.SetGenesisConfig(genesis_config);
-
+        
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
         std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
 
@@ -1066,7 +1038,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         if (valid_net_ids_set.size() == 0) {
             return kInitError;
         }
-
+        
         ZJC_DEBUG("save shard db: shard_db");
         auto db = std::make_shared<db::Db>();
         if (!db->Init("./shard_db_" + net_id_str)) {
@@ -1112,21 +1084,21 @@ void NetworkInit::GetNetworkNodesFromConf(const YAML::Node& genesis_config,
                     secptr->SetPrivateKey(node_ptr->prikey);
                     node_ptr->pubkey = secptr->GetPublicKey();
                     node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
-                    root_genesis_nodes.push_back(node_ptr);
+                    root_genesis_nodes.push_back(node_ptr);                    
                 }
             }
         }
-
-        uint32_t shard_num = network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId;
+        
+        uint32_t shard_num = network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId;        
         if (genesis_config["shards"]) {
             assert(genesis_config["shards"].size() == shard_num);
-
+            
             for (uint32_t net_i = 0; net_i < genesis_config["shards"].size(); net_i++) {
                 auto shard_config = genesis_config["shards"][net_i];
                 std::vector<GenisisNodeInfoPtr> cons_genesis_nodes;
                 uint32_t net_id = shard_config["net_id"].as<uint32_t>();
-
-                for (uint32_t i = 0; i < shard_config["sks"].size(); i++) {
+                
+                for (uint32_t i = 0; i < shard_config["sks"].size(); i++) {        
                     std::string sk = shard_config["sks"][i].as<std::string>();
                     auto node_ptr = std::make_shared<GenisisNodeInfo>();
                     node_ptr->prikey = common::Encode::HexDecode(sk);
@@ -1134,9 +1106,9 @@ void NetworkInit::GetNetworkNodesFromConf(const YAML::Node& genesis_config,
                     secptr->SetPrivateKey(node_ptr->prikey);
                     node_ptr->pubkey = secptr->GetPublicKey();
                     node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
-                    cons_genesis_nodes.push_back(node_ptr);
+                    cons_genesis_nodes.push_back(node_ptr);        
                 }
-
+                
                 cons_genesis_nodes_of_shards[net_id-network::kConsensusShardBeginNetworkId] = cons_genesis_nodes;
             }
         }
@@ -1418,7 +1390,7 @@ void NetworkInit::HandleElectionBlock(
     network::UniversalManager::Instance()->OnNewElectBlock(sharding_id, elect_height, members, elect_block);
     ZJC_DEBUG("1 success called election block. height: %lu, elect height: %lu, used elect height: %lu, net: %u, local net id: %u",
         block->height(), elect_height, block->electblock_height(), elect_block->shard_network_id(), common::GlobalInfo::Instance()->network_id());
-
+    
     // 从候选池申请加入共识池
     // 新节点加入共识池需要发送两次 JoinElect
     // 由于 N 共识池基于 N-2 共识池选举得到，如果只发送一次，则 N+1, N+3, N+5... 轮次无法参与共识
@@ -1479,7 +1451,7 @@ bool NetworkInit::BlockBlsAggSignatureValid(
     auto g1_hash = libBLS::Bls::Hashing(block_hash);
 #if MOCK_SIGN
     bool check_res = true;
-#else
+#else            
     bool check_res = libBLS::Bls::Verification(g1_hash, sign, common_pk);
 #endif
     if (!check_res) {

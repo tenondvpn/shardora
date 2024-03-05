@@ -8,7 +8,6 @@ namespace zjchain {
 
 namespace transport {
 
-class MultiThreadHandler;
 class EncoderFactory : public tnet::PacketFactory {
 public:
     virtual tnet::PacketEncoder* CreateEncoder() {
@@ -16,15 +15,12 @@ public:
     }
 
     virtual tnet::PacketDecoder* CreateDecoder() {
-        return new MsgDecoder(multi_thread_handler_);
+        return new MsgDecoder();
     }
 
-    EncoderFactory(MultiThreadHandler* multi_thread_handler) {
-        multi_thread_handler_ = multi_thread_handler;
-    }
-
+    EncoderFactory() {}
     virtual ~EncoderFactory() {}
-    MultiThreadHandler* multi_thread_handler_ = nullptr;
+
 };
 
 }  // namespace transport

@@ -1,12 +1,13 @@
 #include "init/command.h"
 
+#include <iostream>
+#include <string>
 #include <stdio.h>
 #include <termios.h> 
 #include <unistd.h>
 
 #include <iostream>
 #include <memory>
-#include <string>
 #include <thread>
 
 #include "common/split.h"
@@ -145,7 +146,7 @@ void Command::PrintDht(uint32_t network_id) {
     if (!base_dht) {
         return;
     }
-    auto readonly_dht = base_dht->readonly_hash_sort_dht();
+    dht::DhtPtr readonly_dht = base_dht->readonly_hash_sort_dht();
     auto node = base_dht->local_node();
     std::cout << "dht nnum: " << readonly_dht->size() + 1 << std::endl;
     std::cout << "local: " << common::Encode::HexEncode(node->id) << ":" << node->id_hash

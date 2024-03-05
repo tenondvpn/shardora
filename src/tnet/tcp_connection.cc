@@ -3,6 +3,7 @@
 #include "common/time_utils.h"
 #include "tnet/utils/cmd_packet.h"
 #include "tnet/socket/client_socket.h"
+#include <common/log.h>
 
 namespace zjchain {
 
@@ -231,7 +232,7 @@ bool TcpConnection::OnRead() {
             break;
         }
 
-        if (!packet_decoder_->Decode(peer_node_public_ip_, buf, n)) {
+        if (!packet_decoder_->Decode(buf, n)) {
             type = CmdPacket::CT_INVALID_PACKET;
             break;
         }
@@ -313,6 +314,7 @@ void TcpConnection::OnWrite() {
                                  strerror(errno));
                     ioError = true;
                 } else {
+                    ZJC_ERROR("writeAble false, [%d] [%s], n: %d", socket_->GetFd(), strerror(errno), n);
                     writeAble = false;
                 }
 

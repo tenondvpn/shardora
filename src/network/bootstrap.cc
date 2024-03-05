@@ -50,15 +50,6 @@ int Bootstrap::Init(common::Config& config, std::shared_ptr<security::Security>&
             continue;
         }
 
-        std::string ip = field_split[1];
-        if (!common::is_ip_address(ip.c_str())) {
-            ip = common::GetIpWithAddrName(ip);
-            if (ip.empty()) {
-                ZJC_ERROR("get addr with name failed: %s", field_split[1]);
-                return kNetworkError;
-            }
-        }
-
         std::string pubkey = common::Encode::HexDecode(
             std::string(field_split[0], field_split.SubLen(0)));
         uint16_t port = 0;
@@ -72,13 +63,13 @@ int Bootstrap::Init(common::Config& config, std::shared_ptr<security::Security>&
 
         root_bootstrap_.push_back(std::make_shared<zjchain::dht::Node>(
             kUniversalNetworkId,
-            ip,
+            std::string(field_split[1], field_split.SubLen(1)),
             port,
             pubkey,
             security->GetAddress(pubkey)));
         node_bootstrap_.push_back(std::make_shared<zjchain::dht::Node>(
             kNodeNetworkId,
-            ip,
+            std::string(field_split[1], field_split.SubLen(1)),
             port,
             pubkey,
             security->GetAddress(pubkey)));

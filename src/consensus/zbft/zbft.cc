@@ -102,7 +102,6 @@ int Zbft::Prepare(bool leader) {
         return LeaderCreatePrepare();
     }
 
-    consensus_prepare_tm_ms_ = common::TimeUtils::TimestampMs();
     if (txs_ptr_->txs.empty()) {
         ZJC_ERROR("pool index invalid[%d], tx empty!", pool_index());
         return kConsensusInvalidPackage;
@@ -163,6 +162,7 @@ int Zbft::LeaderPrecommitOk(
         index,
         prepare_hash,
         backup_sign);
+
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
     //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
     if ((uint32_t)valid_count >= min_aggree_member_count_) {
@@ -177,7 +177,7 @@ int Zbft::LeaderPrecommitOk(
         } else {
             set_consensus_status(kConsensusPreCommit);
         }
-
+        
         if (LeaderPrecommitAggSign(prepare_hash) != kConsensusSuccess) {
             ZJC_ERROR("create bls precommit agg sign failed!");
             return kConsensusOppose;
@@ -269,12 +269,12 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
     }
 
     try {
-#if MOCK_SIGN
+#if MOCK_SIGN        
         bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::random_element());
 #else
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
         std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
-        libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
+        libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);        
         bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(
             bls_instance.SignatureRecover(
             all_signs,
@@ -302,7 +302,7 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
 
 #if MOCK_VERIFY
         sign_precommit_hash = precommit_bls_agg_verify_hash_;
-#endif
+#endif        
 
         if (sign_precommit_hash != precommit_bls_agg_verify_hash_) {
             common_pk_.to_affine_coordinates();
@@ -479,7 +479,7 @@ int Zbft::LeaderCreateCommitAggSign() {
 
     try {
 #if MOCK_SIGN
-        bls_commit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::random_element());
+        bls_commit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::random_element()); 
 #else
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
         std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
@@ -584,7 +584,7 @@ bool Zbft::set_bls_precommit_agg_sign(
 
 #if MOCK_VERIFY
     sign_commit_hash = sign_hash;
-#endif
+#endif    
 
     bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(agg_sign);
     if (sign_commit_hash != sign_hash) {
@@ -667,7 +667,7 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
 
 #if MOCK_VERIFY
     sign_commit_hash = commit_bls_agg_verify_hash_;
-#endif
+#endif    
 
     if (prepare_block_->is_commited_block()) {
         if (sign_commit_hash != commit_bls_agg_verify_hash_) {

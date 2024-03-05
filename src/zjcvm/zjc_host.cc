@@ -208,13 +208,15 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
     } else {
         std::string id = std::string((char*)msg.code_address.bytes, sizeof(msg.code_address.bytes));
         auto acc_info = acc_mgr_->GetAccountInfo(thread_idx_, id);
-        // if (acc_info == nullptr) {
-        //     evmc_res.status_code = EVMC_REVERT;
-        //     ZJC_WARN("get account info failed: %s", common::Encode::HexEncode(id).c_str());
-        //     return evmc_res;
-        // }
+        if (acc_info == nullptr) {
+            evmc_res.status_code = EVMC_REVERT;
+            ZJC_WARN("get call bytes code failed: %s, field: %s",
+                common::Encode::HexEncode(id).c_str(),
+                protos::kFieldBytesCode.c_str());
+            return evmc_res;
+        }
 
-        if (acc_info != nullptr && !acc_info->bytes_code().empty()) {
+        if (!acc_info->bytes_code().empty()) {
             ZJC_DEBUG("get call bytes code success: %s, field: %s",
                 common::Encode::HexEncode(id).c_str(),
                 protos::kFieldBytesCode.c_str());

@@ -49,7 +49,6 @@ public:
     void PopTxs(uint32_t pool_index);
     void InitCrossPools();
     void BftCheckInvalidGids(uint32_t pool_index, std::vector<std::shared_ptr<InvalidGidItem>>& items);
-    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
     void OnNewCrossBlock(
             uint8_t thread_idx,
@@ -257,7 +256,6 @@ private:
     uint32_t max_cross_pools_size_ = 1;
     uint32_t now_sharding_count_ = 1;
     uint32_t prev_cross_sync_index_ = 0;
-    uint64_t prev_tm = 0;
     std::shared_ptr<CrossBlockManager> cross_block_mgr_ = nullptr;
     common::Tick tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_[common::kMaxThreadCount];

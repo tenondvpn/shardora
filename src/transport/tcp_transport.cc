@@ -41,14 +41,13 @@ int TcpTransport::Init(
             this,
             std::placeholders::_1,
             std::placeholders::_2);
-    encoder_factory_ = std::make_shared<EncoderFactory>(msg_handler_);        
     transport_ = std::make_shared<TnetTransport>(
         true,
         10 * 1024 * 1024,
         10 * 1024 * 1024,
         1,
         packet_handler,
-        encoder_factory_);
+        &encoder_factory_);
     if (!transport_->Init()) {
         TRANSPORT_ERROR("transport init failed");
         return kTransportError;
@@ -139,6 +138,10 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
         if (conn->is_client()) {
             conn->Destroy(true);
         }
+        
+//         if (!conn->PeerIp().empty() && conn->PeerPort() != 0) {
+//             CreateDropNodeMessage(conn->PeerIp(), conn->PeerPort());
+//         }
 
         packet.Free();
         ZJC_DEBUG("message coming failed 2 type: %d", packet.PacketType());
@@ -170,17 +173,6 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
 
     conn->SetPeerIp(from_ip);
     conn->SetPeerPort(from_port);
-
-    {
-        auto output_item = std::make_shared<ClientItem>();
-        output_item->hash64 = msg_ptr->header.hash64();
-        output_item->filter_from = true;
-        output_item->sent_id = common::Hash::Hash64(
-            from_ip + ":" + std::to_string(from_port) + ":" + std::to_string(msg_ptr->header.hash64()));
-        output_queues_[server_thread_idx_].push(output_item);
-        output_con_.notify_one();
-    }
-
     ZJC_DEBUG("message coming: %s:%d", from_ip.c_str(), from_port);
     msg_ptr->conn = conn;
     msg_handler_->HandleMessage(msg_ptr);
@@ -192,18 +184,20 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
     return true;
 }
 
-void TcpTransport::SetMessageHash(
-        const transport::protobuf::OldHeader& message,
-        uint8_t thread_idx) {
-    auto tmpHeader = const_cast<transport::protobuf::OldHeader*>(&message);
-    std::string hash_str;
-    hash_str.reserve(1024);
-    hash_str.append(msg_random_);
-    hash_str.append((char*)&thread_idx, sizeof(thread_idx));
-    auto msg_count = ++thread_msg_count_[thread_idx];
-    hash_str.append((char*)&msg_count, sizeof(msg_count));
-    tmpHeader->set_hash64(common::Hash::Hash64(hash_str));
-    ZJC_DEBUG("3 send message hash64: %lu", message.hash64());
+void TcpTransport::CreateDropNodeMessage(const std::string& ip, uint16_t port) {
+    MessagePtr msg_ptr = std::make_shared<TransportMessage>();
+    auto& msg = msg_ptr->header;
+    msg.set_src_sharding_id(0);
+    common::DhtKey dht_key;
+    dht_key.construct.net_id = 0;
+    msg.set_des_dht_key(std::string(dht_key.dht_key, sizeof(dht_key.dht_key)));
+    msg.set_type(common::kNetworkMessage);
+    SetMessageHash(msg, 0);
+    auto* net_msg = msg.mutable_network_proto();
+    auto drop_req = net_msg->mutable_drop_node();
+    drop_req->set_ip(ip);
+    drop_req->set_port(port);
+    msg_handler_->HandleMessage(msg_ptr);
 }
 
 void TcpTransport::SetMessageHash(
@@ -217,18 +211,21 @@ void TcpTransport::SetMessageHash(
     auto msg_count = ++thread_msg_count_[thread_idx];
     hash_str.append((char*)&msg_count, sizeof(msg_count));
     tmpHeader->set_hash64(common::Hash::Hash64(hash_str));
-    ZJC_DEBUG("3 send message hash64: %lu", message.hash64());
 }
 
 int TcpTransport::Send(
         uint8_t thread_idx,
         tnet::TcpInterface* tcp_conn,
         const transport::protobuf::Header& message) {
+    assert(message.broadcast().bloomfilter_size() < 64);
     auto tmpHeader = const_cast<transport::protobuf::Header*>(&message);
     tmpHeader->set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
     std::string msg;
-    assert(message.has_hash64() && message.hash64() != 0);
-    ZJC_DEBUG("0 send message hash64: %lu", message.hash64());
+    if (!message.has_hash64() || message.hash64() == 0) {
+        SetMessageHash(message, thread_idx);
+    }
+
+    ZJC_DEBUG("send message hash64: %lu", message.hash64());
     message.SerializeToString(&msg);
     if (tcp_conn->Send(msg) != 0) {
         auto* tmp_conn = static_cast<tnet::TcpConnection*>(tcp_conn);
@@ -251,37 +248,15 @@ int TcpTransport::Send(
     assert(thread_idx < common::kMaxThreadCount);
     auto tmpHeader = const_cast<transport::protobuf::Header*>(&message);
     tmpHeader->set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
-    assert(message.has_hash64() && message.hash64() != 0);
-    ZJC_DEBUG("1 send message hash64: %lu", message.hash64());
-    auto output_item = std::make_shared<ClientItem>();
-    output_item->des_ip = des_ip;
-    output_item->port = des_port;
-    output_item->hash64 = message.hash64();
-    output_item->sent_id = common::Hash::Hash64(
-        des_ip + ":" + std::to_string(des_port) + ":" + std::to_string(message.hash64()));
-    output_item->msg = message.SerializeAsString();
-    output_queues_[thread_idx].push(output_item);
-    output_con_.notify_one();
-    return kTransportSuccess;
-}
+    assert(message.broadcast().bloomfilter_size() < 64);
+    if (!message.has_hash64() || message.hash64() == 0) {
+        SetMessageHash(message, thread_idx);
+    }
 
-int TcpTransport::Send(
-        uint8_t thread_idx,
-        const std::string& des_ip,
-        uint16_t des_port,
-        const transport::protobuf::OldHeader& message) {
-    assert(thread_idx < common::kMaxThreadCount);
-    auto tmpHeader = const_cast<transport::protobuf::OldHeader*>(&message);
-    tmpHeader->set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
-    assert(message.has_hash64() && message.hash64() != 0);
-    ZJC_DEBUG("1 send message hash64: %lu", message.hash64());
     auto output_item = std::make_shared<ClientItem>();
     output_item->des_ip = des_ip;
     output_item->port = des_port;
-    output_item->hash64 = message.hash64();
-    output_item->sent_id = common::Hash::Hash64(
-        des_ip + ":" + std::to_string(des_port) + ":" + std::to_string(message.hash64()));
-    output_item->msg = message.SerializeAsString();
+    message.SerializeToString(&output_item->msg);
     output_queues_[thread_idx].push(output_item);
     output_con_.notify_one();
     return kTransportSuccess;
@@ -345,16 +320,6 @@ void TcpTransport::Output() {
             while (output_queues_[i].size() > 0) {
                 std::shared_ptr<ClientItem> item_ptr = nullptr;
                 output_queues_[i].pop(&item_ptr);
-                if (!sent_msgs_.Push(item_ptr->sent_id)) {
-                    ZJC_DEBUG("filter message: %lu", item_ptr->sent_id);
-                    continue;
-                }
-                
-                if (item_ptr->filter_from) {
-                    ZJC_DEBUG("filter from message: %lu", item_ptr->sent_id);
-                    continue;
-                }
-
                 auto tcp_conn = GetConnection(item_ptr->des_ip, item_ptr->port);
                 if (tcp_conn == nullptr) {
                     TRANSPORT_ERROR("get tcp connection failed[%s][%d][hash64: %llu]",
@@ -369,10 +334,8 @@ void TcpTransport::Output() {
                     continue;
                 }
 
-                msg_handler_->AddOutputMessageId(item_ptr->hash64);
-                ZJC_DEBUG("send message %s:%u, hash64: %lu, size: %u, sent id: %lu",
-                    item_ptr->des_ip.c_str(), item_ptr->port,
-                    item_ptr->hash64, item_ptr->msg.size(), item_ptr->sent_id);
+                ZJC_DEBUG("send message %s:%u, hash64: %lu, size: %u",
+                    item_ptr->des_ip.c_str(), item_ptr->port, 0, item_ptr->msg.size());
             }
         }
 

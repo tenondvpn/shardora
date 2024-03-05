@@ -18,7 +18,6 @@ public:
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<db::Db>& db);
     ~BlsManager();
-    bool CheckBlsMessageValid(transport::MessagePtr& msg_ptr);
     void OnNewElectBlock(
         uint32_t sharding_id,
         uint64_t elect_height,
@@ -66,10 +65,8 @@ public:
     static int GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g1_hash);
     int AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
-    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
 private:
-    int CheckFinishMessageValid(const transport::MessagePtr& msg_ptr);
     void HandleFinish(const transport::MessagePtr& msg_ptr);
     void CheckAggSignValid(
         uint32_t t,

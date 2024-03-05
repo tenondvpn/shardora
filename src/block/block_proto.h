@@ -42,6 +42,7 @@ public:
 //             msg.set_client_dht_key(header.client_dht_key());
 //             msg.set_client_handled(true);
 //         }
+//         msg.set_hop_count(0);
 //         msg.set_data(block_data);
     }
 
@@ -60,6 +61,7 @@ public:
 //         msg.set_id(common::GlobalInfo::Instance()->MessageId());
 //         msg.set_universal(false);
 //         msg.set_type(common::kBlockMessage);
+//         msg.set_hop_count(0);
 //         msg.set_client(false);
 //         block::protobuf::BlockMessage block_msg;
 //         auto attr_req = block_msg.mutable_acc_attr_req();
@@ -86,6 +88,7 @@ public:
 //         msg.set_type(common::kBlockMessage);
 //         msg.set_client(false);
 //         msg.set_version(common::GlobalInfo::Instance()->version());
+//         msg.set_hop_count(0);
 //         block::protobuf::BlockMessage block_msg;
 //         auto acc_shard_req = block_msg.mutable_acc_shard_req();
 //         acc_shard_req->set_id(common::GlobalInfo::Instance()->id());
@@ -103,6 +106,7 @@ public:
 //         msg.set_id(common::GlobalInfo::Instance()->MessageId());
 //         msg.set_type(common::kBlockMessage);
 //         msg.set_client(false);
+//         msg.set_hop_count(0);
 //         block::protobuf::BlockMessage block_msg;
 //         auto acc_shard_req = block_msg.mutable_acc_shard_res();
 //         acc_shard_req->set_id(req_id);

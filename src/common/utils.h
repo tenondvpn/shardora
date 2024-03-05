@@ -1,12 +1,7 @@
 #pragma once
 
-#include <arpa/inet.h>
-#include <net/if.h>
-#include <netinet/in.h>
 #include <stdint.h>
 #include <string.h>
-#include <sys/socket.h>  
-#include <sys/ioctl.h>  
 #include <time.h>
 
 #include <string>
@@ -43,10 +38,11 @@ struct Construct {
                 (message).debug().c_str(), \
                 (message).handled(), \
                 (message).hash(), \
+                (message).hop_count(), \
                 src_cons_key->net_id, \
                 des_cons_key->net_id, \
                 (message).id(), \
-                (message).broadcast(), \
+                (message).has_broadcast(), \
                 (message).universal(), \
                 (message).type(), \
                 (std::string(append)).c_str()); \
@@ -62,16 +58,21 @@ namespace common {
 
 enum MessageType {
     kDhtMessage = 0,
-    kSyncMessage = 1,
-    kConsensusMessage = 2,
-    kVssMessage = 3,
-    kBlsMessage = 4,
-    kPoolsMessage = 5,
-    kBlockMessage = 6,
-    kConsensusTimerMessage = 7,
-    kInitMessage = 8,
+    kNetworkMessage = 1,
+    kSyncMessage = 2,
+    kConsensusMessage = 3,
+    kElectMessage = 4,
+    kVssMessage = 5,
+    kBlsMessage = 6,
+    kPoolsMessage = 7,
+    kContractMessage = 8,
+    kBlockMessage = 9,
+    kConsensusTimerMessage = 10,
+    kPoolTimerMessage = 11,
+    kInitMessage = 12,
+    kC2cMessage = 13,
     // max (message) type
-    kMaxMessageTypeCount,
+    kLegoMaxMessageTypeCount = 16,
 };
 
 enum CommonErrorCode {
@@ -134,7 +135,8 @@ static const uint32_t kInvalidPoolIndex = kImmutablePoolSize + 1;
 static const uint32_t kTestForNetworkId = 4u;
 static const uint16_t kDefaultVpnPort = 9033u;
 static const uint16_t kDefaultRoutePort = 9034u;
-static const int64_t kRotationPeriod = 120000ll * 1000000ll * 1000000ll;
+// static const int64_t kRotationPeriod = 600ll * 1000ll * 1000ll; // epoch time
+static const int64_t kRotationPeriod = 1200ll * 1000ll * 1000ll; // for quicker debugging
 static const uint32_t kMaxRotationCount = 4u;
 static const uint16_t kNodePortRangeMin = 1000u;
 static const uint16_t kNodePortRangeMax = 10000u;
@@ -173,7 +175,7 @@ static const uint32_t kInvalidInt32 = (std::numeric_limits<int32_t>::max)();
 static const uint32_t kInvalidFloat = (std::numeric_limits<float>::max)();
 static const uint8_t kMaxThreadCount = 16;
 
-static const uint32_t kSingleBlockMaxTransactions = 256u;
+static const uint32_t kSingleBlockMaxTransactions = 4096u; // 1M 大约 4000+ 交易
 static const uint32_t kSingleBlockMaxMBytes = 1u;
 
 static const uint32_t kVpnShareStakingPrice = 1u;
@@ -341,38 +343,8 @@ inline static uint32_t GetSignerCount(uint32_t n) {
     return t;
 }
 
-template<class KeyType>
-uint32_t Hash32(const KeyType& t) {
-    return 0;
-}
+template <class KeyType> uint32_t Hash32(const KeyType &t) { return 0; }
 
-inline static std::string GetIpWithAddrName(const std::string& addr_name) {
-    int inet_sock;  
-    struct ifreq ifr;
-    inet_sock = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);  
-    strcpy(ifr.ifr_name, addr_name.c_str());  
-    if (ioctl(inet_sock, SIOCGIFADDR, &ifr) <  0)  {
-        return "";
-    }
-
-    return std::string(inet_ntoa(((struct sockaddr_in*)&(ifr.ifr_addr))->sin_addr));
-}
-
-inline static bool is_ip_address(const char* ip) {
-    int a = -1;
-    int b = -1;
-    int c = -1;
-    int d = -1;
-    if ((sscanf(ip, "%d.%d.%d.%d", &a, &b, &c, &d)==4) &&
-            (a>=0 && a<=255) &&
-            (b>=0 && b<=255) &&
-            (c>=0 && c<=255) &&
-            (d>=0 && d<=255)) {
-        return true;
-    }
-
-    return false;
-} 
 
 inline uint64_t GetNthElement(std::vector<uint64_t> v, float ratio) {
     size_t n = v.size() * ratio - 1;

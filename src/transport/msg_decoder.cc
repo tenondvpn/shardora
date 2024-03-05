@@ -1,13 +1,10 @@
 #include "transport/msg_decoder.h"
-#include "transport/multi_thread.h"
-#include "transport/transport_utils.h"
 
 namespace zjchain {
 
 namespace transport {
 
-MsgDecoder::MsgDecoder(MultiThreadHandler* multi_thread_handler) :
-    multi_thread_handler_(multi_thread_handler) {}
+MsgDecoder::MsgDecoder() {}
 
 MsgDecoder::~MsgDecoder() {
     for (auto iter = packet_list_.begin(); iter != packet_list_.end(); ++iter) {
@@ -17,7 +14,7 @@ MsgDecoder::~MsgDecoder() {
     packet_list_.clear();
 }
 
-bool MsgDecoder::GetPacketLen(const std::string& from_ip, const char* buf, size_t len, size_t& pos) {
+bool MsgDecoder::GetPacketLen(const char* buf, size_t len, size_t& pos) {
     if (tmp_str_.empty()) {
         if ((len - pos) < sizeof(tnet::PacketHeader)) {
             tmp_str_.assign(buf + pos, len - pos);
@@ -25,11 +22,6 @@ bool MsgDecoder::GetPacketLen(const std::string& from_ip, const char* buf, size_
             return true;
         } else {
             tnet::PacketHeader* header = (tnet::PacketHeader*)(buf + pos);
-            if (header->length >= kTcpBuffLength) {
-                multi_thread_handler_->AddInvalidMessageIp(from_ip);
-                return false;
-            }
-
             packet_len_ = header->length;
             type_ = header->type;
             pos += sizeof(tnet::PacketHeader);
@@ -44,11 +36,6 @@ bool MsgDecoder::GetPacketLen(const std::string& from_ip, const char* buf, size_
         } else {
             tmp_str_.append(buf + pos, header_left);
             tnet::PacketHeader* header = (tnet::PacketHeader*)tmp_str_.c_str();
-            if (header->length >= kTcpBuffLength) {
-                multi_thread_handler_->AddInvalidMessageIp(from_ip);
-                return false;
-            }
-
             packet_len_ = header->length;
             type_ = header->type;
             pos += header_left;
@@ -60,14 +47,14 @@ bool MsgDecoder::GetPacketLen(const std::string& from_ip, const char* buf, size_
     return false;
 }
 
-bool MsgDecoder::Decode(const std::string& from_ip, const char* buf, size_t len) {
+bool MsgDecoder::Decode(const char* buf, size_t len) {
     if (len == 0) {
         return true;
     }
 
     size_t pos = 0;
     if (packet_len_ == 0) {
-        if (!GetPacketLen(from_ip, buf, len, pos)) {
+        if (!GetPacketLen(buf, len, pos)) {
             return false;
         }
     }
@@ -93,7 +80,7 @@ bool MsgDecoder::Decode(const std::string& from_ip, const char* buf, size_t len)
             packet_list_.push_back(packet);
             packet_len_ = 0;
             if (pos < len) {
-                if (!GetPacketLen(from_ip, buf, len, pos)) {
+                if (!GetPacketLen(buf, len, pos)) {
                     return false;
                 }
             }

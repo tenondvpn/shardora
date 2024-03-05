@@ -8,13 +8,13 @@ namespace zjchain {
 namespace consensus {
 
 inline bool ElectNodeBalanceCompare(const NodeDetailPtr& left, const NodeDetailPtr& right) {
-    return left->stake < right->stake;
+    return left->stoke < right->stoke;
 }
 
 inline bool ElectNodeBalanceDiffCompare(
         const NodeDetailPtr& left,
         const NodeDetailPtr& right) {
-    return left->stake_diff < right->stake_diff;
+    return left->stoke_diff < right->stoke_diff;
 }
 
 int ElectTxItem::HandleTx(
@@ -61,7 +61,7 @@ int ElectTxItem::HandleTx(
                 elect_statistic.sharding_id(),
                 nullptr,
                 nullptr);
-
+            
             if (members == nullptr) {
                 ZJC_WARN("get members failed, elect height: %lu, net: %u",
                     now_elect_height, elect_statistic.sharding_id());
@@ -83,11 +83,11 @@ int ElectTxItem::HandleTx(
 
             int32_t member_count = members->size();
             if (member_count != statistic->tx_count_size() ||
-                    member_count != statistic->stakes_size() ||
+                    member_count != statistic->stokes_size() ||
                     member_count != statistic->area_point_size()) {
                 ZJC_DEBUG("now_elect_height: %lu, member size error: %u, %u, %u, %u",
                     now_elect_height, members->size(), statistic->tx_count_size(),
-                    statistic->stakes_size(), statistic->area_point_size());
+                    statistic->stokes_size(), statistic->area_point_size());
                 assert(false);
                 return kConsensusError;
             }
@@ -100,7 +100,7 @@ int ElectTxItem::HandleTx(
                         ":" + std::to_string(statistic->area_point(i).x()) +
                         ":" + std::to_string(statistic->area_point(i).y()) +
                         ":" + std::to_string(statistic->tx_count(i)) +
-                        ":" + std::to_string(statistic->stakes(i)) + ",";
+                        ":" + std::to_string(statistic->stokes(i)) + ",";
                 }
 
                 ZJC_DEBUG("elect info: %s", ids.c_str());
@@ -359,7 +359,7 @@ void ElectTxItem::GetIndexNodes(
 
         auto node_info = std::make_shared<ElectNodeInfo>();
         node_info->area_weight = min_area_weight;
-        node_info->stake = elect_statistic.join_elect_nodes(i).stake();
+        node_info->stoke = elect_statistic.join_elect_nodes(i).stoke();
         node_info->tx_count = min_tx_count;
         node_info->credit = account_info->credit();
         node_info->pubkey = elect_statistic.join_elect_nodes(i).pubkey();
@@ -629,7 +629,7 @@ int ElectTxItem::CheckWeedout(
         auto node_info = std::make_shared<ElectNodeInfo>();
         node_info->area_weight = min_dis;
         node_info->tx_count = statistic_item.tx_count(member_idx);
-        node_info->stake = statistic_item.stakes(member_idx);
+        node_info->stoke = statistic_item.stokes(member_idx);
         node_info->credit = account_info->credit();
         node_info->index = member_idx;
         node_info->pubkey = (*members)[member_idx]->pubkey;
@@ -764,7 +764,7 @@ void ElectTxItem::SmoothFtsValue(
     {
         std::string ids;
         for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
-            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stake) + ",";
+            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stoke) + ",";
         }
 
         ZJC_DEBUG("before sort: %s", ids.c_str());
@@ -773,19 +773,19 @@ void ElectTxItem::SmoothFtsValue(
     {
         std::string ids;
         for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
-            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stake) + ",";
+            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stoke) + ",";
         }
 
         ZJC_DEBUG("before sort 0: %s", ids.c_str());
     }
-    elect_nodes[0]->stake_diff = 0;
+    elect_nodes[0]->stoke_diff = 0;
     for (uint32_t i = 1; i < elect_nodes.size(); ++i) {
-        elect_nodes[i]->stake_diff = elect_nodes[i]->stake - elect_nodes[i - 1]->stake;
+        elect_nodes[i]->stoke_diff = elect_nodes[i]->stoke - elect_nodes[i - 1]->stoke;
     }
     {
         std::string ids;
         for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
-            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stake_diff) + ",";
+            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stoke_diff) + ",";
         }
 
         ZJC_DEBUG("after sort: %s", ids.c_str());
@@ -794,17 +794,17 @@ void ElectTxItem::SmoothFtsValue(
     {
         std::string ids;
         for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
-            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stake_diff) + ",";
+            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stoke_diff) + ",";
         }
 
         ZJC_DEBUG("after sort 1: %s", ids.c_str());
     }
-    uint64_t diff_2b3 = elect_nodes[elect_nodes.size() * 2 / 3]->stake_diff;
+    uint64_t diff_2b3 = elect_nodes[elect_nodes.size() * 2 / 3]->stoke_diff;
     std::stable_sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceCompare);
     {
         std::string ids;
         for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
-            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stake) + ",";
+            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stoke) + ",";
         }
 
         ZJC_DEBUG("after sort 2: %s", ids.c_str());
@@ -818,7 +818,7 @@ void ElectTxItem::SmoothFtsValue(
         int32_t max_balance = 0;
         auto& g2 = *g2_;
         for (uint32_t i = 1; i < elect_nodes.size(); ++i) {
-            uint64_t fts_val_diff = elect_nodes[i]->stake - elect_nodes[i - 1]->stake;
+            uint64_t fts_val_diff = elect_nodes[i]->stoke - elect_nodes[i - 1]->stoke;
             if (fts_val_diff == 0) {
                 blance_weight[i] = blance_weight[i - 1];
             }

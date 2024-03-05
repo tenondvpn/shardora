@@ -97,7 +97,6 @@ public:
         int32_t leader_mod_num,
         uint64_t elect_height,
         uint32_t new_leader_idx);
-    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
 private:
     int AddBft(ZbftPtr& bft_ptr);
@@ -377,7 +376,7 @@ private:
     inline bool isCommit(const zbft::protobuf::ZbftMessage& zbft) {
         return !zbft.commit_gid().empty();
     }
-
+    
     inline bool isCurrentBft(const zbft::protobuf::ZbftMessage& zbft) {
         auto bft_msgs = gid_with_msg_map_[zbft.pool_index()];
         if (isPrepare(zbft)) {
@@ -393,7 +392,7 @@ private:
     }
 
     inline bool isOlderBft(const zbft::protobuf::ZbftMessage& zbft) {
-        return (zbft.tx_bft().height() < getCurrentBftHeight(zbft.pool_index()));
+        return (zbft.tx_bft().height() < getCurrentBftHeight(zbft.pool_index())); 
     }
 
     inline uint64_t getCurrentBftHeight(uint32_t pool_index) {
@@ -412,11 +411,11 @@ private:
 
     inline uint64_t latest_commit_height(uint32_t pool_index) {
         return pools_mgr_->latest_height(pool_index);
-    }
+    } 
 
     void WaitForLastCommitIfNeeded(uint32_t pool_index, uint64_t timeout_ms) {
         auto start_ms = common::TimeUtils::TimestampMs();
-        auto backup_stage = GetBackupBftStage(gid_with_msg_map_[pool_index]);
+        auto backup_stage = GetBackupBftStage(gid_with_msg_map_[pool_index]); 
         while(backup_stage == BackupBftStage::PRECOMMIT_RECEIVED ||
             backup_stage == BackupBftStage::COMMIT_RECEIVED) {
             std::this_thread::sleep_for(std::chrono::microseconds(timeout_ms/10));

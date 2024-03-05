@@ -40,7 +40,7 @@ namespace protobuf_protos_2fpools_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[16];
+  static const ::google::protobuf::internal::ParseTable schema[15];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -62,9 +62,6 @@ extern CrossShardStatisticItemDefaultTypeInternal _CrossShardStatisticItem_defau
 class ElectStatistic;
 class ElectStatisticDefaultTypeInternal;
 extern ElectStatisticDefaultTypeInternal _ElectStatistic_default_instance_;
-class ElectStatisticItem;
-class ElectStatisticItemDefaultTypeInternal;
-extern ElectStatisticItemDefaultTypeInternal _ElectStatisticItem_default_instance_;
 class InvalidBftMessage;
 class InvalidBftMessageDefaultTypeInternal;
 extern InvalidBftMessageDefaultTypeInternal _InvalidBftMessage_default_instance_;
@@ -107,7 +104,6 @@ template<> ::zjchain::pools::protobuf::AreaInfo* Arena::CreateMaybeMessage<::zjc
 template<> ::zjchain::pools::protobuf::CrossShardStatistic* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::CrossShardStatistic>(Arena*);
 template<> ::zjchain::pools::protobuf::CrossShardStatisticItem* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::CrossShardStatisticItem>(Arena*);
 template<> ::zjchain::pools::protobuf::ElectStatistic* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::ElectStatistic>(Arena*);
-template<> ::zjchain::pools::protobuf::ElectStatisticItem* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::ElectStatisticItem>(Arena*);
 template<> ::zjchain::pools::protobuf::InvalidBftMessage* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::InvalidBftMessage>(Arena*);
 template<> ::zjchain::pools::protobuf::JoinElectNode* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::JoinElectNode>(Arena*);
 template<> ::zjchain::pools::protobuf::PoolLatestInfo* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::PoolLatestInfo>(Arena*);
@@ -1382,17 +1378,17 @@ class PoolStatisticItem : public ::google::protobuf::Message /* @@protoc_inserti
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
       mutable_tx_count();
 
-  // repeated uint64 stakes = 2;
-  int stakes_size() const;
-  void clear_stakes();
-  static const int kStakesFieldNumber = 2;
-  ::google::protobuf::uint64 stakes(int index) const;
-  void set_stakes(int index, ::google::protobuf::uint64 value);
-  void add_stakes(::google::protobuf::uint64 value);
+  // repeated uint64 stokes = 2;
+  int stokes_size() const;
+  void clear_stokes();
+  static const int kStokesFieldNumber = 2;
+  ::google::protobuf::uint64 stokes(int index) const;
+  void set_stokes(int index, ::google::protobuf::uint64 value);
+  void add_stokes(::google::protobuf::uint64 value);
   const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
-      stakes() const;
+      stokes() const;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
-      mutable_stakes();
+      mutable_stokes();
 
   // repeated .zjchain.pools.protobuf.AreaInfo area_point = 4;
   int area_point_size() const;
@@ -1422,7 +1418,7 @@ class PoolStatisticItem : public ::google::protobuf::Message /* @@protoc_inserti
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > tx_count_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > stakes_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > stokes_;
   ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::AreaInfo > area_point_;
   ::google::protobuf::uint64 elect_height_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
@@ -1538,12 +1534,12 @@ class JoinElectNode : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::std::string* release_pubkey();
   void set_allocated_pubkey(::std::string* pubkey);
 
-  // optional uint64 stake = 2;
-  bool has_stake() const;
-  void clear_stake();
-  static const int kStakeFieldNumber = 2;
-  ::google::protobuf::uint64 stake() const;
-  void set_stake(::google::protobuf::uint64 value);
+  // optional uint64 stoke = 2;
+  bool has_stoke() const;
+  void clear_stoke();
+  static const int kStokeFieldNumber = 2;
+  ::google::protobuf::uint64 stoke() const;
+  void set_stoke(::google::protobuf::uint64 value);
 
   // optional uint32 shard = 3;
   bool has_shard() const;
@@ -1563,8 +1559,8 @@ class JoinElectNode : public ::google::protobuf::Message /* @@protoc_insertion_p
  private:
   void set_has_pubkey();
   void clear_has_pubkey();
-  void set_has_stake();
-  void clear_has_stake();
+  void set_has_stoke();
+  void clear_has_stoke();
   void set_has_shard();
   void clear_has_shard();
   void set_has_elect_pos();
@@ -1574,7 +1570,7 @@ class JoinElectNode : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr pubkey_;
-  ::google::protobuf::uint64 stake_;
+  ::google::protobuf::uint64 stoke_;
   ::google::protobuf::uint32 shard_;
   ::google::protobuf::int32 elect_pos_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
@@ -1852,145 +1848,6 @@ class CrossShardStatistic : public ::google::protobuf::Message /* @@protoc_inser
 };
 // -------------------------------------------------------------------
 
-class ElectStatisticItem : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.pools.protobuf.ElectStatisticItem) */ {
- public:
-  ElectStatisticItem();
-  virtual ~ElectStatisticItem();
-
-  ElectStatisticItem(const ElectStatisticItem& from);
-
-  inline ElectStatisticItem& operator=(const ElectStatisticItem& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  #if LANG_CXX11
-  ElectStatisticItem(ElectStatisticItem&& from) noexcept
-    : ElectStatisticItem() {
-    *this = ::std::move(from);
-  }
-
-  inline ElectStatisticItem& operator=(ElectStatisticItem&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-  #endif
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const ElectStatisticItem& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const ElectStatisticItem* internal_default_instance() {
-    return reinterpret_cast<const ElectStatisticItem*>(
-               &_ElectStatisticItem_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    11;
-
-  void Swap(ElectStatisticItem* other);
-  friend void swap(ElectStatisticItem& a, ElectStatisticItem& b) {
-    a.Swap(&b);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline ElectStatisticItem* New() const final {
-    return CreateMaybeMessage<ElectStatisticItem>(NULL);
-  }
-
-  ElectStatisticItem* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<ElectStatisticItem>(arena);
-  }
-  void CopyFrom(const ::google::protobuf::Message& from) final;
-  void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const ElectStatisticItem& from);
-  void MergeFrom(const ElectStatisticItem& from);
-  void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input) final;
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const final;
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(ElectStatisticItem* other);
-  private:
-  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return NULL;
-  }
-  inline void* MaybeArenaPtr() const {
-    return NULL;
-  }
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional .zjchain.pools.protobuf.AreaInfo area_point = 4;
-  bool has_area_point() const;
-  void clear_area_point();
-  static const int kAreaPointFieldNumber = 4;
-  private:
-  const ::zjchain::pools::protobuf::AreaInfo& _internal_area_point() const;
-  public:
-  const ::zjchain::pools::protobuf::AreaInfo& area_point() const;
-  ::zjchain::pools::protobuf::AreaInfo* release_area_point();
-  ::zjchain::pools::protobuf::AreaInfo* mutable_area_point();
-  void set_allocated_area_point(::zjchain::pools::protobuf::AreaInfo* area_point);
-
-  // optional uint64 gas_sum = 1;
-  bool has_gas_sum() const;
-  void clear_gas_sum();
-  static const int kGasSumFieldNumber = 1;
-  ::google::protobuf::uint64 gas_sum() const;
-  void set_gas_sum(::google::protobuf::uint64 value);
-
-  // optional uint64 stake = 2;
-  bool has_stake() const;
-  void clear_stake();
-  static const int kStakeFieldNumber = 2;
-  ::google::protobuf::uint64 stake() const;
-  void set_stake(::google::protobuf::uint64 value);
-
-  // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.ElectStatisticItem)
- private:
-  void set_has_gas_sum();
-  void clear_has_gas_sum();
-  void set_has_stake();
-  void clear_has_stake();
-  void set_has_area_point();
-  void clear_has_area_point();
-
-  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::HasBits<1> _has_bits_;
-  mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::zjchain::pools::protobuf::AreaInfo* area_point_;
-  ::google::protobuf::uint64 gas_sum_;
-  ::google::protobuf::uint64 stake_;
-  friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
-};
-// -------------------------------------------------------------------
-
 class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.pools.protobuf.ElectStatistic) */ {
  public:
   ElectStatistic();
@@ -2033,7 +1890,7 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
                &_ElectStatistic_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    11;
 
   void Swap(ElectStatistic* other);
   friend void swap(ElectStatistic& a, ElectStatistic& b) {
@@ -2121,18 +1978,6 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
       mutable_lof_leaders();
 
-  // repeated .zjchain.pools.protobuf.ElectStatisticItem elect_info = 9;
-  int elect_info_size() const;
-  void clear_elect_info();
-  static const int kElectInfoFieldNumber = 9;
-  ::zjchain::pools::protobuf::ElectStatisticItem* mutable_elect_info(int index);
-  ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ElectStatisticItem >*
-      mutable_elect_info();
-  const ::zjchain::pools::protobuf::ElectStatisticItem& elect_info(int index) const;
-  ::zjchain::pools::protobuf::ElectStatisticItem* add_elect_info();
-  const ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ElectStatisticItem >&
-      elect_info() const;
-
   // optional .zjchain.pools.protobuf.StatisticTxItem heights = 2;
   bool has_heights() const;
   void clear_heights();
@@ -2197,7 +2042,6 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::PoolStatisticItem > statistics_;
   ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::JoinElectNode > join_elect_nodes_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > lof_leaders_;
-  ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ElectStatisticItem > elect_info_;
   ::zjchain::pools::protobuf::StatisticTxItem* heights_;
   ::zjchain::pools::protobuf::CrossShardStatistic* cross_;
   ::google::protobuf::uint64 gas_amount_;
@@ -2249,7 +2093,7 @@ class SyncPoolsMaxHeight : public ::google::protobuf::Message /* @@protoc_insert
                &_SyncPoolsMaxHeight_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    12;
 
   void Swap(SyncPoolsMaxHeight* other);
   friend void swap(SyncPoolsMaxHeight& a, SyncPoolsMaxHeight& b) {
@@ -2389,7 +2233,7 @@ class InvalidBftMessage : public ::google::protobuf::Message /* @@protoc_inserti
                &_InvalidBftMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    13;
 
   void Swap(InvalidBftMessage* other);
   friend void swap(InvalidBftMessage& a, InvalidBftMessage& b) {
@@ -2559,7 +2403,7 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
                &_TxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    14;
 
   void Swap(TxMessage* other);
   friend void swap(TxMessage& a, TxMessage& b) {
@@ -3991,34 +3835,34 @@ PoolStatisticItem::mutable_tx_count() {
   return &tx_count_;
 }
 
-// repeated uint64 stakes = 2;
-inline int PoolStatisticItem::stakes_size() const {
-  return stakes_.size();
+// repeated uint64 stokes = 2;
+inline int PoolStatisticItem::stokes_size() const {
+  return stokes_.size();
 }
-inline void PoolStatisticItem::clear_stakes() {
-  stakes_.Clear();
+inline void PoolStatisticItem::clear_stokes() {
+  stokes_.Clear();
 }
-inline ::google::protobuf::uint64 PoolStatisticItem::stakes(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.PoolStatisticItem.stakes)
-  return stakes_.Get(index);
+inline ::google::protobuf::uint64 PoolStatisticItem::stokes(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.PoolStatisticItem.stokes)
+  return stokes_.Get(index);
 }
-inline void PoolStatisticItem::set_stakes(int index, ::google::protobuf::uint64 value) {
-  stakes_.Set(index, value);
-  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.PoolStatisticItem.stakes)
+inline void PoolStatisticItem::set_stokes(int index, ::google::protobuf::uint64 value) {
+  stokes_.Set(index, value);
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.PoolStatisticItem.stokes)
 }
-inline void PoolStatisticItem::add_stakes(::google::protobuf::uint64 value) {
-  stakes_.Add(value);
-  // @@protoc_insertion_point(field_add:zjchain.pools.protobuf.PoolStatisticItem.stakes)
+inline void PoolStatisticItem::add_stokes(::google::protobuf::uint64 value) {
+  stokes_.Add(value);
+  // @@protoc_insertion_point(field_add:zjchain.pools.protobuf.PoolStatisticItem.stokes)
 }
 inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
-PoolStatisticItem::stakes() const {
-  // @@protoc_insertion_point(field_list:zjchain.pools.protobuf.PoolStatisticItem.stakes)
-  return stakes_;
+PoolStatisticItem::stokes() const {
+  // @@protoc_insertion_point(field_list:zjchain.pools.protobuf.PoolStatisticItem.stokes)
+  return stokes_;
 }
 inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
-PoolStatisticItem::mutable_stakes() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.pools.protobuf.PoolStatisticItem.stakes)
-  return &stakes_;
+PoolStatisticItem::mutable_stokes() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.pools.protobuf.PoolStatisticItem.stokes)
+  return &stokes_;
 }
 
 // optional uint64 elect_height = 3;
@@ -4145,28 +3989,28 @@ inline void JoinElectNode::set_allocated_pubkey(::std::string* pubkey) {
   // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.JoinElectNode.pubkey)
 }
 
-// optional uint64 stake = 2;
-inline bool JoinElectNode::has_stake() const {
+// optional uint64 stoke = 2;
+inline bool JoinElectNode::has_stoke() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void JoinElectNode::set_has_stake() {
+inline void JoinElectNode::set_has_stoke() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void JoinElectNode::clear_has_stake() {
+inline void JoinElectNode::clear_has_stoke() {
   _has_bits_[0] &= ~0x00000002u;
 }
-inline void JoinElectNode::clear_stake() {
-  stake_ = GOOGLE_ULONGLONG(0);
-  clear_has_stake();
+inline void JoinElectNode::clear_stoke() {
+  stoke_ = GOOGLE_ULONGLONG(0);
+  clear_has_stoke();
 }
-inline ::google::protobuf::uint64 JoinElectNode::stake() const {
-  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.JoinElectNode.stake)
-  return stake_;
+inline ::google::protobuf::uint64 JoinElectNode::stoke() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.JoinElectNode.stoke)
+  return stoke_;
 }
-inline void JoinElectNode::set_stake(::google::protobuf::uint64 value) {
-  set_has_stake();
-  stake_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.JoinElectNode.stake)
+inline void JoinElectNode::set_stoke(::google::protobuf::uint64 value) {
+  set_has_stoke();
+  stoke_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.JoinElectNode.stoke)
 }
 
 // optional uint32 shard = 3;
@@ -4373,116 +4217,6 @@ inline void CrossShardStatistic::set_elect_height(::google::protobuf::uint64 val
   set_has_elect_height();
   elect_height_ = value;
   // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.CrossShardStatistic.elect_height)
-}
-
-// -------------------------------------------------------------------
-
-// ElectStatisticItem
-
-// optional uint64 gas_sum = 1;
-inline bool ElectStatisticItem::has_gas_sum() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void ElectStatisticItem::set_has_gas_sum() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void ElectStatisticItem::clear_has_gas_sum() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void ElectStatisticItem::clear_gas_sum() {
-  gas_sum_ = GOOGLE_ULONGLONG(0);
-  clear_has_gas_sum();
-}
-inline ::google::protobuf::uint64 ElectStatisticItem::gas_sum() const {
-  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ElectStatisticItem.gas_sum)
-  return gas_sum_;
-}
-inline void ElectStatisticItem::set_gas_sum(::google::protobuf::uint64 value) {
-  set_has_gas_sum();
-  gas_sum_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ElectStatisticItem.gas_sum)
-}
-
-// optional uint64 stake = 2;
-inline bool ElectStatisticItem::has_stake() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void ElectStatisticItem::set_has_stake() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void ElectStatisticItem::clear_has_stake() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void ElectStatisticItem::clear_stake() {
-  stake_ = GOOGLE_ULONGLONG(0);
-  clear_has_stake();
-}
-inline ::google::protobuf::uint64 ElectStatisticItem::stake() const {
-  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ElectStatisticItem.stake)
-  return stake_;
-}
-inline void ElectStatisticItem::set_stake(::google::protobuf::uint64 value) {
-  set_has_stake();
-  stake_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ElectStatisticItem.stake)
-}
-
-// optional .zjchain.pools.protobuf.AreaInfo area_point = 4;
-inline bool ElectStatisticItem::has_area_point() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void ElectStatisticItem::set_has_area_point() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void ElectStatisticItem::clear_has_area_point() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void ElectStatisticItem::clear_area_point() {
-  if (area_point_ != NULL) area_point_->Clear();
-  clear_has_area_point();
-}
-inline const ::zjchain::pools::protobuf::AreaInfo& ElectStatisticItem::_internal_area_point() const {
-  return *area_point_;
-}
-inline const ::zjchain::pools::protobuf::AreaInfo& ElectStatisticItem::area_point() const {
-  const ::zjchain::pools::protobuf::AreaInfo* p = area_point_;
-  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ElectStatisticItem.area_point)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::pools::protobuf::AreaInfo*>(
-      &::zjchain::pools::protobuf::_AreaInfo_default_instance_);
-}
-inline ::zjchain::pools::protobuf::AreaInfo* ElectStatisticItem::release_area_point() {
-  // @@protoc_insertion_point(field_release:zjchain.pools.protobuf.ElectStatisticItem.area_point)
-  clear_has_area_point();
-  ::zjchain::pools::protobuf::AreaInfo* temp = area_point_;
-  area_point_ = NULL;
-  return temp;
-}
-inline ::zjchain::pools::protobuf::AreaInfo* ElectStatisticItem::mutable_area_point() {
-  set_has_area_point();
-  if (area_point_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::pools::protobuf::AreaInfo>(GetArenaNoVirtual());
-    area_point_ = p;
-  }
-  // @@protoc_insertion_point(field_mutable:zjchain.pools.protobuf.ElectStatisticItem.area_point)
-  return area_point_;
-}
-inline void ElectStatisticItem::set_allocated_area_point(::zjchain::pools::protobuf::AreaInfo* area_point) {
-  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
-    delete area_point_;
-  }
-  if (area_point) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
-    if (message_arena != submessage_arena) {
-      area_point = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, area_point, submessage_arena);
-    }
-    set_has_area_point();
-  } else {
-    clear_has_area_point();
-  }
-  area_point_ = area_point;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.ElectStatisticItem.area_point)
 }
 
 // -------------------------------------------------------------------
@@ -4765,36 +4499,6 @@ inline void ElectStatistic::set_elect_height(::google::protobuf::uint64 value) {
   set_has_elect_height();
   elect_height_ = value;
   // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ElectStatistic.elect_height)
-}
-
-// repeated .zjchain.pools.protobuf.ElectStatisticItem elect_info = 9;
-inline int ElectStatistic::elect_info_size() const {
-  return elect_info_.size();
-}
-inline void ElectStatistic::clear_elect_info() {
-  elect_info_.Clear();
-}
-inline ::zjchain::pools::protobuf::ElectStatisticItem* ElectStatistic::mutable_elect_info(int index) {
-  // @@protoc_insertion_point(field_mutable:zjchain.pools.protobuf.ElectStatistic.elect_info)
-  return elect_info_.Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ElectStatisticItem >*
-ElectStatistic::mutable_elect_info() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.pools.protobuf.ElectStatistic.elect_info)
-  return &elect_info_;
-}
-inline const ::zjchain::pools::protobuf::ElectStatisticItem& ElectStatistic::elect_info(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ElectStatistic.elect_info)
-  return elect_info_.Get(index);
-}
-inline ::zjchain::pools::protobuf::ElectStatisticItem* ElectStatistic::add_elect_info() {
-  // @@protoc_insertion_point(field_add:zjchain.pools.protobuf.ElectStatistic.elect_info)
-  return elect_info_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ElectStatisticItem >&
-ElectStatistic::elect_info() const {
-  // @@protoc_insertion_point(field_list:zjchain.pools.protobuf.ElectStatistic.elect_info)
-  return elect_info_;
 }
 
 // -------------------------------------------------------------------
@@ -5773,8 +5477,6 @@ inline void TxMessage::set_allocated_contract_from(::std::string* contract_from)
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
-// -------------------------------------------------------------------
-
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

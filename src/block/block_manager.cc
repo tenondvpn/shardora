@@ -64,15 +64,11 @@ int BlockManager::Init(
     network::Route::Instance()->RegisterMessage(
         common::kBlockMessage,
         std::bind(&BlockManager::HandleMessage, this, std::placeholders::_1));
-    // test_sync_block_tick_.CutOff(
-    //     100000lu,
-    //     std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
+    test_sync_block_tick_.CutOff(
+        100000lu,
+        std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
     bool genesis = false;
     return kBlockSuccess;
-}
-
-int BlockManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
-    return transport::kFirewallCheckSuccess;
 }
 
 void BlockManager::ConsensusTimerMessage(uint8_t thread_idx) {
@@ -283,7 +279,7 @@ void BlockManager::HandleAllNewBlock(uint8_t thread_idx) {
             db::DbWriteBatch db_batch;
             // TODO 更新 pool info，每次 AddNewBlock 之前需要更新 pool latest info
             AddBlockItemToCache(thread_idx, block_ptr, db_batch);
-
+            
             AddNewBlock(thread_idx, block_ptr, db_batch);
         }
     }
@@ -499,8 +495,8 @@ void BlockManager::GenesisAddOneAccount(uint32_t des_sharding_id,
               common::Encode::HexEncode(account_info->addr()).c_str(),
               account_info->balance(),
               des_sharding_id);
-
-    prefix_db_->AddAddressInfo(account_info->addr(), *account_info, db_batch);
+    
+    prefix_db_->AddAddressInfo(account_info->addr(), *account_info, db_batch);    
 }
 
 void BlockManager::HandleCrossTx(
@@ -747,14 +743,14 @@ void BlockManager::RootHandleNormalToTx(
             }
             continue;
         }
-
+        
         // for ContractCreateByRootFrom tx
         if (isContractCreateToTxMessageItem(tos_item)) {
             tx->set_contract_code(tos_item.library_bytes());
             tx->set_contract_from(tos_item.contract_from());
             tx->set_contract_prepayment(tos_item.prepayment());
         }
-
+        
         tx->set_pubkey("");
         tx->set_to(tos_item.des());
         auto gid = common::Hash::keccak256(
@@ -765,7 +761,7 @@ void BlockManager::RootHandleNormalToTx(
         tx->set_amount(tos_item.amount());
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
-
+        
         auto pool_index = common::Hash::Hash32(tos_item.des()) % common::kImmutablePoolSize;
         msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
         msg_ptr->thread_idx = thread_idx;
@@ -807,7 +803,7 @@ void BlockManager::HandleLocalNormalToTx(
         if (to_tx.des().size() == security::kUnicastAddressLength * 2) { // gas_prepayment tx des = to + from
             addr = to_tx.des().substr(0, security::kUnicastAddressLength); // addr = to
         }
-
+        
         auto account_info = GetAccountInfo(addr);
         if (account_info == nullptr) {
             // 只接受 root 发回来的块
@@ -902,7 +898,7 @@ void BlockManager::createConsensusLocalToTxs(
     for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {
         std::string str_for_hash;
         // 48 ? des = to(20) + from(20)  = 40, 40 + pool(4) + amount(8) = 52
-        str_for_hash.reserve(iter->second.tos_size() * 48);
+        str_for_hash.reserve(iter->second.tos_size() * 48); 
         for (int32_t i = 0; i < iter->second.tos_size(); ++i) {
             str_for_hash.append(iter->second.tos(i).des());
             uint32_t pool_idx = iter->second.tos(i).pool_index();
@@ -964,7 +960,7 @@ void BlockManager::createContractCreateByRootToTxs(
         to_item->set_library_bytes(contract_create_tx->library_bytes);
         to_item->set_contract_from(contract_create_tx->contract_from);
         to_item->set_prepayment(contract_create_tx->contract_prepayment);
-
+        
         ZJC_DEBUG("success add local contract create to %s, %lu, contract_from %s, contract_code: %s, prepayment: %lu",
             common::Encode::HexEncode(contract_create_tx->des).c_str(),
             contract_create_tx->amount,
@@ -972,13 +968,13 @@ void BlockManager::createContractCreateByRootToTxs(
             common::Encode::HexEncode(contract_create_tx->library_bytes).c_str(),
             contract_create_tx->contract_prepayment);
     }
-
+    
     for (auto iter = to_cc_tx_map.begin(); iter != to_cc_tx_map.end(); iter++) {
         if (iter->second.tos_size() <= 0) {
             continue;
         }
 
-        auto to_msg = iter->second.tos(0);
+        auto to_msg = iter->second.tos(0); 
         std::string str_for_hash;
         str_for_hash.append(to_msg.des());
         uint32_t pool_idx = to_msg.pool_index();
@@ -990,7 +986,7 @@ void BlockManager::createContractCreateByRootToTxs(
         std::string contract_from = to_msg.contract_from();
         str_for_hash.append(contract_from);
         auto cc_hash = common::Hash::keccak256(str_for_hash);
-
+        
         auto val = iter->second.SerializeAsString();
         prefix_db_->SaveTemporaryKv(cc_hash, val);
         // 与 consensuslocaltos 不同，每个交易只有一个 contractcreate，不必持久化
@@ -1014,7 +1010,7 @@ void BlockManager::createContractCreateByRootToTxs(
         tx->set_contract_code(to_msg.library_bytes());
         tx->set_contract_from(to_msg.contract_from());
         tx->set_contract_prepayment(to_msg.prepayment());
-
+        
         msg_ptr->thread_idx = thread_idx;
         ZJC_DEBUG("create contract to tx add to pool, to: %s, gid: %s, cc_hash: %s, height_hash: %s, pool_idx: %lu, amount: %lu, contract_from: %s",
             common::Encode::HexEncode(to_msg.des()).c_str(),
@@ -1022,7 +1018,7 @@ void BlockManager::createContractCreateByRootToTxs(
             common::Encode::HexEncode(cc_hash).c_str(),
             common::Encode::HexEncode(heights_hash).c_str(),
             pool_idx, amount, common::Encode::HexEncode(contract_from).c_str());
-        pools_mgr_->HandleMessage(msg_ptr);
+        pools_mgr_->HandleMessage(msg_ptr);        
     }
 }
 
@@ -1430,14 +1426,6 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
         ZJC_DEBUG("error to txs sharding create statistic tx");
         statistic_item->shard_statistic_tx = nullptr;
         statistic_item->cross_statistic_tx = nullptr;
-        return;
-    }
-
-    std::string credit_statistic_hash;
-    if (statistic_mgr_->StatisticPrevElectionCredit(
-            msg_ptr->header.block_proto().statistic_tx().elect_height(),
-            &credit_statistic_hash) != pools::kPoolsSuccess) {
-        ZJC_DEBUG("error to txs sharding create statistic tx");
         return;
     }
 
@@ -2003,10 +1991,11 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
         statistic_msg.set_leader_idx(tmp_to_tx_leader->index);
         // send to other nodes
     }
-
+    
+    statistic_message_->header.release_broadcast();
     statistic_message_->thread_idx = thread_idx;
     auto& msg = statistic_message_->header;
-    msg.set_broadcast(true);
+    auto& broadcast = *msg.mutable_broadcast();
     auto& block_msg = *msg.mutable_block_proto();
     block::protobuf::StatisticTxMessage& statistic_msg = *block_msg.mutable_statistic_tx();
     statistic_msg.set_leader_to_idx(leader_create_statistic_heights_index_++);
@@ -2095,7 +2084,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     
     shard_to.set_leader_to_idx(leader_create_to_heights_index_++);
     // send to other nodes
-    msg.set_broadcast(true);
+    auto& broadcast = *msg.mutable_broadcast();
     msg_ptr->thread_idx = thread_idx;
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);

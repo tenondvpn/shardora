@@ -8,7 +8,6 @@
 #include "network/route.h"
 #include "pools/tx_utils.h"
 #include "protos/transport.pb.h"
-#include "transport/tcp_transport.h"
 #include "zjcvm/execution.h"
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
@@ -87,8 +86,9 @@ static int CreateTransactionWithAttr(
     msg.set_src_sharding_id(des_net_id);
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kPoolsMessage);
-    msg.set_broadcast(true);
-    transport::TcpTransport::Instance()->SetMessageHash(msg, common::kMaxThreadCount - 1);
+    msg.set_hop_count(0);
+    auto broadcast = msg.mutable_broadcast();
+    broadcast->set_hop_limit(10);
     auto new_tx = msg.mutable_tx_proto();
     new_tx->set_gid(gid);
     new_tx->set_pubkey(from_pk);
@@ -136,7 +136,6 @@ static int CreateTransactionWithAttr(
 
         new_tx->set_contract_prepayment(pepay_val);
     }
-
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign = sign_r + sign_s + "0";// http_handler->security_ptr()->GetSign(sign_r, sign_s, sign_v);
     sign[64] = char(sign_v);
@@ -153,10 +152,6 @@ static int CreateTransactionWithAttr(
     }
 
     msg.set_sign(sign);
-    ZJC_DEBUG("from: %s, to: %s, hash64: %lu",
-        common::Encode::HexEncode(from).c_str(),
-        common::Encode::HexEncode(to).c_str(),
-        msg.hash64());
     return kHttpSuccess;
 }
  
@@ -369,7 +364,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         ZJC_INFO("query contract error: %s.", res.c_str());
         return;
     }
-
+	
     std::string qdata((char*)result.output_data, result.output_size);
     evmc_bytes32 len_bytes;
     memcpy(len_bytes.bytes, qdata.c_str() + 32, 32);
@@ -377,47 +372,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     std::string http_res(qdata.c_str() + 64, len);
     evbuffer_add(req->buffer_out, http_res.c_str(), http_res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
-    ZJC_INFO("query contract success %s, %s, len: %lu", contract_addr, input, len);
-}
-
-static void AppleVerifySuccess(evhtp_request_t* req, void* data) {
-    ZJC_DEBUG("http transaction coming.");
-    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
-    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
-    auto header3 = evhtp_header_new(
-        "Access-Control-Allow-Headers",
-        "x-requested-with,content-type", 0, 0);
-    evhtp_headers_add_header(req->headers_out, header1);
-    evhtp_headers_add_header(req->headers_out, header2);
-    evhtp_headers_add_header(req->headers_out, header3);
-    const char* json_data = evhtp_kv_find(req->uri->query, "data");
-    
-    // auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    // transport::protobuf::Header& msg = msg_ptr->header;
-    // int status = CreateTransactionWithAttr(
-    //     common::Encode::HexDecode(gid),
-    //     common::Encode::HexDecode(frompk),
-    //     common::Encode::HexDecode(to),
-    //     common::Encode::HexDecode(tmp_sign_r),
-    //     common::Encode::HexDecode(tmp_sign_s),
-    //     tmp_sign_v,
-    //     amount_val,
-    //     gas_limit_val,
-    //     gas_price_val,
-    //     shard_id_val,
-    //     req->uri->query,
-    //     msg);
-    // if (status != http::kHttpSuccess) {
-    //     std::string res = std::string("transaction invalid: ") + GetStatus(status);
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
-
-    // http_handler->net_handler()->NewHttpServer(msg_ptr);
-    std::string res = std::string("ok");
-    evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    evhtp_send_reply(req, EVHTP_RES_OK);
+    ZJC_INFO("query contract success");
 }
 
 static void QueryAccount(evhtp_request_t* req, void* data) {
@@ -481,7 +436,6 @@ void HttpHandler::Init(
     contract_mgr = tmp_contract_mgr;
     http_server.AddCallback("/transaction", HttpTransaction);
     http_server.AddCallback("/query_contract", QueryContract);
-    http_server.AddCallback("/apple_verify_success", AppleVerifySuccess);
     http_server.AddCallback("/query_account", QueryAccount);
 }
 

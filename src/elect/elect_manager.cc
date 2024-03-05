@@ -9,6 +9,7 @@
 #include "common/time_utils.h"
 #include "dht/dht_utils.h"
 #include "db/db_utils.h"
+#include "elect/elect_proto.h"
 #include "network/route.h"
 #include "network/shard_network.h"
 #include "vss/vss_manager.h"
@@ -18,6 +19,22 @@ namespace zjchain {
 namespace elect {
 
 int ElectManager::Init() {
+//     for (uint32_t i = network::kRootCongressNetworkId;
+//             i < network::kConsensusShardEndNetworkId; ++i) {
+//         auto block_ptr = elect_block_mgr_.GetLatestElectBlock(i);
+//         if (block_ptr == nullptr) {
+//             break;
+//         }
+// 
+//         OnNewElectBlock(
+//             0,
+//             block_ptr->elect_height(),
+//             block_ptr);
+//         vss::VssManager::Instance()->OnElectBlock(
+//             elect_block.shard_network_id(),
+//             latest_elect_block_height);
+//     }
+
     return kElectSuccess;
 }
 
@@ -37,6 +54,9 @@ ElectManager::ElectManager(
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     height_with_block_ = std::make_shared<HeightWithElectBlock>(security, db_);
     bls_mgr_ = bls_mgr;
+//     network::Route::Instance()->RegisterMessage(
+//         common::kElectMessage,
+//         std::bind(&ElectManager::HandleMessage, this, std::placeholders::_1));
     memset(latest_leader_count_, 0, sizeof(latest_leader_count_));
     memset(latest_member_count_, 0, sizeof(latest_member_count_));
     for (uint32_t i = 0; i < network::kConsensusShardEndNetworkId; ++i) {
@@ -269,7 +289,7 @@ bool ElectManager::ProcessPrevElectMembers(
             prev_elect_block.shard_network_id(),
             common::Encode::HexEncode((*iter)->id).c_str(),
             (*iter)->pool_index_mod_num,
-            ((*iter)->bls_publick_key != libff::alt_bn128_G2::zero()));
+            ((*iter)->bls_publick_key == libff::alt_bn128_G2::zero()));
     }
 
     if (*elected) {

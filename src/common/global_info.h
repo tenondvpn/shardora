@@ -154,34 +154,6 @@ public:
         return pools_with_thread_;
     }
 
-    uint64_t valid_free_bandwidth() const {
-        return valid_free_bandwidth_;
-    }
-
-    uint64_t min_c2c_sellout_amount() const {
-        return min_c2c_sellout_amount_;
-    }
-
-    uint64_t min_c2c_prepayment() const {
-        return min_c2c_prepayment_;
-    }
-
-    const std::string& c2c_contract_addr() const {
-        return c2c_contract_addr_;
-    }
-
-    const std::string& chain_ips() const {
-        return chain_ips_;
-    }
-
-    uint64_t c2c_timeout_ms() const {
-        return c2c_timeout_ms_;
-    }
-
-    uint64_t c2c_min_purchase_amount() const {
-        uint64_t c2c_min_purchase_amount_;
-    }
-
 private:
     GlobalInfo();
     ~GlobalInfo();
@@ -218,13 +190,6 @@ private:
     int32_t join_root_ = common::kRandom;
     std::set<uint32_t>* thread_with_pools_ = nullptr;
     uint32_t pools_with_thread_[common::kInvalidPoolIndex] = { 0 };
-    uint64_t valid_free_bandwidth_ = 1024llu * 1024llu * 100llu;
-    uint64_t min_c2c_sellout_amount_ = 10000lu;
-    uint64_t min_c2c_prepayment_ = 20000000lu;
-    std::string c2c_contract_addr_;
-    std::string chain_ips_ = "172.26.8.108:21001,172.26.8.108:22001,172.26.8.108:23001";
-    uint64_t c2c_timeout_ms_ = 10000lu;
-    uint64_t c2c_min_purchase_amount_ = 100000000lu;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };

@@ -55,7 +55,7 @@ public:
         prefix_db_->SaveLatestElectBlock(block, db_batch);
     }
 
-    // GetLatestElectBlock 从缓存中获取最新的选举块
+    // GetLatestElectBlock 从缓存中获取最新的选举块 
     std::shared_ptr<elect::protobuf::ElectBlock> GetLatestElectBlock(uint32_t sharding_id) {
         return latest_elect_blocks_[sharding_id];
     }

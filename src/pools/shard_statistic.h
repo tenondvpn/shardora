@@ -42,7 +42,6 @@ public:
         uint64_t prepare_elect_height,
         uint64_t elect_height);
     void OnNewBlock(const block::protobuf::Block& block);
-    void OnNewBlockCredit(const block::protobuf::Block& block);
     void GetStatisticInfo(
         uint64_t timeblock_height,
         block::protobuf::StatisticInfo* statistic_info);
@@ -56,7 +55,6 @@ public:
         std::string* statistic_hash,
         std::string* cross_hash);
     int LeaderCreateStatisticHeights(pools::protobuf::StatisticTxItem& to_heights);
-    int StatisticPrevElectionCredit(uint64_t prev_elect_height, std::string* statistic_hash);
 
 private:
     void CreateStatisticTransaction(uint64_t timeblock_height);
@@ -74,10 +72,6 @@ private:
     void LoadLatestHeights();
     void NormalizeLofMap(std::unordered_map<uint32_t, common::Point>& lof_map);
     bool LoadAndStatisticBlock(uint32_t poll_index, uint64_t height);
-    int SetNodeCreditInfo(
-        uint32_t local_net_id,
-        uint64_t prev_elect_height,
-        std::shared_ptr<StaticCreditInfo> credit_ptr);
 
     static const uint32_t kLofRation = 5;
     static const uint32_t kLofMaxNodes = 8;
@@ -99,8 +93,6 @@ private:
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     uint64_t prepare_elect_height_ = 0;
     std::shared_ptr<security::Security> secptr_ = nullptr;
-
-    std::map<uint64_t, std::shared_ptr<StaticCreditInfo>, std::less<uint64_t>> credits_;
 
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };

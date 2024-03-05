@@ -13,7 +13,7 @@ TnetTransport::TnetTransport(
         uint32_t send_buff_size,
         uint32_t thread_count,
         PacketHandler packet_handler,
-        std::shared_ptr<PacketFactory> packet_factory)
+        PacketFactory* packet_factory)
         : acceptor_isolate_thread_(acceptor_isolate_thread),
           recv_buff_size_(recv_buff_size),
           send_buff_size_(send_buff_size),

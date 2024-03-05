@@ -65,7 +65,7 @@ public:
             if (to_txs.tos(i).to().size() != security::kUnicastAddressLength * 2) {
                 continue;
             }
-
+            
             prefix_db_->SaveContractUserPrepayment(
                 to_txs.tos(i).to(), // 对于 kContractGasPrepayment 交易来说，to 当中已经包含了 from
                 "",

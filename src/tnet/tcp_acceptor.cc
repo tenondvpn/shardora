@@ -33,7 +33,7 @@ TcpAcceptor::TcpAcceptor(
         uint32_t send_buff_size,
         PacketHandler packet_handler,
         ConnectionHandler conn_handler,
-        std::shared_ptr<PacketFactory> packet_factory,
+        PacketFactory* packet_factory,
         EventLoop& event_loop,
         const std::vector<EventLoop*>& event_loops)
         : recv_buff_size_(recv_buff_size),

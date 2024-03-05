@@ -11,7 +11,7 @@ namespace tnet {
 class PacketDecoder {
 
 public:
-    virtual bool Decode(const std::string& from_ip, const char* buf, size_t len) = 0;
+    virtual bool Decode(const char* buf, size_t len) = 0;
     virtual Packet* GetPacket() = 0;
     virtual void Free() = 0;
 

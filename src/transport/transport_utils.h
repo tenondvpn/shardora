@@ -68,18 +68,12 @@ enum TcpConnnectionType {
     kRemoveClient = 3,
 };
 
-enum FirewallCheckStatus {
-    kFirewallCheckSuccess = 0,
-    kFirewallCheckError = 1,
-};
-
 static const uint64_t kConsensusMessageTimeoutUs = 5000000lu;
 static const uint64_t kHandledTimeoutMs = 10000lu;
 static const uint64_t kMessagePeriodUs = 1500000lu;
-static const uint32_t kBroadcastBloomfilterSize = 32u;
 
 struct TransportMessage {
-    TransportMessage() : conn(nullptr), retry(false), handled(false), sign_verified(false) {
+    TransportMessage() : conn(nullptr), retry(false), handled(false) {
         timeout = common::TimeUtils::TimestampUs() + kConsensusMessageTimeoutUs;
         handle_timeout = common::kInvalidUint64;
         prev_timestamp = common::TimeUtils::TimestampUs() + kMessagePeriodUs;
@@ -99,20 +93,14 @@ struct TransportMessage {
     uint64_t timeout;
     uint64_t prev_timestamp;
     bool handled;
-    bool sign_verified;
 };
 
 typedef std::shared_ptr<TransportMessage> MessagePtr;
 typedef std::function<void(const transport::MessagePtr& message)> MessageProcessor;
-typedef std::function<int(transport::MessagePtr& message)> FirewallCheckCallback;
 
 struct ClientItem {
-    ClientItem() : filter_from(false) {}
     std::string des_ip;
-    uint64_t sent_id;
-    uint64_t hash64;
     uint16_t port;
-    bool filter_from;
     std::string msg;
 };
 

@@ -13,7 +13,6 @@
 
 #include <parallel_hashmap/phmap.h>
 
-#include "common/limit_hash_set.h"
 #include "common/spin_mutex.h"
 #include "common/thread_safe_queue.h"
 #include "common/unique_set.h"
@@ -59,33 +58,13 @@ class MultiThreadHandler {
 public:
     MultiThreadHandler();
     ~MultiThreadHandler();
-    int Init(std::shared_ptr<db::Db>& db, std::shared_ptr<security::Security>& security);
+    int Init(std::shared_ptr<db::Db>& db);
     void Start();
     void HandleMessage(MessagePtr& msg_ptr);
     MessagePtr GetMessageFromQueue(uint32_t thread_idx);
     void Destroy();
     void NewHttpServer(MessagePtr& msg_ptr) {
         http_server_message_queue_.push(msg_ptr);
-    }
-
-    void NewWsServer(MessagePtr& msg_ptr) {
-        ws_server_message_queue_.push(msg_ptr);
-    }
-
-    void AddInvalidMessageIp(const std::string& from_ip) {
-    }
-
-    void AddInvalidMessageIp(uint8_t thread_idx, const std::string& from_ip) {
-    }
-
-    void AddFirewallCheckCallback(int32_t type, FirewallCheckCallback cb) {
-        assert(type < common::kMaxMessageTypeCount);
-        assert(firewall_checks_[type] == nullptr);
-        firewall_checks_[type] = cb;
-    }
-
-    void AddOutputMessageId(uint64_t id) {
-        output_msg_id_queue_.push(id);
     }
 
 private:
@@ -103,7 +82,6 @@ private:
     int StartTcpServer();
     int32_t GetPriority(MessagePtr& msg_ptr);
     bool IsMessageUnique(uint64_t msg_hash);
-    bool IsFromMessageUnique(const std::string& from_ip, uint64_t msg_hash);
     void InitThreadPriorityMessageQueues();
     uint8_t GetThreadIndex(MessagePtr& msg_ptr);
     void HandleSyncBlockResponse(MessagePtr& msg_ptr);
@@ -111,25 +89,16 @@ private:
     void CreateConsensusBlockMessage(
         std::shared_ptr<transport::TransportMessage>& new_msg_ptr,
         std::shared_ptr<block::protobuf::Block>& block_ptr);
-        
-    int CheckMessageValid(MessagePtr& msg_ptr);
-    int CheckSignValid(MessagePtr& msg_ptr);
-    int CheckDhtMessageValid(MessagePtr& msg_ptr);
 
     static const int kQueueObjectCount = 1024 * 1024;
 
     std::queue<std::shared_ptr<protobuf::Header>> local_queue_;
     std::vector<ThreadHandlerPtr> thread_vec_;
     bool inited_{ false };
-    common::LimitHashSet<uint64_t> unique_message_set_{1024000};
-    common::ThreadSafeQueue<uint64_t> output_msg_id_queue_;
     common::UniqueSet<uint64_t, 10240, 64> unique_message_sets_;
-    common::UniqueSet<uint64_t, 10240, 64> from_unique_message_sets_;
     common::ThreadSafeQueue<MessagePtr>** threads_message_queues_;
     common::ThreadSafeQueue<MessagePtr> http_server_message_queue_;
-    common::ThreadSafeQueue<MessagePtr> ws_server_message_queue_;
     common::ThreadSafeQueue<SavedBlockQueueItemPtr> saved_block_queue_;
-
     std::condition_variable* wait_con_ = nullptr;
     std::mutex* wait_mutex_ = nullptr;
     uint32_t consensus_thread_count_ = 4;
@@ -139,8 +108,6 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::unordered_map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_check_block_map_[common::kInvalidPoolIndex];
     std::unordered_set<uint64_t> committed_heights_[common::kInvalidPoolIndex];
-    std::shared_ptr<security::Security> security_ = nullptr;
-    FirewallCheckCallback firewall_checks_[common::kMaxMessageTypeCount] = { nullptr };
 
     DISALLOW_COPY_AND_ASSIGN(MultiThreadHandler);
 };

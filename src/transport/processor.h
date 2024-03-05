@@ -12,13 +12,13 @@ public:
     static Processor* Instance();
 
     inline void RegisterProcessor(uint32_t type, MessageProcessor processor) {
-        assert(type < common::kMaxMessageTypeCount);
+        assert(type < common::kLegoMaxMessageTypeCount);
         message_processor_[type] = processor;
     }
 
     inline void HandleMessage(MessagePtr& msg_ptr) {
         auto& message = msg_ptr->header;
-        assert(message.type() < common::kMaxMessageTypeCount);
+        assert(message.type() < common::kLegoMaxMessageTypeCount);
         auto handler = message_processor_[message.type()];
         if (handler == nullptr) {
             assert(false);
@@ -32,7 +32,7 @@ private:
     Processor();
     ~Processor();
 
-    MessageProcessor message_processor_[common::kMaxMessageTypeCount];
+    MessageProcessor message_processor_[common::kLegoMaxMessageTypeCount];
 
     DISALLOW_COPY_AND_ASSIGN(Processor);
 };
