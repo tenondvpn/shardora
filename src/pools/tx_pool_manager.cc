@@ -225,7 +225,7 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
     }
 
     if (prev_check_leader_valid_ms_ < now_tm_ms && member_index_ != common::kInvalidUint32) {
-        if (network::DhtManager::Instance()->valid_count(
+        if (false && network::DhtManager::Instance()->valid_count(
                 common::GlobalInfo::Instance()->network_id()) + 1 >=
                 common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
             bool get_factor = false;

@@ -380,7 +380,6 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
 void NetworkInit::RotationLeaderCallback(
         uint8_t thread_idx,
         const std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>>& invalid_pools) {
-    return;
     auto rotation = rotation_leaders_;
     if (rotation == nullptr) {
         return;
