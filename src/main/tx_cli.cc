@@ -14,7 +14,7 @@
 using namespace zjchain;
 static bool global_stop = false;
 static const std::string kBroadcastIp = "10.101.20.29";
-static const std::string kBroadcastPort = 13001;
+static const uint16_t kBroadcastPort = 13001;
 
 static void SignalCallback(int sig_int) {
     global_stop = true;
