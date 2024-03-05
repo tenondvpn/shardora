@@ -15,6 +15,7 @@
 #include "protos/prefix_db.h"
 #include "protos/sync.pb.h"
 #include "protos/transport.pb.h"
+#include "security/security.h"
 #include "sync/sync_utils.h"
 #include "transport/transport_utils.h"
 
@@ -62,7 +63,7 @@ struct SyncItem {
     std::string key;
     uint32_t priority{ 0 };
     uint32_t sync_times{ 0 };
-    uint32_t pool_idx{ common::kInvalidUint32 }; // 对于 SyncElectBlock 来说pool 就是 elect network id
+    uint32_t pool_idx{ common::kInvalidUint32 };
     uint64_t height{ common::kInvalidUint64 };
     uint64_t sync_tm_us;
     uint32_t tag;
@@ -93,8 +94,10 @@ public:
         uint32_t priority);
     void Init(
         const std::shared_ptr<block::BlockManager>& block_mgr,
-        const std::shared_ptr<db::Db>& db);
+        const std::shared_ptr<db::Db>& db,
+        std::shared_ptr<security::Security> security);
     void HandleMessage(const transport::MessagePtr& msg);
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     uint32_t added_key_size() const {
         return added_key_set_.size();
     }
@@ -153,6 +156,7 @@ private:
     std::unordered_set<std::string> synced_keys_;
     std::deque<std::string> timeout_queue_;
     uint32_t max_sharding_id_ = network::kConsensusShardBeginNetworkId;
+    std::shared_ptr<security::Security> security_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(KeyValueSync);
 };

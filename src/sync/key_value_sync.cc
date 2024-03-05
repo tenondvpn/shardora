@@ -38,9 +38,11 @@ void KeyValueSync::AddSync(
 
 void KeyValueSync::Init(
         const std::shared_ptr<block::BlockManager>& block_mgr,
-        const std::shared_ptr<db::Db>& db) {
+        const std::shared_ptr<db::Db>& db,
+        std::shared_ptr<security::Security> security) {
     block_mgr_ = block_mgr;
     db_ = db;
+    security_ = security;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db);
     network::Route::Instance()->RegisterMessage(
         common::kSyncMessage,
@@ -48,6 +50,10 @@ void KeyValueSync::Init(
     tick_.CutOff(
         100000lu,
         std::bind(&KeyValueSync::ConsensusTimerMessage, this, std::placeholders::_1));
+}
+
+int KeyValueSync::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+    return transport::kFirewallCheckSuccess;
 }
 
 void KeyValueSync::AddSyncHeight(
@@ -161,9 +167,7 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
                 height_item->set_height(item->height);
                 height_item->set_tag(item->tag);
                 if (item->tag == kElectBlock) {
-                    ZJC_DEBUG("try to sync elect block: %u_%u_%lu", item->network_id, item->pool_idx, item->height);
-                } else {
-                    ZJC_DEBUG("try to sync normal block: %u_%u_%lu", item->network_id, item->pool_idx, item->height);
+                    ZJC_DEBUG("sync get elect block: %u_%u_%lu", item->network_id, item->pool_idx, item->height);
                 }
             } else {
                 sync_req->add_keys(item->key);
@@ -278,7 +282,18 @@ uint64_t KeyValueSync::SendSyncRequest(
     dht::DhtKeyManager dht_key(network_id);
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kSyncMessage);
+    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     *msg.mutable_sync_proto() = sync_msg;
+    std::string sign;
+    if (security_->Sign(
+            transport::TcpTransport::Instance()->GetHeaderHashForSign(msg),
+            &sign) != security::kSecuritySuccess) {
+        ZJC_ERROR("sync new from %s:%d", node->public_ip.c_str(), node->public_port);
+        return node->id_hash;
+    }
+
+    msg.set_sign(sign);
+    msg.set_pubkey(security_->GetPublicKey());
     transport::TcpTransport::Instance()->Send(
         thread_idx, node->public_ip, node->public_port, msg);
     ZJC_DEBUG("sync new from %s:%d", node->public_ip.c_str(), node->public_port);
@@ -583,7 +598,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                               block_item->height(),
                               block_item->network_id(),
                               block_item->pool_index());
-                    
+
                 }
             }
         }
