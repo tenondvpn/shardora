@@ -520,6 +520,11 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         return;
     }
 
+    if (header.pubkey().empty()) {
+        DHT_ERROR("not refresh neighbor no public key.");
+        return;
+    }
+
     NodePtr node = std::make_shared<Node>(
         header.src_sharding_id(),
         dht_msg.refresh_neighbors_req().public_ip(),
