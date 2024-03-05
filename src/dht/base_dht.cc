@@ -43,8 +43,11 @@ int BaseDht::Init(
             std::bind(&BaseDht::RefreshNeighbors, shared_from_this(), std::placeholders::_1));
     }
 
-    auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
+    assert(dht_.empty());
+    auto tmp_dht_ptr = std::make_shared<const Dht>(dht_);
     readonly_hash_sort_dht_ = tmp_dht_ptr;
+    assert(readonly_hash_sort_dht_->empty());
+
     return kDhtSuccess;
 }
 
@@ -65,10 +68,12 @@ void BaseDht::UniversalJoin(const NodePtr& node) {
 }
 
 int BaseDht::Join(NodePtr& node) {
-    DHT_DEBUG("sharding: %u, now try join new node: %s:%d",
+    DHT_DEBUG("sharding: %u, now try join new node: %s:%d, size: %d, %d",
         local_node_->sharding_id,
         node->public_ip.c_str(),
-        node->public_port);
+        node->public_port,
+        dht_.size(),
+        readonly_hash_sort_dht_->size());
 
     if (node_join_cb_ != nullptr) {
         if (node_join_cb_(node) != kDhtSuccess) {
@@ -120,12 +125,13 @@ int BaseDht::Join(NodePtr& node) {
         return lhs->id_hash < rhs->id_hash;
     });
         
-    auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
+    auto tmp_dht_ptr = std::make_shared<const Dht>(dht_);
     readonly_hash_sort_dht_ = tmp_dht_ptr;
-    DHT_DEBUG("sharding: %u, join new node: %s:%d",
+    DHT_DEBUG("sharding: %u, join new node: %s:%d, local: %s:%d",
         local_node_->sharding_id,
         node->public_ip.c_str(),
-        node->public_port);
+        node->public_port,
+        local_node_->public_ip.c_str(), local_node_->public_port);
     valid_count_ = dht_.size() + 1;
     return kDhtSuccess;
 }
@@ -147,7 +153,6 @@ int BaseDht::Drop(const std::string& id) {
     }
 
     dht_key_hash = (*iter)->dht_key_hash;
-    DHT_DEBUG("success drop node: %s:%d", (*iter)->public_ip.c_str(), (*iter)->public_port);
     dht_.erase(iter);
     auto miter = node_map_.find(dht_key_hash);
     if (miter != node_map_.end()) {
@@ -173,7 +178,7 @@ int BaseDht::Drop(const std::vector<std::string>& ids) {
             [](const NodePtr& lhs, const NodePtr& rhs)->bool {
         return lhs->id_hash < rhs->id_hash;
     });
-    auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
+    auto tmp_dht_ptr = std::make_shared<const Dht>(dht_);
     readonly_hash_sort_dht_ = tmp_dht_ptr;
     return kDhtSuccess;
 }
@@ -201,7 +206,7 @@ int BaseDht::Drop(NodePtr& node) {
             [](const NodePtr& lhs, const NodePtr& rhs)->bool {
         return lhs->id_hash < rhs->id_hash;
     });
-    auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
+    auto tmp_dht_ptr = std::make_shared<const Dht>(dht_);
     readonly_hash_sort_dht_ = tmp_dht_ptr;
     auto miter = node_map_.find(node->dht_key_hash);
     if (miter != node_map_.end()) {
@@ -209,7 +214,6 @@ int BaseDht::Drop(NodePtr& node) {
         node_map_.erase(miter);
     }
 
-    DHT_DEBUG("success drop node: %s:%d", node->public_ip.c_str(), node->public_port);
     return kDhtSuccess;
 }
 
@@ -242,9 +246,8 @@ int BaseDht::Drop(const std::string& ip, uint16_t port) {
         [](const NodePtr& lhs, const NodePtr& rhs)->bool {
             return lhs->id_hash < rhs->id_hash;
         });
-    auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
+    auto tmp_dht_ptr = std::make_shared<const Dht>(dht_);
     readonly_hash_sort_dht_ = tmp_dht_ptr;
-    DHT_DEBUG("success drop node: %s:%d", ip.c_str(), port);
     return kDhtSuccess;
 }
 
@@ -260,7 +263,6 @@ int BaseDht::Bootstrap(
             continue;
         }
 
-        // 构造一条 bootstrap message
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto& msg = msg_ptr->header;
         DhtKeyManager dhtkey(local_node_->sharding_id, boot_nodes[i]->id);
@@ -375,9 +377,10 @@ NodePtr BaseDht::FindNodeDirect(transport::protobuf::Header& message) {
 }
 
 void BaseDht::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    ZJC_DEBUG("dht handle message coming.");
     auto& header = msg_ptr->header;
     if (header.type() != common::kDhtMessage) {
-        //         DHT_ERROR("invalid message type[%d]", header.type());
+        DHT_ERROR("invalid message type[%d]", header.type());
         return;
     }
 
@@ -386,6 +389,7 @@ void BaseDht::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    ZJC_DEBUG("success handle dht message and now dispatch it.");
     DhtDispatchMessage(msg_ptr);
 }
 
@@ -397,31 +401,32 @@ void BaseDht::DhtDispatchMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     if (msg_ptr->header.dht_proto().has_bootstrap_res()) {
-        ZJC_DEBUG("has_bootstrap_res");
+//         ZJC_DEBUG("has_bootstrap_res");
         ProcessBootstrapResponse(msg_ptr);
         return;
     }
 
     if (msg_ptr->header.dht_proto().has_refresh_neighbors_req()) {
-        ZJC_DEBUG("has_refresh_neighbors_req");
+//         ZJC_DEBUG("has_refresh_neighbors_req");
         ProcessRefreshNeighborsRequest(msg_ptr);
         return;
     }
 
     if (msg_ptr->header.dht_proto().has_refresh_neighbors_res()) {
-        ZJC_DEBUG("has_refresh_neighbors_res");
+//         ZJC_DEBUG("has_refresh_neighbors_res");
         ProcessRefreshNeighborsResponse(msg_ptr);
         return;
     }
 
     if (msg_ptr->header.dht_proto().has_connect_req()) {
-        ZJC_DEBUG("has_connect_req");
+//         ZJC_DEBUG("has_connect_req");
         ProcessConnectRequest(msg_ptr);
         return;
     }
+
+    ZJC_DEBUG("dht not valid message.");
 }
 
-// 处理 bootstrap transportmessage
 void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& dht_msg = header.dht_proto();
@@ -430,17 +435,7 @@ void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    // 验证消息签名
-    std::string sign_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(header);
-    if (security_->Verify(
-            sign_hash,
-            dht_msg.bootstrap_req().pubkey(),
-            header.sign()) != security::kSecuritySuccess) {
-        DHT_ERROR("verifi signature failed!");
-        return;
-    }
-
-    auto id = security_->GetAddress(dht_msg.bootstrap_req().pubkey());
+    auto id = security_->GetAddress(header.pubkey());
     DhtKeyManager dhtkey(header.src_sharding_id(), id);
     transport::protobuf::Header msg;
     DhtProto::CreateBootstrapResponse(
@@ -468,8 +463,8 @@ void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
         msg.src_sharding_id(),
         dht_msg.bootstrap_req().public_ip(),
         dht_msg.bootstrap_req().public_port(),
-        dht_msg.bootstrap_req().pubkey(),
-        security_->GetAddress(dht_msg.bootstrap_req().pubkey()));
+        header.pubkey(),
+        security_->GetAddress(header.pubkey()));
     msg_ptr->conn->SetPeerIp(dht_msg.bootstrap_req().public_ip());
     msg_ptr->conn->SetPeerPort(dht_msg.bootstrap_req().public_port());
     node->join_way = kJoinFromBootstrapReq;
@@ -491,26 +486,12 @@ void BaseDht::ProcessBootstrapResponse(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    if (!dht_msg.bootstrap_res().has_pubkey() || dht_msg.bootstrap_res().pubkey().empty()) {
-        return;
-    }
-
-    // check sign
-    std::string sign_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(header);
-    if (security_->Verify(
-            sign_hash,
-            dht_msg.bootstrap_res().pubkey(),
-            header.sign()) != security::kSecuritySuccess) {
-        DHT_ERROR("verifi signature failed!");
-        return;
-    }
-
     NodePtr node = std::make_shared<Node>(
         header.src_sharding_id(),
         dht_msg.bootstrap_res().public_ip(),
         dht_msg.bootstrap_res().public_port(),
-        dht_msg.bootstrap_res().pubkey(),
-        security_->GetAddress(dht_msg.bootstrap_res().pubkey()));
+        header.pubkey(),
+        security_->GetAddress(header.pubkey()));
     node->join_way = kJoinFromBootstrapRes;
     msg_ptr->conn->SetPeerIp(dht_msg.bootstrap_res().public_ip());
     msg_ptr->conn->SetPeerPort(dht_msg.bootstrap_res().public_port());
@@ -539,21 +520,12 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         return;
     }
 
-    std::string sign_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(header);
-    if (security_->Verify(
-            sign_hash,
-            dht_msg.refresh_neighbors_req().pubkey(),
-            header.sign()) != security::kSecuritySuccess) {
-        DHT_ERROR("verifi signature failed!");
-        return;
-    }
-
     NodePtr node = std::make_shared<Node>(
         header.src_sharding_id(),
         dht_msg.refresh_neighbors_req().public_ip(),
         dht_msg.refresh_neighbors_req().public_port(),
-        dht_msg.refresh_neighbors_req().pubkey(),
-        security_->GetAddress(dht_msg.refresh_neighbors_req().pubkey()));
+        header.pubkey(),
+        security_->GetAddress(header.pubkey()));
     msg_ptr->conn->SetPeerIp(dht_msg.refresh_neighbors_req().public_ip());
     msg_ptr->conn->SetPeerPort(dht_msg.refresh_neighbors_req().public_port());
     node->join_way = kJoinFromRefreshNeigberRequest;
@@ -574,8 +546,7 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
     if (bloomfilter) {
         auto& closest_nodes = dht_;
         for (auto iter = closest_nodes.begin(); iter != closest_nodes.end(); ++iter) {
-            // ZJC_DEBUG("port:%u, src_shard_id:%u, hash:%lu id:%s node_shard:%u", dht_msg.refresh_neighbors_req().public_port(), header.src_sharding_id(), (*iter)->dht_key_hash, common::Encode::HexSubstr((*iter)->id).c_str(), (*iter)->sharding_id);
-            if (bloomfilter->Contain((*iter)->dht_key_hash)) {
+            if (bloomfilter->Contain(common::Hash::Hash64((*iter)->id))) {
                 ZJC_DEBUG("res refresh neighbers filter: %s:%u, hash: %lu",
                     common::Encode::HexEncode((*iter)->dht_key).c_str(), msg_ptr->header.hash64());
                 continue;
@@ -591,7 +562,7 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         }
     }
 
-    auto id = security_->GetAddress(dht_msg.refresh_neighbors_req().pubkey());
+    auto id = security_->GetAddress(header.pubkey());
     DhtKeyManager dhtkey(header.src_sharding_id(), id);
     auto close_nodes = DhtFunction::GetClosestNodes(
         tmp_dht,
@@ -608,7 +579,18 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         local_node_->dht_key,
         close_nodes,
         res);
+    
     transport::TcpTransport::Instance()->SetMessageHash(res, msg_ptr->thread_idx);
+    res.set_pubkey(security_->GetPublicKey());
+    std::string sign;
+    if (security_->Sign(
+            transport::TcpTransport::Instance()->GetHeaderHashForSign(res),
+            &sign) != security::kSecuritySuccess) {
+        ZJC_DEBUG("sign error");
+        return;
+    }
+
+    res.set_sign(sign);
     ZJC_DEBUG("send refresh neighbers response hash: %lu", res.hash64());
     msg_ptr->conn->Send(res.SerializeAsString());
 }
@@ -628,37 +610,16 @@ void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_p
     }
 
     const auto& res_nodes = dht_msg.refresh_neighbors_res().nodes();
-    // add res_nodes to waiting_refresh_nodes_map_ pubkey => [NodePtr, NodePtr, ...]
-    waiting_refresh_nodes_map_.clear();
     for (int32_t i = 0; i < res_nodes.size(); ++i) {
-        NodePtr node = std::make_shared<Node>(
-            res_nodes[i].sharding_id(),
+        ZJC_DEBUG("connect neighbers new node: %s:%u",
+            res_nodes[i].public_ip().c_str(), res_nodes[i].public_port());
+        Connect(
+            msg_ptr->thread_idx,
             res_nodes[i].public_ip(),
             res_nodes[i].public_port(),
             res_nodes[i].pubkey(),
-            security_->GetAddress(res_nodes[i].pubkey()));
-        auto iter = waiting_refresh_nodes_map_.find(res_nodes[i].id());
-        if (iter != waiting_refresh_nodes_map_.end()) {
-            iter->second.push_back(node);
-        } else {
-            std::vector<NodePtr> nodes = {node};
-            waiting_refresh_nodes_map_.insert(std::make_pair(res_nodes[i].id(), nodes));
-        }
-    }
-
-    for (auto iter = waiting_refresh_nodes_map_.begin(); iter != waiting_refresh_nodes_map_.end(); ++iter) {
-        if (iter->second.size() > 0) {
-            NodePtr node = iter->second[0];
-            ZJC_DEBUG("connect neighbers new node: %s:%u",
-                      node->public_ip.c_str(), node->public_port);
-            Connect(
-                msg_ptr->thread_idx,
-                node->public_ip,
-                node->public_port,
-                node->pubkey_str,
-                header.src_sharding_id(),
-                false);      
-        }
+            header.src_sharding_id(),
+            false);
     }
 }
 
@@ -741,51 +702,29 @@ void BaseDht::ProcessConnectRequest(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    std::string sign_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(header);
-    if (security_->Verify(
-            sign_hash,
-            dht_msg.connect_req().pubkey(),
-            header.sign()) != security::kSecuritySuccess) {
-        DHT_ERROR("verifi signature failed: %lu", msg_ptr->header.hash64());
-        return;
-    }
-
-    
-    if (dht_msg.connect_req().is_response()) {
-        // if is response
-        // find nodes from waiting_refresh_nodes_map_ mapping by the sender node and join it
-        auto iter = waiting_refresh_nodes_map_.find(dht_msg.connect_req().id());
-        if (iter != waiting_refresh_nodes_map_.end()) {
-            auto nodes = iter->second;
-            for (uint32_t i = 0; i < nodes.size(); ++i) {
-                nodes[i]->join_way = kJoinFromConnect;
-                Join(nodes[i]);
-            }
-        }
-        
-        return;
-    }
-
-    // if not response, join the sender node only
     NodePtr node = std::make_shared<Node>(
         header.src_sharding_id(),
         dht_msg.connect_req().public_ip(),
         dht_msg.connect_req().public_port(),
-        dht_msg.connect_req().pubkey(),
-        security_->GetAddress(dht_msg.connect_req().pubkey()));
+        header.pubkey(),
+        security_->GetAddress(header.pubkey()));
     node->join_way = kJoinFromConnect;
     msg_ptr->conn->SetPeerIp(dht_msg.connect_req().public_ip());
     msg_ptr->conn->SetPeerPort(dht_msg.connect_req().public_port());
     Join(node);
-    
+    if (dht_msg.connect_req().is_response()) {
+        DHT_DEBUG("process connect response success: %lu", msg_ptr->header.hash64());
+        return;
+    }
+
     Connect(
         msg_ptr->thread_idx,
         dht_msg.connect_req().public_ip(),
         dht_msg.connect_req().public_port(),
-        dht_msg.connect_req().pubkey(),
+        header.pubkey(),
         header.src_sharding_id(),
         true);
-    DHT_ERROR("process connect success: %lu", msg_ptr->header.hash64());
+    DHT_DEBUG("process connect success: %lu", msg_ptr->header.hash64());
 }
 
 bool BaseDht::NodeValid(NodePtr& node) {
@@ -957,6 +896,7 @@ void BaseDht::ProcessTimerRequest(uint8_t thread_idx) {
         node->dht_key,
         msg);
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
+    msg.set_pubkey(security_->GetPublicKey());
     std::string sign;
     if (security_->Sign(
             transport::TcpTransport::Instance()->GetHeaderHashForSign(msg),
@@ -970,12 +910,12 @@ void BaseDht::ProcessTimerRequest(uint8_t thread_idx) {
         node->public_ip,
         node->public_port,
         msg);
-    ZJC_DEBUG("refresh neighbors now %s:%d! hash: %lu",
-        node->public_ip.c_str(), node->public_port, msg.hash64());
+    ZJC_DEBUG("refresh neighbors now %s:%d! hash: %lu, dht size: %d",
+        node->public_ip.c_str(), node->public_port, msg.hash64(), readonly_hash_sort_dht_->size());
 }
 
 void BaseDht::PrintDht(uint8_t thread_idx) {
-    dht::DhtPtr readonly_dht = readonly_hash_sort_dht();
+    auto readonly_dht = readonly_hash_sort_dht();
     if (readonly_dht != nullptr) {
         auto node = local_node();
         std::string debug_str;
@@ -990,7 +930,7 @@ void BaseDht::PrintDht(uint8_t thread_idx) {
             auto node = *iter;
             assert(node != nullptr);
             std::string tmp_res = common::StringUtil::Format(
-                "\n%s, id: %u, %s:%u",
+                "\t\t%s, id: %u, %s:%u",
                 common::Encode::HexSubstr(node->id).c_str(),
                 node->sharding_id,
                 node->public_ip.c_str(),
