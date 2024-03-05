@@ -267,7 +267,7 @@ clickhouse-client -q "drop table zjc_ck_transaction_table"
         f.write(code_str)
 
 
-def gen_run_nodes_sh_file(server_conf: dict, file_path, build_genesis_path, tag, datadir='/root', srcdir='/root/xufei'):
+def gen_run_nodes_sh_file(server_conf: dict, file_path, build_genesis_path, tag, datadir='/root'):
     code_str = """
 #!/bin/bash
 # 修改配置文件
@@ -305,7 +305,7 @@ echo "==== STEP1: START DEPLOY ===="
     code_str += f"""
 echo "[$server0]"
 # sshpass -p {server0_pass} ssh -o StrictHostKeyChecking=no root@$server0 <<EOF
-cd {srcdir} && sh {build_genesis_path} $target $no_build
+sh {build_genesis_path} $target $no_build
 cd {datadir} && sh -x fetch.sh 127.0.0.1 ${{server0}} ${server0_pass} {server0_node_names_str}
 # EOF
 
@@ -422,7 +422,6 @@ def main():
     parser.add_argument('--config', help='nodes_conf.yml 文件位置', default='')
     parser.add_argument('--tag', help='tag', default='default')
     parser.add_argument('--datadir', help='datadir', default='/root')
-    parser.add_argument('--srcdir', help='srcdir', default='/root/xufei/zjchain')
     args = parser.parse_args()
     if args.config == '':
         args.config = './nodes_conf.yml'
@@ -430,16 +429,13 @@ def main():
     if args.datadir.endswith('/'):
         args.datadir = args.datadir[:-1]
 
-    if args.srcdir.endswith('/'):
-        args.srcdir = args.srcdir[:-1]
-
     file_path = args.config
     server_conf = parse_server_yml_file(file_path)
     build_genesis_path = './build_genesis.sh'
     gen_zjnodes(server_conf, "./zjnodes")
     gen_genesis_yaml_file(server_conf, "./conf/genesis.yml")
     gen_genesis_sh_file(server_conf, build_genesis_path, datadir=args.datadir)
-    gen_run_nodes_sh_file(server_conf, "./deploy_genesis_multi_server.sh", build_genesis_path, tag=args.tag, datadir=args.datadir, srcdir=args.srcdir)
+    gen_run_nodes_sh_file(server_conf, "./deploy_genesis_multi_server.sh", build_genesis_path, tag=args.tag, datadir=args.datadir)
     modify_shard_num_in_src_code(server_conf)
 
 if __name__ == '__main__':
