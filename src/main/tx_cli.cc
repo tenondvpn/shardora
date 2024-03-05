@@ -198,7 +198,7 @@ int tx_main(int argc, char** argv) {
         }
     }
 
-    if (net_handler.Init(db_ptr, security) != 0) {
+    if (net_handler.Init(db_ptr) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
     }
@@ -299,7 +299,7 @@ int one_tx_main(int argc, char** argv) {
         }
     }
 
-    if (net_handler.Init(db_ptr, security) != 0) {
+    if (net_handler.Init(db_ptr) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
     }
@@ -381,7 +381,7 @@ int create_library(int argc, char** argv) {
         }
     }
 
-    if (net_handler.Init(db_ptr, security) != 0) {
+    if (net_handler.Init(db_ptr) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
     }
@@ -458,7 +458,7 @@ int contract_main(int argc, char** argv) {
         }
     }
 
-    if (net_handler.Init(db_ptr, security) != 0) {
+    if (net_handler.Init(db_ptr) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
     }
@@ -543,7 +543,7 @@ int contract_set_prepayment(int argc, char** argv) {
         }
     }
 
-    if (net_handler.Init(db_ptr, security) != 0) {
+    if (net_handler.Init(db_ptr) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
     }
@@ -619,7 +619,7 @@ int contract_call(int argc, char** argv, bool more=false) {
         }
     }
 
-    if (net_handler.Init(db_ptr, security) != 0) {
+    if (net_handler.Init(db_ptr) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
     }
