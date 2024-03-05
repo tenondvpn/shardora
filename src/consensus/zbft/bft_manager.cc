@@ -448,7 +448,7 @@ ZbftPtr BftManager::Start(
 
     std::shared_ptr<WaitingTxsItem> txs_ptr = get_txs_ptr(thread_item, commited_bft_ptr);
     if (txs_ptr == nullptr) {
-        ZJC_DEBUG("thread idx error 5: %d, commited_bft_ptr: %d", thread_index, (commited_bft_ptr == nullptr));
+        // ZJC_DEBUG("thread idx error 5: %d, commited_bft_ptr: %d", thread_index, (commited_bft_ptr == nullptr));
         return nullptr;
     }
 
