@@ -1087,7 +1087,7 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
         return false;
     }
 
-    msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
+    // msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
     // if (security_->Verify(
     //         msg_ptr->msg_hash,
     //         tx_msg.pubkey(),
@@ -1103,17 +1103,17 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     //     return false;
     // }
 
-    // if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
-    //     // avoid save gid different tx
-    //     ZJC_DEBUG("tx msg hash exists: %s failed!",
-    //         common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
-    //     return false;
-    // }
+    if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
+        // avoid save gid different tx
+        ZJC_DEBUG("tx msg hash exists: %s failed!",
+            common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
+        return false;
+    }
 
-    // if (prefix_db_->GidExists(tx_msg.gid())) {
-    //     ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
-    //     return false;
-    // }
+    if (prefix_db_->GidExists(tx_msg.gid())) {
+        ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
+        return false;
+    }
 
     return true;
 }
