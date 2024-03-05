@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <protos/pools.pb.h>
 
 #include "common/unique_map.h"
 #include "common/unique_set.h"
