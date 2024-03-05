@@ -73,7 +73,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
     msg.set_src_sharding_id(des_net_id);
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kPoolsMessage);
-    msg.set_broadcast(false);
+    msg.set_broadcast(true);
     auto new_tx = msg.mutable_tx_proto();
     new_tx->set_gid(gid);
     new_tx->set_pubkey(security->GetPublicKeyUnCompressed());
