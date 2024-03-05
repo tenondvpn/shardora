@@ -1,5 +1,7 @@
 #pragma once
 
+#include <yaml-cpp/node/node.h>
+
 #include "block/account_manager.h"
 #include "block/block_manager.h"
 #include "bls/bls_manager.h"
@@ -16,15 +18,17 @@
 #include "init/command.h"
 #include "init/http_handler.h"
 #include "init/init_utils.h"
+#include "init/ws_server.h"
 #include "pools/shard_statistic.h"
 #include "pools/tx_pool_manager.h"
 #include "protos/elect.pb.h"
+#include "protos/ws.pb.h"
 #include "security/security.h"
 #include "sync/key_value_sync.h"
 #include "timeblock/time_block_manager.h"
 #include "transport/multi_thread.h"
 #include "vss/vss_manager.h"
-#include <yaml-cpp/node/node.h>
+#include "websocket/websocket_server.h"
 
 namespace zjchain {
 
@@ -76,10 +80,12 @@ private:
     void RotationLeaderCallback(uint8_t thread_idx, const std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>>& invalid_pools);
     void CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req);
     bool BlockBlsAggSignatureValid(uint8_t thread_idx, const block::protobuf::Block& block);
+    void RegisterFirewallCheck();
     void BroadcastInvalidPools(
         uint8_t thread_idx,
         std::shared_ptr<LeaderRotationInfo> leader_rotation,
         int32_t mod_num);
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
     static const uint32_t kInvalidPoolFactor = 50u;  // 50%
     static const uint32_t kMinValodPoolCount = 4u;  // 64 must finish all
@@ -115,7 +121,8 @@ private:
     uint64_t latest_elect_height_ = 0;
     std::shared_ptr<LeaderRotationInfo> rotation_leaders_ = nullptr;
     // 是否还需要发送一次 JoinElect
-    bool another_join_elect_msg_needed_ = false;
+        bool another_join_elect_msg_needed_ = false;
+    WsServer ws_server_;
 
     DISALLOW_COPY_AND_ASSIGN(NetworkInit);
 };

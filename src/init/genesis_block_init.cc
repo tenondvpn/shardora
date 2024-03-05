@@ -1,8 +1,8 @@
 #include "init/genesis_block_init.h"
 
 #include <cmath>
-#include <utility>
 #include <vector>
+#include <utility>
 
 #include <libbls/tools/utils.h>
 
@@ -52,7 +52,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
     const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
     const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
     const std::set<uint32_t>& valid_net_ids_set) {
-    int res = kInitSuccess;    
+    int res = kInitSuccess;
     // 事先计算一下每个节点账户要分配的余额
     std::unordered_map<std::string, uint64_t> genesis_acount_balance_map;
     genesis_acount_balance_map = GetGenesisAccountBalanceMap(root_genesis_nodes, cons_genesis_nodes_of_shards);
@@ -68,10 +68,10 @@ int GenesisBlockInit::CreateGenesisBlocks(
         uint32_t shard_node_net_id = i + network::kConsensusShardBeginNetworkId;
         auto shard_iter = valid_net_ids_set.find(shard_node_net_id);
         if (shard_iter != valid_net_ids_set.end()) {
-            real_cons_genesis_nodes_of_shards[i] = cons_genesis_nodes_of_shards[i]; 
+            real_cons_genesis_nodes_of_shards[i] = cons_genesis_nodes_of_shards[i];
         }
     }
-    
+
 
     if (net_type == GenisisNetworkType::RootNetwork) { // 构造 root 创世网络
         // 生成节点私有数据，如 bls
@@ -80,10 +80,10 @@ int GenesisBlockInit::CreateGenesisBlocks(
         for (uint32_t i = 0; i < real_cons_genesis_nodes_of_shards.size(); i++) {
             uint32_t net_id = i + network::kConsensusShardBeginNetworkId;
             if (cons_genesis_nodes_of_shards[i].size() != 0) {
-                CreateNodePrivateInfo(net_id, 1llu, cons_genesis_nodes_of_shards[i]);    
+                CreateNodePrivateInfo(net_id, 1llu, cons_genesis_nodes_of_shards[i]);
             }
         }
-        
+
         common::GlobalInfo::Instance()->set_network_id(network::kRootCongressNetworkId);
         PrepareCreateGenesisBlocks();
         res = CreateRootGenesisBlocks(real_root_genesis_nodes,
@@ -108,7 +108,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
 
             CreateNodePrivateInfo(shard_node_net_id, 1llu, cons_genesis_nodes);
             common::GlobalInfo::Instance()->set_network_id(shard_node_net_id);
-            PrepareCreateGenesisBlocks();            
+            PrepareCreateGenesisBlocks();
             res = CreateShardGenesisBlocks(real_root_genesis_nodes,
                                            cons_genesis_nodes,
                                            shard_node_net_id,
@@ -122,7 +122,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
             ComputeG2sForNodes(prikeys);
         }
     }
-    
+
     return res;
 }
 
@@ -464,7 +464,7 @@ std::unordered_map<std::string, uint64_t> GenesisBlockInit::GetGenesisAccountBal
 
     uint64_t aver_balance = common::kGenesisShardingNodesMaxZjc / valid_ids.size();
     uint64_t rest_balance = common::kGenesisShardingNodesMaxZjc % valid_ids.size();
-    
+
     std::unordered_map<std::string, uint64_t> node_balance_map;
     // 平均分配余额，剩下的都给最后一个
     uint32_t count = 0;
@@ -542,7 +542,7 @@ int GenesisBlockInit::CreateElectBlock(
     if (genesis_nodes.size() == 0) {
         return kInitSuccess;
     }
-    
+
     // ??? 不应该是 pool_index 吗，为什么是 shard_netid
     auto account_info = account_mgr_->pools_address_info(shard_netid);
     auto tenon_block = std::make_shared<block::protobuf::Block>();
@@ -561,7 +561,7 @@ int GenesisBlockInit::CreateElectBlock(
     uint32_t expect_leader_count = (uint32_t)pow(
         2.0,
         (double)((uint32_t)log2(double(genesis_nodes.size() / 3))));
-    
+
     uint32_t node_idx = 0;
     for (auto iter = genesis_nodes.begin(); iter != genesis_nodes.end(); ++iter, ++node_idx) {
         auto in = ec_block.add_in();
@@ -572,7 +572,7 @@ int GenesisBlockInit::CreateElectBlock(
     tenon_block->set_height(height);
     ec_block.set_shard_network_id(shard_netid);
     ec_block.set_elect_height(tenon_block->height());
-    
+
     if (prev_height != common::kInvalidUint64) {
         auto prev_members = ec_block.mutable_prev_members();
         for (uint32_t i = 0; i < genesis_nodes.size(); ++i) {
@@ -691,7 +691,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_is_commited_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-        
+
         BlsAggSignBlock(genesis_nodes, tenon_block);
         fputs((common::Encode::HexEncode(tenon_block->SerializeAsString()) + "\n").c_str(),
             root_gens_init_block_file);
@@ -731,7 +731,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tx_info->set_step(pools::protobuf::kConsensusRootTimeBlock);
         tx_info->set_gas_limit(0llu);
         tx_info->set_amount(0);
-        
+
         auto timeblock_storage = tx_info->add_storages();
         tenon_block->set_height(root_single_block_height++);
         timeblock::protobuf::TimeBlock tm_block;
@@ -739,7 +739,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tm_block.set_height(tenon_block->height());
         tm_block.set_vss_random(common::Random::RandomUint64());
         timeblock_storage->set_key(protos::kAttrTimerBlock);
-        
+
         char data[16];
         uint64_t* u64_data = (uint64_t*)data;
         u64_data[0] = tm_block.timestamp();
@@ -758,7 +758,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_is_commited_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-        
+
         BlsAggSignBlock(genesis_nodes, tenon_block);
         auto tmp_str = tenon_block->SerializeAsString();
         block::protobuf::Block tenon_block2;
@@ -805,7 +805,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
     // char buffer[10240];
     // std::string file_content;
     // size_t bytes_read = 0;
-    
+
     // while ((bytes_read = fread(buffer, sizeof(char), sizeof(buffer), root_gens_init_block_file)) > 0) {
     //     file_content.append(buffer, bytes_read);
     // }
@@ -913,12 +913,12 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     pools::protobuf::StatisticTxItem init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     std::string prehashes[common::kImmutablePoolSize]; // 256
-    
+
     // 为创世账户在 root 网络中创建创世块
     // 创世块中包含：创建初始账户，以及节点选举类型的交易
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         // 用于聚合不同 net_id 的交易，供创建账户使用
-        std::map<block::protobuf::BlockTx*, uint32_t> tx2net_map_for_account; 
+        std::map<block::protobuf::BlockTx*, uint32_t> tx2net_map_for_account;
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         auto tx_list = tenon_block->mutable_tx_list();
         auto iter = root_account_with_pool_index_map_.find(i);
@@ -1008,7 +1008,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         for (uint32_t k = 0; k < cons_genesis_nodes_of_shards.size(); k++) {
             uint32_t net_id = k + network::kConsensusShardBeginNetworkId;
             auto cons_genesis_nodes = cons_genesis_nodes_of_shards[k];
-            
+
             for (uint32_t member_idx = 0; member_idx < cons_genesis_nodes.size(); ++member_idx) {
                 // 同理，shard 节点的选举交易也打包到对应的 pool 块中
                 if (common::GetAddressPoolIndex(cons_genesis_nodes[member_idx]->id) == i) {
@@ -1069,7 +1069,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         for (auto it = tx2net_map_for_account.begin(); it != tx2net_map_for_account.end(); ++it) {
             auto tx = it->first;
             uint32_t net_id = it->second;
-            
+
             block_mgr_->GenesisAddOneAccount(net_id, *tx, tenon_block->height(), db_batch);
         }
         // 出块，并处理块中不同类型的交易
@@ -1166,18 +1166,18 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         pool_prev_hash_map[net_id] = prehashes[net_id];
         init_heights.set_heights(net_id, 2);
     }
-    
+
     if (all_balance != 0) {
         ZJC_FATAL("balance all error[%llu][%llu]", all_balance, common::kGenesisFoundationMaxZjc);
         return kInitError;
     }
 
     uint64_t root_pool_height = 0;
-    // pool256 中创建时间块 
+    // pool256 中创建时间块
     int res = GenerateRootSingleBlock(root_genesis_nodes, root_gens_init_block_file, &root_pool_height);
     if (res == kInitSuccess) {
         init_heights.add_heights(root_pool_height);
-        
+
         std::vector<GenisisNodeInfoPtr> all_cons_genesis_nodes;
         for (std::vector<GenisisNodeInfoPtr> nodes : cons_genesis_nodes_of_shards) {
             all_cons_genesis_nodes.insert(all_cons_genesis_nodes.end(), nodes.begin(), nodes.end());
@@ -1306,8 +1306,8 @@ int GenesisBlockInit::CreateShardNodesBlocks(
 
     // 每个节点分配创世账户余额
     // uint64_t genesis_account_balance = common::kGenesisShardingNodesMaxZjc / valid_ids.size();
-    
-    
+
+
     int32_t idx = 0;
     // 每个节点都要创建一个块
     for (auto iter = valid_ids.begin(); iter != valid_ids.end(); ++iter, ++idx) {
@@ -1399,7 +1399,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         } else {
             block_mgr_->GenesisAddAllAccount(net_id, tenon_block, db_batch);
         }
-        
+
         db_->Put(db_batch);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
@@ -1425,7 +1425,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
 }
 
 // CreateShardGenesisBlocks 为某 shard 网络创建创世块
-// params: 
+// params:
 // root_genesis_nodes root 网络的创世节点
 // cons_genesis_nodes 目标 shard 网络的创世节点
 // net_id 网络 ID
@@ -1445,25 +1445,25 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     } else {
         return kInitError;
     }
-     
+
     // 每个账户分配余额，只有 shard3 中的合法账户会被分配
     uint64_t genesis_account_balance = 0;
     // if (net_id == network::kConsensusShardBeginNetworkId) {
     genesis_account_balance = common::kGenesisFoundationMaxZjc / pool_acc_map.size(); // 两个分片
     // }
     pool_acc_map[common::kRootChainPoolIndex] = common::kRootPoolsAddress;
-    
+
     uint64_t all_balance = 0llu;
     pools::protobuf::StatisticTxItem init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
-    
+
     uint32_t idx = 0;
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
     for (auto iter = pool_acc_map.begin(); iter != pool_acc_map.end(); ++iter, ++idx) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         auto tx_list = tenon_block->mutable_tx_list();
         std::string address = iter->second;
-        
+
         // from
         {
             auto tx_info = tx_list->Add();
@@ -1476,7 +1476,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
                 // 单独创建 0x000...000
                 tx_info->set_to(address);
             }
-            
+
             tx_info->set_amount(0);
             tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
@@ -1514,7 +1514,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             tx_info->set_balance(genesis_account_balance);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-        }            
+        }
         
         tenon_block->set_prehash("");
         tenon_block->set_version(common::kTransactionVersion);
@@ -1562,12 +1562,12 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             }
         }
 
-        all_balance += account_ptr->balance();    
+        all_balance += account_ptr->balance();
 
         // if (net_id != network::kConsensusShardBeginNetworkId) {
         //     all_balance = common::kGenesisFoundationMaxZjc;
         // }
-        
+
         init_heights.add_heights(0);
     }
 
@@ -1611,7 +1611,7 @@ void GenesisBlockInit::InitShardGenesisAccount() {
         for (uint32_t net_id = network::kConsensusShardBeginNetworkId; net_id < network::kConsensusShardEndNetworkId; net_id++) {
             auto pool_index_map = GetGenesisAccount(net_id);
             net_pool_index_map_.insert(std::make_pair(net_id, pool_index_map));
-        }    
+        }
     }
 
     hasRunOnce = true;
@@ -1630,7 +1630,7 @@ const std::map<uint32_t, std::string> GenesisBlockInit::GetGenesisAccount(uint32
     if (index == -1) {
         return pool_index_map;
     }
-    
+
     auto shard_config = genesis_config_["shards"][index];
 
     for (uint32_t i = 0; i < shard_config["accounts"].size(); i++) {
