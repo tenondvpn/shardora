@@ -80,11 +80,13 @@ void WebSocketServer::OnMessage(websocketpp::connection_hdl hdl, server::message
     auto iter = processors_.find(type);
     if (iter == processors_.end()) {
         server_.send(hdl, kInvalidType, websocketpp::frame::opcode::text);
+        ZJC_INFO("invalid ws message: %s", type.c_str());
         return;
     }
 
     if (int32_t(payload.size()) < type_len + 1) {
         server_.send(hdl, kInvalidMessage, websocketpp::frame::opcode::text);
+        ZJC_INFO("invalid ws message: %s, %d, %d", type.c_str(), payload.size(), type_len);
         return;
     }
 
