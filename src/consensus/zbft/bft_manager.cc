@@ -765,10 +765,10 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 ZJC_DEBUG("get commit gid failed: %s, pool: %u",
                     common::Encode::HexEncode(zbft.commit_gid()).c_str(),
                     zbft.pool_index());
-                // SyncConsensusBlock(
-                //     msg_ptr->thread_idx,
-                //     zbft.pool_index(),
-                //     zbft.commit_gid());
+                SyncConsensusBlock(
+                    msg_ptr->thread_idx,
+                    zbft.pool_index(),
+                    zbft.commit_gid());
             } else {
                 // 只有当前状态是 PreCommit 的 bft 才允许 Commit
                 if (commit_bft_ptr->consensus_status() == kConsensusPreCommit) {
