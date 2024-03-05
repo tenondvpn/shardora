@@ -444,6 +444,13 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     assert(msg_ptr->thread_idx < common::kMaxThreadCount);
     pools_msg_queue_[msg_ptr->thread_idx].push(msg_ptr);
     pop_tx_con_.notify_one();
+    auto now_tm = common::TimeUtils::TimestampMs();
+    if (now_tm > prev_show_tm_ms_ + 3000) {
+        for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
+            ZJC_INFO("pools stored message size: %d, %d", i, pools_msg_queue_[i].size());
+        }
+        prev_show_tm_ms_ = now_tm;
+    }
 }
 
 void TxPoolManager::HandleInvalidGids(const transport::MessagePtr& msg_ptr) {
