@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "tnet/tcp_acceptor.h"
 #include "tnet/tcp_connection.h"
 #include "tnet/socket/client_socket.h"
@@ -17,7 +19,7 @@ public:
             uint32_t send_buff_size,
             uint32_t thread_count,
             PacketHandler packet_handler,
-            PacketFactory* packet_factory);
+            std::shared_ptr<PacketFactory> packet_factory);
     virtual ~TnetTransport();
     virtual TcpConnection* CreateConnection(
             const std::string& peerSpec,
@@ -55,7 +57,7 @@ private:
     mutable std::atomic<int32_t> round_robin_index_{ 0 };
     bool stoped_{ true };
     PacketHandler packet_handler_{ nullptr };
-    PacketFactory* packet_factory_{ nullptr };
+    std::shared_ptr<PacketFactory> packet_factory_{ nullptr };
 
     DISALLOW_COPY_AND_ASSIGN(TnetTransport);
 };
