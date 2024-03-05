@@ -148,4 +148,5 @@ message TxMessage {
     optional uint64 contract_prepayment = 11;
     optional bytes contract_code = 12;
     optional bytes contract_input = 13;
+    optional bytes contract_from = 14;
 }
