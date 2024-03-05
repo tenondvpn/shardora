@@ -618,47 +618,6 @@ void TxPoolManager::PopPoolsMessage() {
     }
 }
 
-void TxPoolManager::HandleContractFromExcute(const transport::MessagePtr& msg_ptr) {
-    auto& tx_msg = msg_ptr->header.tx_proto();
-    if (!UserTxValid(msg_ptr)) {
-//         assert(false);
-        return;
-    }
-
-    if (tx_msg.amount() + consensus::kCallContractDefaultUseGas * tx_msg.gas_price() > 
-            tx_msg.contract_prepayment()) {
-        ZJC_DEBUG("address balance invalid: %lu, transfer amount: %lu, "
-            "prepayment: %lu, default call contract gas: %lu",
-            msg_ptr->address_info->balance(),
-            tx_msg.amount(),
-            tx_msg.contract_prepayment(),
-            consensus::kCallContractDefaultUseGas);
-        assert(false);
-        return;
-    }
-
-    if (msg_ptr->address_info->balance() < tx_msg.contract_prepayment() +
-            consensus::kCallContractDefaultUseGas * tx_msg.gas_price()) {
-        ZJC_DEBUG("address balance invalid: %lu, transfer amount: %lu, "
-            "prepayment: %lu, default call contract gas: %lu",
-            msg_ptr->address_info->balance(),
-            tx_msg.amount(),
-            tx_msg.contract_prepayment(),
-            consensus::kCallContractDefaultUseGas);
-        assert(false);
-        return;
-    }
-
-    msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-//     ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d",
-//         msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
-    ZJC_DEBUG("success push tx: %s, %lu", common::Encode::HexEncode(tx_msg.gid()).c_str(), msg_ptr->header.hash64());
-}
-
-void TxPoolManager::HandleContractFromExcuteRecycle(const transport::MessagePtr& msg_ptr) {
-
-}
-
 void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     if (header.has_tx_proto()) {
