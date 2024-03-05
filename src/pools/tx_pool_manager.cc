@@ -1106,20 +1106,20 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
     // TODO msg_ptr->msg_hash 是否为空？
     // 转账交易，验证签名
     if (tx_msg.step() == pools::protobuf::kNormalFrom) {
-        if (security_->Verify(
-                msg_ptr->msg_hash,
-                tx_msg.pubkey(),
-                msg_ptr->header.sign()) != security::kSecuritySuccess) {
-            ZJC_DEBUG("verify signature failed address balance invalid: %lu, transfer amount: %lu, "
-                "prepayment: %lu, default call contract gas: %lu, txid: %s",
-                msg_ptr->address_info->balance(),
-                tx_msg.amount(),
-                tx_msg.contract_prepayment(),
-                consensus::kCallContractDefaultUseGas,
-                common::Encode::HexEncode(tx_msg.gid()).c_str());
-            assert(false);
-            return;
-        }
+        // if (security_->Verify(
+        //         msg_ptr->msg_hash,
+        //         tx_msg.pubkey(),
+        //         msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        //     ZJC_DEBUG("verify signature failed address balance invalid: %lu, transfer amount: %lu, "
+        //         "prepayment: %lu, default call contract gas: %lu, txid: %s",
+        //         msg_ptr->address_info->balance(),
+        //         tx_msg.amount(),
+        //         tx_msg.contract_prepayment(),
+        //         consensus::kCallContractDefaultUseGas,
+        //         common::Encode::HexEncode(tx_msg.gid()).c_str());
+        //     assert(false);
+        //     return;
+        // }
     }
 
 
