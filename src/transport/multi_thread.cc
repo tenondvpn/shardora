@@ -208,7 +208,6 @@ int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
 }
 
 void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
-    ZJC_INFO("message coming: %lu", msg_ptr->header.hash64());
     if (common::kConsensusMessage == msg_ptr->header.type()) {
         if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
             return;
@@ -233,7 +232,6 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
     }
 
     if (!IsMessageUnique(msg_ptr->header.hash64())) {
-        ZJC_INFO("message filtered: %lu", msg_ptr->header.hash64());
         return;
     }
 
