@@ -26,6 +26,44 @@ uint64_t VssManager::EpochRandom() {
     return epoch_random_;
 }
 
+int VssManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+    auto elect_item_ptr = elect_item();
+    if (elect_item_ptr == nullptr) {
+        return transport::kFirewallCheckError;
+    }
+
+    auto& header = msg_ptr->header;
+    ZJC_DEBUG("vss message coming.");
+    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
+            common::GlobalInfo::Instance()->network_id() !=
+            (network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
+        ZJC_DEBUG("invalid vss message network_id: %d", common::GlobalInfo::Instance()->network_id());
+        return transport::kFirewallCheckError;
+    }
+
+    if (elect_item_ptr->local_index == elect::kInvalidMemberIndex) {
+        ZJC_ERROR("not elected.");
+        return transport::kFirewallCheckError;
+    }
+
+    // must verify message signature, to avoid evil node
+    auto& vss_msg = header.vss_proto();
+    if (vss_msg.member_index() >= elect_item_ptr->member_count) {
+        ZJC_ERROR("member index invalid.");
+        return transport::kFirewallCheckError;
+    }
+
+    auto& pubkey = (*elect_item_ptr->members)[vss_msg.member_index()]->pubkey;
+    std::string message_hash;
+    protos::GetProtoHash(header, &message_hash);
+    if (security_ptr_->Verify(message_hash, pubkey, header.sign()) != security::kSecuritySuccess) {
+        ZJC_ERROR("security::Security::Instance()->Verify failed");
+        return transport::kFirewallCheckError;
+    }
+
+    return transport::kFirewallCheckSuccess;
+}
+
 void VssManager::OnTimeBlock(
         uint64_t tm_block_tm,
         uint64_t tm_height,
@@ -280,7 +318,7 @@ void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
     dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
     msg.set_src_sharding_id(network::kRootCongressNetworkId);
     msg.set_des_dht_key(dht_key.StrKey());
-    auto broadcast = msg.mutable_broadcast();
+    msg.set_broadcast(true);
     vss::protobuf::VssMessage& vss_msg = *msg.mutable_vss_proto();
     vss_msg.set_random_hash(local_random_.GetHash());
     vss_msg.set_tm_height(prev_tm_height_);
@@ -339,7 +377,7 @@ void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
     dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
     msg.set_src_sharding_id(network::kRootCongressNetworkId);
     msg.set_des_dht_key(dht_key.StrKey());
-    auto broadcast = msg.mutable_broadcast();
+    msg.set_broadcast(true);
     vss::protobuf::VssMessage& vss_msg = *msg.mutable_vss_proto();
     vss_msg.set_random(local_random_.GetFinalRandomNum());
     vss_msg.set_tm_height(prev_tm_height_);
@@ -398,7 +436,7 @@ void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
     dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
     msg.set_src_sharding_id(network::kRootCongressNetworkId);
     msg.set_des_dht_key(dht_key.StrKey());
-    auto broadcast = msg.mutable_broadcast();
+    msg.set_broadcast(true);
     vss::protobuf::VssMessage& vss_msg = *msg.mutable_vss_proto();
     vss_msg.set_random(GetAllVssValid());
     vss_msg.set_tm_height(prev_tm_height_);
@@ -469,14 +507,6 @@ void VssManager::HandleVssMessage(const transport::MessagePtr& msg_ptr) {
     auto& vss_msg = header.vss_proto();
     if (vss_msg.member_index() >= elect_item_ptr->member_count) {
         ZJC_ERROR("member index invalid.");
-        return;
-    }
-
-    auto& pubkey = (*elect_item_ptr->members)[vss_msg.member_index()]->pubkey;
-    std::string message_hash;
-    protos::GetProtoHash(header, &message_hash);
-    if (security_ptr_->Verify(message_hash, pubkey, header.sign()) != security::kSecuritySuccess) {
-        ZJC_ERROR("security::Security::Instance()->Verify failed");
         return;
     }
 
