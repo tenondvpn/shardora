@@ -1,5 +1,7 @@
 #pragma once
 
+#include <_types/_uint64_t.h>
+#include <common/limit_hash_set.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -96,6 +98,7 @@ private:
     std::vector<ThreadHandlerPtr> thread_vec_;
     bool inited_{ false };
     common::UniqueSet<uint64_t, 10240, 64> unique_message_sets_;
+    common::LimitHashSet<uint64_t> unique_message_sets2_{ 1024000 };
     common::ThreadSafeQueue<MessagePtr>** threads_message_queues_;
     common::ThreadSafeQueue<MessagePtr> http_server_message_queue_;
     common::ThreadSafeQueue<SavedBlockQueueItemPtr> saved_block_queue_;
