@@ -141,8 +141,8 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         prev_tx_count_tm_us_ = now_tm_us;
     }
 
-    
-    gid_start_time_map_[tx_ptr->gid] = common::TimeUtils::TimestampUs(); 
+
+    gid_start_time_map_[tx_ptr->gid] = common::TimeUtils::TimestampUs();
     timeout_txs_.push(tx_ptr->gid);
     oldest_timestamp_ = prio_map_.begin()->second->time_valid;
     return kPoolsSuccess;
@@ -174,7 +174,7 @@ void TxPool::GetTx(
             pool_index_, common::Encode::HexEncode(iter->second->tx_hash).c_str());
         iter = src_prio_map.erase(iter);
         if (res_map.size() >= count) {
-            return;
+            break;
         }
     }
 }
@@ -256,20 +256,18 @@ void TxPool::RemoveTx(const std::string& gid) {
 //         common::Encode::HexEncode(giter->second->gid).c_str(),
 //         common::Encode::HexEncode(giter->second->tx_hash).c_str());
     gid_map_.erase(giter);
-
-    
-    
-    
     if (!prio_map_.empty()) {
         oldest_timestamp_ = prio_map_.begin()->second->time_valid;
     } else {
         oldest_timestamp_ = 0;
     }
+
+    now_tx_count_ = gid_map_.size();
 }
 
 void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
     for (int32_t i = 0; i < tx_list.size(); ++i) {
-        auto gid = tx_list[i].gid(); 
+        auto gid = tx_list[i].gid();
         RemoveTx(gid);
 
         // 统计交易确认延迟
@@ -287,7 +285,7 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
             uint64_t p95 = common::GetNthElement(latencys_us_, 0.95);
             uint64_t p100 = common::GetNthElement(latencys_us_, 1);
             latencys_us_.clear();
-        
+
             ZJC_INFO("tx latency p90: %llu, p95: %llu, max: %llu", p90, p95, p100);
         }
     }

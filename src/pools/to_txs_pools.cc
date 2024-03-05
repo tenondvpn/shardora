@@ -165,7 +165,7 @@ void ToTxsPools::HandleContractExecute(
     for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
         uint32_t sharding_id = common::kInvalidUint32;
         uint32_t pool_index = -1;
-        // 如果需要 root 创建则此时没有 addr info 
+        // 如果需要 root 创建则此时没有 addr info
         auto addr_info = GetAddressInfo(tx.contract_txs(i).to());
         if (addr_info != nullptr) {
             sharding_id = addr_info->sharding_id();
@@ -174,7 +174,6 @@ void ToTxsPools::HandleContractExecute(
         ZJC_DEBUG("add contract execute to: %s, %lu",
             common::Encode::HexEncode(tx.contract_txs(i).to()).c_str(),
             tx.contract_txs(i).amount());
-        
         AddTxToMap(
             block,
             tx.contract_txs(i).to(),
@@ -348,7 +347,7 @@ void ToTxsPools::AddTxToMap(
             item.from = from;
             item.prepayment = prepayment;
         }
-        
+
         height_iter->second[to] = item;
         ZJC_DEBUG("add to %s step: %u", common::Encode::HexEncode(to).c_str(), type);
     }
@@ -743,7 +742,7 @@ int ToTxsPools::CreateToTxWithHeights(
             str_for_hash.append((char*)&net_id, sizeof(net_id));
             ZJC_DEBUG("create contract use caller sharding address: %s, %u",
                 common::Encode::HexEncode(to).c_str(),
-                common::GlobalInfo::Instance()->network_id());        
+                common::GlobalInfo::Instance()->network_id());
         } else if (iter->second.type == pools::protobuf::kContractCreateByRootFrom) {
             assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
             ZJC_DEBUG("library bytes: %s, to: %s, from: %s",
@@ -759,7 +758,7 @@ int ToTxsPools::CreateToTxWithHeights(
                 to_item->set_contract_from(iter->second.from);
                 str_for_hash.append(iter->second.from);
                 to_item->set_prepayment(iter->second.prepayment);
-                str_for_hash.append((char*)&iter->second.prepayment, sizeof(iter->second.prepayment));	
+                str_for_hash.append((char*)&iter->second.prepayment, sizeof(iter->second.prepayment));
             }
             auto net_id = common::kInvalidUint32; // ContractCreate 不在直接分配 sharding，由 root 分配
             to_item->set_sharding_id(net_id);

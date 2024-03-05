@@ -51,6 +51,10 @@ public:
     uint32_t SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms);
     void RemoveTx(const std::string& gid);
 
+    uint32_t now_tx_count() const {
+        return now_tx_count_;
+    }
+
     uint32_t tx_size() const {
         return prio_map_.size();
     }
@@ -305,6 +309,7 @@ private:
         pools::protobuf::PoolLatestInfo pool_info;
         uint32_t network_id = common::GlobalInfo::Instance()->network_id();
         if (network_id == common::kInvalidUint32) {
+            ZJC_INFO("init latest pool info shard: %u, pool: %d", network_id, pool_index_);
             return;
         }
 
@@ -317,7 +322,6 @@ private:
                 network_id,
                 pool_index_,
                 &pool_info)) {
-            // 根据数据库更新内存中的 tx_pool 状态
             if (latest_height_ == common::kInvalidUint64 || latest_height_ < pool_info.height()) {
                 latest_height_ = pool_info.height();
                 latest_hash_ = pool_info.hash();
@@ -325,7 +329,7 @@ private:
                 prev_synced_height_ = synced_height_;
                 to_sync_max_height_ = latest_height_;
                 InitGetTempBftInvalidHashs();
-                ZJC_DEBUG("init latest pool info shard: %u, pool %lu, init height: %lu",
+                ZJC_INFO("init latest pool info shard: %u, pool %lu, init height: %lu",
                     network_id, pool_index_, latest_height_);
             }
         }
@@ -367,6 +371,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     uint32_t all_finish_tx_count_ = 0;
     uint32_t all_tx_count_ = 0;
+    uint32_t now_tx_count_ = 0;
     uint32_t checked_count_ = 0;
     volatile uint32_t finish_tx_count_ = 0;
     std::map<uint64_t, std::string> checked_height_with_prehash_;
