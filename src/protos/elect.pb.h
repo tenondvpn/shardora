@@ -1263,20 +1263,20 @@ class WaitingNodesMessage : public ::google::protobuf::Message /* @@protoc_inser
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
       mutable_nodes_filter();
 
-  // optional bytes stoke_hash = 3;
-  bool has_stoke_hash() const;
-  void clear_stoke_hash();
-  static const int kStokeHashFieldNumber = 3;
-  const ::std::string& stoke_hash() const;
-  void set_stoke_hash(const ::std::string& value);
+  // optional bytes stake_hash = 3;
+  bool has_stake_hash() const;
+  void clear_stake_hash();
+  static const int kStakeHashFieldNumber = 3;
+  const ::std::string& stake_hash() const;
+  void set_stake_hash(const ::std::string& value);
   #if LANG_CXX11
-  void set_stoke_hash(::std::string&& value);
+  void set_stake_hash(::std::string&& value);
   #endif
-  void set_stoke_hash(const char* value);
-  void set_stoke_hash(const void* value, size_t size);
-  ::std::string* mutable_stoke_hash();
-  ::std::string* release_stoke_hash();
-  void set_allocated_stoke_hash(::std::string* stoke_hash);
+  void set_stake_hash(const char* value);
+  void set_stake_hash(const void* value, size_t size);
+  ::std::string* mutable_stake_hash();
+  ::std::string* release_stake_hash();
+  void set_allocated_stake_hash(::std::string* stake_hash);
 
   // optional uint32 waiting_shard_id = 2;
   bool has_waiting_shard_id() const;
@@ -1289,14 +1289,14 @@ class WaitingNodesMessage : public ::google::protobuf::Message /* @@protoc_inser
  private:
   void set_has_waiting_shard_id();
   void clear_has_waiting_shard_id();
-  void set_has_stoke_hash();
-  void clear_has_stoke_hash();
+  void set_has_stake_hash();
+  void clear_has_stake_hash();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > nodes_filter_;
-  ::google::protobuf::internal::ArenaStringPtr stoke_hash_;
+  ::google::protobuf::internal::ArenaStringPtr stake_hash_;
   ::google::protobuf::uint32 waiting_shard_id_;
   friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
 };
@@ -2288,29 +2288,29 @@ class ElectMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::zjchain::elect::protobuf::LeaderRotationMessage* mutable_leader_rotation();
   void set_allocated_leader_rotation(::zjchain::elect::protobuf::LeaderRotationMessage* leader_rotation);
 
-  // optional .zjchain.elect.protobuf.SyncNodeStokeRequest sync_stoke_req = 9;
-  bool has_sync_stoke_req() const;
-  void clear_sync_stoke_req();
-  static const int kSyncStokeReqFieldNumber = 9;
+  // optional .zjchain.elect.protobuf.SyncNodeStokeRequest sync_stake_req = 9;
+  bool has_sync_stake_req() const;
+  void clear_sync_stake_req();
+  static const int kSyncStakeReqFieldNumber = 9;
   private:
-  const ::zjchain::elect::protobuf::SyncNodeStokeRequest& _internal_sync_stoke_req() const;
+  const ::zjchain::elect::protobuf::SyncNodeStokeRequest& _internal_sync_stake_req() const;
   public:
-  const ::zjchain::elect::protobuf::SyncNodeStokeRequest& sync_stoke_req() const;
-  ::zjchain::elect::protobuf::SyncNodeStokeRequest* release_sync_stoke_req();
-  ::zjchain::elect::protobuf::SyncNodeStokeRequest* mutable_sync_stoke_req();
-  void set_allocated_sync_stoke_req(::zjchain::elect::protobuf::SyncNodeStokeRequest* sync_stoke_req);
+  const ::zjchain::elect::protobuf::SyncNodeStokeRequest& sync_stake_req() const;
+  ::zjchain::elect::protobuf::SyncNodeStokeRequest* release_sync_stake_req();
+  ::zjchain::elect::protobuf::SyncNodeStokeRequest* mutable_sync_stake_req();
+  void set_allocated_sync_stake_req(::zjchain::elect::protobuf::SyncNodeStokeRequest* sync_stake_req);
 
-  // optional .zjchain.elect.protobuf.SyncNodeStokeResponse sync_stoke_res = 10;
-  bool has_sync_stoke_res() const;
-  void clear_sync_stoke_res();
-  static const int kSyncStokeResFieldNumber = 10;
+  // optional .zjchain.elect.protobuf.SyncNodeStokeResponse sync_stake_res = 10;
+  bool has_sync_stake_res() const;
+  void clear_sync_stake_res();
+  static const int kSyncStakeResFieldNumber = 10;
   private:
-  const ::zjchain::elect::protobuf::SyncNodeStokeResponse& _internal_sync_stoke_res() const;
+  const ::zjchain::elect::protobuf::SyncNodeStokeResponse& _internal_sync_stake_res() const;
   public:
-  const ::zjchain::elect::protobuf::SyncNodeStokeResponse& sync_stoke_res() const;
-  ::zjchain::elect::protobuf::SyncNodeStokeResponse* release_sync_stoke_res();
-  ::zjchain::elect::protobuf::SyncNodeStokeResponse* mutable_sync_stoke_res();
-  void set_allocated_sync_stoke_res(::zjchain::elect::protobuf::SyncNodeStokeResponse* sync_stoke_res);
+  const ::zjchain::elect::protobuf::SyncNodeStokeResponse& sync_stake_res() const;
+  ::zjchain::elect::protobuf::SyncNodeStokeResponse* release_sync_stake_res();
+  ::zjchain::elect::protobuf::SyncNodeStokeResponse* mutable_sync_stake_res();
+  void set_allocated_sync_stake_res(::zjchain::elect::protobuf::SyncNodeStokeResponse* sync_stake_res);
 
   // optional int32 member_index = 4;
   bool has_member_index() const;
@@ -2337,10 +2337,10 @@ class ElectMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   void clear_has_waiting_heartbeat();
   void set_has_leader_rotation();
   void clear_has_leader_rotation();
-  void set_has_sync_stoke_req();
-  void clear_has_sync_stoke_req();
-  void set_has_sync_stoke_res();
-  void clear_has_sync_stoke_res();
+  void set_has_sync_stake_req();
+  void clear_has_sync_stake_req();
+  void set_has_sync_stake_res();
+  void clear_has_sync_stake_res();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -2352,8 +2352,8 @@ class ElectMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::zjchain::elect::protobuf::WaitingNodesMessage* waiting_nodes_;
   ::zjchain::elect::protobuf::WaitingNodeHeartbeat* waiting_heartbeat_;
   ::zjchain::elect::protobuf::LeaderRotationMessage* leader_rotation_;
-  ::zjchain::elect::protobuf::SyncNodeStokeRequest* sync_stoke_req_;
-  ::zjchain::elect::protobuf::SyncNodeStokeResponse* sync_stoke_res_;
+  ::zjchain::elect::protobuf::SyncNodeStokeRequest* sync_stake_req_;
+  ::zjchain::elect::protobuf::SyncNodeStokeResponse* sync_stake_res_;
   ::google::protobuf::int32 member_index_;
   friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
 };
@@ -3828,70 +3828,70 @@ inline void WaitingNodesMessage::set_waiting_shard_id(::google::protobuf::uint32
   // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.WaitingNodesMessage.waiting_shard_id)
 }
 
-// optional bytes stoke_hash = 3;
-inline bool WaitingNodesMessage::has_stoke_hash() const {
+// optional bytes stake_hash = 3;
+inline bool WaitingNodesMessage::has_stake_hash() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void WaitingNodesMessage::set_has_stoke_hash() {
+inline void WaitingNodesMessage::set_has_stake_hash() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void WaitingNodesMessage::clear_has_stoke_hash() {
+inline void WaitingNodesMessage::clear_has_stake_hash() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void WaitingNodesMessage::clear_stoke_hash() {
-  stoke_hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_stoke_hash();
+inline void WaitingNodesMessage::clear_stake_hash() {
+  stake_hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_stake_hash();
 }
-inline const ::std::string& WaitingNodesMessage::stoke_hash() const {
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.WaitingNodesMessage.stoke_hash)
-  return stoke_hash_.GetNoArena();
+inline const ::std::string& WaitingNodesMessage::stake_hash() const {
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.WaitingNodesMessage.stake_hash)
+  return stake_hash_.GetNoArena();
 }
-inline void WaitingNodesMessage::set_stoke_hash(const ::std::string& value) {
-  set_has_stoke_hash();
-  stoke_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.WaitingNodesMessage.stoke_hash)
+inline void WaitingNodesMessage::set_stake_hash(const ::std::string& value) {
+  set_has_stake_hash();
+  stake_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.WaitingNodesMessage.stake_hash)
 }
 #if LANG_CXX11
-inline void WaitingNodesMessage::set_stoke_hash(::std::string&& value) {
-  set_has_stoke_hash();
-  stoke_hash_.SetNoArena(
+inline void WaitingNodesMessage::set_stake_hash(::std::string&& value) {
+  set_has_stake_hash();
+  stake_hash_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.elect.protobuf.WaitingNodesMessage.stoke_hash)
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.elect.protobuf.WaitingNodesMessage.stake_hash)
 }
 #endif
-inline void WaitingNodesMessage::set_stoke_hash(const char* value) {
+inline void WaitingNodesMessage::set_stake_hash(const char* value) {
   GOOGLE_DCHECK(value != NULL);
-  set_has_stoke_hash();
-  stoke_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.elect.protobuf.WaitingNodesMessage.stoke_hash)
+  set_has_stake_hash();
+  stake_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.elect.protobuf.WaitingNodesMessage.stake_hash)
 }
-inline void WaitingNodesMessage::set_stoke_hash(const void* value, size_t size) {
-  set_has_stoke_hash();
-  stoke_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+inline void WaitingNodesMessage::set_stake_hash(const void* value, size_t size) {
+  set_has_stake_hash();
+  stake_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.elect.protobuf.WaitingNodesMessage.stoke_hash)
+  // @@protoc_insertion_point(field_set_pointer:zjchain.elect.protobuf.WaitingNodesMessage.stake_hash)
 }
-inline ::std::string* WaitingNodesMessage::mutable_stoke_hash() {
-  set_has_stoke_hash();
-  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.WaitingNodesMessage.stoke_hash)
-  return stoke_hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+inline ::std::string* WaitingNodesMessage::mutable_stake_hash() {
+  set_has_stake_hash();
+  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.WaitingNodesMessage.stake_hash)
+  return stake_hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* WaitingNodesMessage::release_stoke_hash() {
-  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.WaitingNodesMessage.stoke_hash)
-  if (!has_stoke_hash()) {
+inline ::std::string* WaitingNodesMessage::release_stake_hash() {
+  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.WaitingNodesMessage.stake_hash)
+  if (!has_stake_hash()) {
     return NULL;
   }
-  clear_has_stoke_hash();
-  return stoke_hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_stake_hash();
+  return stake_hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void WaitingNodesMessage::set_allocated_stoke_hash(::std::string* stoke_hash) {
-  if (stoke_hash != NULL) {
-    set_has_stoke_hash();
+inline void WaitingNodesMessage::set_allocated_stake_hash(::std::string* stake_hash) {
+  if (stake_hash != NULL) {
+    set_has_stake_hash();
   } else {
-    clear_has_stoke_hash();
+    clear_has_stake_hash();
   }
-  stoke_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), stoke_hash);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.WaitingNodesMessage.stoke_hash)
+  stake_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), stake_hash);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.WaitingNodesMessage.stake_hash)
 }
 
 // -------------------------------------------------------------------
@@ -4884,120 +4884,120 @@ inline void ElectMessage::set_allocated_leader_rotation(::zjchain::elect::protob
   // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.ElectMessage.leader_rotation)
 }
 
-// optional .zjchain.elect.protobuf.SyncNodeStokeRequest sync_stoke_req = 9;
-inline bool ElectMessage::has_sync_stoke_req() const {
+// optional .zjchain.elect.protobuf.SyncNodeStokeRequest sync_stake_req = 9;
+inline bool ElectMessage::has_sync_stake_req() const {
   return (_has_bits_[0] & 0x00000080u) != 0;
 }
-inline void ElectMessage::set_has_sync_stoke_req() {
+inline void ElectMessage::set_has_sync_stake_req() {
   _has_bits_[0] |= 0x00000080u;
 }
-inline void ElectMessage::clear_has_sync_stoke_req() {
+inline void ElectMessage::clear_has_sync_stake_req() {
   _has_bits_[0] &= ~0x00000080u;
 }
-inline void ElectMessage::clear_sync_stoke_req() {
-  if (sync_stoke_req_ != NULL) sync_stoke_req_->Clear();
-  clear_has_sync_stoke_req();
+inline void ElectMessage::clear_sync_stake_req() {
+  if (sync_stake_req_ != NULL) sync_stake_req_->Clear();
+  clear_has_sync_stake_req();
 }
-inline const ::zjchain::elect::protobuf::SyncNodeStokeRequest& ElectMessage::_internal_sync_stoke_req() const {
-  return *sync_stoke_req_;
+inline const ::zjchain::elect::protobuf::SyncNodeStokeRequest& ElectMessage::_internal_sync_stake_req() const {
+  return *sync_stake_req_;
 }
-inline const ::zjchain::elect::protobuf::SyncNodeStokeRequest& ElectMessage::sync_stoke_req() const {
-  const ::zjchain::elect::protobuf::SyncNodeStokeRequest* p = sync_stoke_req_;
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.ElectMessage.sync_stoke_req)
+inline const ::zjchain::elect::protobuf::SyncNodeStokeRequest& ElectMessage::sync_stake_req() const {
+  const ::zjchain::elect::protobuf::SyncNodeStokeRequest* p = sync_stake_req_;
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.ElectMessage.sync_stake_req)
   return p != NULL ? *p : *reinterpret_cast<const ::zjchain::elect::protobuf::SyncNodeStokeRequest*>(
       &::zjchain::elect::protobuf::_SyncNodeStokeRequest_default_instance_);
 }
-inline ::zjchain::elect::protobuf::SyncNodeStokeRequest* ElectMessage::release_sync_stoke_req() {
-  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.ElectMessage.sync_stoke_req)
-  clear_has_sync_stoke_req();
-  ::zjchain::elect::protobuf::SyncNodeStokeRequest* temp = sync_stoke_req_;
-  sync_stoke_req_ = NULL;
+inline ::zjchain::elect::protobuf::SyncNodeStokeRequest* ElectMessage::release_sync_stake_req() {
+  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.ElectMessage.sync_stake_req)
+  clear_has_sync_stake_req();
+  ::zjchain::elect::protobuf::SyncNodeStokeRequest* temp = sync_stake_req_;
+  sync_stake_req_ = NULL;
   return temp;
 }
-inline ::zjchain::elect::protobuf::SyncNodeStokeRequest* ElectMessage::mutable_sync_stoke_req() {
-  set_has_sync_stoke_req();
-  if (sync_stoke_req_ == NULL) {
+inline ::zjchain::elect::protobuf::SyncNodeStokeRequest* ElectMessage::mutable_sync_stake_req() {
+  set_has_sync_stake_req();
+  if (sync_stake_req_ == NULL) {
     auto* p = CreateMaybeMessage<::zjchain::elect::protobuf::SyncNodeStokeRequest>(GetArenaNoVirtual());
-    sync_stoke_req_ = p;
+    sync_stake_req_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.ElectMessage.sync_stoke_req)
-  return sync_stoke_req_;
+  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.ElectMessage.sync_stake_req)
+  return sync_stake_req_;
 }
-inline void ElectMessage::set_allocated_sync_stoke_req(::zjchain::elect::protobuf::SyncNodeStokeRequest* sync_stoke_req) {
+inline void ElectMessage::set_allocated_sync_stake_req(::zjchain::elect::protobuf::SyncNodeStokeRequest* sync_stake_req) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
-    delete sync_stoke_req_;
+    delete sync_stake_req_;
   }
-  if (sync_stoke_req) {
+  if (sync_stake_req) {
     ::google::protobuf::Arena* submessage_arena = NULL;
     if (message_arena != submessage_arena) {
-      sync_stoke_req = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, sync_stoke_req, submessage_arena);
+      sync_stake_req = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, sync_stake_req, submessage_arena);
     }
-    set_has_sync_stoke_req();
+    set_has_sync_stake_req();
   } else {
-    clear_has_sync_stoke_req();
+    clear_has_sync_stake_req();
   }
-  sync_stoke_req_ = sync_stoke_req;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.ElectMessage.sync_stoke_req)
+  sync_stake_req_ = sync_stake_req;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.ElectMessage.sync_stake_req)
 }
 
-// optional .zjchain.elect.protobuf.SyncNodeStokeResponse sync_stoke_res = 10;
-inline bool ElectMessage::has_sync_stoke_res() const {
+// optional .zjchain.elect.protobuf.SyncNodeStokeResponse sync_stake_res = 10;
+inline bool ElectMessage::has_sync_stake_res() const {
   return (_has_bits_[0] & 0x00000100u) != 0;
 }
-inline void ElectMessage::set_has_sync_stoke_res() {
+inline void ElectMessage::set_has_sync_stake_res() {
   _has_bits_[0] |= 0x00000100u;
 }
-inline void ElectMessage::clear_has_sync_stoke_res() {
+inline void ElectMessage::clear_has_sync_stake_res() {
   _has_bits_[0] &= ~0x00000100u;
 }
-inline void ElectMessage::clear_sync_stoke_res() {
-  if (sync_stoke_res_ != NULL) sync_stoke_res_->Clear();
-  clear_has_sync_stoke_res();
+inline void ElectMessage::clear_sync_stake_res() {
+  if (sync_stake_res_ != NULL) sync_stake_res_->Clear();
+  clear_has_sync_stake_res();
 }
-inline const ::zjchain::elect::protobuf::SyncNodeStokeResponse& ElectMessage::_internal_sync_stoke_res() const {
-  return *sync_stoke_res_;
+inline const ::zjchain::elect::protobuf::SyncNodeStokeResponse& ElectMessage::_internal_sync_stake_res() const {
+  return *sync_stake_res_;
 }
-inline const ::zjchain::elect::protobuf::SyncNodeStokeResponse& ElectMessage::sync_stoke_res() const {
-  const ::zjchain::elect::protobuf::SyncNodeStokeResponse* p = sync_stoke_res_;
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.ElectMessage.sync_stoke_res)
+inline const ::zjchain::elect::protobuf::SyncNodeStokeResponse& ElectMessage::sync_stake_res() const {
+  const ::zjchain::elect::protobuf::SyncNodeStokeResponse* p = sync_stake_res_;
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.ElectMessage.sync_stake_res)
   return p != NULL ? *p : *reinterpret_cast<const ::zjchain::elect::protobuf::SyncNodeStokeResponse*>(
       &::zjchain::elect::protobuf::_SyncNodeStokeResponse_default_instance_);
 }
-inline ::zjchain::elect::protobuf::SyncNodeStokeResponse* ElectMessage::release_sync_stoke_res() {
-  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.ElectMessage.sync_stoke_res)
-  clear_has_sync_stoke_res();
-  ::zjchain::elect::protobuf::SyncNodeStokeResponse* temp = sync_stoke_res_;
-  sync_stoke_res_ = NULL;
+inline ::zjchain::elect::protobuf::SyncNodeStokeResponse* ElectMessage::release_sync_stake_res() {
+  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.ElectMessage.sync_stake_res)
+  clear_has_sync_stake_res();
+  ::zjchain::elect::protobuf::SyncNodeStokeResponse* temp = sync_stake_res_;
+  sync_stake_res_ = NULL;
   return temp;
 }
-inline ::zjchain::elect::protobuf::SyncNodeStokeResponse* ElectMessage::mutable_sync_stoke_res() {
-  set_has_sync_stoke_res();
-  if (sync_stoke_res_ == NULL) {
+inline ::zjchain::elect::protobuf::SyncNodeStokeResponse* ElectMessage::mutable_sync_stake_res() {
+  set_has_sync_stake_res();
+  if (sync_stake_res_ == NULL) {
     auto* p = CreateMaybeMessage<::zjchain::elect::protobuf::SyncNodeStokeResponse>(GetArenaNoVirtual());
-    sync_stoke_res_ = p;
+    sync_stake_res_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.ElectMessage.sync_stoke_res)
-  return sync_stoke_res_;
+  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.ElectMessage.sync_stake_res)
+  return sync_stake_res_;
 }
-inline void ElectMessage::set_allocated_sync_stoke_res(::zjchain::elect::protobuf::SyncNodeStokeResponse* sync_stoke_res) {
+inline void ElectMessage::set_allocated_sync_stake_res(::zjchain::elect::protobuf::SyncNodeStokeResponse* sync_stake_res) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
-    delete sync_stoke_res_;
+    delete sync_stake_res_;
   }
-  if (sync_stoke_res) {
+  if (sync_stake_res) {
     ::google::protobuf::Arena* submessage_arena = NULL;
     if (message_arena != submessage_arena) {
-      sync_stoke_res = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, sync_stoke_res, submessage_arena);
+      sync_stake_res = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, sync_stake_res, submessage_arena);
     }
-    set_has_sync_stoke_res();
+    set_has_sync_stake_res();
   } else {
-    clear_has_sync_stoke_res();
+    clear_has_sync_stake_res();
   }
-  sync_stoke_res_ = sync_stoke_res;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.ElectMessage.sync_stoke_res)
+  sync_stake_res_ = sync_stake_res;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.ElectMessage.sync_stake_res)
 }
 
 #ifdef __GNUC__

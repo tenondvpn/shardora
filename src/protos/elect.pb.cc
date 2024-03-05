@@ -431,7 +431,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::WaitingNodesMessage, nodes_filter_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::WaitingNodesMessage, waiting_shard_id_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::WaitingNodesMessage, stoke_hash_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::WaitingNodesMessage, stake_hash_),
   ~0u,
   1,
   0,
@@ -506,8 +506,8 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::ElectMessage, sign_res_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::ElectMessage, waiting_heartbeat_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::ElectMessage, leader_rotation_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::ElectMessage, sync_stoke_req_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::ElectMessage, sync_stoke_res_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::ElectMessage, sync_stake_req_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::ElectMessage, sync_stake_res_),
   2,
   3,
   4,
@@ -595,7 +595,7 @@ void AddDescriptorsImpl() {
       "(\r\022\024\n\014elect_height\030\004 \001(\004\022\026\n\016all_gas_amou"
       "nt\030\005 \001(\004\022\024\n\014gas_for_root\030\006 \001(\004\"Y\n\023Waitin"
       "gNodesMessage\022\024\n\014nodes_filter\030\001 \003(\004\022\030\n\020w"
-      "aiting_shard_id\030\002 \001(\r\022\022\n\nstoke_hash\030\003 \001("
+      "aiting_shard_id\030\002 \001(\r\022\022\n\nstake_hash\030\003 \001("
       "\014\"i\n\024WaitingNodeHeartbeat\022\021\n\tpublic_ip\030\001"
       " \001(\014\022\023\n\013public_port\030\002 \001(\r\022\022\n\nnetwork_id\030"
       "\003 \001(\r\022\025\n\rtimestamp_sec\030\004 \001(\004\"@\n\025LeaderRo"
@@ -619,8 +619,8 @@ void AddDescriptorsImpl() {
       "in.elect.protobuf.WaitingNodeHeartbeat\022F"
       "\n\017leader_rotation\030\010 \001(\0132-.zjchain.elect."
       "protobuf.LeaderRotationMessage\022D\n\016sync_s"
-      "toke_req\030\t \001(\0132,.zjchain.elect.protobuf."
-      "SyncNodeStokeRequest\022E\n\016sync_stoke_res\030\n"
+      "take_req\030\t \001(\0132,.zjchain.elect.protobuf."
+      "SyncNodeStokeRequest\022E\n\016sync_stake_res\030\n"
       " \001(\0132-.zjchain.elect.protobuf.SyncNodeSt"
       "okeResponse"
   };
@@ -3098,7 +3098,7 @@ void WaitingNodesMessage::InitAsDefaultInstance() {
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int WaitingNodesMessage::kNodesFilterFieldNumber;
 const int WaitingNodesMessage::kWaitingShardIdFieldNumber;
-const int WaitingNodesMessage::kStokeHashFieldNumber;
+const int WaitingNodesMessage::kStakeHashFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 WaitingNodesMessage::WaitingNodesMessage()
@@ -3114,16 +3114,16 @@ WaitingNodesMessage::WaitingNodesMessage(const WaitingNodesMessage& from)
       _has_bits_(from._has_bits_),
       nodes_filter_(from.nodes_filter_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  stoke_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.has_stoke_hash()) {
-    stoke_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.stoke_hash_);
+  stake_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_stake_hash()) {
+    stake_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.stake_hash_);
   }
   waiting_shard_id_ = from.waiting_shard_id_;
   // @@protoc_insertion_point(copy_constructor:zjchain.elect.protobuf.WaitingNodesMessage)
 }
 
 void WaitingNodesMessage::SharedCtor() {
-  stoke_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  stake_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   waiting_shard_id_ = 0u;
 }
 
@@ -3133,7 +3133,7 @@ WaitingNodesMessage::~WaitingNodesMessage() {
 }
 
 void WaitingNodesMessage::SharedDtor() {
-  stoke_hash_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  stake_hash_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void WaitingNodesMessage::SetCachedSize(int size) const {
@@ -3159,7 +3159,7 @@ void WaitingNodesMessage::Clear() {
   nodes_filter_.Clear();
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    stoke_hash_.ClearNonDefaultToEmptyNoArena();
+    stake_hash_.ClearNonDefaultToEmptyNoArena();
   }
   waiting_shard_id_ = 0u;
   _has_bits_.Clear();
@@ -3209,12 +3209,12 @@ bool WaitingNodesMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional bytes stoke_hash = 3;
+      // optional bytes stake_hash = 3;
       case 3: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->mutable_stoke_hash()));
+                input, this->mutable_stake_hash()));
         } else {
           goto handle_unusual;
         }
@@ -3259,10 +3259,10 @@ void WaitingNodesMessage::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->waiting_shard_id(), output);
   }
 
-  // optional bytes stoke_hash = 3;
+  // optional bytes stake_hash = 3;
   if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
-      3, this->stoke_hash(), output);
+      3, this->stake_hash(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3289,11 +3289,11 @@ void WaitingNodesMessage::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->waiting_shard_id(), target);
   }
 
-  // optional bytes stoke_hash = 3;
+  // optional bytes stake_hash = 3;
   if (cached_has_bits & 0x00000001u) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        3, this->stoke_hash(), target);
+        3, this->stake_hash(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3323,11 +3323,11 @@ size_t WaitingNodesMessage::ByteSizeLong() const {
   }
 
   if (_has_bits_[0 / 32] & 3u) {
-    // optional bytes stoke_hash = 3;
-    if (has_stoke_hash()) {
+    // optional bytes stake_hash = 3;
+    if (has_stake_hash()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->stoke_hash());
+          this->stake_hash());
     }
 
     // optional uint32 waiting_shard_id = 2;
@@ -3369,8 +3369,8 @@ void WaitingNodesMessage::MergeFrom(const WaitingNodesMessage& from) {
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 3u) {
     if (cached_has_bits & 0x00000001u) {
-      set_has_stoke_hash();
-      stoke_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.stoke_hash_);
+      set_has_stake_hash();
+      stake_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.stake_hash_);
     }
     if (cached_has_bits & 0x00000002u) {
       waiting_shard_id_ = from.waiting_shard_id_;
@@ -3404,7 +3404,7 @@ void WaitingNodesMessage::Swap(WaitingNodesMessage* other) {
 void WaitingNodesMessage::InternalSwap(WaitingNodesMessage* other) {
   using std::swap;
   nodes_filter_.InternalSwap(&other->nodes_filter_);
-  stoke_hash_.Swap(&other->stoke_hash_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  stake_hash_.Swap(&other->stake_hash_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(waiting_shard_id_, other->waiting_shard_id_);
   swap(_has_bits_[0], other->_has_bits_[0]);
@@ -5188,9 +5188,9 @@ void ElectMessage::InitAsDefaultInstance() {
       ::zjchain::elect::protobuf::WaitingNodeHeartbeat::internal_default_instance());
   ::zjchain::elect::protobuf::_ElectMessage_default_instance_._instance.get_mutable()->leader_rotation_ = const_cast< ::zjchain::elect::protobuf::LeaderRotationMessage*>(
       ::zjchain::elect::protobuf::LeaderRotationMessage::internal_default_instance());
-  ::zjchain::elect::protobuf::_ElectMessage_default_instance_._instance.get_mutable()->sync_stoke_req_ = const_cast< ::zjchain::elect::protobuf::SyncNodeStokeRequest*>(
+  ::zjchain::elect::protobuf::_ElectMessage_default_instance_._instance.get_mutable()->sync_stake_req_ = const_cast< ::zjchain::elect::protobuf::SyncNodeStokeRequest*>(
       ::zjchain::elect::protobuf::SyncNodeStokeRequest::internal_default_instance());
-  ::zjchain::elect::protobuf::_ElectMessage_default_instance_._instance.get_mutable()->sync_stoke_res_ = const_cast< ::zjchain::elect::protobuf::SyncNodeStokeResponse*>(
+  ::zjchain::elect::protobuf::_ElectMessage_default_instance_._instance.get_mutable()->sync_stake_res_ = const_cast< ::zjchain::elect::protobuf::SyncNodeStokeResponse*>(
       ::zjchain::elect::protobuf::SyncNodeStokeResponse::internal_default_instance());
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
@@ -5202,8 +5202,8 @@ const int ElectMessage::kSignChFieldNumber;
 const int ElectMessage::kSignResFieldNumber;
 const int ElectMessage::kWaitingHeartbeatFieldNumber;
 const int ElectMessage::kLeaderRotationFieldNumber;
-const int ElectMessage::kSyncStokeReqFieldNumber;
-const int ElectMessage::kSyncStokeResFieldNumber;
+const int ElectMessage::kSyncStakeReqFieldNumber;
+const int ElectMessage::kSyncStakeResFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ElectMessage::ElectMessage()
@@ -5251,15 +5251,15 @@ ElectMessage::ElectMessage(const ElectMessage& from)
   } else {
     leader_rotation_ = NULL;
   }
-  if (from.has_sync_stoke_req()) {
-    sync_stoke_req_ = new ::zjchain::elect::protobuf::SyncNodeStokeRequest(*from.sync_stoke_req_);
+  if (from.has_sync_stake_req()) {
+    sync_stake_req_ = new ::zjchain::elect::protobuf::SyncNodeStokeRequest(*from.sync_stake_req_);
   } else {
-    sync_stoke_req_ = NULL;
+    sync_stake_req_ = NULL;
   }
-  if (from.has_sync_stoke_res()) {
-    sync_stoke_res_ = new ::zjchain::elect::protobuf::SyncNodeStokeResponse(*from.sync_stoke_res_);
+  if (from.has_sync_stake_res()) {
+    sync_stake_res_ = new ::zjchain::elect::protobuf::SyncNodeStokeResponse(*from.sync_stake_res_);
   } else {
-    sync_stoke_res_ = NULL;
+    sync_stake_res_ = NULL;
   }
   member_index_ = from.member_index_;
   // @@protoc_insertion_point(copy_constructor:zjchain.elect.protobuf.ElectMessage)
@@ -5286,8 +5286,8 @@ void ElectMessage::SharedDtor() {
   if (this != internal_default_instance()) delete waiting_nodes_;
   if (this != internal_default_instance()) delete waiting_heartbeat_;
   if (this != internal_default_instance()) delete leader_rotation_;
-  if (this != internal_default_instance()) delete sync_stoke_req_;
-  if (this != internal_default_instance()) delete sync_stoke_res_;
+  if (this != internal_default_instance()) delete sync_stake_req_;
+  if (this != internal_default_instance()) delete sync_stake_res_;
 }
 
 void ElectMessage::SetCachedSize(int size) const {
@@ -5339,13 +5339,13 @@ void ElectMessage::Clear() {
       leader_rotation_->Clear();
     }
     if (cached_has_bits & 0x00000080u) {
-      GOOGLE_DCHECK(sync_stoke_req_ != NULL);
-      sync_stoke_req_->Clear();
+      GOOGLE_DCHECK(sync_stake_req_ != NULL);
+      sync_stake_req_->Clear();
     }
   }
   if (cached_has_bits & 0x00000100u) {
-    GOOGLE_DCHECK(sync_stoke_res_ != NULL);
-    sync_stoke_res_->Clear();
+    GOOGLE_DCHECK(sync_stake_res_ != NULL);
+    sync_stake_res_->Clear();
   }
   member_index_ = 0;
   _has_bits_.Clear();
@@ -5460,24 +5460,24 @@ bool ElectMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .zjchain.elect.protobuf.SyncNodeStokeRequest sync_stoke_req = 9;
+      // optional .zjchain.elect.protobuf.SyncNodeStokeRequest sync_stake_req = 9;
       case 9: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(74u /* 74 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_sync_stoke_req()));
+               input, mutable_sync_stake_req()));
         } else {
           goto handle_unusual;
         }
         break;
       }
 
-      // optional .zjchain.elect.protobuf.SyncNodeStokeResponse sync_stoke_res = 10;
+      // optional .zjchain.elect.protobuf.SyncNodeStokeResponse sync_stake_res = 10;
       case 10: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(82u /* 82 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_sync_stoke_res()));
+               input, mutable_sync_stake_res()));
         } else {
           goto handle_unusual;
         }
@@ -5558,16 +5558,16 @@ void ElectMessage::SerializeWithCachedSizes(
       8, this->_internal_leader_rotation(), output);
   }
 
-  // optional .zjchain.elect.protobuf.SyncNodeStokeRequest sync_stoke_req = 9;
+  // optional .zjchain.elect.protobuf.SyncNodeStokeRequest sync_stake_req = 9;
   if (cached_has_bits & 0x00000080u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      9, this->_internal_sync_stoke_req(), output);
+      9, this->_internal_sync_stake_req(), output);
   }
 
-  // optional .zjchain.elect.protobuf.SyncNodeStokeResponse sync_stoke_res = 10;
+  // optional .zjchain.elect.protobuf.SyncNodeStokeResponse sync_stake_res = 10;
   if (cached_has_bits & 0x00000100u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      10, this->_internal_sync_stoke_res(), output);
+      10, this->_internal_sync_stake_res(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -5639,18 +5639,18 @@ void ElectMessage::SerializeWithCachedSizes(
         8, this->_internal_leader_rotation(), deterministic, target);
   }
 
-  // optional .zjchain.elect.protobuf.SyncNodeStokeRequest sync_stoke_req = 9;
+  // optional .zjchain.elect.protobuf.SyncNodeStokeRequest sync_stake_req = 9;
   if (cached_has_bits & 0x00000080u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        9, this->_internal_sync_stoke_req(), deterministic, target);
+        9, this->_internal_sync_stake_req(), deterministic, target);
   }
 
-  // optional .zjchain.elect.protobuf.SyncNodeStokeResponse sync_stoke_res = 10;
+  // optional .zjchain.elect.protobuf.SyncNodeStokeResponse sync_stake_res = 10;
   if (cached_has_bits & 0x00000100u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        10, this->_internal_sync_stoke_res(), deterministic, target);
+        10, this->_internal_sync_stake_res(), deterministic, target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -5720,20 +5720,20 @@ size_t ElectMessage::ByteSizeLong() const {
           *leader_rotation_);
     }
 
-    // optional .zjchain.elect.protobuf.SyncNodeStokeRequest sync_stoke_req = 9;
-    if (has_sync_stoke_req()) {
+    // optional .zjchain.elect.protobuf.SyncNodeStokeRequest sync_stake_req = 9;
+    if (has_sync_stake_req()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
-          *sync_stoke_req_);
+          *sync_stake_req_);
     }
 
   }
   if (_has_bits_[8 / 32] & 768u) {
-    // optional .zjchain.elect.protobuf.SyncNodeStokeResponse sync_stoke_res = 10;
-    if (has_sync_stoke_res()) {
+    // optional .zjchain.elect.protobuf.SyncNodeStokeResponse sync_stake_res = 10;
+    if (has_sync_stake_res()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
-          *sync_stoke_res_);
+          *sync_stake_res_);
     }
 
     // optional int32 member_index = 4;
@@ -5797,12 +5797,12 @@ void ElectMessage::MergeFrom(const ElectMessage& from) {
       mutable_leader_rotation()->::zjchain::elect::protobuf::LeaderRotationMessage::MergeFrom(from.leader_rotation());
     }
     if (cached_has_bits & 0x00000080u) {
-      mutable_sync_stoke_req()->::zjchain::elect::protobuf::SyncNodeStokeRequest::MergeFrom(from.sync_stoke_req());
+      mutable_sync_stake_req()->::zjchain::elect::protobuf::SyncNodeStokeRequest::MergeFrom(from.sync_stake_req());
     }
   }
   if (cached_has_bits & 768u) {
     if (cached_has_bits & 0x00000100u) {
-      mutable_sync_stoke_res()->::zjchain::elect::protobuf::SyncNodeStokeResponse::MergeFrom(from.sync_stoke_res());
+      mutable_sync_stake_res()->::zjchain::elect::protobuf::SyncNodeStokeResponse::MergeFrom(from.sync_stake_res());
     }
     if (cached_has_bits & 0x00000200u) {
       member_index_ = from.member_index_;
@@ -5844,8 +5844,8 @@ void ElectMessage::InternalSwap(ElectMessage* other) {
   swap(waiting_nodes_, other->waiting_nodes_);
   swap(waiting_heartbeat_, other->waiting_heartbeat_);
   swap(leader_rotation_, other->leader_rotation_);
-  swap(sync_stoke_req_, other->sync_stoke_req_);
-  swap(sync_stoke_res_, other->sync_stoke_res_);
+  swap(sync_stake_req_, other->sync_stake_req_);
+  swap(sync_stake_res_, other->sync_stake_res_);
   swap(member_index_, other->member_index_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);

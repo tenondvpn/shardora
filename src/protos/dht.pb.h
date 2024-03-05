@@ -195,25 +195,10 @@ class BootstrapRequest : public ::google::protobuf::Message /* @@protoc_insertio
 
   // accessors -------------------------------------------------------
 
-  // optional bytes pubkey = 1;
-  bool has_pubkey() const;
-  void clear_pubkey();
-  static const int kPubkeyFieldNumber = 1;
-  const ::std::string& pubkey() const;
-  void set_pubkey(const ::std::string& value);
-  #if LANG_CXX11
-  void set_pubkey(::std::string&& value);
-  #endif
-  void set_pubkey(const char* value);
-  void set_pubkey(const void* value, size_t size);
-  ::std::string* mutable_pubkey();
-  ::std::string* release_pubkey();
-  void set_allocated_pubkey(::std::string* pubkey);
-
-  // optional string public_ip = 2;
+  // optional string public_ip = 1;
   bool has_public_ip() const;
   void clear_public_ip();
-  static const int kPublicIpFieldNumber = 2;
+  static const int kPublicIpFieldNumber = 1;
   const ::std::string& public_ip() const;
   void set_public_ip(const ::std::string& value);
   #if LANG_CXX11
@@ -225,17 +210,15 @@ class BootstrapRequest : public ::google::protobuf::Message /* @@protoc_insertio
   ::std::string* release_public_ip();
   void set_allocated_public_ip(::std::string* public_ip);
 
-  // optional int32 public_port = 3;
+  // optional int32 public_port = 2;
   bool has_public_port() const;
   void clear_public_port();
-  static const int kPublicPortFieldNumber = 3;
+  static const int kPublicPortFieldNumber = 2;
   ::google::protobuf::int32 public_port() const;
   void set_public_port(::google::protobuf::int32 value);
 
   // @@protoc_insertion_point(class_scope:zjchain.dht.protobuf.BootstrapRequest)
  private:
-  void set_has_pubkey();
-  void clear_has_pubkey();
   void set_has_public_ip();
   void clear_has_public_ip();
   void set_has_public_port();
@@ -244,7 +227,6 @@ class BootstrapRequest : public ::google::protobuf::Message /* @@protoc_insertio
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::internal::ArenaStringPtr pubkey_;
   ::google::protobuf::internal::ArenaStringPtr public_ip_;
   ::google::protobuf::int32 public_port_;
   friend struct ::protobuf_protos_2fdht_2eproto::TableStruct;
@@ -345,25 +327,10 @@ class BootstrapResponse : public ::google::protobuf::Message /* @@protoc_inserti
 
   // accessors -------------------------------------------------------
 
-  // optional bytes pubkey = 1;
-  bool has_pubkey() const;
-  void clear_pubkey();
-  static const int kPubkeyFieldNumber = 1;
-  const ::std::string& pubkey() const;
-  void set_pubkey(const ::std::string& value);
-  #if LANG_CXX11
-  void set_pubkey(::std::string&& value);
-  #endif
-  void set_pubkey(const char* value);
-  void set_pubkey(const void* value, size_t size);
-  ::std::string* mutable_pubkey();
-  ::std::string* release_pubkey();
-  void set_allocated_pubkey(::std::string* pubkey);
-
-  // optional string public_ip = 2;
+  // optional string public_ip = 1;
   bool has_public_ip() const;
   void clear_public_ip();
-  static const int kPublicIpFieldNumber = 2;
+  static const int kPublicIpFieldNumber = 1;
   const ::std::string& public_ip() const;
   void set_public_ip(const ::std::string& value);
   #if LANG_CXX11
@@ -375,17 +342,15 @@ class BootstrapResponse : public ::google::protobuf::Message /* @@protoc_inserti
   ::std::string* release_public_ip();
   void set_allocated_public_ip(::std::string* public_ip);
 
-  // optional int32 public_port = 3;
+  // optional int32 public_port = 2;
   bool has_public_port() const;
   void clear_public_port();
-  static const int kPublicPortFieldNumber = 3;
+  static const int kPublicPortFieldNumber = 2;
   ::google::protobuf::int32 public_port() const;
   void set_public_port(::google::protobuf::int32 value);
 
   // @@protoc_insertion_point(class_scope:zjchain.dht.protobuf.BootstrapResponse)
  private:
-  void set_has_pubkey();
-  void clear_has_pubkey();
   void set_has_public_ip();
   void clear_has_public_ip();
   void set_has_public_port();
@@ -394,7 +359,6 @@ class BootstrapResponse : public ::google::protobuf::Message /* @@protoc_inserti
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::internal::ArenaStringPtr pubkey_;
   ::google::protobuf::internal::ArenaStringPtr public_ip_;
   ::google::protobuf::int32 public_port_;
   friend struct ::protobuf_protos_2fdht_2eproto::TableStruct;
@@ -525,34 +489,12 @@ class NodeInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::std::string* release_pubkey();
   void set_allocated_pubkey(::std::string* pubkey);
 
-  // optional bytes id = 5;
-  bool has_id() const;
-  void clear_id();
-  static const int kIdFieldNumber = 5;
-  const ::std::string& id() const;
-  void set_id(const ::std::string& value);
-  #if LANG_CXX11
-  void set_id(::std::string&& value);
-  #endif
-  void set_id(const char* value);
-  void set_id(const void* value, size_t size);
-  ::std::string* mutable_id();
-  ::std::string* release_id();
-  void set_allocated_id(::std::string* id);
-
   // optional int32 public_port = 2;
   bool has_public_port() const;
   void clear_public_port();
   static const int kPublicPortFieldNumber = 2;
   ::google::protobuf::int32 public_port() const;
   void set_public_port(::google::protobuf::int32 value);
-
-  // optional int32 sharding_id = 4;
-  bool has_sharding_id() const;
-  void clear_sharding_id();
-  static const int kShardingIdFieldNumber = 4;
-  ::google::protobuf::int32 sharding_id() const;
-  void set_sharding_id(::google::protobuf::int32 value);
 
   // @@protoc_insertion_point(class_scope:zjchain.dht.protobuf.NodeInfo)
  private:
@@ -562,19 +504,13 @@ class NodeInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
   void clear_has_public_port();
   void set_has_pubkey();
   void clear_has_pubkey();
-  void set_has_sharding_id();
-  void clear_has_sharding_id();
-  void set_has_id();
-  void clear_has_id();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr public_ip_;
   ::google::protobuf::internal::ArenaStringPtr pubkey_;
-  ::google::protobuf::internal::ArenaStringPtr id_;
   ::google::protobuf::int32 public_port_;
-  ::google::protobuf::int32 sharding_id_;
   friend struct ::protobuf_protos_2fdht_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -685,10 +621,10 @@ class RefreshNeighborsRequest : public ::google::protobuf::Message /* @@protoc_i
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
       mutable_bloomfilter();
 
-  // repeated bytes ids = 6;
+  // repeated bytes ids = 5;
   int ids_size() const;
   void clear_ids();
-  static const int kIdsFieldNumber = 6;
+  static const int kIdsFieldNumber = 5;
   const ::std::string& ids(int index) const;
   ::std::string* mutable_ids(int index);
   void set_ids(int index, const ::std::string& value);
@@ -707,25 +643,10 @@ class RefreshNeighborsRequest : public ::google::protobuf::Message /* @@protoc_i
   const ::google::protobuf::RepeatedPtrField< ::std::string>& ids() const;
   ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_ids();
 
-  // optional bytes pubkey = 3;
-  bool has_pubkey() const;
-  void clear_pubkey();
-  static const int kPubkeyFieldNumber = 3;
-  const ::std::string& pubkey() const;
-  void set_pubkey(const ::std::string& value);
-  #if LANG_CXX11
-  void set_pubkey(::std::string&& value);
-  #endif
-  void set_pubkey(const char* value);
-  void set_pubkey(const void* value, size_t size);
-  ::std::string* mutable_pubkey();
-  ::std::string* release_pubkey();
-  void set_allocated_pubkey(::std::string* pubkey);
-
-  // optional string public_ip = 4;
+  // optional string public_ip = 3;
   bool has_public_ip() const;
   void clear_public_ip();
-  static const int kPublicIpFieldNumber = 4;
+  static const int kPublicIpFieldNumber = 3;
   const ::std::string& public_ip() const;
   void set_public_ip(const ::std::string& value);
   #if LANG_CXX11
@@ -744,10 +665,10 @@ class RefreshNeighborsRequest : public ::google::protobuf::Message /* @@protoc_i
   ::google::protobuf::uint32 count() const;
   void set_count(::google::protobuf::uint32 value);
 
-  // optional int32 public_port = 5;
+  // optional int32 public_port = 4;
   bool has_public_port() const;
   void clear_public_port();
-  static const int kPublicPortFieldNumber = 5;
+  static const int kPublicPortFieldNumber = 4;
   ::google::protobuf::int32 public_port() const;
   void set_public_port(::google::protobuf::int32 value);
 
@@ -755,8 +676,6 @@ class RefreshNeighborsRequest : public ::google::protobuf::Message /* @@protoc_i
  private:
   void set_has_count();
   void clear_has_count();
-  void set_has_pubkey();
-  void clear_has_pubkey();
   void set_has_public_ip();
   void clear_has_public_ip();
   void set_has_public_port();
@@ -767,7 +686,6 @@ class RefreshNeighborsRequest : public ::google::protobuf::Message /* @@protoc_i
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > bloomfilter_;
   ::google::protobuf::RepeatedPtrField< ::std::string> ids_;
-  ::google::protobuf::internal::ArenaStringPtr pubkey_;
   ::google::protobuf::internal::ArenaStringPtr public_ip_;
   ::google::protobuf::uint32 count_;
   ::google::protobuf::int32 public_port_;
@@ -1214,25 +1132,10 @@ class ConnectReqeust : public ::google::protobuf::Message /* @@protoc_insertion_
 
   // accessors -------------------------------------------------------
 
-  // optional bytes pubkey = 1;
-  bool has_pubkey() const;
-  void clear_pubkey();
-  static const int kPubkeyFieldNumber = 1;
-  const ::std::string& pubkey() const;
-  void set_pubkey(const ::std::string& value);
-  #if LANG_CXX11
-  void set_pubkey(::std::string&& value);
-  #endif
-  void set_pubkey(const char* value);
-  void set_pubkey(const void* value, size_t size);
-  ::std::string* mutable_pubkey();
-  ::std::string* release_pubkey();
-  void set_allocated_pubkey(::std::string* pubkey);
-
-  // optional string public_ip = 3;
+  // optional string public_ip = 2;
   bool has_public_ip() const;
   void clear_public_ip();
-  static const int kPublicIpFieldNumber = 3;
+  static const int kPublicIpFieldNumber = 2;
   const ::std::string& public_ip() const;
   void set_public_ip(const ::std::string& value);
   #if LANG_CXX11
@@ -1244,54 +1147,33 @@ class ConnectReqeust : public ::google::protobuf::Message /* @@protoc_insertion_
   ::std::string* release_public_ip();
   void set_allocated_public_ip(::std::string* public_ip);
 
-  // optional bytes id = 5;
-  bool has_id() const;
-  void clear_id();
-  static const int kIdFieldNumber = 5;
-  const ::std::string& id() const;
-  void set_id(const ::std::string& value);
-  #if LANG_CXX11
-  void set_id(::std::string&& value);
-  #endif
-  void set_id(const char* value);
-  void set_id(const void* value, size_t size);
-  ::std::string* mutable_id();
-  ::std::string* release_id();
-  void set_allocated_id(::std::string* id);
-
-  // optional bool is_response = 2;
+  // optional bool is_response = 1;
   bool has_is_response() const;
   void clear_is_response();
-  static const int kIsResponseFieldNumber = 2;
+  static const int kIsResponseFieldNumber = 1;
   bool is_response() const;
   void set_is_response(bool value);
 
-  // optional int32 public_port = 4;
+  // optional int32 public_port = 3;
   bool has_public_port() const;
   void clear_public_port();
-  static const int kPublicPortFieldNumber = 4;
+  static const int kPublicPortFieldNumber = 3;
   ::google::protobuf::int32 public_port() const;
   void set_public_port(::google::protobuf::int32 value);
 
   // @@protoc_insertion_point(class_scope:zjchain.dht.protobuf.ConnectReqeust)
  private:
-  void set_has_pubkey();
-  void clear_has_pubkey();
   void set_has_is_response();
   void clear_has_is_response();
   void set_has_public_ip();
   void clear_has_public_ip();
   void set_has_public_port();
   void clear_has_public_port();
-  void set_has_id();
-  void clear_has_id();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::internal::ArenaStringPtr pubkey_;
   ::google::protobuf::internal::ArenaStringPtr public_ip_;
-  ::google::protobuf::internal::ArenaStringPtr id_;
   bool is_response_;
   ::google::protobuf::int32 public_port_;
   friend struct ::protobuf_protos_2fdht_2eproto::TableStruct;
@@ -1645,81 +1527,15 @@ class DhtMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
 #endif  // __GNUC__
 // BootstrapRequest
 
-// optional bytes pubkey = 1;
-inline bool BootstrapRequest::has_pubkey() const {
+// optional string public_ip = 1;
+inline bool BootstrapRequest::has_public_ip() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void BootstrapRequest::set_has_pubkey() {
+inline void BootstrapRequest::set_has_public_ip() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void BootstrapRequest::clear_has_pubkey() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void BootstrapRequest::clear_pubkey() {
-  pubkey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_pubkey();
-}
-inline const ::std::string& BootstrapRequest::pubkey() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.BootstrapRequest.pubkey)
-  return pubkey_.GetNoArena();
-}
-inline void BootstrapRequest::set_pubkey(const ::std::string& value) {
-  set_has_pubkey();
-  pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.BootstrapRequest.pubkey)
-}
-#if LANG_CXX11
-inline void BootstrapRequest::set_pubkey(::std::string&& value) {
-  set_has_pubkey();
-  pubkey_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.BootstrapRequest.pubkey)
-}
-#endif
-inline void BootstrapRequest::set_pubkey(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_pubkey();
-  pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.BootstrapRequest.pubkey)
-}
-inline void BootstrapRequest::set_pubkey(const void* value, size_t size) {
-  set_has_pubkey();
-  pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.BootstrapRequest.pubkey)
-}
-inline ::std::string* BootstrapRequest::mutable_pubkey() {
-  set_has_pubkey();
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.BootstrapRequest.pubkey)
-  return pubkey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* BootstrapRequest::release_pubkey() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.BootstrapRequest.pubkey)
-  if (!has_pubkey()) {
-    return NULL;
-  }
-  clear_has_pubkey();
-  return pubkey_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void BootstrapRequest::set_allocated_pubkey(::std::string* pubkey) {
-  if (pubkey != NULL) {
-    set_has_pubkey();
-  } else {
-    clear_has_pubkey();
-  }
-  pubkey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), pubkey);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.BootstrapRequest.pubkey)
-}
-
-// optional string public_ip = 2;
-inline bool BootstrapRequest::has_public_ip() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void BootstrapRequest::set_has_public_ip() {
-  _has_bits_[0] |= 0x00000002u;
-}
 inline void BootstrapRequest::clear_has_public_ip() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void BootstrapRequest::clear_public_ip() {
   public_ip_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -1777,15 +1593,15 @@ inline void BootstrapRequest::set_allocated_public_ip(::std::string* public_ip) 
   // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.BootstrapRequest.public_ip)
 }
 
-// optional int32 public_port = 3;
+// optional int32 public_port = 2;
 inline bool BootstrapRequest::has_public_port() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void BootstrapRequest::set_has_public_port() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void BootstrapRequest::clear_has_public_port() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void BootstrapRequest::clear_public_port() {
   public_port_ = 0;
@@ -1805,81 +1621,15 @@ inline void BootstrapRequest::set_public_port(::google::protobuf::int32 value) {
 
 // BootstrapResponse
 
-// optional bytes pubkey = 1;
-inline bool BootstrapResponse::has_pubkey() const {
+// optional string public_ip = 1;
+inline bool BootstrapResponse::has_public_ip() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void BootstrapResponse::set_has_pubkey() {
+inline void BootstrapResponse::set_has_public_ip() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void BootstrapResponse::clear_has_pubkey() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void BootstrapResponse::clear_pubkey() {
-  pubkey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_pubkey();
-}
-inline const ::std::string& BootstrapResponse::pubkey() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.BootstrapResponse.pubkey)
-  return pubkey_.GetNoArena();
-}
-inline void BootstrapResponse::set_pubkey(const ::std::string& value) {
-  set_has_pubkey();
-  pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.BootstrapResponse.pubkey)
-}
-#if LANG_CXX11
-inline void BootstrapResponse::set_pubkey(::std::string&& value) {
-  set_has_pubkey();
-  pubkey_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.BootstrapResponse.pubkey)
-}
-#endif
-inline void BootstrapResponse::set_pubkey(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_pubkey();
-  pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.BootstrapResponse.pubkey)
-}
-inline void BootstrapResponse::set_pubkey(const void* value, size_t size) {
-  set_has_pubkey();
-  pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.BootstrapResponse.pubkey)
-}
-inline ::std::string* BootstrapResponse::mutable_pubkey() {
-  set_has_pubkey();
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.BootstrapResponse.pubkey)
-  return pubkey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* BootstrapResponse::release_pubkey() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.BootstrapResponse.pubkey)
-  if (!has_pubkey()) {
-    return NULL;
-  }
-  clear_has_pubkey();
-  return pubkey_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void BootstrapResponse::set_allocated_pubkey(::std::string* pubkey) {
-  if (pubkey != NULL) {
-    set_has_pubkey();
-  } else {
-    clear_has_pubkey();
-  }
-  pubkey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), pubkey);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.BootstrapResponse.pubkey)
-}
-
-// optional string public_ip = 2;
-inline bool BootstrapResponse::has_public_ip() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void BootstrapResponse::set_has_public_ip() {
-  _has_bits_[0] |= 0x00000002u;
-}
 inline void BootstrapResponse::clear_has_public_ip() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void BootstrapResponse::clear_public_ip() {
   public_ip_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -1937,15 +1687,15 @@ inline void BootstrapResponse::set_allocated_public_ip(::std::string* public_ip)
   // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.BootstrapResponse.public_ip)
 }
 
-// optional int32 public_port = 3;
+// optional int32 public_port = 2;
 inline bool BootstrapResponse::has_public_port() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void BootstrapResponse::set_has_public_port() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void BootstrapResponse::clear_has_public_port() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void BootstrapResponse::clear_public_port() {
   public_port_ = 0;
@@ -2033,13 +1783,13 @@ inline void NodeInfo::set_allocated_public_ip(::std::string* public_ip) {
 
 // optional int32 public_port = 2;
 inline bool NodeInfo::has_public_port() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void NodeInfo::set_has_public_port() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void NodeInfo::clear_has_public_port() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void NodeInfo::clear_public_port() {
   public_port_ = 0;
@@ -2121,109 +1871,19 @@ inline void NodeInfo::set_allocated_pubkey(::std::string* pubkey) {
   // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.NodeInfo.pubkey)
 }
 
-// optional int32 sharding_id = 4;
-inline bool NodeInfo::has_sharding_id() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void NodeInfo::set_has_sharding_id() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void NodeInfo::clear_has_sharding_id() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void NodeInfo::clear_sharding_id() {
-  sharding_id_ = 0;
-  clear_has_sharding_id();
-}
-inline ::google::protobuf::int32 NodeInfo::sharding_id() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.NodeInfo.sharding_id)
-  return sharding_id_;
-}
-inline void NodeInfo::set_sharding_id(::google::protobuf::int32 value) {
-  set_has_sharding_id();
-  sharding_id_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.NodeInfo.sharding_id)
-}
-
-// optional bytes id = 5;
-inline bool NodeInfo::has_id() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void NodeInfo::set_has_id() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void NodeInfo::clear_has_id() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void NodeInfo::clear_id() {
-  id_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_id();
-}
-inline const ::std::string& NodeInfo::id() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.NodeInfo.id)
-  return id_.GetNoArena();
-}
-inline void NodeInfo::set_id(const ::std::string& value) {
-  set_has_id();
-  id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.NodeInfo.id)
-}
-#if LANG_CXX11
-inline void NodeInfo::set_id(::std::string&& value) {
-  set_has_id();
-  id_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.NodeInfo.id)
-}
-#endif
-inline void NodeInfo::set_id(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_id();
-  id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.NodeInfo.id)
-}
-inline void NodeInfo::set_id(const void* value, size_t size) {
-  set_has_id();
-  id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.NodeInfo.id)
-}
-inline ::std::string* NodeInfo::mutable_id() {
-  set_has_id();
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.NodeInfo.id)
-  return id_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* NodeInfo::release_id() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.NodeInfo.id)
-  if (!has_id()) {
-    return NULL;
-  }
-  clear_has_id();
-  return id_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void NodeInfo::set_allocated_id(::std::string* id) {
-  if (id != NULL) {
-    set_has_id();
-  } else {
-    clear_has_id();
-  }
-  id_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), id);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.NodeInfo.id)
-}
-
 // -------------------------------------------------------------------
 
 // RefreshNeighborsRequest
 
 // optional uint32 count = 1;
 inline bool RefreshNeighborsRequest::has_count() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void RefreshNeighborsRequest::set_has_count() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void RefreshNeighborsRequest::clear_has_count() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void RefreshNeighborsRequest::clear_count() {
   count_ = 0u;
@@ -2269,81 +1929,15 @@ RefreshNeighborsRequest::mutable_bloomfilter() {
   return &bloomfilter_;
 }
 
-// optional bytes pubkey = 3;
-inline bool RefreshNeighborsRequest::has_pubkey() const {
+// optional string public_ip = 3;
+inline bool RefreshNeighborsRequest::has_public_ip() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void RefreshNeighborsRequest::set_has_pubkey() {
+inline void RefreshNeighborsRequest::set_has_public_ip() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void RefreshNeighborsRequest::clear_has_pubkey() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void RefreshNeighborsRequest::clear_pubkey() {
-  pubkey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_pubkey();
-}
-inline const ::std::string& RefreshNeighborsRequest::pubkey() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.RefreshNeighborsRequest.pubkey)
-  return pubkey_.GetNoArena();
-}
-inline void RefreshNeighborsRequest::set_pubkey(const ::std::string& value) {
-  set_has_pubkey();
-  pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.RefreshNeighborsRequest.pubkey)
-}
-#if LANG_CXX11
-inline void RefreshNeighborsRequest::set_pubkey(::std::string&& value) {
-  set_has_pubkey();
-  pubkey_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.RefreshNeighborsRequest.pubkey)
-}
-#endif
-inline void RefreshNeighborsRequest::set_pubkey(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_pubkey();
-  pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.RefreshNeighborsRequest.pubkey)
-}
-inline void RefreshNeighborsRequest::set_pubkey(const void* value, size_t size) {
-  set_has_pubkey();
-  pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.RefreshNeighborsRequest.pubkey)
-}
-inline ::std::string* RefreshNeighborsRequest::mutable_pubkey() {
-  set_has_pubkey();
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.RefreshNeighborsRequest.pubkey)
-  return pubkey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* RefreshNeighborsRequest::release_pubkey() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.RefreshNeighborsRequest.pubkey)
-  if (!has_pubkey()) {
-    return NULL;
-  }
-  clear_has_pubkey();
-  return pubkey_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void RefreshNeighborsRequest::set_allocated_pubkey(::std::string* pubkey) {
-  if (pubkey != NULL) {
-    set_has_pubkey();
-  } else {
-    clear_has_pubkey();
-  }
-  pubkey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), pubkey);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.RefreshNeighborsRequest.pubkey)
-}
-
-// optional string public_ip = 4;
-inline bool RefreshNeighborsRequest::has_public_ip() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void RefreshNeighborsRequest::set_has_public_ip() {
-  _has_bits_[0] |= 0x00000002u;
-}
 inline void RefreshNeighborsRequest::clear_has_public_ip() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void RefreshNeighborsRequest::clear_public_ip() {
   public_ip_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -2401,15 +1995,15 @@ inline void RefreshNeighborsRequest::set_allocated_public_ip(::std::string* publ
   // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.RefreshNeighborsRequest.public_ip)
 }
 
-// optional int32 public_port = 5;
+// optional int32 public_port = 4;
 inline bool RefreshNeighborsRequest::has_public_port() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void RefreshNeighborsRequest::set_has_public_port() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void RefreshNeighborsRequest::clear_has_public_port() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void RefreshNeighborsRequest::clear_public_port() {
   public_port_ = 0;
@@ -2425,7 +2019,7 @@ inline void RefreshNeighborsRequest::set_public_port(::google::protobuf::int32 v
   // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.RefreshNeighborsRequest.public_port)
 }
 
-// repeated bytes ids = 6;
+// repeated bytes ids = 5;
 inline int RefreshNeighborsRequest::ids_size() const {
   return ids_.size();
 }
@@ -2588,81 +2182,15 @@ inline void HeartbeatResponse::set_dht_key_hash(::google::protobuf::uint64 value
 
 // ConnectReqeust
 
-// optional bytes pubkey = 1;
-inline bool ConnectReqeust::has_pubkey() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void ConnectReqeust::set_has_pubkey() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void ConnectReqeust::clear_has_pubkey() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void ConnectReqeust::clear_pubkey() {
-  pubkey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_pubkey();
-}
-inline const ::std::string& ConnectReqeust::pubkey() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.ConnectReqeust.pubkey)
-  return pubkey_.GetNoArena();
-}
-inline void ConnectReqeust::set_pubkey(const ::std::string& value) {
-  set_has_pubkey();
-  pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.ConnectReqeust.pubkey)
-}
-#if LANG_CXX11
-inline void ConnectReqeust::set_pubkey(::std::string&& value) {
-  set_has_pubkey();
-  pubkey_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.ConnectReqeust.pubkey)
-}
-#endif
-inline void ConnectReqeust::set_pubkey(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_pubkey();
-  pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.ConnectReqeust.pubkey)
-}
-inline void ConnectReqeust::set_pubkey(const void* value, size_t size) {
-  set_has_pubkey();
-  pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.ConnectReqeust.pubkey)
-}
-inline ::std::string* ConnectReqeust::mutable_pubkey() {
-  set_has_pubkey();
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.ConnectReqeust.pubkey)
-  return pubkey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* ConnectReqeust::release_pubkey() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.ConnectReqeust.pubkey)
-  if (!has_pubkey()) {
-    return NULL;
-  }
-  clear_has_pubkey();
-  return pubkey_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void ConnectReqeust::set_allocated_pubkey(::std::string* pubkey) {
-  if (pubkey != NULL) {
-    set_has_pubkey();
-  } else {
-    clear_has_pubkey();
-  }
-  pubkey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), pubkey);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.ConnectReqeust.pubkey)
-}
-
-// optional bool is_response = 2;
+// optional bool is_response = 1;
 inline bool ConnectReqeust::has_is_response() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void ConnectReqeust::set_has_is_response() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void ConnectReqeust::clear_has_is_response() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void ConnectReqeust::clear_is_response() {
   is_response_ = false;
@@ -2678,15 +2206,15 @@ inline void ConnectReqeust::set_is_response(bool value) {
   // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.ConnectReqeust.is_response)
 }
 
-// optional string public_ip = 3;
+// optional string public_ip = 2;
 inline bool ConnectReqeust::has_public_ip() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000001u) != 0;
 }
 inline void ConnectReqeust::set_has_public_ip() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000001u;
 }
 inline void ConnectReqeust::clear_has_public_ip() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void ConnectReqeust::clear_public_ip() {
   public_ip_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -2744,15 +2272,15 @@ inline void ConnectReqeust::set_allocated_public_ip(::std::string* public_ip) {
   // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.ConnectReqeust.public_ip)
 }
 
-// optional int32 public_port = 4;
+// optional int32 public_port = 3;
 inline bool ConnectReqeust::has_public_port() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void ConnectReqeust::set_has_public_port() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void ConnectReqeust::clear_has_public_port() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void ConnectReqeust::clear_public_port() {
   public_port_ = 0;
@@ -2766,72 +2294,6 @@ inline void ConnectReqeust::set_public_port(::google::protobuf::int32 value) {
   set_has_public_port();
   public_port_ = value;
   // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.ConnectReqeust.public_port)
-}
-
-// optional bytes id = 5;
-inline bool ConnectReqeust::has_id() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void ConnectReqeust::set_has_id() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void ConnectReqeust::clear_has_id() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void ConnectReqeust::clear_id() {
-  id_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_id();
-}
-inline const ::std::string& ConnectReqeust::id() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.ConnectReqeust.id)
-  return id_.GetNoArena();
-}
-inline void ConnectReqeust::set_id(const ::std::string& value) {
-  set_has_id();
-  id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.ConnectReqeust.id)
-}
-#if LANG_CXX11
-inline void ConnectReqeust::set_id(::std::string&& value) {
-  set_has_id();
-  id_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.ConnectReqeust.id)
-}
-#endif
-inline void ConnectReqeust::set_id(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_id();
-  id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.ConnectReqeust.id)
-}
-inline void ConnectReqeust::set_id(const void* value, size_t size) {
-  set_has_id();
-  id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.ConnectReqeust.id)
-}
-inline ::std::string* ConnectReqeust::mutable_id() {
-  set_has_id();
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.ConnectReqeust.id)
-  return id_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* ConnectReqeust::release_id() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.ConnectReqeust.id)
-  if (!has_id()) {
-    return NULL;
-  }
-  clear_has_id();
-  return id_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void ConnectReqeust::set_allocated_id(::std::string* id) {
-  if (id != NULL) {
-    set_has_id();
-  } else {
-    clear_has_id();
-  }
-  id_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), id);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.ConnectReqeust.id)
 }
 
 // -------------------------------------------------------------------

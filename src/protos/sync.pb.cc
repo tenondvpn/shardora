@@ -263,13 +263,11 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::sync::protobuf::SyncResItem, network_id_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::sync::protobuf::SyncResItem, pool_idx_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::sync::protobuf::SyncResItem, height_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::sync::protobuf::SyncResItem, tag_),
   0,
   1,
   2,
   3,
   4,
-  5,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::sync::protobuf::SyncValueResponse, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::sync::protobuf::SyncValueResponse, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -295,9 +293,9 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 16, 24, sizeof(::zjchain::sync::protobuf::SyncHeightItem)},
   { 27, 35, sizeof(::zjchain::sync::protobuf::FlushDbItem)},
   { 38, 46, sizeof(::zjchain::sync::protobuf::SyncValueRequest)},
-  { 49, 60, sizeof(::zjchain::sync::protobuf::SyncResItem)},
-  { 66, 73, sizeof(::zjchain::sync::protobuf::SyncValueResponse)},
-  { 75, 82, sizeof(::zjchain::sync::protobuf::SyncMessage)},
+  { 49, 59, sizeof(::zjchain::sync::protobuf::SyncResItem)},
+  { 64, 71, sizeof(::zjchain::sync::protobuf::SyncValueResponse)},
+  { 73, 80, sizeof(::zjchain::sync::protobuf::SyncMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -341,19 +339,19 @@ void AddDescriptorsImpl() {
       "\001 \001(\004\022\022\n\nmax_height\030\002 \001(\004\022\017\n\007heights\030\003 \003"
       "(\004\"l\n\020SyncValueRequest\022\022\n\nnetwork_id\030\001 \001"
       "(\r\022\014\n\004keys\030\002 \003(\014\0226\n\007heights\030\003 \003(\0132%.zjch"
-      "ain.sync.protobuf.SyncHeightItem\"l\n\013Sync"
+      "ain.sync.protobuf.SyncHeightItem\"_\n\013Sync"
       "ResItem\022\013\n\003key\030\001 \001(\014\022\r\n\005value\030\002 \001(\014\022\022\n\nn"
       "etwork_id\030\003 \001(\r\022\020\n\010pool_idx\030\004 \001(\r\022\016\n\006hei"
-      "ght\030\005 \001(\004\022\013\n\003tag\030\006 \001(\r\"X\n\021SyncValueRespo"
-      "nse\022\022\n\nnetwork_id\030\001 \001(\r\022/\n\003res\030\002 \003(\0132\".z"
-      "jchain.sync.protobuf.SyncResItem\"\220\001\n\013Syn"
-      "cMessage\022\?\n\016sync_value_req\030\001 \001(\0132\'.zjcha"
-      "in.sync.protobuf.SyncValueRequest\022@\n\016syn"
-      "c_value_res\030\002 \001(\0132(.zjchain.sync.protobu"
-      "f.SyncValueResponse"
+      "ght\030\005 \001(\004\"X\n\021SyncValueResponse\022\022\n\nnetwor"
+      "k_id\030\001 \001(\r\022/\n\003res\030\002 \003(\0132\".zjchain.sync.p"
+      "rotobuf.SyncResItem\"\220\001\n\013SyncMessage\022\?\n\016s"
+      "ync_value_req\030\001 \001(\0132\'.zjchain.sync.proto"
+      "buf.SyncValueRequest\022@\n\016sync_value_res\030\002"
+      " \001(\0132(.zjchain.sync.protobuf.SyncValueRe"
+      "sponse"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 739);
+      descriptor, 726);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/sync.proto", &protobuf_RegisterTypes);
 }
@@ -1855,7 +1853,6 @@ const int SyncResItem::kValueFieldNumber;
 const int SyncResItem::kNetworkIdFieldNumber;
 const int SyncResItem::kPoolIdxFieldNumber;
 const int SyncResItem::kHeightFieldNumber;
-const int SyncResItem::kTagFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 SyncResItem::SyncResItem()
@@ -1879,8 +1876,8 @@ SyncResItem::SyncResItem(const SyncResItem& from)
     value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.value_);
   }
   ::memcpy(&network_id_, &from.network_id_,
-    static_cast<size_t>(reinterpret_cast<char*>(&tag_) -
-    reinterpret_cast<char*>(&network_id_)) + sizeof(tag_));
+    static_cast<size_t>(reinterpret_cast<char*>(&height_) -
+    reinterpret_cast<char*>(&network_id_)) + sizeof(height_));
   // @@protoc_insertion_point(copy_constructor:zjchain.sync.protobuf.SyncResItem)
 }
 
@@ -1888,8 +1885,8 @@ void SyncResItem::SharedCtor() {
   key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&network_id_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&tag_) -
-      reinterpret_cast<char*>(&network_id_)) + sizeof(tag_));
+      reinterpret_cast<char*>(&height_) -
+      reinterpret_cast<char*>(&network_id_)) + sizeof(height_));
 }
 
 SyncResItem::~SyncResItem() {
@@ -1931,10 +1928,10 @@ void SyncResItem::Clear() {
       value_.ClearNonDefaultToEmptyNoArena();
     }
   }
-  if (cached_has_bits & 60u) {
+  if (cached_has_bits & 28u) {
     ::memset(&network_id_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&tag_) -
-        reinterpret_cast<char*>(&network_id_)) + sizeof(tag_));
+        reinterpret_cast<char*>(&height_) -
+        reinterpret_cast<char*>(&network_id_)) + sizeof(height_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -2016,20 +2013,6 @@ bool SyncResItem::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint32 tag = 6;
-      case 6: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
-          set_has_tag();
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 input, &tag_)));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -2084,11 +2067,6 @@ void SyncResItem::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(5, this->height(), output);
   }
 
-  // optional uint32 tag = 6;
-  if (cached_has_bits & 0x00000020u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(6, this->tag(), output);
-  }
-
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -2133,11 +2111,6 @@ void SyncResItem::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(5, this->height(), target);
   }
 
-  // optional uint32 tag = 6;
-  if (cached_has_bits & 0x00000020u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(6, this->tag(), target);
-  }
-
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -2155,7 +2128,7 @@ size_t SyncResItem::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 63u) {
+  if (_has_bits_[0 / 32] & 31u) {
     // optional bytes key = 1;
     if (has_key()) {
       total_size += 1 +
@@ -2191,13 +2164,6 @@ size_t SyncResItem::ByteSizeLong() const {
           this->height());
     }
 
-    // optional uint32 tag = 6;
-    if (has_tag()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->tag());
-    }
-
   }
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
@@ -2227,7 +2193,7 @@ void SyncResItem::MergeFrom(const SyncResItem& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 63u) {
+  if (cached_has_bits & 31u) {
     if (cached_has_bits & 0x00000001u) {
       set_has_key();
       key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.key_);
@@ -2244,9 +2210,6 @@ void SyncResItem::MergeFrom(const SyncResItem& from) {
     }
     if (cached_has_bits & 0x00000010u) {
       height_ = from.height_;
-    }
-    if (cached_has_bits & 0x00000020u) {
-      tag_ = from.tag_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -2283,7 +2246,6 @@ void SyncResItem::InternalSwap(SyncResItem* other) {
   swap(network_id_, other->network_id_);
   swap(pool_idx_, other->pool_idx_);
   swap(height_, other->height_);
-  swap(tag_, other->tag_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }

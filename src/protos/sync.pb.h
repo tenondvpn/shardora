@@ -916,13 +916,6 @@ class SyncResItem : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::uint64 height() const;
   void set_height(::google::protobuf::uint64 value);
 
-  // optional uint32 tag = 6;
-  bool has_tag() const;
-  void clear_tag();
-  static const int kTagFieldNumber = 6;
-  ::google::protobuf::uint32 tag() const;
-  void set_tag(::google::protobuf::uint32 value);
-
   // @@protoc_insertion_point(class_scope:zjchain.sync.protobuf.SyncResItem)
  private:
   void set_has_key();
@@ -935,8 +928,6 @@ class SyncResItem : public ::google::protobuf::Message /* @@protoc_insertion_poi
   void clear_has_pool_idx();
   void set_has_height();
   void clear_has_height();
-  void set_has_tag();
-  void clear_has_tag();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -946,7 +937,6 @@ class SyncResItem : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::uint32 network_id_;
   ::google::protobuf::uint32 pool_idx_;
   ::google::protobuf::uint64 height_;
-  ::google::protobuf::uint32 tag_;
   friend struct ::protobuf_protos_2fsync_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -1878,30 +1868,6 @@ inline void SyncResItem::set_height(::google::protobuf::uint64 value) {
   set_has_height();
   height_ = value;
   // @@protoc_insertion_point(field_set:zjchain.sync.protobuf.SyncResItem.height)
-}
-
-// optional uint32 tag = 6;
-inline bool SyncResItem::has_tag() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
-}
-inline void SyncResItem::set_has_tag() {
-  _has_bits_[0] |= 0x00000020u;
-}
-inline void SyncResItem::clear_has_tag() {
-  _has_bits_[0] &= ~0x00000020u;
-}
-inline void SyncResItem::clear_tag() {
-  tag_ = 0u;
-  clear_has_tag();
-}
-inline ::google::protobuf::uint32 SyncResItem::tag() const {
-  // @@protoc_insertion_point(field_get:zjchain.sync.protobuf.SyncResItem.tag)
-  return tag_;
-}
-inline void SyncResItem::set_tag(::google::protobuf::uint32 value) {
-  set_has_tag();
-  tag_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.sync.protobuf.SyncResItem.tag)
 }
 
 // -------------------------------------------------------------------

@@ -1369,21 +1369,6 @@ class ConsensusToTxsItem : public ::google::protobuf::Message /* @@protoc_insert
   ::std::string* release_to();
   void set_allocated_to(::std::string* to);
 
-  // optional bytes contract_from = 3;
-  bool has_contract_from() const;
-  void clear_contract_from();
-  static const int kContractFromFieldNumber = 3;
-  const ::std::string& contract_from() const;
-  void set_contract_from(const ::std::string& value);
-  #if LANG_CXX11
-  void set_contract_from(::std::string&& value);
-  #endif
-  void set_contract_from(const char* value);
-  void set_contract_from(const void* value, size_t size);
-  ::std::string* mutable_contract_from();
-  ::std::string* release_contract_from();
-  void set_allocated_contract_from(::std::string* contract_from);
-
   // optional uint64 balance = 2;
   bool has_balance() const;
   void clear_balance();
@@ -1397,14 +1382,11 @@ class ConsensusToTxsItem : public ::google::protobuf::Message /* @@protoc_insert
   void clear_has_to();
   void set_has_balance();
   void clear_has_balance();
-  void set_has_contract_from();
-  void clear_has_contract_from();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr to_;
-  ::google::protobuf::internal::ArenaStringPtr contract_from_;
   ::google::protobuf::uint64 balance_;
   friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
 };
@@ -7034,13 +7016,13 @@ inline void ConsensusToTxsItem::set_allocated_to(::std::string* to) {
 
 // optional uint64 balance = 2;
 inline bool ConsensusToTxsItem::has_balance() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void ConsensusToTxsItem::set_has_balance() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void ConsensusToTxsItem::clear_has_balance() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void ConsensusToTxsItem::clear_balance() {
   balance_ = GOOGLE_ULONGLONG(0);
@@ -7054,72 +7036,6 @@ inline void ConsensusToTxsItem::set_balance(::google::protobuf::uint64 value) {
   set_has_balance();
   balance_ = value;
   // @@protoc_insertion_point(field_set:zjchain.block.protobuf.ConsensusToTxsItem.balance)
-}
-
-// optional bytes contract_from = 3;
-inline bool ConsensusToTxsItem::has_contract_from() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void ConsensusToTxsItem::set_has_contract_from() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void ConsensusToTxsItem::clear_has_contract_from() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void ConsensusToTxsItem::clear_contract_from() {
-  contract_from_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_contract_from();
-}
-inline const ::std::string& ConsensusToTxsItem::contract_from() const {
-  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.ConsensusToTxsItem.contract_from)
-  return contract_from_.GetNoArena();
-}
-inline void ConsensusToTxsItem::set_contract_from(const ::std::string& value) {
-  set_has_contract_from();
-  contract_from_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.ConsensusToTxsItem.contract_from)
-}
-#if LANG_CXX11
-inline void ConsensusToTxsItem::set_contract_from(::std::string&& value) {
-  set_has_contract_from();
-  contract_from_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.block.protobuf.ConsensusToTxsItem.contract_from)
-}
-#endif
-inline void ConsensusToTxsItem::set_contract_from(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_contract_from();
-  contract_from_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.block.protobuf.ConsensusToTxsItem.contract_from)
-}
-inline void ConsensusToTxsItem::set_contract_from(const void* value, size_t size) {
-  set_has_contract_from();
-  contract_from_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.block.protobuf.ConsensusToTxsItem.contract_from)
-}
-inline ::std::string* ConsensusToTxsItem::mutable_contract_from() {
-  set_has_contract_from();
-  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.ConsensusToTxsItem.contract_from)
-  return contract_from_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* ConsensusToTxsItem::release_contract_from() {
-  // @@protoc_insertion_point(field_release:zjchain.block.protobuf.ConsensusToTxsItem.contract_from)
-  if (!has_contract_from()) {
-    return NULL;
-  }
-  clear_has_contract_from();
-  return contract_from_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void ConsensusToTxsItem::set_allocated_contract_from(::std::string* contract_from) {
-  if (contract_from != NULL) {
-    set_has_contract_from();
-  } else {
-    clear_has_contract_from();
-  }
-  contract_from_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), contract_from);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.ConsensusToTxsItem.contract_from)
 }
 
 // -------------------------------------------------------------------

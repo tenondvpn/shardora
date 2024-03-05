@@ -3,32 +3,27 @@ syntax = "proto2";
 package zjchain.dht.protobuf;
 
 message BootstrapRequest {
-    optional bytes pubkey = 1;
-    optional string public_ip = 2;
-    optional int32 public_port = 3;
+    optional string public_ip = 1;
+    optional int32 public_port = 2;
 }
 
 message BootstrapResponse {
-    optional bytes pubkey = 1;
-    optional string public_ip = 2;
-    optional int32 public_port = 3;
+    optional string public_ip = 1;
+    optional int32 public_port = 2;
 }
 
 message NodeInfo {
     optional bytes public_ip = 1;
     optional int32 public_port = 2;
     optional bytes pubkey = 3;
-    optional int32 sharding_id = 4;
-    optional bytes id = 5;
 }
 
 message RefreshNeighborsRequest {
     optional uint32 count = 1;
     repeated uint64 bloomfilter = 2;
-    optional bytes pubkey = 3;
-    optional string public_ip = 4;
-    optional int32 public_port = 5;
-    repeated bytes ids = 6;
+    optional string public_ip = 3;
+    optional int32 public_port = 4;
+    repeated bytes ids = 5;
 }
 
 message RefreshNeighborsResponse {
@@ -44,11 +39,9 @@ message HeartbeatResponse {
 }
 
 message ConnectReqeust {
-    optional bytes pubkey = 1;
-    optional bool is_response = 2;
-    optional string public_ip = 3;
-    optional int32 public_port = 4;
-    optional bytes id = 5;
+    optional bool is_response = 1;
+    optional string public_ip = 2;
+    optional int32 public_port = 3;
 }
 
 message TimerRequest {

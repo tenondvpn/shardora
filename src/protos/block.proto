@@ -61,7 +61,6 @@ message Block {
 message ConsensusToTxsItem {
     optional bytes to = 1;
     optional uint64 balance = 2;
-    optional bytes contract_from = 3;
 }
 
 message ConsensusToTxs {

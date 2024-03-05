@@ -19,6 +19,7 @@
 #include "protos/sync.pb.h"
 #include "protos/timeblock.pb.h"
 #include "protos/tx_storage_key.h"
+#include "protos/ws.pb.h"
 #include "security/security.h"
 
 namespace zjchain {
@@ -71,6 +72,9 @@ static const std::string kCrossCheckHeightPrefix = "aj\x01";
 static const std::string kElectHeightWithBlsCommonPkPrefix = "ak\x01";
 static const std::string kBftInvalidHeightHashs = "al\x01";
 static const std::string kTempBftInvalidHeightHashs = "am\x01";
+static const std::string kBandwidthPrefix = "an\x01";
+static const std::string kC2cSelloutPrefix = "ao\x01";
+static const std::string kC2cSellorderPrefix = "ap\x01";
 
 class PrefixDb {
 public:
@@ -109,7 +113,6 @@ public:
             const address::protobuf::AddressInfo& addr_info,
             db::DbWriteBatch& db_batch) {
         db_batch.Put(kAddressPrefix + addr, addr_info.SerializeAsString());
-        ZJC_INFO("success add addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
     }
 
     void AddAddressInfo(const std::string& addr, const std::string& val) {
@@ -1038,7 +1041,7 @@ public:
         db_batch.Put(key, val);
     }
 
-    void GetElectNodeMinStoke(uint32_t sharding_id, const std::string& id, uint64_t* stoke) {
+    void GetElectNodeMinStoke(uint32_t sharding_id, const std::string& id, uint64_t* stake) {
         std::string key;
         key.reserve(64);
         key.append(kSaveLatestElectHeightPrefix);
@@ -1068,8 +1071,8 @@ public:
             }
 
             uint64_t* balance = (uint64_t*)val.c_str();
-            if (balance[0] < *stoke || *stoke == 0) {
-                *stoke = balance[0];
+            if (balance[0] < *stake || *stake == 0) {
+                *stake = balance[0];
             }
         }
     }
@@ -1582,6 +1585,130 @@ public:
             shard_id, pool_index, height, common::Encode::HexEncode(val).c_str());
         return true;
     }
+
+    bool SaveIdBandwidth(
+            const std::string& id,
+            uint64_t bw,
+            uint64_t* all_bw) {
+        std::string key;
+        key.reserve(128);
+        key.append(kBandwidthPrefix);
+        key.append(id);
+        ws::protobuf::BandwidthItem item;
+        uint64_t day = common::TimeUtils::TimestampDays();
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (st.ok()) {
+            if (item.ParseFromString(val)) {
+                if (item.timestamp() == day) {
+                    bw += item.bandwidth();
+                }
+            }
+        }
+
+        *all_bw = bw;
+        item.set_bandwidth(*all_bw);
+        item.set_timestamp(day);
+        auto pst = db_->Put(key, item.SerializeAsString());
+        if (!pst.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+
+        return true;
+    }
+
+    void SaveSellout(
+            const std::string& id,
+            const ws::protobuf::SellInfo& sell_info) {
+        std::string key;
+        key.reserve(128);
+        key.append(kC2cSelloutPrefix);
+        key.append(id);
+        auto pst = db_->Put(key, sell_info.SerializeAsString());
+        if (!pst.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+    }
+
+    void GetAllSellout(std::vector<std::shared_ptr<ws::protobuf::SellInfo>>* sells) {
+        std::string key;
+        key.reserve(128);
+        key.append(kC2cSelloutPrefix);
+        std::map<std::string, std::string> sell_map;
+        db_->GetAllPrefix(key, sell_map);
+        for (auto iter = sell_map.begin(); iter != sell_map.end(); ++iter) {
+            auto sell_ptr = std::make_shared<ws::protobuf::SellInfo>();
+            auto& sell_info = *sell_ptr;
+            if (!sell_info.ParseFromString(iter->second)) {
+                continue;
+            }
+
+            sells->push_back(sell_ptr);
+        }
+    }
+
+    bool GetSellout(
+            const std::string& id,
+            ws::protobuf::SellInfo* sell_info) {
+        std::string key;
+        key.reserve(128);
+        key.append(kC2cSelloutPrefix);
+        key.append(id);
+        std::string val;
+        auto pst = db_->Get(key, &val);
+        if (!pst.ok()) {
+            return false;
+        }
+
+        return sell_info->ParseFromString(val);
+    }
+
+    void SaveSellOrder(
+            const std::string& id,
+            const ws::protobuf::SellInfo& sell_info) {
+        std::string key;
+        key.reserve(128);
+        key.append(kC2cSellorderPrefix);
+        key.append(id);
+        auto pst = db_->Put(key, sell_info.SerializeAsString());
+        if (!pst.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+    }
+
+    void GetAllOrder(std::vector<std::shared_ptr<ws::protobuf::SellInfo>>* orders) {
+        std::string key;
+        key.reserve(128);
+        key.append(kC2cSellorderPrefix);
+        std::map<std::string, std::string> sell_map;
+        db_->GetAllPrefix(key, sell_map);
+        for (auto iter = sell_map.begin(); iter != sell_map.end(); ++iter) {
+            auto sell_ptr = std::make_shared<ws::protobuf::SellInfo>();
+            auto& sell_info = *sell_ptr;
+            if (!sell_info.ParseFromString(iter->second)) {
+                continue;
+            }
+
+            orders->push_back(sell_ptr);
+        }
+    }
+
+    bool GetOrder(
+            const std::string& id,
+            ws::protobuf::SellInfo* sell_info) {
+        std::string key;
+        key.reserve(128);
+        key.append(kC2cSellorderPrefix);
+        key.append(id);
+        std::string val;
+        auto pst = db_->Get(key, &val);
+        if (!pst.ok()) {
+            return false;
+        }
+
+        return sell_info->ParseFromString(val);
+    }
+
 
 private:
     void DumpGidToDb(uint8_t thread_idx) {

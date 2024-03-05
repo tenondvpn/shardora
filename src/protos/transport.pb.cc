@@ -74,6 +74,11 @@ class BroadcastParamDefaultTypeInternal {
   ::google::protobuf::internal::ExplicitlyConstructed<BroadcastParam>
       _instance;
 } _BroadcastParam_default_instance_;
+class OldHeaderDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<OldHeader>
+      _instance;
+} _OldHeader_default_instance_;
 class HeaderDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<Header>
@@ -97,6 +102,41 @@ static void InitDefaultsBroadcastParam() {
 ::google::protobuf::internal::SCCInfo<0> scc_info_BroadcastParam =
     {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsBroadcastParam}, {}};
 
+static void InitDefaultsOldHeader() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::zjchain::transport::protobuf::_OldHeader_default_instance_;
+    new (ptr) ::zjchain::transport::protobuf::OldHeader();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::zjchain::transport::protobuf::OldHeader::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<21> scc_info_OldHeader =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 21, InitDefaultsOldHeader}, {
+      &protobuf_protos_2ftransport_2eproto::scc_info_BroadcastParam.base,
+      &protobuf_protos_2fnetwork_2eproto::scc_info_NetworkMessage.base,
+      &protobuf_protos_2fdht_2eproto::scc_info_DhtMessage.base,
+      &protobuf_protos_2fbls_2eproto::scc_info_BlsMessage.base,
+      &protobuf_protos_2fpools_2eproto::scc_info_TxMessage.base,
+      &protobuf_protos_2fcontract_2eproto::scc_info_ContractMessage.base,
+      &protobuf_protos_2felect_2eproto::scc_info_ElectMessage.base,
+      &protobuf_protos_2fzbft_2eproto::scc_info_ZbftMessage.base,
+      &protobuf_protos_2fblock_2eproto::scc_info_BlockMessage.base,
+      &protobuf_protos_2fpools_2eproto::scc_info_ToTxHeights.base,
+      &protobuf_protos_2fsync_2eproto::scc_info_SyncInfo.base,
+      &protobuf_protos_2fsync_2eproto::scc_info_SyncMessage.base,
+      &protobuf_protos_2fvss_2eproto::scc_info_VssMessage.base,
+      &protobuf_protos_2fblock_2eproto::scc_info_CrossShardingTosMessage.base,
+      &protobuf_protos_2fblock_2eproto::scc_info_CrossShardingStatisticMessage.base,
+      &protobuf_protos_2fblock_2eproto::scc_info_ElectBlockMessage.base,
+      &protobuf_protos_2finit_2eproto::scc_info_InitMessage.base,
+      &protobuf_protos_2fpools_2eproto::scc_info_SyncPoolsMaxHeight.base,
+      &protobuf_protos_2fblock_2eproto::scc_info_Block.base,
+      &protobuf_protos_2fpools_2eproto::scc_info_InvalidBftMessage.base,
+      &protobuf_protos_2fc2c_2eproto::scc_info_C2cMessage.base,}};
+
 static void InitDefaultsHeader() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -108,9 +148,8 @@ static void InitDefaultsHeader() {
   ::zjchain::transport::protobuf::Header::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<21> scc_info_Header =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 21, InitDefaultsHeader}, {
-      &protobuf_protos_2ftransport_2eproto::scc_info_BroadcastParam.base,
+::google::protobuf::internal::SCCInfo<20> scc_info_Header =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 20, InitDefaultsHeader}, {
       &protobuf_protos_2fnetwork_2eproto::scc_info_NetworkMessage.base,
       &protobuf_protos_2fdht_2eproto::scc_info_DhtMessage.base,
       &protobuf_protos_2fbls_2eproto::scc_info_BlsMessage.base,
@@ -134,10 +173,11 @@ static void InitDefaultsHeader() {
 
 void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_BroadcastParam.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_OldHeader.base);
   ::google::protobuf::internal::InitSCC(&scc_info_Header.base);
 }
 
-::google::protobuf::Metadata file_level_metadata[2];
+::google::protobuf::Metadata file_level_metadata[3];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::BroadcastParam, _has_bits_),
@@ -173,6 +213,71 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,
   8,
   12,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, src_sharding_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, des_dht_key_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, hop_count_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, debug_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, hash64_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, type_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, broadcast_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, sign_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, version_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, network_proto_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, dht_proto_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, bls_proto_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, tx_proto_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, contract_proto_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, elect_proto_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, zbft_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, block_proto_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, to_tx_heights_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, sync_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, sync_proto_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, vss_proto_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, cross_tos_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, cross_statistic_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, elect_block_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, init_proto_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, sync_heights_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, block_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, invalid_bfts_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, from_public_port_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::OldHeader, c2c_),
+  23,
+  0,
+  24,
+  1,
+  25,
+  26,
+  3,
+  2,
+  27,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  ~0u,
+  28,
+  22,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -208,15 +313,16 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, invalid_bfts_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, from_public_port_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, c2c_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, pubkey_),
   23,
   0,
   24,
   1,
   25,
   26,
-  3,
-  2,
   27,
+  2,
+  28,
   4,
   5,
   6,
@@ -236,16 +342,19 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   20,
   21,
   ~0u,
-  28,
+  29,
   22,
+  3,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 19, sizeof(::zjchain::transport::protobuf::BroadcastParam)},
-  { 33, 68, sizeof(::zjchain::transport::protobuf::Header)},
+  { 33, 68, sizeof(::zjchain::transport::protobuf::OldHeader)},
+  { 98, 134, sizeof(::zjchain::transport::protobuf::Header)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::transport::protobuf::_BroadcastParam_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::transport::protobuf::_OldHeader_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::transport::protobuf::_Header_default_instance_),
 };
 
@@ -264,7 +373,7 @@ void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 2);
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 3);
 }
 
 void AddDescriptorsImpl() {
@@ -284,46 +393,81 @@ void AddDescriptorsImpl() {
       "p\030\007 \001(\002\022\027\n\014hop_to_layer\030\010 \001(\r:\0011\022\016\n\006head"
       "er\030\t \001(\014\022\014\n\004body\030\n \001(\014\022\023\n\013net_crossed\030\013 "
       "\001(\010\022\023\n\013bloomfilter\030\014 \003(\004\022\024\n\tevil_rate\030\r "
-      "\001(\002:\0010\022\036\n\023ign_bloomfilter_hop\030\016 \001(\r:\0011\"\204"
-      "\013\n\006Header\022\027\n\017src_sharding_id\030\001 \001(\005\022\023\n\013de"
-      "s_dht_key\030\002 \001(\014\022\024\n\thop_count\030\003 \001(\r:\0010\022\r\n"
-      "\005debug\030\004 \001(\014\022\016\n\006hash64\030\005 \001(\004\022\014\n\004type\030\006 \001"
-      "(\r\022=\n\tbroadcast\030\007 \001(\0132*.zjchain.transpor"
-      "t.protobuf.BroadcastParam\022\014\n\004sign\030\010 \001(\014\022"
-      "\022\n\007version\030\t \001(\005:\0010\022\?\n\rnetwork_proto\030\n \001"
-      "(\0132(.zjchain.network.protobuf.NetworkMes"
-      "sage\0223\n\tdht_proto\030\013 \001(\0132 .zjchain.dht.pr"
-      "otobuf.DhtMessage\0223\n\tbls_proto\030\014 \001(\0132 .z"
-      "jchain.bls.protobuf.BlsMessage\0223\n\010tx_pro"
-      "to\030\r \001(\0132!.zjchain.pools.protobuf.TxMess"
-      "age\022B\n\016contract_proto\030\016 \001(\0132*.zjchain.co"
-      "ntract.protobuf.ContractMessage\0229\n\013elect"
-      "_proto\030\017 \001(\0132$.zjchain.elect.protobuf.El"
-      "ectMessage\0220\n\004zbft\030\020 \001(\0132\".zjchain.zbft."
-      "protobuf.ZbftMessage\0229\n\013block_proto\030\021 \001("
-      "\0132$.zjchain.block.protobuf.BlockMessage\022"
-      ":\n\rto_tx_heights\030\022 \001(\0132#.zjchain.pools.p"
-      "rotobuf.ToTxHeights\022-\n\004sync\030\023 \001(\0132\037.zjch"
-      "ain.sync.protobuf.SyncInfo\0226\n\nsync_proto"
-      "\030\024 \001(\0132\".zjchain.sync.protobuf.SyncMessa"
-      "ge\0223\n\tvss_proto\030\025 \001(\0132 .zjchain.vss.prot"
-      "obuf.VssMessage\022B\n\tcross_tos\030\026 \001(\0132/.zjc"
-      "hain.block.protobuf.CrossShardingTosMess"
-      "age\022N\n\017cross_statistic\030\027 \001(\01325.zjchain.b"
-      "lock.protobuf.CrossShardingStatisticMess"
-      "age\022>\n\013elect_block\030\030 \001(\0132).zjchain.block"
-      ".protobuf.ElectBlockMessage\0226\n\ninit_prot"
-      "o\030\031 \001(\0132\".zjchain.init.protobuf.InitMess"
-      "age\022@\n\014sync_heights\030\032 \001(\0132*.zjchain.pool"
-      "s.protobuf.SyncPoolsMaxHeight\022,\n\005block\030\033"
-      " \001(\0132\035.zjchain.block.protobuf.Block\022\?\n\014i"
-      "nvalid_bfts\030\034 \003(\0132).zjchain.pools.protob"
-      "uf.InvalidBftMessage\022\030\n\020from_public_port"
-      "\030\035 \001(\r\022-\n\003c2c\030\036 \001(\0132 .zjchain.c2c.protob"
-      "uf.C2cMessage"
+      "\001(\002:\0010\022\036\n\023ign_bloomfilter_hop\030\016 \001(\r:\0011\"\207"
+      "\013\n\tOldHeader\022\027\n\017src_sharding_id\030\001 \001(\005\022\023\n"
+      "\013des_dht_key\030\002 \001(\014\022\024\n\thop_count\030\003 \001(\r:\0010"
+      "\022\r\n\005debug\030\004 \001(\014\022\016\n\006hash64\030\005 \001(\004\022\014\n\004type\030"
+      "\006 \001(\r\022=\n\tbroadcast\030\007 \001(\0132*.zjchain.trans"
+      "port.protobuf.BroadcastParam\022\014\n\004sign\030\010 \001"
+      "(\014\022\022\n\007version\030\t \001(\005:\0010\022\?\n\rnetwork_proto\030"
+      "\n \001(\0132(.zjchain.network.protobuf.Network"
+      "Message\0223\n\tdht_proto\030\013 \001(\0132 .zjchain.dht"
+      ".protobuf.DhtMessage\0223\n\tbls_proto\030\014 \001(\0132"
+      " .zjchain.bls.protobuf.BlsMessage\0223\n\010tx_"
+      "proto\030\r \001(\0132!.zjchain.pools.protobuf.TxM"
+      "essage\022B\n\016contract_proto\030\016 \001(\0132*.zjchain"
+      ".contract.protobuf.ContractMessage\0229\n\013el"
+      "ect_proto\030\017 \001(\0132$.zjchain.elect.protobuf"
+      ".ElectMessage\0220\n\004zbft\030\020 \001(\0132\".zjchain.zb"
+      "ft.protobuf.ZbftMessage\0229\n\013block_proto\030\021"
+      " \001(\0132$.zjchain.block.protobuf.BlockMessa"
+      "ge\022:\n\rto_tx_heights\030\022 \001(\0132#.zjchain.pool"
+      "s.protobuf.ToTxHeights\022-\n\004sync\030\023 \001(\0132\037.z"
+      "jchain.sync.protobuf.SyncInfo\0226\n\nsync_pr"
+      "oto\030\024 \001(\0132\".zjchain.sync.protobuf.SyncMe"
+      "ssage\0223\n\tvss_proto\030\025 \001(\0132 .zjchain.vss.p"
+      "rotobuf.VssMessage\022B\n\tcross_tos\030\026 \001(\0132/."
+      "zjchain.block.protobuf.CrossShardingTosM"
+      "essage\022N\n\017cross_statistic\030\027 \001(\01325.zjchai"
+      "n.block.protobuf.CrossShardingStatisticM"
+      "essage\022>\n\013elect_block\030\030 \001(\0132).zjchain.bl"
+      "ock.protobuf.ElectBlockMessage\0226\n\ninit_p"
+      "roto\030\031 \001(\0132\".zjchain.init.protobuf.InitM"
+      "essage\022@\n\014sync_heights\030\032 \001(\0132*.zjchain.p"
+      "ools.protobuf.SyncPoolsMaxHeight\022,\n\005bloc"
+      "k\030\033 \001(\0132\035.zjchain.block.protobuf.Block\022\?"
+      "\n\014invalid_bfts\030\034 \003(\0132).zjchain.pools.pro"
+      "tobuf.InvalidBftMessage\022\030\n\020from_public_p"
+      "ort\030\035 \001(\r\022-\n\003c2c\030\036 \001(\0132 .zjchain.c2c.pro"
+      "tobuf.C2cMessage\"\350\n\n\006Header\022\027\n\017src_shard"
+      "ing_id\030\001 \001(\005\022\023\n\013des_dht_key\030\002 \001(\014\022\024\n\thop"
+      "_count\030\003 \001(\r:\0010\022\r\n\005debug\030\004 \001(\014\022\016\n\006hash64"
+      "\030\005 \001(\004\022\014\n\004type\030\006 \001(\r\022\021\n\tbroadcast\030\007 \001(\010\022"
+      "\014\n\004sign\030\010 \001(\014\022\022\n\007version\030\t \001(\005:\0010\022\?\n\rnet"
+      "work_proto\030\n \001(\0132(.zjchain.network.proto"
+      "buf.NetworkMessage\0223\n\tdht_proto\030\013 \001(\0132 ."
+      "zjchain.dht.protobuf.DhtMessage\0223\n\tbls_p"
+      "roto\030\014 \001(\0132 .zjchain.bls.protobuf.BlsMes"
+      "sage\0223\n\010tx_proto\030\r \001(\0132!.zjchain.pools.p"
+      "rotobuf.TxMessage\022B\n\016contract_proto\030\016 \001("
+      "\0132*.zjchain.contract.protobuf.ContractMe"
+      "ssage\0229\n\013elect_proto\030\017 \001(\0132$.zjchain.ele"
+      "ct.protobuf.ElectMessage\0220\n\004zbft\030\020 \001(\0132\""
+      ".zjchain.zbft.protobuf.ZbftMessage\0229\n\013bl"
+      "ock_proto\030\021 \001(\0132$.zjchain.block.protobuf"
+      ".BlockMessage\022:\n\rto_tx_heights\030\022 \001(\0132#.z"
+      "jchain.pools.protobuf.ToTxHeights\022-\n\004syn"
+      "c\030\023 \001(\0132\037.zjchain.sync.protobuf.SyncInfo"
+      "\0226\n\nsync_proto\030\024 \001(\0132\".zjchain.sync.prot"
+      "obuf.SyncMessage\0223\n\tvss_proto\030\025 \001(\0132 .zj"
+      "chain.vss.protobuf.VssMessage\022B\n\tcross_t"
+      "os\030\026 \001(\0132/.zjchain.block.protobuf.CrossS"
+      "hardingTosMessage\022N\n\017cross_statistic\030\027 \001"
+      "(\01325.zjchain.block.protobuf.CrossShardin"
+      "gStatisticMessage\022>\n\013elect_block\030\030 \001(\0132)"
+      ".zjchain.block.protobuf.ElectBlockMessag"
+      "e\0226\n\ninit_proto\030\031 \001(\0132\".zjchain.init.pro"
+      "tobuf.InitMessage\022@\n\014sync_heights\030\032 \001(\0132"
+      "*.zjchain.pools.protobuf.SyncPoolsMaxHei"
+      "ght\022,\n\005block\030\033 \001(\0132\035.zjchain.block.proto"
+      "buf.Block\022\?\n\014invalid_bfts\030\034 \003(\0132).zjchai"
+      "n.pools.protobuf.InvalidBftMessage\022\030\n\020fr"
+      "om_public_port\030\035 \001(\r\022-\n\003c2c\030\036 \001(\0132 .zjch"
+      "ain.c2c.protobuf.C2cMessage\022\016\n\006pubkey\030\037 "
+      "\001(\014"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 2013);
+      descriptor, 3403);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/transport.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fnetwork_2eproto::AddDescriptors();
@@ -1111,168 +1255,168 @@ void BroadcastParam::InternalSwap(BroadcastParam* other) {
 
 // ===================================================================
 
-void Header::InitAsDefaultInstance() {
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->broadcast_ = const_cast< ::zjchain::transport::protobuf::BroadcastParam*>(
+void OldHeader::InitAsDefaultInstance() {
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->broadcast_ = const_cast< ::zjchain::transport::protobuf::BroadcastParam*>(
       ::zjchain::transport::protobuf::BroadcastParam::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->network_proto_ = const_cast< ::zjchain::network::protobuf::NetworkMessage*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->network_proto_ = const_cast< ::zjchain::network::protobuf::NetworkMessage*>(
       ::zjchain::network::protobuf::NetworkMessage::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->dht_proto_ = const_cast< ::zjchain::dht::protobuf::DhtMessage*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->dht_proto_ = const_cast< ::zjchain::dht::protobuf::DhtMessage*>(
       ::zjchain::dht::protobuf::DhtMessage::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->bls_proto_ = const_cast< ::zjchain::bls::protobuf::BlsMessage*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->bls_proto_ = const_cast< ::zjchain::bls::protobuf::BlsMessage*>(
       ::zjchain::bls::protobuf::BlsMessage::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->tx_proto_ = const_cast< ::zjchain::pools::protobuf::TxMessage*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->tx_proto_ = const_cast< ::zjchain::pools::protobuf::TxMessage*>(
       ::zjchain::pools::protobuf::TxMessage::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->contract_proto_ = const_cast< ::zjchain::contract::protobuf::ContractMessage*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->contract_proto_ = const_cast< ::zjchain::contract::protobuf::ContractMessage*>(
       ::zjchain::contract::protobuf::ContractMessage::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->elect_proto_ = const_cast< ::zjchain::elect::protobuf::ElectMessage*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->elect_proto_ = const_cast< ::zjchain::elect::protobuf::ElectMessage*>(
       ::zjchain::elect::protobuf::ElectMessage::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->zbft_ = const_cast< ::zjchain::zbft::protobuf::ZbftMessage*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->zbft_ = const_cast< ::zjchain::zbft::protobuf::ZbftMessage*>(
       ::zjchain::zbft::protobuf::ZbftMessage::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->block_proto_ = const_cast< ::zjchain::block::protobuf::BlockMessage*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->block_proto_ = const_cast< ::zjchain::block::protobuf::BlockMessage*>(
       ::zjchain::block::protobuf::BlockMessage::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->to_tx_heights_ = const_cast< ::zjchain::pools::protobuf::ToTxHeights*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->to_tx_heights_ = const_cast< ::zjchain::pools::protobuf::ToTxHeights*>(
       ::zjchain::pools::protobuf::ToTxHeights::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->sync_ = const_cast< ::zjchain::sync::protobuf::SyncInfo*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->sync_ = const_cast< ::zjchain::sync::protobuf::SyncInfo*>(
       ::zjchain::sync::protobuf::SyncInfo::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->sync_proto_ = const_cast< ::zjchain::sync::protobuf::SyncMessage*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->sync_proto_ = const_cast< ::zjchain::sync::protobuf::SyncMessage*>(
       ::zjchain::sync::protobuf::SyncMessage::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->vss_proto_ = const_cast< ::zjchain::vss::protobuf::VssMessage*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->vss_proto_ = const_cast< ::zjchain::vss::protobuf::VssMessage*>(
       ::zjchain::vss::protobuf::VssMessage::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->cross_tos_ = const_cast< ::zjchain::block::protobuf::CrossShardingTosMessage*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->cross_tos_ = const_cast< ::zjchain::block::protobuf::CrossShardingTosMessage*>(
       ::zjchain::block::protobuf::CrossShardingTosMessage::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->cross_statistic_ = const_cast< ::zjchain::block::protobuf::CrossShardingStatisticMessage*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->cross_statistic_ = const_cast< ::zjchain::block::protobuf::CrossShardingStatisticMessage*>(
       ::zjchain::block::protobuf::CrossShardingStatisticMessage::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->elect_block_ = const_cast< ::zjchain::block::protobuf::ElectBlockMessage*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->elect_block_ = const_cast< ::zjchain::block::protobuf::ElectBlockMessage*>(
       ::zjchain::block::protobuf::ElectBlockMessage::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->init_proto_ = const_cast< ::zjchain::init::protobuf::InitMessage*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->init_proto_ = const_cast< ::zjchain::init::protobuf::InitMessage*>(
       ::zjchain::init::protobuf::InitMessage::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->sync_heights_ = const_cast< ::zjchain::pools::protobuf::SyncPoolsMaxHeight*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->sync_heights_ = const_cast< ::zjchain::pools::protobuf::SyncPoolsMaxHeight*>(
       ::zjchain::pools::protobuf::SyncPoolsMaxHeight::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->block_ = const_cast< ::zjchain::block::protobuf::Block*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->block_ = const_cast< ::zjchain::block::protobuf::Block*>(
       ::zjchain::block::protobuf::Block::internal_default_instance());
-  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->c2c_ = const_cast< ::zjchain::c2c::protobuf::C2cMessage*>(
+  ::zjchain::transport::protobuf::_OldHeader_default_instance_._instance.get_mutable()->c2c_ = const_cast< ::zjchain::c2c::protobuf::C2cMessage*>(
       ::zjchain::c2c::protobuf::C2cMessage::internal_default_instance());
 }
-void Header::clear_network_proto() {
+void OldHeader::clear_network_proto() {
   if (network_proto_ != NULL) network_proto_->Clear();
   clear_has_network_proto();
 }
-void Header::clear_dht_proto() {
+void OldHeader::clear_dht_proto() {
   if (dht_proto_ != NULL) dht_proto_->Clear();
   clear_has_dht_proto();
 }
-void Header::clear_bls_proto() {
+void OldHeader::clear_bls_proto() {
   if (bls_proto_ != NULL) bls_proto_->Clear();
   clear_has_bls_proto();
 }
-void Header::clear_tx_proto() {
+void OldHeader::clear_tx_proto() {
   if (tx_proto_ != NULL) tx_proto_->Clear();
   clear_has_tx_proto();
 }
-void Header::clear_contract_proto() {
+void OldHeader::clear_contract_proto() {
   if (contract_proto_ != NULL) contract_proto_->Clear();
   clear_has_contract_proto();
 }
-void Header::clear_elect_proto() {
+void OldHeader::clear_elect_proto() {
   if (elect_proto_ != NULL) elect_proto_->Clear();
   clear_has_elect_proto();
 }
-void Header::clear_zbft() {
+void OldHeader::clear_zbft() {
   if (zbft_ != NULL) zbft_->Clear();
   clear_has_zbft();
 }
-void Header::clear_block_proto() {
+void OldHeader::clear_block_proto() {
   if (block_proto_ != NULL) block_proto_->Clear();
   clear_has_block_proto();
 }
-void Header::clear_to_tx_heights() {
+void OldHeader::clear_to_tx_heights() {
   if (to_tx_heights_ != NULL) to_tx_heights_->Clear();
   clear_has_to_tx_heights();
 }
-void Header::clear_sync() {
+void OldHeader::clear_sync() {
   if (sync_ != NULL) sync_->Clear();
   clear_has_sync();
 }
-void Header::clear_sync_proto() {
+void OldHeader::clear_sync_proto() {
   if (sync_proto_ != NULL) sync_proto_->Clear();
   clear_has_sync_proto();
 }
-void Header::clear_vss_proto() {
+void OldHeader::clear_vss_proto() {
   if (vss_proto_ != NULL) vss_proto_->Clear();
   clear_has_vss_proto();
 }
-void Header::clear_cross_tos() {
+void OldHeader::clear_cross_tos() {
   if (cross_tos_ != NULL) cross_tos_->Clear();
   clear_has_cross_tos();
 }
-void Header::clear_cross_statistic() {
+void OldHeader::clear_cross_statistic() {
   if (cross_statistic_ != NULL) cross_statistic_->Clear();
   clear_has_cross_statistic();
 }
-void Header::clear_elect_block() {
+void OldHeader::clear_elect_block() {
   if (elect_block_ != NULL) elect_block_->Clear();
   clear_has_elect_block();
 }
-void Header::clear_init_proto() {
+void OldHeader::clear_init_proto() {
   if (init_proto_ != NULL) init_proto_->Clear();
   clear_has_init_proto();
 }
-void Header::clear_sync_heights() {
+void OldHeader::clear_sync_heights() {
   if (sync_heights_ != NULL) sync_heights_->Clear();
   clear_has_sync_heights();
 }
-void Header::clear_block() {
+void OldHeader::clear_block() {
   if (block_ != NULL) block_->Clear();
   clear_has_block();
 }
-void Header::clear_invalid_bfts() {
+void OldHeader::clear_invalid_bfts() {
   invalid_bfts_.Clear();
 }
-void Header::clear_c2c() {
+void OldHeader::clear_c2c() {
   if (c2c_ != NULL) c2c_->Clear();
   clear_has_c2c();
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Header::kSrcShardingIdFieldNumber;
-const int Header::kDesDhtKeyFieldNumber;
-const int Header::kHopCountFieldNumber;
-const int Header::kDebugFieldNumber;
-const int Header::kHash64FieldNumber;
-const int Header::kTypeFieldNumber;
-const int Header::kBroadcastFieldNumber;
-const int Header::kSignFieldNumber;
-const int Header::kVersionFieldNumber;
-const int Header::kNetworkProtoFieldNumber;
-const int Header::kDhtProtoFieldNumber;
-const int Header::kBlsProtoFieldNumber;
-const int Header::kTxProtoFieldNumber;
-const int Header::kContractProtoFieldNumber;
-const int Header::kElectProtoFieldNumber;
-const int Header::kZbftFieldNumber;
-const int Header::kBlockProtoFieldNumber;
-const int Header::kToTxHeightsFieldNumber;
-const int Header::kSyncFieldNumber;
-const int Header::kSyncProtoFieldNumber;
-const int Header::kVssProtoFieldNumber;
-const int Header::kCrossTosFieldNumber;
-const int Header::kCrossStatisticFieldNumber;
-const int Header::kElectBlockFieldNumber;
-const int Header::kInitProtoFieldNumber;
-const int Header::kSyncHeightsFieldNumber;
-const int Header::kBlockFieldNumber;
-const int Header::kInvalidBftsFieldNumber;
-const int Header::kFromPublicPortFieldNumber;
-const int Header::kC2CFieldNumber;
+const int OldHeader::kSrcShardingIdFieldNumber;
+const int OldHeader::kDesDhtKeyFieldNumber;
+const int OldHeader::kHopCountFieldNumber;
+const int OldHeader::kDebugFieldNumber;
+const int OldHeader::kHash64FieldNumber;
+const int OldHeader::kTypeFieldNumber;
+const int OldHeader::kBroadcastFieldNumber;
+const int OldHeader::kSignFieldNumber;
+const int OldHeader::kVersionFieldNumber;
+const int OldHeader::kNetworkProtoFieldNumber;
+const int OldHeader::kDhtProtoFieldNumber;
+const int OldHeader::kBlsProtoFieldNumber;
+const int OldHeader::kTxProtoFieldNumber;
+const int OldHeader::kContractProtoFieldNumber;
+const int OldHeader::kElectProtoFieldNumber;
+const int OldHeader::kZbftFieldNumber;
+const int OldHeader::kBlockProtoFieldNumber;
+const int OldHeader::kToTxHeightsFieldNumber;
+const int OldHeader::kSyncFieldNumber;
+const int OldHeader::kSyncProtoFieldNumber;
+const int OldHeader::kVssProtoFieldNumber;
+const int OldHeader::kCrossTosFieldNumber;
+const int OldHeader::kCrossStatisticFieldNumber;
+const int OldHeader::kElectBlockFieldNumber;
+const int OldHeader::kInitProtoFieldNumber;
+const int OldHeader::kSyncHeightsFieldNumber;
+const int OldHeader::kBlockFieldNumber;
+const int OldHeader::kInvalidBftsFieldNumber;
+const int OldHeader::kFromPublicPortFieldNumber;
+const int OldHeader::kC2CFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
-Header::Header()
+OldHeader::OldHeader()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   ::google::protobuf::internal::InitSCC(
-      &protobuf_protos_2ftransport_2eproto::scc_info_Header.base);
+      &protobuf_protos_2ftransport_2eproto::scc_info_OldHeader.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.transport.protobuf.Header)
+  // @@protoc_insertion_point(constructor:zjchain.transport.protobuf.OldHeader)
 }
-Header::Header(const Header& from)
+OldHeader::OldHeader(const OldHeader& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_),
@@ -1393,10 +1537,10 @@ Header::Header(const Header& from)
   ::memcpy(&src_sharding_id_, &from.src_sharding_id_,
     static_cast<size_t>(reinterpret_cast<char*>(&from_public_port_) -
     reinterpret_cast<char*>(&src_sharding_id_)) + sizeof(from_public_port_));
-  // @@protoc_insertion_point(copy_constructor:zjchain.transport.protobuf.Header)
+  // @@protoc_insertion_point(copy_constructor:zjchain.transport.protobuf.OldHeader)
 }
 
-void Header::SharedCtor() {
+void OldHeader::SharedCtor() {
   des_dht_key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   debug_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   sign_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -1405,12 +1549,12 @@ void Header::SharedCtor() {
       reinterpret_cast<char*>(&broadcast_)) + sizeof(from_public_port_));
 }
 
-Header::~Header() {
-  // @@protoc_insertion_point(destructor:zjchain.transport.protobuf.Header)
+OldHeader::~OldHeader() {
+  // @@protoc_insertion_point(destructor:zjchain.transport.protobuf.OldHeader)
   SharedDtor();
 }
 
-void Header::SharedDtor() {
+void OldHeader::SharedDtor() {
   des_dht_key_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   debug_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   sign_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -1436,22 +1580,22 @@ void Header::SharedDtor() {
   if (this != internal_default_instance()) delete c2c_;
 }
 
-void Header::SetCachedSize(int size) const {
+void OldHeader::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const ::google::protobuf::Descriptor* Header::descriptor() {
+const ::google::protobuf::Descriptor* OldHeader::descriptor() {
   ::protobuf_protos_2ftransport_2eproto::protobuf_AssignDescriptorsOnce();
   return ::protobuf_protos_2ftransport_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
 }
 
-const Header& Header::default_instance() {
-  ::google::protobuf::internal::InitSCC(&protobuf_protos_2ftransport_2eproto::scc_info_Header.base);
+const OldHeader& OldHeader::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2ftransport_2eproto::scc_info_OldHeader.base);
   return *internal_default_instance();
 }
 
 
-void Header::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.transport.protobuf.Header)
+void OldHeader::Clear() {
+// @@protoc_insertion_point(message_clear_start:zjchain.transport.protobuf.OldHeader)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -1563,11 +1707,11 @@ void Header::Clear() {
   _internal_metadata_.Clear();
 }
 
-bool Header::MergePartialFromCodedStream(
+bool OldHeader::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.transport.protobuf.Header)
+  // @@protoc_insertion_point(parse_start:zjchain.transport.protobuf.OldHeader)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(16383u);
     tag = p.first;
@@ -1957,17 +2101,17 @@ bool Header::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.transport.protobuf.Header)
+  // @@protoc_insertion_point(parse_success:zjchain.transport.protobuf.OldHeader)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.transport.protobuf.Header)
+  // @@protoc_insertion_point(parse_failure:zjchain.transport.protobuf.OldHeader)
   return false;
 #undef DO_
 }
 
-void Header::SerializeWithCachedSizes(
+void OldHeader::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.transport.protobuf.Header)
+  // @@protoc_insertion_point(serialize_start:zjchain.transport.protobuf.OldHeader)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -2153,13 +2297,13 @@ void Header::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.transport.protobuf.Header)
+  // @@protoc_insertion_point(serialize_end:zjchain.transport.protobuf.OldHeader)
 }
 
-::google::protobuf::uint8* Header::InternalSerializeWithCachedSizesToArray(
+::google::protobuf::uint8* OldHeader::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.transport.protobuf.Header)
+  // @@protoc_insertion_point(serialize_to_array_start:zjchain.transport.protobuf.OldHeader)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -2367,12 +2511,12 @@ void Header::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.transport.protobuf.Header)
+  // @@protoc_insertion_point(serialize_to_array_end:zjchain.transport.protobuf.OldHeader)
   return target;
 }
 
-size_t Header::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.transport.protobuf.Header)
+size_t OldHeader::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:zjchain.transport.protobuf.OldHeader)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2607,23 +2751,23 @@ size_t Header::ByteSizeLong() const {
   return total_size;
 }
 
-void Header::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.transport.protobuf.Header)
+void OldHeader::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:zjchain.transport.protobuf.OldHeader)
   GOOGLE_DCHECK_NE(&from, this);
-  const Header* source =
-      ::google::protobuf::internal::DynamicCastToGenerated<const Header>(
+  const OldHeader* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const OldHeader>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.transport.protobuf.Header)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.transport.protobuf.OldHeader)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.transport.protobuf.Header)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.transport.protobuf.OldHeader)
     MergeFrom(*source);
   }
 }
 
-void Header::MergeFrom(const Header& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.transport.protobuf.Header)
+void OldHeader::MergeFrom(const OldHeader& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.transport.protobuf.OldHeader)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -2733,29 +2877,29 @@ void Header::MergeFrom(const Header& from) {
   }
 }
 
-void Header::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.transport.protobuf.Header)
+void OldHeader::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:zjchain.transport.protobuf.OldHeader)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-void Header::CopyFrom(const Header& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.transport.protobuf.Header)
+void OldHeader::CopyFrom(const OldHeader& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.transport.protobuf.OldHeader)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-bool Header::IsInitialized() const {
+bool OldHeader::IsInitialized() const {
   return true;
 }
 
-void Header::Swap(Header* other) {
+void OldHeader::Swap(OldHeader* other) {
   if (other == this) return;
   InternalSwap(other);
 }
-void Header::InternalSwap(Header* other) {
+void OldHeader::InternalSwap(OldHeader* other) {
   using std::swap;
   CastToBase(&invalid_bfts_)->InternalSwap(CastToBase(&other->invalid_bfts_));
   des_dht_key_.Swap(&other->des_dht_key_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
@@ -2794,6 +2938,1730 @@ void Header::InternalSwap(Header* other) {
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
 
+::google::protobuf::Metadata OldHeader::GetMetadata() const {
+  protobuf_protos_2ftransport_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2ftransport_2eproto::file_level_metadata[kIndexInFileMessages];
+}
+
+
+// ===================================================================
+
+void Header::InitAsDefaultInstance() {
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->network_proto_ = const_cast< ::zjchain::network::protobuf::NetworkMessage*>(
+      ::zjchain::network::protobuf::NetworkMessage::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->dht_proto_ = const_cast< ::zjchain::dht::protobuf::DhtMessage*>(
+      ::zjchain::dht::protobuf::DhtMessage::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->bls_proto_ = const_cast< ::zjchain::bls::protobuf::BlsMessage*>(
+      ::zjchain::bls::protobuf::BlsMessage::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->tx_proto_ = const_cast< ::zjchain::pools::protobuf::TxMessage*>(
+      ::zjchain::pools::protobuf::TxMessage::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->contract_proto_ = const_cast< ::zjchain::contract::protobuf::ContractMessage*>(
+      ::zjchain::contract::protobuf::ContractMessage::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->elect_proto_ = const_cast< ::zjchain::elect::protobuf::ElectMessage*>(
+      ::zjchain::elect::protobuf::ElectMessage::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->zbft_ = const_cast< ::zjchain::zbft::protobuf::ZbftMessage*>(
+      ::zjchain::zbft::protobuf::ZbftMessage::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->block_proto_ = const_cast< ::zjchain::block::protobuf::BlockMessage*>(
+      ::zjchain::block::protobuf::BlockMessage::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->to_tx_heights_ = const_cast< ::zjchain::pools::protobuf::ToTxHeights*>(
+      ::zjchain::pools::protobuf::ToTxHeights::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->sync_ = const_cast< ::zjchain::sync::protobuf::SyncInfo*>(
+      ::zjchain::sync::protobuf::SyncInfo::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->sync_proto_ = const_cast< ::zjchain::sync::protobuf::SyncMessage*>(
+      ::zjchain::sync::protobuf::SyncMessage::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->vss_proto_ = const_cast< ::zjchain::vss::protobuf::VssMessage*>(
+      ::zjchain::vss::protobuf::VssMessage::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->cross_tos_ = const_cast< ::zjchain::block::protobuf::CrossShardingTosMessage*>(
+      ::zjchain::block::protobuf::CrossShardingTosMessage::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->cross_statistic_ = const_cast< ::zjchain::block::protobuf::CrossShardingStatisticMessage*>(
+      ::zjchain::block::protobuf::CrossShardingStatisticMessage::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->elect_block_ = const_cast< ::zjchain::block::protobuf::ElectBlockMessage*>(
+      ::zjchain::block::protobuf::ElectBlockMessage::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->init_proto_ = const_cast< ::zjchain::init::protobuf::InitMessage*>(
+      ::zjchain::init::protobuf::InitMessage::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->sync_heights_ = const_cast< ::zjchain::pools::protobuf::SyncPoolsMaxHeight*>(
+      ::zjchain::pools::protobuf::SyncPoolsMaxHeight::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->block_ = const_cast< ::zjchain::block::protobuf::Block*>(
+      ::zjchain::block::protobuf::Block::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->c2c_ = const_cast< ::zjchain::c2c::protobuf::C2cMessage*>(
+      ::zjchain::c2c::protobuf::C2cMessage::internal_default_instance());
+}
+void Header::clear_network_proto() {
+  if (network_proto_ != NULL) network_proto_->Clear();
+  clear_has_network_proto();
+}
+void Header::clear_dht_proto() {
+  if (dht_proto_ != NULL) dht_proto_->Clear();
+  clear_has_dht_proto();
+}
+void Header::clear_bls_proto() {
+  if (bls_proto_ != NULL) bls_proto_->Clear();
+  clear_has_bls_proto();
+}
+void Header::clear_tx_proto() {
+  if (tx_proto_ != NULL) tx_proto_->Clear();
+  clear_has_tx_proto();
+}
+void Header::clear_contract_proto() {
+  if (contract_proto_ != NULL) contract_proto_->Clear();
+  clear_has_contract_proto();
+}
+void Header::clear_elect_proto() {
+  if (elect_proto_ != NULL) elect_proto_->Clear();
+  clear_has_elect_proto();
+}
+void Header::clear_zbft() {
+  if (zbft_ != NULL) zbft_->Clear();
+  clear_has_zbft();
+}
+void Header::clear_block_proto() {
+  if (block_proto_ != NULL) block_proto_->Clear();
+  clear_has_block_proto();
+}
+void Header::clear_to_tx_heights() {
+  if (to_tx_heights_ != NULL) to_tx_heights_->Clear();
+  clear_has_to_tx_heights();
+}
+void Header::clear_sync() {
+  if (sync_ != NULL) sync_->Clear();
+  clear_has_sync();
+}
+void Header::clear_sync_proto() {
+  if (sync_proto_ != NULL) sync_proto_->Clear();
+  clear_has_sync_proto();
+}
+void Header::clear_vss_proto() {
+  if (vss_proto_ != NULL) vss_proto_->Clear();
+  clear_has_vss_proto();
+}
+void Header::clear_cross_tos() {
+  if (cross_tos_ != NULL) cross_tos_->Clear();
+  clear_has_cross_tos();
+}
+void Header::clear_cross_statistic() {
+  if (cross_statistic_ != NULL) cross_statistic_->Clear();
+  clear_has_cross_statistic();
+}
+void Header::clear_elect_block() {
+  if (elect_block_ != NULL) elect_block_->Clear();
+  clear_has_elect_block();
+}
+void Header::clear_init_proto() {
+  if (init_proto_ != NULL) init_proto_->Clear();
+  clear_has_init_proto();
+}
+void Header::clear_sync_heights() {
+  if (sync_heights_ != NULL) sync_heights_->Clear();
+  clear_has_sync_heights();
+}
+void Header::clear_block() {
+  if (block_ != NULL) block_->Clear();
+  clear_has_block();
+}
+void Header::clear_invalid_bfts() {
+  invalid_bfts_.Clear();
+}
+void Header::clear_c2c() {
+  if (c2c_ != NULL) c2c_->Clear();
+  clear_has_c2c();
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int Header::kSrcShardingIdFieldNumber;
+const int Header::kDesDhtKeyFieldNumber;
+const int Header::kHopCountFieldNumber;
+const int Header::kDebugFieldNumber;
+const int Header::kHash64FieldNumber;
+const int Header::kTypeFieldNumber;
+const int Header::kBroadcastFieldNumber;
+const int Header::kSignFieldNumber;
+const int Header::kVersionFieldNumber;
+const int Header::kNetworkProtoFieldNumber;
+const int Header::kDhtProtoFieldNumber;
+const int Header::kBlsProtoFieldNumber;
+const int Header::kTxProtoFieldNumber;
+const int Header::kContractProtoFieldNumber;
+const int Header::kElectProtoFieldNumber;
+const int Header::kZbftFieldNumber;
+const int Header::kBlockProtoFieldNumber;
+const int Header::kToTxHeightsFieldNumber;
+const int Header::kSyncFieldNumber;
+const int Header::kSyncProtoFieldNumber;
+const int Header::kVssProtoFieldNumber;
+const int Header::kCrossTosFieldNumber;
+const int Header::kCrossStatisticFieldNumber;
+const int Header::kElectBlockFieldNumber;
+const int Header::kInitProtoFieldNumber;
+const int Header::kSyncHeightsFieldNumber;
+const int Header::kBlockFieldNumber;
+const int Header::kInvalidBftsFieldNumber;
+const int Header::kFromPublicPortFieldNumber;
+const int Header::kC2CFieldNumber;
+const int Header::kPubkeyFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+Header::Header()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2ftransport_2eproto::scc_info_Header.base);
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:zjchain.transport.protobuf.Header)
+}
+Header::Header(const Header& from)
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
+      _has_bits_(from._has_bits_),
+      invalid_bfts_(from.invalid_bfts_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  des_dht_key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_des_dht_key()) {
+    des_dht_key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.des_dht_key_);
+  }
+  debug_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_debug()) {
+    debug_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.debug_);
+  }
+  sign_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_sign()) {
+    sign_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sign_);
+  }
+  pubkey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_pubkey()) {
+    pubkey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.pubkey_);
+  }
+  if (from.has_network_proto()) {
+    network_proto_ = new ::zjchain::network::protobuf::NetworkMessage(*from.network_proto_);
+  } else {
+    network_proto_ = NULL;
+  }
+  if (from.has_dht_proto()) {
+    dht_proto_ = new ::zjchain::dht::protobuf::DhtMessage(*from.dht_proto_);
+  } else {
+    dht_proto_ = NULL;
+  }
+  if (from.has_bls_proto()) {
+    bls_proto_ = new ::zjchain::bls::protobuf::BlsMessage(*from.bls_proto_);
+  } else {
+    bls_proto_ = NULL;
+  }
+  if (from.has_tx_proto()) {
+    tx_proto_ = new ::zjchain::pools::protobuf::TxMessage(*from.tx_proto_);
+  } else {
+    tx_proto_ = NULL;
+  }
+  if (from.has_contract_proto()) {
+    contract_proto_ = new ::zjchain::contract::protobuf::ContractMessage(*from.contract_proto_);
+  } else {
+    contract_proto_ = NULL;
+  }
+  if (from.has_elect_proto()) {
+    elect_proto_ = new ::zjchain::elect::protobuf::ElectMessage(*from.elect_proto_);
+  } else {
+    elect_proto_ = NULL;
+  }
+  if (from.has_zbft()) {
+    zbft_ = new ::zjchain::zbft::protobuf::ZbftMessage(*from.zbft_);
+  } else {
+    zbft_ = NULL;
+  }
+  if (from.has_block_proto()) {
+    block_proto_ = new ::zjchain::block::protobuf::BlockMessage(*from.block_proto_);
+  } else {
+    block_proto_ = NULL;
+  }
+  if (from.has_to_tx_heights()) {
+    to_tx_heights_ = new ::zjchain::pools::protobuf::ToTxHeights(*from.to_tx_heights_);
+  } else {
+    to_tx_heights_ = NULL;
+  }
+  if (from.has_sync()) {
+    sync_ = new ::zjchain::sync::protobuf::SyncInfo(*from.sync_);
+  } else {
+    sync_ = NULL;
+  }
+  if (from.has_sync_proto()) {
+    sync_proto_ = new ::zjchain::sync::protobuf::SyncMessage(*from.sync_proto_);
+  } else {
+    sync_proto_ = NULL;
+  }
+  if (from.has_vss_proto()) {
+    vss_proto_ = new ::zjchain::vss::protobuf::VssMessage(*from.vss_proto_);
+  } else {
+    vss_proto_ = NULL;
+  }
+  if (from.has_cross_tos()) {
+    cross_tos_ = new ::zjchain::block::protobuf::CrossShardingTosMessage(*from.cross_tos_);
+  } else {
+    cross_tos_ = NULL;
+  }
+  if (from.has_cross_statistic()) {
+    cross_statistic_ = new ::zjchain::block::protobuf::CrossShardingStatisticMessage(*from.cross_statistic_);
+  } else {
+    cross_statistic_ = NULL;
+  }
+  if (from.has_elect_block()) {
+    elect_block_ = new ::zjchain::block::protobuf::ElectBlockMessage(*from.elect_block_);
+  } else {
+    elect_block_ = NULL;
+  }
+  if (from.has_init_proto()) {
+    init_proto_ = new ::zjchain::init::protobuf::InitMessage(*from.init_proto_);
+  } else {
+    init_proto_ = NULL;
+  }
+  if (from.has_sync_heights()) {
+    sync_heights_ = new ::zjchain::pools::protobuf::SyncPoolsMaxHeight(*from.sync_heights_);
+  } else {
+    sync_heights_ = NULL;
+  }
+  if (from.has_block()) {
+    block_ = new ::zjchain::block::protobuf::Block(*from.block_);
+  } else {
+    block_ = NULL;
+  }
+  if (from.has_c2c()) {
+    c2c_ = new ::zjchain::c2c::protobuf::C2cMessage(*from.c2c_);
+  } else {
+    c2c_ = NULL;
+  }
+  ::memcpy(&src_sharding_id_, &from.src_sharding_id_,
+    static_cast<size_t>(reinterpret_cast<char*>(&from_public_port_) -
+    reinterpret_cast<char*>(&src_sharding_id_)) + sizeof(from_public_port_));
+  // @@protoc_insertion_point(copy_constructor:zjchain.transport.protobuf.Header)
+}
+
+void Header::SharedCtor() {
+  des_dht_key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  debug_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  sign_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  pubkey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::memset(&network_proto_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&from_public_port_) -
+      reinterpret_cast<char*>(&network_proto_)) + sizeof(from_public_port_));
+}
+
+Header::~Header() {
+  // @@protoc_insertion_point(destructor:zjchain.transport.protobuf.Header)
+  SharedDtor();
+}
+
+void Header::SharedDtor() {
+  des_dht_key_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  debug_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  sign_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  pubkey_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (this != internal_default_instance()) delete network_proto_;
+  if (this != internal_default_instance()) delete dht_proto_;
+  if (this != internal_default_instance()) delete bls_proto_;
+  if (this != internal_default_instance()) delete tx_proto_;
+  if (this != internal_default_instance()) delete contract_proto_;
+  if (this != internal_default_instance()) delete elect_proto_;
+  if (this != internal_default_instance()) delete zbft_;
+  if (this != internal_default_instance()) delete block_proto_;
+  if (this != internal_default_instance()) delete to_tx_heights_;
+  if (this != internal_default_instance()) delete sync_;
+  if (this != internal_default_instance()) delete sync_proto_;
+  if (this != internal_default_instance()) delete vss_proto_;
+  if (this != internal_default_instance()) delete cross_tos_;
+  if (this != internal_default_instance()) delete cross_statistic_;
+  if (this != internal_default_instance()) delete elect_block_;
+  if (this != internal_default_instance()) delete init_proto_;
+  if (this != internal_default_instance()) delete sync_heights_;
+  if (this != internal_default_instance()) delete block_;
+  if (this != internal_default_instance()) delete c2c_;
+}
+
+void Header::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ::google::protobuf::Descriptor* Header::descriptor() {
+  ::protobuf_protos_2ftransport_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2ftransport_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const Header& Header::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2ftransport_2eproto::scc_info_Header.base);
+  return *internal_default_instance();
+}
+
+
+void Header::Clear() {
+// @@protoc_insertion_point(message_clear_start:zjchain.transport.protobuf.Header)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  invalid_bfts_.Clear();
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 255u) {
+    if (cached_has_bits & 0x00000001u) {
+      des_dht_key_.ClearNonDefaultToEmptyNoArena();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      debug_.ClearNonDefaultToEmptyNoArena();
+    }
+    if (cached_has_bits & 0x00000004u) {
+      sign_.ClearNonDefaultToEmptyNoArena();
+    }
+    if (cached_has_bits & 0x00000008u) {
+      pubkey_.ClearNonDefaultToEmptyNoArena();
+    }
+    if (cached_has_bits & 0x00000010u) {
+      GOOGLE_DCHECK(network_proto_ != NULL);
+      network_proto_->Clear();
+    }
+    if (cached_has_bits & 0x00000020u) {
+      GOOGLE_DCHECK(dht_proto_ != NULL);
+      dht_proto_->Clear();
+    }
+    if (cached_has_bits & 0x00000040u) {
+      GOOGLE_DCHECK(bls_proto_ != NULL);
+      bls_proto_->Clear();
+    }
+    if (cached_has_bits & 0x00000080u) {
+      GOOGLE_DCHECK(tx_proto_ != NULL);
+      tx_proto_->Clear();
+    }
+  }
+  if (cached_has_bits & 65280u) {
+    if (cached_has_bits & 0x00000100u) {
+      GOOGLE_DCHECK(contract_proto_ != NULL);
+      contract_proto_->Clear();
+    }
+    if (cached_has_bits & 0x00000200u) {
+      GOOGLE_DCHECK(elect_proto_ != NULL);
+      elect_proto_->Clear();
+    }
+    if (cached_has_bits & 0x00000400u) {
+      GOOGLE_DCHECK(zbft_ != NULL);
+      zbft_->Clear();
+    }
+    if (cached_has_bits & 0x00000800u) {
+      GOOGLE_DCHECK(block_proto_ != NULL);
+      block_proto_->Clear();
+    }
+    if (cached_has_bits & 0x00001000u) {
+      GOOGLE_DCHECK(to_tx_heights_ != NULL);
+      to_tx_heights_->Clear();
+    }
+    if (cached_has_bits & 0x00002000u) {
+      GOOGLE_DCHECK(sync_ != NULL);
+      sync_->Clear();
+    }
+    if (cached_has_bits & 0x00004000u) {
+      GOOGLE_DCHECK(sync_proto_ != NULL);
+      sync_proto_->Clear();
+    }
+    if (cached_has_bits & 0x00008000u) {
+      GOOGLE_DCHECK(vss_proto_ != NULL);
+      vss_proto_->Clear();
+    }
+  }
+  if (cached_has_bits & 8323072u) {
+    if (cached_has_bits & 0x00010000u) {
+      GOOGLE_DCHECK(cross_tos_ != NULL);
+      cross_tos_->Clear();
+    }
+    if (cached_has_bits & 0x00020000u) {
+      GOOGLE_DCHECK(cross_statistic_ != NULL);
+      cross_statistic_->Clear();
+    }
+    if (cached_has_bits & 0x00040000u) {
+      GOOGLE_DCHECK(elect_block_ != NULL);
+      elect_block_->Clear();
+    }
+    if (cached_has_bits & 0x00080000u) {
+      GOOGLE_DCHECK(init_proto_ != NULL);
+      init_proto_->Clear();
+    }
+    if (cached_has_bits & 0x00100000u) {
+      GOOGLE_DCHECK(sync_heights_ != NULL);
+      sync_heights_->Clear();
+    }
+    if (cached_has_bits & 0x00200000u) {
+      GOOGLE_DCHECK(block_ != NULL);
+      block_->Clear();
+    }
+    if (cached_has_bits & 0x00400000u) {
+      GOOGLE_DCHECK(c2c_ != NULL);
+      c2c_->Clear();
+    }
+  }
+  src_sharding_id_ = 0;
+  if (cached_has_bits & 1056964608u) {
+    ::memset(&hop_count_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&from_public_port_) -
+        reinterpret_cast<char*>(&hop_count_)) + sizeof(from_public_port_));
+  }
+  _has_bits_.Clear();
+  _internal_metadata_.Clear();
+}
+
+bool Header::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:zjchain.transport.protobuf.Header)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(16383u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional int32 src_sharding_id = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
+          set_has_src_sharding_id();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &src_sharding_id_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bytes des_dht_key = 2;
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_des_dht_key()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint32 hop_count = 3 [default = 0];
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u /* 24 & 0xFF */)) {
+          set_has_hop_count();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &hop_count_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bytes debug = 4;
+      case 4: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(34u /* 34 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_debug()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint64 hash64 = 5;
+      case 5: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(40u /* 40 & 0xFF */)) {
+          set_has_hash64();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &hash64_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint32 type = 6;
+      case 6: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
+          set_has_type();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &type_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bool broadcast = 7;
+      case 7: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(56u /* 56 & 0xFF */)) {
+          set_has_broadcast();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &broadcast_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bytes sign = 8;
+      case 8: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(66u /* 66 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_sign()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional int32 version = 9 [default = 0];
+      case 9: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(72u /* 72 & 0xFF */)) {
+          set_has_version();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &version_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.network.protobuf.NetworkMessage network_proto = 10;
+      case 10: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(82u /* 82 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_network_proto()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.dht.protobuf.DhtMessage dht_proto = 11;
+      case 11: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(90u /* 90 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_dht_proto()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.bls.protobuf.BlsMessage bls_proto = 12;
+      case 12: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(98u /* 98 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_bls_proto()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.pools.protobuf.TxMessage tx_proto = 13;
+      case 13: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(106u /* 106 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_tx_proto()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.contract.protobuf.ContractMessage contract_proto = 14;
+      case 14: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(114u /* 114 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_contract_proto()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.elect.protobuf.ElectMessage elect_proto = 15;
+      case 15: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(122u /* 122 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_elect_proto()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.zbft.protobuf.ZbftMessage zbft = 16;
+      case 16: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(130u /* 130 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_zbft()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.block.protobuf.BlockMessage block_proto = 17;
+      case 17: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(138u /* 138 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_block_proto()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 18;
+      case 18: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(146u /* 146 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_to_tx_heights()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.sync.protobuf.SyncInfo sync = 19;
+      case 19: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(154u /* 154 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_sync()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.sync.protobuf.SyncMessage sync_proto = 20;
+      case 20: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(162u /* 162 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_sync_proto()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.vss.protobuf.VssMessage vss_proto = 21;
+      case 21: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(170u /* 170 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_vss_proto()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.block.protobuf.CrossShardingTosMessage cross_tos = 22;
+      case 22: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(178u /* 178 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_cross_tos()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.block.protobuf.CrossShardingStatisticMessage cross_statistic = 23;
+      case 23: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(186u /* 186 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_cross_statistic()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.block.protobuf.ElectBlockMessage elect_block = 24;
+      case 24: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(194u /* 194 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_elect_block()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.init.protobuf.InitMessage init_proto = 25;
+      case 25: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(202u /* 202 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_init_proto()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.pools.protobuf.SyncPoolsMaxHeight sync_heights = 26;
+      case 26: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(210u /* 210 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_sync_heights()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.block.protobuf.Block block = 27;
+      case 27: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(218u /* 218 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_block()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // repeated .zjchain.pools.protobuf.InvalidBftMessage invalid_bfts = 28;
+      case 28: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(226u /* 226 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+                input, add_invalid_bfts()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint32 from_public_port = 29;
+      case 29: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(232u /* 232 & 0xFF */)) {
+          set_has_from_public_port();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &from_public_port_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.c2c.protobuf.C2cMessage c2c = 30;
+      case 30: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(242u /* 242 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_c2c()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bytes pubkey = 31;
+      case 31: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(250u /* 250 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_pubkey()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:zjchain.transport.protobuf.Header)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:zjchain.transport.protobuf.Header)
+  return false;
+#undef DO_
+}
+
+void Header::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:zjchain.transport.protobuf.Header)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional int32 src_sharding_id = 1;
+  if (cached_has_bits & 0x00800000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->src_sharding_id(), output);
+  }
+
+  // optional bytes des_dht_key = 2;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      2, this->des_dht_key(), output);
+  }
+
+  // optional uint32 hop_count = 3 [default = 0];
+  if (cached_has_bits & 0x01000000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->hop_count(), output);
+  }
+
+  // optional bytes debug = 4;
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      4, this->debug(), output);
+  }
+
+  // optional uint64 hash64 = 5;
+  if (cached_has_bits & 0x02000000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(5, this->hash64(), output);
+  }
+
+  // optional uint32 type = 6;
+  if (cached_has_bits & 0x04000000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(6, this->type(), output);
+  }
+
+  // optional bool broadcast = 7;
+  if (cached_has_bits & 0x08000000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(7, this->broadcast(), output);
+  }
+
+  // optional bytes sign = 8;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      8, this->sign(), output);
+  }
+
+  // optional int32 version = 9 [default = 0];
+  if (cached_has_bits & 0x10000000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(9, this->version(), output);
+  }
+
+  // optional .zjchain.network.protobuf.NetworkMessage network_proto = 10;
+  if (cached_has_bits & 0x00000010u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      10, this->_internal_network_proto(), output);
+  }
+
+  // optional .zjchain.dht.protobuf.DhtMessage dht_proto = 11;
+  if (cached_has_bits & 0x00000020u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      11, this->_internal_dht_proto(), output);
+  }
+
+  // optional .zjchain.bls.protobuf.BlsMessage bls_proto = 12;
+  if (cached_has_bits & 0x00000040u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      12, this->_internal_bls_proto(), output);
+  }
+
+  // optional .zjchain.pools.protobuf.TxMessage tx_proto = 13;
+  if (cached_has_bits & 0x00000080u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      13, this->_internal_tx_proto(), output);
+  }
+
+  // optional .zjchain.contract.protobuf.ContractMessage contract_proto = 14;
+  if (cached_has_bits & 0x00000100u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      14, this->_internal_contract_proto(), output);
+  }
+
+  // optional .zjchain.elect.protobuf.ElectMessage elect_proto = 15;
+  if (cached_has_bits & 0x00000200u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      15, this->_internal_elect_proto(), output);
+  }
+
+  // optional .zjchain.zbft.protobuf.ZbftMessage zbft = 16;
+  if (cached_has_bits & 0x00000400u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      16, this->_internal_zbft(), output);
+  }
+
+  // optional .zjchain.block.protobuf.BlockMessage block_proto = 17;
+  if (cached_has_bits & 0x00000800u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      17, this->_internal_block_proto(), output);
+  }
+
+  // optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 18;
+  if (cached_has_bits & 0x00001000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      18, this->_internal_to_tx_heights(), output);
+  }
+
+  // optional .zjchain.sync.protobuf.SyncInfo sync = 19;
+  if (cached_has_bits & 0x00002000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      19, this->_internal_sync(), output);
+  }
+
+  // optional .zjchain.sync.protobuf.SyncMessage sync_proto = 20;
+  if (cached_has_bits & 0x00004000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      20, this->_internal_sync_proto(), output);
+  }
+
+  // optional .zjchain.vss.protobuf.VssMessage vss_proto = 21;
+  if (cached_has_bits & 0x00008000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      21, this->_internal_vss_proto(), output);
+  }
+
+  // optional .zjchain.block.protobuf.CrossShardingTosMessage cross_tos = 22;
+  if (cached_has_bits & 0x00010000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      22, this->_internal_cross_tos(), output);
+  }
+
+  // optional .zjchain.block.protobuf.CrossShardingStatisticMessage cross_statistic = 23;
+  if (cached_has_bits & 0x00020000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      23, this->_internal_cross_statistic(), output);
+  }
+
+  // optional .zjchain.block.protobuf.ElectBlockMessage elect_block = 24;
+  if (cached_has_bits & 0x00040000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      24, this->_internal_elect_block(), output);
+  }
+
+  // optional .zjchain.init.protobuf.InitMessage init_proto = 25;
+  if (cached_has_bits & 0x00080000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      25, this->_internal_init_proto(), output);
+  }
+
+  // optional .zjchain.pools.protobuf.SyncPoolsMaxHeight sync_heights = 26;
+  if (cached_has_bits & 0x00100000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      26, this->_internal_sync_heights(), output);
+  }
+
+  // optional .zjchain.block.protobuf.Block block = 27;
+  if (cached_has_bits & 0x00200000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      27, this->_internal_block(), output);
+  }
+
+  // repeated .zjchain.pools.protobuf.InvalidBftMessage invalid_bfts = 28;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->invalid_bfts_size()); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      28,
+      this->invalid_bfts(static_cast<int>(i)),
+      output);
+  }
+
+  // optional uint32 from_public_port = 29;
+  if (cached_has_bits & 0x20000000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(29, this->from_public_port(), output);
+  }
+
+  // optional .zjchain.c2c.protobuf.C2cMessage c2c = 30;
+  if (cached_has_bits & 0x00400000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      30, this->_internal_c2c(), output);
+  }
+
+  // optional bytes pubkey = 31;
+  if (cached_has_bits & 0x00000008u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      31, this->pubkey(), output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:zjchain.transport.protobuf.Header)
+}
+
+::google::protobuf::uint8* Header::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:zjchain.transport.protobuf.Header)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional int32 src_sharding_id = 1;
+  if (cached_has_bits & 0x00800000u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->src_sharding_id(), target);
+  }
+
+  // optional bytes des_dht_key = 2;
+  if (cached_has_bits & 0x00000001u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        2, this->des_dht_key(), target);
+  }
+
+  // optional uint32 hop_count = 3 [default = 0];
+  if (cached_has_bits & 0x01000000u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->hop_count(), target);
+  }
+
+  // optional bytes debug = 4;
+  if (cached_has_bits & 0x00000002u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        4, this->debug(), target);
+  }
+
+  // optional uint64 hash64 = 5;
+  if (cached_has_bits & 0x02000000u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(5, this->hash64(), target);
+  }
+
+  // optional uint32 type = 6;
+  if (cached_has_bits & 0x04000000u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(6, this->type(), target);
+  }
+
+  // optional bool broadcast = 7;
+  if (cached_has_bits & 0x08000000u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(7, this->broadcast(), target);
+  }
+
+  // optional bytes sign = 8;
+  if (cached_has_bits & 0x00000004u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        8, this->sign(), target);
+  }
+
+  // optional int32 version = 9 [default = 0];
+  if (cached_has_bits & 0x10000000u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(9, this->version(), target);
+  }
+
+  // optional .zjchain.network.protobuf.NetworkMessage network_proto = 10;
+  if (cached_has_bits & 0x00000010u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        10, this->_internal_network_proto(), deterministic, target);
+  }
+
+  // optional .zjchain.dht.protobuf.DhtMessage dht_proto = 11;
+  if (cached_has_bits & 0x00000020u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        11, this->_internal_dht_proto(), deterministic, target);
+  }
+
+  // optional .zjchain.bls.protobuf.BlsMessage bls_proto = 12;
+  if (cached_has_bits & 0x00000040u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        12, this->_internal_bls_proto(), deterministic, target);
+  }
+
+  // optional .zjchain.pools.protobuf.TxMessage tx_proto = 13;
+  if (cached_has_bits & 0x00000080u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        13, this->_internal_tx_proto(), deterministic, target);
+  }
+
+  // optional .zjchain.contract.protobuf.ContractMessage contract_proto = 14;
+  if (cached_has_bits & 0x00000100u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        14, this->_internal_contract_proto(), deterministic, target);
+  }
+
+  // optional .zjchain.elect.protobuf.ElectMessage elect_proto = 15;
+  if (cached_has_bits & 0x00000200u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        15, this->_internal_elect_proto(), deterministic, target);
+  }
+
+  // optional .zjchain.zbft.protobuf.ZbftMessage zbft = 16;
+  if (cached_has_bits & 0x00000400u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        16, this->_internal_zbft(), deterministic, target);
+  }
+
+  // optional .zjchain.block.protobuf.BlockMessage block_proto = 17;
+  if (cached_has_bits & 0x00000800u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        17, this->_internal_block_proto(), deterministic, target);
+  }
+
+  // optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 18;
+  if (cached_has_bits & 0x00001000u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        18, this->_internal_to_tx_heights(), deterministic, target);
+  }
+
+  // optional .zjchain.sync.protobuf.SyncInfo sync = 19;
+  if (cached_has_bits & 0x00002000u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        19, this->_internal_sync(), deterministic, target);
+  }
+
+  // optional .zjchain.sync.protobuf.SyncMessage sync_proto = 20;
+  if (cached_has_bits & 0x00004000u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        20, this->_internal_sync_proto(), deterministic, target);
+  }
+
+  // optional .zjchain.vss.protobuf.VssMessage vss_proto = 21;
+  if (cached_has_bits & 0x00008000u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        21, this->_internal_vss_proto(), deterministic, target);
+  }
+
+  // optional .zjchain.block.protobuf.CrossShardingTosMessage cross_tos = 22;
+  if (cached_has_bits & 0x00010000u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        22, this->_internal_cross_tos(), deterministic, target);
+  }
+
+  // optional .zjchain.block.protobuf.CrossShardingStatisticMessage cross_statistic = 23;
+  if (cached_has_bits & 0x00020000u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        23, this->_internal_cross_statistic(), deterministic, target);
+  }
+
+  // optional .zjchain.block.protobuf.ElectBlockMessage elect_block = 24;
+  if (cached_has_bits & 0x00040000u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        24, this->_internal_elect_block(), deterministic, target);
+  }
+
+  // optional .zjchain.init.protobuf.InitMessage init_proto = 25;
+  if (cached_has_bits & 0x00080000u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        25, this->_internal_init_proto(), deterministic, target);
+  }
+
+  // optional .zjchain.pools.protobuf.SyncPoolsMaxHeight sync_heights = 26;
+  if (cached_has_bits & 0x00100000u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        26, this->_internal_sync_heights(), deterministic, target);
+  }
+
+  // optional .zjchain.block.protobuf.Block block = 27;
+  if (cached_has_bits & 0x00200000u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        27, this->_internal_block(), deterministic, target);
+  }
+
+  // repeated .zjchain.pools.protobuf.InvalidBftMessage invalid_bfts = 28;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->invalid_bfts_size()); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        28, this->invalid_bfts(static_cast<int>(i)), deterministic, target);
+  }
+
+  // optional uint32 from_public_port = 29;
+  if (cached_has_bits & 0x20000000u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(29, this->from_public_port(), target);
+  }
+
+  // optional .zjchain.c2c.protobuf.C2cMessage c2c = 30;
+  if (cached_has_bits & 0x00400000u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        30, this->_internal_c2c(), deterministic, target);
+  }
+
+  // optional bytes pubkey = 31;
+  if (cached_has_bits & 0x00000008u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        31, this->pubkey(), target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:zjchain.transport.protobuf.Header)
+  return target;
+}
+
+size_t Header::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:zjchain.transport.protobuf.Header)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  // repeated .zjchain.pools.protobuf.InvalidBftMessage invalid_bfts = 28;
+  {
+    unsigned int count = static_cast<unsigned int>(this->invalid_bfts_size());
+    total_size += 2UL * count;
+    for (unsigned int i = 0; i < count; i++) {
+      total_size +=
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          this->invalid_bfts(static_cast<int>(i)));
+    }
+  }
+
+  if (_has_bits_[0 / 32] & 255u) {
+    // optional bytes des_dht_key = 2;
+    if (has_des_dht_key()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->des_dht_key());
+    }
+
+    // optional bytes debug = 4;
+    if (has_debug()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->debug());
+    }
+
+    // optional bytes sign = 8;
+    if (has_sign()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->sign());
+    }
+
+    // optional bytes pubkey = 31;
+    if (has_pubkey()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->pubkey());
+    }
+
+    // optional .zjchain.network.protobuf.NetworkMessage network_proto = 10;
+    if (has_network_proto()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *network_proto_);
+    }
+
+    // optional .zjchain.dht.protobuf.DhtMessage dht_proto = 11;
+    if (has_dht_proto()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *dht_proto_);
+    }
+
+    // optional .zjchain.bls.protobuf.BlsMessage bls_proto = 12;
+    if (has_bls_proto()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *bls_proto_);
+    }
+
+    // optional .zjchain.pools.protobuf.TxMessage tx_proto = 13;
+    if (has_tx_proto()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *tx_proto_);
+    }
+
+  }
+  if (_has_bits_[8 / 32] & 65280u) {
+    // optional .zjchain.contract.protobuf.ContractMessage contract_proto = 14;
+    if (has_contract_proto()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *contract_proto_);
+    }
+
+    // optional .zjchain.elect.protobuf.ElectMessage elect_proto = 15;
+    if (has_elect_proto()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *elect_proto_);
+    }
+
+    // optional .zjchain.zbft.protobuf.ZbftMessage zbft = 16;
+    if (has_zbft()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *zbft_);
+    }
+
+    // optional .zjchain.block.protobuf.BlockMessage block_proto = 17;
+    if (has_block_proto()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *block_proto_);
+    }
+
+    // optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 18;
+    if (has_to_tx_heights()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *to_tx_heights_);
+    }
+
+    // optional .zjchain.sync.protobuf.SyncInfo sync = 19;
+    if (has_sync()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *sync_);
+    }
+
+    // optional .zjchain.sync.protobuf.SyncMessage sync_proto = 20;
+    if (has_sync_proto()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *sync_proto_);
+    }
+
+    // optional .zjchain.vss.protobuf.VssMessage vss_proto = 21;
+    if (has_vss_proto()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *vss_proto_);
+    }
+
+  }
+  if (_has_bits_[16 / 32] & 16711680u) {
+    // optional .zjchain.block.protobuf.CrossShardingTosMessage cross_tos = 22;
+    if (has_cross_tos()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *cross_tos_);
+    }
+
+    // optional .zjchain.block.protobuf.CrossShardingStatisticMessage cross_statistic = 23;
+    if (has_cross_statistic()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *cross_statistic_);
+    }
+
+    // optional .zjchain.block.protobuf.ElectBlockMessage elect_block = 24;
+    if (has_elect_block()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *elect_block_);
+    }
+
+    // optional .zjchain.init.protobuf.InitMessage init_proto = 25;
+    if (has_init_proto()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *init_proto_);
+    }
+
+    // optional .zjchain.pools.protobuf.SyncPoolsMaxHeight sync_heights = 26;
+    if (has_sync_heights()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *sync_heights_);
+    }
+
+    // optional .zjchain.block.protobuf.Block block = 27;
+    if (has_block()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *block_);
+    }
+
+    // optional .zjchain.c2c.protobuf.C2cMessage c2c = 30;
+    if (has_c2c()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *c2c_);
+    }
+
+    // optional int32 src_sharding_id = 1;
+    if (has_src_sharding_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->src_sharding_id());
+    }
+
+  }
+  if (_has_bits_[24 / 32] & 1056964608u) {
+    // optional uint32 hop_count = 3 [default = 0];
+    if (has_hop_count()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->hop_count());
+    }
+
+    // optional uint64 hash64 = 5;
+    if (has_hash64()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->hash64());
+    }
+
+    // optional uint32 type = 6;
+    if (has_type()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->type());
+    }
+
+    // optional bool broadcast = 7;
+    if (has_broadcast()) {
+      total_size += 1 + 1;
+    }
+
+    // optional int32 version = 9 [default = 0];
+    if (has_version()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->version());
+    }
+
+    // optional uint32 from_public_port = 29;
+    if (has_from_public_port()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->from_public_port());
+    }
+
+  }
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void Header::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:zjchain.transport.protobuf.Header)
+  GOOGLE_DCHECK_NE(&from, this);
+  const Header* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const Header>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.transport.protobuf.Header)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.transport.protobuf.Header)
+    MergeFrom(*source);
+  }
+}
+
+void Header::MergeFrom(const Header& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.transport.protobuf.Header)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  invalid_bfts_.MergeFrom(from.invalid_bfts_);
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 255u) {
+    if (cached_has_bits & 0x00000001u) {
+      set_has_des_dht_key();
+      des_dht_key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.des_dht_key_);
+    }
+    if (cached_has_bits & 0x00000002u) {
+      set_has_debug();
+      debug_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.debug_);
+    }
+    if (cached_has_bits & 0x00000004u) {
+      set_has_sign();
+      sign_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sign_);
+    }
+    if (cached_has_bits & 0x00000008u) {
+      set_has_pubkey();
+      pubkey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.pubkey_);
+    }
+    if (cached_has_bits & 0x00000010u) {
+      mutable_network_proto()->::zjchain::network::protobuf::NetworkMessage::MergeFrom(from.network_proto());
+    }
+    if (cached_has_bits & 0x00000020u) {
+      mutable_dht_proto()->::zjchain::dht::protobuf::DhtMessage::MergeFrom(from.dht_proto());
+    }
+    if (cached_has_bits & 0x00000040u) {
+      mutable_bls_proto()->::zjchain::bls::protobuf::BlsMessage::MergeFrom(from.bls_proto());
+    }
+    if (cached_has_bits & 0x00000080u) {
+      mutable_tx_proto()->::zjchain::pools::protobuf::TxMessage::MergeFrom(from.tx_proto());
+    }
+  }
+  if (cached_has_bits & 65280u) {
+    if (cached_has_bits & 0x00000100u) {
+      mutable_contract_proto()->::zjchain::contract::protobuf::ContractMessage::MergeFrom(from.contract_proto());
+    }
+    if (cached_has_bits & 0x00000200u) {
+      mutable_elect_proto()->::zjchain::elect::protobuf::ElectMessage::MergeFrom(from.elect_proto());
+    }
+    if (cached_has_bits & 0x00000400u) {
+      mutable_zbft()->::zjchain::zbft::protobuf::ZbftMessage::MergeFrom(from.zbft());
+    }
+    if (cached_has_bits & 0x00000800u) {
+      mutable_block_proto()->::zjchain::block::protobuf::BlockMessage::MergeFrom(from.block_proto());
+    }
+    if (cached_has_bits & 0x00001000u) {
+      mutable_to_tx_heights()->::zjchain::pools::protobuf::ToTxHeights::MergeFrom(from.to_tx_heights());
+    }
+    if (cached_has_bits & 0x00002000u) {
+      mutable_sync()->::zjchain::sync::protobuf::SyncInfo::MergeFrom(from.sync());
+    }
+    if (cached_has_bits & 0x00004000u) {
+      mutable_sync_proto()->::zjchain::sync::protobuf::SyncMessage::MergeFrom(from.sync_proto());
+    }
+    if (cached_has_bits & 0x00008000u) {
+      mutable_vss_proto()->::zjchain::vss::protobuf::VssMessage::MergeFrom(from.vss_proto());
+    }
+  }
+  if (cached_has_bits & 16711680u) {
+    if (cached_has_bits & 0x00010000u) {
+      mutable_cross_tos()->::zjchain::block::protobuf::CrossShardingTosMessage::MergeFrom(from.cross_tos());
+    }
+    if (cached_has_bits & 0x00020000u) {
+      mutable_cross_statistic()->::zjchain::block::protobuf::CrossShardingStatisticMessage::MergeFrom(from.cross_statistic());
+    }
+    if (cached_has_bits & 0x00040000u) {
+      mutable_elect_block()->::zjchain::block::protobuf::ElectBlockMessage::MergeFrom(from.elect_block());
+    }
+    if (cached_has_bits & 0x00080000u) {
+      mutable_init_proto()->::zjchain::init::protobuf::InitMessage::MergeFrom(from.init_proto());
+    }
+    if (cached_has_bits & 0x00100000u) {
+      mutable_sync_heights()->::zjchain::pools::protobuf::SyncPoolsMaxHeight::MergeFrom(from.sync_heights());
+    }
+    if (cached_has_bits & 0x00200000u) {
+      mutable_block()->::zjchain::block::protobuf::Block::MergeFrom(from.block());
+    }
+    if (cached_has_bits & 0x00400000u) {
+      mutable_c2c()->::zjchain::c2c::protobuf::C2cMessage::MergeFrom(from.c2c());
+    }
+    if (cached_has_bits & 0x00800000u) {
+      src_sharding_id_ = from.src_sharding_id_;
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
+  if (cached_has_bits & 1056964608u) {
+    if (cached_has_bits & 0x01000000u) {
+      hop_count_ = from.hop_count_;
+    }
+    if (cached_has_bits & 0x02000000u) {
+      hash64_ = from.hash64_;
+    }
+    if (cached_has_bits & 0x04000000u) {
+      type_ = from.type_;
+    }
+    if (cached_has_bits & 0x08000000u) {
+      broadcast_ = from.broadcast_;
+    }
+    if (cached_has_bits & 0x10000000u) {
+      version_ = from.version_;
+    }
+    if (cached_has_bits & 0x20000000u) {
+      from_public_port_ = from.from_public_port_;
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
+}
+
+void Header::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:zjchain.transport.protobuf.Header)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void Header::CopyFrom(const Header& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.transport.protobuf.Header)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool Header::IsInitialized() const {
+  return true;
+}
+
+void Header::Swap(Header* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void Header::InternalSwap(Header* other) {
+  using std::swap;
+  CastToBase(&invalid_bfts_)->InternalSwap(CastToBase(&other->invalid_bfts_));
+  des_dht_key_.Swap(&other->des_dht_key_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  debug_.Swap(&other->debug_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  sign_.Swap(&other->sign_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  pubkey_.Swap(&other->pubkey_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  swap(network_proto_, other->network_proto_);
+  swap(dht_proto_, other->dht_proto_);
+  swap(bls_proto_, other->bls_proto_);
+  swap(tx_proto_, other->tx_proto_);
+  swap(contract_proto_, other->contract_proto_);
+  swap(elect_proto_, other->elect_proto_);
+  swap(zbft_, other->zbft_);
+  swap(block_proto_, other->block_proto_);
+  swap(to_tx_heights_, other->to_tx_heights_);
+  swap(sync_, other->sync_);
+  swap(sync_proto_, other->sync_proto_);
+  swap(vss_proto_, other->vss_proto_);
+  swap(cross_tos_, other->cross_tos_);
+  swap(cross_statistic_, other->cross_statistic_);
+  swap(elect_block_, other->elect_block_);
+  swap(init_proto_, other->init_proto_);
+  swap(sync_heights_, other->sync_heights_);
+  swap(block_, other->block_);
+  swap(c2c_, other->c2c_);
+  swap(src_sharding_id_, other->src_sharding_id_);
+  swap(hop_count_, other->hop_count_);
+  swap(hash64_, other->hash64_);
+  swap(type_, other->type_);
+  swap(broadcast_, other->broadcast_);
+  swap(version_, other->version_);
+  swap(from_public_port_, other->from_public_port_);
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
 ::google::protobuf::Metadata Header::GetMetadata() const {
   protobuf_protos_2ftransport_2eproto::protobuf_AssignDescriptorsOnce();
   return ::protobuf_protos_2ftransport_2eproto::file_level_metadata[kIndexInFileMessages];
@@ -2808,6 +4676,9 @@ namespace google {
 namespace protobuf {
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::transport::protobuf::BroadcastParam* Arena::CreateMaybeMessage< ::zjchain::transport::protobuf::BroadcastParam >(Arena* arena) {
   return Arena::CreateInternal< ::zjchain::transport::protobuf::BroadcastParam >(arena);
+}
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::transport::protobuf::OldHeader* Arena::CreateMaybeMessage< ::zjchain::transport::protobuf::OldHeader >(Arena* arena) {
+  return Arena::CreateInternal< ::zjchain::transport::protobuf::OldHeader >(arena);
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::transport::protobuf::Header* Arena::CreateMaybeMessage< ::zjchain::transport::protobuf::Header >(Arena* arena) {
   return Arena::CreateInternal< ::zjchain::transport::protobuf::Header >(arena);
