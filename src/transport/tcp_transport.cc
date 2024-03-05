@@ -369,6 +369,7 @@ void TcpTransport::Output() {
                     continue;
                 }
 
+                msg_handler_->AddOutputMessageId(item_ptr->hash64);
                 ZJC_DEBUG("send message %s:%u, hash64: %lu, size: %u, sent id: %lu",
                     item_ptr->des_ip.c_str(), item_ptr->port,
                     item_ptr->hash64, item_ptr->msg.size(), item_ptr->sent_id);

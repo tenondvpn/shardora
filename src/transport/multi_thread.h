@@ -84,6 +84,10 @@ public:
         firewall_checks_[type] = cb;
     }
 
+    void AddOutputMessageId(uint64_t id) {
+        output_msg_id_queue_.push(id);
+    }
+
 private:
     struct SavedBlockQueueItem {
         SavedBlockQueueItem(uint32_t c_pool, uint64_t c_height, uint32_t p, uint64_t h)
@@ -118,6 +122,7 @@ private:
     std::vector<ThreadHandlerPtr> thread_vec_;
     bool inited_{ false };
     common::LimitHashSet<uint64_t> unique_message_set_{1024000};
+    common::ThreadSafeQueue<uint64_t> output_msg_id_queue_;
     common::UniqueSet<uint64_t, 10240, 64> unique_message_sets_;
     common::UniqueSet<uint64_t, 10240, 64> from_unique_message_sets_;
     common::ThreadSafeQueue<MessagePtr>** threads_message_queues_;

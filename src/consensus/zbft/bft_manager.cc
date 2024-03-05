@@ -730,7 +730,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
         header.zbft().pool_index(),
         msg_ptr->header.zbft().sync_block());
-
     if (header.has_zbft() && header.zbft().leader_idx() < 0 && !msg_ptr->header.zbft().sync_block()) {
         dht::DhtKeyManager dht_key(
             msg_ptr->header.src_sharding_id(),

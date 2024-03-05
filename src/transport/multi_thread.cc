@@ -380,6 +380,12 @@ void MultiThreadHandler::SaveKeyValue(const transport::protobuf::Header& msg, db
 }
 
 bool MultiThreadHandler::IsMessageUnique(uint64_t msg_hash) {
+    while (output_msg_id_queue_.size() > 0) {
+        uint64_t id = 0;
+        output_msg_id_queue_.pop(&id);
+        unique_message_set_.Push(id);
+    }
+    
     return unique_message_set_.Push(msg_hash);
     // return unique_message_sets_.add(msg_hash);
 }
