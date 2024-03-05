@@ -91,6 +91,12 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+
+    if (net_handler_.Init(db_, security_) != transport::kTransportSuccess) {
+        INIT_ERROR("init net handdler failed!");
+        return kInitError;
+    }
+
     common::Ip::Instance();
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     // 随机数
@@ -100,7 +106,6 @@ int NetworkInit::Init(int argc, char** argv) {
         common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
         db_);
     zjcvm::Execution::Instance()->Init(db_);
-
     InitLocalNetworkId();
     ZJC_DEBUG("id: %s, init sharding id: %u",
         common::Encode::HexEncode(security_->GetAddress()).c_str(),
