@@ -1,5 +1,7 @@
 #pragma once
 
+#include <sys/ioctl.h>
+#include <net/if.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/socket.h>  
