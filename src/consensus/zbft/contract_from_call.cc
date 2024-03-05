@@ -1,10 +1,10 @@
-#include "consensus/zbft/join_elect_tx_item.h"
+#include "consensus/zbft/contract_from_call.h"
 
 namespace zjchain {
 
 namespace consensus {
 
-int JoinElectTxItem::HandleTx(
+int ContractFromCall::HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
@@ -26,31 +26,11 @@ int JoinElectTxItem::HandleTx(
     }
 
     do  {
-        gas_used = consensus::kJoinElectGas;
+        gas_used = consensus::kCallContractDefaultUseGas;
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // TODO(): check key exists and reserve gas
             gas_used += (block_tx.storages(i).key().size() + msg_ptr->header.tx_proto().value().size()) *
                 consensus::kKeyValueStorageEachBytes;
-            if (block_tx.storages(i).key() == protos::kJoinElectVerifyG2) {
-                std::string val;
-                if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
-                    break;
-                }
-
-                bls::protobuf::JoinElectInfo join_info;
-                if (!join_info.ParseFromString(val)) {
-                    break;
-                }
-
-                if (join_info.shard_id() != network::kRootCongressNetworkId) {
-                    if (join_info.shard_id() != common::GlobalInfo::Instance()->network_id() ||
-                            join_info.shard_id() != msg_ptr->address_info->sharding_id()) {
-                        block_tx.set_status(consensus::kConsensusError);
-                        ZJC_DEBUG("shard error: %lu", join_info.shard_id());
-                        break;
-                    }
-                }
-            }
         }
 
         if (from_balance < block_tx.gas_limit()  * block_tx.gas_price()) {
@@ -67,9 +47,15 @@ int JoinElectTxItem::HandleTx(
     } while (0);
 
     if (block_tx.status() == kConsensusSuccess) {
-        uint64_t dec_amount = gas_used * block_tx.gas_price();
+        uint64_t dec_amount = block_tx.contract_prepayment() + gas_used * block_tx.gas_price();
         if (from_balance >= gas_used * block_tx.gas_price()) {
-            from_balance -= gas_used * block_tx.gas_price();
+            if (from_balance >= dec_amount) {
+                from_balance -= dec_amount;
+            } else {
+                from_balance -= gas_used * block_tx.gas_price();
+                block_tx.set_status(consensus::kConsensusAccountBalanceError);
+                ZJC_ERROR("leader balance error: %llu, %llu", from_balance, dec_amount);
+            }
         } else {
             from_balance = 0;
             block_tx.set_status(consensus::kConsensusAccountBalanceError);
@@ -84,26 +70,9 @@ int JoinElectTxItem::HandleTx(
         }
     }
 
-    if (elect_mgr_->IsIdExistsInAnyShard(from)) {
-        block_tx.set_status(kConsensusElectNodeExists);
-    } else {
-        uint64_t stake = 0;
-        prefix_db_->GetElectNodeMinStoke(common::GlobalInfo::Instance()->network_id(), from, &stake);
-        auto stake_storage = block_tx.add_storages();
-        stake_storage->set_key(protos::kElectNodeStoke);
-        char data[8];
-        uint64_t* tmp = (uint64_t*)data;
-        tmp[0] = stake;
-        stake_storage->set_val_hash(std::string(data, sizeof(data)));
-    }
-
     acc_balance_map[from] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
-    ZJC_DEBUG("status: %d, success join elect: %s, pool: %u, height: %lu",
-        block_tx.status(), common::Encode::HexEncode(from).c_str(),
-        block.pool_index(),
-        block.height());
 //     ZJC_DEBUG("handle tx success: %s, %lu, %lu, status: %d",
 //         common::Encode::HexEncode(block_tx.gid()).c_str(),
 //         block_tx.balance(),

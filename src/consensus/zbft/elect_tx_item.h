@@ -13,8 +13,8 @@ namespace consensus {
 struct ElectNodeInfo {
     ElectNodeInfo() : leader_mod_index(-1), mining_token(0) {}
     uint64_t fts_value;
-    uint64_t stoke;
-    uint64_t stoke_diff;
+    uint64_t stake;
+    uint64_t stake_diff;
     uint64_t tx_count;
     int32_t credit;
     int32_t area_weight;
@@ -121,8 +121,8 @@ private:
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
     std::vector<std::shared_ptr<ElectNodeInfo>> elect_nodes_;
-    uint64_t max_stoke_ = 0;
-    uint64_t min_stoke_ = common::kInvalidUint64;
+    uint64_t max_stake_ = 0;
+    uint64_t min_stake_ = common::kInvalidUint64;
     uint32_t max_area_weight_ = 0;
     uint32_t min_area_weight_ = common::kInvalidUint32;
     uint32_t max_tx_count_ = 0;

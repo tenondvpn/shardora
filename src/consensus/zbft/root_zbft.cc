@@ -63,7 +63,7 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
                     tx.step(), tx.amount(), src_tx.step(), src_tx.amount());
                 tx_list->RemoveLast();
                 assert(false);
-                continue;    
+                continue;
             }
         }
 

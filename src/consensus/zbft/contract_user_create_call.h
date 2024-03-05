@@ -49,7 +49,7 @@ private:
         int64_t& contract_balance_add,
         int64_t& caller_balance_add,
         int64_t& gas_more);
-    
+
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     DISALLOW_COPY_AND_ASSIGN(ContractUserCreateCall);
