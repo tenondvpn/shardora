@@ -8,7 +8,6 @@
 #include "network/network_utils.h"
 #include "network/universal_manager.h"
 #include "network/dht_manager.h"
-#include "network/network_proto.h"
 
 namespace zjchain {
 
@@ -54,6 +53,13 @@ int Universal::Init(
     return kNetworkSuccess;
 }
 
+void Universal::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    auto& msg = msg_ptr->header;
+    if (msg.type() == common::kDhtMessage) {
+        return dht::BaseDht::HandleMessage(msg_ptr);
+    }
+}
+
 int Universal::Join(dht::NodePtr& node) {
     int res = BaseDht::Join(node);
     if (!is_universal_) {
@@ -94,7 +100,8 @@ std::vector<dht::NodePtr> Universal::LocalGetNetworkNodes(
         return tmp_nodes;
     }
 
-    auto local_nodes = dht->readonly_hash_sort_dht();  // change must copy
+    auto tmp_dht_ptr = dht->readonly_hash_sort_dht();
+    dht::DhtPtr local_nodes = std::make_shared<dht::Dht>(*tmp_dht_ptr);  // change must copy
     local_nodes->push_back(dht->local_node());
     for (uint32_t i = 0; i < local_nodes->size(); ++i) {
         auto net_id = dht::DhtKeyManager::DhtKeyGetNetId((*local_nodes)[i]->dht_key);
@@ -104,87 +111,6 @@ std::vector<dht::NodePtr> Universal::LocalGetNetworkNodes(
     }
 
     return tmp_nodes;
-}
-
-void Universal::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    auto& msg = msg_ptr->header;
-    if (msg.type() == common::kDhtMessage) {
-        return dht::BaseDht::HandleMessage(msg_ptr);
-    }
-
-    if (msg.type() != common::kNetworkMessage) {
-        return;
-    }
-
-    if (msg_ptr->header.network_proto().has_get_net_nodes_req()) {
-        ProcessGetNetworkNodesRequest(msg_ptr);
-        ZJC_DEBUG("handle get net nodes req.");
-        return;
-    }
-
-    if (msg_ptr->header.network_proto().has_get_net_nodes_res()) {
-        ProcessGetNetworkNodesResponse(msg_ptr);
-        ZJC_DEBUG("handle get net nodes res.");
-        return;
-    }
-
-    if (msg_ptr->header.network_proto().has_drop_node()) {
-        ZJC_DEBUG("drop node for all network: %s:%d",
-            msg_ptr->header.network_proto().drop_node().ip().c_str(),
-            msg_ptr->header.network_proto().drop_node().port());
-        DhtManager::Instance()->DropNode(
-            msg_ptr->header.network_proto().drop_node().ip(),
-            msg_ptr->header.network_proto().drop_node().port());
-        UniversalManager::Instance()->DropNode(
-            msg_ptr->header.network_proto().drop_node().ip(),
-            msg_ptr->header.network_proto().drop_node().port());
-        return;
-    }
-}
-
-void Universal::ProcessGetNetworkNodesRequest(const transport::MessagePtr& msg_ptr) {
-    auto& network_msg = msg_ptr->header.network_proto();
-    std::vector<dht::NodePtr> nodes = LocalGetNetworkNodes(
-            network_msg.get_net_nodes_req().net_id(),
-            network_msg.get_net_nodes_req().count());
-    if (nodes.empty()) {
-        return;
-    }
-
-    transport::protobuf::Header msg;
-    NetworkProto::CreateGetNetworkNodesResponse(local_node_, msg_ptr->header, nodes, msg);
-    msg_ptr->conn->Send(msg.SerializeAsString());
-}
-
-void Universal::ProcessGetNetworkNodesResponse(const transport::MessagePtr& msg_ptr) {
-    auto& header = msg_ptr->header;
-    auto& network_msg = header.network_proto();
-    do {
-        if (header.type() != common::kNetworkMessage) {
-            break;
-        }
-
-        if (!network_msg.has_get_net_nodes_res()) {
-            break;
-        }
-
-        const auto& res_nodes = network_msg.get_net_nodes_res().nodes();
-        for (int32_t i = 0; i < res_nodes.size(); ++i) {
-            if (res_nodes[i].pubkey().empty()) {
-                continue;
-            }
-
-            auto node = std::make_shared<dht::Node>(
-                res_nodes[i].sharding_id(),
-                res_nodes[i].public_ip(),
-                res_nodes[i].public_port(),
-                res_nodes[i].pubkey(),
-                security_->GetAddress(res_nodes[i].pubkey()));
-            wait_nodes_.push_back(node);
-        }
-    } while (0);
-    std::unique_lock<std::mutex> lock(wait_mutex_);
-    wait_con_.notify_all();
 }
 
 void Universal::AddNetworkId(uint32_t network_id) {
@@ -265,7 +191,8 @@ void Universal::OnNewElectBlock(
             if (tmp_shard_id != sharding_id &&
                     tmp_shard_id != network::kUniversalNetworkId &&
                     tmp_shard_id != network::kNodeNetworkId) {
-                uni_net->Drop((*iter));
+                auto node = *iter;
+                uni_net->Drop(node);
                 ZJC_DEBUG("drop universal nodes network %u node: %s:%u, %s",
                     tmp_shard_id,
                     (*iter)->public_ip.c_str(),

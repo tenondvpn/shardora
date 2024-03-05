@@ -44,7 +44,7 @@ private:
 
     static const uint64_t kBroadcastPeriod = 10000lu;
 
-    transport::MessageProcessor message_processor_[common::kLegoMaxMessageTypeCount];
+    transport::MessageProcessor message_processor_[common::kMaxMessageTypeCount];
     broadcast::BroadcastPtr broadcast_{ nullptr };
     typedef common::ThreadSafeQueue<transport::MessagePtr> BroadcastQueue;
     BroadcastQueue* broadcast_queue_ = nullptr;

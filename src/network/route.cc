@@ -1,7 +1,7 @@
 #include "network/route.h"
 
 #include "common/time_utils.h"
-#include "broadcast/filter_broadcast.h"
+#include "broadcast/gossip.h"
 #include "dht/dht_key.h"
 #include "network/universal.h"
 #include "network/dht_manager.h"
@@ -24,10 +24,7 @@ void Route::Init() {
     RegisterMessage(
             common::kDhtMessage,
             std::bind(&Route::HandleDhtMessage, this, std::placeholders::_1));
-    RegisterMessage(
-            common::kNetworkMessage,
-            std::bind(&Route::HandleDhtMessage, this, std::placeholders::_1));
-    broadcast_ = std::make_shared<broadcast::FilterBroadcast>();
+    broadcast_ = std::make_shared<broadcast::Gossip>();
     broadcast_thread_index_ = common::GlobalInfo::Instance()->message_handler_thread_count() + 3 +
         common::GlobalInfo::Instance()->tick_thread_pool_count();
     broadcast_thread_ = std::make_shared<std::thread>(std::bind(&Route::Broadcasting, this));
@@ -41,7 +38,6 @@ void Route::Destroy() {
     }
 
     UnRegisterMessage(common::kDhtMessage);
-    UnRegisterMessage(common::kNetworkMessage);
     broadcast_.reset();
     delete[] broadcast_queue_;
 }
@@ -61,9 +57,9 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
     }
 
     if (dht_ptr != nullptr) {
-        if (message.has_broadcast()) {
-            assert(message.broadcast().bloomfilter_size() < 64);
+        if (message.broadcast()) {
 //             broadcast_->Broadcasting(msg_ptr->thread_idx, dht_ptr, msg_ptr);
+            assert(msg_ptr->header.has_hash64() && msg_ptr->header.hash64() != 0);
             ZJC_DEBUG("0 broadcast: %lu, now size: %u", msg_ptr->header.hash64(), broadcast_queue_[msg_ptr->thread_idx].size());
             broadcast_queue_[msg_ptr->thread_idx].push(msg_ptr);
             broadcast_con_.notify_one();
@@ -75,16 +71,12 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
 
     // this node not in this network, relay by universal
     RouteByUniversal(msg_ptr);
-    if (message.type() == common::kElectMessage) {
-        NETWORK_ERROR("TTTTTTTT message.type() == common::kElectMessage des_net_id: %d send to universal.", des_net_id);
-    }
-
     return kNetworkSuccess;
 }
 
 void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
     auto& header = header_ptr->header;
-    if (header.type() >= common::kLegoMaxMessageTypeCount) {
+    if (header.type() >= common::kMaxMessageTypeCount) {
         return;
     }
 
@@ -105,8 +97,9 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
         return;
     }
 
-    if (header.has_broadcast()) {
+    if (header.broadcast()) {
 //         Broadcast(header_ptr->thread_idx, header_ptr);
+        assert(header_ptr->header.has_hash64() && header_ptr->header.hash64() != 0);
         auto tmp_ptr = std::make_shared<transport::TransportMessage>(*header_ptr);
         ZJC_DEBUG("1 broadcast: %lu, now size: %u", header_ptr->header.hash64(), broadcast_queue_[header_ptr->thread_idx].size());
         broadcast_queue_[header_ptr->thread_idx].push(tmp_ptr);
@@ -139,6 +132,7 @@ void Route::Broadcasting() {
 }
 
 void Route::HandleDhtMessage(const transport::MessagePtr& header_ptr) {
+    ZJC_DEBUG("dht message coming.");
     auto& header = header_ptr->header;
     auto dht = GetDht(header.des_dht_key());
     if (!dht) {
@@ -146,11 +140,12 @@ void Route::HandleDhtMessage(const transport::MessagePtr& header_ptr) {
         return;
     }
 
+    ZJC_DEBUG("dht message coming handle it.");
     dht->HandleMessage(header_ptr);
 }
 
 void Route::RegisterMessage(uint32_t type, transport::MessageProcessor proc) {
-    if (type >= common::kLegoMaxMessageTypeCount) {
+    if (type >= common::kMaxMessageTypeCount) {
         return;
     }
 
@@ -165,7 +160,7 @@ void Route::RegisterMessage(uint32_t type, transport::MessageProcessor proc) {
 }
 
 void Route::UnRegisterMessage(uint32_t type) {
-    if (type >= common::kLegoMaxMessageTypeCount) {
+    if (type >= common::kMaxMessageTypeCount) {
         return;
     }
 
@@ -182,14 +177,16 @@ Route::~Route() {
 
 void Route::Broadcast(uint8_t thread_idx, const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
-    if (!header.has_broadcast() || !header.has_des_dht_key()) {
+    if (!header.broadcast() || !header.has_des_dht_key()) {
+        assert(false);
         return;
     }
-
+ 
     uint32_t des_net_id = dht::DhtKeyManager::DhtKeyGetNetId(header.des_dht_key());
     auto des_dht = GetDht(header.des_dht_key());
     if (!des_dht) {
         RouteByUniversal(msg_ptr);
+        ZJC_DEBUG("broadcast by route!");
         return;
     }
 
@@ -198,17 +195,6 @@ void Route::Broadcast(uint8_t thread_idx, const transport::MessagePtr& msg_ptr) 
         src_net_id = header.src_sharding_id();
     }
 
-    if (src_net_id != des_net_id) {
-        auto* cast_msg = const_cast<transport::protobuf::Header*>(&header);
-        auto broad_param = cast_msg->mutable_broadcast();
-        if (!broad_param->net_crossed()) {
-            broad_param->set_net_crossed(true);
-            broad_param->clear_bloomfilter();
-            cast_msg->set_hop_count(0);
-        }
-    }
-
-    assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
     broadcast_->Broadcasting(thread_idx, des_dht, msg_ptr);
 }
 
@@ -231,7 +217,7 @@ void Route::RouteByUniversal(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    if (header.has_broadcast()) {
+    if (header.broadcast()) {
         // choose limit nodes to broadcast from universal
         universal_dht->SendToDesNetworkNodes(msg_ptr);
     } else {
