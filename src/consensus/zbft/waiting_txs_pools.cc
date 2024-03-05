@@ -24,7 +24,7 @@ void WaitingTxsPools::TxRecover(std::shared_ptr<Zbft>& zbft_ptr) {
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool_index) {
-    std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(pool_index);
+    std::shared_ptr<WaitingTxsItem> txs_item = nullptr;// GetSingleTx(pool_index);
     if (txs_item == nullptr) {
         txs_item = wtxs[pool_index].LeaderGetValidTxs();
     }
