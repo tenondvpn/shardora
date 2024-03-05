@@ -13,6 +13,7 @@
 
 #include <parallel_hashmap/phmap.h>
 
+#include "common/limit_hash_set.h"
 #include "common/spin_mutex.h"
 #include "common/thread_safe_queue.h"
 #include "common/unique_set.h"
@@ -95,7 +96,7 @@ private:
     std::queue<std::shared_ptr<protobuf::Header>> local_queue_;
     std::vector<ThreadHandlerPtr> thread_vec_;
     bool inited_{ false };
-    common::UniqueSet<uint64_t, 10240, 64> unique_message_sets_;
+    common::LimitHashSet<uint64_t> unique_message_sets_{1024000};
     common::ThreadSafeQueue<MessagePtr>** threads_message_queues_;
     common::ThreadSafeQueue<MessagePtr> http_server_message_queue_;
     common::ThreadSafeQueue<SavedBlockQueueItemPtr> saved_block_queue_;
