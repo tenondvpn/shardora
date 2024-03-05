@@ -13,6 +13,9 @@
 
 using namespace zjchain;
 static bool global_stop = false;
+static const std::string kBroadcastIp = "10.101.20.29";
+static const std::string kBroadcastPort = 13001;
+
 static void SignalCallback(int sig_int) {
     global_stop = true;
 }
@@ -70,8 +73,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
     msg.set_src_sharding_id(des_net_id);
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kPoolsMessage);
-    msg.set_hop_count(0);
-    auto broadcast = msg.mutable_broadcast();
+    msg.set_broadcast(false);
     auto new_tx = msg.mutable_tx_proto();
     new_tx->set_gid(gid);
     new_tx->set_pubkey(security->GetPublicKeyUnCompressed());
@@ -121,12 +123,13 @@ static transport::MessagePtr CreateTransactionWithAttr(
 //     }
 
 
-    std::cout << "tx gid: " << common::Encode::HexEncode(new_tx->gid())
-        << " tx pukey: " << common::Encode::HexEncode(new_tx->pubkey())
-        << " tx to: " << common::Encode::HexEncode(new_tx->to())
-        << " tx hash: " << common::Encode::HexEncode(tx_hash)
-        << " tx sign: " << common::Encode::HexEncode(sign)
-        << std::endl;
+    // std::cout << "tx gid: " << common::Encode::HexEncode(new_tx->gid())
+    //     << " tx pukey: " << common::Encode::HexEncode(new_tx->pubkey())
+    //     << " tx to: " << common::Encode::HexEncode(new_tx->to())
+    //     << " tx hash: " << common::Encode::HexEncode(tx_hash)
+    //     << " tx sign: " << common::Encode::HexEncode(sign)
+    //     << " hash64: " << msg.hash64()
+    //     << std::endl;
     msg.set_sign(sign);
     assert(new_tx->gas_price() > 0);
     return msg_ptr;
@@ -167,6 +170,11 @@ static void LoadAllAccounts() {
         std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
         security->SetPrivateKey(prikey);
         pri_pub_map[prikey] = security->GetPublicKey();
+        if (addr == common::Encode::HexDecode("431be10b3a0e46f8a46686c6b0c29bc743f715fa")) {
+            break;
+        }
+
+        std::cout << read_buf;
     }
 
     if (prikeys.size() != 256) {
@@ -200,7 +208,7 @@ int tx_main(int argc, char** argv) {
         }
     }
 
-    if (net_handler.Init(db_ptr) != 0) {
+    if (net_handler.Init(db_ptr, security) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
     }
@@ -230,20 +238,23 @@ int tx_main(int argc, char** argv) {
     for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
         uint64_t* gid_int = (uint64_t*)gid.data();
         gid_int[0] = pos;
-//         if (addrs_map[from_prikey] == to) {
-//             ++prikey_pos;
-//             from_prikey = prikeys[prikey_pos % prikeys.size()];
-//             security->SetPrivateKey(from_prikey);
-//             continue;
-//         }
-/*
+        if (addrs_map[from_prikey] == to) {
+            ++prikey_pos;
+            from_prikey = prikeys[prikey_pos % prikeys.size()];
+            security->SetPrivateKey(from_prikey);
+        }
+
+        if (security->GetAddress() == common::Encode::HexDecode("f1cd7abb586966d500d91329658ec48aa2094702")) {
+            ++prikey_pos;
+            from_prikey = prikeys[prikey_pos % prikeys.size()];
+            security->SetPrivateKey(from_prikey);
+        }
+
         uint32_t* tmp_data = (uint32_t*)to.c_str();
         if (common::Random::RandomInt32() % 10 < 3) {
             tmp_data[0] = common::Random::RandomInt16();
         }
-*/
-        std::cout << "tttt: " << std::endl;
-        gid = common::Encode::HexDecode("263960455acf4ad92ce0911de10d2f995c806e3e6d1c931f085752e65aca496c");
+
         auto tx_msg_ptr = CreateTransactionWithAttr(
             security,
             gid,
@@ -255,28 +266,12 @@ int tx_main(int argc, char** argv) {
             10000,
             1,
             3);
-        break;
-//         if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
-//             std::cout << "send tcp client failed!" << std::endl;
-//             return 1;
-//         }
-//         if (transport::TcpTransport::Instance()->Send(0, "10.101.20.29", 21001, tx_msg_ptr->header) != 0) {
-//             std::cout << "send tcp client failed!" << std::endl;
-//             return 1;
-//         }
-// 
-//         if (transport::TcpTransport::Instance()->Send(0, "10.101.20.30", 22001, tx_msg_ptr->header) != 0) {
-//             std::cout << "send tcp client failed!" << std::endl;
-//             return 1;
-//         }
-// 
-//         if (transport::TcpTransport::Instance()->Send(0, "10.101.20.31", 23001, tx_msg_ptr->header) != 0) {
-//             std::cout << "send tcp client failed!" << std::endl;
-//             return 1;
-//         }
+        if (transport::TcpTransport::Instance()->Send(0, kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
+            std::cout << "send tcp client failed!" << std::endl;
+            return 1;
+        }
 
-//         std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << ", tx hash: " << tx_msg_ptr->header.hash64() << std::endl;
-        if (pos % 1 == 0) {
+        if (pos % 100 == 0) {
             ++prikey_pos;
             from_prikey = prikeys[prikey_pos % prikeys.size()];
             security->SetPrivateKey(from_prikey);
@@ -314,7 +309,7 @@ int one_tx_main(int argc, char** argv) {
         }
     }
 
-    if (net_handler.Init(db_ptr) != 0) {
+    if (net_handler.Init(db_ptr, security) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
     }
@@ -361,25 +356,10 @@ int one_tx_main(int argc, char** argv) {
         10000000,
         ((uint32_t)(1000 - pos)) % 1000 + 1,
         3);
-    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
+    if (transport::TcpTransport::Instance()->Send(0, kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
         std::cout << "send tcp client failed!" << std::endl;
         return 1;
     }
-//     if (transport::TcpTransport::Instance()->Send(0, "10.101.20.29", 21001, tx_msg_ptr->header) != 0) {
-//         std::cout << "send tcp client failed!" << std::endl;
-//         return 1;
-//     }
-// 
-//     if (transport::TcpTransport::Instance()->Send(0, "10.101.20.30", 22001, tx_msg_ptr->header) != 0) {
-//         std::cout << "send tcp client failed!" << std::endl;
-//         return 1;
-//     }
-// 
-//     if (transport::TcpTransport::Instance()->Send(0, "10.101.20.31", 23001, tx_msg_ptr->header) != 0) {
-//         std::cout << "send tcp client failed!" << std::endl;
-//         return 1;
-//     }
-
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {
         std::cout << "save pos failed!" << std::endl;
@@ -411,7 +391,7 @@ int create_library(int argc, char** argv) {
         }
     }
 
-    if (net_handler.Init(db_ptr) != 0) {
+    if (net_handler.Init(db_ptr, security) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
     }
@@ -452,17 +432,7 @@ int create_library(int argc, char** argv) {
         100000,
         10,
         3);
-    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
-        std::cout << "send tcp client failed!" << std::endl;
-        return 1;
-    }
-
-    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 22001, tx_msg_ptr->header) != 0) {
-        std::cout << "send tcp client failed!" << std::endl;
-        return 1;
-    }
-
-    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 21001, tx_msg_ptr->header) != 0) {
+    if (transport::TcpTransport::Instance()->Send(0, kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
         std::cout << "send tcp client failed!" << std::endl;
         return 1;
     }
@@ -498,7 +468,7 @@ int contract_main(int argc, char** argv) {
         }
     }
 
-    if (net_handler.Init(db_ptr) != 0) {
+    if (net_handler.Init(db_ptr, security) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
     }
@@ -547,17 +517,7 @@ int contract_main(int argc, char** argv) {
         10000000,
         10,
         3);
-    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
-        std::cout << "send tcp client failed!" << std::endl;
-        return 1;
-    }
-
-    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 22001, tx_msg_ptr->header) != 0) {
-        std::cout << "send tcp client failed!" << std::endl;
-        return 1;
-    }
-
-    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 21001, tx_msg_ptr->header) != 0) {
+    if (transport::TcpTransport::Instance()->Send(0, kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
         std::cout << "send tcp client failed!" << std::endl;
         return 1;
     }
@@ -593,7 +553,7 @@ int contract_set_prepayment(int argc, char** argv) {
         }
     }
 
-    if (net_handler.Init(db_ptr) != 0) {
+    if (net_handler.Init(db_ptr, security) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
     }
@@ -633,17 +593,7 @@ int contract_set_prepayment(int argc, char** argv) {
         10000000,
         10,
         3);
-    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
-        std::cout << "send tcp client failed!" << std::endl;
-        return 1;
-    }
-
-    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 22001, tx_msg_ptr->header) != 0) {
-        std::cout << "send tcp client failed!" << std::endl;
-        return 1;
-    }
-
-    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 21001, tx_msg_ptr->header) != 0) {
+    if (transport::TcpTransport::Instance()->Send(0, kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
         std::cout << "send tcp client failed!" << std::endl;
         return 1;
     }
@@ -679,7 +629,7 @@ int contract_call(int argc, char** argv, bool more=false) {
         }
     }
 
-    if (net_handler.Init(db_ptr) != 0) {
+    if (net_handler.Init(db_ptr, security) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
     }
@@ -728,20 +678,10 @@ int contract_call(int argc, char** argv, bool more=false) {
             10000000,
             10,
             3);
-        if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
-            std::cout << "send tcp client failed!" << std::endl;
-            return 1;
-        }
-
-        if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 22001, tx_msg_ptr->header) != 0) {
-            std::cout << "send tcp client failed!" << std::endl;
-            return 1;
-        }
-
-        if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 21001, tx_msg_ptr->header) != 0) {
-            std::cout << "send tcp client failed!" << std::endl;
-            return 1;
-        }
+    if (transport::TcpTransport::Instance()->Send(0, kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
+        std::cout << "send tcp client failed!" << std::endl;
+        return 1;
+    }
 
         if (!more) {
             break;
@@ -765,6 +705,8 @@ int main(int argc, char** argv) {
     std::cout << argc << std::endl;
     if (argc <= 1) {
         tx_main(argc, argv);
+        transport::TcpTransport::Instance()->Stop();
+        usleep(1000000);
         return 0;
     }
 
@@ -784,5 +726,7 @@ int main(int argc, char** argv) {
         one_tx_main(argc, argv);
     }
 
+    usleep(1000000);
+    transport::TcpTransport::Instance()->Stop();
     return 0;
 }
