@@ -10,6 +10,19 @@ grep "new from add new to sharding" ./log/zjchain.log | grep "pool: 0" | awk -F'
 
 ## Genesis Nodes Deployment
 
+### 编写配置文件
+
+可使用脚本快速生成
+```
+python3 gen_nodes_conf.py -n 10 -s 1 -m 10.101.20.29,10.101.20.30 -r 3 -m0 10.101.20.29
+```
+
+### 生成部署脚本
+
+```
+
+```
+
 ### Deploy on One Server
 
 ```shell

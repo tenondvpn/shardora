@@ -72,7 +72,8 @@ def _get_node_sks_from_server_conf(server_conf, net_id):
     return [gen_node_sk(n) for n in node_names]
 
 def _gen_accounts_with_server_conf(server_conf, net_id):
-    account_sks_from_server_conf = server_conf['account_sks'].get(net_id, [])
+    account_sks = server_conf.get('account_sks', {})
+    account_sks_from_server_conf = account_sks.get(net_id, [])
     num = 256 - len(account_sks_from_server_conf)
     random_sks = gen_account_sks(net_id, num)
     accounts = [sk2account(sk) for sk in account_sks_from_server_conf + random_sks]
@@ -307,7 +308,7 @@ echo "==== STEP1: START DEPLOY ===="
 echo "[$server0]"
 # sshpass -p {server0_pass} ssh -o StrictHostKeyChecking=no root@$server0 <<EOF
 sh {build_genesis_path} $target $no_build
-cd {datadir} && sh -x fetch.sh 127.0.0.1 ${{server0}} ${server0_pass} {server0_node_names_str}
+cd {datadir} && sh -x fetch.sh 127.0.0.1 ${{server0}} '{server0_pass}' '{datadir}' {server0_node_names_str}
 # EOF
 
 """
@@ -324,7 +325,7 @@ sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <
 mkdir -p {datadir};
 rm -rf {datadir}/zjnodes;
 sshpass -p '{server0_pass}' scp -o StrictHostKeyChecking=no root@"${{server0}}":{datadir}/fetch.sh {datadir}/
-cd {datadir} && sh -x fetch.sh ${{server0}} ${{{server_name}}} '{server0_pass}' {server_node_names_str}
+cd {datadir} && sh -x fetch.sh ${{server0}} ${{{server_name}}} '{server0_pass}' '{datadir}' {server_node_names_str}
 EOF
 ) &
 
