@@ -109,7 +109,7 @@ struct localToTxInfo {
     std::string library_bytes;
     std::string contract_from;
     uint64_t contract_prepayment; // prepayment 交易的 prepayment 是通过 amount 传递的吧
-    
+
     localToTxInfo(const std::string& des,
         uint64_t amount,
         uint32_t pool_index,

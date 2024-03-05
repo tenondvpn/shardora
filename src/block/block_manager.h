@@ -70,6 +70,8 @@ public:
         const std::shared_ptr<block::protobuf::Block>& block_item,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
+
     void SetMaxConsensusShardingId(uint32_t sharding_id) {
         max_consensus_sharding_id_ = sharding_id;
     }

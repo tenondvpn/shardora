@@ -79,7 +79,7 @@ void AccountManager::CreatePoolsAddressInfo() {
         pool_address_info_[pool_idx]->set_addr(addr);
         pool_address_info_[pool_idx]->set_type(address::protobuf::kToTxAddress);
         pool_address_info_[pool_idx]->set_latest_height(0);
-        
+
         pool_idx_set.insert(pool_idx);
     }
 }
@@ -291,7 +291,7 @@ void AccountManager::HandleContractCreateByRootTo(
 		block.network_id(),
 		block.pool_index(),
 		tx.contract_code().c_str());
-	
+
 	if (tx.status() != consensus::kConsensusSuccess) {
 		return;
 	}
@@ -397,7 +397,7 @@ void AccountManager::HandleCreateContractByRootFrom(
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     // handle from
-    // 只处理 from 账户，合约账户需要 root 分配 shard，在该 shard 中执行 ConsensusLocalTos 交易来创建   
+    // 只处理 from 账户，合约账户需要 root 分配 shard，在该 shard 中执行 ConsensusLocalTos 交易来创建
     auto& account_id = GetTxValidAddress(tx);
     auto account_info = GetAccountInfo(thread_idx, account_id);
     if (account_info == nullptr) {
@@ -420,7 +420,7 @@ void AccountManager::HandleCreateContractByRootFrom(
     if (account_info->latest_height() >= block.height()) {
         return;
     }
-    
+
     account_info->set_latest_height(block.height());
     account_info->set_balance(tx.balance());
     prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
@@ -492,13 +492,13 @@ void AccountManager::HandleRootCreateAddressTx(
     account_info = std::make_shared<address::protobuf::AddressInfo>();
     account_info->set_pool_index(pool_index);
     account_info->set_addr(tx.to());
-    
+
     if (isContractCreateTx(tx)) {
         account_info->set_type(address::protobuf::kContract);
     } else {
         account_info->set_type(address::protobuf::kNormal);
     }
-    
+
     account_info->set_sharding_id(sharding_id);
     account_info->set_latest_height(block.height());
     account_info->set_balance(0);  // root address balance invalid
