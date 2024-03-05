@@ -321,7 +321,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
     uint32_t valid_n = genesis_nodes.size();
     uint32_t valid_t = common::GetSignerCount(valid_n);
     std::vector<std::vector<libff::alt_bn128_Fr>> secret_key_contribution(valid_n);
-    for (uint32_t idx = 0; idx < genesis_nodes.size(); ++idx) {
+    auto create_node = [&](int idx) {
         std::string file = std::string("./") + common::Encode::HexEncode(genesis_nodes[idx]->id);
         bool file_valid = true;
         bls::protobuf::LocalPolynomial local_poly;
@@ -400,6 +400,18 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
         prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
         prefix_db_->AddBlsVerifyG2(secptr->GetAddress(), *req);
         prefix_db_->SaveTemporaryKv(genesis_nodes[idx]->check_hash, join_info.SerializeAsString());
+    };
+    
+    std::vector<std::shared_ptr<std::thread>> work_thread_;
+    for (uint32_t idx = 0; idx < genesis_nodes.size(); ++idx) {
+        work_thread_.push_back(std::make_shared<std::thread>(create_node, idx));
+        if (idx >= genesis_nodes.size() - 1 || work_thread_.size() >= 8) {
+            for (uint32_t i = 0; i < work_thread_.size(); ++i) {
+                work_thread_[i]->join();
+            }
+
+            work_thread_.clear();
+        }
     }
 
     for (size_t i = 0; i < genesis_nodes.size(); ++i) {
