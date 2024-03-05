@@ -218,7 +218,9 @@ void GenesisBlockInit::ComputeG2sForNodes(const std::vector<std::string>& prikey
 }
 
 void GenesisBlockInit::PrepareCreateGenesisBlocks() {
-        std::shared_ptr<security::Security> security = nullptr;
+        // std::shared_ptr<security::Security> security = nullptr;
+        std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
+        security->SetPrivateKey(common::Random::RandomString(32));
         std::shared_ptr<sync::KeyValueSync> kv_sync = nullptr;
         // 初始化本节点所有的 tx pool 和 cross tx pool
         pools_mgr_ = std::make_shared<pools::TxPoolManager>(security, db_, kv_sync, nullptr);
