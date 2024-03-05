@@ -432,12 +432,22 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         pools_msg_queue_[msg_ptr->thread_idx].size());
     auto& header = msg_ptr->header;
     if (header.has_sync_heights()) {
+        auto btime = common::TimeUtils::TimestampMs();
         HandleSyncPoolsMaxHeight(msg_ptr);
+        auto etime = common::TimeUtils::TimestampMs();
+        if (etime - btime > 10000lu) {
+            ZJC_WARN("HandleSyncPoolsMaxHeight handle message timeout: %d, %lu", msg_ptr->header.tx_proto().step(), (etime - btime));
+        }
         return;
     }
 
     if (header.invalid_bfts_size() > 0) {
+         auto btime = common::TimeUtils::TimestampMs();
         HandleInvalidGids(msg_ptr);
+        auto etime = common::TimeUtils::TimestampMs();
+        if (etime - btime > 10000lu) {
+            ZJC_WARN("HandleInvalidGids handle message timeout: %d, %lu", msg_ptr->header.tx_proto().step(), (etime - btime));
+        }
         return;
     }
 
@@ -577,7 +587,12 @@ void TxPoolManager::PopPoolsMessage() {
                 }
 
                 msg_ptr->thread_idx = -1;
+                auto btime = common::TimeUtils::TimestampMs();
                 HandlePoolsMessage(msg_ptr);
+                auto etime = common::TimeUtils::TimestampMs();
+                if (etime - btime > 10000lu) {
+                    ZJC_WARN("handle message timeout: %d, %lu", msg_ptr->header.tx_proto().step(), (etime - btime));
+                }
             }
         }
 
