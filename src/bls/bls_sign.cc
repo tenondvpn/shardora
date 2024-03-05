@@ -2,7 +2,6 @@
 
 #include "common/encode.h"
 #include "libff/common/profiling.hpp"
-#include "common/time_utils.h"
 
 namespace zjchain {
 
@@ -30,7 +29,7 @@ void BlsSign::Sign(
             libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
-#endif        
+#endif
     } catch (std::exception& e) {
         BLS_ERROR("sign message failed: %s", e.what());
         *sign = libff::alt_bn128_G1::zero();
