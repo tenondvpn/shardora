@@ -1,6 +1,5 @@
 #pragma once
 
-#include <_types/_uint64_t.h>
 #include <common/limit_hash_set.h>
 #include <stdio.h>
 #include <stdlib.h>
