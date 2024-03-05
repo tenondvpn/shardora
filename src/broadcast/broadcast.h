@@ -35,10 +35,6 @@ protected:
         const transport::MessagePtr& message,
         const std::vector<dht::NodePtr>& nodes);
     inline uint32_t GetNeighborCount(const transport::protobuf::Header& message) {
-        if (message.broadcast().has_neighbor_count()) {
-            return message.broadcast().neighbor_count();
-        }
-
         return kBroadcastDefaultNeighborCount;
     }
 

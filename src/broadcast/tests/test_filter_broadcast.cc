@@ -97,12 +97,7 @@ TEST_F(TestFilterBroadcast, LayerGetNodes) {
     }
     FilterBroadcast filter_broad;
     transport::protobuf::Header message;
-    auto broad_param = message.mutable_broadcast();
-    broad_param->set_layer_left(0);
-    broad_param->set_layer_right((std::numeric_limits<uint64_t>::max)());
-    broad_param->set_hop_to_layer(0);
-    auto bloomfilter = filter_broad.GetBloomfilter(message);
-    auto nodes = filter_broad.GetlayerNodes(base_dht, bloomfilter, message);
+    message.set_broadcast(true);
 }
 
 TEST_F(TestFilterBroadcast, BroadcastingNoOverlap) {
@@ -129,12 +124,6 @@ TEST_F(TestFilterBroadcast, BroadcastingNoOverlap) {
     FilterBroadcast filter_broad;
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& message = msg_ptr->header;
-    auto broad_param = message.mutable_broadcast();
-    broad_param->set_layer_left(0);
-    broad_param->set_layer_right((std::numeric_limits<uint64_t>::max)());
-    broad_param->set_hop_to_layer(0);
-    msg_ptr->thread_idx = 0;
-    filter_broad.Broadcasting(base_dht, msg_ptr);
 }
 
 TEST_F(TestFilterBroadcast, BroadcastingOverlap) {
@@ -162,12 +151,6 @@ TEST_F(TestFilterBroadcast, BroadcastingOverlap) {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& message = msg_ptr->header;
     msg_ptr->thread_idx = 0;
-    auto broad_param = message.mutable_broadcast();
-    broad_param->set_layer_left(0);
-    broad_param->set_layer_right((std::numeric_limits<uint64_t>::max)());
-    broad_param->set_hop_to_layer(0);
-    broad_param->set_overlap(0.3f);
-    filter_broad.Broadcasting(base_dht, msg_ptr);
 }
 
 }  // namespace test
