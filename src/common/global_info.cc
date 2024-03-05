@@ -69,6 +69,23 @@ int GlobalInfo::Init(const common::Config& config) {
     config.Get("zjchain", "ck_host", ck_host_);
     config.Get("zjchain", "ck_user", ck_user_);
     config.Get("zjchain", "ck_pass", ck_pass_);
+    config.Get("zjchain", "valid_free_bandwidth", valid_free_bandwidth_);
+    config.Get("zjchain", "chain_ips", chain_ips_);
+    config.Get("zjchain", "c2c_contract_addr", c2c_contract_addr_);
+    config.Get("zjchain", "min_c2c_sellout_amount", min_c2c_sellout_amount_);
+    config.Get("zjchain", "c2c_timeout_ms", c2c_timeout_ms_);
+    config.Get("zjchain", "c2c_min_purchase_amount", c2c_min_purchase_amount_);
+    min_c2c_sellout_amount_ *= 1000000lu;
+    min_c2c_prepayment_ = min_c2c_sellout_amount_ + 10000000lu;
+
+    std::string addr_name;
+    if (config.Get("zjchain", "addr_name", addr_name) && !addr_name.empty()) {
+        auto ip = GetIpWithAddrName(addr_name);
+        if (!ip.empty()) {
+            config_local_ip_ = ip;
+            ZJC_INFO("get local ip with addr name: %s, ip: %s", addr_name.c_str(), ip.c_str());
+        }
+    }
 
     auto bft_thread = message_handler_thread_count_ - 1;
     thread_with_pools_ = new std::set<uint32_t>[bft_thread];
