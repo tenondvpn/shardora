@@ -140,7 +140,7 @@ static std::vector<std::string> prikeys;
 static std::vector<std::string> addrs;
 static std::unordered_map<std::string, std::string> pri_pub_map;
 static void LoadAllAccounts() {
-    FILE* fd = fopen("../src/consensus/tests/init_acc", "r");
+    FILE* fd = fopen("../addrs", "r");
     if (fd == nullptr) {
         std::cout << "invalid init acc file." << std::endl;
         exit(1);
@@ -156,25 +156,15 @@ static void LoadAllAccounts() {
             break;
         }
 
-        common::Split<> split(read_buf, '\t');
-        if (split.Count() != 2) {
-            break;
-        }
-
-        std::string prikey = common::Encode::HexDecode(
-            std::string(split[1], split.SubLen(1) - 1));
-        std::string addr = common::Encode::HexDecode(split[0]);
-        addrs_map[prikey] = addr;
-        addrs.push_back(addr);
+        std::string prikey = common::Encode::HexDecode(std::string(read_res, 64));
         prikeys.push_back(prikey);
         std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
         security->SetPrivateKey(prikey);
         pri_pub_map[prikey] = security->GetPublicKey();
-        if (addr == common::Encode::HexDecode("431be10b3a0e46f8a46686c6b0c29bc743f715fa")) {
-            break;
-        }
-
-        std::cout << read_buf;
+        std::string addr = security->GetAddress();
+        addrs_map[prikey] = addr;
+        addrs.push_back(addr);
+        std::cout << common::Encode::HexEncode(prikey) << " : " << common::Encode::HexEncode(addr) << std::endl;
     }
 
     if (prikeys.size() != 256) {
