@@ -22,7 +22,7 @@ fi
 if [[ "${fromip}" == "127.0.0.1" ]]; then
 	for service in "${services[@]}"; do
 		# 除了 bootstrap 那一行其余都执行替换
-		sed -i "s/${fromip}/${newip}/g" "zjnodes/${service}/conf/zjchain.conf"
+		sed -i "s/${fromip}/${newip}/g" "${datadir}/zjnodes/${service}/conf/zjchain.conf"
 	done
 else
 	rm -rf "${datadir}"/zjnodes
@@ -32,6 +32,6 @@ else
 	
 	for service in "${services[@]}"; do
 		# 除了 bootstrap 那一行其余都执行替换
-		sed -i "/bootstrap/!s/${fromip}/${newip}/g" "zjnodes/${service}/conf/zjchain.conf"
+		sed -i "/bootstrap/!s/${fromip}/${newip}/g" "${datadir}/zjnodes/${service}/conf/zjchain.conf"
 	done
 fi
