@@ -219,7 +219,7 @@ private:
     void HandleInvalidGids(const transport::MessagePtr& msg_ptr);
     void GetMinValidTxCount();
 
-    static const uint32_t kPopMessageCountEachTime = 64u;
+    static const uint32_t kPopMessageCountEachTime = 64000u;
     static const uint64_t kFlushHeightTreePeriod = 60000lu;
     static const uint64_t kSyncPoolsMaxHeightsPeriod = 3000lu;
     static const uint64_t kSyncMissingBlockPeriod = 3000lu;
