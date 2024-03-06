@@ -109,6 +109,10 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
 //         Broadcast(header_ptr->thread_idx, header_ptr);
         auto tmp_ptr = std::make_shared<transport::TransportMessage>(*header_ptr);
         ZJC_INFO("====5 broadcast t: %lu, hash: %lu, now size: %u", header_ptr->thread_idx, header_ptr->header.hash64(), broadcast_queue_[header_ptr->thread_idx].size());
+        if (broadcast_queue_[header_ptr->thread_idx].size() > 1000) {
+            ZJC_ERROR("messages exploded!");
+            return;
+        }
         broadcast_queue_[header_ptr->thread_idx].push(tmp_ptr);
         broadcast_con_.notify_one();
     }
