@@ -98,7 +98,7 @@ private:
     std::vector<ThreadHandlerPtr> thread_vec_;
     bool inited_{ false };
     common::UniqueSet<uint64_t, 10240, 64> unique_message_sets_;
-    common::LRUSet<uint64_t> unique_message_sets2_{ 1024000 }; // 10M+ 左右
+    common::LimitHashSet<uint64_t> unique_message_sets2_{ 10240000 }; // 10M+ 左右
     common::ThreadSafeQueue<MessagePtr>** threads_message_queues_;
     common::ThreadSafeQueue<MessagePtr> http_server_message_queue_;
     common::ThreadSafeQueue<SavedBlockQueueItemPtr> saved_block_queue_;
