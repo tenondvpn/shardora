@@ -12,7 +12,7 @@ namespace tnet {
 Socket::Socket() {}
 
 Socket::~Socket() {
-    Close();
+    // Close();
 }
 
 int Socket::Read(void* buf, size_t len) const {
@@ -251,7 +251,7 @@ bool Socket::GetSoError(int* code) const {
 }
 
 void Socket::Free() {
-    delete this;
+    // delete this;
 }
 
 int Socket::GetIpPort(std::string* ip, uint16_t* port) {

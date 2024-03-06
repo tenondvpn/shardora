@@ -226,7 +226,7 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
     }
 
     if (prev_check_leader_valid_ms_ < now_tm_ms && member_index_ != common::kInvalidUint32) {
-        if (network::DhtManager::Instance()->valid_count(
+        if (false && network::DhtManager::Instance()->valid_count(
                 common::GlobalInfo::Instance()->network_id()) + 1 >=
                 common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
             bool get_factor = false;
@@ -433,18 +433,35 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         pools_msg_queue_[msg_ptr->thread_idx].size());
     auto& header = msg_ptr->header;
     if (header.has_sync_heights()) {
+        auto btime = common::TimeUtils::TimestampMs();
         HandleSyncPoolsMaxHeight(msg_ptr);
+        auto etime = common::TimeUtils::TimestampMs();
+        if (etime - btime > 10000lu) {
+            ZJC_WARN("HandleSyncPoolsMaxHeight handle message timeout: %d, %lu", msg_ptr->header.tx_proto().step(), (etime - btime));
+        }
         return;
     }
 
     if (header.invalid_bfts_size() > 0) {
+         auto btime = common::TimeUtils::TimestampMs();
         HandleInvalidGids(msg_ptr);
+        auto etime = common::TimeUtils::TimestampMs();
+        if (etime - btime > 10000lu) {
+            ZJC_WARN("HandleInvalidGids handle message timeout: %d, %lu", msg_ptr->header.tx_proto().step(), (etime - btime));
+        }
         return;
     }
 
     assert(msg_ptr->thread_idx < common::kMaxThreadCount);
     pools_msg_queue_[msg_ptr->thread_idx].push(msg_ptr);
     pop_tx_con_.notify_one();
+    auto now_tm = common::TimeUtils::TimestampMs();
+    if (now_tm > prev_show_tm_ms_ + 3000) {
+        for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
+            ZJC_INFO("pools stored message size: %d, %d", i, pools_msg_queue_[i].size());
+        }
+        prev_show_tm_ms_ = now_tm;
+    }
 }
 
 void TxPoolManager::HandleInvalidGids(const transport::MessagePtr& msg_ptr) {
@@ -571,7 +588,12 @@ void TxPoolManager::PopPoolsMessage() {
                 }
 
                 msg_ptr->thread_idx = -1;
+                auto btime = common::TimeUtils::TimestampMs();
                 HandlePoolsMessage(msg_ptr);
+                auto etime = common::TimeUtils::TimestampMs();
+                if (etime - btime > 10000lu) {
+                    ZJC_WARN("handle message timeout: %d, %lu", msg_ptr->header.tx_proto().step(), (etime - btime));
+                }
             }
         }
 
@@ -1221,7 +1243,7 @@ void TxPoolManager::BftCheckInvalidGids(
 
 void TxPoolManager::PopTxs(uint32_t pool_index) {
     uint32_t count = 0;
-    while (msg_queues_[pool_index].size() > 0 && ++count < kPopMessageCountEachTime) {
+    while (msg_queues_[pool_index].size() > 0) {
         transport::MessagePtr msg_ptr = nullptr;
         msg_queues_[pool_index].pop(&msg_ptr);
 //         auto& tx_msg = msg_ptr->header.tx_proto();

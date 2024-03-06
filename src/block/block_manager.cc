@@ -384,7 +384,7 @@ void BlockManager::CheckWaitingBlocks(uint8_t thread_idx, uint32_t shard, uint64
     }
 
     while (!height_iter->second.empty()) {
-        auto& block_item = height_iter->second.front();
+        auto block_item = height_iter->second.front();
         height_iter->second.pop();
         if (block_agg_valid_func_ != nullptr && !block_agg_valid_func_(thread_idx, *block_item)) {
             ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, "

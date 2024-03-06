@@ -194,7 +194,7 @@ int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
 
         return kTransportPriorityLow;
     case common::kPoolsMessage:
-        return kTransportPriorityHigh;
+        return kTransportPrioritySystem;
     case common::kInitMessage:
         return kTransportPriorityHighest;
     case common::kBlsMessage:
@@ -232,7 +232,6 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
     }
 
     if (!IsMessageUnique(msg_ptr->header.hash64())) {
-        ZJC_DEBUG("message filtered: %lu", msg_ptr->header.hash64());
         return;
     }
 
