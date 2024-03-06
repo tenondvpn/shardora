@@ -829,7 +829,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
 
             bft_msgs->msgs[0] = msg_ptr;
-            ZJC_INFO("====1.1 backup receive prepare msg: %s, height: %d, latest: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), new_height, latest_commit_height(zbft.pool_index()));
+            // ZJC_INFO("====1.1 backup receive prepare msg: %s, height: %d, latest: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), new_height, latest_commit_height(zbft.pool_index()));
             
             // TODO 此处应该回复消息给 leader，避免 leader 等待 bft 的 10s 超时，造成待共识队列阻塞
             if (new_height < latest_commit_height(zbft.pool_index()) + 1) {
@@ -856,7 +856,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
 
             bft_msgs->msgs[1] = msg_ptr;
-            ZJC_INFO("====1.2 backup receive precommit msg: %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
+            // ZJC_INFO("====1.2 backup receive precommit msg: %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
 
             if (bft_msgs->msgs[0] != nullptr &&
                 bft_msgs->msgs[0]->header.zbft().tx_bft().height() != latest_commit_height(zbft.pool_index()) + 1) {
@@ -2017,7 +2017,7 @@ int BftManager::LeaderPrepare(
 
     bft_msg.set_leader_idx(elect_item.local_node_member_index);
     bft_msg.set_prepare_gid(bft_ptr->gid());
-    ZJC_INFO("====0.1 leader send prepare msg: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
+    // ZJC_INFO("====0.1 leader send prepare msg: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_elect_height(bft_ptr->elect_height());
     bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
@@ -2514,7 +2514,7 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
     auto& zbft = msg_ptr->header.zbft();
     if (isPrepare(zbft)) {
         int res = LeaderHandlePrepare(msg_ptr);
-        ZJC_INFO("====1.1 leader receive prepare msg: %s, res: %d, leader: %d, member: %d, agree: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), res, zbft.leader_idx(), zbft.member_index(), zbft.agree_precommit());
+        // ZJC_INFO("====1.1 leader receive prepare msg: %s, res: %d, leader: %d, member: %d, agree: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), res, zbft.leader_idx(), zbft.member_index(), zbft.agree_precommit());
         if (res == kConsensusAgree) {
             LeaderSendPrecommitMessage(msg_ptr, true);
         } else if (res == kConsensusOppose) {
@@ -2529,7 +2529,7 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
         ZJC_DEBUG("has precommit now leader handle gid: %s",
             common::Encode::HexEncode(zbft.precommit_gid()).c_str());
         auto bft_ptr = LeaderGetZbft(msg_ptr, zbft.precommit_gid());
-        ZJC_INFO("====1.2 leader receive precommit msg: %s, has res: %d, leader: %d, member: %d", common::Encode::HexEncode(zbft.precommit_gid()).c_str(), bft_ptr != nullptr, zbft.leader_idx(), zbft.member_index());
+        // ZJC_INFO("====1.2 leader receive precommit msg: %s, has res: %d, leader: %d, member: %d", common::Encode::HexEncode(zbft.precommit_gid()).c_str(), bft_ptr != nullptr, zbft.leader_idx(), zbft.member_index());
         if (bft_ptr == nullptr) {
 //             ZJC_ERROR("precommit get bft failed: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
             return;

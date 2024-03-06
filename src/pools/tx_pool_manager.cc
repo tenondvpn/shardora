@@ -1083,7 +1083,7 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
         assert(false);
         return false;
     }
-    ZJC_INFO("====4 tx verify dur: %lu us", common::TimeUtils::TimestampUs() - s);
+    // ZJC_INFO("====4 tx verify dur: %lu us", common::TimeUtils::TimestampUs() - s);
 
     if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
         // avoid save gid different tx
