@@ -261,14 +261,14 @@ int tx_main(int argc, char** argv) {
             return 1;
         }
 
-        if (pos % 1000000000 == 0) {
+        if (pos % 100 == 0) {
             ++prikey_pos;
             from_prikey = prikeys[prikey_pos % prikeys.size()];
             security->SetPrivateKey(from_prikey);
             usleep(10000);
         }
 
-        usleep(400);
+        usleep(200);
     }
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {
