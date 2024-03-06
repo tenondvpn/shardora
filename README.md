@@ -1,179 +1,129 @@
 # zjchain
 
-## For Testing
-
-Use the following command to filter and sort specific log entries from `zjchain.log`:
-
-```bash
-grep "new from add new to sharding" ./log/zjchain.log | grep "pool: 0" | awk -F' ' '{ printf("%03d", $19); print " " $15}' | sort > 0
-```
-
 ## Genesis Nodes Deployment
 
-### Deploy on One Server
+### 编写配置文件
 
-```shell
-sh deploy_genesis.sh Release 10.101.20.35
+编写 nodes_conf.yml 文件
+
+```yaml
+nodes:
+  - name: r1
+    net: 2
+    server: 10.101.20.35
+    http_port: 8201
+    tcp_port: 12001
+  - name: r2
+    net: 2
+    server: 10.101.20.35
+    http_port: 8202
+    tcp_port: 12002
+  - name: r3
+    net: 2
+    server: 10.101.20.33
+    http_port: 8203
+    tcp_port: 12003
+  - name: s3_1
+    net: 3
+    server: 10.101.20.35
+    http_port: 8301
+    tcp_port: 13001
+  - name: s3_2
+    net: 3
+    server: 10.101.20.35
+    http_port: 8302
+    tcp_port: 13002
+  - name: s3_3
+    net: 3
+    server: 10.101.20.35
+    port: 8103
+    http_port: 8303
+    tcp_port: 13003
+  - name: s3_4
+    net: 3
+    server: 10.101.20.33
+    http_port: 8304
+    tcp_port: 13004
+  - name: s3_5
+    net: 3
+    server: 10.101.20.33
+    http_port: 8305
+    tcp_port: 13005
+  - name: s3_6
+    net: 3
+    server: 10.101.20.32
+    http_port: 8306
+    tcp_port: 13006
+  - name: s4_1
+    net: 4
+    server: 10.101.20.35
+    http_port: 8401
+    tcp_port: 14001
+  - name: s4_2
+    net: 4
+    server: 10.101.20.35
+    http_port: 8402
+    tcp_port: 14002
+  - name: s4_3
+    net: 4
+    server: 10.101.20.35
+    http_port: 8403
+    tcp_port: 14003
+  - name: s4_4
+    net: 4
+    server: 10.101.20.35
+    http_port: 8404
+    tcp_port: 14004
+  - name: s4_5
+    net: 4
+    server: 10.101.20.33
+    http_port: 8405
+    tcp_port: 14005
+  - name: s4_6
+    net: 4
+    server: 10.101.20.33
+    http_port: 8406
+    tcp_port: 14006
+  - name: s4_7
+    net: 4
+    server: 10.101.20.32
+    http_port: 8407
+    tcp_port: 14007
+account_sks:
+  3: # 分片 3 的创世账号私钥，共 256 个，剩余的随机生成账户
+    - b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708
+    - 02b91d27bb1761688be87898c44772e727f5e2f64aaf51a42931a0ca66a8a227
+    - 580bb274af80b8d39b33f25ddbc911b14a1b3a2a6ec8ca376ffe9661cf809d36
+    - 37a286f6e530de788a88ed46e15426812cf69a49bbd53f682db4f8ff5a0c84de
+passwords: # 服务器密码
+  10.101.20.35: '!@#$%^'
+  10.101.20.33: '!@#$%^'
+  10.101.20.32: '!@#$%^'
 ```
 
-### Deploy on Multiple Servers
+也可使用脚本快速生成，会自动负载均衡到服务器
+```
+python3 gen_nodes_conf.py -n 10 -s 1 -m 10.101.20.29,10.101.20.30 -r 3 -m0 10.101.20.29
 
-#### 1. Create Genesis Data
-
-Execute the script below to generate genesis data in the db folders:
-
-```bash
-sh ./genesis.sh Release
+-n --node_num_per_shard 每个分配的节点数
+-s --shard_num 分片数量，比如 1 时只生成 #3
+-m --machines 机器ip，逗号分割
+-r --root_node_num root节点个数
+-m0 --machine0 部署脚本所在机器
 ```
 
-The shard distribution is specified in the `genesis.sh` file. Edit this file if you need to modify the node-to-shard mapping.
+### 生成部署脚本
 
-#### 2. Configure `zjchain.conf` for Node Deployment
+```
+python3 gen_genesis_script.py --config "./nodes_conf_n50_s1_m5.yml" --datadir="/root/xf"
 
-Here is a sample configuration:
-
-```ini
-[db]
-path=./db
-[log]
-path=log/zjchain.log
-[zjchain]
-bootstrap=031d29587f946b7e57533725856e3b2fc840ac8395311fea149642334629cd5757:10.101.20.35:11001,03a6f3b7a4a3b546d515bfa643fc4153b86464543a13ab5dd05ce6f095efb98d87:10.101.20.35:12001,031e886027cdf3e7c58b9e47e8aac3fe67c393a155d79a96a0572dd2163b4186f0:10.101.20.35:13001
-ck_ip=10.101.20.35
-ck_passworkd=""
-ck_user=""
-country=NL
-data_service_node_for_net_id=-1
-first_node=0
-http_port=8781
-id=c513ba24d79f6adc5060caebc9267663457f74c2
-local_ip=10.101.20.35
-local_port=21001
-net_id=4
-prikey=e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269
-show_cmd=0
-statistic_ck=true
-tcp_spec=0.0.0.0:21002
-local_member_idx=0
-[tx_block]
-network_id=4
+--config 节点配置文件
+--datadir 节点部署到的文件夹
 ```
 
-Key fields to note:
+会生成部署脚本 deploy_genesis.sh
 
-- `bootstrap`: Nodes to connect to for network establishment.
-- `local_ip`: IP address of the node.
-- `local_port`: Port number of the node.
-- `prikey`: Private key of the node account.
-- `http_port`: If non-zero, a HTTP server starts.
-
-Replace `127.0.0.1` with the actual IP in `zjchain.conf`. Use the provided tool for this:
-
-```bash
-sh -x fetch.sh 127.0.0.1 10.101.20.35 r1 r2 r3 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11
+执行即可部署
 ```
-
-Arguments:
-
-- `arg1`: Source IP to be replaced.
-- `arg2`: New IP address.
-- `arg3..`: Node config files to update.
-
-Manual editing is also an option.
-
-#### 3. Copy Genesis Data to Other Servers and Edit `zjchain.conf`
-
-Use `fetch.sh` to transfer genesis data and update IP addresses:
-
-```bash
-sh -x fetch.sh 10.101.20.35 10.101.20.36 r1 r2 r3 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11
-```
-
-This script:
-
-1. Copies genesis data from the source server.
-2. Updates IPs in `zjchain.conf`.
-
-Alternatively, manually upload genesis data and edit config files.
-
-#### 4. Start or Stop Nodes
-
-Execute the start commands as follows:
-
-```bash
-# server1
-cd /root/deploy && sh start.sh r1
-sleep 3
-
-# server2
-cd /root/deploy && sh start.sh r2 r3
-```
-
-To stop nodes:
-
-```shell
-cd /root/deploy && sh stop.sh r1 r2 r3
-```
-
-If starting the first node, wait at least 3 seconds before launching others.
-
-
-## Start A New Node
-
-Follow these steps to start a new node and join the chain:
-
-#### 0. Fetch exec files from genesis server.
-
-```shell
-sh fetch.sh 10.101.20.35 10.101.20.36 zjchain
-```
-
-#### 1. Prepare `zjchain.conf` for the Node
-
-Example configuration:
-
-```ini
-[db]
-path=./db
-[log]
-path=log/zjchain.log
-[zjchain]
-bootstrap=031d29587f946b7e57533725856e3b2fc840ac8395311fea149642334629cd5757:10.101.20.35:11001,03a6f3b7a4a3b546d515bfa643fc4153b86464543a13ab5dd05ce6f095efb98d87:10.101.20.35:12001,031e886027cdf3e7c58b9e47e8aac3fe67c393a155d79a96a0572dd2163b4186f0:10.101.20.35:13001
-country=NL
-first_node=0
-http_port=8792
-local_ip=10.101.20.36
-local_port=32001
-prikey=0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db999
-show_cmd=0
-for_ck=false
-local_member_idx=2
-```
-
-#### 2. Send a Transaction to the Node Account
-
-Send a transaction to allocate a shard for the node. A Node.js script is provided for this:
-
-```bash
-cd ./src/contract/tests/contracts
-
-node test_transaction.js 1 {node private key}
-
-shell > 
-{
-  balance: '0',
-  shardingId: 3, // the node is created in shard3 by root 
-  poolIndex: 146,
-  addr: 'NIDjSIlmODPBAs7mULVnd+EK0/s=',
-  type: 'kNormal',
-  latestHeight: '1'
-}
-```
-
-#### 3. Run the Node
-
-Start the node with:
-
-```bash
-sh /root/deploy/start.sh
+sh deploy_genesis.sh Release/Debug
 ```

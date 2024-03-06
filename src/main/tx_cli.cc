@@ -13,8 +13,8 @@
 
 using namespace zjchain;
 static bool global_stop = false;
-static const std::string kBroadcastIp = "10.101.20.29";
-static const uint16_t kBroadcastPort = 13001;
+static const std::string kBroadcastIp = "10.101.20.35";
+static const uint16_t kBroadcastPort = 13004;
 
 static void SignalCallback(int sig_int) {
     global_stop = true;
@@ -218,7 +218,7 @@ int tx_main(int argc, char** argv) {
     }
 
     std::string gid = common::Random::RandomString(32);
-    std::string prikey = common::Encode::HexDecode("263960455acf4ad92ce0911de10d2f995c806e3e6d1c931f085752e65aca496c");
+    std::string prikey = common::Encode::HexDecode("b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708");
     std::string to = common::Encode::HexDecode("d9ec5aff3001dece14e1f4a35a39ed506bd6274b");
     uint32_t prikey_pos = 0;
     auto from_prikey = prikey;
@@ -267,6 +267,8 @@ int tx_main(int argc, char** argv) {
             security->SetPrivateKey(from_prikey);
             usleep(10000);
         }
+
+        usleep(200);
     }
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {

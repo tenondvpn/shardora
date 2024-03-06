@@ -5,7 +5,9 @@
 fromip="$1"
 newip="$2"
 pass="$3"
-services=("${@:4}")
+datadir="$4"
+services=("${@:5}")
+
 
 if [[ -z $1 ]]; then
     echo "Error: SrcIp is required."
@@ -20,16 +22,16 @@ fi
 if [[ "${fromip}" == "127.0.0.1" ]]; then
 	for service in "${services[@]}"; do
 		# 除了 bootstrap 那一行其余都执行替换
-		sed -i "s/${fromip}/${newip}/g" "zjnodes/${service}/conf/zjchain.conf"
+		sed -i "s/${fromip}/${newip}/g" "${datadir}/zjnodes/${service}/conf/zjchain.conf"
 	done
 else
-	rm -rf /root/zjnodes
-	rm -rf /root/deploy
-	sshpass -p $pass scp -o StrictHostKeyChecking=no -r root@"${fromip}":/root/zjnodes /root/zjnodes
-	sshpass -p $pass scp -o StrictHostKeyChecking=no -r root@"${fromip}":/root/deploy /root/deploy
+	rm -rf "${datadir}"/zjnodes
+	rm -rf "${datadir}"/deploy
+	sshpass -p $pass scp -o StrictHostKeyChecking=no -r root@"${fromip}":"${datadir}"/zjnodes "${datadir}"/zjnodes
+	sshpass -p $pass scp -o StrictHostKeyChecking=no -r root@"${fromip}":"$datadir"/deploy "${datadir}"/deploy
 	
 	for service in "${services[@]}"; do
 		# 除了 bootstrap 那一行其余都执行替换
-		sed -i "/bootstrap/!s/${fromip}/${newip}/g" "zjnodes/${service}/conf/zjchain.conf"
+		sed -i "/bootstrap/!s/${fromip}/${newip}/g" "${datadir}/zjnodes/${service}/conf/zjchain.conf"
 	done
 fi

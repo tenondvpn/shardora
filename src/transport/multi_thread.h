@@ -1,5 +1,6 @@
 #pragma once
 
+#include <common/limit_hash_set.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -18,6 +19,7 @@
 #include "common/thread_safe_queue.h"
 #include "common/unique_set.h"
 #include "common/unique_map.h"
+#include "common/lru_set.h"
 #include "db/db.h"
 #include "protos/prefix_db.h"
 #include "protos/transport.pb.h"
@@ -96,7 +98,8 @@ private:
     std::queue<std::shared_ptr<protobuf::Header>> local_queue_;
     std::vector<ThreadHandlerPtr> thread_vec_;
     bool inited_{ false };
-    common::LimitHashSet<uint64_t> unique_message_sets_{1024000};
+    common::UniqueSet<uint64_t, 10240, 64> unique_message_sets_;
+    common::LRUSet<uint64_t> unique_message_sets2_{ 1024000 }; // 10M+ 左右
     common::ThreadSafeQueue<MessagePtr>** threads_message_queues_;
     common::ThreadSafeQueue<MessagePtr> http_server_message_queue_;
     common::ThreadSafeQueue<SavedBlockQueueItemPtr> saved_block_queue_;

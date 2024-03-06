@@ -806,6 +806,9 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         if (isPrepare(zbft)) {
+            if (isCurrentBft(zbft)) {
+                return;
+            }
              // TODO if not new prepare, return directly
             if (!isCurrentBft(zbft)) {
                 // 新的 prepare 消息（旧的 zbft 已经 commit）和同 height 不同 gid 的消息(旧的 zbft 被 opposed 时)会覆盖之前的 prepare

@@ -71,15 +71,13 @@ contract C2CSellOrder {
         emit NewSelloutValue(msg.value);
         require(msg.value >= minPlegementValue);
         emit NewSellout(msg.sender, receivable, price, msg.value, orderId);
+        require(!valid_managers[msg.sender]);
+        emit NewSellout(msg.sender, receivable, price, msg.value, orderId);
 
         if (orders[msg.sender].exists) {
             require(orders[msg.sender].managerReleased);
+            delete orders[msg.sender];
         }
-
-        emit NewSellout(msg.sender, receivable, price, msg.value, orderId);
-
-        require(!valid_managers[msg.sender]);
-        emit NewSellout(msg.sender, receivable, price, msg.value, orderId);
 
         orders[msg.sender] = SellOrder({
             accountsReceivable: receivable,
