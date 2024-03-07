@@ -108,10 +108,12 @@ private:
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
+    void UpdateAccountsThread();
+    void InitLoadAllAddress();
 
     inline bool isContractCreateTx(const block::protobuf::BlockTx& tx) {
         return tx.has_contract_code();
-    } 
+    }
 
     static const uint64_t kCheckMissingHeightPeriod = 3000000llu;
     static const uint64_t kFushTreeToDbPeriod = 6000000llu;
@@ -122,6 +124,7 @@ private:
     common::Tick check_missing_height_tick_;
     common::Tick flush_db_tick_;
     common::Tick refresh_pool_max_height_tick_;
+    common::Tick merge_updated_accounts_tick_;
     uint64_t prev_refresh_heights_tm_{ 0 };
     common::LimitHashSet<std::string> block_hash_limit_set_{ 2048u };
     bool inited_{ false };
@@ -130,6 +133,9 @@ private:
     std::shared_ptr<address::protobuf::AddressInfo> pool_address_info_[common::kImmutablePoolSize] = { nullptr };
     std::shared_ptr<address::protobuf::AddressInfo> root_pool_address_info_ = nullptr ;
     std::unordered_map<std::string, protos::AddressInfoPtr> thread_address_map_[common::kMaxThreadCount];
+    common::ThreadSafeQueue<protos::AddressInfoPtr> thread_update_accounts_queue_[common::kMaxThreadCount];
+    std::shared_ptr<std::thread> merge_update_accounts_thread_ = nullptr;
+    common::ThreadSafeQueue<protos::AddressInfoPtr> thread_valid_accounts_queue_[common::kMaxThreadCount];
 
     DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };

@@ -143,6 +143,24 @@ public:
         return addr_info;
     }
 
+    
+    void GetAllAddressInfo(std::unordered_map<std::string, protos::AddressInfoPtr>* addr_map_ptr) {
+        std::string key;
+        key.reserve(128);
+        key.append(kAddressPrefix);
+        std::map<std::string, std::string> str_addr_map;
+        db_->GetAllPrefix(key, str_addr_map);
+        auto& addr_map = *addr_map_ptr;
+        for (auto iter = str_addr_map.begin(); iter != str_addr_map.end(); ++iter) {
+            auto addr_ptr = std::make_shared<address::protobuf::AddressInfo>();
+            if (!addr_ptr->ParseFromString(iter->second)) {
+                continue;
+            }
+
+            addr_map[addr_ptr->addr()] = addr_ptr;
+        }
+    }
+
     void SaveSwapKey(
             uint32_t local_member_idx,
             uint64_t height,
