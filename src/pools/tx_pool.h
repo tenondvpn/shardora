@@ -62,6 +62,8 @@ public:
     void FlushHeightTree(db::DbWriteBatch& db_batch) {
         if (height_tree_ptr_ != nullptr) {
             height_tree_ptr_->FlushToDb(db_batch);
+            // 清理内存
+            height_tree_ptr_.reset();
         }
     }
 
