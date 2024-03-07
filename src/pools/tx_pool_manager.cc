@@ -1089,8 +1089,6 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     }
 
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-    auto s = common::TimeUtils::TimestampUs();
-    
     if (security_->Verify(
             msg_ptr->msg_hash,
             tx_msg.pubkey(),

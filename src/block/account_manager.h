@@ -1,8 +1,8 @@
 #pragma once
 
-#include <unordered_map>
-#include <queue>
 #include <memory>
+#include <queue>
+#include <unordered_map>
 
 #include "common/config.h"
 #include "common/tick.h"
@@ -129,6 +129,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<address::protobuf::AddressInfo> pool_address_info_[common::kImmutablePoolSize] = { nullptr };
     std::shared_ptr<address::protobuf::AddressInfo> root_pool_address_info_ = nullptr ;
+    std::unordered_map<std::string, protos::AddressInfoPtr> thread_address_map_[common::kMaxThreadCount];
 
     DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };
