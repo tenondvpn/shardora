@@ -161,11 +161,15 @@ public:
             synced_max_heights_[pool_index] = height;
         }
 
-        pools::protobuf::PoolLatestInfo pool_info;
-        pool_info.set_height(height);
-        pool_info.set_hash(hash);
         // 更新对应 pool 的最新状态，主要是高度信息和哈希值
         uint64_t synced_height = tx_pool_[pool_index].UpdateLatestInfo(thread_idx, height, hash, prehash);
+        
+        // 获取更新后的 poollatestinfo(不能直接吧 height 和 hash 当作 latest 因为同步的时候有可能是乱序的)
+        pools::protobuf::PoolLatestInfo pool_info;
+        pool_info.set_height(tx_pool_[pool_index].latest_height());
+        pool_info.set_hash(tx_pool_[pool_index].latest_hash());        
+        // 更新对应 pool 的最新状态，主要是高度信息和哈希值
+        
         pool_info.set_synced_height(synced_height);
         prefix_db_->SaveLatestPoolInfo(sharding_id, pool_index, pool_info, db_batch);
     }
