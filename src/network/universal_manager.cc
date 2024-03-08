@@ -30,6 +30,7 @@ void UniversalManager::Init(
     security_ = security;
     db_ = db;
     acc_mgr_ = acc_mgr;
+    assert(acc_mgr_ != nullptr);
 }
 
 void UniversalManager::Destroy() {

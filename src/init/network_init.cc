@@ -124,13 +124,13 @@ int NetworkInit::Init(int argc, char** argv) {
     network::Route::Instance()->RegisterMessage(
         common::kInitMessage,
         std::bind(&NetworkInit::HandleMessage, this, std::placeholders::_1));
+    account_mgr_ = std::make_shared<block::AccountManager>();
     network::UniversalManager::Instance()->Init(security_, db_, account_mgr_);
     if (InitNetworkSingleton() != kInitSuccess) {
         INIT_ERROR("InitNetworkSingleton failed!");
         return kInitError;
     }
 
-    account_mgr_ = std::make_shared<block::AccountManager>();
     block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
     bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_);
     elect_mgr_ = std::make_shared<elect::ElectManager>(
