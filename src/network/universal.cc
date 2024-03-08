@@ -1,5 +1,6 @@
 #include "network/universal.h"
 
+#include "block/account_manager.h"
 #include "common/global_info.h"
 #include "common/country_code.h"
 #include "dht/dht_key.h"
@@ -14,7 +15,11 @@ namespace zjchain {
 
 namespace network {
 
-Universal::Universal(dht::NodePtr& local_node, std::shared_ptr<db::Db>& db) : BaseDht(local_node) {
+Universal::Universal(
+        dht::NodePtr& local_node, 
+        std::shared_ptr<db::Db>& db,
+        std::shared_ptr<block::AccountManager>& acc_mgr) : BaseDht(local_node) {
+    acc_mgr_ = acc_mgr;
     if (local_node->sharding_id == network::kUniversalNetworkId) {
         is_universal_ = true;
     }
@@ -54,13 +59,13 @@ int Universal::Init(
     return kNetworkSuccess;
 }
 
-int Universal::Join(dht::NodePtr& node) {
+int Universal::Join(uint8_t thread_idx, dht::NodePtr& node) {
     int res = BaseDht::Join(node);
     if (!is_universal_) {
         return res;
     }
 
-    AddNodeToUniversal(node);
+    AddNodeToUniversal(thread_idx, node);
     // add to subnetworks
 //     ZJC_DEBUG("universal join node: %s:%d", node->public_ip.c_str(), node->public_port);
     DhtManager::Instance()->Join(node);
@@ -221,6 +226,7 @@ int Universal::Destroy() {
 }
 
 void Universal::OnNewElectBlock(
+        uint8_t thread_idx,
         uint32_t sharding_id,
         uint64_t elect_height,
         common::MembersPtr& members,
@@ -253,7 +259,7 @@ void Universal::OnNewElectBlock(
         old_id_set.insert(node->id);
         if (new_item->id_set.find((*iter)->id) != new_item->id_set.end()) {
             if (des_dht != nullptr) {
-                des_dht->UniversalJoin(*iter);
+                des_dht->UniversalJoin(thread_idx, *iter);
                 ZJC_DEBUG("expand nodes join network %u add new node: %s:%u, %s",
                     sharding_id,
                     (*iter)->public_ip.c_str(),
@@ -304,7 +310,7 @@ void Universal::OnNewElectBlock(
     }
 }
 
-int Universal::AddNodeToUniversal(dht::NodePtr& node) {
+int Universal::AddNodeToUniversal(uint8_t thread_idx, dht::NodePtr& node) {
     bool elected = false;
     for (auto sharding_iter = sharding_latest_height_map_.begin();
         sharding_iter != sharding_latest_height_map_.end(); ++sharding_iter) {
@@ -326,7 +332,7 @@ int Universal::AddNodeToUniversal(dht::NodePtr& node) {
     if (!elected &&
             common::GlobalInfo::Instance()->network_id() >= network::kRootCongressNetworkId &&
             common::GlobalInfo::Instance()->network_id() < network::kConsensusShardEndNetworkId) {
-        auto account_info = prefix_db_->GetAddressInfo(node->id);
+        auto account_info = acc_mgr_->GetAccountInfo(thread_idx, node->id);
         if (account_info != nullptr) {
             auto new_node = std::make_shared<dht::Node>(
                 account_info->sharding_id() + network::kConsensusWaitingShardOffset,

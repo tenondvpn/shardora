@@ -13,13 +13,17 @@
 
 namespace zjchain {
 
+namespace block {
+    class AccountManager;
+};
+
 namespace zjcvm {
 
 class ZjchainHost;
 class Execution {
 public:
     static Execution* Instance();
-    void Init(std::shared_ptr<db::Db>& db);
+    void Init(std::shared_ptr<db::Db>& db, std::shared_ptr<block::AccountManager>& acc_mgr);
     int execute(
         const std::string& contract_address,
         const std::string& input,
@@ -35,7 +39,7 @@ public:
 
     bool IsAddressExists(uint8_t thread_idx, const std::string& addr) {
         if (thread_idx >= thread_count_) {
-            auto address_info = prefix_db_->GetAddressInfo(addr);
+            auto address_info = acc_mgr_->GetAccountInfo(thread_idx, addr);
             if (address_info != nullptr) {
                 return true;
             }
@@ -49,7 +53,7 @@ public:
         }
 
         // get from db and add to memory cache
-        auto address_info = prefix_db_->GetAddressInfo(addr);
+        auto address_info = acc_mgr_->GetAccountInfo(thread_idx, addr);
         if (address_info != nullptr) {
             address_exists_set_[thread_idx].add(addr);
             return true;
@@ -197,6 +201,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint8_t thread_count_ = 0;
+    std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(Execution);
 };

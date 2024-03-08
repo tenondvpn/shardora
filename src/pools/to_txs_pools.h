@@ -10,6 +10,10 @@
 
 namespace zjchain {
 
+class block {
+    class AccountManager;
+}
+
 namespace pools {
 
 class TxPoolManager;
@@ -19,40 +23,44 @@ public:
         std::shared_ptr<db::Db>& db,
         const std::string& local_id,
         uint32_t max_sharding_id,
-        std::shared_ptr<pools::TxPoolManager>& pools_mgr);
+        std::shared_ptr<pools::TxPoolManager>& pools_mgr,
+        std::shared_ptr<block::AccountManager>& acc_mgr);
     ~ToTxsPools();
     void NewBlock(const std::shared_ptr<block::protobuf::Block>& block, db::DbWriteBatch& db_batch);
     int CreateToTxWithHeights(
+        uint8_t thread_idx, 
         uint32_t sharding_id,
         uint64_t elect_height,
         const pools::protobuf::ShardToTxItem& leader_to_heights,
         std::string* to_hash);
     int LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights);
-    bool StatisticTos(const pools::protobuf::ShardToTxItem& to_heights);
+    bool StatisticTos(uint8_t thread_idx, const pools::protobuf::ShardToTxItem& to_heights);
 
 private:
-    std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(
-        const std::string& addr);
     void HandleNormalToTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx_info);
     void LoadLatestHeights();
     void HandleNormalFrom(
+        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleCreateContractUserCall(
+        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleCreateContractByRootFrom(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleContractGasPrepayment(
+        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleRootCreateAddress(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleContractExecute(
+        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleJoinElect(
@@ -72,7 +80,11 @@ private:
     void HandleElectJoinVerifyVec(
         const std::string& verify_hash,
         std::vector<bls::protobuf::JoinElectInfo>& verify_reqs);
-    bool PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_t max_height);
+    bool PreStatisticTos(
+        uint8_t thread_idx, 
+        uint32_t pool_idx, 
+        uint64_t min_height, 
+        uint64_t max_height);
     void RemoveCacheBlock(uint32_t pool_idx, uint64_t height) {
         auto iter = added_heights_[pool_idx].find(height);
         if (iter != added_heights_[pool_idx].end()) {
@@ -112,6 +124,7 @@ private:
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<pools::protobuf::ShardToTxItem> prev_to_heights_ = nullptr;
     uint64_t has_statistic_height_[common::kInvalidPoolIndex] = { 1 };
+    std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ToTxsPools);
 };

@@ -1,5 +1,6 @@
 #include "pools/tx_pool_manager.h"
 
+#include "block/account_manager.h"
 #include "common/log.h"
 #include "common/global_info.h"
 #include "common/hash.h"
@@ -23,9 +24,11 @@ TxPoolManager::TxPoolManager(
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<sync::KeyValueSync>& kv_sync,
+        std::shared_ptr<block::AccountManager>& acc_mgr,
         RotationLeaderCallback rotatition_leader_cb) {
     security_ = security;
     db_ = db;
+    acc_mgr_ = acc_mgr;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     prefix_db_->InitGidManager();
     kv_sync_ = kv_sync;
@@ -406,23 +409,6 @@ void TxPoolManager::SyncBlockWithMaxHeights(uint8_t thread_idx, uint32_t pool_id
         pool_idx,
         height,
         sync::kSyncHigh);
-}
-
-std::shared_ptr<address::protobuf::AddressInfo> TxPoolManager::GetAddressInfo(
-    const std::string& addr) {
-    // first get from cache
-    std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
-    if (address_map_.get(addr, &address_info)) {
-        return address_info;
-    }
-
-    // get from db and add to memory cache
-    address_info = prefix_db_->GetAddressInfo(addr);
-    if (address_info != nullptr) {
-        address_map_.add(addr, address_info);
-    }
-
-    return address_info;
 }
 
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
@@ -812,7 +798,7 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& tx_msg = *header.mutable_tx_proto();
     auto addr = security_->GetAddress(tx_msg.pubkey());
-    msg_ptr->address_info = GetAddressInfo(addr);
+    msg_ptr->address_info = acc_mgr_->GetAccountInfo(msg_ptr->thread_idx, addr);
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no address info: %s", common::Encode::HexEncode(addr).c_str());
         return;
@@ -940,7 +926,7 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    msg_ptr->address_info = GetAddressInfo(tx_msg.to());
+    msg_ptr->address_info = acc_mgr_->GetAccountInfo(msg_ptr->thread_idx, tx_msg.to());
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no contract address info: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
@@ -1057,7 +1043,7 @@ void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg
 bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& tx_msg = header.tx_proto();
-    msg_ptr->address_info = GetAddressInfo(security_->GetAddress(tx_msg.pubkey()));
+    msg_ptr->address_info = acc_mgr_->GetAccountInfo(msg_ptr->thread_idx, security_->GetAddress(tx_msg.pubkey()));
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no address info.");
         return false;
@@ -1198,7 +1184,7 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
     }
 
     ZJC_INFO("create contract address: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
-    auto contract_info = GetAddressInfo(tx_msg.to());
+    auto contract_info = acc_mgr_->GetAccountInfo(msg_ptr->thread_idx, tx_msg.to());
     if (contract_info != nullptr) {
         ZJC_WARN("contract address exists: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;

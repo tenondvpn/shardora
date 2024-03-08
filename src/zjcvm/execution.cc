@@ -1,5 +1,6 @@
 #include "zjcvm/execution.h"
 
+#include "block/account_manager.h"
 #include "common/encode.h"
 #include "common/global_info.h"
 #include "evmone/evmone.h"
@@ -32,8 +33,9 @@ Execution* Execution::Instance() {
     return &ins;
 }
 
-void Execution::Init(std::shared_ptr<db::Db>& db) {
+void Execution::Init(std::shared_ptr<db::Db>& db, std::shared_ptr<block::AccountManager>& acc_mgr) {
     db_ = db;
+    acc_mgr_ = acc_mgr;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     evm_ = evmc::VM{ evmc_create_evmone()};
 
