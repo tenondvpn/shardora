@@ -213,7 +213,7 @@ int ShardNetwork<DhtType>::JoinShard(uint8_t thread_idx) {
             nodes[i]->public_port,
             nodes[i]->pubkey_str,
             nodes[i]->id);
-        elect_dht_->Join(new_node);
+        elect_dht_->Join(thread_idx, new_node);
         ZJC_DEBUG("join network %u add new node: %s:%u, %s",
             sharding_id_,
             nodes[i]->public_ip.c_str(),
