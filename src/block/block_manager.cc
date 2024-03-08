@@ -13,8 +13,10 @@
 #include "protos/block.pb.h"
 #include "protos/elect.pb.h"
 #include "transport/processor.h"
+#include <common/log.h>
 #include <protos/pools.pb.h>
 #include <protos/tx_storage_key.h>
+#include <malloc.h>
 
 namespace zjchain {
 
@@ -1075,6 +1077,9 @@ void BlockManager::AddNewBlock(
             HandleNormalToTx(thread_idx, *block_item, tx_list[i], db_batch);
             break;
         case pools::protobuf::kConsensusRootTimeBlock:
+            // 释放内存碎片，耗时
+            ZJC_INFO("====9, malloc_trim");
+            malloc_trim(0);
             prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
             break;
         case pools::protobuf::kStatistic:
