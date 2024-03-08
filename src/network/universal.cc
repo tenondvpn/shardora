@@ -69,7 +69,7 @@ int Universal::Join(uint8_t thread_idx, dht::NodePtr& node) {
     // add to subnetworks
 //     ZJC_DEBUG("universal join node: %s:%d", node->public_ip.c_str(), node->public_port);
     DhtManager::Instance()->Join(thread_idx, node);
-    UniversalManager::Instance()->Join(node);
+    UniversalManager::Instance()->Join(thread_idx, node);
     return res;
 }
 
