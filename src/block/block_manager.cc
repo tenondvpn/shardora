@@ -16,7 +16,7 @@
 #include <common/log.h>
 #include <protos/pools.pb.h>
 #include <protos/tx_storage_key.h>
-#include <malloc.h>
+#include "google/malloc_extension.h"
 
 namespace zjchain {
 
@@ -1079,7 +1079,8 @@ void BlockManager::AddNewBlock(
         case pools::protobuf::kConsensusRootTimeBlock:
             // 释放内存碎片，耗时
             ZJC_INFO("====9, malloc_trim");
-            malloc_trim(0);
+            MallocExtension::instance()->ReleaseFreeMemory();
+
             prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
             break;
         case pools::protobuf::kStatistic:
