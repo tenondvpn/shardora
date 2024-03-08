@@ -61,6 +61,31 @@ void Execution::Init(std::shared_ptr<db::Db>& db, std::shared_ptr<block::Account
     storage_map_ = new common::UniqueMap<std::string, std::string, 256, 16>[thread_count_];
 }
 
+bool Execution::IsAddressExists(uint8_t thread_idx, const std::string& addr) {
+    if (thread_idx >= thread_count_) {
+        auto address_info = acc_mgr_->GetAccountInfo(thread_idx, addr);
+        if (address_info != nullptr) {
+            return true;
+        }
+
+        return false;
+    }
+
+    assert(thread_idx < common::kMaxThreadCount);
+    if (address_exists_set_[thread_idx].exists(addr)) {
+        return true;
+    }
+
+    // get from db and add to memory cache
+    auto address_info = acc_mgr_->GetAccountInfo(thread_idx, addr);
+    if (address_info != nullptr) {
+        address_exists_set_[thread_idx].add(addr);
+        return true;
+    }
+
+    return false;
+}
+
 int Execution::execute(
         const std::string& bytes_code,
         const std::string& str_input,

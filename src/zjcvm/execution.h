@@ -36,31 +36,7 @@ public:
         uint32_t call_mode,
         ZjchainHost& host,
         evmc::Result* res);
-
-    bool IsAddressExists(uint8_t thread_idx, const std::string& addr) {
-        if (thread_idx >= thread_count_) {
-            auto address_info = acc_mgr_->GetAccountInfo(thread_idx, addr);
-            if (address_info != nullptr) {
-                return true;
-            }
-
-            return false;
-        }
-
-        assert(thread_idx < common::kMaxThreadCount);
-        if (address_exists_set_[thread_idx].exists(addr)) {
-            return true;
-        }
-
-        // get from db and add to memory cache
-        auto address_info = acc_mgr_->GetAccountInfo(thread_idx, addr);
-        if (address_info != nullptr) {
-            address_exists_set_[thread_idx].add(addr);
-            return true;
-        }
-
-        return false;
-    }
+    bool IsAddressExists(uint8_t thread_idx, const std::string& addr);
 
     bool AddressWarm(uint8_t thread_idx, const evmc::address& addr) {
         if (thread_idx >= thread_count_) {
