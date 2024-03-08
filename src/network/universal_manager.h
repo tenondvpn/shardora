@@ -31,7 +31,7 @@ public:
         std::shared_ptr<block::AccountManager>& acc_mgr);
     void Destroy();
     void DropNode(const std::string& ip, uint16_t port);
-    void Join(const dht::NodePtr& node);
+    void Join(uint8_t thread_idx, const dht::NodePtr& node);
     void OnNewElectBlock(
         uint8_t thread_idx,
         uint32_t sharding_id,

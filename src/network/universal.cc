@@ -60,7 +60,7 @@ int Universal::Init(
 }
 
 int Universal::Join(uint8_t thread_idx, dht::NodePtr& node) {
-    int res = BaseDht::Join(node);
+    int res = BaseDht::Join(thread_idx, node);
     if (!is_universal_) {
         return res;
     }
@@ -68,7 +68,7 @@ int Universal::Join(uint8_t thread_idx, dht::NodePtr& node) {
     AddNodeToUniversal(thread_idx, node);
     // add to subnetworks
 //     ZJC_DEBUG("universal join node: %s:%d", node->public_ip.c_str(), node->public_port);
-    DhtManager::Instance()->Join(node);
+    DhtManager::Instance()->Join(thread_idx, node);
     UniversalManager::Instance()->Join(node);
     return res;
 }
@@ -322,7 +322,7 @@ int Universal::AddNodeToUniversal(uint8_t thread_idx, dht::NodePtr& node) {
                 node->public_port,
                 node->pubkey_str,
                 node->id);
-            BaseDht::Join(new_node);
+            BaseDht::Join(thread_idx, new_node);
             elected = true;
             ZJC_DEBUG("universal add node: %s, sharding id: %u",
                 common::Encode::HexEncode(node->id).c_str(), sharding_iter->first);
@@ -340,14 +340,14 @@ int Universal::AddNodeToUniversal(uint8_t thread_idx, dht::NodePtr& node) {
                 node->public_port,
                 node->pubkey_str,
                 node->id);
-            BaseDht::Join(new_node);
+            BaseDht::Join(thread_idx, new_node);
             auto root_new_node = std::make_shared<dht::Node>(
                 network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset,
                 node->public_ip,
                 node->public_port,
                 node->pubkey_str,
                 node->id);
-            BaseDht::Join(root_new_node);
+            BaseDht::Join(thread_idx, root_new_node);
         }
     }
 
