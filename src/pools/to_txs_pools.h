@@ -10,9 +10,9 @@
 
 namespace zjchain {
 
-class block {
+namespace block {
     class AccountManager;
-}
+};
 
 namespace pools {
 
