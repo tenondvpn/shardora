@@ -41,7 +41,10 @@ TxPoolManager::TxPoolManager(
 
     ZJC_INFO("TxPoolManager init success: %d", common::kInvalidPoolIndex);
     InitCrossPools();
-    pop_message_thread_ = std::make_shared<std::thread>(&TxPoolManager::PopPoolsMessage, this);
+    pop_message_thread_ = std::make_shared<std::thread>(
+        &TxPoolManager::PopPoolsMessage, 
+        this, 
+        common::GlobalInfo::Instance()->now_valid_thread_index());
     // 每 10ms 会共识一次时间块
     tick_.CutOff(
         10000lu,
@@ -564,7 +567,7 @@ void TxPoolManager::HandleInvalidGids(const transport::MessagePtr& msg_ptr) {
     }
 }
 
-void TxPoolManager::PopPoolsMessage() {
+void TxPoolManager::PopPoolsMessage(uint8_t thread_idx) {
     while (!destroy_) {
         for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
             while (pools_msg_queue_[i].size() > 0) {
@@ -573,7 +576,7 @@ void TxPoolManager::PopPoolsMessage() {
                     break;
                 }
 
-                msg_ptr->thread_idx = -1;
+                msg_ptr->thread_idx = thread_idx;
                 auto btime = common::TimeUtils::TimestampMs();
                 HandlePoolsMessage(msg_ptr);
                 auto etime = common::TimeUtils::TimestampMs();

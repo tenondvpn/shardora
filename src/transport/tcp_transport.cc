@@ -34,7 +34,7 @@ int TcpTransport::Init(
         bool create_server,
         MultiThreadHandler* msg_handler) {
     // server just one thread
-    server_thread_idx_ = common::GlobalInfo::Instance()->message_handler_thread_count();
+    server_thread_idx_ = common::GlobalInfo::Instance()->now_valid_thread_index();
     msg_handler_ = msg_handler;
     auto packet_handler = std::bind(
             &TcpTransport::OnClientPacket,

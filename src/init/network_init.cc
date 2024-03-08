@@ -142,10 +142,7 @@ int NetworkInit::Init(int argc, char** argv) {
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(
         security_, db_, kv_sync_, account_mgr_,
         std::bind(&NetworkInit::RotationLeaderCallback, this, std::placeholders::_1, std::placeholders::_2));
-    account_mgr_->Init(
-        common::GlobalInfo::Instance()->message_handler_thread_count(),
-        db_,
-        pools_mgr_);
+    account_mgr_->Init(db_, pools_mgr_);
     zjcvm::Execution::Instance()->Init(db_, account_mgr_);
     auto new_db_cb = std::bind(
         &NetworkInit::DbNewBlockCallback,
@@ -766,7 +763,7 @@ int NetworkInit::InitNetworkSingleton() {
         return kInitError;
     }
 
-    main_thread_idx_ = common::GlobalInfo::Instance()->message_handler_thread_count() + 1;
+    main_thread_idx_ = common::GlobalInfo::Instance()->now_valid_thread_index();
     if (network::UniversalManager::Instance()->CreateUniversalNetwork(
             main_thread_idx_,
             conf_) != network::kNetworkSuccess) {

@@ -19,10 +19,6 @@ namespace zjcvm {
 Execution::Execution() {}
 
 Execution::~Execution() {
-    if (address_exists_set_ != nullptr) {
-        delete[] address_exists_set_;
-    }
-
     if (storage_map_ != nullptr) {
         delete[] storage_map_;
     }
@@ -56,30 +52,13 @@ void Execution::Init(std::shared_ptr<db::Db>& db, std::shared_ptr<block::Account
 //         return;
 //     }
 
-    thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
-    address_exists_set_ = new common::StringUniqueSet<256, 16>[thread_count_];
-    storage_map_ = new common::UniqueMap<std::string, std::string, 256, 16>[thread_count_];
+    auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
+    storage_map_ = new common::UniqueMap<std::string, std::string, 256, 16>[thread_count];
 }
 
 bool Execution::IsAddressExists(uint8_t thread_idx, const std::string& addr) {
-    if (thread_idx >= thread_count_) {
-        auto address_info = acc_mgr_->GetAccountInfo(thread_idx, addr);
-        if (address_info != nullptr) {
-            return true;
-        }
-
-        return false;
-    }
-
-    assert(thread_idx < common::kMaxThreadCount);
-    if (address_exists_set_[thread_idx].exists(addr)) {
-        return true;
-    }
-
-    // get from db and add to memory cache
     auto address_info = acc_mgr_->GetAccountInfo(thread_idx, addr);
     if (address_info != nullptr) {
-        address_exists_set_[thread_idx].add(addr);
         return true;
     }
 

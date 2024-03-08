@@ -154,6 +154,14 @@ public:
         return pools_with_thread_;
     }
 
+    uint8_t now_valid_thread_index() {
+        if (now_valid_thread_index_ >= common::kMaxThreadCount) {
+            ZJC_FATAL("invalid thread count max: %d", common::kMaxThreadCount);
+        }
+
+        return now_valid_thread_index_++;
+    }
+
 private:
     GlobalInfo();
     ~GlobalInfo();
@@ -190,6 +198,7 @@ private:
     int32_t join_root_ = common::kRandom;
     std::set<uint32_t>* thread_with_pools_ = nullptr;
     uint32_t pools_with_thread_[common::kInvalidPoolIndex] = { 0 };
+    uint8_t now_valid_thread_index_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };

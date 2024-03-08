@@ -176,7 +176,6 @@ private:
     common::UniqueMap<std::string, std::string, 256, 16>* storage_map_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    uint8_t thread_count_ = 0;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(Execution);

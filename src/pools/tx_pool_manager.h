@@ -218,7 +218,7 @@ private:
         std::string* new_hash);
     void SyncCrossPool(uint8_t thread_idx);
     void FlushHeightTree();
-    void PopPoolsMessage();
+    void PopPoolsMessage(uint8_t thread_idx);
     void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);
     void HandleInvalidGids(const transport::MessagePtr& msg_ptr);
     void GetMinValidTxCount();
