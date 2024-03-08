@@ -52,7 +52,7 @@ int BlockManager::Init(
     contract_mgr_ = contract_mgr;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(
-        db_, local_id, max_consensus_sharding_id_, pools_mgr_);
+        db_, local_id, max_consensus_sharding_id_, pools_mgr_, account_mgr_);
     block_agg_valid_func_ = block_agg_valid_func;
     if (common::GlobalInfo::Instance()->for_ck_server()) {
         ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "", db, contract_mgr_);
