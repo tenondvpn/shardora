@@ -278,7 +278,7 @@ private:
     uint64_t prev_get_valid_tm_ms_ = 0;
     uint64_t prev_show_tm_ms_ = 0;
     uint64_t prev_msgs_show_tm_ms_ = 0;
-    std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
+    std::weak_ptr<block::AccountManager> acc_mgr_;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };
