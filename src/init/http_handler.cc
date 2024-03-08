@@ -395,7 +395,6 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
     }
 
     std::string addr = common::Encode::HexDecode(tmp_addr);
-
     auto addr_info = prefix_db->GetAddressInfo(addr);
     if (addr_info == nullptr) {
         std::string res = "get address failed: " + addr;

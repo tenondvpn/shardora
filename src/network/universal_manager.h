@@ -11,6 +11,10 @@
 
 namespace zjchain {
 
+namespace block {
+    class AccountManager;
+};
+
 namespace network {
 
 class UniversalManager {
@@ -21,11 +25,15 @@ public:
     dht::BaseDhtPtr GetUniversal(uint32_t network_id);
     int CreateUniversalNetwork(uint8_t thread_idx, const common::Config& config);
     int CreateNodeNetwork(uint8_t thread_idx, const common::Config& config);
-    void Init(std::shared_ptr<security::Security>& security, std::shared_ptr<db::Db>& db);
+    void Init(
+        std::shared_ptr<security::Security>& security, 
+        std::shared_ptr<db::Db>& db, 
+        std::shared_ptr<block::AccountManager>& acc_mgr);
     void Destroy();
     void DropNode(const std::string& ip, uint16_t port);
-    void Join(const dht::NodePtr& node);
+    void Join(uint8_t thread_idx, const dht::NodePtr& node);
     void OnNewElectBlock(
+        uint8_t thread_idx,
         uint32_t sharding_id,
         uint64_t elect_height,
         common::MembersPtr& members,
@@ -44,6 +52,7 @@ private:
     dht::BaseDhtPtr dhts_[kUniversalNetworkCount];  // just universal and node network
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
+    std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(UniversalManager);
 };

@@ -1,5 +1,6 @@
 #include "pools/to_txs_pools.h"
 
+#include "block/account_manager.h"
 #include "consensus/consensus_utils.h"
 #include "common/global_info.h"
 #include "network/network_utils.h"
@@ -16,8 +17,9 @@ ToTxsPools::ToTxsPools(
         std::shared_ptr<db::Db>& db,
         const std::string& local_id,
         uint32_t max_sharding_id,
-        std::shared_ptr<pools::TxPoolManager>& pools_mgr)
-        : db_(db), local_id_(local_id), pools_mgr_(pools_mgr) {
+        std::shared_ptr<pools::TxPoolManager>& pools_mgr,
+        std::shared_ptr<block::AccountManager>& acc_mgr)
+        : db_(db), local_id_(local_id), pools_mgr_(pools_mgr), acc_mgr_(acc_mgr) {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         network_txs_pools_[i] = HeightMap();
@@ -62,7 +64,11 @@ void ToTxsPools::NewBlock(const std::shared_ptr<block::protobuf::Block>& block_p
     valided_heights_[block.pool_index()].insert(block.height());
 }
 
-bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_t max_height) {
+bool ToTxsPools::PreStatisticTos(
+        uint8_t thread_idx, 
+        uint32_t pool_idx, 
+        uint64_t min_height, 
+        uint64_t max_height) {
     for (uint64_t height = min_height; height <= max_height; ++height) {
         auto iter = added_heights_[pool_idx].find(height);
         std::shared_ptr<block::protobuf::Block> block_ptr = nullptr;
@@ -111,22 +117,22 @@ bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_
                 HandleNormalToTx(block, tx_list[i]);
                 break;
             case pools::protobuf::kContractCreate:
-                HandleCreateContractUserCall(block, tx_list[i]);
+                HandleCreateContractUserCall(thread_idx, block, tx_list[i]);
                 break;
             case pools::protobuf::kContractCreateByRootFrom:
                 HandleCreateContractByRootFrom(block, tx_list[i]);
                 break;
             case pools::protobuf::kContractGasPrepayment:
-                HandleContractGasPrepayment(block, tx_list[i]);
+                HandleContractGasPrepayment(thread_idx, block, tx_list[i]);
                 break;
             case pools::protobuf::kNormalFrom:
-                HandleNormalFrom(block, tx_list[i]);
+                HandleNormalFrom(thread_idx, block, tx_list[i]);
                 break;
             case pools::protobuf::kRootCreateAddress:
                 HandleRootCreateAddress(block, tx_list[i]);
                 break;
             case pools::protobuf::kContractExcute:
-                HandleContractExecute(block, tx_list[i]);
+                HandleContractExecute(thread_idx, block, tx_list[i]);
                 break;
             case pools::protobuf::kJoinElect:
                 HandleJoinElect(block, tx_list[i]);
@@ -160,13 +166,14 @@ void ToTxsPools::HandleJoinElect(
 }
 
 void ToTxsPools::HandleContractExecute(
+        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx) {
     for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
         uint32_t sharding_id = common::kInvalidUint32;
         uint32_t pool_index = -1;
         // 如果需要 root 创建则此时没有 addr info 
-        auto addr_info = GetAddressInfo(tx.contract_txs(i).to());
+        auto addr_info = acc_mgr_->GetAccountInfo(thread_idx, tx.contract_txs(i).to());
         if (addr_info != nullptr) {
             sharding_id = addr_info->sharding_id();
         }
@@ -187,16 +194,17 @@ void ToTxsPools::HandleContractExecute(
 }
 
 void ToTxsPools::HandleContractGasPrepayment(
+        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx) {
     if (tx.amount() > 0) {
-        HandleNormalFrom(block, tx);
+        HandleNormalFrom(thread_idx, block, tx);
     }
 
     if (tx.contract_prepayment() > 0) {
         uint32_t sharding_id = common::kInvalidUint32;
         uint32_t pool_index = -1;
-        auto addr_info = GetAddressInfo(tx.to());
+        auto addr_info = acc_mgr_->GetAccountInfo(thread_idx, tx.to());
         if (addr_info != nullptr) {
             sharding_id = addr_info->sharding_id();
         }
@@ -214,6 +222,7 @@ void ToTxsPools::HandleContractGasPrepayment(
 }
 
 void ToTxsPools::HandleNormalFrom(
+        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx) {
     if (tx.amount() <= 0) {
@@ -223,7 +232,7 @@ void ToTxsPools::HandleNormalFrom(
 
     uint32_t sharding_id = common::kInvalidUint32;
     uint32_t pool_index = -1;
-    auto addr_info = GetAddressInfo(tx.to());
+    auto addr_info = acc_mgr_->GetAccountInfo(thread_idx, tx.to());
     if (addr_info != nullptr) {
         sharding_id = addr_info->sharding_id();
     }
@@ -232,6 +241,7 @@ void ToTxsPools::HandleNormalFrom(
 }
 
 void ToTxsPools::HandleCreateContractUserCall(
+        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx) {
     uint32_t sharding_id = network::kRootCongressNetworkId;
@@ -240,7 +250,7 @@ void ToTxsPools::HandleCreateContractUserCall(
     for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
         uint32_t sharding_id = common::kInvalidUint32;
         uint32_t pool_index = -1;
-        auto addr_info = GetAddressInfo(tx.contract_txs(i).to());
+        auto addr_info = acc_mgr_->GetAccountInfo(thread_idx, tx.contract_txs(i).to());
         if (addr_info != nullptr) {
             sharding_id = addr_info->sharding_id();
         }
@@ -509,23 +519,6 @@ void ToTxsPools::LoadLatestHeights() {
     ZJC_DEBUG("to txs get consensus heights: %s", init_consensus_height.c_str());
 }
 
-std::shared_ptr<address::protobuf::AddressInfo> ToTxsPools::GetAddressInfo(
-        const std::string& addr) {
-    // first get from cache
-    std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
-    if (address_map_.get(addr, &address_info)) {
-        return address_info;
-    }
-
-    // get from db and add to memory cache
-    address_info = prefix_db_->GetAddressInfo(addr);
-    if (address_info != nullptr) {
-        address_map_.add(addr, address_info);
-    }
-
-    return address_info;
-}
-
 void ToTxsPools::HandleElectJoinVerifyVec(
         const std::string& verify_hash,
         std::vector<bls::protobuf::JoinElectInfo>& verify_reqs) {
@@ -582,7 +575,9 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
     return kPoolsSuccess;
 }
 
-bool ToTxsPools::StatisticTos(const pools::protobuf::ShardToTxItem& leader_to_heights) {
+bool ToTxsPools::StatisticTos(
+        uint8_t thread_idx, 
+        const pools::protobuf::ShardToTxItem& leader_to_heights) {
     if (leader_to_heights.heights_size() != common::kImmutablePoolSize) {
         assert(false);
         return false;
@@ -591,7 +586,7 @@ bool ToTxsPools::StatisticTos(const pools::protobuf::ShardToTxItem& leader_to_he
     for (uint32_t pool_idx = 0; pool_idx < common::kImmutablePoolSize; ++pool_idx) {
         uint64_t min_height = has_statistic_height_[pool_idx] + 1;
         uint64_t max_height = leader_to_heights.heights(pool_idx);
-        if (!PreStatisticTos(pool_idx, min_height, max_height)) {
+        if (!PreStatisticTos(thread_idx, pool_idx, min_height, max_height)) {
             return false;
         }
     }
@@ -600,6 +595,7 @@ bool ToTxsPools::StatisticTos(const pools::protobuf::ShardToTxItem& leader_to_he
 }
 
 int ToTxsPools::CreateToTxWithHeights(
+        uint8_t thread_idx, 
         uint32_t sharding_id,
         uint64_t elect_height,
         const pools::protobuf::ShardToTxItem& leader_to_heights,
@@ -650,7 +646,7 @@ int ToTxsPools::CreateToTxWithHeights(
                     uint32_t* tmp_data = (uint32_t*)to_iter->first.c_str();
                     uint32_t step = tmp_data[0];
                     std::string to(to_iter->first.c_str() + 4, to_iter->first.size() - 4);
-                    auto account_info = GetAddressInfo(to);
+                    auto account_info = acc_mgr_->GetAccountInfo(thread_idx, to);
                     if (account_info == nullptr) {
                         if (sharding_id != network::kRootCongressNetworkId) {
                             continue;
@@ -725,7 +721,7 @@ int ToTxsPools::CreateToTxWithHeights(
         // create contract just in caller sharding
         if (iter->second.type == pools::protobuf::kContractCreate) {
             assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
-            auto account_info = GetAddressInfo(to);
+            auto account_info = acc_mgr_->GetAccountInfo(thread_idx, to);
             if (account_info == nullptr) {
                 to_tx.mutable_tos()->ReleaseLast();
                 continue;

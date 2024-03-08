@@ -40,7 +40,7 @@ private:
     void HandleMessage(const transport::MessagePtr& header);
     void HandleDhtMessage(const transport::MessagePtr& header);
     void Broadcast(uint8_t thread_idx, const transport::MessagePtr& header);
-    void Broadcasting();
+    void Broadcasting(uint8_t thread_idx);
 
     static const uint64_t kBroadcastPeriod = 10000lu;
 
@@ -51,7 +51,6 @@ private:
     common::Tick broadcast_tick_;
 
     // broadcast con and mutex
-    uint8_t broadcast_thread_index_ = 0;
     std::condition_variable broadcast_con_;
     std::mutex broadcast_mu_;
     std::shared_ptr<std::thread> broadcast_thread_ = nullptr;

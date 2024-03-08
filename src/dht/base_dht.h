@@ -33,8 +33,8 @@ public:
         BootstrapResponseCallback boot_cb,
         NewNodeJoinCallback node_join_cb);
     virtual int Destroy();
-    virtual int Join(NodePtr& node);
-    virtual void UniversalJoin(const NodePtr& node);
+    virtual int Join(uint8_t thread_idx, NodePtr& node);
+    virtual void UniversalJoin(uint8_t thread_idx, const NodePtr& node);
     virtual int Drop(NodePtr& node);
     virtual int Drop(const std::vector<std::string>& ids);
     virtual int Drop(const std::string& id);

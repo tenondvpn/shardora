@@ -221,10 +221,10 @@ void GenesisBlockInit::PrepareCreateGenesisBlocks() {
         std::shared_ptr<security::Security> security = nullptr;
         std::shared_ptr<sync::KeyValueSync> kv_sync = nullptr;
         // 初始化本节点所有的 tx pool 和 cross tx pool
-        pools_mgr_ = std::make_shared<pools::TxPoolManager>(security, db_, kv_sync, nullptr);
+        pools_mgr_ = std::make_shared<pools::TxPoolManager>(security, db_, kv_sync, account_mgr_, nullptr);
         std::shared_ptr<pools::ShardStatistic> statistic_mgr = nullptr;
         std::shared_ptr<contract::ContractManager> ct_mgr = nullptr;
-        account_mgr_->Init(1, db_, pools_mgr_);
+        account_mgr_->Init(db_, pools_mgr_);
         block_mgr_->Init(account_mgr_, db_, pools_mgr_, statistic_mgr, security, ct_mgr, "", nullptr, nullptr);
         return;
 };

@@ -99,7 +99,6 @@ int NetworkInit::Init(int argc, char** argv) {
     gas_prepayment_ = std::make_shared<consensus::ContractGasPrepayment>(
         common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
         db_);
-    zjcvm::Execution::Instance()->Init(db_);
     
     InitLocalNetworkId();
     ZJC_DEBUG("id: %s, init sharding id: %u",
@@ -125,28 +124,26 @@ int NetworkInit::Init(int argc, char** argv) {
     network::Route::Instance()->RegisterMessage(
         common::kInitMessage,
         std::bind(&NetworkInit::HandleMessage, this, std::placeholders::_1));
-    network::UniversalManager::Instance()->Init(security_, db_);
+    account_mgr_ = std::make_shared<block::AccountManager>();
+    network::UniversalManager::Instance()->Init(security_, db_, account_mgr_);
     if (InitNetworkSingleton() != kInitSuccess) {
         INIT_ERROR("InitNetworkSingleton failed!");
         return kInitError;
     }
 
-    account_mgr_ = std::make_shared<block::AccountManager>();
     block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
     bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_);
     elect_mgr_ = std::make_shared<elect::ElectManager>(
-        vss_mgr_, block_mgr_, security_, bls_mgr_, db_,
+        vss_mgr_, account_mgr_, block_mgr_, security_, bls_mgr_, db_,
         nullptr);
     kv_sync_->Init(
         block_mgr_,
         db_);
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(
-        security_, db_, kv_sync_,
+        security_, db_, kv_sync_, account_mgr_,
         std::bind(&NetworkInit::RotationLeaderCallback, this, std::placeholders::_1, std::placeholders::_2));
-    account_mgr_->Init(
-        common::GlobalInfo::Instance()->message_handler_thread_count(),
-        db_,
-        pools_mgr_);
+    account_mgr_->Init(db_, pools_mgr_);
+    zjcvm::Execution::Instance()->Init(db_, account_mgr_);
     auto new_db_cb = std::bind(
         &NetworkInit::DbNewBlockCallback,
         this,
@@ -422,8 +419,9 @@ void NetworkInit::RotationLeaderCallback(
 }
 
 void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
-    auto account_info = prefix_db_->GetAddressInfo(
-            msg_ptr->header.init_proto().addr_req().id());
+    auto account_info = account_mgr_->GetAccountInfo(
+        msg_ptr->thread_idx,
+        msg_ptr->header.init_proto().addr_req().id());
     if (account_info == nullptr) {
         return;
     }
@@ -765,7 +763,7 @@ int NetworkInit::InitNetworkSingleton() {
         return kInitError;
     }
 
-    main_thread_idx_ = common::GlobalInfo::Instance()->message_handler_thread_count() + 1;
+    main_thread_idx_ = common::GlobalInfo::Instance()->now_valid_thread_index();
     if (network::UniversalManager::Instance()->CreateUniversalNetwork(
             main_thread_idx_,
             conf_) != network::kNetworkSuccess) {
@@ -1387,7 +1385,12 @@ void NetworkInit::HandleElectionBlock(
     pools_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     shard_statistic_->OnNewElectBlock(sharding_id, block->height(), elect_height);
     kv_sync_->OnNewElectBlock(sharding_id, block->height());
-    network::UniversalManager::Instance()->OnNewElectBlock(sharding_id, elect_height, members, elect_block);
+    network::UniversalManager::Instance()->OnNewElectBlock(
+        thread_idx,
+        sharding_id,
+        elect_height,
+        members,
+        elect_block);
     ZJC_DEBUG("1 success called election block. height: %lu, elect height: %lu, used elect height: %lu, net: %u, local net id: %u",
         block->height(), elect_height, block->electblock_height(), elect_block->shard_network_id(), common::GlobalInfo::Instance()->network_id());
     

@@ -5,6 +5,7 @@
 #include <map>
 #include <unordered_set>
 
+#include "block/account_manager.h"
 #include "block/block_manager.h"
 #include "bls/bls_manager.h"
 #include "common/utils.h"
@@ -35,6 +36,7 @@ class ElectManager {
 public:
     ElectManager(
         std::shared_ptr<vss::VssManager>& vss_mgr,
+        std::shared_ptr<block::AccountManager>& acc_mgr,
         std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
@@ -111,6 +113,7 @@ private:
     // visit not frequently, just mutex lock
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
+    std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
     std::map<uint32_t, ElectNodePtr> elect_network_map_;
     std::mutex elect_network_map_mutex_;
     std::shared_ptr<ElectNode> elect_node_ptr_{ nullptr };

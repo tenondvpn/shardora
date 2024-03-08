@@ -40,12 +40,14 @@ int ElectManager::Init() {
 
 ElectManager::ElectManager(
         std::shared_ptr<vss::VssManager>& vss_mgr,
+        std::shared_ptr<block::AccountManager>& acc_mgr,
         std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         std::shared_ptr<db::Db>& db,
         NewElectBlockCallback new_elect_cb) {
     vss_mgr_ = vss_mgr;
+    acc_mgr_ = acc_mgr;
     block_mgr_ = block_mgr;
     security_ = security;
     db_ = db;
@@ -84,7 +86,7 @@ int ElectManager::Join(uint8_t thread_idx, uint32_t network_id) {
             std::placeholders::_2),
         security_,
         prefix_db_);
-    if (elect_node_ptr_->Init(thread_idx) != network::kNetworkSuccess) {
+    if (elect_node_ptr_->Init(thread_idx, acc_mgr_) != network::kNetworkSuccess) {
         ELECT_ERROR("node join network [%u] failed!", network_id);
         return kElectError;
     }

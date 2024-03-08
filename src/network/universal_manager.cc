@@ -2,6 +2,7 @@
 
 #include <cassert>
 
+#include "block/account_manager.h"
 #include "common/global_info.h"
 #include "common/encode.h"
 #include "common/country_code.h"
@@ -24,9 +25,12 @@ UniversalManager* UniversalManager::Instance() {
 
 void UniversalManager::Init(
         std::shared_ptr<security::Security>& security,
-        std::shared_ptr<db::Db>& db) {
+        std::shared_ptr<db::Db>& db,
+        std::shared_ptr<block::AccountManager>& acc_mgr) {
     security_ = security;
     db_ = db;
+    acc_mgr_ = acc_mgr;
+    assert(acc_mgr_ != nullptr);
 }
 
 void UniversalManager::Destroy() {
@@ -115,7 +119,7 @@ int UniversalManager::CreateNetwork(
         security_->GetPublicKey(),
         security_->GetAddress());
     local_node->first_node = common::GlobalInfo::Instance()->config_first_node();
-    dht::BaseDhtPtr dht_ptr = std::make_shared<network::Universal>(local_node, db_);
+    dht::BaseDhtPtr dht_ptr = std::make_shared<network::Universal>(local_node, db_, acc_mgr_);
     dht_ptr->Init(
         security_,
         std::bind(
@@ -173,13 +177,14 @@ int UniversalManager::CreateNodeNetwork(uint8_t thread_idx, const common::Config
 }
 
 void UniversalManager::OnNewElectBlock(
+        uint8_t thread_idx,
         uint32_t sharding_id,
         uint64_t elect_height,
         common::MembersPtr& members,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
     if (dhts_[kUniversalNetworkId] != nullptr) {
         Universal* unidht = static_cast<Universal*>(dhts_[kUniversalNetworkId].get());
-        unidht->OnNewElectBlock(sharding_id, elect_height, members, elect_block);
+        unidht->OnNewElectBlock(thread_idx, sharding_id, elect_height, members, elect_block);
     }
 }
 
@@ -197,9 +202,9 @@ void UniversalManager::DropNode(const std::string& ip, uint16_t port) {
     }
 }
 
-void UniversalManager::Join(const dht::NodePtr& node) {
+void UniversalManager::Join(uint8_t thread_idx, const dht::NodePtr& node) {
     if (dhts_[kNodeNetworkId] != nullptr) {
-        dhts_[kNodeNetworkId]->UniversalJoin(node);
+        dhts_[kNodeNetworkId]->UniversalJoin(thread_idx, node);
     }
 }
 

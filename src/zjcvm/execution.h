@@ -13,13 +13,17 @@
 
 namespace zjchain {
 
+namespace block {
+    class AccountManager;
+};
+
 namespace zjcvm {
 
 class ZjchainHost;
 class Execution {
 public:
     static Execution* Instance();
-    void Init(std::shared_ptr<db::Db>& db);
+    void Init(std::shared_ptr<db::Db>& db, std::shared_ptr<block::AccountManager>& acc_mgr);
     int execute(
         const std::string& contract_address,
         const std::string& input,
@@ -32,171 +36,41 @@ public:
         uint32_t call_mode,
         ZjchainHost& host,
         evmc::Result* res);
-
-    bool IsAddressExists(uint8_t thread_idx, const std::string& addr) {
-        if (thread_idx >= thread_count_) {
-            auto address_info = prefix_db_->GetAddressInfo(addr);
-            if (address_info != nullptr) {
-                return true;
-            }
-
-            return false;
-        }
-
-        assert(thread_idx < common::kMaxThreadCount);
-        if (address_exists_set_[thread_idx].exists(addr)) {
-            return true;
-        }
-
-        // get from db and add to memory cache
-        auto address_info = prefix_db_->GetAddressInfo(addr);
-        if (address_info != nullptr) {
-            address_exists_set_[thread_idx].add(addr);
-            return true;
-        }
-
-        return false;
-    }
-
-    bool AddressWarm(uint8_t thread_idx, const evmc::address& addr) {
-        if (thread_idx >= thread_count_) {
-            return false;
-        }
-
-        auto str_addr = std::string((char*)addr.bytes, sizeof(addr.bytes));
-        assert(thread_idx < common::kMaxThreadCount);
-        if (address_exists_set_[thread_idx].exists(str_addr)) {
-            return true;
-        }
-
-        return false;
-    }
-
+    bool IsAddressExists(uint8_t thread_idx, const std::string& addr);
+    bool AddressWarm(uint8_t thread_idx, const evmc::address& addr);
     bool StorageKeyWarm(
             uint8_t thread_idx,
             const evmc::address& addr,
-            const evmc::bytes32& key) {
-        if (thread_idx >= thread_count_) {
-            return false;
-        }
-
-        auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
-            std::string((char*)key.bytes, sizeof(key.bytes));
-        return storage_map_[thread_idx].exists(str_key);
-    }
-
+            const evmc::bytes32& key);
     void NewBlockWithTx(
             uint8_t thread_idx,
             const std::shared_ptr<block::protobuf::Block>& block_item,
             const block::protobuf::BlockTx& tx,
-            db::DbWriteBatch& db_batch) {
-        if (tx.step() != pools::protobuf::kContractCreate &&
-            tx.step() != pools::protobuf::kContractExcute &&
-            tx.step() != pools::protobuf::kContractCreateByRootTo) {
-            return;
-        }
-
-        for (int32_t i = 0; i < tx.storages_size(); ++i) {
-            if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
-                continue;
-            }
-
-
-            if (tx.storages(i).val_size() > 32) {
-                std::string val;
-                if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
-                    continue;
-                }
-
-                UpdateStorage(thread_idx, tx.storages(i).key(), val, db_batch);
-            } else {
-                UpdateStorage(thread_idx, tx.storages(i).key(), tx.storages(i).val_hash(), db_batch);
-            }
-        }
-    }
-
+            db::DbWriteBatch& db_batch);
     void UpdateStorage(
             uint8_t thread_idx,
             const std::string& key,
             const std::string& val,
-            db::DbWriteBatch& db_batch) {
-        if (thread_idx >= thread_count_) {
-            return;
-        }
-
-        storage_map_[thread_idx].update(key, val);
-        prefix_db_->SaveTemporaryKv(key, val, db_batch);
-        ZJC_DEBUG("update storage: %s, %s", common::Encode::HexEncode(key).c_str(), common::Encode::HexEncode(val).c_str());
-    }
-
+            db::DbWriteBatch& db_batch);
     evmc::bytes32 GetStorage(
             uint8_t thread_idx,
             const evmc::address& addr,
-            const evmc::bytes32& key) {
-        auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
-            std::string((char*)key.bytes, sizeof(key.bytes));
-        std::string val;
-        if (thread_idx >= thread_count_) {
-            prefix_db_->GetTemporaryKv(str_key, &val);
-        } else {
-            if (!storage_map_[thread_idx].get(str_key, &val)) {
-                // get from db and add to memory cache
-                if (prefix_db_->GetTemporaryKv(str_key, &val)) {
-                    storage_map_[thread_idx].add(str_key, val);
-                }
-            }
-        }
-
-        ZJC_DEBUG("get storage: %s, %s", common::Encode::HexEncode(str_key).c_str(), common::Encode::HexEncode(val).c_str());
-        if (val.empty()) {
-            return evmc::bytes32{};
-        }
-
-        evmc::bytes32 tmp_val{};
-        uint32_t offset = 0;
-        uint32_t length = sizeof(tmp_val.bytes);
-        if (val.size() < sizeof(tmp_val.bytes)) {
-            offset = sizeof(tmp_val.bytes) - val.size();
-            length = val.size();
-        }
-
-        memcpy(tmp_val.bytes + offset, val.c_str(), length);
-        return tmp_val;
-    }
-
+            const evmc::bytes32& key);
     bool GetStorage(
             uint8_t thread_idx,
             const evmc::address& addr,
             const std::string& key,
-            std::string* val) {
-        auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) + key;
-        auto res = true;
-        if (thread_idx >= thread_count_) {
-            prefix_db_->GetTemporaryKv(str_key, val);
-        } else {
-            if (!storage_map_[thread_idx].get(str_key, val)) {
-                // get from db and add to memory cache
-                res = prefix_db_->GetTemporaryKv(str_key, val);
-                if (res) {
-                    storage_map_[thread_idx].add(str_key, *val);
-                }
-            }
-        }
-
-        ZJC_DEBUG("get storage: %s, %s", common::Encode::HexEncode(str_key).c_str(), common::Encode::HexEncode(*val).c_str());
-        return res;
-    }
+            std::string* val);
 
 private:
     Execution();
     ~Execution();
 
     evmc::VM evm_;
-    common::StringUniqueSet<256, 16>* address_exists_set_ = nullptr;
     common::UniqueMap<std::string, std::string, 256, 16>* storage_map_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    uint8_t thread_count_ = 0;
+    std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(Execution);
 };

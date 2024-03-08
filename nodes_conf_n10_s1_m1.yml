@@ -2,67 +2,67 @@ nodes:
 - http_port: 8201
   name: r1
   net: 2
-  server: 10.101.20.33
+  server: 10.101.20.29
   tcp_port: 12001
 - http_port: 8202
   name: r2
   net: 2
-  server: 10.101.20.33
+  server: 10.101.20.29
   tcp_port: 12002
 - http_port: 8203
   name: r3
   net: 2
-  server: 10.101.20.33
+  server: 10.101.20.29
   tcp_port: 12003
 - http_port: 8301
   name: s3_1
   net: 3
-  server: 10.101.20.33
+  server: 10.101.20.29
   tcp_port: 13001
 - http_port: 8302
   name: s3_2
   net: 3
-  server: 10.101.20.33
+  server: 10.101.20.29
   tcp_port: 13002
 - http_port: 8303
   name: s3_3
   net: 3
-  server: 10.101.20.33
+  server: 10.101.20.29
   tcp_port: 13003
 - http_port: 8304
   name: s3_4
   net: 3
-  server: 10.101.20.33
+  server: 10.101.20.29
   tcp_port: 13004
 - http_port: 8305
   name: s3_5
   net: 3
-  server: 10.101.20.33
+  server: 10.101.20.29
   tcp_port: 13005
 - http_port: 8306
   name: s3_6
   net: 3
-  server: 10.101.20.33
+  server: 10.101.20.29
   tcp_port: 13006
 - http_port: 8307
   name: s3_7
   net: 3
-  server: 10.101.20.33
+  server: 10.101.20.29
   tcp_port: 13007
 - http_port: 8308
   name: s3_8
   net: 3
-  server: 10.101.20.33
+  server: 10.101.20.29
   tcp_port: 13008
 - http_port: 8309
   name: s3_9
   net: 3
-  server: 10.101.20.33
+  server: 10.101.20.29
   tcp_port: 13009
 - http_port: 8310
   name: s3_10
   net: 3
-  server: 10.101.20.33
+  server: 10.101.20.29
   tcp_port: 13010
 account_sks:
   3:
@@ -323,5 +323,4 @@ account_sks:
     - 8dd1c4dae73e51bc15fba072348eaa9a4851418891feb7f3da9ad36a27b79e5b
     - b74f21203e15d823e4e7a6e76dcb5e4d1b8d1475136a3058c65d1cc3a04a9a3f
 passwords:
-  10.101.20.33: '!@#$%^'
-
+  10.101.20.12: '!@#$%^'

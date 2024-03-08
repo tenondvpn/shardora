@@ -106,7 +106,7 @@ typedef std::shared_ptr<Node> NodePtr;
 typedef std::function<void(
     BaseDht* dht,
     const protobuf::DhtMessage& dht_msg)> BootstrapResponseCallback;
-typedef std::function<int(NodePtr& node)> NewNodeJoinCallback;
+typedef std::function<int(uint8_t, NodePtr& node)> NewNodeJoinCallback;
 int DefaultDhtSignCallback(
     const std::string& peer_pubkey,
     const std::string& append_data,
