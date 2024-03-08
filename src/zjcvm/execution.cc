@@ -131,7 +131,7 @@ evmc::bytes32 Execution::GetStorage(
     auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
         std::string((char*)key.bytes, sizeof(key.bytes));
     std::string val;
-    auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count() - 1
+    auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
     if (thread_idx >= thread_count) {
         prefix_db_->GetTemporaryKv(str_key, &val);
     } else {
@@ -167,7 +167,7 @@ bool Execution::GetStorage(
         std::string* val) {
     auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) + key;
     auto res = true;
-    auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count() - 1
+    auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
     if (thread_idx >= thread_count) {
         prefix_db_->GetTemporaryKv(str_key, val);
     } else {
