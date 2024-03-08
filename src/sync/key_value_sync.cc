@@ -136,7 +136,6 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
         while (!prio_sync_queue_[i].empty()) {
             SyncItemPtr item = prio_sync_queue_[i].front();
             prio_sync_queue_[i].pop();
-            ZJC_INFO("====6.1 synced_map_: %lu : %lu,", synced_map_.size(), added_key_set_.size());
             if (synced_map_.find(item->key) != synced_map_.end()) {
                 continue;
             }
