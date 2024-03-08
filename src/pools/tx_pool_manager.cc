@@ -798,7 +798,8 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& tx_msg = *header.mutable_tx_proto();
     auto addr = security_->GetAddress(tx_msg.pubkey());
-    msg_ptr->address_info = acc_mgr_->GetAccountInfo(msg_ptr->thread_idx, addr);
+    auto tmp_acc_ptr = acc_mgr_.lock();
+    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(msg_ptr->thread_idx, addr);
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no address info: %s", common::Encode::HexEncode(addr).c_str());
         return;
@@ -926,7 +927,8 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    msg_ptr->address_info = acc_mgr_->GetAccountInfo(msg_ptr->thread_idx, tx_msg.to());
+    auto tmp_acc_ptr = acc_mgr_.lock();
+    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(msg_ptr->thread_idx, tx_msg.to());
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no contract address info: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
@@ -1043,7 +1045,8 @@ void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg
 bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& tx_msg = header.tx_proto();
-    msg_ptr->address_info = acc_mgr_->GetAccountInfo(msg_ptr->thread_idx, security_->GetAddress(tx_msg.pubkey()));
+    auto tmp_acc_ptr = acc_mgr_.lock();
+    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(msg_ptr->thread_idx, security_->GetAddress(tx_msg.pubkey()));
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no address info.");
         return false;
@@ -1184,7 +1187,8 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
     }
 
     ZJC_INFO("create contract address: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
-    auto contract_info = acc_mgr_->GetAccountInfo(msg_ptr->thread_idx, tx_msg.to());
+    auto tmp_acc_ptr = acc_mgr_.lock();
+    auto contract_info = tmp_acc_ptr->GetAccountInfo(msg_ptr->thread_idx, tx_msg.to());
     if (contract_info != nullptr) {
         ZJC_WARN("contract address exists: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
