@@ -163,6 +163,7 @@ void TcpConnection::Close() {
 }
 
 void TcpConnection::CloseWithoutLock() {
+    ZJC_DEBUG("connection socket closed tcp_state_: %d", tcp_state_);
     if (tcp_state_ != kTcpClosed) {
         tcp_state_ = kTcpClosed;
         if (socket_ != NULL) {
@@ -171,6 +172,8 @@ void TcpConnection::CloseWithoutLock() {
             socket_ = nullptr;
         }
     }
+    
+    ZJC_DEBUG("connection socket closed tcp_state_: %d", tcp_state_);
 }
 
 void TcpConnection::NotifyWriteable(bool need_release, bool lock) {

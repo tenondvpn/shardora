@@ -135,9 +135,9 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
             return true;
         }
 
-        if (conn->is_client()) {
-            conn->Destroy(true);
-        }
+        // if (conn->is_client()) {
+        //     conn->Destroy(true);
+        // }
         
 //         if (!conn->PeerIp().empty() && conn->PeerPort() != 0) {
 //             CreateDropNodeMessage(conn->PeerIp(), conn->PeerPort());
@@ -231,7 +231,7 @@ int TcpTransport::Send(
         auto* tmp_conn = static_cast<tnet::TcpConnection*>(tcp_conn);
         assert(tmp_conn != nullptr);
         if (tmp_conn->is_client()) {
-            tmp_conn->Destroy(true);
+            tmp_conn->Destroy(false);
         }
 
         return kTransportError;
@@ -270,7 +270,7 @@ int TcpTransport::Send(
         auto* tmp_conn = static_cast<tnet::TcpConnection*>(tcp_conn);
         assert(tmp_conn != nullptr);
         if (tmp_conn->is_client()) {
-            tmp_conn->Destroy(true);
+            tmp_conn->Destroy(false);
         }
 
         return kTransportError;
@@ -330,7 +330,7 @@ void TcpTransport::Output() {
                 if (tcp_conn->Send(item_ptr->msg) != 0) {
                     TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu]",
                         item_ptr->des_ip.c_str(), item_ptr->port, 0);
-                    tcp_conn->Destroy(true);
+                    tcp_conn->Destroy(false);
                     continue;
                 }
 
