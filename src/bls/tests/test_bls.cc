@@ -191,6 +191,35 @@ public:
         ZJC_DEBUG("SaveLocalPolynomial success: %s",
             common::Encode::HexEncode(sec_ptr->GetAddress()).c_str());
     }
+
+    static void GetPrivateKey(std::vector<std::string>& pri_vec, uint32_t n) {
+        FILE* prikey_fd = fopen("prikey", "r");
+        if (prikey_fd != nullptr) {
+            char line[128];
+            while (!feof(prikey_fd)) {
+                fgets(line, 128, prikey_fd);
+                pri_vec.push_back(common::Encode::HexDecode(std::string(line, 64)));
+                if (pri_vec.size() == n) {
+                    break;
+                }
+            }
+
+            fclose(prikey_fd);
+        }
+
+        ASSERT_TRUE(pri_vec.size() <= n);
+        ASSERT_TRUE(pri_vec.size() <= 1024);
+        if (pri_vec.empty()) {
+            FILE* prikey_fd = fopen("prikey", "w");
+            for (uint32_t i = 0; i < n; ++i) {
+                pri_vec.push_back(common::Random::RandomString(32));
+                std::string val = common::Encode::HexEncode(pri_vec[i]) + "\n";
+                fwrite(val.c_str(), 1, val.size(), prikey_fd);
+            }
+
+            fclose(prikey_fd);
+        }
+    }
 };
 
 TEST_F(TestBls, TestPolynomial) {
@@ -211,7 +240,6 @@ TEST_F(TestBls, ContributionSignAndVerify) {
     BlsDkg* dkg = new BlsDkg[n];
     GetPrivateKey(pri_vec, n);
     ASSERT_EQ(pri_vec.size(), n);
-    BlsDkg* dkg = new BlsDkg[n];
     system("sudo rm -rf ./db_*");
     for (uint32_t i = 0; i < n; i++) {
         std::shared_ptr<security::Security> tmp_security_ptr = std::make_shared<security::Ecdsa>();
@@ -291,35 +319,6 @@ TEST_F(TestBls, ContributionSignAndVerify) {
         bls_sign.Verify(valid_t, n, agg_sign, hash, common_public_key, &verify_hash),
         kBlsSuccess);
     std::cout << "use time us: " << (common::TimeUtils::TimestampUs() - t2) << std::endl;
-}
-
-static void GetPrivateKey(std::vector<std::string>& pri_vec, uint32_t n) {
-    FILE* prikey_fd = fopen("prikey", "r");
-    if (prikey_fd != nullptr) {
-        char line[128];
-        while (!feof(prikey_fd)) {
-            fgets(line, 128, prikey_fd);
-            pri_vec.push_back(common::Encode::HexDecode(std::string(line, 64)));
-            if (pri_vec.size() == n) {
-                break;
-            }
-        }
-
-        fclose(prikey_fd);
-    }
-
-    ASSERT_TRUE(pri_vec.size() <= n);
-    ASSERT_TRUE(pri_vec.size() <= 1024);
-    if (pri_vec.empty()) {
-        FILE* prikey_fd = fopen("prikey", "w");
-        for (uint32_t i = 0; i < n; ++i) {
-            pri_vec.push_back(common::Random::RandomString(32));
-            std::string val = common::Encode::HexEncode(pri_vec[i]) + "\n";
-            fwrite(val.c_str(), 1, val.size(), prikey_fd);
-        }
-
-        fclose(prikey_fd);
-    }
 }
 
 static void CreateContribution(
