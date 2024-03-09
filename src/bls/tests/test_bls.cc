@@ -24,6 +24,7 @@
 #include "bls/bls_dkg.h"
 #include "bls/bls_manager.h"
 #include "bls/polynomial.h"
+#include "protos/prefix_db.h"
 #include "protos/bls.pb.h"
 #include "network/network_utils.h"
 
@@ -152,6 +153,42 @@ public:
             network::UniversalManager::Instance()->RegisterUniversal(network_id, base_dht);
         }
     }
+
+    static void LocalCreateContribution(std::shared_ptr<security::Security> sec_ptr) {
+        auto n = common::GlobalInfo::Instance()->each_shard_max_members();
+        auto t = common::GetSignerCount(n);
+        libBLS::Dkg dkg_instance(t, n);
+        std::vector<libff::alt_bn128_Fr> polynomial = dkg_instance.GeneratePolynomial();
+        bls::protobuf::LocalPolynomial local_poly;
+        for (uint32_t i = 0; i < polynomial.size(); ++i) {
+            local_poly.add_polynomial(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(polynomial[i])));
+        }
+
+        bls::protobuf::VerifyVecBrdReq bls_verify_req;
+        auto g2_vec = dkg_instance.VerificationVector(polynomial);
+        for (uint32_t i = 0; i < t; ++i) {
+            bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req.add_verify_vec();
+            verify_item.set_x_c0(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
+            verify_item.set_x_c1(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c1)));
+            verify_item.set_y_c0(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c0)));
+            verify_item.set_y_c1(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c1)));
+            verify_item.set_z_c0(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
+            verify_item.set_z_c1(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
+
+        }
+        
+        auto str = bls_verify_req.SerializeAsString();
+        auto prefix_db = std::make_shared<protos::PrefixDb>(db_ptr);
+        prefix_db->AddBlsVerifyG2(sec_ptr->GetAddress(), bls_verify_req);
+        prefix_db->SaveLocalPolynomial(sec_ptr, sec_ptr->GetAddress(), local_poly);
+    }
 };
 
 TEST_F(TestBls, TestPolynomial) {
@@ -160,20 +197,29 @@ TEST_F(TestBls, TestPolynomial) {
 }
 
 TEST_F(TestBls, ContributionSignAndVerify) {
-    static const uint32_t t = 7;
+    SetGloableInfo(common::Random::RandomString(32), network::kConsensusShardBeginNetworkId);
+    auto btime0 = common::TimeUtils::TimestampUs();
+
+    std::vector<std::string> pri_vec;
     static const uint32_t n = 10;
+    static const uint32_t t = common::GetSignerCount(n);
     static const uint32_t valid_t = t;
     static const uint32_t valid_count = n;
 
-    SetGloableInfo(common::Random::RandomString(32), network::kConsensusShardBeginNetworkId);
     BlsDkg* dkg = new BlsDkg[n];
-    auto btime0 = common::TimeUtils::TimestampUs();
-    for (uint32_t i = 0; i < valid_count; i++) {
+    GetPrivateKey(pri_vec, n);
+    ASSERT_EQ(pri_vec.size(), n);
+    BlsDkg* dkg = new BlsDkg[n];
+    system("sudo rm -rf ./db_*");
+    for (uint32_t i = 0; i < n; i++) {
+        std::shared_ptr<security::Security> tmp_security_ptr = std::make_shared<security::Ecdsa>();
+        tmp_security_ptr->SetPrivateKey(pri_vec[i]);
+        LocalCreateContribution(tmp_security_ptr);
         dkg[i].Init(
             bls_manager,
-            security_ptr,
-            valid_t,
-            valid_count,
+            tmp_security_ptr,
+            t,
+            n,
             libff::alt_bn128_Fr::zero(),
             libff::alt_bn128_G2::zero(),
             libff::alt_bn128_G2::zero(),
