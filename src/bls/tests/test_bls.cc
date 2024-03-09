@@ -414,7 +414,7 @@ static void HandleVerifyBroadcast(
                 }
                 auto msg_ptr = verify_brd_msgs[i];
                 msg_ptr->thread_idx = 0;
-                dkg[j].HandleMessage(msg_ptr);
+                dkg[j].HandleBlsMessage(msg_ptr);
             }
         }
     };
@@ -450,7 +450,7 @@ static void HandleSwapSeckey(
                 }
                 auto msg_ptr = swap_seckey_msgs[i];
                 msg_ptr->thread_idx = 0;
-                dkg[j].HandleMessage(msg_ptr);
+                dkg[j].HandleBlsMessage(msg_ptr);
             }
         }
     };
@@ -611,7 +611,6 @@ TEST_F(TestBls, AllSuccess) {
         member->public_ip = common::IpToUint32("127.0.0.1");
         member->public_port = 123;
         members->push_back(member);
-
         bls::protobuf::LocalPolynomial local_poly;
         for (uint32_t j = 0; j < polynomial[idx].size(); ++j) {
             local_poly.add_polynomial(common::Encode::HexDecode(
@@ -900,7 +899,7 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
                 continue;
             }
 
-            dkg[j].HandleMessage(msg_ptr);
+            dkg[j].HandleBlsMessage(msg_ptr);
         }
     }
 
@@ -933,7 +932,7 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
                 continue;
             }
 
-            dkg[j].HandleMessage(msg_ptr);
+            dkg[j].HandleBlsMessage(msg_ptr);
         }
     }
 
@@ -1052,7 +1051,7 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
                 continue;
             }
 
-            dkg[j].HandleMessage(msg_ptr);
+            dkg[j].HandleBlsMessage(msg_ptr);
         }
     }
 
@@ -1081,7 +1080,7 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
             auto msg_ptr = swap_sec_msgs[i];
             msg_ptr->thread_idx = 0;
-            dkg[j].HandleMessage(msg_ptr);
+            dkg[j].HandleBlsMessage(msg_ptr);
         }
     }
 
@@ -1194,7 +1193,7 @@ TEST_F(TestBls, ThreeRatioFailFine) {
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
             auto msg_ptr = verify_brd_msgs[i];
             msg_ptr->thread_idx = 0;
-            dkg[j].HandleMessage(msg_ptr);
+            dkg[j].HandleBlsMessage(msg_ptr);
         }
     }
 
@@ -1223,7 +1222,7 @@ TEST_F(TestBls, ThreeRatioFailFine) {
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
             auto msg_ptr = swap_sec_msgs[i];
             msg_ptr->thread_idx = 0;
-            dkg[j].HandleMessage(msg_ptr);
+            dkg[j].HandleBlsMessage(msg_ptr);
         }
     }
 
@@ -1343,7 +1342,7 @@ TEST_F(TestBls, ThreeRatioFail) {
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
             auto msg_ptr = verify_brd_msgs[i];
             msg_ptr->thread_idx = 0;
-            dkg[j].HandleMessage(msg_ptr);
+            dkg[j].HandleBlsMessage(msg_ptr);
         }
     }
 
@@ -1372,7 +1371,7 @@ TEST_F(TestBls, ThreeRatioFail) {
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
             auto msg_ptr = swap_sec_msgs[i];
             msg_ptr->thread_idx = 0;
-            dkg[j].HandleMessage(msg_ptr);
+            dkg[j].HandleBlsMessage(msg_ptr);
         }
     }
 
