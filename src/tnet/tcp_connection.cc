@@ -64,11 +64,13 @@ void TcpConnection::Destroy(bool closeSocketImmediately) {
     int16_t new_val = 0;
     int16_t old_val = 1;
     if (destroy_flag_.compare_exchange_strong(new_val, old_val)) {
-        if (closeSocketImmediately) {
-            Close();
-        }
+        // if (closeSocketImmediately) {
+        Close();
+        // }
 
-        event_loop_.PostTask(std::bind(&TcpConnection::ReleaseByIOThread, this));
+        common::AutoSpinLock l(spin_mutex_);
+        tcp_state_ = kTcpClosed;
+        // event_loop_.PostTask(std::bind(&TcpConnection::ReleaseByIOThread, this));
     }
 
     free_timeout_ms_ = common::TimeUtils::TimestampMs() + 10000lu;;
@@ -172,7 +174,7 @@ void TcpConnection::CloseWithoutLock() {
             socket_ = nullptr;
         }
     }
-    
+
     ZJC_DEBUG("connection socket closed tcp_state_: %d", tcp_state_);
 }
 
@@ -428,6 +430,7 @@ void TcpConnection::NotifyCmdPacketAndClose(int type) {
 }
 
 void TcpConnection::ReleaseByIOThread() {
+    assert(false);
     common::AutoSpinLock l(spin_mutex_);
     tcp_state_ = kTcpClosed;
 }
