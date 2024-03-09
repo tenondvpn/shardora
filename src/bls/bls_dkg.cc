@@ -924,6 +924,8 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
 void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     bls::protobuf::LocalPolynomial local_poly;
     if (!prefix_db_->GetLocalPolynomial(security_, security_->GetAddress(), &local_poly)) {
+        ZJC_ERROR("failed GetLocalPolynomial: %s",
+            common::Encode::HexEncode(security_->GetAddress()).c_str());
         assert(false);
         return;
     }
