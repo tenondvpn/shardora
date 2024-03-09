@@ -180,7 +180,7 @@ std::vector<dht::NodePtr> FilterBroadcast::GetRandomFilterNodes(
     return nodes;
 }
 
-uint32_t FilterBroadcast::BinarySearch(dht::Dht& dht, uint64_t val) {
+uint32_t FilterBroadcast::BinarySearch(const dht::Dht& dht, uint64_t val) {
     assert(!dht.empty());
     int32_t low = 0;
     int32_t high = dht.size() - 1;
