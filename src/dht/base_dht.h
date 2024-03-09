@@ -53,7 +53,7 @@ public:
     int CheckJoin(NodePtr& node);
 
     DhtPtr readonly_hash_sort_dht() {
-        return readonly_hash_sort_dht_;
+        return readonly_hash_sort_dht_[valid_dht_idx];
     }
 
     const NodePtr& local_node() {
@@ -111,7 +111,8 @@ protected:
     static const uint64_t kConnectTimeoutMs = 3000u;
 
     Dht dht_;
-    DhtPtr readonly_hash_sort_dht_ = nullptr;
+    DhtPtr readonly_hash_sort_dht_[2] = {nullptr};
+    uint32_t valid_dht_idx = 0;
     DhtPtr readonly_dht_ = nullptr;
     NodePtr local_node_{ nullptr };
     std::unordered_map<uint64_t, NodePtr> node_map_;
