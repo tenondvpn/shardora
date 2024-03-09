@@ -28,7 +28,7 @@ public:
     ~ToTxsPools();
     void NewBlock(const std::shared_ptr<block::protobuf::Block>& block, db::DbWriteBatch& db_batch);
     int CreateToTxWithHeights(
-        uint8_t thread_idx, 
+        uint8_t thread_idx,
         uint32_t sharding_id,
         uint64_t elect_height,
         const pools::protobuf::ShardToTxItem& leader_to_heights,
@@ -38,6 +38,7 @@ public:
 
 private:
     void HandleNormalToTx(
+        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx_info);
     void LoadLatestHeights();
@@ -49,14 +50,12 @@ private:
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
-    void HandleCreateContractByRootFrom(
-        const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx);
     void HandleContractGasPrepayment(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleRootCreateAddress(
+        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleContractExecute(
@@ -64,6 +63,7 @@ private:
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleJoinElect(
+        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void AddTxToMap(
@@ -73,10 +73,7 @@ private:
         uint64_t amount,
         uint32_t sharding_id,
         int32_t pool_index,
-        const std::string& key,
-        const std::string& library_bytes,
-        const std::string& from,
-        uint64_t prepayment);
+        const std::string& key);
     void HandleElectJoinVerifyVec(
         const std::string& verify_hash,
         std::vector<bls::protobuf::JoinElectInfo>& verify_reqs);
@@ -100,10 +97,6 @@ private:
         int32_t src_step;
         std::string elect_join_g2_key;
         std::vector<bls::protobuf::JoinElectInfo> verify_reqs;
-         // for kContractCreate
-        std::string library_bytes;
-        std::string from;
-		uint64_t prepayment;
     };
 
     // destination shard -> pool -> height -> items
