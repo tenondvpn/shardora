@@ -718,7 +718,7 @@ TEST_F(TestBls, AllSuccess) {
     ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
     std::vector<libff::alt_bn128_G1> all_signs;
     for (uint32_t i = 0; i < n; ++i) {
-        dkg[i].FinishNoLock(0);
+        dkg[i].FinishBroadcast(0);
         ASSERT_TRUE(dkg[i].finished_);
     }
 
@@ -899,7 +899,7 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
     BlsSign bls_sign;
     ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
     for (uint32_t i = 0; i < n; ++i) {
-        dkg[i].FinishNoLock(0);
+        dkg[i].FinishBroadcast(0);
         if (i != kInvalidNodeIndex) {
             ASSERT_TRUE(dkg[i].finished_);
         }
@@ -1047,7 +1047,7 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
     BlsSign bls_sign;
     ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
     for (uint32_t i = 0; i < n; ++i) {
-        dkg[i].FinishNoLock(0);
+        dkg[i].FinishBroadcast(0);
         if (i != kInvalidNodeIndex) {
             ASSERT_TRUE(dkg[i].finished_);
         }
@@ -1199,7 +1199,7 @@ TEST_F(TestBls, ThreeRatioFailFine) {
     ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
     std::vector<libff::alt_bn128_G1> all_signs;
     for (uint32_t i = 0; i < n; ++i) {
-        dkg[i].FinishNoLock(0);
+        dkg[i].FinishBroadcast(0);
     }
 
     size_t count = 0;
@@ -1350,7 +1350,7 @@ TEST_F(TestBls, ThreeRatioFail) {
     ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
     std::vector<libff::alt_bn128_G1> all_signs;
     for (uint32_t i = 0; i < n; ++i) {
-        dkg[i].FinishNoLock(0);
+        dkg[i].FinishBroadcast(0);
         ASSERT_FALSE(dkg[i].finished_);
     }
 
