@@ -99,12 +99,13 @@ std::vector<dht::NodePtr> Universal::LocalGetNetworkNodes(
         return tmp_nodes;
     }
 
-    auto local_nodes = dht->readonly_hash_sort_dht();  // change must copy
-    local_nodes->push_back(dht->local_node());
-    for (uint32_t i = 0; i < local_nodes->size(); ++i) {
-        auto net_id = dht::DhtKeyManager::DhtKeyGetNetId((*local_nodes)[i]->dht_key);
+    auto tmp_local_nodes = dht->readonly_hash_sort_dht();  // change must copy
+    dht::Dht local_nodes = *tmp_local_nodes;
+    local_nodes.push_back(dht->local_node());
+    for (uint32_t i = 0; i < local_nodes.size(); ++i) {
+        auto net_id = dht::DhtKeyManager::DhtKeyGetNetId(local_nodes[i]->dht_key);
         if (net_id == network_id) {
-            tmp_nodes.push_back((*local_nodes)[i]);
+            tmp_nodes.push_back(local_nodes[i]);
         }
     }
 
@@ -271,7 +272,8 @@ void Universal::OnNewElectBlock(
             if (tmp_shard_id != sharding_id &&
                     tmp_shard_id != network::kUniversalNetworkId &&
                     tmp_shard_id != network::kNodeNetworkId) {
-                uni_net->Drop((*iter));
+                auto node_ptr = *iter;
+                uni_net->Drop(node_ptr);
                 ZJC_DEBUG("drop universal nodes network %u node: %s:%u, %s",
                     tmp_shard_id,
                     (*iter)->public_ip.c_str(),
