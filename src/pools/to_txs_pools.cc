@@ -113,25 +113,25 @@ bool ToTxsPools::PreStatisticTos(
             switch (tx_list[i].step()) {
             case pools::protobuf::kNormalTo:
             case pools::protobuf::kRootCreateAddressCrossSharding:
-                HandleNormalToTx(block, tx_list[i]);
+                HandleNormalToTx(thread_idx, block, tx_list[i]);
                 break;
             case pools::protobuf::kContractCreate:
-                HandleCreateContractUserCall(block, tx_list[i]);
+                HandleCreateContractUserCall(thread_idx, block, tx_list[i]);
                 break;
             case pools::protobuf::kContractGasPrepayment:
-                HandleContractGasPrepayment(block, tx_list[i]);
+                HandleContractGasPrepayment(thread_idx, block, tx_list[i]);
                 break;
             case pools::protobuf::kNormalFrom:
-                HandleNormalFrom(block, tx_list[i]);
+                HandleNormalFrom(thread_idx, block, tx_list[i]);
                 break;
             case pools::protobuf::kRootCreateAddress:
-                HandleRootCreateAddress(block, tx_list[i]);
+                HandleRootCreateAddress(thread_idx, block, tx_list[i]);
                 break;
             case pools::protobuf::kContractExcute:
-                HandleContractExecute(block, tx_list[i]);
+                HandleContractExecute(thread_idx, block, tx_list[i]);
                 break;
             case pools::protobuf::kJoinElect:
-                HandleJoinElect(block, tx_list[i]);
+                HandleJoinElect(thread_idx, block, tx_list[i]);
                 break;
             default:
                 break;
@@ -143,6 +143,7 @@ bool ToTxsPools::PreStatisticTos(
 }
 
 void ToTxsPools::HandleJoinElect(
+        uint8_t thread_idx, 
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx) {
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
