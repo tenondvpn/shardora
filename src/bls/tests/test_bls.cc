@@ -602,6 +602,7 @@ TEST_F(TestBls, AllSuccess) {
 
     auto prefix_db = std::make_shared<protos::PrefixDb>(db_ptr);
     common::MembersPtr members = std::make_shared<common::Members>();
+    db::DbWriteBatch db_batch;
     for (uint32_t idx = 0; idx < pri_vec.size(); ++idx) {
         auto tmp_security_ptr = dkg[idx].security_;
         std::string pubkey_str = tmp_security_ptr->GetPublicKey();
@@ -723,11 +724,13 @@ TEST_F(TestBls, AllSuccess) {
         }
 
         auto str = join_info.SerializeAsString();
+        prefix_db->SaveNodeVerificationVector(dkg[idx].security_->GetAddress(), join_info, db_batch);
         prefix_db->SaveTemporaryKv(check_hash, str);
         prefix_db->AddBlsVerifyG2(dkg[idx].security_->GetAddress(), *req);
         prefix_db->SaveLocalPolynomial(dkg[idx].security_, dkg[idx].security_->GetAddress(), local_poly);
     }
 
+    db_ptr->Put(db_batch);
     auto time0 = common::TimeUtils::TimestampUs();
     std::vector<transport::MessagePtr> verify_brd_msgs;
     auto latest_timeblock_info = std::make_shared<TimeBlockItem>();
