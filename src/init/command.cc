@@ -146,7 +146,8 @@ void Command::PrintDht(uint32_t network_id) {
     if (!base_dht) {
         return;
     }
-    dht::DhtPtr readonly_dht = base_dht->readonly_hash_sort_dht();
+    
+    auto readonly_dht = base_dht->readonly_hash_sort_dht();
     auto node = base_dht->local_node();
     std::cout << "dht nnum: " << readonly_dht->size() + 1 << std::endl;
     std::cout << "local: " << common::Encode::HexEncode(node->id) << ":" << node->id_hash

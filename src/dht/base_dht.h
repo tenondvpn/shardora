@@ -23,6 +23,7 @@ namespace dht {
 
 typedef std::vector<NodePtr> Dht;
 typedef std::shared_ptr<Dht> DhtPtr;
+typedef std::shared_ptr<const Dht> ConstDhtPtr;
 
 class BaseDht : public std::enable_shared_from_this<BaseDht> {
 public:
@@ -52,7 +53,7 @@ public:
     void SendToDesNetworkNodes(const transport::MessagePtr& msg);
     int CheckJoin(NodePtr& node);
 
-    DhtPtr readonly_hash_sort_dht() {
+    ConstDhtPtr readonly_hash_sort_dht() {
         return readonly_hash_sort_dht_[valid_dht_idx];
     }
 
@@ -111,7 +112,7 @@ protected:
     static const uint64_t kConnectTimeoutMs = 3000u;
 
     Dht dht_;
-    DhtPtr readonly_hash_sort_dht_[2] = {nullptr};
+    ConstDhtPtr readonly_hash_sort_dht_[2] = {nullptr};
     uint32_t valid_dht_idx = 0;
     DhtPtr readonly_dht_ = nullptr;
     NodePtr local_node_{ nullptr };

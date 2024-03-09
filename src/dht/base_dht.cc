@@ -985,7 +985,7 @@ void BaseDht::ProcessTimerRequest(uint8_t thread_idx) {
 }
 
 void BaseDht::PrintDht(uint8_t thread_idx) {
-    dht::DhtPtr readonly_dht = readonly_hash_sort_dht();
+    auto readonly_dht = readonly_hash_sort_dht();
     if (readonly_dht != nullptr) {
         auto node = local_node();
         std::string debug_str;

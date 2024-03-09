@@ -136,7 +136,7 @@ std::vector<dht::NodePtr> FilterBroadcast::GetRandomFilterNodes(
         dht::BaseDhtPtr& dht_ptr,
         std::shared_ptr<common::BloomFilter>& bloomfilter,
         const transport::protobuf::Header& message) {
-    dht::DhtPtr readobly_dht = dht_ptr->readonly_hash_sort_dht();
+    auto readobly_dht = dht_ptr->readonly_hash_sort_dht();
     std::vector<uint32_t> pos_vec;
     uint32_t idx = 0;
     for (uint32_t i = 0; i < readobly_dht->size(); ++i) {
@@ -207,7 +207,7 @@ void FilterBroadcast::Send(
         dht::BaseDhtPtr& dht_ptr,
         const transport::MessagePtr& msg_ptr,
         const std::vector<dht::NodePtr>& nodes) {
-    dht::DhtPtr readobly_dht = dht_ptr->readonly_hash_sort_dht();
+    auto readobly_dht = dht_ptr->readonly_hash_sort_dht();
     for (uint32_t i = 0; i < nodes.size(); ++i) {
         int res = transport::TcpTransport::Instance()->Send(
             thread_idx,
