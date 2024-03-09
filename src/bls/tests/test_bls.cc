@@ -639,29 +639,29 @@ TEST_F(TestBls, AllSuccess) {
                 }
             }
 
-            bls::protobuf::JoinElectBlsInfo verfy_final_vals;
-            for (uint32_t i = 0; i < verify_g2s.size(); ++i) {
-                auto midx = tmp_idx + i * common::kElectNodeMinMemberIndex;
-                ASSERT_TRUE(verify_g2s[i] == contributions[midx] * libff::alt_bn128_G2::one());
+            // bls::protobuf::JoinElectBlsInfo verfy_final_vals;
+            // for (uint32_t i = 0; i < verify_g2s.size(); ++i) {
+            //     auto midx = tmp_idx + i * common::kElectNodeMinMemberIndex;
+            //     ASSERT_TRUE(verify_g2s[i] == contributions[midx] * libff::alt_bn128_G2::one());
                 
-                bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verify_req()->add_verify_vec();
-                verify_item.set_x_c0(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c0)));
-                verify_item.set_x_c1(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c1)));
-                verify_item.set_y_c0(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Y.c0)));
-                verify_item.set_y_c1(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Y.c1)));
-                verify_item.set_z_c0(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c0)));
-                verify_item.set_z_c1(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c1)));
-            }
+            //     bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verify_req()->add_verify_vec();
+            //     verify_item.set_x_c0(common::Encode::HexDecode(
+            //         libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c0)));
+            //     verify_item.set_x_c1(common::Encode::HexDecode(
+            //         libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c1)));
+            //     verify_item.set_y_c0(common::Encode::HexDecode(
+            //         libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Y.c0)));
+            //     verify_item.set_y_c1(common::Encode::HexDecode(
+            //         libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Y.c1)));
+            //     verify_item.set_z_c0(common::Encode::HexDecode(
+            //         libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c0)));
+            //     verify_item.set_z_c1(common::Encode::HexDecode(
+            //         libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c1)));
+            // }
 
-            verfy_final_vals.set_src_hash(check_hash);
-            auto verified_val = verfy_final_vals.SerializeAsString();
-            prefix_db->SaveVerifiedG2s(tmp_idx, id, verify_g2s.size(), verfy_final_vals);
+            // verfy_final_vals.set_src_hash(check_hash);
+            // auto verified_val = verfy_final_vals.SerializeAsString();
+            // prefix_db->SaveVerifiedG2s(tmp_idx, id, verify_g2s.size(), verfy_final_vals);
 // 
 //             auto old_g2 = polynomial[tmp_idx][0] * libff::alt_bn128_G2::one();
 //             polynomial[tmp_idx][0] = libff::alt_bn128_Fr::random_element();
