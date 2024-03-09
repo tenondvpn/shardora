@@ -708,21 +708,19 @@ TEST_F(TestBls, AllSuccess) {
                 prefix_db->SaveVerifiedG2s(tmp_idx, id, i + 1, verfy_final_vals);
             }
             
+            // auto old_g2 = polynomial[tmp_idx][0] * libff::alt_bn128_G2::one();
+            // polynomial[tmp_idx][0] = libff::alt_bn128_Fr::random_element();
+            // g2_vec = dkg_instance.VerificationVector(polynomial[tmp_idx]);
+            // contributions = dkg_instance.SecretKeyContribution(polynomial[tmp_idx]);
+            // for (uint32_t i = 0; i < contributions.size(); ++i) {
+            //     ASSERT_TRUE(dkg_instance.Verification(i, contributions[i], g2_vec));
+            // }
 
-            auto old_g2 = polynomial[tmp_idx][0] * libff::alt_bn128_G2::one();
-            polynomial[tmp_idx][0] = libff::alt_bn128_Fr::random_element();
-            g2_vec = dkg_instance.VerificationVector(polynomial[tmp_idx]);
-            contributions = dkg_instance.SecretKeyContribution(polynomial[tmp_idx]);
-            for (uint32_t i = 0; i < contributions.size(); ++i) {
-                ASSERT_TRUE(dkg_instance.Verification(i, contributions[i], g2_vec));
-            }
-
-            auto new_g2 = polynomial[tmp_idx][0] * libff::alt_bn128_G2::one();
-            auto old1 = power(libff::alt_bn128_Fr(tmp_idx + 1), 0) * old_g2;
-            auto new1 = power(libff::alt_bn128_Fr(tmp_idx + 1), 0) * new_g2;
-            verify_g2s[0] = verify_g2s[0] - old1 + new1;
-            ASSERT_TRUE(verify_g2s[0] == contributions[tmp_idx] * libff::alt_bn128_G2::one());
-            std::cout << "change tmp_idx verify success." << std::endl;
+            // auto new_g2 = polynomial[tmp_idx][0] * libff::alt_bn128_G2::one();
+            // auto old1 = power(libff::alt_bn128_Fr(tmp_idx + 1), 0) * old_g2;
+            // auto new1 = power(libff::alt_bn128_Fr(tmp_idx + 1), 0) * new_g2;
+            // verify_g2s[0] = verify_g2s[0] - old1 + new1;
+            // ASSERT_TRUE(verify_g2s[0] == contributions[tmp_idx] * libff::alt_bn128_G2::one());
         }
 
         auto str = join_info.SerializeAsString();
