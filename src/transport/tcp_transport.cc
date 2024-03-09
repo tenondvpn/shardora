@@ -292,6 +292,7 @@ void TcpTransport::EraseConn(uint64_t now_tm_ms) {
                 }
             }
 
+            from_item->Destroy(true);
             delete from_item;
             erase_conns_.pop_front();
             continue;

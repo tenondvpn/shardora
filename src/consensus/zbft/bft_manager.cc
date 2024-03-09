@@ -1216,7 +1216,7 @@ void BftManager::SyncConsensusBlock(
         const std::string& bft_gid) {
     dht::BaseDhtPtr dht = network::DhtManager::Instance()->GetDht(
         common::GlobalInfo::Instance()->network_id());
-    dht::DhtPtr readobly_dht = dht->readonly_hash_sort_dht();
+    auto readobly_dht = dht->readonly_hash_sort_dht();
     if (readobly_dht->empty()) {
         return;
     }

@@ -44,7 +44,9 @@ int BaseDht::Init(
     }
 
     auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
-    readonly_hash_sort_dht_ = tmp_dht_ptr;
+    auto invalid_idx = (valid_dht_idx + 1) % 2;
+    readonly_hash_sort_dht_[invalid_idx] = tmp_dht_ptr;
+    valid_dht_idx = invalid_idx;
     return kDhtSuccess;
 }
 
@@ -121,7 +123,9 @@ int BaseDht::Join(uint8_t thread_idx, NodePtr& node) {
     });
         
     auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
-    readonly_hash_sort_dht_ = tmp_dht_ptr;
+    auto invalid_idx = (valid_dht_idx + 1) % 2;
+    readonly_hash_sort_dht_[invalid_idx] = tmp_dht_ptr;
+    valid_dht_idx = invalid_idx;
     DHT_DEBUG("sharding: %u, join new node: %s:%d",
         local_node_->sharding_id,
         node->public_ip.c_str(),
@@ -174,7 +178,9 @@ int BaseDht::Drop(const std::vector<std::string>& ids) {
         return lhs->id_hash < rhs->id_hash;
     });
     auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
-    readonly_hash_sort_dht_ = tmp_dht_ptr;
+    auto invalid_idx = (valid_dht_idx + 1) % 2;
+    readonly_hash_sort_dht_[invalid_idx] = tmp_dht_ptr;
+    valid_dht_idx = invalid_idx;
     return kDhtSuccess;
 }
 
@@ -202,7 +208,9 @@ int BaseDht::Drop(NodePtr& node) {
         return lhs->id_hash < rhs->id_hash;
     });
     auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
-    readonly_hash_sort_dht_ = tmp_dht_ptr;
+    auto invalid_idx = (valid_dht_idx + 1) % 2;
+    readonly_hash_sort_dht_[invalid_idx] = tmp_dht_ptr;
+    valid_dht_idx = invalid_idx;
     auto miter = node_map_.find(node->dht_key_hash);
     if (miter != node_map_.end()) {
         assert(miter->second->id == node->id);
@@ -243,7 +251,9 @@ int BaseDht::Drop(const std::string& ip, uint16_t port) {
             return lhs->id_hash < rhs->id_hash;
         });
     auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
-    readonly_hash_sort_dht_ = tmp_dht_ptr;
+    auto invalid_idx = (valid_dht_idx + 1) % 2;
+    readonly_hash_sort_dht_[invalid_idx] = tmp_dht_ptr;
+    valid_dht_idx = invalid_idx;
     DHT_DEBUG("success drop node: %s:%d", ip.c_str(), port);
     return kDhtSuccess;
 }
@@ -299,7 +309,7 @@ int BaseDht::Bootstrap(
 void BaseDht::SendToDesNetworkNodes(const transport::MessagePtr& msg_ptr) {
     auto& message = msg_ptr->header;
     uint32_t send_count = 0;
-    auto dht_ptr = readonly_hash_sort_dht_;
+    auto dht_ptr = readonly_hash_sort_dht_[valid_dht_idx];
     uint32_t des_net_id = DhtKeyManager::DhtKeyGetNetId(message.des_dht_key());
     for (auto iter = dht_ptr->begin(); iter != dht_ptr->end(); ++iter) {
         auto dht_node = (*iter);
@@ -349,7 +359,7 @@ void BaseDht::SendToClosestNode(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    auto dht_ptr = readonly_hash_sort_dht_;
+    auto dht_ptr = readonly_hash_sort_dht_[valid_dht_idx];
     if (dht_ptr->empty()) {
         return;
     }
@@ -943,7 +953,7 @@ void BaseDht::ProcessTimerRequest(uint8_t thread_idx) {
 //     }
 // 
 //     prev_refresh_neighbor_tm_ = now_tm;
-    auto dht_ptr = readonly_hash_sort_dht_;
+    auto dht_ptr = readonly_hash_sort_dht_[valid_dht_idx];
     if (dht_ptr == nullptr || dht_ptr->empty()) {
         return;
     }
@@ -975,7 +985,7 @@ void BaseDht::ProcessTimerRequest(uint8_t thread_idx) {
 }
 
 void BaseDht::PrintDht(uint8_t thread_idx) {
-    dht::DhtPtr readonly_dht = readonly_hash_sort_dht();
+    auto readonly_dht = readonly_hash_sort_dht();
     if (readonly_dht != nullptr) {
         auto node = local_node();
         std::string debug_str;

@@ -1044,7 +1044,7 @@ void BlockManager::AddNewBlock(
     }
 
     // db_batch 并没有用，只是更新下 to_txs_pool 的状态，如高度
-    to_txs_pool_->NewBlock(block_item, db_batch);
+    // to_txs_pool_->NewBlock(block_item, db_batch);
 
     // 当前节点和 block 分配的 shard 不同，要跨分片交易
     if (block_item->pool_index() == common::kRootChainPoolIndex) {
@@ -1676,27 +1676,27 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     
     bool all_valid = true;
     // 聚合不同 to shard 的交易
-    if (!to_txs_pool_->StatisticTos(msg_ptr->thread_idx, heights)) {
-        ZJC_DEBUG("statistic tos failed!");
-        return;
-    }
+    // if (!to_txs_pool_->StatisticTos(msg_ptr->thread_idx, heights)) {
+    //     ZJC_DEBUG("statistic tos failed!");
+    //     return;
+    // }
 
     std::string tos_hashs;
-    for (uint32_t sharding_id = network::kRootCongressNetworkId;
-            sharding_id <= max_consensus_sharding_id_; ++sharding_id) {
-        std::string tos_hash;
-        if (to_txs_pool_->CreateToTxWithHeights(
-                msg_ptr->thread_idx,
-                sharding_id,
-                leader_to_txs->elect_height,
-                heights,
-                &tos_hash) != pools::kPoolsSuccess) {
-            all_valid = false;
-            continue;
-        }
+    // for (uint32_t sharding_id = network::kRootCongressNetworkId;
+    //         sharding_id <= max_consensus_sharding_id_; ++sharding_id) {
+    //     std::string tos_hash;
+    //     if (to_txs_pool_->CreateToTxWithHeights(
+    //             msg_ptr->thread_idx,
+    //             sharding_id,
+    //             leader_to_txs->elect_height,
+    //             heights,
+    //             &tos_hash) != pools::kPoolsSuccess) {
+    //         all_valid = false;
+    //         continue;
+    //     }
 
-        tos_hashs += tos_hash;
-    }
+    //     tos_hashs += tos_hash;
+    // }
 
     if (tos_hashs.empty()) {
         return;
@@ -2067,7 +2067,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     }
 
     auto& to_heights = *shard_to.add_to_txs();
-    int res = to_txs_pool_->LeaderCreateToHeights(to_heights);
+    int res = -1;//to_txs_pool_->LeaderCreateToHeights(to_heights);
     if (res != pools::kPoolsSuccess || to_heights.heights_size() <= 0) {
         shard_to.mutable_to_txs()->RemoveLast();
     } else {
