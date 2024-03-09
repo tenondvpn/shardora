@@ -724,8 +724,8 @@ TEST_F(TestBls, AllSuccess) {
 
         auto str = join_info.SerializeAsString();
         prefix_db->SaveTemporaryKv(check_hash, str);
-        prefix_db->AddBlsVerifyG2(tmp_security_ptr->GetAddress(), *req);
-        prefix_db->SaveLocalPolynomial(tmp_security_ptr, tmp_security_ptr->GetAddress(), local_poly);
+        prefix_db->AddBlsVerifyG2(dkg[idx].security_->GetAddress(), *req);
+        prefix_db->SaveLocalPolynomial(dkg[idx].security_, dkg[idx].security_->GetAddress(), local_poly);
     }
 
     auto time0 = common::TimeUtils::TimestampUs();
