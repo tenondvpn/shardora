@@ -163,6 +163,8 @@ void TcpConnection::Close() {
 
 void TcpConnection::CloseWithoutLock() {
     ZJC_DEBUG("connection socket closed tcp_state_: %d", tcp_state_);
+    event_loop_.DisableIoEvent(socket_->GetFd(), kEventRead, *this);
+    event_loop_.DisableIoEvent(socket_->GetFd(), kEventWrite, *this);
     if (tcp_state_ != kTcpClosed) {
         tcp_state_ = kTcpClosed;
         if (socket_ != NULL) {
