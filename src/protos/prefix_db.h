@@ -710,6 +710,15 @@ public:
         }
     }
 
+    void AddBlsVerifyG2(
+            const std::string& id,
+            const bls::protobuf::VerifyVecBrdReq& verfy_req,
+            db::DbWriteBatch& db_batch) {
+        std::string key = kBlsVerifyPrefex + id;
+        std::string val = verfy_req.SerializeAsString();
+        db_batch.Put(key, val);
+    }
+
     bool GetBlsVerifyG2(
             const std::string& id,
             bls::protobuf::VerifyVecBrdReq* verfy_req) {
@@ -1211,6 +1220,36 @@ public:
         if (!st.ok()) {
             ZJC_FATAL("write db failed!");
         }
+    }
+
+    void SaveLocalPolynomial(
+            std::shared_ptr<security::Security>& security_ptr,
+            const std::string& id,
+            const bls::protobuf::LocalPolynomial& local_poly,
+            bool for_temp,
+            db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(128);
+        if (for_temp) {
+            key.append(kLocalTempPolynomialPrefix);
+        } else {
+            key.append(kLocalPolynomialPrefix);
+        }        key.append(id);
+        std::string tmp_val = local_poly.SerializeAsString();
+        char tmp_data[4];
+        uint32_t* tmp = (uint32_t*)tmp_data;
+        tmp[0] = tmp_val.size();
+        std::string val = std::string(tmp_data, sizeof(tmp_data)) + tmp_val;
+        std::string enc_data;
+        if (security_ptr->Encrypt(
+                val,
+                security_ptr->GetPrikey(),
+                &enc_data) != security::kSecuritySuccess) {
+            ZJC_FATAL("encrypt data failed!");
+            return;
+        }
+
+        db_batch.Put(key, enc_data);
     }
 
     bool GetLocalPolynomial(

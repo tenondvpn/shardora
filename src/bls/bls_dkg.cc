@@ -483,6 +483,8 @@ bool BlsDkg::VerifySekkeyValid(
             min_aggree_member_count_,
             &verfy_final_vals)) {
         // compute verified g2s with new index
+        ZJC_ERROR("failed get verified g2 local_member_index_: %d, id: %s, min_aggree_member_count_: %d",
+            local_member_index_, common::Encode::HexEncode((*members_)[peer_index]->id).c_str(), min_aggree_member_count_);
         if (!CheckRecomputeG2s((*members_)[peer_index]->id, verfy_final_vals)) {
             ZJC_WARN("failed get verified g2: %u, %s",
                 local_member_index_,
@@ -490,6 +492,9 @@ bool BlsDkg::VerifySekkeyValid(
 //             assert(false);
             return false;
         }
+    } else {
+        ZJC_ERROR("success get verified g2 local_member_index_: %d, id: %s, min_aggree_member_count_: %d",
+            local_member_index_, common::Encode::HexEncode((*members_)[peer_index]->id).c_str(), min_aggree_member_count_);
     }
 
     bls::protobuf::JoinElectInfo join_info;
