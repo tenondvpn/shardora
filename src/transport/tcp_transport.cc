@@ -135,9 +135,9 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
             return true;
         }
 
-        // if (conn->is_client()) {
-        //     conn->Destroy(true);
-        // }
+        if (conn->is_client()) {
+            conn->Destroy(true);
+        }
         
 //         if (!conn->PeerIp().empty() && conn->PeerPort() != 0) {
 //             CreateDropNodeMessage(conn->PeerIp(), conn->PeerPort());
