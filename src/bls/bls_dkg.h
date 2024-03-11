@@ -29,8 +29,6 @@
 #include "security/security.h"
 #include "transport/transport_utils.h"
 
-#define ZJC_UNITTEST
-
 namespace zjchain {
 
 namespace bls {
