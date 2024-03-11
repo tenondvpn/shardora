@@ -167,7 +167,8 @@ public:
 
     // After running for a period of time, ensure that all threads have been created successfully and cancel the lock.
     uint8_t get_thread_index() {
-        auto now_thread_id = std::thread::get_id();
+        auto now_thread_id_tmp = std::this_thread::get_id();
+        int now_thread_id = *(int*)&now_thread_id_tmp;
         uint8_t thread_idx = 0;
         if (should_check_thread_all_valid_) {
             std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
