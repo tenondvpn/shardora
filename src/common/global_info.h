@@ -161,8 +161,8 @@ public:
             ZJC_FATAL("invalid thread count max: %d", common::kMaxThreadCount);
         }
 
-        ZJC_INFO("new thread index: %d", (now_valid_thread_index_ + 1));
-        return ++now_valid_thread_index_;
+        ZJC_INFO("new thread index: %d", now_valid_thread_index_);
+        return now_valid_thread_index_++;
     }
 
     // After running for a period of time, ensure that all threads have been created successfully and cancel the lock.
