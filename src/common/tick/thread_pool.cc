@@ -51,6 +51,7 @@ TickThreadPool::TickThreadPool() {
     for (uint32_t i = 0; i < common::GlobalInfo::Instance()->tick_thread_pool_count(); ++i) {
         thread_pool_.push_back(std::make_shared<std::thread>(
             std::thread(&TickThreadPool::Ticking, this, start_thread_idx + i)));
+        ZJC_INFO("tiking use thread index: %d", (start_thread_idx + i));
     }
 }
 

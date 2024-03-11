@@ -155,11 +155,13 @@ public:
     }
 
     uint8_t now_valid_thread_index() {
+        std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
         if (now_valid_thread_index_ >= common::kMaxThreadCount) {
             ZJC_FATAL("invalid thread count max: %d", common::kMaxThreadCount);
         }
 
-        return now_valid_thread_index_++;
+        ZJC_INFO("new thread index: %d", (now_valid_thread_index_ + 1));
+        return ++now_valid_thread_index_;
     }
 
 private:
@@ -199,6 +201,7 @@ private:
     std::set<uint32_t>* thread_with_pools_ = nullptr;
     uint32_t pools_with_thread_[common::kInvalidPoolIndex] = { 0 };
     uint8_t now_valid_thread_index_ = 0;
+    std::mutex now_valid_thread_index_mutex_;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };
