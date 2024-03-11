@@ -185,7 +185,6 @@ public:
                 should_check_thread_all_valid_ = false;
             }
         } else {
-            uint8_t thread_idx = 0;
             auto iter = thread_with_index_.find(now_thread_id);
             if (iter == thread_with_index_.end()) {
                 ZJC_FATAL("invalid get new thread index.");
