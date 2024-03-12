@@ -568,7 +568,7 @@ TEST_F(TestBls, FileSigns) {
 
 TEST_F(TestBls, AllSuccess) {
     system("sudo rm -rf ./db_* prikey*");
-    static const uint32_t n = 128;
+    static const uint32_t n = 1024;
     // static const uint32_t n = 10;
     static const uint32_t t = common::GetSignerCount(n);
     std::vector<std::string> pri_vec;
@@ -619,6 +619,7 @@ TEST_F(TestBls, AllSuccess) {
     db::DbWriteBatch db_batchs[pri_vec.size()];
     auto t4 = common::TimeUtils::TimestampMs();
     auto callback = [&](uint32_t idx) {
+        auto btime = common::TimeUtils::TimestampMs();
         auto& db_batch = db_batchs[idx];
         std::string id = dkg[idx].security_->GetAddress();
         bls::protobuf::LocalPolynomial local_poly;
@@ -633,7 +634,7 @@ TEST_F(TestBls, AllSuccess) {
         join_info.set_shard_id(sharding_id);
         auto* req = join_info.mutable_g2_req();
         auto g2_vec = dkg_instance.VerificationVector(polynomial[idx]);
-        auto contributions = dkg_instance.SecretKeyContribution(polynomial[idx]);
+        // auto contributions = dkg_instance.SecretKeyContribution(polynomial[idx]);
         // auto contributions1 = dkg_instance.SecretKeyContribution(polynomial[idx]);
         // for (uint32_t i = 0; i < contributions.size(); ++i) {
         //     ASSERT_TRUE(dkg_instance.Verification(i, contributions[i], g2_vec));
@@ -743,8 +744,11 @@ TEST_F(TestBls, AllSuccess) {
             local_poly, 
             false, 
             db_batch);
+        auto etime = common::TimeUtils::TimestampMs();
+        std::cout << "over " << idx << " use time: " << (etime - btime) << std::endl;
     };
 
+    auto btime = common::TimeUtils::TimestampMs();
     std::vector<std::shared_ptr<std::thread>> thread_vec;
     for (uint32_t idx = 0; idx < pri_vec.size(); ++idx) {
         thread_vec.push_back(std::make_shared<std::thread>(callback, idx));
@@ -757,10 +761,12 @@ TEST_F(TestBls, AllSuccess) {
         }
     }
 
-    for (uint32_t i = 0; i < pri_vec.size(); ++i) {
+    for (uint32_t i = 0; i < db_batchs.size(); ++i) {
         db_ptr->Put(db_batchs[i]);
     }
 
+    auto etime = common::TimeUtils::TimestampMs();
+    std::cout << "all over use time: " << (etime - btime) << std::endl;
     auto time0 = common::TimeUtils::TimestampUs();
     std::vector<transport::MessagePtr> verify_brd_msgs;
     auto latest_timeblock_info = std::make_shared<TimeBlockItem>();
