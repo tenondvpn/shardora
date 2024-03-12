@@ -360,11 +360,9 @@ public:
         }
     }
 
-    void CheckAllNodesVerify() {
+    void CheckAllNodesVerify(uint32_t n) {
         system("sudo rm -rf ./db_* prikey*");
-        static const uint32_t n = 1024;
-        // static const uint32_t n = 10;
-        static const uint32_t t = common::GetSignerCount(n);
+        uint32_t t = common::GetSignerCount(n);
         std::vector<std::string> pri_vec;
         GetPrivateKey(pri_vec, n);
         ASSERT_EQ(pri_vec.size(), n);
@@ -387,8 +385,8 @@ public:
 
         auto t2 = common::TimeUtils::TimestampMs();
         std::cout << "init all dkg success use time: " << (t2 - t1) << std::endl;
-        static const uint32_t valid_n = pri_vec.size();
-        static const uint32_t valid_t = common::GetSignerCount(valid_n);
+        uint32_t valid_n = pri_vec.size();
+        uint32_t valid_t = common::GetSignerCount(valid_n);
         libBLS::Dkg dkg_instance = libBLS::Dkg(valid_t, valid_n);
         std::vector<std::vector<libff::alt_bn128_Fr>> polynomial(valid_n);
         std::cout << "now GeneratePolynomial all dkg" << std::endl;
@@ -675,6 +673,6 @@ int main(int argc, char** argv) {
     using namespace zjchain;
     bls::BlsVerify::Init();
     bls::BlsVerify verify;
-    verify.Init();
+    verify.CheckAllNodesVerify(10);
     return 0;
 }
