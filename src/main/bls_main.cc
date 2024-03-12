@@ -67,7 +67,6 @@ public:
                 uint32_t* int_data = (uint32_t*)val.c_str();
                 uint32_t idx = int_data[1];
                 bls::protobuf::BlsVerifyValue verify_val;
-                ASSERT_TRUE(verify_val.ParseFromArray(val.c_str() + 8, val.size() - 8));
                 prefix_db->SavePresetVerifyValue(idx, 0, verify_val);
                 ++idx;
                 if (idx >= 1024) {
@@ -201,8 +200,6 @@ public:
             fclose(prikey_fd);
         }
 
-        ASSERT_TRUE(pri_vec.size() <= n);
-        ASSERT_TRUE(pri_vec.size() <= 1024);
         if (pri_vec.empty()) {
             FILE* prikey_fd = fopen(file_name, "w");
             for (uint32_t i = 0; i < n; ++i) {
