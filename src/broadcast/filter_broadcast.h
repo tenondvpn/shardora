@@ -28,7 +28,7 @@ private:
         dht::BaseDhtPtr& dht_ptr,
         std::shared_ptr<common::BloomFilter>& bloomfilter,
         const transport::protobuf::Header& message);
-    uint32_t BinarySearch(dht::Dht& dht, uint64_t val);
+    uint32_t BinarySearch(const dht::Dht& dht, uint64_t val);
     void LayerSend(
         uint8_t thread_idx,
         dht::BaseDhtPtr& dht_ptr,

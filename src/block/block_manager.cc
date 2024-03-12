@@ -53,7 +53,7 @@ int BlockManager::Init(
     contract_mgr_ = contract_mgr;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(
-        db_, local_id, max_consensus_sharding_id_, pools_mgr_);
+        db_, local_id, max_consensus_sharding_id_, pools_mgr_, account_mgr_);
     block_agg_valid_func_ = block_agg_valid_func;
     if (common::GlobalInfo::Instance()->for_ck_server()) {
         ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "", db, contract_mgr_);
@@ -387,7 +387,7 @@ void BlockManager::CheckWaitingBlocks(uint8_t thread_idx, uint32_t shard, uint64
     }
 
     while (!height_iter->second.empty()) {
-        auto& block_item = height_iter->second.front();
+        auto block_item = height_iter->second.front();
         height_iter->second.pop();
         if (block_agg_valid_func_ != nullptr && !block_agg_valid_func_(thread_idx, *block_item)) {
             ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, "
@@ -778,11 +778,6 @@ void BlockManager::RootHandleNormalToTx(
     }
 }
 
-std::shared_ptr<address::protobuf::AddressInfo> BlockManager::GetAccountInfo(
-        const std::string& addr) {
-    return prefix_db_->GetAddressInfo(addr);
-}
-
 // TODO refactor needed!
 void BlockManager::HandleLocalNormalToTx(
         uint8_t thread_idx,
@@ -807,7 +802,7 @@ void BlockManager::HandleLocalNormalToTx(
             addr = to_tx.des().substr(0, security::kUnicastAddressLength); // addr = to
         }
         
-        auto account_info = GetAccountInfo(addr);
+        auto account_info = account_mgr_->GetAccountInfo(thread_idx, addr);
         if (account_info == nullptr) {
             // 只接受 root 发回来的块
             if (step != pools::protobuf::kRootCreateAddressCrossSharding) {
@@ -1052,7 +1047,7 @@ void BlockManager::AddNewBlock(
     }
 
     // db_batch 并没有用，只是更新下 to_txs_pool 的状态，如高度
-    to_txs_pool_->NewBlock(block_item, db_batch);
+    // to_txs_pool_->NewBlock(block_item, db_batch);
 
     // 当前节点和 block 分配的 shard 不同，要跨分片交易
     if (block_item->pool_index() == common::kRootChainPoolIndex) {
@@ -1231,7 +1226,7 @@ void BlockManager::AddMiningToken(
         }
 
         auto id = security_->GetAddress(elect_block.in(i).pubkey());
-        auto account_info = GetAccountInfo(id);
+        auto account_info = account_mgr_->GetAccountInfo(thread_idx, id);
         if (account_info == nullptr ||
                 account_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
             continue;
@@ -1684,26 +1679,27 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     
     bool all_valid = true;
     // 聚合不同 to shard 的交易
-    if (!to_txs_pool_->StatisticTos(heights)) {
-        ZJC_DEBUG("statistic tos failed!");
-        return;
-    }
+    // if (!to_txs_pool_->StatisticTos(msg_ptr->thread_idx, heights)) {
+    //     ZJC_DEBUG("statistic tos failed!");
+    //     return;
+    // }
 
     std::string tos_hashs;
-    for (uint32_t sharding_id = network::kRootCongressNetworkId;
-            sharding_id <= max_consensus_sharding_id_; ++sharding_id) {
-        std::string tos_hash;
-        if (to_txs_pool_->CreateToTxWithHeights(
-                sharding_id,
-                leader_to_txs->elect_height,
-                heights,
-                &tos_hash) != pools::kPoolsSuccess) {
-            all_valid = false;
-            continue;
-        }
+    // for (uint32_t sharding_id = network::kRootCongressNetworkId;
+    //         sharding_id <= max_consensus_sharding_id_; ++sharding_id) {
+    //     std::string tos_hash;
+    //     if (to_txs_pool_->CreateToTxWithHeights(
+    //             msg_ptr->thread_idx,
+    //             sharding_id,
+    //             leader_to_txs->elect_height,
+    //             heights,
+    //             &tos_hash) != pools::kPoolsSuccess) {
+    //         all_valid = false;
+    //         continue;
+    //     }
 
-        tos_hashs += tos_hash;
-    }
+    //     tos_hashs += tos_hash;
+    // }
 
     if (tos_hashs.empty()) {
         return;
@@ -2074,7 +2070,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     }
 
     auto& to_heights = *shard_to.add_to_txs();
-    int res = to_txs_pool_->LeaderCreateToHeights(to_heights);
+    int res = -1;//to_txs_pool_->LeaderCreateToHeights(to_heights);
     if (res != pools::kPoolsSuccess || to_heights.heights_size() <= 0) {
         shard_to.mutable_to_txs()->RemoveLast();
     } else {

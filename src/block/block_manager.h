@@ -187,7 +187,6 @@ private:
     void StatisticWithLeaderHeights(const transport::MessagePtr& msg_ptr, bool retry);
     void HandleToTxMessage();
     void HandleStatisticTxMessage();
-    std::shared_ptr<address::protobuf::AddressInfo> GetAccountInfo(const std::string& addr);
     void AddWaitingCheckSignBlock(const std::shared_ptr<block::protobuf::Block>& block_ptr);
     void CheckWaitingBlocks(uint8_t thread_idx, uint32_t shard, uint64_t elect_height);
 

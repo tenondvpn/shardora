@@ -23,6 +23,7 @@ namespace dht {
 
 typedef std::vector<NodePtr> Dht;
 typedef std::shared_ptr<Dht> DhtPtr;
+typedef std::shared_ptr<const Dht> ConstDhtPtr;
 
 class BaseDht : public std::enable_shared_from_this<BaseDht> {
 public:
@@ -33,8 +34,8 @@ public:
         BootstrapResponseCallback boot_cb,
         NewNodeJoinCallback node_join_cb);
     virtual int Destroy();
-    virtual int Join(NodePtr& node);
-    virtual void UniversalJoin(const NodePtr& node);
+    virtual int Join(uint8_t thread_idx, NodePtr& node);
+    virtual void UniversalJoin(uint8_t thread_idx, const NodePtr& node);
     virtual int Drop(NodePtr& node);
     virtual int Drop(const std::vector<std::string>& ids);
     virtual int Drop(const std::string& id);
@@ -52,8 +53,8 @@ public:
     void SendToDesNetworkNodes(const transport::MessagePtr& msg);
     int CheckJoin(NodePtr& node);
 
-    DhtPtr readonly_hash_sort_dht() {
-        return readonly_hash_sort_dht_;
+    ConstDhtPtr readonly_hash_sort_dht() {
+        return readonly_hash_sort_dht_[valid_dht_idx];
     }
 
     const NodePtr& local_node() {
@@ -111,7 +112,8 @@ protected:
     static const uint64_t kConnectTimeoutMs = 3000u;
 
     Dht dht_;
-    DhtPtr readonly_hash_sort_dht_ = nullptr;
+    ConstDhtPtr readonly_hash_sort_dht_[2] = {nullptr};
+    uint32_t valid_dht_idx = 0;
     DhtPtr readonly_dht_ = nullptr;
     NodePtr local_node_{ nullptr };
     std::unordered_map<uint64_t, NodePtr> node_map_;

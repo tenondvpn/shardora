@@ -1,5 +1,6 @@
 #include "pools/tx_pool_manager.h"
 
+#include "block/account_manager.h"
 #include "common/log.h"
 #include "common/global_info.h"
 #include "common/hash.h"
@@ -23,9 +24,11 @@ TxPoolManager::TxPoolManager(
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<sync::KeyValueSync>& kv_sync,
+        std::shared_ptr<block::AccountManager>& acc_mgr,
         RotationLeaderCallback rotatition_leader_cb) {
     security_ = security;
     db_ = db;
+    acc_mgr_ = acc_mgr;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     prefix_db_->InitGidManager();
     kv_sync_ = kv_sync;
@@ -38,7 +41,10 @@ TxPoolManager::TxPoolManager(
 
     ZJC_INFO("TxPoolManager init success: %d", common::kInvalidPoolIndex);
     InitCrossPools();
-    pop_message_thread_ = std::make_shared<std::thread>(&TxPoolManager::PopPoolsMessage, this);
+    pop_message_thread_ = std::make_shared<std::thread>(
+        &TxPoolManager::PopPoolsMessage, 
+        this, 
+        common::GlobalInfo::Instance()->now_valid_thread_index());
     // 每 10ms 会共识一次时间块
     tick_.CutOff(
         10000lu,
@@ -226,7 +232,7 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
     }
 
     if (prev_check_leader_valid_ms_ < now_tm_ms && member_index_ != common::kInvalidUint32) {
-        if (network::DhtManager::Instance()->valid_count(
+        if (false && network::DhtManager::Instance()->valid_count(
                 common::GlobalInfo::Instance()->network_id()) + 1 >=
                 common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
             bool get_factor = false;
@@ -408,23 +414,6 @@ void TxPoolManager::SyncBlockWithMaxHeights(uint8_t thread_idx, uint32_t pool_id
         sync::kSyncHigh);
 }
 
-std::shared_ptr<address::protobuf::AddressInfo> TxPoolManager::GetAddressInfo(
-    const std::string& addr) {
-    // first get from cache
-    std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
-    if (address_map_.get(addr, &address_info)) {
-        return address_info;
-    }
-
-    // get from db and add to memory cache
-    address_info = prefix_db_->GetAddressInfo(addr);
-    if (address_info != nullptr) {
-        address_map_.add(addr, address_info);
-    }
-
-    return address_info;
-}
-
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // just one thread
     ZJC_DEBUG("success add message hash64: %lu, thread idx: %u, msg size: %u",
@@ -433,18 +422,35 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         pools_msg_queue_[msg_ptr->thread_idx].size());
     auto& header = msg_ptr->header;
     if (header.has_sync_heights()) {
+        auto btime = common::TimeUtils::TimestampMs();
         HandleSyncPoolsMaxHeight(msg_ptr);
+        auto etime = common::TimeUtils::TimestampMs();
+        if (etime - btime > 10000lu) {
+            ZJC_WARN("HandleSyncPoolsMaxHeight handle message timeout: %d, %lu", msg_ptr->header.tx_proto().step(), (etime - btime));
+        }
         return;
     }
 
     if (header.invalid_bfts_size() > 0) {
+         auto btime = common::TimeUtils::TimestampMs();
         HandleInvalidGids(msg_ptr);
+        auto etime = common::TimeUtils::TimestampMs();
+        if (etime - btime > 10000lu) {
+            ZJC_WARN("HandleInvalidGids handle message timeout: %d, %lu", msg_ptr->header.tx_proto().step(), (etime - btime));
+        }
         return;
     }
 
     assert(msg_ptr->thread_idx < common::kMaxThreadCount);
     pools_msg_queue_[msg_ptr->thread_idx].push(msg_ptr);
     pop_tx_con_.notify_one();
+    auto now_tm = common::TimeUtils::TimestampMs();
+    if (now_tm > prev_show_tm_ms_ + 3000) {
+        for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
+            ZJC_INFO("pools stored message size: %d, %d", i, pools_msg_queue_[i].size());
+        }
+        prev_show_tm_ms_ = now_tm;
+    }
 }
 
 void TxPoolManager::HandleInvalidGids(const transport::MessagePtr& msg_ptr) {
@@ -561,7 +567,7 @@ void TxPoolManager::HandleInvalidGids(const transport::MessagePtr& msg_ptr) {
     }
 }
 
-void TxPoolManager::PopPoolsMessage() {
+void TxPoolManager::PopPoolsMessage(uint8_t thread_idx) {
     while (!destroy_) {
         for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
             while (pools_msg_queue_[i].size() > 0) {
@@ -570,8 +576,13 @@ void TxPoolManager::PopPoolsMessage() {
                     break;
                 }
 
-                msg_ptr->thread_idx = -1;
+                msg_ptr->thread_idx = thread_idx;
+                auto btime = common::TimeUtils::TimestampMs();
                 HandlePoolsMessage(msg_ptr);
+                auto etime = common::TimeUtils::TimestampMs();
+                if (etime - btime > 10000lu) {
+                    ZJC_WARN("handle message timeout: %d, %lu", msg_ptr->header.tx_proto().step(), (etime - btime));
+                }
             }
         }
 
@@ -790,7 +801,8 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& tx_msg = *header.mutable_tx_proto();
     auto addr = security_->GetAddress(tx_msg.pubkey());
-    msg_ptr->address_info = GetAddressInfo(addr);
+    auto tmp_acc_ptr = acc_mgr_.lock();
+    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(msg_ptr->thread_idx, addr);
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no address info: %s", common::Encode::HexEncode(addr).c_str());
         return;
@@ -918,7 +930,8 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    msg_ptr->address_info = GetAddressInfo(tx_msg.to());
+    auto tmp_acc_ptr = acc_mgr_.lock();
+    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(msg_ptr->thread_idx, tx_msg.to());
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no contract address info: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
@@ -1035,7 +1048,8 @@ void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg
 bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& tx_msg = header.tx_proto();
-    msg_ptr->address_info = GetAddressInfo(security_->GetAddress(tx_msg.pubkey()));
+    auto tmp_acc_ptr = acc_mgr_.lock();
+    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(msg_ptr->thread_idx, security_->GetAddress(tx_msg.pubkey()));
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no address info.");
         return false;
@@ -1067,8 +1081,6 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     }
 
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-    auto s = common::TimeUtils::TimestampUs();
-    
     if (security_->Verify(
             msg_ptr->msg_hash,
             tx_msg.pubkey(),
@@ -1178,7 +1190,8 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
     }
 
     ZJC_INFO("create contract address: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
-    auto contract_info = GetAddressInfo(tx_msg.to());
+    auto tmp_acc_ptr = acc_mgr_.lock();
+    auto contract_info = tmp_acc_ptr->GetAccountInfo(msg_ptr->thread_idx, tx_msg.to());
     if (contract_info != nullptr) {
         ZJC_WARN("contract address exists: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
@@ -1221,7 +1234,7 @@ void TxPoolManager::BftCheckInvalidGids(
 
 void TxPoolManager::PopTxs(uint32_t pool_index) {
     uint32_t count = 0;
-    while (msg_queues_[pool_index].size() > 0 && ++count < kPopMessageCountEachTime) {
+    while (msg_queues_[pool_index].size() > 0) {
         transport::MessagePtr msg_ptr = nullptr;
         msg_queues_[pool_index].pop(&msg_ptr);
 //         auto& tx_msg = msg_ptr->header.tx_proto();

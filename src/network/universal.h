@@ -12,22 +12,30 @@
 
 namespace zjchain {
 
+namespace block {
+    class AccountManager;
+};
+
 namespace network {
 
 class Universal : public dht::BaseDht {
 public:
-    Universal(dht::NodePtr& local_node, std::shared_ptr<db::Db>& db);
+    Universal(
+        dht::NodePtr& local_node, 
+        std::shared_ptr<db::Db>& db,
+        std::shared_ptr<block::AccountManager>& acc_mgr);
     virtual ~Universal();
     virtual int Init(
         std::shared_ptr<security::Security>& security,
         dht::BootstrapResponseCallback boot_cb,
         dht::NewNodeJoinCallback node_join_cb);
-    virtual int Join(dht::NodePtr& node);
+    virtual int Join(uint8_t thread_idx, dht::NodePtr& node);
     virtual int Destroy();
     virtual bool CheckDestination(const std::string& des_dht_key, bool closest);
     virtual void HandleMessage(const transport::MessagePtr& msg);
     virtual bool IsUniversal() { return true; }
     void OnNewElectBlock(
+        uint8_t thread_idx,
         uint32_t sharding_id,
         uint64_t elect_height,
         common::MembersPtr& members,
@@ -45,7 +53,7 @@ private:
 
     void ProcessGetNetworkNodesRequest(const transport::MessagePtr& header);
     void ProcessGetNetworkNodesResponse(const transport::MessagePtr& header);
-    int AddNodeToUniversal(dht::NodePtr& node);
+    int AddNodeToUniversal(uint8_t thread_idx, dht::NodePtr& node);
 
     bool* universal_ids_{ nullptr };
     std::condition_variable wait_con_;
@@ -54,6 +62,7 @@ private:
     std::vector<dht::NodePtr> wait_nodes_;
     std::unordered_map<int32_t, std::shared_ptr<ElectItem>> sharding_latest_height_map_;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(Universal);
 };

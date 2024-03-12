@@ -23,6 +23,10 @@
 
 namespace zjchain {
 
+namespace block {
+    class AccountManager;
+};
+
 namespace pools {
 
 class TxPoolManager {
@@ -31,6 +35,7 @@ public:
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<sync::KeyValueSync>& kv_sync,
+        std::shared_ptr<block::AccountManager>& acc_mgr,
         RotationLeaderCallback rotatition_leader_cb);
     ~TxPoolManager();
     void HandleMessage(const transport::MessagePtr& msg);
@@ -199,7 +204,6 @@ public:
 
 private:
     void DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr);
-    std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& addr);
     void HandleCreateContractTx(const transport::MessagePtr& msg_ptr);
     void HandleSetContractPrepayment(const transport::MessagePtr& msg_ptr);
     void HandleNormalFromTx(const transport::MessagePtr& msg_ptr);
@@ -218,7 +222,7 @@ private:
         std::string* new_hash);
     void SyncCrossPool(uint8_t thread_idx);
     void FlushHeightTree();
-    void PopPoolsMessage();
+    void PopPoolsMessage(uint8_t thread_idx);
     void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);
     void HandleInvalidGids(const transport::MessagePtr& msg_ptr);
     void GetMinValidTxCount();
@@ -276,6 +280,9 @@ private:
     uint64_t min_valid_timestamp_ = 0;
     uint64_t min_timestamp_ = common::kInvalidUint64;
     uint64_t prev_get_valid_tm_ms_ = 0;
+    uint64_t prev_show_tm_ms_ = 0;
+    uint64_t prev_msgs_show_tm_ms_ = 0;
+    std::weak_ptr<block::AccountManager> acc_mgr_;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

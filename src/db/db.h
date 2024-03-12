@@ -117,6 +117,21 @@ public:
         delete iter;
     }
 
+    void GetAllPrefix(const std::string& prefix, std::map<std::string, std::string>& res_map) {
+        DbReadOptions option;
+        auto iter = db_->NewIterator(option);
+        iter->Seek(prefix);
+        int32_t valid_count = 0;
+        while (iter->Valid()) {
+            if (memcmp(prefix.c_str(), iter->key().data(), prefix.size()) != 0) {
+                break;
+            }
+
+            res_map[iter->key().ToString()] = iter->value().ToString();
+            iter->Next();
+        }
+    }
+
     DickDb* db() {
         return db_;
     }

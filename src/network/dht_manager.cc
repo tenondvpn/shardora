@@ -100,10 +100,10 @@ void DhtManager::DropNode(const std::string& ip, uint16_t port) {
     }
 }
 
-void DhtManager::Join(const dht::NodePtr& node) {
+void DhtManager::Join(uint8_t thread_idx, const dht::NodePtr& node) {
     auto dht_map_ptr = dht_map_ptr_;
     for (auto iter = dht_map_ptr->begin(); iter != dht_map_ptr->end(); ++iter) {
-        iter->second->UniversalJoin(node);
+        iter->second->UniversalJoin(thread_idx, node);
     }
 }
 
