@@ -67,7 +67,8 @@ void Command::Run() {
     while (!destroy_) {
         if (!show_cmd_) {
             std::this_thread::sleep_for(std::chrono::microseconds(200000ll));
-            continue;
+            break;
+            // continue;
         }
 
         std::cout << std::endl << std::endl << "cmd > ";
