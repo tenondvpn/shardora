@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 
+#define ZJC_UNITTEST
 #include "bzlib.h"
 
 #include "common/random.h"
@@ -209,6 +210,153 @@ public:
             }
 
             fclose(prikey_fd);
+        }
+    }
+
+    void CreateContribution(
+            common::MembersPtr members,
+            BlsDkg* dkg,
+            const std::vector<std::string>& pri_vec,
+            std::shared_ptr<TimeBlockItem>& latest_timeblock_info,
+            std::vector<transport::MessagePtr>& verify_brd_msgs) {
+        static const int32_t kThreadCount = 1;
+        std::vector<transport::MessagePtr> tmp_verify_brd_msgs[kThreadCount];
+        auto test_func = [&](uint32_t b, uint32_t e, uint32_t thread_idx) {
+            for (uint32_t i = b; i < e; ++i) {
+                dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
+                dkg[i].local_member_index_ = i;
+                dkg[i].BroadcastVerfify(0);
+                tmp_verify_brd_msgs[thread_idx].push_back(dkg[i].ver_brd_msg_);
+                ASSERT_EQ(dkg[i].ver_brd_msg_->header.bls_proto().elect_height(), 1);
+                dkg[i].ver_brd_msg_ = nullptr;
+            }
+        };
+
+        std::vector<std::thread> thread_vec;
+        for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+            int32_t b = (pri_vec.size() / kThreadCount) * thread_idx;
+            int32_t e = (pri_vec.size() / kThreadCount) * (thread_idx + 1);
+            if (thread_idx == kThreadCount - 1) {
+                e += pri_vec.size() % kThreadCount;
+            }
+
+            thread_vec.push_back(std::thread(test_func, b, e, thread_idx));
+        }
+
+        for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+            thread_vec[thread_idx].join();
+        }
+
+        for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+            for (uint32_t j = 0; j < tmp_verify_brd_msgs[thread_idx].size(); ++j) {
+                verify_brd_msgs.push_back(tmp_verify_brd_msgs[thread_idx][j]);
+            }
+        }
+    }
+
+    void GetSwapSeckeyMessage(
+            BlsDkg* dkg,
+            int32_t n,
+            std::vector<transport::MessagePtr>& swap_sec_msgs) {
+        std::vector<transport::MessagePtr> swap_sec_msgs_thread[kThreadCount];
+        std::vector<transport::MessagePtr> tmp_verify_brd_msgs[kThreadCount];
+        auto test_func = [&](uint32_t b, uint32_t e, uint32_t thread_idx) {
+            for (uint32_t i = b; i < e; ++i) {
+                bls_manager->security_ = dkg[i].security_;
+                dkg[i].SwapSecKey(0);
+                swap_sec_msgs_thread[thread_idx].push_back(dkg[i].sec_swap_msgs_);
+            }
+        };
+
+        std::vector<std::thread> thread_vec;
+        for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+            int32_t b = (n / kThreadCount) * thread_idx;
+            int32_t e = (n / kThreadCount) * (thread_idx + 1);
+            if (thread_idx == kThreadCount - 1) {
+                e += n % kThreadCount;
+            }
+
+            thread_vec.push_back(std::thread(test_func, b, e, thread_idx));
+        }
+
+        for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+            thread_vec[thread_idx].join();
+        }
+
+        for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+            for (uint32_t j = 0; j < swap_sec_msgs_thread[thread_idx].size(); ++j) {
+                swap_sec_msgs.push_back(swap_sec_msgs_thread[thread_idx][j]);
+            }
+        }
+    }
+
+    void HandleVerifyBroadcast(
+            BlsDkg* dkg,
+            const std::vector<std::string>& pri_vec,
+            const std::vector<transport::MessagePtr>& verify_brd_msgs) {
+        uint32_t n = pri_vec.size();
+        std::vector<transport::MessagePtr> tmp_verify_brd_msgs[kThreadCount];
+        auto test_func = [&](uint32_t b, uint32_t e, uint32_t thread_idx) {
+            for (uint32_t i = 0; i < n; ++i) {
+                for (uint32_t j = b; j < e; ++j) {
+                    if (i == j) {
+                        continue;
+                    }
+                    auto msg_ptr = verify_brd_msgs[i];
+                    msg_ptr->thread_idx = 0;
+                    dkg[j].HandleBlsMessage(msg_ptr);
+                }
+            }
+        };
+
+        std::vector<std::thread> thread_vec;
+        for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+            int32_t b = (pri_vec.size() / kThreadCount) * thread_idx;
+            int32_t e = (pri_vec.size() / kThreadCount) * (thread_idx + 1);
+            if (thread_idx == kThreadCount - 1) {
+                e += pri_vec.size() % kThreadCount;
+            }
+
+            thread_vec.push_back(std::thread(test_func, b, e, thread_idx));
+        }
+
+        for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+            thread_vec[thread_idx].join();
+        }
+    }
+
+    void HandleSwapSeckey(
+            BlsDkg* dkg,
+            const std::vector<std::string>& pri_vec,
+            const std::vector<transport::MessagePtr>& swap_seckey_msgs) {
+        uint32_t n = pri_vec.size();
+        std::vector<transport::MessagePtr> tmp_verify_brd_msgs[kThreadCount];
+        auto test_func = [&](uint32_t b, uint32_t e, uint32_t thread_idx) {
+            for (uint32_t i = 0; i < n; ++i) {
+                for (uint32_t j = b; j < e; ++j) {
+                    if (i == j) {
+                        continue;
+                    }
+                    auto msg_ptr = swap_seckey_msgs[i];
+                    msg_ptr->thread_idx = 0;
+                    dkg[j].HandleBlsMessage(msg_ptr);
+                }
+            }
+        };
+
+        std::vector<std::thread> thread_vec;
+        for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+            int32_t b = (pri_vec.size() / kThreadCount) * thread_idx;
+            int32_t e = (pri_vec.size() / kThreadCount) * (thread_idx + 1);
+            if (thread_idx == kThreadCount - 1) {
+                e += pri_vec.size() % kThreadCount;
+            }
+
+            thread_vec.push_back(std::thread(test_func, b, e, thread_idx));
+        }
+
+        for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+            thread_vec[thread_idx].join();
         }
     }
 };
