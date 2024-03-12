@@ -432,7 +432,7 @@ void KeyValueSync::ResponseElectBlock(
     }
 
     uint64_t elect_height = elect_net_heights_map_[elect_network_id];
-    while (elect_height > min_height) {
+    while (elect_height >= min_height) {
         block::protobuf::Block block;
         if (!prefix_db_->GetBlockWithHeight(
                 network::kRootCongressNetworkId,
@@ -494,16 +494,16 @@ void KeyValueSync::ResponseElectBlock(
         return;
     }
 
-    ++fiter;
+//    ++fiter;
     for (; fiter != shard_set.end(); ++fiter) {
         block::protobuf::Block block;
         if (!prefix_db_->GetBlockWithHeight(
                 network::kRootCongressNetworkId,
-                network_id % common::kImmutablePoolSize,
+                elect_network_id % common::kImmutablePoolSize,
                 *fiter,
                 &block)) {
             ZJC_DEBUG("block invalid network: %u, pool: %lu, height: %lu",
-                network::kRootCongressNetworkId, network_id % common::kImmutablePoolSize, *fiter);
+                network::kRootCongressNetworkId, elect_network_id % common::kImmutablePoolSize, *fiter);
             return;
         }
 
