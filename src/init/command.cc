@@ -1,6 +1,7 @@
 #include "init/command.h"
 
 #include <iostream>
+#include <common/log.h>
 #include <string>
 #include <stdio.h>
 #include <termios.h> 

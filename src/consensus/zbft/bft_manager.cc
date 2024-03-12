@@ -809,23 +809,21 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             if (isCurrentBft(zbft)) {
                 return;
             }
-             // TODO if not new prepare, return directly
-            if (!isCurrentBft(zbft)) {
-                // 新的 prepare 消息（旧的 zbft 已经 commit）和同 height 不同 gid 的消息(旧的 zbft 被 opposed 时)会覆盖之前的 prepare
-                if (!isOlderBft(zbft)) {
-                    // 如果 backup 在收到 commit 消息之前，或者是在 commit 消息但在成功出块之前收到了下一消息的 prepare
-                    // 则自旋等待一定时间
-                    WaitForLastCommitIfNeeded(zbft.pool_index(), COMMIT_MSG_TIMEOUT_MS);
+            // 新的 prepare 消息（旧的 zbft 已经 commit）和同 height 不同 gid 的消息(旧的 zbft 被 opposed 时)会覆盖之前的 prepare
+            if (!isOlderBft(zbft)) {
+                // 如果 backup 在收到 commit 消息之前，或者是在 commit 消息但在成功出块之前收到了下一消息的 prepare
+                // 则自旋等待一定时间
+                // TODO 是不是可以比较快高来判断是否覆盖 zbft，避免等待
+                WaitForLastCommitIfNeeded(zbft.pool_index(), COMMIT_MSG_TIMEOUT_MS);
                     
-                    bft_msgs = std::make_shared<BftMessageInfo>(header.zbft().prepare_gid());
-                    gid_with_msg_map_[header.zbft().pool_index()] = bft_msgs;
-                } else {
-                    ZJC_DEBUG("gid oldest for old: %s, %lu, %lu",
-                        common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
-                        zbft.tx_bft().height(),
-                        getCurrentBftHeight(zbft.pool_index()));
-                    return;
-                }
+                bft_msgs = std::make_shared<BftMessageInfo>(header.zbft().prepare_gid());
+                gid_with_msg_map_[header.zbft().pool_index()] = bft_msgs;
+            } else {
+                ZJC_DEBUG("gid oldest for old: %s, %lu, %lu",
+                    common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+                    zbft.tx_bft().height(),
+                    getCurrentBftHeight(zbft.pool_index()));
+                return;
             }
 
             bft_msgs->msgs[0] = msg_ptr;

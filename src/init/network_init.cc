@@ -211,7 +211,6 @@ int NetworkInit::Init(int argc, char** argv) {
         INIT_ERROR("InitHttpServer failed!");
         return kInitError;
     }
-
     net_handler_.Start();
     GetAddressShardingId(main_thread_idx_);
     if (InitCommand() != kInitSuccess) {
@@ -222,6 +221,7 @@ int NetworkInit::Init(int argc, char** argv) {
     inited_ = true;
     
     cmd_.Run();
+    // std::this_thread::sleep_for(std::chrono::seconds(120));
     return kInitSuccess;
 }
 

@@ -13,6 +13,7 @@
 #include "protos/block.pb.h"
 #include "sync/sync_utils.h"
 #include "transport/processor.h"
+#include <common/log.h>
 
 namespace zjchain {
 
@@ -609,6 +610,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
 }
 
 void KeyValueSync::CheckSyncTimeout() {
+    
     auto now_tm = common::TimeUtils::TimestampUs();
     for (auto iter = synced_map_.begin(); iter != synced_map_.end();) {
         if (iter->second->sync_times >= kSyncMaxRetryTimes) {

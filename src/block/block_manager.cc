@@ -13,6 +13,7 @@
 #include "protos/block.pb.h"
 #include "protos/elect.pb.h"
 #include "transport/processor.h"
+#include <common/log.h>
 #include <protos/pools.pb.h>
 #include <protos/tx_storage_key.h>
 
@@ -278,9 +279,10 @@ void BlockManager::HandleAllNewBlock(uint8_t thread_idx) {
         if (block_from_network_queue_.pop(&block_ptr)) {
             db::DbWriteBatch db_batch;
             // TODO 更新 pool info，每次 AddNewBlock 之前需要更新 pool latest info
-            AddBlockItemToCache(thread_idx, block_ptr, db_batch);
             
-            AddNewBlock(thread_idx, block_ptr, db_batch);
+            if (AddBlockItemToCache(thread_idx, block_ptr, db_batch)) {
+                AddNewBlock(thread_idx, block_ptr, db_batch);
+            }
         }
     }
 
@@ -288,13 +290,13 @@ void BlockManager::HandleAllNewBlock(uint8_t thread_idx) {
 }
 
 // 更新 pool 最新状态
-void BlockManager::AddBlockItemToCache(
+bool BlockManager::AddBlockItemToCache(
         uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
     if (!block->is_commited_block()) {
         assert(false);
-        return;
+        return false;
     }
 
     if (prefix_db_->BlockExists(block->hash())) {
@@ -304,7 +306,7 @@ void BlockManager::AddBlockItemToCache(
                   block->height(),
                   block->tx_list_size(),
                   common::Encode::HexEncode(block->hash()).c_str());
-        return;
+        return false;
     }
 
     if (prefix_db_->BlockExists(block->network_id(), block->pool_index(), block->height())) {
@@ -314,13 +316,13 @@ void BlockManager::AddBlockItemToCache(
                   block->height(),
                   block->tx_list_size(),
                   common::Encode::HexEncode(block->hash()).c_str());
-        return;
+        return false;
     }
 
     const auto& tx_list = block->tx_list();
     if (tx_list.empty()) {
         assert(false);
-        return;
+        return false;
     }
 
     ZJC_DEBUG("block manager cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
@@ -341,6 +343,7 @@ void BlockManager::AddBlockItemToCache(
             block->prehash(),
             db_batch);
     }
+    return true;
 }
 
 void BlockManager::GenesisNewBlock(

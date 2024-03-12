@@ -112,7 +112,7 @@ public:
 
 private:
     void HandleAllNewBlock(uint8_t thread_idx);
-    void AddBlockItemToCache(
+    bool AddBlockItemToCache(
         uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);
