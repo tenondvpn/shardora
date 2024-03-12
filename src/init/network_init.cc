@@ -210,25 +210,20 @@ int NetworkInit::Init(int argc, char** argv) {
     block_mgr_->LoadLatestBlocks(common::GlobalInfo::Instance()->message_handler_thread_count());
     shard_statistic_->Init();
     transport::TcpTransport::Instance()->Start(false);
-    ZJC_INFO("====6.1");
     if (InitHttpServer() != kInitSuccess) {
         INIT_ERROR("InitHttpServer failed!");
         return kInitError;
     }
-    ZJC_INFO("====6.2");
     net_handler_.Start();
-    ZJC_INFO("====6.3");
     GetAddressShardingId(main_thread_idx_);
     if (InitCommand() != kInitSuccess) {
         INIT_ERROR("InitCommand failed!");
         return kInitError;
     }
-    ZJC_INFO("====6.4");
 
     inited_ = true;
     
     cmd_.Run();
-    ZJC_INFO("====6.5");
     return kInitSuccess;
 }
 
