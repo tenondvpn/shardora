@@ -74,10 +74,6 @@ void Command::Run() {
         std::string cmdline;
         std::getline(std::cin, cmdline);
         ProcessCommand(cmdline);
-        ZJC_INFO("======1");
-        std::this_thread::sleep_for(std::chrono::microseconds(60000ll));
-        ZJC_INFO("======2");
-        break;
     }
 }
 
