@@ -555,7 +555,7 @@ public:
             }
         }
 
-        for (uint32_t i = 0; i < db_batchs.size(); ++i) {
+        for (uint32_t i = 0; i < pri_vec.size(); ++i) {
             db_ptr->Put(db_batchs[i]);
         }
 
