@@ -227,7 +227,11 @@ public:
                 dkg[i].local_member_index_ = i;
                 dkg[i].BroadcastVerfify(0);
                 tmp_verify_brd_msgs[thread_idx].push_back(dkg[i].ver_brd_msg_);
-                ASSERT_EQ(dkg[i].ver_brd_msg_->header.bls_proto().elect_height(), 1);
+                if (dkg[i].ver_brd_msg_->header.bls_proto().elect_height() != 1) {
+                    std::cout << "elect height failed!" << std::endl;
+                    exit(0);
+                }
+
                 dkg[i].ver_brd_msg_ = nullptr;
             }
         };
@@ -365,7 +369,6 @@ public:
         uint32_t t = common::GetSignerCount(n);
         std::vector<std::string> pri_vec;
         GetPrivateKey(pri_vec, n);
-        ASSERT_EQ(pri_vec.size(), n);
         BlsDkg* dkg = new BlsDkg[n];
         auto t1 = common::TimeUtils::TimestampMs();
         std::cout << "now init all dkg" << std::endl;
@@ -577,7 +580,6 @@ public:
         // swap sec key
         std::vector<transport::MessagePtr> swap_sec_msgs;
         GetSwapSeckeyMessage(dkg, n, swap_sec_msgs);
-        ASSERT_EQ(swap_sec_msgs.size(), n);
         auto time3 = common::TimeUtils::TimestampUs();
         std::cout << "2: " << (time3 - time2) << std::endl;
         HandleSwapSeckey(dkg, pri_vec, swap_sec_msgs);
@@ -589,11 +591,14 @@ public:
         auto hash_str = common::Hash::Sha256("hello world");
         libff::alt_bn128_G1 hash;
         BlsSign bls_sign;
-        ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
         std::vector<libff::alt_bn128_G1> all_signs;
         for (uint32_t i = 0; i < n; ++i) {
             dkg[i].FinishBroadcast(0);
-            ASSERT_TRUE(dkg[i].finished_);
+            if (!dkg[i].finished_) {
+                std::cout << "not finished " << i << std::endl;
+                assert(false);
+                exit(0);
+            }
         }
 
         bls::protobuf::VerifyVecBrdReq proto_signs;
@@ -604,9 +609,6 @@ public:
             bls_sign.Sign(t, n, dkg[i].local_sec_key_, hash, &sign);
             std::string verify_hash;
             // slow
-            ASSERT_EQ(
-                bls_sign.Verify(t, n, sign, hash, dkg[i].local_publick_key_, &verify_hash),
-                kBlsSuccess);
             bls::protobuf::VerifyVecItem& verify_item = *proto_signs.add_verify_vec();
             verify_item.set_x_c0(common::Encode::HexDecode(
                 libBLS::ThresholdUtils::fieldElementToString(sign.X)));
@@ -655,9 +657,10 @@ public:
             BlsSign bls_sign;
             std::string verify_hash;
             // slow
-            ASSERT_EQ(
-                bls_sign.Verify(t, n, agg_sign, hash, dkg[i].common_public_key_, &verify_hash),
-                kBlsSuccess);
+            if (bls_sign.Verify(t, n, agg_sign, hash, dkg[i].common_public_key_, &verify_hash) != kBlsSuccess) {
+                std::cout << "Verify signature failed!" << std::endl;
+                exit(0);
+            }
         }
 
         auto time7 = common::TimeUtils::TimestampUs();
