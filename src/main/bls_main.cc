@@ -44,7 +44,7 @@ public:
 
     ~BlsVerify() {}
 
-    void Init() {
+    static void Init() {
         std::string config_path_ = "./";
         std::string log_conf_path = config_path_ + "/log4cpp.properties";
         std::string log_path = config_path_ + "/zjc.log";
@@ -56,7 +56,7 @@ public:
         InitBlsVerificationValue();
     }
 
-    void InitBlsVerificationValue() {
+    static void InitBlsVerificationValue() {
         auto prefix_db = std::make_shared<protos::PrefixDb>(db_ptr);
         FILE* rlocal_bls_fd = fopen("../../src/bls/saved_verify_one", "r");
         if (rlocal_bls_fd != nullptr) {
@@ -80,7 +80,7 @@ public:
         }
     }
 
-    void WriteDefaultLogConf(
+    static void WriteDefaultLogConf(
         const std::string& log_conf_path,
         const std::string& log_path) {
         FILE* file = NULL;
@@ -104,7 +104,7 @@ public:
         fclose(file);
     }
 
-    void SetGloableInfo(const std::string& private_key, uint32_t network_id) {
+    static void SetGloableInfo(const std::string& private_key, uint32_t network_id) {
         security_ptr = std::make_shared<security::Ecdsa>();
         security_ptr->SetPrivateKey(common::Encode::HexDecode(
             "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"));
@@ -116,7 +116,7 @@ public:
         JoinNetwork(network::kConsensusShardBeginNetworkId);
     }
 
-    void JoinNetwork(uint32_t network_id) {
+    static void JoinNetwork(uint32_t network_id) {
         if (network_id > 1) {
             network::DhtManager::Instance()->UnRegisterDht(network_id);
         }
@@ -147,7 +147,7 @@ public:
         }
     }
 
-    void LocalCreateContribution(std::shared_ptr<security::Security> sec_ptr) {
+    static void LocalCreateContribution(std::shared_ptr<security::Security> sec_ptr) {
         auto n = common::GlobalInfo::Instance()->each_shard_max_members();
         auto t = common::GetSignerCount(n);
         libBLS::Dkg dkg_instance(t, n);
@@ -185,7 +185,7 @@ public:
             common::Encode::HexEncode(sec_ptr->GetAddress()).c_str());
     }
 
-    void GetPrivateKey(std::vector<std::string>& pri_vec, uint32_t n) {
+    static void GetPrivateKey(std::vector<std::string>& pri_vec, uint32_t n) {
         auto file_name = (std::string("prikey_") + std::to_string(n)).c_str();
         FILE* prikey_fd = fopen(file_name, "r");
         if (prikey_fd != nullptr) {
@@ -213,7 +213,7 @@ public:
         }
     }
 
-    void CreateContribution(
+    static void CreateContribution(
             common::MembersPtr members,
             BlsDkg* dkg,
             const std::vector<std::string>& pri_vec,
@@ -254,7 +254,7 @@ public:
         }
     }
 
-    void GetSwapSeckeyMessage(
+    static void GetSwapSeckeyMessage(
             BlsDkg* dkg,
             int32_t n,
             std::vector<transport::MessagePtr>& swap_sec_msgs) {
@@ -290,7 +290,7 @@ public:
         }
     }
 
-    void HandleVerifyBroadcast(
+    static void HandleVerifyBroadcast(
             BlsDkg* dkg,
             const std::vector<std::string>& pri_vec,
             const std::vector<transport::MessagePtr>& verify_brd_msgs) {
@@ -325,7 +325,7 @@ public:
         }
     }
 
-    void HandleSwapSeckey(
+    static void HandleSwapSeckey(
             BlsDkg* dkg,
             const std::vector<std::string>& pri_vec,
             const std::vector<transport::MessagePtr>& swap_seckey_msgs) {
@@ -359,6 +359,312 @@ public:
             thread_vec[thread_idx].join();
         }
     }
+
+    void CheckAllNodesVerify() {
+        system("sudo rm -rf ./db_* prikey*");
+        static const uint32_t n = 1024;
+        // static const uint32_t n = 10;
+        static const uint32_t t = common::GetSignerCount(n);
+        std::vector<std::string> pri_vec;
+        GetPrivateKey(pri_vec, n);
+        ASSERT_EQ(pri_vec.size(), n);
+        BlsDkg* dkg = new BlsDkg[n];
+        auto t1 = common::TimeUtils::TimestampMs();
+        std::cout << "now init all dkg" << std::endl;
+        for (uint32_t i = 0; i < n; i++) {
+            std::shared_ptr<security::Security> tmp_security_ptr = std::make_shared<security::Ecdsa>();
+            tmp_security_ptr->SetPrivateKey(pri_vec[i]);
+            dkg[i].Init(
+                bls_manager,
+                tmp_security_ptr,
+                t,
+                n,
+                libff::alt_bn128_Fr::zero(),
+                libff::alt_bn128_G2::zero(),
+                libff::alt_bn128_G2::zero(),
+                db_ptr);
+        }
+
+        auto t2 = common::TimeUtils::TimestampMs();
+        std::cout << "init all dkg success use time: " << (t2 - t1) << std::endl;
+        static const uint32_t valid_n = pri_vec.size();
+        static const uint32_t valid_t = common::GetSignerCount(valid_n);
+        libBLS::Dkg dkg_instance = libBLS::Dkg(valid_t, valid_n);
+        std::vector<std::vector<libff::alt_bn128_Fr>> polynomial(valid_n);
+        std::cout << "now GeneratePolynomial all dkg" << std::endl;
+        for (auto& pol : polynomial) {
+            pol = dkg_instance.GeneratePolynomial();
+        }
+
+        auto t3 = common::TimeUtils::TimestampMs();
+        std::cout << "GeneratePolynomial success use time: " << (t3 - t2) << std::endl;
+        auto prefix_db = std::make_shared<protos::PrefixDb>(db_ptr);
+        common::MembersPtr members = std::make_shared<common::Members>();
+        for (uint32_t idx = 0; idx < pri_vec.size(); ++idx) {
+            auto tmp_security_ptr = dkg[idx].security_;
+            std::string pubkey_str = tmp_security_ptr->GetPublicKey();
+            std::string id = tmp_security_ptr->GetAddress();
+            auto member = std::make_shared<common::BftMember>(
+                network::kConsensusShardBeginNetworkId, id, pubkey_str, idx, idx == 0 ? 0 : -1);
+            member->public_ip = common::IpToUint32("127.0.0.1");
+            member->public_port = 123;
+            members->push_back(member);
+        }
+        db::DbWriteBatch db_batchs[pri_vec.size()];
+        auto t4 = common::TimeUtils::TimestampMs();
+        auto callback = [&](uint32_t idx) {
+            auto btime = common::TimeUtils::TimestampMs();
+            auto& db_batch = db_batchs[idx];
+            std::string id = dkg[idx].security_->GetAddress();
+            bls::protobuf::LocalPolynomial local_poly;
+            for (uint32_t j = 0; j < polynomial[idx].size(); ++j) {
+                local_poly.add_polynomial(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j])));
+            }
+
+            bls::protobuf::JoinElectInfo join_info;
+            join_info.set_member_idx(idx);
+            uint32_t sharding_id = 3;
+            join_info.set_shard_id(sharding_id);
+            auto* req = join_info.mutable_g2_req();
+            auto g2_vec = dkg_instance.VerificationVector(polynomial[idx]);
+            // auto contributions = dkg_instance.SecretKeyContribution(polynomial[idx]);
+            // auto contributions1 = dkg_instance.SecretKeyContribution(polynomial[idx]);
+            // for (uint32_t i = 0; i < contributions.size(); ++i) {
+            //     ASSERT_TRUE(dkg_instance.Verification(i, contributions[i], g2_vec));
+            //     ASSERT_TRUE(dkg_instance.Verification(i, contributions1[i], g2_vec));
+            //     ASSERT_TRUE(contributions[i] == contributions1[i]);
+            // }
+
+            std::vector<libff::alt_bn128_G2> verify_g2_vec;
+            std::string str_for_hash;
+            str_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
+            str_for_hash.append((char*)&idx, sizeof(idx));
+            for (uint32_t i = 0; i < valid_t; ++i) {
+                bls::protobuf::VerifyVecItem& verify_item = *req->add_verify_vec();
+                verify_item.set_x_c0(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
+                verify_item.set_x_c1(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c1)));
+                verify_item.set_y_c0(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c0)));
+                verify_item.set_y_c1(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c1)));
+                verify_item.set_z_c0(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
+                verify_item.set_z_c1(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
+
+                auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(verify_item.x_c0()).c_str());
+                auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(verify_item.x_c1()).c_str());
+                auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+                auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(verify_item.y_c0()).c_str());
+                auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(verify_item.y_c1()).c_str());
+                auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+                auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(verify_item.z_c0()).c_str());
+                auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(verify_item.z_c1()).c_str());
+                auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+                auto g2 = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+                verify_g2_vec.push_back(g2);
+
+                str_for_hash.append(verify_item.x_c0());
+                str_for_hash.append(verify_item.x_c1());
+                str_for_hash.append(verify_item.y_c0());
+                str_for_hash.append(verify_item.y_c1());
+                str_for_hash.append(verify_item.z_c0());
+                str_for_hash.append(verify_item.z_c1());
+            }
+
+            auto check_hash = common::Hash::keccak256(str_for_hash);
+            for (uint32_t tmp_idx = 0; tmp_idx < pri_vec.size(); ++tmp_idx) {
+                if (tmp_idx == idx) {
+                    continue;
+                }
+
+                auto all_pos_count = valid_t;
+                std::vector<libff::alt_bn128_G2> verify_g2s(all_pos_count, libff::alt_bn128_G2::zero());
+                int32_t j = valid_t - 1;
+                for (int32_t vidx = 0; vidx < verify_g2_vec.size(); ++vidx) {
+                    // for (int32_t j = 0; j < all_pos_count; ++j) {
+                        // auto midx = tmp_idx + j * common::kElectNodeMinMemberIndex;
+                        verify_g2s[j] = verify_g2s[j] + power(libff::alt_bn128_Fr(tmp_idx + 1), vidx) * verify_g2_vec[vidx];
+                    // }
+                }
+
+                for (uint32_t i = verify_g2s.size() - 1; i < verify_g2s.size(); ++i) {
+                    // auto midx = tmp_idx + i * common::kElectNodeMinMemberIndex;
+                    // ASSERT_TRUE(verify_g2s[i] == contributions[midx] * libff::alt_bn128_G2::one());
+                    
+                    bls::protobuf::JoinElectBlsInfo verfy_final_vals;
+                    bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verified_g2();
+                    verify_item.set_x_c0(common::Encode::HexDecode(
+                        libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c0)));
+                    verify_item.set_x_c1(common::Encode::HexDecode(
+                        libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c1)));
+                    verify_item.set_y_c0(common::Encode::HexDecode(
+                        libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Y.c0)));
+                    verify_item.set_y_c1(common::Encode::HexDecode(
+                        libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Y.c1)));
+                    verify_item.set_z_c0(common::Encode::HexDecode(
+                        libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c0)));
+                    verify_item.set_z_c1(common::Encode::HexDecode(
+                        libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c1)));
+                    auto verified_val = verfy_final_vals.SerializeAsString();
+                    prefix_db->SaveVerifiedG2s(tmp_idx, id, i + 1, verfy_final_vals, db_batch);
+                }
+                
+                // auto old_g2 = polynomial[tmp_idx][0] * libff::alt_bn128_G2::one();
+                // polynomial[tmp_idx][0] = libff::alt_bn128_Fr::random_element();
+                // g2_vec = dkg_instance.VerificationVector(polynomial[tmp_idx]);
+                // contributions = dkg_instance.SecretKeyContribution(polynomial[tmp_idx]);
+                // for (uint32_t i = 0; i < contributions.size(); ++i) {
+                //     ASSERT_TRUE(dkg_instance.Verification(i, contributions[i], g2_vec));
+                // }
+
+                // auto new_g2 = polynomial[tmp_idx][0] * libff::alt_bn128_G2::one();
+                // auto old1 = power(libff::alt_bn128_Fr(tmp_idx + 1), 0) * old_g2;
+                // auto new1 = power(libff::alt_bn128_Fr(tmp_idx + 1), 0) * new_g2;
+                // verify_g2s[0] = verify_g2s[0] - old1 + new1;
+                // ASSERT_TRUE(verify_g2s[0] == contributions[tmp_idx] * libff::alt_bn128_G2::one());
+            }
+
+            auto str = join_info.SerializeAsString();
+            prefix_db->SaveNodeVerificationVector(dkg[idx].security_->GetAddress(), join_info, db_batch);
+            prefix_db->SaveTemporaryKv(check_hash, str, db_batch);
+            prefix_db->AddBlsVerifyG2(dkg[idx].security_->GetAddress(), *req, db_batch);
+            prefix_db->SaveLocalPolynomial(
+                dkg[idx].security_, 
+                dkg[idx].security_->GetAddress(), 
+                local_poly, 
+                false, 
+                db_batch);
+            auto etime = common::TimeUtils::TimestampMs();
+            std::cout << "over " << idx << " use time: " << (etime - btime) << std::endl;
+        };
+
+        auto btime = common::TimeUtils::TimestampMs();
+        std::vector<std::shared_ptr<std::thread>> thread_vec;
+        for (uint32_t idx = 0; idx < pri_vec.size(); ++idx) {
+            thread_vec.push_back(std::make_shared<std::thread>(callback, idx));
+            if (thread_vec.size() >= kThreadCount || idx == (pri_vec.size() - 1)) {
+                for (uint32_t i = 0; i < thread_vec.size(); ++i) {
+                    thread_vec[i]->join();
+                }
+
+                thread_vec.clear();
+            }
+        }
+
+        for (uint32_t i = 0; i < db_batchs.size(); ++i) {
+            db_ptr->Put(db_batchs[i]);
+        }
+
+        auto etime = common::TimeUtils::TimestampMs();
+        std::cout << "all over use time: " << (etime - btime) << std::endl;
+        auto time0 = common::TimeUtils::TimestampUs();
+        std::vector<transport::MessagePtr> verify_brd_msgs;
+        auto latest_timeblock_info = std::make_shared<TimeBlockItem>();
+        latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
+        latest_timeblock_info->latest_time_block_height = 1;
+        latest_timeblock_info->vss_random = common::Random::RandomUint64();
+        std::cout << "now create contribution." << std::endl;
+        CreateContribution(members, dkg, pri_vec, latest_timeblock_info, verify_brd_msgs);
+        auto time1 = common::TimeUtils::TimestampUs();
+        std::cout << "0: " << (time1 - time0) << std::endl;
+        HandleVerifyBroadcast(dkg, pri_vec, verify_brd_msgs);
+        auto tmp_vec = std::vector<transport::MessagePtr>();
+        verify_brd_msgs.swap(tmp_vec);
+        auto time2 = common::TimeUtils::TimestampUs();
+        std::cout << "1: " << (time2 - time1) << std::endl;
+        // swap sec key
+        std::vector<transport::MessagePtr> swap_sec_msgs;
+        GetSwapSeckeyMessage(dkg, n, swap_sec_msgs);
+        ASSERT_EQ(swap_sec_msgs.size(), n);
+        auto time3 = common::TimeUtils::TimestampUs();
+        std::cout << "2: " << (time3 - time2) << std::endl;
+        HandleSwapSeckey(dkg, pri_vec, swap_sec_msgs);
+        swap_sec_msgs.swap(tmp_vec);
+        auto time4 = common::TimeUtils::TimestampUs();
+        std::cout << "3: " << (time4 - time3) << std::endl;
+        std::cout << "success handle bls test message." << std::endl;
+        // sign and verify
+        auto hash_str = common::Hash::Sha256("hello world");
+        libff::alt_bn128_G1 hash;
+        BlsSign bls_sign;
+        ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
+        std::vector<libff::alt_bn128_G1> all_signs;
+        for (uint32_t i = 0; i < n; ++i) {
+            dkg[i].FinishBroadcast(0);
+            ASSERT_TRUE(dkg[i].finished_);
+        }
+
+        bls::protobuf::VerifyVecBrdReq proto_signs;
+        std::vector<size_t> idx_vec(t);
+        for (size_t i = 0; i < t; ++i) {
+            BlsSign bls_sign;
+            libff::alt_bn128_G1 sign;
+            bls_sign.Sign(t, n, dkg[i].local_sec_key_, hash, &sign);
+            std::string verify_hash;
+            // slow
+            ASSERT_EQ(
+                bls_sign.Verify(t, n, sign, hash, dkg[i].local_publick_key_, &verify_hash),
+                kBlsSuccess);
+            bls::protobuf::VerifyVecItem& verify_item = *proto_signs.add_verify_vec();
+            verify_item.set_x_c0(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(sign.X)));
+            verify_item.set_x_c1(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(sign.Y)));
+            verify_item.set_y_c0(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(sign.Z)));
+            if (all_signs.size() < t) {
+                all_signs.push_back(sign);
+                idx_vec[i] = i + 1;
+            }
+        }
+
+        bls::protobuf::VerifyVecItem& verify_item = *proto_signs.add_verify_vec();
+        verify_item.set_x_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(dkg[0].common_public_key_.X.c0)));
+        verify_item.set_x_c1(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(dkg[0].common_public_key_.X.c1)));
+        verify_item.set_y_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(dkg[0].common_public_key_.Y.c0)));
+        verify_item.set_y_c1(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(dkg[0].common_public_key_.Y.c1)));
+        verify_item.set_z_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(dkg[0].common_public_key_.Z.c0)));
+        verify_item.set_z_c1(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(dkg[0].common_public_key_.Z.c1)));
+
+        FILE* fd_signs = fopen("signs", "w");
+        std::string signs_val = common::Encode::HexEncode(proto_signs.SerializeAsString());
+        fwrite(signs_val.c_str(), 1, signs_val.size(), fd_signs);
+        fclose(fd_signs);
+
+        libBLS::Bls bls_instance = libBLS::Bls(t, n);
+        auto time5 = common::TimeUtils::TimestampUs();
+        std::cout << "4: " << (time5 - time4) << std::endl;
+        auto lagrange_coeffs = libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t);
+        auto time61 = common::TimeUtils::TimestampUs();
+        std::cout << "LagrangeCoeffs : " << (time61 - time5) << std::endl;
+        time5 = time61;
+        libff::alt_bn128_G1 agg_sign = bls_instance.SignatureRecover(
+            all_signs,
+            lagrange_coeffs);
+        auto time6 = common::TimeUtils::TimestampUs();
+        std::cout << "SignatureRecover 5: " << (time6 - time5) << std::endl;
+        for (uint32_t i = 0; i < n; ++i) {
+            BlsSign bls_sign;
+            std::string verify_hash;
+            // slow
+            ASSERT_EQ(
+                bls_sign.Verify(t, n, agg_sign, hash, dkg[i].common_public_key_, &verify_hash),
+                kBlsSuccess);
+        }
+
+        auto time7 = common::TimeUtils::TimestampUs();
+        std::cout << "6: " << (time7 - time6) << std::endl;
+    }
 };
 
 }  // namespace bls
@@ -367,6 +673,7 @@ public:
 
 int main(int argc, char** argv) {
     using namespace zjchain;
+    bls::BlsVerify::Init();
     bls::BlsVerify verify;
     verify.Init();
     return 0;
