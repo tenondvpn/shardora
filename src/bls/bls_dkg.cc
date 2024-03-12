@@ -483,6 +483,8 @@ bool BlsDkg::VerifySekkeyValid(
             min_aggree_member_count_,
             &verfy_final_vals)) {
         // compute verified g2s with new index
+        ZJC_ERROR("failed get verified g2 local_member_index_: %d, id: %s, min_aggree_member_count_: %d",
+            local_member_index_, common::Encode::HexEncode((*members_)[peer_index]->id).c_str(), min_aggree_member_count_);
         if (!CheckRecomputeG2s((*members_)[peer_index]->id, verfy_final_vals)) {
             ZJC_WARN("failed get verified g2: %u, %s",
                 local_member_index_,
@@ -490,6 +492,9 @@ bool BlsDkg::VerifySekkeyValid(
 //             assert(false);
             return false;
         }
+    } else {
+        ZJC_ERROR("success get verified g2 local_member_index_: %d, id: %s, min_aggree_member_count_: %d",
+            local_member_index_, common::Encode::HexEncode((*members_)[peer_index]->id).c_str(), min_aggree_member_count_);
     }
 
     bls::protobuf::JoinElectInfo join_info;
@@ -924,6 +929,8 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
 void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     bls::protobuf::LocalPolynomial local_poly;
     if (!prefix_db_->GetLocalPolynomial(security_, security_->GetAddress(), &local_poly)) {
+        ZJC_ERROR("failed GetLocalPolynomial: %s",
+            common::Encode::HexEncode(security_->GetAddress()).c_str());
         assert(false);
         return;
     }

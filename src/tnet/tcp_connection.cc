@@ -425,7 +425,9 @@ void TcpConnection::OnConnectTimeout() {
 
 void TcpConnection::NotifyCmdPacketAndClose(int type) {
     packet_handler_(this, CmdPacketFactory::Create(type));
-    Close();
+    if (!is_client_) {
+        Close();
+    }
 }
 
 void TcpConnection::ReleaseByIOThread() {
