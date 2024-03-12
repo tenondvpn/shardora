@@ -64,14 +64,9 @@ int clear_icanon(void) {
 void Command::Run() {
     Help();
     clear_icanon();
-    int i = 0;
     while (!destroy_) {
         if (!show_cmd_) {
             std::this_thread::sleep_for(std::chrono::microseconds(200000ll));
-            i++;
-            if (i >= 3) {
-                destroy_ = true;
-            }
             continue;
         }
 

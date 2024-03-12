@@ -223,7 +223,8 @@ int NetworkInit::Init(int argc, char** argv) {
 
     inited_ = true;
     
-    cmd_.Run();
+    // cmd_.Run();
+    std::this_thread::sleep_for(std::chrono::seconds(120));
     return kInitSuccess;
 }
 
