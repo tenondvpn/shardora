@@ -131,6 +131,7 @@ add_executable(wsc ${MAIN_DIR}/ws_cli.cc)
 add_executable(tnets ${MAIN_DIR}/tnet_svr.cc)
 add_executable(tnetc ${MAIN_DIR}/tnet_cli.cc)
 add_executable(txcli ${MAIN_DIR}/tx_cli.cc)
+add_executable(bls ${MAIN_DIR}/bls_main.cc)
 
 set(LINK_ARGS
     init
@@ -166,6 +167,7 @@ set(LINK_ARGS
     gmp
 )
 
+target_link_libraries(bls ${LINK_ARGS})
 target_link_libraries(zjchain ${LINK_ARGS})
 target_link_libraries(httpc http common tcmalloc pthread gmp)
 target_link_libraries(https http common tcmalloc pthread gmp)
