@@ -40,7 +40,8 @@ int AccountManager::Init(
     pools_mgr_ = pools_mgr;
     CreatePoolsAddressInfo();
     inited_ = true;
-    update_acc_thread_ = std::make_shared<std::thread>(std::bind(&AccountManager::RunUpdateAccounts, this));
+    update_acc_thread_ = std::make_shared<std::thread>(
+        std::bind(&AccountManager::RunUpdateAccounts, this));
     return kBlockSuccess;
 }
 

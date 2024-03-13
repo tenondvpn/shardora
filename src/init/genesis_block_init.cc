@@ -229,7 +229,6 @@ void GenesisBlockInit::PrepareCreateGenesisBlocks() {
         return;
 };
 
-
 bool GenesisBlockInit::CheckRecomputeG2s(
         uint32_t local_member_index,
         uint32_t valid_t,
