@@ -681,6 +681,10 @@ TEST_F(TestBls, AllSuccess) {
             str_for_hash.append(verify_item.z_c1());
         }
 
+
+        auto verify_item_str = req->SerializeAsString();
+        std::cout << "g2 vec size: " << verify_item_str.size() << std::endl;
+        exit(0);
         auto check_hash = common::Hash::keccak256(str_for_hash);
         for (uint32_t tmp_idx = 0; tmp_idx < pri_vec.size(); ++tmp_idx) {
             if (tmp_idx == idx) {
