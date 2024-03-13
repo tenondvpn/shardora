@@ -593,6 +593,8 @@ void AccountManager::UpdateAccountsThread() {
             protos::AddressInfoPtr account_info;
             thread_update_accounts_queue_[i].pop(&account_info);
             updates_accounts_.push(account_info);
+            ZJC_DEBUG("success get update address %d, %s",
+                i, common::Encode::HexEncode(account_info->addr()).c_str());
         }
     }
 
@@ -601,6 +603,8 @@ void AccountManager::UpdateAccountsThread() {
         updates_accounts_.pop(&account_info);
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             thread_valid_accounts_queue_[i].push(account_info);
+            ZJC_DEBUG("success set update address %d, %s",
+                i, common::Encode::HexEncode(account_info->addr()).c_str());
         }
     }
 }
