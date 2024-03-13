@@ -24,6 +24,11 @@ AccountManager::AccountManager() {
 }
 
 AccountManager::~AccountManager() {
+    destroy_ = true;
+    if (update_acc_thread_ != nullptr) {
+        update_acc_thread_->join();
+        update_acc_thread_ = nullptr;
+    }
 }
 
 int AccountManager::Init(
@@ -35,6 +40,7 @@ int AccountManager::Init(
     pools_mgr_ = pools_mgr;
     CreatePoolsAddressInfo();
     inited_ = true;
+    update_acc_thread_ = std::make_shared<std::thread>(std::bind(&AccountManager::RunUpdateAccounts, this));
     return kBlockSuccess;
 }
 
@@ -186,6 +192,7 @@ void AccountManager::HandleNormalFromTx(
     account_info->set_balance(tx.balance());
     prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
     thread_update_accounts_queue_[thread_idx].push(account_info);
+    update_acc_con_.notify_one();
     ZJC_DEBUG("transfer from address new balance %s: %lu, height: %lu, pool: %u",
         common::Encode::HexEncode(account_id).c_str(), tx.balance(),
         block.height(), block.pool_index());
@@ -211,6 +218,7 @@ void AccountManager::HandleContractPrepayment(
     account_info->set_balance(tx.balance());
     prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
     thread_update_accounts_queue_[thread_idx].push(account_info);
+    update_acc_con_.notify_one();
     ZJC_DEBUG("contract prepayment address new balance %s: %lu, height: %lu, pool: %u",
         common::Encode::HexEncode(account_id).c_str(), tx.balance(),
         block.height(), block.pool_index());
@@ -280,6 +288,7 @@ void AccountManager::HandleLocalToTx(
         }
 
         thread_update_accounts_queue_[thread_idx].push(account_info);
+        update_acc_con_.notify_one();
         ZJC_INFO("transfer to address new balance %s: %lu",
             common::Encode::HexEncode(to_txs.tos(i).to()).c_str(), to_txs.tos(i).balance());
     }
@@ -319,6 +328,7 @@ void AccountManager::HandleContractCreateByRootTo(
             account_info->set_bytes_code(bytes_code);
             prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
             thread_update_accounts_queue_[thread_idx].push(account_info);
+            update_acc_con_.notify_one();
             ZJC_DEBUG("create add local contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
                 common::Encode::HexEncode(tx.to()).c_str(),
                 tx.amount(),
@@ -359,6 +369,8 @@ void AccountManager::HandleCreateContract(
                 thread_update_accounts_queue_[thread_idx].push(account_info);
             }
         }
+
+        update_acc_con_.notify_one();
     }
 
     if (tx.status() == consensus::kConsensusSuccess) {
@@ -394,6 +406,8 @@ void AccountManager::HandleCreateContract(
                 break;
             }
         }
+                
+        update_acc_con_.notify_one();
     }
 }
 
@@ -430,6 +444,7 @@ void AccountManager::HandleCreateContractByRootFrom(
     account_info->set_balance(tx.balance());
     prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
     thread_update_accounts_queue_[thread_idx].push(account_info);
+    update_acc_con_.notify_one();
     ZJC_DEBUG("contract create by root from new balance %s: %lu, height: %lu, pool: %u",
         common::Encode::HexEncode(account_id).c_str(), tx.balance(),
         block.height(), block.pool_index());
@@ -466,6 +481,7 @@ void AccountManager::HandleContractExecuteTx(
     account_info->set_balance(tx.amount());
     prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
     thread_update_accounts_queue_[thread_idx].push(account_info);
+    update_acc_con_.notify_one();
     ZJC_DEBUG("contract call address new balance %s: %lu",
         common::Encode::HexEncode(account_id).c_str(), tx.amount());
 }
@@ -511,6 +527,7 @@ void AccountManager::HandleRootCreateAddressTx(
     account_info->set_balance(0);  // root address balance invalid
     prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
     thread_update_accounts_queue_[thread_idx].push(account_info);
+    update_acc_con_.notify_one();
     ZJC_INFO("2 get address info failed create new address to this id: %s,"
         "shard: %u, local shard: %u",
         common::Encode::HexEncode(tx.to()).c_str(), sharding_id,
@@ -582,8 +599,17 @@ void AccountManager::HandleJoinElectTx(
     }
 
     thread_update_accounts_queue_[thread_idx].push(account_info);
+    update_acc_con_.notify_one();
     ZJC_DEBUG("join elect to address new elect pos %s: %lu",
         common::Encode::HexEncode(tx.from()).c_str(), join_info.member_idx());
+}
+
+void AccountManager::RunUpdateAccounts() {
+    while (!destroy_) {
+        UpdateAccountsThread();
+        std::unique_lock<std::mutex> lock(update_acc_mutex_);
+        update_acc_con_.wait_for(lock, std::chrono::milliseconds(100));
+    }
 }
 
 void AccountManager::UpdateAccountsThread() {
@@ -593,6 +619,8 @@ void AccountManager::UpdateAccountsThread() {
             protos::AddressInfoPtr account_info;
             thread_update_accounts_queue_[i].pop(&account_info);
             updates_accounts_.push(account_info);
+            ZJC_DEBUG("success get update address %d, %s",
+                i, common::Encode::HexEncode(account_info->addr()).c_str());
         }
     }
 
@@ -601,6 +629,8 @@ void AccountManager::UpdateAccountsThread() {
         updates_accounts_.pop(&account_info);
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             thread_valid_accounts_queue_[i].push(account_info);
+            ZJC_DEBUG("success set update address %d, %s",
+                i, common::Encode::HexEncode(account_info->addr()).c_str());
         }
     }
 }

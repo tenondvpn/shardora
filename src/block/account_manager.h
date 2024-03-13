@@ -109,6 +109,7 @@ private:
         db::DbWriteBatch& db_batch);
     void UpdateAccountsThread();
     void InitLoadAllAddress();
+    void RunUpdateAccounts();
 
     inline bool isContractCreateTx(const block::protobuf::BlockTx& tx) {
         return tx.has_contract_code();
@@ -134,6 +135,10 @@ private:
     common::ThreadSafeQueue<protos::AddressInfoPtr> thread_update_accounts_queue_[common::kMaxThreadCount];
     std::shared_ptr<std::thread> merge_update_accounts_thread_ = nullptr;
     common::ThreadSafeQueue<protos::AddressInfoPtr> thread_valid_accounts_queue_[common::kMaxThreadCount];
+    volatile bool destroy_ = false;
+    std::condition_variable update_acc_con_;
+    std::mutex update_acc_mutex_;
+    std::shared_ptr<std::thread> update_acc_thread_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };
