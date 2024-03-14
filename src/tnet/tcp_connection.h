@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "common/spin_mutex.h"
+#include "common/thread_safe_queue.h"
 #include "common/tick.h"
 #include "common/time_utils.h"
 #include "tnet/tcp_interface.h"
@@ -159,7 +160,8 @@ private:
     static const int OUT_BUFFER_LIST_SIZE = 10240;
 
     common::SpinMutex spin_mutex_;
-    BufferList out_buffer_list_;
+    common::ThreadSafeQueue<ByteBufferPtr> out_buffer_list_;
+    // BufferList out_buffer_list_;
     WriteableHandlerList writeable_handle_list_;
     volatile TcpState tcp_state_{ kTcpNone };
     int action_{ 0 };

@@ -99,17 +99,9 @@ bool TcpConnection::SendPacketWithoutLock(Packet& packet) {
         return false;
     }
 
-    if (tcp_state_ != kTcpConnected || !out_buffer_list_.empty()) {
-        if (out_buffer_list_.size() >= OUT_BUFFER_LIST_SIZE) {
-            ZJC_ERROR("out_buffer_list_ out of size %d, %d", OUT_BUFFER_LIST_SIZE, out_buffer_list_.size());
-            return false;
-        }
-
-        out_buffer_list_.push_back(buf_ptr);
-        if (max_count_ < out_buffer_list_.size()) {
-            max_count_ = out_buffer_list_.size();
-        }
-
+    auto queue_size = out_buffer_list_.size();
+    if (tcp_state_ != kTcpConnected || queue_size > 0) {
+        out_buffer_list_.push(buf_ptr);
         return true;
     }
 
@@ -293,7 +285,7 @@ void TcpConnection::OnWrite() {
         return;
     }
 
-    if (out_buffer_list_.empty()) {
+    if (out_buffer_list_.size() <= 0) {
         NotifyWriteable(false, false);
         spin_mutex_.unlock();
         return;
@@ -301,12 +293,15 @@ void TcpConnection::OnWrite() {
 
     bool ioError = false;
     bool writeAble = true;
-    while (!out_buffer_list_.empty()) {
-        ByteBufferPtr& bufferPtr = out_buffer_list_.front();
+    while (true) {
+        ByteBufferPtr bufferPtr = nullptr;
+        if (!out_buffer_list_.pop(&bufferPtr) || bufferPtr == nullptr) {
+            break;
+        }
+
         while (true) {
             size_t len = bufferPtr->length();
             if (len == 0) {
-                out_buffer_list_.pop_front();
                 break;
             }
 
