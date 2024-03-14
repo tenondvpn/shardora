@@ -243,7 +243,6 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     common::ThreadSafeQueue<transport::MessagePtr> msg_queues_[common::kInvalidPoolIndex];
     CreateConsensusItemFunction item_functions_[pools::protobuf::StepType_ARRAYSIZE] = { nullptr };
-    common::UniqueMap<std::string, protos::AddressInfoPtr, 256, 16> address_map_;
     uint32_t prev_count_[257] = { 0 };
     uint64_t prev_timestamp_us_ = 0;
     uint64_t prev_sync_check_ms_ = 0;
