@@ -82,7 +82,7 @@ private:
     std::string msg_random_;
     volatile bool destroy_ = false;
     std::shared_ptr<std::thread> output_thread_ = nullptr;
-    common::ThreadSafeQueue<std::shared_ptr<ClientItem>> output_queues_[common::kMaxThreadCount];
+    common::ThreadSafeQueue<std::shared_ptr<ClientItem>, 10240> output_queues_[common::kMaxThreadCount];
     common::ThreadSafeQueue<tnet::TcpConnection*> from_client_conn_queues_;
     std::unordered_map<std::string, tnet::TcpConnection*> from_conn_map_;
     common::LimitHashSet<tnet::TcpConnection*> added_conns_{ 1024 };
