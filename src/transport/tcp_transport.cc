@@ -328,7 +328,10 @@ void TcpTransport::Output() {
 
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             auto queue_size = output_queues_[i].size();
-            ZJC_INFO("get thread queue size: %d, %u", i, queue_size);
+            if (queue_size > 10) {
+                ZJC_INFO("get thread queue size: %d, %u", i, queue_size);
+            }
+            
             while (output_queues_[i].size() > 0) {
                 std::shared_ptr<ClientItem> item_ptr = nullptr;
                 output_queues_[i].pop(&item_ptr);
