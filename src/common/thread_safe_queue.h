@@ -5,6 +5,8 @@
 #include <condition_variable>
 #include <mutex>
 
+#include "common/log.h"
+
 namespace zjchain {
 
 namespace common {
