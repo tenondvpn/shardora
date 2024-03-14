@@ -23,8 +23,8 @@ enum TnetErrorCode {
 };
 
 static const int kEpollMaxWaitTime = 100;
-static const uint32_t kEpollMaxEvents = 256;
-static const uint32_t kDvMaxEvents = 10240u;
+static const uint32_t kEpollMaxEvents = 256u;
+static const uint32_t kDvMaxEvents = kEpollMaxEvents;
 
 class TcpConnection;
 class Packet;
