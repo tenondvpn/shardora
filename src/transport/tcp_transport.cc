@@ -258,12 +258,14 @@ int TcpTransport::Send(
     output_item->port = des_port;
     message.SerializeToString(&output_item->msg);
     output_queues_[thread_idx].push(output_item);
+#ifndef NDEBUG
     static std::atomic<uint32_t> max_count = 0;
     if (output_queues_[thread_idx].size() > max_count) {
         max_count = output_queues_[thread_idx].size();
         ZJC_DEBUG("get output_queues_ size %d, %d", thread_idx, output_queues_[thread_idx].size());
     }
-    
+#endif
+
     output_con_.notify_one();
     return kTransportSuccess;
 }
