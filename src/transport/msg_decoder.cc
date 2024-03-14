@@ -82,13 +82,13 @@ bool MsgDecoder::Decode(const char* buf, size_t len) {
             tnet::MsgPacket* packet = new tnet::MsgPacket(type_, tnet::kEncodeWithHeader, true);
             packet->SetMessage(msg);
             packet_list_.push_back(packet);
-#ifndef NDEBUG
-            static std::atomic<uint32_t> packet_count = 0;
-            if (packet_list_.size() > packet_count) {
-                packet_count = packet_list_.size();
-                ZJC_DEBUG("on read packet size: %u", uint32_t(packet_count));
-            }
-#endif
+// #ifndef NDEBUG
+//             static std::atomic<uint32_t> packet_count = 0;
+//             if (packet_list_.size() > packet_count) {
+//                 packet_count = packet_list_.size();
+//                 ZJC_DEBUG("on read packet size: %u", uint32_t(packet_count));
+//             }
+// #endif
             packet_len_ = 0;
             if (pos < len) {
                 if (!GetPacketLen(buf, len, pos)) {
