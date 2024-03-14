@@ -40,7 +40,7 @@ public:
     }
 
 private:
-    moodycamel::ReaderWriterQueue<T, kMaxCount> rw_queue_;
+    moodycamel::ReaderWriterQueue<T, kMaxCount> rw_queue_ = 102400;
     std::condition_variable con_;
     std::mutex mutex_;
 
