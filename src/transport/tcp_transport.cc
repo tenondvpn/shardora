@@ -116,7 +116,7 @@ void TcpTransport::Stop() {
 }
 
 bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packet) {
-    ZJC_DEBUG("message coming");
+    // ZJC_DEBUG("message coming");
     auto tcp_conn = dynamic_cast<tnet::TcpConnection*>(conn);
     if (conn->GetSocket() == nullptr) {
         packet.Free();
@@ -173,7 +173,7 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
 
     conn->SetPeerIp(from_ip);
     conn->SetPeerPort(from_port);
-    ZJC_DEBUG("message coming: %s:%d", from_ip.c_str(), from_port);
+    // ZJC_DEBUG("message coming: %s:%d", from_ip.c_str(), from_port);
     msg_ptr->conn = conn;
     msg_handler_->HandleMessage(msg_ptr);
     if (!conn->is_client() && added_conns_.Push(conn)) {
@@ -331,7 +331,7 @@ void TcpTransport::Output() {
             if (queue_size > 10) {
                 ZJC_INFO("get thread queue size: %d, %u", i, queue_size);
             }
-            
+
             while (output_queues_[i].size() > 0) {
                 std::shared_ptr<ClientItem> item_ptr = nullptr;
                 output_queues_[i].pop(&item_ptr);
@@ -404,7 +404,6 @@ tnet::TcpConnection* TcpTransport::GetConnection(
             ZJC_DEBUG("remove connect and reconnect send message %s:%d, erase conn size: %d", ip.c_str(), port, erase_conns_.size());
             conn_map_.erase(iter);
         } else {
-            ZJC_DEBUG("use exists connect send message %s:%d", ip.c_str(), port);
             return iter->second;
         }
     }
