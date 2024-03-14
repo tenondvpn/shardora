@@ -19,7 +19,6 @@ public:
     ~ThreadSafeQueue() {}
 
     void push(T e) {
-        ++count_;
         while (!rw_queue_.try_enqueue(e)) {
             ZJC_DEBUG("get rw_queue size: %u", 0);
             std::unique_lock<std::mutex> lock(mutex_);
@@ -30,11 +29,9 @@ public:
     bool pop(T* e) {
         bool res = rw_queue_.try_dequeue(*e);
         if (res) {
-            if (count_ >= kQueueCount) {
+            if (rw_queue_.size() >= kQueueCount - 1) {
                 con_.notify_one();
             }
-            
-            --count_;
         }
 
         return res;
@@ -50,7 +47,6 @@ private:
     moodycamel::ReaderWriterQueue<T, kMaxCount> rw_queue_{kQueueCount};
     std::condition_variable con_;
     std::mutex mutex_;
-    volatile uint32_t count_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(ThreadSafeQueue);
 };
