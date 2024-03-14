@@ -318,9 +318,9 @@ int BlsManager::GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g
 }
 
 void BlsManager::PopFinishMessage(uint8_t thread_idx) {
-    while (finish_msg_queue_.size() > 0) {
+    while (true) {
         transport::MessagePtr msg_ptr = nullptr;
-        if (!finish_msg_queue_.pop(&msg_ptr)) {
+        if (!finish_msg_queue_.pop(&msg_ptr) || msg_ptr == nullptr) {
             break;
         }
 

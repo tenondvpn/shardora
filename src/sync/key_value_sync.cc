@@ -101,9 +101,13 @@ void KeyValueSync::ConsensusTimerMessage(uint8_t thread_idx) {
 void KeyValueSync::PopItems() {
     uint32_t pop_count = 0;
     for (uint8_t thread_idx = 0; thread_idx < common::kMaxThreadCount; ++thread_idx) {
-        while (item_queues_[thread_idx].size() > 0 && pop_count++ < 64) {
+        while (pop_count++ < 64) {
             SyncItemPtr item = nullptr;
             item_queues_[thread_idx].pop(&item);
+            if (item == nullptr) {
+                break;
+            }
+            
             auto iter = added_key_set_.find(item->key);
             if (iter != added_key_set_.end()) {
                 ZJC_DEBUG("key exists add new sync item key: %s, priority: %u",
@@ -299,9 +303,9 @@ void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void KeyValueSync::PopKvMessage(uint8_t thread_idx) {
-    while (kv_msg_queue_.size() > 0) {
+    while (true) {
         transport::MessagePtr msg_ptr = nullptr;
-        if (!kv_msg_queue_.pop(&msg_ptr)) {
+        if (!kv_msg_queue_.pop(&msg_ptr) || msg_ptr == nullptr) {
             break;
         }
 

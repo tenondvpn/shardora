@@ -146,9 +146,9 @@ void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void BlsDkg::PopBlsMessage(uint8_t thread_idx) {
-    while (bls_msg_queue_.size() > 0) {
+    while (true) {
         transport::MessagePtr msg_ptr = nullptr;
-        if (!bls_msg_queue_.pop(&msg_ptr)) {
+        if (!bls_msg_queue_.pop(&msg_ptr) || msg_ptr == nullptr) {
             break;
         }
 

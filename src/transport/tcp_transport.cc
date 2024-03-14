@@ -319,22 +319,25 @@ void TcpTransport::Output() {
             prev_erase_timestamp_ms_ = now_tm_ms + kCheckEraseConnPeriodMs;
         }
 
-        while (from_client_conn_queues_.size() > 0) {
+        while (true) {
             tnet::TcpConnection* conn = nullptr;
             from_client_conn_queues_.pop(&conn);
+            if (conn == nullptr) {
+                break;
+            }
+            
             std::string key = conn->PeerIp() + ":" + std::to_string(conn->PeerPort());
             from_conn_map_[key] = conn;
         }
 
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
-            auto queue_size = output_queues_[i].size();
-            if (queue_size > 10) {
-                ZJC_INFO("get thread queue size: %d, %u", i, queue_size);
-            }
-
-            while (output_queues_[i].size() > 0) {
+            while (true) {
                 std::shared_ptr<ClientItem> item_ptr = nullptr;
                 output_queues_[i].pop(&item_ptr);
+                if (item_ptr == nullptr) {
+                    break;
+                }
+
                 auto tcp_conn = GetConnection(item_ptr->des_ip, item_ptr->port);
                 if (tcp_conn == nullptr) {
                     TRANSPORT_ERROR("get tcp connection failed[%s][%d][hash64: %llu]",

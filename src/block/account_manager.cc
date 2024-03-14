@@ -106,9 +106,13 @@ void AccountManager::InitLoadAllAddress() {
 protos::AddressInfoPtr AccountManager::GetAccountInfo(
         uint8_t thread_idx,
         const std::string& addr) {
-    while (thread_valid_accounts_queue_[thread_idx].size() > 0) {
+    while (true) {
         std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
         thread_valid_accounts_queue_[thread_idx].pop(&address_info);
+        if (address_info == nullptr) {
+            break;
+        }
+
         thread_address_map_[thread_idx][address_info->addr()] = address_info;
     }
    
@@ -616,18 +620,26 @@ void AccountManager::RunUpdateAccounts() {
 void AccountManager::UpdateAccountsThread() {
     common::ThreadSafeQueue<protos::AddressInfoPtr> updates_accounts_;
     for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
-        while (thread_update_accounts_queue_[i].size() > 0) {
-            protos::AddressInfoPtr account_info;
+        while (true) {
+            protos::AddressInfoPtr account_info = nullptr;
             thread_update_accounts_queue_[i].pop(&account_info);
+            if (account_info == nullptr) {
+                break;
+            }
+
             updates_accounts_.push(account_info);
             ZJC_DEBUG("success get update address %d, %s",
                 i, common::Encode::HexEncode(account_info->addr()).c_str());
         }
     }
 
-    while (updates_accounts_.size() > 0) {
-        protos::AddressInfoPtr account_info;
+    while (true) {
+        protos::AddressInfoPtr account_info = nullptr;
         updates_accounts_.pop(&account_info);
+        if (account_info == nullptr) {
+            break;
+        }
+        
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             thread_valid_accounts_queue_[i].push(account_info);
             ZJC_DEBUG("success set update address %d, %s",

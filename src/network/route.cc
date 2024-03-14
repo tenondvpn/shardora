@@ -124,13 +124,15 @@ void Route::Broadcasting(uint8_t thread_idx) {
     while (!destroy_) {
         bool has_data = false;
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
-            while (broadcast_queue_[i].size() > 0) {
-                transport::MessagePtr msg_ptr;
-                if (broadcast_queue_[i].pop(&msg_ptr)) {
-                    Broadcast(thread_idx, msg_ptr);
-                    if (!has_data) {
-                        has_data = true;
-                    }
+            while (true) {
+                transport::MessagePtr msg_ptr = nullptr;
+                if (!broadcast_queue_[i].pop(&msg_ptr) || msg_ptr == nullptr) {
+                    break;
+                }
+            
+                Broadcast(thread_idx, msg_ptr);
+                if (!has_data) {
+                    has_data = true;
                 }
             }
         }
