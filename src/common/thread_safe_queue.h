@@ -29,7 +29,7 @@ public:
     bool pop(T* e) {
         bool res = rw_queue_.try_dequeue(*e);
         if (res) {
-            if (rw_queue_.size() >= kQueueCount - 1) {
+            if (size() >= kQueueCount - 1) {
                 con_.notify_one();
             }
         }
