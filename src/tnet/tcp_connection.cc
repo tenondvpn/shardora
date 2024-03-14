@@ -128,7 +128,7 @@ bool TcpConnection::SendPacketWithoutLock(Packet& packet) {
 
     if (rc) {
         if (buf_ptr->length() > 0) {
-            out_buffer_list_.push_back(buf_ptr);
+            out_buffer_list_.push(buf_ptr);
         } else if (action_ != kActionNone) {
             event_loop_.PostTask(std::bind(
                     &TcpConnection::ActionAfterPacketSent, this));
