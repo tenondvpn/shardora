@@ -1,5 +1,9 @@
 #include "transport/msg_decoder.h"
 
+#include <atomic>
+
+#include "common/log.h"
+
 namespace zjchain {
 
 namespace transport {
@@ -82,7 +86,7 @@ bool MsgDecoder::Decode(const char* buf, size_t len) {
             static std::atomic<uint32_t> packet_count = 0;
             if (packet_list_.size() > packet_count) {
                 packet_count = packet_list_.size();
-                ZJC_DEBUG("on read packet size: %u", packet_count);
+                ZJC_DEBUG("on read packet size: %u", uint32_t(packet_count));
             }
 #endif
             packet_len_ = 0;
