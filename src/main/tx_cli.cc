@@ -104,10 +104,10 @@ static transport::MessagePtr CreateTransactionWithAttr(
     transport::TcpTransport::Instance()->SetMessageHash(msg, 0);
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign;
-    if (security->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
-        assert(false);
-        return nullptr;
-    }
+    // if (security->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
+    //     assert(false);
+    //     return nullptr;
+    // }
 
 //     std::string test_sign = common::Encode::HexDecode("24e113bf95efa71f9ac4fe941a00091a241cd55dfba119675aa5e48adf680c60") +
 //         common::Encode::HexDecode("4d74b3e55148ef7ecc4404f3514c94b0bd4a9ac9d207e7b5a9085e070db8231c") + "\0";
@@ -261,14 +261,12 @@ int tx_main(int argc, char** argv) {
             return 1;
         }
 
-        if (pos % 100 == 0) {
+        if (pos % 1000 == 0) {
             ++prikey_pos;
             from_prikey = prikeys[prikey_pos % prikeys.size()];
             security->SetPrivateKey(from_prikey);
             usleep(10000);
         }
-
-        usleep(200);
     }
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {
