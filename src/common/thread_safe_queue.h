@@ -6,7 +6,7 @@ namespace zjchain {
 
 namespace common {
 
-template<class T, uint32_t kMaxCount=16*1024>
+template<class T, uint32_t kMaxCount=512>
 class ThreadSafeQueue {
 public:
     ThreadSafeQueue() {}
