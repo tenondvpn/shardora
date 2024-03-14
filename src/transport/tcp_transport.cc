@@ -379,6 +379,7 @@ tnet::TcpConnection* TcpTransport::GetConnection(
         }
 
         erase_conns_.push_back(from_iter->second);
+        ZJC_DEBUG("remove connect and reconnect send message %s:%d, erase conn size: %d", ip.c_str(), port, erase_conns_.size());
         from_conn_map_.erase(from_iter);
     }
 
@@ -386,7 +387,7 @@ tnet::TcpConnection* TcpTransport::GetConnection(
     if (iter != conn_map_.end()) {
         if (iter->second->ShouldReconnect()) {
             erase_conns_.push_back(iter->second);
-            ZJC_DEBUG("remove connect and reconnect send message %s:%d", ip.c_str(), port);
+            ZJC_DEBUG("remove connect and reconnect send message %s:%d, erase conn size: %d", ip.c_str(), port, erase_conns_.size());
             conn_map_.erase(iter);
         } else {
             ZJC_DEBUG("use exists connect send message %s:%d", ip.c_str(), port);
@@ -405,7 +406,7 @@ tnet::TcpConnection* TcpTransport::GetConnection(
     }
     
     tcp_conn->set_client();
-    ZJC_DEBUG("success connect send message %s:%d", ip.c_str(), port);
+    ZJC_DEBUG("success connect send message %s:%d, conn map size: %d", ip.c_str(), port, conn_map_.size());
     conn_map_[peer_spec] = tcp_conn;
     return tcp_conn;
 }
