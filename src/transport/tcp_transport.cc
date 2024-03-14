@@ -257,7 +257,7 @@ int TcpTransport::Send(
     output_item->des_ip = des_ip;
     output_item->port = des_port;
     message.SerializeToString(&output_item->msg);
-    // output_queues_[thread_idx].push(output_item);
+    output_queues_[thread_idx].push(output_item);
     // ZJC_INFO("get output_queues_ size %d, %d", thread_idx, output_queues_[thread_idx].size());
 // #ifndef NDEBUG
 //     static std::atomic<uint32_t> max_count = 0;
