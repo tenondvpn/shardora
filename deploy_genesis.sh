@@ -3,7 +3,7 @@
 # 修改配置文件
 # 确保服务器安装了 sshpass
 echo "==== STEP1: START DEPLOY ===="
-server0=10.101.20.29
+server0=127.0.0.1
 target=$1
 no_build=$2
 
