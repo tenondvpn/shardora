@@ -1085,7 +1085,7 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
             msg_ptr->msg_hash,
             tx_msg.pubkey(),
             msg_ptr->header.sign()) != security::kSecuritySuccess) {
-        ZJC_DEBUG("verify signature failed address balance invalid: %lu, transfer amount: %lu, "
+        ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
             "prepayment: %lu, default call contract gas: %lu, txid: %s",
             msg_ptr->address_info->balance(),
             tx_msg.amount(),
