@@ -64,10 +64,11 @@ void TcpConnection::Destroy(bool closeSocketImmediately) {
     int16_t new_val = 0;
     int16_t old_val = 1;
     if (destroy_flag_.compare_exchange_strong(new_val, old_val)) {
-        // if (closeSocketImmediately) {
+        if (closeSocketImmediately) {
             Close();
-        // }
-        // event_loop_.PostTask(std::bind(&TcpConnection::ReleaseByIOThread, this));
+        }
+
+        event_loop_.PostTask(std::bind(&TcpConnection::ReleaseByIOThread, this));
     }
 
     free_timeout_ms_ = common::TimeUtils::TimestampMs() + 10000lu;;
@@ -75,27 +76,9 @@ void TcpConnection::Destroy(bool closeSocketImmediately) {
 
 bool TcpConnection::SendPacket(Packet& packet) {
     bool rc = false;
-    bool push_to_queue = false;
-    ByteBufferPtr buf_ptr(new ByteBuffer);
     {
         common::AutoSpinLock l(spin_mutex_);
-        if (tcp_state_ == kTcpNone || tcp_state_ == kTcpClosed) {
-        ZJC_ERROR("bad state, %d", tcp_state_);
-            return false;
-        }
-
-        if (!packet_encoder_->Encode(packet, buf_ptr.get())) {
-            ZJC_ERROR("encode packet failed");
-            return false;
-        }
-
-        rc = SendPacketWithoutLock(packet, buf_ptr, &push_to_queue);
-        NotifyWriteable(false, false);
-    }
-
-
-    if (push_to_queue) {
-        out_buffer_list_.push(buf_ptr);
+        rc = SendPacketWithoutLock(packet);
     }
 
     if (rc) {
@@ -105,10 +88,29 @@ bool TcpConnection::SendPacket(Packet& packet) {
     return rc;
 }
 
-bool TcpConnection::SendPacketWithoutLock(Packet& packet, ByteBufferPtr buf_ptr, bool* push_to_queue) {
-    auto queue_size = out_buffer_list_.size();
-    if (tcp_state_ != kTcpConnected || queue_size > 0) {
-        *push_to_queue = true;
+bool TcpConnection::SendPacketWithoutLock(Packet& packet) {
+    if (tcp_state_ == kTcpNone || tcp_state_ == kTcpClosed) {
+        ZJC_ERROR("bad state, %d", tcp_state_);
+        return false;
+    }
+
+    ByteBufferPtr buf_ptr(new ByteBuffer);
+    if (!packet_encoder_->Encode(packet, buf_ptr.get())) {
+        ZJC_ERROR("encode packet failed");
+        return false;
+    }
+
+    if (tcp_state_ != kTcpConnected || !out_buffer_list_.empty()) {
+        if (out_buffer_list_.size() >= OUT_BUFFER_LIST_SIZE) {
+            ZJC_ERROR("out_buffer_list_ out of size %d, %d", OUT_BUFFER_LIST_SIZE, out_buffer_list_.size());
+            return false;
+        }
+
+        out_buffer_list_.push_back(buf_ptr);
+        if (max_count_ < out_buffer_list_.size()) {
+            max_count_ = out_buffer_list_.size();
+        }
+
         return true;
     }
 
@@ -135,7 +137,7 @@ bool TcpConnection::SendPacketWithoutLock(Packet& packet, ByteBufferPtr buf_ptr,
 
     if (rc) {
         if (buf_ptr->length() > 0) {
-            *push_to_queue = true;
+            out_buffer_list_.push_back(buf_ptr);
         } else if (action_ != kActionNone) {
             event_loop_.PostTask(std::bind(
                     &TcpConnection::ActionAfterPacketSent, this));
@@ -161,10 +163,7 @@ void TcpConnection::Close() {
 }
 
 void TcpConnection::CloseWithoutLock() {
-    ZJC_DEBUG("connection socket closed tcp_state_: %d", tcp_state_);
     if (tcp_state_ != kTcpClosed) {
-        event_loop_.DisableIoEvent(socket_->GetFd(), kEventRead, *this);
-        event_loop_.DisableIoEvent(socket_->GetFd(), kEventWrite, *this);
         tcp_state_ = kTcpClosed;
         if (socket_ != NULL) {
             socket_->Close();
@@ -172,8 +171,6 @@ void TcpConnection::CloseWithoutLock() {
             socket_ = nullptr;
         }
     }
-
-    ZJC_DEBUG("connection socket closed tcp_state_: %d", tcp_state_);
 }
 
 void TcpConnection::NotifyWriteable(bool need_release, bool lock) {
@@ -292,7 +289,7 @@ void TcpConnection::OnWrite() {
         return;
     }
 
-    if (out_buffer_list_.size() <= 0) {
+    if (out_buffer_list_.empty()) {
         NotifyWriteable(false, false);
         spin_mutex_.unlock();
         return;
@@ -300,15 +297,12 @@ void TcpConnection::OnWrite() {
 
     bool ioError = false;
     bool writeAble = true;
-    while (true) {
-        ByteBufferPtr bufferPtr = nullptr;
-        if (!out_buffer_list_.pop(&bufferPtr) || bufferPtr == nullptr) {
-            break;
-        }
-
+    while (!out_buffer_list_.empty()) {
+        ByteBufferPtr& bufferPtr = out_buffer_list_.front();
         while (true) {
             size_t len = bufferPtr->length();
             if (len == 0) {
+                out_buffer_list_.pop_front();
                 break;
             }
 
@@ -427,13 +421,10 @@ void TcpConnection::OnConnectTimeout() {
 
 void TcpConnection::NotifyCmdPacketAndClose(int type) {
     packet_handler_(this, CmdPacketFactory::Create(type));
-    if (!is_client_) {
-        Close();
-    }
+    Close();
 }
 
 void TcpConnection::ReleaseByIOThread() {
-    assert(false);
     common::AutoSpinLock l(spin_mutex_);
     tcp_state_ = kTcpClosed;
 }

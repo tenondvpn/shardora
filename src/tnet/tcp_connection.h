@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "common/spin_mutex.h"
-#include "common/thread_safe_queue.h"
 #include "common/tick.h"
 #include "common/time_utils.h"
 #include "tnet/tcp_interface.h"
@@ -75,7 +74,7 @@ public:
     uint64_t GetBytesSend() const;
     void Destroy(bool closeSocketImmediately);
     virtual bool SendPacket(Packet& packet);
-    bool SendPacketWithoutLock(Packet& packet, ByteBufferPtr buf_ptr, bool* push_to_queue);
+    virtual bool SendPacketWithoutLock(Packet& packet);
     virtual bool Connect(uint32_t timeout);
     virtual void Close();
     virtual void CloseWithoutLock();
@@ -160,8 +159,7 @@ private:
     static const int OUT_BUFFER_LIST_SIZE = 10240;
 
     common::SpinMutex spin_mutex_;
-    common::ThreadSafeQueue<ByteBufferPtr> out_buffer_list_;
-    // BufferList out_buffer_list_;
+    BufferList out_buffer_list_;
     WriteableHandlerList writeable_handle_list_;
     volatile TcpState tcp_state_{ kTcpNone };
     int action_{ 0 };
