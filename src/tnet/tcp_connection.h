@@ -75,7 +75,7 @@ public:
     uint64_t GetBytesSend() const;
     void Destroy(bool closeSocketImmediately);
     virtual bool SendPacket(Packet& packet);
-    virtual bool SendPacketWithoutLock(Packet& packet);
+    bool SendPacketWithoutLock(Packet& packet, ByteBufferPtr buf_ptr, bool* push_to_queue);
     virtual bool Connect(uint32_t timeout);
     virtual void Close();
     virtual void CloseWithoutLock();

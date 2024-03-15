@@ -75,9 +75,25 @@ void TcpConnection::Destroy(bool closeSocketImmediately) {
 
 bool TcpConnection::SendPacket(Packet& packet) {
     bool rc = false;
+    bool push_to_queue = false;
+    ByteBufferPtr buf_ptr(new ByteBuffer);
     {
         common::AutoSpinLock l(spin_mutex_);
-        rc = SendPacketWithoutLock(packet);
+        if (tcp_state_ == kTcpNone || tcp_state_ == kTcpClosed) {
+        ZJC_ERROR("bad state, %d", tcp_state_);
+            return false;
+        }
+
+        if (!packet_encoder_->Encode(packet, buf_ptr.get())) {
+            ZJC_ERROR("encode packet failed");
+            return false;
+        }
+
+        rc = SendPacketWithoutLock(packet, buf_ptr, &push_to_queue);
+    }
+
+    if (push_to_queue) {
+        out_buffer_list_.push(buf_ptr);
     }
 
     if (rc) {
@@ -87,21 +103,10 @@ bool TcpConnection::SendPacket(Packet& packet) {
     return rc;
 }
 
-bool TcpConnection::SendPacketWithoutLock(Packet& packet) {
-    if (tcp_state_ == kTcpNone || tcp_state_ == kTcpClosed) {
-        ZJC_ERROR("bad state, %d", tcp_state_);
-        return false;
-    }
-
-    ByteBufferPtr buf_ptr(new ByteBuffer);
-    if (!packet_encoder_->Encode(packet, buf_ptr.get())) {
-        ZJC_ERROR("encode packet failed");
-        return false;
-    }
-
+bool TcpConnection::SendPacketWithoutLock(Packet& packet, ByteBufferPtr buf_ptr, bool* push_to_queue) {
     auto queue_size = out_buffer_list_.size();
     if (tcp_state_ != kTcpConnected || queue_size > 0) {
-        out_buffer_list_.push(buf_ptr);
+        *push_to_queue = true;
         return true;
     }
 
@@ -128,7 +133,7 @@ bool TcpConnection::SendPacketWithoutLock(Packet& packet) {
 
     if (rc) {
         if (buf_ptr->length() > 0) {
-            out_buffer_list_.push(buf_ptr);
+            *push_to_queue = true;
         } else if (action_ != kActionNone) {
             event_loop_.PostTask(std::bind(
                     &TcpConnection::ActionAfterPacketSent, this));
