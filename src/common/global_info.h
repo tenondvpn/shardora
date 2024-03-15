@@ -196,7 +196,7 @@ public:
         return thread_idx;
     }
 
-    void global_stoped() {
+    void set_global_stoped() {
         global_stoped_ = true;
     }
 
