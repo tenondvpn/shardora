@@ -90,7 +90,13 @@ bool TcpConnection::SendPacket(Packet& packet) {
         }
 
         rc = SendPacketWithoutLock(packet, buf_ptr, &push_to_queue);
+        if (push_to_queue) {
+            event_loop_.PostTask(std::bind(
+                &TcpConnection::NotifyWriteable, this, true, true));
+            event_loop_.Wakeup();
+        }
     }
+
 
     if (push_to_queue) {
         out_buffer_list_.push(buf_ptr);
