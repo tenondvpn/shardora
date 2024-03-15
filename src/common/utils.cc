@@ -183,6 +183,7 @@ uint32_t iclock() {
 }
 
 static void SignalCallback(int sig_int) {
+    common::GlobalInfo::Instance()->global_stoped();
 }
 
 void SignalRegister() {
