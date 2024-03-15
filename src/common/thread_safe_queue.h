@@ -21,7 +21,7 @@ public:
     void push(T e) {
         ++count_;
         while (!rw_queue_.try_enqueue(e)) {
-            ZJC_DEBUG("get rw_queue size: %u, %u", size(), count_);
+            ZJC_DEBUG("get rw_queue size: %u, %u", size(), uint32_t(count_));
             std::unique_lock<std::mutex> lock(mutex_);
             con_.wait_for(lock, std::chrono::milliseconds(100));
         }
