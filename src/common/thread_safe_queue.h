@@ -12,7 +12,7 @@ namespace zjchain {
 
 namespace common {
 
-template<class T, uint32_t kMaxCount=1024 * 1024>
+template<class T, uint32_t kMaxCount=1024>
 class ThreadSafeQueue {
 public:
     ThreadSafeQueue() {}
@@ -42,7 +42,7 @@ public:
     }
 
 private:
-    static const int32_t kQueueCount = 10240;
+    static const int32_t kQueueCount = 1024;
 
     moodycamel::ReaderWriterQueue<T, kMaxCount> rw_queue_{kQueueCount};
     std::condition_variable con_;
