@@ -576,13 +576,13 @@ void TxPoolManager::PopPoolsMessage(uint8_t thread_idx) {
                     break;
                 }
 
-                // msg_ptr->thread_idx = thread_idx;
-                // auto btime = common::TimeUtils::TimestampMs();
-                // HandlePoolsMessage(msg_ptr);
-                // auto etime = common::TimeUtils::TimestampMs();
-                // if (etime - btime > 10000lu) {
-                //     ZJC_WARN("handle message timeout: %d, %lu", msg_ptr->header.tx_proto().step(), (etime - btime));
-                // }
+                msg_ptr->thread_idx = thread_idx;
+                auto btime = common::TimeUtils::TimestampMs();
+                HandlePoolsMessage(msg_ptr);
+                auto etime = common::TimeUtils::TimestampMs();
+                if (etime - btime > 10000lu) {
+                    ZJC_WARN("handle message timeout: %d, %lu", msg_ptr->header.tx_proto().step(), (etime - btime));
+                }
             }
         }
 
@@ -1244,7 +1244,7 @@ void TxPoolManager::PopTxs(uint32_t pool_index) {
         if (msg_ptr == nullptr) {
             break;
         }
-        
+
 //         auto& tx_msg = msg_ptr->header.tx_proto();
 //         if (tx_msg.step() == pools::protobuf::kNormalFrom) {
 //             if (security_->Verify(
