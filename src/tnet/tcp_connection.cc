@@ -49,7 +49,7 @@ void TcpConnection::SetPacketDecoder(PacketDecoder* decoder) {
 
 void TcpConnection::SetPacketHandler(const PacketHandler& handler) {
     packet_handler_ = handler;
-    packet_handler_(this, CmdPacketFactory::Create(CmdPacket::CT_TCP_NEW_CONNECTION));
+    packet_handler_(shared_from_this(), CmdPacketFactory::Create(CmdPacket::CT_TCP_NEW_CONNECTION));
 }
 
 uint64_t TcpConnection::GetBytesRecv() const {

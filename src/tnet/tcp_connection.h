@@ -18,7 +18,7 @@ namespace zjchain {
 
 namespace tnet {
 
-class TcpConnection : public EventHandler, public TcpInterface {
+class TcpConnection : public EventHandler, public TcpInterface, public std::enable_shared_from_this<TcpConnection> {
 public:
     enum TcpState : int32_t {
         kTcpNone,
