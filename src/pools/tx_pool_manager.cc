@@ -1257,7 +1257,7 @@ void TxPoolManager::PopTxs(uint32_t pool_index) {
 //         }
 
         // DispatchTx(pool_index, msg_ptr);
-        ZJC_INFO("success pop tx: %s, %lu", common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(), msg_ptr->header.hash64());
+        // ZJC_INFO("success pop tx: %s, %lu", common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(), msg_ptr->header.hash64());
     }
 }
 
