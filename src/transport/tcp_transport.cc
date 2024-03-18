@@ -115,9 +115,8 @@ void TcpTransport::Stop() {
     }
 }
 
-bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packet) {
+bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tnet::Packet& packet) {
     // ZJC_DEBUG("message coming");
-    auto tcp_conn = dynamic_cast<tnet::TcpConnection*>(conn);
     if (conn->GetSocket() == nullptr) {
         packet.Free();
         ZJC_DEBUG("message coming failed 0");
@@ -288,29 +287,6 @@ int TcpTransport::Send(
     return kTransportSuccess;
 }
 
-void TcpTransport::EraseConn(uint64_t now_tm_ms) {
-    // delay to release
-    while (!erase_conns_.empty()) {
-        auto from_item = erase_conns_.front();
-        if (from_item->free_timeout_ms() <= now_tm_ms) {
-            if (!from_item->is_client()) {
-                std::string key = from_item->PeerIp() + ":" + std::to_string(from_item->PeerPort());
-                auto iter = from_conn_map_.find(key);
-                if (iter != from_conn_map_.end()) {
-                    from_conn_map_.erase(iter);
-                }
-            }
-
-            from_item->Destroy(true);
-            delete from_item;
-            erase_conns_.pop_front();
-            continue;
-        }
-
-        break;
-    }
-}
-
 void TcpTransport::Output() {
     while (!destroy_) {
         auto now_tm_ms = common::TimeUtils::TimestampMs();
@@ -320,7 +296,7 @@ void TcpTransport::Output() {
         }
 
         while (true) {
-            tnet::TcpConnection* conn = nullptr;
+            std::shared_ptr<tnet::TcpConnection> conn = nullptr;
             from_client_conn_queues_.pop(&conn);
             if (conn == nullptr) {
                 break;
@@ -380,7 +356,7 @@ int TcpTransport::GetSocket() {
 //             300u * 1000u * 1000u);
 // }
 
-tnet::TcpConnection* TcpTransport::GetConnection(
+std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
         const std::string& ip,
         uint16_t port) {
     if (ip == "0.0.0.0" || port == 0) {
@@ -395,7 +371,6 @@ tnet::TcpConnection* TcpTransport::GetConnection(
             return from_iter->second;
         }
 
-        erase_conns_.push_back(from_iter->second);
         ZJC_DEBUG("remove connect and reconnect send message %s:%d, erase conn size: %d", ip.c_str(), port, erase_conns_.size());
         from_conn_map_.erase(from_iter);
     }
@@ -403,7 +378,6 @@ tnet::TcpConnection* TcpTransport::GetConnection(
     auto iter = conn_map_.find(peer_spec);
     if (iter != conn_map_.end()) {
         if (iter->second->ShouldReconnect()) {
-            erase_conns_.push_back(iter->second);
             ZJC_DEBUG("remove connect and reconnect send message %s:%d, erase conn size: %d", ip.c_str(), port, erase_conns_.size());
             conn_map_.erase(iter);
         } else {

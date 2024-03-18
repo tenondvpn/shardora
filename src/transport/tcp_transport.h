@@ -57,11 +57,11 @@ public:
 private:
     TcpTransport();
     ~TcpTransport();
-    bool OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packet);
+    bool OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tnet::Packet& packet);
     void EraseConn(uint64_t now_tm_ms);
     void CreateDropNodeMessage(const std::string& ip, uint16_t port);
     void Output();
-    tnet::TcpConnection* GetConnection(
+    std::shared_ptr<tnet::TcpConnection> GetConnection(
         const std::string& ip,
         uint16_t port);
 
@@ -72,10 +72,7 @@ private:
     tnet::TcpAcceptor* acceptor_{ nullptr };
     EncoderFactory encoder_factory_;
     tnet::ListenSocket* socket_{ nullptr };
-    std::unordered_map<std::string, tnet::TcpConnection*> conn_map_;
-    std::deque<tnet::TcpConnection*> erase_conns_;
-    common::SpinMutex erase_conns_mutex_;
-    common::Tick erase_conn_tick_;
+    std::unordered_map<std::string, std::shared_ptr<tnet::TcpConnection>> conn_map_;
     MultiThreadHandler* msg_handler_ = nullptr;
     uint64_t thread_msg_count_[common::kMaxThreadCount] = { 0 };
     uint8_t server_thread_idx_ = 255;
@@ -83,9 +80,9 @@ private:
     volatile bool destroy_ = false;
     std::shared_ptr<std::thread> output_thread_ = nullptr;
     common::ThreadSafeQueue<std::shared_ptr<ClientItem>> output_queues_[common::kMaxThreadCount];
-    common::ThreadSafeQueue<tnet::TcpConnection*> from_client_conn_queues_;
-    std::unordered_map<std::string, tnet::TcpConnection*> from_conn_map_;
-    common::LimitHashSet<tnet::TcpConnection*> added_conns_{ 1024 };
+    common::ThreadSafeQueue<std::shared_ptr<tnet::TcpConnection>> from_client_conn_queues_;
+    std::unordered_map<std::string, std::shared_ptr<tnet::TcpConnection>> from_conn_map_;
+    common::LimitHashSet<std::shared_ptr<tnet::TcpConnection>> added_conns_{ 1024 };
     std::condition_variable output_con_;
     std::mutex output_mutex_;
     std::mutex send_output_mutex_;
