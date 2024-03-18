@@ -75,7 +75,7 @@ bool MsgDecoder::Decode(const char* buf, size_t len) {
                 tmp_str_.clear();
             }
             pos += left_len;
-            tnet::MsgPacket* packet = new tnet::MsgPacket(type_, tnet::kEncodeWithHeader, true);
+            tnet::MsgPacket* packet = new tnet::MsgPacket(type_, tnet::kEncodeWithHeader, true, 0);
             packet->SetMessage(msg);
             packet_list_.push_back(packet);
             packet_len_ = 0;
