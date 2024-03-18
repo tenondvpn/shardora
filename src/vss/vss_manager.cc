@@ -433,9 +433,9 @@ void VssManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void VssManager::PopVssMessage(uint8_t thread_idx) {
-    while (vss_msg_queue_.size() > 0) {
+    while (true) {
         transport::MessagePtr msg_ptr = nullptr;
-        if (!vss_msg_queue_.pop(&msg_ptr)) {
+        if (!vss_msg_queue_.pop(&msg_ptr) || msg_ptr == nullptr) {
             break;
         }
 

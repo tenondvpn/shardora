@@ -274,15 +274,18 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
 void BlockManager::HandleAllNewBlock(uint8_t thread_idx) {
     // 同步的 NetworkNewBlock 也会走这个逻辑
-    while (block_from_network_queue_.size() > 0) {
+    while (true) {
         std::shared_ptr<block::protobuf::Block> block_ptr = nullptr;
-        if (block_from_network_queue_.pop(&block_ptr)) {
-            db::DbWriteBatch db_batch;
-            // TODO 更新 pool info，每次 AddNewBlock 之前需要更新 pool latest info
-            
-            if (AddBlockItemToCache(thread_idx, block_ptr, db_batch)) {
-                AddNewBlock(thread_idx, block_ptr, db_batch);
-            }
+        block_from_network_queue_.pop(&block_ptr);
+        if (block_ptr == nullptr) {
+            break;
+        }
+
+        db::DbWriteBatch db_batch;
+        // TODO 更新 pool info，每次 AddNewBlock 之前需要更新 pool latest info
+        
+        if (AddBlockItemToCache(thread_idx, block_ptr, db_batch)) {
+            AddNewBlock(thread_idx, block_ptr, db_batch);
         }
     }
 
@@ -453,11 +456,14 @@ void BlockManager::NewBlockWithTx(
 void BlockManager::HandleAllConsensusBlocks(uint8_t thread_idx) {
     auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count();
     for (int32_t i = 0; i < thread_count; ++i) {
-        while (consensus_block_queues_[i].size() > 0) {
+        while (true) {
             BlockToDbItemPtr db_item_ptr = nullptr;
-            if (consensus_block_queues_[i].pop(&db_item_ptr)) {
-                AddNewBlock(thread_idx, db_item_ptr->block_ptr, *db_item_ptr->db_batch);
+            consensus_block_queues_[i].pop(&db_item_ptr);
+            if (db_item_ptr == nullptr) {
+                break;
             }
+                
+            AddNewBlock(thread_idx, db_item_ptr->block_ptr, *db_item_ptr->db_batch);
         }
     }
 }

@@ -7,6 +7,7 @@
 #include <errno.h>
 
 #include <functional>
+#include <memory>
 
 #include "common/utils.h"
 #include "common/split.h"
@@ -23,14 +24,14 @@ enum TnetErrorCode {
 };
 
 static const int kEpollMaxWaitTime = 100;
-static const uint32_t kEpollMaxEvents = 256;
-static const uint32_t kDvMaxEvents = 10240u;
+static const uint32_t kEpollMaxEvents = 256u;
+static const uint32_t kDvMaxEvents = kEpollMaxEvents;
 
 class TcpConnection;
 class Packet;
 
 typedef std::function<bool(TcpConnection&)> ConnectionHandler;
-typedef std::function<bool(TcpConnection*, Packet&)> PacketHandler;
+typedef std::function<bool(std::shared_ptr<TcpConnection>, Packet&)> PacketHandler;
 typedef std::function<void()> WriteableHandler;
 
 inline static bool ParseSpec(const std::string& s, in_addr_t* addr, uint16_t* port) {

@@ -196,6 +196,14 @@ public:
         return thread_idx;
     }
 
+    void set_global_stoped() {
+        global_stoped_ = true;
+    }
+
+    bool global_stoped() const {
+        return global_stoped_;
+    }
+
 private:
     GlobalInfo();
     ~GlobalInfo();
@@ -238,6 +246,7 @@ private:
     uint64_t begin_run_timestamp_ms_ = 0;
     volatile bool should_check_thread_all_valid_ = true;
     std::unordered_map<int, uint8_t> valid_thread_index_;
+    volatile bool global_stoped_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };

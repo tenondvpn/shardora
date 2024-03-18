@@ -214,11 +214,11 @@ void FilterBroadcast::Send(
             nodes[i]->public_ip,
             nodes[i]->public_port,
             msg_ptr->header);
-        BROAD_DEBUG("broadcast random send to: %s:%d, txhash: %lu, res: %u",
-            nodes[i]->public_ip.c_str(),
-            nodes[i]->public_port,
-            msg_ptr->header.hash64(),
-            res);
+        // BROAD_DEBUG("broadcast random send to: %s:%d, txhash: %lu, res: %u",
+        //     nodes[i]->public_ip.c_str(),
+        //     nodes[i]->public_port,
+        //     msg_ptr->header.hash64(),
+        //     res);
     }
 }
 

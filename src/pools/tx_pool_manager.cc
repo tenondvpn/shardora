@@ -570,9 +570,9 @@ void TxPoolManager::HandleInvalidGids(const transport::MessagePtr& msg_ptr) {
 void TxPoolManager::PopPoolsMessage(uint8_t thread_idx) {
     while (!destroy_) {
         for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
-            while (pools_msg_queue_[i].size() > 0) {
+            while (true) {
                 transport::MessagePtr msg_ptr = nullptr;
-                if (!pools_msg_queue_[i].pop(&msg_ptr)) {
+                if (!pools_msg_queue_[i].pop(&msg_ptr) || msg_ptr == nullptr) {
                     break;
                 }
 
@@ -712,7 +712,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
         transport::TcpTransport::Instance()->SetMessageHash(
             msg,
             msg_ptr->thread_idx);
-        transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
+        transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn.get(), msg);
 //         ZJC_DEBUG("response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
     } else {
         auto& heights = msg_ptr->header.sync_heights().heights();
@@ -1085,7 +1085,7 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
             msg_ptr->msg_hash,
             tx_msg.pubkey(),
             msg_ptr->header.sign()) != security::kSecuritySuccess) {
-        ZJC_DEBUG("verify signature failed address balance invalid: %lu, transfer amount: %lu, "
+        ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
             "prepayment: %lu, default call contract gas: %lu, txid: %s",
             msg_ptr->address_info->balance(),
             tx_msg.amount(),
@@ -1225,18 +1225,26 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
 void TxPoolManager::BftCheckInvalidGids(
         uint32_t pool_index,
         std::vector<std::shared_ptr<InvalidGidItem>>& items) {
-    while (invalid_gid_queues_[pool_index].size() > 0) {
+    while (true) {
         std::shared_ptr<InvalidGidItem> gid_ptr = nullptr;
         invalid_gid_queues_[pool_index].pop(&gid_ptr);
+        if (gid_ptr == nullptr) {
+            break;
+        }
+
         items.push_back(gid_ptr);
     }
 }
 
 void TxPoolManager::PopTxs(uint32_t pool_index) {
     uint32_t count = 0;
-    while (msg_queues_[pool_index].size() > 0) {
+    while (true) {
         transport::MessagePtr msg_ptr = nullptr;
         msg_queues_[pool_index].pop(&msg_ptr);
+        if (msg_ptr == nullptr) {
+            break;
+        }
+
 //         auto& tx_msg = msg_ptr->header.tx_proto();
 //         if (tx_msg.step() == pools::protobuf::kNormalFrom) {
 //             if (security_->Verify(
@@ -1249,7 +1257,7 @@ void TxPoolManager::PopTxs(uint32_t pool_index) {
 //         }
 
         DispatchTx(pool_index, msg_ptr);
-        ZJC_DEBUG("success pop tx: %s, %lu", common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(), msg_ptr->header.hash64());
+        // ZJC_INFO("success pop tx: %s, %lu", common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(), msg_ptr->header.hash64());
     }
 }
 

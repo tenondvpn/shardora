@@ -82,7 +82,7 @@ struct TransportMessage {
     }
 
     protobuf::Header header;
-    tnet::TcpInterface* conn = nullptr;
+    std::shared_ptr<tnet::TcpInterface> conn = nullptr;
     uint8_t thread_idx = -1;
     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
     std::string msg_hash;
@@ -102,6 +102,7 @@ struct ClientItem {
     std::string des_ip;
     uint16_t port;
     std::string msg;
+    uint64_t hash64;
 };
 
 struct ClientConnection {
@@ -111,7 +112,7 @@ struct ClientConnection {
 };
 
 static const uint32_t kMaxHops = 20u;
-static const uint32_t kMaxMessageReserveCount = 10240;
+static const uint32_t kMaxMessageReserveCount = 102400;
 static const uint32_t kBroadcastMaxRelayTimes = 2u;
 static const uint32_t kBroadcastMaxMessageCount = 1024u * 1024u;
 static const uint32_t kUniqueMaxMessageCount = 10u * 1024u;

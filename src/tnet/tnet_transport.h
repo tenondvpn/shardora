@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "tnet/tcp_acceptor.h"
 #include "tnet/tcp_connection.h"
 #include "tnet/socket/client_socket.h"
@@ -19,7 +21,7 @@ public:
             PacketHandler packet_handler,
             PacketFactory* packet_factory);
     virtual ~TnetTransport();
-    virtual TcpConnection* CreateConnection(
+    std::shared_ptr<TcpConnection> CreateConnection(
             const std::string& peerSpec,
             const std::string& localSpec,
             uint32_t timeout);
@@ -39,7 +41,7 @@ protected:
     virtual void ImplResourceDestroy();
 
 private:
-    virtual TcpConnection* CreateTcpConnection(
+    std::shared_ptr<TcpConnection> CreateTcpConnection(
             EventLoop& event_loop,
             ClientSocket& socket);
     void ThreadProc(EventLoop* event_loop);

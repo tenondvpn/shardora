@@ -454,7 +454,7 @@ void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
 
     std::cout << "success handle init req message." << std::endl;
     transport::TcpTransport::Instance()->SetMessageHash(msg, msg_ptr->thread_idx);
-    transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
+    transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn.get(), msg);
 }
 
 void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {

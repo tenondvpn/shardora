@@ -262,7 +262,7 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
 
     threads_message_queues_[queue_idx][priority].push(msg_ptr);
     wait_con_[queue_idx % all_thread_count_].notify_one();
-    ZJC_DEBUG("queue size message push success: %lu, queue_idx: %d, priority: %d, thread queue size: %u, net: %u, type: %d",
+    ZJC_ERROR("queue size message push success: %lu, queue_idx: %d, priority: %d, thread queue size: %u, net: %u, type: %d",
         msg_ptr->header.hash64(), queue_idx, priority,
         threads_message_queues_[queue_idx][priority].size(),
         common::GlobalInfo::Instance()->network_id(),
@@ -389,29 +389,29 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx) {
     for (uint32_t i = 0; i < all_thread_count_; ++i) {
         if (i % all_thread_count_ == thread_idx) {
             for (uint32_t pri = kTransportPrioritySystem; pri < kTransportPriorityMaxCount; ++pri) {
-                if (threads_message_queues_[i][pri].size() > 0) {
-                    MessagePtr msg_obj;
-                    threads_message_queues_[i][pri].pop(&msg_obj);
-                    if (msg_obj->handle_timeout < now_tm_ms) {
-                        ZJC_DEBUG("remove handle timeout invalid message hash: %lu", msg_obj->header.hash64());
-                        continue;
-                    }
-
-                    ZJC_DEBUG("pop valid message hash: %lu, size: %u, thread: %u",
-                        msg_obj->header.hash64(), threads_message_queues_[i][pri].size(), thread_idx);
-                    return msg_obj;
+                MessagePtr msg_obj;
+                threads_message_queues_[i][pri].pop(&msg_obj);
+                if (msg_obj == nullptr) {
+                    continue;
                 }
+
+                if (msg_obj->handle_timeout < now_tm_ms) {
+                    ZJC_DEBUG("remove handle timeout invalid message hash: %lu", msg_obj->header.hash64());
+                    continue;
+                }
+
+                // ZJC_DEBUG("pop valid message hash: %lu, size: %u, thread: %u",
+                //     msg_obj->header.hash64(), threads_message_queues_[i][pri].size(), thread_idx);
+                return msg_obj;
             }
         }
     }
 
     // handle http/ws request
     if (thread_idx == consensus_thread_count_) {
-        if (http_server_message_queue_.size() > 0) {
-            MessagePtr msg_obj;
-            http_server_message_queue_.pop(&msg_obj);
-            return msg_obj;
-        }
+        MessagePtr msg_obj;
+        http_server_message_queue_.pop(&msg_obj);
+        return msg_obj;
     }
     
     return nullptr;

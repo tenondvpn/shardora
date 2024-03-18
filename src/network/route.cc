@@ -109,10 +109,6 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
 //         Broadcast(header_ptr->thread_idx, header_ptr);
         auto tmp_ptr = std::make_shared<transport::TransportMessage>(*header_ptr);
         // ZJC_INFO("====5 broadcast t: %lu, hash: %lu, now size: %u", header_ptr->thread_idx, header_ptr->header.hash64(), broadcast_queue_[header_ptr->thread_idx].size());
-        if (broadcast_queue_[header_ptr->thread_idx].size() > 1000) {
-            ZJC_ERROR("messages exploded!");
-            return;
-        }
         broadcast_queue_[header_ptr->thread_idx].push(tmp_ptr);
         broadcast_con_.notify_one();
     }
@@ -124,13 +120,15 @@ void Route::Broadcasting(uint8_t thread_idx) {
     while (!destroy_) {
         bool has_data = false;
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
-            while (broadcast_queue_[i].size() > 0) {
-                transport::MessagePtr msg_ptr;
-                if (broadcast_queue_[i].pop(&msg_ptr)) {
-                    Broadcast(thread_idx, msg_ptr);
-                    if (!has_data) {
-                        has_data = true;
-                    }
+            while (true) {
+                transport::MessagePtr msg_ptr = nullptr;
+                if (!broadcast_queue_[i].pop(&msg_ptr) || msg_ptr == nullptr) {
+                    break;
+                }
+            
+                Broadcast(thread_idx, msg_ptr);
+                if (!has_data) {
+                    has_data = true;
                 }
             }
         }

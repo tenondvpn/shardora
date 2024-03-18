@@ -18,7 +18,7 @@ namespace zjchain {
 
 namespace tnet {
 
-class TcpConnection : public EventHandler, public TcpInterface {
+class TcpConnection : public EventHandler, public TcpInterface, public std::enable_shared_from_this<TcpConnection> {
 public:
     enum TcpState : int32_t {
         kTcpNone,
@@ -55,16 +55,32 @@ public:
         return Send(data.c_str(), data.size());
     }
 
-    virtual int Send(const char* data, int32_t len) {
-        MsgPacket* reply_packet = new MsgPacket(0, tnet::kEncodeWithHeader, false);
+    virtual int Send(uint64_t msg_id, const std::string& data) {
+        return Send(data.c_str(), data.size(), msg_id);
+    }
+
+    virtual int Send(const char* data, int32_t len, uint64_t msg_id) {
+        MsgPacket* reply_packet = new MsgPacket(0, tnet::kEncodeWithHeader, false, msg_id);
         // local message is thread safe and don't free memory
         reply_packet->SetMessage((char*)data, len);
-        if (!SendPacket(*reply_packet)) {
+        int res = SendPacket(*reply_packet);
+        if (res != 0) {
             reply_packet->Free();
-            return 1;
         }
 
-        return 0;
+        return res;
+    }
+
+    virtual int Send(const char* data, int32_t len) {
+        MsgPacket* reply_packet = new MsgPacket(0, tnet::kEncodeWithHeader, false, 0);
+        // local message is thread safe and don't free memory
+        reply_packet->SetMessage((char*)data, len);
+         int res = SendPacket(*reply_packet);
+        if (res != 0) {
+            reply_packet->Free();
+        }
+
+        return res;
     }
 
     void SetPacketEncoder(PacketEncoder* encoder);
@@ -73,8 +89,8 @@ public:
     uint64_t GetBytesRecv() const;
     uint64_t GetBytesSend() const;
     void Destroy(bool closeSocketImmediately);
-    virtual bool SendPacket(Packet& packet);
-    virtual bool SendPacketWithoutLock(Packet& packet);
+    int SendPacket(Packet& packet);
+    int SendPacketWithoutLock(Packet& packet);
     virtual bool Connect(uint32_t timeout);
     virtual void Close();
     virtual void CloseWithoutLock();
@@ -116,12 +132,13 @@ public:
     
     bool ShouldReconnect() {
         auto now_tm_ms = common::TimeUtils::TimestampMs();
-        if (now_tm_ms >= create_timestamp_ms_ + kConnectTimeoutMs) {
-            ZJC_DEBUG("should remove connect timeout.");
-            return true;
-        }
+        // if (now_tm_ms >= create_timestamp_ms_ + kConnectTimeoutMs) {
+        //     ZJC_DEBUG("should remove connect timeout.");
+        //     return true;
+        // }
 
-        if (GetTcpState() == tnet::TcpConnection::kTcpClosed) {
+        if (GetTcpState() == tnet::TcpConnection::kTcpClosed &&
+                now_tm_ms >= (create_timestamp_ms_ + kConnectTimeoutMs)) {
             ZJC_DEBUG("should remove connect lost.");
             return true;
         }
