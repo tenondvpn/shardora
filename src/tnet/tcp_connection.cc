@@ -186,6 +186,8 @@ void TcpConnection::CloseWithoutLock() {
             socket_ = nullptr;
         }
     }
+
+    out_buffer_list_.clear();
 }
 
 void TcpConnection::NotifyWriteable(bool need_release, bool lock) {
