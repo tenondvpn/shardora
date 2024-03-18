@@ -71,7 +71,7 @@ void TcpConnection::Destroy(bool closeSocketImmediately) {
         event_loop_.PostTask(std::bind(&TcpConnection::ReleaseByIOThread, this));
     }
 
-    free_timeout_ms_ = common::TimeUtils::TimestampMs() + 10000lu;;
+    free_timeout_ms_ = common::TimeUtils::TimestampMs() + common::kMessageTimeoutMs * 2;
 }
 
 bool TcpConnection::SendPacket(Packet& packet) {

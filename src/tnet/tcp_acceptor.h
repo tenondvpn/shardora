@@ -1,7 +1,8 @@
 #pragma once
 
 #include <atomic>
-#include<unordered_map>
+#include <memory>
+#include <unordered_map>
 
 #include "common/spin_mutex.h"
 #include "tnet/tnet_utils.h"
@@ -35,7 +36,7 @@ public:
 private:
     virtual bool ImplResourceInit();
     virtual void ImplResourceDestroy();
-    virtual TcpConnection* CreateTcpConnection(
+    std::shared_ptr<TcpConnection> CreateTcpConnection(
             EventLoop& evnetLoop,
             ServerSocket& socket);
     void ReleaseByIOThread();
@@ -54,6 +55,7 @@ private:
     EventLoop& event_loop_;
     std::vector<EventLoop*> event_loops_;
     std::atomic<uint32_t> destroy_{ 0 };
+    std::unordered_map<std::string, std::shared_ptr<TcpConnection>> conn_map_;
 
     DISALLOW_COPY_AND_ASSIGN(TcpAcceptor);
 };

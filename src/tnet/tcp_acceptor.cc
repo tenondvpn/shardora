@@ -160,8 +160,8 @@ bool TcpAcceptor::OnRead() {
         }
 
         EventLoop& event_loop = GetNextEventLoop();
-        TcpConnection* conn = CreateTcpConnection(event_loop, *socket);
-        if (conn == NULL) {
+        auto conn = CreateTcpConnection(event_loop, *socket);
+        if (conn == nullptr) {
             ZJC_ERROR("create connection failed, close socket[%d]",
                 socket->GetFd());
             socket->Free();
@@ -180,6 +180,10 @@ bool TcpAcceptor::OnRead() {
                 std::ref(*conn),
                 std::ref(conn_handler_)));
         event_loop.Wakeup();
+        std::string from_ip;
+        uint16_t from_port;
+        socket->GetIpPort(&from_ip, &from_port);
+        conn_map_[from_ip + std::to_string(from_port)] = conn;
     }
 
     return false;
@@ -198,10 +202,10 @@ void TcpAcceptor::ImplResourceDestroy()
 {
 }
 
-TcpConnection* TcpAcceptor::CreateTcpConnection(
+std::shared_ptr<TcpConnection> TcpAcceptor::CreateTcpConnection(
         EventLoop& event_loop,
         ServerSocket& socket) {
-    TcpConnection* conn = new TcpConnection(event_loop);
+    auto conn = std::make_shared<TcpConnection>(event_loop);
     conn->SetSocket(socket);
     return conn;
 }
