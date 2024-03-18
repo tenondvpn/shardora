@@ -316,7 +316,7 @@ void TcpTransport::Output() {
                     continue;
                 }
 
-                if (tcp_conn->Send(item_ptr->msg) != 0) {
+                if (tcp_conn->Send(item_ptr->hash64, item_ptr->msg) != 0) {
                     TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu]",
                         item_ptr->des_ip.c_str(), item_ptr->port, 0);
                     tcp_conn->Destroy(true);

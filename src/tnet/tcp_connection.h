@@ -55,8 +55,24 @@ public:
         return Send(data.c_str(), data.size());
     }
 
+    virtual int Send(uint64_t msg_id, const std::string& data) {
+        return Send(data.c_str(), data.size(), msg_id);
+    }
+
+    virtual int Send(const char* data, int32_t len, uint64_t msg_id) {
+        MsgPacket* reply_packet = new MsgPacket(0, tnet::kEncodeWithHeader, false, msg_id);
+        // local message is thread safe and don't free memory
+        reply_packet->SetMessage((char*)data, len);
+        if (!SendPacket(*reply_packet)) {
+            reply_packet->Free();
+            return 1;
+        }
+
+        return 0;
+    }
+
     virtual int Send(const char* data, int32_t len) {
-        MsgPacket* reply_packet = new MsgPacket(0, tnet::kEncodeWithHeader, false);
+        MsgPacket* reply_packet = new MsgPacket(0, tnet::kEncodeWithHeader, false, 0);
         // local message is thread safe and don't free memory
         reply_packet->SetMessage((char*)data, len);
         if (!SendPacket(*reply_packet)) {

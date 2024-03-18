@@ -16,8 +16,8 @@ struct PacketHeader {
 
 class MsgPacket : public tnet::Packet {
 public:
-    MsgPacket(uint32_t type, uint32_t encode_type, bool free_data)
-            : type_(type), encode_type_(encode_type), free_data_(free_data) {}
+    MsgPacket(uint32_t type, uint32_t encode_type, bool free_data, uint64_t msg_id)
+            : type_(type), encode_type_(encode_type), free_data_(free_data), msg_id_(msg_id) {}
     virtual ~MsgPacket() {}
 
     virtual void Free() {
@@ -73,6 +73,10 @@ public:
         message_len_ = len;
     }
 
+    uint64_t msg_id() const {
+        return msg_id_;
+    }
+
 private:
     std::string* message_{ nullptr };
     uint32_t type_{ 0 };
@@ -80,6 +84,7 @@ private:
     char* message_data_{ nullptr };
     uint32_t message_len_{ 0 };
     bool free_data_{ false };
+    uint64_t msg_id_ = 0;
 };
 
 }  // namespace tnet
