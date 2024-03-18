@@ -58,7 +58,6 @@ private:
     TcpTransport();
     ~TcpTransport();
     bool OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tnet::Packet& packet);
-    void EraseConn(uint64_t now_tm_ms);
     void CreateDropNodeMessage(const std::string& ip, uint16_t port);
     void Output();
     std::shared_ptr<tnet::TcpConnection> GetConnection(

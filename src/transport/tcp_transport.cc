@@ -289,12 +289,6 @@ int TcpTransport::Send(
 
 void TcpTransport::Output() {
     while (!destroy_) {
-        auto now_tm_ms = common::TimeUtils::TimestampMs();
-        if (prev_erase_timestamp_ms_ < now_tm_ms) {
-            EraseConn(now_tm_ms);
-            prev_erase_timestamp_ms_ = now_tm_ms + kCheckEraseConnPeriodMs;
-        }
-
         while (true) {
             std::shared_ptr<tnet::TcpConnection> conn = nullptr;
             from_client_conn_queues_.pop(&conn);
