@@ -1038,7 +1038,7 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
         transport::TcpTransport::Instance()->SetMessageHash(msg, msg_ptr->thread_idx);
         transport::TcpTransport::Instance()->Send(
             msg_ptr->thread_idx,
-            msg_ptr->conn,
+            msg_ptr->conn.get(),
             msg);
         ZJC_DEBUG("send res to block hash: %s, gid: %s, hash64: %lu",
             common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
