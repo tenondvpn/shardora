@@ -255,6 +255,7 @@ int TcpTransport::Send(
     auto output_item = std::make_shared<ClientItem>();
     output_item->des_ip = des_ip;
     output_item->port = des_port;
+    output_item->hash64 = message.hash64();
     message.SerializeToString(&output_item->msg);
     output_queues_[thread_idx].push(output_item);
     // ZJC_INFO("get output_queues_ size %d, %d", thread_idx, output_queues_[thread_idx].size());
@@ -322,8 +323,8 @@ void TcpTransport::Output() {
                     continue;
                 }
 
-                ZJC_DEBUG("send message %s:%u, hash64: %lu, size: %u",
-                    item_ptr->des_ip.c_str(), item_ptr->port, 0, item_ptr->msg.size());
+                ZJC_INFO("send message %s:%u, hash64: %lu, size: %u",
+                    item_ptr->des_ip.c_str(), item_ptr->port, item_ptr->hash64, item_ptr->msg.size());
             }
         }
 

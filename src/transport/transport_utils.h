@@ -102,6 +102,7 @@ struct ClientItem {
     std::string des_ip;
     uint16_t port;
     std::string msg;
+    uint64_t hash64;
 };
 
 struct ClientConnection {
