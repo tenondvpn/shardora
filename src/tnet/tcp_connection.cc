@@ -245,7 +245,7 @@ bool TcpConnection::OnRead() {
 
             spin_mutex_.unlock();
             create_timestamp_ms_ = common::TimeUtils::TimestampMs();
-            if (!packet_handler_(this, *packet)) {
+            if (!packet_handler_(shared_from_this(), *packet)) {
                 userBreak = true;
             }
 
@@ -420,7 +420,7 @@ void TcpConnection::OnConnectTimeout() {
 }
 
 void TcpConnection::NotifyCmdPacketAndClose(int type) {
-    packet_handler_(this, CmdPacketFactory::Create(type));
+    packet_handler_(shared_from_this(), CmdPacketFactory::Create(type));
     Close();
 }
 
