@@ -99,7 +99,7 @@ void Zbft::Destroy() {
 
 int Zbft::Prepare(bool leader) {
     if (leader) {
-        return LeaderCreatePrepare();
+        return LeaderCreatePrepare(leader);
     }
 
     if (txs_ptr_->txs.empty()) {
@@ -113,7 +113,7 @@ int Zbft::Prepare(bool leader) {
     }
 
     int32_t invalid_tx_idx = -1;
-    int res = BackupCheckPrepare(&invalid_tx_idx);
+    int res = BackupCheckPrepare(&invalid_tx_idx, leader);
     if (res != kConsensusSuccess) {
         ZJC_ERROR("backup prepare failed: %d", res);
         return res;
@@ -122,9 +122,9 @@ int Zbft::Prepare(bool leader) {
     return kConsensusSuccess;
 }
 
-int Zbft::LeaderCreatePrepare() {
+int Zbft::LeaderCreatePrepare(bool leader) {
     local_member_index_ = leader_index_;
-    if (LeaderCallTransaction() != kConsensusSuccess) {
+    if (LeaderCallTransaction(leader) != kConsensusSuccess) {
         assert(false);
         return kConsensusError;
     }
@@ -132,8 +132,8 @@ int Zbft::LeaderCreatePrepare() {
     return kConsensusSuccess;
 }
 
-int Zbft::BackupCheckPrepare(int32_t* invalid_tx_idx) {
-    if (DoTransaction() != kConsensusSuccess) {
+int Zbft::BackupCheckPrepare(int32_t* invalid_tx_idx, bool leader) {
+    if (DoTransaction(leader) != kConsensusSuccess) {
         return kConsensusInvalidPackage;
     }
 
@@ -699,8 +699,8 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
     return true;
 }
 
-int Zbft::LeaderCallTransaction() {
-    if (DoTransaction() != kConsensusSuccess) {
+int Zbft::LeaderCallTransaction(bool leader) {
+    if (DoTransaction(leader) != kConsensusSuccess) {
         ZJC_ERROR("leader do transaction failed!");
         return kConsensusError;
     }
@@ -729,9 +729,10 @@ int Zbft::LeaderCallTransaction() {
     return kConsensusSuccess;
 }
 
-int Zbft::DoTransaction() {
+int Zbft::DoTransaction(bool leader) {
     std::string pool_hash = pools_mgr_->latest_hash(txs_ptr_->pool_index);
     uint64_t pool_height = pools_mgr_->latest_height(txs_ptr_->pool_index);
+    uint64_t preblock_time = pools_mgr_->latest_timestamp(txs_ptr_->pool_index);
     if (pool_hash.empty() || pool_height == common::kInvalidUint64) {
         ZJC_DEBUG("pool index not inited: %u", txs_ptr_->pool_index);
         return kConsensusError;
@@ -747,7 +748,22 @@ int Zbft::DoTransaction() {
     zjc_block.set_height(pool_height + 1);
     assert(zjc_block.height() > 0);
 //     ZJC_DEBUG("add new block: %lu", zjc_block.height());
-    zjc_block.set_timestamp(common::TimeUtils::TimestampMs());
+    if (leader) {
+        uint64_t cur_time = common::TimeUtils::TimestampMs();
+        if (preblock_time < cur_time) 
+            zjc_block.set_timestamp(cur_time); 
+        else
+            zjc_block.set_timestamp(preblock_time); 
+    } else {
+        // todo backup节点使用leader节点时间
+        uint64_t cur_time = common::TimeUtils::TimestampMs();
+        if (leader_timestamp_ < preblock_time || (cur_time > leader_timestamp_ ? cur_time - leader_timestamp_ > 10000 : leader_timestamp_ - cur_time > 10000)) { // leader节点的时间戳必须大于上一个区块时间戳；leader节点的时间戳跟当前时间戳绝对值差值小于10s
+            ZJC_ERROR("timestamp is error. cur_time = %lu, preblock_time = %lu, leader_timestamp = %lu ", cur_time, preblock_time, leader_timestamp_);
+            return kConsensusError;
+        }
+        zjc_block.set_timestamp(leader_timestamp_);
+    }
+    
     if (txs_ptr_->tx_type != pools::protobuf::kNormalFrom) {
         zjc_block.set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
     }

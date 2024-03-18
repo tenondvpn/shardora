@@ -137,6 +137,9 @@ public:
         return tx_pool_[pool_index].latest_hash();
     }
 
+    uint64_t latest_timestamp(uint32_t pool_index) const {
+        return tx_pool_[pool_index].latest_timestamp();
+    }
     // just for test
     int AddTx(uint32_t pool_index, TxItemPtr& tx_ptr) {
         if (pool_index >= common::kInvalidPoolIndex) {
@@ -149,13 +152,13 @@ public:
     // UpdateLatestInfo 当某个 pool 出块后，更新此 shard 的 pool_mgr 状态
     void UpdateLatestInfo(
             uint8_t thread_idx,
-            uint32_t sharding_id,
-            uint32_t pool_index,
-            uint64_t height,
-            const std::string& hash,
-            const std::string& prehash,
+            std::shared_ptr<block::protobuf::Block>& block,
             db::DbWriteBatch& db_batch) {
+        uint64_t height = block->height();
         assert(height >= 0);
+        uint32_t sharding_id = block->network_id();
+        uint32_t pool_index = block->pool_index();
+        const std::string hash = block->hash();
         ZJC_DEBUG("sharding_id: %u, pool index: %u, update height: %lu", sharding_id, pool_index, height);
         if (pool_index >= common::kInvalidPoolIndex) {
             return;
@@ -166,15 +169,12 @@ public:
             synced_max_heights_[pool_index] = height;
         }
 
-        // 更新对应 pool 的最新状态，主要是高度信息和哈希值
-        uint64_t synced_height = tx_pool_[pool_index].UpdateLatestInfo(thread_idx, height, hash, prehash);
-        
-        // 获取更新后的 poollatestinfo(不能直接吧 height 和 hash 当作 latest 因为同步的时候有可能是乱序的)
         pools::protobuf::PoolLatestInfo pool_info;
-        pool_info.set_height(tx_pool_[pool_index].latest_height());
-        pool_info.set_hash(tx_pool_[pool_index].latest_hash());        
+        pool_info.set_height(height);
+        pool_info.set_hash(hash);
+        pool_info.set_timestamp(block->timestamp());
         // 更新对应 pool 的最新状态，主要是高度信息和哈希值
-        
+        uint64_t synced_height = tx_pool_[pool_index].UpdateLatestInfo(thread_idx, height, hash, block->prehash(),block->timestamp());
         pool_info.set_synced_height(synced_height);
         prefix_db_->SaveLatestPoolInfo(sharding_id, pool_index, pool_info, db_batch);
     }

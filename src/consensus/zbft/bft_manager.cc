@@ -1606,6 +1606,7 @@ ZbftPtr BftManager::CreateBftPtr(
     bft_ptr->set_gid(bft_msg.prepare_gid());
     bft_ptr->set_network_id(bft_msg.net_id());
     bft_ptr->set_member_count(elect_item.member_size);
+    bft_ptr->set_leader_timestamp(bft_msg.tx_bft().time_stamp());
     ZJC_DEBUG("success create bft: %s, tx size: %u",
         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), txs_ptr->txs.size());
     return bft_ptr;
@@ -2008,6 +2009,7 @@ int BftManager::LeaderPrepare(
     auto& bft_msg = *header.mutable_zbft();
     zbft::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
     tx_bft.set_height(bft_ptr->prepare_block()->height());
+    tx_bft.set_time_stamp(bft_ptr->prepare_block()->timestamp());
     auto& tx_map = bft_ptr->txs_ptr()->txs;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         tx_bft.add_tx_hash_list(iter->first);

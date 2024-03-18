@@ -10,6 +10,7 @@ message TxBft {
     optional uint64 height = 3;
     repeated bytes tx_hash_list = 4;
     optional pools.protobuf.StepType tx_type = 5 [default=kNormalFrom];
+    optional uint64 time_stamp = 6;
 }
 
 message ZbftMessage {

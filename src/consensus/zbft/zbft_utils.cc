@@ -81,6 +81,8 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
     msg.append((char*)&timeblock_height, sizeof(timeblock_height));
     uint64_t elect_height = block.electblock_height();
     msg.append((char*)&elect_height, sizeof(elect_height));
+    uint64_t timestamp = block.timestamp();
+    msg.append((char*)&timestamp, sizeof(timestamp));  
     uint32_t leader_idx = block.leader_index();
     msg.append((char*)&leader_idx, sizeof(leader_idx));
     if (block.change_leader_invalid_hashs_size() > 0) {

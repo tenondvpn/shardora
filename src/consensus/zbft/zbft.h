@@ -43,10 +43,10 @@ public:
         const libff::alt_bn128_G2& common_pk,
         const libff::alt_bn128_Fr& local_sec_key);
     int Prepare(bool leader);
-    int LeaderCreatePrepare();
-    int BackupCheckPrepare(int32_t* invalid_tx_idx);
-    int DoTransaction();
-    int LeaderCallTransaction();
+    int LeaderCreatePrepare(bool leader);
+    int BackupCheckPrepare(int32_t* invalid_tx_idx, bool leader);
+    int DoTransaction(bool leader);
+    int LeaderCallTransaction(bool leader);
     int LeaderPrecommitOk(
         const std::string& tx_prepare,
         uint32_t index,
@@ -80,7 +80,12 @@ public:
     uint32_t network_id() {
         return network_id_;
     }
-
+    void set_leader_timestamp(uint64_t timestamp) {
+        leader_timestamp_ = timestamp;
+    }
+    uint64_t leader_timestamp() {
+        return leader_timestamp_;
+    }
     void set_randm_num(uint64_t rnum) {
         rand_num_ = rnum;
     }
@@ -530,6 +535,7 @@ protected:
     common::MembersPtr members_ptr_{ nullptr };
     std::string gid_;
     uint32_t network_id_{ 0 };
+    uint64_t leader_timestamp_{0};
     uint32_t leader_index_{ 0 };
     uint64_t rand_num_{ 0 };
     bool leader_handled_precommit_{ false };

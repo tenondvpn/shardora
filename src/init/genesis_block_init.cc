@@ -619,11 +619,7 @@ int GenesisBlockInit::CreateElectBlock(
     db::DbWriteBatch db_batch;
     pools_mgr_->UpdateLatestInfo(
         0,
-        tenon_block->network_id(),
-        tenon_block->pool_index(),
-        tenon_block->height(),
-        tenon_block->hash(),
-        tenon_block->prehash(),
+        tenon_block,
         db_batch);
 
     prefix_db_->SaveLatestElectBlock(ec_block, db_batch);
@@ -698,11 +694,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         db::DbWriteBatch db_batch;
         pools_mgr_->UpdateLatestInfo(
             0,
-            tenon_block->network_id(),
-            tenon_block->pool_index(),
-            tenon_block->height(),
-            tenon_block->hash(),
-            tenon_block->prehash(),
+            tenon_block,
             db_batch);
 
         AddBlockItemToCache(tenon_block, db_batch);
@@ -768,11 +760,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         prefix_db_->SaveGenesisTimeblock(tm_block.height(), tm_block.timestamp(), db_batch);
         pools_mgr_->UpdateLatestInfo(
             0,
-            tenon_block->network_id(),
-            tenon_block->pool_index(),
-            tenon_block->height(),
-            tenon_block->hash(),
-            tenon_block->prehash(),
+            tenon_block,
             db_batch);
 
         prefix_db_->SaveLatestTimeBlock(tenon_block->height(), db_batch);
@@ -1052,11 +1040,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         // 更新交易池最新信息
         pools_mgr_->UpdateLatestInfo(
             0,
-            tenon_block->network_id(),
-            tenon_block->pool_index(),
-            tenon_block->height(),
-            tenon_block->hash(),
-            tenon_block->prehash(),
+            tenon_block,
             db_batch);
         // ??? 和 UpdateLatestInfo 差不多啊，冗余了吧
         AddBlockItemToCache(tenon_block, db_batch);
@@ -1262,9 +1246,10 @@ void GenesisBlockInit::AddBlockItemToCache(
     pools::protobuf::PoolLatestInfo pool_info;
     pool_info.set_height(block->height());
     pool_info.set_hash(block->hash());
+    pool_info.set_timestamp(block->timestamp());
     prefix_db_->SaveLatestPoolInfo(
         block->network_id(), block->pool_index(), pool_info, db_batch);
-    ZJC_DEBUG("success add pool latest info: %u, %u, %lu", block->network_id(), block->pool_index(), block->height());
+    ZJC_DEBUG("success add pool latest info: %u, %u, %lu, %lu", block->network_id(), block->pool_index(), block->height(), block->timestamp());
 }
 
 // 在 net_id 中为 shard 节点创建块
@@ -1377,11 +1362,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         db::DbWriteBatch db_batch;
         pools_mgr_->UpdateLatestInfo(
             0,
-            tenon_block->network_id(),
-            tenon_block->pool_index(),
-            tenon_block->height(),
-            tenon_block->hash(),
-            tenon_block->prehash(),
+            tenon_block,
             db_batch);
         AddBlockItemToCache(tenon_block, db_batch);
         block_mgr_->GenesisNewBlock(0, tenon_block);
@@ -1533,11 +1514,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         // 更新 pool 最新信息
         pools_mgr_->UpdateLatestInfo(
             0,
-            tenon_block->network_id(),
-            tenon_block->pool_index(),
-            tenon_block->height(),
-            tenon_block->hash(),
-            tenon_block->prehash(),
+            tenon_block,
             db_batch);
         AddBlockItemToCache(tenon_block, db_batch);
         block_mgr_->GenesisNewBlock(0, tenon_block);

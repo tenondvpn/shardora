@@ -1129,6 +1129,13 @@ class PoolLatestInfo : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::uint64 synced_height() const;
   void set_synced_height(::google::protobuf::uint64 value);
 
+  // optional uint64 timestamp = 4;
+  bool has_timestamp() const;
+  void clear_timestamp();
+  static const int kTimestampFieldNumber = 4;
+  ::google::protobuf::uint64 timestamp() const;
+  void set_timestamp(::google::protobuf::uint64 value);
+
   // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.PoolLatestInfo)
  private:
   void set_has_height();
@@ -1137,6 +1144,8 @@ class PoolLatestInfo : public ::google::protobuf::Message /* @@protoc_insertion_
   void clear_has_hash();
   void set_has_synced_height();
   void clear_has_synced_height();
+  void set_has_timestamp();
+  void clear_has_timestamp();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -1144,6 +1153,7 @@ class PoolLatestInfo : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::internal::ArenaStringPtr hash_;
   ::google::protobuf::uint64 height_;
   ::google::protobuf::uint64 synced_height_;
+  ::google::protobuf::uint64 timestamp_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -3747,6 +3757,30 @@ inline void PoolLatestInfo::set_synced_height(::google::protobuf::uint64 value) 
   set_has_synced_height();
   synced_height_ = value;
   // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.PoolLatestInfo.synced_height)
+}
+
+// optional uint64 timestamp = 4;
+inline bool PoolLatestInfo::has_timestamp() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void PoolLatestInfo::set_has_timestamp() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void PoolLatestInfo::clear_has_timestamp() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void PoolLatestInfo::clear_timestamp() {
+  timestamp_ = GOOGLE_ULONGLONG(0);
+  clear_has_timestamp();
+}
+inline ::google::protobuf::uint64 PoolLatestInfo::timestamp() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.PoolLatestInfo.timestamp)
+  return timestamp_;
+}
+inline void PoolLatestInfo::set_timestamp(::google::protobuf::uint64 value) {
+  set_has_timestamp();
+  timestamp_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.PoolLatestInfo.timestamp)
 }
 
 // -------------------------------------------------------------------

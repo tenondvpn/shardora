@@ -69,6 +69,7 @@ message PoolLatestInfo {
     optional uint64 height = 1;
     optional bytes hash = 2;
     optional uint64 synced_height = 3;
+    optional uint64 timestamp = 4;
 }
 
 message AreaInfo {

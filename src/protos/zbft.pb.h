@@ -221,6 +221,13 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::uint64 height() const;
   void set_height(::google::protobuf::uint64 value);
 
+  // optional uint64 time_stamp = 6;
+  bool has_time_stamp() const;
+  void clear_time_stamp();
+  static const int kTimeStampFieldNumber = 6;
+  ::google::protobuf::uint64 time_stamp() const;
+  void set_time_stamp(::google::protobuf::uint64 value);
+
   // optional .zjchain.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
   bool has_tx_type() const;
   void clear_tx_type();
@@ -238,6 +245,8 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   void clear_has_height();
   void set_has_tx_type();
   void clear_has_tx_type();
+  void set_has_time_stamp();
+  void clear_has_time_stamp();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -246,6 +255,7 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::internal::ArenaStringPtr prepare_final_hash_;
   ::zjchain::block::protobuf::Block* block_;
   ::google::protobuf::uint64 height_;
+  ::google::protobuf::uint64 time_stamp_;
   int tx_type_;
   friend struct ::protobuf_protos_2fzbft_2eproto::TableStruct;
 };
@@ -879,13 +889,13 @@ TxBft::mutable_tx_hash_list() {
 
 // optional .zjchain.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
 inline bool TxBft::has_tx_type() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void TxBft::set_has_tx_type() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void TxBft::clear_has_tx_type() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void TxBft::clear_tx_type() {
   tx_type_ = 0;
@@ -900,6 +910,30 @@ inline void TxBft::set_tx_type(::zjchain::pools::protobuf::StepType value) {
   set_has_tx_type();
   tx_type_ = value;
   // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.TxBft.tx_type)
+}
+
+// optional uint64 time_stamp = 6;
+inline bool TxBft::has_time_stamp() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void TxBft::set_has_time_stamp() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void TxBft::clear_has_time_stamp() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void TxBft::clear_time_stamp() {
+  time_stamp_ = GOOGLE_ULONGLONG(0);
+  clear_has_time_stamp();
+}
+inline ::google::protobuf::uint64 TxBft::time_stamp() const {
+  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.TxBft.time_stamp)
+  return time_stamp_;
+}
+inline void TxBft::set_time_stamp(::google::protobuf::uint64 value) {
+  set_has_time_stamp();
+  time_stamp_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.TxBft.time_stamp)
 }
 
 // -------------------------------------------------------------------

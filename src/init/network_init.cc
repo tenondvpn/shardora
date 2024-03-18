@@ -1089,6 +1089,7 @@ void NetworkInit::GetNetworkNodesFromConf(const YAML::Node& genesis_config,
         
         uint32_t shard_num = network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId;        
         if (genesis_config["shards"]) {
+            ZJC_DEBUG("shards size = %u", genesis_config["shards"].size());
             assert(genesis_config["shards"].size() == shard_num);
             
             for (uint32_t net_i = 0; net_i < genesis_config["shards"].size(); net_i++) {
@@ -1160,11 +1161,7 @@ void NetworkInit::AddBlockItemToCache(
             common::GlobalInfo::Instance()->network_id()) {
         pools_mgr_->UpdateLatestInfo(
             thread_idx,
-            block->network_id(),
-            block->pool_index(),
-            block->height(),
-            block->hash(),
-            block->prehash(),
+            block,
             db_batch);
     }
     

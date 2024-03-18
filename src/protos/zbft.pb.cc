@@ -91,10 +91,12 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::zbft::protobuf::TxBft, height_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::zbft::protobuf::TxBft, tx_hash_list_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::zbft::protobuf::TxBft, tx_type_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::zbft::protobuf::TxBft, time_stamp_),
   1,
   0,
   2,
   ~0u,
+  4,
   3,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::zbft::protobuf::ZbftMessage, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::zbft::protobuf::ZbftMessage, _internal_metadata_),
@@ -147,8 +149,8 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 10, sizeof(::zjchain::zbft::protobuf::TxBft)},
-  { 15, 42, sizeof(::zjchain::zbft::protobuf::ZbftMessage)},
+  { 0, 11, sizeof(::zjchain::zbft::protobuf::TxBft)},
+  { 17, 44, sizeof(::zjchain::zbft::protobuf::ZbftMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -179,28 +181,29 @@ void AddDescriptorsImpl() {
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
       "\n\021protos/zbft.proto\022\025zjchain.zbft.protob"
       "uf\032\022protos/block.proto\032\022protos/pools.pro"
-      "to\"\267\001\n\005TxBft\022,\n\005block\030\001 \001(\0132\035.zjchain.bl"
+      "to\"\313\001\n\005TxBft\022,\n\005block\030\001 \001(\0132\035.zjchain.bl"
       "ock.protobuf.Block\022\032\n\022prepare_final_hash"
       "\030\002 \001(\014\022\016\n\006height\030\003 \001(\004\022\024\n\014tx_hash_list\030\004"
       " \003(\014\022>\n\007tx_type\030\005 \001(\0162 .zjchain.pools.pr"
-      "otobuf.StepType:\013kNormalFrom\"\251\004\n\013ZbftMes"
-      "sage\022\023\n\013prepare_gid\030\001 \001(\014\022\025\n\rprecommit_g"
-      "id\030\002 \001(\014\022\022\n\ncommit_gid\030\003 \001(\014\022\026\n\nleader_i"
-      "dx\030\004 \001(\005:\002-1\022\016\n\006net_id\030\005 \001(\r\022\036\n\017agree_pr"
-      "ecommit\030\006 \001(\010:\005false\022\033\n\014agree_commit\030\007 \001"
-      "(\010:\005false\022\036\n\npool_index\030\010 \001(\r:\n429496729"
-      "5\022\r\n\005error\030\t \001(\005\022,\n\006tx_bft\030\n \001(\0132\034.zjcha"
-      "in.zbft.protobuf.TxBft\022\024\n\014member_index\030\013"
-      " \001(\r\022\027\n\017backup_enc_data\030\014 \001(\014\022\024\n\014elect_h"
-      "eight\030\r \001(\004\022\022\n\nbls_sign_x\030\016 \001(\014\022\022\n\nbls_s"
-      "ign_y\030\017 \001(\014\022\026\n\016prepare_height\030\020 \001(\004\022\024\n\014p"
-      "repare_hash\030\021 \001(\014\022,\n\005block\030\022 \001(\0132\035.zjcha"
-      "in.block.protobuf.Block\022\022\n\nsync_block\030\023 "
-      "\001(\010\022\013\n\003ips\030\024 \003(\r\022\032\n\022oppose_prepare_gid\030\025"
-      " \001(\014\022\022\n\ninvaid_txs\030\026 \003(\r"
+      "otobuf.StepType:\013kNormalFrom\022\022\n\ntime_sta"
+      "mp\030\006 \001(\004\"\251\004\n\013ZbftMessage\022\023\n\013prepare_gid\030"
+      "\001 \001(\014\022\025\n\rprecommit_gid\030\002 \001(\014\022\022\n\ncommit_g"
+      "id\030\003 \001(\014\022\026\n\nleader_idx\030\004 \001(\005:\002-1\022\016\n\006net_"
+      "id\030\005 \001(\r\022\036\n\017agree_precommit\030\006 \001(\010:\005false"
+      "\022\033\n\014agree_commit\030\007 \001(\010:\005false\022\036\n\npool_in"
+      "dex\030\010 \001(\r:\n4294967295\022\r\n\005error\030\t \001(\005\022,\n\006"
+      "tx_bft\030\n \001(\0132\034.zjchain.zbft.protobuf.TxB"
+      "ft\022\024\n\014member_index\030\013 \001(\r\022\027\n\017backup_enc_d"
+      "ata\030\014 \001(\014\022\024\n\014elect_height\030\r \001(\004\022\022\n\nbls_s"
+      "ign_x\030\016 \001(\014\022\022\n\nbls_sign_y\030\017 \001(\014\022\026\n\016prepa"
+      "re_height\030\020 \001(\004\022\024\n\014prepare_hash\030\021 \001(\014\022,\n"
+      "\005block\030\022 \001(\0132\035.zjchain.block.protobuf.Bl"
+      "ock\022\022\n\nsync_block\030\023 \001(\010\022\013\n\003ips\030\024 \003(\r\022\032\n\022"
+      "oppose_prepare_gid\030\025 \001(\014\022\022\n\ninvaid_txs\030\026"
+      " \003(\r"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 824);
+      descriptor, 844);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/zbft.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fblock_2eproto::AddDescriptors();
@@ -238,6 +241,7 @@ const int TxBft::kPrepareFinalHashFieldNumber;
 const int TxBft::kHeightFieldNumber;
 const int TxBft::kTxHashListFieldNumber;
 const int TxBft::kTxTypeFieldNumber;
+const int TxBft::kTimeStampFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 TxBft::TxBft()
@@ -316,7 +320,7 @@ void TxBft::Clear() {
       block_->Clear();
     }
   }
-  if (cached_has_bits & 12u) {
+  if (cached_has_bits & 28u) {
     ::memset(&height_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&tx_type_) -
         reinterpret_cast<char*>(&height_)) + sizeof(tx_type_));
@@ -405,6 +409,20 @@ bool TxBft::MergePartialFromCodedStream(
         break;
       }
 
+      // optional uint64 time_stamp = 6;
+      case 6: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
+          set_has_time_stamp();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &time_stamp_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -456,9 +474,14 @@ void TxBft::SerializeWithCachedSizes(
   }
 
   // optional .zjchain.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
       5, this->tx_type(), output);
+  }
+
+  // optional uint64 time_stamp = 6;
+  if (cached_has_bits & 0x00000008u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(6, this->time_stamp(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -502,9 +525,14 @@ void TxBft::SerializeWithCachedSizes(
   }
 
   // optional .zjchain.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       5, this->tx_type(), target);
+  }
+
+  // optional uint64 time_stamp = 6;
+  if (cached_has_bits & 0x00000008u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(6, this->time_stamp(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -532,7 +560,7 @@ size_t TxBft::ByteSizeLong() const {
       this->tx_hash_list(i));
   }
 
-  if (_has_bits_[0 / 32] & 15u) {
+  if (_has_bits_[0 / 32] & 31u) {
     // optional bytes prepare_final_hash = 2;
     if (has_prepare_final_hash()) {
       total_size += 1 +
@@ -552,6 +580,13 @@ size_t TxBft::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt64Size(
           this->height());
+    }
+
+    // optional uint64 time_stamp = 6;
+    if (has_time_stamp()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->time_stamp());
     }
 
     // optional .zjchain.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
@@ -590,7 +625,7 @@ void TxBft::MergeFrom(const TxBft& from) {
 
   tx_hash_list_.MergeFrom(from.tx_hash_list_);
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 15u) {
+  if (cached_has_bits & 31u) {
     if (cached_has_bits & 0x00000001u) {
       set_has_prepare_final_hash();
       prepare_final_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.prepare_final_hash_);
@@ -602,6 +637,9 @@ void TxBft::MergeFrom(const TxBft& from) {
       height_ = from.height_;
     }
     if (cached_has_bits & 0x00000008u) {
+      time_stamp_ = from.time_stamp_;
+    }
+    if (cached_has_bits & 0x00000010u) {
       tx_type_ = from.tx_type_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -637,6 +675,7 @@ void TxBft::InternalSwap(TxBft* other) {
     GetArenaNoVirtual());
   swap(block_, other->block_);
   swap(height_, other->height_);
+  swap(time_stamp_, other->time_stamp_);
   swap(tx_type_, other->tx_type_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);

@@ -102,7 +102,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
     }
 
     transport::TcpTransport::Instance()->SetMessageHash(msg, 0);
-    auto tx_hash = pools::GetTxMessageHash(*new_tx);
+    auto tx_hash = pools::GetTxMessageHash(*new_tx); // cout 输出信息
     std::string sign;
     if (security->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
         assert(false);
@@ -135,10 +135,10 @@ static transport::MessagePtr CreateTransactionWithAttr(
     return msg_ptr;
 }
 
-static std::unordered_map<std::string, std::string> addrs_map;
-static std::vector<std::string> prikeys;
-static std::vector<std::string> addrs;
-static std::unordered_map<std::string, std::string> pri_pub_map;
+static std::unordered_map<std::string, std::string> g_pri_addrs_map;
+static std::vector<std::string> g_prikeys;
+static std::vector<std::string> g_addrs;
+static std::unordered_map<std::string, std::string> g_pri_pub_map;
 static void LoadAllAccounts() {
     FILE* fd = fopen("../addrs", "r");
     if (fd == nullptr) {
@@ -157,17 +157,17 @@ static void LoadAllAccounts() {
         }
 
         std::string prikey = common::Encode::HexDecode(std::string(read_res, 64));
-        prikeys.push_back(prikey);
+        g_prikeys.push_back(prikey);
         std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
         security->SetPrivateKey(prikey);
-        pri_pub_map[prikey] = security->GetPublicKey();
+        g_pri_pub_map[prikey] = security->GetPublicKey();
         std::string addr = security->GetAddress();
-        addrs_map[prikey] = addr;
-        addrs.push_back(addr);
+        g_pri_addrs_map[prikey] = addr;
+        g_addrs.push_back(addr);
         std::cout << common::Encode::HexEncode(prikey) << " : " << common::Encode::HexEncode(addr) << std::endl;
     }
 
-    if (prikeys.size() != 256) {
+    if (g_prikeys.size() != 256) {
         std::cout << "invalid init acc file." << std::endl;
         exit(1);
     }
@@ -228,15 +228,15 @@ int tx_main(int argc, char** argv) {
     for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
         uint64_t* gid_int = (uint64_t*)gid.data();
         gid_int[0] = pos;
-        if (addrs_map[from_prikey] == to) {
+        if (g_pri_addrs_map[from_prikey] == to) {
             ++prikey_pos;
-            from_prikey = prikeys[prikey_pos % prikeys.size()];
+            from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
         }
 
         if (security->GetAddress() == common::Encode::HexDecode("f1cd7abb586966d500d91329658ec48aa2094702")) {
             ++prikey_pos;
-            from_prikey = prikeys[prikey_pos % prikeys.size()];
+            from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
         }
 
@@ -263,9 +263,9 @@ int tx_main(int argc, char** argv) {
 
         if (pos % 100 == 0) {
             ++prikey_pos;
-            from_prikey = prikeys[prikey_pos % prikeys.size()];
+            from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
-            usleep(10000);
+            usleep(1000000);
         }
 
         usleep(200);
@@ -324,15 +324,15 @@ int one_tx_main(int argc, char** argv) {
     std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
     std::string to = common::Encode::HexDecode(argv[2]);
     uint32_t prikey_pos = 0;
-    auto from_prikey = prikeys[prikey_pos % prikeys.size()];
+    auto from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
     security->SetPrivateKey(from_prikey);
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
     uint64_t* gid_int = (uint64_t*)gid.data();
     gid_int[0] = pos;
-    if (addrs_map[from_prikey] == to) {
+    if (g_pri_addrs_map[from_prikey] == to) {
         ++prikey_pos;
-        from_prikey = prikeys[prikey_pos % prikeys.size()];
+        from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
         security->SetPrivateKey(from_prikey);
         return 1;
     }
@@ -405,7 +405,7 @@ int create_library(int argc, char** argv) {
     std::string gid = common::Random::RandomString(32);
     std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
     uint32_t prikey_pos = 0;
-    auto from_prikey = prikeys[254];
+    auto from_prikey = g_prikeys[254];
     security->SetPrivateKey(from_prikey);
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
@@ -482,7 +482,7 @@ int contract_main(int argc, char** argv) {
     std::string gid = common::Random::RandomString(32);
     std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
     uint32_t prikey_pos = 0;
-    auto from_prikey = prikeys[254];
+    auto from_prikey = g_prikeys[254];
     security->SetPrivateKey(from_prikey);
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
@@ -567,7 +567,7 @@ int contract_set_prepayment(int argc, char** argv) {
     std::string gid = common::Random::RandomString(32);
     std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
     uint32_t prikey_pos = 0;
-    auto from_prikey = prikeys[254];
+    auto from_prikey = g_prikeys[254];
     security->SetPrivateKey(from_prikey);
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
@@ -643,7 +643,7 @@ int contract_call(int argc, char** argv, bool more=false) {
     std::string gid = common::Random::RandomString(32);
     std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
     uint32_t prikey_pos = 0;
-    auto from_prikey = prikeys[254];
+    auto from_prikey = g_prikeys[254];
     security->SetPrivateKey(from_prikey);
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
     uint32_t count = 0;

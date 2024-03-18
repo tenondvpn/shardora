@@ -117,6 +117,13 @@ public:
 //         assert(!latest_hash_.empty());
         return latest_hash_;
     }
+    uint64_t latest_timestamp() {
+        if (latest_timestamp_ == 0) {
+            InitLatestInfo();
+        }
+        
+        return latest_timestamp_;
+    }
 
     void GetHeightInvalidChangeLeaderHashs(uint64_t height, std::vector<std::string>&hashs) {
         auto iter = change_leader_invalid_hashs_.find(height);
@@ -189,7 +196,8 @@ public:
             uint8_t thread_idx,
             uint64_t height,
             const std::string& hash,
-            const std::string& prehash) {
+            const std::string& prehash,
+            const uint64_t timestamp) {
         if (height_tree_ptr_ == nullptr) {
             InitHeightTree();
         }
@@ -203,6 +211,7 @@ public:
         if (latest_height_ == common::kInvalidUint64 || latest_height_ < height) {
             latest_height_ = height;
             latest_hash_ = hash;
+            latest_timestamp_ = timestamp;
             InitGetTempBftInvalidHashs();
         }
 
@@ -324,6 +333,7 @@ private:
                 latest_height_ = pool_info.height();
                 latest_hash_ = pool_info.hash();
                 synced_height_ = pool_info.synced_height();
+                latest_timestamp_ = pool_info.timestamp();
                 prev_synced_height_ = synced_height_;
                 to_sync_max_height_ = latest_height_;
                 InitGetTempBftInvalidHashs();
@@ -357,6 +367,7 @@ private:
     std::map<std::string, TxItemPtr> universal_prio_map_;
     uint64_t latest_height_ = common::kInvalidUint64;
     std::string latest_hash_;
+    uint64_t latest_timestamp_ = 0U;
     std::unordered_map<uint64_t, std::set<std::string>> change_leader_invalid_hashs_;
     std::shared_ptr<HeightTreeLevel> height_tree_ptr_ = nullptr;
     uint32_t pool_index_ = common::kInvalidPoolIndex;

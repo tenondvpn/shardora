@@ -336,11 +336,7 @@ bool BlockManager::AddBlockItemToCache(
         common::GlobalInfo::Instance()->network_id()) {
         pools_mgr_->UpdateLatestInfo(
             thread_idx,
-            block->network_id(),
-            block->pool_index(),
-            block->height(),
-            block->hash(),
-            block->prehash(),
+            block,
             db_batch);
     }
     return true;
