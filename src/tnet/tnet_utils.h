@@ -31,7 +31,7 @@ class TcpConnection;
 class Packet;
 
 typedef std::function<bool(TcpConnection&)> ConnectionHandler;
-typedef std::function<bool(std:shared_ptr<TcpConnection>, Packet&)> PacketHandler;
+typedef std::function<bool(std::shared_ptr<TcpConnection>, Packet&)> PacketHandler;
 typedef std::function<void()> WriteableHandler;
 
 inline static bool ParseSpec(const std::string& s, in_addr_t* addr, uint16_t* port) {
