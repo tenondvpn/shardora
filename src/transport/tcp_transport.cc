@@ -376,14 +376,12 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
             return from_iter->second;
         }
 
-        ZJC_DEBUG("remove connect and reconnect send message %s:%d, erase conn size: %d", ip.c_str(), port, erase_conns_.size());
         from_conn_map_.erase(from_iter);
     }
 
     auto iter = conn_map_.find(peer_spec);
     if (iter != conn_map_.end()) {
         if (iter->second->ShouldReconnect()) {
-            ZJC_DEBUG("remove connect and reconnect send message %s:%d, erase conn size: %d", ip.c_str(), port, erase_conns_.size());
             conn_map_.erase(iter);
         } else {
             return iter->second;
