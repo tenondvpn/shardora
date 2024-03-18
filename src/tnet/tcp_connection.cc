@@ -14,6 +14,7 @@ TcpConnection::TcpConnection(EventLoop& event_loop) : event_loop_(event_loop) {
 }
 
 TcpConnection::~TcpConnection() {
+    ZJC_ERROR("connection relreased called: %lu", (uint64_t)this);
     if (socket_ != NULL) {
         socket_->Close();
         socket_->Free();
@@ -158,6 +159,7 @@ bool TcpConnection::Connect(uint32_t timeout) {
 }
 
 void TcpConnection::Close() {
+    ZJC_ERROR("connection close called: %lu", (uint64_t)this);
     common::AutoSpinLock l(spin_mutex_);
     CloseWithoutLock();
 }
