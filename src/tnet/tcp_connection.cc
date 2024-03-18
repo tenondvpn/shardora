@@ -31,9 +31,6 @@ TcpConnection::~TcpConnection() {
         packet_decoder_->Free();
         packet_decoder_ = nullptr;
     }
-
-    int a = 0;
-    delete &a;
 }
 
 void TcpConnection::SetPacketEncoder(PacketEncoder* encoder) {
