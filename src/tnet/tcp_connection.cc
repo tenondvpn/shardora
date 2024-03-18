@@ -10,6 +10,7 @@ namespace zjchain {
 namespace tnet {
 
 TcpConnection::TcpConnection(EventLoop& event_loop) : event_loop_(event_loop) {
+    ZJC_ERROR("connection created called: %lu", (uint64_t)this);
     create_timestamp_ms_ = common::TimeUtils::TimestampMs();
 }
 
