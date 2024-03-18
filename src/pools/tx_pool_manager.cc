@@ -712,7 +712,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
         transport::TcpTransport::Instance()->SetMessageHash(
             msg,
             msg_ptr->thread_idx);
-        transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
+        transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn.get(), msg);
 //         ZJC_DEBUG("response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
     } else {
         auto& heights = msg_ptr->header.sync_heights().heights();
