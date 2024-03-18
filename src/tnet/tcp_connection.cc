@@ -10,12 +10,10 @@ namespace zjchain {
 namespace tnet {
 
 TcpConnection::TcpConnection(EventLoop& event_loop) : event_loop_(event_loop) {
-    ZJC_INFO("connection created called: %lu", (uint64_t)this);
     create_timestamp_ms_ = common::TimeUtils::TimestampMs();
 }
 
 TcpConnection::~TcpConnection() {
-    ZJC_INFO("connection relreased called: %lu", (uint64_t)this);
     if (socket_ != NULL) {
         socket_->Close();
         socket_->Free();
@@ -34,7 +32,6 @@ TcpConnection::~TcpConnection() {
 }
 
 void TcpConnection::SetPacketEncoder(PacketEncoder* encoder) {
-    ZJC_INFO("connection SetPacketEncoder called: %lu", (uint64_t)this);
     if (packet_encoder_ != NULL) {
         packet_encoder_->Free();
     }
@@ -43,7 +40,6 @@ void TcpConnection::SetPacketEncoder(PacketEncoder* encoder) {
 }
 
 void TcpConnection::SetPacketDecoder(PacketDecoder* decoder) {
-    ZJC_INFO("connection SetPacketDecoder called: %lu", (uint64_t)this);
     if (packet_decoder_ != NULL) {
         packet_decoder_->Free();
     }
@@ -52,23 +48,19 @@ void TcpConnection::SetPacketDecoder(PacketDecoder* decoder) {
 }
 
 void TcpConnection::SetPacketHandler(const PacketHandler& handler) {
-    ZJC_INFO("connection SetPacketHandler called: %lu", (uint64_t)this);
     packet_handler_ = handler;
     packet_handler_(shared_from_this(), CmdPacketFactory::Create(CmdPacket::CT_TCP_NEW_CONNECTION));
 }
 
 uint64_t TcpConnection::GetBytesRecv() const {
-    ZJC_INFO("connection GetBytesRecv called: %lu", (uint64_t)this);
     return bytes_recv_;
 }
 
 uint64_t TcpConnection::GetBytesSend() const {
-    ZJC_INFO("connection GetBytesSend called: %lu", (uint64_t)this);
     return bytes_sent_;
 }
 
 void TcpConnection::Destroy(bool closeSocketImmediately) {
-    ZJC_INFO("connection Destroy called: %lu", (uint64_t)this);
     int16_t new_val = 0;
     int16_t old_val = 1;
     if (destroy_flag_.compare_exchange_strong(new_val, old_val)) {
@@ -98,7 +90,6 @@ int TcpConnection::SendPacket(Packet& packet) {
 
 int TcpConnection::SendPacketWithoutLock(Packet& packet) {
     auto* msg_pkg = dynamic_cast<MsgPacket*>(&packet);
-    ZJC_ERROR("SendPacketWithoutLock: %lu", msg_pkg->msg_id());
     if (tcp_state_ == kTcpNone || tcp_state_ == kTcpClosed) {
         ZJC_ERROR("bad state, %d, %lu", tcp_state_, msg_pkg->msg_id());
         return -1;
@@ -160,24 +151,20 @@ int TcpConnection::SendPacketWithoutLock(Packet& packet) {
         }
     }
 
-    ZJC_ERROR("SendPacketWithoutLock: %lu res: %d", msg_pkg->msg_id(), rc);
     return rc ? 0 : -1;
 }
 
 bool TcpConnection::Connect(uint32_t timeout) {
-    ZJC_INFO("connection Connect called: %lu", (uint64_t)this);
     common::AutoSpinLock l(spin_mutex_);
     return ConnectWithoutLock(timeout);
 }
 
 void TcpConnection::Close() {
-    ZJC_INFO("connection close called: %lu", (uint64_t)this);
     common::AutoSpinLock l(spin_mutex_);
     CloseWithoutLock();
 }
 
 void TcpConnection::CloseWithoutLock() {
-    ZJC_INFO("connection CloseWithoutLock called: %lu", (uint64_t)this);
     if (tcp_state_ != kTcpClosed) {
         tcp_state_ = kTcpClosed;
         if (socket_ != NULL) {
@@ -191,7 +178,6 @@ void TcpConnection::CloseWithoutLock() {
 }
 
 void TcpConnection::NotifyWriteable(bool need_release, bool lock) {
-    ZJC_INFO("connection NotifyWriteable called: %lu", (uint64_t)this);
     if (tcp_state_ != kTcpConnected) {
         return;
     }
@@ -216,7 +202,6 @@ void TcpConnection::NotifyWriteable(bool need_release, bool lock) {
 }
 
 void TcpConnection::ActionAfterPacketSent() {
-    ZJC_INFO("connection ActionAfterPacketSent called: %lu", (uint64_t)this);
     bool good = false;
     {
         common::AutoSpinLock l(spin_mutex_);
@@ -367,7 +352,6 @@ void TcpConnection::OnWrite() {
 }
 
 bool TcpConnection::ConnectWithoutLock(uint32_t timeout) {
-    ZJC_INFO("connection ConnectWithoutLock called: %lu", (uint64_t)this);
     if (tcp_state_ != kTcpNone) {
         ZJC_ERROR("bad state");
         return false;
@@ -419,7 +403,6 @@ bool TcpConnection::ConnectWithoutLock(uint32_t timeout) {
 }
 
 bool TcpConnection::ProcessConnecting() {
-    ZJC_INFO("connection ProcessConnecting called: %lu", (uint64_t)this);
     if (tcp_state_ != kTcpConnecting) {
 //         ZJC_ERROR("bad state [%d]", tcp_state_);
         return false;
@@ -437,18 +420,15 @@ bool TcpConnection::ProcessConnecting() {
 }
 
 void TcpConnection::OnConnectTimeout() {
-    ZJC_INFO("connection OnConnectTimeout called: %lu", (uint64_t)this);
     NotifyCmdPacketAndClose(CmdPacket::CT_CONNECT_TIMEOUT);
 }
 
 void TcpConnection::NotifyCmdPacketAndClose(int type) {
-    ZJC_INFO("connection NotifyCmdPacketAndClose called: %lu", (uint64_t)this);
     packet_handler_(shared_from_this(), CmdPacketFactory::Create(type));
     Close();
 }
 
 void TcpConnection::ReleaseByIOThread() {
-    ZJC_INFO("connection ReleaseByIOThread called: %lu", (uint64_t)this);
     common::AutoSpinLock l(spin_mutex_);
     tcp_state_ = kTcpClosed;
 }
