@@ -7,6 +7,7 @@
 #include <errno.h>
 
 #include <functional>
+#include <memory>
 
 #include "common/utils.h"
 #include "common/split.h"
