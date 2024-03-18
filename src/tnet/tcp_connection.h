@@ -63,24 +63,24 @@ public:
         MsgPacket* reply_packet = new MsgPacket(0, tnet::kEncodeWithHeader, false, msg_id);
         // local message is thread safe and don't free memory
         reply_packet->SetMessage((char*)data, len);
-        if (!SendPacket(*reply_packet)) {
+        int res = SendPacket(*reply_packet);
+        if (res != 0) {
             reply_packet->Free();
-            return 1;
         }
 
-        return 0;
+        return res;
     }
 
     virtual int Send(const char* data, int32_t len) {
         MsgPacket* reply_packet = new MsgPacket(0, tnet::kEncodeWithHeader, false, 0);
         // local message is thread safe and don't free memory
         reply_packet->SetMessage((char*)data, len);
-        if (!SendPacket(*reply_packet)) {
+         int res = SendPacket(*reply_packet);
+        if (res != 0) {
             reply_packet->Free();
-            return 1;
         }
 
-        return 0;
+        return res;
     }
 
     void SetPacketEncoder(PacketEncoder* encoder);
@@ -89,8 +89,8 @@ public:
     uint64_t GetBytesRecv() const;
     uint64_t GetBytesSend() const;
     void Destroy(bool closeSocketImmediately);
-    virtual bool SendPacket(Packet& packet);
-    virtual bool SendPacketWithoutLock(Packet& packet);
+    int SendPacket(Packet& packet);
+    int SendPacketWithoutLock(Packet& packet);
     virtual bool Connect(uint32_t timeout);
     virtual void Close();
     virtual void CloseWithoutLock();

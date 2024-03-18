@@ -226,11 +226,14 @@ int TcpTransport::Send(
 
     ZJC_DEBUG("send message hash64: %lu", message.hash64());
     message.SerializeToString(&msg);
-    if (tcp_conn->Send(msg) != 0) {
-        auto* tmp_conn = static_cast<tnet::TcpConnection*>(tcp_conn);
-        assert(tmp_conn != nullptr);
-        if (tmp_conn->is_client()) {
-            tmp_conn->Destroy(true);
+    int res = tcp_conn->Send(msg);
+    if (res != 0) {
+        if (res < 0) {
+            auto* tmp_conn = static_cast<tnet::TcpConnection*>(tcp_conn);
+            assert(tmp_conn != nullptr);
+            if (tmp_conn->is_client()) {
+                tmp_conn->Destroy(true);
+            }
         }
 
         return kTransportError;
@@ -275,11 +278,14 @@ int TcpTransport::Send(
         uint8_t thread_idx,
         tnet::TcpInterface* tcp_conn,
         const std::string& message) {
-    if (tcp_conn->Send(message) != 0) {
-        auto* tmp_conn = static_cast<tnet::TcpConnection*>(tcp_conn);
-        assert(tmp_conn != nullptr);
-        if (tmp_conn->is_client()) {
-            tmp_conn->Destroy(true);
+    int res = tcp_conn->Send(message);
+    if (res != 0) {
+        if (res < 0) {
+            auto* tmp_conn = static_cast<tnet::TcpConnection*>(tcp_conn);
+            assert(tmp_conn != nullptr);
+            if (tmp_conn->is_client()) {
+                tmp_conn->Destroy(true);
+            }
         }
 
         return kTransportError;
@@ -316,10 +322,14 @@ void TcpTransport::Output() {
                     continue;
                 }
 
-                if (tcp_conn->Send(item_ptr->hash64, item_ptr->msg) != 0) {
-                    TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu]",
-                        item_ptr->des_ip.c_str(), item_ptr->port, 0);
-                    tcp_conn->Destroy(true);
+                int res = tcp_conn->Send(item_ptr->hash64, item_ptr->msg);
+                if (res != 0) {
+                    TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu] res: %d",
+                        item_ptr->des_ip.c_str(), item_ptr->port, 0, res);
+                    if (res <= 0) {
+                        tcp_conn->Destroy(true);
+                    }
+                    
                     continue;
                 }
 

@@ -82,39 +82,39 @@ void TcpConnection::Destroy(bool closeSocketImmediately) {
     free_timeout_ms_ = common::TimeUtils::TimestampMs() + common::kMessageTimeoutMs * 2;
 }
 
-bool TcpConnection::SendPacket(Packet& packet) {
-    bool rc = false;
+int TcpConnection::SendPacket(Packet& packet) {
+    int rc = 0;
     {
         common::AutoSpinLock l(spin_mutex_);
         rc = SendPacketWithoutLock(packet);
     }
 
-    if (rc) {
+    if (rc == 0) {
         packet.Free();
     }
 
     return rc;
 }
 
-bool TcpConnection::SendPacketWithoutLock(Packet& packet) {
+int TcpConnection::SendPacketWithoutLock(Packet& packet) {
     auto* msg_pkg = dynamic_cast<MsgPacket*>(&packet);
     ZJC_ERROR("SendPacketWithoutLock: %lu", msg_pkg->msg_id());
     if (tcp_state_ == kTcpNone || tcp_state_ == kTcpClosed) {
         ZJC_ERROR("bad state, %d, %lu", tcp_state_, msg_pkg->msg_id());
-        return false;
+        return -1;
     }
 
     ByteBufferPtr buf_ptr(new ByteBuffer);
     if (!packet_encoder_->Encode(packet, buf_ptr.get())) {
         ZJC_ERROR("encode packet failed: %lu", msg_pkg->msg_id());
-        return false;
+        return -1;
     }
 
     if (tcp_state_ != kTcpConnected || !out_buffer_list_.empty()) {
         if (out_buffer_list_.size() >= OUT_BUFFER_LIST_SIZE) {
             ZJC_ERROR("out_buffer_list_ out of size %d, %d, %lu", 
                 OUT_BUFFER_LIST_SIZE, out_buffer_list_.size(), msg_pkg->msg_id());
-            return false;
+            return 1;
         }
 
         out_buffer_list_.push_back(buf_ptr);
@@ -122,7 +122,7 @@ bool TcpConnection::SendPacketWithoutLock(Packet& packet) {
             max_count_ = out_buffer_list_.size();
         }
 
-        return true;
+        return 0;
     }
 
     bool rc = true;
@@ -161,7 +161,7 @@ bool TcpConnection::SendPacketWithoutLock(Packet& packet) {
     }
 
     ZJC_ERROR("SendPacketWithoutLock: %lu res: %d", msg_pkg->msg_id(), rc);
-    return rc;
+    return rc ? 0 : -1;
 }
 
 bool TcpConnection::Connect(uint32_t timeout) {
