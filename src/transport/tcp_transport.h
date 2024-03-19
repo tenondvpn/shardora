@@ -1,6 +1,7 @@
 #pragma once
 
 #include <condition_variable>
+#include <deque>
 #include <memory>
 #include <mutex>
 #include <set>
@@ -9,6 +10,7 @@
 #include "common/limit_hash_set.h"
 #include "common/spin_mutex.h"
 #include "common/thread_safe_queue.h"
+#include "common/tick.h"
 #include "tnet/socket/socket_factory.h"
 #include "tnet/socket/listen_socket.h"
 #include "tnet/tnet_transport.h"
@@ -63,8 +65,10 @@ private:
     std::shared_ptr<tnet::TcpConnection> GetConnection(
         const std::string& ip,
         uint16_t port);
+    void CheckConnectionValid(uint8_t thread_idx);
 
     static const uint64_t kEraseConnPeriod = 10000000lu;
+    static const uint32_t kEachCheckConnectionCount = 100u;
     static const uint64_t kCheckEraseConnPeriodMs = 10000lu;
 
     std::shared_ptr<tnet::TnetTransport> transport_{ nullptr };
@@ -86,6 +90,10 @@ private:
     std::mutex output_mutex_;
     std::mutex send_output_mutex_;
     uint64_t prev_erase_timestamp_ms_ = 0;
+    common::ThreadSafeQueue<std::shared_ptr<tnet::TcpConnection>> in_check_queue_;
+    common::ThreadSafeQueue<std::shared_ptr<tnet::TcpConnection>> out_check_queue_;
+    std::deque<std::shared_ptr<tnet::TcpConnection>> waiting_check_queue_;
+    common::Tick check_conn_tick_;
 };
 
 }  // namespace transport

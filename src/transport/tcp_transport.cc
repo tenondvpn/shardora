@@ -95,6 +95,9 @@ int TcpTransport::Start(bool hold) {
     }
 
     output_thread_ = std::make_shared<std::thread>(&TcpTransport::Output, this);
+    check_conn_tick_.CutOff(
+        10000000, 
+        std::bind(&TcpTransport::CheckConnectionValid, this, std::placeholders::_1));
     return kTransportSuccess;
 }
 
@@ -347,20 +350,6 @@ int TcpTransport::GetSocket() {
     return socket_->GetFd();
 }
 
-// tnet::TcpConnection* TcpTransport::CreateConnection(const std::string& ip, uint16_t port) {
-//     if (ip == "0.0.0.0") {
-//         return nullptr;
-//     }
-// 
-//     std::string peer_spec = ip + ":" + std::to_string(port);
-// //     std::string local_spec = common::GlobalInfo::Instance()->config_local_ip() + ":" +
-// //         std::to_string(common::GlobalInfo::Instance()->config_local_port());
-//     return transport_->CreateConnection(
-//             peer_spec,
-//             "",
-//             300u * 1000u * 1000u);
-// }
-
 std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
         const std::string& ip,
         uint16_t port) {
@@ -401,8 +390,54 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
     tcp_conn->set_client();
     ZJC_DEBUG("success connect send message %s:%d, conn map size: %d", ip.c_str(), port, conn_map_.size());
     conn_map_[peer_spec] = tcp_conn;
+    in_check_queue_.push(tcp_conn);
+    while (!destroy_) {
+        std::shared_ptr<TcpConnection> out_conn = nullptr;
+        if (!out_check_queue_.pop(&out_conn) || out_conn == nullptr) {
+            break;
+        }
+
+        std::string from_ip;
+        uint16_t from_port;
+        out_conn->GetSocket()->GetIpPort(&from_ip, &from_port);
+        auto key = from_ip + std::to_string(from_port);
+        auto iter = conn_map_.find(key);
+        if (iter != conn_map_.end()) {
+            conn_map_.erase(iter);
+            ZJC_DEBUG("remove accept connection: %s", key.c_str());
+        }
+    }
+
     return tcp_conn;
 }
+
+void TcpTransport::CheckConnectionValid(uint8_t thread_idx) {
+    while (destroy_ == 0) {
+        std::shared_ptr<TcpConnection> out_conn = nullptr;
+        if (!in_check_queue_.pop(&out_conn) || out_conn == nullptr) {
+            break;
+        }
+
+        waiting_check_queue_.push_back(out_conn);
+    }
+
+    uint32_t length = waiting_check_queue_.size();
+    uint32_t check_count = 0;
+    while (check_count < kEachCheckConnectionCount && check_count <= length && !destroy_) {
+        ++check_count;
+        auto conn = waiting_check_queue_.front();
+        if (conn->ShouldReconnect()) {
+            out_check_queue_.push(conn);
+        } else {
+            waiting_check_queue_.push_back(conn);
+        }
+    }
+
+    check_conn_tick_.CutOff(
+        10000000, 
+        std::bind(&TcpTransport::CheckConnectionValid, this, std::placeholders::_1));
+}
+
 
 std::string TcpTransport::GetHeaderHashForSign(const transport::protobuf::Header& message) {
     assert(message.has_hash64());

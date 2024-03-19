@@ -75,6 +75,9 @@ bool TcpAcceptor::Start() {
         ZJC_ERROR("enable accept event failed");
     }
 
+    check_conn_tick_.CutOff(
+        10000000, 
+        std::bind(&TcpAcceptor::CheckConnectionValid, this, std::placeholders::_1));
     return rc;
 }
 
@@ -158,7 +161,6 @@ bool TcpAcceptor::OnRead() {
         if (send_buff_size_ != 0 && !socket->SetSoSndBuf(send_buff_size_)) {
             ZJC_ERROR("set send buffer size failed");
         }
-
         EventLoop& event_loop = GetNextEventLoop();
         auto conn = CreateTcpConnection(event_loop, *socket);
         if (conn == nullptr) {
@@ -184,9 +186,53 @@ bool TcpAcceptor::OnRead() {
         uint16_t from_port;
         socket->GetIpPort(&from_ip, &from_port);
         conn_map_[from_ip + std::to_string(from_port)] = conn;
+        in_check_queue_.push(conn);
+        while (destroy_ == 0) {
+            std::shared_ptr<TcpConnection> out_conn = nullptr;
+            if (!out_check_queue_.pop(&out_conn) || out_conn == nullptr) {
+                break;
+            }
+
+            std::string from_ip;
+            uint16_t from_port;
+            out_conn->GetSocket()->GetIpPort(&from_ip, &from_port);
+            auto key = from_ip + std::to_string(from_port);
+            auto iter = conn_map_.find(key);
+            if (iter != conn_map_.end()) {
+                conn_map_.erase(iter);
+                ZJC_DEBUG("remove accept connection: %s", key.c_str());
+            }
+        }
     }
 
     return false;
+}
+
+void TcpAcceptor::CheckConnectionValid(uint8_t thread_idx) {
+    while (destroy_ == 0) {
+        std::shared_ptr<TcpConnection> out_conn = nullptr;
+        if (!in_check_queue_.pop(&out_conn) || out_conn == nullptr) {
+            break;
+        }
+
+        waiting_check_queue_.push_back(out_conn);
+    }
+
+    uint32_t length = waiting_check_queue_.size();
+    uint32_t check_count = 0;
+    while (check_count < kEachCheckConnectionCount && check_count <= length && destroy_ == 0) {
+        ++check_count;
+        auto conn = waiting_check_queue_.front();
+        if (conn->ShouldReconnect()) {
+            out_check_queue_.push(conn);
+        } else {
+            waiting_check_queue_.push_back(conn);
+        }
+    }
+
+    check_conn_tick_.CutOff(
+        10000000, 
+        std::bind(&TcpAcceptor::CheckConnectionValid, this, std::placeholders::_1));
 }
 
 void TcpAcceptor::OnWrite()
