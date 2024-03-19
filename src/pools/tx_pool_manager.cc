@@ -1237,7 +1237,6 @@ void TxPoolManager::BftCheckInvalidGids(
 }
 
 void TxPoolManager::PopTxs(uint32_t pool_index) {
-    uint32_t count = 0;
     while (!destroy_) {
         transport::MessagePtr msg_ptr = nullptr;
         msg_queues_[pool_index].pop(&msg_ptr);
@@ -1245,21 +1244,7 @@ void TxPoolManager::PopTxs(uint32_t pool_index) {
             break;
         }
 
-//         auto& tx_msg = msg_ptr->header.tx_proto();
-//         if (tx_msg.step() == pools::protobuf::kNormalFrom) {
-//             if (security_->Verify(
-//                     msg_ptr->msg_hash,
-//                     tx_msg.pubkey(),
-//                     msg_ptr->header.sign()) != security::kSecuritySuccess) {
-//                 ZJC_WARN("verify signature failed!");
-//                 continue;
-//             }
-//         }
-
         DispatchTx(pool_index, msg_ptr);
-        if (++count >= 256) {
-            break;
-        }
         // ZJC_INFO("success pop tx: %s, %lu", common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(), msg_ptr->header.hash64());
     }
 }
