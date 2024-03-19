@@ -1238,7 +1238,7 @@ void TxPoolManager::BftCheckInvalidGids(
 
 void TxPoolManager::PopTxs(uint32_t pool_index) {
     uint32_t count = 0;
-    while (true) {
+    while (!destroy_) {
         transport::MessagePtr msg_ptr = nullptr;
         msg_queues_[pool_index].pop(&msg_ptr);
         if (msg_ptr == nullptr) {
@@ -1257,6 +1257,9 @@ void TxPoolManager::PopTxs(uint32_t pool_index) {
 //         }
 
         DispatchTx(pool_index, msg_ptr);
+        if (++count >= 256) {
+            break;
+        }
         // ZJC_INFO("success pop tx: %s, %lu", common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(), msg_ptr->header.hash64());
     }
 }
