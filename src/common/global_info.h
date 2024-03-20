@@ -225,7 +225,9 @@ public:
                         }
                     }
 
-                    pools_with_thread_ = tmp_pools_with_thread;
+                    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
+                        pools_with_thread_[pool_idx] = tmp_pools_with_thread[pool_idx];
+                    }
                 }
 
                 ZJC_INFO("thread index %d set cosensus index: %d", thread_idx, i);
