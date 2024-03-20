@@ -335,7 +335,7 @@ void BftManager::CheckInvalidGids() {
 }
 
 void BftManager::PopAllPoolTxs() {
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
             pools_mgr_->PopTxs(pool_idx, false);
@@ -393,7 +393,7 @@ void BftManager::RotationLeader(
 
 ZbftPtr BftManager::Start(
         ZbftPtr commited_bft_ptr) {
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
 #ifndef ZJC_UNITTEST
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) <
@@ -1760,7 +1760,7 @@ void BftManager::CheckTimeout() {
     auto now_ms = now_timestamp_us / 1000lu;
     prev_checktime_out_milli_ = now_timestamp_us / 1000 + kCheckTimeoutPeriodMilli;
     auto elect_item_ptr = elect_items_[elect_item_idx_];
-    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     for (uint32_t pool_index = 0; pool_index < common::kInvalidPoolIndex; ++pool_index) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_index] != thread_idx) {
             continue;

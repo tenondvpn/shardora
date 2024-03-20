@@ -141,7 +141,7 @@ int NetworkInit::Init(int argc, char** argv) {
         db_);
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(
         security_, db_, kv_sync_, account_mgr_,
-        std::bind(&NetworkInit::RotationLeaderCallback, this, std::placeholders::_1, std::placeholders::_2));
+        std::bind(&NetworkInit::RotationLeaderCallback, this, std::placeholders::_1));
     account_mgr_->Init(db_, pools_mgr_);
     zjcvm::Execution::Instance()->Init(db_, account_mgr_);
     auto new_db_cb = std::bind(
@@ -161,11 +161,11 @@ int NetworkInit::Init(int argc, char** argv) {
         contract_mgr_,
         security_->GetAddress(),
         new_db_cb,
-        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1, std::placeholders::_2));
+        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     bft_mgr_ = std::make_shared<consensus::BftManager>();
     auto bft_init_res = bft_mgr_->Init(
-        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1),
         contract_mgr_,
         gas_prepayment_,
         vss_mgr_,
@@ -181,7 +181,7 @@ int NetworkInit::Init(int argc, char** argv) {
         nullptr,
         common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
         std::bind(&NetworkInit::AddBlockItemToCache, this,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+            std::placeholders::_1, std::placeholders::_2));
     if (bft_init_res != consensus::kConsensusSuccess) {
         INIT_ERROR("init bft failed!");
         return kInitError;
@@ -204,7 +204,7 @@ int NetworkInit::Init(int argc, char** argv) {
         }
     }
 
-    block_mgr_->LoadLatestBlocks(common::GlobalInfo::Instance()->message_handler_thread_count());
+    block_mgr_->LoadLatestBlocks();
     shard_statistic_->Init();
     transport::TcpTransport::Instance()->Start(false);
     if (InitHttpServer() != kInitSuccess) {
@@ -522,7 +522,7 @@ void NetworkInit::GetAddressShardingId() {
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     network::Route::Instance()->Send(msg_ptr);
     std::cout << "sent get addresss info: " << common::Encode::HexEncode(security_->GetAddress()) << std::endl;
-    init_tick_.CutOff(10000000lu, std::bind(&NetworkInit::GetAddressShardingId, this, std::placeholders::_1));
+    init_tick_.CutOff(10000000lu, std::bind(&NetworkInit::GetAddressShardingId, this));
 }
 
 void NetworkInit::InitLocalNetworkId() {
@@ -1380,13 +1380,13 @@ void NetworkInit::HandleElectionBlock(
             common::GlobalInfo::Instance()->network_id()) {
         join_elect_tick_.CutOff(
             uint64_t(rand()) % (common::kTimeBlockCreatePeriodSeconds / 4 * 3 * 1000000lu),
-            std::bind(&NetworkInit::SendJoinElectTransaction, this, std::placeholders::_1));
+            std::bind(&NetworkInit::SendJoinElectTransaction, this));
         ZJC_DEBUG("now send join elect request transaction. first message.");
         another_join_elect_msg_needed_ = true;
     } else if (another_join_elect_msg_needed_ && sharding_id == common::GlobalInfo::Instance()->network_id()) {
         join_elect_tick_.CutOff(
             uint64_t(rand()) % (common::kTimeBlockCreatePeriodSeconds / 4 * 3 * 1000000lu),
-            std::bind(&NetworkInit::SendJoinElectTransaction, this, std::placeholders::_1));
+            std::bind(&NetworkInit::SendJoinElectTransaction, this));
         ZJC_DEBUG("now send join elect request transaction. second message.");
         another_join_elect_msg_needed_ = false;
     }
