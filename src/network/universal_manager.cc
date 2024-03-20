@@ -158,7 +158,7 @@ int UniversalManager::CreateNetwork(
 }
 
 int UniversalManager::CreateUniversalNetwork(const common::Config& config) {
-    int res = CreateNetworkkUniversalNetworkId, config);
+    int res = CreateNetwork(kUniversalNetworkId, config);
     if (res != kNetworkSuccess) {
         return res;
     }
