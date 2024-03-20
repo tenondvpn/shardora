@@ -159,6 +159,10 @@ public:
         main_inited_success_ = true;
     }
 
+    bool main_inited_success() const {
+        return main_inited_success_;
+    }
+
     // After running for a period of time, ensure that all threads have been created successfully and cancel the lock.
     uint8_t get_thread_index() {
         auto now_thread_id_tmp = std::this_thread::get_id();

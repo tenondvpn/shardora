@@ -43,6 +43,11 @@ void ThreadHandler::HandleMessage() {
     ZJC_DEBUG("thread handler thread index coming thread_idx: %d, maping_thread_idx: %d, message_handler_thread_count: %d", 
         thread_idx, maping_thread_idx, common::GlobalInfo::Instance()->message_handler_thread_count());
     while (!destroy_) {
+        if (!common::GlobalInfo::Instance()->main_inited_success()) {
+            usleep(100000);
+            continue;
+        }
+        
         uint32_t count = 0;
         while (count++ < kMaxHandleMessageCount) {
             auto msg_ptr = msg_handler_->GetMessageFromQueue(maping_thread_idx);
