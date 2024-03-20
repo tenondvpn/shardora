@@ -213,10 +213,15 @@ public:
         for (uint8_t i = 0; i < bft_thread; ++i) {
             if (consensus_thread_index_map_[i] == common::kInvalidUint8) {
                 consensus_thread_index_map_[i] = thread_idx;
-                for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
-                    if (pools_with_thread_[pool_idx] == i) {
-                        pools_with_thread_[pool_idx] = thread_idx;
-                        thread_with_pools_[thread_idx].insert(pool_idx);
+                if (i == message_handler_thread_count_ - 1) {
+                    for (uint8_t src_thread_idx = 0; src_thread_idx < i; ++src_thread_idx) {
+                        for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
+                            auto valid_thread_idx = consensus_thread_index_map_[src_thread_idx];
+                            if (pools_with_thread_[pool_idx] == src_thread_idx) {
+                                pools_with_thread_[pool_idx] = valid_thread_idx;
+                                thread_with_pools_[valid_thread_idx].insert(pool_idx);
+                            }
+                        }
                     }
                 }
 
