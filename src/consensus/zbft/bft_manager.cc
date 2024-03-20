@@ -262,6 +262,11 @@ void BftManager::SetThreadItem(
     }
 
     for (uint8_t j = 0; j < thread_count_; ++j) {
+        auto thread_idx = common::GlobalInfo::Instance()->get_consensus_thread_idx(j);
+        if (thread_idx == common::kInvalidUint8) {
+            ZJC_FATAL("invalid thread index: %d, %d", j, thread_idx);
+        }
+        
         std::string thread_debug_str;
         auto thread_item = std::make_shared<PoolTxIndexItem>();
         auto& pools_set = common::GlobalInfo::Instance()->thread_with_pools()[j];
@@ -273,7 +278,7 @@ void BftManager::SetThreadItem(
         }
 
         thread_item->prev_index = 0;
-        thread_set[j] = thread_item;  // ptr change, multi-thread safe
+        thread_set[thread_idx] = thread_item;  // ptr change, multi-thread safe
         ZJC_DEBUG("local_node_pool_mod_num: %d, leader_count: %d, thread: %d handle pools: %s",
             local_node_pool_mod_num, leader_count, j, thread_debug_str.c_str());
     }
@@ -416,7 +421,7 @@ ZbftPtr BftManager::Start(ZbftPtr commited_bft_ptr) {
         }
 
         if (item_ptr->time_valid > now_tm_ms) {
-            ZJC_DEBUG("thread idx error 3: %d", thread_index);
+            // ZJC_DEBUG("thread idx error 3: %d", thread_index);
             return nullptr;
         }
 

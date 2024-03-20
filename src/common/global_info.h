@@ -199,12 +199,17 @@ public:
         return global_stoped_;
     }
 
+    uint8_t get_consensus_thread_idx(uint8_t thread_idx) {
+        return consensus_consensus_thread_index_map_[thread_idx];
+    }
+
     uint8_t SetConsensusRealThreadIdx(uint8_t thread_idx) {
         std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
         auto bft_thread = message_handler_thread_count_;
         for (uint8_t i = 0; i < bft_thread; ++i) {
             if (consensus_thread_index_map_[i] == common::kInvalidUint8) {
                 consensus_thread_index_map_[i] = thread_idx;
+                consensus_consensus_thread_index_map_[thread_idx] = i;
                 for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
                     if (pools_with_thread_[pool_idx] == i) {
                         pools_with_thread_[pool_idx] = thread_idx;
@@ -257,6 +262,7 @@ private:
     int32_t join_root_ = common::kRandom;
     std::set<uint32_t>* thread_with_pools_ = nullptr;
     uint8_t consensus_thread_index_map_[common::kMaxThreadCount] = {common::kInvalidUint8};
+    uint8_t consensus_consensus_thread_index_map_[common::kMaxThreadCount] = {common::kInvalidUint8};
     uint32_t pools_with_thread_[common::kInvalidPoolIndex] = { 0 };
     uint8_t now_valid_thread_index_ = 0;
     std::mutex now_valid_thread_index_mutex_;
