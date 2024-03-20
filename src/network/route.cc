@@ -118,6 +118,7 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
 }
 
 void Route::Broadcasting() {
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     while (!destroy_) {
         bool has_data = false;
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
