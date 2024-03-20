@@ -155,6 +155,10 @@ public:
         return pools_with_thread_;
     }
 
+    void set_main_inited_success() {
+        main_inited_success_ = true;
+    }
+
     // After running for a period of time, ensure that all threads have been created successfully and cancel the lock.
     uint8_t get_thread_index() {
         auto now_thread_id_tmp = std::this_thread::get_id();
@@ -171,7 +175,7 @@ public:
             }
             
             auto now_tm = common::TimeUtils::TimestampMs();
-            if (begin_run_timestamp_ms_ + kWaitingAllThreadValidPeriodMs < now_tm) {
+            if (begin_run_timestamp_ms_ + kWaitingAllThreadValidPeriodMs < now_tm && main_inited_success_) {
                 should_check_thread_all_valid_ = false;
             }
         } else {
@@ -260,6 +264,7 @@ private:
     volatile bool should_check_thread_all_valid_ = true;
     std::unordered_map<int, uint8_t> valid_thread_index_;
     volatile bool global_stoped_ = false;
+    volatile bool main_inited_success_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };

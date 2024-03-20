@@ -217,7 +217,7 @@ int NetworkInit::Init(int argc, char** argv) {
     }
 
     inited_ = true;
-    
+    common::GlobalInfo::Instance()->set_main_inited_success();
     cmd_.Run();
     // std::this_thread::sleep_for(std::chrono::seconds(120));
     return kInitSuccess;
