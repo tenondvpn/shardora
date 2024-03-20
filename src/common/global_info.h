@@ -178,6 +178,8 @@ public:
             if (begin_run_timestamp_ms_ + kWaitingAllThreadValidPeriodMs < now_tm && main_inited_success_) {
                 should_check_thread_all_valid_ = false;
             }
+            
+            ZJC_DEBUG("success add thread: %u, thread_index: %d", now_thread_id, thread_idx);
         } else {
             auto iter = thread_with_index_.find(now_thread_id);
             if (iter == thread_with_index_.end()) {
@@ -187,7 +189,6 @@ public:
             thread_idx = iter->second;
         }
 
-        ZJC_DEBUG("success add thread: %u, thread_index: %d", now_thread_id, thread_idx);
         return thread_idx;
     }
 
