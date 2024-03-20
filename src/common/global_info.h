@@ -212,7 +212,7 @@ public:
             }
         }
 
-        ZJC_FATAL("invalid thread idx: %d", thread_idx);
+        ZJC_FATAL("invalid thread idx: %d, bft_thread: %d", thread_idx, bft_thread);
         return common::kInvalidUint8;
     }
 
