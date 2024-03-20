@@ -116,6 +116,9 @@ public:
 
     void SetSocket(Socket& socket) {
         socket_ = &socket;
+        std::string from_ip;
+        uint16_t from_port;
+        socket_->GetIpPort(&socket_ip_, &socket_port_);
     }
 
     uint32_t id() {
@@ -128,6 +131,14 @@ public:
 
     uint64_t free_timeout_ms() {
         return free_timeout_ms_;
+    }
+
+    std::string socket_ip() const {
+        return socket_ip_;
+    }
+
+    uint16_t socket_port() const {
+        return socket_port_;
     }
     
     bool ShouldReconnect() {
@@ -196,6 +207,8 @@ private:
     uint32_t max_count_{ 0 };
     uint64_t create_timestamp_ms_ = 0;
     bool is_client_ = false;
+    std::string socket_ip_;
+    uint16_t socket_port_;
 
     DISALLOW_COPY_AND_ASSIGN(TcpConnection);
 };
