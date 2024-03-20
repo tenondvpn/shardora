@@ -391,8 +391,7 @@ void BftManager::RotationLeader(
         elect_item_ptr->invalid_time);
 }
 
-ZbftPtr BftManager::Start(
-        ZbftPtr commited_bft_ptr) {
+ZbftPtr BftManager::Start(ZbftPtr commited_bft_ptr) {
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
 #ifndef ZJC_UNITTEST
     if (network::DhtManager::Instance()->valid_count(
