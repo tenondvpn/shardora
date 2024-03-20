@@ -132,19 +132,22 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
 
     gid_map_[tx_ptr->gid] = tx_ptr;
 
+#ifndef NDEBUG
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tx_count_tm_us_ == 0) {
         prev_tx_count_tm_us_ = now_tm_us;
     }
+
     if (now_tm_us > prev_tx_count_tm_us_ + 3000000lu) {
         ZJC_INFO("waiting_tx_count pool: %d: tx: %llu", pool_index_, gid_map_.size());
         prev_tx_count_tm_us_ = now_tm_us;
     }
 
-    
     gid_start_time_map_[tx_ptr->gid] = common::TimeUtils::TimestampUs(); 
-    timeout_txs_.push(tx_ptr->gid);
     oldest_timestamp_ = prio_map_.begin()->second->time_valid;
+#endif
+
+    timeout_txs_.push(tx_ptr->gid);
     return kPoolsSuccess;
 }
 
@@ -164,7 +167,7 @@ void TxPool::GetTx(
     auto timestamp_now = common::TimeUtils::TimestampUs();
     std::vector<TxItemPtr> recover_txs;
     auto iter = src_prio_map.begin();
-    while (iter != src_prio_map.end()) {
+    while (iter != src_prio_map.end() && res_map.size() < count) {
         if (iter->second->time_valid >= timestamp_now) {
             break;
         }
@@ -173,9 +176,6 @@ void TxPool::GetTx(
         ZJC_DEBUG("leader success get local transfer to tx %u, %s",
             pool_index_, common::Encode::HexEncode(iter->second->tx_hash).c_str());
         iter = src_prio_map.erase(iter);
-        if (res_map.size() >= count) {
-            return;
-        }
     }
 }
 
@@ -256,22 +256,21 @@ void TxPool::RemoveTx(const std::string& gid) {
 //         common::Encode::HexEncode(giter->second->gid).c_str(),
 //         common::Encode::HexEncode(giter->second->tx_hash).c_str());
     gid_map_.erase(giter);
-
-    
-    
-    
+#ifndef NDEBUG
     if (!prio_map_.empty()) {
         oldest_timestamp_ = prio_map_.begin()->second->time_valid;
     } else {
         oldest_timestamp_ = 0;
     }
+#endif
 }
 
 void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
     for (int32_t i = 0; i < tx_list.size(); ++i) {
-        auto gid = tx_list[i].gid(); 
+        auto& gid = tx_list[i].gid(); 
         RemoveTx(gid);
 
+#ifndef NDEBUG
         // 统计交易确认延迟
         auto now_tm = common::TimeUtils::TimestampUs();
         auto start_tm_iter = gid_start_time_map_.find(gid);
@@ -290,6 +289,7 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
         
             ZJC_INFO("tx latency p90: %llu, p95: %llu, max: %llu", p90, p95, p100);
         }
+#endif
     }
 
     finish_tx_count_ += tx_list.size();

@@ -336,7 +336,7 @@ void BftManager::CheckInvalidGids(uint8_t thread_idx) {
 void BftManager::PopAllPoolTxs(uint8_t thread_index) {
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
-            pools_mgr_->PopTxs(pool_idx);
+            pools_mgr_->PopTxs(pool_idx, false);
             pools_mgr_->CheckTimeoutTx(pool_idx);
         }
     }
@@ -1522,30 +1522,19 @@ ZbftPtr BftManager::CreateBftPtr(
         } else if (bft_msg.tx_bft().tx_type() == pools::protobuf::kConsensusRootTimeBlock) {
             txs_ptr = txs_pools_->GetTimeblockTx(bft_msg.pool_index(), false);
         } else {
-            //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-            //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
-            
             txs_ptr = txs_pools_->FollowerGetTxs(
                 bft_msg.pool_index(),
                 bft_msg.tx_bft().tx_hash_list(),
                 msg_ptr->thread_idx,
                 nullptr);
             if (txs_ptr == nullptr) {
+                pools_mgr_->PopTxs(bft_msg.pool_index(), true);
                 // 重试，在 tps 较高情况下有可能还未同步过来
-                for (int i = 0; i < GET_TXS_RETRY_TIMES; i++) {
-                    PopAllPoolTxs(msg_ptr->thread_idx);
-                    txs_ptr = txs_pools_->FollowerGetTxs(
-                            bft_msg.pool_index(),
-                            bft_msg.tx_bft().tx_hash_list(),
-                            msg_ptr->thread_idx,
-                            invalid_txs);
-                    if (txs_ptr != nullptr) {
-                        break;
-                    }
-                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                }
-                
+                txs_ptr = txs_pools_->FollowerGetTxs(
+                        bft_msg.pool_index(),
+                        bft_msg.tx_bft().tx_hash_list(),
+                        msg_ptr->thread_idx,
+                        invalid_txs);
                 if (txs_ptr == nullptr) {
                     ZJC_ERROR("invalid consensus kNormal, txs not equal to leader. pool_index: %d, gid: %s, tx size: %u",
                         bft_msg.pool_index(),
@@ -1553,8 +1542,6 @@ ZbftPtr BftManager::CreateBftPtr(
                         bft_msg.tx_bft().tx_hash_list_size());
                 }
             }
-            //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-            //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
         }
     } else {
         ZJC_ERROR("invalid consensus, tx empty.");
@@ -2963,7 +2950,7 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
         }
     }
 
-    ZJC_INFO("[NEW BLOCK] hash: %s, gid: %s, is leader: %d, leader idx: %d, thread idx: %d, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu",
+    ZJC_DEBUG("[NEW BLOCK] hash: %s, gid: %s, is leader: %d, leader idx: %d, thread idx: %d, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu",
         common::Encode::HexEncode(zjc_block->hash()).c_str(),
         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
         bft_ptr->this_node_is_leader(),

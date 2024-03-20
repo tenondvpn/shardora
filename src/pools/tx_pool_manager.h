@@ -51,7 +51,7 @@ public:
     }
 
     void TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs);
-    void PopTxs(uint32_t pool_index);
+    void PopTxs(uint32_t pool_index, bool pop_all);
     void InitCrossPools();
     void BftCheckInvalidGids(uint32_t pool_index, std::vector<std::shared_ptr<InvalidGidItem>>& items);
 

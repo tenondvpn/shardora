@@ -57,7 +57,6 @@ enum class BackupBftStage {
   PRECOMMIT_RECEIVED,
   COMMIT_RECEIVED,
 };
-static const int GET_TXS_RETRY_TIMES = 2;
 
 class WaitingTxsPools;
 class BftManager : public Consensus {

@@ -444,6 +444,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     assert(msg_ptr->thread_idx < common::kMaxThreadCount);
     pools_msg_queue_[msg_ptr->thread_idx].push(msg_ptr);
     pop_tx_con_.notify_one();
+#ifndef NDEBUG
     auto now_tm = common::TimeUtils::TimestampMs();
     if (now_tm > prev_show_tm_ms_ + 3000) {
         for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
@@ -451,6 +452,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
         prev_show_tm_ms_ = now_tm;
     }
+#endif
 }
 
 void TxPoolManager::HandleInvalidGids(const transport::MessagePtr& msg_ptr) {
@@ -570,18 +572,17 @@ void TxPoolManager::HandleInvalidGids(const transport::MessagePtr& msg_ptr) {
 void TxPoolManager::PopPoolsMessage(uint8_t thread_idx) {
     while (!destroy_) {
         for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
-            while (true) {
+            auto count = 0;
+            while (!destroy_) {
                 transport::MessagePtr msg_ptr = nullptr;
                 if (!pools_msg_queue_[i].pop(&msg_ptr) || msg_ptr == nullptr) {
                     break;
                 }
 
                 msg_ptr->thread_idx = thread_idx;
-                auto btime = common::TimeUtils::TimestampMs();
                 HandlePoolsMessage(msg_ptr);
-                auto etime = common::TimeUtils::TimestampMs();
-                if (etime - btime > 10000lu) {
-                    ZJC_WARN("handle message timeout: %d, %lu", msg_ptr->header.tx_proto().step(), (etime - btime));
+                if (++count >= 64) {
+                    break;
                 }
             }
         }
@@ -1081,33 +1082,33 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     }
 
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-    if (security_->Verify(
-            msg_ptr->msg_hash,
-            tx_msg.pubkey(),
-            msg_ptr->header.sign()) != security::kSecuritySuccess) {
-        ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
-            "prepayment: %lu, default call contract gas: %lu, txid: %s",
-            msg_ptr->address_info->balance(),
-            tx_msg.amount(),
-            tx_msg.contract_prepayment(),
-            consensus::kCallContractDefaultUseGas,
-            common::Encode::HexEncode(tx_msg.gid()).c_str());
-        assert(false);
-        return false;
-    }
+    // if (security_->Verify(
+    //         msg_ptr->msg_hash,
+    //         tx_msg.pubkey(),
+    //         msg_ptr->header.sign()) != security::kSecuritySuccess) {
+    //     ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
+    //         "prepayment: %lu, default call contract gas: %lu, txid: %s",
+    //         msg_ptr->address_info->balance(),
+    //         tx_msg.amount(),
+    //         tx_msg.contract_prepayment(),
+    //         consensus::kCallContractDefaultUseGas,
+    //         common::Encode::HexEncode(tx_msg.gid()).c_str());
+    //     assert(false);
+    //     return false;
+    // }
     // ZJC_INFO("====4 tx verify dur: %lu us", common::TimeUtils::TimestampUs() - s);
 
-    if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
-        // avoid save gid different tx
-        ZJC_DEBUG("tx msg hash exists: %s failed!",
-            common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
-        return false;
-    }
+    // if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
+    //     // avoid save gid different tx
+    //     ZJC_DEBUG("tx msg hash exists: %s failed!",
+    //         common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
+    //     return false;
+    // }
 
-    if (prefix_db_->GidExists(tx_msg.gid())) {
-        ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
-        return false;
-    }
+    // if (prefix_db_->GidExists(tx_msg.gid())) {
+    //     ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
+    //     return false;
+    // }
 
     return true;
 }
@@ -1236,27 +1237,19 @@ void TxPoolManager::BftCheckInvalidGids(
     }
 }
 
-void TxPoolManager::PopTxs(uint32_t pool_index) {
+void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all) {
     uint32_t count = 0;
-    while (true) {
+    while (!destroy_) {
         transport::MessagePtr msg_ptr = nullptr;
         msg_queues_[pool_index].pop(&msg_ptr);
         if (msg_ptr == nullptr) {
             break;
         }
 
-//         auto& tx_msg = msg_ptr->header.tx_proto();
-//         if (tx_msg.step() == pools::protobuf::kNormalFrom) {
-//             if (security_->Verify(
-//                     msg_ptr->msg_hash,
-//                     tx_msg.pubkey(),
-//                     msg_ptr->header.sign()) != security::kSecuritySuccess) {
-//                 ZJC_WARN("verify signature failed!");
-//                 continue;
-//             }
-//         }
-
         DispatchTx(pool_index, msg_ptr);
+        if (!pop_all && ++count >= 64) {
+            break;
+        }
         // ZJC_INFO("success pop tx: %s, %lu", common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(), msg_ptr->header.hash64());
     }
 }

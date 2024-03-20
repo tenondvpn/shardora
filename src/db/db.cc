@@ -42,22 +42,22 @@ bool Db::Init(const std::string& db_path) {
     static const int32_t cache_size = 500;
     leveldb::Options options;
     options.create_if_missing = true;
-    options.max_file_size = 32 * 1048576; // leveldb 1.20
-    int32_t max_open_files = cache_size / 1024 * 300;
-    if (max_open_files < 500) {
-        max_open_files = 500;
-    }
+    // options.max_file_size = 32 * 1048576; // leveldb 1.20
+    // int32_t max_open_files = cache_size / 1024 * 300;
+    // if (max_open_files < 500) {
+    //     max_open_files = 500;
+    // }
 
-    if (max_open_files > 1000) {
-        max_open_files = 1000;
-    }
+    // if (max_open_files > 1000) {
+    //     max_open_files = 1000;
+    // }
 
-    options.max_open_files = max_open_files;
-    options.filter_policy = leveldb::NewBloomFilterPolicy(10);
-    options.block_cache = leveldb::NewLRUCache(cache_size * 1048576);
-    options.block_size = 32 * 1024;
-    options.write_buffer_size = 64 * 1024 * 1024;
-    options.compression = leveldb::kSnappyCompression;
+    // options.max_open_files = max_open_files;
+    // options.filter_policy = leveldb::NewBloomFilterPolicy(10);
+    // options.block_cache = leveldb::NewLRUCache(cache_size * 1048576);
+    // options.block_size = 32 * 1024;
+    // options.write_buffer_size = 64 * 1024 * 1024;
+    // options.compression = leveldb::kSnappyCompression;
     DbStatus status = leveldb::DB::Open(options, db_path, &db_);
     if (!status.ok()) {
         ZJC_ERROR("open db[%s] failed, error[%s]", db_path.c_str(), status.ToString().c_str());

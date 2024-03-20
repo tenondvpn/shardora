@@ -181,7 +181,7 @@ TEST_F(TestTxPoolManager, All) {
     tx_pool_mgr.RegisterCreateTxFunction(0, CreateFromTx);
     tx_pool_mgr.HandleMessage(msg_ptr);
     ASSERT_EQ(tx_pool_mgr.msg_queues_[msg_ptr->address_info->pool_index()].size(), 1);
-    tx_pool_mgr.PopTxs(msg_ptr->address_info->pool_index());
+    tx_pool_mgr.PopTxs(msg_ptr->address_info->pool_index(), true);
     std::map<std::string, pools::TxItemPtr> res_vec;
     tx_pool_mgr.GetTx(msg_ptr->address_info->pool_index(), 10, res_vec);
     ASSERT_EQ(res_vec.size(), 1);
@@ -267,7 +267,7 @@ static void TestMultiThread(int32_t thread_count, int32_t leader_count, uint32_t
             uint32_t tmp_count = 0;
             for (uint32_t i = 0; i < pool_idxs.size(); ++i) {
                 std::map<std::string, pools::TxItemPtr> res_vec;
-                tx_pool_mgr.PopTxs(pool_idxs[i]);
+                tx_pool_mgr.PopTxs(pool_idxs[i], true);
                 tx_pool_mgr.GetTx(pool_idxs[i], 10, res_vec);
                 if (!res_vec.empty()) {
                     block::protobuf::Block block;
