@@ -222,7 +222,7 @@ private:
         std::string* new_hash);
     void SyncCrossPool(uint8_t thread_idx);
     void FlushHeightTree();
-    void PopPoolsMessage(uint8_t thread_idx);
+    void PopPoolsMessage();
     void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);
     void HandleInvalidGids(const transport::MessagePtr& msg_ptr);
     void GetMinValidTxCount();

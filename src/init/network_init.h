@@ -106,7 +106,6 @@ private:
     std::shared_ptr<pools::ShardStatistic> shard_statistic_ = nullptr;
     http::HttpServer http_server_;
     HttpHandler http_handler_;
-    uint8_t main_thread_idx_ = 255;
     common::Tick init_tick_;
     common::Tick join_elect_tick_;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;

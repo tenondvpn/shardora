@@ -43,8 +43,7 @@ TxPoolManager::TxPoolManager(
     InitCrossPools();
     pop_message_thread_ = std::make_shared<std::thread>(
         &TxPoolManager::PopPoolsMessage, 
-        this, 
-        common::GlobalInfo::Instance()->now_valid_thread_index());
+        this);
     // 每 10ms 会共识一次时间块
     tick_.CutOff(
         10000lu,
@@ -569,7 +568,8 @@ void TxPoolManager::HandleInvalidGids(const transport::MessagePtr& msg_ptr) {
     }
 }
 
-void TxPoolManager::PopPoolsMessage(uint8_t thread_idx) {
+void TxPoolManager::PopPoolsMessage() {
+    uint8_t thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     while (!destroy_) {
         for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
             auto count = 0;

@@ -155,16 +155,6 @@ public:
         return pools_with_thread_;
     }
 
-    uint8_t now_valid_thread_index() {
-        std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
-        if (now_valid_thread_index_ >= common::kMaxThreadCount) {
-            ZJC_FATAL("invalid thread count max: %d", common::kMaxThreadCount);
-        }
-
-        ZJC_INFO("new thread index: %d", now_valid_thread_index_);
-        return now_valid_thread_index_++;
-    }
-
     // After running for a period of time, ensure that all threads have been created successfully and cancel the lock.
     uint8_t get_thread_index() {
         auto now_thread_id_tmp = std::this_thread::get_id();

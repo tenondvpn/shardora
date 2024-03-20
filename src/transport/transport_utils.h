@@ -83,7 +83,6 @@ struct TransportMessage {
 
     protobuf::Header header;
     std::shared_ptr<tnet::TcpInterface> conn = nullptr;
-    uint8_t thread_idx = -1;
     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
     std::string msg_hash;
     bool retry;

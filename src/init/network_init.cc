@@ -212,7 +212,8 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
     net_handler_.Start();
-    GetAddressShardingId(main_thread_idx_);
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    GetAddressShardingId(thread_idx);
     if (InitCommand() != kInitSuccess) {
         INIT_ERROR("InitCommand failed!");
         return kInitError;
@@ -763,16 +764,16 @@ int NetworkInit::InitNetworkSingleton() {
         return kInitError;
     }
 
-    main_thread_idx_ = common::GlobalInfo::Instance()->now_valid_thread_index();
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     if (network::UniversalManager::Instance()->CreateUniversalNetwork(
-            main_thread_idx_,
+            thread_idx,
             conf_) != network::kNetworkSuccess) {
         INIT_ERROR("create universal network failed!");
         return kInitError;
     }
 
     if (network::UniversalManager::Instance()->CreateNodeNetwork(
-            main_thread_idx_,
+            thread_idx,
             conf_) != network::kNetworkSuccess) {
         INIT_ERROR("create node network failed!");
         return kInitError;

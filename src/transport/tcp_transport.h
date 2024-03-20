@@ -78,7 +78,6 @@ private:
     std::unordered_map<std::string, std::shared_ptr<tnet::TcpConnection>> conn_map_;
     MultiThreadHandler* msg_handler_ = nullptr;
     uint64_t thread_msg_count_[common::kMaxThreadCount] = { 0 };
-    uint8_t server_thread_idx_ = 255;
     std::string msg_random_;
     volatile bool destroy_ = false;
     std::shared_ptr<std::thread> output_thread_ = nullptr;
