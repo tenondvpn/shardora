@@ -433,7 +433,7 @@ void MultiThreadHandler::Join() {
     }
     thread_vec_.clear();
     inited_ = false;
-    for (uint32_t i = 0; i < all_thread_count_; ++i) {
+    for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
         delete[] threads_message_queues_[i];
     }
 
@@ -443,8 +443,8 @@ void MultiThreadHandler::Join() {
 }
 
 void MultiThreadHandler::InitThreadPriorityMessageQueues() {
-    threads_message_queues_ = new common::ThreadSafeQueue<MessagePtr>*[all_thread_count_];
-    for (uint32_t i = 0; i < all_thread_count_; ++i) {
+    threads_message_queues_ = new common::ThreadSafeQueue<MessagePtr>*[common::kMaxThreadCount];
+    for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
         threads_message_queues_[i] =
             new common::ThreadSafeQueue<MessagePtr>[kTransportPriorityMaxCount];
     }
