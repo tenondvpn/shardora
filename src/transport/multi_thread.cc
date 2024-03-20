@@ -253,8 +253,8 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
         HandleSyncBlockResponse(msg_ptr);
     }
 
-    auto thread_index = GetThreadIndex(msg_ptr);
-    auto src_thread_index = common::GlobalInfo::Instance()->get_consensus_consensus_thread_index_map(thread_index);
+    auto src_thread_index = GetThreadIndex(msg_ptr);
+    auto thread_index = common::GlobalInfo::Instance()->get_consensus_thread_idx(src_thread_index);
     if (src_thread_index > consensus_thread_count_) {
         assert(false);
         return;
