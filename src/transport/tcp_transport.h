@@ -40,16 +40,13 @@ public:
     int Start(bool hold);
     void Stop();
     int Send(
-        uint8_t thread_idx,
         const std::string& ip,
         uint16_t port,
         const transport::protobuf::Header& message);
     int Send(
-        uint8_t thread_idx,
         tnet::TcpInterface* conn,
         const transport::protobuf::Header& message);
     int Send(
-        uint8_t thread_idx,
         tnet::TcpInterface* conn,
         const std::string& message);
     int GetSocket();
@@ -65,7 +62,7 @@ private:
     std::shared_ptr<tnet::TcpConnection> GetConnection(
         const std::string& ip,
         uint16_t port);
-    void CheckConnectionValid(uint8_t thread_idx);
+    void CheckConnectionValid();
 
     static const uint64_t kEraseConnPeriod = 10000000lu;
     static const uint32_t kEachCheckConnectionCount = 100u;
