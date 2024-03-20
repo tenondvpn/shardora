@@ -148,8 +148,7 @@ int NetworkInit::Init(int argc, char** argv) {
         &NetworkInit::DbNewBlockCallback,
         this,
         std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3);
+        std::placeholders::_2);
     shard_statistic_ = std::make_shared<pools::ShardStatistic>(
         elect_mgr_, db_, security_, pools_mgr_);
     block_mgr_->Init(
@@ -196,7 +195,6 @@ int NetworkInit::Init(int argc, char** argv) {
     if (common::GlobalInfo::Instance()->network_id() != common::kInvalidUint32 &&
             common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
         if (elect_mgr_->Join(
-                0,
                 common::GlobalInfo::Instance()->network_id()) != elect::kElectSuccess) {
             INIT_ERROR("join waiting pool network[%u] failed!",
                 common::GlobalInfo::Instance()->network_id());
