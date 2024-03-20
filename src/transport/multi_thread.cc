@@ -127,8 +127,7 @@ int MultiThreadHandler::Init(std::shared_ptr<db::Db>& db) {
 
 void MultiThreadHandler::Start() {
     for (uint32_t i = 0; i < all_thread_count_; ++i) {
-        thread_vec_.push_back(std::make_shared<ThreadHandler>(
-            i, this, wait_con_[i], wait_mutex_[i]));
+        thread_vec_.push_back(std::make_shared<ThreadHandler>(this, wait_con_[i], wait_mutex_[i]));
     }
 }
 
