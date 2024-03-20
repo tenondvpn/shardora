@@ -47,7 +47,7 @@ TxPoolManager::TxPoolManager(
     // 每 10ms 会共识一次时间块
     tick_.CutOff(
         10000lu,
-        std::bind(&TxPoolManager::ConsensusTimerMessage, this, std::placeholders::_1));
+        std::bind(&TxPoolManager::ConsensusTimerMessage, this));
     // 注册 kPoolsMessage 的回调函数
     network::Route::Instance()->RegisterMessage(
         common::kPoolsMessage,
@@ -104,10 +104,10 @@ void TxPoolManager::InitCrossPools() {
         local_is_root, got_sharding_id, des_sharding_id);
 }
 
-void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
+void TxPoolManager::SyncCrossPool() {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (max_cross_pools_size_ == 1) {
-        auto sync_count = cross_pools_[0].SyncMissingBlocks(thread_idx, now_tm_ms);
+        auto sync_count = cross_pools_[0].SyncMissingBlocks(now_tm_ms);
         uint64_t ex_height = common::kInvalidUint64;
         if (cross_pools_[0].latest_height() == common::kInvalidUint64) {
             ex_height = 1;
@@ -121,7 +121,6 @@ void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
             uint32_t count = 0;
             for (uint64_t i = ex_height; i < cross_synced_max_heights_[0] && count < 64; ++i, ++count) {
                 kv_sync_->AddSyncHeight(
-                    thread_idx,
                     network::kRootCongressNetworkId,
                     common::kRootChainPoolIndex,
                     i,
@@ -142,12 +141,11 @@ void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
     prev_cross_sync_index_ %= now_sharding_count_;
     auto begin_pool = prev_cross_sync_index_;
     for (; prev_cross_sync_index_ < now_sharding_count_; ++prev_cross_sync_index_) {
-        auto res = cross_pools_[prev_cross_sync_index_].SyncMissingBlocks(thread_idx, now_tm_ms);
+        auto res = cross_pools_[prev_cross_sync_index_].SyncMissingBlocks(now_tm_ms);
         if (cross_pools_[prev_cross_sync_index_].latest_height() == common::kInvalidUint64 ||
                 cross_pools_[prev_cross_sync_index_].latest_height() <
                 cross_synced_max_heights_[prev_cross_sync_index_]) {
             kv_sync_->AddSyncHeight(
-                thread_idx,
                 network::kConsensusShardBeginNetworkId + prev_cross_sync_index_,
                 common::kRootChainPoolIndex,
                 cross_synced_max_heights_[prev_cross_sync_index_],
@@ -169,12 +167,11 @@ void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
     }
 
     for (prev_cross_sync_index_ = 0; prev_cross_sync_index_ < begin_pool; ++prev_cross_sync_index_) {
-        auto res = cross_pools_[prev_cross_sync_index_].SyncMissingBlocks(thread_idx, now_tm_ms);
+        auto res = cross_pools_[prev_cross_sync_index_].SyncMissingBlocks(now_tm_ms);
         if (cross_pools_[prev_cross_sync_index_].latest_height() == common::kInvalidUint64 ||
                 cross_pools_[prev_cross_sync_index_].latest_height() <
                 cross_synced_max_heights_[prev_cross_sync_index_]) {
             kv_sync_->AddSyncHeight(
-                thread_idx,
                 network::kConsensusShardBeginNetworkId + prev_cross_sync_index_,
                 common::kRootChainPoolIndex,
                 cross_synced_max_heights_[prev_cross_sync_index_],
@@ -218,7 +215,7 @@ void TxPoolManager::FlushHeightTree() {
     }
 }
 
-void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
+void TxPoolManager::ConsensusTimerMessage() {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (prev_sync_height_tree_tm_ms_ < now_tm_ms) {
         FlushHeightTree();
@@ -263,7 +260,7 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
                         invalid_pools_.pop_front();
                     }
 
-                    rotatition_leader_cb_(thread_idx, invalid_pools_);
+                    rotatition_leader_cb_(invalid_pools_);
                 }
             }
 
@@ -272,12 +269,12 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
     }
 
     if (prev_sync_check_ms_ < now_tm_ms) {
-        SyncMinssingHeights(thread_idx, now_tm_ms);
+        SyncMinssingHeights(now_tm_ms);
         prev_sync_check_ms_ = now_tm_ms + kSyncMissingBlockPeriod;
     }
 
     if (prev_sync_heights_ms_ < now_tm_ms) {
-        SyncPoolsMaxHeight(thread_idx);
+        SyncPoolsMaxHeight();
         prev_sync_heights_ms_ = now_tm_ms + kSyncPoolsMaxHeightsPeriod;
     }
 
@@ -285,7 +282,7 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
         if (cross_pools_ == nullptr) {
             InitCrossPools();
         } else {
-            SyncCrossPool(thread_idx);
+            SyncCrossPool();
         }
 
         if (max_cross_pools_size_ > 1) {
@@ -302,7 +299,7 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
 
     tick_.CutOff(
         100000lu,
-        std::bind(&TxPoolManager::ConsensusTimerMessage, this, std::placeholders::_1));
+        std::bind(&TxPoolManager::ConsensusTimerMessage, this));
 }
 
 void TxPoolManager::CheckLeaderValid(
@@ -339,7 +336,7 @@ void TxPoolManager::CheckLeaderValid(
     }
 }
 
-void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms) {
+void TxPoolManager::SyncMinssingHeights(uint64_t now_tm_ms) {
     if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
         return;
     }
@@ -347,12 +344,12 @@ void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms) 
     prev_synced_pool_index_ %= common::kInvalidPoolIndex;
     auto begin_pool = prev_synced_pool_index_;
     for (; prev_synced_pool_index_ < common::kInvalidPoolIndex; ++prev_synced_pool_index_) {
-        auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(thread_idx, now_tm_ms);
+        auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(now_tm_ms);
         if (tx_pool_[prev_synced_pool_index_].latest_height() == common::kInvalidUint64 ||
                 tx_pool_[prev_synced_pool_index_].latest_height() <
                 synced_max_heights_[prev_synced_pool_index_]) {
             SyncBlockWithMaxHeights(
-                thread_idx, prev_synced_pool_index_, synced_max_heights_[prev_synced_pool_index_]);
+                prev_synced_pool_index_, synced_max_heights_[prev_synced_pool_index_]);
 //             ZJC_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
 //                 prev_synced_pool_index_,
 //                 res, tx_pool_[prev_synced_pool_index_].latest_height(),
@@ -369,12 +366,12 @@ void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms) 
 
     for (prev_synced_pool_index_ = 0;
             prev_synced_pool_index_ < begin_pool; ++prev_synced_pool_index_) {
-        auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(thread_idx, now_tm_ms);
+        auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(now_tm_ms);
         if (tx_pool_[prev_synced_pool_index_].latest_height() == common::kInvalidUint64 || 
                 tx_pool_[prev_synced_pool_index_].latest_height() <
                 synced_max_heights_[prev_synced_pool_index_]) {
             SyncBlockWithMaxHeights(
-                thread_idx, prev_synced_pool_index_, synced_max_heights_[prev_synced_pool_index_]);
+                prev_synced_pool_index_, synced_max_heights_[prev_synced_pool_index_]);
 //             ZJC_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
 //                 prev_synced_pool_index_,
 //                 res, tx_pool_[prev_synced_pool_index_].latest_height(),
@@ -390,7 +387,7 @@ void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms) 
     }
 }
 
-void TxPoolManager::SyncBlockWithMaxHeights(uint8_t thread_idx, uint32_t pool_idx, uint64_t height) {
+void TxPoolManager::SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height) {
     if (kv_sync_ == nullptr) {
         return;
     }
@@ -406,7 +403,6 @@ void TxPoolManager::SyncBlockWithMaxHeights(uint8_t thread_idx, uint32_t pool_id
     }
 
     kv_sync_->AddSyncHeight(
-        thread_idx,
         net_id,
         pool_idx,
         height,
@@ -414,11 +410,12 @@ void TxPoolManager::SyncBlockWithMaxHeights(uint8_t thread_idx, uint32_t pool_id
 }
 
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     // just one thread
     ZJC_DEBUG("success add message hash64: %lu, thread idx: %u, msg size: %u",
         msg_ptr->header.hash64(),
-        msg_ptr->thread_idx,
-        pools_msg_queue_[msg_ptr->thread_idx].size());
+        thread_idx,
+        pools_msg_queue_[thread_idx].size());
     auto& header = msg_ptr->header;
     if (header.has_sync_heights()) {
         auto btime = common::TimeUtils::TimestampMs();
@@ -440,8 +437,8 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    assert(msg_ptr->thread_idx < common::kMaxThreadCount);
-    pools_msg_queue_[msg_ptr->thread_idx].push(msg_ptr);
+    assert(thread_idx < common::kMaxThreadCount);
+    pools_msg_queue_[thread_idx].push(msg_ptr);
     pop_tx_con_.notify_one();
 #ifndef NDEBUG
     auto now_tm = common::TimeUtils::TimestampMs();
@@ -569,7 +566,6 @@ void TxPoolManager::HandleInvalidGids(const transport::MessagePtr& msg_ptr) {
 }
 
 void TxPoolManager::PopPoolsMessage() {
-    uint8_t thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     while (!destroy_) {
         for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
             auto count = 0;
@@ -579,7 +575,6 @@ void TxPoolManager::PopPoolsMessage() {
                     break;
                 }
 
-                msg_ptr->thread_idx = thread_idx;
                 HandlePoolsMessage(msg_ptr);
                 if (++count >= 64) {
                     break;
@@ -656,9 +651,8 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
     }
 }
 
-void TxPoolManager::SyncPoolsMaxHeight(uint8_t thread_idx) {
+void TxPoolManager::SyncPoolsMaxHeight() {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->thread_idx = thread_idx;
     msg_ptr->header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     auto net_id = common::GlobalInfo::Instance()->network_id();
     if (net_id >= network::kConsensusWaitingShardBeginNetworkId) {
@@ -670,9 +664,7 @@ void TxPoolManager::SyncPoolsMaxHeight(uint8_t thread_idx) {
     msg_ptr->header.set_type(common::kPoolsMessage);
     auto* sync_heights = msg_ptr->header.mutable_sync_heights();
     sync_heights->set_req(true);
-    transport::TcpTransport::Instance()->SetMessageHash(
-        msg_ptr->header,
-        msg_ptr->thread_idx);
+    transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header);
     network::Route::Instance()->Send(msg_ptr);
 }
 
@@ -710,10 +702,8 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             }
         }
 
-        transport::TcpTransport::Instance()->SetMessageHash(
-            msg,
-            msg_ptr->thread_idx);
-        transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn.get(), msg);
+        transport::TcpTransport::Instance()->SetMessageHash(msg);
+        transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
 //         ZJC_DEBUG("response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
     } else {
         auto& heights = msg_ptr->header.sync_heights().heights();
@@ -803,7 +793,7 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     auto& tx_msg = *header.mutable_tx_proto();
     auto addr = security_->GetAddress(tx_msg.pubkey());
     auto tmp_acc_ptr = acc_mgr_.lock();
-    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(msg_ptr->thread_idx, addr);
+    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(addr);
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no address info: %s", common::Encode::HexEncode(addr).c_str());
         return;
@@ -932,7 +922,7 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     }
 
     auto tmp_acc_ptr = acc_mgr_.lock();
-    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(msg_ptr->thread_idx, tx_msg.to());
+    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no contract address info: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
@@ -1050,7 +1040,7 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& tx_msg = header.tx_proto();
     auto tmp_acc_ptr = acc_mgr_.lock();
-    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(msg_ptr->thread_idx, security_->GetAddress(tx_msg.pubkey()));
+    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(security_->GetAddress(tx_msg.pubkey()));
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no address info.");
         return false;
@@ -1192,7 +1182,7 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
 
     ZJC_INFO("create contract address: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
     auto tmp_acc_ptr = acc_mgr_.lock();
-    auto contract_info = tmp_acc_ptr->GetAccountInfo(msg_ptr->thread_idx, tx_msg.to());
+    auto contract_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
     if (contract_info != nullptr) {
         ZJC_WARN("contract address exists: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;

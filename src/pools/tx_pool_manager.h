@@ -56,7 +56,6 @@ public:
     void BftCheckInvalidGids(uint32_t pool_index, std::vector<std::shared_ptr<InvalidGidItem>>& items);
 
     void OnNewCrossBlock(
-            uint8_t thread_idx,
             const std::shared_ptr<block::protobuf::Block>& block_item) {
         ZJC_DEBUG("new cross block coming net: %u, pool: %u, height: %lu",
             block_item->network_id(), block_item->pool_index(), block_item->height());
@@ -82,7 +81,7 @@ public:
             return;
         }
 
-        cross_pools_[index].UpdateLatestInfo(thread_idx, block_item->height());
+        cross_pools_[index].UpdateLatestInfo(block_item->height());
         ZJC_DEBUG("succcess update cross block latest info net: %u, pool: %u, height: %lu",
             block_item->network_id(), block_item->pool_index(), block_item->height());
     }
@@ -151,7 +150,6 @@ public:
 
     // UpdateLatestInfo 当某个 pool 出块后，更新此 shard 的 pool_mgr 状态
     void UpdateLatestInfo(
-            uint8_t thread_idx,
             std::shared_ptr<block::protobuf::Block>& block,
             db::DbWriteBatch& db_batch) {
         uint64_t height = block->height();
@@ -174,7 +172,7 @@ public:
         pool_info.set_hash(hash);
         pool_info.set_timestamp(block->timestamp());
         // 更新对应 pool 的最新状态，主要是高度信息和哈希值
-        uint64_t synced_height = tx_pool_[pool_index].UpdateLatestInfo(thread_idx, height, hash, block->prehash(),block->timestamp());
+        uint64_t synced_height = tx_pool_[pool_index].UpdateLatestInfo(height, hash, block->prehash(),block->timestamp());
         pool_info.set_synced_height(synced_height);
         prefix_db_->SaveLatestPoolInfo(sharding_id, pool_index, pool_info, db_batch);
     }
@@ -210,17 +208,17 @@ private:
     void HandleContractExcute(const transport::MessagePtr& msg_ptr);
     void HandleElectTx(const transport::MessagePtr& msg_ptr);
     bool UserTxValid(const transport::MessagePtr& msg_ptr);
-    void ConsensusTimerMessage(uint8_t thread_idx);
-    void SyncPoolsMaxHeight(uint8_t thread_idx);
+    void ConsensusTimerMessage();
+    void SyncPoolsMaxHeight();
     void HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_ptr);
-    void SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms);
-    void SyncBlockWithMaxHeights(uint8_t thread_idx, uint32_t pool_idx, uint64_t height);
+    void SyncMinssingHeights(uint64_t now_tm_ms);
+    void SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height);
     void CheckLeaderValid(const std::vector<double>& factors, std::vector<int32_t>* invalid_pools);
     bool SaveNodeVerfiyVec(
         const std::string& id,
         const bls::protobuf::JoinElectInfo& join_info,
         std::string* new_hash);
-    void SyncCrossPool(uint8_t thread_idx);
+    void SyncCrossPool();
     void FlushHeightTree();
     void PopPoolsMessage();
     void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);

@@ -120,7 +120,6 @@ public:
     std::unordered_map<std::string, std::unordered_map<std::string, uint64_t>> to_account_value_;
     std::unordered_map<evmc::address, evmc::uint256be> account_balance_;
     std::string create_bytes_code_;
-    uint8_t thread_idx_;
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
 
