@@ -17,12 +17,10 @@ namespace zjchain {
 namespace transport {
 
 ThreadHandler::ThreadHandler(
-        uint32_t thread_idx,
         MultiThreadHandler* msg_handler,
         std::condition_variable& wait_con,
         std::mutex& wait_mutex)
-        : thread_idx_(thread_idx),
-        msg_handler_(msg_handler),
+        : msg_handler_(msg_handler),
         wait_con_(wait_con),
         wait_mutex_(wait_mutex) {
     thread_.reset(new std::thread(&ThreadHandler::HandleMessage, this));
@@ -39,17 +37,17 @@ void ThreadHandler::Join() {
 }
 
 void ThreadHandler::HandleMessage() {
-    uint64_t thread_timer_hash_64 = common::Random::RandomUint64();
     static const uint32_t kMaxHandleMessageCount = 16u;
+    uint8_t thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    uint8_t maping_thread_idx = common::GlobalInfo::Instance()->SetConsensusRealThreadIdx(thread_idx);
     while (!destroy_) {
         uint32_t count = 0;
         while (count++ < kMaxHandleMessageCount) {
-            auto msg_ptr = msg_handler_->GetMessageFromQueue(thread_idx_);
+            auto msg_ptr = msg_handler_->GetMessageFromQueue(maping_thread_idx);
             if (!msg_ptr) {
                 break;
             }
 
-            msg_ptr->thread_idx = thread_idx_;
 //             ZJC_DEBUG("start message handled msg hash: %lu, thread idx: %d",
 //                 msg_ptr->header.hash64(), msg_ptr->thread_idx);
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
@@ -64,15 +62,14 @@ void ThreadHandler::HandleMessage() {
                 }
 
                 ZJC_INFO("over handle message: %d, thread: %d use: %lu us, all: %s",
-                    msg_ptr->header.type(), thread_idx_, (etime - btime), t.c_str());
+                    msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
             }
 //             ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
         }
 
-        if (thread_idx_ + 1 < common::GlobalInfo::Instance()->message_handler_thread_count()) {
+        if (maping_thread_idx != common::GlobalInfo::Instance()->message_handler_thread_count() - 1) {
             auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
-            msg_ptr->thread_idx = thread_idx_;
             msg_ptr->header.set_type(common::kConsensusTimerMessage);
 //             ZJC_DEBUG("start kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
             msg_ptr->times[msg_ptr->times_idx++] = btime;
@@ -84,10 +81,10 @@ void ThreadHandler::HandleMessage() {
                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
                 }
 
-                ZJC_INFO("kConsensusTimerMessage over handle message: %d, thread: %d use: %lu us, all: %s", msg_ptr->header.type(), thread_idx_,(etime - btime), t.c_str());
+                ZJC_INFO("kConsensusTimerMessage over handle message: %d, thread: %d use: %lu us, all: %s", 
+                    msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
             }
 //             ZJC_DEBUG("end kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
-            ++thread_timer_hash_64;
         }
 
         if (count >= kMaxHandleMessageCount) {
@@ -286,6 +283,7 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
         }
 
         assert(false);
+        ZJC_FATAL("invalid message thread: %d", msg_ptr->header.zbft().pool_index());
         return consensus_thread_count_ + 1;
     default:
         return consensus_thread_count_;

@@ -35,7 +35,6 @@ class MultiThreadHandler;
 class ThreadHandler {
 public:
     ThreadHandler(
-        uint32_t thread_idx,
         MultiThreadHandler* msg_handler,
         std::condition_variable& wait_con,
         std::mutex& wait_mutex);
@@ -47,7 +46,6 @@ private:
 
     std::shared_ptr<std::thread> thread_{ nullptr };
     bool destroy_{ false };
-    uint32_t thread_idx_{ 0 };
     MultiThreadHandler* msg_handler_ = nullptr;
     std::condition_variable& wait_con_;
     std::mutex& wait_mutex_;

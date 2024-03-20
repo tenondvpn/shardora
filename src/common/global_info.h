@@ -194,6 +194,27 @@ public:
         return global_stoped_;
     }
 
+    uint8_t SetConsensusRealThreadIdx(uint8_t thread_idx) {
+        std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
+        auto bft_thread = message_handler_thread_count_;
+        for (uint8_t i = 0; i < bft_thread; ++i) {
+            if (consensus_thread_index_map_[i] != common::kInvalidUint8) {
+                consensus_thread_index_map_[i] = thread_idx;
+                for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
+                    if (pools_with_thread_[pool_idx] == i) {
+                        pools_with_thread_[pool_idx] = thread_idx;
+                        thread_with_pools_[thread_idx].insert(pool_idx);
+                    }
+                }
+
+                return i;
+            }
+        }
+
+        ZJC_FATAL("invalid thread idx: %d", thread_idx);
+        return common::kInvalidUint8;
+    }
+
 private:
     GlobalInfo();
     ~GlobalInfo();
@@ -219,7 +240,6 @@ private:
     int32_t tcp_server_thread_count_ = 4;
     std::string ip_db_path_;
     std::unordered_map<uint64_t, uint16_t> thread_with_index_;
-    uint8_t now_thread_idx_ = 0;
     uint8_t message_handler_thread_count_ = 4;
     bool for_ck_server_ = false;
     std::string ck_host_ = "127.0.0.1";
@@ -230,6 +250,7 @@ private:
     uint32_t sharding_min_nodes_count_ = 2u;
     int32_t join_root_ = common::kRandom;
     std::set<uint32_t>* thread_with_pools_ = nullptr;
+    uint8_t consensus_thread_index_map_[common::kMaxThreadCount] = {common::kInvalidUint8};
     uint32_t pools_with_thread_[common::kInvalidPoolIndex] = { 0 };
     uint8_t now_valid_thread_index_ = 0;
     std::mutex now_valid_thread_index_mutex_;

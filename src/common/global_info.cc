@@ -76,11 +76,9 @@ int GlobalInfo::Init(const common::Config& config) {
     auto each_thread_pools_count = common::kInvalidPoolIndex / bft_thread;
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         auto thread_idx = (i / each_thread_pools_count) % bft_thread;
-        thread_with_pools_[thread_idx].insert(i);
         pools_with_thread_[i] = thread_idx;
     }
 
-    now_valid_thread_index_ = message_handler_thread_count_ + kTickThreadPoolCount;
     return kCommonSuccess;
 }
 
