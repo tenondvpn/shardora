@@ -570,18 +570,17 @@ void TxPoolManager::HandleInvalidGids(const transport::MessagePtr& msg_ptr) {
 void TxPoolManager::PopPoolsMessage(uint8_t thread_idx) {
     while (!destroy_) {
         for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
-            while (true) {
+            auto count = 0;
+            while (!destroy_) {
                 transport::MessagePtr msg_ptr = nullptr;
                 if (!pools_msg_queue_[i].pop(&msg_ptr) || msg_ptr == nullptr) {
                     break;
                 }
 
                 msg_ptr->thread_idx = thread_idx;
-                auto btime = common::TimeUtils::TimestampMs();
                 HandlePoolsMessage(msg_ptr);
-                auto etime = common::TimeUtils::TimestampMs();
-                if (etime - btime > 10000lu) {
-                    ZJC_WARN("handle message timeout: %d, %lu", msg_ptr->header.tx_proto().step(), (etime - btime));
+                if (++count >= 64) {
+                    break;
                 }
             }
         }

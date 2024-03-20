@@ -164,7 +164,7 @@ void TxPool::GetTx(
     auto timestamp_now = common::TimeUtils::TimestampUs();
     std::vector<TxItemPtr> recover_txs;
     auto iter = src_prio_map.begin();
-    while (iter != src_prio_map.end()) {
+    while (iter != src_prio_map.end() && res_map.size() < count) {
         if (iter->second->time_valid >= timestamp_now) {
             break;
         }
@@ -173,9 +173,6 @@ void TxPool::GetTx(
         ZJC_DEBUG("leader success get local transfer to tx %u, %s",
             pool_index_, common::Encode::HexEncode(iter->second->tx_hash).c_str());
         iter = src_prio_map.erase(iter);
-        if (res_map.size() >= count) {
-            return;
-        }
     }
 }
 
