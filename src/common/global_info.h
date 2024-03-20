@@ -210,6 +210,7 @@ public:
     uint8_t SetConsensusRealThreadIdx(uint8_t thread_idx) {
         std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
         auto bft_thread = message_handler_thread_count_;
+        uint32_t tmp_pools_with_thread[common::kInvalidPoolIndex] = { 0 };
         for (uint8_t i = 0; i < bft_thread; ++i) {
             if (consensus_thread_index_map_[i] == common::kInvalidUint8) {
                 consensus_thread_index_map_[i] = thread_idx;
@@ -218,11 +219,13 @@ public:
                         for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
                             auto valid_thread_idx = consensus_thread_index_map_[src_thread_idx];
                             if (pools_with_thread_[pool_idx] == src_thread_idx) {
-                                pools_with_thread_[pool_idx] = valid_thread_idx;
+                                tmp_pools_with_thread[pool_idx] = valid_thread_idx;
                                 thread_with_pools_[valid_thread_idx].insert(pool_idx);
                             }
                         }
                     }
+
+                    pools_with_thread_ = tmp_pools_with_thread;
                 }
 
                 ZJC_INFO("thread index %d set cosensus index: %d", thread_idx, i);
