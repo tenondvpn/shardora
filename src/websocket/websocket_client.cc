@@ -1,5 +1,7 @@
 #include "websocket/websocket_client.h"
 
+#include "common/global_info.h"
+
 namespace zjchain {
 
 namespace ws {
