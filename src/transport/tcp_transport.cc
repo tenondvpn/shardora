@@ -201,13 +201,12 @@ void TcpTransport::CreateDropNodeMessage(const std::string& ip, uint16_t port) {
     msg_handler_->HandleMessage(msg_ptr);
 }
 
-void TcpTransport::SetMessageHash(
-        const transport::protobuf::Header& message,
-        uint8_t thread_idx) {
+void TcpTransport::SetMessageHash(const transport::protobuf::Header& message) {
     auto tmpHeader = const_cast<transport::protobuf::Header*>(&message);
     std::string hash_str;
     hash_str.reserve(1024);
     hash_str.append(msg_random_);
+    uint8_t thread_idx = common::GlobalInfo::Instance()->get_thread_index(); 
     hash_str.append((char*)&thread_idx, sizeof(thread_idx));
     auto msg_count = ++thread_msg_count_[thread_idx];
     hash_str.append((char*)&msg_count, sizeof(msg_count));

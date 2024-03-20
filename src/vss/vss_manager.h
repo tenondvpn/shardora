@@ -41,17 +41,17 @@ private:
     bool IsVssFirstPeriodsHandleMessage();
     bool IsVssSecondPeriodsHandleMessage();
     bool IsVssThirdPeriodsHandleMessage();
-    void BroadcastFirstPeriodHash(uint8_t thread_idx);
-    void BroadcastSecondPeriodRandom(uint8_t thread_idx);
-    void BroadcastThirdPeriodRandom(uint8_t thread_idx);
+    void BroadcastFirstPeriodHash();
+    void BroadcastSecondPeriodRandom();
+    void BroadcastThirdPeriodRandom();
     void HandleFirstPeriodHash(const protobuf::VssMessage& vss_msg);
     void HandleSecondPeriodRandom(const protobuf::VssMessage& vss_msg);
     void HandleThirdPeriodRandom(const protobuf::VssMessage& vss_msg);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     uint64_t GetAllVssValid();
     void SetConsensusFinalRandomNum(const std::string& id, uint64_t final_random_num);
-    void ConsensusTimerMessage(uint8_t thread_idx);
-    void PopVssMessage(uint8_t thread_idx);
+    void ConsensusTimerMessage();
+    void PopVssMessage();
     void HandleVssMessage(const transport::MessagePtr& msg_ptr);
 
     int64_t kDkgPeriodUs = common::kTimeBlockCreatePeriodSeconds / 10 * 1000u * 1000u;

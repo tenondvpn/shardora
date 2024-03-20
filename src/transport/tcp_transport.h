@@ -54,7 +54,7 @@ public:
         const std::string& message);
     int GetSocket();
     std::string GetHeaderHashForSign(const transport::protobuf::Header& message);
-    void SetMessageHash(const transport::protobuf::Header& message, uint8_t thread_idx);
+    void SetMessageHash(const transport::protobuf::Header& message);
 
 private:
     TcpTransport();
