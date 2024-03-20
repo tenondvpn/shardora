@@ -170,6 +170,7 @@ public:
             if (iter == thread_with_index_.end()) {
                 thread_idx = now_valid_thread_index_++;
                 thread_with_index_[now_thread_id] = thread_idx;
+                ZJC_DEBUG("success add thread: %u, thread_index: %d", now_thread_id, thread_idx);
             } else {
                 thread_idx = iter->second;
             }
@@ -178,8 +179,6 @@ public:
             if (begin_run_timestamp_ms_ + kWaitingAllThreadValidPeriodMs < now_tm && main_inited_success_) {
                 should_check_thread_all_valid_ = false;
             }
-            
-            ZJC_DEBUG("success add thread: %u, thread_index: %d", now_thread_id, thread_idx);
         } else {
             auto iter = thread_with_index_.find(now_thread_id);
             if (iter == thread_with_index_.end()) {
