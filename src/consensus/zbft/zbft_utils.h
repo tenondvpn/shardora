@@ -143,7 +143,6 @@ struct BftMessageInfo {
 };
 
 typedef std::function<void(
-    uint8_t thread_idx,
     std::shared_ptr<block::protobuf::Block>& block,
     db::DbWriteBatch& db_batch)> BlockCacheCallback;
 

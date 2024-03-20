@@ -812,7 +812,6 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
     zjcvm::Uint64ToEvmcBytes32(
         zjc_host.tx_context_.chain_id,
         chanin_id);
-    zjc_host.thread_idx_ = txs_ptr_->thread_index;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) { 
         auto& tx_info = iter->second->msg_ptr->header.tx_proto();
         auto& block_tx = *tx_list->Add();
@@ -831,7 +830,6 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
 
         block_tx.set_status(kConsensusSuccess);
         int do_tx_res = iter->second->HandleTx(
-            txs_ptr_->thread_index,
             zjc_block,
             db_batch_,
             zjc_host,

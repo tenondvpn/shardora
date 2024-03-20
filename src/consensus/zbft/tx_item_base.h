@@ -19,7 +19,6 @@ protected:
     virtual ~TxItemBase() {}
 
     virtual int HandleTx(
-            uint8_t thread_idx,
             const block::protobuf::Block& block,
             std::shared_ptr<db::DbWriteBatch>& db_batch,
             zjcvm::ZjchainHost& zjc_host,
@@ -91,13 +90,12 @@ protected:
     }
 
     int GetTempAccountBalance(
-            uint8_t thread_idx,
             const std::string& id,
             std::unordered_map<std::string, int64_t>& acc_balance_map,
             uint64_t* balance) {
         auto iter = acc_balance_map.find(id);
         if (iter == acc_balance_map.end()) {
-            auto acc_info = account_mgr_->GetAccountInfo(thread_idx, id);
+            auto acc_info = account_mgr_->GetAccountInfo(id);
             if (acc_info == nullptr) {
                 ZJC_DEBUG("account addres not exists[%s]", common::Encode::HexEncode(id).c_str());
                 return consensus::kConsensusAccountNotExists;

@@ -387,10 +387,6 @@ public:
     int LeaderPrecommitAggSign(const std::string& hash);
     int LeaderCreateCommitAggSign();
     void RechallengePrecommitClear();
-    uint8_t thread_index() const {
-        return txs_ptr_->thread_index;
-    }
-
     const std::string& precommit_bls_agg_verify_hash() const {
         return precommit_bls_agg_verify_hash_;
     }

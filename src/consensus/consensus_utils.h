@@ -165,7 +165,6 @@ struct WaitingTxsItem {
     std::string max_txs_hash;
     uint32_t max_txs_hash_count;
     uint32_t pool_index;
-    uint8_t thread_index;
     pools::protobuf::StepType tx_type;
 };
 

@@ -184,8 +184,7 @@ int ShardNetwork<DhtType>::JoinShard() {
             std::bind(
                 &ShardNetwork::JoinNewNodeValid,
                 this,
-                std::placeholders::_1,
-                std::placeholders::_2)) != network::kNetworkSuccess) {
+                std::placeholders::_1)) != network::kNetworkSuccess) {
         NETWORK_ERROR("init shard role dht failed!");
         return kNetworkError;
     }
