@@ -17,7 +17,6 @@ FilterBroadcast::FilterBroadcast() {}
 FilterBroadcast::~FilterBroadcast() {}
 
 void FilterBroadcast::Broadcasting(
-        uint8_t thread_idx,
         dht::BaseDhtPtr& dht_ptr,
         const transport::MessagePtr& msg_ptr) {
     assert(dht_ptr);
@@ -40,7 +39,7 @@ void FilterBroadcast::Broadcasting(
         }
 
 //         ZJC_DEBUG("layer Broadcasting: %lu, size: %u", msg_ptr->header.hash64(), nodes.size());
-        LayerSend(thread_idx, dht_ptr, msg_ptr, nodes);
+        LayerSend(dht_ptr, msg_ptr, nodes);
     } else {
         auto nodes = GetRandomFilterNodes(dht_ptr, bloomfilter, message);
         for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
@@ -50,7 +49,7 @@ void FilterBroadcast::Broadcasting(
 //         ZJC_DEBUG("random Broadcasting: %lu, size: %u",
 //             msg_ptr->header.hash64(), nodes.size());
         assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
-        Send(thread_idx, dht_ptr, msg_ptr, nodes);
+        Send(dht_ptr, msg_ptr, nodes);
     }
 }
 
@@ -203,14 +202,12 @@ uint32_t FilterBroadcast::BinarySearch(const dht::Dht& dht, uint64_t val) {
 }
 
 void FilterBroadcast::Send(
-        uint8_t thread_idx,
         dht::BaseDhtPtr& dht_ptr,
         const transport::MessagePtr& msg_ptr,
         const std::vector<dht::NodePtr>& nodes) {
     auto readobly_dht = dht_ptr->readonly_hash_sort_dht();
     for (uint32_t i = 0; i < nodes.size(); ++i) {
         int res = transport::TcpTransport::Instance()->Send(
-            thread_idx,
             nodes[i]->public_ip,
             nodes[i]->public_port,
             msg_ptr->header);
@@ -223,7 +220,6 @@ void FilterBroadcast::Send(
 }
 
 void FilterBroadcast::LayerSend(
-        uint8_t thread_idx,
         dht::BaseDhtPtr& dht_ptr,
         const transport::MessagePtr& msg_ptr,
         std::vector<dht::NodePtr>& nodes) {
@@ -254,7 +250,6 @@ void FilterBroadcast::LayerSend(
 
         BROAD_DEBUG("broadcast layer send to: %s:%d, txhash: %lu", nodes[i]->public_ip.c_str(), nodes[i]->public_port, msg_ptr->header.hash64());
         transport::TcpTransport::Instance()->Send(
-            thread_idx,
             nodes[i]->public_ip,
             nodes[i]->public_port,
             message);
