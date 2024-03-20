@@ -353,7 +353,7 @@ void MultiThreadHandler::CreateConsensusBlockMessage(
         return;
     }
 
-    transport::TcpTransport::Instance()->SetMessageHash(new_msg_ptr->header, queue_idx);
+    transport::TcpTransport::Instance()->SetMessageHash(new_msg_ptr->header);
     uint32_t priority = GetPriority(new_msg_ptr);
     threads_message_queues_[queue_idx][priority].push(new_msg_ptr);
     ZJC_DEBUG("create sync block message: %d, index: %d, queue_idx: %d, hash64: %lu, block hash: %s, size: %u",
