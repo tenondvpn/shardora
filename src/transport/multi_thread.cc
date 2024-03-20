@@ -290,7 +290,6 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
             return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.zbft().pool_index()];
         }
 
-        assert(false);
         ZJC_FATAL("invalid message thread: %d", msg_ptr->header.zbft().pool_index());
         return consensus_thread_count_ + 1;
     default:
