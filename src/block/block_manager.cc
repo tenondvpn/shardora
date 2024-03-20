@@ -67,7 +67,7 @@ int BlockManager::Init(
         std::bind(&BlockManager::HandleMessage, this, std::placeholders::_1));
     test_sync_block_tick_.CutOff(
         100000lu,
-        std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
+        std::bind(&BlockManager::ConsensusTimerMessage, this));
     bool genesis = false;
     return kBlockSuccess;
 }
@@ -337,7 +337,6 @@ bool BlockManager::AddBlockItemToCache(
         block->network_id() + network::kConsensusWaitingShardOffset ==
         common::GlobalInfo::Instance()->network_id()) {
         pools_mgr_->UpdateLatestInfo(
-            thread_idx,
             block,
             db_batch);
     }
@@ -1018,13 +1017,12 @@ void BlockManager::AddNewBlock(
     }
 
     ZJC_DEBUG("new block coming sharding id: %u, pool: %d, height: %lu, "
-        "tx size: %u, hash: %s, thread_idx: %d, elect height: %lu",
+        "tx size: %u, hash: %s, elect height: %lu",
         block_item->network_id(),
         block_item->pool_index(),
         block_item->height(),
         block_item->tx_list_size(),
         common::Encode::HexEncode(block_item->hash()).c_str(),
-        thread_idx,
         block_item->electblock_height());
     // TODO: check all block saved success
     assert(block_item->electblock_height() >= 1);
@@ -1042,7 +1040,7 @@ void BlockManager::AddNewBlock(
         if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
                 block_item->network_id() + network::kConsensusWaitingShardOffset !=
                 common::GlobalInfo::Instance()->network_id()) {
-            pools_mgr_->OnNewCrossBlock(thread_idx, block_item);
+            pools_mgr_->OnNewCrossBlock(block_item);
         }
     }
 
@@ -1211,7 +1209,7 @@ void BlockManager::AddMiningToken(
         }
 
         auto id = security_->GetAddress(elect_block.in(i).pubkey());
-        auto account_info = account_mgr_->GetAccountInfo(thread_idx, id);
+        auto account_info = account_mgr_->GetAccountInfo(id);
         if (account_info == nullptr ||
                 account_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
             continue;
