@@ -59,17 +59,17 @@ int Universal::Init(
     return kNetworkSuccess;
 }
 
-int Universal::Join(uint8_t thread_idx, dht::NodePtr& node) {
-    int res = BaseDht::Join(thread_idx, node);
+int Universal::Join(dht::NodePtr& node) {
+    int res = BaseDht::Join(node);
     if (!is_universal_) {
         return res;
     }
 
-    AddNodeToUniversal(thread_idx, node);
+    AddNodeToUniversal(node);
     // add to subnetworks
 //     ZJC_DEBUG("universal join node: %s:%d", node->public_ip.c_str(), node->public_port);
-    DhtManager::Instance()->Join(thread_idx, node);
-    UniversalManager::Instance()->Join(thread_idx, node);
+    DhtManager::Instance()->Join(node);
+    UniversalManager::Instance()->Join(node);
     return res;
 }
 
