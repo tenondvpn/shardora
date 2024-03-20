@@ -198,7 +198,7 @@ public:
         std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
         auto bft_thread = message_handler_thread_count_;
         for (uint8_t i = 0; i < bft_thread; ++i) {
-            if (consensus_thread_index_map_[i] != common::kInvalidUint8) {
+            if (consensus_thread_index_map_[i] == common::kInvalidUint8) {
                 consensus_thread_index_map_[i] = thread_idx;
                 for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
                     if (pools_with_thread_[pool_idx] == i) {
