@@ -28,13 +28,12 @@ public:
     ~ToTxsPools();
     void NewBlock(const std::shared_ptr<block::protobuf::Block>& block, db::DbWriteBatch& db_batch);
     int CreateToTxWithHeights(
-        uint8_t thread_idx, 
         uint32_t sharding_id,
         uint64_t elect_height,
         const pools::protobuf::ShardToTxItem& leader_to_heights,
         std::string* to_hash);
     int LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights);
-    bool StatisticTos(uint8_t thread_idx, const pools::protobuf::ShardToTxItem& to_heights);
+    bool StatisticTos(const pools::protobuf::ShardToTxItem& to_heights);
 
 private:
     void HandleNormalToTx(
@@ -42,25 +41,21 @@ private:
         const block::protobuf::BlockTx& tx_info);
     void LoadLatestHeights();
     void HandleNormalFrom(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleCreateContractUserCall(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleCreateContractByRootFrom(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleContractGasPrepayment(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleRootCreateAddress(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleContractExecute(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleJoinElect(
@@ -81,7 +76,6 @@ private:
         const std::string& verify_hash,
         std::vector<bls::protobuf::JoinElectInfo>& verify_reqs);
     bool PreStatisticTos(
-        uint8_t thread_idx, 
         uint32_t pool_idx, 
         uint64_t min_height, 
         uint64_t max_height);

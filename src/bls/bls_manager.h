@@ -88,11 +88,11 @@ private:
         BlsFinishItemPtr& finish_item,
         std::vector<libff::alt_bn128_G1>& all_signs,
         std::vector<size_t>& idx_vec);
-    void TimerMessage(uint8_t thread_idx);
+    void TimerMessage();
     void ResetLeaders(
         const common::MembersPtr& members,
         elect::protobuf::PrevMembers* prev_members);
-    void PopFinishMessage(uint8_t thread_idx);
+    void PopFinishMessage();
 
     std::shared_ptr<bls::BlsDkg> waiting_bls_{ nullptr };
     uint64_t max_height_{ common::kInvalidUint64 };
