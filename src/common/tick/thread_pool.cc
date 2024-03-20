@@ -47,11 +47,9 @@ void TickThreadPool::Destroy() {
 }
 
 TickThreadPool::TickThreadPool() {
-    uint8_t start_thread_idx = common::GlobalInfo::Instance()->message_handler_thread_count();
     for (uint32_t i = 0; i < common::GlobalInfo::Instance()->tick_thread_pool_count(); ++i) {
         thread_pool_.push_back(std::make_shared<std::thread>(
-            std::thread(&TickThreadPool::Ticking, this, start_thread_idx + i)));
-        ZJC_INFO("tiking use thread index: %d", (start_thread_idx + i));
+            std::thread(&TickThreadPool::Ticking, this)));
     }
 }
 
@@ -59,8 +57,8 @@ TickThreadPool::~TickThreadPool() {
     Destroy();
 }
 
-void TickThreadPool::Ticking(uint8_t idx) {
-    uint8_t thread_idx = idx;
+void TickThreadPool::Ticking() {
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     while (!destroy_) {
         uint32_t first_idx = 0;
         uint32_t now_idx = (std::numeric_limits<uint32_t>::max)();
@@ -77,7 +75,7 @@ void TickThreadPool::Ticking(uint8_t idx) {
                 auto tick_now = std::chrono::steady_clock::now();
                 if (tick_item->cutoff_time <= tick_now) {
                     RemoveTick(tick_item->idx);
-                    tick_item->callback(thread_idx);
+                    tick_item->callback();
                 } else {
                     getted_items.push_back(tick_item);
                 }
