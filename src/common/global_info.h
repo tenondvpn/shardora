@@ -158,7 +158,7 @@ public:
     // After running for a period of time, ensure that all threads have been created successfully and cancel the lock.
     uint8_t get_thread_index() {
         auto now_thread_id_tmp = std::this_thread::get_id();
-        int now_thread_id = *(int*)&now_thread_id_tmp;
+        uint32_t now_thread_id = *(uint32_t*)&now_thread_id_tmp;
         uint8_t thread_idx = 0;
         if (should_check_thread_all_valid_) {
             std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
@@ -177,12 +177,13 @@ public:
         } else {
             auto iter = thread_with_index_.find(now_thread_id);
             if (iter == thread_with_index_.end()) {
-                ZJC_FATAL("invalid get new thread index.");
+                ZJC_FATAL("invalid get new thread index: %u", now_thread_id);
             }
                 
             thread_idx = iter->second;
         }
 
+        ZJC_DEBUG("success add thread: %u, thread_index: %d", now_thread_id, thread_idx);
         return thread_idx;
     }
 
@@ -222,7 +223,7 @@ private:
 
     static const uint32_t kDefaultTestNetworkShardId = 4u;
     static const uint32_t kTickThreadPoolCount = 1U;
-    static const uint64_t kWaitingAllThreadValidPeriodMs = 10000lu;
+    static const uint64_t kWaitingAllThreadValidPeriodMs = 60000lu;
 
     std::string config_local_ip_;
     uint16_t config_local_port_{ 0 };
