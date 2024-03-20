@@ -54,6 +54,7 @@ int32_t HttpServer::Start() {
 }
 
 void HttpServer::RunHttpServer() {
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     event_base_loop(evbase_, 0);
 }
 

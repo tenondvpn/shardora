@@ -566,6 +566,7 @@ void TxPoolManager::HandleInvalidGids(const transport::MessagePtr& msg_ptr) {
 }
 
 void TxPoolManager::PopPoolsMessage() {
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     while (!destroy_) {
         for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
             auto count = 0;

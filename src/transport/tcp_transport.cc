@@ -407,6 +407,7 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
 }
 
 void TcpTransport::CheckConnectionValid() {
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     while (destroy_ == 0) {
         std::shared_ptr<TcpConnection> out_conn = nullptr;
         if (!in_check_queue_.pop(&out_conn) || out_conn == nullptr) {

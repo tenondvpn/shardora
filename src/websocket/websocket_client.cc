@@ -19,6 +19,7 @@ int32_t WebSocketClient::Init(WsClient::message_handler cb) {
 
 void WebSocketClient::Start() {
     run_thread_ = new std::thread([&]() { 
+        auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
         client_.run();
     });
 }
