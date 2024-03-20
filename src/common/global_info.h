@@ -207,6 +207,10 @@ public:
         return consensus_thread_index_map_[thread_idx];
     }
 
+    uint8_t get_consensus_consensus_thread_index_map(uint8_t thread_idx) {
+        return consensus_consensus_thread_index_map_[thread_idx];
+    }
+
     uint8_t SetConsensusRealThreadIdx(uint8_t thread_idx) {
         std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
         auto bft_thread = message_handler_thread_count_;

@@ -253,23 +253,24 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
         HandleSyncBlockResponse(msg_ptr);
     }
 
-    auto queue_idx = GetThreadIndex(msg_ptr);
-    if (queue_idx > consensus_thread_count_) {
+    auto thread_index = GetThreadIndex(msg_ptr);
+    auto src_thread_index = common::GlobalInfo::Instance()->get_consensus_consensus_thread_index_map(thread_index);
+    if (src_thread_index > consensus_thread_count_) {
         assert(false);
         return;
     }
 
-    if (queue_idx == consensus_thread_count_ &&
-            threads_message_queues_[queue_idx][priority].size() >= kMaxMessageReserveCount) {
-        ZJC_WARN("message extend max: %u, cur: %u", kMaxMessageReserveCount, threads_message_queues_[queue_idx][priority].size());
+    if (src_thread_index == consensus_thread_count_ &&
+            threads_message_queues_[thread_index][priority].size() >= kMaxMessageReserveCount) {
+        ZJC_WARN("message extend max: %u, cur: %u", kMaxMessageReserveCount, threads_message_queues_[thread_index][priority].size());
         return;
     }
 
-    threads_message_queues_[queue_idx][priority].push(msg_ptr);
-    wait_con_[queue_idx % all_thread_count_].notify_one();
+    threads_message_queues_[thread_index][priority].push(msg_ptr);
+    wait_con_[thread_index % all_thread_count_].notify_one();
     ZJC_DEBUG("queue size message push success: %lu, queue_idx: %d, priority: %d, thread queue size: %u, net: %u, type: %d",
-        msg_ptr->header.hash64(), queue_idx, priority,
-        threads_message_queues_[queue_idx][priority].size(),
+        msg_ptr->header.hash64(), thread_index, priority,
+        threads_message_queues_[thread_index][priority].size(),
         common::GlobalInfo::Instance()->network_id(),
         msg_ptr->header.type());
 }
