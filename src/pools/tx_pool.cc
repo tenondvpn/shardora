@@ -132,19 +132,22 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
 
     gid_map_[tx_ptr->gid] = tx_ptr;
 
+#ifndef NDEBUG
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tx_count_tm_us_ == 0) {
         prev_tx_count_tm_us_ = now_tm_us;
     }
+
     if (now_tm_us > prev_tx_count_tm_us_ + 3000000lu) {
         ZJC_INFO("waiting_tx_count pool: %d: tx: %llu", pool_index_, gid_map_.size());
         prev_tx_count_tm_us_ = now_tm_us;
     }
 
-    
     gid_start_time_map_[tx_ptr->gid] = common::TimeUtils::TimestampUs(); 
-    timeout_txs_.push(tx_ptr->gid);
     oldest_timestamp_ = prio_map_.begin()->second->time_valid;
+#endif
+
+    timeout_txs_.push(tx_ptr->gid);
     return kPoolsSuccess;
 }
 
@@ -253,11 +256,13 @@ void TxPool::RemoveTx(const std::string& gid) {
 //         common::Encode::HexEncode(giter->second->gid).c_str(),
 //         common::Encode::HexEncode(giter->second->tx_hash).c_str());
     gid_map_.erase(giter);
+#ifndef NDEBUG
     if (!prio_map_.empty()) {
         oldest_timestamp_ = prio_map_.begin()->second->time_valid;
     } else {
         oldest_timestamp_ = 0;
     }
+#endif
 }
 
 void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
