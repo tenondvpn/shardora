@@ -336,7 +336,7 @@ void BftManager::CheckInvalidGids(uint8_t thread_idx) {
 void BftManager::PopAllPoolTxs(uint8_t thread_index) {
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
-            pools_mgr_->PopTxs(pool_idx);
+            pools_mgr_->PopTxs(pool_idx, false);
             pools_mgr_->CheckTimeoutTx(pool_idx);
         }
     }
@@ -1528,7 +1528,7 @@ ZbftPtr BftManager::CreateBftPtr(
                 msg_ptr->thread_idx,
                 nullptr);
             if (txs_ptr == nullptr) {
-                pools_mgr_->PopTxs(bft_msg.pool_index());
+                pools_mgr_->PopTxs(bft_msg.pool_index(), true);
                 // 重试，在 tps 较高情况下有可能还未同步过来
                 txs_ptr = txs_pools_->FollowerGetTxs(
                         bft_msg.pool_index(),
