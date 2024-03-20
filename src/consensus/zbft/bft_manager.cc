@@ -75,15 +75,14 @@ int BftManager::Init(
     RegisterCreateTxCallbacks();
     security_ptr_ = security_ptr;
     txs_pools_ = std::make_shared<WaitingTxsPools>(pools_mgr_, block_mgr, tm_block_mgr);
-    thread_count_ = thread_count;
-    bft_queue_ = new std::queue<ZbftPtr>[thread_count];
+    bft_queue_ = new std::queue<ZbftPtr>[common::kMaxThreadCount];
     elect_items_[0] = std::make_shared<ElectItem>();
     elect_items_[1] = std::make_shared<ElectItem>();
 
 #ifdef ZJC_UNITTEST
-    now_msg_ = new transport::MessagePtr[thread_count_];
+    now_msg_ = new transport::MessagePtr[common::kMaxThreadCount];
 #endif
-    for (uint8_t i = 0; i < thread_count_; ++i) {
+    for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
         bft_gids_[i] = common::Hash::keccak256(common::Random::RandomString(1024));
         bft_gids_index_[i] = 0;
     }
@@ -233,8 +232,8 @@ void BftManager::OnNewElectBlock(
     auto new_idx = (elect_item_idx_ + 1) % 2;
     elect_items_[new_idx].reset();
     elect_items_[new_idx] = elect_item_ptr;
-    ZJC_DEBUG("new elect block local leader index: %d, leader_count: %d, thread_count_: %d, elect height: %lu, member size: %d",
-        local_node_pool_mod_num, elect_item.leader_count, thread_count_, elect_item.elect_height, members->size());
+    ZJC_DEBUG("new elect block local leader index: %d, leader_count: %d, elect height: %lu, member size: %d",
+        local_node_pool_mod_num, elect_item.leader_count, elect_item.elect_height, members->size());
     auto& thread_set = elect_item.thread_set;
     SetThreadItem(elect_item.leader_count, local_node_pool_mod_num, thread_set);
     // thread_set[0]->member_ips[elect_item.local_node_member_index] = common::IpToUint32(
@@ -261,7 +260,7 @@ void BftManager::SetThreadItem(
         }
     }
 
-    for (uint8_t j = 0; j < thread_count_; ++j) {
+    for (uint8_t j = 0; j < common::GlobalInfo::Instance()->message_handler_thread_count() - 1; ++j) {
         auto thread_idx = common::GlobalInfo::Instance()->get_consensus_thread_idx(j);
         if (thread_idx == common::kInvalidUint8) {
             ZJC_FATAL("invalid thread index: %d, %d", j, thread_idx);
