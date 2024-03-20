@@ -262,7 +262,7 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
 
     threads_message_queues_[queue_idx][priority].push(msg_ptr);
     wait_con_[queue_idx % all_thread_count_].notify_one();
-    ZJC_ERROR("queue size message push success: %lu, queue_idx: %d, priority: %d, thread queue size: %u, net: %u, type: %d",
+    ZJC_DEBUG("queue size message push success: %lu, queue_idx: %d, priority: %d, thread queue size: %u, net: %u, type: %d",
         msg_ptr->header.hash64(), queue_idx, priority,
         threads_message_queues_[queue_idx][priority].size(),
         common::GlobalInfo::Instance()->network_id(),
