@@ -58,7 +58,7 @@ void TxPool::InitHeightTree() {
     }
 }
 
-uint32_t TxPool::SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms) {
+uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
     if (height_tree_ptr_ == nullptr) {
         return 0;
     }
@@ -101,7 +101,6 @@ uint32_t TxPool::SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms) {
 //                 net_id, pool_index_, latest_height_,
 //                 invalid_heights.size(), invalid_heights[i]);
             kv_sync_->AddSyncHeight(
-                thread_idx,
                 net_id,
                 pool_index_,
                 invalid_heights[i],
