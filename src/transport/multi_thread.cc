@@ -253,16 +253,9 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
         HandleSyncBlockResponse(msg_ptr);
     }
 
-    auto src_thread_index = GetThreadIndex(msg_ptr);
-    auto thread_index = common::GlobalInfo::Instance()->get_consensus_thread_idx(src_thread_index);
-    if (src_thread_index > consensus_thread_count_) {
+    auto thread_index = GetThreadIndex(msg_ptr);
+    if (thread_index >= common::kMaxThreadCount) {
         assert(false);
-        return;
-    }
-
-    if (src_thread_index == consensus_thread_count_ &&
-            threads_message_queues_[thread_index][priority].size() >= kMaxMessageReserveCount) {
-        ZJC_WARN("message extend max: %u, cur: %u", kMaxMessageReserveCount, threads_message_queues_[thread_index][priority].size());
         return;
     }
 
@@ -285,16 +278,16 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
     case common::kBlsMessage:
     case common::kPoolsMessage:
     case common::kInitMessage:
-        return consensus_thread_count_;
+        return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_);
     case common::kConsensusMessage:
         if (msg_ptr->header.zbft().pool_index() < common::kInvalidPoolIndex) {
             return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.zbft().pool_index()];
         }
 
         ZJC_FATAL("invalid message thread: %d", msg_ptr->header.zbft().pool_index());
-        return consensus_thread_count_ + 1;
+        return common::kMaxThreadCount;
     default:
-        return consensus_thread_count_;
+        return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_);
     }
 }
 
