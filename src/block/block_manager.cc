@@ -60,8 +60,7 @@ int BlockManager::Init(
         ZJC_DEBUG("support ck");
     }
 
-    consensus_block_queues_ = new common::ThreadSafeQueue<BlockToDbItemPtr>[
-        common::GlobalInfo::Instance()->message_handler_thread_count()];
+    consensus_block_queues_ = new common::ThreadSafeQueue<BlockToDbItemPtr>[common::kMaxThreadCount];
     network::Route::Instance()->RegisterMessage(
         common::kBlockMessage,
         std::bind(&BlockManager::HandleMessage, this, std::placeholders::_1));
@@ -449,8 +448,7 @@ void BlockManager::NewBlockWithTx(
 }
 
 void BlockManager::HandleAllConsensusBlocks() {
-    auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count();
-    for (int32_t i = 0; i < thread_count; ++i) {
+    for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
         while (true) {
             BlockToDbItemPtr db_item_ptr = nullptr;
             consensus_block_queues_[i].pop(&db_item_ptr);
