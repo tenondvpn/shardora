@@ -212,8 +212,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
     net_handler_.Start();
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    GetAddressShardingId(thread_idx);
+    GetAddressShardingId();
     if (InitCommand() != kInitSuccess) {
         INIT_ERROR("InitCommand failed!");
         return kInitError;
@@ -241,7 +240,6 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void NetworkInit::BroadcastInvalidPools(
-        uint8_t thread_idx,
         std::shared_ptr<LeaderRotationInfo> rotation,
         int32_t mod_num) {
     auto net_id = common::GlobalInfo::Instance()->network_id();
@@ -271,7 +269,6 @@ void NetworkInit::BroadcastInvalidPools(
         rotation->tm_block_tm, kRotationLeaderCount, leader_idx,
         leader_idx);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->thread_idx = thread_idx;
     msg_ptr->header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     dht::DhtKeyManager dht_key(net_id);
     msg_ptr->header.set_des_dht_key(dht_key.StrKey());
@@ -284,9 +281,7 @@ void NetworkInit::BroadcastInvalidPools(
     pools->set_leader_idx(leader_idx);
     pools->set_version(rotation->rotations[mod_num].version);
     msg_ptr->header.mutable_broadcast();
-    transport::TcpTransport::Instance()->SetMessageHash(
-        msg_ptr->header,
-        msg_ptr->thread_idx);
+    transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header);
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
     std::string sign;
     if (security_->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
@@ -376,7 +371,6 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
 }
 
 void NetworkInit::RotationLeaderCallback(
-        uint8_t thread_idx,
         const std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>>& invalid_pools) {
     auto rotation = rotation_leaders_;
     if (rotation == nullptr) {
@@ -414,14 +408,13 @@ void NetworkInit::RotationLeaderCallback(
 
     for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
         if (invalid_leader_mods[i] + 2 >= (pools::kCaculateLeaderLofPeriod / pools::kCheckLeaderLofPeriod)) {
-            BroadcastInvalidPools(thread_idx, rotation, i);
+            BroadcastInvalidPools(rotation, i);
         }
     }
 }
 
 void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
     auto account_info = account_mgr_->GetAccountInfo(
-        msg_ptr->thread_idx,
         msg_ptr->header.init_proto().addr_req().id());
     if (account_info == nullptr) {
         return;
@@ -454,8 +447,8 @@ void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
     }
 
     std::cout << "success handle init req message." << std::endl;
-    transport::TcpTransport::Instance()->SetMessageHash(msg, msg_ptr->thread_idx);
-    transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn.get(), msg);
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
+    transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
 }
 
 void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
@@ -502,7 +495,7 @@ void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
         << ", join type: " << common::GlobalInfo::Instance()->join_root() << ", rand join: " << sharding_id << std::endl;
     prefix_db_->SaveJoinShard(sharding_id, des_sharding_id_);
     auto waiting_network_id = sharding_id + network::kConsensusWaitingShardOffset;
-    if (elect_mgr_->Join(msg_ptr->thread_idx, waiting_network_id) != elect::kElectSuccess) {
+    if (elect_mgr_->Join(waiting_network_id) != elect::kElectSuccess) {
         INIT_ERROR("join waiting pool network[%u] failed!", waiting_network_id);
         return;
     }
@@ -512,13 +505,12 @@ void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
     common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
 }
 
-void NetworkInit::GetAddressShardingId(uint8_t thread_idx) {
+void NetworkInit::GetAddressShardingId() {
     if (common::GlobalInfo::Instance()->network_id() != common::kInvalidUint32) {
         return;
     }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     msg.set_type(common::kInitMessage);
@@ -527,7 +519,7 @@ void NetworkInit::GetAddressShardingId(uint8_t thread_idx) {
     auto& init_msg = *msg.mutable_init_proto();
     auto& init_req = *init_msg.mutable_addr_req();
     init_req.set_id(security_->GetAddress());
-    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
     network::Route::Instance()->Send(msg_ptr);
     std::cout << "sent get addresss info: " << common::Encode::HexEncode(security_->GetAddress()) << std::endl;
     init_tick_.CutOff(10000000lu, std::bind(&NetworkInit::GetAddressShardingId, this, std::placeholders::_1));
@@ -580,7 +572,7 @@ void NetworkInit::InitLocalNetworkId() {
     common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
 }
 
-void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
+void NetworkInit::SendJoinElectTransaction() {
     // if (common::GlobalInfo::Instance()->for_ck_server()) {
     //     return;
     // }
@@ -638,7 +630,7 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     }
 
     new_tx->set_value(join_info.SerializeAsString());
-    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign;
     if (security_->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
@@ -647,7 +639,6 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     }
 
     msg.set_sign(sign);
-    msg_ptr->thread_idx = thread_idx;
     // msg_ptr->msg_hash = tx_hash; // TxPoolmanager::HandleElectTx 接收端计算了，这里不必传输
     network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("success send join elect request transaction: %u, join: %u, gid: %s, "
@@ -764,16 +755,13 @@ int NetworkInit::InitNetworkSingleton() {
         return kInitError;
     }
 
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     if (network::UniversalManager::Instance()->CreateUniversalNetwork(
-            thread_idx,
             conf_) != network::kNetworkSuccess) {
         INIT_ERROR("create universal network failed!");
         return kInitError;
     }
 
     if (network::UniversalManager::Instance()->CreateNodeNetwork(
-            thread_idx,
             conf_) != network::kNetworkSuccess) {
         INIT_ERROR("create node network failed!");
         return kInitError;
@@ -1115,7 +1103,6 @@ void NetworkInit::GetNetworkNodesFromConf(const YAML::Node& genesis_config,
 }
 
 void NetworkInit::AddBlockItemToCache(
-        uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
     if (!block->is_commited_block()) {
@@ -1161,7 +1148,6 @@ void NetworkInit::AddBlockItemToCache(
             block->network_id() + network::kConsensusWaitingShardOffset ==
             common::GlobalInfo::Instance()->network_id()) {
         pools_mgr_->UpdateLatestInfo(
-            thread_idx,
             block,
             db_batch);
     }
@@ -1178,16 +1164,16 @@ void NetworkInit::AddBlockItemToCache(
         case pools::protobuf::kJoinElect:
         case pools::protobuf::kContractGasPrepayment:
         case pools::protobuf::kContractCreateByRootFrom: // 只处理 from 不处理合约账户
-            account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
+            account_mgr_->NewBlockWithTx(block, tx_list[i], db_batch);
             // 对于 kRootCreateAddress 的合约账户创建不需要增加 prepayment，root 只记录路由
             break;
         case pools::protobuf::kConsensusLocalTos:
         case pools::protobuf::kContractCreate:
         case pools::protobuf::kContractCreateByRootTo:
         case pools::protobuf::kContractExcute:
-            account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
-            gas_prepayment_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
-            zjcvm::Execution::Instance()->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
+            account_mgr_->NewBlockWithTx(block, tx_list[i], db_batch);
+            gas_prepayment_->NewBlockWithTx(block, tx_list[i], db_batch);
+            zjcvm::Execution::Instance()->NewBlockWithTx(block, tx_list[i], db_batch);
             break;
         default:
             break;
@@ -1197,16 +1183,15 @@ void NetworkInit::AddBlockItemToCache(
 
 // pool tx thread, thread safe
 bool NetworkInit::DbNewBlockCallback(
-        uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
     for (int32_t i = 0; i < block->tx_list_size(); ++i) {
         switch (block->tx_list(i).step()) {
         case pools::protobuf::kConsensusRootTimeBlock:
-            HandleTimeBlock(thread_idx, block, block->tx_list(i), db_batch);
+            HandleTimeBlock(block, block->tx_list(i), db_batch);
             break;
         case pools::protobuf::kConsensusRootElectShard:
-            HandleElectionBlock(thread_idx, block, block->tx_list(i), db_batch);
+            HandleElectionBlock(block, block->tx_list(i), db_batch);
             break;
         default:
             break;
@@ -1218,7 +1203,6 @@ bool NetworkInit::DbNewBlockCallback(
 }
 
 void NetworkInit::HandleTimeBlock(
-        uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
@@ -1233,7 +1217,7 @@ void NetworkInit::HandleTimeBlock(
             tm_block_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             bls_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             shard_statistic_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
-            block_mgr_->OnTimeBlock(thread_idx, data_arr[0], block->height(), data_arr[1]);
+            block_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             ZJC_DEBUG("new time block called height: %lu, tm: %lu", block->height(), data_arr[1]);
         }
 
@@ -1246,7 +1230,6 @@ void NetworkInit::HandleTimeBlock(
 }
 
 void NetworkInit::HandleElectionBlock(
-        uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
         const block::protobuf::BlockTx& block_tx,
         db::DbWriteBatch& db_batch) {
@@ -1304,7 +1287,6 @@ void NetworkInit::HandleElectionBlock(
     }
 
     auto members = elect_mgr_->OnNewElectBlock(
-        thread_idx,
         block->height(),
         elect_block,
         prev_elect_block,
@@ -1384,7 +1366,6 @@ void NetworkInit::HandleElectionBlock(
     shard_statistic_->OnNewElectBlock(sharding_id, block->height(), elect_height);
     kv_sync_->OnNewElectBlock(sharding_id, block->height());
     network::UniversalManager::Instance()->OnNewElectBlock(
-        thread_idx,
         sharding_id,
         elect_height,
         members,
@@ -1412,7 +1393,6 @@ void NetworkInit::HandleElectionBlock(
 }
 
 bool NetworkInit::BlockBlsAggSignatureValid(
-        uint8_t thread_idx,
         const block::protobuf::Block& block) try {
     if (block.bls_agg_sign_x().empty() || block.bls_agg_sign_y().empty()) {
         assert(false);
@@ -1437,7 +1417,6 @@ bool NetworkInit::BlockBlsAggSignatureValid(
             block.electblock_height(),
             (common_pk == libff::alt_bn128_G2::zero()));
         kv_sync_->AddSyncElectBlock(
-           thread_idx,
            network::kRootCongressNetworkId,
            block.network_id(),
            block.electblock_height(),
