@@ -101,7 +101,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
         }
     }
 
-    transport::TcpTransport::Instance()->SetMessageHash(msg, 0);
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
     auto tx_hash = pools::GetTxMessageHash(*new_tx); // cout 输出信息
     std::string sign;
     if (security->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
