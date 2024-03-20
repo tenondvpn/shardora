@@ -204,7 +204,7 @@ public:
     }
 
     uint8_t get_consensus_thread_idx(uint8_t thread_idx) {
-        return consensus_consensus_thread_index_map_[thread_idx];
+        return consensus_thread_index_map_[thread_idx];
     }
 
     uint8_t SetConsensusRealThreadIdx(uint8_t thread_idx) {
