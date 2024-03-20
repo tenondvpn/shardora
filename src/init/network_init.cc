@@ -108,6 +108,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    net_handler_.Start();
     int transport_res = transport::TcpTransport::Instance()->Init(
         common::GlobalInfo::Instance()->config_local_ip() + ":" +
         std::to_string(common::GlobalInfo::Instance()->config_local_port()),
@@ -209,7 +210,6 @@ int NetworkInit::Init(int argc, char** argv) {
         INIT_ERROR("InitHttpServer failed!");
         return kInitError;
     }
-    net_handler_.Start();
     GetAddressShardingId();
     if (InitCommand() != kInitSuccess) {
         INIT_ERROR("InitCommand failed!");
