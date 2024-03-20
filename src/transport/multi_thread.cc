@@ -50,7 +50,7 @@ void ThreadHandler::HandleMessage() {
         
         uint32_t count = 0;
         while (count++ < kMaxHandleMessageCount) {
-            auto msg_ptr = msg_handler_->GetMessageFromQueue(maping_thread_idx);
+            auto msg_ptr = msg_handler_->GetMessageFromQueue(thread_idx);
             if (!msg_ptr) {
                 break;
             }
