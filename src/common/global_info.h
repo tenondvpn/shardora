@@ -216,13 +216,19 @@ public:
                 consensus_thread_index_map_[i] = thread_idx;
                 if (i == message_handler_thread_count_ - 1) {
                     for (uint8_t src_thread_idx = 0; src_thread_idx < i; ++src_thread_idx) {
+                        std::string tmp_str;
+                        auto valid_thread_idx = consensus_thread_index_map_[src_thread_idx];
+                        thread_with_pools_[valid_thread_idx].clear();
                         for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
-                            auto valid_thread_idx = consensus_thread_index_map_[src_thread_idx];
                             if (pools_with_thread_[pool_idx] == src_thread_idx) {
                                 tmp_pools_with_thread[pool_idx] = valid_thread_idx;
                                 thread_with_pools_[valid_thread_idx].insert(pool_idx);
+                                tmp_str += std::to_string(pool_idx) + ", ";
                             }
                         }
+
+                        ZJC_DEBUG("thread: %d, src_thread_idx: %d, pools: %s", 
+                            valid_thread_idx, src_thread_idx, tmp_str.c_str());
                     }
 
                     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
