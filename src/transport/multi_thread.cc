@@ -392,25 +392,21 @@ bool MultiThreadHandler::IsMessageUnique(uint64_t msg_hash) {
  
 MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    for (uint32_t i = 0; i < all_thread_count_; ++i) {
-        if (i % all_thread_count_ == thread_idx) {
-            for (uint32_t pri = kTransportPrioritySystem; pri < kTransportPriorityMaxCount; ++pri) {
-                MessagePtr msg_obj;
-                threads_message_queues_[i][pri].pop(&msg_obj);
-                if (msg_obj == nullptr) {
-                    continue;
-                }
-
-                if (msg_obj->handle_timeout < now_tm_ms) {
-                    ZJC_DEBUG("remove handle timeout invalid message hash: %lu", msg_obj->header.hash64());
-                    continue;
-                }
-
-                // ZJC_DEBUG("pop valid message hash: %lu, size: %u, thread: %u",
-                //     msg_obj->header.hash64(), threads_message_queues_[i][pri].size(), thread_idx);
-                return msg_obj;
-            }
+    for (uint32_t pri = kTransportPrioritySystem; pri < kTransportPriorityMaxCount; ++pri) {
+        MessagePtr msg_obj;
+        threads_message_queues_[thread_idx][pri].pop(&msg_obj);
+        if (msg_obj == nullptr) {
+            continue;
         }
+
+        if (msg_obj->handle_timeout < now_tm_ms) {
+            ZJC_DEBUG("remove handle timeout invalid message hash: %lu", msg_obj->header.hash64());
+            continue;
+        }
+
+        // ZJC_DEBUG("pop valid message hash: %lu, size: %u, thread: %u",
+        //     msg_obj->header.hash64(), threads_message_queues_[i][pri].size(), thread_idx);
+        return msg_obj;
     }
 
     // handle http/ws request
