@@ -165,7 +165,7 @@ void BftManager::NotifyRotationLeader(
     auto elect_item_ptr = std::make_shared<ElectItem>(*old_elect_item);
     auto& elect_item = *elect_item_ptr;
     if (elect_item.local_node_member_index == old_leader_idx) {
-        for (uint8_t j = 0; j < thread_count_; ++j) {
+        for (uint8_t j = 0; j < common::kMaxThreadCount; ++j) {
             elect_item.thread_set[j] = nullptr;
         }
     }
@@ -237,9 +237,9 @@ void BftManager::OnNewElectBlock(
         local_node_pool_mod_num, elect_item.leader_count, thread_count_, elect_item.elect_height, members->size());
     auto& thread_set = elect_item.thread_set;
     SetThreadItem(elect_item.leader_count, local_node_pool_mod_num, thread_set);
-    thread_set[0]->member_ips[elect_item.local_node_member_index] = common::IpToUint32(
-        common::GlobalInfo::Instance()->config_local_ip().c_str());
-    thread_set[0]->valid_ip_count = 1;
+    // thread_set[0]->member_ips[elect_item.local_node_member_index] = common::IpToUint32(
+    //     common::GlobalInfo::Instance()->config_local_ip().c_str());
+    // thread_set[0]->valid_ip_count = 1;
     minimal_node_count_to_consensus_ = members->size() * 2 / 3;
     if (minimal_node_count_to_consensus_ + 1 < members->size()) {
         ++minimal_node_count_to_consensus_;
