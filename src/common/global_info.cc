@@ -73,7 +73,7 @@ int GlobalInfo::Init(const common::Config& config) {
     config.Get("zjchain", "ck_pass", ck_pass_);
 
     auto bft_thread = message_handler_thread_count_ - 1;
-    thread_with_pools_ = new std::set<uint32_t>[bft_thread];
+    thread_with_pools_ = new std::set<uint32_t>[common::kMaxThreadCount];
     auto each_thread_pools_count = common::kInvalidPoolIndex / bft_thread;
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         auto thread_idx = (i / each_thread_pools_count) % bft_thread;
