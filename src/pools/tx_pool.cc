@@ -253,10 +253,6 @@ void TxPool::RemoveTx(const std::string& gid) {
 //         common::Encode::HexEncode(giter->second->gid).c_str(),
 //         common::Encode::HexEncode(giter->second->tx_hash).c_str());
     gid_map_.erase(giter);
-
-    
-    
-    
     if (!prio_map_.empty()) {
         oldest_timestamp_ = prio_map_.begin()->second->time_valid;
     } else {
@@ -266,9 +262,10 @@ void TxPool::RemoveTx(const std::string& gid) {
 
 void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
     for (int32_t i = 0; i < tx_list.size(); ++i) {
-        auto gid = tx_list[i].gid(); 
+        auto& gid = tx_list[i].gid(); 
         RemoveTx(gid);
 
+#ifndef NDEBUG
         // 统计交易确认延迟
         auto now_tm = common::TimeUtils::TimestampUs();
         auto start_tm_iter = gid_start_time_map_.find(gid);
@@ -287,6 +284,7 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
         
             ZJC_INFO("tx latency p90: %llu, p95: %llu, max: %llu", p90, p95, p100);
         }
+#endif
     }
 
     finish_tx_count_ += tx_list.size();
