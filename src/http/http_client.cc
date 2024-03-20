@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#include "common/global_info.h"
+
 namespace zjchain {
 
 namespace http {

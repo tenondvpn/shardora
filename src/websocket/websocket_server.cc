@@ -2,6 +2,8 @@
 
 #include <evhtp/internal.h>
 
+#include "common/global_info.h"
+
 namespace zjchain {
 
 namespace ws {

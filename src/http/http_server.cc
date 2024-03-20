@@ -4,6 +4,7 @@
 #include <functional>
 #include <map>
 
+#include "common/global_info.h"
 #include "common/string_utils.h"
 
 namespace zjchain {
