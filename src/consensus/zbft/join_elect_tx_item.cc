@@ -5,7 +5,6 @@ namespace zjchain {
 namespace consensus {
 
 int JoinElectTxItem::HandleTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
@@ -16,8 +15,7 @@ int JoinElectTxItem::HandleTx(
     uint64_t from_balance = 0;
     uint64_t to_balance = 0;
     auto& from = msg_ptr->address_info->addr();
-    int balance_status = GetTempAccountBalance(
-        thread_idx, from, acc_balance_map, &from_balance);
+    int balance_status = GetTempAccountBalance(from, acc_balance_map, &from_balance);
     if (balance_status != kConsensusSuccess) {
         block_tx.set_status(balance_status);
         // will never happen

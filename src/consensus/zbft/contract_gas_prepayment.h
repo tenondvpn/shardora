@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/global_info.h"
 #include "common/unique_map.h"
 #include "block/account_manager.h"
 #include "protos/prefix_db.h"
@@ -22,7 +23,6 @@ public:
     virtual ~ContractGasPrepayment() {}
 
     void HandleLocalToTx(
-            uint8_t thread_idx,
             const block::protobuf::Block& block,
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
@@ -61,6 +61,7 @@ public:
             return;
         }
 
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
             if (to_txs.tos(i).to().size() != security::kUnicastAddressLength * 2) {
                 continue;
@@ -84,7 +85,6 @@ public:
     }
 
     void HandleUserCreate(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
@@ -103,6 +103,7 @@ public:
             tx.contract_prepayment(),
             db_batch);
         std::string key = tx.to() + tx.from();
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         prepayment_gas_[thread_idx].update(key, tx.contract_prepayment());
         pools_max_heights_[block.pool_index()] = block.height();
         ZJC_DEBUG("contract: %s, set user: %s, prepayment: %lu, pool: %u, height: %lu",
@@ -114,7 +115,6 @@ public:
     }
 
     void HandleContractExecute(
-            uint8_t thread_idx,
             const block::protobuf::Block& block,
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
@@ -129,6 +129,7 @@ public:
             tx.balance(),
             db_batch);
         std::string key = tx.to() + tx.from();
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         prepayment_gas_[thread_idx].update(key, tx.balance());
         pools_max_heights_[block.pool_index()] = block.height();
         ZJC_DEBUG("contract: %s, set user: %s, prepayment: %lu, pool: %u, height: %lu",
@@ -140,39 +141,37 @@ public:
     }
 
     void NewBlockWithTx(
-            uint8_t thread_idx,
             const std::shared_ptr<block::protobuf::Block>& block_item,
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
         if (tx.step() == pools::protobuf::kConsensusLocalTos) { // 增加 prepayment 的交易
-            HandleLocalToTx(thread_idx, *block_item, tx, db_batch);
+            HandleLocalToTx(*block_item, tx, db_batch);
             return;
         }
 
         if (tx.step() == pools::protobuf::kContractCreate) {
-            HandleUserCreate(thread_idx, *block_item, tx, db_batch);
+            HandleUserCreate(*block_item, tx, db_batch);
             return;
         }
 
         if (tx.step() == pools::protobuf::kContractExcute) {
-            HandleContractExecute(thread_idx, *block_item, tx, db_batch);
+            HandleContractExecute(*block_item, tx, db_batch);
             return;
         }
 
         if (tx.step() == pools::protobuf::kContractCreateByRootTo) {
-            HandleUserCreate(thread_idx, *block_item, tx, db_batch);
+            HandleUserCreate(*block_item, tx, db_batch);
             return;
         }
     }
   
     uint64_t GetAddressPrepayment(
-            uint8_t thread_idx,
             uint32_t pool_index,
             const std::string& contract_addr,
             const std::string& user_addr) {
-        assert(thread_idx < thread_count_);
         std::string key = contract_addr + user_addr;
         uint64_t prepayment = 0;
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         if (prepayment_gas_[thread_idx].get(key, &prepayment)) {
             return prepayment;
         }

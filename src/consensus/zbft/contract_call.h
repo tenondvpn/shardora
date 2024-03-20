@@ -33,7 +33,6 @@ public:
 
     virtual ~ContractCall() {}
     virtual int HandleTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjchost,
@@ -55,7 +54,6 @@ private:
         int64_t& caller_balance_add,
         int64_t& gas_more);
     void GetTempPerpaymentBalance(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& block_tx,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
