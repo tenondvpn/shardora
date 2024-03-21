@@ -268,7 +268,7 @@ void BftManager::SetThreadItem(
         
         std::string thread_debug_str;
         auto thread_item = std::make_shared<PoolTxIndexItem>();
-        auto& pools_set = common::GlobalInfo::Instance()->thread_with_pools()[j];
+        auto& pools_set = common::GlobalInfo::Instance()->thread_with_pools()[thread_idx];
         for (auto iter = pools_set.begin(); iter != pools_set.end(); ++iter) {
             if (leader_pool_set.find(*iter) != leader_pool_set.end()) {
                 thread_item->pools.push_back(*iter);
@@ -279,7 +279,7 @@ void BftManager::SetThreadItem(
         thread_item->prev_index = 0;
         thread_set[thread_idx] = thread_item;  // ptr change, multi-thread safe
         ZJC_DEBUG("local_node_pool_mod_num: %d, leader_count: %d, thread: %d handle pools: %s",
-            local_node_pool_mod_num, leader_count, j, thread_debug_str.c_str());
+            local_node_pool_mod_num, leader_count, thread_idx, thread_debug_str.c_str());
     }
 }
 
