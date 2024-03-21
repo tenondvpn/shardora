@@ -358,7 +358,7 @@ void MultiThreadHandler::CreateConsensusBlockMessage(
     assert(block_item->has_bls_agg_sign_y() && block_item->has_bls_agg_sign_x());
     *bft_msg.mutable_block() = *block_item;
     auto queue_idx = GetThreadIndex(new_msg_ptr);
-    if (queue_idx > consensus_thread_count_) {
+    if (queue_idx >= common::kMaxThreadCount) {
         assert(false);
         return;
     }

@@ -433,7 +433,6 @@ void TcpTransport::CheckConnectionValid() {
         std::bind(&TcpTransport::CheckConnectionValid, this));
 }
 
-
 std::string TcpTransport::GetHeaderHashForSign(const transport::protobuf::Header& message) {
     assert(message.has_hash64());
     assert(message.hash64() != 0);
