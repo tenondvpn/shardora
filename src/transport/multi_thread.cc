@@ -238,9 +238,15 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
         return;
     }
 
-    if (!IsMessageUnique(msg_ptr->header.hash64())) {
+    if (CheckMessageValid(msg_ptr) != kFirewallCheckSuccess) {
+        ZJC_DEBUG("message filtered: %lu, type: %d, from: %s:%d",
+            msg_ptr->header.hash64(),
+            msg_ptr->header.type(),
+            msg_ptr->conn->PeerIp().c_str(),
+            msg_ptr->conn->PeerPort());
         return;
     }
+
 
     // all key value must temp kv
 	// 将收到的 sync kv 先持久化
@@ -384,7 +390,73 @@ bool MultiThreadHandler::IsMessageUnique(uint64_t msg_hash) {
     
     // return unique_message_sets_.add(msg_hash);
 }
- 
+
+bool MultiThreadHandler::IsFromMessageUnique(const std::string& from_ip, uint64_t msg_hash) {
+    auto from_hash = common::Hash::Hash64(from_ip + ":" + std::to_string(msg_hash));
+    return from_unique_message_sets_.Push(from_hash);
+}
+
+int MultiThreadHandler::CheckMessageValid(MessagePtr& msg_ptr) {
+    // if (!IsFromMessageUnique(msg_ptr->conn->PeerIp(), msg_ptr->header.hash64())) {
+    //     return kFirewallCheckError;
+    // }
+
+    if (msg_ptr->header.type() >= common::kMaxMessageTypeCount) {
+        ZJC_DEBUG("invalid message type: %d", msg_ptr->header.type());
+        return kFirewallCheckError;
+    }
+
+    // if (firewall_checks_[msg_ptr->header.type()] == nullptr) {
+    //     ZJC_DEBUG("invalid fierwall check message type: %d", msg_ptr->header.type());
+    //     return kFirewallCheckError;
+    // }
+
+    // int check_status = firewall_checks_[msg_ptr->header.type()](msg_ptr);
+    // if (check_status != kFirewallCheckSuccess) {
+    //     ZJC_DEBUG("check firewall failed %d", msg_ptr->header.type());
+    //     return kFirewallCheckError;
+    // }
+
+    if (!IsMessageUnique(msg_ptr->header.hash64())) {
+        // invalid msg id
+        ZJC_DEBUG("check message id failed %d, %lu, from: %s:%d",
+            msg_ptr->header.type(), msg_ptr->header.hash64(),
+            msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort());
+        return kFirewallCheckError;
+    }
+    
+    return kFirewallCheckSuccess;
+}
+
+int MultiThreadHandler::CheckSignValid(MessagePtr& msg_ptr) {
+    if (!msg_ptr->header.has_sign() || !msg_ptr->header.has_pubkey() ||
+            msg_ptr->header.sign().empty() || msg_ptr->header.pubkey().empty()) {
+        ZJC_DEBUG("invalid message no sign or no public key.");
+        return kFirewallCheckError;
+    }
+
+    std::string sign_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
+    if (security_->Verify(
+            sign_hash,
+            msg_ptr->header.pubkey(),
+            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        ZJC_ERROR("verify signature failed!");
+        return kFirewallCheckError;
+    }
+
+    return kFirewallCheckSuccess;
+}
+
+int MultiThreadHandler::CheckDhtMessageValid(MessagePtr& msg_ptr) {
+    if (CheckSignValid(msg_ptr) != kFirewallCheckSuccess) {
+        ZJC_DEBUG("check dht msg failed!");
+        return kFirewallCheckError;
+    }
+
+    ZJC_DEBUG("check dht msg success!");
+    return kFirewallCheckSuccess;
+}
+
 MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool http_svr_thread) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     for (uint32_t pri = kTransportPrioritySystem; pri < kTransportPriorityMaxCount; ++pri) {
