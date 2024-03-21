@@ -3,7 +3,7 @@
 #include <memory>
 #include <protos/pools.pb.h>
 
-#include "common/unique_map.h"
+#include "common/limit_hash_map.h"
 #include "common/unique_set.h"
 #include "common/utils.h"
 #include "evmc/evmc.hpp"
@@ -62,7 +62,7 @@ private:
     ~Execution();
 
     evmc::VM evm_;
-    common::UniqueMap<std::string, std::string, 256, 16>* storage_map_ = nullptr;
+    common::LimitHashMap<std::string, std::string, 1024>* storage_map_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;

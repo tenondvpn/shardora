@@ -105,7 +105,6 @@ private:
     typedef std::map<uint64_t, TxMap> HeightMap;  // order by height
     typedef std::unordered_map <uint32_t, HeightMap> PoolMap;
     PoolMap network_txs_pools_;
-    common::UniqueMap<std::string, protos::AddressInfoPtr, 10240, 16> address_map_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::unordered_map<uint32_t, std::shared_ptr<pools::protobuf::ShardToTxItem>> handled_map_;
