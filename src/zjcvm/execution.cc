@@ -52,7 +52,7 @@ void Execution::Init(std::shared_ptr<db::Db>& db, std::shared_ptr<block::Account
 //         return;
 //     }
 
-    storage_map_ = new common::UniqueMap<std::string, std::string, 256, 16>[common::kMaxThreadCount];
+    storage_map_ = new common::LimitHashMap<std::string, std::string, 1024>[common::kMaxThreadCount];
 }
 
 bool Execution::IsAddressExists(const std::string& addr) {

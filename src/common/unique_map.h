@@ -19,6 +19,7 @@ class UniqueMap {
 
 public:
     explicit UniqueMap() {
+        ZJC_FATAL("Code is obsolete and unavailable");
         buckets_ = new common::FixedQueue<Item*, EachBucketSize>[BucketSize];
     }
 
