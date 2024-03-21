@@ -339,13 +339,17 @@ void BftManager::CheckInvalidGids() {
 }
 
 void BftManager::PopAllPoolTxs() {
+    std::string pop_index_debug;
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
             pools_mgr_->PopTxs(pool_idx, false);
             pools_mgr_->CheckTimeoutTx(pool_idx);
+            pop_index_debug += std::to_string(pool_idx) + ",";
         }
     }
+
+    ZJC_DEBUG("PopAllPoolTxs thread: %d, pools: %s", thread_index, pop_index_debug.c_str());
 }
 
 void BftManager::RotationLeader(
