@@ -9,7 +9,7 @@ namespace zjchain {
 
 namespace common {
 
-template<class KeyType, class ValueType, uint32_t MaxSize=64>
+template<class KeyType, class ValueType, uint32_t MaxSize>
 class  LimitHashMap {
 public:
     LimitHashMap() : max_size_(MaxSize) {}
