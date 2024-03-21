@@ -84,7 +84,7 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
 
 void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
     auto& header = header_ptr->header;
-    if (header.type() >= common::kLegoMaxMessageTypeCount) {
+    if (header.type() >= common::kMaxMessageTypeCount) {
         return;
     }
 
@@ -154,7 +154,7 @@ void Route::HandleDhtMessage(const transport::MessagePtr& header_ptr) {
 }
 
 void Route::RegisterMessage(uint32_t type, transport::MessageProcessor proc) {
-    if (type >= common::kLegoMaxMessageTypeCount) {
+    if (type >= common::kMaxMessageTypeCount) {
         return;
     }
 
@@ -169,7 +169,7 @@ void Route::RegisterMessage(uint32_t type, transport::MessageProcessor proc) {
 }
 
 void Route::UnRegisterMessage(uint32_t type) {
-    if (type >= common::kLegoMaxMessageTypeCount) {
+    if (type >= common::kMaxMessageTypeCount) {
         return;
     }
 

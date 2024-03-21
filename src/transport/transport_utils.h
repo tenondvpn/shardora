@@ -68,6 +68,11 @@ enum TcpConnnectionType {
     kRemoveClient = 3,
 };
 
+enum FirewallCheckStatus {
+    kFirewallCheckSuccess = 0,
+    kFirewallCheckError = 1,
+};
+
 static const uint64_t kConsensusMessageTimeoutUs = 5000000lu;
 static const uint64_t kHandledTimeoutMs = 10000lu;
 static const uint64_t kMessagePeriodUs = 1500000lu;
@@ -96,6 +101,7 @@ struct TransportMessage {
 
 typedef std::shared_ptr<TransportMessage> MessagePtr;
 typedef std::function<void(const transport::MessagePtr& message)> MessageProcessor;
+typedef std::function<int(transport::MessagePtr& message)> FirewallCheckCallback;
 
 struct ClientItem {
     std::string des_ip;

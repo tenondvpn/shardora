@@ -23,6 +23,7 @@
 #include "db/db.h"
 #include "protos/prefix_db.h"
 #include "protos/transport.pb.h"
+#include "security/security.h"
 #include "transport/transport_utils.h"
 
 namespace zjchain {
@@ -68,6 +69,12 @@ public:
         http_server_message_queue_.push(msg_ptr);
     }
 
+    void AddFirewallCheckCallback(int32_t type, FirewallCheckCallback cb) {
+        assert(type < common::kMaxMessageTypeCount);
+        assert(firewall_checks_[type] == nullptr);
+        firewall_checks_[type] = cb;
+    }
+
 private:
     struct SavedBlockQueueItem {
         SavedBlockQueueItem(uint32_t c_pool, uint64_t c_height, uint32_t p, uint64_t h)
@@ -90,6 +97,10 @@ private:
     void CreateConsensusBlockMessage(
         std::shared_ptr<transport::TransportMessage>& new_msg_ptr,
         std::shared_ptr<block::protobuf::Block>& block_ptr);
+    bool IsFromMessageUnique(const std::string& from_ip, uint64_t msg_hash);
+    int CheckMessageValid(MessagePtr& msg_ptr);
+    int CheckSignValid(MessagePtr& msg_ptr);
+    int CheckDhtMessageValid(MessagePtr& msg_ptr);
 
     static const int kQueueObjectCount = 1024 * 1024;
 
@@ -110,6 +121,9 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::unordered_map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_check_block_map_[common::kInvalidPoolIndex];
     std::unordered_set<uint64_t> committed_heights_[common::kInvalidPoolIndex];
+    std::shared_ptr<security::Security> security_ = nullptr;
+    FirewallCheckCallback firewall_checks_[common::kMaxMessageTypeCount] = { nullptr };
+    common::LimitHashSet<uint64_t> from_unique_message_sets_{10240};
 
     DISALLOW_COPY_AND_ASSIGN(MultiThreadHandler);
 };

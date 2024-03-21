@@ -418,7 +418,7 @@ void TcpTransport::CheckConnectionValid() {
 
     uint32_t length = waiting_check_queue_.size();
     uint32_t check_count = 0;
-    while (check_count < kEachCheckConnectionCount && check_count <= length && !destroy_) {
+    while (check_count < kEachCheckConnectionCount && check_count < length && !destroy_) {
         ++check_count;
         auto conn = waiting_check_queue_.front();
         if (conn->ShouldReconnect()) {
