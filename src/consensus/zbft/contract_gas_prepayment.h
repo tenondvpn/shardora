@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/global_info.h"
-#include "common/unique_map.h"
+#include "common/limit_hash_map.h"
 #include "block/account_manager.h"
 #include "protos/prefix_db.h"
 #include "security/security.h"
@@ -14,7 +14,7 @@ class ContractGasPrepayment {
 public:
     ContractGasPrepayment(std::shared_ptr<db::Db>& db) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
-        prepayment_gas_ = new common::UniqueMap<std::string, uint64_t, 256, 16>[common::kMaxThreadCount];
+        prepayment_gas_ = new common::LimitHashMap<std::string, uint64_t, 1024>[common::kMaxThreadCount];
     }
 
     virtual ~ContractGasPrepayment() {}
@@ -70,7 +70,7 @@ public:
                 block.height(),
                 to_txs.tos(i).balance(),
                 db_batch);
-            prepayment_gas_[thread_idx].update(to_txs.tos(i).to(), to_txs.tos(i).balance());
+            prepayment_gas_[thread_idx].Insert(to_txs.tos(i).to(), to_txs.tos(i).balance());
             ZJC_DEBUG("success save contract prepayment contract: %s, prepayment: %lu, pool: %u, height: %lu",
                 common::Encode::HexEncode(to_txs.tos(i).to()).c_str(),
                 to_txs.tos(i).balance(),
@@ -101,7 +101,7 @@ public:
             db_batch);
         std::string key = tx.to() + tx.from();
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-        prepayment_gas_[thread_idx].update(key, tx.contract_prepayment());
+        prepayment_gas_[thread_idx].Insert(key, tx.contract_prepayment());
         pools_max_heights_[block.pool_index()] = block.height();
         ZJC_DEBUG("success save contract prepayment contract: %s, set user: %s, prepayment: %lu, pool: %u, height: %lu",
             common::Encode::HexEncode(tx.to()).c_str(),
@@ -127,7 +127,7 @@ public:
             db_batch);
         std::string key = tx.to() + tx.from();
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-        prepayment_gas_[thread_idx].update(key, tx.balance());
+        prepayment_gas_[thread_idx].Insert(key, tx.balance());
         pools_max_heights_[block.pool_index()] = block.height();
         ZJC_DEBUG("success save contract prepayment contract: %s, set user: %s, prepayment: %lu, pool: %u, height: %lu",
             common::Encode::HexEncode(tx.to()).c_str(),
@@ -169,14 +169,14 @@ public:
         std::string key = contract_addr + user_addr;
         uint64_t prepayment = 0;
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-        if (prepayment_gas_[thread_idx].get(key, &prepayment)) {
+        if (prepayment_gas_[thread_idx].Get(key, &prepayment)) {
             ZJC_DEBUG("success get contract prepayment %s, %s, %lu", common::Encode::HexEncode(contract_addr).c_str(), common::Encode::HexEncode(user_addr).c_str(), prepayment);
             return prepayment;
         }
 
         uint64_t height = 0;
         if (!prefix_db_->GetContractUserPrepayment(contract_addr, user_addr, &height, &prepayment)) {
-            prepayment_gas_[thread_idx].add(key, prepayment);
+            prepayment_gas_[thread_idx].Get(key, &prepayment);
             ZJC_DEBUG("failed get contract prepayment %s, %s, %lu", common::Encode::HexEncode(contract_addr).c_str(), common::Encode::HexEncode(user_addr).c_str(), prepayment);
             return 0;
         }
@@ -195,7 +195,7 @@ public:
 private:
     uint8_t thread_count_ = 0;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    common::UniqueMap<std::string, uint64_t, 256, 16>* prepayment_gas_ = nullptr;
+    common::LimitHashMap<std::string, uint64_t>* prepayment_gas_ = nullptr;
     uint64_t pools_max_heights_[common::kImmutablePoolSize] = { 0 };
 
     DISALLOW_COPY_AND_ASSIGN(ContractGasPrepayment);
