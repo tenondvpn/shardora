@@ -220,7 +220,7 @@ void TcpAcceptor::CheckConnectionValid() {
 
     uint32_t length = waiting_check_queue_.size();
     uint32_t check_count = 0;
-    while (check_count < kEachCheckConnectionCount && check_count <= length && destroy_ == 0) {
+    while (check_count < kEachCheckConnectionCount && check_count < length && destroy_ == 0) {
         ++check_count;
         auto conn = waiting_check_queue_.front();
         if (conn->ShouldReconnect()) {
