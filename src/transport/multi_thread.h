@@ -62,7 +62,7 @@ public:
     int Init(std::shared_ptr<db::Db>& db);
     void Start();
     void HandleMessage(MessagePtr& msg_ptr);
-    MessagePtr GetMessageFromQueue(uint32_t thread_idx);
+    MessagePtr GetMessageFromQueue(uint32_t thread_idx, bool);
     void Destroy();
     void NewHttpServer(MessagePtr& msg_ptr) {
         http_server_message_queue_.push(msg_ptr);

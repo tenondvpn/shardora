@@ -50,7 +50,9 @@ void ThreadHandler::HandleMessage() {
         
         uint32_t count = 0;
         while (count++ < kMaxHandleMessageCount) {
-            auto msg_ptr = msg_handler_->GetMessageFromQueue(thread_idx);
+            auto msg_ptr = msg_handler_->GetMessageFromQueue(
+                thread_idx, 
+                (maping_thread_idx == (common::GlobalInfo::Instance()->message_handler_thread_count() - 1)));
             if (!msg_ptr) {
                 break;
             }
@@ -383,7 +385,7 @@ bool MultiThreadHandler::IsMessageUnique(uint64_t msg_hash) {
     // return unique_message_sets_.add(msg_hash);
 }
  
-MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx) {
+MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool http_svr_thread) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     for (uint32_t pri = kTransportPrioritySystem; pri < kTransportPriorityMaxCount; ++pri) {
         MessagePtr msg_obj;
@@ -403,7 +405,7 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx) {
     }
 
     // handle http/ws request
-    if (thread_idx == consensus_thread_count_) {
+    if (http_svr_thread) {
         MessagePtr msg_obj;
         http_server_message_queue_.pop(&msg_obj);
         return msg_obj;
