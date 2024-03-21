@@ -52,8 +52,7 @@ void Execution::Init(std::shared_ptr<db::Db>& db, std::shared_ptr<block::Account
 //         return;
 //     }
 
-    auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
-    storage_map_ = new common::UniqueMap<std::string, std::string, 256, 16>[thread_count];
+    storage_map_ = new common::UniqueMap<std::string, std::string, 256, 16>[common::kMaxThreadCount];
 }
 
 bool Execution::IsAddressExists(const std::string& addr) {
