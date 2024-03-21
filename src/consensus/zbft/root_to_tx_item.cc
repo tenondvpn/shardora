@@ -25,7 +25,6 @@ RootToTxItem::RootToTxItem(
 RootToTxItem::~RootToTxItem() {}
 
 int RootToTxItem::HandleTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
@@ -35,14 +34,13 @@ int RootToTxItem::HandleTx(
     if (block_tx.to().size() == security::kUnicastAddressLength * 2) {
         // gas prepayment
         account_info = account_mgr_->GetAccountInfo(
-            thread_idx,
             block_tx.to().substr(0, security::kUnicastAddressLength));
         if (account_info == nullptr) {
             block_tx.set_status(kConsensusAccountNotExists);
             return kConsensusSuccess;
         }
     } else {
-        account_info = account_mgr_->GetAccountInfo(thread_idx, block_tx.to());
+        account_info = account_mgr_->GetAccountInfo(block_tx.to());
     }
 
     char des_sharding_and_pool[8];

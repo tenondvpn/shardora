@@ -66,7 +66,6 @@ public:
     }
 
     virtual int HandleTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
@@ -93,7 +92,7 @@ public:
 
 typedef std::shared_ptr<TxItem> TxItemPtr;
 typedef std::function<TxItemPtr(const transport::MessagePtr& msg_ptr)> CreateConsensusItemFunction;
-typedef std::function<void(uint8_t thread_idx, const std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>>& invalid_pools)> RotationLeaderCallback;
+typedef std::function<void(const std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>>& invalid_pools)> RotationLeaderCallback;
 
 struct StatisticElectItem {
     StatisticElectItem() : elect_height(0) {

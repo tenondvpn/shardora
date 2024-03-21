@@ -70,7 +70,7 @@ ElectManager::ElectManager(
 
 ElectManager::~ElectManager() {}
 
-int ElectManager::Join(uint8_t thread_idx, uint32_t network_id) {
+int ElectManager::Join(uint32_t network_id) {
     auto iter = elect_network_map_.find(network_id);
     if (iter != elect_network_map_.end()) {
         ELECT_INFO("this node has join network[%u]", network_id);
@@ -86,7 +86,7 @@ int ElectManager::Join(uint8_t thread_idx, uint32_t network_id) {
             std::placeholders::_2),
         security_,
         prefix_db_);
-    if (elect_node_ptr_->Init(thread_idx, acc_mgr_) != network::kNetworkSuccess) {
+    if (elect_node_ptr_->Init(acc_mgr_) != network::kNetworkSuccess) {
         ELECT_ERROR("node join network [%u] failed!", network_id);
         return kElectError;
     }
@@ -121,7 +121,6 @@ void ElectManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 common::MembersPtr ElectManager::OnNewElectBlock(
-        uint8_t thread_idx,
         uint64_t height,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block_ptr,
         const std::shared_ptr<elect::protobuf::ElectBlock>& prev_elect_block_ptr,
@@ -151,7 +150,7 @@ common::MembersPtr ElectManager::OnNewElectBlock(
         }
     }
 
-    ElectedToConsensusShard(thread_idx, elect_block, elected);
+    ElectedToConsensusShard(elect_block, elected);
     elect_block_mgr_.OnNewElectBlock(height, elect_block, db_batch);
     return members_ptr_[elect_block.shard_network_id()];
 //     if (new_elect_cb_ != nullptr) {
@@ -164,7 +163,6 @@ common::MembersPtr ElectManager::OnNewElectBlock(
 }
 
 void ElectManager::ElectedToConsensusShard(
-        uint8_t thread_idx,
         protobuf::ElectBlock& elect_block,
         bool cons_elected) {
     auto local_netid = common::GlobalInfo::Instance()->network_id();
@@ -173,7 +171,7 @@ void ElectManager::ElectedToConsensusShard(
     if (!cons_elected) {
         if (local_netid == elect_block.shard_network_id()) {
 //             Quit(local_netid);
-            if (Join(thread_idx, local_netid + network::kConsensusWaitingShardOffset) != kElectSuccess) {
+            if (Join(local_netid + network::kConsensusWaitingShardOffset) != kElectSuccess) {
                 ELECT_ERROR("join elected network failed![%u]",
                     local_netid + network::kConsensusWaitingShardOffset);
             } else {
@@ -186,7 +184,7 @@ void ElectManager::ElectedToConsensusShard(
     } else {
         if (local_netid != elect_block.shard_network_id()) {
 //             Quit(local_netid);
-            if (Join(thread_idx, elect_block.shard_network_id()) != kElectSuccess) {
+            if (Join(elect_block.shard_network_id()) != kElectSuccess) {
                 ELECT_ERROR("join elected network failed![%u]", elect_block.shard_network_id());
             } else {
                 ELECT_INFO("join new election shard network: %u", elect_block.shard_network_id());
@@ -208,7 +206,7 @@ void ElectManager::ElectedToConsensusShard(
             }
 
             prev_elected_ids_ = now_elected_ids_;
-            if (Join(thread_idx, elect_block.shard_network_id()) != kElectSuccess) {
+            if (Join(elect_block.shard_network_id()) != kElectSuccess) {
                 ELECT_WARN("join elected network failed![%u]", elect_block.shard_network_id());
             } else {
                 ELECT_INFO("join new election shard network: %u", elect_block.shard_network_id());

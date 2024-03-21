@@ -109,7 +109,6 @@ void UniversalManager::DhtBootstrapResponseCallback(
 }
 
 int UniversalManager::CreateNetwork(
-        uint8_t thread_idx,
         uint32_t network_id,
         const common::Config& config) {
     dht::NodePtr local_node = std::make_shared<dht::Node>(
@@ -148,7 +147,7 @@ int UniversalManager::CreateNetwork(
     }
 
     uint64_t bTime = common::TimeUtils::TimestampMs();
-    if (dht_ptr->Bootstrap(thread_idx, boot_nodes, false, network_id) != dht::kDhtSuccess) {
+    if (dht_ptr->Bootstrap(boot_nodes, false, network_id) != dht::kDhtSuccess) {
 //         UnRegisterUniversal(network_id);
         NETWORK_ERROR("bootstrap universal network failed!");
         return kNetworkError;
@@ -158,8 +157,8 @@ int UniversalManager::CreateNetwork(
     return kNetworkSuccess;
 }
 
-int UniversalManager::CreateUniversalNetwork(uint8_t thread_idx, const common::Config& config) {
-    int res = CreateNetwork(thread_idx, kUniversalNetworkId, config);
+int UniversalManager::CreateUniversalNetwork(const common::Config& config) {
+    int res = CreateNetwork(kUniversalNetworkId, config);
     if (res != kNetworkSuccess) {
         return res;
     }
@@ -172,19 +171,18 @@ int UniversalManager::CreateUniversalNetwork(uint8_t thread_idx, const common::C
     return kNetworkSuccess;
 }
 
-int UniversalManager::CreateNodeNetwork(uint8_t thread_idx, const common::Config& config) {
-    return CreateNetwork(thread_idx, kNodeNetworkId, config);
+int UniversalManager::CreateNodeNetwork(const common::Config& config) {
+    return CreateNetwork(kNodeNetworkId, config);
 }
 
 void UniversalManager::OnNewElectBlock(
-        uint8_t thread_idx,
         uint32_t sharding_id,
         uint64_t elect_height,
         common::MembersPtr& members,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
     if (dhts_[kUniversalNetworkId] != nullptr) {
         Universal* unidht = static_cast<Universal*>(dhts_[kUniversalNetworkId].get());
-        unidht->OnNewElectBlock(thread_idx, sharding_id, elect_height, members, elect_block);
+        unidht->OnNewElectBlock(sharding_id, elect_height, members, elect_block);
     }
 }
 
@@ -202,9 +200,9 @@ void UniversalManager::DropNode(const std::string& ip, uint16_t port) {
     }
 }
 
-void UniversalManager::Join(uint8_t thread_idx, const dht::NodePtr& node) {
+void UniversalManager::Join(const dht::NodePtr& node) {
     if (dhts_[kNodeNetworkId] != nullptr) {
-        dhts_[kNodeNetworkId]->UniversalJoin(thread_idx, node);
+        dhts_[kNodeNetworkId]->UniversalJoin(node);
     }
 }
 

@@ -18,7 +18,6 @@ namespace zjcvm {
 bool ZjchainHost::account_exists(const evmc::address& addr) const noexcept {
     ZJC_DEBUG("called 0");
     return Execution::Instance()->IsAddressExists(
-        thread_idx_,
         std::string((char*)addr.bytes, sizeof(addr.bytes)));
 }
 
@@ -40,7 +39,7 @@ evmc::bytes32 ZjchainHost::get_storage(
         }
     }
 
-    return Execution::Instance()->GetStorage(thread_idx_, addr, key);
+    return Execution::Instance()->GetStorage(addr, key);
 }
 
 evmc_storage_status ZjchainHost::set_storage(
@@ -117,7 +116,7 @@ evmc::uint256be ZjchainHost::get_balance(const evmc::address& addr) const noexce
 size_t ZjchainHost::get_code_size(const evmc::address& addr) const noexcept {
     ZJC_DEBUG("called 4");
     std::string id = std::string((char*)addr.bytes, sizeof(addr.bytes));
-    auto acc_info = acc_mgr_->GetAccountInfo(thread_idx_, id);
+    auto acc_info = acc_mgr_->GetAccountInfo(id);
     if (acc_info == nullptr) {
         return 0;
     }
@@ -143,7 +142,7 @@ size_t ZjchainHost::copy_code(
         size_t buffer_size) const noexcept {
     ZJC_DEBUG("called 6");
     std::string id = std::string((char*)addr.bytes, sizeof(addr.bytes));
-    auto acc_info = acc_mgr_->GetAccountInfo(thread_idx_, id);
+    auto acc_info = acc_mgr_->GetAccountInfo(id);
     if (acc_info == nullptr) {
         return 0;
     }
@@ -207,7 +206,7 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
         ZJC_DEBUG("call default contract failed: %s", common::Encode::HexEncode(origin_address_).c_str());
     } else {
         std::string id = std::string((char*)msg.code_address.bytes, sizeof(msg.code_address.bytes));
-        auto acc_info = acc_mgr_->GetAccountInfo(thread_idx_, id);
+        auto acc_info = acc_mgr_->GetAccountInfo(id);
         if (acc_info == nullptr) {
             evmc_res.status_code = EVMC_REVERT;
             ZJC_WARN("get call bytes code failed: %s, field: %s",
@@ -339,7 +338,7 @@ int ZjchainHost::GetKeyValue(const std::string& id, const std::string& key_str, 
     ZJC_DEBUG("called 14");
     auto addr = evmc::address{};
     memcpy(addr.bytes, id.c_str(), id.size());
-    if (!Execution::Instance()->GetStorage(thread_idx_, addr, key_str, val)) {
+    if (!Execution::Instance()->GetStorage(addr, key_str, val)) {
         return kZjcvmError;
     }
 
@@ -348,7 +347,7 @@ int ZjchainHost::GetKeyValue(const std::string& id, const std::string& key_str, 
 
 evmc_access_status ZjchainHost::access_account(const evmc::address& addr) noexcept {
     ZJC_DEBUG("called 15");
-    if (Execution::Instance()->AddressWarm(thread_idx_, addr)) {
+    if (Execution::Instance()->AddressWarm(addr)) {
         return EVMC_ACCESS_WARM;
     }
 
@@ -359,7 +358,7 @@ evmc_access_status ZjchainHost::access_storage(
         const evmc::address& addr,
         const evmc::bytes32& key) noexcept {
     ZJC_DEBUG("called 16");
-    if (Execution::Instance()->StorageKeyWarm(thread_idx_, addr, key)) {
+    if (Execution::Instance()->StorageKeyWarm(addr, key)) {
         return EVMC_ACCESS_WARM;
     }
 

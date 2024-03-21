@@ -27,6 +27,7 @@ GlobalInfo::~GlobalInfo() {
 }
 
 int GlobalInfo::Init(const common::Config& config) {
+    memset(consensus_thread_index_map_, common::kInvalidUint8, sizeof(consensus_thread_index_map_));
     begin_run_timestamp_ms_ = common::TimeUtils::TimestampMs();
     message_handler_thread_count_ = 4;
     config.Get("zjchain", "consensus_thread_count", message_handler_thread_count_);
@@ -72,15 +73,13 @@ int GlobalInfo::Init(const common::Config& config) {
     config.Get("zjchain", "ck_pass", ck_pass_);
 
     auto bft_thread = message_handler_thread_count_ - 1;
-    thread_with_pools_ = new std::set<uint32_t>[bft_thread];
+    thread_with_pools_ = new std::set<uint32_t>[common::kMaxThreadCount];
     auto each_thread_pools_count = common::kInvalidPoolIndex / bft_thread;
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         auto thread_idx = (i / each_thread_pools_count) % bft_thread;
-        thread_with_pools_[thread_idx].insert(i);
         pools_with_thread_[i] = thread_idx;
     }
 
-    now_valid_thread_index_ = message_handler_thread_count_ + kTickThreadPoolCount;
     return kCommonSuccess;
 }
 

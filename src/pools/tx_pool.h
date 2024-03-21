@@ -48,7 +48,7 @@ public:
     void TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
     void TxRecover(std::map<std::string, TxItemPtr>& txs);
     void CheckTimeoutTx();
-    uint32_t SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms);
+    uint32_t SyncMissingBlocks(uint64_t now_tm_ms);
     void RemoveTx(const std::string& gid);
 
     uint32_t tx_size() const {
@@ -193,7 +193,6 @@ public:
     }
 
     uint64_t UpdateLatestInfo(
-            uint8_t thread_idx,
             uint64_t height,
             const std::string& hash,
             const std::string& prehash,
@@ -239,7 +238,7 @@ public:
                 prev_synced_height_ = synced_height_;
             }
         } else {
-            SyncBlock(thread_idx);
+            SyncBlock();
         }
 
         ZJC_DEBUG("pool index: %d, new height: %lu, new synced height: %lu, prev_synced_height_: %lu, to_sync_max_height_: %lu, latest height: %lu",
@@ -256,7 +255,7 @@ public:
         return false;
     }
 
-    void SyncBlock(uint8_t thread_idx) {
+    void SyncBlock() {
         if (height_tree_ptr_ == nullptr) {
             return;
         }
@@ -276,7 +275,6 @@ public:
                 ++prev_synced_height_) {
             if (!height_tree_ptr_->Valid(prev_synced_height_ + 1)) {
                 kv_sync_->AddSyncHeight(
-                    thread_idx,
                     net_id,
                     pool_index_,
                     prev_synced_height_ + 1,

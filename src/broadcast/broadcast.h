@@ -22,7 +22,6 @@ namespace broadcast {
 class Broadcast {
 public:
     virtual void Broadcasting(
-        uint8_t thread_idx,
         dht::BaseDhtPtr& dht_ptr,
         const transport::MessagePtr& message) = 0;
 
@@ -30,7 +29,6 @@ protected:
     Broadcast();
     virtual ~Broadcast();
     void Send(
-        uint8_t thread_idx,
         dht::BaseDhtPtr& dht_ptr,
         const transport::MessagePtr& message,
         const std::vector<dht::NodePtr>& nodes);

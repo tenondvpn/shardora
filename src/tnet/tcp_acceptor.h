@@ -45,7 +45,7 @@ private:
     void ReleaseByIOThread();
     virtual bool OnRead();
     virtual void OnWrite();
-    void CheckConnectionValid(uint8_t thread_idx);
+    void CheckConnectionValid();
 
     static const uint32_t kEachCheckConnectionCount = 100u;
 

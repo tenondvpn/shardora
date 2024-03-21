@@ -36,28 +36,23 @@ public:
         uint32_t call_mode,
         ZjchainHost& host,
         evmc::Result* res);
-    bool IsAddressExists(uint8_t thread_idx, const std::string& addr);
-    bool AddressWarm(uint8_t thread_idx, const evmc::address& addr);
+    bool IsAddressExists(const std::string& addr);
+    bool AddressWarm(const evmc::address& addr);
     bool StorageKeyWarm(
-            uint8_t thread_idx,
             const evmc::address& addr,
             const evmc::bytes32& key);
     void NewBlockWithTx(
-            uint8_t thread_idx,
             const std::shared_ptr<block::protobuf::Block>& block_item,
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch);
     void UpdateStorage(
-            uint8_t thread_idx,
             const std::string& key,
             const std::string& val,
             db::DbWriteBatch& db_batch);
     evmc::bytes32 GetStorage(
-            uint8_t thread_idx,
             const evmc::address& addr,
             const evmc::bytes32& key);
     bool GetStorage(
-            uint8_t thread_idx,
             const evmc::address& addr,
             const std::string& key,
             std::string* val);

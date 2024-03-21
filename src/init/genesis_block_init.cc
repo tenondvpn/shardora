@@ -617,7 +617,6 @@ int GenesisBlockInit::CreateElectBlock(
     BlsAggSignBlock(root_genesis_nodes, tenon_block);
     db::DbWriteBatch db_batch;
     pools_mgr_->UpdateLatestInfo(
-        0,
         tenon_block,
         db_batch);
 
@@ -628,7 +627,7 @@ int GenesisBlockInit::CreateElectBlock(
     fputs(ec_val.c_str(), root_gens_init_block_file);
     AddBlockItemToCache(tenon_block, db_batch);
     block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
-    block_mgr_->GenesisNewBlock(0, tenon_block);
+    block_mgr_->GenesisNewBlock(tenon_block);
     db_->Put(db_batch);
 
     auto account_ptr = account_mgr_->GetAcountInfoFromDb(account_info->addr());
@@ -692,13 +691,12 @@ int GenesisBlockInit::GenerateRootSingleBlock(
             root_gens_init_block_file);
         db::DbWriteBatch db_batch;
         pools_mgr_->UpdateLatestInfo(
-            0,
             tenon_block,
             db_batch);
 
         AddBlockItemToCache(tenon_block, db_batch);
         block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
-        block_mgr_->GenesisNewBlock(0, tenon_block);
+        block_mgr_->GenesisNewBlock(tenon_block);
         db_->Put(db_batch);
         std::string pool_hash;
         uint64_t pool_height = 0;
@@ -758,7 +756,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         db::DbWriteBatch db_batch;
         prefix_db_->SaveGenesisTimeblock(tm_block.height(), tm_block.timestamp(), db_batch);
         pools_mgr_->UpdateLatestInfo(
-            0,
             tenon_block,
             db_batch);
 
@@ -768,7 +765,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         fputs((common::Encode::HexEncode(tmp_str) + "\n").c_str(), root_gens_init_block_file);
 //         tmblock::TimeBlockManager::Instance()->UpdateTimeBlock(1, now_tm, now_tm);
         AddBlockItemToCache(tenon_block, db_batch);
-        block_mgr_->GenesisNewBlock(0, tenon_block);
+        block_mgr_->GenesisNewBlock(tenon_block);
         block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
         db_->Put(db_batch);
         std::string pool_hash;
@@ -824,7 +821,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
         // block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
 
         // 选举块、时间块无论 shard 都是要全网同步的
-        block_mgr_->GenesisNewBlock(0, tenon_block);
+        block_mgr_->GenesisNewBlock(tenon_block);
         for (int32_t i = 0; i < tenon_block->tx_list_size(); ++i) {
             for (int32_t j = 0; j < tenon_block->tx_list(i).storages_size(); ++j) {
                 if (tenon_block->tx_list(i).storages(j).key() == protos::kElectNodeAttrElectBlock) {
@@ -1038,7 +1035,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
 
         // 更新交易池最新信息
         pools_mgr_->UpdateLatestInfo(
-            0,
             tenon_block,
             db_batch);
         // ??? 和 UpdateLatestInfo 差不多啊，冗余了吧
@@ -1056,13 +1052,13 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             block_mgr_->GenesisAddOneAccount(net_id, *tx, tenon_block->height(), db_batch);
         }
         // 出块，并处理块中不同类型的交易
-        block_mgr_->GenesisNewBlock(0, tenon_block);
+        block_mgr_->GenesisNewBlock(tenon_block);
         // 处理选举交易（??? 这里没有和 GenesisNewBlock 重复吗）
         // TODO 感觉重复，可实验
         for (uint32_t i = 0; i < root_genesis_nodes.size(); ++i) {
             for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
                 if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
-                    block_mgr_->HandleJoinElectTx(0, *tenon_block, tenon_block->tx_list(tx_idx), db_batch);
+                    block_mgr_->HandleJoinElectTx(*tenon_block, tenon_block->tx_list(tx_idx), db_batch);
                 }
             }
         }
@@ -1360,15 +1356,14 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         //         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
         db::DbWriteBatch db_batch;
         pools_mgr_->UpdateLatestInfo(
-            0,
             tenon_block,
             db_batch);
         AddBlockItemToCache(tenon_block, db_batch);
-        block_mgr_->GenesisNewBlock(0, tenon_block);
+        block_mgr_->GenesisNewBlock(tenon_block);
         for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
             for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
                 if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
-                    block_mgr_->HandleJoinElectTx(0, *tenon_block, tenon_block->tx_list(tx_idx), db_batch);
+                    block_mgr_->HandleJoinElectTx(*tenon_block, tenon_block->tx_list(tx_idx), db_batch);
                 }
             }
         }
@@ -1512,11 +1507,10 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         db::DbWriteBatch db_batch;
         // 更新 pool 最新信息
         pools_mgr_->UpdateLatestInfo(
-            0,
             tenon_block,
             db_batch);
         AddBlockItemToCache(tenon_block, db_batch);
-        block_mgr_->GenesisNewBlock(0, tenon_block);
+        block_mgr_->GenesisNewBlock(tenon_block);
         block_mgr_->GenesisAddAllAccount(net_id, tenon_block, db_batch);
         db_->Put(db_batch);
 

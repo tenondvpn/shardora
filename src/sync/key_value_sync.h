@@ -75,18 +75,15 @@ public:
     KeyValueSync();
     ~KeyValueSync();
     void AddSync(
-        uint8_t thread_idx,
         uint32_t network_id,
         const std::string& key,
         uint32_t priority);
     void AddSyncHeight(
-        uint8_t thread_idx,
         uint32_t network_id,
         uint32_t pool_idx,
         uint64_t height,
         uint32_t priority);
     void AddSyncElectBlock(
-        uint8_t thread_idx,
         uint32_t network_id,
         uint32_t pool_idx,
         uint64_t height,
@@ -110,22 +107,21 @@ public:
     }
 
 private:
-    void CheckSyncItem(uint8_t thread_idx);
+    void CheckSyncItem();
     void CheckSyncTimeout();
     uint64_t SendSyncRequest(
-        uint8_t thread_idx,
         uint32_t network_id,
         const sync::protobuf::SyncMessage& sync_msg,
         const std::set<uint64_t>& sended_neigbors);
     void ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr);
     void ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr);
     void PopItems();
-    void ConsensusTimerMessage(uint8_t thread_idx);
+    void ConsensusTimerMessage();
     bool AddSyncKeyValue(
         transport::protobuf::Header* msg,
         const block::protobuf::Block& block,
         uint32_t& add_size);
-    void PopKvMessage(uint8_t thread_idx);
+    void PopKvMessage();
     void HandleKvMessage(const transport::MessagePtr& msg_ptr);
     void ResponseElectBlock(
         uint32_t network_id,

@@ -77,7 +77,7 @@ bool TcpAcceptor::Start() {
 
     check_conn_tick_.CutOff(
         10000000, 
-        std::bind(&TcpAcceptor::CheckConnectionValid, this, std::placeholders::_1));
+        std::bind(&TcpAcceptor::CheckConnectionValid, this));
     return rc;
 }
 
@@ -208,7 +208,7 @@ bool TcpAcceptor::OnRead() {
     return false;
 }
 
-void TcpAcceptor::CheckConnectionValid(uint8_t thread_idx) {
+void TcpAcceptor::CheckConnectionValid() {
     while (destroy_ == 0) {
         std::shared_ptr<TcpConnection> out_conn = nullptr;
         if (!in_check_queue_.pop(&out_conn) || out_conn == nullptr) {
@@ -232,7 +232,7 @@ void TcpAcceptor::CheckConnectionValid(uint8_t thread_idx) {
 
     check_conn_tick_.CutOff(
         10000000, 
-        std::bind(&TcpAcceptor::CheckConnectionValid, this, std::placeholders::_1));
+        std::bind(&TcpAcceptor::CheckConnectionValid, this));
 }
 
 void TcpAcceptor::OnWrite()

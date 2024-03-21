@@ -43,20 +43,20 @@ BlsManager::BlsManager(
     network::Route::Instance()->RegisterMessage(
         common::kBlsMessage,
         std::bind(&BlsManager::HandleMessage, this, std::placeholders::_1));
-    tick_.CutOff(1000000lu, std::bind(&BlsManager::TimerMessage, this, std::placeholders::_1));
+    tick_.CutOff(1000000lu, std::bind(&BlsManager::TimerMessage, this));
 }
 
 BlsManager::~BlsManager() {}
 
-void BlsManager::TimerMessage(uint8_t thread_idx) {
+void BlsManager::TimerMessage() {
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) >=
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
         auto now_tm_ms = common::TimeUtils::TimestampMs();
-        PopFinishMessage(thread_idx);
+        PopFinishMessage();
         auto tmp_bls = waiting_bls_;
         if (tmp_bls != nullptr) {
-            tmp_bls->TimerMessage(thread_idx);
+            tmp_bls->TimerMessage();
         }
 
         auto etime = common::TimeUtils::TimestampMs();
@@ -65,7 +65,7 @@ void BlsManager::TimerMessage(uint8_t thread_idx) {
         }
     }
 
-    tick_.CutOff(100000lu, std::bind(&BlsManager::TimerMessage, this, std::placeholders::_1));
+    tick_.CutOff(100000lu, std::bind(&BlsManager::TimerMessage, this));
 }
 
 void BlsManager::OnNewElectBlock(
@@ -317,14 +317,13 @@ int BlsManager::GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g
     return BlsSign::GetLibffHash(str_hash, g1_hash);
 }
 
-void BlsManager::PopFinishMessage(uint8_t thread_idx) {
+void BlsManager::PopFinishMessage() {
     while (true) {
         transport::MessagePtr msg_ptr = nullptr;
         if (!finish_msg_queue_.pop(&msg_ptr) || msg_ptr == nullptr) {
             break;
         }
 
-        msg_ptr->thread_idx = thread_idx;
         HandleFinish(msg_ptr);
     }
 }

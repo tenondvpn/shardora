@@ -155,20 +155,18 @@ public:
         return pools_with_thread_;
     }
 
-    uint8_t now_valid_thread_index() {
-        std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
-        if (now_valid_thread_index_ >= common::kMaxThreadCount) {
-            ZJC_FATAL("invalid thread count max: %d", common::kMaxThreadCount);
-        }
+    void set_main_inited_success() {
+        main_inited_success_ = true;
+    }
 
-        ZJC_INFO("new thread index: %d", now_valid_thread_index_);
-        return now_valid_thread_index_++;
+    bool main_inited_success() const {
+        return main_inited_success_;
     }
 
     // After running for a period of time, ensure that all threads have been created successfully and cancel the lock.
     uint8_t get_thread_index() {
         auto now_thread_id_tmp = std::this_thread::get_id();
-        int now_thread_id = *(int*)&now_thread_id_tmp;
+        uint32_t now_thread_id = *(uint32_t*)&now_thread_id_tmp;
         uint8_t thread_idx = 0;
         if (should_check_thread_all_valid_) {
             std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
@@ -176,18 +174,19 @@ public:
             if (iter == thread_with_index_.end()) {
                 thread_idx = now_valid_thread_index_++;
                 thread_with_index_[now_thread_id] = thread_idx;
+                ZJC_DEBUG("success add thread: %u, thread_index: %d", now_thread_id, thread_idx);
             } else {
                 thread_idx = iter->second;
             }
             
             auto now_tm = common::TimeUtils::TimestampMs();
-            if (begin_run_timestamp_ms_ + kWaitingAllThreadValidPeriodMs < now_tm) {
+            if (begin_run_timestamp_ms_ + kWaitingAllThreadValidPeriodMs < now_tm && main_inited_success_) {
                 should_check_thread_all_valid_ = false;
             }
         } else {
             auto iter = thread_with_index_.find(now_thread_id);
             if (iter == thread_with_index_.end()) {
-                ZJC_FATAL("invalid get new thread index.");
+                ZJC_FATAL("invalid get new thread index: %u", now_thread_id);
             }
                 
             thread_idx = iter->second;
@@ -204,13 +203,55 @@ public:
         return global_stoped_;
     }
 
+    uint8_t get_consensus_thread_idx(uint8_t thread_idx) {
+        return consensus_thread_index_map_[thread_idx];
+    }
+
+    uint8_t SetConsensusRealThreadIdx(uint8_t thread_idx) {
+        std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
+        auto bft_thread = message_handler_thread_count_;
+        for (uint8_t i = 0; i < bft_thread; ++i) {
+            if (consensus_thread_index_map_[i] == common::kInvalidUint8) {
+                consensus_thread_index_map_[i] = thread_idx;
+                if (i == message_handler_thread_count_ - 1) {
+                    uint32_t tmp_pools_with_thread[common::kInvalidPoolIndex] = { 0 };
+                    for (uint8_t src_thread_idx = 0; src_thread_idx < i; ++src_thread_idx) {
+                        std::string tmp_str;
+                        auto valid_thread_idx = consensus_thread_index_map_[src_thread_idx];
+                        thread_with_pools_[valid_thread_idx].clear();
+                        for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
+                            if (pools_with_thread_[pool_idx] == src_thread_idx) {
+                                tmp_pools_with_thread[pool_idx] = valid_thread_idx;
+                                thread_with_pools_[valid_thread_idx].insert(pool_idx);
+                                tmp_str += std::to_string(pool_idx) + ", ";
+                            }
+                        }
+
+                        ZJC_DEBUG("thread: %d, src_thread_idx: %d, pools: %s", 
+                            valid_thread_idx, src_thread_idx, tmp_str.c_str());
+                    }
+
+                    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
+                        pools_with_thread_[pool_idx] = tmp_pools_with_thread[pool_idx];
+                    }
+                }
+
+                ZJC_INFO("thread index %d set cosensus index: %d", thread_idx, i);
+                return i;
+            }
+        }
+
+        ZJC_FATAL("invalid thread idx: %d, bft_thread: %d", thread_idx, bft_thread);
+        return common::kInvalidUint8;
+    }
+
 private:
     GlobalInfo();
     ~GlobalInfo();
 
     static const uint32_t kDefaultTestNetworkShardId = 4u;
     static const uint32_t kTickThreadPoolCount = 1U;
-    static const uint64_t kWaitingAllThreadValidPeriodMs = 10000lu;
+    static const uint64_t kWaitingAllThreadValidPeriodMs = 60000lu;
 
     std::string config_local_ip_;
     uint16_t config_local_port_{ 0 };
@@ -229,7 +270,6 @@ private:
     int32_t tcp_server_thread_count_ = 4;
     std::string ip_db_path_;
     std::unordered_map<uint64_t, uint16_t> thread_with_index_;
-    uint8_t now_thread_idx_ = 0;
     uint8_t message_handler_thread_count_ = 4;
     bool for_ck_server_ = false;
     std::string ck_host_ = "127.0.0.1";
@@ -240,6 +280,7 @@ private:
     uint32_t sharding_min_nodes_count_ = 2u;
     int32_t join_root_ = common::kRandom;
     std::set<uint32_t>* thread_with_pools_ = nullptr;
+    uint8_t consensus_thread_index_map_[common::kMaxThreadCount] = {common::kInvalidUint8};
     uint32_t pools_with_thread_[common::kInvalidPoolIndex] = { 0 };
     uint8_t now_valid_thread_index_ = 0;
     std::mutex now_valid_thread_index_mutex_;
@@ -247,6 +288,7 @@ private:
     volatile bool should_check_thread_all_valid_ = true;
     std::unordered_map<int, uint8_t> valid_thread_index_;
     volatile bool global_stoped_ = false;
+    volatile bool main_inited_success_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };

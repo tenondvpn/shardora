@@ -104,7 +104,6 @@ private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
     ZbftPtr Start(
-        uint8_t thread_index,
         ZbftPtr commited_bft_ptr);
     ZbftPtr StartBft(
         const std::shared_ptr<ElectItem>& elect_item,
@@ -122,8 +121,8 @@ private:
         ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr);
     int BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
-    void CheckTimeout(uint8_t thread_index);
-    void CheckMessageTimeout(uint8_t thread_index);
+    void CheckTimeout();
+    void CheckMessageTimeout();
     int LeaderHandlePrepare(const transport::MessagePtr& msg_ptr);
     int LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     ZbftPtr CreateBftPtr(
@@ -131,7 +130,6 @@ private:
         const transport::MessagePtr& msg_ptr,
         std::vector<uint8_t>* invalid_txs);
     void BackupHandleZbftMessage(
-        uint8_t thread_index,
         const transport::MessagePtr& msg_ptr);
     int BackupPrepare(
         const ElectItem& elect_item,
@@ -151,24 +149,19 @@ private:
         const transport::MessagePtr& msg_ptr,
         const std::string& gid);
     void SyncConsensusBlock(
-        uint8_t thread_idx,
         uint32_t pool_index,
         const std::string& bft_gid);
     void HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr);
     bool AddSyncKeyValue(transport::protobuf::Header* msg, const block::protobuf::Block& block);
     void SaveKeyValue(const transport::protobuf::Header& msg);
-    void PopAllPoolTxs(uint8_t thread_index);
+    void PopAllPoolTxs();
     void LeaderBroadcastBlock(
-        uint8_t thread_index,
         const std::shared_ptr<block::protobuf::Block>& block);
     void BroadcastLocalTosBlock(
-        uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block);
     void BroadcastWaitingBlock(
-        uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block);
     void BroadcastBlock(
-        uint8_t thread_idx,
         uint32_t des_shard,
         const std::shared_ptr<block::protobuf::Block>& block);
     void RegisterCreateTxCallbacks();
@@ -184,11 +177,11 @@ private:
     void AddWaitingBlock(std::shared_ptr<block::protobuf::Block>& block_ptr);
     void RemoveWaitingBlock(uint32_t pool_index, uint64_t height);
     void ReConsensusPrepareBft(const ElectItem& elect_item, ZbftPtr& bft_ptr);
-    void HandleSyncedBlock(uint8_t thread_idx, std::shared_ptr<block::protobuf::Block>& block_ptr);
+    void HandleSyncedBlock(std::shared_ptr<block::protobuf::Block>& block_ptr);
     void ReConsensusChangedLeaderBft(ZbftPtr& bft_ptr);
     bool CheckChangedLeaderBftsValid(uint32_t pool, uint64_t height, const std::string& gid);
-    void BroadcastInvalidGids(uint8_t thread_idx);
-    void CheckInvalidGids(uint8_t thread_idx);
+    void BroadcastInvalidGids();
+    void CheckInvalidGids();
     void LeaderRemoveTimeoutPrepareBft(ZbftPtr& bft_ptr);
     void BackupSendPrepareMessage(
         const ElectItem& elect_item,
@@ -201,7 +194,7 @@ private:
         bool agree);
     void LeaderSendPrecommitMessage(const transport::MessagePtr& leader_msg_ptr, bool agree);
     void LeaderSendCommitMessage(const transport::MessagePtr& leader_msg_ptr, bool agree);
-    void HandleCommitedSyncBlock(uint8_t thread_idx, const zbft::protobuf::ZbftMessage& req_bft_msg);
+    void HandleCommitedSyncBlock(const zbft::protobuf::ZbftMessage& req_bft_msg);
     std::shared_ptr<WaitingTxsItem> get_txs_ptr(
         std::shared_ptr<PoolTxIndexItem>& thread_item,
         ZbftPtr& commited_bft_ptr);
@@ -341,7 +334,7 @@ private:
     std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_blocks_[common::kInvalidPoolIndex];
     std::map<uint64_t, std::shared_ptr<block::protobuf::Block>, std::greater<uint64_t>> waiting_agg_verify_blocks_[common::kInvalidPoolIndex];
     ZbftPtr changed_leader_pools_height_[common::kInvalidPoolIndex] = { nullptr };
-    common::LimitHashMap<std::string, ZbftPtr> removed_preapare_gid_with_hash_[common::kInvalidPoolIndex];
+    common::LimitHashMap<std::string, ZbftPtr, 64> removed_preapare_gid_with_hash_[common::kInvalidPoolIndex];
     uint64_t prev_broadcast_invalid_gid_tm_[common::kMaxThreadCount] = { 0 };
     std::unordered_set<std::string> broadcasted_gids_[common::kMaxThreadCount];
     std::shared_ptr<BftMessageInfo> gid_with_msg_map_[common::kInvalidPoolIndex];

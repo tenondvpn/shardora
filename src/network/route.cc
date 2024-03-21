@@ -29,8 +29,7 @@ void Route::Init() {
     broadcast_ = std::make_shared<broadcast::FilterBroadcast>();
     broadcast_thread_ = std::make_shared<std::thread>(std::bind(
         &Route::Broadcasting, 
-        this, 
-        common::GlobalInfo::Instance()->now_valid_thread_index()));
+        this));
 }
 
 void Route::Destroy() {
@@ -62,10 +61,11 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
 
     if (dht_ptr != nullptr) {
         if (message.has_broadcast()) {
+            auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
             assert(message.broadcast().bloomfilter_size() < 64);
 //             broadcast_->Broadcasting(msg_ptr->thread_idx, dht_ptr, msg_ptr);
-            ZJC_DEBUG("0 broadcast: %lu, now size: %u", msg_ptr->header.hash64(), broadcast_queue_[msg_ptr->thread_idx].size());
-            broadcast_queue_[msg_ptr->thread_idx].push(msg_ptr);
+            ZJC_DEBUG("0 broadcast: %lu, now size: %u", msg_ptr->header.hash64(), broadcast_queue_[thread_idx].size());
+            broadcast_queue_[thread_idx].push(msg_ptr);
             broadcast_con_.notify_one();
         } else {
             dht_ptr->SendToClosestNode(msg_ptr);
@@ -108,15 +108,17 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
     if (header.has_broadcast()) {
 //         Broadcast(header_ptr->thread_idx, header_ptr);
         auto tmp_ptr = std::make_shared<transport::TransportMessage>(*header_ptr);
-        // ZJC_INFO("====5 broadcast t: %lu, hash: %lu, now size: %u", header_ptr->thread_idx, header_ptr->header.hash64(), broadcast_queue_[header_ptr->thread_idx].size());
-        broadcast_queue_[header_ptr->thread_idx].push(tmp_ptr);
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        // ZJC_INFO("====5 broadcast t: %lu, hash: %lu, now size: %u", thread_idx, header_ptr->header.hash64(), broadcast_queue_[thread_idx].size());
+        broadcast_queue_[thread_idx].push(tmp_ptr);
         broadcast_con_.notify_one();
     }
 
     message_processor_[header.type()](header_ptr);
 }
 
-void Route::Broadcasting(uint8_t thread_idx) {
+void Route::Broadcasting() {
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     while (!destroy_) {
         bool has_data = false;
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
@@ -126,7 +128,7 @@ void Route::Broadcasting(uint8_t thread_idx) {
                     break;
                 }
             
-                Broadcast(thread_idx, msg_ptr);
+                Broadcast(msg_ptr);
                 if (!has_data) {
                     has_data = true;
                 }
@@ -182,7 +184,7 @@ Route::~Route() {
     Destroy();
 }
 
-void Route::Broadcast(uint8_t thread_idx, const transport::MessagePtr& msg_ptr) {
+void Route::Broadcast(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     if (!header.has_broadcast() || !header.has_des_dht_key()) {
         return;
@@ -211,7 +213,7 @@ void Route::Broadcast(uint8_t thread_idx, const transport::MessagePtr& msg_ptr) 
     }
 
     assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
-    broadcast_->Broadcasting(thread_idx, des_dht, msg_ptr);
+    broadcast_->Broadcasting(des_dht, msg_ptr);
 }
 
 dht::BaseDhtPtr Route::GetDht(const std::string& dht_key) {

@@ -51,7 +51,6 @@ public:
     }
 
     virtual int HandleTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,

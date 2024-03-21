@@ -19,7 +19,7 @@ VssManager::VssManager(std::shared_ptr<security::Security>& security_ptr)
         std::bind(&VssManager::HandleMessage, this, std::placeholders::_1));
     tick_.CutOff(
         100000lu,
-        std::bind(&VssManager::ConsensusTimerMessage, this, std::placeholders::_1));
+        std::bind(&VssManager::ConsensusTimerMessage, this));
 }
 
 uint64_t VssManager::EpochRandom() {
@@ -91,17 +91,17 @@ void VssManager::OnTimeBlock(
         tmblock_tm, begin_time_us_, first_offset_, second_offset_, third_offset_, kDkgPeriodUs, local_random_.GetHash());
 }
 
-void VssManager::ConsensusTimerMessage(uint8_t thread_idx) {
+void VssManager::ConsensusTimerMessage() {
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) >=
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
         auto now_tm_ms = common::TimeUtils::TimestampMs();
-        PopVssMessage(thread_idx);
+        PopVssMessage();
         auto now_tm_us = common::TimeUtils::TimestampUs();
         if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-            BroadcastFirstPeriodHash(thread_idx);
-            BroadcastSecondPeriodRandom(thread_idx);
-            BroadcastThirdPeriodRandom(thread_idx);
+            BroadcastFirstPeriodHash();
+            BroadcastSecondPeriodRandom();
+            BroadcastThirdPeriodRandom();
         }
 
         auto etime = common::TimeUtils::TimestampMs();
@@ -112,7 +112,7 @@ void VssManager::ConsensusTimerMessage(uint8_t thread_idx) {
 
     tick_.CutOff(
         100000lu,
-        std::bind(&VssManager::ConsensusTimerMessage, this, std::placeholders::_1));
+        std::bind(&VssManager::ConsensusTimerMessage, this));
 }
 
 void VssManager::OnNewElectBlock(
@@ -252,7 +252,7 @@ bool VssManager::IsVssThirdPeriodsHandleMessage() {
     return false;
 }
 
-void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
+void VssManager::BroadcastFirstPeriodHash() {
     auto elect_item_ptr = elect_item_[elect_valid_index_];
     if (elect_item_ptr == nullptr || elect_item_ptr->members == nullptr) {
         return;
@@ -274,7 +274,6 @@ void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
     ++first_try_times_;
     first_prev_tm_ = now_us;
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->thread_idx = thread_idx;
     transport::protobuf::Header& msg = msg_ptr->header;
     msg.set_type(common::kVssMessage);
     dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
@@ -287,7 +286,7 @@ void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
     vss_msg.set_elect_height(prev_elect_height_);
     vss_msg.set_member_index(elect_item_ptr->local_index);
     vss_msg.set_type(kVssRandomHash);
-    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
     std::string message_hash;
     protos::GetProtoHash(msg, &message_hash);
     std::string sign;
@@ -307,7 +306,7 @@ void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
 #endif
 }
 
-void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
+void VssManager::BroadcastSecondPeriodRandom() {
     auto elect_item_ptr = elect_item_[elect_valid_index_];
     if (elect_item_ptr == nullptr) {
         return;
@@ -333,7 +332,6 @@ void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
     ++second_try_times_;
     second_prev_tm_ = now_us;
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->thread_idx = thread_idx;
     transport::protobuf::Header& msg = msg_ptr->header;
     msg.set_type(common::kVssMessage);
     dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
@@ -348,7 +346,7 @@ void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
     vss_msg.set_type(kVssRandom);
     std::string message_hash;
     protos::GetProtoHash(msg, &message_hash);
-    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
     std::string sign;
     if (security_ptr_->Sign(
             message_hash,
@@ -366,7 +364,7 @@ void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
 #endif
 }
 
-void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
+void VssManager::BroadcastThirdPeriodRandom() {
     auto elect_item_ptr = elect_item_[elect_valid_index_];
     if (elect_item_ptr == nullptr) {
         return;
@@ -392,7 +390,6 @@ void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
     ++third_try_times_;
     third_prev_tm_ = now_us;
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->thread_idx = thread_idx;
     transport::protobuf::Header& msg = msg_ptr->header;
     msg.set_type(common::kVssMessage);
     dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
@@ -405,7 +402,7 @@ void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
     vss_msg.set_elect_height(prev_elect_height_);
     vss_msg.set_type(kVssFinalRandom);
     vss_msg.set_member_index(elect_item_ptr->local_index);
-    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
     std::string message_hash;
     protos::GetProtoHash(msg, &message_hash);
     std::string sign;
@@ -432,14 +429,13 @@ void VssManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("queue size vss_msg_queue_: %d", vss_msg_queue_.size());
 }
 
-void VssManager::PopVssMessage(uint8_t thread_idx) {
+void VssManager::PopVssMessage() {
     while (true) {
         transport::MessagePtr msg_ptr = nullptr;
         if (!vss_msg_queue_.pop(&msg_ptr) || msg_ptr == nullptr) {
             break;
         }
 
-        msg_ptr->thread_idx = thread_idx;
         HandleVssMessage(msg_ptr);
     }
 }

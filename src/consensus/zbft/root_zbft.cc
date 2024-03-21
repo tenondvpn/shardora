@@ -68,7 +68,6 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
         }
 
         int do_tx_res = iter->second->HandleTx(
-            txs_ptr_->thread_index,
             zjc_block,
             db_batch_,
             zjc_host,
@@ -100,7 +99,6 @@ void RootZbft::RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_bl
     iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), db_batch_, &tx);
     std::unordered_map<std::string, int64_t> acc_balance_map;
     int do_tx_res = iter->second->HandleTx(
-        txs_ptr_->thread_index,
         zjc_block,
         db_batch_,
         zjc_host,

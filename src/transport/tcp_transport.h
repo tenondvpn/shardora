@@ -40,21 +40,18 @@ public:
     int Start(bool hold);
     void Stop();
     int Send(
-        uint8_t thread_idx,
         const std::string& ip,
         uint16_t port,
         const transport::protobuf::Header& message);
     int Send(
-        uint8_t thread_idx,
         tnet::TcpInterface* conn,
         const transport::protobuf::Header& message);
     int Send(
-        uint8_t thread_idx,
         tnet::TcpInterface* conn,
         const std::string& message);
     int GetSocket();
     std::string GetHeaderHashForSign(const transport::protobuf::Header& message);
-    void SetMessageHash(const transport::protobuf::Header& message, uint8_t thread_idx);
+    void SetMessageHash(const transport::protobuf::Header& message);
 
 private:
     TcpTransport();
@@ -65,7 +62,7 @@ private:
     std::shared_ptr<tnet::TcpConnection> GetConnection(
         const std::string& ip,
         uint16_t port);
-    void CheckConnectionValid(uint8_t thread_idx);
+    void CheckConnectionValid();
 
     static const uint64_t kEraseConnPeriod = 10000000lu;
     static const uint32_t kEachCheckConnectionCount = 100u;
@@ -78,7 +75,6 @@ private:
     std::unordered_map<std::string, std::shared_ptr<tnet::TcpConnection>> conn_map_;
     MultiThreadHandler* msg_handler_ = nullptr;
     uint64_t thread_msg_count_[common::kMaxThreadCount] = { 0 };
-    uint8_t server_thread_idx_ = 255;
     std::string msg_random_;
     volatile bool destroy_ = false;
     std::shared_ptr<std::thread> output_thread_ = nullptr;

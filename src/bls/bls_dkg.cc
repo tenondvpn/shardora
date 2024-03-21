@@ -47,14 +47,14 @@ void BlsDkg::Init(
 void BlsDkg::Destroy() {
 }
 
-void BlsDkg::TimerMessage(uint8_t thread_idx) {
+void BlsDkg::TimerMessage() {
     auto now_tm_us = common::TimeUtils::TimestampUs();
-    PopBlsMessage(thread_idx);
+    PopBlsMessage();
     if (!has_broadcast_verify_ &&
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4) &&
             now_tm_us > (begin_time_us_ + ver_offset_)) {
         ZJC_DEBUG("now call send verify g2.");
-        BroadcastVerfify(thread_idx);
+        BroadcastVerfify();
         has_broadcast_verify_ = true;
     }
 
@@ -62,7 +62,7 @@ void BlsDkg::TimerMessage(uint8_t thread_idx) {
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7) &&
             now_tm_us >(begin_time_us_ + swap_offset_)) {
         ZJC_DEBUG("now call send swap sec key.");
-        SwapSecKey(thread_idx);
+        SwapSecKey();
         has_broadcast_swapkey_ = true;
     }
 
@@ -70,7 +70,7 @@ void BlsDkg::TimerMessage(uint8_t thread_idx) {
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 10) &&
             now_tm_us >(begin_time_us_ + finish_offset_)) {
         ZJC_DEBUG("now call send finish.");
-        FinishBroadcast(thread_idx);
+        FinishBroadcast();
         has_finished_ = true;
     }
 }
@@ -145,14 +145,13 @@ void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("queue size bls_msg_queue_: %d", bls_msg_queue_.size());
 }
 
-void BlsDkg::PopBlsMessage(uint8_t thread_idx) {
+void BlsDkg::PopBlsMessage() {
     while (true) {
         transport::MessagePtr msg_ptr = nullptr;
         if (!bls_msg_queue_.pop(&msg_ptr) || msg_ptr == nullptr) {
             break;
         }
 
-        msg_ptr->thread_idx = thread_idx;
         HandleBlsMessage(msg_ptr);
     }
 }
@@ -269,7 +268,7 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
     BLS_ERROR("catch error: %s", e.what());
 }
 
-void BlsDkg::CheckVerifyAllValid(uint8_t thread_idx) {
+void BlsDkg::CheckVerifyAllValid() {
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (now_tm_us > (begin_time_us_ + kDkgPeriodUs * 2 + 5) &&
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4 - 5)) {
@@ -280,7 +279,7 @@ void BlsDkg::CheckVerifyAllValid(uint8_t thread_idx) {
 
             auto iter = verify_map_.find(i);
             if (iter == verify_map_.end()) {
-                SendGetVerifyInfo(thread_idx, i);
+                SendGetVerifyInfo(i);
             }
         }
     }
@@ -292,7 +291,7 @@ void BlsDkg::CheckVerifyAllValid(uint8_t thread_idx) {
 //     }
 }
 
-void BlsDkg::SendGetVerifyInfo(uint8_t thread_idx, int32_t index) {
+void BlsDkg::SendGetVerifyInfo(int32_t index) {
     auto dht = network::DhtManager::Instance()->GetDht(
         common::GlobalInfo::Instance()->network_id());
     if (!dht) {
@@ -300,7 +299,6 @@ void BlsDkg::SendGetVerifyInfo(uint8_t thread_idx, int32_t index) {
     }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
     auto& bls_msg = *msg.mutable_bls_proto();
     bls_msg.set_index(local_member_index_);
@@ -314,14 +312,14 @@ void BlsDkg::SendGetVerifyInfo(uint8_t thread_idx, int32_t index) {
     BLS_DEBUG("send get verify req elect_height: %lu, index: %d", elect_hegiht_, index);
 }
 
-void BlsDkg::CheckSwapKeyAllValid(uint8_t thread_idx) {
+void BlsDkg::CheckSwapKeyAllValid() {
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (now_tm_us > (begin_time_us_ + kDkgPeriodUs * 4 + 5) &&
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 8 - 5)) {
         for (uint32_t i = 0; i < member_count_; ++i) {
             auto iter = valid_swapkey_set_.find(i);
             if (iter == valid_swapkey_set_.end()) {
-                SendGetSwapKey(thread_idx, i);
+                SendGetSwapKey(i);
             }
         }
     }
@@ -333,7 +331,7 @@ void BlsDkg::CheckSwapKeyAllValid(uint8_t thread_idx) {
 //     }
 }
 
-void BlsDkg::SendGetSwapKey(uint8_t thread_idx, int32_t index) {
+void BlsDkg::SendGetSwapKey(int32_t index) {
     auto dht = network::DhtManager::Instance()->GetDht(
         common::GlobalInfo::Instance()->network_id());
     if (!dht) {
@@ -341,7 +339,6 @@ void BlsDkg::SendGetSwapKey(uint8_t thread_idx, int32_t index) {
     }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
     auto& bls_msg = *msg.mutable_bls_proto();
     bls_msg.set_index(local_member_index_);
@@ -662,7 +659,7 @@ libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t peer_mem_index, uint32_t*
     return libff::alt_bn128_G2(x_coord, y_coord, z_coord);
 }
 
-void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
+void BlsDkg::BroadcastVerfify() try {
     if (members_ == nullptr || local_member_index_ >= member_count_) {
         ZJC_ERROR("member null or member index invalid!");
         assert(false);
@@ -671,7 +668,6 @@ void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
 
     CreateContribution(member_count_, min_aggree_member_count_);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
     auto& bls_msg = *msg.mutable_bls_proto();
     auto* verfiy_brd = bls_msg.mutable_verify_brd();
@@ -696,14 +692,13 @@ void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
     BLS_ERROR("catch error: %s", e.what());
 }
 
-void BlsDkg::SwapSecKey(uint8_t thread_idx) try {
+void BlsDkg::SwapSecKey() try {
     if (members_ == nullptr || local_member_index_ >= member_count_) {
         ZJC_ERROR("members invalid!");
         return;
     }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
     auto& bls_msg = *msg.mutable_bls_proto();
     auto swap_req = bls_msg.mutable_swap_req();
@@ -769,7 +764,7 @@ void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* se
     *seckey_len = msg.size();
 }
 
-void BlsDkg::FinishBroadcast(uint8_t thread_idx) try {
+void BlsDkg::FinishBroadcast() try {
     if (members_ == nullptr ||
             local_member_index_ >= member_count_ ||
             valid_sec_key_count_ < min_aggree_member_count_) {
@@ -839,7 +834,7 @@ void BlsDkg::FinishBroadcast(uint8_t thread_idx) try {
     local_sec_key_ = dkg.SecretKeyShareCreate(valid_seck_keys);
     local_publick_key_ = dkg.GetPublicKeyFromSecretKey(local_sec_key_);
     DumpLocalPrivateKey();
-    BroadcastFinish(thread_idx, bitmap);
+    BroadcastFinish(bitmap);
     finished_ = true;
 } catch (std::exception& e) {
     local_sec_key_ = libff::alt_bn128_Fr::zero();
@@ -863,9 +858,8 @@ void BlsDkg::DumpLocalPrivateKey() {
         enc_data);
 }
 
-void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
+void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
     auto& bls_msg = *msg.mutable_bls_proto();
     auto finish_msg = bls_msg.mutable_finish_req();
@@ -1012,7 +1006,7 @@ void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
     auto broad_param = msg.mutable_broadcast();
     bls_msg.set_elect_height(elect_hegiht_);
     bls_msg.set_index(local_member_index_);
-    transport::TcpTransport::Instance()->SetMessageHash(msg, msg_ptr->thread_idx);
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
     std::string message_hash;
     protos::GetProtoHash(msg_ptr->header, &message_hash);
     std::string sign_out;

@@ -84,7 +84,7 @@ public:
         gid_set_[1].reserve(30240);
         db_batch_tick_.CutOff(
             5000000lu,
-            std::bind(&PrefixDb::DumpGidToDb, this, std::placeholders::_1));
+            std::bind(&PrefixDb::DumpGidToDb, this));
     }
 
     void Destroy() {
@@ -1641,7 +1641,7 @@ public:
     }
 
 private:
-    void DumpGidToDb(uint8_t thread_idx) {
+    void DumpGidToDb() {
         if (!dumped_gid_) {
             uint32_t index = (valid_index_ + 1) % 2;
             ZJC_DEBUG("put 5");
@@ -1652,7 +1652,7 @@ private:
 
         db_batch_tick_.CutOff(
             1000000lu,
-            std::bind(&PrefixDb::DumpGidToDb, this, std::placeholders::_1));
+            std::bind(&PrefixDb::DumpGidToDb, this));
     }
 
     static const uint32_t kSaveElectHeightCount = 4u;

@@ -307,7 +307,6 @@ public:
                         continue;
                     }
                     auto msg_ptr = verify_brd_msgs[i];
-                    msg_ptr->thread_idx = 0;
                     dkg[j].HandleBlsMessage(msg_ptr);
                 }
             }
@@ -342,7 +341,6 @@ public:
                         continue;
                     }
                     auto msg_ptr = swap_seckey_msgs[i];
-                    msg_ptr->thread_idx = 0;
                     dkg[j].HandleBlsMessage(msg_ptr);
                 }
             }

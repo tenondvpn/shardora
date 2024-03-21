@@ -101,7 +101,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
         }
     }
 
-    transport::TcpTransport::Instance()->SetMessageHash(msg, 0);
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
     auto tx_hash = pools::GetTxMessageHash(*new_tx); // cout 输出信息
     std::string sign;
     if (security->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
@@ -256,7 +256,7 @@ int tx_main(int argc, char** argv) {
             10000,
             1,
             3);
-        if (transport::TcpTransport::Instance()->Send(0, kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
+        if (transport::TcpTransport::Instance()->Send(kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
         }
@@ -346,7 +346,7 @@ int one_tx_main(int argc, char** argv) {
         10000000,
         ((uint32_t)(1000 - pos)) % 1000 + 1,
         3);
-    if (transport::TcpTransport::Instance()->Send(0, kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
+    if (transport::TcpTransport::Instance()->Send(kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
         std::cout << "send tcp client failed!" << std::endl;
         return 1;
     }
@@ -422,7 +422,7 @@ int create_library(int argc, char** argv) {
         100000,
         10,
         3);
-    if (transport::TcpTransport::Instance()->Send(0, kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
+    if (transport::TcpTransport::Instance()->Send(kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
         std::cout << "send tcp client failed!" << std::endl;
         return 1;
     }
@@ -507,7 +507,7 @@ int contract_main(int argc, char** argv) {
         10000000,
         10,
         3);
-    if (transport::TcpTransport::Instance()->Send(0, kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
+    if (transport::TcpTransport::Instance()->Send(kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
         std::cout << "send tcp client failed!" << std::endl;
         return 1;
     }
@@ -583,7 +583,7 @@ int contract_set_prepayment(int argc, char** argv) {
         10000000,
         10,
         3);
-    if (transport::TcpTransport::Instance()->Send(0, kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
+    if (transport::TcpTransport::Instance()->Send(kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
         std::cout << "send tcp client failed!" << std::endl;
         return 1;
     }
@@ -668,7 +668,7 @@ int contract_call(int argc, char** argv, bool more=false) {
             10000000,
             10,
             3);
-    if (transport::TcpTransport::Instance()->Send(0, kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
+    if (transport::TcpTransport::Instance()->Send(kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
         std::cout << "send tcp client failed!" << std::endl;
         return 1;
     }

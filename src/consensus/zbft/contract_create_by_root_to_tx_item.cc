@@ -17,7 +17,6 @@ namespace consensus {
 // 处理 ContractCreate 交易的 Local 部分（to 部分，已经过 root 分配 shard）
 // from 部分已经在 ContractUserCreateCall::HandleTx 处理完成
 int ContractCreateByRootToTxItem::HandleTx(
-		uint8_t thread_idx,
 		const block::protobuf::Block& block,
 		std::shared_ptr<db::DbWriteBatch>& db_batch,
 		zjcvm::ZjchainHost& zjc_host,
@@ -62,7 +61,7 @@ int ContractCreateByRootToTxItem::HandleTx(
 		common::Encode::HexEncode(block_tx.to()).c_str());
 	
 	// TODO 从 kv 中读取 cc tx info
-	auto contract_info = account_mgr_->GetAccountInfo(thread_idx, block_tx.to());
+	auto contract_info = account_mgr_->GetAccountInfo(block_tx.to());
 	if (contract_info != nullptr) {
 		ZJC_ERROR("contract addr already exsit, to: %s", common::Encode::HexEncode(block_tx.to()).c_str());
 		block_tx.set_status(kConsensusAccountExists);

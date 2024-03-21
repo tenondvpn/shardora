@@ -31,17 +31,17 @@ public:
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<protos::PrefixDb>& prefix_db);
     ~ShardNetwork();
-    int Init(uint8_t thread_idx, std::shared_ptr<block::AccountManager>& acc_mgr);
+    int Init(std::shared_ptr<block::AccountManager>& acc_mgr);
     void Destroy();
     dht::BaseDhtPtr GetDht() {
         return elect_dht_;
     }
 
 private:
-    int JoinUniversal(uint8_t thread_idx);
-    int JoinShard(uint8_t thread_idx);
+    int JoinUniversal();
+    int JoinShard();
     bool IsThisNetworkNode(uint32_t network_id, const std::string& id);
-    int JoinNewNodeValid(uint8_t thread_idx, dht::NodePtr& node);
+    int JoinNewNodeValid(dht::NodePtr& node);
     int SignDhtMessage(
         const std::string& peer_pubkey,
         const std::string& append_data,
@@ -78,9 +78,8 @@ ShardNetwork<DhtType>::~ShardNetwork() {}
 
 template<class DhtType>
 int ShardNetwork<DhtType>::Init(
-        uint8_t thread_idx, 
         std::shared_ptr<block::AccountManager>& acc_mgr) {
-    if (JoinShard(thread_idx) != kNetworkSuccess) {
+    if (JoinShard() != kNetworkSuccess) {
         return kNetworkJoinShardFailed;
     }
 
@@ -122,10 +121,10 @@ bool ShardNetwork<DhtType>::IsThisNetworkNode(uint32_t network_id, const std::st
 
 
 template<class DhtType>
-int ShardNetwork<DhtType>::JoinNewNodeValid(uint8_t thread_idx, dht::NodePtr& node) {
+int ShardNetwork<DhtType>::JoinNewNodeValid(dht::NodePtr& node) {
     if (!(sharding_id_ >= network::kRootCongressNetworkId &&
             sharding_id_ < network::kConsensusShardEndNetworkId)) {
-        auto account_info = acc_mgr_->GetAccountInfo(thread_idx, node->id);
+        auto account_info = acc_mgr_->GetAccountInfo(node->id);
         if (account_info == nullptr) {
             ZJC_INFO("get address: %s failed!", common::Encode::HexEncode(node->id).c_str());
             return dht::kDhtError;
@@ -159,7 +158,7 @@ int ShardNetwork<DhtType>::JoinNewNodeValid(uint8_t thread_idx, dht::NodePtr& no
 }
 
 template<class DhtType>
-int ShardNetwork<DhtType>::JoinShard(uint8_t thread_idx) {
+int ShardNetwork<DhtType>::JoinShard() {
     auto unversal_dht = network::UniversalManager::Instance()->GetUniversal(
         network::kUniversalNetworkId);
     if (unversal_dht == nullptr) {
@@ -185,8 +184,7 @@ int ShardNetwork<DhtType>::JoinShard(uint8_t thread_idx) {
             std::bind(
                 &ShardNetwork::JoinNewNodeValid,
                 this,
-                std::placeholders::_1,
-                std::placeholders::_2)) != network::kNetworkSuccess) {
+                std::placeholders::_1)) != network::kNetworkSuccess) {
         NETWORK_ERROR("init shard role dht failed!");
         return kNetworkError;
     }
@@ -198,7 +196,7 @@ int ShardNetwork<DhtType>::JoinShard(uint8_t thread_idx) {
         return kNetworkSuccess;
     }
 
-    if (elect_dht_->Bootstrap(thread_idx, boot_nodes, false, sharding_id_) != dht::kDhtSuccess) {
+    if (elect_dht_->Bootstrap(boot_nodes, false, sharding_id_) != dht::kDhtSuccess) {
         NETWORK_ERROR("join shard network [%u] failed!", sharding_id_);
     }
 
@@ -213,7 +211,7 @@ int ShardNetwork<DhtType>::JoinShard(uint8_t thread_idx) {
             nodes[i]->public_port,
             nodes[i]->pubkey_str,
             nodes[i]->id);
-        elect_dht_->Join(thread_idx, new_node);
+        elect_dht_->Join(new_node);
         ZJC_DEBUG("join network %u add new node: %s:%u, %s",
             sharding_id_,
             nodes[i]->public_ip.c_str(),

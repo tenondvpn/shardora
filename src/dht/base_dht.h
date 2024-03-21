@@ -34,14 +34,13 @@ public:
         BootstrapResponseCallback boot_cb,
         NewNodeJoinCallback node_join_cb);
     virtual int Destroy();
-    virtual int Join(uint8_t thread_idx, NodePtr& node);
-    virtual void UniversalJoin(uint8_t thread_idx, const NodePtr& node);
+    virtual int Join(NodePtr& node);
+    virtual void UniversalJoin(const NodePtr& node);
     virtual int Drop(NodePtr& node);
     virtual int Drop(const std::vector<std::string>& ids);
     virtual int Drop(const std::string& id);
     virtual int Drop(const std::string& ip, uint16_t port);
     virtual int Bootstrap(
-        uint8_t thread_idx,
         const std::vector<NodePtr>& boot_nodes,
         bool wait,
         int32_t sharding_id);
@@ -94,17 +93,16 @@ protected:
     void ProcessRefreshNeighborsRequest(const transport::MessagePtr& header);
     void ProcessRefreshNeighborsResponse(const transport::MessagePtr& header);
     void ProcessConnectRequest(const transport::MessagePtr& header);
-    void ProcessTimerRequest(uint8_t thread_idx);
-    void RefreshNeighbors(uint8_t thread_idx);
+    void ProcessTimerRequest();
+    void RefreshNeighbors();
     NodePtr FindNodeDirect(transport::protobuf::Header& message);
     void Connect(
-        uint8_t thread_idx,
         const std::string& des_ip,
         uint16_t des_port,
         const std::string& des_pubkey,
         int32_t src_sharding_id,
         bool response);
-    void PrintDht(uint8_t thread_idx);
+    void PrintDht();
 
     static const uint32_t kRefreshNeighborPeriod = 3 * 1000 * 1000u;
     static const uint32_t kHeartbeatMaxSendTimes = 5u;

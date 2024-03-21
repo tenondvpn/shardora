@@ -44,12 +44,11 @@ public:
         NewElectBlockCallback new_elect_cb);
     ~ElectManager();
     int Init();
-    int Join(uint8_t thread_idx, uint32_t network_id);
+    int Join(uint32_t network_id);
     int Quit(uint32_t network_id);
     uint64_t latest_height(uint32_t network_id);
     void OnTimeBlock(uint64_t tm_block_tm);
     common::MembersPtr OnNewElectBlock(
-        uint8_t thread_idx,
         uint64_t height,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block,
         const std::shared_ptr<elect::protobuf::ElectBlock>& prev_elect_block,
@@ -104,7 +103,6 @@ private:
         bool* elected);
     bool NodeHasElected(uint32_t network_id, const std::string& node_id);
     void ElectedToConsensusShard(
-        uint8_t thread_idx,
         protobuf::ElectBlock& elect_block,
         bool elected);
 

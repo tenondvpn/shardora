@@ -24,7 +24,7 @@ void WaitingTxsPools::TxRecover(std::shared_ptr<Zbft>& zbft_ptr) {
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool_index) {
-    std::shared_ptr<WaitingTxsItem> txs_item = nullptr;// GetSingleTx(pool_index);
+    std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(pool_index);
     if (txs_item == nullptr) {
         txs_item = wtxs[pool_index].LeaderGetValidTxs();
     }
@@ -214,7 +214,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(uint32_t pool_index, b
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::FollowerGetTxs(
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
-        uint8_t thread_idx,
         std::vector<uint8_t>* invalid_txs) {
     auto txs_item = wtxs[pool_index].FollowerGetTxs(tx_hash_list, invalid_txs);
     if (txs_item != nullptr) {
