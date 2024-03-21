@@ -50,12 +50,15 @@ int32_t HttpServer::Start() {
     }
 
     http_thread_ = new std::thread(std::bind(&HttpServer::RunHttpServer, this));
+    std::unique_lock<std::mutex> lock(mutex_);
+    con_.wait_for(lock, std::chrono::milliseconds(1000));
     http_thread_->detach();
     return kHttpSuccess;
 }
 
 void HttpServer::RunHttpServer() {
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+    con_.notify_one();
     event_base_loop(evbase_, 0);
 }
 

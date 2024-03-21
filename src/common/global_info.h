@@ -179,8 +179,7 @@ public:
                 thread_idx = iter->second;
             }
             
-            auto now_tm = common::TimeUtils::TimestampMs();
-            if (begin_run_timestamp_ms_ + kWaitingAllThreadValidPeriodMs < now_tm && main_inited_success_) {
+            if (main_inited_success_) {
                 should_check_thread_all_valid_ = false;
             }
         } else {
@@ -251,7 +250,6 @@ private:
 
     static const uint32_t kDefaultTestNetworkShardId = 4u;
     static const uint32_t kTickThreadPoolCount = 1U;
-    static const uint64_t kWaitingAllThreadValidPeriodMs = 60000lu;
 
     std::string config_local_ip_;
     uint16_t config_local_port_{ 0 };
