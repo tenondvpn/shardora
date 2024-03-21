@@ -79,7 +79,7 @@ bool Execution::StorageKeyWarm(
     auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
         std::string((char*)key.bytes, sizeof(key.bytes));
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    return storage_map_[thread_idx].exists(str_key);
+    return storage_map_[thread_idx].KeyExists(str_key);
 }
 
 void Execution::NewBlockWithTx(
@@ -116,7 +116,7 @@ void Execution::UpdateStorage(
         const std::string& val,
         db::DbWriteBatch& db_batch) {
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    storage_map_[thread_idx].update(key, val);
+    storage_map_[thread_idx].Insert(key, val);
     prefix_db_->SaveTemporaryKv(key, val, db_batch);
     ZJC_DEBUG("update storage: %s, %s", common::Encode::HexEncode(key).c_str(), common::Encode::HexEncode(val).c_str());
 }
@@ -132,10 +132,10 @@ evmc::bytes32 Execution::GetStorage(
     if (thread_idx >= thread_count) {
         prefix_db_->GetTemporaryKv(str_key, &val);
     } else {
-        if (!storage_map_[thread_idx].get(str_key, &val)) {
+        if (!storage_map_[thread_idx].Get(str_key, &val)) {
             // get from db and add to memory cache
             if (prefix_db_->GetTemporaryKv(str_key, &val)) {
-                storage_map_[thread_idx].add(str_key, val);
+                storage_map_[thread_idx].Insert(str_key, val);
             }
         }
     }
@@ -168,11 +168,11 @@ bool Execution::GetStorage(
     if (thread_idx >= thread_count) {
         prefix_db_->GetTemporaryKv(str_key, val);
     } else {
-        if (!storage_map_[thread_idx].get(str_key, val)) {
+        if (!storage_map_[thread_idx].Get(str_key, val)) {
             // get from db and add to memory cache
             res = prefix_db_->GetTemporaryKv(str_key, val);
             if (res) {
-                storage_map_[thread_idx].add(str_key, *val);
+                storage_map_[thread_idx].Insert(str_key, *val);
             }
         }
     }
