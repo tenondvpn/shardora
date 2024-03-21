@@ -1,6 +1,8 @@
 #pragma once
 
+#include <condition_variable>>
 #include <memory>
+#include <mutex>
 
 #include "tnet/tcp_acceptor.h"
 #include "tnet/tcp_connection.h"
@@ -58,6 +60,8 @@ private:
     bool stoped_{ true };
     PacketHandler packet_handler_{ nullptr };
     PacketFactory* packet_factory_{ nullptr };
+    std::condition_variable con_;
+    std::mutex mutex_;
 
     DISALLOW_COPY_AND_ASSIGN(TnetTransport);
 };
