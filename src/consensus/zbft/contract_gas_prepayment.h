@@ -12,12 +12,9 @@ namespace consensus {
 
 class ContractGasPrepayment {
 public:
-    ContractGasPrepayment(
-            uint8_t thread_count,
-            std::shared_ptr<db::Db>& db) {
-        thread_count_ = thread_count;
+    ContractGasPrepayment(std::shared_ptr<db::Db>& db) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
-        prepayment_gas_ = new common::UniqueMap<std::string, uint64_t, 256, 16>[thread_count];
+        prepayment_gas_ = new common::UniqueMap<std::string, uint64_t, 256, 16>[common::kMaxThreadCount];
     }
 
     virtual ~ContractGasPrepayment() {}
