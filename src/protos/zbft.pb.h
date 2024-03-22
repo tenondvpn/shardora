@@ -187,6 +187,18 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   const ::google::protobuf::RepeatedPtrField< ::std::string>& tx_hash_list() const;
   ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_tx_hash_list();
 
+  // repeated .shardora.pools.protobuf.TxMessage txs = 7;
+  int txs_size() const;
+  void clear_txs();
+  static const int kTxsFieldNumber = 7;
+  ::shardora::pools::protobuf::TxMessage* mutable_txs(int index);
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage >*
+      mutable_txs();
+  const ::shardora::pools::protobuf::TxMessage& txs(int index) const;
+  ::shardora::pools::protobuf::TxMessage* add_txs();
+  const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage >&
+      txs() const;
+
   // optional bytes prepare_final_hash = 2;
   bool has_prepare_final_hash() const;
   void clear_prepare_final_hash();
@@ -252,6 +264,7 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::std::string> tx_hash_list_;
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage > txs_;
   ::google::protobuf::internal::ArenaStringPtr prepare_final_hash_;
   ::shardora::block::protobuf::Block* block_;
   ::google::protobuf::uint64 height_;
@@ -934,6 +947,33 @@ inline void TxBft::set_time_stamp(::google::protobuf::uint64 value) {
   set_has_time_stamp();
   time_stamp_ = value;
   // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.TxBft.time_stamp)
+}
+
+// repeated .shardora.pools.protobuf.TxMessage txs = 7;
+inline int TxBft::txs_size() const {
+  return txs_.size();
+}
+inline ::shardora::pools::protobuf::TxMessage* TxBft::mutable_txs(int index) {
+  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.TxBft.txs)
+  return txs_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage >*
+TxBft::mutable_txs() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.zbft.protobuf.TxBft.txs)
+  return &txs_;
+}
+inline const ::shardora::pools::protobuf::TxMessage& TxBft::txs(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.TxBft.txs)
+  return txs_.Get(index);
+}
+inline ::shardora::pools::protobuf::TxMessage* TxBft::add_txs() {
+  // @@protoc_insertion_point(field_add:shardora.zbft.protobuf.TxBft.txs)
+  return txs_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage >&
+TxBft::txs() const {
+  // @@protoc_insertion_point(field_list:shardora.zbft.protobuf.TxBft.txs)
+  return txs_;
 }
 
 // -------------------------------------------------------------------

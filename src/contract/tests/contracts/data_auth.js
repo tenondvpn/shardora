@@ -126,7 +126,7 @@ function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract
 
     var message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
         amount_buf, gas_limit_buf, gas_price_buf, step_buf, Buffer.from(contract_bytes, 'hex'), 
-        Buffer.from(input, 'hex'), prepay_buf, Buffer.from(key, 'hex'), Buffer.from(value, 'hex')]);
+        Buffer.from(input, 'hex'), prepay_buf, Buffer.from(key), Buffer.from(value)]);
     var kechash = keccak256(message_buf)
 
     var digest = Secp256k1.uint256(kechash, 16)
@@ -144,6 +144,9 @@ function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract
         return;
     }
 
+    console.log("key: " + key);
+    console.log("value: " + value);
+    console.log("message_buf: " + message_buf);
     return {
         'gid': gid,
         'pubkey': '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16),
@@ -155,7 +158,7 @@ function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract
         'shard_id': local_count_shard_id,
         'hash': kechash,
         'key': key,
-        'value': value,
+        'val': value,
         'attrs_size': 4,
         "bytes_code": contract_bytes,
         "input": input,
@@ -358,8 +361,11 @@ function new_contract(contract_bytes) {
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var kechash = keccak256(self_account_id + gid + contract_bytes).toString('hex')
     var self_contract_address = kechash.slice(kechash.length - 40, kechash.length)
-    var key = "__csourcecode".toString('hex');
-    var value = fs.readFileSync('data_auth.sol', 'utf-8').toString('hex');
+    var key = Buffer.from("__csc").toString('hex');
+    var tmp_value = fs.readFileSync('data_auth.sol', 'utf-8');
+    var value = Buffer.from(tmp_value).toString('hex');
+    console.log("src key: " + key);
+    console.log("src value: " + value);
     var data = param_contract(
         6,
         gid,
