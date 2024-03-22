@@ -73,7 +73,7 @@ public:
         auto txs_items = std::make_shared<consensus::WaitingTxsItem>();
         auto& tx_map = txs_items->txs;
         for (int32_t i = 0; i < txs.size(); ++i) {
-            auto& txhash = txs[i].txhash();
+            auto txhash = "";  // txs[i].txhash();
             auto iter = gid_map_.find(txhash);
             if (iter == gid_map_.end()) {
                 ZJC_INFO("failed get tx %u, %s", pool_index_, common::Encode::HexEncode(txhash).c_str());
