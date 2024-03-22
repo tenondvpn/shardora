@@ -51,6 +51,10 @@ void KeyValueSync::Init(
         std::bind(&KeyValueSync::ConsensusTimerMessage, this));
 }
 
+int KeyValueSync::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+    return transport::kFirewallCheckSuccess;
+}
+
 void KeyValueSync::AddSyncHeight(
         uint32_t network_id,
         uint32_t pool_idx,

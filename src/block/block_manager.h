@@ -104,6 +104,7 @@ public:
                               db::DbWriteBatch& db_batch);
     void ChangeLeader(int32_t mod_num, common::BftMemberPtr& mem_ptr);
     bool ShouldStopConsensus();
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
 private:
     void HandleAllNewBlock();

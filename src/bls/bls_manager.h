@@ -65,6 +65,7 @@ public:
     static int GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g1_hash);
     int AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
 private:
     void HandleFinish(const transport::MessagePtr& msg_ptr);
@@ -93,6 +94,7 @@ private:
         const common::MembersPtr& members,
         elect::protobuf::PrevMembers* prev_members);
     void PopFinishMessage();
+    int CheckFinishMessageValid(const transport::MessagePtr& msg_ptr);
 
     std::shared_ptr<bls::BlsDkg> waiting_bls_{ nullptr };
     uint64_t max_height_{ common::kInvalidUint64 };

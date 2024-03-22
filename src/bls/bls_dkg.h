@@ -52,6 +52,8 @@ public:
         common::MembersPtr& members,
         std::shared_ptr<TimeBlockItem>& latest_timeblock_info);
     void HandleMessage(const transport::MessagePtr& header);
+    bool CheckBlsMessageValid(transport::MessagePtr& msg_ptr);
+    
     uint64_t elect_hegiht() {
         return elect_hegiht_;
     }

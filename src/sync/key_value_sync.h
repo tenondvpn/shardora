@@ -92,6 +92,8 @@ public:
         const std::shared_ptr<block::BlockManager>& block_mgr,
         const std::shared_ptr<db::Db>& db);
     void HandleMessage(const transport::MessagePtr& msg);
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
+
     uint32_t added_key_size() const {
         return added_key_set_.size();
     }

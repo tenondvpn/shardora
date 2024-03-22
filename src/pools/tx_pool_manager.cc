@@ -104,6 +104,29 @@ void TxPoolManager::InitCrossPools() {
         local_is_root, got_sharding_id, des_sharding_id);
 }
 
+
+int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+    return transport::kFirewallCheckSuccess;
+    // auto& header = msg_ptr->header;
+    // auto& tx_msg = header.tx_proto();
+    // if (!msg_ptr->header.has_sign() || !tx_msg.has_pubkey() ||
+    //         msg_ptr->header.sign().empty() || tx_msg.pubkey().empty()) {
+    //     ZJC_DEBUG("pools check firewall message failed, invalid sign or pk.");
+    //     return transport::kFirewallCheckError;
+    // }
+
+    // std::string sign_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
+    // if (security_->Verify(
+    //         sign_hash,
+    //         tx_msg.pubkey(),
+    //         msg_ptr->header.sign()) != security::kSecuritySuccess) {
+    //     ZJC_ERROR("verify signature failed!");
+    //     return transport::kFirewallCheckError;
+    // }
+
+    // return transport::kFirewallCheckSuccess;
+}
+
 void TxPoolManager::SyncCrossPool() {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (max_cross_pools_size_ == 1) {
