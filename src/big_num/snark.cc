@@ -2,7 +2,7 @@
 
 #include "libff/common/profiling.hpp"
 
-namespace zjchain {
+namespace shardora {
 
 namespace bignum {
 
@@ -169,4 +169,4 @@ libff::alt_bn128_G2 Snark::DecodePointG2(const std::string& data) {
 
 };  // namespace bignum
 
-};  // namespace zjchain
+};  // namespace shardora

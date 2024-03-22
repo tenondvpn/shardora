@@ -2,7 +2,7 @@
 
 #include "common/time_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace contract {
 
@@ -259,4 +259,4 @@ int PbcParing::Transform() {
 
 }  // namespace contract
 
-}  // namespace zjchain
+}  // namespace shardora

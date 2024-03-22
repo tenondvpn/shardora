@@ -29,7 +29,7 @@
 #include "security/security.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace bls {
 
@@ -53,7 +53,7 @@ public:
         std::shared_ptr<TimeBlockItem>& latest_timeblock_info);
     void HandleMessage(const transport::MessagePtr& header);
     bool CheckBlsMessageValid(transport::MessagePtr& msg_ptr);
-    
+
     uint64_t elect_hegiht() {
         return elect_hegiht_;
     }
@@ -189,4 +189,4 @@ private:
 
 };  // namespace bls
 
-};  // namespace zjchain
+};  // namespace shardora

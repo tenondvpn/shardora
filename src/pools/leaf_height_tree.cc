@@ -7,7 +7,7 @@
 #include "protos/sync.pb.h"
 #include "pools/leaf_height_tree.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
 
@@ -436,4 +436,4 @@ void LeafHeightTree::GetLeafInvalidHeights(std::vector<uint64_t>* height_vec) {
 
 }  // namespace pools
 
-}  // namespace zjchain
+}  // namespace shardora

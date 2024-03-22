@@ -1,6 +1,6 @@
 #include "tnet/utils/cmd_packet.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace tnet {
 
@@ -70,4 +70,4 @@ CmdPacket& CmdPacketFactory::Create(int type) {
 
 }  // namespace tnet
 
-}  // namespace zjchain
+}  // namespace shardora

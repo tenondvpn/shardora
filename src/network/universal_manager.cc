@@ -14,7 +14,7 @@
 #include "network/network_utils.h"
 #include "network/bootstrap.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace network {
 
@@ -208,4 +208,4 @@ void UniversalManager::Join(const dht::NodePtr& node) {
 
 }  // namespace network
 
-}  // namespace zjchain
+}  // namespace shardora

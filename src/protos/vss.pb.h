@@ -45,7 +45,7 @@ struct TableStruct {
 };
 void AddDescriptors();
 }  // namespace protobuf_protos_2fvss_2eproto
-namespace zjchain {
+namespace shardora {
 namespace vss {
 namespace protobuf {
 class VssMessage;
@@ -53,13 +53,13 @@ class VssMessageDefaultTypeInternal;
 extern VssMessageDefaultTypeInternal _VssMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace vss
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> ::zjchain::vss::protobuf::VssMessage* Arena::CreateMaybeMessage<::zjchain::vss::protobuf::VssMessage>(Arena*);
 }  // namespace protobuf
 }  // namespace google
-namespace zjchain {
+namespace shardora {
 namespace vss {
 namespace protobuf {
 
@@ -390,7 +390,7 @@ inline void VssMessage::set_type(::google::protobuf::int32 value) {
 
 }  // namespace protobuf
 }  // namespace vss
-}  // namespace zjchain
+}  // namespace shardora
 
 // @@protoc_insertion_point(global_scope)
 

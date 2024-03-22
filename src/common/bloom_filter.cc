@@ -4,7 +4,7 @@
 #include "common/bloom_filter.h"
 #include "common/u16_bit_count.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -122,4 +122,4 @@ bool BloomFilter::operator!=(const BloomFilter& r) const {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -4,7 +4,7 @@
 #include "consensus/zbft/tx_item_base.h"
 #include "security/security.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace vss {
     class VssManager;
@@ -67,4 +67,4 @@ private:
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

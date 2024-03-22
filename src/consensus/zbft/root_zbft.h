@@ -2,7 +2,7 @@
 
 #include "consensus/zbft/zbft.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace elect {
     class ElectManager;
@@ -32,4 +32,4 @@ private:
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

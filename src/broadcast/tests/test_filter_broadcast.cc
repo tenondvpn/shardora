@@ -11,7 +11,7 @@
 #include "broadcast/filter_broadcast.h"
 #include "transport/multi_thread.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace broadcast {
 
@@ -174,4 +174,4 @@ TEST_F(TestFilterBroadcast, BroadcastingOverlap) {
 
 }  // namespace db
 
-}  // namespace zjchain
+}  // namespace shardora

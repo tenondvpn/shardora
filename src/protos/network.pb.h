@@ -45,7 +45,7 @@ struct TableStruct {
 };
 void AddDescriptors();
 }  // namespace protobuf_protos_2fnetwork_2eproto
-namespace zjchain {
+namespace shardora {
 namespace network {
 namespace protobuf {
 class DropNodeRequest;
@@ -65,7 +65,7 @@ class NodeInfoDefaultTypeInternal;
 extern NodeInfoDefaultTypeInternal _NodeInfo_default_instance_;
 }  // namespace protobuf
 }  // namespace network
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> ::zjchain::network::protobuf::DropNodeRequest* Arena::CreateMaybeMessage<::zjchain::network::protobuf::DropNodeRequest>(Arena*);
@@ -75,7 +75,7 @@ template<> ::zjchain::network::protobuf::NetworkMessage* Arena::CreateMaybeMessa
 template<> ::zjchain::network::protobuf::NodeInfo* Arena::CreateMaybeMessage<::zjchain::network::protobuf::NodeInfo>(Arena*);
 }  // namespace protobuf
 }  // namespace google
-namespace zjchain {
+namespace shardora {
 namespace network {
 namespace protobuf {
 
@@ -1326,7 +1326,7 @@ inline void NetworkMessage::set_allocated_drop_node(::zjchain::network::protobuf
 
 }  // namespace protobuf
 }  // namespace network
-}  // namespace zjchain
+}  // namespace shardora
 
 // @@protoc_insertion_point(global_scope)
 

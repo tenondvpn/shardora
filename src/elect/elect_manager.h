@@ -21,7 +21,7 @@
 #include "security/security.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace vss {
     class VssManager;
@@ -151,4 +151,4 @@ private:
 
 }  // namespace elect
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -8,7 +8,7 @@
 #include "network/network_utils.h"
 #include "pools/tx_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
     
@@ -95,4 +95,4 @@ uint32_t CrossPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 
 }  // namespace pools
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -15,7 +15,7 @@
 #include "transport/processor.h"
 #include <common/log.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace sync {
 
@@ -635,4 +635,4 @@ void KeyValueSync::CheckSyncTimeout() {
 
 }  // namespace sync
 
-}  // namespace zjchain
+}  // namespace shardora

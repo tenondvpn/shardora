@@ -4,7 +4,7 @@
 
 #include "common/utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace ck {
 
@@ -20,4 +20,4 @@ static const std::string kClickhousePrepaymentTableName = "zjc_ck_prepayment_tab
 
 };  // namespace ck
 
-};  // namespace zjchain
+};  // namespace shardora

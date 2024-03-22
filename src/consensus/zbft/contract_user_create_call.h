@@ -7,7 +7,7 @@
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace contract {
     class ContractManager;
@@ -56,4 +56,4 @@ private:
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

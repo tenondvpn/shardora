@@ -6,7 +6,7 @@
 
 #include "common/utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -173,4 +173,4 @@ static std::map<uint8_t, std::string> global_code_to_country_english_map = {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

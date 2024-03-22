@@ -3,7 +3,7 @@
 #include "common/encode.h"
 #include "security/ecdsa/crypto_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace security {
 
@@ -104,4 +104,4 @@ void SecurityStringTrans::EcPointToString(
 
 }  // namespace security
 
-}  // namespace zjchain
+}  // namespace shardora

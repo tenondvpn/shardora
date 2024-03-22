@@ -46,7 +46,7 @@ struct TableStruct {
 };
 void AddDescriptors();
 }  // namespace protobuf_protos_2fc2c_2eproto
-namespace zjchain {
+namespace shardora {
 namespace c2c {
 namespace protobuf {
 class BuyerReport;
@@ -72,7 +72,7 @@ class SellInfoDefaultTypeInternal;
 extern SellInfoDefaultTypeInternal _SellInfo_default_instance_;
 }  // namespace protobuf
 }  // namespace c2c
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> ::zjchain::c2c::protobuf::BuyerReport* Arena::CreateMaybeMessage<::zjchain::c2c::protobuf::BuyerReport>(Arena*);
@@ -84,7 +84,7 @@ template<> ::zjchain::c2c::protobuf::OrderInfo* Arena::CreateMaybeMessage<::zjch
 template<> ::zjchain::c2c::protobuf::SellInfo* Arena::CreateMaybeMessage<::zjchain::c2c::protobuf::SellInfo>(Arena*);
 }  // namespace protobuf
 }  // namespace google
-namespace zjchain {
+namespace shardora {
 namespace c2c {
 namespace protobuf {
 
@@ -2716,7 +2716,7 @@ C2cMessage::get_sell() const {
 
 }  // namespace protobuf
 }  // namespace c2c
-}  // namespace zjchain
+}  // namespace shardora
 
 namespace google {
 namespace protobuf {

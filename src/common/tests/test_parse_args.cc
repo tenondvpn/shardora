@@ -4,7 +4,7 @@
 #define protected public
 #include "common/parse_args.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -240,4 +240,4 @@ TEST_F(TestParserArgs, AddArgType) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

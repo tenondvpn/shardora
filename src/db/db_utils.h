@@ -7,7 +7,7 @@
 #define DB_WARN(fmt, ...) ZJC_WARN("[db]" fmt, ## __VA_ARGS__)
 #define DB_ERROR(fmt, ...) ZJC_ERROR("[db]" fmt, ## __VA_ARGS__)
 
-namespace zjchain {
+namespace shardora {
 
 namespace db {
 

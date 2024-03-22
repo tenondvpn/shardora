@@ -12,7 +12,7 @@
 #include "transport/transport_utils.h"
 #include "transport/tcp_transport.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace transport {
 
@@ -515,4 +515,4 @@ void MultiThreadHandler::InitThreadPriorityMessageQueues() {
 
 }  // namespace transport
 
-}  // namespace zjchain
+}  // namespace shardora

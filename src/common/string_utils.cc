@@ -11,7 +11,7 @@
 #define LONG_MIN (std::numeric_limits<long>::min)()  // NOLINT
 #endif
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -388,4 +388,4 @@ void StringUtil::Trim(std::string& str) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -22,7 +22,7 @@
 #include "rocksdb/db.h"
 #endif
 
-namespace zjchain {
+namespace shardora {
 
 namespace db {
 

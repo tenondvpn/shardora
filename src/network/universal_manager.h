@@ -9,7 +9,7 @@
 #include "network/universal.h"
 #include "security/security.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace block {
     class AccountManager;
@@ -58,4 +58,4 @@ private:
 
 }  // namespace network
 
-}  // namespace zjchain
+}  // namespace shardora

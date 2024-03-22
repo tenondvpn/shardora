@@ -7,7 +7,7 @@
 #include <openssl/ec.h>
 #include "common/utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace security {
 
@@ -36,4 +36,4 @@ private:
 
 }  // namespace security
 
-}  // namespace zjchain
+}  // namespace shardora

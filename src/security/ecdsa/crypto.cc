@@ -4,7 +4,7 @@
 #include "security/ecdsa/ecdh_create_key.h"
 #include "security/ecdsa/aes.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace security {
 
@@ -53,4 +53,4 @@ int Crypto::GetDecryptData(
 
 };  // namespace security
 
-};  // namespace zjchain
+};  // namespace shardora

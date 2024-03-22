@@ -3,7 +3,7 @@
 #include "protos/transport.pb.h"
 #include "dht/dht_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace network {
 
@@ -29,4 +29,4 @@ private:
 
 }  // namespace network
 
-}  // namespace zjchain
+}  // namespace shardora

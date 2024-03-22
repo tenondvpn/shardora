@@ -22,7 +22,7 @@
 namespace protobuf_protos_2fbls_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_BlsPublicKey;
 }  // namespace protobuf_protos_2fbls_2eproto
-namespace zjchain {
+namespace shardora {
 namespace address {
 namespace protobuf {
 class AddressInfoDefaultTypeInternal {
@@ -32,7 +32,7 @@ class AddressInfoDefaultTypeInternal {
 } _AddressInfo_default_instance_;
 }  // namespace protobuf
 }  // namespace address
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2faddress_2eproto {
 static void InitDefaultsAddressInfo() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -149,7 +149,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2faddress_2eproto
-namespace zjchain {
+namespace shardora {
 namespace address {
 namespace protobuf {
 const ::google::protobuf::EnumDescriptor* AddressType_descriptor() {
@@ -882,7 +882,7 @@ void AddressInfo::InternalSwap(AddressInfo* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace address
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::address::protobuf::AddressInfo* Arena::CreateMaybeMessage< ::zjchain::address::protobuf::AddressInfo >(Arena* arena) {

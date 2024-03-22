@@ -45,7 +45,7 @@ struct TableStruct {
 };
 void AddDescriptors();
 }  // namespace protobuf_protos_2fbls_2eproto
-namespace zjchain {
+namespace shardora {
 namespace bls {
 namespace protobuf {
 class AgainstParticipant;
@@ -101,7 +101,7 @@ class VerifyVecItemDefaultTypeInternal;
 extern VerifyVecItemDefaultTypeInternal _VerifyVecItem_default_instance_;
 }  // namespace protobuf
 }  // namespace bls
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> ::zjchain::bls::protobuf::AgainstParticipant* Arena::CreateMaybeMessage<::zjchain::bls::protobuf::AgainstParticipant>(Arena*);
@@ -123,7 +123,7 @@ template<> ::zjchain::bls::protobuf::VerifyVecBrdRes* Arena::CreateMaybeMessage<
 template<> ::zjchain::bls::protobuf::VerifyVecItem* Arena::CreateMaybeMessage<::zjchain::bls::protobuf::VerifyVecItem>(Arena*);
 }  // namespace protobuf
 }  // namespace google
-namespace zjchain {
+namespace shardora {
 namespace bls {
 namespace protobuf {
 
@@ -4977,7 +4977,7 @@ inline void BlsMessage::set_elect_height(::google::protobuf::uint64 value) {
 
 }  // namespace protobuf
 }  // namespace bls
-}  // namespace zjchain
+}  // namespace shardora
 
 // @@protoc_insertion_point(global_scope)
 

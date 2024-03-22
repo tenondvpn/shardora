@@ -25,7 +25,7 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protob
 namespace protobuf_protos_2fzbft_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fzbft_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_TxBft;
 }  // namespace protobuf_protos_2fzbft_2eproto
-namespace zjchain {
+namespace shardora {
 namespace zbft {
 namespace protobuf {
 class TxBftDefaultTypeInternal {
@@ -40,7 +40,7 @@ class ZbftMessageDefaultTypeInternal {
 } _ZbftMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace zbft
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2fzbft_2eproto {
 static void InitDefaultsTxBft() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -221,7 +221,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2fzbft_2eproto
-namespace zjchain {
+namespace shardora {
 namespace zbft {
 namespace protobuf {
 
@@ -1845,7 +1845,7 @@ void ZbftMessage::InternalSwap(ZbftMessage* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace zbft
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::zbft::protobuf::TxBft* Arena::CreateMaybeMessage< ::zjchain::zbft::protobuf::TxBft >(Arena* arena) {

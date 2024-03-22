@@ -45,7 +45,7 @@ struct TableStruct {
 };
 void AddDescriptors();
 }  // namespace protobuf_protos_2fsync_2eproto
-namespace zjchain {
+namespace shardora {
 namespace sync {
 namespace protobuf {
 class FlushDbItem;
@@ -74,7 +74,7 @@ class SyncValueResponseDefaultTypeInternal;
 extern SyncValueResponseDefaultTypeInternal _SyncValueResponse_default_instance_;
 }  // namespace protobuf
 }  // namespace sync
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> ::zjchain::sync::protobuf::FlushDbItem* Arena::CreateMaybeMessage<::zjchain::sync::protobuf::FlushDbItem>(Arena*);
@@ -87,7 +87,7 @@ template<> ::zjchain::sync::protobuf::SyncValueRequest* Arena::CreateMaybeMessag
 template<> ::zjchain::sync::protobuf::SyncValueResponse* Arena::CreateMaybeMessage<::zjchain::sync::protobuf::SyncValueResponse>(Arena*);
 }  // namespace protobuf
 }  // namespace google
-namespace zjchain {
+namespace shardora {
 namespace sync {
 namespace protobuf {
 
@@ -2104,7 +2104,7 @@ inline void SyncMessage::set_allocated_sync_value_res(::zjchain::sync::protobuf:
 
 }  // namespace protobuf
 }  // namespace sync
-}  // namespace zjchain
+}  // namespace shardora
 
 // @@protoc_insertion_point(global_scope)
 

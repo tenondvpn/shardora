@@ -26,7 +26,7 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fsync_2eproto ::google::protobu
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fsync_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_SyncValueRequest;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fsync_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_SyncValueResponse;
 }  // namespace protobuf_protos_2fsync_2eproto
-namespace zjchain {
+namespace shardora {
 namespace sync {
 namespace protobuf {
 class SyncItemDefaultTypeInternal {
@@ -71,7 +71,7 @@ class SyncMessageDefaultTypeInternal {
 } _SyncMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace sync
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2fsync_2eproto {
 static void InitDefaultsSyncItem() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -369,7 +369,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2fsync_2eproto
-namespace zjchain {
+namespace shardora {
 namespace sync {
 namespace protobuf {
 
@@ -2868,7 +2868,7 @@ void SyncMessage::InternalSwap(SyncMessage* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace sync
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::sync::protobuf::SyncItem* Arena::CreateMaybeMessage< ::zjchain::sync::protobuf::SyncItem >(Arena* arena) {

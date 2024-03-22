@@ -47,7 +47,7 @@ struct TableStruct {
 };
 void AddDescriptors();
 }  // namespace protobuf_protos_2faddress_2eproto
-namespace zjchain {
+namespace shardora {
 namespace address {
 namespace protobuf {
 class AddressInfo;
@@ -55,13 +55,13 @@ class AddressInfoDefaultTypeInternal;
 extern AddressInfoDefaultTypeInternal _AddressInfo_default_instance_;
 }  // namespace protobuf
 }  // namespace address
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> ::zjchain::address::protobuf::AddressInfo* Arena::CreateMaybeMessage<::zjchain::address::protobuf::AddressInfo>(Arena*);
 }  // namespace protobuf
 }  // namespace google
-namespace zjchain {
+namespace shardora {
 namespace address {
 namespace protobuf {
 
@@ -778,7 +778,7 @@ inline void AddressInfo::set_destructed(bool value) {
 
 }  // namespace protobuf
 }  // namespace address
-}  // namespace zjchain
+}  // namespace shardora
 
 namespace google {
 namespace protobuf {

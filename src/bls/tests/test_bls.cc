@@ -28,7 +28,7 @@
 #include "protos/bls.pb.h"
 #include "network/network_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace bls {
 
@@ -1484,4 +1484,4 @@ TEST_F(TestBls, ThreeRatioFail) {
 
 }  // namespace bls
 
-}  // namespace zjchain
+}  // namespace shardora

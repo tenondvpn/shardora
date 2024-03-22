@@ -33,7 +33,7 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protob
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<2> scc_info_ElectBlock;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<2> scc_info_PrevMembers;
 }  // namespace protobuf_protos_2felect_2eproto
-namespace zjchain {
+namespace shardora {
 namespace elect {
 namespace protobuf {
 class VerifyVecValueDefaultTypeInternal {
@@ -108,7 +108,7 @@ class ElectMessageDefaultTypeInternal {
 } _ElectMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace elect
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2felect_2eproto {
 static void InitDefaultsVerifyVecValue() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -641,7 +641,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2felect_2eproto
-namespace zjchain {
+namespace shardora {
 namespace elect {
 namespace protobuf {
 
@@ -5860,7 +5860,7 @@ void ElectMessage::InternalSwap(ElectMessage* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace elect
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::elect::protobuf::VerifyVecValue* Arena::CreateMaybeMessage< ::zjchain::elect::protobuf::VerifyVecValue >(Arena* arena) {

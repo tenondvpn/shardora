@@ -1,6 +1,6 @@
 #include "contract/contract_blake2_compression.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace contract {
 
@@ -208,4 +208,4 @@ int Blake2Compression::call(
 
 }  // namespace contract
 
-}  // namespace zjchain
+}  // namespace shardora

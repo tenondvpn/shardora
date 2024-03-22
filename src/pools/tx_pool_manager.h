@@ -21,7 +21,7 @@
 #include "security/security.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace block {
     class AccountManager;
@@ -288,4 +288,4 @@ private:
 
 }  // namespace pools
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -16,7 +16,7 @@
 #include "protos/prefix_db.h"
 #include "protos/transport.pb.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace block {
 
@@ -134,4 +134,4 @@ private:
 
 }  // namespace block
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -7,7 +7,7 @@
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
 
-namespace zjchain {
+namespace shardora {
 namespace consensus {
 
 class ContractCreateByRootFromTxItem : public TxItemBase {
@@ -39,4 +39,4 @@ private:
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

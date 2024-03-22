@@ -2,7 +2,7 @@
 
 #include "zjcvm/execution.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -89,4 +89,4 @@ int ContractUserCall::HandleTx(
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

@@ -14,7 +14,7 @@
 #include "transport/transport_utils.h"
 #include "zjcvm/zjc_host.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
 
@@ -279,4 +279,4 @@ static std::string GetTxMessageHashByJoin(const pools::protobuf::TxMessage& tx_i
 
 };  // namespace pools
 
-};  // namespace zjchain
+};  // namespace shardora

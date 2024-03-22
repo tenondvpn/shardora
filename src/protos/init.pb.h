@@ -47,7 +47,7 @@ struct TableStruct {
 };
 void AddDescriptors();
 }  // namespace protobuf_protos_2finit_2eproto
-namespace zjchain {
+namespace shardora {
 namespace init {
 namespace protobuf {
 class GenesisInitBlsInfo;
@@ -67,7 +67,7 @@ class InvalidLeaderPoolsDefaultTypeInternal;
 extern InvalidLeaderPoolsDefaultTypeInternal _InvalidLeaderPools_default_instance_;
 }  // namespace protobuf
 }  // namespace init
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> ::zjchain::init::protobuf::GenesisInitBlsInfo* Arena::CreateMaybeMessage<::zjchain::init::protobuf::GenesisInitBlsInfo>(Arena*);
@@ -77,7 +77,7 @@ template<> ::zjchain::init::protobuf::InitMessage* Arena::CreateMaybeMessage<::z
 template<> ::zjchain::init::protobuf::InvalidLeaderPools* Arena::CreateMaybeMessage<::zjchain::init::protobuf::InvalidLeaderPools>(Arena*);
 }  // namespace protobuf
 }  // namespace google
-namespace zjchain {
+namespace shardora {
 namespace init {
 namespace protobuf {
 
@@ -1771,7 +1771,7 @@ inline void InitMessage::set_allocated_pools(::zjchain::init::protobuf::InvalidL
 
 }  // namespace protobuf
 }  // namespace init
-}  // namespace zjchain
+}  // namespace shardora
 
 // @@protoc_insertion_point(global_scope)
 

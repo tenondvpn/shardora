@@ -8,7 +8,7 @@
 #include "protos/get_proto_hash.h"
 #include "transport/processor.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace vss {
 
@@ -616,4 +616,4 @@ void VssManager::HandleThirdPeriodRandom(const protobuf::VssMessage& vss_msg) {
 
 }  // namespace vss
 
-}  // namespace zjchain
+}  // namespace shardora

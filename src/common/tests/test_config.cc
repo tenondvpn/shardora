@@ -5,7 +5,7 @@
 #define private public
 #include "common/config.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -186,4 +186,4 @@ TEST_F(TestConfig, Set) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

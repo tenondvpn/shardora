@@ -2,7 +2,7 @@
 
 #include "common/string_utils.h"
 
-using namespace zjchain;
+using namespace shardora;
 http::HttpClient cli;
 const char* peer_ip = "";
 

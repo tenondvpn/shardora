@@ -9,7 +9,7 @@
 #define private public
 #include "big_num/snark.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace bignum {
 
@@ -39,4 +39,4 @@ TEST_F(TestSnark, all) {
 
 }  // namespace bignum
 
-}  // namespace zjchain
+}  // namespace shardora

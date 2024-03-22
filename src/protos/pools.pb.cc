@@ -32,7 +32,7 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protob
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_PoolStatisticItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_ToTxMessageItem;
 }  // namespace protobuf_protos_2fpools_2eproto
-namespace zjchain {
+namespace shardora {
 namespace pools {
 namespace protobuf {
 class ToTxHeightsDefaultTypeInternal {
@@ -112,7 +112,7 @@ class TxMessageDefaultTypeInternal {
 } _TxMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace pools
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2fpools_2eproto {
 static void InitDefaultsToTxHeights() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -725,7 +725,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2fpools_2eproto
-namespace zjchain {
+namespace shardora {
 namespace pools {
 namespace protobuf {
 const ::google::protobuf::EnumDescriptor* StepType_descriptor() {
@@ -6939,7 +6939,7 @@ void TxMessage::InternalSwap(TxMessage* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace pools
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::pools::protobuf::ToTxHeights* Arena::CreateMaybeMessage< ::zjchain::pools::protobuf::ToTxHeights >(Arena* arena) {

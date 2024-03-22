@@ -4,7 +4,7 @@
 
 #include "common/utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace http {
 
@@ -39,6 +39,6 @@ inline static const char* GetStatus(int status) {
     return "unknown";
 }
 
-};  // namespace zjchain
+};  // namespace shardora
 
-};  // namespace zjchain
+};  // namespace shardora

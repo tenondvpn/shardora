@@ -13,7 +13,7 @@
 #include "common/split.h"
 #include "common/log.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace tnet {
 
@@ -73,4 +73,4 @@ inline static bool ParseSpec(const std::string& s, in_addr_t* addr, uint16_t* po
 
 }  // namespace tnet
 
-}  // namespace zjchain
+}  // namespace shardora

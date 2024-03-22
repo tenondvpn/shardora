@@ -8,7 +8,7 @@
 #include "dht/base_dht.h"
 #include "broadcast/broadcast_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace broadcast {
 
@@ -282,4 +282,4 @@ uint64_t FilterBroadcast::GetLayerRight(
 
 }  // namespace broadcast
 
-}  // namespace zjchain
+}  // namespace shardora

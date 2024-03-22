@@ -5,7 +5,7 @@
 #include "common/fixed_queue.h"
 #include "common/hash.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -175,4 +175,4 @@ private:
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

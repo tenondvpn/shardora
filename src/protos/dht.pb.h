@@ -45,7 +45,7 @@ struct TableStruct {
 };
 void AddDescriptors();
 }  // namespace protobuf_protos_2fdht_2eproto
-namespace zjchain {
+namespace shardora {
 namespace dht {
 namespace protobuf {
 class BootstrapRequest;
@@ -80,7 +80,7 @@ class TimerRequestDefaultTypeInternal;
 extern TimerRequestDefaultTypeInternal _TimerRequest_default_instance_;
 }  // namespace protobuf
 }  // namespace dht
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> ::zjchain::dht::protobuf::BootstrapRequest* Arena::CreateMaybeMessage<::zjchain::dht::protobuf::BootstrapRequest>(Arena*);
@@ -95,7 +95,7 @@ template<> ::zjchain::dht::protobuf::RefreshNeighborsResponse* Arena::CreateMayb
 template<> ::zjchain::dht::protobuf::TimerRequest* Arena::CreateMaybeMessage<::zjchain::dht::protobuf::TimerRequest>(Arena*);
 }  // namespace protobuf
 }  // namespace google
-namespace zjchain {
+namespace shardora {
 namespace dht {
 namespace protobuf {
 
@@ -3356,7 +3356,7 @@ inline void DhtMessage::set_allocated_timer(::zjchain::dht::protobuf::TimerReque
 
 }  // namespace protobuf
 }  // namespace dht
-}  // namespace zjchain
+}  // namespace shardora
 
 // @@protoc_insertion_point(global_scope)
 

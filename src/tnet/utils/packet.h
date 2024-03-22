@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace tnet {
 
@@ -38,4 +38,4 @@ protected:
 
 }  // namespace tnet
 
-}  // namespace zjchain
+}  // namespace shardora

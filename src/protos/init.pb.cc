@@ -31,7 +31,7 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2finit_2eproto ::google::protobu
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2finit_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_InvalidLeaderPools;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2finit_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_GetAddressInfoResponse;
 }  // namespace protobuf_protos_2finit_2eproto
-namespace zjchain {
+namespace shardora {
 namespace init {
 namespace protobuf {
 class GetAddressInfoRequestDefaultTypeInternal {
@@ -61,7 +61,7 @@ class InitMessageDefaultTypeInternal {
 } _InitMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace init
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2finit_2eproto {
 static void InitDefaultsGetAddressInfoRequest() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -291,7 +291,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2finit_2eproto
-namespace zjchain {
+namespace shardora {
 namespace init {
 namespace protobuf {
 
@@ -2136,7 +2136,7 @@ void InitMessage::InternalSwap(InitMessage* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace init
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::init::protobuf::GetAddressInfoRequest* Arena::CreateMaybeMessage< ::zjchain::init::protobuf::GetAddressInfoRequest >(Arena* arena) {

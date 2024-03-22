@@ -12,7 +12,7 @@
 #include "common/utils.h"
 #include "tnet/tnet_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace tnet {
 
@@ -53,4 +53,4 @@ private:
 
 }  // namespace tnet
 
-}  // namespace zjchain
+}  // namespace shardora

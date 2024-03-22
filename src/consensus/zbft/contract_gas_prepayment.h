@@ -6,7 +6,7 @@
 #include "protos/prefix_db.h"
 #include "security/security.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -203,4 +203,4 @@ private:
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

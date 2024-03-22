@@ -9,7 +9,7 @@
 
 #include <evmc/evmc.hpp>
 
-namespace zjchain {
+namespace shardora {
 
 namespace contract {
     class ContractManager;
@@ -127,4 +127,4 @@ public:
 
 }  // namespace zjcvm
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -7,7 +7,7 @@
 #include "dht/dht_key.h"
 #include "network/network_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace network {
 
@@ -103,4 +103,4 @@ std::vector<dht::NodePtr> Bootstrap::GetNetworkBootstrap(
 
 }  // namespace network
 
-}  // namespace zjchain
+}  // namespace shardora

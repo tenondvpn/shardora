@@ -6,7 +6,7 @@
 #define private public
 #include "common/random.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -92,4 +92,4 @@ TEST_F(TestRandom, RandomString) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

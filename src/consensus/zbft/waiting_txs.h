@@ -6,7 +6,7 @@
 #include "pools/tx_pool_manager.h"
 #include <common/log.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -61,4 +61,4 @@ private:
 
 }  // namespace consensus
 
-}  // namespace zjchain
+}  // namespace shardora

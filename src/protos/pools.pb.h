@@ -47,7 +47,7 @@ struct TableStruct {
 };
 void AddDescriptors();
 }  // namespace protobuf_protos_2fpools_2eproto
-namespace zjchain {
+namespace shardora {
 namespace pools {
 namespace protobuf {
 class AreaInfo;
@@ -97,7 +97,7 @@ class TxMessageDefaultTypeInternal;
 extern TxMessageDefaultTypeInternal _TxMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace pools
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> ::zjchain::pools::protobuf::AreaInfo* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::AreaInfo>(Arena*);
@@ -117,7 +117,7 @@ template<> ::zjchain::pools::protobuf::ToTxMessageItem* Arena::CreateMaybeMessag
 template<> ::zjchain::pools::protobuf::TxMessage* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::TxMessage>(Arena*);
 }  // namespace protobuf
 }  // namespace google
-namespace zjchain {
+namespace shardora {
 namespace pools {
 namespace protobuf {
 
@@ -5544,7 +5544,7 @@ inline void TxMessage::set_allocated_contract_from(::std::string* contract_from)
 
 }  // namespace protobuf
 }  // namespace pools
-}  // namespace zjchain
+}  // namespace shardora
 
 namespace google {
 namespace protobuf {

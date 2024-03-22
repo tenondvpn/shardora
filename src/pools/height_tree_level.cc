@@ -6,7 +6,7 @@
 
 #include "common/utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
 
@@ -409,4 +409,4 @@ void HeightTreeLevel::FlushToDb(db::DbWriteBatch& db_batch) {
 
 };  // namespace pools
 
-};  // namespace zjchain
+};  // namespace shardora

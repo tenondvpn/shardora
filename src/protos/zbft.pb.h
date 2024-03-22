@@ -47,7 +47,7 @@ struct TableStruct {
 };
 void AddDescriptors();
 }  // namespace protobuf_protos_2fzbft_2eproto
-namespace zjchain {
+namespace shardora {
 namespace zbft {
 namespace protobuf {
 class TxBft;
@@ -58,14 +58,14 @@ class ZbftMessageDefaultTypeInternal;
 extern ZbftMessageDefaultTypeInternal _ZbftMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace zbft
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> ::zjchain::zbft::protobuf::TxBft* Arena::CreateMaybeMessage<::zjchain::zbft::protobuf::TxBft>(Arena*);
 template<> ::zjchain::zbft::protobuf::ZbftMessage* Arena::CreateMaybeMessage<::zjchain::zbft::protobuf::ZbftMessage>(Arena*);
 }  // namespace protobuf
 }  // namespace google
-namespace zjchain {
+namespace shardora {
 namespace zbft {
 namespace protobuf {
 
@@ -1890,7 +1890,7 @@ ZbftMessage::mutable_invaid_txs() {
 
 }  // namespace protobuf
 }  // namespace zbft
-}  // namespace zjchain
+}  // namespace shardora
 
 // @@protoc_insertion_point(global_scope)
 

@@ -19,7 +19,7 @@
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -624,4 +624,4 @@ typedef std::shared_ptr<Zbft> ZbftPtr;
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

@@ -4,7 +4,7 @@
 
 #include "common/global_info.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace ws {
 
@@ -105,4 +105,4 @@ void WebSocketServer::Stop() {
 
 };  // namespace ws
 
-};  // namespace zjchain
+};  // namespace shardora

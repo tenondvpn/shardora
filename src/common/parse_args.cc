@@ -4,7 +4,7 @@
 
 #include "common/string_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -259,4 +259,4 @@ int ParserArgs::Parse(const std::string& params, std::string& err_pos) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -6,7 +6,7 @@
 #include "tnet/utils/packet_decoder.h"
 #include "tnet/utils/packet_encoder.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace tnet {
 
@@ -23,4 +23,4 @@ protected:
 
 }  // namespace tnet
 
-}  // namespace zjchain
+}  // namespace shardora

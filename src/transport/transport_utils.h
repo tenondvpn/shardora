@@ -22,7 +22,7 @@
 #define TRANSPORT_WARN(fmt, ...) ZJC_WARN("[transport]" fmt, ## __VA_ARGS__)
 #define TRANSPORT_ERROR(fmt, ...) ZJC_ERROR("[transport]" fmt, ## __VA_ARGS__)
 
-namespace zjchain {
+namespace shardora {
 
 namespace transport {
 
@@ -138,4 +138,4 @@ inline void CloseSocket(int sock) {
 
 }  // namespace transport
 
-}  // namespace zjchain
+}  // namespace shardora

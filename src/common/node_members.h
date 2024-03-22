@@ -4,7 +4,7 @@
 
 #include "common/utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -46,4 +46,4 @@ typedef std::shared_ptr<Members> MembersPtr;
 
 };  // namespace common
 
-};  // namespace zjchain
+};  // namespace shardora

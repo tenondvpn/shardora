@@ -10,7 +10,7 @@
 #include "network/network_utils.h"
 #include "pools/tx_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
     
@@ -296,4 +296,4 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
 
 }  // namespace pools
 
-}  // namespace zjchain
+}  // namespace shardora

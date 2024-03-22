@@ -18,7 +18,7 @@
 #include "protos/prefix_db.h"
 #include "security/security.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace elect {
 
@@ -310,4 +310,4 @@ private:
 
 }  // namespace elect
 
-}  // namespace zjchain
+}  // namespace shardora

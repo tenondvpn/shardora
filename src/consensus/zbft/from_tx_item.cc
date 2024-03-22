@@ -1,6 +1,6 @@
 #include "consensus/zbft/from_tx_item.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -85,4 +85,4 @@ int FromTxItem::HandleTx(
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

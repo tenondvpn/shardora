@@ -5,7 +5,7 @@
 
 #include "common/time_utils.h"
 
-using namespace zjchain;
+using namespace shardora;
 std::atomic<uint32_t> receive_count = 0;
 std::mutex test_m;
 int64_t b_time = 0;

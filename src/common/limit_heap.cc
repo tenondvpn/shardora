@@ -1,6 +1,6 @@
 #include "common/limit_heap.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -31,4 +31,4 @@ uint64_t MinHeapUniqueVal(const int32_t& val) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

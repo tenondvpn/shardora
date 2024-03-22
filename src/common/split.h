@@ -5,7 +5,7 @@
 #include <iostream>
 #include <cassert>
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -106,4 +106,4 @@ private:
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

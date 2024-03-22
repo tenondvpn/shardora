@@ -3,7 +3,7 @@
 #include "common/utils.h"
 #include "common/log.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace sync {
 
@@ -36,4 +36,4 @@ static const uint32_t kPoolHeightPairCount = 2u * (common::kImmutablePoolSize + 
 
 }  // namespace sync
 
-}  // namespace zjchain
+}  // namespace shardora

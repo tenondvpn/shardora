@@ -11,7 +11,7 @@
 #include "pools/tx_utils.h"
 #include "protos/block.pb.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -170,4 +170,4 @@ struct WaitingTxsItem {
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

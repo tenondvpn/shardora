@@ -11,7 +11,7 @@
 #include "common/encode.h"
 #include "big_num/bignum_utils.h"
 
-using namespace zjchain;
+using namespace shardora;
 extern std::random_device s_fixedHashEngine;
 template <unsigned N> struct StaticLog2 { enum { result = 1 + StaticLog2<N / 2>::result }; };
 template <> struct StaticLog2<1> { enum { result = 0 }; };

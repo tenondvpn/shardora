@@ -38,7 +38,7 @@
 #include "timeblock/time_block_manager.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace vss {
     class VssManager;
@@ -437,4 +437,4 @@ private:
 
 }  // namespace consensus
 
-}  // namespace zjchain
+}  // namespace shardora

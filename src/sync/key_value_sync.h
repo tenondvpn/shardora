@@ -18,7 +18,7 @@
 #include "sync/sync_utils.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace dht {
     class BaseDht;
@@ -157,4 +157,4 @@ private:
 
 }  // namespace sync
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -51,7 +51,7 @@ namespace protobuf_protos_2fpools_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_ShardToTxItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_StatisticTxItem;
 }  // namespace protobuf_protos_2fpools_2eproto
-namespace zjchain {
+namespace shardora {
 namespace block {
 namespace protobuf {
 class StorageItemDefaultTypeInternal {
@@ -216,7 +216,7 @@ class BlockMessageDefaultTypeInternal {
 } _BlockMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace block
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2fblock_2eproto {
 static void InitDefaultsStorageItem() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -1367,7 +1367,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2fblock_2eproto
-namespace zjchain {
+namespace shardora {
 namespace block {
 namespace protobuf {
 
@@ -13165,7 +13165,7 @@ void BlockMessage::InternalSwap(BlockMessage* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace block
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::block::protobuf::StorageItem* Arena::CreateMaybeMessage< ::zjchain::block::protobuf::StorageItem >(Arena* arena) {

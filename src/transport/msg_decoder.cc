@@ -1,6 +1,6 @@
 #include "transport/msg_decoder.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace transport {
 
@@ -108,4 +108,4 @@ void MsgDecoder::Free() {
 
 }  // namespace transport
 
-}  // namespace zjchain
+}  // namespace shardora

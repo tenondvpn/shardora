@@ -4,7 +4,7 @@
 
 #include "common/global_info.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace http {
 
@@ -76,4 +76,4 @@ int32_t HttpClient::Request(const char* ip, uint16_t port, const std::string& ms
 
 };  // namespace http
 
-};  // namespace zjchain
+};  // namespace shardora

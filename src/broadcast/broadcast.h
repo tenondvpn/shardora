@@ -8,7 +8,7 @@
 #include "protos/transport.pb.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace dht {
     class BaseDht;
@@ -48,4 +48,4 @@ private:
 
 }  // namespace broadcast
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -3,7 +3,7 @@
 #include "contract/contract_manager.h"
 #include "zjcvm/execution.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -341,4 +341,4 @@ int ContractUserCreateCall::CreateContractCallExcute(
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

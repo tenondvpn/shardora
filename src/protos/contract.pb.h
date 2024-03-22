@@ -45,7 +45,7 @@ struct TableStruct {
 };
 void AddDescriptors();
 }  // namespace protobuf_protos_2fcontract_2eproto
-namespace zjchain {
+namespace shardora {
 namespace contract {
 namespace protobuf {
 class ContractMessage;
@@ -59,7 +59,7 @@ class GetAttrByKeyResDefaultTypeInternal;
 extern GetAttrByKeyResDefaultTypeInternal _GetAttrByKeyRes_default_instance_;
 }  // namespace protobuf
 }  // namespace contract
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> ::zjchain::contract::protobuf::ContractMessage* Arena::CreateMaybeMessage<::zjchain::contract::protobuf::ContractMessage>(Arena*);
@@ -67,7 +67,7 @@ template<> ::zjchain::contract::protobuf::GetAttrByKeyReq* Arena::CreateMaybeMes
 template<> ::zjchain::contract::protobuf::GetAttrByKeyRes* Arena::CreateMaybeMessage<::zjchain::contract::protobuf::GetAttrByKeyRes>(Arena*);
 }  // namespace protobuf
 }  // namespace google
-namespace zjchain {
+namespace shardora {
 namespace contract {
 namespace protobuf {
 
@@ -980,7 +980,7 @@ inline void ContractMessage::set_allocated_get_attr_res(::zjchain::contract::pro
 
 }  // namespace protobuf
 }  // namespace contract
-}  // namespace zjchain
+}  // namespace shardora
 
 // @@protoc_insertion_point(global_scope)
 

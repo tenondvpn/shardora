@@ -9,7 +9,7 @@
 #include "transport/multi_thread.h"
 #include "transport/processor.h"
 
-using namespace zjchain;
+using namespace shardora;
 
 int main(int argc, char* argv[]) {
     transport::MultiThreadHandler net_handler;

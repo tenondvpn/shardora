@@ -2,7 +2,7 @@
 
 #include <map>
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -60,4 +60,4 @@ private:
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

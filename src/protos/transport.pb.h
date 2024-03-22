@@ -57,7 +57,7 @@ struct TableStruct {
 };
 void AddDescriptors();
 }  // namespace protobuf_protos_2ftransport_2eproto
-namespace zjchain {
+namespace shardora {
 namespace transport {
 namespace protobuf {
 class BroadcastParam;
@@ -68,14 +68,14 @@ class HeaderDefaultTypeInternal;
 extern HeaderDefaultTypeInternal _Header_default_instance_;
 }  // namespace protobuf
 }  // namespace transport
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> ::zjchain::transport::protobuf::BroadcastParam* Arena::CreateMaybeMessage<::zjchain::transport::protobuf::BroadcastParam>(Arena*);
 template<> ::zjchain::transport::protobuf::Header* Arena::CreateMaybeMessage<::zjchain::transport::protobuf::Header>(Arena*);
 }  // namespace protobuf
 }  // namespace google
-namespace zjchain {
+namespace shardora {
 namespace transport {
 namespace protobuf {
 
@@ -2777,7 +2777,7 @@ inline void Header::set_allocated_c2c(::zjchain::c2c::protobuf::C2cMessage* c2c)
 
 }  // namespace protobuf
 }  // namespace transport
-}  // namespace zjchain
+}  // namespace shardora
 
 // @@protoc_insertion_point(global_scope)
 

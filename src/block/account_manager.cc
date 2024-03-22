@@ -16,7 +16,7 @@
 #include "protos/elect.pb.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace block {
 
@@ -686,4 +686,4 @@ void AccountManager::NewBlockWithTx(
 
 }  // namespace block
 
-}  //namespace zjchain
+}  //namespace shardora

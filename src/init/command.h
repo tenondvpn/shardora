@@ -9,7 +9,7 @@
 #include "common/utils.h"
 #include "common/tick.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace init {
 
@@ -50,4 +50,4 @@ private:
 
 }  // namespace init
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -9,7 +9,7 @@
 #include "protos/get_proto_hash.h"
 #include <protos/pools.pb.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
 
@@ -816,4 +816,4 @@ int ToTxsPools::CreateToTxWithHeights(
 
 };  // namespace pools
 
-};  // namespace zjchain
+};  // namespace shardora

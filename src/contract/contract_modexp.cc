@@ -7,7 +7,7 @@
 #include "big_num/snark.h"
 #include "big_num/bignum_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace contract {
 
@@ -73,4 +73,4 @@ int Modexp::call(
 
 }  // namespace contract
 
-}  // namespace zjchain
+}  // namespace shardora

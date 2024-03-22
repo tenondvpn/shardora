@@ -3,7 +3,7 @@
 #include "common/global_info.h"
 #include "common/string_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -70,4 +70,4 @@ std::string Ip::GetIpCountry(const std::string& ip) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -4,7 +4,7 @@
 #include "libff/common/profiling.hpp"
 #include "common/time_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace bls {
 
@@ -142,4 +142,4 @@ int BlsSign::GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g1_h
 
 };  // namespace bls
 
-};  // namespace zjchain
+};  // namespace shardora

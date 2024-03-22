@@ -9,7 +9,7 @@
 #include "common/random.h"
 #include "common/encode.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -62,4 +62,4 @@ TEST_F(TestFtsTree, all) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

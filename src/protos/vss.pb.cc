@@ -19,7 +19,7 @@
 #endif
 // @@protoc_insertion_point(includes)
 
-namespace zjchain {
+namespace shardora {
 namespace vss {
 namespace protobuf {
 class VssMessageDefaultTypeInternal {
@@ -29,7 +29,7 @@ class VssMessageDefaultTypeInternal {
 } _VssMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace vss
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2fvss_2eproto {
 static void InitDefaultsVssMessage() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -122,7 +122,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2fvss_2eproto
-namespace zjchain {
+namespace shardora {
 namespace vss {
 namespace protobuf {
 
@@ -552,7 +552,7 @@ void VssMessage::InternalSwap(VssMessage* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace vss
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::vss::protobuf::VssMessage* Arena::CreateMaybeMessage< ::zjchain::vss::protobuf::VssMessage >(Arena* arena) {

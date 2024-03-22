@@ -45,7 +45,7 @@ struct TableStruct {
 };
 void AddDescriptors();
 }  // namespace protobuf_protos_2felect_2eproto
-namespace zjchain {
+namespace shardora {
 namespace elect {
 namespace protobuf {
 class BlsPublicKey;
@@ -92,7 +92,7 @@ class memberDefaultTypeInternal;
 extern memberDefaultTypeInternal _member_default_instance_;
 }  // namespace protobuf
 }  // namespace elect
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> ::zjchain::elect::protobuf::BlsPublicKey* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::BlsPublicKey>(Arena*);
@@ -111,7 +111,7 @@ template<> ::zjchain::elect::protobuf::WaitingNodesMessage* Arena::CreateMaybeMe
 template<> ::zjchain::elect::protobuf::member* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::member>(Arena*);
 }  // namespace protobuf
 }  // namespace google
-namespace zjchain {
+namespace shardora {
 namespace elect {
 namespace protobuf {
 
@@ -5034,7 +5034,7 @@ inline void ElectMessage::set_allocated_sync_stoke_res(::zjchain::elect::protobu
 
 }  // namespace protobuf
 }  // namespace elect
-}  // namespace zjchain
+}  // namespace shardora
 
 // @@protoc_insertion_point(global_scope)
 

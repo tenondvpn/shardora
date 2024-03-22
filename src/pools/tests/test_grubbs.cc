@@ -9,7 +9,7 @@
 #include "pools/tx_pool_manager.h"
 #include "db/db.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
 
@@ -74,4 +74,4 @@ TEST_F(TestGrubbs, All) {
 
 }  // namespace pools
 
-}  // namespace zjchain
+}  // namespace shardora

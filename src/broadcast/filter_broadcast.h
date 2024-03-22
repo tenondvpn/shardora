@@ -4,7 +4,7 @@
 #include "dht/base_dht.h"
 #include "broadcast/broadcast.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace broadcast {
 
@@ -44,4 +44,4 @@ private:
 
 }  // namespace broadcast
 
-}  // namespace zjchain
+}  // namespace shardora

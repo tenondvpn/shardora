@@ -29,7 +29,7 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_SwapSecKeyReq;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_VerifyVecBrdReq;
 }  // namespace protobuf_protos_2fbls_2eproto
-namespace zjchain {
+namespace shardora {
 namespace bls {
 namespace protobuf {
 class VerifyVecItemDefaultTypeInternal {
@@ -119,7 +119,7 @@ class BlsMessageDefaultTypeInternal {
 } _BlsMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace bls
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2fbls_2eproto {
 static void InitDefaultsVerifyVecItem() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -703,7 +703,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2fbls_2eproto
-namespace zjchain {
+namespace shardora {
 namespace bls {
 namespace protobuf {
 
@@ -6183,7 +6183,7 @@ void BlsMessage::InternalSwap(BlsMessage* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace bls
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::bls::protobuf::VerifyVecItem* Arena::CreateMaybeMessage< ::zjchain::bls::protobuf::VerifyVecItem >(Arena* arena) {

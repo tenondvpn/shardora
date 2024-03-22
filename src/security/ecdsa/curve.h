@@ -11,7 +11,7 @@
 
 #include "security/ecdsa/crypto_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace security {
 
@@ -33,4 +33,4 @@ struct Curve {
 
 }  // namespace security
 
-}  // namespace zjchain
+}  // namespace shardora

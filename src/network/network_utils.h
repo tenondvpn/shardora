@@ -10,7 +10,7 @@
 #define NETWORK_WARN(fmt, ...) ZJC_WARN("[network]" fmt, ## __VA_ARGS__)
 #define NETWORK_ERROR(fmt, ...) ZJC_ERROR("[network]" fmt, ## __VA_ARGS__)
 
-namespace zjchain {
+namespace shardora {
 
 namespace network {
 
@@ -73,4 +73,4 @@ inline static bool IsSameShardOrSameWaitingPool(uint32_t local_net_id, uint32_t 
 
 }  // namespace network
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -7,7 +7,7 @@
 #include <common/log.h>
 #include "common/time_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace security {
 
@@ -130,4 +130,4 @@ std::string Ecdsa::UnicastAddress(const std::string& src_address) {
 
 }  // namespace security
 
-}  // namespace zjchain
+}  // namespace shardora

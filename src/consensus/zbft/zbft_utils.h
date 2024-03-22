@@ -16,7 +16,7 @@
 #include "protos/block.pb.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -160,4 +160,4 @@ bool IsShardSuperSingleBlockTx(uint32_t tx_type);
 
 }  // namespace consensus
 
-}  //namespace zjchain
+}  //namespace shardora

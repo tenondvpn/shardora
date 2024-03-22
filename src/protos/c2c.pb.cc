@@ -27,7 +27,7 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fc2c_2eproto ::google::protobuf
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fc2c_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_OrderInfo;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fc2c_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_SellInfo;
 }  // namespace protobuf_protos_2fc2c_2eproto
-namespace zjchain {
+namespace shardora {
 namespace c2c {
 namespace protobuf {
 class OrderInfoDefaultTypeInternal {
@@ -67,7 +67,7 @@ class C2cMessageDefaultTypeInternal {
 } _C2cMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace c2c
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2fc2c_2eproto {
 static void InitDefaultsOrderInfo() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -367,7 +367,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2fc2c_2eproto
-namespace zjchain {
+namespace shardora {
 namespace c2c {
 namespace protobuf {
 const ::google::protobuf::EnumDescriptor* Status_descriptor() {
@@ -3077,7 +3077,7 @@ void C2cMessage::InternalSwap(C2cMessage* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace c2c
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::c2c::protobuf::OrderInfo* Arena::CreateMaybeMessage< ::zjchain::c2c::protobuf::OrderInfo >(Arena* arena) {

@@ -11,7 +11,7 @@
 #include "timeblock/time_block_manager.h"
 #include "timeblock/time_block_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace tmblock {
 
@@ -86,4 +86,4 @@ TEST_F(TestTimeBlockManager, LeaderNewTimeBlockValid) {
 
 }  // namespace tmblock
 
-}  // namespace zjchain
+}  // namespace shardora

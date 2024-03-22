@@ -5,7 +5,7 @@
 #include "security/ecdsa/security_string_trans.h"
 #include "security/ecdsa/secp256k1.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace security {
 
@@ -131,4 +131,4 @@ int PublicKey::DeserializeToSecp256k1(const std::string& src) {
 
 }  // namespace security
 
-}  // namespace zjchain
+}  // namespace shardora

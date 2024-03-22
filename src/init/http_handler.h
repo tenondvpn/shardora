@@ -7,7 +7,7 @@
 #include "transport/multi_thread.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace init {
 
@@ -41,4 +41,4 @@ private:
 
 };  // namespace init
 
-};  // namespace zjchain
+};  // namespace shardora

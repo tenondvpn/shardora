@@ -9,7 +9,7 @@
 #include "xxHash/xxhash.h"
 #include "ethash/keccak.hpp"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -487,4 +487,4 @@ std::string Hash::keccak256(const std::string& str) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

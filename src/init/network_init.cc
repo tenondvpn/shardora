@@ -32,7 +32,7 @@
 #include "zjcvm/execution.h"
 #include "yaml-cpp/yaml.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace init {
 
@@ -1478,4 +1478,4 @@ bool NetworkInit::BlockBlsAggSignatureValid(
 
 }  // namespace init
 
-}  // namespace zjchain
+}  // namespace shardora

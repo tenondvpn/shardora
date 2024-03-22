@@ -29,7 +29,7 @@
 #include "pools/tx_pool_manager.h"
 #include "transport/processor.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -3211,4 +3211,4 @@ bool BftManager::IsCreateContractLibraray(const block::protobuf::BlockTx& tx_inf
 
 }  // namespace consensus
 
-}  // namespace zjchain
+}  // namespace shardora

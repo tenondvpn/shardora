@@ -1,6 +1,6 @@
 #include "common/encode.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -159,4 +159,4 @@ std::string Encode::Base64Substr(const std::string& str) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

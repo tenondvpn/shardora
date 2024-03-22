@@ -30,7 +30,7 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fdht_2eproto ::google::protobuf
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fdht_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_TimerRequest;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fdht_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_RefreshNeighborsResponse;
 }  // namespace protobuf_protos_2fdht_2eproto
-namespace zjchain {
+namespace shardora {
 namespace dht {
 namespace protobuf {
 class BootstrapRequestDefaultTypeInternal {
@@ -85,7 +85,7 @@ class DhtMessageDefaultTypeInternal {
 } _DhtMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace dht
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2fdht_2eproto {
 static void InitDefaultsBootstrapRequest() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -468,7 +468,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2fdht_2eproto
-namespace zjchain {
+namespace shardora {
 namespace dht {
 namespace protobuf {
 
@@ -4002,7 +4002,7 @@ void DhtMessage::InternalSwap(DhtMessage* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace dht
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::dht::protobuf::BootstrapRequest* Arena::CreateMaybeMessage< ::zjchain::dht::protobuf::BootstrapRequest >(Arena* arena) {

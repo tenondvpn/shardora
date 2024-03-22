@@ -45,7 +45,7 @@ struct TableStruct {
 };
 void AddDescriptors();
 }  // namespace protobuf_protos_2ftimeblock_2eproto
-namespace zjchain {
+namespace shardora {
 namespace timeblock {
 namespace protobuf {
 class TimeBlock;
@@ -53,13 +53,13 @@ class TimeBlockDefaultTypeInternal;
 extern TimeBlockDefaultTypeInternal _TimeBlock_default_instance_;
 }  // namespace protobuf
 }  // namespace timeblock
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> ::zjchain::timeblock::protobuf::TimeBlock* Arena::CreateMaybeMessage<::zjchain::timeblock::protobuf::TimeBlock>(Arena*);
 }  // namespace protobuf
 }  // namespace google
-namespace zjchain {
+namespace shardora {
 namespace timeblock {
 namespace protobuf {
 
@@ -288,7 +288,7 @@ inline void TimeBlock::set_vss_random(::google::protobuf::uint64 value) {
 
 }  // namespace protobuf
 }  // namespace timeblock
-}  // namespace zjchain
+}  // namespace shardora
 
 // @@protoc_insertion_point(global_scope)
 

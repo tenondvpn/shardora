@@ -23,7 +23,7 @@ namespace protobuf_protos_2fcontract_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fcontract_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_GetAttrByKeyReq;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fcontract_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_GetAttrByKeyRes;
 }  // namespace protobuf_protos_2fcontract_2eproto
-namespace zjchain {
+namespace shardora {
 namespace contract {
 namespace protobuf {
 class GetAttrByKeyReqDefaultTypeInternal {
@@ -43,7 +43,7 @@ class ContractMessageDefaultTypeInternal {
 } _ContractMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace contract
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2fcontract_2eproto {
 static void InitDefaultsGetAttrByKeyReq() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -188,7 +188,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2fcontract_2eproto
-namespace zjchain {
+namespace shardora {
 namespace contract {
 namespace protobuf {
 
@@ -1127,7 +1127,7 @@ void ContractMessage::InternalSwap(ContractMessage* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace contract
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::contract::protobuf::GetAttrByKeyReq* Arena::CreateMaybeMessage< ::zjchain::contract::protobuf::GetAttrByKeyReq >(Arena* arena) {

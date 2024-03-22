@@ -19,7 +19,7 @@
 #endif
 // @@protoc_insertion_point(includes)
 
-namespace zjchain {
+namespace shardora {
 namespace timeblock {
 namespace protobuf {
 class TimeBlockDefaultTypeInternal {
@@ -29,7 +29,7 @@ class TimeBlockDefaultTypeInternal {
 } _TimeBlock_default_instance_;
 }  // namespace protobuf
 }  // namespace timeblock
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2ftimeblock_2eproto {
 static void InitDefaultsTimeBlock() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -114,7 +114,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2ftimeblock_2eproto
-namespace zjchain {
+namespace shardora {
 namespace timeblock {
 namespace protobuf {
 
@@ -436,7 +436,7 @@ void TimeBlock::InternalSwap(TimeBlock* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace timeblock
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::timeblock::protobuf::TimeBlock* Arena::CreateMaybeMessage< ::zjchain::timeblock::protobuf::TimeBlock >(Arena* arena) {

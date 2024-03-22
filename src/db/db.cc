@@ -5,7 +5,7 @@
 #include "common/utils.h"
 #include "common/log.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace db {
 

@@ -10,7 +10,7 @@
 #include "dht/dht_utils.h"
 #include "protos/network.pb.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace block {
     class AccountManager;
@@ -68,4 +68,4 @@ private:
 
 }  // namespace network
 
-}  //namespace zjchain
+}  //namespace shardora

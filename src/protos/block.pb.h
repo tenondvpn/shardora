@@ -46,7 +46,7 @@ struct TableStruct {
 };
 void AddDescriptors();
 }  // namespace protobuf_protos_2fblock_2eproto
-namespace zjchain {
+namespace shardora {
 namespace block {
 namespace protobuf {
 class AccountAttrRequest;
@@ -147,7 +147,7 @@ class VpnCountItemDefaultTypeInternal;
 extern VpnCountItemDefaultTypeInternal _VpnCountItem_default_instance_;
 }  // namespace protobuf
 }  // namespace block
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> ::zjchain::block::protobuf::AccountAttrRequest* Arena::CreateMaybeMessage<::zjchain::block::protobuf::AccountAttrRequest>(Arena*);
@@ -184,7 +184,7 @@ template<> ::zjchain::block::protobuf::UpdateVpnCountResponse* Arena::CreateMayb
 template<> ::zjchain::block::protobuf::VpnCountItem* Arena::CreateMaybeMessage<::zjchain::block::protobuf::VpnCountItem>(Arena*);
 }  // namespace protobuf
 }  // namespace google
-namespace zjchain {
+namespace shardora {
 namespace block {
 namespace protobuf {
 
@@ -11115,7 +11115,7 @@ inline void BlockMessage::set_allocated_statistic_tx(::zjchain::block::protobuf:
 
 }  // namespace protobuf
 }  // namespace block
-}  // namespace zjchain
+}  // namespace shardora
 
 // @@protoc_insertion_point(global_scope)
 

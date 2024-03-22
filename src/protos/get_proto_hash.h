@@ -2,7 +2,7 @@
 
 #include "protos/transport.pb.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace protos {
 
@@ -12,4 +12,4 @@ std::string GetJoinElectReqHash(const bls::protobuf::JoinElectInfo& join_req);
 
 };  // namespace protos
 
-};  // namespace zjchain
+};  // namespace shardora

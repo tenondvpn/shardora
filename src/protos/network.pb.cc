@@ -25,7 +25,7 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fnetwork_2eproto ::google::prot
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fnetwork_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_NodeInfo;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fnetwork_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_GetNetworkNodesResponse;
 }  // namespace protobuf_protos_2fnetwork_2eproto
-namespace zjchain {
+namespace shardora {
 namespace network {
 namespace protobuf {
 class GetNetworkNodesRequestDefaultTypeInternal {
@@ -55,7 +55,7 @@ class NetworkMessageDefaultTypeInternal {
 } _NetworkMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace network
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2fnetwork_2eproto {
 static void InitDefaultsGetNetworkNodesRequest() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -261,7 +261,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2fnetwork_2eproto
-namespace zjchain {
+namespace shardora {
 namespace network {
 namespace protobuf {
 
@@ -1786,7 +1786,7 @@ void NetworkMessage::InternalSwap(NetworkMessage* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace network
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::network::protobuf::GetNetworkNodesRequest* Arena::CreateMaybeMessage< ::zjchain::network::protobuf::GetNetworkNodesRequest >(Arena* arena) {

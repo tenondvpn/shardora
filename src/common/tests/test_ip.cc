@@ -6,7 +6,7 @@
 #define private public
 #include "common/ip.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -45,4 +45,4 @@ TEST_F(TestIp, AddAndContainClear) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

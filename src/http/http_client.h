@@ -5,7 +5,7 @@
 
 #include "http/http_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace http {
 
@@ -28,4 +28,4 @@ private:
 
 };  // namespace http
 
-};  // namespace zjchain
+};  // namespace shardora

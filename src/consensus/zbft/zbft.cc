@@ -9,7 +9,7 @@
 #include "common/encode.h"
 #include <common/log.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -857,4 +857,4 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

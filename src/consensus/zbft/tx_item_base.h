@@ -5,7 +5,7 @@
 #include "security/security.h"
 #include <protos/pools.pb.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -125,7 +125,7 @@ protected:
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora
 
 
 

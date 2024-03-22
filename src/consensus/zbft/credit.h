@@ -15,7 +15,7 @@
 #include "protos/block.pb.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -80,4 +80,4 @@ private:
 
 }  // namespace consensus
 
-}  //namespace zjchain
+}  //namespace shardora

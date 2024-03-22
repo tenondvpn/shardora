@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "websocket/websocket_utils.h"
-namespace zjchain {
+namespace shardora {
 
 namespace ws {
 
@@ -28,4 +28,4 @@ private:
 
 };  // namespace tcp
 
-};  // namespace zjchain
+};  // namespace shardora

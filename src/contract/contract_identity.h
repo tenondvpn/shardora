@@ -3,7 +3,7 @@
 #include "contract/contract_interface.h"
 #include "common/tick.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace contract {
 
@@ -25,4 +25,4 @@ private:
 
 }  // namespace contract
 
-}  // namespace zjchain
+}  // namespace shardora

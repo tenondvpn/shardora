@@ -1,7 +1,7 @@
 #include "elect/elect_utils.h"
 
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -12,4 +12,4 @@ uint64_t MinHeapUniqueVal(const elect::HeapItem& val) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

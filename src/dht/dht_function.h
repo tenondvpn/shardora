@@ -8,7 +8,7 @@
 #include "dht/dht_utils.h"
 #include "dht/base_dht.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace dht {
 
@@ -56,4 +56,4 @@ private:
 
 }  // namespace dht
 
-}  // namespace zjchain
+}  // namespace shardora

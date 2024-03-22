@@ -8,7 +8,7 @@
 #include "network/network_utils.h"
 #include "sync/key_value_sync.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
 
@@ -235,5 +235,5 @@ private:
 
 }  // namespace pools
 
-}  // namespace zjchain
+}  // namespace shardora
 
