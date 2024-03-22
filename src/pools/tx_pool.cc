@@ -118,7 +118,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     assert(tx_ptr != nullptr);
-    auto iter = gid_map_.find(tx_ptr->tx_hash);
+    auto iter = gid_map_.find(tx_ptr->gid);
     if (iter != gid_map_.end()) {
         return kPoolsTxAdded;
     }
@@ -171,9 +171,9 @@ void TxPool::GetTx(
             break;
         }
 
-        res_map[iter->second->tx_hash] = iter->second;
+        res_map[iter->second->unique_tx_hash] = iter->second;
         ZJC_DEBUG("leader success get local transfer to tx %u, %s",
-            pool_index_, common::Encode::HexEncode(iter->second->tx_hash).c_str());
+            pool_index_, common::Encode::HexEncode(iter->second->unique_tx_hash).c_str());
         iter = src_prio_map.erase(iter);
     }
 }
