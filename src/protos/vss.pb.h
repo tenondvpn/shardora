@@ -56,7 +56,7 @@ extern VssMessageDefaultTypeInternal _VssMessage_default_instance_;
 }  // namespace shardora
 namespace google {
 namespace protobuf {
-template<> ::zjchain::vss::protobuf::VssMessage* Arena::CreateMaybeMessage<::zjchain::vss::protobuf::VssMessage>(Arena*);
+template<> ::shardora::vss::protobuf::VssMessage* Arena::CreateMaybeMessage<::shardora::vss::protobuf::VssMessage>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 namespace shardora {
@@ -65,7 +65,7 @@ namespace protobuf {
 
 // ===================================================================
 
-class VssMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.vss.protobuf.VssMessage) */ {
+class VssMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.vss.protobuf.VssMessage) */ {
  public:
   VssMessage();
   virtual ~VssMessage();
@@ -201,7 +201,7 @@ class VssMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::google::protobuf::uint64 elect_height() const;
   void set_elect_height(::google::protobuf::uint64 value);
 
-  // @@protoc_insertion_point(class_scope:zjchain.vss.protobuf.VssMessage)
+  // @@protoc_insertion_point(class_scope:shardora.vss.protobuf.VssMessage)
  private:
   void set_has_random_hash();
   void clear_has_random_hash();
@@ -253,13 +253,13 @@ inline void VssMessage::clear_random_hash() {
   clear_has_random_hash();
 }
 inline ::google::protobuf::uint64 VssMessage::random_hash() const {
-  // @@protoc_insertion_point(field_get:zjchain.vss.protobuf.VssMessage.random_hash)
+  // @@protoc_insertion_point(field_get:shardora.vss.protobuf.VssMessage.random_hash)
   return random_hash_;
 }
 inline void VssMessage::set_random_hash(::google::protobuf::uint64 value) {
   set_has_random_hash();
   random_hash_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.vss.protobuf.VssMessage.random_hash)
+  // @@protoc_insertion_point(field_set:shardora.vss.protobuf.VssMessage.random_hash)
 }
 
 // optional uint64 random = 2;
@@ -277,13 +277,13 @@ inline void VssMessage::clear_random() {
   clear_has_random();
 }
 inline ::google::protobuf::uint64 VssMessage::random() const {
-  // @@protoc_insertion_point(field_get:zjchain.vss.protobuf.VssMessage.random)
+  // @@protoc_insertion_point(field_get:shardora.vss.protobuf.VssMessage.random)
   return random_;
 }
 inline void VssMessage::set_random(::google::protobuf::uint64 value) {
   set_has_random();
   random_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.vss.protobuf.VssMessage.random)
+  // @@protoc_insertion_point(field_set:shardora.vss.protobuf.VssMessage.random)
 }
 
 // optional uint32 member_index = 3;
@@ -301,13 +301,13 @@ inline void VssMessage::clear_member_index() {
   clear_has_member_index();
 }
 inline ::google::protobuf::uint32 VssMessage::member_index() const {
-  // @@protoc_insertion_point(field_get:zjchain.vss.protobuf.VssMessage.member_index)
+  // @@protoc_insertion_point(field_get:shardora.vss.protobuf.VssMessage.member_index)
   return member_index_;
 }
 inline void VssMessage::set_member_index(::google::protobuf::uint32 value) {
   set_has_member_index();
   member_index_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.vss.protobuf.VssMessage.member_index)
+  // @@protoc_insertion_point(field_set:shardora.vss.protobuf.VssMessage.member_index)
 }
 
 // optional uint64 tm_height = 4;
@@ -325,13 +325,13 @@ inline void VssMessage::clear_tm_height() {
   clear_has_tm_height();
 }
 inline ::google::protobuf::uint64 VssMessage::tm_height() const {
-  // @@protoc_insertion_point(field_get:zjchain.vss.protobuf.VssMessage.tm_height)
+  // @@protoc_insertion_point(field_get:shardora.vss.protobuf.VssMessage.tm_height)
   return tm_height_;
 }
 inline void VssMessage::set_tm_height(::google::protobuf::uint64 value) {
   set_has_tm_height();
   tm_height_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.vss.protobuf.VssMessage.tm_height)
+  // @@protoc_insertion_point(field_set:shardora.vss.protobuf.VssMessage.tm_height)
 }
 
 // optional uint64 elect_height = 5;
@@ -349,13 +349,13 @@ inline void VssMessage::clear_elect_height() {
   clear_has_elect_height();
 }
 inline ::google::protobuf::uint64 VssMessage::elect_height() const {
-  // @@protoc_insertion_point(field_get:zjchain.vss.protobuf.VssMessage.elect_height)
+  // @@protoc_insertion_point(field_get:shardora.vss.protobuf.VssMessage.elect_height)
   return elect_height_;
 }
 inline void VssMessage::set_elect_height(::google::protobuf::uint64 value) {
   set_has_elect_height();
   elect_height_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.vss.protobuf.VssMessage.elect_height)
+  // @@protoc_insertion_point(field_set:shardora.vss.protobuf.VssMessage.elect_height)
 }
 
 // optional int32 type = 6;
@@ -373,13 +373,13 @@ inline void VssMessage::clear_type() {
   clear_has_type();
 }
 inline ::google::protobuf::int32 VssMessage::type() const {
-  // @@protoc_insertion_point(field_get:zjchain.vss.protobuf.VssMessage.type)
+  // @@protoc_insertion_point(field_get:shardora.vss.protobuf.VssMessage.type)
   return type_;
 }
 inline void VssMessage::set_type(::google::protobuf::int32 value) {
   set_has_type();
   type_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.vss.protobuf.VssMessage.type)
+  // @@protoc_insertion_point(field_set:shardora.vss.protobuf.VssMessage.type)
 }
 
 #ifdef __GNUC__

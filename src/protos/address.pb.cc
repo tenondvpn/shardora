@@ -38,11 +38,11 @@ static void InitDefaultsAddressInfo() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::address::protobuf::_AddressInfo_default_instance_;
-    new (ptr) ::zjchain::address::protobuf::AddressInfo();
+    void* ptr = &::shardora::address::protobuf::_AddressInfo_default_instance_;
+    new (ptr) ::shardora::address::protobuf::AddressInfo();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::address::protobuf::AddressInfo::InitAsDefaultInstance();
+  ::shardora::address::protobuf::AddressInfo::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<1> scc_info_AddressInfo =
@@ -57,23 +57,23 @@ void InitDefaults() {
 const ::google::protobuf::EnumDescriptor* file_level_enum_descriptors[1];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, pubkey_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, balance_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, sharding_id_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, pool_index_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, addr_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, type_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, bytes_code_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, latest_height_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, credit_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, g2s_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, elect_pos_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, destructed_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, pubkey_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, balance_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, sharding_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, pool_index_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, addr_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, type_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, bytes_code_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, latest_height_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, credit_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, g2s_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, elect_pos_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, destructed_),
   0,
   3,
   4,
@@ -88,11 +88,11 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   9,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 17, sizeof(::zjchain::address::protobuf::AddressInfo)},
+  { 0, 17, sizeof(::shardora::address::protobuf::AddressInfo)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::address::protobuf::_AddressInfo_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::address::protobuf::_AddressInfo_default_instance_),
 };
 
 void protobuf_AssignDescriptors() {
@@ -116,23 +116,23 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\024protos/address.proto\022\030zjchain.address."
-      "protobuf\032\020protos/bls.proto\"\274\002\n\013AddressIn"
-      "fo\022\016\n\006pubkey\030\001 \001(\014\022\017\n\007balance\030\002 \001(\004\022\023\n\013s"
-      "harding_id\030\003 \001(\r\022\022\n\npool_index\030\004 \001(\r\022\014\n\004"
-      "addr\030\005 \001(\014\0223\n\004type\030\006 \001(\0162%.zjchain.addre"
-      "ss.protobuf.AddressType\022\022\n\nbytes_code\030\007 "
-      "\001(\014\022\025\n\rlatest_height\030\010 \001(\004\022\021\n\006credit\030\t \001"
-      "(\005:\0010\022/\n\003g2s\030\n \003(\0132\".zjchain.bls.protobu"
-      "f.BlsPublicKey\022\035\n\telect_pos\030\013 \001(\r:\n42949"
-      "67295\022\022\n\ndestructed\030\014 \001(\010*\225\001\n\013AddressTyp"
-      "e\022\013\n\007kNormal\020\000\022\r\n\tkContract\020\001\022\016\n\nkRootEl"
-      "ect\020\002\022\016\n\nkRootTimer\020\003\022\016\n\nkStatistic\020\004\022\020\n"
-      "\014kToTxAddress\020\005\022\025\n\021kLocalToTxAddress\020\006\022\021"
-      "\n\rkElectAddress\020\007"
+      "\n\024protos/address.proto\022\031shardora.address"
+      ".protobuf\032\020protos/bls.proto\"\276\002\n\013AddressI"
+      "nfo\022\016\n\006pubkey\030\001 \001(\014\022\017\n\007balance\030\002 \001(\004\022\023\n\013"
+      "sharding_id\030\003 \001(\r\022\022\n\npool_index\030\004 \001(\r\022\014\n"
+      "\004addr\030\005 \001(\014\0224\n\004type\030\006 \001(\0162&.shardora.add"
+      "ress.protobuf.AddressType\022\022\n\nbytes_code\030"
+      "\007 \001(\014\022\025\n\rlatest_height\030\010 \001(\004\022\021\n\006credit\030\t"
+      " \001(\005:\0010\0220\n\003g2s\030\n \003(\0132#.shardora.bls.prot"
+      "obuf.BlsPublicKey\022\035\n\telect_pos\030\013 \001(\r:\n42"
+      "94967295\022\022\n\ndestructed\030\014 \001(\010*\225\001\n\013Address"
+      "Type\022\013\n\007kNormal\020\000\022\r\n\tkContract\020\001\022\016\n\nkRoo"
+      "tElect\020\002\022\016\n\nkRootTimer\020\003\022\016\n\nkStatistic\020\004"
+      "\022\020\n\014kToTxAddress\020\005\022\025\n\021kLocalToTxAddress\020"
+      "\006\022\021\n\rkElectAddress\020\007"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 537);
+      descriptor, 540);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/address.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
@@ -200,7 +200,7 @@ AddressInfo::AddressInfo()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2faddress_2eproto::scc_info_AddressInfo.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.address.protobuf.AddressInfo)
+  // @@protoc_insertion_point(constructor:shardora.address.protobuf.AddressInfo)
 }
 AddressInfo::AddressInfo(const AddressInfo& from)
   : ::google::protobuf::Message(),
@@ -223,7 +223,7 @@ AddressInfo::AddressInfo(const AddressInfo& from)
   ::memcpy(&balance_, &from.balance_,
     static_cast<size_t>(reinterpret_cast<char*>(&elect_pos_) -
     reinterpret_cast<char*>(&balance_)) + sizeof(elect_pos_));
-  // @@protoc_insertion_point(copy_constructor:zjchain.address.protobuf.AddressInfo)
+  // @@protoc_insertion_point(copy_constructor:shardora.address.protobuf.AddressInfo)
 }
 
 void AddressInfo::SharedCtor() {
@@ -237,7 +237,7 @@ void AddressInfo::SharedCtor() {
 }
 
 AddressInfo::~AddressInfo() {
-  // @@protoc_insertion_point(destructor:zjchain.address.protobuf.AddressInfo)
+  // @@protoc_insertion_point(destructor:shardora.address.protobuf.AddressInfo)
   SharedDtor();
 }
 
@@ -262,7 +262,7 @@ const AddressInfo& AddressInfo::default_instance() {
 
 
 void AddressInfo::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.address.protobuf.AddressInfo)
+// @@protoc_insertion_point(message_clear_start:shardora.address.protobuf.AddressInfo)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -299,7 +299,7 @@ bool AddressInfo::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.address.protobuf.AddressInfo)
+  // @@protoc_insertion_point(parse_start:shardora.address.protobuf.AddressInfo)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -371,7 +371,7 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .zjchain.address.protobuf.AddressType type = 6;
+      // optional .shardora.address.protobuf.AddressType type = 6;
       case 6: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
@@ -379,8 +379,8 @@ bool AddressInfo::MergePartialFromCodedStream(
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
                  input, &value)));
-          if (::zjchain::address::protobuf::AddressType_IsValid(value)) {
-            set_type(static_cast< ::zjchain::address::protobuf::AddressType >(value));
+          if (::shardora::address::protobuf::AddressType_IsValid(value)) {
+            set_type(static_cast< ::shardora::address::protobuf::AddressType >(value));
           } else {
             mutable_unknown_fields()->AddVarint(
                 6, static_cast< ::google::protobuf::uint64>(value));
@@ -431,7 +431,7 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated .zjchain.bls.protobuf.BlsPublicKey g2s = 10;
+      // repeated .shardora.bls.protobuf.BlsPublicKey g2s = 10;
       case 10: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(82u /* 82 & 0xFF */)) {
@@ -483,17 +483,17 @@ bool AddressInfo::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.address.protobuf.AddressInfo)
+  // @@protoc_insertion_point(parse_success:shardora.address.protobuf.AddressInfo)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.address.protobuf.AddressInfo)
+  // @@protoc_insertion_point(parse_failure:shardora.address.protobuf.AddressInfo)
   return false;
 #undef DO_
 }
 
 void AddressInfo::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.address.protobuf.AddressInfo)
+  // @@protoc_insertion_point(serialize_start:shardora.address.protobuf.AddressInfo)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -525,7 +525,7 @@ void AddressInfo::SerializeWithCachedSizes(
       5, this->addr(), output);
   }
 
-  // optional .zjchain.address.protobuf.AddressType type = 6;
+  // optional .shardora.address.protobuf.AddressType type = 6;
   if (cached_has_bits & 0x00000040u) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
       6, this->type(), output);
@@ -547,7 +547,7 @@ void AddressInfo::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(9, this->credit(), output);
   }
 
-  // repeated .zjchain.bls.protobuf.BlsPublicKey g2s = 10;
+  // repeated .shardora.bls.protobuf.BlsPublicKey g2s = 10;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->g2s_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
@@ -570,13 +570,13 @@ void AddressInfo::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.address.protobuf.AddressInfo)
+  // @@protoc_insertion_point(serialize_end:shardora.address.protobuf.AddressInfo)
 }
 
 ::google::protobuf::uint8* AddressInfo::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.address.protobuf.AddressInfo)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.address.protobuf.AddressInfo)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -610,7 +610,7 @@ void AddressInfo::SerializeWithCachedSizes(
         5, this->addr(), target);
   }
 
-  // optional .zjchain.address.protobuf.AddressType type = 6;
+  // optional .shardora.address.protobuf.AddressType type = 6;
   if (cached_has_bits & 0x00000040u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       6, this->type(), target);
@@ -633,7 +633,7 @@ void AddressInfo::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(9, this->credit(), target);
   }
 
-  // repeated .zjchain.bls.protobuf.BlsPublicKey g2s = 10;
+  // repeated .shardora.bls.protobuf.BlsPublicKey g2s = 10;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->g2s_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
@@ -655,12 +655,12 @@ void AddressInfo::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.address.protobuf.AddressInfo)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.address.protobuf.AddressInfo)
   return target;
 }
 
 size_t AddressInfo::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.address.protobuf.AddressInfo)
+// @@protoc_insertion_point(message_byte_size_start:shardora.address.protobuf.AddressInfo)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -668,7 +668,7 @@ size_t AddressInfo::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  // repeated .zjchain.bls.protobuf.BlsPublicKey g2s = 10;
+  // repeated .shardora.bls.protobuf.BlsPublicKey g2s = 10;
   {
     unsigned int count = static_cast<unsigned int>(this->g2s_size());
     total_size += 1UL * count;
@@ -722,7 +722,7 @@ size_t AddressInfo::ByteSizeLong() const {
           this->pool_index());
     }
 
-    // optional .zjchain.address.protobuf.AddressType type = 6;
+    // optional .shardora.address.protobuf.AddressType type = 6;
     if (has_type()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->type());
@@ -763,22 +763,22 @@ size_t AddressInfo::ByteSizeLong() const {
 }
 
 void AddressInfo::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.address.protobuf.AddressInfo)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.address.protobuf.AddressInfo)
   GOOGLE_DCHECK_NE(&from, this);
   const AddressInfo* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const AddressInfo>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.address.protobuf.AddressInfo)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.address.protobuf.AddressInfo)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.address.protobuf.AddressInfo)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.address.protobuf.AddressInfo)
     MergeFrom(*source);
   }
 }
 
 void AddressInfo::MergeFrom(const AddressInfo& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.address.protobuf.AddressInfo)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.address.protobuf.AddressInfo)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -831,14 +831,14 @@ void AddressInfo::MergeFrom(const AddressInfo& from) {
 }
 
 void AddressInfo::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.address.protobuf.AddressInfo)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.address.protobuf.AddressInfo)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void AddressInfo::CopyFrom(const AddressInfo& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.address.protobuf.AddressInfo)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.address.protobuf.AddressInfo)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -885,8 +885,8 @@ void AddressInfo::InternalSwap(AddressInfo* other) {
 }  // namespace shardora
 namespace google {
 namespace protobuf {
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::address::protobuf::AddressInfo* Arena::CreateMaybeMessage< ::zjchain::address::protobuf::AddressInfo >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::address::protobuf::AddressInfo >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::address::protobuf::AddressInfo* Arena::CreateMaybeMessage< ::shardora::address::protobuf::AddressInfo >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::address::protobuf::AddressInfo >(arena);
 }
 }  // namespace protobuf
 }  // namespace google

@@ -61,8 +61,8 @@ extern ZbftMessageDefaultTypeInternal _ZbftMessage_default_instance_;
 }  // namespace shardora
 namespace google {
 namespace protobuf {
-template<> ::zjchain::zbft::protobuf::TxBft* Arena::CreateMaybeMessage<::zjchain::zbft::protobuf::TxBft>(Arena*);
-template<> ::zjchain::zbft::protobuf::ZbftMessage* Arena::CreateMaybeMessage<::zjchain::zbft::protobuf::ZbftMessage>(Arena*);
+template<> ::shardora::zbft::protobuf::TxBft* Arena::CreateMaybeMessage<::shardora::zbft::protobuf::TxBft>(Arena*);
+template<> ::shardora::zbft::protobuf::ZbftMessage* Arena::CreateMaybeMessage<::shardora::zbft::protobuf::ZbftMessage>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 namespace shardora {
@@ -71,7 +71,7 @@ namespace protobuf {
 
 // ===================================================================
 
-class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.zbft.protobuf.TxBft) */ {
+class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.zbft.protobuf.TxBft) */ {
  public:
   TxBft();
   virtual ~TxBft();
@@ -202,17 +202,17 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::std::string* release_prepare_final_hash();
   void set_allocated_prepare_final_hash(::std::string* prepare_final_hash);
 
-  // optional .zjchain.block.protobuf.Block block = 1;
+  // optional .shardora.block.protobuf.Block block = 1;
   bool has_block() const;
   void clear_block();
   static const int kBlockFieldNumber = 1;
   private:
-  const ::zjchain::block::protobuf::Block& _internal_block() const;
+  const ::shardora::block::protobuf::Block& _internal_block() const;
   public:
-  const ::zjchain::block::protobuf::Block& block() const;
-  ::zjchain::block::protobuf::Block* release_block();
-  ::zjchain::block::protobuf::Block* mutable_block();
-  void set_allocated_block(::zjchain::block::protobuf::Block* block);
+  const ::shardora::block::protobuf::Block& block() const;
+  ::shardora::block::protobuf::Block* release_block();
+  ::shardora::block::protobuf::Block* mutable_block();
+  void set_allocated_block(::shardora::block::protobuf::Block* block);
 
   // optional uint64 height = 3;
   bool has_height() const;
@@ -228,14 +228,14 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::uint64 time_stamp() const;
   void set_time_stamp(::google::protobuf::uint64 value);
 
-  // optional .zjchain.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
+  // optional .shardora.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
   bool has_tx_type() const;
   void clear_tx_type();
   static const int kTxTypeFieldNumber = 5;
-  ::zjchain::pools::protobuf::StepType tx_type() const;
-  void set_tx_type(::zjchain::pools::protobuf::StepType value);
+  ::shardora::pools::protobuf::StepType tx_type() const;
+  void set_tx_type(::shardora::pools::protobuf::StepType value);
 
-  // @@protoc_insertion_point(class_scope:zjchain.zbft.protobuf.TxBft)
+  // @@protoc_insertion_point(class_scope:shardora.zbft.protobuf.TxBft)
  private:
   void set_has_block();
   void clear_has_block();
@@ -253,7 +253,7 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::std::string> tx_hash_list_;
   ::google::protobuf::internal::ArenaStringPtr prepare_final_hash_;
-  ::zjchain::block::protobuf::Block* block_;
+  ::shardora::block::protobuf::Block* block_;
   ::google::protobuf::uint64 height_;
   ::google::protobuf::uint64 time_stamp_;
   int tx_type_;
@@ -261,7 +261,7 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
 };
 // -------------------------------------------------------------------
 
-class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.zbft.protobuf.ZbftMessage) */ {
+class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.zbft.protobuf.ZbftMessage) */ {
  public:
   ZbftMessage();
   virtual ~ZbftMessage();
@@ -499,29 +499,29 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::std::string* release_oppose_prepare_gid();
   void set_allocated_oppose_prepare_gid(::std::string* oppose_prepare_gid);
 
-  // optional .zjchain.zbft.protobuf.TxBft tx_bft = 10;
+  // optional .shardora.zbft.protobuf.TxBft tx_bft = 10;
   bool has_tx_bft() const;
   void clear_tx_bft();
   static const int kTxBftFieldNumber = 10;
   private:
-  const ::zjchain::zbft::protobuf::TxBft& _internal_tx_bft() const;
+  const ::shardora::zbft::protobuf::TxBft& _internal_tx_bft() const;
   public:
-  const ::zjchain::zbft::protobuf::TxBft& tx_bft() const;
-  ::zjchain::zbft::protobuf::TxBft* release_tx_bft();
-  ::zjchain::zbft::protobuf::TxBft* mutable_tx_bft();
-  void set_allocated_tx_bft(::zjchain::zbft::protobuf::TxBft* tx_bft);
+  const ::shardora::zbft::protobuf::TxBft& tx_bft() const;
+  ::shardora::zbft::protobuf::TxBft* release_tx_bft();
+  ::shardora::zbft::protobuf::TxBft* mutable_tx_bft();
+  void set_allocated_tx_bft(::shardora::zbft::protobuf::TxBft* tx_bft);
 
-  // optional .zjchain.block.protobuf.Block block = 18;
+  // optional .shardora.block.protobuf.Block block = 18;
   bool has_block() const;
   void clear_block();
   static const int kBlockFieldNumber = 18;
   private:
-  const ::zjchain::block::protobuf::Block& _internal_block() const;
+  const ::shardora::block::protobuf::Block& _internal_block() const;
   public:
-  const ::zjchain::block::protobuf::Block& block() const;
-  ::zjchain::block::protobuf::Block* release_block();
-  ::zjchain::block::protobuf::Block* mutable_block();
-  void set_allocated_block(::zjchain::block::protobuf::Block* block);
+  const ::shardora::block::protobuf::Block& block() const;
+  ::shardora::block::protobuf::Block* release_block();
+  ::shardora::block::protobuf::Block* mutable_block();
+  void set_allocated_block(::shardora::block::protobuf::Block* block);
 
   // optional uint32 net_id = 5;
   bool has_net_id() const;
@@ -593,7 +593,7 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::uint32 pool_index() const;
   void set_pool_index(::google::protobuf::uint32 value);
 
-  // @@protoc_insertion_point(class_scope:zjchain.zbft.protobuf.ZbftMessage)
+  // @@protoc_insertion_point(class_scope:shardora.zbft.protobuf.ZbftMessage)
  private:
   void set_has_prepare_gid();
   void clear_has_prepare_gid();
@@ -649,8 +649,8 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::internal::ArenaStringPtr bls_sign_y_;
   ::google::protobuf::internal::ArenaStringPtr prepare_hash_;
   ::google::protobuf::internal::ArenaStringPtr oppose_prepare_gid_;
-  ::zjchain::zbft::protobuf::TxBft* tx_bft_;
-  ::zjchain::block::protobuf::Block* block_;
+  ::shardora::zbft::protobuf::TxBft* tx_bft_;
+  ::shardora::block::protobuf::Block* block_;
   ::google::protobuf::uint32 net_id_;
   ::google::protobuf::int32 error_;
   bool agree_precommit_;
@@ -674,7 +674,7 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
 #endif  // __GNUC__
 // TxBft
 
-// optional .zjchain.block.protobuf.Block block = 1;
+// optional .shardora.block.protobuf.Block block = 1;
 inline bool TxBft::has_block() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -684,32 +684,32 @@ inline void TxBft::set_has_block() {
 inline void TxBft::clear_has_block() {
   _has_bits_[0] &= ~0x00000002u;
 }
-inline const ::zjchain::block::protobuf::Block& TxBft::_internal_block() const {
+inline const ::shardora::block::protobuf::Block& TxBft::_internal_block() const {
   return *block_;
 }
-inline const ::zjchain::block::protobuf::Block& TxBft::block() const {
-  const ::zjchain::block::protobuf::Block* p = block_;
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.TxBft.block)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::block::protobuf::Block*>(
-      &::zjchain::block::protobuf::_Block_default_instance_);
+inline const ::shardora::block::protobuf::Block& TxBft::block() const {
+  const ::shardora::block::protobuf::Block* p = block_;
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.TxBft.block)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::block::protobuf::Block*>(
+      &::shardora::block::protobuf::_Block_default_instance_);
 }
-inline ::zjchain::block::protobuf::Block* TxBft::release_block() {
-  // @@protoc_insertion_point(field_release:zjchain.zbft.protobuf.TxBft.block)
+inline ::shardora::block::protobuf::Block* TxBft::release_block() {
+  // @@protoc_insertion_point(field_release:shardora.zbft.protobuf.TxBft.block)
   clear_has_block();
-  ::zjchain::block::protobuf::Block* temp = block_;
+  ::shardora::block::protobuf::Block* temp = block_;
   block_ = NULL;
   return temp;
 }
-inline ::zjchain::block::protobuf::Block* TxBft::mutable_block() {
+inline ::shardora::block::protobuf::Block* TxBft::mutable_block() {
   set_has_block();
   if (block_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::block::protobuf::Block>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::block::protobuf::Block>(GetArenaNoVirtual());
     block_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.zbft.protobuf.TxBft.block)
+  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.TxBft.block)
   return block_;
 }
-inline void TxBft::set_allocated_block(::zjchain::block::protobuf::Block* block) {
+inline void TxBft::set_allocated_block(::shardora::block::protobuf::Block* block) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete reinterpret_cast< ::google::protobuf::MessageLite*>(block_);
@@ -725,7 +725,7 @@ inline void TxBft::set_allocated_block(::zjchain::block::protobuf::Block* block)
     clear_has_block();
   }
   block_ = block;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.zbft.protobuf.TxBft.block)
+  // @@protoc_insertion_point(field_set_allocated:shardora.zbft.protobuf.TxBft.block)
 }
 
 // optional bytes prepare_final_hash = 2;
@@ -743,41 +743,41 @@ inline void TxBft::clear_prepare_final_hash() {
   clear_has_prepare_final_hash();
 }
 inline const ::std::string& TxBft::prepare_final_hash() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.TxBft.prepare_final_hash)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.TxBft.prepare_final_hash)
   return prepare_final_hash_.GetNoArena();
 }
 inline void TxBft::set_prepare_final_hash(const ::std::string& value) {
   set_has_prepare_final_hash();
   prepare_final_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.TxBft.prepare_final_hash)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.TxBft.prepare_final_hash)
 }
 #if LANG_CXX11
 inline void TxBft::set_prepare_final_hash(::std::string&& value) {
   set_has_prepare_final_hash();
   prepare_final_hash_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.zbft.protobuf.TxBft.prepare_final_hash)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.zbft.protobuf.TxBft.prepare_final_hash)
 }
 #endif
 inline void TxBft::set_prepare_final_hash(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_prepare_final_hash();
   prepare_final_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.zbft.protobuf.TxBft.prepare_final_hash)
+  // @@protoc_insertion_point(field_set_char:shardora.zbft.protobuf.TxBft.prepare_final_hash)
 }
 inline void TxBft::set_prepare_final_hash(const void* value, size_t size) {
   set_has_prepare_final_hash();
   prepare_final_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.zbft.protobuf.TxBft.prepare_final_hash)
+  // @@protoc_insertion_point(field_set_pointer:shardora.zbft.protobuf.TxBft.prepare_final_hash)
 }
 inline ::std::string* TxBft::mutable_prepare_final_hash() {
   set_has_prepare_final_hash();
-  // @@protoc_insertion_point(field_mutable:zjchain.zbft.protobuf.TxBft.prepare_final_hash)
+  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.TxBft.prepare_final_hash)
   return prepare_final_hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* TxBft::release_prepare_final_hash() {
-  // @@protoc_insertion_point(field_release:zjchain.zbft.protobuf.TxBft.prepare_final_hash)
+  // @@protoc_insertion_point(field_release:shardora.zbft.protobuf.TxBft.prepare_final_hash)
   if (!has_prepare_final_hash()) {
     return NULL;
   }
@@ -791,7 +791,7 @@ inline void TxBft::set_allocated_prepare_final_hash(::std::string* prepare_final
     clear_has_prepare_final_hash();
   }
   prepare_final_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), prepare_final_hash);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.zbft.protobuf.TxBft.prepare_final_hash)
+  // @@protoc_insertion_point(field_set_allocated:shardora.zbft.protobuf.TxBft.prepare_final_hash)
 }
 
 // optional uint64 height = 3;
@@ -809,13 +809,13 @@ inline void TxBft::clear_height() {
   clear_has_height();
 }
 inline ::google::protobuf::uint64 TxBft::height() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.TxBft.height)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.TxBft.height)
   return height_;
 }
 inline void TxBft::set_height(::google::protobuf::uint64 value) {
   set_has_height();
   height_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.TxBft.height)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.TxBft.height)
 }
 
 // repeated bytes tx_hash_list = 4;
@@ -826,68 +826,68 @@ inline void TxBft::clear_tx_hash_list() {
   tx_hash_list_.Clear();
 }
 inline const ::std::string& TxBft::tx_hash_list(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.TxBft.tx_hash_list)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.TxBft.tx_hash_list)
   return tx_hash_list_.Get(index);
 }
 inline ::std::string* TxBft::mutable_tx_hash_list(int index) {
-  // @@protoc_insertion_point(field_mutable:zjchain.zbft.protobuf.TxBft.tx_hash_list)
+  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.TxBft.tx_hash_list)
   return tx_hash_list_.Mutable(index);
 }
 inline void TxBft::set_tx_hash_list(int index, const ::std::string& value) {
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.TxBft.tx_hash_list)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.TxBft.tx_hash_list)
   tx_hash_list_.Mutable(index)->assign(value);
 }
 #if LANG_CXX11
 inline void TxBft::set_tx_hash_list(int index, ::std::string&& value) {
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.TxBft.tx_hash_list)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.TxBft.tx_hash_list)
   tx_hash_list_.Mutable(index)->assign(std::move(value));
 }
 #endif
 inline void TxBft::set_tx_hash_list(int index, const char* value) {
   GOOGLE_DCHECK(value != NULL);
   tx_hash_list_.Mutable(index)->assign(value);
-  // @@protoc_insertion_point(field_set_char:zjchain.zbft.protobuf.TxBft.tx_hash_list)
+  // @@protoc_insertion_point(field_set_char:shardora.zbft.protobuf.TxBft.tx_hash_list)
 }
 inline void TxBft::set_tx_hash_list(int index, const void* value, size_t size) {
   tx_hash_list_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_set_pointer:zjchain.zbft.protobuf.TxBft.tx_hash_list)
+  // @@protoc_insertion_point(field_set_pointer:shardora.zbft.protobuf.TxBft.tx_hash_list)
 }
 inline ::std::string* TxBft::add_tx_hash_list() {
-  // @@protoc_insertion_point(field_add_mutable:zjchain.zbft.protobuf.TxBft.tx_hash_list)
+  // @@protoc_insertion_point(field_add_mutable:shardora.zbft.protobuf.TxBft.tx_hash_list)
   return tx_hash_list_.Add();
 }
 inline void TxBft::add_tx_hash_list(const ::std::string& value) {
   tx_hash_list_.Add()->assign(value);
-  // @@protoc_insertion_point(field_add:zjchain.zbft.protobuf.TxBft.tx_hash_list)
+  // @@protoc_insertion_point(field_add:shardora.zbft.protobuf.TxBft.tx_hash_list)
 }
 #if LANG_CXX11
 inline void TxBft::add_tx_hash_list(::std::string&& value) {
   tx_hash_list_.Add(std::move(value));
-  // @@protoc_insertion_point(field_add:zjchain.zbft.protobuf.TxBft.tx_hash_list)
+  // @@protoc_insertion_point(field_add:shardora.zbft.protobuf.TxBft.tx_hash_list)
 }
 #endif
 inline void TxBft::add_tx_hash_list(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   tx_hash_list_.Add()->assign(value);
-  // @@protoc_insertion_point(field_add_char:zjchain.zbft.protobuf.TxBft.tx_hash_list)
+  // @@protoc_insertion_point(field_add_char:shardora.zbft.protobuf.TxBft.tx_hash_list)
 }
 inline void TxBft::add_tx_hash_list(const void* value, size_t size) {
   tx_hash_list_.Add()->assign(reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_add_pointer:zjchain.zbft.protobuf.TxBft.tx_hash_list)
+  // @@protoc_insertion_point(field_add_pointer:shardora.zbft.protobuf.TxBft.tx_hash_list)
 }
 inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
 TxBft::tx_hash_list() const {
-  // @@protoc_insertion_point(field_list:zjchain.zbft.protobuf.TxBft.tx_hash_list)
+  // @@protoc_insertion_point(field_list:shardora.zbft.protobuf.TxBft.tx_hash_list)
   return tx_hash_list_;
 }
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 TxBft::mutable_tx_hash_list() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.zbft.protobuf.TxBft.tx_hash_list)
+  // @@protoc_insertion_point(field_mutable_list:shardora.zbft.protobuf.TxBft.tx_hash_list)
   return &tx_hash_list_;
 }
 
-// optional .zjchain.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
+// optional .shardora.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
 inline bool TxBft::has_tx_type() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -901,15 +901,15 @@ inline void TxBft::clear_tx_type() {
   tx_type_ = 0;
   clear_has_tx_type();
 }
-inline ::zjchain::pools::protobuf::StepType TxBft::tx_type() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.TxBft.tx_type)
-  return static_cast< ::zjchain::pools::protobuf::StepType >(tx_type_);
+inline ::shardora::pools::protobuf::StepType TxBft::tx_type() const {
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.TxBft.tx_type)
+  return static_cast< ::shardora::pools::protobuf::StepType >(tx_type_);
 }
-inline void TxBft::set_tx_type(::zjchain::pools::protobuf::StepType value) {
-  assert(::zjchain::pools::protobuf::StepType_IsValid(value));
+inline void TxBft::set_tx_type(::shardora::pools::protobuf::StepType value) {
+  assert(::shardora::pools::protobuf::StepType_IsValid(value));
   set_has_tx_type();
   tx_type_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.TxBft.tx_type)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.TxBft.tx_type)
 }
 
 // optional uint64 time_stamp = 6;
@@ -927,13 +927,13 @@ inline void TxBft::clear_time_stamp() {
   clear_has_time_stamp();
 }
 inline ::google::protobuf::uint64 TxBft::time_stamp() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.TxBft.time_stamp)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.TxBft.time_stamp)
   return time_stamp_;
 }
 inline void TxBft::set_time_stamp(::google::protobuf::uint64 value) {
   set_has_time_stamp();
   time_stamp_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.TxBft.time_stamp)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.TxBft.time_stamp)
 }
 
 // -------------------------------------------------------------------
@@ -955,41 +955,41 @@ inline void ZbftMessage::clear_prepare_gid() {
   clear_has_prepare_gid();
 }
 inline const ::std::string& ZbftMessage::prepare_gid() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.prepare_gid)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.prepare_gid)
   return prepare_gid_.GetNoArena();
 }
 inline void ZbftMessage::set_prepare_gid(const ::std::string& value) {
   set_has_prepare_gid();
   prepare_gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.prepare_gid)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.prepare_gid)
 }
 #if LANG_CXX11
 inline void ZbftMessage::set_prepare_gid(::std::string&& value) {
   set_has_prepare_gid();
   prepare_gid_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.zbft.protobuf.ZbftMessage.prepare_gid)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.zbft.protobuf.ZbftMessage.prepare_gid)
 }
 #endif
 inline void ZbftMessage::set_prepare_gid(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_prepare_gid();
   prepare_gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.zbft.protobuf.ZbftMessage.prepare_gid)
+  // @@protoc_insertion_point(field_set_char:shardora.zbft.protobuf.ZbftMessage.prepare_gid)
 }
 inline void ZbftMessage::set_prepare_gid(const void* value, size_t size) {
   set_has_prepare_gid();
   prepare_gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.zbft.protobuf.ZbftMessage.prepare_gid)
+  // @@protoc_insertion_point(field_set_pointer:shardora.zbft.protobuf.ZbftMessage.prepare_gid)
 }
 inline ::std::string* ZbftMessage::mutable_prepare_gid() {
   set_has_prepare_gid();
-  // @@protoc_insertion_point(field_mutable:zjchain.zbft.protobuf.ZbftMessage.prepare_gid)
+  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.ZbftMessage.prepare_gid)
   return prepare_gid_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* ZbftMessage::release_prepare_gid() {
-  // @@protoc_insertion_point(field_release:zjchain.zbft.protobuf.ZbftMessage.prepare_gid)
+  // @@protoc_insertion_point(field_release:shardora.zbft.protobuf.ZbftMessage.prepare_gid)
   if (!has_prepare_gid()) {
     return NULL;
   }
@@ -1003,7 +1003,7 @@ inline void ZbftMessage::set_allocated_prepare_gid(::std::string* prepare_gid) {
     clear_has_prepare_gid();
   }
   prepare_gid_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), prepare_gid);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.zbft.protobuf.ZbftMessage.prepare_gid)
+  // @@protoc_insertion_point(field_set_allocated:shardora.zbft.protobuf.ZbftMessage.prepare_gid)
 }
 
 // optional bytes precommit_gid = 2;
@@ -1021,41 +1021,41 @@ inline void ZbftMessage::clear_precommit_gid() {
   clear_has_precommit_gid();
 }
 inline const ::std::string& ZbftMessage::precommit_gid() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.precommit_gid)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.precommit_gid)
   return precommit_gid_.GetNoArena();
 }
 inline void ZbftMessage::set_precommit_gid(const ::std::string& value) {
   set_has_precommit_gid();
   precommit_gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.precommit_gid)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.precommit_gid)
 }
 #if LANG_CXX11
 inline void ZbftMessage::set_precommit_gid(::std::string&& value) {
   set_has_precommit_gid();
   precommit_gid_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.zbft.protobuf.ZbftMessage.precommit_gid)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.zbft.protobuf.ZbftMessage.precommit_gid)
 }
 #endif
 inline void ZbftMessage::set_precommit_gid(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_precommit_gid();
   precommit_gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.zbft.protobuf.ZbftMessage.precommit_gid)
+  // @@protoc_insertion_point(field_set_char:shardora.zbft.protobuf.ZbftMessage.precommit_gid)
 }
 inline void ZbftMessage::set_precommit_gid(const void* value, size_t size) {
   set_has_precommit_gid();
   precommit_gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.zbft.protobuf.ZbftMessage.precommit_gid)
+  // @@protoc_insertion_point(field_set_pointer:shardora.zbft.protobuf.ZbftMessage.precommit_gid)
 }
 inline ::std::string* ZbftMessage::mutable_precommit_gid() {
   set_has_precommit_gid();
-  // @@protoc_insertion_point(field_mutable:zjchain.zbft.protobuf.ZbftMessage.precommit_gid)
+  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.ZbftMessage.precommit_gid)
   return precommit_gid_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* ZbftMessage::release_precommit_gid() {
-  // @@protoc_insertion_point(field_release:zjchain.zbft.protobuf.ZbftMessage.precommit_gid)
+  // @@protoc_insertion_point(field_release:shardora.zbft.protobuf.ZbftMessage.precommit_gid)
   if (!has_precommit_gid()) {
     return NULL;
   }
@@ -1069,7 +1069,7 @@ inline void ZbftMessage::set_allocated_precommit_gid(::std::string* precommit_gi
     clear_has_precommit_gid();
   }
   precommit_gid_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), precommit_gid);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.zbft.protobuf.ZbftMessage.precommit_gid)
+  // @@protoc_insertion_point(field_set_allocated:shardora.zbft.protobuf.ZbftMessage.precommit_gid)
 }
 
 // optional bytes commit_gid = 3;
@@ -1087,41 +1087,41 @@ inline void ZbftMessage::clear_commit_gid() {
   clear_has_commit_gid();
 }
 inline const ::std::string& ZbftMessage::commit_gid() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.commit_gid)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.commit_gid)
   return commit_gid_.GetNoArena();
 }
 inline void ZbftMessage::set_commit_gid(const ::std::string& value) {
   set_has_commit_gid();
   commit_gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.commit_gid)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.commit_gid)
 }
 #if LANG_CXX11
 inline void ZbftMessage::set_commit_gid(::std::string&& value) {
   set_has_commit_gid();
   commit_gid_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.zbft.protobuf.ZbftMessage.commit_gid)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.zbft.protobuf.ZbftMessage.commit_gid)
 }
 #endif
 inline void ZbftMessage::set_commit_gid(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_commit_gid();
   commit_gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.zbft.protobuf.ZbftMessage.commit_gid)
+  // @@protoc_insertion_point(field_set_char:shardora.zbft.protobuf.ZbftMessage.commit_gid)
 }
 inline void ZbftMessage::set_commit_gid(const void* value, size_t size) {
   set_has_commit_gid();
   commit_gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.zbft.protobuf.ZbftMessage.commit_gid)
+  // @@protoc_insertion_point(field_set_pointer:shardora.zbft.protobuf.ZbftMessage.commit_gid)
 }
 inline ::std::string* ZbftMessage::mutable_commit_gid() {
   set_has_commit_gid();
-  // @@protoc_insertion_point(field_mutable:zjchain.zbft.protobuf.ZbftMessage.commit_gid)
+  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.ZbftMessage.commit_gid)
   return commit_gid_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* ZbftMessage::release_commit_gid() {
-  // @@protoc_insertion_point(field_release:zjchain.zbft.protobuf.ZbftMessage.commit_gid)
+  // @@protoc_insertion_point(field_release:shardora.zbft.protobuf.ZbftMessage.commit_gid)
   if (!has_commit_gid()) {
     return NULL;
   }
@@ -1135,7 +1135,7 @@ inline void ZbftMessage::set_allocated_commit_gid(::std::string* commit_gid) {
     clear_has_commit_gid();
   }
   commit_gid_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), commit_gid);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.zbft.protobuf.ZbftMessage.commit_gid)
+  // @@protoc_insertion_point(field_set_allocated:shardora.zbft.protobuf.ZbftMessage.commit_gid)
 }
 
 // optional int32 leader_idx = 4 [default = -1];
@@ -1153,13 +1153,13 @@ inline void ZbftMessage::clear_leader_idx() {
   clear_has_leader_idx();
 }
 inline ::google::protobuf::int32 ZbftMessage::leader_idx() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.leader_idx)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.leader_idx)
   return leader_idx_;
 }
 inline void ZbftMessage::set_leader_idx(::google::protobuf::int32 value) {
   set_has_leader_idx();
   leader_idx_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.leader_idx)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.leader_idx)
 }
 
 // optional uint32 net_id = 5;
@@ -1177,13 +1177,13 @@ inline void ZbftMessage::clear_net_id() {
   clear_has_net_id();
 }
 inline ::google::protobuf::uint32 ZbftMessage::net_id() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.net_id)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.net_id)
   return net_id_;
 }
 inline void ZbftMessage::set_net_id(::google::protobuf::uint32 value) {
   set_has_net_id();
   net_id_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.net_id)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.net_id)
 }
 
 // optional bool agree_precommit = 6 [default = false];
@@ -1201,13 +1201,13 @@ inline void ZbftMessage::clear_agree_precommit() {
   clear_has_agree_precommit();
 }
 inline bool ZbftMessage::agree_precommit() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.agree_precommit)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.agree_precommit)
   return agree_precommit_;
 }
 inline void ZbftMessage::set_agree_precommit(bool value) {
   set_has_agree_precommit();
   agree_precommit_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.agree_precommit)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.agree_precommit)
 }
 
 // optional bool agree_commit = 7 [default = false];
@@ -1225,13 +1225,13 @@ inline void ZbftMessage::clear_agree_commit() {
   clear_has_agree_commit();
 }
 inline bool ZbftMessage::agree_commit() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.agree_commit)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.agree_commit)
   return agree_commit_;
 }
 inline void ZbftMessage::set_agree_commit(bool value) {
   set_has_agree_commit();
   agree_commit_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.agree_commit)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.agree_commit)
 }
 
 // optional uint32 pool_index = 8 [default = 4294967295];
@@ -1249,13 +1249,13 @@ inline void ZbftMessage::clear_pool_index() {
   clear_has_pool_index();
 }
 inline ::google::protobuf::uint32 ZbftMessage::pool_index() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.pool_index)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.pool_index)
   return pool_index_;
 }
 inline void ZbftMessage::set_pool_index(::google::protobuf::uint32 value) {
   set_has_pool_index();
   pool_index_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.pool_index)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.pool_index)
 }
 
 // optional int32 error = 9;
@@ -1273,16 +1273,16 @@ inline void ZbftMessage::clear_error() {
   clear_has_error();
 }
 inline ::google::protobuf::int32 ZbftMessage::error() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.error)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.error)
   return error_;
 }
 inline void ZbftMessage::set_error(::google::protobuf::int32 value) {
   set_has_error();
   error_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.error)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.error)
 }
 
-// optional .zjchain.zbft.protobuf.TxBft tx_bft = 10;
+// optional .shardora.zbft.protobuf.TxBft tx_bft = 10;
 inline bool ZbftMessage::has_tx_bft() const {
   return (_has_bits_[0] & 0x00000100u) != 0;
 }
@@ -1296,32 +1296,32 @@ inline void ZbftMessage::clear_tx_bft() {
   if (tx_bft_ != NULL) tx_bft_->Clear();
   clear_has_tx_bft();
 }
-inline const ::zjchain::zbft::protobuf::TxBft& ZbftMessage::_internal_tx_bft() const {
+inline const ::shardora::zbft::protobuf::TxBft& ZbftMessage::_internal_tx_bft() const {
   return *tx_bft_;
 }
-inline const ::zjchain::zbft::protobuf::TxBft& ZbftMessage::tx_bft() const {
-  const ::zjchain::zbft::protobuf::TxBft* p = tx_bft_;
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.tx_bft)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::zbft::protobuf::TxBft*>(
-      &::zjchain::zbft::protobuf::_TxBft_default_instance_);
+inline const ::shardora::zbft::protobuf::TxBft& ZbftMessage::tx_bft() const {
+  const ::shardora::zbft::protobuf::TxBft* p = tx_bft_;
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.tx_bft)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::zbft::protobuf::TxBft*>(
+      &::shardora::zbft::protobuf::_TxBft_default_instance_);
 }
-inline ::zjchain::zbft::protobuf::TxBft* ZbftMessage::release_tx_bft() {
-  // @@protoc_insertion_point(field_release:zjchain.zbft.protobuf.ZbftMessage.tx_bft)
+inline ::shardora::zbft::protobuf::TxBft* ZbftMessage::release_tx_bft() {
+  // @@protoc_insertion_point(field_release:shardora.zbft.protobuf.ZbftMessage.tx_bft)
   clear_has_tx_bft();
-  ::zjchain::zbft::protobuf::TxBft* temp = tx_bft_;
+  ::shardora::zbft::protobuf::TxBft* temp = tx_bft_;
   tx_bft_ = NULL;
   return temp;
 }
-inline ::zjchain::zbft::protobuf::TxBft* ZbftMessage::mutable_tx_bft() {
+inline ::shardora::zbft::protobuf::TxBft* ZbftMessage::mutable_tx_bft() {
   set_has_tx_bft();
   if (tx_bft_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::zbft::protobuf::TxBft>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::zbft::protobuf::TxBft>(GetArenaNoVirtual());
     tx_bft_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.zbft.protobuf.ZbftMessage.tx_bft)
+  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.ZbftMessage.tx_bft)
   return tx_bft_;
 }
-inline void ZbftMessage::set_allocated_tx_bft(::zjchain::zbft::protobuf::TxBft* tx_bft) {
+inline void ZbftMessage::set_allocated_tx_bft(::shardora::zbft::protobuf::TxBft* tx_bft) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete tx_bft_;
@@ -1337,7 +1337,7 @@ inline void ZbftMessage::set_allocated_tx_bft(::zjchain::zbft::protobuf::TxBft* 
     clear_has_tx_bft();
   }
   tx_bft_ = tx_bft;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.zbft.protobuf.ZbftMessage.tx_bft)
+  // @@protoc_insertion_point(field_set_allocated:shardora.zbft.protobuf.ZbftMessage.tx_bft)
 }
 
 // optional uint32 member_index = 11;
@@ -1355,13 +1355,13 @@ inline void ZbftMessage::clear_member_index() {
   clear_has_member_index();
 }
 inline ::google::protobuf::uint32 ZbftMessage::member_index() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.member_index)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.member_index)
   return member_index_;
 }
 inline void ZbftMessage::set_member_index(::google::protobuf::uint32 value) {
   set_has_member_index();
   member_index_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.member_index)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.member_index)
 }
 
 // optional bytes backup_enc_data = 12;
@@ -1379,41 +1379,41 @@ inline void ZbftMessage::clear_backup_enc_data() {
   clear_has_backup_enc_data();
 }
 inline const ::std::string& ZbftMessage::backup_enc_data() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.backup_enc_data)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.backup_enc_data)
   return backup_enc_data_.GetNoArena();
 }
 inline void ZbftMessage::set_backup_enc_data(const ::std::string& value) {
   set_has_backup_enc_data();
   backup_enc_data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.backup_enc_data)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.backup_enc_data)
 }
 #if LANG_CXX11
 inline void ZbftMessage::set_backup_enc_data(::std::string&& value) {
   set_has_backup_enc_data();
   backup_enc_data_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.zbft.protobuf.ZbftMessage.backup_enc_data)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.zbft.protobuf.ZbftMessage.backup_enc_data)
 }
 #endif
 inline void ZbftMessage::set_backup_enc_data(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_backup_enc_data();
   backup_enc_data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.zbft.protobuf.ZbftMessage.backup_enc_data)
+  // @@protoc_insertion_point(field_set_char:shardora.zbft.protobuf.ZbftMessage.backup_enc_data)
 }
 inline void ZbftMessage::set_backup_enc_data(const void* value, size_t size) {
   set_has_backup_enc_data();
   backup_enc_data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.zbft.protobuf.ZbftMessage.backup_enc_data)
+  // @@protoc_insertion_point(field_set_pointer:shardora.zbft.protobuf.ZbftMessage.backup_enc_data)
 }
 inline ::std::string* ZbftMessage::mutable_backup_enc_data() {
   set_has_backup_enc_data();
-  // @@protoc_insertion_point(field_mutable:zjchain.zbft.protobuf.ZbftMessage.backup_enc_data)
+  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.ZbftMessage.backup_enc_data)
   return backup_enc_data_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* ZbftMessage::release_backup_enc_data() {
-  // @@protoc_insertion_point(field_release:zjchain.zbft.protobuf.ZbftMessage.backup_enc_data)
+  // @@protoc_insertion_point(field_release:shardora.zbft.protobuf.ZbftMessage.backup_enc_data)
   if (!has_backup_enc_data()) {
     return NULL;
   }
@@ -1427,7 +1427,7 @@ inline void ZbftMessage::set_allocated_backup_enc_data(::std::string* backup_enc
     clear_has_backup_enc_data();
   }
   backup_enc_data_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), backup_enc_data);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.zbft.protobuf.ZbftMessage.backup_enc_data)
+  // @@protoc_insertion_point(field_set_allocated:shardora.zbft.protobuf.ZbftMessage.backup_enc_data)
 }
 
 // optional uint64 elect_height = 13;
@@ -1445,13 +1445,13 @@ inline void ZbftMessage::clear_elect_height() {
   clear_has_elect_height();
 }
 inline ::google::protobuf::uint64 ZbftMessage::elect_height() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.elect_height)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.elect_height)
   return elect_height_;
 }
 inline void ZbftMessage::set_elect_height(::google::protobuf::uint64 value) {
   set_has_elect_height();
   elect_height_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.elect_height)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.elect_height)
 }
 
 // optional bytes bls_sign_x = 14;
@@ -1469,41 +1469,41 @@ inline void ZbftMessage::clear_bls_sign_x() {
   clear_has_bls_sign_x();
 }
 inline const ::std::string& ZbftMessage::bls_sign_x() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.bls_sign_x)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.bls_sign_x)
   return bls_sign_x_.GetNoArena();
 }
 inline void ZbftMessage::set_bls_sign_x(const ::std::string& value) {
   set_has_bls_sign_x();
   bls_sign_x_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.bls_sign_x)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.bls_sign_x)
 }
 #if LANG_CXX11
 inline void ZbftMessage::set_bls_sign_x(::std::string&& value) {
   set_has_bls_sign_x();
   bls_sign_x_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.zbft.protobuf.ZbftMessage.bls_sign_x)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.zbft.protobuf.ZbftMessage.bls_sign_x)
 }
 #endif
 inline void ZbftMessage::set_bls_sign_x(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_bls_sign_x();
   bls_sign_x_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.zbft.protobuf.ZbftMessage.bls_sign_x)
+  // @@protoc_insertion_point(field_set_char:shardora.zbft.protobuf.ZbftMessage.bls_sign_x)
 }
 inline void ZbftMessage::set_bls_sign_x(const void* value, size_t size) {
   set_has_bls_sign_x();
   bls_sign_x_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.zbft.protobuf.ZbftMessage.bls_sign_x)
+  // @@protoc_insertion_point(field_set_pointer:shardora.zbft.protobuf.ZbftMessage.bls_sign_x)
 }
 inline ::std::string* ZbftMessage::mutable_bls_sign_x() {
   set_has_bls_sign_x();
-  // @@protoc_insertion_point(field_mutable:zjchain.zbft.protobuf.ZbftMessage.bls_sign_x)
+  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.ZbftMessage.bls_sign_x)
   return bls_sign_x_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* ZbftMessage::release_bls_sign_x() {
-  // @@protoc_insertion_point(field_release:zjchain.zbft.protobuf.ZbftMessage.bls_sign_x)
+  // @@protoc_insertion_point(field_release:shardora.zbft.protobuf.ZbftMessage.bls_sign_x)
   if (!has_bls_sign_x()) {
     return NULL;
   }
@@ -1517,7 +1517,7 @@ inline void ZbftMessage::set_allocated_bls_sign_x(::std::string* bls_sign_x) {
     clear_has_bls_sign_x();
   }
   bls_sign_x_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), bls_sign_x);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.zbft.protobuf.ZbftMessage.bls_sign_x)
+  // @@protoc_insertion_point(field_set_allocated:shardora.zbft.protobuf.ZbftMessage.bls_sign_x)
 }
 
 // optional bytes bls_sign_y = 15;
@@ -1535,41 +1535,41 @@ inline void ZbftMessage::clear_bls_sign_y() {
   clear_has_bls_sign_y();
 }
 inline const ::std::string& ZbftMessage::bls_sign_y() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.bls_sign_y)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.bls_sign_y)
   return bls_sign_y_.GetNoArena();
 }
 inline void ZbftMessage::set_bls_sign_y(const ::std::string& value) {
   set_has_bls_sign_y();
   bls_sign_y_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.bls_sign_y)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.bls_sign_y)
 }
 #if LANG_CXX11
 inline void ZbftMessage::set_bls_sign_y(::std::string&& value) {
   set_has_bls_sign_y();
   bls_sign_y_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.zbft.protobuf.ZbftMessage.bls_sign_y)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.zbft.protobuf.ZbftMessage.bls_sign_y)
 }
 #endif
 inline void ZbftMessage::set_bls_sign_y(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_bls_sign_y();
   bls_sign_y_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.zbft.protobuf.ZbftMessage.bls_sign_y)
+  // @@protoc_insertion_point(field_set_char:shardora.zbft.protobuf.ZbftMessage.bls_sign_y)
 }
 inline void ZbftMessage::set_bls_sign_y(const void* value, size_t size) {
   set_has_bls_sign_y();
   bls_sign_y_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.zbft.protobuf.ZbftMessage.bls_sign_y)
+  // @@protoc_insertion_point(field_set_pointer:shardora.zbft.protobuf.ZbftMessage.bls_sign_y)
 }
 inline ::std::string* ZbftMessage::mutable_bls_sign_y() {
   set_has_bls_sign_y();
-  // @@protoc_insertion_point(field_mutable:zjchain.zbft.protobuf.ZbftMessage.bls_sign_y)
+  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.ZbftMessage.bls_sign_y)
   return bls_sign_y_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* ZbftMessage::release_bls_sign_y() {
-  // @@protoc_insertion_point(field_release:zjchain.zbft.protobuf.ZbftMessage.bls_sign_y)
+  // @@protoc_insertion_point(field_release:shardora.zbft.protobuf.ZbftMessage.bls_sign_y)
   if (!has_bls_sign_y()) {
     return NULL;
   }
@@ -1583,7 +1583,7 @@ inline void ZbftMessage::set_allocated_bls_sign_y(::std::string* bls_sign_y) {
     clear_has_bls_sign_y();
   }
   bls_sign_y_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), bls_sign_y);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.zbft.protobuf.ZbftMessage.bls_sign_y)
+  // @@protoc_insertion_point(field_set_allocated:shardora.zbft.protobuf.ZbftMessage.bls_sign_y)
 }
 
 // optional uint64 prepare_height = 16;
@@ -1601,13 +1601,13 @@ inline void ZbftMessage::clear_prepare_height() {
   clear_has_prepare_height();
 }
 inline ::google::protobuf::uint64 ZbftMessage::prepare_height() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.prepare_height)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.prepare_height)
   return prepare_height_;
 }
 inline void ZbftMessage::set_prepare_height(::google::protobuf::uint64 value) {
   set_has_prepare_height();
   prepare_height_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.prepare_height)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.prepare_height)
 }
 
 // optional bytes prepare_hash = 17;
@@ -1625,41 +1625,41 @@ inline void ZbftMessage::clear_prepare_hash() {
   clear_has_prepare_hash();
 }
 inline const ::std::string& ZbftMessage::prepare_hash() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.prepare_hash)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.prepare_hash)
   return prepare_hash_.GetNoArena();
 }
 inline void ZbftMessage::set_prepare_hash(const ::std::string& value) {
   set_has_prepare_hash();
   prepare_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.prepare_hash)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.prepare_hash)
 }
 #if LANG_CXX11
 inline void ZbftMessage::set_prepare_hash(::std::string&& value) {
   set_has_prepare_hash();
   prepare_hash_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.zbft.protobuf.ZbftMessage.prepare_hash)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.zbft.protobuf.ZbftMessage.prepare_hash)
 }
 #endif
 inline void ZbftMessage::set_prepare_hash(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_prepare_hash();
   prepare_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.zbft.protobuf.ZbftMessage.prepare_hash)
+  // @@protoc_insertion_point(field_set_char:shardora.zbft.protobuf.ZbftMessage.prepare_hash)
 }
 inline void ZbftMessage::set_prepare_hash(const void* value, size_t size) {
   set_has_prepare_hash();
   prepare_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.zbft.protobuf.ZbftMessage.prepare_hash)
+  // @@protoc_insertion_point(field_set_pointer:shardora.zbft.protobuf.ZbftMessage.prepare_hash)
 }
 inline ::std::string* ZbftMessage::mutable_prepare_hash() {
   set_has_prepare_hash();
-  // @@protoc_insertion_point(field_mutable:zjchain.zbft.protobuf.ZbftMessage.prepare_hash)
+  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.ZbftMessage.prepare_hash)
   return prepare_hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* ZbftMessage::release_prepare_hash() {
-  // @@protoc_insertion_point(field_release:zjchain.zbft.protobuf.ZbftMessage.prepare_hash)
+  // @@protoc_insertion_point(field_release:shardora.zbft.protobuf.ZbftMessage.prepare_hash)
   if (!has_prepare_hash()) {
     return NULL;
   }
@@ -1673,10 +1673,10 @@ inline void ZbftMessage::set_allocated_prepare_hash(::std::string* prepare_hash)
     clear_has_prepare_hash();
   }
   prepare_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), prepare_hash);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.zbft.protobuf.ZbftMessage.prepare_hash)
+  // @@protoc_insertion_point(field_set_allocated:shardora.zbft.protobuf.ZbftMessage.prepare_hash)
 }
 
-// optional .zjchain.block.protobuf.Block block = 18;
+// optional .shardora.block.protobuf.Block block = 18;
 inline bool ZbftMessage::has_block() const {
   return (_has_bits_[0] & 0x00000200u) != 0;
 }
@@ -1686,32 +1686,32 @@ inline void ZbftMessage::set_has_block() {
 inline void ZbftMessage::clear_has_block() {
   _has_bits_[0] &= ~0x00000200u;
 }
-inline const ::zjchain::block::protobuf::Block& ZbftMessage::_internal_block() const {
+inline const ::shardora::block::protobuf::Block& ZbftMessage::_internal_block() const {
   return *block_;
 }
-inline const ::zjchain::block::protobuf::Block& ZbftMessage::block() const {
-  const ::zjchain::block::protobuf::Block* p = block_;
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.block)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::block::protobuf::Block*>(
-      &::zjchain::block::protobuf::_Block_default_instance_);
+inline const ::shardora::block::protobuf::Block& ZbftMessage::block() const {
+  const ::shardora::block::protobuf::Block* p = block_;
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.block)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::block::protobuf::Block*>(
+      &::shardora::block::protobuf::_Block_default_instance_);
 }
-inline ::zjchain::block::protobuf::Block* ZbftMessage::release_block() {
-  // @@protoc_insertion_point(field_release:zjchain.zbft.protobuf.ZbftMessage.block)
+inline ::shardora::block::protobuf::Block* ZbftMessage::release_block() {
+  // @@protoc_insertion_point(field_release:shardora.zbft.protobuf.ZbftMessage.block)
   clear_has_block();
-  ::zjchain::block::protobuf::Block* temp = block_;
+  ::shardora::block::protobuf::Block* temp = block_;
   block_ = NULL;
   return temp;
 }
-inline ::zjchain::block::protobuf::Block* ZbftMessage::mutable_block() {
+inline ::shardora::block::protobuf::Block* ZbftMessage::mutable_block() {
   set_has_block();
   if (block_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::block::protobuf::Block>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::block::protobuf::Block>(GetArenaNoVirtual());
     block_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.zbft.protobuf.ZbftMessage.block)
+  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.ZbftMessage.block)
   return block_;
 }
-inline void ZbftMessage::set_allocated_block(::zjchain::block::protobuf::Block* block) {
+inline void ZbftMessage::set_allocated_block(::shardora::block::protobuf::Block* block) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete reinterpret_cast< ::google::protobuf::MessageLite*>(block_);
@@ -1727,7 +1727,7 @@ inline void ZbftMessage::set_allocated_block(::zjchain::block::protobuf::Block* 
     clear_has_block();
   }
   block_ = block;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.zbft.protobuf.ZbftMessage.block)
+  // @@protoc_insertion_point(field_set_allocated:shardora.zbft.protobuf.ZbftMessage.block)
 }
 
 // optional bool sync_block = 19;
@@ -1745,13 +1745,13 @@ inline void ZbftMessage::clear_sync_block() {
   clear_has_sync_block();
 }
 inline bool ZbftMessage::sync_block() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.sync_block)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.sync_block)
   return sync_block_;
 }
 inline void ZbftMessage::set_sync_block(bool value) {
   set_has_sync_block();
   sync_block_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.sync_block)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.sync_block)
 }
 
 // repeated uint32 ips = 20;
@@ -1762,25 +1762,25 @@ inline void ZbftMessage::clear_ips() {
   ips_.Clear();
 }
 inline ::google::protobuf::uint32 ZbftMessage::ips(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.ips)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.ips)
   return ips_.Get(index);
 }
 inline void ZbftMessage::set_ips(int index, ::google::protobuf::uint32 value) {
   ips_.Set(index, value);
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.ips)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.ips)
 }
 inline void ZbftMessage::add_ips(::google::protobuf::uint32 value) {
   ips_.Add(value);
-  // @@protoc_insertion_point(field_add:zjchain.zbft.protobuf.ZbftMessage.ips)
+  // @@protoc_insertion_point(field_add:shardora.zbft.protobuf.ZbftMessage.ips)
 }
 inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
 ZbftMessage::ips() const {
-  // @@protoc_insertion_point(field_list:zjchain.zbft.protobuf.ZbftMessage.ips)
+  // @@protoc_insertion_point(field_list:shardora.zbft.protobuf.ZbftMessage.ips)
   return ips_;
 }
 inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
 ZbftMessage::mutable_ips() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.zbft.protobuf.ZbftMessage.ips)
+  // @@protoc_insertion_point(field_mutable_list:shardora.zbft.protobuf.ZbftMessage.ips)
   return &ips_;
 }
 
@@ -1799,41 +1799,41 @@ inline void ZbftMessage::clear_oppose_prepare_gid() {
   clear_has_oppose_prepare_gid();
 }
 inline const ::std::string& ZbftMessage::oppose_prepare_gid() const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.oppose_prepare_gid)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.oppose_prepare_gid)
   return oppose_prepare_gid_.GetNoArena();
 }
 inline void ZbftMessage::set_oppose_prepare_gid(const ::std::string& value) {
   set_has_oppose_prepare_gid();
   oppose_prepare_gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.oppose_prepare_gid)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.oppose_prepare_gid)
 }
 #if LANG_CXX11
 inline void ZbftMessage::set_oppose_prepare_gid(::std::string&& value) {
   set_has_oppose_prepare_gid();
   oppose_prepare_gid_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.zbft.protobuf.ZbftMessage.oppose_prepare_gid)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.zbft.protobuf.ZbftMessage.oppose_prepare_gid)
 }
 #endif
 inline void ZbftMessage::set_oppose_prepare_gid(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_oppose_prepare_gid();
   oppose_prepare_gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.zbft.protobuf.ZbftMessage.oppose_prepare_gid)
+  // @@protoc_insertion_point(field_set_char:shardora.zbft.protobuf.ZbftMessage.oppose_prepare_gid)
 }
 inline void ZbftMessage::set_oppose_prepare_gid(const void* value, size_t size) {
   set_has_oppose_prepare_gid();
   oppose_prepare_gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.zbft.protobuf.ZbftMessage.oppose_prepare_gid)
+  // @@protoc_insertion_point(field_set_pointer:shardora.zbft.protobuf.ZbftMessage.oppose_prepare_gid)
 }
 inline ::std::string* ZbftMessage::mutable_oppose_prepare_gid() {
   set_has_oppose_prepare_gid();
-  // @@protoc_insertion_point(field_mutable:zjchain.zbft.protobuf.ZbftMessage.oppose_prepare_gid)
+  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.ZbftMessage.oppose_prepare_gid)
   return oppose_prepare_gid_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* ZbftMessage::release_oppose_prepare_gid() {
-  // @@protoc_insertion_point(field_release:zjchain.zbft.protobuf.ZbftMessage.oppose_prepare_gid)
+  // @@protoc_insertion_point(field_release:shardora.zbft.protobuf.ZbftMessage.oppose_prepare_gid)
   if (!has_oppose_prepare_gid()) {
     return NULL;
   }
@@ -1847,7 +1847,7 @@ inline void ZbftMessage::set_allocated_oppose_prepare_gid(::std::string* oppose_
     clear_has_oppose_prepare_gid();
   }
   oppose_prepare_gid_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), oppose_prepare_gid);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.zbft.protobuf.ZbftMessage.oppose_prepare_gid)
+  // @@protoc_insertion_point(field_set_allocated:shardora.zbft.protobuf.ZbftMessage.oppose_prepare_gid)
 }
 
 // repeated uint32 invaid_txs = 22;
@@ -1858,25 +1858,25 @@ inline void ZbftMessage::clear_invaid_txs() {
   invaid_txs_.Clear();
 }
 inline ::google::protobuf::uint32 ZbftMessage::invaid_txs(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.invaid_txs)
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.invaid_txs)
   return invaid_txs_.Get(index);
 }
 inline void ZbftMessage::set_invaid_txs(int index, ::google::protobuf::uint32 value) {
   invaid_txs_.Set(index, value);
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.invaid_txs)
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.invaid_txs)
 }
 inline void ZbftMessage::add_invaid_txs(::google::protobuf::uint32 value) {
   invaid_txs_.Add(value);
-  // @@protoc_insertion_point(field_add:zjchain.zbft.protobuf.ZbftMessage.invaid_txs)
+  // @@protoc_insertion_point(field_add:shardora.zbft.protobuf.ZbftMessage.invaid_txs)
 }
 inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
 ZbftMessage::invaid_txs() const {
-  // @@protoc_insertion_point(field_list:zjchain.zbft.protobuf.ZbftMessage.invaid_txs)
+  // @@protoc_insertion_point(field_list:shardora.zbft.protobuf.ZbftMessage.invaid_txs)
   return invaid_txs_;
 }
 inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
 ZbftMessage::mutable_invaid_txs() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.zbft.protobuf.ZbftMessage.invaid_txs)
+  // @@protoc_insertion_point(field_mutable_list:shardora.zbft.protobuf.ZbftMessage.invaid_txs)
   return &invaid_txs_;
 }
 

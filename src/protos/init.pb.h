@@ -70,11 +70,11 @@ extern InvalidLeaderPoolsDefaultTypeInternal _InvalidLeaderPools_default_instanc
 }  // namespace shardora
 namespace google {
 namespace protobuf {
-template<> ::zjchain::init::protobuf::GenesisInitBlsInfo* Arena::CreateMaybeMessage<::zjchain::init::protobuf::GenesisInitBlsInfo>(Arena*);
-template<> ::zjchain::init::protobuf::GetAddressInfoRequest* Arena::CreateMaybeMessage<::zjchain::init::protobuf::GetAddressInfoRequest>(Arena*);
-template<> ::zjchain::init::protobuf::GetAddressInfoResponse* Arena::CreateMaybeMessage<::zjchain::init::protobuf::GetAddressInfoResponse>(Arena*);
-template<> ::zjchain::init::protobuf::InitMessage* Arena::CreateMaybeMessage<::zjchain::init::protobuf::InitMessage>(Arena*);
-template<> ::zjchain::init::protobuf::InvalidLeaderPools* Arena::CreateMaybeMessage<::zjchain::init::protobuf::InvalidLeaderPools>(Arena*);
+template<> ::shardora::init::protobuf::GenesisInitBlsInfo* Arena::CreateMaybeMessage<::shardora::init::protobuf::GenesisInitBlsInfo>(Arena*);
+template<> ::shardora::init::protobuf::GetAddressInfoRequest* Arena::CreateMaybeMessage<::shardora::init::protobuf::GetAddressInfoRequest>(Arena*);
+template<> ::shardora::init::protobuf::GetAddressInfoResponse* Arena::CreateMaybeMessage<::shardora::init::protobuf::GetAddressInfoResponse>(Arena*);
+template<> ::shardora::init::protobuf::InitMessage* Arena::CreateMaybeMessage<::shardora::init::protobuf::InitMessage>(Arena*);
+template<> ::shardora::init::protobuf::InvalidLeaderPools* Arena::CreateMaybeMessage<::shardora::init::protobuf::InvalidLeaderPools>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 namespace shardora {
@@ -83,7 +83,7 @@ namespace protobuf {
 
 // ===================================================================
 
-class GetAddressInfoRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.init.protobuf.GetAddressInfoRequest) */ {
+class GetAddressInfoRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.init.protobuf.GetAddressInfoRequest) */ {
  public:
   GetAddressInfoRequest();
   virtual ~GetAddressInfoRequest();
@@ -192,7 +192,7 @@ class GetAddressInfoRequest : public ::google::protobuf::Message /* @@protoc_ins
   ::std::string* release_id();
   void set_allocated_id(::std::string* id);
 
-  // @@protoc_insertion_point(class_scope:zjchain.init.protobuf.GetAddressInfoRequest)
+  // @@protoc_insertion_point(class_scope:shardora.init.protobuf.GetAddressInfoRequest)
  private:
   void set_has_id();
   void clear_has_id();
@@ -205,7 +205,7 @@ class GetAddressInfoRequest : public ::google::protobuf::Message /* @@protoc_ins
 };
 // -------------------------------------------------------------------
 
-class GetAddressInfoResponse : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.init.protobuf.GetAddressInfoResponse) */ {
+class GetAddressInfoResponse : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.init.protobuf.GetAddressInfoResponse) */ {
  public:
   GetAddressInfoResponse();
   virtual ~GetAddressInfoResponse();
@@ -299,19 +299,19 @@ class GetAddressInfoResponse : public ::google::protobuf::Message /* @@protoc_in
 
   // accessors -------------------------------------------------------
 
-  // optional .zjchain.block.protobuf.Block block = 1;
+  // optional .shardora.block.protobuf.Block block = 1;
   bool has_block() const;
   void clear_block();
   static const int kBlockFieldNumber = 1;
   private:
-  const ::zjchain::block::protobuf::Block& _internal_block() const;
+  const ::shardora::block::protobuf::Block& _internal_block() const;
   public:
-  const ::zjchain::block::protobuf::Block& block() const;
-  ::zjchain::block::protobuf::Block* release_block();
-  ::zjchain::block::protobuf::Block* mutable_block();
-  void set_allocated_block(::zjchain::block::protobuf::Block* block);
+  const ::shardora::block::protobuf::Block& block() const;
+  ::shardora::block::protobuf::Block* release_block();
+  ::shardora::block::protobuf::Block* mutable_block();
+  void set_allocated_block(::shardora::block::protobuf::Block* block);
 
-  // @@protoc_insertion_point(class_scope:zjchain.init.protobuf.GetAddressInfoResponse)
+  // @@protoc_insertion_point(class_scope:shardora.init.protobuf.GetAddressInfoResponse)
  private:
   void set_has_block();
   void clear_has_block();
@@ -319,12 +319,12 @@ class GetAddressInfoResponse : public ::google::protobuf::Message /* @@protoc_in
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::zjchain::block::protobuf::Block* block_;
+  ::shardora::block::protobuf::Block* block_;
   friend struct ::protobuf_protos_2finit_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
-class InvalidLeaderPools : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.init.protobuf.InvalidLeaderPools) */ {
+class InvalidLeaderPools : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.init.protobuf.InvalidLeaderPools) */ {
  public:
   InvalidLeaderPools();
   virtual ~InvalidLeaderPools();
@@ -465,7 +465,7 @@ class InvalidLeaderPools : public ::google::protobuf::Message /* @@protoc_insert
   ::google::protobuf::uint32 version() const;
   void set_version(::google::protobuf::uint32 value);
 
-  // @@protoc_insertion_point(class_scope:zjchain.init.protobuf.InvalidLeaderPools)
+  // @@protoc_insertion_point(class_scope:shardora.init.protobuf.InvalidLeaderPools)
  private:
   void set_has_elect_height();
   void clear_has_elect_height();
@@ -491,7 +491,7 @@ class InvalidLeaderPools : public ::google::protobuf::Message /* @@protoc_insert
 };
 // -------------------------------------------------------------------
 
-class GenesisInitBlsInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.init.protobuf.GenesisInitBlsInfo) */ {
+class GenesisInitBlsInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.init.protobuf.GenesisInitBlsInfo) */ {
  public:
   GenesisInitBlsInfo();
   virtual ~GenesisInitBlsInfo();
@@ -645,29 +645,29 @@ class GenesisInitBlsInfo : public ::google::protobuf::Message /* @@protoc_insert
   ::std::string* release_prikey();
   void set_allocated_prikey(::std::string* prikey);
 
-  // optional .zjchain.bls.protobuf.JoinElectInfo join_info = 6;
+  // optional .shardora.bls.protobuf.JoinElectInfo join_info = 6;
   bool has_join_info() const;
   void clear_join_info();
   static const int kJoinInfoFieldNumber = 6;
   private:
-  const ::zjchain::bls::protobuf::JoinElectInfo& _internal_join_info() const;
+  const ::shardora::bls::protobuf::JoinElectInfo& _internal_join_info() const;
   public:
-  const ::zjchain::bls::protobuf::JoinElectInfo& join_info() const;
-  ::zjchain::bls::protobuf::JoinElectInfo* release_join_info();
-  ::zjchain::bls::protobuf::JoinElectInfo* mutable_join_info();
-  void set_allocated_join_info(::zjchain::bls::protobuf::JoinElectInfo* join_info);
+  const ::shardora::bls::protobuf::JoinElectInfo& join_info() const;
+  ::shardora::bls::protobuf::JoinElectInfo* release_join_info();
+  ::shardora::bls::protobuf::JoinElectInfo* mutable_join_info();
+  void set_allocated_join_info(::shardora::bls::protobuf::JoinElectInfo* join_info);
 
-  // optional .zjchain.bls.protobuf.LocalPolynomial local_poly = 7;
+  // optional .shardora.bls.protobuf.LocalPolynomial local_poly = 7;
   bool has_local_poly() const;
   void clear_local_poly();
   static const int kLocalPolyFieldNumber = 7;
   private:
-  const ::zjchain::bls::protobuf::LocalPolynomial& _internal_local_poly() const;
+  const ::shardora::bls::protobuf::LocalPolynomial& _internal_local_poly() const;
   public:
-  const ::zjchain::bls::protobuf::LocalPolynomial& local_poly() const;
-  ::zjchain::bls::protobuf::LocalPolynomial* release_local_poly();
-  ::zjchain::bls::protobuf::LocalPolynomial* mutable_local_poly();
-  void set_allocated_local_poly(::zjchain::bls::protobuf::LocalPolynomial* local_poly);
+  const ::shardora::bls::protobuf::LocalPolynomial& local_poly() const;
+  ::shardora::bls::protobuf::LocalPolynomial* release_local_poly();
+  ::shardora::bls::protobuf::LocalPolynomial* mutable_local_poly();
+  void set_allocated_local_poly(::shardora::bls::protobuf::LocalPolynomial* local_poly);
 
   // optional uint64 height = 1;
   bool has_height() const;
@@ -683,7 +683,7 @@ class GenesisInitBlsInfo : public ::google::protobuf::Message /* @@protoc_insert
   ::google::protobuf::uint32 shard_id() const;
   void set_shard_id(::google::protobuf::uint32 value);
 
-  // @@protoc_insertion_point(class_scope:zjchain.init.protobuf.GenesisInitBlsInfo)
+  // @@protoc_insertion_point(class_scope:shardora.init.protobuf.GenesisInitBlsInfo)
  private:
   void set_has_height();
   void clear_has_height();
@@ -709,15 +709,15 @@ class GenesisInitBlsInfo : public ::google::protobuf::Message /* @@protoc_insert
   ::google::protobuf::internal::ArenaStringPtr bls_enc_data_;
   ::google::protobuf::internal::ArenaStringPtr bls_hash_;
   ::google::protobuf::internal::ArenaStringPtr prikey_;
-  ::zjchain::bls::protobuf::JoinElectInfo* join_info_;
-  ::zjchain::bls::protobuf::LocalPolynomial* local_poly_;
+  ::shardora::bls::protobuf::JoinElectInfo* join_info_;
+  ::shardora::bls::protobuf::LocalPolynomial* local_poly_;
   ::google::protobuf::uint64 height_;
   ::google::protobuf::uint32 shard_id_;
   friend struct ::protobuf_protos_2finit_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
-class InitMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.init.protobuf.InitMessage) */ {
+class InitMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.init.protobuf.InitMessage) */ {
  public:
   InitMessage();
   virtual ~InitMessage();
@@ -811,43 +811,43 @@ class InitMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
 
   // accessors -------------------------------------------------------
 
-  // optional .zjchain.init.protobuf.GetAddressInfoRequest addr_req = 1;
+  // optional .shardora.init.protobuf.GetAddressInfoRequest addr_req = 1;
   bool has_addr_req() const;
   void clear_addr_req();
   static const int kAddrReqFieldNumber = 1;
   private:
-  const ::zjchain::init::protobuf::GetAddressInfoRequest& _internal_addr_req() const;
+  const ::shardora::init::protobuf::GetAddressInfoRequest& _internal_addr_req() const;
   public:
-  const ::zjchain::init::protobuf::GetAddressInfoRequest& addr_req() const;
-  ::zjchain::init::protobuf::GetAddressInfoRequest* release_addr_req();
-  ::zjchain::init::protobuf::GetAddressInfoRequest* mutable_addr_req();
-  void set_allocated_addr_req(::zjchain::init::protobuf::GetAddressInfoRequest* addr_req);
+  const ::shardora::init::protobuf::GetAddressInfoRequest& addr_req() const;
+  ::shardora::init::protobuf::GetAddressInfoRequest* release_addr_req();
+  ::shardora::init::protobuf::GetAddressInfoRequest* mutable_addr_req();
+  void set_allocated_addr_req(::shardora::init::protobuf::GetAddressInfoRequest* addr_req);
 
-  // optional .zjchain.init.protobuf.GetAddressInfoResponse addr_res = 2;
+  // optional .shardora.init.protobuf.GetAddressInfoResponse addr_res = 2;
   bool has_addr_res() const;
   void clear_addr_res();
   static const int kAddrResFieldNumber = 2;
   private:
-  const ::zjchain::init::protobuf::GetAddressInfoResponse& _internal_addr_res() const;
+  const ::shardora::init::protobuf::GetAddressInfoResponse& _internal_addr_res() const;
   public:
-  const ::zjchain::init::protobuf::GetAddressInfoResponse& addr_res() const;
-  ::zjchain::init::protobuf::GetAddressInfoResponse* release_addr_res();
-  ::zjchain::init::protobuf::GetAddressInfoResponse* mutable_addr_res();
-  void set_allocated_addr_res(::zjchain::init::protobuf::GetAddressInfoResponse* addr_res);
+  const ::shardora::init::protobuf::GetAddressInfoResponse& addr_res() const;
+  ::shardora::init::protobuf::GetAddressInfoResponse* release_addr_res();
+  ::shardora::init::protobuf::GetAddressInfoResponse* mutable_addr_res();
+  void set_allocated_addr_res(::shardora::init::protobuf::GetAddressInfoResponse* addr_res);
 
-  // optional .zjchain.init.protobuf.InvalidLeaderPools pools = 3;
+  // optional .shardora.init.protobuf.InvalidLeaderPools pools = 3;
   bool has_pools() const;
   void clear_pools();
   static const int kPoolsFieldNumber = 3;
   private:
-  const ::zjchain::init::protobuf::InvalidLeaderPools& _internal_pools() const;
+  const ::shardora::init::protobuf::InvalidLeaderPools& _internal_pools() const;
   public:
-  const ::zjchain::init::protobuf::InvalidLeaderPools& pools() const;
-  ::zjchain::init::protobuf::InvalidLeaderPools* release_pools();
-  ::zjchain::init::protobuf::InvalidLeaderPools* mutable_pools();
-  void set_allocated_pools(::zjchain::init::protobuf::InvalidLeaderPools* pools);
+  const ::shardora::init::protobuf::InvalidLeaderPools& pools() const;
+  ::shardora::init::protobuf::InvalidLeaderPools* release_pools();
+  ::shardora::init::protobuf::InvalidLeaderPools* mutable_pools();
+  void set_allocated_pools(::shardora::init::protobuf::InvalidLeaderPools* pools);
 
-  // @@protoc_insertion_point(class_scope:zjchain.init.protobuf.InitMessage)
+  // @@protoc_insertion_point(class_scope:shardora.init.protobuf.InitMessage)
  private:
   void set_has_addr_req();
   void clear_has_addr_req();
@@ -859,9 +859,9 @@ class InitMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::zjchain::init::protobuf::GetAddressInfoRequest* addr_req_;
-  ::zjchain::init::protobuf::GetAddressInfoResponse* addr_res_;
-  ::zjchain::init::protobuf::InvalidLeaderPools* pools_;
+  ::shardora::init::protobuf::GetAddressInfoRequest* addr_req_;
+  ::shardora::init::protobuf::GetAddressInfoResponse* addr_res_;
+  ::shardora::init::protobuf::InvalidLeaderPools* pools_;
   friend struct ::protobuf_protos_2finit_2eproto::TableStruct;
 };
 // ===================================================================
@@ -890,41 +890,41 @@ inline void GetAddressInfoRequest::clear_id() {
   clear_has_id();
 }
 inline const ::std::string& GetAddressInfoRequest::id() const {
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.GetAddressInfoRequest.id)
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.GetAddressInfoRequest.id)
   return id_.GetNoArena();
 }
 inline void GetAddressInfoRequest::set_id(const ::std::string& value) {
   set_has_id();
   id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.GetAddressInfoRequest.id)
+  // @@protoc_insertion_point(field_set:shardora.init.protobuf.GetAddressInfoRequest.id)
 }
 #if LANG_CXX11
 inline void GetAddressInfoRequest::set_id(::std::string&& value) {
   set_has_id();
   id_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.init.protobuf.GetAddressInfoRequest.id)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.init.protobuf.GetAddressInfoRequest.id)
 }
 #endif
 inline void GetAddressInfoRequest::set_id(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_id();
   id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.init.protobuf.GetAddressInfoRequest.id)
+  // @@protoc_insertion_point(field_set_char:shardora.init.protobuf.GetAddressInfoRequest.id)
 }
 inline void GetAddressInfoRequest::set_id(const void* value, size_t size) {
   set_has_id();
   id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.init.protobuf.GetAddressInfoRequest.id)
+  // @@protoc_insertion_point(field_set_pointer:shardora.init.protobuf.GetAddressInfoRequest.id)
 }
 inline ::std::string* GetAddressInfoRequest::mutable_id() {
   set_has_id();
-  // @@protoc_insertion_point(field_mutable:zjchain.init.protobuf.GetAddressInfoRequest.id)
+  // @@protoc_insertion_point(field_mutable:shardora.init.protobuf.GetAddressInfoRequest.id)
   return id_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* GetAddressInfoRequest::release_id() {
-  // @@protoc_insertion_point(field_release:zjchain.init.protobuf.GetAddressInfoRequest.id)
+  // @@protoc_insertion_point(field_release:shardora.init.protobuf.GetAddressInfoRequest.id)
   if (!has_id()) {
     return NULL;
   }
@@ -938,14 +938,14 @@ inline void GetAddressInfoRequest::set_allocated_id(::std::string* id) {
     clear_has_id();
   }
   id_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), id);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.GetAddressInfoRequest.id)
+  // @@protoc_insertion_point(field_set_allocated:shardora.init.protobuf.GetAddressInfoRequest.id)
 }
 
 // -------------------------------------------------------------------
 
 // GetAddressInfoResponse
 
-// optional .zjchain.block.protobuf.Block block = 1;
+// optional .shardora.block.protobuf.Block block = 1;
 inline bool GetAddressInfoResponse::has_block() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -955,32 +955,32 @@ inline void GetAddressInfoResponse::set_has_block() {
 inline void GetAddressInfoResponse::clear_has_block() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline const ::zjchain::block::protobuf::Block& GetAddressInfoResponse::_internal_block() const {
+inline const ::shardora::block::protobuf::Block& GetAddressInfoResponse::_internal_block() const {
   return *block_;
 }
-inline const ::zjchain::block::protobuf::Block& GetAddressInfoResponse::block() const {
-  const ::zjchain::block::protobuf::Block* p = block_;
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.GetAddressInfoResponse.block)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::block::protobuf::Block*>(
-      &::zjchain::block::protobuf::_Block_default_instance_);
+inline const ::shardora::block::protobuf::Block& GetAddressInfoResponse::block() const {
+  const ::shardora::block::protobuf::Block* p = block_;
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.GetAddressInfoResponse.block)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::block::protobuf::Block*>(
+      &::shardora::block::protobuf::_Block_default_instance_);
 }
-inline ::zjchain::block::protobuf::Block* GetAddressInfoResponse::release_block() {
-  // @@protoc_insertion_point(field_release:zjchain.init.protobuf.GetAddressInfoResponse.block)
+inline ::shardora::block::protobuf::Block* GetAddressInfoResponse::release_block() {
+  // @@protoc_insertion_point(field_release:shardora.init.protobuf.GetAddressInfoResponse.block)
   clear_has_block();
-  ::zjchain::block::protobuf::Block* temp = block_;
+  ::shardora::block::protobuf::Block* temp = block_;
   block_ = NULL;
   return temp;
 }
-inline ::zjchain::block::protobuf::Block* GetAddressInfoResponse::mutable_block() {
+inline ::shardora::block::protobuf::Block* GetAddressInfoResponse::mutable_block() {
   set_has_block();
   if (block_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::block::protobuf::Block>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::block::protobuf::Block>(GetArenaNoVirtual());
     block_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.init.protobuf.GetAddressInfoResponse.block)
+  // @@protoc_insertion_point(field_mutable:shardora.init.protobuf.GetAddressInfoResponse.block)
   return block_;
 }
-inline void GetAddressInfoResponse::set_allocated_block(::zjchain::block::protobuf::Block* block) {
+inline void GetAddressInfoResponse::set_allocated_block(::shardora::block::protobuf::Block* block) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete reinterpret_cast< ::google::protobuf::MessageLite*>(block_);
@@ -996,7 +996,7 @@ inline void GetAddressInfoResponse::set_allocated_block(::zjchain::block::protob
     clear_has_block();
   }
   block_ = block;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.GetAddressInfoResponse.block)
+  // @@protoc_insertion_point(field_set_allocated:shardora.init.protobuf.GetAddressInfoResponse.block)
 }
 
 // -------------------------------------------------------------------
@@ -1011,25 +1011,25 @@ inline void InvalidLeaderPools::clear_pools() {
   pools_.Clear();
 }
 inline ::google::protobuf::int32 InvalidLeaderPools::pools(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.InvalidLeaderPools.pools)
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.InvalidLeaderPools.pools)
   return pools_.Get(index);
 }
 inline void InvalidLeaderPools::set_pools(int index, ::google::protobuf::int32 value) {
   pools_.Set(index, value);
-  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.InvalidLeaderPools.pools)
+  // @@protoc_insertion_point(field_set:shardora.init.protobuf.InvalidLeaderPools.pools)
 }
 inline void InvalidLeaderPools::add_pools(::google::protobuf::int32 value) {
   pools_.Add(value);
-  // @@protoc_insertion_point(field_add:zjchain.init.protobuf.InvalidLeaderPools.pools)
+  // @@protoc_insertion_point(field_add:shardora.init.protobuf.InvalidLeaderPools.pools)
 }
 inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
 InvalidLeaderPools::pools() const {
-  // @@protoc_insertion_point(field_list:zjchain.init.protobuf.InvalidLeaderPools.pools)
+  // @@protoc_insertion_point(field_list:shardora.init.protobuf.InvalidLeaderPools.pools)
   return pools_;
 }
 inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
 InvalidLeaderPools::mutable_pools() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.init.protobuf.InvalidLeaderPools.pools)
+  // @@protoc_insertion_point(field_mutable_list:shardora.init.protobuf.InvalidLeaderPools.pools)
   return &pools_;
 }
 
@@ -1048,13 +1048,13 @@ inline void InvalidLeaderPools::clear_elect_height() {
   clear_has_elect_height();
 }
 inline ::google::protobuf::uint64 InvalidLeaderPools::elect_height() const {
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.InvalidLeaderPools.elect_height)
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.InvalidLeaderPools.elect_height)
   return elect_height_;
 }
 inline void InvalidLeaderPools::set_elect_height(::google::protobuf::uint64 value) {
   set_has_elect_height();
   elect_height_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.InvalidLeaderPools.elect_height)
+  // @@protoc_insertion_point(field_set:shardora.init.protobuf.InvalidLeaderPools.elect_height)
 }
 
 // optional uint32 member_index = 3;
@@ -1072,13 +1072,13 @@ inline void InvalidLeaderPools::clear_member_index() {
   clear_has_member_index();
 }
 inline ::google::protobuf::uint32 InvalidLeaderPools::member_index() const {
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.InvalidLeaderPools.member_index)
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.InvalidLeaderPools.member_index)
   return member_index_;
 }
 inline void InvalidLeaderPools::set_member_index(::google::protobuf::uint32 value) {
   set_has_member_index();
   member_index_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.InvalidLeaderPools.member_index)
+  // @@protoc_insertion_point(field_set:shardora.init.protobuf.InvalidLeaderPools.member_index)
 }
 
 // optional int32 mod_num = 4;
@@ -1096,13 +1096,13 @@ inline void InvalidLeaderPools::clear_mod_num() {
   clear_has_mod_num();
 }
 inline ::google::protobuf::int32 InvalidLeaderPools::mod_num() const {
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.InvalidLeaderPools.mod_num)
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.InvalidLeaderPools.mod_num)
   return mod_num_;
 }
 inline void InvalidLeaderPools::set_mod_num(::google::protobuf::int32 value) {
   set_has_mod_num();
   mod_num_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.InvalidLeaderPools.mod_num)
+  // @@protoc_insertion_point(field_set:shardora.init.protobuf.InvalidLeaderPools.mod_num)
 }
 
 // optional uint32 leader_idx = 5;
@@ -1120,13 +1120,13 @@ inline void InvalidLeaderPools::clear_leader_idx() {
   clear_has_leader_idx();
 }
 inline ::google::protobuf::uint32 InvalidLeaderPools::leader_idx() const {
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.InvalidLeaderPools.leader_idx)
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.InvalidLeaderPools.leader_idx)
   return leader_idx_;
 }
 inline void InvalidLeaderPools::set_leader_idx(::google::protobuf::uint32 value) {
   set_has_leader_idx();
   leader_idx_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.InvalidLeaderPools.leader_idx)
+  // @@protoc_insertion_point(field_set:shardora.init.protobuf.InvalidLeaderPools.leader_idx)
 }
 
 // optional uint32 version = 6;
@@ -1144,13 +1144,13 @@ inline void InvalidLeaderPools::clear_version() {
   clear_has_version();
 }
 inline ::google::protobuf::uint32 InvalidLeaderPools::version() const {
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.InvalidLeaderPools.version)
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.InvalidLeaderPools.version)
   return version_;
 }
 inline void InvalidLeaderPools::set_version(::google::protobuf::uint32 value) {
   set_has_version();
   version_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.InvalidLeaderPools.version)
+  // @@protoc_insertion_point(field_set:shardora.init.protobuf.InvalidLeaderPools.version)
 }
 
 // -------------------------------------------------------------------
@@ -1172,13 +1172,13 @@ inline void GenesisInitBlsInfo::clear_height() {
   clear_has_height();
 }
 inline ::google::protobuf::uint64 GenesisInitBlsInfo::height() const {
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.GenesisInitBlsInfo.height)
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.GenesisInitBlsInfo.height)
   return height_;
 }
 inline void GenesisInitBlsInfo::set_height(::google::protobuf::uint64 value) {
   set_has_height();
   height_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.GenesisInitBlsInfo.height)
+  // @@protoc_insertion_point(field_set:shardora.init.protobuf.GenesisInitBlsInfo.height)
 }
 
 // optional uint32 shard_id = 2;
@@ -1196,13 +1196,13 @@ inline void GenesisInitBlsInfo::clear_shard_id() {
   clear_has_shard_id();
 }
 inline ::google::protobuf::uint32 GenesisInitBlsInfo::shard_id() const {
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.GenesisInitBlsInfo.shard_id)
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.GenesisInitBlsInfo.shard_id)
   return shard_id_;
 }
 inline void GenesisInitBlsInfo::set_shard_id(::google::protobuf::uint32 value) {
   set_has_shard_id();
   shard_id_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.GenesisInitBlsInfo.shard_id)
+  // @@protoc_insertion_point(field_set:shardora.init.protobuf.GenesisInitBlsInfo.shard_id)
 }
 
 // optional bytes id = 3;
@@ -1220,41 +1220,41 @@ inline void GenesisInitBlsInfo::clear_id() {
   clear_has_id();
 }
 inline const ::std::string& GenesisInitBlsInfo::id() const {
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.GenesisInitBlsInfo.id)
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.GenesisInitBlsInfo.id)
   return id_.GetNoArena();
 }
 inline void GenesisInitBlsInfo::set_id(const ::std::string& value) {
   set_has_id();
   id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.GenesisInitBlsInfo.id)
+  // @@protoc_insertion_point(field_set:shardora.init.protobuf.GenesisInitBlsInfo.id)
 }
 #if LANG_CXX11
 inline void GenesisInitBlsInfo::set_id(::std::string&& value) {
   set_has_id();
   id_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.init.protobuf.GenesisInitBlsInfo.id)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.init.protobuf.GenesisInitBlsInfo.id)
 }
 #endif
 inline void GenesisInitBlsInfo::set_id(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_id();
   id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.init.protobuf.GenesisInitBlsInfo.id)
+  // @@protoc_insertion_point(field_set_char:shardora.init.protobuf.GenesisInitBlsInfo.id)
 }
 inline void GenesisInitBlsInfo::set_id(const void* value, size_t size) {
   set_has_id();
   id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.init.protobuf.GenesisInitBlsInfo.id)
+  // @@protoc_insertion_point(field_set_pointer:shardora.init.protobuf.GenesisInitBlsInfo.id)
 }
 inline ::std::string* GenesisInitBlsInfo::mutable_id() {
   set_has_id();
-  // @@protoc_insertion_point(field_mutable:zjchain.init.protobuf.GenesisInitBlsInfo.id)
+  // @@protoc_insertion_point(field_mutable:shardora.init.protobuf.GenesisInitBlsInfo.id)
   return id_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* GenesisInitBlsInfo::release_id() {
-  // @@protoc_insertion_point(field_release:zjchain.init.protobuf.GenesisInitBlsInfo.id)
+  // @@protoc_insertion_point(field_release:shardora.init.protobuf.GenesisInitBlsInfo.id)
   if (!has_id()) {
     return NULL;
   }
@@ -1268,7 +1268,7 @@ inline void GenesisInitBlsInfo::set_allocated_id(::std::string* id) {
     clear_has_id();
   }
   id_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), id);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.GenesisInitBlsInfo.id)
+  // @@protoc_insertion_point(field_set_allocated:shardora.init.protobuf.GenesisInitBlsInfo.id)
 }
 
 // optional bytes bls_enc_data = 4;
@@ -1286,41 +1286,41 @@ inline void GenesisInitBlsInfo::clear_bls_enc_data() {
   clear_has_bls_enc_data();
 }
 inline const ::std::string& GenesisInitBlsInfo::bls_enc_data() const {
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
   return bls_enc_data_.GetNoArena();
 }
 inline void GenesisInitBlsInfo::set_bls_enc_data(const ::std::string& value) {
   set_has_bls_enc_data();
   bls_enc_data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
+  // @@protoc_insertion_point(field_set:shardora.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
 }
 #if LANG_CXX11
 inline void GenesisInitBlsInfo::set_bls_enc_data(::std::string&& value) {
   set_has_bls_enc_data();
   bls_enc_data_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
 }
 #endif
 inline void GenesisInitBlsInfo::set_bls_enc_data(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_bls_enc_data();
   bls_enc_data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
+  // @@protoc_insertion_point(field_set_char:shardora.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
 }
 inline void GenesisInitBlsInfo::set_bls_enc_data(const void* value, size_t size) {
   set_has_bls_enc_data();
   bls_enc_data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
+  // @@protoc_insertion_point(field_set_pointer:shardora.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
 }
 inline ::std::string* GenesisInitBlsInfo::mutable_bls_enc_data() {
   set_has_bls_enc_data();
-  // @@protoc_insertion_point(field_mutable:zjchain.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
+  // @@protoc_insertion_point(field_mutable:shardora.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
   return bls_enc_data_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* GenesisInitBlsInfo::release_bls_enc_data() {
-  // @@protoc_insertion_point(field_release:zjchain.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
+  // @@protoc_insertion_point(field_release:shardora.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
   if (!has_bls_enc_data()) {
     return NULL;
   }
@@ -1334,7 +1334,7 @@ inline void GenesisInitBlsInfo::set_allocated_bls_enc_data(::std::string* bls_en
     clear_has_bls_enc_data();
   }
   bls_enc_data_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), bls_enc_data);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
+  // @@protoc_insertion_point(field_set_allocated:shardora.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
 }
 
 // optional bytes bls_hash = 5;
@@ -1352,41 +1352,41 @@ inline void GenesisInitBlsInfo::clear_bls_hash() {
   clear_has_bls_hash();
 }
 inline const ::std::string& GenesisInitBlsInfo::bls_hash() const {
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.GenesisInitBlsInfo.bls_hash)
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.GenesisInitBlsInfo.bls_hash)
   return bls_hash_.GetNoArena();
 }
 inline void GenesisInitBlsInfo::set_bls_hash(const ::std::string& value) {
   set_has_bls_hash();
   bls_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.GenesisInitBlsInfo.bls_hash)
+  // @@protoc_insertion_point(field_set:shardora.init.protobuf.GenesisInitBlsInfo.bls_hash)
 }
 #if LANG_CXX11
 inline void GenesisInitBlsInfo::set_bls_hash(::std::string&& value) {
   set_has_bls_hash();
   bls_hash_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.init.protobuf.GenesisInitBlsInfo.bls_hash)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.init.protobuf.GenesisInitBlsInfo.bls_hash)
 }
 #endif
 inline void GenesisInitBlsInfo::set_bls_hash(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_bls_hash();
   bls_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.init.protobuf.GenesisInitBlsInfo.bls_hash)
+  // @@protoc_insertion_point(field_set_char:shardora.init.protobuf.GenesisInitBlsInfo.bls_hash)
 }
 inline void GenesisInitBlsInfo::set_bls_hash(const void* value, size_t size) {
   set_has_bls_hash();
   bls_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.init.protobuf.GenesisInitBlsInfo.bls_hash)
+  // @@protoc_insertion_point(field_set_pointer:shardora.init.protobuf.GenesisInitBlsInfo.bls_hash)
 }
 inline ::std::string* GenesisInitBlsInfo::mutable_bls_hash() {
   set_has_bls_hash();
-  // @@protoc_insertion_point(field_mutable:zjchain.init.protobuf.GenesisInitBlsInfo.bls_hash)
+  // @@protoc_insertion_point(field_mutable:shardora.init.protobuf.GenesisInitBlsInfo.bls_hash)
   return bls_hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* GenesisInitBlsInfo::release_bls_hash() {
-  // @@protoc_insertion_point(field_release:zjchain.init.protobuf.GenesisInitBlsInfo.bls_hash)
+  // @@protoc_insertion_point(field_release:shardora.init.protobuf.GenesisInitBlsInfo.bls_hash)
   if (!has_bls_hash()) {
     return NULL;
   }
@@ -1400,10 +1400,10 @@ inline void GenesisInitBlsInfo::set_allocated_bls_hash(::std::string* bls_hash) 
     clear_has_bls_hash();
   }
   bls_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), bls_hash);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.GenesisInitBlsInfo.bls_hash)
+  // @@protoc_insertion_point(field_set_allocated:shardora.init.protobuf.GenesisInitBlsInfo.bls_hash)
 }
 
-// optional .zjchain.bls.protobuf.JoinElectInfo join_info = 6;
+// optional .shardora.bls.protobuf.JoinElectInfo join_info = 6;
 inline bool GenesisInitBlsInfo::has_join_info() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -1413,32 +1413,32 @@ inline void GenesisInitBlsInfo::set_has_join_info() {
 inline void GenesisInitBlsInfo::clear_has_join_info() {
   _has_bits_[0] &= ~0x00000010u;
 }
-inline const ::zjchain::bls::protobuf::JoinElectInfo& GenesisInitBlsInfo::_internal_join_info() const {
+inline const ::shardora::bls::protobuf::JoinElectInfo& GenesisInitBlsInfo::_internal_join_info() const {
   return *join_info_;
 }
-inline const ::zjchain::bls::protobuf::JoinElectInfo& GenesisInitBlsInfo::join_info() const {
-  const ::zjchain::bls::protobuf::JoinElectInfo* p = join_info_;
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.GenesisInitBlsInfo.join_info)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::bls::protobuf::JoinElectInfo*>(
-      &::zjchain::bls::protobuf::_JoinElectInfo_default_instance_);
+inline const ::shardora::bls::protobuf::JoinElectInfo& GenesisInitBlsInfo::join_info() const {
+  const ::shardora::bls::protobuf::JoinElectInfo* p = join_info_;
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.GenesisInitBlsInfo.join_info)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::bls::protobuf::JoinElectInfo*>(
+      &::shardora::bls::protobuf::_JoinElectInfo_default_instance_);
 }
-inline ::zjchain::bls::protobuf::JoinElectInfo* GenesisInitBlsInfo::release_join_info() {
-  // @@protoc_insertion_point(field_release:zjchain.init.protobuf.GenesisInitBlsInfo.join_info)
+inline ::shardora::bls::protobuf::JoinElectInfo* GenesisInitBlsInfo::release_join_info() {
+  // @@protoc_insertion_point(field_release:shardora.init.protobuf.GenesisInitBlsInfo.join_info)
   clear_has_join_info();
-  ::zjchain::bls::protobuf::JoinElectInfo* temp = join_info_;
+  ::shardora::bls::protobuf::JoinElectInfo* temp = join_info_;
   join_info_ = NULL;
   return temp;
 }
-inline ::zjchain::bls::protobuf::JoinElectInfo* GenesisInitBlsInfo::mutable_join_info() {
+inline ::shardora::bls::protobuf::JoinElectInfo* GenesisInitBlsInfo::mutable_join_info() {
   set_has_join_info();
   if (join_info_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::bls::protobuf::JoinElectInfo>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::bls::protobuf::JoinElectInfo>(GetArenaNoVirtual());
     join_info_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.init.protobuf.GenesisInitBlsInfo.join_info)
+  // @@protoc_insertion_point(field_mutable:shardora.init.protobuf.GenesisInitBlsInfo.join_info)
   return join_info_;
 }
-inline void GenesisInitBlsInfo::set_allocated_join_info(::zjchain::bls::protobuf::JoinElectInfo* join_info) {
+inline void GenesisInitBlsInfo::set_allocated_join_info(::shardora::bls::protobuf::JoinElectInfo* join_info) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete reinterpret_cast< ::google::protobuf::MessageLite*>(join_info_);
@@ -1454,10 +1454,10 @@ inline void GenesisInitBlsInfo::set_allocated_join_info(::zjchain::bls::protobuf
     clear_has_join_info();
   }
   join_info_ = join_info;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.GenesisInitBlsInfo.join_info)
+  // @@protoc_insertion_point(field_set_allocated:shardora.init.protobuf.GenesisInitBlsInfo.join_info)
 }
 
-// optional .zjchain.bls.protobuf.LocalPolynomial local_poly = 7;
+// optional .shardora.bls.protobuf.LocalPolynomial local_poly = 7;
 inline bool GenesisInitBlsInfo::has_local_poly() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
@@ -1467,32 +1467,32 @@ inline void GenesisInitBlsInfo::set_has_local_poly() {
 inline void GenesisInitBlsInfo::clear_has_local_poly() {
   _has_bits_[0] &= ~0x00000020u;
 }
-inline const ::zjchain::bls::protobuf::LocalPolynomial& GenesisInitBlsInfo::_internal_local_poly() const {
+inline const ::shardora::bls::protobuf::LocalPolynomial& GenesisInitBlsInfo::_internal_local_poly() const {
   return *local_poly_;
 }
-inline const ::zjchain::bls::protobuf::LocalPolynomial& GenesisInitBlsInfo::local_poly() const {
-  const ::zjchain::bls::protobuf::LocalPolynomial* p = local_poly_;
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.GenesisInitBlsInfo.local_poly)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::bls::protobuf::LocalPolynomial*>(
-      &::zjchain::bls::protobuf::_LocalPolynomial_default_instance_);
+inline const ::shardora::bls::protobuf::LocalPolynomial& GenesisInitBlsInfo::local_poly() const {
+  const ::shardora::bls::protobuf::LocalPolynomial* p = local_poly_;
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.GenesisInitBlsInfo.local_poly)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::bls::protobuf::LocalPolynomial*>(
+      &::shardora::bls::protobuf::_LocalPolynomial_default_instance_);
 }
-inline ::zjchain::bls::protobuf::LocalPolynomial* GenesisInitBlsInfo::release_local_poly() {
-  // @@protoc_insertion_point(field_release:zjchain.init.protobuf.GenesisInitBlsInfo.local_poly)
+inline ::shardora::bls::protobuf::LocalPolynomial* GenesisInitBlsInfo::release_local_poly() {
+  // @@protoc_insertion_point(field_release:shardora.init.protobuf.GenesisInitBlsInfo.local_poly)
   clear_has_local_poly();
-  ::zjchain::bls::protobuf::LocalPolynomial* temp = local_poly_;
+  ::shardora::bls::protobuf::LocalPolynomial* temp = local_poly_;
   local_poly_ = NULL;
   return temp;
 }
-inline ::zjchain::bls::protobuf::LocalPolynomial* GenesisInitBlsInfo::mutable_local_poly() {
+inline ::shardora::bls::protobuf::LocalPolynomial* GenesisInitBlsInfo::mutable_local_poly() {
   set_has_local_poly();
   if (local_poly_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::bls::protobuf::LocalPolynomial>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::bls::protobuf::LocalPolynomial>(GetArenaNoVirtual());
     local_poly_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.init.protobuf.GenesisInitBlsInfo.local_poly)
+  // @@protoc_insertion_point(field_mutable:shardora.init.protobuf.GenesisInitBlsInfo.local_poly)
   return local_poly_;
 }
-inline void GenesisInitBlsInfo::set_allocated_local_poly(::zjchain::bls::protobuf::LocalPolynomial* local_poly) {
+inline void GenesisInitBlsInfo::set_allocated_local_poly(::shardora::bls::protobuf::LocalPolynomial* local_poly) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete reinterpret_cast< ::google::protobuf::MessageLite*>(local_poly_);
@@ -1508,7 +1508,7 @@ inline void GenesisInitBlsInfo::set_allocated_local_poly(::zjchain::bls::protobu
     clear_has_local_poly();
   }
   local_poly_ = local_poly;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.GenesisInitBlsInfo.local_poly)
+  // @@protoc_insertion_point(field_set_allocated:shardora.init.protobuf.GenesisInitBlsInfo.local_poly)
 }
 
 // optional bytes prikey = 8;
@@ -1526,41 +1526,41 @@ inline void GenesisInitBlsInfo::clear_prikey() {
   clear_has_prikey();
 }
 inline const ::std::string& GenesisInitBlsInfo::prikey() const {
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.GenesisInitBlsInfo.prikey)
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.GenesisInitBlsInfo.prikey)
   return prikey_.GetNoArena();
 }
 inline void GenesisInitBlsInfo::set_prikey(const ::std::string& value) {
   set_has_prikey();
   prikey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.GenesisInitBlsInfo.prikey)
+  // @@protoc_insertion_point(field_set:shardora.init.protobuf.GenesisInitBlsInfo.prikey)
 }
 #if LANG_CXX11
 inline void GenesisInitBlsInfo::set_prikey(::std::string&& value) {
   set_has_prikey();
   prikey_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.init.protobuf.GenesisInitBlsInfo.prikey)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.init.protobuf.GenesisInitBlsInfo.prikey)
 }
 #endif
 inline void GenesisInitBlsInfo::set_prikey(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_prikey();
   prikey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.init.protobuf.GenesisInitBlsInfo.prikey)
+  // @@protoc_insertion_point(field_set_char:shardora.init.protobuf.GenesisInitBlsInfo.prikey)
 }
 inline void GenesisInitBlsInfo::set_prikey(const void* value, size_t size) {
   set_has_prikey();
   prikey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.init.protobuf.GenesisInitBlsInfo.prikey)
+  // @@protoc_insertion_point(field_set_pointer:shardora.init.protobuf.GenesisInitBlsInfo.prikey)
 }
 inline ::std::string* GenesisInitBlsInfo::mutable_prikey() {
   set_has_prikey();
-  // @@protoc_insertion_point(field_mutable:zjchain.init.protobuf.GenesisInitBlsInfo.prikey)
+  // @@protoc_insertion_point(field_mutable:shardora.init.protobuf.GenesisInitBlsInfo.prikey)
   return prikey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* GenesisInitBlsInfo::release_prikey() {
-  // @@protoc_insertion_point(field_release:zjchain.init.protobuf.GenesisInitBlsInfo.prikey)
+  // @@protoc_insertion_point(field_release:shardora.init.protobuf.GenesisInitBlsInfo.prikey)
   if (!has_prikey()) {
     return NULL;
   }
@@ -1574,14 +1574,14 @@ inline void GenesisInitBlsInfo::set_allocated_prikey(::std::string* prikey) {
     clear_has_prikey();
   }
   prikey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), prikey);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.GenesisInitBlsInfo.prikey)
+  // @@protoc_insertion_point(field_set_allocated:shardora.init.protobuf.GenesisInitBlsInfo.prikey)
 }
 
 // -------------------------------------------------------------------
 
 // InitMessage
 
-// optional .zjchain.init.protobuf.GetAddressInfoRequest addr_req = 1;
+// optional .shardora.init.protobuf.GetAddressInfoRequest addr_req = 1;
 inline bool InitMessage::has_addr_req() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -1595,32 +1595,32 @@ inline void InitMessage::clear_addr_req() {
   if (addr_req_ != NULL) addr_req_->Clear();
   clear_has_addr_req();
 }
-inline const ::zjchain::init::protobuf::GetAddressInfoRequest& InitMessage::_internal_addr_req() const {
+inline const ::shardora::init::protobuf::GetAddressInfoRequest& InitMessage::_internal_addr_req() const {
   return *addr_req_;
 }
-inline const ::zjchain::init::protobuf::GetAddressInfoRequest& InitMessage::addr_req() const {
-  const ::zjchain::init::protobuf::GetAddressInfoRequest* p = addr_req_;
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.InitMessage.addr_req)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::init::protobuf::GetAddressInfoRequest*>(
-      &::zjchain::init::protobuf::_GetAddressInfoRequest_default_instance_);
+inline const ::shardora::init::protobuf::GetAddressInfoRequest& InitMessage::addr_req() const {
+  const ::shardora::init::protobuf::GetAddressInfoRequest* p = addr_req_;
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.InitMessage.addr_req)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::init::protobuf::GetAddressInfoRequest*>(
+      &::shardora::init::protobuf::_GetAddressInfoRequest_default_instance_);
 }
-inline ::zjchain::init::protobuf::GetAddressInfoRequest* InitMessage::release_addr_req() {
-  // @@protoc_insertion_point(field_release:zjchain.init.protobuf.InitMessage.addr_req)
+inline ::shardora::init::protobuf::GetAddressInfoRequest* InitMessage::release_addr_req() {
+  // @@protoc_insertion_point(field_release:shardora.init.protobuf.InitMessage.addr_req)
   clear_has_addr_req();
-  ::zjchain::init::protobuf::GetAddressInfoRequest* temp = addr_req_;
+  ::shardora::init::protobuf::GetAddressInfoRequest* temp = addr_req_;
   addr_req_ = NULL;
   return temp;
 }
-inline ::zjchain::init::protobuf::GetAddressInfoRequest* InitMessage::mutable_addr_req() {
+inline ::shardora::init::protobuf::GetAddressInfoRequest* InitMessage::mutable_addr_req() {
   set_has_addr_req();
   if (addr_req_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::init::protobuf::GetAddressInfoRequest>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::init::protobuf::GetAddressInfoRequest>(GetArenaNoVirtual());
     addr_req_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.init.protobuf.InitMessage.addr_req)
+  // @@protoc_insertion_point(field_mutable:shardora.init.protobuf.InitMessage.addr_req)
   return addr_req_;
 }
-inline void InitMessage::set_allocated_addr_req(::zjchain::init::protobuf::GetAddressInfoRequest* addr_req) {
+inline void InitMessage::set_allocated_addr_req(::shardora::init::protobuf::GetAddressInfoRequest* addr_req) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete addr_req_;
@@ -1636,10 +1636,10 @@ inline void InitMessage::set_allocated_addr_req(::zjchain::init::protobuf::GetAd
     clear_has_addr_req();
   }
   addr_req_ = addr_req;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.InitMessage.addr_req)
+  // @@protoc_insertion_point(field_set_allocated:shardora.init.protobuf.InitMessage.addr_req)
 }
 
-// optional .zjchain.init.protobuf.GetAddressInfoResponse addr_res = 2;
+// optional .shardora.init.protobuf.GetAddressInfoResponse addr_res = 2;
 inline bool InitMessage::has_addr_res() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -1653,32 +1653,32 @@ inline void InitMessage::clear_addr_res() {
   if (addr_res_ != NULL) addr_res_->Clear();
   clear_has_addr_res();
 }
-inline const ::zjchain::init::protobuf::GetAddressInfoResponse& InitMessage::_internal_addr_res() const {
+inline const ::shardora::init::protobuf::GetAddressInfoResponse& InitMessage::_internal_addr_res() const {
   return *addr_res_;
 }
-inline const ::zjchain::init::protobuf::GetAddressInfoResponse& InitMessage::addr_res() const {
-  const ::zjchain::init::protobuf::GetAddressInfoResponse* p = addr_res_;
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.InitMessage.addr_res)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::init::protobuf::GetAddressInfoResponse*>(
-      &::zjchain::init::protobuf::_GetAddressInfoResponse_default_instance_);
+inline const ::shardora::init::protobuf::GetAddressInfoResponse& InitMessage::addr_res() const {
+  const ::shardora::init::protobuf::GetAddressInfoResponse* p = addr_res_;
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.InitMessage.addr_res)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::init::protobuf::GetAddressInfoResponse*>(
+      &::shardora::init::protobuf::_GetAddressInfoResponse_default_instance_);
 }
-inline ::zjchain::init::protobuf::GetAddressInfoResponse* InitMessage::release_addr_res() {
-  // @@protoc_insertion_point(field_release:zjchain.init.protobuf.InitMessage.addr_res)
+inline ::shardora::init::protobuf::GetAddressInfoResponse* InitMessage::release_addr_res() {
+  // @@protoc_insertion_point(field_release:shardora.init.protobuf.InitMessage.addr_res)
   clear_has_addr_res();
-  ::zjchain::init::protobuf::GetAddressInfoResponse* temp = addr_res_;
+  ::shardora::init::protobuf::GetAddressInfoResponse* temp = addr_res_;
   addr_res_ = NULL;
   return temp;
 }
-inline ::zjchain::init::protobuf::GetAddressInfoResponse* InitMessage::mutable_addr_res() {
+inline ::shardora::init::protobuf::GetAddressInfoResponse* InitMessage::mutable_addr_res() {
   set_has_addr_res();
   if (addr_res_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::init::protobuf::GetAddressInfoResponse>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::init::protobuf::GetAddressInfoResponse>(GetArenaNoVirtual());
     addr_res_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.init.protobuf.InitMessage.addr_res)
+  // @@protoc_insertion_point(field_mutable:shardora.init.protobuf.InitMessage.addr_res)
   return addr_res_;
 }
-inline void InitMessage::set_allocated_addr_res(::zjchain::init::protobuf::GetAddressInfoResponse* addr_res) {
+inline void InitMessage::set_allocated_addr_res(::shardora::init::protobuf::GetAddressInfoResponse* addr_res) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete addr_res_;
@@ -1694,10 +1694,10 @@ inline void InitMessage::set_allocated_addr_res(::zjchain::init::protobuf::GetAd
     clear_has_addr_res();
   }
   addr_res_ = addr_res;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.InitMessage.addr_res)
+  // @@protoc_insertion_point(field_set_allocated:shardora.init.protobuf.InitMessage.addr_res)
 }
 
-// optional .zjchain.init.protobuf.InvalidLeaderPools pools = 3;
+// optional .shardora.init.protobuf.InvalidLeaderPools pools = 3;
 inline bool InitMessage::has_pools() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -1711,32 +1711,32 @@ inline void InitMessage::clear_pools() {
   if (pools_ != NULL) pools_->Clear();
   clear_has_pools();
 }
-inline const ::zjchain::init::protobuf::InvalidLeaderPools& InitMessage::_internal_pools() const {
+inline const ::shardora::init::protobuf::InvalidLeaderPools& InitMessage::_internal_pools() const {
   return *pools_;
 }
-inline const ::zjchain::init::protobuf::InvalidLeaderPools& InitMessage::pools() const {
-  const ::zjchain::init::protobuf::InvalidLeaderPools* p = pools_;
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.InitMessage.pools)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::init::protobuf::InvalidLeaderPools*>(
-      &::zjchain::init::protobuf::_InvalidLeaderPools_default_instance_);
+inline const ::shardora::init::protobuf::InvalidLeaderPools& InitMessage::pools() const {
+  const ::shardora::init::protobuf::InvalidLeaderPools* p = pools_;
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.InitMessage.pools)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::init::protobuf::InvalidLeaderPools*>(
+      &::shardora::init::protobuf::_InvalidLeaderPools_default_instance_);
 }
-inline ::zjchain::init::protobuf::InvalidLeaderPools* InitMessage::release_pools() {
-  // @@protoc_insertion_point(field_release:zjchain.init.protobuf.InitMessage.pools)
+inline ::shardora::init::protobuf::InvalidLeaderPools* InitMessage::release_pools() {
+  // @@protoc_insertion_point(field_release:shardora.init.protobuf.InitMessage.pools)
   clear_has_pools();
-  ::zjchain::init::protobuf::InvalidLeaderPools* temp = pools_;
+  ::shardora::init::protobuf::InvalidLeaderPools* temp = pools_;
   pools_ = NULL;
   return temp;
 }
-inline ::zjchain::init::protobuf::InvalidLeaderPools* InitMessage::mutable_pools() {
+inline ::shardora::init::protobuf::InvalidLeaderPools* InitMessage::mutable_pools() {
   set_has_pools();
   if (pools_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::init::protobuf::InvalidLeaderPools>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::init::protobuf::InvalidLeaderPools>(GetArenaNoVirtual());
     pools_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.init.protobuf.InitMessage.pools)
+  // @@protoc_insertion_point(field_mutable:shardora.init.protobuf.InitMessage.pools)
   return pools_;
 }
-inline void InitMessage::set_allocated_pools(::zjchain::init::protobuf::InvalidLeaderPools* pools) {
+inline void InitMessage::set_allocated_pools(::shardora::init::protobuf::InvalidLeaderPools* pools) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete pools_;
@@ -1752,7 +1752,7 @@ inline void InitMessage::set_allocated_pools(::zjchain::init::protobuf::InvalidL
     clear_has_pools();
   }
   pools_ = pools;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.InitMessage.pools)
+  // @@protoc_insertion_point(field_set_allocated:shardora.init.protobuf.InitMessage.pools)
 }
 
 #ifdef __GNUC__
