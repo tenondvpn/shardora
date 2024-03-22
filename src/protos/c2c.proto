@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package zjchain.c2c.protobuf;
+package shardora.c2c.protobuf;
 
 enum Status {
     kDefault = 0;

@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package zjchain.zbft.protobuf;
+package shardora.zbft.protobuf;
 import "protos/block.proto";
 import "protos/pools.proto";
 

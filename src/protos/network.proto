@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package zjchain.network.protobuf;
+package shardora.network.protobuf;
 
 message GetNetworkNodesRequest {
     optional uint32 net_id = 1;

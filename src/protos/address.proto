@@ -1,7 +1,7 @@
 syntax = "proto2";
 
 import "protos/bls.proto";
-package zjchain.address.protobuf;
+package shardora.address.protobuf;
 
 enum AddressType {
     kNormal = 0;

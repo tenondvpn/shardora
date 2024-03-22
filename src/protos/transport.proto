@@ -12,7 +12,7 @@ import "protos/sync.proto";
 import "protos/vss.proto";
 import "protos/init.proto";
 import "protos/c2c.proto";
-package zjchain.transport.protobuf;
+package shardora.transport.protobuf;
 
 message BroadcastParam {
     optional uint32 type = 1;
