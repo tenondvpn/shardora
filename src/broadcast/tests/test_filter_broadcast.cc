@@ -22,7 +22,7 @@ static transport::MultiThreadHandler msg_handler_;
 class TestFilterBroadcast : public testing::Test {
 public:
     static void SetUpTestCase() {    
-        zjchain::transport::TcpTransport::Instance()->Init(
+        shardora::transport::TcpTransport::Instance()->Init(
             "127.0.0.1:8990",
             128,
             true,

@@ -8,7 +8,7 @@
 
 std::condition_variable cond;
 std::mutex con_m;
-zjchain::ws::WebSocketServer ws_server_;
+shardora::ws::WebSocketServer ws_server_;
 typedef websocketpp::client<websocketpp::config::asio_client> client;
 client c;
 void run_cb() {
