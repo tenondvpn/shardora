@@ -93,14 +93,12 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::zbft::protobuf::TxBft, block_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::zbft::protobuf::TxBft, prepare_final_hash_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::zbft::protobuf::TxBft, height_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::zbft::protobuf::TxBft, tx_hash_list_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::zbft::protobuf::TxBft, tx_type_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::zbft::protobuf::TxBft, time_stamp_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::zbft::protobuf::TxBft, txs_),
   1,
   0,
   2,
-  ~0u,
   4,
   3,
   ~0u,
@@ -155,8 +153,8 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 12, sizeof(::shardora::zbft::protobuf::TxBft)},
-  { 19, 46, sizeof(::shardora::zbft::protobuf::ZbftMessage)},
+  { 0, 11, sizeof(::shardora::zbft::protobuf::TxBft)},
+  { 17, 44, sizeof(::shardora::zbft::protobuf::ZbftMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -187,30 +185,29 @@ void AddDescriptorsImpl() {
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
       "\n\021protos/zbft.proto\022\026shardora.zbft.proto"
       "buf\032\022protos/block.proto\032\022protos/pools.pr"
-      "oto\"\376\001\n\005TxBft\022-\n\005block\030\001 \001(\0132\036.shardora."
+      "oto\"\350\001\n\005TxBft\022-\n\005block\030\001 \001(\0132\036.shardora."
       "block.protobuf.Block\022\032\n\022prepare_final_ha"
-      "sh\030\002 \001(\014\022\016\n\006height\030\003 \001(\004\022\024\n\014tx_hash_list"
-      "\030\004 \003(\014\022\?\n\007tx_type\030\005 \001(\0162!.shardora.pools"
-      ".protobuf.StepType:\013kNormalFrom\022\022\n\ntime_"
-      "stamp\030\006 \001(\004\022/\n\003txs\030\007 \003(\0132\".shardora.pool"
-      "s.protobuf.TxMessage\"\253\004\n\013ZbftMessage\022\023\n\013"
-      "prepare_gid\030\001 \001(\014\022\025\n\rprecommit_gid\030\002 \001(\014"
-      "\022\022\n\ncommit_gid\030\003 \001(\014\022\026\n\nleader_idx\030\004 \001(\005"
-      ":\002-1\022\016\n\006net_id\030\005 \001(\r\022\036\n\017agree_precommit\030"
-      "\006 \001(\010:\005false\022\033\n\014agree_commit\030\007 \001(\010:\005fals"
-      "e\022\036\n\npool_index\030\010 \001(\r:\n4294967295\022\r\n\005err"
-      "or\030\t \001(\005\022-\n\006tx_bft\030\n \001(\0132\035.shardora.zbft"
-      ".protobuf.TxBft\022\024\n\014member_index\030\013 \001(\r\022\027\n"
-      "\017backup_enc_data\030\014 \001(\014\022\024\n\014elect_height\030\r"
-      " \001(\004\022\022\n\nbls_sign_x\030\016 \001(\014\022\022\n\nbls_sign_y\030\017"
-      " \001(\014\022\026\n\016prepare_height\030\020 \001(\004\022\024\n\014prepare_"
-      "hash\030\021 \001(\014\022-\n\005block\030\022 \001(\0132\036.shardora.blo"
-      "ck.protobuf.Block\022\022\n\nsync_block\030\023 \001(\010\022\013\n"
-      "\003ips\030\024 \003(\r\022\032\n\022oppose_prepare_gid\030\025 \001(\014\022\022"
-      "\n\ninvaid_txs\030\026 \003(\r"
+      "sh\030\002 \001(\014\022\016\n\006height\030\003 \001(\004\022\?\n\007tx_type\030\004 \001("
+      "\0162!.shardora.pools.protobuf.StepType:\013kN"
+      "ormalFrom\022\022\n\ntime_stamp\030\005 \001(\004\022/\n\003txs\030\006 \003"
+      "(\0132\".shardora.pools.protobuf.TxMessage\"\253"
+      "\004\n\013ZbftMessage\022\023\n\013prepare_gid\030\001 \001(\014\022\025\n\rp"
+      "recommit_gid\030\002 \001(\014\022\022\n\ncommit_gid\030\003 \001(\014\022\026"
+      "\n\nleader_idx\030\004 \001(\005:\002-1\022\016\n\006net_id\030\005 \001(\r\022\036"
+      "\n\017agree_precommit\030\006 \001(\010:\005false\022\033\n\014agree_"
+      "commit\030\007 \001(\010:\005false\022\036\n\npool_index\030\010 \001(\r:"
+      "\n4294967295\022\r\n\005error\030\t \001(\005\022-\n\006tx_bft\030\n \001"
+      "(\0132\035.shardora.zbft.protobuf.TxBft\022\024\n\014mem"
+      "ber_index\030\013 \001(\r\022\027\n\017backup_enc_data\030\014 \001(\014"
+      "\022\024\n\014elect_height\030\r \001(\004\022\022\n\nbls_sign_x\030\016 \001"
+      "(\014\022\022\n\nbls_sign_y\030\017 \001(\014\022\026\n\016prepare_height"
+      "\030\020 \001(\004\022\024\n\014prepare_hash\030\021 \001(\014\022-\n\005block\030\022 "
+      "\001(\0132\036.shardora.block.protobuf.Block\022\022\n\ns"
+      "ync_block\030\023 \001(\010\022\013\n\003ips\030\024 \003(\r\022\032\n\022oppose_p"
+      "repare_gid\030\025 \001(\014\022\022\n\ninvaid_txs\030\026 \003(\r"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 898);
+      descriptor, 876);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/zbft.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fblock_2eproto::AddDescriptors();
@@ -249,7 +246,6 @@ void TxBft::clear_txs() {
 const int TxBft::kBlockFieldNumber;
 const int TxBft::kPrepareFinalHashFieldNumber;
 const int TxBft::kHeightFieldNumber;
-const int TxBft::kTxHashListFieldNumber;
 const int TxBft::kTxTypeFieldNumber;
 const int TxBft::kTimeStampFieldNumber;
 const int TxBft::kTxsFieldNumber;
@@ -266,7 +262,6 @@ TxBft::TxBft(const TxBft& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_),
-      tx_hash_list_(from.tx_hash_list_),
       txs_(from.txs_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   prepare_final_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -321,7 +316,6 @@ void TxBft::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  tx_hash_list_.Clear();
   txs_.Clear();
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 3u) {
@@ -390,22 +384,10 @@ bool TxBft::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated bytes tx_hash_list = 4;
+      // optional .shardora.pools.protobuf.StepType tx_type = 4 [default = kNormalFrom];
       case 4: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(34u /* 34 & 0xFF */)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->add_tx_hash_list()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // optional .shardora.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
-      case 5: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(40u /* 40 & 0xFF */)) {
+            static_cast< ::google::protobuf::uint8>(32u /* 32 & 0xFF */)) {
           int value;
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
@@ -414,7 +396,7 @@ bool TxBft::MergePartialFromCodedStream(
             set_tx_type(static_cast< ::shardora::pools::protobuf::StepType >(value));
           } else {
             mutable_unknown_fields()->AddVarint(
-                5, static_cast< ::google::protobuf::uint64>(value));
+                4, static_cast< ::google::protobuf::uint64>(value));
           }
         } else {
           goto handle_unusual;
@@ -422,10 +404,10 @@ bool TxBft::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint64 time_stamp = 6;
-      case 6: {
+      // optional uint64 time_stamp = 5;
+      case 5: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
+            static_cast< ::google::protobuf::uint8>(40u /* 40 & 0xFF */)) {
           set_has_time_stamp();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
@@ -436,10 +418,10 @@ bool TxBft::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated .shardora.pools.protobuf.TxMessage txs = 7;
-      case 7: {
+      // repeated .shardora.pools.protobuf.TxMessage txs = 6;
+      case 6: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(58u /* 58 & 0xFF */)) {
+            static_cast< ::google::protobuf::uint8>(50u /* 50 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
                 input, add_txs()));
         } else {
@@ -492,28 +474,22 @@ void TxBft::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(3, this->height(), output);
   }
 
-  // repeated bytes tx_hash_list = 4;
-  for (int i = 0, n = this->tx_hash_list_size(); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteBytes(
-      4, this->tx_hash_list(i), output);
-  }
-
-  // optional .shardora.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
+  // optional .shardora.pools.protobuf.StepType tx_type = 4 [default = kNormalFrom];
   if (cached_has_bits & 0x00000010u) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
-      5, this->tx_type(), output);
+      4, this->tx_type(), output);
   }
 
-  // optional uint64 time_stamp = 6;
+  // optional uint64 time_stamp = 5;
   if (cached_has_bits & 0x00000008u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt64(6, this->time_stamp(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(5, this->time_stamp(), output);
   }
 
-  // repeated .shardora.pools.protobuf.TxMessage txs = 7;
+  // repeated .shardora.pools.protobuf.TxMessage txs = 6;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->txs_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      7,
+      6,
       this->txs(static_cast<int>(i)),
       output);
   }
@@ -552,29 +528,23 @@ void TxBft::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(3, this->height(), target);
   }
 
-  // repeated bytes tx_hash_list = 4;
-  for (int i = 0, n = this->tx_hash_list_size(); i < n; i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteBytesToArray(4, this->tx_hash_list(i), target);
-  }
-
-  // optional .shardora.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
+  // optional .shardora.pools.protobuf.StepType tx_type = 4 [default = kNormalFrom];
   if (cached_has_bits & 0x00000010u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      5, this->tx_type(), target);
+      4, this->tx_type(), target);
   }
 
-  // optional uint64 time_stamp = 6;
+  // optional uint64 time_stamp = 5;
   if (cached_has_bits & 0x00000008u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(6, this->time_stamp(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(5, this->time_stamp(), target);
   }
 
-  // repeated .shardora.pools.protobuf.TxMessage txs = 7;
+  // repeated .shardora.pools.protobuf.TxMessage txs = 6;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->txs_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        7, this->txs(static_cast<int>(i)), deterministic, target);
+        6, this->txs(static_cast<int>(i)), deterministic, target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -594,15 +564,7 @@ size_t TxBft::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  // repeated bytes tx_hash_list = 4;
-  total_size += 1 *
-      ::google::protobuf::internal::FromIntSize(this->tx_hash_list_size());
-  for (int i = 0, n = this->tx_hash_list_size(); i < n; i++) {
-    total_size += ::google::protobuf::internal::WireFormatLite::BytesSize(
-      this->tx_hash_list(i));
-  }
-
-  // repeated .shardora.pools.protobuf.TxMessage txs = 7;
+  // repeated .shardora.pools.protobuf.TxMessage txs = 6;
   {
     unsigned int count = static_cast<unsigned int>(this->txs_size());
     total_size += 1UL * count;
@@ -635,14 +597,14 @@ size_t TxBft::ByteSizeLong() const {
           this->height());
     }
 
-    // optional uint64 time_stamp = 6;
+    // optional uint64 time_stamp = 5;
     if (has_time_stamp()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt64Size(
           this->time_stamp());
     }
 
-    // optional .shardora.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
+    // optional .shardora.pools.protobuf.StepType tx_type = 4 [default = kNormalFrom];
     if (has_tx_type()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->tx_type());
@@ -676,7 +638,6 @@ void TxBft::MergeFrom(const TxBft& from) {
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  tx_hash_list_.MergeFrom(from.tx_hash_list_);
   txs_.MergeFrom(from.txs_);
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 31u) {
@@ -724,7 +685,6 @@ void TxBft::Swap(TxBft* other) {
 }
 void TxBft::InternalSwap(TxBft* other) {
   using std::swap;
-  tx_hash_list_.InternalSwap(CastToBase(&other->tx_hash_list_));
   CastToBase(&txs_)->InternalSwap(CastToBase(&other->txs_));
   prepare_final_hash_.Swap(&other->prepare_final_hash_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
