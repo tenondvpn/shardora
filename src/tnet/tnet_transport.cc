@@ -189,7 +189,7 @@ bool TnetTransport::Start() {
             this,
             acceptor_event_loop_));
     std::unique_lock<std::mutex> lock(mutex_);
-    con_.wait_for(lock, std::chrono::milliseconds(5000));
+    con_.wait(lock);
 
 //     acceptor_thread_->detach();
     return true;
