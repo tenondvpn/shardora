@@ -65,7 +65,7 @@ public:
         prio_key = std::string((char*)&prio, sizeof(prio)) + gid;
     }
 
-    TxItem(pools::protobuf::TxMessage& tx)
+    TxItem(const pools::protobuf::TxMessage& tx)
             : msg_ptr(nullptr),
             prev_consensus_tm_us(0),
             tx_hash(tx.gid()),
