@@ -44,8 +44,6 @@ public:
     virtual ~TxItem() {}
     TxItem(const pools::protobuf::TxMessage& tx)
             : prev_consensus_tm_us(0),
-            tx_hash(tx.gid()),
-            unnique_tx_hash(tx.txhash()),
             gid(tx.gid()),
             gas_price(tx.gas_price()),
             in_consensus(false),
@@ -82,8 +80,7 @@ uint64_t now_tm = common::TimeUtils::TimestampUs();
     uint64_t time_valid{ 0 };
     const uint64_t& gas_price;
     int32_t step = pools::protobuf::kNormalFrom;
-    const std::string& tx_hash;
-    const std::string& unnique_tx_hash;
+    const std::string unique_tx_hash;
     const std::string& gid;
     std::string prio_key;
     bool in_consensus;

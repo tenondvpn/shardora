@@ -143,8 +143,4 @@ message TxMessage {
     optional bytes contract_code = 12;
     optional bytes contract_input = 13;
     optional bytes contract_from = 14;
-
-    // just local set
-    optional bytes txhash = 15;
-    optional bytes from = 16;
 }

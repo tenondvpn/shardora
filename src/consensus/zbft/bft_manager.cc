@@ -1523,11 +1523,10 @@ ZbftPtr BftManager::CreateBftPtr(
             for (int32_t i = 0; i < bft_msg.tx_bft().txs_size(); ++i) {
                 auto* tmp_bft_msg = msg_ptr->header.mutable_zbft();
                 auto* tx = tmp_bft_msg->mutable_tx_bft()->mutable_txs(i);
-                auto txhash = pools::GetTxMessageHash(bft_msg.tx_bft().txs(i));
-                // TODO: verify signature
-                tx->set_txhash(txhash);
                 auto tx_ptr = std::make_shared<FromTxItem>(*tx, account_mgr_, security_ptr_);
-                txs_ptr->txs[txhash] = tx_ptr;
+                tx_ptr->unique_tx_hash = pools::GetTxMessageHash(bft_msg.tx_bft().txs(i));
+                // TODO: verify signature
+                txs_ptr->txs[tx_ptr->unique_tx_hash] = tx_ptr;
             }
 
             // txs_ptr = txs_pools_->FollowerGetTxs(
