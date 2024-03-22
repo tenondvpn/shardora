@@ -2,6 +2,7 @@
 
 #include "block/account_manager.h"
 #include "consensus/zbft/tx_item_base.h"
+#include "protos/pools.pb.h"
 #include "security/security.h"
 
 namespace shardora {
@@ -11,7 +12,7 @@ namespace consensus {
 class CreateLibrary : public TxItemBase {
 public:
     CreateLibrary(
-        const transport::MessagePtr& msg,
+        const pools::protobuf::TxMessage& msg,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<security::Security>& sec_ptr)
         : TxItemBase(msg, account_mgr, sec_ptr) {}
@@ -26,7 +27,7 @@ public:
         // gas just consume by from
         uint64_t from_balance = 0;
         uint64_t to_balance = 0;
-        auto& from = msg_ptr->address_info->addr();
+        auto& from = address_info->addr();
         int balance_status = GetTempAccountBalance(from, acc_balance_map, &from_balance);
         if (balance_status != kConsensusSuccess) {
             block_tx.set_status(balance_status);

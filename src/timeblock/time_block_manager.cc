@@ -77,7 +77,7 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader, uint32_t pool_ind
             return nullptr;
         }
 
-        auto& tx_info = *tmblock_tx_ptr_->msg_ptr->header.mutable_tx_proto();
+        auto& tx_info = tmblock_tx_ptr_->tx_info;
         char data[16];
         uint64_t* u64_data = (uint64_t*)data;
         uint64_t now_tm_sec = now_tm_us / 1000000lu;
