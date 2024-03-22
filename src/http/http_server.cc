@@ -51,7 +51,7 @@ int32_t HttpServer::Start() {
 
     http_thread_ = new std::thread(std::bind(&HttpServer::RunHttpServer, this));
     std::unique_lock<std::mutex> lock(mutex_);
-    con_.wait_for(lock, std::chrono::milliseconds(1000));
+    con_.wait(lock);
     http_thread_->detach();
     return kHttpSuccess;
 }

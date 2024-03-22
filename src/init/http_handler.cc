@@ -136,6 +136,11 @@ static int CreateTransactionWithAttr(
 
         new_tx->set_contract_prepayment(pepay_val);
     }
+
+    if (key != nullptr && val != nullptr) {
+        ZJC_DEBUG("create transaction key: %s, value: %s", key, val);
+    }
+    
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign = sign_r + sign_s + "0";// http_handler->security_ptr()->GetSign(sign_r, sign_s, sign_v);
     sign[64] = char(sign_v);

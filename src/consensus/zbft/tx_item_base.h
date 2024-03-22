@@ -2,8 +2,9 @@
 
 #include "block/account_manager.h"
 #include "pools/tx_pool.h"
+#include "protos/pools.pb.h"
+#include "protos/prefix_db.h"
 #include "security/security.h"
-#include <protos/pools.pb.h>
 
 namespace shardora {
 
@@ -42,7 +43,8 @@ protected:
         if (tx_info.value().size() > 32) {
             auto hash = common::Hash::keccak256(tx_info.value());
             storage->set_val_hash(hash);
-            db_batch->Put(hash, tx_info.value());
+            auto& db_batch_tmp = *db_batch.get();
+            prefix_db_->SaveTemporaryKv(hash, tx_info.value(), db_batch_tmp);
         } else {
             storage->set_val_hash(tx_info.value());
         }
@@ -121,6 +123,7 @@ protected:
 
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<security::Security> sec_ptr_ = nullptr;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 };
 
 };  // namespace consensus

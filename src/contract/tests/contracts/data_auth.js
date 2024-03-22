@@ -9,7 +9,9 @@ var http = require('http');
 var fs = require('fs');
 
 var self_private_key = null;
+var self_private_key2 = null;
 var self_public_key = null;
+var self_public_keyi2 = null;
 var local_count_shard_id = 3;
 var contract_address = null;
 
@@ -35,9 +37,12 @@ function init_private_key() {
     //const privateKeyBuf = Secp256k1.uint256("373a3165ec09edea6e7a1c8cff21b06f5fb074386ece283927aef730c6d44596", 16)
     //const privateKeyBuf = Secp256k1.uint256("fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971", 16)
     //manager
-    const privateKeyBuf = Secp256k1.uint256("b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708", 16)
+    const privateKeyBuf2 = Secp256k1.uint256("4b07a853acfa8ebd71fd1585dd02289ec983bd125bbb6a5316c8015562a22e82", 16)
+    const privateKeyBuf = Secp256k1.uint256("3701d2b9951b41390aaf198bb3fe096c4c8b5f3697b577fd06c350bbca2dfa5b", 16)
     self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
+    self_private_key2 = Secp256k1.uint256(privateKeyBuf2, 16)
     self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
+    self_public_key2 = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key2)
     var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
     var address = keccak256(pk_bytes).toString('hex')
     console.log("self_account_id: " + address.toString('hex'));
@@ -50,8 +55,8 @@ function init_private_key() {
 function PostCode(data) {
     var post_data = querystring.stringify(data);
     var post_options = {
-        host: '82.156.224.174',
-        port: '8781',
+        host: '127.0.0.1',
+        port: '8301',
         path: '/transaction',
         method: 'POST',
         headers: {
@@ -85,9 +90,85 @@ function GetValidHexString(uint256_bytes) {
     return str_res;
 }
 
-function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract_bytes, input, prepay) {
+function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract_bytes, input, prepay, key, value) {
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var frompk = '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16);
+    const MAX_UINT32 = 0xFFFFFFFF;
+    var amount_buf = new Buffer(8);
+    var big = ~~(amount / MAX_UINT32)
+    var low = (amount % MAX_UINT32) - big
+    amount_buf.writeUInt32LE(big, 4)
+    amount_buf.writeUInt32LE(low, 0)
+
+    var gas_limit_buf = new Buffer(8);
+    var big = ~~(gas_limit / MAX_UINT32)
+    var low = (gas_limit % MAX_UINT32) - big
+    gas_limit_buf.writeUInt32LE(big, 4)
+    gas_limit_buf.writeUInt32LE(low, 0)
+
+    var gas_price_buf = new Buffer(8);
+    var big = ~~(gas_price / MAX_UINT32)
+    var low = (gas_price % MAX_UINT32) - big
+    gas_price_buf.writeUInt32LE(big, 4)
+    gas_price_buf.writeUInt32LE(low, 0)
+
+    var step_buf = new Buffer(8);
+    var big = ~~(tx_type / MAX_UINT32)
+    var low = (tx_type % MAX_UINT32) - big
+    step_buf.writeUInt32LE(big, 0)
+    step_buf.writeUInt32LE(low, 0)
+
+    var prepay_buf = new Buffer(8);
+    var big = ~~(prepay / MAX_UINT32)
+    var low = (prepay % MAX_UINT32) - big
+    prepay_buf.writeUInt32LE(big, 4)
+    prepay_buf.writeUInt32LE(low, 0)
+
+    var message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
+        amount_buf, gas_limit_buf, gas_price_buf, step_buf, Buffer.from(contract_bytes, 'hex'), 
+        Buffer.from(input, 'hex'), prepay_buf, Buffer.from(key, 'hex'), Buffer.from(value, 'hex')]);
+    var kechash = keccak256(message_buf)
+
+    var digest = Secp256k1.uint256(kechash, 16)
+    const sig = Secp256k1.ecsign(self_private_key, digest)
+    const sigR = Secp256k1.uint256(sig.r, 16)
+    const sigS = Secp256k1.uint256(sig.s, 16)
+    const pubX = Secp256k1.uint256(self_public_key.x, 16)
+    const pubY = Secp256k1.uint256(self_public_key.y, 16)
+    const isValidSig = Secp256k1.ecverify(pubX, pubY, sigR, sigS, digest)
+    console.log("digest: " + digest)
+    console.log("sigr: " + sigR.toString(16))
+    console.log("sigs: " + sigS.toString(16))
+    if (!isValidSig) {
+        console.log('signature transaction failed.')
+        return;
+    }
+
+    return {
+        'gid': gid,
+        'pubkey': '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16),
+        'to': to,
+        'amount': amount,
+        'gas_limit': gas_limit,
+        'gas_price': gas_price,
+        'type': tx_type,
+        'shard_id': local_count_shard_id,
+        'hash': kechash,
+        'key': key,
+        'value': value,
+        'attrs_size': 4,
+        "bytes_code": contract_bytes,
+        "input": input,
+        "pepay": prepay,
+        'sign_r': sigR.toString(16),
+        'sign_s': sigS.toString(16),
+        'sign_v': sig.v,
+    }
+}
+
+function param_contract2(tx_type, gid, to, amount, gas_limit, gas_price, contract_bytes, input, prepay) {
+    var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
+    var frompk = '04' + self_public_key2.x.toString(16) + self_public_key2.y.toString(16);
     const MAX_UINT32 = 0xFFFFFFFF;
     var amount_buf = new Buffer(8);
     var big = ~~(amount / MAX_UINT32)
@@ -124,11 +205,11 @@ function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract
     var kechash = keccak256(message_buf)
 
     var digest = Secp256k1.uint256(kechash, 16)
-    const sig = Secp256k1.ecsign(self_private_key, digest)
+    const sig = Secp256k1.ecsign(self_private_key2, digest)
     const sigR = Secp256k1.uint256(sig.r, 16)
     const sigS = Secp256k1.uint256(sig.s, 16)
-    const pubX = Secp256k1.uint256(self_public_key.x, 16)
-    const pubY = Secp256k1.uint256(self_public_key.y, 16)
+    const pubX = Secp256k1.uint256(self_public_key2.x, 16)
+    const pubY = Secp256k1.uint256(self_public_key2.y, 16)
     const isValidSig = Secp256k1.ecverify(pubX, pubY, sigR, sigS, digest)
     console.log("digest: " + digest)
     console.log("sigr: " + sigR.toString(16))
@@ -140,7 +221,7 @@ function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract
 
     return {
         'gid': gid,
-        'pubkey': '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16),
+        'pubkey': '04' + self_public_key2.x.toString(16) + self_public_key2.y.toString(16),
         'to': to,
         'amount': amount,
         'gas_limit': gas_limit,
@@ -157,6 +238,7 @@ function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract
         'sign_v': sig.v,
     }
 }
+
 
 function create_tx(to, amount, gas_limit, gas_price, prepay, tx_type) {
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
@@ -215,10 +297,69 @@ function create_tx(to, amount, gas_limit, gas_price, prepay, tx_type) {
     }
 }
 
+function create_tx2(to, amount, gas_limit, gas_price, prepay, tx_type) {
+    var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
+    var frompk = '04' + self_public_key2.x.toString(16) + self_public_key2.y.toString(16);
+    const MAX_UINT32 = 0xFFFFFFFF;
+    var amount_buf = new Buffer(8);
+    var big = ~~(amount / MAX_UINT32)
+    var low = (amount % MAX_UINT32) - big
+    amount_buf.writeUInt32LE(big, 4)
+    amount_buf.writeUInt32LE(low, 0)
+
+    var gas_limit_buf = new Buffer(8);
+    var big = ~~(gas_limit / MAX_UINT32)
+    var low = (gas_limit % MAX_UINT32) - big
+    gas_limit_buf.writeUInt32LE(big, 4)
+    gas_limit_buf.writeUInt32LE(low, 0)
+
+    var gas_price_buf = new Buffer(8);
+    var big = ~~(gas_price / MAX_UINT32)
+    var low = (gas_price % MAX_UINT32) - big
+    gas_price_buf.writeUInt32LE(big, 4)
+    gas_price_buf.writeUInt32LE(low, 0)
+    var step_buf = new Buffer(8);
+    var big = ~~(tx_type / MAX_UINT32)
+    var low = (tx_type % MAX_UINT32) - big
+    step_buf.writeUInt32LE(big, 0)
+    step_buf.writeUInt32LE(low, 0)
+    var prepay_buf = new Buffer(8);
+    var big = ~~(prepay / MAX_UINT32)
+    var low = (prepay % MAX_UINT32) - big
+    prepay_buf.writeUInt32LE(big, 4)
+    prepay_buf.writeUInt32LE(low, 0)
+
+    var message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
+        amount_buf, gas_limit_buf, gas_price_buf, step_buf, prepay_buf]);
+    var kechash = keccak256(message_buf)
+    var digest = Secp256k1.uint256(kechash, 16)
+    const sig = Secp256k1.ecsign(self_private_key2, digest)
+    const sigR = Secp256k1.uint256(sig.r, 16)
+    const sigS = Secp256k1.uint256(sig.s, 16)
+    const pubX = Secp256k1.uint256(self_public_key2.x, 16)
+    const pubY = Secp256k1.uint256(self_public_key2.y, 16)
+    return {
+        'gid': gid,
+        'pubkey': '04' + self_public_key2.x.toString(16) + self_public_key2.y.toString(16),
+        'to': to,
+        'amount': amount,
+        'gas_limit': gas_limit,
+        'gas_price': gas_price,
+        'type': tx_type,
+        'shard_id': local_count_shard_id,
+        'sign_r': sigR.toString(16),
+        'sign_s': sigS.toString(16),
+        'sign_v': sig.v,
+        'pepay': prepay
+    }
+}
+
 function new_contract(contract_bytes) {
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var kechash = keccak256(self_account_id + gid + contract_bytes).toString('hex')
     var self_contract_address = kechash.slice(kechash.length - 40, kechash.length)
+    var key = "__csourcecode".toString('hex');
+    var value = fs.readFileSync('data_auth.sol', 'utf-8').toString('hex');
     var data = param_contract(
         6,
         gid,
@@ -228,7 +369,7 @@ function new_contract(contract_bytes) {
         1,
         contract_bytes,
         "",
-        999999999);
+        999999999, key, value);
     PostCode(data);
 
     const opt = { flag: 'w', }
@@ -248,13 +389,31 @@ function call_contract(input, amount) {
         gid,
         contract_address,
         amount,
-        90000000000,
+        9000000,
+        1,
+        "",
+        input,
+        0, "", "");
+    PostCode(data);
+}
+
+function call_contract2(input, amount) {
+    contract_address = fs.readFileSync('contract_address', 'utf-8');
+    console.log("contract_address: " + contract_address);
+    var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
+    var data = param_contract2(
+        8,
+        gid,
+        contract_address,
+        amount,
+        9000000,
         1,
         "",
         input,
         0);
     PostCode(data);
 }
+
 
 function do_transaction(to_addr, amount, gas_limit, gas_price) {
     var data = create_tx(to_addr, amount, gas_limit, gas_price, 0, 0);
@@ -263,15 +422,15 @@ function do_transaction(to_addr, amount, gas_limit, gas_price) {
 
 function CreatePhr() {
     console.log("test smart contract signature: ");
-    var account1 = web3.eth.accounts.privateKeyToAccount('0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5');
+    var account1 = web3.eth.accounts.privateKeyToAccount('0x4b07a853acfa8ebd71fd1585dd02289ec983bd125bbb6a5316c8015562a22e82');
     console.log("account1 :");
-    console.log(account1.address);
-    var account2 = web3.eth.accounts.privateKeyToAccount('0x748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05');
+    console.log(account1.address.toLowerCase());
+    var account2 = web3.eth.accounts.privateKeyToAccount('0x3701d2b9951b41390aaf198bb3fe096c4c8b5f3697b577fd06c350bbca2dfa5b');
     console.log("account2 :");
-    console.log(account2.address);
-    var account3 = web3.eth.accounts.privateKeyToAccount('0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5');
+    console.log(account2.address.toLowerCase());
+    var account3 = web3.eth.accounts.privateKeyToAccount('0x078ae19446ed495f90b204676b4540f73bba4ca1c3af1c57c1b2aa4ca06c7a12');
     console.log("account3 :");
-    console.log(account3.address);
+    console.log(account3.address.toLowerCase());
 
     var cons_codes = web3.eth.abi.encodeParameters(['address[]'],
         [[account1.address,
@@ -304,6 +463,8 @@ function CreatePhr() {
         console.log("GetAuthJson func: " + func.substring(2));
     }
 }
+
+CreatePhr();
 
 function GetConstructorParams(args) {
     if (args.length < 2) {
@@ -389,8 +550,8 @@ function GetAuthorizationParams(args) {
 function QueryPostCode(path, data) {
     var post_data = querystring.stringify(data);
     var post_options = {
-        host: '82.156.224.174',
-        port: '8781',
+        host: '127.0.0.1',
+        port: '8301',
         path: path,
         method: 'POST',
         headers: {
@@ -428,6 +589,12 @@ function Prepayment(prepay) {
     PostCode(data);
 }
 
+function Prepayment2(prepay) {
+    var contract_address = fs.readFileSync('contract_address', 'utf-8');
+    var data = create_tx2(contract_address, 0, 100000, 1, prepay, 7);
+    PostCode(data);
+}
+
 init_private_key();
 const args = process.argv.slice(2)
 
@@ -448,6 +615,7 @@ if (args[0] == 0) {
 // 调用确权预置quota
 if (args[0] == 1) {
     Prepayment(100000000000);
+   // Prepayment2(100000000000);
 }
 
 // 增加数据管理员
@@ -488,4 +656,14 @@ if (args[0] == 5) {
     var func = web3.eth.abi.encodeFunctionSignature('GetAuthJson()');
     console.log("GetAuthJson func: " + func.substring(2));
     QueryContract(func.substring(2));
+}
+
+if (args[0] == 6) {
+    var auth_cods = GetAuthorizationParams(args);
+    if (auth_cods == null) {
+        console.log("确权失败，输入的确权参数错误: " + process.argv);
+        return;
+    }
+
+    call_contract2(auth_cods, 0);
 }
