@@ -43,13 +43,13 @@ class TxItem {
 public:
     virtual ~TxItem() {}
     TxItem(const transport::MessagePtr& msg)
-            : msg_ptr(msg),
-            prev_consensus_tm_us(0),
+            : prev_consensus_tm_us(0),
             tx_hash(msg->header.tx_proto().gid()),
             unnique_tx_hash(msg_ptr->msg_hash),
             gid(msg->header.tx_proto().gid()),
             gas_price(msg->header.tx_proto().gas_price()),
-            in_consensus(false) {
+            in_consensus(false),
+            tx_info(msg->header.tx_proto()) {
         uint64_t now_tm = common::TimeUtils::TimestampUs();
         time_valid = now_tm + kBftStartDeltaTime;
 #ifdef ZJC_UNITTEST
@@ -66,13 +66,13 @@ public:
     }
 
     TxItem(const pools::protobuf::TxMessage& tx)
-            : msg_ptr(nullptr),
-            prev_consensus_tm_us(0),
+            : prev_consensus_tm_us(0),
             tx_hash(tx.gid()),
             unnique_tx_hash(tx.txhash()),
             gid(tx.gid()),
             gas_price(tx.gas_price()),
-            in_consensus(false) {
+            in_consensus(false),
+            tx_info(tx) {
 uint64_t now_tm = common::TimeUtils::TimestampUs();
         time_valid = now_tm + kBftStartDeltaTime;
 #ifdef ZJC_UNITTEST
@@ -99,7 +99,6 @@ uint64_t now_tm = common::TimeUtils::TimestampUs();
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         block::protobuf::BlockTx* block_tx) = 0;
 
-    transport::MessagePtr msg_ptr;
     uint64_t prev_consensus_tm_us;
     uint64_t timeout;
     uint64_t remove_timeout;
@@ -111,6 +110,7 @@ uint64_t now_tm = common::TimeUtils::TimestampUs();
     const std::string& gid;
     std::string prio_key;
     bool in_consensus;
+    pools::protobuf::TxMessage tx_info;
 };
 
 typedef std::shared_ptr<TxItem> TxItemPtr;
