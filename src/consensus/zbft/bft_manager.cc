@@ -466,7 +466,6 @@ ZbftPtr BftManager::Start(ZbftPtr commited_bft_ptr) {
     }
 
     auto zbft_ptr = StartBft(elect_item_ptr, txs_ptr, commited_bft_ptr);
-	
     if (zbft_ptr == nullptr) {
         for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
             iter->second->in_consensus = false;
