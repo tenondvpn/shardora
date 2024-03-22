@@ -1992,6 +1992,8 @@ int BftManager::LeaderPrepare(
     auto& tx_map = bft_ptr->txs_ptr()->txs;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         tx_bft.add_tx_hash_list(iter->first);
+        auto* tx_info = tx_bft.add_txs();
+        *tx_info = iter->second->msg_ptr->header.tx_proto();
     }
 
     bft_msg.set_leader_idx(elect_item.local_node_member_index);
