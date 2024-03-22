@@ -156,6 +156,16 @@ void BlsDkg::PopBlsMessage() {
     }
 }
 
+bool BlsDkg::CheckBlsMessageValid(transport::MessagePtr& msg_ptr) {
+    std::string msg_hash;
+    if (!IsSignValid(msg_ptr, &msg_hash)) {
+        BLS_ERROR("sign verify failed!");
+        return false;
+    }
+
+    return true;
+}
+
 void BlsDkg::HandleBlsMessage(const transport::MessagePtr& msg_ptr) try {
     if (members_ == nullptr) {
         BLS_ERROR("members_ == nullptr");
