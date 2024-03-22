@@ -85,6 +85,7 @@ int ContractUserCreateCall::HandleTx(
             // TODO(): check key exists and reserve gas
             gas_used += (block_tx.storages(i).key().size() + msg_ptr->header.tx_proto().value().size()) *
                 consensus::kKeyValueStorageEachBytes;
+            ZJC_DEBUG("create contract key: %s, value: %s", block_tx.storages(i).key().c_str(), block_tx.storages(i).val_hash().c_str());
         }
 
         if (block_tx.gas_limit() < gas_used) {
