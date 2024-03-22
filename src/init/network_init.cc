@@ -244,6 +244,10 @@ void NetworkInit::RegisterFirewallCheck() {
         std::bind(&NetworkInit::FirewallCheckMessage, this, std::placeholders::_1));
 }
 
+int NetworkInit::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+    return transport::kFirewallCheckSuccess;
+}
+
 void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.init_proto().has_addr_req()) {
         HandleAddrReq(msg_ptr);
