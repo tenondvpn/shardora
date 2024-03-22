@@ -1484,7 +1484,7 @@ ZbftPtr BftManager::CreateBftPtr(
         const ElectItem& elect_item,
         const transport::MessagePtr& msg_ptr,
         std::vector<uint8_t>* invalid_txs) {
-    auto& bft_msg = *msg_ptr->header.mutable_zbft();
+    auto& bft_msg = msg_ptr->header.zbft();
     std::vector<uint64_t> bloom_data;
     std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
     if (bft_msg.tx_bft().txs_size() > 0) {
@@ -1520,12 +1520,13 @@ ZbftPtr BftManager::CreateBftPtr(
             txs_ptr = txs_pools_->GetTimeblockTx(bft_msg.pool_index(), false);
         } else {
             for (int32_t i = 0; i < bft_msg.tx_bft().txs_size(); ++i) {
-                auto* tx = bft_msg.mutable_tx_bft()->mutable_txs(i);
+                auto* tmp_bft_msg = msg_ptr->header.mutable_zbft();
+                auto* tx = tmp_bft_msg->mutable_tx_bft()->mutable_txs(i);
                 auto txhash = pools::GetTxMessageHash(bft_msg.tx_bft().txs(i));
                 // TODO: verify signature
                 tx->set_txhash(txhash);
             }
-            
+
             txs_ptr = txs_pools_->FollowerGetTxs(
                 bft_msg.pool_index(),
                 bft_msg.tx_bft().txs(),
@@ -1550,7 +1551,7 @@ ZbftPtr BftManager::CreateBftPtr(
         return nullptr;
     }
 
-    if (txs_ptr != nullptr && (int32_t)txs_ptr->txs.size() != bft_msg.tx_bft().tx_hash_list_size()) {
+    if (txs_ptr != nullptr && (int32_t)txs_ptr->txs.size() != bft_msg.tx_bft().txs_size()) {
         ZJC_ERROR("invalid consensus, txs not equal to leader.");
         txs_ptr = nullptr;
     }

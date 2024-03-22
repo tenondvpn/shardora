@@ -47,7 +47,7 @@ public:
     std::shared_ptr<WaitingTxsItem> GetElectTx(uint32_t pool_index, const std::string& tx_hash);
     std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
         uint32_t pool_index,
-        const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
+        const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
         std::vector<uint8_t>* invalid_txs);
 
 private:
