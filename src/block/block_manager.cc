@@ -1740,10 +1740,10 @@ pools::TxItemPtr BlockManager::GetCrossTx(uint32_t pool_index, bool leader) {
             return nullptr;
         }
 
-        cross_statistic_tx->tx_ptr->msg_ptr->address_info =
+        cross_statistic_tx->tx_ptr->address_info =
             account_mgr_->pools_address_info(pool_index);
-        auto* tx = cross_statistic_tx->tx_ptr->msg_ptr->header.mutable_tx_proto();
-        tx->set_to(cross_statistic_tx->tx_ptr->msg_ptr->address_info->addr());
+        auto& tx = cross_statistic_tx->tx_ptr->tx_info;
+        tx.set_to(cross_statistic_tx->tx_ptr->address_info->addr());
         cross_statistic_tx->tx_ptr->in_consensus = true;
         return cross_statistic_tx->tx_ptr;
     }
@@ -1766,10 +1766,10 @@ pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) 
             return nullptr;
         }
 
-        shard_statistic_tx->tx_ptr->msg_ptr->address_info =
+        shard_statistic_tx->tx_ptr->address_info =
             account_mgr_->pools_address_info(pool_index);
-        auto* tx = shard_statistic_tx->tx_ptr->msg_ptr->header.mutable_tx_proto();
-        tx->set_to(shard_statistic_tx->tx_ptr->msg_ptr->address_info->addr());
+        auto& tx = shard_statistic_tx->tx_ptr->tx_info;
+        tx.set_to(shard_statistic_tx->tx_ptr->address_info->addr());
         shard_statistic_tx->tx_ptr->in_consensus = true;
         ZJC_DEBUG("success get statistic tx hash: %s",
             common::Encode::HexEncode(shard_statistic_tx->tx_hash).c_str());
@@ -1800,7 +1800,7 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
 
         if (!shard_elect_tx->tx_ptr->in_consensus) {
             if (!tx_hash.empty()) {
-                if (shard_elect_tx->tx_ptr->tx_hash == tx_hash) {
+                if (shard_elect_tx->tx_ptr->unique_tx_hash == tx_hash) {
                     shard_elect_tx->tx_ptr->in_consensus = true;
                     return shard_elect_tx->tx_ptr;
                 }
