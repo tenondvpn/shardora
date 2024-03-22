@@ -220,6 +220,30 @@ int NetworkInit::Init(int argc, char** argv) {
     return kInitSuccess;
 }
 
+void NetworkInit::RegisterFirewallCheck() {
+    net_handler_.AddFirewallCheckCallback(
+        common::kVssMessage,
+        std::bind(&vss::VssManager::FirewallCheckMessage, vss_mgr_.get(), std::placeholders::_1));
+    net_handler_.AddFirewallCheckCallback(
+        common::kBlsMessage,
+        std::bind(&bls::BlsManager::FirewallCheckMessage, bls_mgr_.get(), std::placeholders::_1));
+    net_handler_.AddFirewallCheckCallback(
+        common::kConsensusMessage,
+        std::bind(&consensus::BftManager::FirewallCheckMessage, bft_mgr_.get(), std::placeholders::_1));
+    net_handler_.AddFirewallCheckCallback(
+        common::kBlockMessage,
+        std::bind(&block::BlockManager::FirewallCheckMessage, block_mgr_.get(), std::placeholders::_1));
+    net_handler_.AddFirewallCheckCallback(
+        common::kSyncMessage,
+        std::bind(&sync::KeyValueSync::FirewallCheckMessage, kv_sync_.get(), std::placeholders::_1));
+    net_handler_.AddFirewallCheckCallback(
+        common::kPoolsMessage,
+        std::bind(&pools::TxPoolManager::FirewallCheckMessage, pools_mgr_.get(), std::placeholders::_1));
+    net_handler_.AddFirewallCheckCallback(
+        common::kInitMessage,
+        std::bind(&NetworkInit::FirewallCheckMessage, this, std::placeholders::_1));
+}
+
 void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.init_proto().has_addr_req()) {
         HandleAddrReq(msg_ptr);

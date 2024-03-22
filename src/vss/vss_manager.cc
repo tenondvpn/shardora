@@ -91,6 +91,45 @@ void VssManager::OnTimeBlock(
         tmblock_tm, begin_time_us_, first_offset_, second_offset_, third_offset_, kDkgPeriodUs, local_random_.GetHash());
 }
 
+
+int VssManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+    auto elect_item_ptr = elect_item();
+    if (elect_item_ptr == nullptr) {
+        return transport::kFirewallCheckError;
+    }
+
+    auto& header = msg_ptr->header;
+    ZJC_DEBUG("vss message coming.");
+    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
+            common::GlobalInfo::Instance()->network_id() !=
+            (network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
+        ZJC_DEBUG("invalid vss message network_id: %d", common::GlobalInfo::Instance()->network_id());
+        return transport::kFirewallCheckError;
+    }
+
+    if (elect_item_ptr->local_index == elect::kInvalidMemberIndex) {
+        ZJC_ERROR("not elected.");
+        return transport::kFirewallCheckError;
+    }
+
+    // must verify message signature, to avoid evil node
+    auto& vss_msg = header.vss_proto();
+    if (vss_msg.member_index() >= elect_item_ptr->member_count) {
+        ZJC_ERROR("member index invalid.");
+        return transport::kFirewallCheckError;
+    }
+
+    auto& pubkey = (*elect_item_ptr->members)[vss_msg.member_index()]->pubkey;
+    std::string message_hash;
+    protos::GetProtoHash(header, &message_hash);
+    if (security_ptr_->Verify(message_hash, pubkey, header.sign()) != security::kSecuritySuccess) {
+        ZJC_ERROR("security::Security::Instance()->Verify failed");
+        return transport::kFirewallCheckError;
+    }
+
+    return transport::kFirewallCheckSuccess;
+}
+
 void VssManager::ConsensusTimerMessage() {
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) >=

@@ -71,6 +71,10 @@ int BlockManager::Init(
     return kBlockSuccess;
 }
 
+int BlockManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+    return transport::kFirewallCheckSuccess;
+}
+
 void BlockManager::ConsensusTimerMessage() {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     auto now_tm = common::TimeUtils::TimestampUs();

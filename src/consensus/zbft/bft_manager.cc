@@ -145,6 +145,10 @@ void BftManager::RegisterCreateTxCallbacks() {
         std::bind(&BftManager::CreateTimeblockTx, this, std::placeholders::_1));
 }
 
+int BftManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+    return transport::kFirewallCheckSuccess;
+}
+
 void BftManager::NotifyRotationLeader(
         uint64_t elect_height,
         int32_t pool_mod_index,

@@ -30,6 +30,7 @@ public:
         common::MembersPtr& members);
     uint64_t EpochRandom();
     uint64_t GetConsensusFinalRandom();
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
     void SetFinalVss(uint64_t vss_random) {
         epoch_random_ = vss_random;

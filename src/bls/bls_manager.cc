@@ -147,6 +147,27 @@ void BlsManager::OnNewElectBlock(
     BLS_DEBUG("success add new bls dkg, elect_height: %lu", elect_height);
 }
 
+
+int BlsManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+    auto& header = msg_ptr->header;
+    auto& bls_msg = header.bls_proto();
+    if (bls_msg.has_finish_req()) {
+        if (CheckFinishMessageValid(msg_ptr) != transport::kFirewallCheckSuccess) {
+            return transport::kFirewallCheckError;
+        }
+    } else {
+        if (waiting_bls_ != nullptr) {
+            if (!waiting_bls_->CheckBlsMessageValid(msg_ptr)) {
+                BLS_ERROR("check firewall failed!");
+                return transport::kFirewallCheckError;
+            }
+        }
+    }
+
+    BLS_DEBUG("check firewall success!");
+    return transport::kFirewallCheckSuccess;
+}
+
 void BlsManager::OnTimeBlock(
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,

@@ -75,6 +75,7 @@ private:
     void BroadcastInvalidPools(
         std::shared_ptr<LeaderRotationInfo> leader_rotation,
         int32_t mod_num);
+    void RegisterFirewallCheck();
 
     static const uint32_t kInvalidPoolFactor = 50u;  // 50%
     static const uint32_t kMinValodPoolCount = 4u;  // 64 must finish all

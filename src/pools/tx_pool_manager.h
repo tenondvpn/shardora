@@ -54,6 +54,7 @@ public:
     void PopTxs(uint32_t pool_index, bool pop_all);
     void InitCrossPools();
     void BftCheckInvalidGids(uint32_t pool_index, std::vector<std::shared_ptr<InvalidGidItem>>& items);
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
     void OnNewCrossBlock(
             const std::shared_ptr<block::protobuf::Block>& block_item) {
@@ -199,6 +200,7 @@ public:
     bool is_next_block_checked(uint32_t pool_index, uint64_t height, const std::string& hash) {
         return tx_pool_[pool_index].is_next_block_checked(height, hash);
     }
+
 
 private:
     void DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr);

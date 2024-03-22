@@ -96,6 +96,7 @@ public:
         int32_t leader_mod_num,
         uint64_t elect_height,
         uint32_t new_leader_idx);
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
 private:
     int AddBft(ZbftPtr& bft_ptr);
