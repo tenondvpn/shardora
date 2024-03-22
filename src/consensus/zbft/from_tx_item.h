@@ -17,6 +17,13 @@ public:
             : TxItemBase(msg, account_mgr, sec_ptr) {
     }
 
+    FromTxItem(
+            const pools::protobuf::TxMessage& tx,
+            std::shared_ptr<block::AccountManager>& account_mgr,
+            std::shared_ptr<security::Security>& sec_ptr)
+            : TxItemBase(tx, account_mgr, sec_ptr) {
+    }
+
     virtual ~FromTxItem() {}
     virtual int HandleTx(
         const block::protobuf::Block& block,

@@ -1526,7 +1526,7 @@ ZbftPtr BftManager::CreateBftPtr(
                 auto txhash = pools::GetTxMessageHash(bft_msg.tx_bft().txs(i));
                 // TODO: verify signature
                 tx->set_txhash(txhash);
-                auto tx_ptr = std::make_shared<pools::TxItem>(*tx);
+                auto tx_ptr = std::make_shared<FromTxItem>(*tx);
                 txs_ptr->txs[txhash] = tx_ptr;
             }
 

@@ -17,6 +17,13 @@ protected:
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<security::Security>& sec_ptr)
         : pools::TxItem(msg), account_mgr_(account_mgr), sec_ptr_(sec_ptr) {}
+
+    TxItemBase(
+        const pools::protobuf::TxMessage& tx,
+        std::shared_ptr<block::AccountManager>& account_mgr,
+        std::shared_ptr<security::Security>& sec_ptr)
+        : pools::TxItem(tx), account_mgr_(account_mgr), sec_ptr_(sec_ptr) {}
+        
     virtual ~TxItemBase() {}
 
     virtual int HandleTx(
