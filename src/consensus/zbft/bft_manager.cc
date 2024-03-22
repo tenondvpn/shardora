@@ -1519,32 +1519,35 @@ ZbftPtr BftManager::CreateBftPtr(
         } else if (bft_msg.tx_bft().tx_type() == pools::protobuf::kConsensusRootTimeBlock) {
             txs_ptr = txs_pools_->GetTimeblockTx(bft_msg.pool_index(), false);
         } else {
+            auto txs_ptr = std::make_shared<WaitingTxsItem>();
             for (int32_t i = 0; i < bft_msg.tx_bft().txs_size(); ++i) {
                 auto* tmp_bft_msg = msg_ptr->header.mutable_zbft();
                 auto* tx = tmp_bft_msg->mutable_tx_bft()->mutable_txs(i);
                 auto txhash = pools::GetTxMessageHash(bft_msg.tx_bft().txs(i));
                 // TODO: verify signature
                 tx->set_txhash(txhash);
+                auto tx_ptr = std::make_shared<pools::TxItem>(*tx);
+                txs_ptr->txs[txhash] = tx_ptr;
             }
 
-            txs_ptr = txs_pools_->FollowerGetTxs(
-                bft_msg.pool_index(),
-                bft_msg.tx_bft().txs(),
-                nullptr);
-            if (txs_ptr == nullptr) {
-                pools_mgr_->PopTxs(bft_msg.pool_index(), true);
-                // 重试，在 tps 较高情况下有可能还未同步过来
-                txs_ptr = txs_pools_->FollowerGetTxs(
-                        bft_msg.pool_index(),
-                        bft_msg.tx_bft().txs(),
-                        invalid_txs);
-                if (txs_ptr == nullptr) {
-                    ZJC_ERROR("invalid consensus kNormal, txs not equal to leader. pool_index: %d, gid: %s, tx size: %u",
-                        bft_msg.pool_index(),
-                        common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-                        bft_msg.tx_bft().txs_size());
-                }
-            }
+            // txs_ptr = txs_pools_->FollowerGetTxs(
+            //     bft_msg.pool_index(),
+            //     bft_msg.tx_bft().txs(),
+            //     nullptr);
+            // if (txs_ptr == nullptr) {
+            //     pools_mgr_->PopTxs(bft_msg.pool_index(), true);
+            //     // 重试，在 tps 较高情况下有可能还未同步过来
+            //     txs_ptr = txs_pools_->FollowerGetTxs(
+            //             bft_msg.pool_index(),
+            //             bft_msg.tx_bft().txs(),
+            //             invalid_txs);
+            //     if (txs_ptr == nullptr) {
+            //         ZJC_ERROR("invalid consensus kNormal, txs not equal to leader. pool_index: %d, gid: %s, tx size: %u",
+            //             bft_msg.pool_index(),
+            //             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+            //             bft_msg.tx_bft().txs_size());
+            //     }
+            // }
         }
     } else {
         ZJC_ERROR("invalid consensus, tx empty.");

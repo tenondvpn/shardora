@@ -65,6 +65,29 @@ public:
         prio_key = std::string((char*)&prio, sizeof(prio)) + gid;
     }
 
+    TxItem(pools::protobuf::TxMessage& tx)
+            : msg_ptr(nullptr),
+            prev_consensus_tm_us(0),
+            tx_hash(tx.gid()),
+            unnique_tx_hash(tx.txhash()),
+            gid(tx.gid()),
+            gas_price(tx.gas_price()),
+            in_consensus(false) {
+uint64_t now_tm = common::TimeUtils::TimestampUs();
+        time_valid = now_tm + kBftStartDeltaTime;
+#ifdef ZJC_UNITTEST
+        time_valid = 0;
+#endif // ZJC_UNITTEST
+        timeout = now_tm + kTxPoolTimeoutUs;
+        remove_timeout = timeout + kTxPoolTimeoutUs;
+        if (tx.has_step()) {
+            step = tx.step();
+        }
+
+        auto prio = common::ShiftUint64(now_tm);
+        prio_key = std::string((char*)&prio, sizeof(prio)) + gid;
+    }
+
     virtual int HandleTx(
         const block::protobuf::Block& block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
