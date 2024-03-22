@@ -42,29 +42,6 @@ enum PoolsErrorCode {
 class TxItem {
 public:
     virtual ~TxItem() {}
-    TxItem(const transport::MessagePtr& msg)
-            : prev_consensus_tm_us(0),
-            tx_hash(msg->header.tx_proto().gid()),
-            unnique_tx_hash(msg_ptr->msg_hash),
-            gid(msg->header.tx_proto().gid()),
-            gas_price(msg->header.tx_proto().gas_price()),
-            in_consensus(false),
-            tx_info(msg->header.tx_proto()) {
-        uint64_t now_tm = common::TimeUtils::TimestampUs();
-        time_valid = now_tm + kBftStartDeltaTime;
-#ifdef ZJC_UNITTEST
-        time_valid = 0;
-#endif // ZJC_UNITTEST
-        timeout = now_tm + kTxPoolTimeoutUs;
-        remove_timeout = timeout + kTxPoolTimeoutUs;
-        if (msg->header.tx_proto().has_step()) {
-            step = msg->header.tx_proto().step();
-        }
-
-        auto prio = common::ShiftUint64(now_tm);
-        prio_key = std::string((char*)&prio, sizeof(prio)) + gid;
-    }
-
     TxItem(const pools::protobuf::TxMessage& tx)
             : prev_consensus_tm_us(0),
             tx_hash(tx.gid()),
