@@ -14,7 +14,7 @@
 using namespace shardora;
 static bool global_stop = false;
 static const std::string kBroadcastIp = "127.0.0.1";
-static const uint16_t kBroadcastPort = 13004;
+static const uint16_t kBroadcastPort = 13001;
 
 static void SignalCallback(int sig_int) {
     global_stop = true;
@@ -73,7 +73,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
     msg.set_src_sharding_id(des_net_id);
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kPoolsMessage);
-    auto* brd = msg.mutable_broadcast();
+    // auto* brd = msg.mutable_broadcast();
     auto new_tx = msg.mutable_tx_proto();
     new_tx->set_gid(gid);
     new_tx->set_pubkey(security->GetPublicKeyUnCompressed());
