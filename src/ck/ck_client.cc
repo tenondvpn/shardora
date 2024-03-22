@@ -212,9 +212,13 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
                     
                 attr_key->Append(common::Encode::HexEncode(tx_list[i].storages(j).key()));
                 attr_value->Append(common::Encode::HexEncode(val));
+                ZJC_DEBUG("to ck add key: %s, val: %s", tx_list[i].storages(j).key().c_str(), val.c_str());
             } else {
                 attr_key->Append(common::Encode::HexEncode(tx_list[i].storages(j).key()));
                 attr_value->Append(common::Encode::HexEncode(tx_list[i].storages(j).val_hash()));
+                ZJC_DEBUG("hash to ck add key: %s, val: %s", 
+                    tx_list[i].storages(j).key().c_str(), 
+                    common::Encode::HexEncode(tx_list[i].storages(j).val_hash()).c_str());
             }
         }
 
