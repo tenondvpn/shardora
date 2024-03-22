@@ -68,12 +68,12 @@ public:
     }
 
     std::shared_ptr<consensus::WaitingTxsItem> GetTx(
-            const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
+            const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
             std::vector<uint8_t>* invalid_txs) {
         auto txs_items = std::make_shared<consensus::WaitingTxsItem>();
         auto& tx_map = txs_items->txs;
-        for (int32_t i = 0; i < tx_hash_list.size(); ++i) {
-            auto& txhash = tx_hash_list[i];
+        for (int32_t i = 0; i < txs.size(); ++i) {
+            auto& txhash = txs[i].txhash();
             auto iter = gid_map_.find(txhash);
             if (iter == gid_map_.end()) {
                 ZJC_INFO("failed get tx %u, %s", pool_index_, common::Encode::HexEncode(txhash).c_str());

@@ -1484,10 +1484,10 @@ ZbftPtr BftManager::CreateBftPtr(
         const ElectItem& elect_item,
         const transport::MessagePtr& msg_ptr,
         std::vector<uint8_t>* invalid_txs) {
-    auto& bft_msg = msg_ptr->header.zbft();
+    auto& bft_msg = *msg_ptr->header.mutable_zbft();
     std::vector<uint64_t> bloom_data;
     std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
-    if (bft_msg.tx_bft().tx_hash_list_size() > 0) {
+    if (bft_msg.tx_bft().txs_size() > 0) {
         // get txs direct
         if (bft_msg.tx_bft().tx_type() == pools::protobuf::kNormalTo) {
             txs_ptr = txs_pools_->GetToTxs(bft_msg.pool_index(), false);
@@ -1508,8 +1508,9 @@ ZbftPtr BftManager::CreateBftPtr(
                     bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
             }
         } else if (bft_msg.tx_bft().tx_type() == pools::protobuf::kConsensusRootElectShard) {
-            if (bft_msg.tx_bft().tx_hash_list_size() == 1) {
-                txs_ptr = txs_pools_->GetElectTx(bft_msg.pool_index(), bft_msg.tx_bft().tx_hash_list(0));
+            if (bft_msg.tx_bft().txs_size() == 1) {
+                auto txhash = pools::GetTxMessageHash(bft_msg.tx_bft().txs(0));
+                txs_ptr = txs_pools_->GetElectTx(bft_msg.pool_index(), txhash);
                 if (txs_ptr == nullptr) {
                     ZJC_ERROR("invalid consensus kConsensusRootElectShard, txs not equal to leader. pool_index: %d, gid: %s",
                         bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
@@ -1518,22 +1519,29 @@ ZbftPtr BftManager::CreateBftPtr(
         } else if (bft_msg.tx_bft().tx_type() == pools::protobuf::kConsensusRootTimeBlock) {
             txs_ptr = txs_pools_->GetTimeblockTx(bft_msg.pool_index(), false);
         } else {
+            for (int32_t i = 0; i < bft_msg.tx_bft().txs_size(); ++i) {
+                auto* tx = bft_msg.mutable_tx_bft()->mutable_txs(i);
+                auto txhash = pools::GetTxMessageHash(bft_msg.tx_bft().txs(i));
+                // TODO: verify signature
+                tx->set_txhash(txhash);
+            }
+            
             txs_ptr = txs_pools_->FollowerGetTxs(
                 bft_msg.pool_index(),
-                bft_msg.tx_bft().tx_hash_list(),
+                bft_msg.tx_bft().txs(),
                 nullptr);
             if (txs_ptr == nullptr) {
                 pools_mgr_->PopTxs(bft_msg.pool_index(), true);
                 // 重试，在 tps 较高情况下有可能还未同步过来
                 txs_ptr = txs_pools_->FollowerGetTxs(
                         bft_msg.pool_index(),
-                        bft_msg.tx_bft().tx_hash_list(),
+                        bft_msg.tx_bft().txs(),
                         invalid_txs);
                 if (txs_ptr == nullptr) {
                     ZJC_ERROR("invalid consensus kNormal, txs not equal to leader. pool_index: %d, gid: %s, tx size: %u",
                         bft_msg.pool_index(),
                         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-                        bft_msg.tx_bft().tx_hash_list_size());
+                        bft_msg.tx_bft().txs_size());
                 }
             }
         }
@@ -1991,7 +1999,6 @@ int BftManager::LeaderPrepare(
     tx_bft.set_time_stamp(bft_ptr->prepare_block()->timestamp());
     auto& tx_map = bft_ptr->txs_ptr()->txs;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
-        tx_bft.add_tx_hash_list(iter->first);
         auto* tx_info = tx_bft.add_txs();
         *tx_info = iter->second->msg_ptr->header.tx_proto();
     }
