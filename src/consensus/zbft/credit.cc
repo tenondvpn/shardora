@@ -112,10 +112,10 @@ int Credit::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     return transport::kFirewallCheckSuccess;
 }
 
-void Credit::StatisticCredit(uint8_t thread_idx) {
+void Credit::StatisticCredit() {
     statistic_credit_tick_.CutOff(
         kCheckCreditPeriodUs,
-        std::bind(&Credit::StatisticCredit, this, std::placeholders::_1));
+        std::bind(&Credit::StatisticCredit, this));
 }
 
 }  // namespace consensus

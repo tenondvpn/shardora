@@ -45,9 +45,9 @@ public:
 private:
     bool IsFirstPeriodsHandleMessage();
     bool IsSecondPeriodsHandleMessage();
-    void BroadcastFirstPeriodHash(uint8_t thread_idx);
-    void BroadcastSecondPeriodCredit(uint8_t thread_idx);
-    void StatisticCredit(uint8_t thread_idx);
+    void BroadcastFirstPeriodHash();
+    void BroadcastSecondPeriodCredit();
+    void StatisticCredit();
 
     int64_t kCreditPeriodUs = common::kTimeBlockCreatePeriodSeconds / 10 * 1000u * 1000u;
     static const uint64_t kCheckCreditPeriodUs = 10000000lu;
