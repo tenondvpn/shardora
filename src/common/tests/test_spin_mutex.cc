@@ -8,7 +8,7 @@
 #include "common/string_utils.h"
 #include "common/split.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -72,4 +72,4 @@ TEST_F(TestSpinMutex, MultiThreadTest) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

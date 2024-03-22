@@ -10,7 +10,7 @@
 
 //#define ENCODE_CONFIG_CONTENT
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -607,4 +607,4 @@ bool Config::AddKey(const std::string& field, const std::string& key, const std:
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

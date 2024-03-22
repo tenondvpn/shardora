@@ -7,7 +7,7 @@
 
 #include "common/utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -48,4 +48,4 @@ TEST_F(TestUtils, All) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -26,7 +26,7 @@
 #define BLOCK_WARN(fmt, ...) ZJC_WARN("[block]" fmt, ## __VA_ARGS__)
 #define BLOCK_ERROR(fmt, ...) ZJC_ERROR("[block]" fmt, ## __VA_ARGS__)
 
-namespace zjchain {
+namespace shardora {
 
 namespace block {
 
@@ -138,4 +138,4 @@ typedef std::function<bool(
 
 }  // namespace block
 
-}  // namespace zjchain
+}  // namespace shardora

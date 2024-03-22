@@ -6,7 +6,7 @@
 #define private public
 #include "common/tick.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -119,4 +119,4 @@ TEST_F(TestTick, All) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -4,7 +4,7 @@
 #include "common/tick.h"
 #include "security/security.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace contract {
 
@@ -29,4 +29,4 @@ private:
 
 }  // namespace contract
 
-}  // namespace zjchain
+}  // namespace shardora

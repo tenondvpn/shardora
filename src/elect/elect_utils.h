@@ -14,7 +14,7 @@
 #define ELECT_WARN(fmt, ...) ZJC_WARN("[elect]" fmt, ## __VA_ARGS__)
 #define ELECT_ERROR(fmt, ...) ZJC_ERROR("[elect]" fmt, ## __VA_ARGS__)
 
-namespace zjchain {
+namespace shardora {
 
 namespace elect {
 
@@ -88,4 +88,4 @@ inline static std::string GetElectHeartbeatHash(
 
 }  // namespace elect
 
-}  // namespace zjchain
+}  // namespace shardora

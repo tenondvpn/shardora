@@ -5,7 +5,7 @@
 #include "consensus/zbft/contract_gas_prepayment.h"
 #include "security/security.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -45,7 +45,7 @@ private:
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora
 
 
 

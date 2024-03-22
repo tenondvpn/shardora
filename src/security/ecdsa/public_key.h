@@ -10,7 +10,7 @@
 #include "security/ecdsa/curve.h"
 #include "security/ecdsa/private_key.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace security {
 
@@ -54,4 +54,4 @@ private:
 
 }  // namespace security
 
-}  // namespace zjchain
+}  // namespace shardora

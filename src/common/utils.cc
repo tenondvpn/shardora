@@ -41,7 +41,7 @@
 #include "common/string_utils.h"
 #include "common/unique_set.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
     
@@ -324,4 +324,4 @@ uint32_t Hash32(const int32_t& key) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

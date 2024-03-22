@@ -7,7 +7,7 @@
 #include "common/encode.h"
 #include "common/time_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -85,4 +85,4 @@ int GlobalInfo::Init(const common::Config& config) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

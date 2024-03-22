@@ -52,7 +52,7 @@ struct Construct {
 #define ZJC_NETWORK_DEBUG_FOR_PROTOMESSAGE(message, append)
 #endif
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -368,5 +368,5 @@ bool Retry(Func func, int maxAttempts, std::chrono::milliseconds delay, Args... 
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora
 

@@ -14,7 +14,7 @@
 #include "network/shard_network.h"
 #include "vss/vss_manager.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace elect {
 
@@ -600,4 +600,4 @@ void ElectManager::AddNewNodeWithIdAndIp(
 
 }  // namespace elect
 
-}  // namespace zjchain
+}  // namespace shardora

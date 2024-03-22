@@ -11,7 +11,7 @@
 #include "transport/multi_thread.h"
 #include "transport/tcp_transport.h"
 
-using namespace zjchain;
+using namespace shardora;
 static bool global_stop = false;
 static const std::string kBroadcastIp = "127.0.0.1";
 static const uint16_t kBroadcastPort = 13004;

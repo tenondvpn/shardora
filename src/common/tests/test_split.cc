@@ -5,7 +5,7 @@
 #define private public
 #include "common/split.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -99,4 +99,4 @@ TEST_F(TestSplit, SplitWithBadChar) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

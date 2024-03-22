@@ -4,7 +4,7 @@
 
 #include "common/random.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -131,4 +131,4 @@ int32_t FtsTree::GetOneNode(std::mt19937_64& g2) {
 
 };  // namespace common
 
-};  // namespace zjchain
+};  // namespace shardora

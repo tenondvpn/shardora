@@ -19,7 +19,7 @@ using namespace boost::multiprecision::literals;
 using bigint = boost::multiprecision::number<boost::multiprecision::cpp_int_backend<>>;
 using u256 = boost::multiprecision::number<boost::multiprecision::cpp_int_backend<256, 256, boost::multiprecision::unsigned_magnitude, boost::multiprecision::unchecked, void>>;
 
-namespace zjchain {
+namespace shardora {
 
 namespace bignum {
 
@@ -49,4 +49,4 @@ inline void ToBigEndian(bigint _val, uint8_t* out, uint32_t out_size) {
 
 };  // namespace bignum
 
-};  // namespace zjchain
+};  // namespace shardora

@@ -2,7 +2,7 @@
 
 #include "elect/elect_manager.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -119,4 +119,4 @@ void RootZbft::RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_bl
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

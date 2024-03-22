@@ -17,7 +17,7 @@
 #include <protos/pools.pb.h>
 #include <protos/tx_storage_key.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace block {
 
@@ -2077,4 +2077,4 @@ void BlockManager::CreateToTx() {
 
 }  // namespace block
 
-}  // namespace zjchain
+}  // namespace shardora

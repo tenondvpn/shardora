@@ -17,7 +17,7 @@
 #include "security/ecdsa/ecdsa.h"
 #include "transport/tcp_transport.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
 
@@ -335,4 +335,4 @@ TEST_F(TestTxPoolManager, TestMapWithPriority) {
 
 }  // namespace pools
 
-}  // namespace zjchain
+}  // namespace shardora

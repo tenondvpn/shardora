@@ -25,7 +25,7 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fnetwork_2eproto ::google::prot
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fnetwork_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_NodeInfo;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fnetwork_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_GetNetworkNodesResponse;
 }  // namespace protobuf_protos_2fnetwork_2eproto
-namespace zjchain {
+namespace shardora {
 namespace network {
 namespace protobuf {
 class GetNetworkNodesRequestDefaultTypeInternal {
@@ -55,17 +55,17 @@ class NetworkMessageDefaultTypeInternal {
 } _NetworkMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace network
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2fnetwork_2eproto {
 static void InitDefaultsGetNetworkNodesRequest() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::network::protobuf::_GetNetworkNodesRequest_default_instance_;
-    new (ptr) ::zjchain::network::protobuf::GetNetworkNodesRequest();
+    void* ptr = &::shardora::network::protobuf::_GetNetworkNodesRequest_default_instance_;
+    new (ptr) ::shardora::network::protobuf::GetNetworkNodesRequest();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::network::protobuf::GetNetworkNodesRequest::InitAsDefaultInstance();
+  ::shardora::network::protobuf::GetNetworkNodesRequest::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<0> scc_info_GetNetworkNodesRequest =
@@ -75,11 +75,11 @@ static void InitDefaultsNodeInfo() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::network::protobuf::_NodeInfo_default_instance_;
-    new (ptr) ::zjchain::network::protobuf::NodeInfo();
+    void* ptr = &::shardora::network::protobuf::_NodeInfo_default_instance_;
+    new (ptr) ::shardora::network::protobuf::NodeInfo();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::network::protobuf::NodeInfo::InitAsDefaultInstance();
+  ::shardora::network::protobuf::NodeInfo::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<0> scc_info_NodeInfo =
@@ -89,11 +89,11 @@ static void InitDefaultsGetNetworkNodesResponse() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::network::protobuf::_GetNetworkNodesResponse_default_instance_;
-    new (ptr) ::zjchain::network::protobuf::GetNetworkNodesResponse();
+    void* ptr = &::shardora::network::protobuf::_GetNetworkNodesResponse_default_instance_;
+    new (ptr) ::shardora::network::protobuf::GetNetworkNodesResponse();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::network::protobuf::GetNetworkNodesResponse::InitAsDefaultInstance();
+  ::shardora::network::protobuf::GetNetworkNodesResponse::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<1> scc_info_GetNetworkNodesResponse =
@@ -104,11 +104,11 @@ static void InitDefaultsDropNodeRequest() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::network::protobuf::_DropNodeRequest_default_instance_;
-    new (ptr) ::zjchain::network::protobuf::DropNodeRequest();
+    void* ptr = &::shardora::network::protobuf::_DropNodeRequest_default_instance_;
+    new (ptr) ::shardora::network::protobuf::DropNodeRequest();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::network::protobuf::DropNodeRequest::InitAsDefaultInstance();
+  ::shardora::network::protobuf::DropNodeRequest::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<0> scc_info_DropNodeRequest =
@@ -118,11 +118,11 @@ static void InitDefaultsNetworkMessage() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::network::protobuf::_NetworkMessage_default_instance_;
-    new (ptr) ::zjchain::network::protobuf::NetworkMessage();
+    void* ptr = &::shardora::network::protobuf::_NetworkMessage_default_instance_;
+    new (ptr) ::shardora::network::protobuf::NetworkMessage();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::network::protobuf::NetworkMessage::InitAsDefaultInstance();
+  ::shardora::network::protobuf::NetworkMessage::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<3> scc_info_NetworkMessage =
@@ -142,70 +142,70 @@ void InitDefaults() {
 ::google::protobuf::Metadata file_level_metadata[5];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::GetNetworkNodesRequest, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::GetNetworkNodesRequest, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::GetNetworkNodesRequest, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::GetNetworkNodesRequest, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::GetNetworkNodesRequest, net_id_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::GetNetworkNodesRequest, count_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::GetNetworkNodesRequest, net_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::GetNetworkNodesRequest, count_),
   0,
   1,
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::NodeInfo, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::NodeInfo, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::NodeInfo, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::NodeInfo, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::NodeInfo, sharding_id_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::NodeInfo, public_ip_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::NodeInfo, public_port_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::NodeInfo, pubkey_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::NodeInfo, sharding_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::NodeInfo, public_ip_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::NodeInfo, public_port_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::NodeInfo, pubkey_),
   2,
   0,
   3,
   1,
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::GetNetworkNodesResponse, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::GetNetworkNodesResponse, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::GetNetworkNodesResponse, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::GetNetworkNodesResponse, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::GetNetworkNodesResponse, nodes_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::GetNetworkNodesResponse, nodes_),
   ~0u,
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::DropNodeRequest, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::DropNodeRequest, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::DropNodeRequest, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::DropNodeRequest, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::DropNodeRequest, ip_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::DropNodeRequest, port_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::DropNodeRequest, ip_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::DropNodeRequest, port_),
   0,
   1,
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::NetworkMessage, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::NetworkMessage, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::NetworkMessage, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::NetworkMessage, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::NetworkMessage, get_net_nodes_req_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::NetworkMessage, get_net_nodes_res_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::network::protobuf::NetworkMessage, drop_node_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::NetworkMessage, get_net_nodes_req_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::NetworkMessage, get_net_nodes_res_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::network::protobuf::NetworkMessage, drop_node_),
   0,
   1,
   2,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 7, sizeof(::zjchain::network::protobuf::GetNetworkNodesRequest)},
-  { 9, 18, sizeof(::zjchain::network::protobuf::NodeInfo)},
-  { 22, 28, sizeof(::zjchain::network::protobuf::GetNetworkNodesResponse)},
-  { 29, 36, sizeof(::zjchain::network::protobuf::DropNodeRequest)},
-  { 38, 46, sizeof(::zjchain::network::protobuf::NetworkMessage)},
+  { 0, 7, sizeof(::shardora::network::protobuf::GetNetworkNodesRequest)},
+  { 9, 18, sizeof(::shardora::network::protobuf::NodeInfo)},
+  { 22, 28, sizeof(::shardora::network::protobuf::GetNetworkNodesResponse)},
+  { 29, 36, sizeof(::shardora::network::protobuf::DropNodeRequest)},
+  { 38, 46, sizeof(::shardora::network::protobuf::NetworkMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::network::protobuf::_GetNetworkNodesRequest_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::network::protobuf::_NodeInfo_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::network::protobuf::_GetNetworkNodesResponse_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::network::protobuf::_DropNodeRequest_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::network::protobuf::_NetworkMessage_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::network::protobuf::_GetNetworkNodesRequest_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::network::protobuf::_NodeInfo_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::network::protobuf::_GetNetworkNodesResponse_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::network::protobuf::_DropNodeRequest_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::network::protobuf::_NetworkMessage_default_instance_),
 };
 
 void protobuf_AssignDescriptors() {
@@ -229,23 +229,23 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\024protos/network.proto\022\030zjchain.network."
-      "protobuf\"7\n\026GetNetworkNodesRequest\022\016\n\006ne"
-      "t_id\030\001 \001(\r\022\r\n\005count\030\002 \001(\r\"W\n\010NodeInfo\022\023\n"
-      "\013sharding_id\030\001 \001(\005\022\021\n\tpublic_ip\030\002 \001(\014\022\023\n"
-      "\013public_port\030\003 \001(\005\022\016\n\006pubkey\030\004 \001(\014\"L\n\027Ge"
-      "tNetworkNodesResponse\0221\n\005nodes\030\001 \003(\0132\".z"
-      "jchain.network.protobuf.NodeInfo\"+\n\017Drop"
-      "NodeRequest\022\n\n\002ip\030\001 \001(\014\022\014\n\004port\030\002 \001(\005\"\351\001"
-      "\n\016NetworkMessage\022K\n\021get_net_nodes_req\030\001 "
-      "\001(\01320.zjchain.network.protobuf.GetNetwor"
-      "kNodesRequest\022L\n\021get_net_nodes_res\030\002 \001(\013"
-      "21.zjchain.network.protobuf.GetNetworkNo"
-      "desResponse\022<\n\tdrop_node\030\003 \001(\0132).zjchain"
-      ".network.protobuf.DropNodeRequest"
+      "\n\024protos/network.proto\022\031shardora.network"
+      ".protobuf\"7\n\026GetNetworkNodesRequest\022\016\n\006n"
+      "et_id\030\001 \001(\r\022\r\n\005count\030\002 \001(\r\"W\n\010NodeInfo\022\023"
+      "\n\013sharding_id\030\001 \001(\005\022\021\n\tpublic_ip\030\002 \001(\014\022\023"
+      "\n\013public_port\030\003 \001(\005\022\016\n\006pubkey\030\004 \001(\014\"M\n\027G"
+      "etNetworkNodesResponse\0222\n\005nodes\030\001 \003(\0132#."
+      "shardora.network.protobuf.NodeInfo\"+\n\017Dr"
+      "opNodeRequest\022\n\n\002ip\030\001 \001(\014\022\014\n\004port\030\002 \001(\005\""
+      "\354\001\n\016NetworkMessage\022L\n\021get_net_nodes_req\030"
+      "\001 \001(\01321.shardora.network.protobuf.GetNet"
+      "workNodesRequest\022M\n\021get_net_nodes_res\030\002 "
+      "\001(\01322.shardora.network.protobuf.GetNetwo"
+      "rkNodesResponse\022=\n\tdrop_node\030\003 \001(\0132*.sha"
+      "rdora.network.protobuf.DropNodeRequest"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 553);
+      descriptor, 558);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/network.proto", &protobuf_RegisterTypes);
 }
@@ -261,7 +261,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2fnetwork_2eproto
-namespace zjchain {
+namespace shardora {
 namespace network {
 namespace protobuf {
 
@@ -279,7 +279,7 @@ GetNetworkNodesRequest::GetNetworkNodesRequest()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fnetwork_2eproto::scc_info_GetNetworkNodesRequest.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.network.protobuf.GetNetworkNodesRequest)
+  // @@protoc_insertion_point(constructor:shardora.network.protobuf.GetNetworkNodesRequest)
 }
 GetNetworkNodesRequest::GetNetworkNodesRequest(const GetNetworkNodesRequest& from)
   : ::google::protobuf::Message(),
@@ -289,7 +289,7 @@ GetNetworkNodesRequest::GetNetworkNodesRequest(const GetNetworkNodesRequest& fro
   ::memcpy(&net_id_, &from.net_id_,
     static_cast<size_t>(reinterpret_cast<char*>(&count_) -
     reinterpret_cast<char*>(&net_id_)) + sizeof(count_));
-  // @@protoc_insertion_point(copy_constructor:zjchain.network.protobuf.GetNetworkNodesRequest)
+  // @@protoc_insertion_point(copy_constructor:shardora.network.protobuf.GetNetworkNodesRequest)
 }
 
 void GetNetworkNodesRequest::SharedCtor() {
@@ -299,7 +299,7 @@ void GetNetworkNodesRequest::SharedCtor() {
 }
 
 GetNetworkNodesRequest::~GetNetworkNodesRequest() {
-  // @@protoc_insertion_point(destructor:zjchain.network.protobuf.GetNetworkNodesRequest)
+  // @@protoc_insertion_point(destructor:shardora.network.protobuf.GetNetworkNodesRequest)
   SharedDtor();
 }
 
@@ -321,7 +321,7 @@ const GetNetworkNodesRequest& GetNetworkNodesRequest::default_instance() {
 
 
 void GetNetworkNodesRequest::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.network.protobuf.GetNetworkNodesRequest)
+// @@protoc_insertion_point(message_clear_start:shardora.network.protobuf.GetNetworkNodesRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -340,7 +340,7 @@ bool GetNetworkNodesRequest::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.network.protobuf.GetNetworkNodesRequest)
+  // @@protoc_insertion_point(parse_start:shardora.network.protobuf.GetNetworkNodesRequest)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -386,17 +386,17 @@ bool GetNetworkNodesRequest::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.network.protobuf.GetNetworkNodesRequest)
+  // @@protoc_insertion_point(parse_success:shardora.network.protobuf.GetNetworkNodesRequest)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.network.protobuf.GetNetworkNodesRequest)
+  // @@protoc_insertion_point(parse_failure:shardora.network.protobuf.GetNetworkNodesRequest)
   return false;
 #undef DO_
 }
 
 void GetNetworkNodesRequest::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.network.protobuf.GetNetworkNodesRequest)
+  // @@protoc_insertion_point(serialize_start:shardora.network.protobuf.GetNetworkNodesRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -415,13 +415,13 @@ void GetNetworkNodesRequest::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.network.protobuf.GetNetworkNodesRequest)
+  // @@protoc_insertion_point(serialize_end:shardora.network.protobuf.GetNetworkNodesRequest)
 }
 
 ::google::protobuf::uint8* GetNetworkNodesRequest::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.network.protobuf.GetNetworkNodesRequest)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.network.protobuf.GetNetworkNodesRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -440,12 +440,12 @@ void GetNetworkNodesRequest::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.network.protobuf.GetNetworkNodesRequest)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.network.protobuf.GetNetworkNodesRequest)
   return target;
 }
 
 size_t GetNetworkNodesRequest::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.network.protobuf.GetNetworkNodesRequest)
+// @@protoc_insertion_point(message_byte_size_start:shardora.network.protobuf.GetNetworkNodesRequest)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -475,22 +475,22 @@ size_t GetNetworkNodesRequest::ByteSizeLong() const {
 }
 
 void GetNetworkNodesRequest::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.network.protobuf.GetNetworkNodesRequest)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.network.protobuf.GetNetworkNodesRequest)
   GOOGLE_DCHECK_NE(&from, this);
   const GetNetworkNodesRequest* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const GetNetworkNodesRequest>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.network.protobuf.GetNetworkNodesRequest)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.network.protobuf.GetNetworkNodesRequest)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.network.protobuf.GetNetworkNodesRequest)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.network.protobuf.GetNetworkNodesRequest)
     MergeFrom(*source);
   }
 }
 
 void GetNetworkNodesRequest::MergeFrom(const GetNetworkNodesRequest& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.network.protobuf.GetNetworkNodesRequest)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.network.protobuf.GetNetworkNodesRequest)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -509,14 +509,14 @@ void GetNetworkNodesRequest::MergeFrom(const GetNetworkNodesRequest& from) {
 }
 
 void GetNetworkNodesRequest::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.network.protobuf.GetNetworkNodesRequest)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.network.protobuf.GetNetworkNodesRequest)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void GetNetworkNodesRequest::CopyFrom(const GetNetworkNodesRequest& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.network.protobuf.GetNetworkNodesRequest)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.network.protobuf.GetNetworkNodesRequest)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -560,7 +560,7 @@ NodeInfo::NodeInfo()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fnetwork_2eproto::scc_info_NodeInfo.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.network.protobuf.NodeInfo)
+  // @@protoc_insertion_point(constructor:shardora.network.protobuf.NodeInfo)
 }
 NodeInfo::NodeInfo(const NodeInfo& from)
   : ::google::protobuf::Message(),
@@ -578,7 +578,7 @@ NodeInfo::NodeInfo(const NodeInfo& from)
   ::memcpy(&sharding_id_, &from.sharding_id_,
     static_cast<size_t>(reinterpret_cast<char*>(&public_port_) -
     reinterpret_cast<char*>(&sharding_id_)) + sizeof(public_port_));
-  // @@protoc_insertion_point(copy_constructor:zjchain.network.protobuf.NodeInfo)
+  // @@protoc_insertion_point(copy_constructor:shardora.network.protobuf.NodeInfo)
 }
 
 void NodeInfo::SharedCtor() {
@@ -590,7 +590,7 @@ void NodeInfo::SharedCtor() {
 }
 
 NodeInfo::~NodeInfo() {
-  // @@protoc_insertion_point(destructor:zjchain.network.protobuf.NodeInfo)
+  // @@protoc_insertion_point(destructor:shardora.network.protobuf.NodeInfo)
   SharedDtor();
 }
 
@@ -614,7 +614,7 @@ const NodeInfo& NodeInfo::default_instance() {
 
 
 void NodeInfo::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.network.protobuf.NodeInfo)
+// @@protoc_insertion_point(message_clear_start:shardora.network.protobuf.NodeInfo)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -641,7 +641,7 @@ bool NodeInfo::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.network.protobuf.NodeInfo)
+  // @@protoc_insertion_point(parse_start:shardora.network.protobuf.NodeInfo)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -711,17 +711,17 @@ bool NodeInfo::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.network.protobuf.NodeInfo)
+  // @@protoc_insertion_point(parse_success:shardora.network.protobuf.NodeInfo)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.network.protobuf.NodeInfo)
+  // @@protoc_insertion_point(parse_failure:shardora.network.protobuf.NodeInfo)
   return false;
 #undef DO_
 }
 
 void NodeInfo::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.network.protobuf.NodeInfo)
+  // @@protoc_insertion_point(serialize_start:shardora.network.protobuf.NodeInfo)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -752,13 +752,13 @@ void NodeInfo::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.network.protobuf.NodeInfo)
+  // @@protoc_insertion_point(serialize_end:shardora.network.protobuf.NodeInfo)
 }
 
 ::google::protobuf::uint8* NodeInfo::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.network.protobuf.NodeInfo)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.network.protobuf.NodeInfo)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -791,12 +791,12 @@ void NodeInfo::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.network.protobuf.NodeInfo)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.network.protobuf.NodeInfo)
   return target;
 }
 
 size_t NodeInfo::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.network.protobuf.NodeInfo)
+// @@protoc_insertion_point(message_byte_size_start:shardora.network.protobuf.NodeInfo)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -840,22 +840,22 @@ size_t NodeInfo::ByteSizeLong() const {
 }
 
 void NodeInfo::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.network.protobuf.NodeInfo)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.network.protobuf.NodeInfo)
   GOOGLE_DCHECK_NE(&from, this);
   const NodeInfo* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const NodeInfo>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.network.protobuf.NodeInfo)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.network.protobuf.NodeInfo)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.network.protobuf.NodeInfo)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.network.protobuf.NodeInfo)
     MergeFrom(*source);
   }
 }
 
 void NodeInfo::MergeFrom(const NodeInfo& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.network.protobuf.NodeInfo)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.network.protobuf.NodeInfo)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -882,14 +882,14 @@ void NodeInfo::MergeFrom(const NodeInfo& from) {
 }
 
 void NodeInfo::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.network.protobuf.NodeInfo)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.network.protobuf.NodeInfo)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void NodeInfo::CopyFrom(const NodeInfo& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.network.protobuf.NodeInfo)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.network.protobuf.NodeInfo)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -934,7 +934,7 @@ GetNetworkNodesResponse::GetNetworkNodesResponse()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fnetwork_2eproto::scc_info_GetNetworkNodesResponse.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.network.protobuf.GetNetworkNodesResponse)
+  // @@protoc_insertion_point(constructor:shardora.network.protobuf.GetNetworkNodesResponse)
 }
 GetNetworkNodesResponse::GetNetworkNodesResponse(const GetNetworkNodesResponse& from)
   : ::google::protobuf::Message(),
@@ -942,14 +942,14 @@ GetNetworkNodesResponse::GetNetworkNodesResponse(const GetNetworkNodesResponse& 
       _has_bits_(from._has_bits_),
       nodes_(from.nodes_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  // @@protoc_insertion_point(copy_constructor:zjchain.network.protobuf.GetNetworkNodesResponse)
+  // @@protoc_insertion_point(copy_constructor:shardora.network.protobuf.GetNetworkNodesResponse)
 }
 
 void GetNetworkNodesResponse::SharedCtor() {
 }
 
 GetNetworkNodesResponse::~GetNetworkNodesResponse() {
-  // @@protoc_insertion_point(destructor:zjchain.network.protobuf.GetNetworkNodesResponse)
+  // @@protoc_insertion_point(destructor:shardora.network.protobuf.GetNetworkNodesResponse)
   SharedDtor();
 }
 
@@ -971,7 +971,7 @@ const GetNetworkNodesResponse& GetNetworkNodesResponse::default_instance() {
 
 
 void GetNetworkNodesResponse::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.network.protobuf.GetNetworkNodesResponse)
+// @@protoc_insertion_point(message_clear_start:shardora.network.protobuf.GetNetworkNodesResponse)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -985,13 +985,13 @@ bool GetNetworkNodesResponse::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.network.protobuf.GetNetworkNodesResponse)
+  // @@protoc_insertion_point(parse_start:shardora.network.protobuf.GetNetworkNodesResponse)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated .zjchain.network.protobuf.NodeInfo nodes = 1;
+      // repeated .shardora.network.protobuf.NodeInfo nodes = 1;
       case 1: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
@@ -1015,21 +1015,21 @@ bool GetNetworkNodesResponse::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.network.protobuf.GetNetworkNodesResponse)
+  // @@protoc_insertion_point(parse_success:shardora.network.protobuf.GetNetworkNodesResponse)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.network.protobuf.GetNetworkNodesResponse)
+  // @@protoc_insertion_point(parse_failure:shardora.network.protobuf.GetNetworkNodesResponse)
   return false;
 #undef DO_
 }
 
 void GetNetworkNodesResponse::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.network.protobuf.GetNetworkNodesResponse)
+  // @@protoc_insertion_point(serialize_start:shardora.network.protobuf.GetNetworkNodesResponse)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // repeated .zjchain.network.protobuf.NodeInfo nodes = 1;
+  // repeated .shardora.network.protobuf.NodeInfo nodes = 1;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->nodes_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
@@ -1042,17 +1042,17 @@ void GetNetworkNodesResponse::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.network.protobuf.GetNetworkNodesResponse)
+  // @@protoc_insertion_point(serialize_end:shardora.network.protobuf.GetNetworkNodesResponse)
 }
 
 ::google::protobuf::uint8* GetNetworkNodesResponse::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.network.protobuf.GetNetworkNodesResponse)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.network.protobuf.GetNetworkNodesResponse)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // repeated .zjchain.network.protobuf.NodeInfo nodes = 1;
+  // repeated .shardora.network.protobuf.NodeInfo nodes = 1;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->nodes_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
@@ -1064,12 +1064,12 @@ void GetNetworkNodesResponse::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.network.protobuf.GetNetworkNodesResponse)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.network.protobuf.GetNetworkNodesResponse)
   return target;
 }
 
 size_t GetNetworkNodesResponse::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.network.protobuf.GetNetworkNodesResponse)
+// @@protoc_insertion_point(message_byte_size_start:shardora.network.protobuf.GetNetworkNodesResponse)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1077,7 +1077,7 @@ size_t GetNetworkNodesResponse::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  // repeated .zjchain.network.protobuf.NodeInfo nodes = 1;
+  // repeated .shardora.network.protobuf.NodeInfo nodes = 1;
   {
     unsigned int count = static_cast<unsigned int>(this->nodes_size());
     total_size += 1UL * count;
@@ -1094,22 +1094,22 @@ size_t GetNetworkNodesResponse::ByteSizeLong() const {
 }
 
 void GetNetworkNodesResponse::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.network.protobuf.GetNetworkNodesResponse)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.network.protobuf.GetNetworkNodesResponse)
   GOOGLE_DCHECK_NE(&from, this);
   const GetNetworkNodesResponse* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const GetNetworkNodesResponse>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.network.protobuf.GetNetworkNodesResponse)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.network.protobuf.GetNetworkNodesResponse)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.network.protobuf.GetNetworkNodesResponse)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.network.protobuf.GetNetworkNodesResponse)
     MergeFrom(*source);
   }
 }
 
 void GetNetworkNodesResponse::MergeFrom(const GetNetworkNodesResponse& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.network.protobuf.GetNetworkNodesResponse)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.network.protobuf.GetNetworkNodesResponse)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -1119,14 +1119,14 @@ void GetNetworkNodesResponse::MergeFrom(const GetNetworkNodesResponse& from) {
 }
 
 void GetNetworkNodesResponse::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.network.protobuf.GetNetworkNodesResponse)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.network.protobuf.GetNetworkNodesResponse)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void GetNetworkNodesResponse::CopyFrom(const GetNetworkNodesResponse& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.network.protobuf.GetNetworkNodesResponse)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.network.protobuf.GetNetworkNodesResponse)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1167,7 +1167,7 @@ DropNodeRequest::DropNodeRequest()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fnetwork_2eproto::scc_info_DropNodeRequest.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.network.protobuf.DropNodeRequest)
+  // @@protoc_insertion_point(constructor:shardora.network.protobuf.DropNodeRequest)
 }
 DropNodeRequest::DropNodeRequest(const DropNodeRequest& from)
   : ::google::protobuf::Message(),
@@ -1179,7 +1179,7 @@ DropNodeRequest::DropNodeRequest(const DropNodeRequest& from)
     ip_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.ip_);
   }
   port_ = from.port_;
-  // @@protoc_insertion_point(copy_constructor:zjchain.network.protobuf.DropNodeRequest)
+  // @@protoc_insertion_point(copy_constructor:shardora.network.protobuf.DropNodeRequest)
 }
 
 void DropNodeRequest::SharedCtor() {
@@ -1188,7 +1188,7 @@ void DropNodeRequest::SharedCtor() {
 }
 
 DropNodeRequest::~DropNodeRequest() {
-  // @@protoc_insertion_point(destructor:zjchain.network.protobuf.DropNodeRequest)
+  // @@protoc_insertion_point(destructor:shardora.network.protobuf.DropNodeRequest)
   SharedDtor();
 }
 
@@ -1211,7 +1211,7 @@ const DropNodeRequest& DropNodeRequest::default_instance() {
 
 
 void DropNodeRequest::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.network.protobuf.DropNodeRequest)
+// @@protoc_insertion_point(message_clear_start:shardora.network.protobuf.DropNodeRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -1229,7 +1229,7 @@ bool DropNodeRequest::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.network.protobuf.DropNodeRequest)
+  // @@protoc_insertion_point(parse_start:shardora.network.protobuf.DropNodeRequest)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -1273,17 +1273,17 @@ bool DropNodeRequest::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.network.protobuf.DropNodeRequest)
+  // @@protoc_insertion_point(parse_success:shardora.network.protobuf.DropNodeRequest)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.network.protobuf.DropNodeRequest)
+  // @@protoc_insertion_point(parse_failure:shardora.network.protobuf.DropNodeRequest)
   return false;
 #undef DO_
 }
 
 void DropNodeRequest::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.network.protobuf.DropNodeRequest)
+  // @@protoc_insertion_point(serialize_start:shardora.network.protobuf.DropNodeRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1303,13 +1303,13 @@ void DropNodeRequest::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.network.protobuf.DropNodeRequest)
+  // @@protoc_insertion_point(serialize_end:shardora.network.protobuf.DropNodeRequest)
 }
 
 ::google::protobuf::uint8* DropNodeRequest::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.network.protobuf.DropNodeRequest)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.network.protobuf.DropNodeRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1330,12 +1330,12 @@ void DropNodeRequest::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.network.protobuf.DropNodeRequest)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.network.protobuf.DropNodeRequest)
   return target;
 }
 
 size_t DropNodeRequest::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.network.protobuf.DropNodeRequest)
+// @@protoc_insertion_point(message_byte_size_start:shardora.network.protobuf.DropNodeRequest)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1365,22 +1365,22 @@ size_t DropNodeRequest::ByteSizeLong() const {
 }
 
 void DropNodeRequest::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.network.protobuf.DropNodeRequest)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.network.protobuf.DropNodeRequest)
   GOOGLE_DCHECK_NE(&from, this);
   const DropNodeRequest* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const DropNodeRequest>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.network.protobuf.DropNodeRequest)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.network.protobuf.DropNodeRequest)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.network.protobuf.DropNodeRequest)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.network.protobuf.DropNodeRequest)
     MergeFrom(*source);
   }
 }
 
 void DropNodeRequest::MergeFrom(const DropNodeRequest& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.network.protobuf.DropNodeRequest)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.network.protobuf.DropNodeRequest)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -1400,14 +1400,14 @@ void DropNodeRequest::MergeFrom(const DropNodeRequest& from) {
 }
 
 void DropNodeRequest::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.network.protobuf.DropNodeRequest)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.network.protobuf.DropNodeRequest)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void DropNodeRequest::CopyFrom(const DropNodeRequest& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.network.protobuf.DropNodeRequest)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.network.protobuf.DropNodeRequest)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1439,12 +1439,12 @@ void DropNodeRequest::InternalSwap(DropNodeRequest* other) {
 // ===================================================================
 
 void NetworkMessage::InitAsDefaultInstance() {
-  ::zjchain::network::protobuf::_NetworkMessage_default_instance_._instance.get_mutable()->get_net_nodes_req_ = const_cast< ::zjchain::network::protobuf::GetNetworkNodesRequest*>(
-      ::zjchain::network::protobuf::GetNetworkNodesRequest::internal_default_instance());
-  ::zjchain::network::protobuf::_NetworkMessage_default_instance_._instance.get_mutable()->get_net_nodes_res_ = const_cast< ::zjchain::network::protobuf::GetNetworkNodesResponse*>(
-      ::zjchain::network::protobuf::GetNetworkNodesResponse::internal_default_instance());
-  ::zjchain::network::protobuf::_NetworkMessage_default_instance_._instance.get_mutable()->drop_node_ = const_cast< ::zjchain::network::protobuf::DropNodeRequest*>(
-      ::zjchain::network::protobuf::DropNodeRequest::internal_default_instance());
+  ::shardora::network::protobuf::_NetworkMessage_default_instance_._instance.get_mutable()->get_net_nodes_req_ = const_cast< ::shardora::network::protobuf::GetNetworkNodesRequest*>(
+      ::shardora::network::protobuf::GetNetworkNodesRequest::internal_default_instance());
+  ::shardora::network::protobuf::_NetworkMessage_default_instance_._instance.get_mutable()->get_net_nodes_res_ = const_cast< ::shardora::network::protobuf::GetNetworkNodesResponse*>(
+      ::shardora::network::protobuf::GetNetworkNodesResponse::internal_default_instance());
+  ::shardora::network::protobuf::_NetworkMessage_default_instance_._instance.get_mutable()->drop_node_ = const_cast< ::shardora::network::protobuf::DropNodeRequest*>(
+      ::shardora::network::protobuf::DropNodeRequest::internal_default_instance());
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int NetworkMessage::kGetNetNodesReqFieldNumber;
@@ -1457,7 +1457,7 @@ NetworkMessage::NetworkMessage()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fnetwork_2eproto::scc_info_NetworkMessage.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.network.protobuf.NetworkMessage)
+  // @@protoc_insertion_point(constructor:shardora.network.protobuf.NetworkMessage)
 }
 NetworkMessage::NetworkMessage(const NetworkMessage& from)
   : ::google::protobuf::Message(),
@@ -1465,21 +1465,21 @@ NetworkMessage::NetworkMessage(const NetworkMessage& from)
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.has_get_net_nodes_req()) {
-    get_net_nodes_req_ = new ::zjchain::network::protobuf::GetNetworkNodesRequest(*from.get_net_nodes_req_);
+    get_net_nodes_req_ = new ::shardora::network::protobuf::GetNetworkNodesRequest(*from.get_net_nodes_req_);
   } else {
     get_net_nodes_req_ = NULL;
   }
   if (from.has_get_net_nodes_res()) {
-    get_net_nodes_res_ = new ::zjchain::network::protobuf::GetNetworkNodesResponse(*from.get_net_nodes_res_);
+    get_net_nodes_res_ = new ::shardora::network::protobuf::GetNetworkNodesResponse(*from.get_net_nodes_res_);
   } else {
     get_net_nodes_res_ = NULL;
   }
   if (from.has_drop_node()) {
-    drop_node_ = new ::zjchain::network::protobuf::DropNodeRequest(*from.drop_node_);
+    drop_node_ = new ::shardora::network::protobuf::DropNodeRequest(*from.drop_node_);
   } else {
     drop_node_ = NULL;
   }
-  // @@protoc_insertion_point(copy_constructor:zjchain.network.protobuf.NetworkMessage)
+  // @@protoc_insertion_point(copy_constructor:shardora.network.protobuf.NetworkMessage)
 }
 
 void NetworkMessage::SharedCtor() {
@@ -1489,7 +1489,7 @@ void NetworkMessage::SharedCtor() {
 }
 
 NetworkMessage::~NetworkMessage() {
-  // @@protoc_insertion_point(destructor:zjchain.network.protobuf.NetworkMessage)
+  // @@protoc_insertion_point(destructor:shardora.network.protobuf.NetworkMessage)
   SharedDtor();
 }
 
@@ -1514,7 +1514,7 @@ const NetworkMessage& NetworkMessage::default_instance() {
 
 
 void NetworkMessage::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.network.protobuf.NetworkMessage)
+// @@protoc_insertion_point(message_clear_start:shardora.network.protobuf.NetworkMessage)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -1542,13 +1542,13 @@ bool NetworkMessage::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.network.protobuf.NetworkMessage)
+  // @@protoc_insertion_point(parse_start:shardora.network.protobuf.NetworkMessage)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional .zjchain.network.protobuf.GetNetworkNodesRequest get_net_nodes_req = 1;
+      // optional .shardora.network.protobuf.GetNetworkNodesRequest get_net_nodes_req = 1;
       case 1: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
@@ -1560,7 +1560,7 @@ bool NetworkMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .zjchain.network.protobuf.GetNetworkNodesResponse get_net_nodes_res = 2;
+      // optional .shardora.network.protobuf.GetNetworkNodesResponse get_net_nodes_res = 2;
       case 2: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
@@ -1572,7 +1572,7 @@ bool NetworkMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .zjchain.network.protobuf.DropNodeRequest drop_node = 3;
+      // optional .shardora.network.protobuf.DropNodeRequest drop_node = 3;
       case 3: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
@@ -1596,34 +1596,34 @@ bool NetworkMessage::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.network.protobuf.NetworkMessage)
+  // @@protoc_insertion_point(parse_success:shardora.network.protobuf.NetworkMessage)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.network.protobuf.NetworkMessage)
+  // @@protoc_insertion_point(parse_failure:shardora.network.protobuf.NetworkMessage)
   return false;
 #undef DO_
 }
 
 void NetworkMessage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.network.protobuf.NetworkMessage)
+  // @@protoc_insertion_point(serialize_start:shardora.network.protobuf.NetworkMessage)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  // optional .zjchain.network.protobuf.GetNetworkNodesRequest get_net_nodes_req = 1;
+  // optional .shardora.network.protobuf.GetNetworkNodesRequest get_net_nodes_req = 1;
   if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       1, this->_internal_get_net_nodes_req(), output);
   }
 
-  // optional .zjchain.network.protobuf.GetNetworkNodesResponse get_net_nodes_res = 2;
+  // optional .shardora.network.protobuf.GetNetworkNodesResponse get_net_nodes_res = 2;
   if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       2, this->_internal_get_net_nodes_res(), output);
   }
 
-  // optional .zjchain.network.protobuf.DropNodeRequest drop_node = 3;
+  // optional .shardora.network.protobuf.DropNodeRequest drop_node = 3;
   if (cached_has_bits & 0x00000004u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       3, this->_internal_drop_node(), output);
@@ -1633,32 +1633,32 @@ void NetworkMessage::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.network.protobuf.NetworkMessage)
+  // @@protoc_insertion_point(serialize_end:shardora.network.protobuf.NetworkMessage)
 }
 
 ::google::protobuf::uint8* NetworkMessage::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.network.protobuf.NetworkMessage)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.network.protobuf.NetworkMessage)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  // optional .zjchain.network.protobuf.GetNetworkNodesRequest get_net_nodes_req = 1;
+  // optional .shardora.network.protobuf.GetNetworkNodesRequest get_net_nodes_req = 1;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
         1, this->_internal_get_net_nodes_req(), deterministic, target);
   }
 
-  // optional .zjchain.network.protobuf.GetNetworkNodesResponse get_net_nodes_res = 2;
+  // optional .shardora.network.protobuf.GetNetworkNodesResponse get_net_nodes_res = 2;
   if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
         2, this->_internal_get_net_nodes_res(), deterministic, target);
   }
 
-  // optional .zjchain.network.protobuf.DropNodeRequest drop_node = 3;
+  // optional .shardora.network.protobuf.DropNodeRequest drop_node = 3;
   if (cached_has_bits & 0x00000004u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
@@ -1669,12 +1669,12 @@ void NetworkMessage::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.network.protobuf.NetworkMessage)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.network.protobuf.NetworkMessage)
   return target;
 }
 
 size_t NetworkMessage::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.network.protobuf.NetworkMessage)
+// @@protoc_insertion_point(message_byte_size_start:shardora.network.protobuf.NetworkMessage)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1683,21 +1683,21 @@ size_t NetworkMessage::ByteSizeLong() const {
         _internal_metadata_.unknown_fields());
   }
   if (_has_bits_[0 / 32] & 7u) {
-    // optional .zjchain.network.protobuf.GetNetworkNodesRequest get_net_nodes_req = 1;
+    // optional .shardora.network.protobuf.GetNetworkNodesRequest get_net_nodes_req = 1;
     if (has_get_net_nodes_req()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           *get_net_nodes_req_);
     }
 
-    // optional .zjchain.network.protobuf.GetNetworkNodesResponse get_net_nodes_res = 2;
+    // optional .shardora.network.protobuf.GetNetworkNodesResponse get_net_nodes_res = 2;
     if (has_get_net_nodes_res()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           *get_net_nodes_res_);
     }
 
-    // optional .zjchain.network.protobuf.DropNodeRequest drop_node = 3;
+    // optional .shardora.network.protobuf.DropNodeRequest drop_node = 3;
     if (has_drop_node()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
@@ -1711,22 +1711,22 @@ size_t NetworkMessage::ByteSizeLong() const {
 }
 
 void NetworkMessage::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.network.protobuf.NetworkMessage)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.network.protobuf.NetworkMessage)
   GOOGLE_DCHECK_NE(&from, this);
   const NetworkMessage* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const NetworkMessage>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.network.protobuf.NetworkMessage)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.network.protobuf.NetworkMessage)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.network.protobuf.NetworkMessage)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.network.protobuf.NetworkMessage)
     MergeFrom(*source);
   }
 }
 
 void NetworkMessage::MergeFrom(const NetworkMessage& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.network.protobuf.NetworkMessage)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.network.protobuf.NetworkMessage)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -1735,26 +1735,26 @@ void NetworkMessage::MergeFrom(const NetworkMessage& from) {
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
-      mutable_get_net_nodes_req()->::zjchain::network::protobuf::GetNetworkNodesRequest::MergeFrom(from.get_net_nodes_req());
+      mutable_get_net_nodes_req()->::shardora::network::protobuf::GetNetworkNodesRequest::MergeFrom(from.get_net_nodes_req());
     }
     if (cached_has_bits & 0x00000002u) {
-      mutable_get_net_nodes_res()->::zjchain::network::protobuf::GetNetworkNodesResponse::MergeFrom(from.get_net_nodes_res());
+      mutable_get_net_nodes_res()->::shardora::network::protobuf::GetNetworkNodesResponse::MergeFrom(from.get_net_nodes_res());
     }
     if (cached_has_bits & 0x00000004u) {
-      mutable_drop_node()->::zjchain::network::protobuf::DropNodeRequest::MergeFrom(from.drop_node());
+      mutable_drop_node()->::shardora::network::protobuf::DropNodeRequest::MergeFrom(from.drop_node());
     }
   }
 }
 
 void NetworkMessage::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.network.protobuf.NetworkMessage)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.network.protobuf.NetworkMessage)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void NetworkMessage::CopyFrom(const NetworkMessage& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.network.protobuf.NetworkMessage)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.network.protobuf.NetworkMessage)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1786,23 +1786,23 @@ void NetworkMessage::InternalSwap(NetworkMessage* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace network
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::network::protobuf::GetNetworkNodesRequest* Arena::CreateMaybeMessage< ::zjchain::network::protobuf::GetNetworkNodesRequest >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::network::protobuf::GetNetworkNodesRequest >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::network::protobuf::GetNetworkNodesRequest* Arena::CreateMaybeMessage< ::shardora::network::protobuf::GetNetworkNodesRequest >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::network::protobuf::GetNetworkNodesRequest >(arena);
 }
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::network::protobuf::NodeInfo* Arena::CreateMaybeMessage< ::zjchain::network::protobuf::NodeInfo >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::network::protobuf::NodeInfo >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::network::protobuf::NodeInfo* Arena::CreateMaybeMessage< ::shardora::network::protobuf::NodeInfo >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::network::protobuf::NodeInfo >(arena);
 }
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::network::protobuf::GetNetworkNodesResponse* Arena::CreateMaybeMessage< ::zjchain::network::protobuf::GetNetworkNodesResponse >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::network::protobuf::GetNetworkNodesResponse >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::network::protobuf::GetNetworkNodesResponse* Arena::CreateMaybeMessage< ::shardora::network::protobuf::GetNetworkNodesResponse >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::network::protobuf::GetNetworkNodesResponse >(arena);
 }
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::network::protobuf::DropNodeRequest* Arena::CreateMaybeMessage< ::zjchain::network::protobuf::DropNodeRequest >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::network::protobuf::DropNodeRequest >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::network::protobuf::DropNodeRequest* Arena::CreateMaybeMessage< ::shardora::network::protobuf::DropNodeRequest >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::network::protobuf::DropNodeRequest >(arena);
 }
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::network::protobuf::NetworkMessage* Arena::CreateMaybeMessage< ::zjchain::network::protobuf::NetworkMessage >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::network::protobuf::NetworkMessage >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::network::protobuf::NetworkMessage* Arena::CreateMaybeMessage< ::shardora::network::protobuf::NetworkMessage >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::network::protobuf::NetworkMessage >(arena);
 }
 }  // namespace protobuf
 }  // namespace google

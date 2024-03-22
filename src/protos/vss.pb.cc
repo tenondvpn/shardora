@@ -19,7 +19,7 @@
 #endif
 // @@protoc_insertion_point(includes)
 
-namespace zjchain {
+namespace shardora {
 namespace vss {
 namespace protobuf {
 class VssMessageDefaultTypeInternal {
@@ -29,17 +29,17 @@ class VssMessageDefaultTypeInternal {
 } _VssMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace vss
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2fvss_2eproto {
 static void InitDefaultsVssMessage() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::vss::protobuf::_VssMessage_default_instance_;
-    new (ptr) ::zjchain::vss::protobuf::VssMessage();
+    void* ptr = &::shardora::vss::protobuf::_VssMessage_default_instance_;
+    new (ptr) ::shardora::vss::protobuf::VssMessage();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::vss::protobuf::VssMessage::InitAsDefaultInstance();
+  ::shardora::vss::protobuf::VssMessage::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<0> scc_info_VssMessage =
@@ -52,17 +52,17 @@ void InitDefaults() {
 ::google::protobuf::Metadata file_level_metadata[1];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::vss::protobuf::VssMessage, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::vss::protobuf::VssMessage, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::vss::protobuf::VssMessage, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::vss::protobuf::VssMessage, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::vss::protobuf::VssMessage, random_hash_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::vss::protobuf::VssMessage, random_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::vss::protobuf::VssMessage, member_index_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::vss::protobuf::VssMessage, tm_height_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::vss::protobuf::VssMessage, elect_height_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::vss::protobuf::VssMessage, type_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::vss::protobuf::VssMessage, random_hash_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::vss::protobuf::VssMessage, random_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::vss::protobuf::VssMessage, member_index_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::vss::protobuf::VssMessage, tm_height_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::vss::protobuf::VssMessage, elect_height_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::vss::protobuf::VssMessage, type_),
   0,
   1,
   3,
@@ -71,11 +71,11 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   4,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 11, sizeof(::zjchain::vss::protobuf::VssMessage)},
+  { 0, 11, sizeof(::shardora::vss::protobuf::VssMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::vss::protobuf::_VssMessage_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::vss::protobuf::_VssMessage_default_instance_),
 };
 
 void protobuf_AssignDescriptors() {
@@ -99,14 +99,14 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\020protos/vss.proto\022\024zjchain.vss.protobuf"
-      "\"~\n\nVssMessage\022\023\n\013random_hash\030\001 \001(\004\022\016\n\006r"
-      "andom\030\002 \001(\004\022\024\n\014member_index\030\003 \001(\r\022\021\n\ttm_"
-      "height\030\004 \001(\004\022\024\n\014elect_height\030\005 \001(\004\022\014\n\004ty"
-      "pe\030\006 \001(\005"
+      "\n\020protos/vss.proto\022\025shardora.vss.protobu"
+      "f\"~\n\nVssMessage\022\023\n\013random_hash\030\001 \001(\004\022\016\n\006"
+      "random\030\002 \001(\004\022\024\n\014member_index\030\003 \001(\r\022\021\n\ttm"
+      "_height\030\004 \001(\004\022\024\n\014elect_height\030\005 \001(\004\022\014\n\004t"
+      "ype\030\006 \001(\005"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 168);
+      descriptor, 169);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/vss.proto", &protobuf_RegisterTypes);
 }
@@ -122,7 +122,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2fvss_2eproto
-namespace zjchain {
+namespace shardora {
 namespace vss {
 namespace protobuf {
 
@@ -144,7 +144,7 @@ VssMessage::VssMessage()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fvss_2eproto::scc_info_VssMessage.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.vss.protobuf.VssMessage)
+  // @@protoc_insertion_point(constructor:shardora.vss.protobuf.VssMessage)
 }
 VssMessage::VssMessage(const VssMessage& from)
   : ::google::protobuf::Message(),
@@ -154,7 +154,7 @@ VssMessage::VssMessage(const VssMessage& from)
   ::memcpy(&random_hash_, &from.random_hash_,
     static_cast<size_t>(reinterpret_cast<char*>(&elect_height_) -
     reinterpret_cast<char*>(&random_hash_)) + sizeof(elect_height_));
-  // @@protoc_insertion_point(copy_constructor:zjchain.vss.protobuf.VssMessage)
+  // @@protoc_insertion_point(copy_constructor:shardora.vss.protobuf.VssMessage)
 }
 
 void VssMessage::SharedCtor() {
@@ -164,7 +164,7 @@ void VssMessage::SharedCtor() {
 }
 
 VssMessage::~VssMessage() {
-  // @@protoc_insertion_point(destructor:zjchain.vss.protobuf.VssMessage)
+  // @@protoc_insertion_point(destructor:shardora.vss.protobuf.VssMessage)
   SharedDtor();
 }
 
@@ -186,7 +186,7 @@ const VssMessage& VssMessage::default_instance() {
 
 
 void VssMessage::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.vss.protobuf.VssMessage)
+// @@protoc_insertion_point(message_clear_start:shardora.vss.protobuf.VssMessage)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -205,7 +205,7 @@ bool VssMessage::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.vss.protobuf.VssMessage)
+  // @@protoc_insertion_point(parse_start:shardora.vss.protobuf.VssMessage)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -307,17 +307,17 @@ bool VssMessage::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.vss.protobuf.VssMessage)
+  // @@protoc_insertion_point(parse_success:shardora.vss.protobuf.VssMessage)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.vss.protobuf.VssMessage)
+  // @@protoc_insertion_point(parse_failure:shardora.vss.protobuf.VssMessage)
   return false;
 #undef DO_
 }
 
 void VssMessage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.vss.protobuf.VssMessage)
+  // @@protoc_insertion_point(serialize_start:shardora.vss.protobuf.VssMessage)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -356,13 +356,13 @@ void VssMessage::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.vss.protobuf.VssMessage)
+  // @@protoc_insertion_point(serialize_end:shardora.vss.protobuf.VssMessage)
 }
 
 ::google::protobuf::uint8* VssMessage::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.vss.protobuf.VssMessage)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.vss.protobuf.VssMessage)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -401,12 +401,12 @@ void VssMessage::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.vss.protobuf.VssMessage)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.vss.protobuf.VssMessage)
   return target;
 }
 
 size_t VssMessage::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.vss.protobuf.VssMessage)
+// @@protoc_insertion_point(message_byte_size_start:shardora.vss.protobuf.VssMessage)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -464,22 +464,22 @@ size_t VssMessage::ByteSizeLong() const {
 }
 
 void VssMessage::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.vss.protobuf.VssMessage)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.vss.protobuf.VssMessage)
   GOOGLE_DCHECK_NE(&from, this);
   const VssMessage* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const VssMessage>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.vss.protobuf.VssMessage)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.vss.protobuf.VssMessage)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.vss.protobuf.VssMessage)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.vss.protobuf.VssMessage)
     MergeFrom(*source);
   }
 }
 
 void VssMessage::MergeFrom(const VssMessage& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.vss.protobuf.VssMessage)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.vss.protobuf.VssMessage)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -510,14 +510,14 @@ void VssMessage::MergeFrom(const VssMessage& from) {
 }
 
 void VssMessage::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.vss.protobuf.VssMessage)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.vss.protobuf.VssMessage)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void VssMessage::CopyFrom(const VssMessage& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.vss.protobuf.VssMessage)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.vss.protobuf.VssMessage)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -552,11 +552,11 @@ void VssMessage::InternalSwap(VssMessage* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace vss
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::vss::protobuf::VssMessage* Arena::CreateMaybeMessage< ::zjchain::vss::protobuf::VssMessage >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::vss::protobuf::VssMessage >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::vss::protobuf::VssMessage* Arena::CreateMaybeMessage< ::shardora::vss::protobuf::VssMessage >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::vss::protobuf::VssMessage >(arena);
 }
 }  // namespace protobuf
 }  // namespace google

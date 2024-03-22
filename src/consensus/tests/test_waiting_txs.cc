@@ -17,7 +17,7 @@
 #include "protos/pools.pb.h"
 #include "security/ecdsa/ecdsa.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -165,4 +165,4 @@ TEST_F(TestWaitingTxs, GetValidTxs) {
 
 }  // namespace consensus
 
-}  // namespace zjchain
+}  // namespace shardora

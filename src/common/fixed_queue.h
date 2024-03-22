@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -106,4 +106,4 @@ public:
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

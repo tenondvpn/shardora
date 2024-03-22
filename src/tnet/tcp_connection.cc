@@ -5,7 +5,7 @@
 #include "tnet/socket/client_socket.h"
 #include <common/log.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace tnet {
 
@@ -435,4 +435,4 @@ void TcpConnection::ReleaseByIOThread() {
 
 }  // namespace tnet
 
-}  // namespace zjchain
+}  // namespace shardora

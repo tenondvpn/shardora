@@ -7,7 +7,7 @@
 #include "protos/vss.pb.h"
 #include "protos/zbft.pb.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace protos {
 
@@ -287,4 +287,4 @@ std::string GetJoinElectReqHash(const bls::protobuf::JoinElectInfo& req) {
 
 };  // namespace protos
 
-};  // namespace zjchain
+};  // namespace shardora

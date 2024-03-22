@@ -4,7 +4,7 @@
 
 #include "contract/contract_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace zjcvm {
     class ZjchainHost;
@@ -38,4 +38,4 @@ struct CallParameters {
 
 }  // namespace contact
 
-}  // namespace zjchain
+}  // namespace shardora

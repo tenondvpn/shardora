@@ -9,7 +9,7 @@
 #include "pools/height_tree_level.h"
 #include "db/db.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
 
@@ -135,4 +135,4 @@ TEST_F(TestHeightTreeLevel, GetInvalidHeights) {
 
 }  // namespace pools
 
-}  // namespace zjchain
+}  // namespace shardora

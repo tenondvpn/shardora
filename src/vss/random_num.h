@@ -12,7 +12,7 @@
 #include "protos/vss.pb.h"
 #include "vss/vss_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace vss {
 
@@ -106,4 +106,4 @@ typedef std::shared_ptr<RandomNum> RandomNumPtr;
 
 }  // namespace vss
 
-}  // namespace zjchain
+}  // namespace shardora

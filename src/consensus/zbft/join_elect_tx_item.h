@@ -5,7 +5,7 @@
 #include "elect/elect_manager.h"
 #include "security/security.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -37,4 +37,4 @@ private:
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

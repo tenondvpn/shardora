@@ -21,7 +21,7 @@
 #include "election/elect_dht.h"
 #include "db/db.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace sync {
 
@@ -118,4 +118,4 @@ TEST_F(TestKeyValueSync, TestSyncHeight) {
 
 }  // namespace sync
 
-}  // namespace zjchain
+}  // namespace shardora

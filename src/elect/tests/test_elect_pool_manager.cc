@@ -20,7 +20,7 @@
 // #include "security/crypto_utils.h"
 // #include "security/security.h"
 // 
-// namespace zjchain {
+// namespace shardora {
 // 
 // namespace elect {
 // 
@@ -425,4 +425,4 @@
 // 
 // }  // namespace elect
 // 
-// }  // namespace zjchain
+// }  // namespace shardora

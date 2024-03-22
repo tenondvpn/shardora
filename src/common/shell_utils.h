@@ -2,7 +2,7 @@
 
 #include "common/utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -22,4 +22,4 @@ int32_t RunShellCmdToGetOutput(const std::string& cmd, std::string* res) {
 
 };  // namespace common
 
-};  // namespace zjchain
+};  // namespace shardora

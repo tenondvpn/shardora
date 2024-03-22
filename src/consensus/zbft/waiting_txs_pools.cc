@@ -2,7 +2,7 @@
 
 #include "consensus/zbft/zbft.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -226,4 +226,4 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::FollowerGetTxs(
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

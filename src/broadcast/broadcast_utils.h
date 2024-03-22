@@ -8,7 +8,7 @@
 #define BROAD_WARN(fmt, ...) ZJC_WARN("[broadcast]" fmt, ## __VA_ARGS__)
 #define BROAD_ERROR(fmt, ...) ZJC_ERROR("[broadcast]" fmt, ## __VA_ARGS__)
 
-namespace zjchain {
+namespace shardora {
 
 namespace broadcast {
 
@@ -21,4 +21,4 @@ static const uint32_t kBroadcastIgnBloomfilter = 1u;
 
 }  // namespace broadcast
 
-}  // namespace zjchain
+}  // namespace shardora

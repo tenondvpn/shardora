@@ -21,7 +21,7 @@
 #include "protos/tx_storage_key.h"
 #include "security/security.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace protos {
 
@@ -1670,4 +1670,4 @@ private:
 
 };  // namespace protos
 
-};  // namespace zjchain
+};  // namespace shardora

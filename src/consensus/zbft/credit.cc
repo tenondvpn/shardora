@@ -1,6 +1,6 @@
 #include "consensus/zbft/credit.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -120,4 +120,4 @@ void Credit::StatisticCredit() {
 
 }  // namespace consensus
 
-}  //namespace zjchain
+}  //namespace shardora

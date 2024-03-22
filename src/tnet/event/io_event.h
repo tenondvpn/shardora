@@ -2,7 +2,7 @@
 
 #include "tnet/event/event_handler.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace tnet {
 
@@ -60,4 +60,4 @@ private:
 
 }  // namespace tnet
 
-}  // namespace zjchain
+}  // namespace shardora

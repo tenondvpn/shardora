@@ -13,7 +13,7 @@
 #include "security/ecdsa/public_key.h"
 #include "security/ecdsa/security_string_trans.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace security {
 
@@ -313,4 +313,4 @@ std::string Secp256k1::ToAddressWithPublicKey(
 
 }  // namespace security
 
-}  // namespace zjchain
+}  // namespace shardora

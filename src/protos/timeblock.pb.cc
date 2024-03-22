@@ -19,7 +19,7 @@
 #endif
 // @@protoc_insertion_point(includes)
 
-namespace zjchain {
+namespace shardora {
 namespace timeblock {
 namespace protobuf {
 class TimeBlockDefaultTypeInternal {
@@ -29,17 +29,17 @@ class TimeBlockDefaultTypeInternal {
 } _TimeBlock_default_instance_;
 }  // namespace protobuf
 }  // namespace timeblock
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2ftimeblock_2eproto {
 static void InitDefaultsTimeBlock() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::timeblock::protobuf::_TimeBlock_default_instance_;
-    new (ptr) ::zjchain::timeblock::protobuf::TimeBlock();
+    void* ptr = &::shardora::timeblock::protobuf::_TimeBlock_default_instance_;
+    new (ptr) ::shardora::timeblock::protobuf::TimeBlock();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::timeblock::protobuf::TimeBlock::InitAsDefaultInstance();
+  ::shardora::timeblock::protobuf::TimeBlock::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<0> scc_info_TimeBlock =
@@ -52,24 +52,24 @@ void InitDefaults() {
 ::google::protobuf::Metadata file_level_metadata[1];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::timeblock::protobuf::TimeBlock, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::timeblock::protobuf::TimeBlock, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::timeblock::protobuf::TimeBlock, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::timeblock::protobuf::TimeBlock, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::timeblock::protobuf::TimeBlock, height_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::timeblock::protobuf::TimeBlock, timestamp_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::timeblock::protobuf::TimeBlock, vss_random_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::timeblock::protobuf::TimeBlock, height_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::timeblock::protobuf::TimeBlock, timestamp_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::timeblock::protobuf::TimeBlock, vss_random_),
   0,
   1,
   2,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 8, sizeof(::zjchain::timeblock::protobuf::TimeBlock)},
+  { 0, 8, sizeof(::shardora::timeblock::protobuf::TimeBlock)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::timeblock::protobuf::_TimeBlock_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::timeblock::protobuf::_TimeBlock_default_instance_),
 };
 
 void protobuf_AssignDescriptors() {
@@ -93,12 +93,13 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\026protos/timeblock.proto\022\032zjchain.timebl"
-      "ock.protobuf\"B\n\tTimeBlock\022\016\n\006height\030\001 \001("
-      "\004\022\021\n\ttimestamp\030\002 \001(\004\022\022\n\nvss_random\030\003 \001(\004"
+      "\n\026protos/timeblock.proto\022\033shardora.timeb"
+      "lock.protobuf\"B\n\tTimeBlock\022\016\n\006height\030\001 \001"
+      "(\004\022\021\n\ttimestamp\030\002 \001(\004\022\022\n\nvss_random\030\003 \001("
+      "\004"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 120);
+      descriptor, 121);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/timeblock.proto", &protobuf_RegisterTypes);
 }
@@ -114,7 +115,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2ftimeblock_2eproto
-namespace zjchain {
+namespace shardora {
 namespace timeblock {
 namespace protobuf {
 
@@ -133,7 +134,7 @@ TimeBlock::TimeBlock()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2ftimeblock_2eproto::scc_info_TimeBlock.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.timeblock.protobuf.TimeBlock)
+  // @@protoc_insertion_point(constructor:shardora.timeblock.protobuf.TimeBlock)
 }
 TimeBlock::TimeBlock(const TimeBlock& from)
   : ::google::protobuf::Message(),
@@ -143,7 +144,7 @@ TimeBlock::TimeBlock(const TimeBlock& from)
   ::memcpy(&height_, &from.height_,
     static_cast<size_t>(reinterpret_cast<char*>(&vss_random_) -
     reinterpret_cast<char*>(&height_)) + sizeof(vss_random_));
-  // @@protoc_insertion_point(copy_constructor:zjchain.timeblock.protobuf.TimeBlock)
+  // @@protoc_insertion_point(copy_constructor:shardora.timeblock.protobuf.TimeBlock)
 }
 
 void TimeBlock::SharedCtor() {
@@ -153,7 +154,7 @@ void TimeBlock::SharedCtor() {
 }
 
 TimeBlock::~TimeBlock() {
-  // @@protoc_insertion_point(destructor:zjchain.timeblock.protobuf.TimeBlock)
+  // @@protoc_insertion_point(destructor:shardora.timeblock.protobuf.TimeBlock)
   SharedDtor();
 }
 
@@ -175,7 +176,7 @@ const TimeBlock& TimeBlock::default_instance() {
 
 
 void TimeBlock::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.timeblock.protobuf.TimeBlock)
+// @@protoc_insertion_point(message_clear_start:shardora.timeblock.protobuf.TimeBlock)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -194,7 +195,7 @@ bool TimeBlock::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.timeblock.protobuf.TimeBlock)
+  // @@protoc_insertion_point(parse_start:shardora.timeblock.protobuf.TimeBlock)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -254,17 +255,17 @@ bool TimeBlock::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.timeblock.protobuf.TimeBlock)
+  // @@protoc_insertion_point(parse_success:shardora.timeblock.protobuf.TimeBlock)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.timeblock.protobuf.TimeBlock)
+  // @@protoc_insertion_point(parse_failure:shardora.timeblock.protobuf.TimeBlock)
   return false;
 #undef DO_
 }
 
 void TimeBlock::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.timeblock.protobuf.TimeBlock)
+  // @@protoc_insertion_point(serialize_start:shardora.timeblock.protobuf.TimeBlock)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -288,13 +289,13 @@ void TimeBlock::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.timeblock.protobuf.TimeBlock)
+  // @@protoc_insertion_point(serialize_end:shardora.timeblock.protobuf.TimeBlock)
 }
 
 ::google::protobuf::uint8* TimeBlock::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.timeblock.protobuf.TimeBlock)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.timeblock.protobuf.TimeBlock)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -318,12 +319,12 @@ void TimeBlock::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.timeblock.protobuf.TimeBlock)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.timeblock.protobuf.TimeBlock)
   return target;
 }
 
 size_t TimeBlock::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.timeblock.protobuf.TimeBlock)
+// @@protoc_insertion_point(message_byte_size_start:shardora.timeblock.protobuf.TimeBlock)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -360,22 +361,22 @@ size_t TimeBlock::ByteSizeLong() const {
 }
 
 void TimeBlock::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.timeblock.protobuf.TimeBlock)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.timeblock.protobuf.TimeBlock)
   GOOGLE_DCHECK_NE(&from, this);
   const TimeBlock* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const TimeBlock>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.timeblock.protobuf.TimeBlock)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.timeblock.protobuf.TimeBlock)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.timeblock.protobuf.TimeBlock)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.timeblock.protobuf.TimeBlock)
     MergeFrom(*source);
   }
 }
 
 void TimeBlock::MergeFrom(const TimeBlock& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.timeblock.protobuf.TimeBlock)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.timeblock.protobuf.TimeBlock)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -397,14 +398,14 @@ void TimeBlock::MergeFrom(const TimeBlock& from) {
 }
 
 void TimeBlock::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.timeblock.protobuf.TimeBlock)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.timeblock.protobuf.TimeBlock)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void TimeBlock::CopyFrom(const TimeBlock& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.timeblock.protobuf.TimeBlock)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.timeblock.protobuf.TimeBlock)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -436,11 +437,11 @@ void TimeBlock::InternalSwap(TimeBlock* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace timeblock
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::timeblock::protobuf::TimeBlock* Arena::CreateMaybeMessage< ::zjchain::timeblock::protobuf::TimeBlock >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::timeblock::protobuf::TimeBlock >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::timeblock::protobuf::TimeBlock* Arena::CreateMaybeMessage< ::shardora::timeblock::protobuf::TimeBlock >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::timeblock::protobuf::TimeBlock >(arena);
 }
 }  // namespace protobuf
 }  // namespace google

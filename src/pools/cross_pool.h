@@ -25,7 +25,7 @@
 #include "pools/height_tree_level.h"
 #include "sync/key_value_sync.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
 
@@ -173,4 +173,4 @@ std::shared_ptr<db::Db> db_ = nullptr;
 
 }  // namespace pools
 
-}  // namespace zjchain
+}  // namespace shardora

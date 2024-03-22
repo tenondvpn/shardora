@@ -9,7 +9,7 @@
 #include "dht/dht_key.h"
 #include "protos/network.pb.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace network {
 
@@ -54,4 +54,4 @@ void NetworkProto::CreateGetNetworkNodesResponse(
 
 }  // namespace network
 
-}  // namespace zjchain
+}  // namespace shardora

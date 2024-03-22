@@ -1,6 +1,6 @@
 #include "consensus/zbft/join_elect_tx_item.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -112,4 +112,4 @@ int JoinElectTxItem::HandleTx(
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

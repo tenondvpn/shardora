@@ -14,7 +14,7 @@
 
 #include <google/protobuf/util/json_util.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace init {
 
@@ -439,4 +439,4 @@ void HttpHandler::Init(
 
 };  // namespace init
 
-};  // namespace zjchain
+};  // namespace shardora

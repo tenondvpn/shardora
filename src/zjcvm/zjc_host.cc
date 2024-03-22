@@ -11,7 +11,7 @@
 #include "zjcvm/execution.h"
 #include "zjcvm/zjcvm_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace zjcvm {
 
@@ -366,4 +366,4 @@ evmc_access_status ZjchainHost::access_storage(
 }
 }  // namespace zjcvm
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -6,7 +6,7 @@
 #include "common/node_members.h"
 #include "elect/elect_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace vss {
 
@@ -44,4 +44,4 @@ struct ElectItem {
 
 }  // namespace vss
 
-}  // namespace zjchain
+}  // namespace shardora

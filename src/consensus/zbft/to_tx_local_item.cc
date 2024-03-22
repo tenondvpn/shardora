@@ -2,7 +2,7 @@
 
 #include "zjcvm/execution.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -104,7 +104,7 @@ int ToTxLocalItem::TxToBlockTx(
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora
 
 
 

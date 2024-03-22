@@ -5,7 +5,7 @@
 #include "common/global_info.h"
 #include "tnet/tnet_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace tnet {
 
@@ -106,4 +106,4 @@ void EventLoop::RunTask() {
 
 }  // namespace tnet
 
-}  // namespace zjchain
+}  // namespace shardora

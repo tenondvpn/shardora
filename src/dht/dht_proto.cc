@@ -3,7 +3,7 @@
 #include "security/security.h"
 #include "dht/dht_key.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace dht {
 
@@ -143,5 +143,5 @@ int32_t DhtProto::CreateConnectRequest(
 
 }  // namespace dht
 
-}  //namespace zjchain
+}  //namespace shardora
 

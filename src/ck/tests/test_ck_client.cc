@@ -17,7 +17,7 @@
 #include "dht/dht_utils.h"
 #include "protos/block.pb.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace ck {
 
@@ -197,4 +197,4 @@ TEST_F(TestCk, All) {
 
 }  // namespace ck
 
-}  // namespace zjchain
+}  // namespace shardora

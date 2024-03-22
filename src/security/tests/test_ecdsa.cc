@@ -15,7 +15,7 @@
 #include "security/ecdsa/ecdsa.h"
 #include "security/ecdsa/secp256k1.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace security {
 
@@ -161,4 +161,4 @@ TEST_F(TestEcdsa, TestBench) {
 
 }  // namespace security
 
-}  // namespace zjchain
+}  // namespace shardora

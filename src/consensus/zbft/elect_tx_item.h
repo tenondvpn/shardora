@@ -6,7 +6,7 @@
 #include "security/security.h"
 #include "vss/vss_manager.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -134,4 +134,4 @@ private:
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

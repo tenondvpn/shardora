@@ -12,7 +12,7 @@
 
 #include "common/utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace ws {
 
@@ -29,4 +29,4 @@ static const std::string kInvalidMessage = "kInvalidMessage";
 
 };  // namespace tcp
 
-};  // namespace zjchain
+};  // namespace shardora

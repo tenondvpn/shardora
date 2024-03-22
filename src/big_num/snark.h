@@ -3,7 +3,7 @@
 #include "common/utils.h"
 #include "big_num/bignum_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace bignum {
 
@@ -31,4 +31,4 @@ private:
 
 };  // namespace bignum
 
-};  // namespace zjchain
+};  // namespace shardora

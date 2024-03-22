@@ -11,7 +11,7 @@
 #include "common/spin_mutex.h"
 #include "common/utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -63,4 +63,4 @@ private:
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

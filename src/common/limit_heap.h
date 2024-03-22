@@ -4,7 +4,7 @@
 #include <unordered_set>
 #include "common/hash.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -197,4 +197,4 @@ public:
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

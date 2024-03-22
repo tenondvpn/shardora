@@ -10,7 +10,7 @@
 #include <protos/tx_storage_key.h>
 #include <zjcvm/zjcvm_utils.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -370,7 +370,7 @@ int ContractCreateByRootToTxItem::SaveContractCreateInfo(
 
 }; // namespace consensus
 
-}; // namespace zjchain
+}; // namespace shardora
 
 
 

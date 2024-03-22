@@ -20,7 +20,7 @@
 #include "transport/multi_thread.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools{
     class TxPoolManager;
@@ -236,5 +236,5 @@ private:
 
 }  // namespace block
 
-}  // namespace zjchain
+}  // namespace shardora
 

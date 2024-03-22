@@ -6,7 +6,7 @@
 #include "consensus/zbft/waiting_txs.h"
 #include "timeblock/time_block_manager.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -64,4 +64,4 @@ private:
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

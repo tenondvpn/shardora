@@ -8,7 +8,7 @@
 #include "protos/get_proto_hash.h"
 #include "protos/transport.pb.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace transport {
 
@@ -453,4 +453,4 @@ std::string TcpTransport::GetHeaderHashForSign(const transport::protobuf::Header
 
 }  // namespace transport
 
-}  // namespace zjchain
+}  // namespace shardora

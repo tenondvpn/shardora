@@ -26,7 +26,7 @@
 #include "vss/vss_manager.h"
 #include <yaml-cpp/node/node.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace init {
 
@@ -118,4 +118,4 @@ private:
 
 }  // namespace init
 
-}  // namespace zjchain
+}  // namespace shardora

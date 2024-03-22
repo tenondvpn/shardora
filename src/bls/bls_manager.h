@@ -8,7 +8,7 @@
 #include "bls/bls_utils.h"
 #include "security/security.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace bls {
 
@@ -114,4 +114,4 @@ private:
 
 };  // namespace bls
 
-};  // namespace zjchain
+};  // namespace shardora

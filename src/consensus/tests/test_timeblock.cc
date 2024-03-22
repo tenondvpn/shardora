@@ -21,7 +21,7 @@
 #include "protos/pools.pb.h"
 #include "security/ecdsa/ecdsa.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -257,4 +257,4 @@ TEST_F(TestTimeBlock, TestTimeBlock) {
 
 }  // namespace consensus
 
-}  // namespace zjchain
+}  // namespace shardora

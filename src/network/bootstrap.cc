@@ -7,7 +7,7 @@
 #include "dht/dht_key.h"
 #include "network/network_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace network {
 
@@ -53,7 +53,7 @@ int Bootstrap::Init(common::Config& config, std::shared_ptr<security::Security>&
         std::string pubkey = common::Encode::HexDecode(
             std::string(field_split[0], field_split.SubLen(0)));
         uint16_t port = 0;
-        if (!zjchain::common::StringUtil::ToUint16(field_split[2], &port)) {
+        if (!shardora::common::StringUtil::ToUint16(field_split[2], &port)) {
             return kNetworkError;
         }
 
@@ -61,13 +61,13 @@ int Bootstrap::Init(common::Config& config, std::shared_ptr<security::Security>&
             continue;
         }
 
-        root_bootstrap_.push_back(std::make_shared<zjchain::dht::Node>(
+        root_bootstrap_.push_back(std::make_shared<shardora::dht::Node>(
             kUniversalNetworkId,
             std::string(field_split[1], field_split.SubLen(1)),
             port,
             pubkey,
             security->GetAddress(pubkey)));
-        node_bootstrap_.push_back(std::make_shared<zjchain::dht::Node>(
+        node_bootstrap_.push_back(std::make_shared<shardora::dht::Node>(
             kNodeNetworkId,
             std::string(field_split[1], field_split.SubLen(1)),
             port,
@@ -103,4 +103,4 @@ std::vector<dht::NodePtr> Bootstrap::GetNetworkBootstrap(
 
 }  // namespace network
 
-}  // namespace zjchain
+}  // namespace shardora

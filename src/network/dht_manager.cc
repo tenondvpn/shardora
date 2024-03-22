@@ -10,7 +10,7 @@
 #include "network/universal_manager.h"
 #include "network/universal.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace network {
 
@@ -109,4 +109,4 @@ void DhtManager::Join(const dht::NodePtr& node) {
 
 }  // namespace network
 
-}  // namespace zjchain
+}  // namespace shardora

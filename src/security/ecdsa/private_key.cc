@@ -6,7 +6,7 @@
 #include "security/ecdsa/crypto_utils.h"
 #include "security/ecdsa/security_string_trans.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace security {
 
@@ -66,4 +66,4 @@ int PrivateKey::Deserialize(const std::string& src) {
 
 }  // namespace security
 
-}  // namespace zjchain
+}  // namespace shardora

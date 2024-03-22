@@ -11,7 +11,7 @@
 #include "broadcast/filter_broadcast.h"
 #include "transport/multi_thread.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace broadcast {
 
@@ -22,7 +22,7 @@ static transport::MultiThreadHandler msg_handler_;
 class TestFilterBroadcast : public testing::Test {
 public:
     static void SetUpTestCase() {    
-        zjchain::transport::TcpTransport::Instance()->Init(
+        shardora::transport::TcpTransport::Instance()->Init(
             "127.0.0.1:8990",
             128,
             true,
@@ -174,4 +174,4 @@ TEST_F(TestFilterBroadcast, BroadcastingOverlap) {
 
 }  // namespace db
 
-}  // namespace zjchain
+}  // namespace shardora

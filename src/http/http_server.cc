@@ -7,7 +7,7 @@
 #include "common/global_info.h"
 #include "common/string_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace http {
 
@@ -90,4 +90,4 @@ int32_t HttpServer::Stop() {
 
 };  // namespace http
 
-};  // namespace zjchain
+};  // namespace shardora

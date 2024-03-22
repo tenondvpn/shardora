@@ -12,7 +12,7 @@
 #include "transport/transport_utils.h"
 #include "vss/random_num.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace vss {
 
@@ -106,4 +106,4 @@ private:
 
 }  // namespace vss
 
-}  // namespace zjchain
+}  // namespace shardora

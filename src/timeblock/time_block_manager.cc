@@ -18,7 +18,7 @@
 #include "transport/transport_utils.h"
 #include "vss/vss_manager.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace timeblock {
 
@@ -124,5 +124,5 @@ void TimeBlockManager::OnTimeBlock(
 
 }  // namespace timeblock
 
-}  // namespace zjchain
+}  // namespace shardora
  

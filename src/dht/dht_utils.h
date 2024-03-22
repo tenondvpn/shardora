@@ -17,7 +17,7 @@
 #define DHT_WARN(fmt, ...) ZJC_WARN("[dht]" fmt, ## __VA_ARGS__)
 #define DHT_ERROR(fmt, ...) ZJC_ERROR("[dht]" fmt, ## __VA_ARGS__)
 
-namespace zjchain {
+namespace shardora {
 
 namespace dht {
 
@@ -116,4 +116,4 @@ int DefaultDhtSignCallback(
 
 }  // namespace dht
 
-}  // namespace zjchain
+}  // namespace shardora

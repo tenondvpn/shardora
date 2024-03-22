@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package zjchain.block.protobuf;
+package shardora.block.protobuf;
 import "protos/pools.proto";
 
 message StorageItem {

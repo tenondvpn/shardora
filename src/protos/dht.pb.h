@@ -45,7 +45,7 @@ struct TableStruct {
 };
 void AddDescriptors();
 }  // namespace protobuf_protos_2fdht_2eproto
-namespace zjchain {
+namespace shardora {
 namespace dht {
 namespace protobuf {
 class BootstrapRequest;
@@ -80,28 +80,28 @@ class TimerRequestDefaultTypeInternal;
 extern TimerRequestDefaultTypeInternal _TimerRequest_default_instance_;
 }  // namespace protobuf
 }  // namespace dht
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
-template<> ::zjchain::dht::protobuf::BootstrapRequest* Arena::CreateMaybeMessage<::zjchain::dht::protobuf::BootstrapRequest>(Arena*);
-template<> ::zjchain::dht::protobuf::BootstrapResponse* Arena::CreateMaybeMessage<::zjchain::dht::protobuf::BootstrapResponse>(Arena*);
-template<> ::zjchain::dht::protobuf::ConnectReqeust* Arena::CreateMaybeMessage<::zjchain::dht::protobuf::ConnectReqeust>(Arena*);
-template<> ::zjchain::dht::protobuf::DhtMessage* Arena::CreateMaybeMessage<::zjchain::dht::protobuf::DhtMessage>(Arena*);
-template<> ::zjchain::dht::protobuf::HeartbeatRequest* Arena::CreateMaybeMessage<::zjchain::dht::protobuf::HeartbeatRequest>(Arena*);
-template<> ::zjchain::dht::protobuf::HeartbeatResponse* Arena::CreateMaybeMessage<::zjchain::dht::protobuf::HeartbeatResponse>(Arena*);
-template<> ::zjchain::dht::protobuf::NodeInfo* Arena::CreateMaybeMessage<::zjchain::dht::protobuf::NodeInfo>(Arena*);
-template<> ::zjchain::dht::protobuf::RefreshNeighborsRequest* Arena::CreateMaybeMessage<::zjchain::dht::protobuf::RefreshNeighborsRequest>(Arena*);
-template<> ::zjchain::dht::protobuf::RefreshNeighborsResponse* Arena::CreateMaybeMessage<::zjchain::dht::protobuf::RefreshNeighborsResponse>(Arena*);
-template<> ::zjchain::dht::protobuf::TimerRequest* Arena::CreateMaybeMessage<::zjchain::dht::protobuf::TimerRequest>(Arena*);
+template<> ::shardora::dht::protobuf::BootstrapRequest* Arena::CreateMaybeMessage<::shardora::dht::protobuf::BootstrapRequest>(Arena*);
+template<> ::shardora::dht::protobuf::BootstrapResponse* Arena::CreateMaybeMessage<::shardora::dht::protobuf::BootstrapResponse>(Arena*);
+template<> ::shardora::dht::protobuf::ConnectReqeust* Arena::CreateMaybeMessage<::shardora::dht::protobuf::ConnectReqeust>(Arena*);
+template<> ::shardora::dht::protobuf::DhtMessage* Arena::CreateMaybeMessage<::shardora::dht::protobuf::DhtMessage>(Arena*);
+template<> ::shardora::dht::protobuf::HeartbeatRequest* Arena::CreateMaybeMessage<::shardora::dht::protobuf::HeartbeatRequest>(Arena*);
+template<> ::shardora::dht::protobuf::HeartbeatResponse* Arena::CreateMaybeMessage<::shardora::dht::protobuf::HeartbeatResponse>(Arena*);
+template<> ::shardora::dht::protobuf::NodeInfo* Arena::CreateMaybeMessage<::shardora::dht::protobuf::NodeInfo>(Arena*);
+template<> ::shardora::dht::protobuf::RefreshNeighborsRequest* Arena::CreateMaybeMessage<::shardora::dht::protobuf::RefreshNeighborsRequest>(Arena*);
+template<> ::shardora::dht::protobuf::RefreshNeighborsResponse* Arena::CreateMaybeMessage<::shardora::dht::protobuf::RefreshNeighborsResponse>(Arena*);
+template<> ::shardora::dht::protobuf::TimerRequest* Arena::CreateMaybeMessage<::shardora::dht::protobuf::TimerRequest>(Arena*);
 }  // namespace protobuf
 }  // namespace google
-namespace zjchain {
+namespace shardora {
 namespace dht {
 namespace protobuf {
 
 // ===================================================================
 
-class BootstrapRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.dht.protobuf.BootstrapRequest) */ {
+class BootstrapRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.dht.protobuf.BootstrapRequest) */ {
  public:
   BootstrapRequest();
   virtual ~BootstrapRequest();
@@ -232,7 +232,7 @@ class BootstrapRequest : public ::google::protobuf::Message /* @@protoc_insertio
   ::google::protobuf::int32 public_port() const;
   void set_public_port(::google::protobuf::int32 value);
 
-  // @@protoc_insertion_point(class_scope:zjchain.dht.protobuf.BootstrapRequest)
+  // @@protoc_insertion_point(class_scope:shardora.dht.protobuf.BootstrapRequest)
  private:
   void set_has_pubkey();
   void clear_has_pubkey();
@@ -251,7 +251,7 @@ class BootstrapRequest : public ::google::protobuf::Message /* @@protoc_insertio
 };
 // -------------------------------------------------------------------
 
-class BootstrapResponse : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.dht.protobuf.BootstrapResponse) */ {
+class BootstrapResponse : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.dht.protobuf.BootstrapResponse) */ {
  public:
   BootstrapResponse();
   virtual ~BootstrapResponse();
@@ -382,7 +382,7 @@ class BootstrapResponse : public ::google::protobuf::Message /* @@protoc_inserti
   ::google::protobuf::int32 public_port() const;
   void set_public_port(::google::protobuf::int32 value);
 
-  // @@protoc_insertion_point(class_scope:zjchain.dht.protobuf.BootstrapResponse)
+  // @@protoc_insertion_point(class_scope:shardora.dht.protobuf.BootstrapResponse)
  private:
   void set_has_pubkey();
   void clear_has_pubkey();
@@ -401,7 +401,7 @@ class BootstrapResponse : public ::google::protobuf::Message /* @@protoc_inserti
 };
 // -------------------------------------------------------------------
 
-class NodeInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.dht.protobuf.NodeInfo) */ {
+class NodeInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.dht.protobuf.NodeInfo) */ {
  public:
   NodeInfo();
   virtual ~NodeInfo();
@@ -554,7 +554,7 @@ class NodeInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::google::protobuf::int32 sharding_id() const;
   void set_sharding_id(::google::protobuf::int32 value);
 
-  // @@protoc_insertion_point(class_scope:zjchain.dht.protobuf.NodeInfo)
+  // @@protoc_insertion_point(class_scope:shardora.dht.protobuf.NodeInfo)
  private:
   void set_has_public_ip();
   void clear_has_public_ip();
@@ -579,7 +579,7 @@ class NodeInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
 };
 // -------------------------------------------------------------------
 
-class RefreshNeighborsRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.dht.protobuf.RefreshNeighborsRequest) */ {
+class RefreshNeighborsRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.dht.protobuf.RefreshNeighborsRequest) */ {
  public:
   RefreshNeighborsRequest();
   virtual ~RefreshNeighborsRequest();
@@ -751,7 +751,7 @@ class RefreshNeighborsRequest : public ::google::protobuf::Message /* @@protoc_i
   ::google::protobuf::int32 public_port() const;
   void set_public_port(::google::protobuf::int32 value);
 
-  // @@protoc_insertion_point(class_scope:zjchain.dht.protobuf.RefreshNeighborsRequest)
+  // @@protoc_insertion_point(class_scope:shardora.dht.protobuf.RefreshNeighborsRequest)
  private:
   void set_has_count();
   void clear_has_count();
@@ -775,7 +775,7 @@ class RefreshNeighborsRequest : public ::google::protobuf::Message /* @@protoc_i
 };
 // -------------------------------------------------------------------
 
-class RefreshNeighborsResponse : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.dht.protobuf.RefreshNeighborsResponse) */ {
+class RefreshNeighborsResponse : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.dht.protobuf.RefreshNeighborsResponse) */ {
  public:
   RefreshNeighborsResponse();
   virtual ~RefreshNeighborsResponse();
@@ -869,30 +869,30 @@ class RefreshNeighborsResponse : public ::google::protobuf::Message /* @@protoc_
 
   // accessors -------------------------------------------------------
 
-  // repeated .zjchain.dht.protobuf.NodeInfo nodes = 1;
+  // repeated .shardora.dht.protobuf.NodeInfo nodes = 1;
   int nodes_size() const;
   void clear_nodes();
   static const int kNodesFieldNumber = 1;
-  ::zjchain::dht::protobuf::NodeInfo* mutable_nodes(int index);
-  ::google::protobuf::RepeatedPtrField< ::zjchain::dht::protobuf::NodeInfo >*
+  ::shardora::dht::protobuf::NodeInfo* mutable_nodes(int index);
+  ::google::protobuf::RepeatedPtrField< ::shardora::dht::protobuf::NodeInfo >*
       mutable_nodes();
-  const ::zjchain::dht::protobuf::NodeInfo& nodes(int index) const;
-  ::zjchain::dht::protobuf::NodeInfo* add_nodes();
-  const ::google::protobuf::RepeatedPtrField< ::zjchain::dht::protobuf::NodeInfo >&
+  const ::shardora::dht::protobuf::NodeInfo& nodes(int index) const;
+  ::shardora::dht::protobuf::NodeInfo* add_nodes();
+  const ::google::protobuf::RepeatedPtrField< ::shardora::dht::protobuf::NodeInfo >&
       nodes() const;
 
-  // @@protoc_insertion_point(class_scope:zjchain.dht.protobuf.RefreshNeighborsResponse)
+  // @@protoc_insertion_point(class_scope:shardora.dht.protobuf.RefreshNeighborsResponse)
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::RepeatedPtrField< ::zjchain::dht::protobuf::NodeInfo > nodes_;
+  ::google::protobuf::RepeatedPtrField< ::shardora::dht::protobuf::NodeInfo > nodes_;
   friend struct ::protobuf_protos_2fdht_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
-class HeartbeatRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.dht.protobuf.HeartbeatRequest) */ {
+class HeartbeatRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.dht.protobuf.HeartbeatRequest) */ {
  public:
   HeartbeatRequest();
   virtual ~HeartbeatRequest();
@@ -993,7 +993,7 @@ class HeartbeatRequest : public ::google::protobuf::Message /* @@protoc_insertio
   ::google::protobuf::uint64 dht_key_hash() const;
   void set_dht_key_hash(::google::protobuf::uint64 value);
 
-  // @@protoc_insertion_point(class_scope:zjchain.dht.protobuf.HeartbeatRequest)
+  // @@protoc_insertion_point(class_scope:shardora.dht.protobuf.HeartbeatRequest)
  private:
   void set_has_dht_key_hash();
   void clear_has_dht_key_hash();
@@ -1006,7 +1006,7 @@ class HeartbeatRequest : public ::google::protobuf::Message /* @@protoc_insertio
 };
 // -------------------------------------------------------------------
 
-class HeartbeatResponse : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.dht.protobuf.HeartbeatResponse) */ {
+class HeartbeatResponse : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.dht.protobuf.HeartbeatResponse) */ {
  public:
   HeartbeatResponse();
   virtual ~HeartbeatResponse();
@@ -1107,7 +1107,7 @@ class HeartbeatResponse : public ::google::protobuf::Message /* @@protoc_inserti
   ::google::protobuf::uint64 dht_key_hash() const;
   void set_dht_key_hash(::google::protobuf::uint64 value);
 
-  // @@protoc_insertion_point(class_scope:zjchain.dht.protobuf.HeartbeatResponse)
+  // @@protoc_insertion_point(class_scope:shardora.dht.protobuf.HeartbeatResponse)
  private:
   void set_has_dht_key_hash();
   void clear_has_dht_key_hash();
@@ -1120,7 +1120,7 @@ class HeartbeatResponse : public ::google::protobuf::Message /* @@protoc_inserti
 };
 // -------------------------------------------------------------------
 
-class ConnectReqeust : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.dht.protobuf.ConnectReqeust) */ {
+class ConnectReqeust : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.dht.protobuf.ConnectReqeust) */ {
  public:
   ConnectReqeust();
   virtual ~ConnectReqeust();
@@ -1273,7 +1273,7 @@ class ConnectReqeust : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::int32 public_port() const;
   void set_public_port(::google::protobuf::int32 value);
 
-  // @@protoc_insertion_point(class_scope:zjchain.dht.protobuf.ConnectReqeust)
+  // @@protoc_insertion_point(class_scope:shardora.dht.protobuf.ConnectReqeust)
  private:
   void set_has_pubkey();
   void clear_has_pubkey();
@@ -1298,7 +1298,7 @@ class ConnectReqeust : public ::google::protobuf::Message /* @@protoc_insertion_
 };
 // -------------------------------------------------------------------
 
-class TimerRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.dht.protobuf.TimerRequest) */ {
+class TimerRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.dht.protobuf.TimerRequest) */ {
  public:
   TimerRequest();
   virtual ~TimerRequest();
@@ -1399,7 +1399,7 @@ class TimerRequest : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::google::protobuf::uint64 tm_milli() const;
   void set_tm_milli(::google::protobuf::uint64 value);
 
-  // @@protoc_insertion_point(class_scope:zjchain.dht.protobuf.TimerRequest)
+  // @@protoc_insertion_point(class_scope:shardora.dht.protobuf.TimerRequest)
  private:
   void set_has_tm_milli();
   void clear_has_tm_milli();
@@ -1412,7 +1412,7 @@ class TimerRequest : public ::google::protobuf::Message /* @@protoc_insertion_po
 };
 // -------------------------------------------------------------------
 
-class DhtMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.dht.protobuf.DhtMessage) */ {
+class DhtMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.dht.protobuf.DhtMessage) */ {
  public:
   DhtMessage();
   virtual ~DhtMessage();
@@ -1506,103 +1506,103 @@ class DhtMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
 
   // accessors -------------------------------------------------------
 
-  // optional .zjchain.dht.protobuf.BootstrapRequest bootstrap_req = 1;
+  // optional .shardora.dht.protobuf.BootstrapRequest bootstrap_req = 1;
   bool has_bootstrap_req() const;
   void clear_bootstrap_req();
   static const int kBootstrapReqFieldNumber = 1;
   private:
-  const ::zjchain::dht::protobuf::BootstrapRequest& _internal_bootstrap_req() const;
+  const ::shardora::dht::protobuf::BootstrapRequest& _internal_bootstrap_req() const;
   public:
-  const ::zjchain::dht::protobuf::BootstrapRequest& bootstrap_req() const;
-  ::zjchain::dht::protobuf::BootstrapRequest* release_bootstrap_req();
-  ::zjchain::dht::protobuf::BootstrapRequest* mutable_bootstrap_req();
-  void set_allocated_bootstrap_req(::zjchain::dht::protobuf::BootstrapRequest* bootstrap_req);
+  const ::shardora::dht::protobuf::BootstrapRequest& bootstrap_req() const;
+  ::shardora::dht::protobuf::BootstrapRequest* release_bootstrap_req();
+  ::shardora::dht::protobuf::BootstrapRequest* mutable_bootstrap_req();
+  void set_allocated_bootstrap_req(::shardora::dht::protobuf::BootstrapRequest* bootstrap_req);
 
-  // optional .zjchain.dht.protobuf.BootstrapResponse bootstrap_res = 2;
+  // optional .shardora.dht.protobuf.BootstrapResponse bootstrap_res = 2;
   bool has_bootstrap_res() const;
   void clear_bootstrap_res();
   static const int kBootstrapResFieldNumber = 2;
   private:
-  const ::zjchain::dht::protobuf::BootstrapResponse& _internal_bootstrap_res() const;
+  const ::shardora::dht::protobuf::BootstrapResponse& _internal_bootstrap_res() const;
   public:
-  const ::zjchain::dht::protobuf::BootstrapResponse& bootstrap_res() const;
-  ::zjchain::dht::protobuf::BootstrapResponse* release_bootstrap_res();
-  ::zjchain::dht::protobuf::BootstrapResponse* mutable_bootstrap_res();
-  void set_allocated_bootstrap_res(::zjchain::dht::protobuf::BootstrapResponse* bootstrap_res);
+  const ::shardora::dht::protobuf::BootstrapResponse& bootstrap_res() const;
+  ::shardora::dht::protobuf::BootstrapResponse* release_bootstrap_res();
+  ::shardora::dht::protobuf::BootstrapResponse* mutable_bootstrap_res();
+  void set_allocated_bootstrap_res(::shardora::dht::protobuf::BootstrapResponse* bootstrap_res);
 
-  // optional .zjchain.dht.protobuf.RefreshNeighborsRequest refresh_neighbors_req = 3;
+  // optional .shardora.dht.protobuf.RefreshNeighborsRequest refresh_neighbors_req = 3;
   bool has_refresh_neighbors_req() const;
   void clear_refresh_neighbors_req();
   static const int kRefreshNeighborsReqFieldNumber = 3;
   private:
-  const ::zjchain::dht::protobuf::RefreshNeighborsRequest& _internal_refresh_neighbors_req() const;
+  const ::shardora::dht::protobuf::RefreshNeighborsRequest& _internal_refresh_neighbors_req() const;
   public:
-  const ::zjchain::dht::protobuf::RefreshNeighborsRequest& refresh_neighbors_req() const;
-  ::zjchain::dht::protobuf::RefreshNeighborsRequest* release_refresh_neighbors_req();
-  ::zjchain::dht::protobuf::RefreshNeighborsRequest* mutable_refresh_neighbors_req();
-  void set_allocated_refresh_neighbors_req(::zjchain::dht::protobuf::RefreshNeighborsRequest* refresh_neighbors_req);
+  const ::shardora::dht::protobuf::RefreshNeighborsRequest& refresh_neighbors_req() const;
+  ::shardora::dht::protobuf::RefreshNeighborsRequest* release_refresh_neighbors_req();
+  ::shardora::dht::protobuf::RefreshNeighborsRequest* mutable_refresh_neighbors_req();
+  void set_allocated_refresh_neighbors_req(::shardora::dht::protobuf::RefreshNeighborsRequest* refresh_neighbors_req);
 
-  // optional .zjchain.dht.protobuf.RefreshNeighborsResponse refresh_neighbors_res = 4;
+  // optional .shardora.dht.protobuf.RefreshNeighborsResponse refresh_neighbors_res = 4;
   bool has_refresh_neighbors_res() const;
   void clear_refresh_neighbors_res();
   static const int kRefreshNeighborsResFieldNumber = 4;
   private:
-  const ::zjchain::dht::protobuf::RefreshNeighborsResponse& _internal_refresh_neighbors_res() const;
+  const ::shardora::dht::protobuf::RefreshNeighborsResponse& _internal_refresh_neighbors_res() const;
   public:
-  const ::zjchain::dht::protobuf::RefreshNeighborsResponse& refresh_neighbors_res() const;
-  ::zjchain::dht::protobuf::RefreshNeighborsResponse* release_refresh_neighbors_res();
-  ::zjchain::dht::protobuf::RefreshNeighborsResponse* mutable_refresh_neighbors_res();
-  void set_allocated_refresh_neighbors_res(::zjchain::dht::protobuf::RefreshNeighborsResponse* refresh_neighbors_res);
+  const ::shardora::dht::protobuf::RefreshNeighborsResponse& refresh_neighbors_res() const;
+  ::shardora::dht::protobuf::RefreshNeighborsResponse* release_refresh_neighbors_res();
+  ::shardora::dht::protobuf::RefreshNeighborsResponse* mutable_refresh_neighbors_res();
+  void set_allocated_refresh_neighbors_res(::shardora::dht::protobuf::RefreshNeighborsResponse* refresh_neighbors_res);
 
-  // optional .zjchain.dht.protobuf.ConnectReqeust connect_req = 5;
+  // optional .shardora.dht.protobuf.ConnectReqeust connect_req = 5;
   bool has_connect_req() const;
   void clear_connect_req();
   static const int kConnectReqFieldNumber = 5;
   private:
-  const ::zjchain::dht::protobuf::ConnectReqeust& _internal_connect_req() const;
+  const ::shardora::dht::protobuf::ConnectReqeust& _internal_connect_req() const;
   public:
-  const ::zjchain::dht::protobuf::ConnectReqeust& connect_req() const;
-  ::zjchain::dht::protobuf::ConnectReqeust* release_connect_req();
-  ::zjchain::dht::protobuf::ConnectReqeust* mutable_connect_req();
-  void set_allocated_connect_req(::zjchain::dht::protobuf::ConnectReqeust* connect_req);
+  const ::shardora::dht::protobuf::ConnectReqeust& connect_req() const;
+  ::shardora::dht::protobuf::ConnectReqeust* release_connect_req();
+  ::shardora::dht::protobuf::ConnectReqeust* mutable_connect_req();
+  void set_allocated_connect_req(::shardora::dht::protobuf::ConnectReqeust* connect_req);
 
-  // optional .zjchain.dht.protobuf.HeartbeatRequest heartbeat_req = 6;
+  // optional .shardora.dht.protobuf.HeartbeatRequest heartbeat_req = 6;
   bool has_heartbeat_req() const;
   void clear_heartbeat_req();
   static const int kHeartbeatReqFieldNumber = 6;
   private:
-  const ::zjchain::dht::protobuf::HeartbeatRequest& _internal_heartbeat_req() const;
+  const ::shardora::dht::protobuf::HeartbeatRequest& _internal_heartbeat_req() const;
   public:
-  const ::zjchain::dht::protobuf::HeartbeatRequest& heartbeat_req() const;
-  ::zjchain::dht::protobuf::HeartbeatRequest* release_heartbeat_req();
-  ::zjchain::dht::protobuf::HeartbeatRequest* mutable_heartbeat_req();
-  void set_allocated_heartbeat_req(::zjchain::dht::protobuf::HeartbeatRequest* heartbeat_req);
+  const ::shardora::dht::protobuf::HeartbeatRequest& heartbeat_req() const;
+  ::shardora::dht::protobuf::HeartbeatRequest* release_heartbeat_req();
+  ::shardora::dht::protobuf::HeartbeatRequest* mutable_heartbeat_req();
+  void set_allocated_heartbeat_req(::shardora::dht::protobuf::HeartbeatRequest* heartbeat_req);
 
-  // optional .zjchain.dht.protobuf.HeartbeatResponse heartbeat_res = 7;
+  // optional .shardora.dht.protobuf.HeartbeatResponse heartbeat_res = 7;
   bool has_heartbeat_res() const;
   void clear_heartbeat_res();
   static const int kHeartbeatResFieldNumber = 7;
   private:
-  const ::zjchain::dht::protobuf::HeartbeatResponse& _internal_heartbeat_res() const;
+  const ::shardora::dht::protobuf::HeartbeatResponse& _internal_heartbeat_res() const;
   public:
-  const ::zjchain::dht::protobuf::HeartbeatResponse& heartbeat_res() const;
-  ::zjchain::dht::protobuf::HeartbeatResponse* release_heartbeat_res();
-  ::zjchain::dht::protobuf::HeartbeatResponse* mutable_heartbeat_res();
-  void set_allocated_heartbeat_res(::zjchain::dht::protobuf::HeartbeatResponse* heartbeat_res);
+  const ::shardora::dht::protobuf::HeartbeatResponse& heartbeat_res() const;
+  ::shardora::dht::protobuf::HeartbeatResponse* release_heartbeat_res();
+  ::shardora::dht::protobuf::HeartbeatResponse* mutable_heartbeat_res();
+  void set_allocated_heartbeat_res(::shardora::dht::protobuf::HeartbeatResponse* heartbeat_res);
 
-  // optional .zjchain.dht.protobuf.TimerRequest timer = 8;
+  // optional .shardora.dht.protobuf.TimerRequest timer = 8;
   bool has_timer() const;
   void clear_timer();
   static const int kTimerFieldNumber = 8;
   private:
-  const ::zjchain::dht::protobuf::TimerRequest& _internal_timer() const;
+  const ::shardora::dht::protobuf::TimerRequest& _internal_timer() const;
   public:
-  const ::zjchain::dht::protobuf::TimerRequest& timer() const;
-  ::zjchain::dht::protobuf::TimerRequest* release_timer();
-  ::zjchain::dht::protobuf::TimerRequest* mutable_timer();
-  void set_allocated_timer(::zjchain::dht::protobuf::TimerRequest* timer);
+  const ::shardora::dht::protobuf::TimerRequest& timer() const;
+  ::shardora::dht::protobuf::TimerRequest* release_timer();
+  ::shardora::dht::protobuf::TimerRequest* mutable_timer();
+  void set_allocated_timer(::shardora::dht::protobuf::TimerRequest* timer);
 
-  // @@protoc_insertion_point(class_scope:zjchain.dht.protobuf.DhtMessage)
+  // @@protoc_insertion_point(class_scope:shardora.dht.protobuf.DhtMessage)
  private:
   void set_has_bootstrap_req();
   void clear_has_bootstrap_req();
@@ -1624,14 +1624,14 @@ class DhtMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::zjchain::dht::protobuf::BootstrapRequest* bootstrap_req_;
-  ::zjchain::dht::protobuf::BootstrapResponse* bootstrap_res_;
-  ::zjchain::dht::protobuf::RefreshNeighborsRequest* refresh_neighbors_req_;
-  ::zjchain::dht::protobuf::RefreshNeighborsResponse* refresh_neighbors_res_;
-  ::zjchain::dht::protobuf::ConnectReqeust* connect_req_;
-  ::zjchain::dht::protobuf::HeartbeatRequest* heartbeat_req_;
-  ::zjchain::dht::protobuf::HeartbeatResponse* heartbeat_res_;
-  ::zjchain::dht::protobuf::TimerRequest* timer_;
+  ::shardora::dht::protobuf::BootstrapRequest* bootstrap_req_;
+  ::shardora::dht::protobuf::BootstrapResponse* bootstrap_res_;
+  ::shardora::dht::protobuf::RefreshNeighborsRequest* refresh_neighbors_req_;
+  ::shardora::dht::protobuf::RefreshNeighborsResponse* refresh_neighbors_res_;
+  ::shardora::dht::protobuf::ConnectReqeust* connect_req_;
+  ::shardora::dht::protobuf::HeartbeatRequest* heartbeat_req_;
+  ::shardora::dht::protobuf::HeartbeatResponse* heartbeat_res_;
+  ::shardora::dht::protobuf::TimerRequest* timer_;
   friend struct ::protobuf_protos_2fdht_2eproto::TableStruct;
 };
 // ===================================================================
@@ -1660,41 +1660,41 @@ inline void BootstrapRequest::clear_pubkey() {
   clear_has_pubkey();
 }
 inline const ::std::string& BootstrapRequest::pubkey() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.BootstrapRequest.pubkey)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.BootstrapRequest.pubkey)
   return pubkey_.GetNoArena();
 }
 inline void BootstrapRequest::set_pubkey(const ::std::string& value) {
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.BootstrapRequest.pubkey)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.BootstrapRequest.pubkey)
 }
 #if LANG_CXX11
 inline void BootstrapRequest::set_pubkey(::std::string&& value) {
   set_has_pubkey();
   pubkey_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.BootstrapRequest.pubkey)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.dht.protobuf.BootstrapRequest.pubkey)
 }
 #endif
 inline void BootstrapRequest::set_pubkey(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.BootstrapRequest.pubkey)
+  // @@protoc_insertion_point(field_set_char:shardora.dht.protobuf.BootstrapRequest.pubkey)
 }
 inline void BootstrapRequest::set_pubkey(const void* value, size_t size) {
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.BootstrapRequest.pubkey)
+  // @@protoc_insertion_point(field_set_pointer:shardora.dht.protobuf.BootstrapRequest.pubkey)
 }
 inline ::std::string* BootstrapRequest::mutable_pubkey() {
   set_has_pubkey();
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.BootstrapRequest.pubkey)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.BootstrapRequest.pubkey)
   return pubkey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* BootstrapRequest::release_pubkey() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.BootstrapRequest.pubkey)
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.BootstrapRequest.pubkey)
   if (!has_pubkey()) {
     return NULL;
   }
@@ -1708,7 +1708,7 @@ inline void BootstrapRequest::set_allocated_pubkey(::std::string* pubkey) {
     clear_has_pubkey();
   }
   pubkey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), pubkey);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.BootstrapRequest.pubkey)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.BootstrapRequest.pubkey)
 }
 
 // optional string public_ip = 2;
@@ -1726,41 +1726,41 @@ inline void BootstrapRequest::clear_public_ip() {
   clear_has_public_ip();
 }
 inline const ::std::string& BootstrapRequest::public_ip() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.BootstrapRequest.public_ip)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.BootstrapRequest.public_ip)
   return public_ip_.GetNoArena();
 }
 inline void BootstrapRequest::set_public_ip(const ::std::string& value) {
   set_has_public_ip();
   public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.BootstrapRequest.public_ip)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.BootstrapRequest.public_ip)
 }
 #if LANG_CXX11
 inline void BootstrapRequest::set_public_ip(::std::string&& value) {
   set_has_public_ip();
   public_ip_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.BootstrapRequest.public_ip)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.dht.protobuf.BootstrapRequest.public_ip)
 }
 #endif
 inline void BootstrapRequest::set_public_ip(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_public_ip();
   public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.BootstrapRequest.public_ip)
+  // @@protoc_insertion_point(field_set_char:shardora.dht.protobuf.BootstrapRequest.public_ip)
 }
 inline void BootstrapRequest::set_public_ip(const char* value, size_t size) {
   set_has_public_ip();
   public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.BootstrapRequest.public_ip)
+  // @@protoc_insertion_point(field_set_pointer:shardora.dht.protobuf.BootstrapRequest.public_ip)
 }
 inline ::std::string* BootstrapRequest::mutable_public_ip() {
   set_has_public_ip();
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.BootstrapRequest.public_ip)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.BootstrapRequest.public_ip)
   return public_ip_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* BootstrapRequest::release_public_ip() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.BootstrapRequest.public_ip)
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.BootstrapRequest.public_ip)
   if (!has_public_ip()) {
     return NULL;
   }
@@ -1774,7 +1774,7 @@ inline void BootstrapRequest::set_allocated_public_ip(::std::string* public_ip) 
     clear_has_public_ip();
   }
   public_ip_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), public_ip);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.BootstrapRequest.public_ip)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.BootstrapRequest.public_ip)
 }
 
 // optional int32 public_port = 3;
@@ -1792,13 +1792,13 @@ inline void BootstrapRequest::clear_public_port() {
   clear_has_public_port();
 }
 inline ::google::protobuf::int32 BootstrapRequest::public_port() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.BootstrapRequest.public_port)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.BootstrapRequest.public_port)
   return public_port_;
 }
 inline void BootstrapRequest::set_public_port(::google::protobuf::int32 value) {
   set_has_public_port();
   public_port_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.BootstrapRequest.public_port)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.BootstrapRequest.public_port)
 }
 
 // -------------------------------------------------------------------
@@ -1820,41 +1820,41 @@ inline void BootstrapResponse::clear_pubkey() {
   clear_has_pubkey();
 }
 inline const ::std::string& BootstrapResponse::pubkey() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.BootstrapResponse.pubkey)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.BootstrapResponse.pubkey)
   return pubkey_.GetNoArena();
 }
 inline void BootstrapResponse::set_pubkey(const ::std::string& value) {
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.BootstrapResponse.pubkey)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.BootstrapResponse.pubkey)
 }
 #if LANG_CXX11
 inline void BootstrapResponse::set_pubkey(::std::string&& value) {
   set_has_pubkey();
   pubkey_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.BootstrapResponse.pubkey)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.dht.protobuf.BootstrapResponse.pubkey)
 }
 #endif
 inline void BootstrapResponse::set_pubkey(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.BootstrapResponse.pubkey)
+  // @@protoc_insertion_point(field_set_char:shardora.dht.protobuf.BootstrapResponse.pubkey)
 }
 inline void BootstrapResponse::set_pubkey(const void* value, size_t size) {
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.BootstrapResponse.pubkey)
+  // @@protoc_insertion_point(field_set_pointer:shardora.dht.protobuf.BootstrapResponse.pubkey)
 }
 inline ::std::string* BootstrapResponse::mutable_pubkey() {
   set_has_pubkey();
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.BootstrapResponse.pubkey)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.BootstrapResponse.pubkey)
   return pubkey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* BootstrapResponse::release_pubkey() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.BootstrapResponse.pubkey)
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.BootstrapResponse.pubkey)
   if (!has_pubkey()) {
     return NULL;
   }
@@ -1868,7 +1868,7 @@ inline void BootstrapResponse::set_allocated_pubkey(::std::string* pubkey) {
     clear_has_pubkey();
   }
   pubkey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), pubkey);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.BootstrapResponse.pubkey)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.BootstrapResponse.pubkey)
 }
 
 // optional string public_ip = 2;
@@ -1886,41 +1886,41 @@ inline void BootstrapResponse::clear_public_ip() {
   clear_has_public_ip();
 }
 inline const ::std::string& BootstrapResponse::public_ip() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.BootstrapResponse.public_ip)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.BootstrapResponse.public_ip)
   return public_ip_.GetNoArena();
 }
 inline void BootstrapResponse::set_public_ip(const ::std::string& value) {
   set_has_public_ip();
   public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.BootstrapResponse.public_ip)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.BootstrapResponse.public_ip)
 }
 #if LANG_CXX11
 inline void BootstrapResponse::set_public_ip(::std::string&& value) {
   set_has_public_ip();
   public_ip_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.BootstrapResponse.public_ip)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.dht.protobuf.BootstrapResponse.public_ip)
 }
 #endif
 inline void BootstrapResponse::set_public_ip(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_public_ip();
   public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.BootstrapResponse.public_ip)
+  // @@protoc_insertion_point(field_set_char:shardora.dht.protobuf.BootstrapResponse.public_ip)
 }
 inline void BootstrapResponse::set_public_ip(const char* value, size_t size) {
   set_has_public_ip();
   public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.BootstrapResponse.public_ip)
+  // @@protoc_insertion_point(field_set_pointer:shardora.dht.protobuf.BootstrapResponse.public_ip)
 }
 inline ::std::string* BootstrapResponse::mutable_public_ip() {
   set_has_public_ip();
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.BootstrapResponse.public_ip)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.BootstrapResponse.public_ip)
   return public_ip_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* BootstrapResponse::release_public_ip() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.BootstrapResponse.public_ip)
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.BootstrapResponse.public_ip)
   if (!has_public_ip()) {
     return NULL;
   }
@@ -1934,7 +1934,7 @@ inline void BootstrapResponse::set_allocated_public_ip(::std::string* public_ip)
     clear_has_public_ip();
   }
   public_ip_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), public_ip);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.BootstrapResponse.public_ip)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.BootstrapResponse.public_ip)
 }
 
 // optional int32 public_port = 3;
@@ -1952,13 +1952,13 @@ inline void BootstrapResponse::clear_public_port() {
   clear_has_public_port();
 }
 inline ::google::protobuf::int32 BootstrapResponse::public_port() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.BootstrapResponse.public_port)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.BootstrapResponse.public_port)
   return public_port_;
 }
 inline void BootstrapResponse::set_public_port(::google::protobuf::int32 value) {
   set_has_public_port();
   public_port_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.BootstrapResponse.public_port)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.BootstrapResponse.public_port)
 }
 
 // -------------------------------------------------------------------
@@ -1980,41 +1980,41 @@ inline void NodeInfo::clear_public_ip() {
   clear_has_public_ip();
 }
 inline const ::std::string& NodeInfo::public_ip() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.NodeInfo.public_ip)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.NodeInfo.public_ip)
   return public_ip_.GetNoArena();
 }
 inline void NodeInfo::set_public_ip(const ::std::string& value) {
   set_has_public_ip();
   public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.NodeInfo.public_ip)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.NodeInfo.public_ip)
 }
 #if LANG_CXX11
 inline void NodeInfo::set_public_ip(::std::string&& value) {
   set_has_public_ip();
   public_ip_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.NodeInfo.public_ip)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.dht.protobuf.NodeInfo.public_ip)
 }
 #endif
 inline void NodeInfo::set_public_ip(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_public_ip();
   public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.NodeInfo.public_ip)
+  // @@protoc_insertion_point(field_set_char:shardora.dht.protobuf.NodeInfo.public_ip)
 }
 inline void NodeInfo::set_public_ip(const void* value, size_t size) {
   set_has_public_ip();
   public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.NodeInfo.public_ip)
+  // @@protoc_insertion_point(field_set_pointer:shardora.dht.protobuf.NodeInfo.public_ip)
 }
 inline ::std::string* NodeInfo::mutable_public_ip() {
   set_has_public_ip();
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.NodeInfo.public_ip)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.NodeInfo.public_ip)
   return public_ip_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* NodeInfo::release_public_ip() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.NodeInfo.public_ip)
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.NodeInfo.public_ip)
   if (!has_public_ip()) {
     return NULL;
   }
@@ -2028,7 +2028,7 @@ inline void NodeInfo::set_allocated_public_ip(::std::string* public_ip) {
     clear_has_public_ip();
   }
   public_ip_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), public_ip);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.NodeInfo.public_ip)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.NodeInfo.public_ip)
 }
 
 // optional int32 public_port = 2;
@@ -2046,13 +2046,13 @@ inline void NodeInfo::clear_public_port() {
   clear_has_public_port();
 }
 inline ::google::protobuf::int32 NodeInfo::public_port() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.NodeInfo.public_port)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.NodeInfo.public_port)
   return public_port_;
 }
 inline void NodeInfo::set_public_port(::google::protobuf::int32 value) {
   set_has_public_port();
   public_port_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.NodeInfo.public_port)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.NodeInfo.public_port)
 }
 
 // optional bytes pubkey = 3;
@@ -2070,41 +2070,41 @@ inline void NodeInfo::clear_pubkey() {
   clear_has_pubkey();
 }
 inline const ::std::string& NodeInfo::pubkey() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.NodeInfo.pubkey)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.NodeInfo.pubkey)
   return pubkey_.GetNoArena();
 }
 inline void NodeInfo::set_pubkey(const ::std::string& value) {
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.NodeInfo.pubkey)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.NodeInfo.pubkey)
 }
 #if LANG_CXX11
 inline void NodeInfo::set_pubkey(::std::string&& value) {
   set_has_pubkey();
   pubkey_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.NodeInfo.pubkey)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.dht.protobuf.NodeInfo.pubkey)
 }
 #endif
 inline void NodeInfo::set_pubkey(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.NodeInfo.pubkey)
+  // @@protoc_insertion_point(field_set_char:shardora.dht.protobuf.NodeInfo.pubkey)
 }
 inline void NodeInfo::set_pubkey(const void* value, size_t size) {
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.NodeInfo.pubkey)
+  // @@protoc_insertion_point(field_set_pointer:shardora.dht.protobuf.NodeInfo.pubkey)
 }
 inline ::std::string* NodeInfo::mutable_pubkey() {
   set_has_pubkey();
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.NodeInfo.pubkey)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.NodeInfo.pubkey)
   return pubkey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* NodeInfo::release_pubkey() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.NodeInfo.pubkey)
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.NodeInfo.pubkey)
   if (!has_pubkey()) {
     return NULL;
   }
@@ -2118,7 +2118,7 @@ inline void NodeInfo::set_allocated_pubkey(::std::string* pubkey) {
     clear_has_pubkey();
   }
   pubkey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), pubkey);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.NodeInfo.pubkey)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.NodeInfo.pubkey)
 }
 
 // optional int32 sharding_id = 4;
@@ -2136,13 +2136,13 @@ inline void NodeInfo::clear_sharding_id() {
   clear_has_sharding_id();
 }
 inline ::google::protobuf::int32 NodeInfo::sharding_id() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.NodeInfo.sharding_id)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.NodeInfo.sharding_id)
   return sharding_id_;
 }
 inline void NodeInfo::set_sharding_id(::google::protobuf::int32 value) {
   set_has_sharding_id();
   sharding_id_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.NodeInfo.sharding_id)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.NodeInfo.sharding_id)
 }
 
 // optional bytes id = 5;
@@ -2160,41 +2160,41 @@ inline void NodeInfo::clear_id() {
   clear_has_id();
 }
 inline const ::std::string& NodeInfo::id() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.NodeInfo.id)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.NodeInfo.id)
   return id_.GetNoArena();
 }
 inline void NodeInfo::set_id(const ::std::string& value) {
   set_has_id();
   id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.NodeInfo.id)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.NodeInfo.id)
 }
 #if LANG_CXX11
 inline void NodeInfo::set_id(::std::string&& value) {
   set_has_id();
   id_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.NodeInfo.id)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.dht.protobuf.NodeInfo.id)
 }
 #endif
 inline void NodeInfo::set_id(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_id();
   id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.NodeInfo.id)
+  // @@protoc_insertion_point(field_set_char:shardora.dht.protobuf.NodeInfo.id)
 }
 inline void NodeInfo::set_id(const void* value, size_t size) {
   set_has_id();
   id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.NodeInfo.id)
+  // @@protoc_insertion_point(field_set_pointer:shardora.dht.protobuf.NodeInfo.id)
 }
 inline ::std::string* NodeInfo::mutable_id() {
   set_has_id();
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.NodeInfo.id)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.NodeInfo.id)
   return id_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* NodeInfo::release_id() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.NodeInfo.id)
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.NodeInfo.id)
   if (!has_id()) {
     return NULL;
   }
@@ -2208,7 +2208,7 @@ inline void NodeInfo::set_allocated_id(::std::string* id) {
     clear_has_id();
   }
   id_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), id);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.NodeInfo.id)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.NodeInfo.id)
 }
 
 // -------------------------------------------------------------------
@@ -2230,13 +2230,13 @@ inline void RefreshNeighborsRequest::clear_count() {
   clear_has_count();
 }
 inline ::google::protobuf::uint32 RefreshNeighborsRequest::count() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.RefreshNeighborsRequest.count)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.RefreshNeighborsRequest.count)
   return count_;
 }
 inline void RefreshNeighborsRequest::set_count(::google::protobuf::uint32 value) {
   set_has_count();
   count_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.RefreshNeighborsRequest.count)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.RefreshNeighborsRequest.count)
 }
 
 // repeated uint64 bloomfilter = 2;
@@ -2247,25 +2247,25 @@ inline void RefreshNeighborsRequest::clear_bloomfilter() {
   bloomfilter_.Clear();
 }
 inline ::google::protobuf::uint64 RefreshNeighborsRequest::bloomfilter(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.RefreshNeighborsRequest.bloomfilter)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.RefreshNeighborsRequest.bloomfilter)
   return bloomfilter_.Get(index);
 }
 inline void RefreshNeighborsRequest::set_bloomfilter(int index, ::google::protobuf::uint64 value) {
   bloomfilter_.Set(index, value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.RefreshNeighborsRequest.bloomfilter)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.RefreshNeighborsRequest.bloomfilter)
 }
 inline void RefreshNeighborsRequest::add_bloomfilter(::google::protobuf::uint64 value) {
   bloomfilter_.Add(value);
-  // @@protoc_insertion_point(field_add:zjchain.dht.protobuf.RefreshNeighborsRequest.bloomfilter)
+  // @@protoc_insertion_point(field_add:shardora.dht.protobuf.RefreshNeighborsRequest.bloomfilter)
 }
 inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
 RefreshNeighborsRequest::bloomfilter() const {
-  // @@protoc_insertion_point(field_list:zjchain.dht.protobuf.RefreshNeighborsRequest.bloomfilter)
+  // @@protoc_insertion_point(field_list:shardora.dht.protobuf.RefreshNeighborsRequest.bloomfilter)
   return bloomfilter_;
 }
 inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
 RefreshNeighborsRequest::mutable_bloomfilter() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.dht.protobuf.RefreshNeighborsRequest.bloomfilter)
+  // @@protoc_insertion_point(field_mutable_list:shardora.dht.protobuf.RefreshNeighborsRequest.bloomfilter)
   return &bloomfilter_;
 }
 
@@ -2284,41 +2284,41 @@ inline void RefreshNeighborsRequest::clear_pubkey() {
   clear_has_pubkey();
 }
 inline const ::std::string& RefreshNeighborsRequest::pubkey() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.RefreshNeighborsRequest.pubkey)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.RefreshNeighborsRequest.pubkey)
   return pubkey_.GetNoArena();
 }
 inline void RefreshNeighborsRequest::set_pubkey(const ::std::string& value) {
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.RefreshNeighborsRequest.pubkey)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.RefreshNeighborsRequest.pubkey)
 }
 #if LANG_CXX11
 inline void RefreshNeighborsRequest::set_pubkey(::std::string&& value) {
   set_has_pubkey();
   pubkey_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.RefreshNeighborsRequest.pubkey)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.dht.protobuf.RefreshNeighborsRequest.pubkey)
 }
 #endif
 inline void RefreshNeighborsRequest::set_pubkey(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.RefreshNeighborsRequest.pubkey)
+  // @@protoc_insertion_point(field_set_char:shardora.dht.protobuf.RefreshNeighborsRequest.pubkey)
 }
 inline void RefreshNeighborsRequest::set_pubkey(const void* value, size_t size) {
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.RefreshNeighborsRequest.pubkey)
+  // @@protoc_insertion_point(field_set_pointer:shardora.dht.protobuf.RefreshNeighborsRequest.pubkey)
 }
 inline ::std::string* RefreshNeighborsRequest::mutable_pubkey() {
   set_has_pubkey();
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.RefreshNeighborsRequest.pubkey)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.RefreshNeighborsRequest.pubkey)
   return pubkey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* RefreshNeighborsRequest::release_pubkey() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.RefreshNeighborsRequest.pubkey)
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.RefreshNeighborsRequest.pubkey)
   if (!has_pubkey()) {
     return NULL;
   }
@@ -2332,7 +2332,7 @@ inline void RefreshNeighborsRequest::set_allocated_pubkey(::std::string* pubkey)
     clear_has_pubkey();
   }
   pubkey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), pubkey);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.RefreshNeighborsRequest.pubkey)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.RefreshNeighborsRequest.pubkey)
 }
 
 // optional string public_ip = 4;
@@ -2350,41 +2350,41 @@ inline void RefreshNeighborsRequest::clear_public_ip() {
   clear_has_public_ip();
 }
 inline const ::std::string& RefreshNeighborsRequest::public_ip() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.RefreshNeighborsRequest.public_ip)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.RefreshNeighborsRequest.public_ip)
   return public_ip_.GetNoArena();
 }
 inline void RefreshNeighborsRequest::set_public_ip(const ::std::string& value) {
   set_has_public_ip();
   public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.RefreshNeighborsRequest.public_ip)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.RefreshNeighborsRequest.public_ip)
 }
 #if LANG_CXX11
 inline void RefreshNeighborsRequest::set_public_ip(::std::string&& value) {
   set_has_public_ip();
   public_ip_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.RefreshNeighborsRequest.public_ip)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.dht.protobuf.RefreshNeighborsRequest.public_ip)
 }
 #endif
 inline void RefreshNeighborsRequest::set_public_ip(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_public_ip();
   public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.RefreshNeighborsRequest.public_ip)
+  // @@protoc_insertion_point(field_set_char:shardora.dht.protobuf.RefreshNeighborsRequest.public_ip)
 }
 inline void RefreshNeighborsRequest::set_public_ip(const char* value, size_t size) {
   set_has_public_ip();
   public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.RefreshNeighborsRequest.public_ip)
+  // @@protoc_insertion_point(field_set_pointer:shardora.dht.protobuf.RefreshNeighborsRequest.public_ip)
 }
 inline ::std::string* RefreshNeighborsRequest::mutable_public_ip() {
   set_has_public_ip();
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.RefreshNeighborsRequest.public_ip)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.RefreshNeighborsRequest.public_ip)
   return public_ip_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* RefreshNeighborsRequest::release_public_ip() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.RefreshNeighborsRequest.public_ip)
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.RefreshNeighborsRequest.public_ip)
   if (!has_public_ip()) {
     return NULL;
   }
@@ -2398,7 +2398,7 @@ inline void RefreshNeighborsRequest::set_allocated_public_ip(::std::string* publ
     clear_has_public_ip();
   }
   public_ip_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), public_ip);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.RefreshNeighborsRequest.public_ip)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.RefreshNeighborsRequest.public_ip)
 }
 
 // optional int32 public_port = 5;
@@ -2416,13 +2416,13 @@ inline void RefreshNeighborsRequest::clear_public_port() {
   clear_has_public_port();
 }
 inline ::google::protobuf::int32 RefreshNeighborsRequest::public_port() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.RefreshNeighborsRequest.public_port)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.RefreshNeighborsRequest.public_port)
   return public_port_;
 }
 inline void RefreshNeighborsRequest::set_public_port(::google::protobuf::int32 value) {
   set_has_public_port();
   public_port_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.RefreshNeighborsRequest.public_port)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.RefreshNeighborsRequest.public_port)
 }
 
 // repeated bytes ids = 6;
@@ -2433,64 +2433,64 @@ inline void RefreshNeighborsRequest::clear_ids() {
   ids_.Clear();
 }
 inline const ::std::string& RefreshNeighborsRequest::ids(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.RefreshNeighborsRequest.ids)
   return ids_.Get(index);
 }
 inline ::std::string* RefreshNeighborsRequest::mutable_ids(int index) {
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.RefreshNeighborsRequest.ids)
   return ids_.Mutable(index);
 }
 inline void RefreshNeighborsRequest::set_ids(int index, const ::std::string& value) {
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.RefreshNeighborsRequest.ids)
   ids_.Mutable(index)->assign(value);
 }
 #if LANG_CXX11
 inline void RefreshNeighborsRequest::set_ids(int index, ::std::string&& value) {
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.RefreshNeighborsRequest.ids)
   ids_.Mutable(index)->assign(std::move(value));
 }
 #endif
 inline void RefreshNeighborsRequest::set_ids(int index, const char* value) {
   GOOGLE_DCHECK(value != NULL);
   ids_.Mutable(index)->assign(value);
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  // @@protoc_insertion_point(field_set_char:shardora.dht.protobuf.RefreshNeighborsRequest.ids)
 }
 inline void RefreshNeighborsRequest::set_ids(int index, const void* value, size_t size) {
   ids_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  // @@protoc_insertion_point(field_set_pointer:shardora.dht.protobuf.RefreshNeighborsRequest.ids)
 }
 inline ::std::string* RefreshNeighborsRequest::add_ids() {
-  // @@protoc_insertion_point(field_add_mutable:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  // @@protoc_insertion_point(field_add_mutable:shardora.dht.protobuf.RefreshNeighborsRequest.ids)
   return ids_.Add();
 }
 inline void RefreshNeighborsRequest::add_ids(const ::std::string& value) {
   ids_.Add()->assign(value);
-  // @@protoc_insertion_point(field_add:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  // @@protoc_insertion_point(field_add:shardora.dht.protobuf.RefreshNeighborsRequest.ids)
 }
 #if LANG_CXX11
 inline void RefreshNeighborsRequest::add_ids(::std::string&& value) {
   ids_.Add(std::move(value));
-  // @@protoc_insertion_point(field_add:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  // @@protoc_insertion_point(field_add:shardora.dht.protobuf.RefreshNeighborsRequest.ids)
 }
 #endif
 inline void RefreshNeighborsRequest::add_ids(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   ids_.Add()->assign(value);
-  // @@protoc_insertion_point(field_add_char:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  // @@protoc_insertion_point(field_add_char:shardora.dht.protobuf.RefreshNeighborsRequest.ids)
 }
 inline void RefreshNeighborsRequest::add_ids(const void* value, size_t size) {
   ids_.Add()->assign(reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_add_pointer:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  // @@protoc_insertion_point(field_add_pointer:shardora.dht.protobuf.RefreshNeighborsRequest.ids)
 }
 inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
 RefreshNeighborsRequest::ids() const {
-  // @@protoc_insertion_point(field_list:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  // @@protoc_insertion_point(field_list:shardora.dht.protobuf.RefreshNeighborsRequest.ids)
   return ids_;
 }
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 RefreshNeighborsRequest::mutable_ids() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  // @@protoc_insertion_point(field_mutable_list:shardora.dht.protobuf.RefreshNeighborsRequest.ids)
   return &ids_;
 }
 
@@ -2498,33 +2498,33 @@ RefreshNeighborsRequest::mutable_ids() {
 
 // RefreshNeighborsResponse
 
-// repeated .zjchain.dht.protobuf.NodeInfo nodes = 1;
+// repeated .shardora.dht.protobuf.NodeInfo nodes = 1;
 inline int RefreshNeighborsResponse::nodes_size() const {
   return nodes_.size();
 }
 inline void RefreshNeighborsResponse::clear_nodes() {
   nodes_.Clear();
 }
-inline ::zjchain::dht::protobuf::NodeInfo* RefreshNeighborsResponse::mutable_nodes(int index) {
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.RefreshNeighborsResponse.nodes)
+inline ::shardora::dht::protobuf::NodeInfo* RefreshNeighborsResponse::mutable_nodes(int index) {
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.RefreshNeighborsResponse.nodes)
   return nodes_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::zjchain::dht::protobuf::NodeInfo >*
+inline ::google::protobuf::RepeatedPtrField< ::shardora::dht::protobuf::NodeInfo >*
 RefreshNeighborsResponse::mutable_nodes() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.dht.protobuf.RefreshNeighborsResponse.nodes)
+  // @@protoc_insertion_point(field_mutable_list:shardora.dht.protobuf.RefreshNeighborsResponse.nodes)
   return &nodes_;
 }
-inline const ::zjchain::dht::protobuf::NodeInfo& RefreshNeighborsResponse::nodes(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.RefreshNeighborsResponse.nodes)
+inline const ::shardora::dht::protobuf::NodeInfo& RefreshNeighborsResponse::nodes(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.RefreshNeighborsResponse.nodes)
   return nodes_.Get(index);
 }
-inline ::zjchain::dht::protobuf::NodeInfo* RefreshNeighborsResponse::add_nodes() {
-  // @@protoc_insertion_point(field_add:zjchain.dht.protobuf.RefreshNeighborsResponse.nodes)
+inline ::shardora::dht::protobuf::NodeInfo* RefreshNeighborsResponse::add_nodes() {
+  // @@protoc_insertion_point(field_add:shardora.dht.protobuf.RefreshNeighborsResponse.nodes)
   return nodes_.Add();
 }
-inline const ::google::protobuf::RepeatedPtrField< ::zjchain::dht::protobuf::NodeInfo >&
+inline const ::google::protobuf::RepeatedPtrField< ::shardora::dht::protobuf::NodeInfo >&
 RefreshNeighborsResponse::nodes() const {
-  // @@protoc_insertion_point(field_list:zjchain.dht.protobuf.RefreshNeighborsResponse.nodes)
+  // @@protoc_insertion_point(field_list:shardora.dht.protobuf.RefreshNeighborsResponse.nodes)
   return nodes_;
 }
 
@@ -2547,13 +2547,13 @@ inline void HeartbeatRequest::clear_dht_key_hash() {
   clear_has_dht_key_hash();
 }
 inline ::google::protobuf::uint64 HeartbeatRequest::dht_key_hash() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.HeartbeatRequest.dht_key_hash)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.HeartbeatRequest.dht_key_hash)
   return dht_key_hash_;
 }
 inline void HeartbeatRequest::set_dht_key_hash(::google::protobuf::uint64 value) {
   set_has_dht_key_hash();
   dht_key_hash_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.HeartbeatRequest.dht_key_hash)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.HeartbeatRequest.dht_key_hash)
 }
 
 // -------------------------------------------------------------------
@@ -2575,13 +2575,13 @@ inline void HeartbeatResponse::clear_dht_key_hash() {
   clear_has_dht_key_hash();
 }
 inline ::google::protobuf::uint64 HeartbeatResponse::dht_key_hash() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.HeartbeatResponse.dht_key_hash)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.HeartbeatResponse.dht_key_hash)
   return dht_key_hash_;
 }
 inline void HeartbeatResponse::set_dht_key_hash(::google::protobuf::uint64 value) {
   set_has_dht_key_hash();
   dht_key_hash_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.HeartbeatResponse.dht_key_hash)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.HeartbeatResponse.dht_key_hash)
 }
 
 // -------------------------------------------------------------------
@@ -2603,41 +2603,41 @@ inline void ConnectReqeust::clear_pubkey() {
   clear_has_pubkey();
 }
 inline const ::std::string& ConnectReqeust::pubkey() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.ConnectReqeust.pubkey)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.ConnectReqeust.pubkey)
   return pubkey_.GetNoArena();
 }
 inline void ConnectReqeust::set_pubkey(const ::std::string& value) {
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.ConnectReqeust.pubkey)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.ConnectReqeust.pubkey)
 }
 #if LANG_CXX11
 inline void ConnectReqeust::set_pubkey(::std::string&& value) {
   set_has_pubkey();
   pubkey_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.ConnectReqeust.pubkey)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.dht.protobuf.ConnectReqeust.pubkey)
 }
 #endif
 inline void ConnectReqeust::set_pubkey(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.ConnectReqeust.pubkey)
+  // @@protoc_insertion_point(field_set_char:shardora.dht.protobuf.ConnectReqeust.pubkey)
 }
 inline void ConnectReqeust::set_pubkey(const void* value, size_t size) {
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.ConnectReqeust.pubkey)
+  // @@protoc_insertion_point(field_set_pointer:shardora.dht.protobuf.ConnectReqeust.pubkey)
 }
 inline ::std::string* ConnectReqeust::mutable_pubkey() {
   set_has_pubkey();
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.ConnectReqeust.pubkey)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.ConnectReqeust.pubkey)
   return pubkey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* ConnectReqeust::release_pubkey() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.ConnectReqeust.pubkey)
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.ConnectReqeust.pubkey)
   if (!has_pubkey()) {
     return NULL;
   }
@@ -2651,7 +2651,7 @@ inline void ConnectReqeust::set_allocated_pubkey(::std::string* pubkey) {
     clear_has_pubkey();
   }
   pubkey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), pubkey);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.ConnectReqeust.pubkey)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.ConnectReqeust.pubkey)
 }
 
 // optional bool is_response = 2;
@@ -2669,13 +2669,13 @@ inline void ConnectReqeust::clear_is_response() {
   clear_has_is_response();
 }
 inline bool ConnectReqeust::is_response() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.ConnectReqeust.is_response)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.ConnectReqeust.is_response)
   return is_response_;
 }
 inline void ConnectReqeust::set_is_response(bool value) {
   set_has_is_response();
   is_response_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.ConnectReqeust.is_response)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.ConnectReqeust.is_response)
 }
 
 // optional string public_ip = 3;
@@ -2693,41 +2693,41 @@ inline void ConnectReqeust::clear_public_ip() {
   clear_has_public_ip();
 }
 inline const ::std::string& ConnectReqeust::public_ip() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.ConnectReqeust.public_ip)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.ConnectReqeust.public_ip)
   return public_ip_.GetNoArena();
 }
 inline void ConnectReqeust::set_public_ip(const ::std::string& value) {
   set_has_public_ip();
   public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.ConnectReqeust.public_ip)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.ConnectReqeust.public_ip)
 }
 #if LANG_CXX11
 inline void ConnectReqeust::set_public_ip(::std::string&& value) {
   set_has_public_ip();
   public_ip_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.ConnectReqeust.public_ip)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.dht.protobuf.ConnectReqeust.public_ip)
 }
 #endif
 inline void ConnectReqeust::set_public_ip(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_public_ip();
   public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.ConnectReqeust.public_ip)
+  // @@protoc_insertion_point(field_set_char:shardora.dht.protobuf.ConnectReqeust.public_ip)
 }
 inline void ConnectReqeust::set_public_ip(const char* value, size_t size) {
   set_has_public_ip();
   public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.ConnectReqeust.public_ip)
+  // @@protoc_insertion_point(field_set_pointer:shardora.dht.protobuf.ConnectReqeust.public_ip)
 }
 inline ::std::string* ConnectReqeust::mutable_public_ip() {
   set_has_public_ip();
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.ConnectReqeust.public_ip)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.ConnectReqeust.public_ip)
   return public_ip_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* ConnectReqeust::release_public_ip() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.ConnectReqeust.public_ip)
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.ConnectReqeust.public_ip)
   if (!has_public_ip()) {
     return NULL;
   }
@@ -2741,7 +2741,7 @@ inline void ConnectReqeust::set_allocated_public_ip(::std::string* public_ip) {
     clear_has_public_ip();
   }
   public_ip_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), public_ip);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.ConnectReqeust.public_ip)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.ConnectReqeust.public_ip)
 }
 
 // optional int32 public_port = 4;
@@ -2759,13 +2759,13 @@ inline void ConnectReqeust::clear_public_port() {
   clear_has_public_port();
 }
 inline ::google::protobuf::int32 ConnectReqeust::public_port() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.ConnectReqeust.public_port)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.ConnectReqeust.public_port)
   return public_port_;
 }
 inline void ConnectReqeust::set_public_port(::google::protobuf::int32 value) {
   set_has_public_port();
   public_port_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.ConnectReqeust.public_port)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.ConnectReqeust.public_port)
 }
 
 // optional bytes id = 5;
@@ -2783,41 +2783,41 @@ inline void ConnectReqeust::clear_id() {
   clear_has_id();
 }
 inline const ::std::string& ConnectReqeust::id() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.ConnectReqeust.id)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.ConnectReqeust.id)
   return id_.GetNoArena();
 }
 inline void ConnectReqeust::set_id(const ::std::string& value) {
   set_has_id();
   id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.ConnectReqeust.id)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.ConnectReqeust.id)
 }
 #if LANG_CXX11
 inline void ConnectReqeust::set_id(::std::string&& value) {
   set_has_id();
   id_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.ConnectReqeust.id)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.dht.protobuf.ConnectReqeust.id)
 }
 #endif
 inline void ConnectReqeust::set_id(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_id();
   id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.ConnectReqeust.id)
+  // @@protoc_insertion_point(field_set_char:shardora.dht.protobuf.ConnectReqeust.id)
 }
 inline void ConnectReqeust::set_id(const void* value, size_t size) {
   set_has_id();
   id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.ConnectReqeust.id)
+  // @@protoc_insertion_point(field_set_pointer:shardora.dht.protobuf.ConnectReqeust.id)
 }
 inline ::std::string* ConnectReqeust::mutable_id() {
   set_has_id();
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.ConnectReqeust.id)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.ConnectReqeust.id)
   return id_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* ConnectReqeust::release_id() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.ConnectReqeust.id)
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.ConnectReqeust.id)
   if (!has_id()) {
     return NULL;
   }
@@ -2831,7 +2831,7 @@ inline void ConnectReqeust::set_allocated_id(::std::string* id) {
     clear_has_id();
   }
   id_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), id);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.ConnectReqeust.id)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.ConnectReqeust.id)
 }
 
 // -------------------------------------------------------------------
@@ -2853,20 +2853,20 @@ inline void TimerRequest::clear_tm_milli() {
   clear_has_tm_milli();
 }
 inline ::google::protobuf::uint64 TimerRequest::tm_milli() const {
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.TimerRequest.tm_milli)
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.TimerRequest.tm_milli)
   return tm_milli_;
 }
 inline void TimerRequest::set_tm_milli(::google::protobuf::uint64 value) {
   set_has_tm_milli();
   tm_milli_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.TimerRequest.tm_milli)
+  // @@protoc_insertion_point(field_set:shardora.dht.protobuf.TimerRequest.tm_milli)
 }
 
 // -------------------------------------------------------------------
 
 // DhtMessage
 
-// optional .zjchain.dht.protobuf.BootstrapRequest bootstrap_req = 1;
+// optional .shardora.dht.protobuf.BootstrapRequest bootstrap_req = 1;
 inline bool DhtMessage::has_bootstrap_req() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -2880,32 +2880,32 @@ inline void DhtMessage::clear_bootstrap_req() {
   if (bootstrap_req_ != NULL) bootstrap_req_->Clear();
   clear_has_bootstrap_req();
 }
-inline const ::zjchain::dht::protobuf::BootstrapRequest& DhtMessage::_internal_bootstrap_req() const {
+inline const ::shardora::dht::protobuf::BootstrapRequest& DhtMessage::_internal_bootstrap_req() const {
   return *bootstrap_req_;
 }
-inline const ::zjchain::dht::protobuf::BootstrapRequest& DhtMessage::bootstrap_req() const {
-  const ::zjchain::dht::protobuf::BootstrapRequest* p = bootstrap_req_;
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.DhtMessage.bootstrap_req)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::dht::protobuf::BootstrapRequest*>(
-      &::zjchain::dht::protobuf::_BootstrapRequest_default_instance_);
+inline const ::shardora::dht::protobuf::BootstrapRequest& DhtMessage::bootstrap_req() const {
+  const ::shardora::dht::protobuf::BootstrapRequest* p = bootstrap_req_;
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.DhtMessage.bootstrap_req)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::dht::protobuf::BootstrapRequest*>(
+      &::shardora::dht::protobuf::_BootstrapRequest_default_instance_);
 }
-inline ::zjchain::dht::protobuf::BootstrapRequest* DhtMessage::release_bootstrap_req() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.DhtMessage.bootstrap_req)
+inline ::shardora::dht::protobuf::BootstrapRequest* DhtMessage::release_bootstrap_req() {
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.DhtMessage.bootstrap_req)
   clear_has_bootstrap_req();
-  ::zjchain::dht::protobuf::BootstrapRequest* temp = bootstrap_req_;
+  ::shardora::dht::protobuf::BootstrapRequest* temp = bootstrap_req_;
   bootstrap_req_ = NULL;
   return temp;
 }
-inline ::zjchain::dht::protobuf::BootstrapRequest* DhtMessage::mutable_bootstrap_req() {
+inline ::shardora::dht::protobuf::BootstrapRequest* DhtMessage::mutable_bootstrap_req() {
   set_has_bootstrap_req();
   if (bootstrap_req_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::dht::protobuf::BootstrapRequest>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::dht::protobuf::BootstrapRequest>(GetArenaNoVirtual());
     bootstrap_req_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.DhtMessage.bootstrap_req)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.DhtMessage.bootstrap_req)
   return bootstrap_req_;
 }
-inline void DhtMessage::set_allocated_bootstrap_req(::zjchain::dht::protobuf::BootstrapRequest* bootstrap_req) {
+inline void DhtMessage::set_allocated_bootstrap_req(::shardora::dht::protobuf::BootstrapRequest* bootstrap_req) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete bootstrap_req_;
@@ -2921,10 +2921,10 @@ inline void DhtMessage::set_allocated_bootstrap_req(::zjchain::dht::protobuf::Bo
     clear_has_bootstrap_req();
   }
   bootstrap_req_ = bootstrap_req;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.DhtMessage.bootstrap_req)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.DhtMessage.bootstrap_req)
 }
 
-// optional .zjchain.dht.protobuf.BootstrapResponse bootstrap_res = 2;
+// optional .shardora.dht.protobuf.BootstrapResponse bootstrap_res = 2;
 inline bool DhtMessage::has_bootstrap_res() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -2938,32 +2938,32 @@ inline void DhtMessage::clear_bootstrap_res() {
   if (bootstrap_res_ != NULL) bootstrap_res_->Clear();
   clear_has_bootstrap_res();
 }
-inline const ::zjchain::dht::protobuf::BootstrapResponse& DhtMessage::_internal_bootstrap_res() const {
+inline const ::shardora::dht::protobuf::BootstrapResponse& DhtMessage::_internal_bootstrap_res() const {
   return *bootstrap_res_;
 }
-inline const ::zjchain::dht::protobuf::BootstrapResponse& DhtMessage::bootstrap_res() const {
-  const ::zjchain::dht::protobuf::BootstrapResponse* p = bootstrap_res_;
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.DhtMessage.bootstrap_res)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::dht::protobuf::BootstrapResponse*>(
-      &::zjchain::dht::protobuf::_BootstrapResponse_default_instance_);
+inline const ::shardora::dht::protobuf::BootstrapResponse& DhtMessage::bootstrap_res() const {
+  const ::shardora::dht::protobuf::BootstrapResponse* p = bootstrap_res_;
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.DhtMessage.bootstrap_res)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::dht::protobuf::BootstrapResponse*>(
+      &::shardora::dht::protobuf::_BootstrapResponse_default_instance_);
 }
-inline ::zjchain::dht::protobuf::BootstrapResponse* DhtMessage::release_bootstrap_res() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.DhtMessage.bootstrap_res)
+inline ::shardora::dht::protobuf::BootstrapResponse* DhtMessage::release_bootstrap_res() {
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.DhtMessage.bootstrap_res)
   clear_has_bootstrap_res();
-  ::zjchain::dht::protobuf::BootstrapResponse* temp = bootstrap_res_;
+  ::shardora::dht::protobuf::BootstrapResponse* temp = bootstrap_res_;
   bootstrap_res_ = NULL;
   return temp;
 }
-inline ::zjchain::dht::protobuf::BootstrapResponse* DhtMessage::mutable_bootstrap_res() {
+inline ::shardora::dht::protobuf::BootstrapResponse* DhtMessage::mutable_bootstrap_res() {
   set_has_bootstrap_res();
   if (bootstrap_res_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::dht::protobuf::BootstrapResponse>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::dht::protobuf::BootstrapResponse>(GetArenaNoVirtual());
     bootstrap_res_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.DhtMessage.bootstrap_res)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.DhtMessage.bootstrap_res)
   return bootstrap_res_;
 }
-inline void DhtMessage::set_allocated_bootstrap_res(::zjchain::dht::protobuf::BootstrapResponse* bootstrap_res) {
+inline void DhtMessage::set_allocated_bootstrap_res(::shardora::dht::protobuf::BootstrapResponse* bootstrap_res) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete bootstrap_res_;
@@ -2979,10 +2979,10 @@ inline void DhtMessage::set_allocated_bootstrap_res(::zjchain::dht::protobuf::Bo
     clear_has_bootstrap_res();
   }
   bootstrap_res_ = bootstrap_res;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.DhtMessage.bootstrap_res)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.DhtMessage.bootstrap_res)
 }
 
-// optional .zjchain.dht.protobuf.RefreshNeighborsRequest refresh_neighbors_req = 3;
+// optional .shardora.dht.protobuf.RefreshNeighborsRequest refresh_neighbors_req = 3;
 inline bool DhtMessage::has_refresh_neighbors_req() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -2996,32 +2996,32 @@ inline void DhtMessage::clear_refresh_neighbors_req() {
   if (refresh_neighbors_req_ != NULL) refresh_neighbors_req_->Clear();
   clear_has_refresh_neighbors_req();
 }
-inline const ::zjchain::dht::protobuf::RefreshNeighborsRequest& DhtMessage::_internal_refresh_neighbors_req() const {
+inline const ::shardora::dht::protobuf::RefreshNeighborsRequest& DhtMessage::_internal_refresh_neighbors_req() const {
   return *refresh_neighbors_req_;
 }
-inline const ::zjchain::dht::protobuf::RefreshNeighborsRequest& DhtMessage::refresh_neighbors_req() const {
-  const ::zjchain::dht::protobuf::RefreshNeighborsRequest* p = refresh_neighbors_req_;
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.DhtMessage.refresh_neighbors_req)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::dht::protobuf::RefreshNeighborsRequest*>(
-      &::zjchain::dht::protobuf::_RefreshNeighborsRequest_default_instance_);
+inline const ::shardora::dht::protobuf::RefreshNeighborsRequest& DhtMessage::refresh_neighbors_req() const {
+  const ::shardora::dht::protobuf::RefreshNeighborsRequest* p = refresh_neighbors_req_;
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.DhtMessage.refresh_neighbors_req)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::dht::protobuf::RefreshNeighborsRequest*>(
+      &::shardora::dht::protobuf::_RefreshNeighborsRequest_default_instance_);
 }
-inline ::zjchain::dht::protobuf::RefreshNeighborsRequest* DhtMessage::release_refresh_neighbors_req() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.DhtMessage.refresh_neighbors_req)
+inline ::shardora::dht::protobuf::RefreshNeighborsRequest* DhtMessage::release_refresh_neighbors_req() {
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.DhtMessage.refresh_neighbors_req)
   clear_has_refresh_neighbors_req();
-  ::zjchain::dht::protobuf::RefreshNeighborsRequest* temp = refresh_neighbors_req_;
+  ::shardora::dht::protobuf::RefreshNeighborsRequest* temp = refresh_neighbors_req_;
   refresh_neighbors_req_ = NULL;
   return temp;
 }
-inline ::zjchain::dht::protobuf::RefreshNeighborsRequest* DhtMessage::mutable_refresh_neighbors_req() {
+inline ::shardora::dht::protobuf::RefreshNeighborsRequest* DhtMessage::mutable_refresh_neighbors_req() {
   set_has_refresh_neighbors_req();
   if (refresh_neighbors_req_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::dht::protobuf::RefreshNeighborsRequest>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::dht::protobuf::RefreshNeighborsRequest>(GetArenaNoVirtual());
     refresh_neighbors_req_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.DhtMessage.refresh_neighbors_req)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.DhtMessage.refresh_neighbors_req)
   return refresh_neighbors_req_;
 }
-inline void DhtMessage::set_allocated_refresh_neighbors_req(::zjchain::dht::protobuf::RefreshNeighborsRequest* refresh_neighbors_req) {
+inline void DhtMessage::set_allocated_refresh_neighbors_req(::shardora::dht::protobuf::RefreshNeighborsRequest* refresh_neighbors_req) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete refresh_neighbors_req_;
@@ -3037,10 +3037,10 @@ inline void DhtMessage::set_allocated_refresh_neighbors_req(::zjchain::dht::prot
     clear_has_refresh_neighbors_req();
   }
   refresh_neighbors_req_ = refresh_neighbors_req;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.DhtMessage.refresh_neighbors_req)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.DhtMessage.refresh_neighbors_req)
 }
 
-// optional .zjchain.dht.protobuf.RefreshNeighborsResponse refresh_neighbors_res = 4;
+// optional .shardora.dht.protobuf.RefreshNeighborsResponse refresh_neighbors_res = 4;
 inline bool DhtMessage::has_refresh_neighbors_res() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -3054,32 +3054,32 @@ inline void DhtMessage::clear_refresh_neighbors_res() {
   if (refresh_neighbors_res_ != NULL) refresh_neighbors_res_->Clear();
   clear_has_refresh_neighbors_res();
 }
-inline const ::zjchain::dht::protobuf::RefreshNeighborsResponse& DhtMessage::_internal_refresh_neighbors_res() const {
+inline const ::shardora::dht::protobuf::RefreshNeighborsResponse& DhtMessage::_internal_refresh_neighbors_res() const {
   return *refresh_neighbors_res_;
 }
-inline const ::zjchain::dht::protobuf::RefreshNeighborsResponse& DhtMessage::refresh_neighbors_res() const {
-  const ::zjchain::dht::protobuf::RefreshNeighborsResponse* p = refresh_neighbors_res_;
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.DhtMessage.refresh_neighbors_res)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::dht::protobuf::RefreshNeighborsResponse*>(
-      &::zjchain::dht::protobuf::_RefreshNeighborsResponse_default_instance_);
+inline const ::shardora::dht::protobuf::RefreshNeighborsResponse& DhtMessage::refresh_neighbors_res() const {
+  const ::shardora::dht::protobuf::RefreshNeighborsResponse* p = refresh_neighbors_res_;
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.DhtMessage.refresh_neighbors_res)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::dht::protobuf::RefreshNeighborsResponse*>(
+      &::shardora::dht::protobuf::_RefreshNeighborsResponse_default_instance_);
 }
-inline ::zjchain::dht::protobuf::RefreshNeighborsResponse* DhtMessage::release_refresh_neighbors_res() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.DhtMessage.refresh_neighbors_res)
+inline ::shardora::dht::protobuf::RefreshNeighborsResponse* DhtMessage::release_refresh_neighbors_res() {
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.DhtMessage.refresh_neighbors_res)
   clear_has_refresh_neighbors_res();
-  ::zjchain::dht::protobuf::RefreshNeighborsResponse* temp = refresh_neighbors_res_;
+  ::shardora::dht::protobuf::RefreshNeighborsResponse* temp = refresh_neighbors_res_;
   refresh_neighbors_res_ = NULL;
   return temp;
 }
-inline ::zjchain::dht::protobuf::RefreshNeighborsResponse* DhtMessage::mutable_refresh_neighbors_res() {
+inline ::shardora::dht::protobuf::RefreshNeighborsResponse* DhtMessage::mutable_refresh_neighbors_res() {
   set_has_refresh_neighbors_res();
   if (refresh_neighbors_res_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::dht::protobuf::RefreshNeighborsResponse>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::dht::protobuf::RefreshNeighborsResponse>(GetArenaNoVirtual());
     refresh_neighbors_res_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.DhtMessage.refresh_neighbors_res)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.DhtMessage.refresh_neighbors_res)
   return refresh_neighbors_res_;
 }
-inline void DhtMessage::set_allocated_refresh_neighbors_res(::zjchain::dht::protobuf::RefreshNeighborsResponse* refresh_neighbors_res) {
+inline void DhtMessage::set_allocated_refresh_neighbors_res(::shardora::dht::protobuf::RefreshNeighborsResponse* refresh_neighbors_res) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete refresh_neighbors_res_;
@@ -3095,10 +3095,10 @@ inline void DhtMessage::set_allocated_refresh_neighbors_res(::zjchain::dht::prot
     clear_has_refresh_neighbors_res();
   }
   refresh_neighbors_res_ = refresh_neighbors_res;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.DhtMessage.refresh_neighbors_res)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.DhtMessage.refresh_neighbors_res)
 }
 
-// optional .zjchain.dht.protobuf.ConnectReqeust connect_req = 5;
+// optional .shardora.dht.protobuf.ConnectReqeust connect_req = 5;
 inline bool DhtMessage::has_connect_req() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -3112,32 +3112,32 @@ inline void DhtMessage::clear_connect_req() {
   if (connect_req_ != NULL) connect_req_->Clear();
   clear_has_connect_req();
 }
-inline const ::zjchain::dht::protobuf::ConnectReqeust& DhtMessage::_internal_connect_req() const {
+inline const ::shardora::dht::protobuf::ConnectReqeust& DhtMessage::_internal_connect_req() const {
   return *connect_req_;
 }
-inline const ::zjchain::dht::protobuf::ConnectReqeust& DhtMessage::connect_req() const {
-  const ::zjchain::dht::protobuf::ConnectReqeust* p = connect_req_;
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.DhtMessage.connect_req)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::dht::protobuf::ConnectReqeust*>(
-      &::zjchain::dht::protobuf::_ConnectReqeust_default_instance_);
+inline const ::shardora::dht::protobuf::ConnectReqeust& DhtMessage::connect_req() const {
+  const ::shardora::dht::protobuf::ConnectReqeust* p = connect_req_;
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.DhtMessage.connect_req)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::dht::protobuf::ConnectReqeust*>(
+      &::shardora::dht::protobuf::_ConnectReqeust_default_instance_);
 }
-inline ::zjchain::dht::protobuf::ConnectReqeust* DhtMessage::release_connect_req() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.DhtMessage.connect_req)
+inline ::shardora::dht::protobuf::ConnectReqeust* DhtMessage::release_connect_req() {
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.DhtMessage.connect_req)
   clear_has_connect_req();
-  ::zjchain::dht::protobuf::ConnectReqeust* temp = connect_req_;
+  ::shardora::dht::protobuf::ConnectReqeust* temp = connect_req_;
   connect_req_ = NULL;
   return temp;
 }
-inline ::zjchain::dht::protobuf::ConnectReqeust* DhtMessage::mutable_connect_req() {
+inline ::shardora::dht::protobuf::ConnectReqeust* DhtMessage::mutable_connect_req() {
   set_has_connect_req();
   if (connect_req_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::dht::protobuf::ConnectReqeust>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::dht::protobuf::ConnectReqeust>(GetArenaNoVirtual());
     connect_req_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.DhtMessage.connect_req)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.DhtMessage.connect_req)
   return connect_req_;
 }
-inline void DhtMessage::set_allocated_connect_req(::zjchain::dht::protobuf::ConnectReqeust* connect_req) {
+inline void DhtMessage::set_allocated_connect_req(::shardora::dht::protobuf::ConnectReqeust* connect_req) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete connect_req_;
@@ -3153,10 +3153,10 @@ inline void DhtMessage::set_allocated_connect_req(::zjchain::dht::protobuf::Conn
     clear_has_connect_req();
   }
   connect_req_ = connect_req;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.DhtMessage.connect_req)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.DhtMessage.connect_req)
 }
 
-// optional .zjchain.dht.protobuf.HeartbeatRequest heartbeat_req = 6;
+// optional .shardora.dht.protobuf.HeartbeatRequest heartbeat_req = 6;
 inline bool DhtMessage::has_heartbeat_req() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
@@ -3170,32 +3170,32 @@ inline void DhtMessage::clear_heartbeat_req() {
   if (heartbeat_req_ != NULL) heartbeat_req_->Clear();
   clear_has_heartbeat_req();
 }
-inline const ::zjchain::dht::protobuf::HeartbeatRequest& DhtMessage::_internal_heartbeat_req() const {
+inline const ::shardora::dht::protobuf::HeartbeatRequest& DhtMessage::_internal_heartbeat_req() const {
   return *heartbeat_req_;
 }
-inline const ::zjchain::dht::protobuf::HeartbeatRequest& DhtMessage::heartbeat_req() const {
-  const ::zjchain::dht::protobuf::HeartbeatRequest* p = heartbeat_req_;
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.DhtMessage.heartbeat_req)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::dht::protobuf::HeartbeatRequest*>(
-      &::zjchain::dht::protobuf::_HeartbeatRequest_default_instance_);
+inline const ::shardora::dht::protobuf::HeartbeatRequest& DhtMessage::heartbeat_req() const {
+  const ::shardora::dht::protobuf::HeartbeatRequest* p = heartbeat_req_;
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.DhtMessage.heartbeat_req)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::dht::protobuf::HeartbeatRequest*>(
+      &::shardora::dht::protobuf::_HeartbeatRequest_default_instance_);
 }
-inline ::zjchain::dht::protobuf::HeartbeatRequest* DhtMessage::release_heartbeat_req() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.DhtMessage.heartbeat_req)
+inline ::shardora::dht::protobuf::HeartbeatRequest* DhtMessage::release_heartbeat_req() {
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.DhtMessage.heartbeat_req)
   clear_has_heartbeat_req();
-  ::zjchain::dht::protobuf::HeartbeatRequest* temp = heartbeat_req_;
+  ::shardora::dht::protobuf::HeartbeatRequest* temp = heartbeat_req_;
   heartbeat_req_ = NULL;
   return temp;
 }
-inline ::zjchain::dht::protobuf::HeartbeatRequest* DhtMessage::mutable_heartbeat_req() {
+inline ::shardora::dht::protobuf::HeartbeatRequest* DhtMessage::mutable_heartbeat_req() {
   set_has_heartbeat_req();
   if (heartbeat_req_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::dht::protobuf::HeartbeatRequest>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::dht::protobuf::HeartbeatRequest>(GetArenaNoVirtual());
     heartbeat_req_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.DhtMessage.heartbeat_req)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.DhtMessage.heartbeat_req)
   return heartbeat_req_;
 }
-inline void DhtMessage::set_allocated_heartbeat_req(::zjchain::dht::protobuf::HeartbeatRequest* heartbeat_req) {
+inline void DhtMessage::set_allocated_heartbeat_req(::shardora::dht::protobuf::HeartbeatRequest* heartbeat_req) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete heartbeat_req_;
@@ -3211,10 +3211,10 @@ inline void DhtMessage::set_allocated_heartbeat_req(::zjchain::dht::protobuf::He
     clear_has_heartbeat_req();
   }
   heartbeat_req_ = heartbeat_req;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.DhtMessage.heartbeat_req)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.DhtMessage.heartbeat_req)
 }
 
-// optional .zjchain.dht.protobuf.HeartbeatResponse heartbeat_res = 7;
+// optional .shardora.dht.protobuf.HeartbeatResponse heartbeat_res = 7;
 inline bool DhtMessage::has_heartbeat_res() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
@@ -3228,32 +3228,32 @@ inline void DhtMessage::clear_heartbeat_res() {
   if (heartbeat_res_ != NULL) heartbeat_res_->Clear();
   clear_has_heartbeat_res();
 }
-inline const ::zjchain::dht::protobuf::HeartbeatResponse& DhtMessage::_internal_heartbeat_res() const {
+inline const ::shardora::dht::protobuf::HeartbeatResponse& DhtMessage::_internal_heartbeat_res() const {
   return *heartbeat_res_;
 }
-inline const ::zjchain::dht::protobuf::HeartbeatResponse& DhtMessage::heartbeat_res() const {
-  const ::zjchain::dht::protobuf::HeartbeatResponse* p = heartbeat_res_;
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.DhtMessage.heartbeat_res)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::dht::protobuf::HeartbeatResponse*>(
-      &::zjchain::dht::protobuf::_HeartbeatResponse_default_instance_);
+inline const ::shardora::dht::protobuf::HeartbeatResponse& DhtMessage::heartbeat_res() const {
+  const ::shardora::dht::protobuf::HeartbeatResponse* p = heartbeat_res_;
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.DhtMessage.heartbeat_res)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::dht::protobuf::HeartbeatResponse*>(
+      &::shardora::dht::protobuf::_HeartbeatResponse_default_instance_);
 }
-inline ::zjchain::dht::protobuf::HeartbeatResponse* DhtMessage::release_heartbeat_res() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.DhtMessage.heartbeat_res)
+inline ::shardora::dht::protobuf::HeartbeatResponse* DhtMessage::release_heartbeat_res() {
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.DhtMessage.heartbeat_res)
   clear_has_heartbeat_res();
-  ::zjchain::dht::protobuf::HeartbeatResponse* temp = heartbeat_res_;
+  ::shardora::dht::protobuf::HeartbeatResponse* temp = heartbeat_res_;
   heartbeat_res_ = NULL;
   return temp;
 }
-inline ::zjchain::dht::protobuf::HeartbeatResponse* DhtMessage::mutable_heartbeat_res() {
+inline ::shardora::dht::protobuf::HeartbeatResponse* DhtMessage::mutable_heartbeat_res() {
   set_has_heartbeat_res();
   if (heartbeat_res_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::dht::protobuf::HeartbeatResponse>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::dht::protobuf::HeartbeatResponse>(GetArenaNoVirtual());
     heartbeat_res_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.DhtMessage.heartbeat_res)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.DhtMessage.heartbeat_res)
   return heartbeat_res_;
 }
-inline void DhtMessage::set_allocated_heartbeat_res(::zjchain::dht::protobuf::HeartbeatResponse* heartbeat_res) {
+inline void DhtMessage::set_allocated_heartbeat_res(::shardora::dht::protobuf::HeartbeatResponse* heartbeat_res) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete heartbeat_res_;
@@ -3269,10 +3269,10 @@ inline void DhtMessage::set_allocated_heartbeat_res(::zjchain::dht::protobuf::He
     clear_has_heartbeat_res();
   }
   heartbeat_res_ = heartbeat_res;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.DhtMessage.heartbeat_res)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.DhtMessage.heartbeat_res)
 }
 
-// optional .zjchain.dht.protobuf.TimerRequest timer = 8;
+// optional .shardora.dht.protobuf.TimerRequest timer = 8;
 inline bool DhtMessage::has_timer() const {
   return (_has_bits_[0] & 0x00000080u) != 0;
 }
@@ -3286,32 +3286,32 @@ inline void DhtMessage::clear_timer() {
   if (timer_ != NULL) timer_->Clear();
   clear_has_timer();
 }
-inline const ::zjchain::dht::protobuf::TimerRequest& DhtMessage::_internal_timer() const {
+inline const ::shardora::dht::protobuf::TimerRequest& DhtMessage::_internal_timer() const {
   return *timer_;
 }
-inline const ::zjchain::dht::protobuf::TimerRequest& DhtMessage::timer() const {
-  const ::zjchain::dht::protobuf::TimerRequest* p = timer_;
-  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.DhtMessage.timer)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::dht::protobuf::TimerRequest*>(
-      &::zjchain::dht::protobuf::_TimerRequest_default_instance_);
+inline const ::shardora::dht::protobuf::TimerRequest& DhtMessage::timer() const {
+  const ::shardora::dht::protobuf::TimerRequest* p = timer_;
+  // @@protoc_insertion_point(field_get:shardora.dht.protobuf.DhtMessage.timer)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::dht::protobuf::TimerRequest*>(
+      &::shardora::dht::protobuf::_TimerRequest_default_instance_);
 }
-inline ::zjchain::dht::protobuf::TimerRequest* DhtMessage::release_timer() {
-  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.DhtMessage.timer)
+inline ::shardora::dht::protobuf::TimerRequest* DhtMessage::release_timer() {
+  // @@protoc_insertion_point(field_release:shardora.dht.protobuf.DhtMessage.timer)
   clear_has_timer();
-  ::zjchain::dht::protobuf::TimerRequest* temp = timer_;
+  ::shardora::dht::protobuf::TimerRequest* temp = timer_;
   timer_ = NULL;
   return temp;
 }
-inline ::zjchain::dht::protobuf::TimerRequest* DhtMessage::mutable_timer() {
+inline ::shardora::dht::protobuf::TimerRequest* DhtMessage::mutable_timer() {
   set_has_timer();
   if (timer_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::dht::protobuf::TimerRequest>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::dht::protobuf::TimerRequest>(GetArenaNoVirtual());
     timer_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.DhtMessage.timer)
+  // @@protoc_insertion_point(field_mutable:shardora.dht.protobuf.DhtMessage.timer)
   return timer_;
 }
-inline void DhtMessage::set_allocated_timer(::zjchain::dht::protobuf::TimerRequest* timer) {
+inline void DhtMessage::set_allocated_timer(::shardora::dht::protobuf::TimerRequest* timer) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete timer_;
@@ -3327,7 +3327,7 @@ inline void DhtMessage::set_allocated_timer(::zjchain::dht::protobuf::TimerReque
     clear_has_timer();
   }
   timer_ = timer;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.DhtMessage.timer)
+  // @@protoc_insertion_point(field_set_allocated:shardora.dht.protobuf.DhtMessage.timer)
 }
 
 #ifdef __GNUC__
@@ -3356,7 +3356,7 @@ inline void DhtMessage::set_allocated_timer(::zjchain::dht::protobuf::TimerReque
 
 }  // namespace protobuf
 }  // namespace dht
-}  // namespace zjchain
+}  // namespace shardora
 
 // @@protoc_insertion_point(global_scope)
 

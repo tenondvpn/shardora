@@ -10,7 +10,7 @@
 #include "contract/contract_utils.h"
 #include "contract/call_parameters.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace contract {
 
@@ -87,4 +87,4 @@ typedef std::shared_ptr<ContractInterface> ContractInterfacePtr;
 
 }  // namespace contract
 
-}  // namespace zjchain
+}  // namespace shardora

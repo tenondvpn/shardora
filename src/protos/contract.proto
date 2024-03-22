@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package zjchain.contract.protobuf;
+package shardora.contract.protobuf;
 
 message GetAttrByKeyReq {
     optional bytes call_addr = 1;

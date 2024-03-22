@@ -2,7 +2,7 @@ syntax = "proto2";
 
 import "protos/bls.proto";
 import "protos/block.proto";
-package zjchain.init.protobuf;
+package shardora.init.protobuf;
 
 message GetAddressInfoRequest {
     optional bytes id = 1;

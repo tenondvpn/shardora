@@ -20,7 +20,7 @@
 #include "transport/processor.h"
 #include "common/encode.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace bls {
 
@@ -1012,4 +1012,4 @@ void BlsManager::ResetLeaders(
 
 };  // namespace bls
 
-};  // namespace zjchain
+};  // namespace shardora

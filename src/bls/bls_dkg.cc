@@ -18,7 +18,7 @@
 #include "protos/prefix_db.h"
 #include "json/json.hpp"
 
-namespace zjchain {
+namespace shardora {
 
 namespace bls {
 
@@ -1031,5 +1031,5 @@ void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
 
 };  // namespace bls
 
-};  // namespace zjchain
+};  // namespace shardora
  

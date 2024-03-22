@@ -9,7 +9,7 @@
 #define CONTRACT_WARN(fmt, ...) ZJC_WARN("[CONTRACT]" fmt, ## __VA_ARGS__)
 #define CONTRACT_ERROR(fmt, ...) ZJC_ERROR("[CONRTACT]" fmt, ## __VA_ARGS__)
 
-namespace zjchain {
+namespace shardora {
 
 namespace contract {
 
@@ -37,4 +37,4 @@ static const std::string kContractBlake2_compression = common::Encode::HexDecode
 
 }  // namespace contact
 
-}  // namespace zjchain
+}  // namespace shardora

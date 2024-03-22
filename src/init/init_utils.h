@@ -18,7 +18,7 @@
 #define INIT_WARN(fmt, ...) ZJC_WARN("[init]" fmt, ## __VA_ARGS__)
 #define INIT_ERROR(fmt, ...) ZJC_ERROR("[init]" fmt, ## __VA_ARGS__)
 
-namespace zjchain {
+namespace shardora {
 
 namespace init {
 
@@ -78,4 +78,4 @@ enum class GenisisNetworkType {
 
 }  // namespace init
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -3,7 +3,7 @@
 #include "common/fts_tree.h"
 #include "protos/get_proto_hash.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -943,4 +943,4 @@ void ElectTxItem::SmoothFtsValue(
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

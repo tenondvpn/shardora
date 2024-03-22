@@ -4,7 +4,7 @@
 #include "protos/tx_storage_key.h"
 #include "vss/vss_manager.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -79,4 +79,4 @@ int RootToTxItem::HandleTx(
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

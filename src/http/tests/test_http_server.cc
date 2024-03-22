@@ -4,7 +4,7 @@
 #define private public
 #include "http/http_server.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace http {
 
@@ -41,4 +41,4 @@ TEST_F(TestHttpServer, InitAndPop) {
 
 }  // namespace http
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -11,7 +11,7 @@
 #include "network/dht_manager.h"
 #include "network/network_proto.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace network {
 
@@ -357,4 +357,4 @@ int Universal::AddNodeToUniversal(dht::NodePtr& node) {
 
 }  // namespace network
 
-}  //namespace zjchain
+}  //namespace shardora

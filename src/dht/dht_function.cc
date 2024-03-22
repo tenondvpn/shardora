@@ -4,7 +4,7 @@
 #include "common/global_info.h"
 #include "dht/dht_key.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace dht {
 
@@ -227,4 +227,4 @@ std::vector<NodePtr> DhtFunction::GetClosestNodes(
 
 }  // namespace dht
 
-}  // namespace zjchain
+}  // namespace shardora

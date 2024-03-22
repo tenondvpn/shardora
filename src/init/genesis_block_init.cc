@@ -30,7 +30,7 @@
 #include "timeblock/time_block_utils.h"
 #include "yaml-cpp/yaml.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace init {
 
@@ -1619,4 +1619,4 @@ void GenesisBlockInit::GenerateRootAccounts() {
 
 };  // namespace init
 
-};  // namespace zjchain
+};  // namespace shardora

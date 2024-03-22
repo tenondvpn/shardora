@@ -7,7 +7,7 @@
 #include "common/bloom_filter.h"
 #include "common/random.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -95,4 +95,4 @@ TEST_F(TestBloomFilter, AddAndContain) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -23,7 +23,7 @@ namespace protobuf_protos_2fcontract_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fcontract_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_GetAttrByKeyReq;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fcontract_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_GetAttrByKeyRes;
 }  // namespace protobuf_protos_2fcontract_2eproto
-namespace zjchain {
+namespace shardora {
 namespace contract {
 namespace protobuf {
 class GetAttrByKeyReqDefaultTypeInternal {
@@ -43,17 +43,17 @@ class ContractMessageDefaultTypeInternal {
 } _ContractMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace contract
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2fcontract_2eproto {
 static void InitDefaultsGetAttrByKeyReq() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::contract::protobuf::_GetAttrByKeyReq_default_instance_;
-    new (ptr) ::zjchain::contract::protobuf::GetAttrByKeyReq();
+    void* ptr = &::shardora::contract::protobuf::_GetAttrByKeyReq_default_instance_;
+    new (ptr) ::shardora::contract::protobuf::GetAttrByKeyReq();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::contract::protobuf::GetAttrByKeyReq::InitAsDefaultInstance();
+  ::shardora::contract::protobuf::GetAttrByKeyReq::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<0> scc_info_GetAttrByKeyReq =
@@ -63,11 +63,11 @@ static void InitDefaultsGetAttrByKeyRes() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::contract::protobuf::_GetAttrByKeyRes_default_instance_;
-    new (ptr) ::zjchain::contract::protobuf::GetAttrByKeyRes();
+    void* ptr = &::shardora::contract::protobuf::_GetAttrByKeyRes_default_instance_;
+    new (ptr) ::shardora::contract::protobuf::GetAttrByKeyRes();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::contract::protobuf::GetAttrByKeyRes::InitAsDefaultInstance();
+  ::shardora::contract::protobuf::GetAttrByKeyRes::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<0> scc_info_GetAttrByKeyRes =
@@ -77,11 +77,11 @@ static void InitDefaultsContractMessage() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::contract::protobuf::_ContractMessage_default_instance_;
-    new (ptr) ::zjchain::contract::protobuf::ContractMessage();
+    void* ptr = &::shardora::contract::protobuf::_ContractMessage_default_instance_;
+    new (ptr) ::shardora::contract::protobuf::ContractMessage();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::contract::protobuf::ContractMessage::InitAsDefaultInstance();
+  ::shardora::contract::protobuf::ContractMessage::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<2> scc_info_ContractMessage =
@@ -98,46 +98,46 @@ void InitDefaults() {
 ::google::protobuf::Metadata file_level_metadata[3];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyReq, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyReq, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::contract::protobuf::GetAttrByKeyReq, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::contract::protobuf::GetAttrByKeyReq, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyReq, call_addr_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyReq, attr_key_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::contract::protobuf::GetAttrByKeyReq, call_addr_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::contract::protobuf::GetAttrByKeyReq, attr_key_),
   0,
   1,
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyRes, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyRes, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::contract::protobuf::GetAttrByKeyRes, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::contract::protobuf::GetAttrByKeyRes, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyRes, call_addr_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyRes, attr_key_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyRes, attr_value_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::contract::protobuf::GetAttrByKeyRes, call_addr_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::contract::protobuf::GetAttrByKeyRes, attr_key_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::contract::protobuf::GetAttrByKeyRes, attr_value_),
   0,
   1,
   2,
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::ContractMessage, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::ContractMessage, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::contract::protobuf::ContractMessage, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::contract::protobuf::ContractMessage, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::ContractMessage, get_attr_req_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::ContractMessage, get_attr_res_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::contract::protobuf::ContractMessage, get_attr_req_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::contract::protobuf::ContractMessage, get_attr_res_),
   0,
   1,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 7, sizeof(::zjchain::contract::protobuf::GetAttrByKeyReq)},
-  { 9, 17, sizeof(::zjchain::contract::protobuf::GetAttrByKeyRes)},
-  { 20, 27, sizeof(::zjchain::contract::protobuf::ContractMessage)},
+  { 0, 7, sizeof(::shardora::contract::protobuf::GetAttrByKeyReq)},
+  { 9, 17, sizeof(::shardora::contract::protobuf::GetAttrByKeyRes)},
+  { 20, 27, sizeof(::shardora::contract::protobuf::ContractMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::contract::protobuf::_GetAttrByKeyReq_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::contract::protobuf::_GetAttrByKeyRes_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::contract::protobuf::_ContractMessage_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::contract::protobuf::_GetAttrByKeyReq_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::contract::protobuf::_GetAttrByKeyRes_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::contract::protobuf::_ContractMessage_default_instance_),
 };
 
 void protobuf_AssignDescriptors() {
@@ -161,18 +161,18 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\025protos/contract.proto\022\031zjchain.contrac"
-      "t.protobuf\"6\n\017GetAttrByKeyReq\022\021\n\tcall_ad"
-      "dr\030\001 \001(\014\022\020\n\010attr_key\030\002 \001(\014\"J\n\017GetAttrByK"
-      "eyRes\022\021\n\tcall_addr\030\001 \001(\014\022\020\n\010attr_key\030\002 \001"
-      "(\014\022\022\n\nattr_value\030\003 \001(\014\"\225\001\n\017ContractMessa"
-      "ge\022@\n\014get_attr_req\030\001 \001(\0132*.zjchain.contr"
-      "act.protobuf.GetAttrByKeyReq\022@\n\014get_attr"
-      "_res\030\002 \001(\0132*.zjchain.contract.protobuf.G"
-      "etAttrByKeyRes"
+      "\n\025protos/contract.proto\022\032shardora.contra"
+      "ct.protobuf\"6\n\017GetAttrByKeyReq\022\021\n\tcall_a"
+      "ddr\030\001 \001(\014\022\020\n\010attr_key\030\002 \001(\014\"J\n\017GetAttrBy"
+      "KeyRes\022\021\n\tcall_addr\030\001 \001(\014\022\020\n\010attr_key\030\002 "
+      "\001(\014\022\022\n\nattr_value\030\003 \001(\014\"\227\001\n\017ContractMess"
+      "age\022A\n\014get_attr_req\030\001 \001(\0132+.shardora.con"
+      "tract.protobuf.GetAttrByKeyReq\022A\n\014get_at"
+      "tr_res\030\002 \001(\0132+.shardora.contract.protobu"
+      "f.GetAttrByKeyRes"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 334);
+      descriptor, 337);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/contract.proto", &protobuf_RegisterTypes);
 }
@@ -188,7 +188,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2fcontract_2eproto
-namespace zjchain {
+namespace shardora {
 namespace contract {
 namespace protobuf {
 
@@ -206,7 +206,7 @@ GetAttrByKeyReq::GetAttrByKeyReq()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fcontract_2eproto::scc_info_GetAttrByKeyReq.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.contract.protobuf.GetAttrByKeyReq)
+  // @@protoc_insertion_point(constructor:shardora.contract.protobuf.GetAttrByKeyReq)
 }
 GetAttrByKeyReq::GetAttrByKeyReq(const GetAttrByKeyReq& from)
   : ::google::protobuf::Message(),
@@ -221,7 +221,7 @@ GetAttrByKeyReq::GetAttrByKeyReq(const GetAttrByKeyReq& from)
   if (from.has_attr_key()) {
     attr_key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.attr_key_);
   }
-  // @@protoc_insertion_point(copy_constructor:zjchain.contract.protobuf.GetAttrByKeyReq)
+  // @@protoc_insertion_point(copy_constructor:shardora.contract.protobuf.GetAttrByKeyReq)
 }
 
 void GetAttrByKeyReq::SharedCtor() {
@@ -230,7 +230,7 @@ void GetAttrByKeyReq::SharedCtor() {
 }
 
 GetAttrByKeyReq::~GetAttrByKeyReq() {
-  // @@protoc_insertion_point(destructor:zjchain.contract.protobuf.GetAttrByKeyReq)
+  // @@protoc_insertion_point(destructor:shardora.contract.protobuf.GetAttrByKeyReq)
   SharedDtor();
 }
 
@@ -254,7 +254,7 @@ const GetAttrByKeyReq& GetAttrByKeyReq::default_instance() {
 
 
 void GetAttrByKeyReq::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.contract.protobuf.GetAttrByKeyReq)
+// @@protoc_insertion_point(message_clear_start:shardora.contract.protobuf.GetAttrByKeyReq)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -276,7 +276,7 @@ bool GetAttrByKeyReq::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.contract.protobuf.GetAttrByKeyReq)
+  // @@protoc_insertion_point(parse_start:shardora.contract.protobuf.GetAttrByKeyReq)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -318,17 +318,17 @@ bool GetAttrByKeyReq::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.contract.protobuf.GetAttrByKeyReq)
+  // @@protoc_insertion_point(parse_success:shardora.contract.protobuf.GetAttrByKeyReq)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.contract.protobuf.GetAttrByKeyReq)
+  // @@protoc_insertion_point(parse_failure:shardora.contract.protobuf.GetAttrByKeyReq)
   return false;
 #undef DO_
 }
 
 void GetAttrByKeyReq::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.contract.protobuf.GetAttrByKeyReq)
+  // @@protoc_insertion_point(serialize_start:shardora.contract.protobuf.GetAttrByKeyReq)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -349,13 +349,13 @@ void GetAttrByKeyReq::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.contract.protobuf.GetAttrByKeyReq)
+  // @@protoc_insertion_point(serialize_end:shardora.contract.protobuf.GetAttrByKeyReq)
 }
 
 ::google::protobuf::uint8* GetAttrByKeyReq::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.contract.protobuf.GetAttrByKeyReq)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.contract.protobuf.GetAttrByKeyReq)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -378,12 +378,12 @@ void GetAttrByKeyReq::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.contract.protobuf.GetAttrByKeyReq)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.contract.protobuf.GetAttrByKeyReq)
   return target;
 }
 
 size_t GetAttrByKeyReq::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.contract.protobuf.GetAttrByKeyReq)
+// @@protoc_insertion_point(message_byte_size_start:shardora.contract.protobuf.GetAttrByKeyReq)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -413,22 +413,22 @@ size_t GetAttrByKeyReq::ByteSizeLong() const {
 }
 
 void GetAttrByKeyReq::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.contract.protobuf.GetAttrByKeyReq)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.contract.protobuf.GetAttrByKeyReq)
   GOOGLE_DCHECK_NE(&from, this);
   const GetAttrByKeyReq* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const GetAttrByKeyReq>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.contract.protobuf.GetAttrByKeyReq)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.contract.protobuf.GetAttrByKeyReq)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.contract.protobuf.GetAttrByKeyReq)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.contract.protobuf.GetAttrByKeyReq)
     MergeFrom(*source);
   }
 }
 
 void GetAttrByKeyReq::MergeFrom(const GetAttrByKeyReq& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.contract.protobuf.GetAttrByKeyReq)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.contract.protobuf.GetAttrByKeyReq)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -448,14 +448,14 @@ void GetAttrByKeyReq::MergeFrom(const GetAttrByKeyReq& from) {
 }
 
 void GetAttrByKeyReq::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.contract.protobuf.GetAttrByKeyReq)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.contract.protobuf.GetAttrByKeyReq)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void GetAttrByKeyReq::CopyFrom(const GetAttrByKeyReq& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.contract.protobuf.GetAttrByKeyReq)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.contract.protobuf.GetAttrByKeyReq)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -500,7 +500,7 @@ GetAttrByKeyRes::GetAttrByKeyRes()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fcontract_2eproto::scc_info_GetAttrByKeyRes.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.contract.protobuf.GetAttrByKeyRes)
+  // @@protoc_insertion_point(constructor:shardora.contract.protobuf.GetAttrByKeyRes)
 }
 GetAttrByKeyRes::GetAttrByKeyRes(const GetAttrByKeyRes& from)
   : ::google::protobuf::Message(),
@@ -519,7 +519,7 @@ GetAttrByKeyRes::GetAttrByKeyRes(const GetAttrByKeyRes& from)
   if (from.has_attr_value()) {
     attr_value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.attr_value_);
   }
-  // @@protoc_insertion_point(copy_constructor:zjchain.contract.protobuf.GetAttrByKeyRes)
+  // @@protoc_insertion_point(copy_constructor:shardora.contract.protobuf.GetAttrByKeyRes)
 }
 
 void GetAttrByKeyRes::SharedCtor() {
@@ -529,7 +529,7 @@ void GetAttrByKeyRes::SharedCtor() {
 }
 
 GetAttrByKeyRes::~GetAttrByKeyRes() {
-  // @@protoc_insertion_point(destructor:zjchain.contract.protobuf.GetAttrByKeyRes)
+  // @@protoc_insertion_point(destructor:shardora.contract.protobuf.GetAttrByKeyRes)
   SharedDtor();
 }
 
@@ -554,7 +554,7 @@ const GetAttrByKeyRes& GetAttrByKeyRes::default_instance() {
 
 
 void GetAttrByKeyRes::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.contract.protobuf.GetAttrByKeyRes)
+// @@protoc_insertion_point(message_clear_start:shardora.contract.protobuf.GetAttrByKeyRes)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -579,7 +579,7 @@ bool GetAttrByKeyRes::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.contract.protobuf.GetAttrByKeyRes)
+  // @@protoc_insertion_point(parse_start:shardora.contract.protobuf.GetAttrByKeyRes)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -633,17 +633,17 @@ bool GetAttrByKeyRes::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.contract.protobuf.GetAttrByKeyRes)
+  // @@protoc_insertion_point(parse_success:shardora.contract.protobuf.GetAttrByKeyRes)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.contract.protobuf.GetAttrByKeyRes)
+  // @@protoc_insertion_point(parse_failure:shardora.contract.protobuf.GetAttrByKeyRes)
   return false;
 #undef DO_
 }
 
 void GetAttrByKeyRes::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.contract.protobuf.GetAttrByKeyRes)
+  // @@protoc_insertion_point(serialize_start:shardora.contract.protobuf.GetAttrByKeyRes)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -670,13 +670,13 @@ void GetAttrByKeyRes::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.contract.protobuf.GetAttrByKeyRes)
+  // @@protoc_insertion_point(serialize_end:shardora.contract.protobuf.GetAttrByKeyRes)
 }
 
 ::google::protobuf::uint8* GetAttrByKeyRes::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.contract.protobuf.GetAttrByKeyRes)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.contract.protobuf.GetAttrByKeyRes)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -706,12 +706,12 @@ void GetAttrByKeyRes::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.contract.protobuf.GetAttrByKeyRes)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.contract.protobuf.GetAttrByKeyRes)
   return target;
 }
 
 size_t GetAttrByKeyRes::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.contract.protobuf.GetAttrByKeyRes)
+// @@protoc_insertion_point(message_byte_size_start:shardora.contract.protobuf.GetAttrByKeyRes)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -748,22 +748,22 @@ size_t GetAttrByKeyRes::ByteSizeLong() const {
 }
 
 void GetAttrByKeyRes::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.contract.protobuf.GetAttrByKeyRes)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.contract.protobuf.GetAttrByKeyRes)
   GOOGLE_DCHECK_NE(&from, this);
   const GetAttrByKeyRes* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const GetAttrByKeyRes>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.contract.protobuf.GetAttrByKeyRes)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.contract.protobuf.GetAttrByKeyRes)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.contract.protobuf.GetAttrByKeyRes)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.contract.protobuf.GetAttrByKeyRes)
     MergeFrom(*source);
   }
 }
 
 void GetAttrByKeyRes::MergeFrom(const GetAttrByKeyRes& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.contract.protobuf.GetAttrByKeyRes)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.contract.protobuf.GetAttrByKeyRes)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -787,14 +787,14 @@ void GetAttrByKeyRes::MergeFrom(const GetAttrByKeyRes& from) {
 }
 
 void GetAttrByKeyRes::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.contract.protobuf.GetAttrByKeyRes)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.contract.protobuf.GetAttrByKeyRes)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void GetAttrByKeyRes::CopyFrom(const GetAttrByKeyRes& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.contract.protobuf.GetAttrByKeyRes)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.contract.protobuf.GetAttrByKeyRes)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -829,10 +829,10 @@ void GetAttrByKeyRes::InternalSwap(GetAttrByKeyRes* other) {
 // ===================================================================
 
 void ContractMessage::InitAsDefaultInstance() {
-  ::zjchain::contract::protobuf::_ContractMessage_default_instance_._instance.get_mutable()->get_attr_req_ = const_cast< ::zjchain::contract::protobuf::GetAttrByKeyReq*>(
-      ::zjchain::contract::protobuf::GetAttrByKeyReq::internal_default_instance());
-  ::zjchain::contract::protobuf::_ContractMessage_default_instance_._instance.get_mutable()->get_attr_res_ = const_cast< ::zjchain::contract::protobuf::GetAttrByKeyRes*>(
-      ::zjchain::contract::protobuf::GetAttrByKeyRes::internal_default_instance());
+  ::shardora::contract::protobuf::_ContractMessage_default_instance_._instance.get_mutable()->get_attr_req_ = const_cast< ::shardora::contract::protobuf::GetAttrByKeyReq*>(
+      ::shardora::contract::protobuf::GetAttrByKeyReq::internal_default_instance());
+  ::shardora::contract::protobuf::_ContractMessage_default_instance_._instance.get_mutable()->get_attr_res_ = const_cast< ::shardora::contract::protobuf::GetAttrByKeyRes*>(
+      ::shardora::contract::protobuf::GetAttrByKeyRes::internal_default_instance());
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int ContractMessage::kGetAttrReqFieldNumber;
@@ -844,7 +844,7 @@ ContractMessage::ContractMessage()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fcontract_2eproto::scc_info_ContractMessage.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.contract.protobuf.ContractMessage)
+  // @@protoc_insertion_point(constructor:shardora.contract.protobuf.ContractMessage)
 }
 ContractMessage::ContractMessage(const ContractMessage& from)
   : ::google::protobuf::Message(),
@@ -852,16 +852,16 @@ ContractMessage::ContractMessage(const ContractMessage& from)
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.has_get_attr_req()) {
-    get_attr_req_ = new ::zjchain::contract::protobuf::GetAttrByKeyReq(*from.get_attr_req_);
+    get_attr_req_ = new ::shardora::contract::protobuf::GetAttrByKeyReq(*from.get_attr_req_);
   } else {
     get_attr_req_ = NULL;
   }
   if (from.has_get_attr_res()) {
-    get_attr_res_ = new ::zjchain::contract::protobuf::GetAttrByKeyRes(*from.get_attr_res_);
+    get_attr_res_ = new ::shardora::contract::protobuf::GetAttrByKeyRes(*from.get_attr_res_);
   } else {
     get_attr_res_ = NULL;
   }
-  // @@protoc_insertion_point(copy_constructor:zjchain.contract.protobuf.ContractMessage)
+  // @@protoc_insertion_point(copy_constructor:shardora.contract.protobuf.ContractMessage)
 }
 
 void ContractMessage::SharedCtor() {
@@ -871,7 +871,7 @@ void ContractMessage::SharedCtor() {
 }
 
 ContractMessage::~ContractMessage() {
-  // @@protoc_insertion_point(destructor:zjchain.contract.protobuf.ContractMessage)
+  // @@protoc_insertion_point(destructor:shardora.contract.protobuf.ContractMessage)
   SharedDtor();
 }
 
@@ -895,7 +895,7 @@ const ContractMessage& ContractMessage::default_instance() {
 
 
 void ContractMessage::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.contract.protobuf.ContractMessage)
+// @@protoc_insertion_point(message_clear_start:shardora.contract.protobuf.ContractMessage)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -919,13 +919,13 @@ bool ContractMessage::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.contract.protobuf.ContractMessage)
+  // @@protoc_insertion_point(parse_start:shardora.contract.protobuf.ContractMessage)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional .zjchain.contract.protobuf.GetAttrByKeyReq get_attr_req = 1;
+      // optional .shardora.contract.protobuf.GetAttrByKeyReq get_attr_req = 1;
       case 1: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
@@ -937,7 +937,7 @@ bool ContractMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .zjchain.contract.protobuf.GetAttrByKeyRes get_attr_res = 2;
+      // optional .shardora.contract.protobuf.GetAttrByKeyRes get_attr_res = 2;
       case 2: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
@@ -961,28 +961,28 @@ bool ContractMessage::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.contract.protobuf.ContractMessage)
+  // @@protoc_insertion_point(parse_success:shardora.contract.protobuf.ContractMessage)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.contract.protobuf.ContractMessage)
+  // @@protoc_insertion_point(parse_failure:shardora.contract.protobuf.ContractMessage)
   return false;
 #undef DO_
 }
 
 void ContractMessage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.contract.protobuf.ContractMessage)
+  // @@protoc_insertion_point(serialize_start:shardora.contract.protobuf.ContractMessage)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  // optional .zjchain.contract.protobuf.GetAttrByKeyReq get_attr_req = 1;
+  // optional .shardora.contract.protobuf.GetAttrByKeyReq get_attr_req = 1;
   if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       1, this->_internal_get_attr_req(), output);
   }
 
-  // optional .zjchain.contract.protobuf.GetAttrByKeyRes get_attr_res = 2;
+  // optional .shardora.contract.protobuf.GetAttrByKeyRes get_attr_res = 2;
   if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       2, this->_internal_get_attr_res(), output);
@@ -992,25 +992,25 @@ void ContractMessage::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.contract.protobuf.ContractMessage)
+  // @@protoc_insertion_point(serialize_end:shardora.contract.protobuf.ContractMessage)
 }
 
 ::google::protobuf::uint8* ContractMessage::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.contract.protobuf.ContractMessage)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.contract.protobuf.ContractMessage)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  // optional .zjchain.contract.protobuf.GetAttrByKeyReq get_attr_req = 1;
+  // optional .shardora.contract.protobuf.GetAttrByKeyReq get_attr_req = 1;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
         1, this->_internal_get_attr_req(), deterministic, target);
   }
 
-  // optional .zjchain.contract.protobuf.GetAttrByKeyRes get_attr_res = 2;
+  // optional .shardora.contract.protobuf.GetAttrByKeyRes get_attr_res = 2;
   if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
@@ -1021,12 +1021,12 @@ void ContractMessage::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.contract.protobuf.ContractMessage)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.contract.protobuf.ContractMessage)
   return target;
 }
 
 size_t ContractMessage::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.contract.protobuf.ContractMessage)
+// @@protoc_insertion_point(message_byte_size_start:shardora.contract.protobuf.ContractMessage)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1035,14 +1035,14 @@ size_t ContractMessage::ByteSizeLong() const {
         _internal_metadata_.unknown_fields());
   }
   if (_has_bits_[0 / 32] & 3u) {
-    // optional .zjchain.contract.protobuf.GetAttrByKeyReq get_attr_req = 1;
+    // optional .shardora.contract.protobuf.GetAttrByKeyReq get_attr_req = 1;
     if (has_get_attr_req()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           *get_attr_req_);
     }
 
-    // optional .zjchain.contract.protobuf.GetAttrByKeyRes get_attr_res = 2;
+    // optional .shardora.contract.protobuf.GetAttrByKeyRes get_attr_res = 2;
     if (has_get_attr_res()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
@@ -1056,22 +1056,22 @@ size_t ContractMessage::ByteSizeLong() const {
 }
 
 void ContractMessage::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.contract.protobuf.ContractMessage)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.contract.protobuf.ContractMessage)
   GOOGLE_DCHECK_NE(&from, this);
   const ContractMessage* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const ContractMessage>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.contract.protobuf.ContractMessage)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.contract.protobuf.ContractMessage)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.contract.protobuf.ContractMessage)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.contract.protobuf.ContractMessage)
     MergeFrom(*source);
   }
 }
 
 void ContractMessage::MergeFrom(const ContractMessage& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.contract.protobuf.ContractMessage)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.contract.protobuf.ContractMessage)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -1080,23 +1080,23 @@ void ContractMessage::MergeFrom(const ContractMessage& from) {
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 3u) {
     if (cached_has_bits & 0x00000001u) {
-      mutable_get_attr_req()->::zjchain::contract::protobuf::GetAttrByKeyReq::MergeFrom(from.get_attr_req());
+      mutable_get_attr_req()->::shardora::contract::protobuf::GetAttrByKeyReq::MergeFrom(from.get_attr_req());
     }
     if (cached_has_bits & 0x00000002u) {
-      mutable_get_attr_res()->::zjchain::contract::protobuf::GetAttrByKeyRes::MergeFrom(from.get_attr_res());
+      mutable_get_attr_res()->::shardora::contract::protobuf::GetAttrByKeyRes::MergeFrom(from.get_attr_res());
     }
   }
 }
 
 void ContractMessage::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.contract.protobuf.ContractMessage)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.contract.protobuf.ContractMessage)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void ContractMessage::CopyFrom(const ContractMessage& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.contract.protobuf.ContractMessage)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.contract.protobuf.ContractMessage)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1127,17 +1127,17 @@ void ContractMessage::InternalSwap(ContractMessage* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace contract
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::contract::protobuf::GetAttrByKeyReq* Arena::CreateMaybeMessage< ::zjchain::contract::protobuf::GetAttrByKeyReq >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::contract::protobuf::GetAttrByKeyReq >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::contract::protobuf::GetAttrByKeyReq* Arena::CreateMaybeMessage< ::shardora::contract::protobuf::GetAttrByKeyReq >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::contract::protobuf::GetAttrByKeyReq >(arena);
 }
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::contract::protobuf::GetAttrByKeyRes* Arena::CreateMaybeMessage< ::zjchain::contract::protobuf::GetAttrByKeyRes >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::contract::protobuf::GetAttrByKeyRes >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::contract::protobuf::GetAttrByKeyRes* Arena::CreateMaybeMessage< ::shardora::contract::protobuf::GetAttrByKeyRes >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::contract::protobuf::GetAttrByKeyRes >(arena);
 }
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::contract::protobuf::ContractMessage* Arena::CreateMaybeMessage< ::zjchain::contract::protobuf::ContractMessage >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::contract::protobuf::ContractMessage >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::contract::protobuf::ContractMessage* Arena::CreateMaybeMessage< ::shardora::contract::protobuf::ContractMessage >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::contract::protobuf::ContractMessage >(arena);
 }
 }  // namespace protobuf
 }  // namespace google

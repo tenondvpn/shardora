@@ -16,7 +16,7 @@
 #include <common/time_utils.h>
 #include <protos/pools.pb.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
 
@@ -1096,33 +1096,33 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     }
 
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-    // if (security_->Verify(
-    //         msg_ptr->msg_hash,
-    //         tx_msg.pubkey(),
-    //         msg_ptr->header.sign()) != security::kSecuritySuccess) {
-    //     ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
-    //         "prepayment: %lu, default call contract gas: %lu, txid: %s",
-    //         msg_ptr->address_info->balance(),
-    //         tx_msg.amount(),
-    //         tx_msg.contract_prepayment(),
-    //         consensus::kCallContractDefaultUseGas,
-    //         common::Encode::HexEncode(tx_msg.gid()).c_str());
-    //     assert(false);
-    //     return false;
-    // }
+    if (security_->Verify(
+            msg_ptr->msg_hash,
+            tx_msg.pubkey(),
+            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
+            "prepayment: %lu, default call contract gas: %lu, txid: %s",
+            msg_ptr->address_info->balance(),
+            tx_msg.amount(),
+            tx_msg.contract_prepayment(),
+            consensus::kCallContractDefaultUseGas,
+            common::Encode::HexEncode(tx_msg.gid()).c_str());
+        assert(false);
+        return false;
+    }
     // ZJC_INFO("====4 tx verify dur: %lu us", common::TimeUtils::TimestampUs() - s);
 
-    // if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
-    //     // avoid save gid different tx
-    //     ZJC_DEBUG("tx msg hash exists: %s failed!",
-    //         common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
-    //     return false;
-    // }
+    if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
+        // avoid save gid different tx
+        ZJC_DEBUG("tx msg hash exists: %s failed!",
+            common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
+        return false;
+    }
 
-    // if (prefix_db_->GidExists(tx_msg.gid())) {
-    //     ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
-    //     return false;
-    // }
+    if (prefix_db_->GidExists(tx_msg.gid())) {
+        ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
+        return false;
+    }
 
     return true;
 }
@@ -1382,4 +1382,4 @@ void TxPoolManager::GetMinValidTxCount() {
 
 }  // namespace pools
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -14,7 +14,7 @@
 #include "network/bootstrap.h"
 #include "security/security.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace network {
 
@@ -225,4 +225,4 @@ int ShardNetwork<DhtType>::JoinShard() {
 
 }  // namespace network
 
-}  // namespace zjchain
+}  // namespace shardora

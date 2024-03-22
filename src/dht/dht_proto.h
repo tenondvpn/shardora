@@ -9,7 +9,7 @@
 #include "protos/transport.pb.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace dht {
 
@@ -59,5 +59,5 @@ private:
 
 }  // namespace dht
 
-}  //namespace zjchain
+}  //namespace shardora
 

@@ -12,7 +12,7 @@
 #include "transport/multi_thread.h"
 #include "transport/processor.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace tcp {
 
@@ -104,4 +104,4 @@ TEST_F(TestTcpTransport, TestServer) {
 
 }  // namespace tcp
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -5,7 +5,7 @@
 #include <set>
 #include <iostream>
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -148,4 +148,4 @@ void TickThreadPool::RemoveTick(uint32_t tick_idx) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

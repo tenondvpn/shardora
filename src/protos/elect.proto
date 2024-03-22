@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package zjchain.elect.protobuf;
+package shardora.elect.protobuf;
 
 message VerifyVecValue {
     optional bytes x_c0 = 1;

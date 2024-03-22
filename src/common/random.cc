@@ -9,7 +9,7 @@
 
 #include "common/random.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -89,4 +89,4 @@ std::string Random::RandomString(uint32_t size) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

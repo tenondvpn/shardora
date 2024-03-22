@@ -15,7 +15,7 @@
 #include "tnet/socket/server_socket.h"
 #include "tnet/utils/packet_factory.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace tnet {
 
@@ -72,4 +72,4 @@ private:
 
 }  // namespace tnet
 
-}  // namespace zjchain
+}  // namespace shardora

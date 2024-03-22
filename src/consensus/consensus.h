@@ -4,7 +4,7 @@
 #include "elect/elect_manager.h"
 #include "pools/tx_pool_manager.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -19,4 +19,4 @@ protected:
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

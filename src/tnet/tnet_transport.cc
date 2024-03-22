@@ -3,7 +3,7 @@
 #include "tnet/tcp_connection.h"
 #include "tnet/socket/socket_factory.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace tnet {
 
@@ -273,4 +273,4 @@ void TnetTransport::ThreadProc(EventLoop* event_loop) {
 
 }  // namespace tnet
 
-}  // namespace zjchain
+}  // namespace shardora
