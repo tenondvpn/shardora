@@ -11,13 +11,6 @@ namespace consensus {
 class FromTxItem : public TxItemBase {
 public:
     FromTxItem(
-            const transport::MessagePtr& msg,
-            std::shared_ptr<block::AccountManager>& account_mgr,
-            std::shared_ptr<security::Security>& sec_ptr)
-            : TxItemBase(msg, account_mgr, sec_ptr) {
-    }
-
-    FromTxItem(
             const pools::protobuf::TxMessage& tx,
             std::shared_ptr<block::AccountManager>& account_mgr,
             std::shared_ptr<security::Security>& sec_ptr)

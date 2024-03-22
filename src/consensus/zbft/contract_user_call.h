@@ -15,7 +15,7 @@ class ContractUserCall : public TxItemBase {
 public:
     ContractUserCall(
             std::shared_ptr<db::Db>& db,
-            const transport::MessagePtr& msg,
+            const pools::protobuf::TxMessage& msg,
             std::shared_ptr<block::AccountManager>& account_mgr,
             std::shared_ptr<security::Security>& sec_ptr)
             : TxItemBase(msg, account_mgr, sec_ptr) {
