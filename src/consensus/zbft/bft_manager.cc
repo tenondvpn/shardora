@@ -2299,7 +2299,7 @@ void BftManager::BackupSendPrecommitMessage(
 void BftManager::BackupAddLocalTxs(zbft::protobuf::TxBft* txbft, uint32_t pool_index) {
     auto precommit_bft_ptr = pools_with_zbfts_[pool_index];
     auto& txs = precommit_bft_ptr->txs_ptr()->txs;
-    pools_mgr_->GetTx(pool_index, 64, txs, txbft);
+    pools_mgr_->GetTx(pool_index, 1024, txs, txbft);
     ZJC_INFO("send to leader tx size: %u", txbft->txs_size());
 }
 
