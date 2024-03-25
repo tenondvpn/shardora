@@ -772,6 +772,7 @@ int Zbft::DoTransaction(bool leader) {
     zjc_block.set_electblock_height(elect_height_);
     assert(elect_height_ >= 1);
     zjc_block.set_leader_index(leader_index_);
+    ZJC_INFO("coming 0");
     DoTransactionAndCreateTxBlock(zjc_block);
     if (zjc_block.tx_list_size() <= 0) {
         ZJC_ERROR("all choose tx invalid!");
@@ -800,6 +801,7 @@ int Zbft::DoTransaction(bool leader) {
 }
 
 void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
+    ZJC_INFO("0");
     auto tx_list = zjc_block.mutable_tx_list();
     auto& tx_map = txs_ptr_->txs;
     tx_list->Reserve(tx_map.size());
@@ -810,10 +812,12 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
     zjc_host.tx_context_.block_number = zjc_block.height();
     zjc_host.tx_context_.block_timestamp = zjc_block.timestamp() / 1000;
     uint64_t chanin_id = (((uint64_t)zjc_block.network_id()) << 32 | (uint64_t)zjc_block.pool_index());
+    ZJC_INFO("1");
     zjcvm::Uint64ToEvmcBytes32(
         zjc_host.tx_context_.chain_id,
         chanin_id);
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) { 
+        ZJC_INFO("2");
         auto& tx_info = iter->second->tx_info;
         auto& block_tx = *tx_list->Add();
         int res = iter->second->TxToBlockTx(tx_info, db_batch_, &block_tx);
@@ -822,6 +826,7 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
             continue;
         }
 
+        ZJC_INFO("3");
         if (block_tx.step() == pools::protobuf::kContractExcute) {
             block_tx.set_from(security_ptr_->GetAddress(
                 iter->second->tx_info.pubkey()));
@@ -829,6 +834,7 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
             block_tx.set_from(iter->second->address_info->addr());
         }
 
+        ZJC_INFO("4");
         block_tx.set_status(kConsensusSuccess);
         int do_tx_res = iter->second->HandleTx(
             zjc_block,
@@ -841,6 +847,7 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
             continue;
         }
 
+        ZJC_INFO("5");
         for (auto event_iter = zjc_host.recorded_logs_.begin();
                 event_iter != zjc_host.recorded_logs_.end(); ++event_iter) {
             auto log = block_tx.add_events();
@@ -851,6 +858,7 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
             }
         }
 
+        ZJC_INFO("6");
         zjc_host.recorded_logs_.clear();
     }
 }

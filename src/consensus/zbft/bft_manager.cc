@@ -2902,7 +2902,7 @@ void BftManager::LeaderAddBackupTxs(const zbft::protobuf::TxBft& txbft, uint32_t
             assert(false);
             continue;
         }
-        
+
         assert(address_info != nullptr);
         pools::TxItemPtr tx_ptr = nullptr;
         switch (tx.step()) {
