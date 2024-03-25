@@ -181,6 +181,7 @@ void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
     }
 
     GetTx(prio_map_, res_map, count);
+    GetTx(consensus_tx_map_, res_map, count);
 }
 
 void TxPool::GetTx(
@@ -247,6 +248,11 @@ void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
         iter->second->in_consensus = false;
         auto miter = gid_map_.find(iter->first);
         if (miter != gid_map_.end()) {
+            if (miter->second->is_consensus_add_tx) {
+                consensus_tx_map_[miter->second->unique_tx_hash] = miter->second;
+                continue;
+            }
+
             if (iter->second->step == pools::protobuf::kCreateLibrary) {
                 universal_prio_map_[miter->second->prio_key] = miter->second;
             } else {

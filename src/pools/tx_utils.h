@@ -48,7 +48,8 @@ public:
             gas_price(tx.gas_price()),
             in_consensus(false),
             tx_info(tx),
-            address_info(addr_info) {
+            address_info(addr_info),
+            is_consensus_add_tx(false) {
 uint64_t now_tm = common::TimeUtils::TimestampUs();
         time_valid = now_tm + kBftStartDeltaTime;
 #ifdef ZJC_UNITTEST
@@ -86,6 +87,7 @@ uint64_t now_tm = common::TimeUtils::TimestampUs();
     bool in_consensus;
     pools::protobuf::TxMessage tx_info;
     protos::AddressInfoPtr address_info;
+    bool is_consensus_add_tx;
 };
 
 typedef std::shared_ptr<TxItem> TxItemPtr;

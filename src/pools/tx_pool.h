@@ -56,6 +56,7 @@ public:
 
     void ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
         for (uint32_t i = 0; i < txs.size(); ++i) {
+            txs[i]->is_consensus_add_tx = true;
             consensus_tx_map_[txs[i]->unique_tx_hash] = txs[i];
         }
     }
@@ -392,7 +393,7 @@ private:
     std::map<uint64_t, std::string> checked_height_with_prehash_;
     volatile uint64_t oldest_timestamp_ = 0;
     uint64_t prev_tx_count_tm_us_ = 0;
-    std::unordered_map<std::string, TxItemPtr> consensus_tx_map_;
+    std::map<std::string, TxItemPtr> consensus_tx_map_;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };
