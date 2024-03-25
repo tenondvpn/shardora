@@ -408,7 +408,7 @@ int MultiThreadHandler::CheckMessageValid(MessagePtr& msg_ptr) {
 
     if (firewall_checks_[msg_ptr->header.type()] == nullptr) {
         ZJC_DEBUG("invalid fierwall check message type: %d", msg_ptr->header.type());
-        return kFirewallCheckError;
+        return kFirewallCheckSuccess;
     }
 
     int check_status = firewall_checks_[msg_ptr->header.type()](msg_ptr);
