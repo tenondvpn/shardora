@@ -179,7 +179,8 @@ public:
                 thread_idx = iter->second;
             }
             
-            if (main_inited_success_) {
+            auto now_tm_ms = common::TimeUtils::TimestampMs();
+            if (main_inited_success_ && begin_run_timestamp_ms_ <= now_tm_ms) {
                 should_check_thread_all_valid_ = false;
             }
         } else {
