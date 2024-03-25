@@ -43,7 +43,7 @@ int AccountManager::Init(
     update_acc_thread_ = std::make_shared<std::thread>(
         std::bind(&AccountManager::RunUpdateAccounts, this));
     std::unique_lock<std::mutex> lock(thread_wait_mutex_);
-    thread_wait_conn_.wait();
+    thread_wait_conn_.wait(lock);
     return kBlockSuccess;
 }
 
