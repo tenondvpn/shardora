@@ -298,7 +298,7 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     CheckMessageTimeout();
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    BroadcastInvalidGids();
+    // BroadcastInvalidGids();
     CheckInvalidGids();
 #endif
 }

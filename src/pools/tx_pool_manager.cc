@@ -110,6 +110,11 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     // return transport::kFirewallCheckSuccess;
     auto& header = msg_ptr->header;
     auto& tx_msg = header.tx_proto();
+    if (msg_ptr->header.has_sync_heights() && !msg_ptr->header.has_tx_proto()) {
+        // TODO: check all message with valid signature
+        return transport::kFirewallCheckSuccess;
+    }
+
     if (!msg_ptr->header.has_sign() || !tx_msg.has_pubkey() ||
             msg_ptr->header.sign().empty() || tx_msg.pubkey().empty()) {
         ZJC_DEBUG("pools check firewall message failed, invalid sign or pk. sign: %d, pk: %d, hash64: %lu", 
