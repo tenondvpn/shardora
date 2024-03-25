@@ -2887,6 +2887,54 @@ int BftManager::LeaderCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
 }
 
 void BftManager::LeaderAddBackupTxs(const zbft::protobuf::TxBft& txbft, uint32_t pool_index) {
+    std::vector<pools::TxItemPtr> txptr_vec;
+    for (int32_t i = 0; i < txbft.txs_size(); ++i) {
+        auto& tx = txbft.txs(i);
+        ZJC_DEBUG("get tx message step: %d", tx.step());
+        protos::AddressInfoPtr address_info = nullptr;
+        if (security_ptr_->IsValidPublicKey(tx.pubkey())) {
+            address_info = account_mgr_->GetAccountInfo(security_ptr_->GetAddress(tx.pubkey()));
+        } else {
+            address_info = account_mgr_->pools_address_info(pool_index);
+        }
+
+        assert(address_info != nullptr);
+        pools::TxItemPtr tx_ptr = nullptr;
+        switch (tx.step()) {
+            case pools::protobuf::kNormalFrom:
+                tx_ptr = std::make_shared<FromTxItem>(
+                    tx, account_mgr_, security_ptr_, address_info);
+                break;
+            case pools::protobuf::kRootCreateAddress:
+                tx_ptr = std::make_shared<RootToTxItem>(
+                    max_consensus_sharding_id_,
+                    tx,
+                    vss_mgr_,
+                    account_mgr_,
+                    security_ptr_,
+                    address_info);
+                break;
+            case pools::protobuf::kConsensusLocalTos:
+                tx_ptr = std::make_shared<ToTxLocalItem>(
+                    tx, 
+                    db_, 
+                    gas_prepayment_, 
+                    account_mgr_, 
+                    security_ptr_, 
+                    address_info);
+                break;
+            default:
+                ZJC_FATAL("invalid tx step: %d", tx.step());
+                break;
+        }
+        
+        if (tx_ptr != nullptr) {
+            tx_ptr->unique_tx_hash = pools::GetTxMessageHash(tx);
+            txptr_vec.push_back(tx_ptr);
+        }
+    }
+    
+    pools_mgr_->ConsensusAddTxs(pool_index, txptr_vec);
 }
 
 void BftManager::CreateTestBlock() {
