@@ -118,10 +118,10 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     if (gid_map_.size() >= 256) {
-        ZJC_WARN("add failed extend 256");
+        // ZJC_WARN("add failed extend 256");
         return kPoolsError;
     }
-    
+
     assert(tx_ptr != nullptr);
     auto iter = gid_map_.find(tx_ptr->tx_info.gid());
     if (iter != gid_map_.end()) {
