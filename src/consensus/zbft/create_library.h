@@ -14,8 +14,9 @@ public:
     CreateLibrary(
         const pools::protobuf::TxMessage& msg,
         std::shared_ptr<block::AccountManager>& account_mgr,
-        std::shared_ptr<security::Security>& sec_ptr)
-        : TxItemBase(msg, account_mgr, sec_ptr) {}
+        std::shared_ptr<security::Security>& sec_ptr,
+        protos::AddressInfoPtr& addr_info)
+        : TxItemBase(msg, account_mgr, sec_ptr, addr_info) {}
     virtual ~CreateLibrary() {}
     int HandleTx(
             const block::protobuf::Block& block,
@@ -41,7 +42,7 @@ public:
             for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
                 // TODO(): check key exists and reserve gas
                 gas_used += network::kConsensusWaitingShardOffset * (
-                    block_tx.storages(i).key().size() + msg_ptr->header.tx_proto().value().size()) *
+                    block_tx.storages(i).key().size() + tx_info.value().size()) *
                     consensus::kKeyValueStorageEachBytes;
             }
 

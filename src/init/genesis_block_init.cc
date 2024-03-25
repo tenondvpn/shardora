@@ -1424,7 +1424,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     // 每个账户分配余额，只有 shard3 中的合法账户会被分配
     uint64_t genesis_account_balance = 0;
     // if (net_id == network::kConsensusShardBeginNetworkId) {
-    genesis_account_balance = common::kGenesisFoundationMaxZjc / pool_acc_map.size(); // 两个分片
+    genesis_account_balance = common::kGenesisFoundationMaxZjc / common::kImmutablePoolSize; // 两个分片
     // }
     pool_acc_map[common::kRootChainPoolIndex] = common::kRootPoolsAddress;
     
@@ -1435,6 +1435,10 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     uint32_t idx = 0;
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
     for (auto iter = pool_acc_map.begin(); iter != pool_acc_map.end(); ++iter, ++idx) {
+        if (iter->first >= common::kInvalidPoolIndex) {
+            break;
+        }
+
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         auto tx_list = tenon_block->mutable_tx_list();
         std::string address = iter->second;

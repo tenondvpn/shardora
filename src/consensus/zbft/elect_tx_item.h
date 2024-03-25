@@ -38,8 +38,9 @@ public:
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         uint64_t first_timeblock_timestamp,
         bool stop_mining,
-        uint32_t network_count)
-        : TxItemBase(msg, account_mgr, sec_ptr),
+        uint32_t network_count,
+        protos::AddressInfoPtr& addr_info)
+        : TxItemBase(msg, account_mgr, sec_ptr, addr_info),
         prefix_db_(prefix_db),
         elect_mgr_(elect_mgr),
         vss_mgr_(vss_mgr),

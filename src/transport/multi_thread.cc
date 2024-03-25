@@ -406,16 +406,16 @@ int MultiThreadHandler::CheckMessageValid(MessagePtr& msg_ptr) {
         return kFirewallCheckError;
     }
 
-    // if (firewall_checks_[msg_ptr->header.type()] == nullptr) {
-    //     ZJC_DEBUG("invalid fierwall check message type: %d", msg_ptr->header.type());
-    //     return kFirewallCheckError;
-    // }
+    if (firewall_checks_[msg_ptr->header.type()] == nullptr) {
+        ZJC_DEBUG("invalid fierwall check message type: %d", msg_ptr->header.type());
+        return kFirewallCheckError;
+    }
 
-    // int check_status = firewall_checks_[msg_ptr->header.type()](msg_ptr);
-    // if (check_status != kFirewallCheckSuccess) {
-    //     ZJC_DEBUG("check firewall failed %d", msg_ptr->header.type());
-    //     return kFirewallCheckError;
-    // }
+    int check_status = firewall_checks_[msg_ptr->header.type()](msg_ptr);
+    if (check_status != kFirewallCheckSuccess) {
+        ZJC_DEBUG("check firewall failed %d", msg_ptr->header.type());
+        return kFirewallCheckError;
+    }
 
     if (!IsMessageUnique(msg_ptr->header.hash64())) {
         // invalid msg id

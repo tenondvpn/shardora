@@ -24,6 +24,8 @@ void WaitingTxsPools::TxRecover(std::shared_ptr<Zbft>& zbft_ptr) {
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool_index) {
+    auto thread_id = common::GlobalInfo::Instance()->get_thread_index();
+    // ZJC_DEBUG("leader get txs coming thread: %d, pool index: %d", thread_id, pool_index);
     std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(pool_index);
     if (txs_item == nullptr) {
         txs_item = wtxs[pool_index].LeaderGetValidTxs();
@@ -31,6 +33,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool
 
     if (txs_item != nullptr) {
         txs_item->pool_index = pool_index;
+        ZJC_DEBUG("success leader get txs coming thread: %d, pool index: %d, tx count: %d", 
+            thread_id, pool_index, txs_item->txs.size());
     }
 
     return txs_item;
@@ -86,10 +90,11 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetElectTx(
 
         auto txs_item = std::make_shared<WaitingTxsItem>();
         txs_item->pool_index = pool_index;
-        txs_item->txs[tx_ptr->tx_hash] = tx_ptr;
+        txs_item->txs[tx_ptr->unique_tx_hash] = tx_ptr;
         txs_item->tx_type = pools::protobuf::kConsensusRootElectShard;
-        ZJC_DEBUG("success to get elect tx: tx hash: %s",
-            common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
+        ZJC_DEBUG("single tx success to get elect tx: tx hash: %s, gid: %s",
+            common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
+            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
         return txs_item;
     }
 
@@ -106,10 +111,11 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_in
     if (tx_ptr != nullptr) {
         auto txs_item = std::make_shared<WaitingTxsItem>();
         txs_item->pool_index = pool_index;
-        txs_item->txs[tx_ptr->tx_hash] = tx_ptr;
+        txs_item->txs[tx_ptr->unique_tx_hash] = tx_ptr;
         txs_item->tx_type = pools::protobuf::kConsensusRootTimeBlock;
-        ZJC_DEBUG("success to get timeblock tx: tx hash: %s",
-            common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
+        ZJC_DEBUG("single tx success to get timeblock tx: tx hash: %s, gid: %s",
+            common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(), 
+            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
         return txs_item;
     }
 
@@ -135,9 +141,12 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetCrossTx(uint32_t pool_index,
 
         auto txs_item = std::make_shared<WaitingTxsItem>();
         txs_item->pool_index = pool_index;
-        txs_item->txs[tx_ptr->tx_hash] = tx_ptr;
+        txs_item->txs[tx_ptr->unique_tx_hash] = tx_ptr;
         txs_item->tx_type = pools::protobuf::kCross;
-        ZJC_DEBUG("1 success get cross tx %u, %d", pool_index, leader);
+        ZJC_DEBUG("single tx success get cross tx %u, %d, tx hash: %s, gid: %s", 
+            pool_index, leader, 
+            common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
+            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
         return txs_item;
     }
 
@@ -174,9 +183,12 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(uint32_t pool_in
 
         auto txs_item = std::make_shared<WaitingTxsItem>();
         txs_item->pool_index = pool_index;
-        txs_item->txs[tx_ptr->tx_hash] = tx_ptr;
+        txs_item->txs[tx_ptr->unique_tx_hash] = tx_ptr;
         txs_item->tx_type = pools::protobuf::kStatistic;
-        ZJC_DEBUG("1 success get statistic tx %u, %d", pool_index, leader);
+        ZJC_DEBUG("single tx success get statistic tx %u, %d, txhash: %s, gid: %s", 
+            pool_index, leader, 
+            common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
+            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
         return txs_item;
     }
 
@@ -202,9 +214,13 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(uint32_t pool_index, b
 
         auto txs_item = std::make_shared<WaitingTxsItem>();
         txs_item->pool_index = pool_index;
-        txs_item->txs[tx_ptr->tx_hash] = tx_ptr;
+        txs_item->txs[tx_ptr->unique_tx_hash] = tx_ptr;
+        assert(tx_ptr->unique_tx_hash.size() == 32);
         txs_item->tx_type = pools::protobuf::kNormalTo;
-        ZJC_DEBUG("1 success get to tx %u, %d", pool_index, leader);
+        ZJC_DEBUG("single tx success get to tx %u, %d, txhash: %s, gid: %s", 
+            pool_index, leader, 
+            common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
+            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
         return txs_item;
     }
 

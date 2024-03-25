@@ -1180,7 +1180,7 @@ void BlockManager::HandleElectTx(
                 return;
             }
 
-            if (shard_elect_tx_[elect_block.shard_network_id()]->tx_ptr->gid == tx.gid()) {
+            if (shard_elect_tx_[elect_block.shard_network_id()]->tx_ptr->tx_info.gid() == tx.gid()) {
                 shard_elect_tx_[elect_block.shard_network_id()] = nullptr;
                 ZJC_DEBUG("success erase elect tx: %u", elect_block.shard_network_id());
             }
@@ -1600,12 +1600,14 @@ void BlockManager::HandleStatisticBlock(
     auto shard_elect_tx = std::make_shared<BlockTxsItem>();
     shard_elect_tx->tx_ptr = create_elect_tx_cb_(new_msg_ptr);
     shard_elect_tx->tx_ptr->time_valid += kElectValidTimeout;
+    shard_elect_tx->tx_ptr->unique_tx_hash = pools::GetTxMessageHash(shard_elect_tx->tx_ptr->tx_info);
     shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + kElectTimeout;
     shard_elect_tx->stop_consensus_timeout = shard_elect_tx->timeout + kStopConsensusTimeoutMs;
     shard_elect_tx_[block.network_id()] = shard_elect_tx;
-    ZJC_INFO("success add elect tx: %u, %lu, gid: %s, statistic elect height: %lu",
+    ZJC_INFO("success add elect tx: %u, %lu, gid: %s, txhash: %s, statistic elect height: %lu",
         block.network_id(), block.timeblock_height(),
         common::Encode::HexEncode(gid).c_str(),
+        common::Encode::HexEncode(shard_elect_tx->tx_ptr->unique_tx_hash).c_str(),
         elect_statistic.elect_height());
 }
 
@@ -1710,6 +1712,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     to_txs_ptr->timeout = now_time_ms + kToValidTimeout + kToTimeoutMs;
     to_txs_ptr->stop_consensus_timeout = to_txs_ptr->timeout + kStopConsensusTimeoutMs;
     leader_to_txs->to_tx = to_txs_ptr;
+    to_txs_ptr->tx_ptr->unique_tx_hash = pools::GetTxMessageHash(to_txs_ptr->tx_ptr->tx_info);
     to_txs_ptr->success = true;
     to_txs_ptr->leader_to_index = shard_to.leader_to_idx();
     ZJC_DEBUG("totx success add txs: %s, leader idx: %u, leader to index: %d, gid: %s",
@@ -1793,11 +1796,6 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
         }
 
         auto shard_elect_tx = shard_elect_tx_[i];
-        if (tx_hash.empty() && (pool_index == 2 || pool_index == 3)) {
-            ZJC_DEBUG("now get elect tx valid check: %u, in consensus: %d",
-                pool_index, shard_elect_tx->tx_ptr->in_consensus);
-        }
-
         if (!shard_elect_tx->tx_ptr->in_consensus) {
             if (!tx_hash.empty()) {
                 if (shard_elect_tx->tx_ptr->unique_tx_hash == tx_hash) {
@@ -1810,9 +1808,6 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
 
             auto now_tm = common::TimeUtils::TimestampUs();
             if (shard_elect_tx->tx_ptr->time_valid > now_tm) {
-                if (tx_hash.empty() && (pool_index == 2 || pool_index == 3)) {
-                    ZJC_DEBUG("now get elect tx time invalid: %u", pool_index);
-                }
                 continue;
             }
 

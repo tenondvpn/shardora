@@ -43,13 +43,12 @@ enum PoolsErrorCode {
 class TxItem {
 public:
     virtual ~TxItem() {}
-    TxItem(const pools::protobuf::TxMessage& tx)
+    TxItem(const pools::protobuf::TxMessage& tx, protos::AddressInfoPtr& addr_info)
             : prev_consensus_tm_us(0),
-            gid(tx.gid()),
             gas_price(tx.gas_price()),
             in_consensus(false),
             tx_info(tx),
-            address_info(nullptr) {
+            address_info(addr_info) {
 uint64_t now_tm = common::TimeUtils::TimestampUs();
         time_valid = now_tm + kBftStartDeltaTime;
 #ifdef ZJC_UNITTEST
@@ -62,7 +61,7 @@ uint64_t now_tm = common::TimeUtils::TimestampUs();
         }
 
         auto prio = common::ShiftUint64(now_tm);
-        prio_key = std::string((char*)&prio, sizeof(prio)) + gid;
+        prio_key = std::string((char*)&prio, sizeof(prio)) + tx.gid();
     }
 
     virtual int HandleTx(
@@ -82,8 +81,7 @@ uint64_t now_tm = common::TimeUtils::TimestampUs();
     uint64_t time_valid{ 0 };
     const uint64_t& gas_price;
     int32_t step = pools::protobuf::kNormalFrom;
-    const std::string unique_tx_hash;
-    const std::string& gid;
+    std::string unique_tx_hash;
     std::string prio_key;
     bool in_consensus;
     pools::protobuf::TxMessage tx_info;

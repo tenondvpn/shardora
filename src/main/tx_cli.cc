@@ -164,10 +164,13 @@ static void LoadAllAccounts() {
         std::string addr = security->GetAddress();
         g_pri_addrs_map[prikey] = addr;
         g_addrs.push_back(addr);
+        if (g_pri_addrs_map.size() >= common::kImmutablePoolSize) {
+            break;
+        }
         std::cout << common::Encode::HexEncode(prikey) << " : " << common::Encode::HexEncode(addr) << std::endl;
     }
 
-    if (g_prikeys.size() != 256) {
+    if (g_prikeys.size() != common::kImmutablePoolSize) {
         std::cout << "invalid init acc file." << std::endl;
         exit(1);
     }

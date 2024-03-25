@@ -106,25 +106,31 @@ void TxPoolManager::InitCrossPools() {
 
 
 int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
-    return transport::kFirewallCheckSuccess;
-    // auto& header = msg_ptr->header;
-    // auto& tx_msg = header.tx_proto();
-    // if (!msg_ptr->header.has_sign() || !tx_msg.has_pubkey() ||
-    //         msg_ptr->header.sign().empty() || tx_msg.pubkey().empty()) {
-    //     ZJC_DEBUG("pools check firewall message failed, invalid sign or pk.");
-    //     return transport::kFirewallCheckError;
-    // }
-
-    // std::string sign_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
-    // if (security_->Verify(
-    //         sign_hash,
-    //         tx_msg.pubkey(),
-    //         msg_ptr->header.sign()) != security::kSecuritySuccess) {
-    //     ZJC_ERROR("verify signature failed!");
-    //     return transport::kFirewallCheckError;
-    // }
-
     // return transport::kFirewallCheckSuccess;
+    auto& header = msg_ptr->header;
+    auto& tx_msg = header.tx_proto();
+    if (!msg_ptr->header.has_sign() || !tx_msg.has_pubkey() ||
+            msg_ptr->header.sign().empty() || tx_msg.pubkey().empty()) {
+        ZJC_DEBUG("pools check firewall message failed, invalid sign or pk.");
+        return transport::kFirewallCheckError;
+    }
+
+    msg_ptr->msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
+    if (security_->Verify(
+            msg_ptr->msg_hash,
+            tx_msg.pubkey(),
+            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        ZJC_ERROR("verify signature failed!");
+        return transport::kFirewallCheckError;
+    }
+
+    auto tmp_acc_ptr = acc_mgr_.lock();
+    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(security_->GetAddress(tx_msg.pubkey()));
+    if (msg_ptr->address_info == nullptr) {
+        return transport::kFirewallCheckError;
+    }
+
+    return transport::kFirewallCheckSuccess;
 }
 
 void TxPoolManager::SyncCrossPool() {
@@ -245,10 +251,10 @@ void TxPoolManager::ConsensusTimerMessage() {
         prev_sync_height_tree_tm_ms_ = now_tm_ms + kFlushHeightTreePeriod;
     }
 
-    if (prev_get_valid_tm_ms_ < now_tm_ms) {
-        prev_get_valid_tm_ms_ = now_tm_ms + kGetMinPeriod;
-        GetMinValidTxCount();
-    }
+    // if (prev_get_valid_tm_ms_ < now_tm_ms) {
+    //     prev_get_valid_tm_ms_ = now_tm_ms + kGetMinPeriod;
+    //     GetMinValidTxCount();
+    // }
 
     if (prev_check_leader_valid_ms_ < now_tm_ms && member_index_ != common::kInvalidUint32) {
         if (false && network::DhtManager::Instance()->valid_count(
@@ -645,6 +651,9 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
                 return;
             }
             
+            msg_ptr->msg_hash = pools::GetTxMessageHash(msg_ptr->header.tx_proto());
+            ZJC_DEBUG("get local tokRootCreateAddress tx message hash: %s", 
+                common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
             auto pool_index = common::GetAddressPoolIndex(tx_msg.to()) % common::kImmutablePoolSize;
             msg_queues_[pool_index].push(msg_ptr);
 //             ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
@@ -657,6 +666,8 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
         case pools::protobuf::kConsensusLocalTos: {
 			// 如果要指定 pool index, tx_msg.to() 必须是 pool addr，否则就随机分配 pool index 了
             auto pool_index = common::GetAddressPoolIndex(tx_msg.to());
+            msg_ptr->msg_hash = pools::GetTxMessageHash(msg_ptr->header.tx_proto());
+            ZJC_DEBUG("get local to tx message hash: %s", common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
             msg_queues_[pool_index].push(msg_ptr);
 //             ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
             break;
@@ -1291,16 +1302,30 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
         return;
     }
 
+    tx_ptr->unique_tx_hash = msg_ptr->msg_hash;
     // 交易池增加 msg 中的交易
     tx_pool_[pool_index].AddTx(tx_ptr);
     ZJC_DEBUG("push queue index pool_index: %u, tx size: %d, latest tm: %lu",
         pool_index, tx_pool_[pool_index].tx_size(), tx_pool_[pool_index].oldest_timestamp());
     ZJC_DEBUG("success add local transfer to tx %u, %s, gid: %s, from pk: %s, to: %s",
         pool_index,
-        common::Encode::HexEncode(tx_ptr->tx_hash).c_str(),
-        common::Encode::HexEncode(tx_ptr->gid).c_str(),
+        common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
+        common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(),
         common::Encode::HexEncode(msg_ptr->header.tx_proto().pubkey()).c_str(),
         common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
+}
+
+
+void TxPoolManager::GetTx(
+        uint32_t pool_index,
+        uint32_t count,
+        const std::map<std::string, pools::TxItemPtr>& invalid_txs,
+        zbft::protobuf::TxBft* txbft) {
+    if (count > common::kSingleBlockMaxTransactions) {
+        count = common::kSingleBlockMaxTransactions;
+    }
+
+    tx_pool_[pool_index].GetTx(invalid_txs, txbft, count);
 }
 
 void TxPoolManager::GetTx(
@@ -1315,14 +1340,14 @@ void TxPoolManager::GetTx(
 //         tx_pool_[pool_index].oldest_timestamp(), min_valid_timestamp_,
 //         ((int64_t)min_valid_timestamp_ - (int64_t)tx_pool_[pool_index].oldest_timestamp()),
 //         tx_pool_[pool_index].tx_size(), min_valid_tx_count_);
-    if (min_valid_timestamp_ != 0 && tx_pool_[pool_index].oldest_timestamp() > min_valid_timestamp_) {
-        return;
-    }
+    // if (min_valid_timestamp_ != 0 && tx_pool_[pool_index].oldest_timestamp() > min_valid_timestamp_) {
+    //     return;
+    // }
 
-    if (tx_pool_[pool_index].tx_size() < min_valid_tx_count_ &&
-            tx_pool_[pool_index].oldest_timestamp() > min_timestamp_) {
-        return;
-    }
+    // if (tx_pool_[pool_index].tx_size() < min_valid_tx_count_ &&
+    //         tx_pool_[pool_index].oldest_timestamp() > min_timestamp_) {
+    //     return;
+    // }
 
     tx_pool_[pool_index].GetTx(res_map, count);
 //     ZJC_DEBUG("success get tx tm: %lu, min tm: %lu, dec: %ld, count: %u, min count: %u, count: %u",

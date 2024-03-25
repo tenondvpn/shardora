@@ -19,7 +19,8 @@ public:
         const pools::protobuf::TxMessage& msg,
         std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<block::AccountManager>& account_mgr,
-        std::shared_ptr<security::Security>& sec_ptr);
+        std::shared_ptr<security::Security>& sec_ptr,
+        protos::AddressInfoPtr& addr_info);
     virtual ~RootToTxItem();
 
     virtual int TxToBlockTx(

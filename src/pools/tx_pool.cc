@@ -113,12 +113,12 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
 //     common::AutoSpinLock auto_lock(mutex_);
-    if (removed_gid_.DataExists(tx_ptr->gid)) {
+    if (removed_gid_.DataExists(tx_ptr->tx_info.gid())) {
         return kPoolsTxAdded;
     }
 
     assert(tx_ptr != nullptr);
-    auto iter = gid_map_.find(tx_ptr->gid);
+    auto iter = gid_map_.find(tx_ptr->tx_info.gid());
     if (iter != gid_map_.end()) {
         return kPoolsTxAdded;
     }
@@ -129,7 +129,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         prio_map_[tx_ptr->prio_key] = tx_ptr;
     }
 
-    gid_map_[tx_ptr->gid] = tx_ptr;
+    gid_map_[tx_ptr->tx_info.gid()] = tx_ptr;
 
 #ifndef NDEBUG
     auto now_tm_us = common::TimeUtils::TimestampUs();
@@ -142,12 +142,34 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         prev_tx_count_tm_us_ = now_tm_us;
     }
 
-    gid_start_time_map_[tx_ptr->gid] = common::TimeUtils::TimestampUs(); 
+    gid_start_time_map_[tx_ptr->tx_info.gid()] = common::TimeUtils::TimestampUs(); 
     oldest_timestamp_ = prio_map_.begin()->second->time_valid;
 #endif
 
-    timeout_txs_.push(tx_ptr->gid);
+    timeout_txs_.push(tx_ptr->tx_info.gid());
     return kPoolsSuccess;
+}
+
+void TxPool::GetTx(
+        const std::map<std::string, pools::TxItemPtr>& invalid_txs, 
+        zbft::protobuf::TxBft* txbft, 
+        uint32_t count) {
+    std::vector<TxItemPtr> recover_txs;
+    auto iter = prio_map_.begin();
+    while (iter != prio_map_.end() && txbft->txs_size() < count) {
+        auto invalid_iter = invalid_txs.find(iter->second->unique_tx_hash);
+        if (invalid_iter != invalid_txs.end()) {
+            continue;
+        }
+
+        auto* tx = txbft->add_txs();
+        *tx = iter->second->tx_info;
+        ZJC_DEBUG("backup success get local transfer to tx %u, %s, step: %d",
+            pool_index_, 
+            common::Encode::HexEncode(iter->second->unique_tx_hash).c_str(),
+            iter->second->tx_info.step());
+        assert(!iter->second->unique_tx_hash.empty());
+    }
 }
 
 void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
@@ -167,13 +189,12 @@ void TxPool::GetTx(
     std::vector<TxItemPtr> recover_txs;
     auto iter = src_prio_map.begin();
     while (iter != src_prio_map.end() && res_map.size() < count) {
-        if (iter->second->time_valid >= timestamp_now) {
-            break;
-        }
-
         res_map[iter->second->unique_tx_hash] = iter->second;
-        ZJC_DEBUG("leader success get local transfer to tx %u, %s",
-            pool_index_, common::Encode::HexEncode(iter->second->unique_tx_hash).c_str());
+        ZJC_DEBUG("leader success get local transfer to tx %u, %s, step: %d",
+            pool_index_, 
+            common::Encode::HexEncode(iter->second->unique_tx_hash).c_str(),
+            iter->second->tx_info.step());
+        assert(!iter->second->unique_tx_hash.empty());
         iter = src_prio_map.erase(iter);
     }
 }
@@ -215,7 +236,7 @@ void TxPool::CheckTimeoutTx() {
         timeout_remove_txs_.pop();
         ZJC_DEBUG("timeout remove gid: %s, tx hash: %s",
             common::Encode::HexEncode(gid).c_str(),
-            common::Encode::HexEncode(iter->second->tx_hash).c_str());
+            common::Encode::HexEncode(iter->second->unique_tx_hash).c_str());
     }
 }
 

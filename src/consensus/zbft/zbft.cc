@@ -814,7 +814,7 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
         zjc_host.tx_context_.chain_id,
         chanin_id);
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) { 
-        auto& tx_info = iter->second->msg_ptr->header.tx_proto();
+        auto& tx_info = iter->second->tx_info;
         auto& block_tx = *tx_list->Add();
         int res = iter->second->TxToBlockTx(tx_info, db_batch_, &block_tx);
         if (res != kConsensusSuccess) {
@@ -824,9 +824,9 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
 
         if (block_tx.step() == pools::protobuf::kContractExcute) {
             block_tx.set_from(security_ptr_->GetAddress(
-                iter->second->msg_ptr->header.tx_proto().pubkey()));
+                iter->second->tx_info.pubkey()));
         } else {
-            block_tx.set_from(iter->second->msg_ptr->address_info->addr());
+            block_tx.set_from(iter->second->address_info->addr());
         }
 
         block_tx.set_status(kConsensusSuccess);

@@ -17,7 +17,7 @@ int ContractUserCreateCall::HandleTx(
     // gas just consume by from
     uint64_t from_balance = 0;
     uint64_t to_balance = 0;
-    auto& from = msg_ptr->address_info->addr();
+    auto& from = address_info->addr();
     int balance_status = GetTempAccountBalance(from, acc_balance_map, &from_balance);
     if (balance_status != kConsensusSuccess) {
         block_tx.set_status(balance_status);
@@ -83,7 +83,7 @@ int ContractUserCreateCall::HandleTx(
         gas_used = 0;
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // TODO(): check key exists and reserve gas
-            gas_used += (block_tx.storages(i).key().size() + msg_ptr->header.tx_proto().value().size()) *
+            gas_used += (block_tx.storages(i).key().size() + tx_info.value().size()) *
                 consensus::kKeyValueStorageEachBytes;
             ZJC_DEBUG("create contract key: %s, value: %s", block_tx.storages(i).key().c_str(), block_tx.storages(i).val_hash().c_str());
         }

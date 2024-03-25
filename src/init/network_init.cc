@@ -118,7 +118,7 @@ int NetworkInit::Init(int argc, char** argv) {
     }
 
     network::DhtManager::Instance();
-    network::Route::Instance();
+    network::Route::Instance()->Init(security_);
     network::Route::Instance()->RegisterMessage(
         common::kInitMessage,
         std::bind(&NetworkInit::HandleMessage, this, std::placeholders::_1));
@@ -1381,6 +1381,11 @@ void NetworkInit::HandleElectionBlock(
         }
     }
 
+    network::Route::Instance()->OnNewElectBlock(
+        sharding_id,
+        elect_height,
+        members,
+        elect_block);
     bft_mgr_->OnNewElectBlock(block->timestamp(),sharding_id, elect_height, members, common_pk, sec_key);
     block_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);

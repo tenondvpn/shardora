@@ -18,7 +18,8 @@ Route* Route::Instance() {
     return &ins;
 }
 
-void Route::Init() {
+void Route::Init(std::shared_ptr<security::Security> sec_ptr) {
+    sec_ptr_ = sec_ptr;
     broadcast_queue_ = new BroadcastQueue[common::kMaxThreadCount];
     RegisterMessage(
             common::kDhtMessage,
@@ -99,10 +100,16 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
         return;
     }
 
-    auto dht = GetDht(header.des_dht_key());
-    if (!dht) {
+    auto dht_ptr = GetDht(header.des_dht_key());
+    if (!dht_ptr) {
         RouteByUniversal(header_ptr);
         return;
+    }
+
+    if (header.type() == common::kPoolsMessage) {
+        if (!CheckPoolsMessage(header_ptr, dht_ptr)) {
+            return;
+        }
     }
 
     if (header.has_broadcast()) {
@@ -115,6 +122,56 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
     }
 
     message_processor_[header.type()](header_ptr);
+}
+
+bool Route::CheckPoolsMessage(const transport::MessagePtr& header_ptr, dht::BaseDhtPtr dht_ptr) {
+    auto& header = header_ptr->header;
+    if (header.has_broadcast()) {
+        assert(false);
+        return false;
+    }
+
+    if (header_ptr->address_info == nullptr || header_ptr->msg_hash.empty()) {
+        ZJC_FATAL("pools message must verify signature and has address info.");
+        return false;
+    }
+
+    // TODO: check is this node tx message or route to nearest consensus node
+    if (header_ptr->address_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+        RouteByUniversal(header_ptr);
+        return false;
+    }
+
+    auto members = all_shard_members_[common::GlobalInfo::Instance()->network_id()];
+    if (members == nullptr) {
+        dht_ptr->SendToClosestNode(header_ptr);
+        return false;
+    }
+
+    auto store_member_index = common::Hash::Hash32(header_ptr->msg_hash) % members->size();
+    if ((*members)[store_member_index]->id != sec_ptr_->GetAddress()) {
+        dht::DhtKeyManager dht_key(
+            header_ptr->address_info->sharding_id(), 
+            (*members)[store_member_index]->id);
+        header.set_des_dht_key(dht_key.StrKey());
+        dht_ptr->SendToClosestNode(header_ptr);
+        return false;
+    }
+
+    return true;
+}
+
+void Route::OnNewElectBlock(
+        uint32_t sharding_id,
+        uint64_t elect_height,
+        common::MembersPtr& members,
+        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
+    if (elect_height <= latest_elect_height_[sharding_id]) {
+        return;
+    }
+
+    latest_elect_height_[sharding_id] = elect_height;
+    all_shard_members_[sharding_id] = members;
 }
 
 void Route::Broadcasting() {
@@ -177,7 +234,6 @@ void Route::UnRegisterMessage(uint32_t type) {
 }
 
 Route::Route() {
-    Init();
 }
 
 Route::~Route() {
