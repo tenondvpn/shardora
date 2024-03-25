@@ -253,16 +253,6 @@ int TcpTransport::Send(
         SetMessageHash(message);
     }
 
-    if (message.type() == common::kPoolsMessage) {
-        if (message.zbft().tx_bft().txs_size() == 0) {
-            assert(false);
-        }
-
-        if (message.zbft().tx_bft().txs(0).pubkey().empty()) {
-            assert(false);
-        }
-    }
-    
     auto output_item = std::make_shared<ClientItem>();
     output_item->des_ip = des_ip;
     output_item->port = des_port;
