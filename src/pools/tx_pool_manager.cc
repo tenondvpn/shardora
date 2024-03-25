@@ -1284,7 +1284,7 @@ void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all) {
             break;
         }
         
-        ZJC_INFO("pool_index: %d, size: %d, success pop tx: %s, %lu", 
+        ZJC_DEBUG("pool_index: %d, size: %d, success pop tx: %s, %lu", 
             pool_index, 
             msg_queues_[pool_index].size(), 
             common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(), 
