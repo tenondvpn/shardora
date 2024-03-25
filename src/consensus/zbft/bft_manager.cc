@@ -1521,7 +1521,7 @@ ZbftPtr BftManager::CreateBftPtr(
             txs_ptr = txs_pools_->GetTimeblockTx(bft_msg.pool_index(), false);
         } else {
             txs_ptr = std::make_shared<WaitingTxsItem>();
-            ZJC_DEBUG("get tx size: %d", bft_msg.tx_bft().txs_size());
+            ZJC_INFO("get tx size: %d", bft_msg.tx_bft().txs_size());
             for (int32_t i = 0; i < bft_msg.tx_bft().txs_size(); ++i) {
                 auto* tmp_bft_msg = msg_ptr->header.mutable_zbft();
                 auto* tx = tmp_bft_msg->mutable_tx_bft()->mutable_txs(i);
