@@ -133,6 +133,10 @@ bool Route::CheckPoolsMessage(const transport::MessagePtr& header_ptr, dht::Base
         return false;
     }
 
+    if (header_ptr->header.has_sync_heights()) {
+        return true;
+    }
+
     if (header_ptr->address_info == nullptr || header_ptr->msg_hash.empty()) {
         ZJC_FATAL("pools message must verify signature and has address info.");
         return false;
