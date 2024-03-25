@@ -772,7 +772,6 @@ int Zbft::DoTransaction(bool leader) {
     zjc_block.set_electblock_height(elect_height_);
     assert(elect_height_ >= 1);
     zjc_block.set_leader_index(leader_index_);
-    ZJC_INFO("coming 0");
     DoTransactionAndCreateTxBlock(zjc_block);
     if (zjc_block.tx_list_size() <= 0) {
         ZJC_ERROR("all choose tx invalid!");
