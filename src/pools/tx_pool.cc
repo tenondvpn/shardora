@@ -117,6 +117,11 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         return kPoolsTxAdded;
     }
 
+    if (gid_map_.size() >= 256) {
+        ZJC_WARN("add failed extend 256");
+        return kPoolsError;
+    }
+    
     assert(tx_ptr != nullptr);
     auto iter = gid_map_.find(tx_ptr->tx_info.gid());
     if (iter != gid_map_.end()) {
@@ -177,11 +182,6 @@ void TxPool::GetTx(
 void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
     GetTx(universal_prio_map_, res_map, count);
     if (!res_map.empty()) {
-        return;
-    }
-
-    // TODO: just test
-    if (prio_map_.size() + consensus_tx_map_.size() < 1024) {
         return;
     }
 
