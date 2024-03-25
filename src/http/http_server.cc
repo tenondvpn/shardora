@@ -57,9 +57,11 @@ int32_t HttpServer::Start() {
 }
 
 void HttpServer::RunHttpServer() {
-    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
-    std::unique_lock<std::mutex> lock(mutex_);
-    con_.notify_one();
+    {
+        auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+        std::unique_lock<std::mutex> lock(mutex_);
+        con_.notify_one();
+    }
     event_base_loop(evbase_, 0);
 }
 
