@@ -2552,11 +2552,11 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
         auto& member_ptr = (*bft_ptr->members_ptr())[zbft.member_index()];
         if (zbft.agree_commit()) {
             if (LeaderCommit(bft_ptr, msg_ptr) == kConsensusAgree) {
-                // auto next_ptr = Start(bft_ptr);
-                // if (next_ptr == nullptr) {
+                auto next_ptr = Start(bft_ptr);
+                if (next_ptr == nullptr) {
                     LeaderSendCommitMessage(msg_ptr, true);
                     Start(nullptr);
-                // }
+                }
 
                 auto& zjc_block = bft_ptr->prepare_block();
                 if (zjc_block != nullptr) {
