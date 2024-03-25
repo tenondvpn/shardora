@@ -280,6 +280,11 @@ void TxPool::RemoveTx(const std::string& gid) {
         universal_prio_map_.erase(universal_prio_iter);
     }
 
+    auto cons_iter = consensus_tx_map_.find(giter->second->unique_tx_hash);
+    if (cons_iter != consensus_tx_map_.end()) {
+        consensus_tx_map_.erase(cons_iter);
+    }
+
 //     ZJC_DEBUG("remove tx success gid: %s, tx hash: %s",
 //         common::Encode::HexEncode(giter->second->gid).c_str(),
 //         common::Encode::HexEncode(giter->second->tx_hash).c_str());

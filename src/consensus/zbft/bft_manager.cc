@@ -481,7 +481,7 @@ ZbftPtr BftManager::Start(ZbftPtr commited_bft_ptr) {
         return nullptr;
     }
 
-    ZJC_DEBUG("leader start bft success, thread: %d, pool: %d,"
+    ZJC_INFO("leader start bft success, thread: %d, pool: %d,"
         "thread_item->pools.size(): %d, "
         "elect_item_ptr->elect_height: %lu, "
         "elect_item_ptr->time_valid: %lu now_tm_ms: %lu, tx size: %u",
@@ -2365,7 +2365,7 @@ int BftManager::BackupPrepare(
         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
         bft_ptr->txs_ptr()->txs.size());
     if (bft_ptr->local_prepare_hash().empty()) {
-        ZJC_DEBUG("failed backup create consensus bft prepare hash: %s, prehash: %s, "
+        ZJC_ERROR("failed backup create consensus bft prepare hash: %s, prehash: %s, "
             "leader prehash: %s, pre height: %lu, leader pre height: %lu, gid: %s, tx size: %d",
             common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
             common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
