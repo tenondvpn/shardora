@@ -3,9 +3,10 @@
 #include <condition_variable>
 #include <mutex>
 
-#include "common/utils.h"
+#include "common/node_members.h"
 #include "common/thread_safe_queue.h"
 #include "common/tick.h"
+#include "common/utils.h"
 #include "protos/transport.pb.h"
 #include "security/security.h"
 #include "transport/transport_utils.h"
