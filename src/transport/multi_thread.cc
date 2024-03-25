@@ -42,6 +42,7 @@ void ThreadHandler::HandleMessage() {
     uint8_t maping_thread_idx = common::GlobalInfo::Instance()->SetConsensusRealThreadIdx(thread_idx);
     ZJC_DEBUG("thread handler thread index coming thread_idx: %d, maping_thread_idx: %d, message_handler_thread_count: %d", 
         thread_idx, maping_thread_idx, common::GlobalInfo::Instance()->message_handler_thread_count());
+    msg_handler_->ThreadWaitNotify();
     while (!destroy_) {
         if (!common::GlobalInfo::Instance()->main_inited_success()) {
             usleep(100000);
@@ -139,6 +140,8 @@ int MultiThreadHandler::Init(std::shared_ptr<db::Db>& db) {
 void MultiThreadHandler::Start() {
     for (uint32_t i = 0; i < all_thread_count_; ++i) {
         thread_vec_.push_back(std::make_shared<ThreadHandler>(this, wait_con_[i], wait_mutex_[i]));
+        std::unique_lock<std::mutex> lock(thread_wait_mutex_);
+        thread_wait_con_.wait(lock);
     }
 }
 

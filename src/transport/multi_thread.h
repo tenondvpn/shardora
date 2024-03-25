@@ -75,6 +75,11 @@ public:
         firewall_checks_[type] = cb;
     }
 
+    void ThreadWaitNotify() {
+        std::unique_lock<std::mutex> lock(thread_wait_mutex_);
+        thread_wait_con_.notify_one();
+    }
+
 private:
     struct SavedBlockQueueItem {
         SavedBlockQueueItem(uint32_t c_pool, uint64_t c_height, uint32_t p, uint64_t h)
@@ -124,6 +129,8 @@ private:
     std::shared_ptr<security::Security> security_ = nullptr;
     FirewallCheckCallback firewall_checks_[common::kMaxMessageTypeCount] = { nullptr };
     common::LimitHashSet<uint64_t> from_unique_message_sets_{10240};
+    std::condition_variable thread_wait_con_;
+    std::mutex thread_wait_mutex_;
 
     DISALLOW_COPY_AND_ASSIGN(MultiThreadHandler);
 };
