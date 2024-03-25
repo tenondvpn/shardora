@@ -26,7 +26,11 @@ void WaitingTxsPools::TxRecover(std::shared_ptr<Zbft>& zbft_ptr) {
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool_index) {
     auto thread_id = common::GlobalInfo::Instance()->get_thread_index();
     // ZJC_DEBUG("leader get txs coming thread: %d, pool index: %d", thread_id, pool_index);
+    #ifdef TEST_NO_CROSS
+    std::shared_ptr<WaitingTxsItem> txs_item = nullptr;
+    #else
     std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(pool_index);
+    #endif
     if (txs_item == nullptr) {
         txs_item = wtxs[pool_index].LeaderGetValidTxs();
     }
