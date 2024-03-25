@@ -268,9 +268,12 @@ std::shared_ptr<TcpConnection> TnetTransport::CreateTcpConnection(
 }
 
 void TnetTransport::ThreadProc(EventLoop* event_loop) {
-    std::unique_lock<std::mutex> lock(mutex_);
-    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
-    con_.notify_one();
+    {
+        auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+        std::unique_lock<std::mutex> lock(mutex_);
+        con_.notify_one();
+    }
+    
     event_loop->Dispatch();
 }
 
