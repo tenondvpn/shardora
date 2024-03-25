@@ -2934,7 +2934,7 @@ void BftManager::LeaderAddBackupTxs(const zbft::protobuf::TxBft& txbft, uint32_t
         }
     }
     
-    pools_mgr_->ConsensusAddTxs(pool_index, txptr_vec);
+    // pools_mgr_->ConsensusAddTxs(pool_index, txptr_vec);
 }
 
 void BftManager::CreateTestBlock() {
