@@ -116,7 +116,7 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
         return transport::kFirewallCheckError;
     }
 
-    msg_ptr->msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
+    msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
     if (security_->Verify(
             msg_ptr->msg_hash,
             tx_msg.pubkey(),
