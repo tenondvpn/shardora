@@ -64,16 +64,16 @@ void ThreadHandler::HandleMessage() {
             auto btime = common::TimeUtils::TimestampUs();
             msg_ptr->times[msg_ptr->times_idx++] = btime;
             Processor::Instance()->HandleMessage(msg_ptr);
-            auto etime = common::TimeUtils::TimestampUs();
-            if (etime - btime > 200000) {
-                std::string t;
-                for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
-                    t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
-                }
+            // auto etime = common::TimeUtils::TimestampUs();
+            // if (etime - btime > 200000) {
+            //     std::string t;
+            //     for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
+            //         t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
+            //     }
 
-                ZJC_INFO("over handle message: %d, thread: %d use: %lu us, all: %s",
-                    msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
-            }
+            //     ZJC_INFO("over handle message: %d, thread: %d use: %lu us, all: %s",
+            //         msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
+            // }
 //             ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
         }
 
@@ -85,16 +85,16 @@ void ThreadHandler::HandleMessage() {
             //     msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
             msg_ptr->times[msg_ptr->times_idx++] = btime;
             Processor::Instance()->HandleMessage(msg_ptr);
-            auto etime = common::TimeUtils::TimestampUs();
-            if (etime - btime > 200000) {
-                std::string t;
-                for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
-                    t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
-                }
+            // auto etime = common::TimeUtils::TimestampUs();
+            // if (etime - btime > 200000) {
+            //     std::string t;
+            //     for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
+            //         t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
+            //     }
 
-                ZJC_INFO("kConsensusTimerMessage over handle message: %d, thread: %d use: %lu us, all: %s", 
-                    msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
-            }
+            //     ZJC_INFO("kConsensusTimerMessage over handle message: %d, thread: %d use: %lu us, all: %s", 
+            //         msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
+            // }
             // ZJC_DEBUG("end kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
             //     msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
         }
