@@ -156,9 +156,10 @@ void TxPool::GetTx(
         uint32_t count) {
     std::vector<TxItemPtr> recover_txs;
     auto iter = prio_map_.begin();
-    while (iter++ != prio_map_.end() && txbft->txs_size() < count) {
+    while (iter != prio_map_.end() && txbft->txs_size() < count) {
         auto invalid_iter = invalid_txs.find(iter->second->unique_tx_hash);
         if (invalid_iter != invalid_txs.end()) {
+            ++iter;
             continue;
         }
 
@@ -169,6 +170,7 @@ void TxPool::GetTx(
             common::Encode::HexEncode(iter->second->unique_tx_hash).c_str(),
             iter->second->tx_info.step());
         assert(!iter->second->unique_tx_hash.empty());
+        ++iter;
     }
 }
 
