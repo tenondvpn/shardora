@@ -2898,6 +2898,11 @@ void BftManager::LeaderAddBackupTxs(const zbft::protobuf::TxBft& txbft, uint32_t
             address_info = account_mgr_->pools_address_info(pool_index);
         }
 
+        if (address_info->pool_index() != pool_index) {
+            assert(false);
+            continue;
+        }
+        
         assert(address_info != nullptr);
         pools::TxItemPtr tx_ptr = nullptr;
         switch (tx.step()) {

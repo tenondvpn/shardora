@@ -181,11 +181,7 @@ void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
     }
 
     GetTx(prio_map_, res_map, count);
-    if (res_map.size() > 0)
-    ZJC_DEBUG("1 leader get tx prio_map_ size: %u, res_map size: %u, count: %u", consensus_tx_map_.size(), res_map.size(), count);
     GetTx(consensus_tx_map_, res_map, count);
-    if (res_map.size() > 0)
-    ZJC_DEBUG("2 leader get tx prio_map_ size: %u, res_map size: %u, count: %u", consensus_tx_map_.size(), res_map.size(), count);
 }
 
 void TxPool::GetTx(
