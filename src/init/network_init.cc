@@ -202,6 +202,7 @@ int NetworkInit::Init(int argc, char** argv) {
 
     block_mgr_->LoadLatestBlocks();
     shard_statistic_->Init();
+    RegisterFirewallCheck();
     transport::TcpTransport::Instance()->Start(false);
     if (InitHttpServer() != kInitSuccess) {
         INIT_ERROR("InitHttpServer failed!");
