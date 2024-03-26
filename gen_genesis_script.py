@@ -219,18 +219,20 @@ fi
     code_str += f"""
 for node in "${{nodes[@]}}"; do
     mkdir -p "{datadir}/zjnodes/${{node}}/log"
-    cp -rf ./zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/${{node}}/conf
-    cp -rf ./zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/${{node}}/conf
+    # cp -rf ./zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/${{node}}/conf
+    # cp -rf ./zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/${{node}}/conf
 done
+cp -rf ./zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/zjchain
+cp -rf ./zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/zjchain/conf
 mkdir -p {datadir}/zjnodes/zjchain/log
 
 
 sudo cp -rf ./cbuild_$TARGET/zjchain {datadir}/zjnodes/zjchain
 sudo cp -f ./conf/genesis.yml {datadir}/zjnodes/zjchain/genesis.yml
 
-for node in "${{nodes[@]}}"; do
-    sudo cp -rf ./cbuild_$TARGET/zjchain {datadir}/zjnodes/${{node}}
-done
+# for node in "${{nodes[@]}}"; do
+    # sudo cp -rf ./cbuild_$TARGET/zjchain {datadir}/zjnodes/${{node}}
+# done
 sudo cp -rf ./cbuild_$TARGET/zjchain {datadir}/zjnodes/zjchain
 
 """
@@ -251,9 +253,9 @@ then
         net_key = 'root' if net_id == 2 else 'shard' + str(net_id)
         db_str = 'root_db' if net_id == 2 else 'shard_db_' + str(net_id)
         code_str += f"""
-for node in "${{{net_key}[@]}}"; do
-	cp -rf {datadir}/zjnodes/zjchain/{db_str} {datadir}/zjnodes/${{node}}/db
-done
+#for node in "${{{net_key}[@]}}"; do
+#	cp -rf {datadir}/zjnodes/zjchain/{db_str} {datadir}/zjnodes/${{node}}/db
+#done
 
 """
 
@@ -306,18 +308,49 @@ echo "==== STEP1: START DEPLOY ===="
     server0_pass = server_conf['passwords'].get(server0, '')
     code_str += f"""
 echo "[$server0]"
-# sshpass -p {server0_pass} ssh -o StrictHostKeyChecking=no root@$server0 <<EOF
 sh {build_genesis_path} $target $no_build
-cd {datadir} && sh -x fetch.sh 127.0.0.1 ${{server0}} '{server0_pass}' '{datadir}' {server0_node_names_str}
-# EOF
+cd {datadir} && sh -x fetch.sh 127.0.0.1 ${{server0}} '{server0_pass}' '{datadir}' {server0_node_names_str};
 
+for n in {server0_node_names_str}; do
+    cp -rf {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/${{n}}/conf
+    cp -rf {datadir}/zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/${{n}}/conf
+    cp -rf {datadir}/zjnodes/zjchain/zjchain {datadir}/zjnodes/${{n}}
+done
 """
+    
+    shard_nodes_map0 = {}
+    
+    for nodename in server_node_map[server0]:
+        s = get_shard_by_nodename(nodename)
+        if not shard_nodes_map0.get(s):
+            shard_nodes_map0[s] = [nodename]
+        else:
+            shard_nodes_map0[s].append(nodename)
+
+    for s, nodes in shard_nodes_map0.items():
+        nodes_name_str = ' '.join(nodes)
+        dbname = get_dbname_by_shard(s)
+        code_str += f"""
+for n in {nodes_name_str}; do
+    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/${{n}}/db
+done
+"""
+
     
     for server_name, server_ip in server_name_map.items():
         if server_name == 'server0':
             continue
         server_node_names_str = ' '.join(server_node_map[server_ip])
         server_pass = server_conf['passwords'].get(server_ip, '')
+
+        shard_nodes_map = {}
+        for nodename in server_node_map[server_ip]:
+            s = get_shard_by_nodename(nodename)
+            if not shard_nodes_map.get(s):
+                shard_nodes_map[s] = [nodename]
+            else:
+                shard_nodes_map[s].append(nodename)
+
         code_str += f"""
 (
 echo "[${server_name}]"
@@ -325,7 +358,25 @@ sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <
 mkdir -p {datadir};
 rm -rf {datadir}/zjnodes;
 sshpass -p '{server0_pass}' scp -o StrictHostKeyChecking=no root@"${{server0}}":{datadir}/fetch.sh {datadir}/
-cd {datadir} && sh -x fetch.sh ${{server0}} ${{{server_name}}} '{server0_pass}' '{datadir}' {server_node_names_str}
+cd {datadir} && sh -x fetch.sh ${{server0}} ${{{server_name}}} '{server0_pass}' '{datadir}' {server_node_names_str};
+
+for n in {server_node_names_str}; do
+    cp -rf {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/\${{n}}/conf
+    cp -rf {datadir}/zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/\${{n}}/conf
+    cp -rf {datadir}/zjnodes/zjchain/zjchain {datadir}/zjnodes/\${{n}}
+done
+"""
+
+        for s, nodes in shard_nodes_map.items():
+            nodes_name_str = ' '.join(nodes)
+            dbname = get_dbname_by_shard(s)
+            code_str += f"""
+for n in {nodes_name_str}; do
+    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/\${{n}}/db
+done
+"""
+
+        code_str += f"""
 EOF
 ) &
 
@@ -417,6 +468,22 @@ def modify_shard_num_in_src_code(server_conf, file_path='./src/network/network_u
     with open(file_path, 'w') as f:
         f.write(new_content)
 
+
+def get_shard_by_nodename(node_name):
+    if node_name.startswith('r'):
+        return 2
+    
+    return int(node_name[1])
+    
+
+def get_dbname_by_node(node_name):
+    return get_dbname_by_shard(get_shard_by_nodename(node_name))
+
+def get_dbname_by_shard(shard):
+    if shard == 2:
+        return 'root_db'
+    
+    return f'shard_db_{shard}'
 
 
 def main():
