@@ -10,11 +10,12 @@ namespace consensus {
 
 RootToTxItem::RootToTxItem(
         uint32_t max_consensus_sharding_id,
-        const transport::MessagePtr& msg,
+        const pools::protobuf::TxMessage& msg,
         std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<block::AccountManager>& account_mgr,
-        std::shared_ptr<security::Security>& sec_ptr)
-        : TxItemBase(msg, account_mgr, sec_ptr),
+        std::shared_ptr<security::Security>& sec_ptr,
+        protos::AddressInfoPtr& addr_info)
+        : TxItemBase(msg, account_mgr, sec_ptr, addr_info),
         max_sharding_id_(max_consensus_sharding_id),
         vss_mgr_(vss_mgr) {
     if (max_sharding_id_ < network::kConsensusShardBeginNetworkId) {

@@ -12,12 +12,13 @@ namespace consensus {
 class JoinElectTxItem : public TxItemBase {
 public:
     JoinElectTxItem(
-            const transport::MessagePtr& msg,
+            const pools::protobuf::TxMessage& msg,
             std::shared_ptr<block::AccountManager>& account_mgr,
             std::shared_ptr<security::Security>& sec_ptr,
             std::shared_ptr<protos::PrefixDb>& prefix_db,
-            std::shared_ptr<elect::ElectManager>& elect_mgr)
-            : TxItemBase(msg, account_mgr, sec_ptr), prefix_db_(prefix_db), elect_mgr_(elect_mgr) {
+            std::shared_ptr<elect::ElectManager>& elect_mgr,
+            protos::AddressInfoPtr& addr_info)
+            : TxItemBase(msg, account_mgr, sec_ptr, addr_info), prefix_db_(prefix_db), elect_mgr_(elect_mgr) {
     }
 
     virtual ~JoinElectTxItem() {}

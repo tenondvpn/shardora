@@ -42,6 +42,7 @@ void ThreadHandler::HandleMessage() {
     uint8_t maping_thread_idx = common::GlobalInfo::Instance()->SetConsensusRealThreadIdx(thread_idx);
     ZJC_DEBUG("thread handler thread index coming thread_idx: %d, maping_thread_idx: %d, message_handler_thread_count: %d", 
         thread_idx, maping_thread_idx, common::GlobalInfo::Instance()->message_handler_thread_count());
+    msg_handler_->ThreadWaitNotify();
     while (!destroy_) {
         if (!common::GlobalInfo::Instance()->main_inited_success()) {
             usleep(100000);
@@ -50,17 +51,27 @@ void ThreadHandler::HandleMessage() {
         
         uint32_t count = 0;
         while (count++ < kMaxHandleMessageCount) {
+            auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = msg_handler_->GetMessageFromQueue(
                 thread_idx, 
                 (maping_thread_idx == (common::GlobalInfo::Instance()->message_handler_thread_count() - 1)));
             if (!msg_ptr) {
+                auto etime = common::TimeUtils::TimestampUs();
+                if (etime - btime > 200000) {
+                    std::string t;
+                    for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
+                        t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
+                    }
+
+                    ZJC_INFO("0 over handle message: %d, thread: %d use: %lu us, all: %s",
+                        msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
+                }
                 break;
             }
 
 //             ZJC_DEBUG("start message handled msg hash: %lu, thread idx: %d",
 //                 msg_ptr->header.hash64(), msg_ptr->thread_idx);
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
-            auto btime = common::TimeUtils::TimestampUs();
             msg_ptr->times[msg_ptr->times_idx++] = btime;
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
@@ -70,7 +81,7 @@ void ThreadHandler::HandleMessage() {
                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
                 }
 
-                ZJC_INFO("over handle message: %d, thread: %d use: %lu us, all: %s",
+                ZJC_INFO("1 over handle message: %d, thread: %d use: %lu us, all: %s",
                     msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
             }
 //             ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
@@ -139,6 +150,8 @@ int MultiThreadHandler::Init(std::shared_ptr<db::Db>& db) {
 void MultiThreadHandler::Start() {
     for (uint32_t i = 0; i < all_thread_count_; ++i) {
         thread_vec_.push_back(std::make_shared<ThreadHandler>(this, wait_con_[i], wait_mutex_[i]));
+        std::unique_lock<std::mutex> lock(thread_wait_mutex_);
+        thread_wait_con_.wait(lock);
     }
 }
 
@@ -406,16 +419,16 @@ int MultiThreadHandler::CheckMessageValid(MessagePtr& msg_ptr) {
         return kFirewallCheckError;
     }
 
-    // if (firewall_checks_[msg_ptr->header.type()] == nullptr) {
-    //     ZJC_DEBUG("invalid fierwall check message type: %d", msg_ptr->header.type());
-    //     return kFirewallCheckError;
-    // }
+    if (firewall_checks_[msg_ptr->header.type()] == nullptr) {
+        ZJC_DEBUG("invalid fierwall check message type: %d", msg_ptr->header.type());
+        return kFirewallCheckSuccess;
+    }
 
-    // int check_status = firewall_checks_[msg_ptr->header.type()](msg_ptr);
-    // if (check_status != kFirewallCheckSuccess) {
-    //     ZJC_DEBUG("check firewall failed %d", msg_ptr->header.type());
-    //     return kFirewallCheckError;
-    // }
+    int check_status = firewall_checks_[msg_ptr->header.type()](msg_ptr);
+    if (check_status != kFirewallCheckSuccess) {
+        ZJC_DEBUG("check firewall failed %d", msg_ptr->header.type());
+        return kFirewallCheckError;
+    }
 
     if (!IsMessageUnique(msg_ptr->header.hash64())) {
         // invalid msg id

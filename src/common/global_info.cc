@@ -28,7 +28,7 @@ GlobalInfo::~GlobalInfo() {
 
 int GlobalInfo::Init(const common::Config& config) {
     memset(consensus_thread_index_map_, common::kInvalidUint8, sizeof(consensus_thread_index_map_));
-    begin_run_timestamp_ms_ = common::TimeUtils::TimestampMs();
+    begin_run_timestamp_ms_ = common::TimeUtils::TimestampMs() + 10000lu;
     message_handler_thread_count_ = 4;
     config.Get("zjchain", "consensus_thread_count", message_handler_thread_count_);
     ++message_handler_thread_count_;

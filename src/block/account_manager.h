@@ -1,6 +1,8 @@
 #pragma once
 
+#include <condition_variable>
 #include <memory>
+#include <mutex>
 #include <queue>
 #include <unordered_map>
 
@@ -128,6 +130,8 @@ private:
     std::condition_variable update_acc_con_;
     std::mutex update_acc_mutex_;
     std::shared_ptr<std::thread> update_acc_thread_ = nullptr;
+    std::condition_variable thread_wait_conn_;
+    std::mutex thread_wait_mutex_;
 
     DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };

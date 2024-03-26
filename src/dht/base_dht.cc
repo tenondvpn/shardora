@@ -785,7 +785,7 @@ void BaseDht::ProcessConnectRequest(const transport::MessagePtr& msg_ptr) {
         dht_msg.connect_req().pubkey(),
         header.src_sharding_id(),
         true);
-    DHT_ERROR("process connect success: %lu", msg_ptr->header.hash64());
+    DHT_DEBUG("process connect success: %lu", msg_ptr->header.hash64());
 }
 
 bool BaseDht::NodeValid(NodePtr& node) {

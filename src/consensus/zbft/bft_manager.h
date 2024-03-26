@@ -200,39 +200,48 @@ private:
         std::shared_ptr<PoolTxIndexItem>& thread_item,
         ZbftPtr& commited_bft_ptr);
     void CreateTestBlock();
+    void BackupAddLocalTxs(zbft::protobuf::TxBft* txbft, uint32_t pool_index);
+    void LeaderAddBackupTxs(const zbft::protobuf::TxBft& txbft, uint32_t pool_index);
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<FromTxItem>(
+            msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateToTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<ToTxItem>(msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<ToTxItem>(
+            msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateStatisticTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<StatisticTxItem>(msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<StatisticTxItem>(
+            msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateToTxLocal(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ToTxLocalItem>(
-            msg_ptr, db_, gas_prepayment_, account_mgr_, security_ptr_);
+            msg_ptr->header.tx_proto(), db_, gas_prepayment_, 
+            account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateTimeblockTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<TimeBlockTx>(msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<TimeBlockTx>(
+            msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateRootToTxItem(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<RootToTxItem>(
             max_consensus_sharding_id_,
-            msg_ptr,
+            msg_ptr->header.tx_proto(),
             vss_mgr_,
             account_mgr_,
-            security_ptr_);
+            security_ptr_,
+            msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateLibraryTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<CreateLibrary>(msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<CreateLibrary>(
+            msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateElectTx(const transport::MessagePtr& msg_ptr) {
@@ -242,7 +251,7 @@ private:
         }
 
         return std::make_shared<ElectTxItem>(
-            msg_ptr,
+            msg_ptr->header.tx_proto(),
             account_mgr_,
             security_ptr_,
             prefix_db_,
@@ -251,44 +260,74 @@ private:
             bls_mgr_,
             first_timeblock_timestamp_,
             false,
-            max_consensus_sharding_id_ - 1);
+            max_consensus_sharding_id_ - 1,
+            msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateJoinElectTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<JoinElectTxItem>(
-            msg_ptr, account_mgr_, security_ptr_, prefix_db_, elect_mgr_);
+            msg_ptr->header.tx_proto(), 
+            account_mgr_, 
+            security_ptr_, 
+            prefix_db_, 
+            elect_mgr_, 
+            msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateCrossTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<CrossTxItem>(msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<CrossTxItem>(
+            msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateRootCrossTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<RootCrossTxItem>(msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<RootCrossTxItem>(
+            msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateContractUserCreateCallTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ContractUserCreateCall>(
-            contract_mgr_, db_, msg_ptr, account_mgr_, security_ptr_);
+            contract_mgr_, 
+            db_, 
+            msg_ptr->header.tx_proto(), 
+            account_mgr_, 
+            security_ptr_, 
+            msg_ptr->address_info);
     }
 
 	pools::TxItemPtr CreateContractByRootFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ContractCreateByRootFromTxItem>(
-            contract_mgr_, db_, msg_ptr, account_mgr_, security_ptr_);
+            contract_mgr_, 
+            db_, 
+            msg_ptr->header.tx_proto(), 
+            account_mgr_, 
+            security_ptr_, 
+            msg_ptr->address_info);
     }
 
 	pools::TxItemPtr CreateContractByRootToTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ContractCreateByRootToTxItem>(
-            contract_mgr_, db_, msg_ptr, account_mgr_, security_ptr_);
+            contract_mgr_, 
+            db_, 
+            msg_ptr->header.tx_proto(), 
+            account_mgr_, 
+            security_ptr_, 
+            msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateContractUserCallTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<ContractUserCall>(db_, msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<ContractUserCall>(
+            db_, msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateContractCallTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ContractCall>(
-            contract_mgr_, gas_prepayment_, db_, msg_ptr, account_mgr_, security_ptr_);
+            contract_mgr_, 
+            gas_prepayment_, 
+            db_, 
+            msg_ptr->header.tx_proto(), 
+            account_mgr_, 
+            security_ptr_, 
+            msg_ptr->address_info);
     }
 
     static const uint32_t kCheckTimeoutPeriodMilli = 1000lu;

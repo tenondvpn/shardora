@@ -46,15 +46,24 @@ public:
     void TxOver(
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
-    void RemoveTx(uint32_t pool_index, const std::string& gid) {
-        tx_pool_[pool_index].RemoveTx(gid);
-    }
-
     void TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs);
     void PopTxs(uint32_t pool_index, bool pop_all);
     void InitCrossPools();
     void BftCheckInvalidGids(uint32_t pool_index, std::vector<std::shared_ptr<InvalidGidItem>>& items);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
+    void GetTx(
+        uint32_t pool_index,
+        uint32_t count,
+        const std::map<std::string, pools::TxItemPtr>& invalid_txs,
+        zbft::protobuf::TxBft* txbft);
+
+    void ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs) {
+        tx_pool_[pool_index].ConsensusAddTxs(txs);
+    }
+
+    void RemoveTx(uint32_t pool_index, const std::string& gid) {
+        tx_pool_[pool_index].RemoveTx(gid);
+    }
 
     void OnNewCrossBlock(
             const std::shared_ptr<block::protobuf::Block>& block_item) {
@@ -119,9 +128,9 @@ public:
 
     std::shared_ptr<consensus::WaitingTxsItem> GetTx(
             uint32_t pool_index,
-            const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
+            const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
             std::vector<uint8_t>* invalid_txs) {
-        return tx_pool_[pool_index].GetTx(tx_hash_list, invalid_txs);
+        return tx_pool_[pool_index].GetTx(txs, invalid_txs);
     }
 
     void RegisterCreateTxFunction(uint32_t type, CreateConsensusItemFunction func) {

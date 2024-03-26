@@ -165,27 +165,17 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
 
   // accessors -------------------------------------------------------
 
-  // repeated bytes tx_hash_list = 4;
-  int tx_hash_list_size() const;
-  void clear_tx_hash_list();
-  static const int kTxHashListFieldNumber = 4;
-  const ::std::string& tx_hash_list(int index) const;
-  ::std::string* mutable_tx_hash_list(int index);
-  void set_tx_hash_list(int index, const ::std::string& value);
-  #if LANG_CXX11
-  void set_tx_hash_list(int index, ::std::string&& value);
-  #endif
-  void set_tx_hash_list(int index, const char* value);
-  void set_tx_hash_list(int index, const void* value, size_t size);
-  ::std::string* add_tx_hash_list();
-  void add_tx_hash_list(const ::std::string& value);
-  #if LANG_CXX11
-  void add_tx_hash_list(::std::string&& value);
-  #endif
-  void add_tx_hash_list(const char* value);
-  void add_tx_hash_list(const void* value, size_t size);
-  const ::google::protobuf::RepeatedPtrField< ::std::string>& tx_hash_list() const;
-  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_tx_hash_list();
+  // repeated .shardora.pools.protobuf.TxMessage txs = 6;
+  int txs_size() const;
+  void clear_txs();
+  static const int kTxsFieldNumber = 6;
+  ::shardora::pools::protobuf::TxMessage* mutable_txs(int index);
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage >*
+      mutable_txs();
+  const ::shardora::pools::protobuf::TxMessage& txs(int index) const;
+  ::shardora::pools::protobuf::TxMessage* add_txs();
+  const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage >&
+      txs() const;
 
   // optional bytes prepare_final_hash = 2;
   bool has_prepare_final_hash() const;
@@ -221,17 +211,17 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::uint64 height() const;
   void set_height(::google::protobuf::uint64 value);
 
-  // optional uint64 time_stamp = 6;
+  // optional uint64 time_stamp = 5;
   bool has_time_stamp() const;
   void clear_time_stamp();
-  static const int kTimeStampFieldNumber = 6;
+  static const int kTimeStampFieldNumber = 5;
   ::google::protobuf::uint64 time_stamp() const;
   void set_time_stamp(::google::protobuf::uint64 value);
 
-  // optional .shardora.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
+  // optional .shardora.pools.protobuf.StepType tx_type = 4 [default = kNormalFrom];
   bool has_tx_type() const;
   void clear_tx_type();
-  static const int kTxTypeFieldNumber = 5;
+  static const int kTxTypeFieldNumber = 4;
   ::shardora::pools::protobuf::StepType tx_type() const;
   void set_tx_type(::shardora::pools::protobuf::StepType value);
 
@@ -251,7 +241,7 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> tx_hash_list_;
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage > txs_;
   ::google::protobuf::internal::ArenaStringPtr prepare_final_hash_;
   ::shardora::block::protobuf::Block* block_;
   ::google::protobuf::uint64 height_;
@@ -818,76 +808,7 @@ inline void TxBft::set_height(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.TxBft.height)
 }
 
-// repeated bytes tx_hash_list = 4;
-inline int TxBft::tx_hash_list_size() const {
-  return tx_hash_list_.size();
-}
-inline void TxBft::clear_tx_hash_list() {
-  tx_hash_list_.Clear();
-}
-inline const ::std::string& TxBft::tx_hash_list(int index) const {
-  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.TxBft.tx_hash_list)
-  return tx_hash_list_.Get(index);
-}
-inline ::std::string* TxBft::mutable_tx_hash_list(int index) {
-  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.TxBft.tx_hash_list)
-  return tx_hash_list_.Mutable(index);
-}
-inline void TxBft::set_tx_hash_list(int index, const ::std::string& value) {
-  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.TxBft.tx_hash_list)
-  tx_hash_list_.Mutable(index)->assign(value);
-}
-#if LANG_CXX11
-inline void TxBft::set_tx_hash_list(int index, ::std::string&& value) {
-  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.TxBft.tx_hash_list)
-  tx_hash_list_.Mutable(index)->assign(std::move(value));
-}
-#endif
-inline void TxBft::set_tx_hash_list(int index, const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  tx_hash_list_.Mutable(index)->assign(value);
-  // @@protoc_insertion_point(field_set_char:shardora.zbft.protobuf.TxBft.tx_hash_list)
-}
-inline void TxBft::set_tx_hash_list(int index, const void* value, size_t size) {
-  tx_hash_list_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_set_pointer:shardora.zbft.protobuf.TxBft.tx_hash_list)
-}
-inline ::std::string* TxBft::add_tx_hash_list() {
-  // @@protoc_insertion_point(field_add_mutable:shardora.zbft.protobuf.TxBft.tx_hash_list)
-  return tx_hash_list_.Add();
-}
-inline void TxBft::add_tx_hash_list(const ::std::string& value) {
-  tx_hash_list_.Add()->assign(value);
-  // @@protoc_insertion_point(field_add:shardora.zbft.protobuf.TxBft.tx_hash_list)
-}
-#if LANG_CXX11
-inline void TxBft::add_tx_hash_list(::std::string&& value) {
-  tx_hash_list_.Add(std::move(value));
-  // @@protoc_insertion_point(field_add:shardora.zbft.protobuf.TxBft.tx_hash_list)
-}
-#endif
-inline void TxBft::add_tx_hash_list(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  tx_hash_list_.Add()->assign(value);
-  // @@protoc_insertion_point(field_add_char:shardora.zbft.protobuf.TxBft.tx_hash_list)
-}
-inline void TxBft::add_tx_hash_list(const void* value, size_t size) {
-  tx_hash_list_.Add()->assign(reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_add_pointer:shardora.zbft.protobuf.TxBft.tx_hash_list)
-}
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-TxBft::tx_hash_list() const {
-  // @@protoc_insertion_point(field_list:shardora.zbft.protobuf.TxBft.tx_hash_list)
-  return tx_hash_list_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-TxBft::mutable_tx_hash_list() {
-  // @@protoc_insertion_point(field_mutable_list:shardora.zbft.protobuf.TxBft.tx_hash_list)
-  return &tx_hash_list_;
-}
-
-// optional .shardora.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
+// optional .shardora.pools.protobuf.StepType tx_type = 4 [default = kNormalFrom];
 inline bool TxBft::has_tx_type() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -912,7 +833,7 @@ inline void TxBft::set_tx_type(::shardora::pools::protobuf::StepType value) {
   // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.TxBft.tx_type)
 }
 
-// optional uint64 time_stamp = 6;
+// optional uint64 time_stamp = 5;
 inline bool TxBft::has_time_stamp() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -934,6 +855,33 @@ inline void TxBft::set_time_stamp(::google::protobuf::uint64 value) {
   set_has_time_stamp();
   time_stamp_ = value;
   // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.TxBft.time_stamp)
+}
+
+// repeated .shardora.pools.protobuf.TxMessage txs = 6;
+inline int TxBft::txs_size() const {
+  return txs_.size();
+}
+inline ::shardora::pools::protobuf::TxMessage* TxBft::mutable_txs(int index) {
+  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.TxBft.txs)
+  return txs_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage >*
+TxBft::mutable_txs() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.zbft.protobuf.TxBft.txs)
+  return &txs_;
+}
+inline const ::shardora::pools::protobuf::TxMessage& TxBft::txs(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.TxBft.txs)
+  return txs_.Get(index);
+}
+inline ::shardora::pools::protobuf::TxMessage* TxBft::add_txs() {
+  // @@protoc_insertion_point(field_add:shardora.zbft.protobuf.TxBft.txs)
+  return txs_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage >&
+TxBft::txs() const {
+  // @@protoc_insertion_point(field_list:shardora.zbft.protobuf.TxBft.txs)
+  return txs_;
 }
 
 // -------------------------------------------------------------------

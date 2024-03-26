@@ -81,11 +81,11 @@ int ContractCall::HandleTx(
     if (block_tx.contract_input().size() >= protos::kContractBytesStartCode.size()) {
         evmc_result evmc_res = {};
         evmc::Result res{ evmc_res };
-        int call_res = ContractExcute(msg_ptr->address_info, to_balance, zjc_host, block_tx, &res);
+        int call_res = ContractExcute(address_info, to_balance, zjc_host, block_tx, &res);
         if (call_res != kConsensusSuccess || res.status_code != EVMC_SUCCESS) {
             block_tx.set_status(EvmcStatusToZbftStatus(res.status_code));
             ZJC_DEBUG("call contract failed, call_res: %d, evmc res: %d, bytes: %s, input: %s!",
-                call_res, res.status_code, common::Encode::HexEncode(msg_ptr->address_info->bytes_code()).c_str(),
+                call_res, res.status_code, common::Encode::HexEncode(address_info->bytes_code()).c_str(),
                 common::Encode::HexEncode(block_tx.contract_input()).c_str());
         }
 
@@ -100,7 +100,7 @@ int ContractCall::HandleTx(
         from_balance -= gas_used * block_tx.gas_price();
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // TODO(): check key exists and reserve gas
-            gas_used += (block_tx.storages(i).key().size() + msg_ptr->header.tx_proto().value().size()) *
+            gas_used += (block_tx.storages(i).key().size() + tx_info.value().size()) *
                 consensus::kKeyValueStorageEachBytes;
         }
 

@@ -33,6 +33,9 @@ ToTxsPools::ToTxsPools(
 ToTxsPools::~ToTxsPools() {}
 
 void ToTxsPools::NewBlock(const std::shared_ptr<block::protobuf::Block>& block_ptr, db::DbWriteBatch& db_batch) {
+#ifdef TEST_NO_CROSS
+    return;
+#endif
     auto& block = *block_ptr;
     if (block.network_id() != common::GlobalInfo::Instance()->network_id() &&
             block.network_id() + network::kConsensusWaitingShardOffset !=
@@ -537,6 +540,9 @@ void ToTxsPools::HandleElectJoinVerifyVec(
 }
 
 int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights) {
+#ifdef TEST_NO_CROSS
+    return kPoolsError;
+#endif
     bool valid = false;
     std::string heights;
     auto timeout = common::TimeUtils::TimestampMs();
@@ -572,6 +578,10 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
 
 bool ToTxsPools::StatisticTos(
         const pools::protobuf::ShardToTxItem& leader_to_heights) {
+#ifdef TEST_NO_CROSS
+    return false;
+#endif
+
     if (leader_to_heights.heights_size() != common::kImmutablePoolSize) {
         assert(false);
         return false;
@@ -593,6 +603,9 @@ int ToTxsPools::CreateToTxWithHeights(
         uint64_t elect_height,
         const pools::protobuf::ShardToTxItem& leader_to_heights,
         std::string* to_hash) {
+#ifdef TEST_NO_CROSS
+    return kPoolsError;
+#endif
     if (leader_to_heights.heights_size() != common::kImmutablePoolSize) {
         assert(false);
         return kPoolsError;

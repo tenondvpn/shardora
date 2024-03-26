@@ -42,6 +42,8 @@ int AccountManager::Init(
     inited_ = true;
     update_acc_thread_ = std::make_shared<std::thread>(
         std::bind(&AccountManager::RunUpdateAccounts, this));
+    std::unique_lock<std::mutex> lock(thread_wait_mutex_);
+    thread_wait_conn_.wait(lock);
     return kBlockSuccess;
 }
 
@@ -608,7 +610,12 @@ void AccountManager::HandleJoinElectTx(
 }
 
 void AccountManager::RunUpdateAccounts() {
-    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+    {
+        auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+        std::unique_lock<std::mutex> lock(thread_wait_mutex_);
+        thread_wait_conn_.notify_one();
+    }
+    
     while (!destroy_) {
         UpdateAccountsThread();
         std::unique_lock<std::mutex> lock(update_acc_mutex_);

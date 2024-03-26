@@ -3,10 +3,13 @@
 #include <condition_variable>
 #include <mutex>
 
-#include "common/utils.h"
+#include "common/node_members.h"
 #include "common/thread_safe_queue.h"
 #include "common/tick.h"
+#include "common/utils.h"
+#include "network/network_utils.h"
 #include "protos/transport.pb.h"
+#include "security/security.h"
 #include "transport/transport_utils.h"
 
 namespace shardora {
@@ -29,11 +32,15 @@ public:
     int Send(const transport::MessagePtr& message);
     void RegisterMessage(uint32_t type, transport::MessageProcessor proc);
     void UnRegisterMessage(uint32_t type);
-    void Init();
+    void Init(std::shared_ptr<security::Security> sec_ptr);
     void Destroy();
     dht::BaseDhtPtr GetDht(const std::string& dht_key);
     void RouteByUniversal(const transport::MessagePtr& header);
-
+    void OnNewElectBlock(
+        uint32_t sharding_id,
+        uint64_t elect_height,
+        common::MembersPtr& members,
+        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block);
 private:
     Route();
     ~Route();
@@ -41,6 +48,7 @@ private:
     void HandleDhtMessage(const transport::MessagePtr& header);
     void Broadcast(const transport::MessagePtr& header);
     void Broadcasting();
+    bool CheckPoolsMessage(const transport::MessagePtr& header_ptr, dht::BaseDhtPtr dht_ptr);
 
     static const uint64_t kBroadcastPeriod = 10000lu;
 
@@ -49,12 +57,14 @@ private:
     typedef common::ThreadSafeQueue<transport::MessagePtr> BroadcastQueue;
     BroadcastQueue* broadcast_queue_ = nullptr;
     common::Tick broadcast_tick_;
-
+    std::shared_ptr<security::Security> sec_ptr_ = nullptr;
     // broadcast con and mutex
     std::condition_variable broadcast_con_;
     std::mutex broadcast_mu_;
     std::shared_ptr<std::thread> broadcast_thread_ = nullptr;
     bool destroy_ = false;
+    uint64_t latest_elect_height_[network::kConsensusShardEndNetworkId + 1] = {0};
+    common::MembersPtr all_shard_members_[network::kConsensusShardEndNetworkId + 1] = {nullptr};
 
     DISALLOW_COPY_AND_ASSIGN(Route);
 };

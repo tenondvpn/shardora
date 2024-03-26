@@ -22,10 +22,11 @@ public:
             std::shared_ptr<contract::ContractManager>& contract_mgr,
             std::shared_ptr<ContractGasPrepayment>& prepayment,
             std::shared_ptr<db::Db>& db,
-            const transport::MessagePtr& msg,
+            const pools::protobuf::TxMessage& msg,
             std::shared_ptr<block::AccountManager>& account_mgr,
-            std::shared_ptr<security::Security>& sec_ptr)
-            : TxItemBase(msg, account_mgr, sec_ptr) {
+            std::shared_ptr<security::Security>& sec_ptr,
+            protos::AddressInfoPtr& addr_info)
+            : TxItemBase(msg, account_mgr, sec_ptr, addr_info) {
         contract_mgr_ = contract_mgr;
         prepayment_ = prepayment;
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);

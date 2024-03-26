@@ -331,8 +331,10 @@ void TcpTransport::Output() {
                     continue;
                 }
 
-                ZJC_DEBUG("send message %s:%u, hash64: %lu, size: %u",
-                    item_ptr->des_ip.c_str(), item_ptr->port, item_ptr->hash64, item_ptr->msg.size());
+                if (item_ptr->msg.size() > 100000) {
+                    ZJC_INFO("send message %s:%u, hash64: %lu, size: %u",
+                        item_ptr->des_ip.c_str(), item_ptr->port, item_ptr->hash64, item_ptr->msg.size());
+                }
             }
         }
 

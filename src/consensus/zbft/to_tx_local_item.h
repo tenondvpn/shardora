@@ -12,12 +12,13 @@ namespace consensus {
 class ToTxLocalItem : public TxItemBase {
 public:
     ToTxLocalItem(
-            const transport::MessagePtr& msg,
+            const pools::protobuf::TxMessage& msg,
             std::shared_ptr<db::Db>& db,
             std::shared_ptr<ContractGasPrepayment>& gas_prepayment,
             std::shared_ptr<block::AccountManager>& account_mgr,
-            std::shared_ptr<security::Security>& sec_ptr)
-            : TxItemBase(msg, account_mgr, sec_ptr), db_(db) {
+            std::shared_ptr<security::Security>& sec_ptr,
+            protos::AddressInfoPtr& addr_info)
+            : TxItemBase(msg, account_mgr, sec_ptr, addr_info), db_(db) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
         gas_prepayment_ = gas_prepayment;
     }

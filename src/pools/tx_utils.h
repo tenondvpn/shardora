@@ -10,6 +10,7 @@
 #include "common/utils.h"
 #include "db/db.h"
 #include "protos/pools.pb.h"
+#include "protos/prefix_db.h"
 #include "security/security.h"
 #include "transport/transport_utils.h"
 #include "zjcvm/zjc_host.h"
@@ -42,27 +43,26 @@ enum PoolsErrorCode {
 class TxItem {
 public:
     virtual ~TxItem() {}
-    TxItem(const transport::MessagePtr& msg)
-            : msg_ptr(msg),
-            prev_consensus_tm_us(0),
-            tx_hash(msg->header.tx_proto().gid()),
-            unnique_tx_hash(msg_ptr->msg_hash),
-            gid(msg->header.tx_proto().gid()),
-            gas_price(msg->header.tx_proto().gas_price()),
-            in_consensus(false) {
-        uint64_t now_tm = common::TimeUtils::TimestampUs();
+    TxItem(const pools::protobuf::TxMessage& tx, protos::AddressInfoPtr& addr_info)
+            : prev_consensus_tm_us(0),
+            gas_price(tx.gas_price()),
+            in_consensus(false),
+            tx_info(tx),
+            address_info(addr_info),
+            is_consensus_add_tx(false) {
+uint64_t now_tm = common::TimeUtils::TimestampUs();
         time_valid = now_tm + kBftStartDeltaTime;
 #ifdef ZJC_UNITTEST
         time_valid = 0;
 #endif // ZJC_UNITTEST
         timeout = now_tm + kTxPoolTimeoutUs;
         remove_timeout = timeout + kTxPoolTimeoutUs;
-        if (msg->header.tx_proto().has_step()) {
-            step = msg->header.tx_proto().step();
+        if (tx.has_step()) {
+            step = tx.step();
         }
 
         auto prio = common::ShiftUint64(now_tm);
-        prio_key = std::string((char*)&prio, sizeof(prio)) + gid;
+        prio_key = std::string((char*)&prio, sizeof(prio)) + tx.gid();
     }
 
     virtual int HandleTx(
@@ -76,18 +76,18 @@ public:
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         block::protobuf::BlockTx* block_tx) = 0;
 
-    transport::MessagePtr msg_ptr;
     uint64_t prev_consensus_tm_us;
     uint64_t timeout;
     uint64_t remove_timeout;
     uint64_t time_valid{ 0 };
     const uint64_t& gas_price;
     int32_t step = pools::protobuf::kNormalFrom;
-    const std::string& tx_hash;
-    const std::string& unnique_tx_hash;
-    const std::string& gid;
+    std::string unique_tx_hash;
     std::string prio_key;
     bool in_consensus;
+    pools::protobuf::TxMessage tx_info;
+    protos::AddressInfoPtr address_info;
+    bool is_consensus_add_tx;
 };
 
 typedef std::shared_ptr<TxItem> TxItemPtr;

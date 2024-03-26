@@ -29,7 +29,7 @@ typedef std::shared_ptr<ElectNodeInfo> NodeDetailPtr;
 class ElectTxItem : public TxItemBase {
 public:
     ElectTxItem(
-        const transport::MessagePtr& msg,
+        const pools::protobuf::TxMessage& msg,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<security::Security>& sec_ptr,
         std::shared_ptr<protos::PrefixDb>& prefix_db,
@@ -38,8 +38,9 @@ public:
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         uint64_t first_timeblock_timestamp,
         bool stop_mining,
-        uint32_t network_count)
-        : TxItemBase(msg, account_mgr, sec_ptr),
+        uint32_t network_count,
+        protos::AddressInfoPtr& addr_info)
+        : TxItemBase(msg, account_mgr, sec_ptr, addr_info),
         prefix_db_(prefix_db),
         elect_mgr_(elect_mgr),
         vss_mgr_(vss_mgr),
