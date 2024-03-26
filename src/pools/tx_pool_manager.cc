@@ -453,6 +453,10 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         msg_ptr->header.hash64(),
         thread_idx,
         pools_msg_queue_[thread_idx].size());
+    if (pools_msg_queue_[thread_idx].size() > 4096) {
+        return;
+    }
+
     auto& header = msg_ptr->header;
     if (header.has_sync_heights()) {
         auto btime = common::TimeUtils::TimestampMs();
