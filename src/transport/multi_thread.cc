@@ -81,8 +81,8 @@ void ThreadHandler::HandleMessage() {
                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
                 }
 
-                ZJC_INFO("1 over handle message: %d, thread: %d use: %lu us, all: %s",
-                    msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
+                ZJC_INFO("1 over handle message: %d, step: %d, thread: %d use: %lu us, all: %s",
+                    msg_ptr->header.type(), msg_ptr->header.zbft().tx_bft().tx_type(), thread_idx, (etime - btime), t.c_str());
             }
 //             ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
         }

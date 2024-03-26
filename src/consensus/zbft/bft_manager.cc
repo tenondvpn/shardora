@@ -2586,19 +2586,16 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
                 bft_ptr->pool_index(),
                 bft_msg.prepare_gid());
         } else if (res == kConsensusAgree) {
-            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             if (bft_ptr->prepare_block() == nullptr) {
                 ZJC_DEBUG("invalid block and sync from other gid: %s",
                     common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
                 assert(false);
             }
 
-            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             if (LeaderCallPrecommit(bft_ptr, msg_ptr) != kConsensusSuccess) {
                 return kConsensusError;
             }
 
-            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             return kConsensusAgree;
         } else if (res == kConsensusOppose) {
             return kConsensusOppose;
@@ -2907,7 +2904,7 @@ void BftManager::CreateTestBlock() {
 }
 
 void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr) {
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    // msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto& zjc_block = bft_ptr->prepare_block();
     // TODO: for test
     {
@@ -2960,25 +2957,19 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
     }
 
 
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(zjc_block, bft_ptr->db_batch());
     new_block_cache_callback_(
         queue_item_ptr->block_ptr,
         *queue_item_ptr->db_batch);
-    
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     block_mgr_->ConsensusAddBlock(queue_item_ptr);
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     if (bft_ptr->this_node_is_leader()) {
         LeaderBroadcastBlock(zjc_block);
     }
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+
     pools_mgr_->TxOver(
         zjc_block->pool_index(),
         zjc_block->tx_list());
     bft_ptr->set_consensus_status(kConsensusCommited);
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tps_tm_us_ == 0) {
         prev_tps_tm_us_ = now_tm_us;
