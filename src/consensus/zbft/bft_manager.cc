@@ -2486,8 +2486,10 @@ void BftManager::LeaderSendCommitMessage(const transport::MessagePtr& leader_msg
 void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
     auto& zbft = msg_ptr->header.zbft();
     if (isPrepare(zbft)) {
+        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         int res = LeaderHandlePrepare(msg_ptr);
         // ZJC_INFO("====1.1 leader receive prepare msg: %s, res: %d, leader: %d, member: %d, agree: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), res, zbft.leader_idx(), zbft.member_index(), zbft.agree_precommit());
+        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         if (res == kConsensusAgree) {
             LeaderSendPrecommitMessage(msg_ptr, true);
         } else if (res == kConsensusOppose) {
@@ -2496,6 +2498,7 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
         } else {
             // waiting
         }
+        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     }
 
     if (isPrecommit(zbft)) {
