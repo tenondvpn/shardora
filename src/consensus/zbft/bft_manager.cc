@@ -719,7 +719,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     auto zbft = header.zbft();
     auto new_height = zbft.tx_bft().height();
-    
     if (isFromLeader(zbft)) {
         std::shared_ptr<BftMessageInfo> bft_msgs = gid_with_msg_map_[zbft.pool_index()];
         
