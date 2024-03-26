@@ -453,7 +453,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         msg_ptr->header.hash64(),
         thread_idx,
         pools_msg_queue_[thread_idx].size());
-    if (pools_msg_queue_[thread_idx].size() > 4096) {
+    if (pools_msg_queue_[thread_idx].size() > 2048) {
         return;
     }
 
