@@ -313,12 +313,12 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
             gid_start_time_map_.erase(gid);
         }
 
-        if (latencys_us_.size() > 1000) {
-            uint64_t p0 = common::GetNthElement(latencys_us_, 0);
-            uint64_t p50 = common::GetNthElement(latencys_us_, 0);
+        if (latencys_us_.size() > 10) {
+            uint64_t p50 = common::GetNthElement(latencys_us_, 0.50);
             uint64_t p90 = common::GetNthElement(latencys_us_, 0.90);
             uint64_t p95 = common::GetNthElement(latencys_us_, 0.95);
             uint64_t p100 = common::GetNthElement(latencys_us_, 1);
+            uint64_t p0 = latencys_us_[0];
 
             uint64_t sum;
             for (int i = 0; i < latencys_us_.size(); i++) {
