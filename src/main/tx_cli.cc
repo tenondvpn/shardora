@@ -130,7 +130,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
     //     << " tx sign: " << common::Encode::HexEncode(sign)
     //     << " hash64: " << msg.hash64()
     //     << std::endl;
-    msg.set_sign(sign);
+    new_tx->set_sign(sign);
     assert(new_tx->gas_price() > 0);
     return msg_ptr;
 }
