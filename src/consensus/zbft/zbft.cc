@@ -254,7 +254,6 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
     uint32_t t = min_aggree_member_count_;
     uint32_t n = members_ptr_->size();
     std::vector<size_t> idx_vec;
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     for (uint32_t i = 0; i < n; ++i) {
         if (!iter->second->prepare_bitmap_.Valid(i)) {
             continue;
@@ -272,7 +271,6 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
 #if MOCK_SIGN        
         bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::random_element());
 #else
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
         std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
         libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);        
@@ -281,7 +279,6 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
             all_signs,
             lagrange_coeffs));
         bls_precommit_agg_sign_->to_affine_coordinates();
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
 #endif
         std::string sign_precommit_hash;
         if (bls_mgr_->GetVerifyHash(
@@ -302,7 +299,6 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
             return kConsensusError;
         }
 
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
 #if MOCK_VERIFY
         sign_precommit_hash = precommit_bls_agg_verify_hash_;
 #endif        
@@ -323,7 +319,6 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
             return kConsensusError;
         }
 
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         ZJC_DEBUG("leader precommit agg sign success! signx: %s, %s: %s, %s",
             libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->X).c_str(),
             common::Encode::HexEncode(sign_precommit_hash).c_str(),
@@ -333,7 +328,6 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
             LeaderResetPrepareBitmap(iter->second);
         }
 
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         valid_index_ = iter->second->valid_index;
     } catch (std::exception& e) {
         ZJC_ERROR("catch bls exception: %s", e.what());

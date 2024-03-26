@@ -2553,8 +2553,6 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
         common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
         common::Encode::HexEncode(bft_ptr->prepare_hash()).c_str());
     if (bft_msg.agree_precommit()) {
-        // 2
-        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         libff::alt_bn128_G1 sign;
         try {
             sign.X = libff::alt_bn128_Fq(bft_msg.bls_sign_x().c_str());
@@ -2565,6 +2563,7 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
             return kConsensusError;
         }
         auto& tx_bft = bft_msg.tx_bft();
+        //2
         msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         int res = bft_ptr->LeaderPrecommitOk(
             bft_msg.prepare_hash(),
