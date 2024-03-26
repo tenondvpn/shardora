@@ -115,10 +115,10 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
         return transport::kFirewallCheckSuccess;
     }
 
-    if (!msg_ptr->header.has_sign() || !tx_msg.has_pubkey() ||
-            msg_ptr->header.sign().empty() || tx_msg.pubkey().empty()) {
+    if (!tx_msg.has_sign() || !tx_msg.has_pubkey() ||
+            tx_msg.sign().empty() || tx_msg.pubkey().empty()) {
         ZJC_DEBUG("pools check firewall message failed, invalid sign or pk. sign: %d, pk: %d, hash64: %lu", 
-            msg_ptr->header.sign().size(), tx_msg.pubkey().size(), header.hash64());
+            tx_msg.sign().size(), tx_msg.pubkey().size(), header.hash64());
         return transport::kFirewallCheckError;
     }
 
@@ -126,7 +126,7 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     // if (security_->Verify(
     //         msg_ptr->msg_hash,
     //         tx_msg.pubkey(),
-    //         msg_ptr->header.sign()) != security::kSecuritySuccess) {
+    //         tx_msg.sign()) != security::kSecuritySuccess) {
     //     ZJC_ERROR("verify signature failed!");
     //     return transport::kFirewallCheckError;
     // }
