@@ -58,6 +58,36 @@ public:
         zbft::protobuf::TxBft* txbft);
 
     void ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs) {
+        // for (uint32_t i = 0; i < txs.size(); ++i) {
+        //     auto tx_ptr = txs[i];
+        //     if (security_->Verify(
+        //             tx_ptr->unique_tx_hash,
+        //             tx_ptr->tx_info.pubkey(),
+        //             msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        //         ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
+        //             "prepayment: %lu, default call contract gas: %lu, txid: %s",
+        //             msg_ptr->address_info->balance(),
+        //             tx_msg.amount(),
+        //             tx_msg.contract_prepayment(),
+        //             consensus::kCallContractDefaultUseGas,
+        //             common::Encode::HexEncode(tx_msg.gid()).c_str());
+        //         assert(false);
+        //         continue;
+        //     }
+
+        //     if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
+        //         // avoid save gid different tx
+        //         ZJC_DEBUG("tx msg hash exists: %s failed!",
+        //             common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
+        //         continue;
+        //     }
+
+        //     if (prefix_db_->GidExists(tx_msg.gid())) {
+        //         ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
+        //         continue;
+        //     }
+        // }
+        
         tx_pool_[pool_index].ConsensusAddTxs(txs);
     }
 
