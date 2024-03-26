@@ -80,20 +80,15 @@ public:
     ~PrefixDb() {}
 
     void InitGidManager() {
-        gid_set_[0].reserve(30240);
-        gid_set_[1].reserve(30240);
         db_batch_tick_.CutOff(
             5000000lu,
             std::bind(&PrefixDb::DumpGidToDb, this));
     }
 
     void Destroy() {
-        for (int32_t i = 0; i < 2; ++i) {
-            if (!gid_set_[i].empty()) {
-                ZJC_DEBUG("put 4");
-                db_->Put(db_batch_[i]);
-                db_batch_[i].Clear();
-            }
+        for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
+            db_->Put(db_batch_[i]);
+            db_batch_[i].Clear();
         }
     }
 
