@@ -2406,6 +2406,20 @@ void BftManager::LeaderSendPrecommitMessage(const transport::MessagePtr& leader_
         common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
         header.hash64());
+
+    if (bft_ptr->prepare_block() == nullptr) {
+        ZJC_DEBUG("invalid block and sync from other gid: %s",
+            common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+        assert(false);
+    }
+
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    if (LeaderCallPrecommit(bft_ptr, msg_ptr) != kConsensusSuccess) {
+        ZJC_ERROR("leader call precommit failed gid: %s",
+            common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+    }
+
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     bft_ptr->AfterNetwork();
 }
 
@@ -2479,7 +2493,11 @@ void BftManager::LeaderSendCommitMessage(const transport::MessagePtr& leader_msg
 void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
     auto& zbft = msg_ptr->header.zbft();
     if (isPrepare(zbft)) {
-        int res = LeaderHandlePrepare(msg_ptr);
+        auto bft_ptr = LeaderGetZbft(msg_ptr, zbft.prepare_gid());
+        int res = kConsensusError; 
+        if (bft_ptr != nullptr) {
+            res = LeaderHandlePrepare(msg_ptr, bft_ptr);
+        }
         // ZJC_INFO("====1.1 leader receive prepare msg: %s, res: %d, leader: %d, member: %d, agree: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), res, zbft.leader_idx(), zbft.member_index(), zbft.agree_precommit());
         msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         if (res == kConsensusAgree) {
@@ -2534,17 +2552,10 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
     }
 }
 
-int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
+int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr) {
     auto& bft_msg = msg_ptr->header.zbft();
     ZJC_DEBUG("has prepare  now leader handle gid: %s",
         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-    auto bft_ptr = LeaderGetZbft(msg_ptr, bft_msg.prepare_gid());
-    if (bft_ptr == nullptr) {
-        ZJC_DEBUG("prepare get bft failed: %s",
-            common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-        return kConsensusError;
-    }
-
     bft_ptr->msg_ptr = msg_ptr;
     auto& member_ptr = (*bft_ptr->members_ptr())[bft_msg.member_index()];
     ZJC_DEBUG("has prepare  now leader handle gid: %s, agree precommit: %d, prepare hash: %s, local hash: %s",
@@ -2563,7 +2574,6 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
             return kConsensusError;
         }
         auto& tx_bft = bft_msg.tx_bft();
-        //2
         msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         int res = bft_ptr->LeaderPrecommitOk(
             bft_msg.prepare_hash(),
@@ -2575,6 +2585,7 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
             res,
             bft_msg.member_index(),
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+        //2
         msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         if (res == kConsensusLeaderWaitingBlock) {
             ZJC_DEBUG("invalid block and sync from other hash: %s, gid: %s",
@@ -2584,18 +2595,6 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
                 bft_ptr->pool_index(),
                 bft_msg.prepare_gid());
         } else if (res == kConsensusAgree) {
-            if (bft_ptr->prepare_block() == nullptr) {
-                ZJC_DEBUG("invalid block and sync from other gid: %s",
-                    common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-                assert(false);
-            }
-
-            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-            if (LeaderCallPrecommit(bft_ptr, msg_ptr) != kConsensusSuccess) {
-                return kConsensusError;
-            }
-
-            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             return kConsensusAgree;
         } else if (res == kConsensusOppose) {
             return kConsensusOppose;

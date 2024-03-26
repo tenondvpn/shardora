@@ -124,7 +124,7 @@ private:
     int BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     void CheckTimeout();
     void CheckMessageTimeout();
-    int LeaderHandlePrepare(const transport::MessagePtr& msg_ptr);
+    int LeaderHandlePrepare(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
     int LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     ZbftPtr CreateBftPtr(
         const ElectItem& elect_item,
