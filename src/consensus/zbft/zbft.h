@@ -538,6 +538,9 @@ public:
         return now_tm - consensus_prepare_tm_ms_;
     }
 
+    // TODO: for test
+    transport::MessagePtr msg_ptr = nullptr;
+
 protected:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;

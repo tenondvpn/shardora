@@ -2545,6 +2545,7 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
         return kConsensusError;
     }
 
+    bft_ptr->msg_ptr = msg_ptr;
     auto& member_ptr = (*bft_ptr->members_ptr())[bft_msg.member_index()];
     ZJC_DEBUG("has prepare  now leader handle gid: %s, agree precommit: %d, prepare hash: %s, local hash: %s",
         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
