@@ -482,17 +482,6 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    if (header.invalid_bfts_size() > 0) {
-         auto btime = common::TimeUtils::TimestampMs();
-        HandleInvalidGids(msg_ptr);
-        auto etime = common::TimeUtils::TimestampMs();
-        if (etime - btime > 10000lu) {
-            ZJC_WARN("HandleInvalidGids handle message timeout: %d, %lu", 
-                msg_ptr->header.tx_proto().step(), (etime - btime));
-        }
-        return;
-    }
-
     assert(thread_idx < common::kMaxThreadCount);
     pools_msg_queue_[thread_idx].push(msg_ptr);
     pop_tx_con_.notify_one();
