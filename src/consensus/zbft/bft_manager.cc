@@ -2045,8 +2045,6 @@ bool BftManager::CheckAggSignValid(const transport::MessagePtr& msg_ptr, ZbftPtr
         return false;
     }
 
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     if (!bft_ptr->set_bls_precommit_agg_sign(
             sign,
             bft_ptr->precommit_bls_agg_verify_hash())) {
@@ -2054,9 +2052,6 @@ bool BftManager::CheckAggSignValid(const transport::MessagePtr& msg_ptr, ZbftPtr
         return false;
     }
 
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //msg_ptr->times[msg_ptr->times_idx - 2] = msg_ptr->times[msg_ptr->times_idx - 1];
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     return true;
 }
 
@@ -2486,7 +2481,6 @@ void BftManager::LeaderSendCommitMessage(const transport::MessagePtr& leader_msg
 void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
     auto& zbft = msg_ptr->header.zbft();
     if (isPrepare(zbft)) {
-        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         int res = LeaderHandlePrepare(msg_ptr);
         // ZJC_INFO("====1.1 leader receive prepare msg: %s, res: %d, leader: %d, member: %d, agree: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), res, zbft.leader_idx(), zbft.member_index(), zbft.agree_precommit());
         msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -2560,6 +2554,7 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
         common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
         common::Encode::HexEncode(bft_ptr->prepare_hash()).c_str());
     if (bft_msg.agree_precommit()) {
+        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         libff::alt_bn128_G1 sign;
         try {
             sign.X = libff::alt_bn128_Fq(bft_msg.bls_sign_x().c_str());
@@ -2580,6 +2575,7 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
             res,
             bft_msg.member_index(),
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         if (res == kConsensusLeaderWaitingBlock) {
             ZJC_DEBUG("invalid block and sync from other hash: %s, gid: %s",
                 common::Encode::HexEncode(bft_ptr->leader_waiting_prepare_hash()).c_str(),
@@ -2594,10 +2590,12 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
                 assert(false);
             }
 
+            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             if (LeaderCallPrecommit(bft_ptr, msg_ptr) != kConsensusSuccess) {
                 return kConsensusError;
             }
 
+            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             return kConsensusAgree;
         } else if (res == kConsensusOppose) {
             return kConsensusOppose;
