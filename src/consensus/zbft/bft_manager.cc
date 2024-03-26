@@ -714,7 +714,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     // leader's message
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     int res = kConsensusSuccess;
 
     auto zbft = header.zbft();
@@ -868,7 +867,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     } else {
         LeaderHandleZbftMessage(msg_ptr);
     }
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
 }
 
 void BftManager::HandleSyncedBlock(std::shared_ptr<block::protobuf::Block>& block_ptr) {
