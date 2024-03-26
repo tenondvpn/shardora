@@ -59,18 +59,14 @@ void ThreadHandler::HandleMessage() {
                 auto etime = common::TimeUtils::TimestampUs();
                 if (etime - btime > 200000) {
                     std::string t;
-                    for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
-                        t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
-                    }
-
-                    ZJC_INFO("0 over handle message: %d, thread: %d use: %lu us, all: %s",
-                        msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
+                    ZJC_INFO("0 over handle thread: %d use: %lu us, all: %s", thread_idx, (etime - btime), t.c_str());
                 }
                 break;
             }
 
 //             ZJC_DEBUG("start message handled msg hash: %lu, thread idx: %d",
 //                 msg_ptr->header.hash64(), msg_ptr->thread_idx);
+            msg_ptr->times_idx = 0;
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
             msg_ptr->times[msg_ptr->times_idx++] = btime;
             Processor::Instance()->HandleMessage(msg_ptr);
@@ -81,8 +77,13 @@ void ThreadHandler::HandleMessage() {
                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
                 }
 
-                ZJC_INFO("1 over handle message: %d, thread: %d use: %lu us, all: %s",
-                    msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
+                ZJC_INFO("1 over handle message: %d, step: %d, times_idx: %d, thread: %d use: %lu us, all: %s",
+                    msg_ptr->header.type(), 
+                    msg_ptr->header.zbft().tx_bft().tx_type(), 
+                    msg_ptr->times_idx, 
+                    thread_idx, 
+                    (etime - btime), 
+                    t.c_str());
             }
 //             ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
         }

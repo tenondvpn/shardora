@@ -298,48 +298,7 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     CheckMessageTimeout();
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    // BroadcastInvalidGids();
-    CheckInvalidGids();
 #endif
-}
-
-void BftManager::CheckInvalidGids() {
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
-        if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_idx) {
-            std::vector<std::shared_ptr<pools::InvalidGidItem>> items;
-            pools_mgr_->BftCheckInvalidGids(pool_idx, items);
-            if (items.empty()) {
-                continue;
-            }
-
-            for (auto iter = items.begin(); iter != items.end(); ++iter) {
-                auto& invalid_gid_item = *iter;
-                //                 if (invalid_gid_item->prepare_hashs.size() == invalid_gid_item->precommit_hashs.size()) {
-                //                     continue;
-                //                 }
-                // 
-                ZJC_DEBUG("success add invalid hash: %u, %lu, %s",
-                    invalid_gid_item->max_pool_index,
-                    invalid_gid_item->max_pool_height,
-                    common::Encode::HexEncode(invalid_gid_item->max_precommit_hash).c_str());
-                if (invalid_gid_item->prepare_hashs.size() < (2 * invalid_gid_item->precommit_hashs.size() / 3)) {
-                    pools_mgr_->AddChangeLeaderInvalidHash(
-                        invalid_gid_item->max_pool_index,
-                        invalid_gid_item->max_pool_height,
-                        invalid_gid_item->max_precommit_hash);
-                }
-
-                if (pools_with_zbfts_[pool_idx] != nullptr) {
-                    if (pools_with_zbfts_[pool_idx]->gid() == invalid_gid_item->gid) {
-                        pools_with_zbfts_[pool_idx]->Destroy();
-                        pools_with_zbfts_[pool_idx] = nullptr;
-                        ZJC_DEBUG("remove gid: %s", common::Encode::HexEncode(invalid_gid_item->gid).c_str());
-                    }
-                }
-            }
-        }
-    }
 }
 
 void BftManager::PopAllPoolTxs() {
@@ -755,12 +714,10 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     // leader's message
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     int res = kConsensusSuccess;
 
     auto zbft = header.zbft();
     auto new_height = zbft.tx_bft().height();
-    
     if (isFromLeader(zbft)) {
         std::shared_ptr<BftMessageInfo> bft_msgs = gid_with_msg_map_[zbft.pool_index()];
         
@@ -910,7 +867,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     } else {
         LeaderHandleZbftMessage(msg_ptr);
     }
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
 }
 
 void BftManager::HandleSyncedBlock(std::shared_ptr<block::protobuf::Block>& block_ptr) {
@@ -2087,8 +2043,6 @@ bool BftManager::CheckAggSignValid(const transport::MessagePtr& msg_ptr, ZbftPtr
         return false;
     }
 
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     if (!bft_ptr->set_bls_precommit_agg_sign(
             sign,
             bft_ptr->precommit_bls_agg_verify_hash())) {
@@ -2096,9 +2050,6 @@ bool BftManager::CheckAggSignValid(const transport::MessagePtr& msg_ptr, ZbftPtr
         return false;
     }
 
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //msg_ptr->times[msg_ptr->times_idx - 2] = msg_ptr->times[msg_ptr->times_idx - 1];
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     return true;
 }
 
@@ -2455,6 +2406,20 @@ void BftManager::LeaderSendPrecommitMessage(const transport::MessagePtr& leader_
         common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
         header.hash64());
+
+    if (bft_ptr->prepare_block() == nullptr) {
+        ZJC_DEBUG("invalid block and sync from other gid: %s",
+            common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+        assert(false);
+    }
+
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    if (LeaderCallPrecommit(bft_ptr) != kConsensusSuccess) {
+        ZJC_ERROR("leader call precommit failed gid: %s",
+            common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+    }
+
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     bft_ptr->AfterNetwork();
 }
 
@@ -2528,8 +2493,13 @@ void BftManager::LeaderSendCommitMessage(const transport::MessagePtr& leader_msg
 void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
     auto& zbft = msg_ptr->header.zbft();
     if (isPrepare(zbft)) {
-        int res = LeaderHandlePrepare(msg_ptr);
+        auto bft_ptr = LeaderGetZbft(msg_ptr, zbft.prepare_gid());
+        int res = kConsensusError; 
+        if (bft_ptr != nullptr) {
+            res = LeaderHandlePrepare(msg_ptr, bft_ptr);
+        }
         // ZJC_INFO("====1.1 leader receive prepare msg: %s, res: %d, leader: %d, member: %d, agree: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), res, zbft.leader_idx(), zbft.member_index(), zbft.agree_precommit());
+        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         if (res == kConsensusAgree) {
             LeaderSendPrecommitMessage(msg_ptr, true);
         } else if (res == kConsensusOppose) {
@@ -2538,6 +2508,7 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
         } else {
             // waiting
         }
+        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     }
 
     if (isPrecommit(zbft)) {
@@ -2581,17 +2552,11 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
     }
 }
 
-int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
+int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr) {
     auto& bft_msg = msg_ptr->header.zbft();
     ZJC_DEBUG("has prepare  now leader handle gid: %s",
         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-    auto bft_ptr = LeaderGetZbft(msg_ptr, bft_msg.prepare_gid());
-    if (bft_ptr == nullptr) {
-        ZJC_DEBUG("prepare get bft failed: %s",
-            common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-        return kConsensusError;
-    }
-
+    bft_ptr->msg_ptr = msg_ptr;
     auto& member_ptr = (*bft_ptr->members_ptr())[bft_msg.member_index()];
     ZJC_DEBUG("has prepare  now leader handle gid: %s, agree precommit: %d, prepare hash: %s, local hash: %s",
         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
@@ -2609,6 +2574,7 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
             return kConsensusError;
         }
         auto& tx_bft = bft_msg.tx_bft();
+        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         int res = bft_ptr->LeaderPrecommitOk(
             bft_msg.prepare_hash(),
             bft_msg.member_index(),
@@ -2619,6 +2585,8 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
             res,
             bft_msg.member_index(),
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+        //2
+        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         if (res == kConsensusLeaderWaitingBlock) {
             ZJC_DEBUG("invalid block and sync from other hash: %s, gid: %s",
                 common::Encode::HexEncode(bft_ptr->leader_waiting_prepare_hash()).c_str(),
@@ -2627,19 +2595,6 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
                 bft_ptr->pool_index(),
                 bft_msg.prepare_gid());
         } else if (res == kConsensusAgree) {
-            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-            if (bft_ptr->prepare_block() == nullptr) {
-                ZJC_DEBUG("invalid block and sync from other gid: %s",
-                    common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-                assert(false);
-            }
-
-            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-            if (LeaderCallPrecommit(bft_ptr, msg_ptr) != kConsensusSuccess) {
-                return kConsensusError;
-            }
-
-            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             return kConsensusAgree;
         } else if (res == kConsensusOppose) {
             return kConsensusOppose;
@@ -2746,7 +2701,7 @@ ZbftPtr BftManager::LeaderGetZbft(
     return bft_ptr;
 }
 
-int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr) {
+int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr) {
     bft_ptr->set_precoimmit_hash();
     ZJC_DEBUG("use g1_precommit_hash prepare hash: %s, gid: %s",
         common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
@@ -2948,7 +2903,7 @@ void BftManager::CreateTestBlock() {
 }
 
 void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr) {
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    // msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto& zjc_block = bft_ptr->prepare_block();
     // TODO: for test
     {
@@ -3001,25 +2956,19 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
     }
 
 
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(zjc_block, bft_ptr->db_batch());
     new_block_cache_callback_(
         queue_item_ptr->block_ptr,
         *queue_item_ptr->db_batch);
-    
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     block_mgr_->ConsensusAddBlock(queue_item_ptr);
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     if (bft_ptr->this_node_is_leader()) {
         LeaderBroadcastBlock(zjc_block);
     }
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+
     pools_mgr_->TxOver(
         zjc_block->pool_index(),
         zjc_block->tx_list());
     bft_ptr->set_consensus_status(kConsensusCommited);
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tps_tm_us_ == 0) {
         prev_tps_tm_us_ = now_tm_us;
@@ -3078,72 +3027,6 @@ void BftManager::LeaderBroadcastBlock(
     default:
         break;
     }
-}
-
-void BftManager::BroadcastInvalidGids() {
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    auto now_timestamp_us = common::TimeUtils::TimestampUs();
-    if (prev_broadcast_invalid_gid_tm_[thread_idx] > now_timestamp_us) {
-        return;
-    }
-
-    prev_broadcast_invalid_gid_tm_[thread_idx] = now_timestamp_us + 10000000lu;
-    auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    auto& msg = msg_ptr->header;
-    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    msg.set_type(common::kPoolsMessage);
-    dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
-    msg.set_des_dht_key(dht_key.StrKey());
-    for (uint32_t pool_index = 0; pool_index < common::kInvalidPoolIndex; ++pool_index) {
-        if (common::GlobalInfo::Instance()->pools_with_thread()[pool_index] != thread_idx) {
-            continue;
-        }
-
-        if (pools_with_zbfts_[pool_index] == nullptr) {
-            continue;
-        }
-
-        auto& bft_ptr = pools_with_zbfts_[pool_index];
-        if (bft_ptr->timeout(now_timestamp_us) &&
-                (bft_ptr->consensus_status() == kConsensusPreCommit ||
-                 bft_ptr->consensus_status() == kConsensusPrepare)) {
-            auto iter = broadcasted_gids_[thread_idx].find(bft_ptr->gid());
-            if (iter != broadcasted_gids_[thread_idx].end()) {
-                continue;
-            }
-
-            broadcasted_gids_[thread_idx].insert(bft_ptr->gid());
-            auto invalid_bfts = msg.add_invalid_bfts();
-            invalid_bfts->set_pool_index(pool_index);
-            invalid_bfts->set_gid(bft_ptr->gid());
-            invalid_bfts->set_hash(bft_ptr->prepare_block()->hash());
-            invalid_bfts->set_height(bft_ptr->prepare_block()->height());
-            ZJC_DEBUG("success broadcast invalid gids to pool: %u, gid: %s, hash: %s",
-                pool_index,
-                common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-                common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());
-        }
-    }
-
-    if (msg.invalid_bfts_size() <= 0) {
-        return;
-    }
-
-    auto elect_item_ptr = elect_items_[elect_item_idx_];
-    auto& elect_item = *elect_item_ptr;
-    msg.mutable_zbft()->set_member_index(elect_item.local_node_member_index);
-    msg.mutable_zbft()->set_elect_height(elect_item.elect_height);
-    transport::TcpTransport::Instance()->SetMessageHash(msg);
-    auto* brdcast = msg.mutable_broadcast();
-    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
-    std::string sign;
-    if (security_ptr_->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
-        assert(false);
-        return;
-    }
-
-    msg.set_sign(sign);
-    network::Route::Instance()->Send(msg_ptr);
 }
 
 void BftManager::BroadcastBlock(

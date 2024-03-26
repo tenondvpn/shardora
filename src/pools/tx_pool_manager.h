@@ -56,10 +56,7 @@ public:
         uint32_t count,
         const std::map<std::string, pools::TxItemPtr>& invalid_txs,
         zbft::protobuf::TxBft* txbft);
-
-    void ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs) {
-        tx_pool_[pool_index].ConsensusAddTxs(txs);
-    }
+    void ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs);
 
     void RemoveTx(uint32_t pool_index, const std::string& gid) {
         tx_pool_[pool_index].RemoveTx(gid);
@@ -149,6 +146,8 @@ public:
     uint64_t latest_timestamp(uint32_t pool_index) const {
         return tx_pool_[pool_index].latest_timestamp();
     }
+
+#ifdef ZJC_UNITTEST
     // just for test
     int AddTx(uint32_t pool_index, TxItemPtr& tx_ptr) {
         if (pool_index >= common::kInvalidPoolIndex) {
@@ -157,6 +156,7 @@ public:
 
         return tx_pool_[pool_index].AddTx(tx_ptr);
     }
+#endif
 
     // UpdateLatestInfo 当某个 pool 出块后，更新此 shard 的 pool_mgr 状态
     void UpdateLatestInfo(
@@ -233,7 +233,6 @@ private:
     void FlushHeightTree();
     void PopPoolsMessage();
     void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);
-    void HandleInvalidGids(const transport::MessagePtr& msg_ptr);
     void GetMinValidTxCount();
 
     static const uint32_t kPopMessageCountEachTime = 64000u;
@@ -291,6 +290,7 @@ private:
     uint64_t prev_show_tm_ms_ = 0;
     uint64_t prev_msgs_show_tm_ms_ = 0;
     std::weak_ptr<block::AccountManager> acc_mgr_;
+    volatile uint32_t now_max_tx_count_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

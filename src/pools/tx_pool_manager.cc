@@ -115,10 +115,10 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
         return transport::kFirewallCheckSuccess;
     }
 
-    if (!msg_ptr->header.has_sign() || !tx_msg.has_pubkey() ||
-            msg_ptr->header.sign().empty() || tx_msg.pubkey().empty()) {
+    if (!tx_msg.has_sign() || !tx_msg.has_pubkey() ||
+            tx_msg.sign().empty() || tx_msg.pubkey().empty()) {
         ZJC_DEBUG("pools check firewall message failed, invalid sign or pk. sign: %d, pk: %d, hash64: %lu", 
-            msg_ptr->header.sign().size(), tx_msg.pubkey().size(), header.hash64());
+            tx_msg.sign().size(), tx_msg.pubkey().size(), header.hash64());
         return transport::kFirewallCheckError;
     }
 
@@ -126,7 +126,7 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     // if (security_->Verify(
     //         msg_ptr->msg_hash,
     //         tx_msg.pubkey(),
-    //         msg_ptr->header.sign()) != security::kSecuritySuccess) {
+    //         tx_msg.sign()) != security::kSecuritySuccess) {
     //     ZJC_ERROR("verify signature failed!");
     //     return transport::kFirewallCheckError;
     // }
@@ -263,6 +263,19 @@ void TxPoolManager::ConsensusTimerMessage() {
     //     prev_get_valid_tm_ms_ = now_tm_ms + kGetMinPeriod;
     //     GetMinValidTxCount();
     // }
+
+    std::priority_queue<uint32_t, std::vector<uint32_t>, std::greater<uint32_t>> tx_count_queue;
+    std::string test_str;
+    for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
+        test_str += std::to_string(tx_pool_[i].tx_size()) + ",";
+        tx_count_queue.push(tx_pool_[i].tx_size());
+        if (tx_count_queue.size() > common::kImmutablePoolSize / 3) {
+            tx_count_queue.pop();
+        }
+    }
+
+    now_max_tx_count_ = tx_count_queue.top();
+    ZJC_DEBUG("now max tx count: %d, all: %s", now_max_tx_count_, test_str.c_str());
 
     if (prev_check_leader_valid_ms_ < now_tm_ms && member_index_ != common::kInvalidUint32) {
         if (false && network::DhtManager::Instance()->valid_count(
@@ -453,7 +466,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         msg_ptr->header.hash64(),
         thread_idx,
         pools_msg_queue_[thread_idx].size());
-    if (pools_msg_queue_[thread_idx].size() > 2048) {
+    if (pools_msg_queue_[thread_idx].size() > common::GlobalInfo::Instance()->pools_each_thread_max_messages()) {
         return;
     }
 
@@ -463,17 +476,8 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         HandleSyncPoolsMaxHeight(msg_ptr);
         auto etime = common::TimeUtils::TimestampMs();
         if (etime - btime > 10000lu) {
-            ZJC_WARN("HandleSyncPoolsMaxHeight handle message timeout: %d, %lu", msg_ptr->header.tx_proto().step(), (etime - btime));
-        }
-        return;
-    }
-
-    if (header.invalid_bfts_size() > 0) {
-         auto btime = common::TimeUtils::TimestampMs();
-        HandleInvalidGids(msg_ptr);
-        auto etime = common::TimeUtils::TimestampMs();
-        if (etime - btime > 10000lu) {
-            ZJC_WARN("HandleInvalidGids handle message timeout: %d, %lu", msg_ptr->header.tx_proto().step(), (etime - btime));
+            ZJC_WARN("HandleSyncPoolsMaxHeight handle message timeout: %d, %lu", 
+                msg_ptr->header.tx_proto().step(), (etime - btime));
         }
         return;
     }
@@ -492,118 +496,42 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 #endif
 }
 
-void TxPoolManager::HandleInvalidGids(const transport::MessagePtr& msg_ptr) {
-    ZJC_DEBUG("invalid gid coming: %lu", msg_ptr->header.hash64());
-    if (latest_members_ == nullptr) {
-        return;
-    }
-
-    if (msg_ptr->header.zbft().elect_height() != latest_elect_height_) {
-        return;
-    }
-
-    if (msg_ptr->header.zbft().member_index() >= latest_members_->size()) {
-        return;
-    }
-
-    auto& mem_ptr = (*latest_members_)[msg_ptr->header.zbft().member_index()];
-    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
-    if (security_->Verify(
-            msg_hash,
-            mem_ptr->pubkey,
-            msg_ptr->header.sign()) != security::kSecuritySuccess) {
-        ZJC_DEBUG("verify leader sign failed: %s", common::Encode::HexEncode(mem_ptr->id).c_str());
-        return;
-    }
-
-    auto& invalid_bfts = msg_ptr->header.invalid_bfts();
-    auto t = common::GetSignerCount(latest_members_->size());
-    for (int32_t i = 0; i < invalid_bfts.size(); ++i) {
-        std::shared_ptr<InvalidGidItem> invalid_gid_item = nullptr;
-        auto iter = invalid_gids_.find(invalid_bfts[i].gid());
-        if (iter == invalid_gids_.end()) {
-            invalid_gid_item = std::make_shared<InvalidGidItem>();
-            invalid_gids_[invalid_bfts[i].gid()] = invalid_gid_item;
-        } else {
-            invalid_gid_item = iter->second;
-        }
-
-        if (!invalid_gid_item->max_precommit_hash.empty()) {
+void TxPoolManager::ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs) {
+    std::vector<pools::TxItemPtr> valid_txs;
+    for (uint32_t i = 0; i < txs.size(); ++i) {
+        auto tx_ptr = txs[i];
+        if (security_->Verify(
+                tx_ptr->unique_tx_hash,
+                tx_ptr->tx_info.pubkey(),
+                tx_ptr->tx_info.sign()) != security::kSecuritySuccess) {
+            ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
+                "prepayment: %lu, default call contract gas: %lu, txid: %s",
+                tx_ptr->address_info->balance(),
+                tx_ptr->tx_info.amount(),
+                tx_ptr->tx_info.contract_prepayment(),
+                consensus::kCallContractDefaultUseGas,
+                common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
+            assert(false);
             continue;
         }
 
-        auto exists_iter = invalid_gid_item->checked_members.find(mem_ptr->id);
-        if (exists_iter != invalid_gid_item->checked_members.end()) {
+        if (prefix_db_->GidExists(tx_ptr->unique_tx_hash)) {
+            // avoid save gid different tx
+            ZJC_DEBUG("tx msg hash exists: %s failed!",
+                common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str());
             continue;
         }
 
-        invalid_gid_item->checked_members.insert(mem_ptr->id);
-        auto pool_iter = invalid_gid_item->pool_index.find(invalid_bfts[i].pool_index());
-        if (pool_iter != invalid_gid_item->pool_index.end()) {
-            ++pool_iter->second;
-            if (pool_iter->second > invalid_gid_item->max_pool_index_count) {
-                invalid_gid_item->max_pool_index_count = pool_iter->second;
-                invalid_gid_item->max_pool_index = invalid_bfts[i].pool_index();
-            }
-        } else {
-            invalid_gid_item->pool_index[invalid_bfts[i].pool_index()] = 1;
-            invalid_gid_item->max_pool_index_count = 1;
-            invalid_gid_item->max_pool_index = invalid_bfts[i].pool_index();
+        if (prefix_db_->GidExists(tx_ptr->tx_info.gid())) {
+            ZJC_DEBUG("tx gid exists: %s failed!", 
+                common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
+            continue;
         }
 
-        auto height_iter = invalid_gid_item->heights.find(invalid_bfts[i].height());
-        if (height_iter != invalid_gid_item->heights.end()) {
-            ++height_iter->second;
-            if (height_iter->second > invalid_gid_item->max_pool_height_count) {
-                invalid_gid_item->max_pool_height_count = height_iter->second;
-                invalid_gid_item->max_pool_height = invalid_bfts[i].height();
-            }
-        } else {
-            invalid_gid_item->heights[invalid_bfts[i].height()] = 1;
-            invalid_gid_item->max_pool_height_count = 1;
-            invalid_gid_item->max_pool_height = invalid_bfts[i].height();
-        }
-
-        std::string precommit_hash;
-        if (invalid_bfts[i].precommit()) {
-            precommit_hash = invalid_bfts[i].hash();
-        } else {
-            auto prepare_iter = invalid_gid_item->prepare_hashs.find(invalid_bfts[i].hash());
-            if (prepare_iter != invalid_gid_item->prepare_hashs.end()) {
-                ++prepare_iter->second;
-            } else {
-                invalid_gid_item->prepare_hashs[invalid_bfts[i].hash()] = 1;
-            }
-
-            auto precommit_hash = invalid_bfts[i].hash();
-            bool is_cross_block = true;
-            precommit_hash.append((char*)&is_cross_block, sizeof(is_cross_block));
-            precommit_hash = common::Hash::keccak256(precommit_hash);
-        }
-
-        auto precommit_iter = invalid_gid_item->precommit_hashs.find(precommit_hash);
-        if (precommit_iter != invalid_gid_item->precommit_hashs.end()) {
-            ++precommit_iter->second;
-            ZJC_DEBUG("invalid gid coming, gid: %s, precommit hash: %s, "
-                "prepare hash: %s, pool: %u, count: %u, t: %u",
-                common::Encode::HexEncode(invalid_bfts[i].gid()).c_str(),
-                common::Encode::HexEncode(precommit_hash).c_str(),
-                common::Encode::HexEncode(invalid_bfts[i].hash()).c_str(),
-                precommit_iter->second, t);
-            if (precommit_iter->second >= t) {
-                invalid_gid_item->max_precommit_hash = precommit_hash;
-                invalid_gid_queues_[invalid_gid_item->max_pool_index].push(invalid_gid_item);
-                ZJC_DEBUG("exceeded 2_3 invalid gid coming, gid: %s, precommit hash: %s, "
-                    "prepare hash: %s, pool: %u, count: %u, t: %u",
-                    common::Encode::HexEncode(invalid_bfts[i].gid()).c_str(),
-                    common::Encode::HexEncode(precommit_hash).c_str(),
-                    common::Encode::HexEncode(invalid_bfts[i].hash()).c_str(),
-                    precommit_iter->second, t);
-            }
-        } else{
-            invalid_gid_item->precommit_hashs[precommit_hash] = 1;
-        }
+        valid_txs.push_back(tx_ptr);
     }
+    
+    tx_pool_[pool_index].ConsensusAddTxs(valid_txs);
 }
 
 void TxPoolManager::PopPoolsMessage() {
@@ -1122,7 +1050,7 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     // if (security_->Verify(
     //         msg_ptr->msg_hash,
     //         tx_msg.pubkey(),
-    //         msg_ptr->header.sign()) != security::kSecuritySuccess) {
+    //         tx_msg.sign()) != security::kSecuritySuccess) {
     //     ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
     //         "prepayment: %lu, default call contract gas: %lu, txid: %s",
     //         msg_ptr->address_info->balance(),
@@ -1156,26 +1084,6 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
 //         assert(false);
         return;
     }
-
-    // TODO msg_ptr->msg_hash 是否为空？
-    // 转账交易，验证签名
-    // if (tx_msg.step() == pools::protobuf::kNormalFrom) {
-    //     if (security_->Verify(
-    //             msg_ptr->msg_hash,
-    //             tx_msg.pubkey(),
-    //             msg_ptr->header.sign()) != security::kSecuritySuccess) {
-    //         ZJC_DEBUG("verify signature failed address balance invalid: %lu, transfer amount: %lu, "
-    //             "prepayment: %lu, default call contract gas: %lu, txid: %s",
-    //             msg_ptr->address_info->balance(),
-    //             tx_msg.amount(),
-    //             tx_msg.contract_prepayment(),
-    //             consensus::kCallContractDefaultUseGas,
-    //             common::Encode::HexEncode(tx_msg.gid()).c_str());
-    //         assert(false);
-    //         return;
-    //     }
-    // }
-
 
     // 验证账户余额是否足够
     if (msg_ptr->address_info->balance() <
@@ -1360,6 +1268,10 @@ void TxPoolManager::GetTx(
     //         tx_pool_[pool_index].oldest_timestamp() > min_timestamp_) {
     //     return;
     // }
+
+    if (tx_pool_[pool_index].tx_size() < now_max_tx_count_) {
+        return;
+    }
 
     tx_pool_[pool_index].GetTx(res_map, count);
 //     ZJC_DEBUG("success get tx tm: %lu, min tm: %lu, dec: %ld, count: %u, min count: %u, count: %u",

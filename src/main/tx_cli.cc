@@ -14,7 +14,7 @@
 using namespace shardora;
 static bool global_stop = false;
 static const std::string kBroadcastIp = "127.0.0.1";
-static const uint16_t kBroadcastPort = 13001;
+static const uint16_t kBroadcastPort = 13004;
 
 static void SignalCallback(int sig_int) {
     global_stop = true;
@@ -130,7 +130,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
     //     << " tx sign: " << common::Encode::HexEncode(sign)
     //     << " hash64: " << msg.hash64()
     //     << std::endl;
-    msg.set_sign(sign);
+    new_tx->set_sign(sign);
     assert(new_tx->gas_price() > 0);
     return msg_ptr;
 }
@@ -268,7 +268,7 @@ int tx_main(int argc, char** argv) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
-            usleep(1000000);
+            usleep(10000);
         }
     }
 
