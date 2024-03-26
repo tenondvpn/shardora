@@ -185,6 +185,9 @@ void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
         return;
     }
 
+    if (prio_map_.size() + consensus_tx_map_.size() < 1024) {
+        return;
+    }
     GetTx(prio_map_, res_map, count);
     GetTx(consensus_tx_map_, res_map, count);
 }
