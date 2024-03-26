@@ -2414,7 +2414,7 @@ void BftManager::LeaderSendPrecommitMessage(const transport::MessagePtr& leader_
     }
 
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    if (LeaderCallPrecommit(bft_ptr, msg_ptr) != kConsensusSuccess) {
+    if (LeaderCallPrecommit(bft_ptr) != kConsensusSuccess) {
         ZJC_ERROR("leader call precommit failed gid: %s",
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
     }
@@ -2701,7 +2701,7 @@ ZbftPtr BftManager::LeaderGetZbft(
     return bft_ptr;
 }
 
-int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr) {
+int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr) {
     bft_ptr->set_precoimmit_hash();
     ZJC_DEBUG("use g1_precommit_hash prepare hash: %s, gid: %s",
         common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
