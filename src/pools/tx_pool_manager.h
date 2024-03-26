@@ -149,6 +149,8 @@ public:
     uint64_t latest_timestamp(uint32_t pool_index) const {
         return tx_pool_[pool_index].latest_timestamp();
     }
+
+#ifdef ZJC_UNITTEST
     // just for test
     int AddTx(uint32_t pool_index, TxItemPtr& tx_ptr) {
         if (pool_index >= common::kInvalidPoolIndex) {
@@ -157,6 +159,7 @@ public:
 
         return tx_pool_[pool_index].AddTx(tx_ptr);
     }
+#endif
 
     // UpdateLatestInfo 当某个 pool 出块后，更新此 shard 的 pool_mgr 状态
     void UpdateLatestInfo(
@@ -291,6 +294,7 @@ private:
     uint64_t prev_show_tm_ms_ = 0;
     uint64_t prev_msgs_show_tm_ms_ = 0;
     std::weak_ptr<block::AccountManager> acc_mgr_;
+    volatile uint32_t now_max_tx_count_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

@@ -50,7 +50,7 @@ public:
             tx_info(tx),
             address_info(addr_info),
             is_consensus_add_tx(false) {
-uint64_t now_tm = common::TimeUtils::TimestampUs();
+        uint64_t now_tm = common::TimeUtils::TimestampUs();
         time_valid = now_tm + kBftStartDeltaTime;
 #ifdef ZJC_UNITTEST
         time_valid = 0;
@@ -61,7 +61,7 @@ uint64_t now_tm = common::TimeUtils::TimestampUs();
             step = tx.step();
         }
 
-        auto prio = common::ShiftUint64(now_tm);
+        auto prio = common::ShiftUint64(tx.gas_price());
         prio_key = std::string((char*)&prio, sizeof(prio)) + tx.gid();
     }
 

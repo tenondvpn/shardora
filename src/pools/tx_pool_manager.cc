@@ -264,6 +264,19 @@ void TxPoolManager::ConsensusTimerMessage() {
     //     GetMinValidTxCount();
     // }
 
+    std::priority_queue<uint32_t, std::vector<uint32_t>, std::greater<uint32_t>> tx_count_queue;
+    std::string test_str;
+    for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
+        test_str += std::to_string(tx_pool_[i].tx_size()) + ",";
+        tx_count_queue.push(tx_pool_[i].tx_size());
+        if (tx_count_queue.size() > common::kImmutablePoolSize / 3) {
+            tx_count_queue.pop();
+        }
+    }
+
+    now_max_tx_count_ = tx_count_queue.top();
+    ZJC_DEBUG("now max tx count: %d, all: %s", now_max_tx_count_, test_str.c_str());
+
     if (prev_check_leader_valid_ms_ < now_tm_ms && member_index_ != common::kInvalidUint32) {
         if (false && network::DhtManager::Instance()->valid_count(
                 common::GlobalInfo::Instance()->network_id()) + 1 >=
@@ -453,7 +466,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         msg_ptr->header.hash64(),
         thread_idx,
         pools_msg_queue_[thread_idx].size());
-    if (pools_msg_queue_[thread_idx].size() > 2048) {
+    if (pools_msg_queue_[thread_idx].size() > common::GlobalInfo::Instance()->pools_each_thread_max_messages()) {
         return;
     }
 
@@ -463,7 +476,8 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         HandleSyncPoolsMaxHeight(msg_ptr);
         auto etime = common::TimeUtils::TimestampMs();
         if (etime - btime > 10000lu) {
-            ZJC_WARN("HandleSyncPoolsMaxHeight handle message timeout: %d, %lu", msg_ptr->header.tx_proto().step(), (etime - btime));
+            ZJC_WARN("HandleSyncPoolsMaxHeight handle message timeout: %d, %lu", 
+                msg_ptr->header.tx_proto().step(), (etime - btime));
         }
         return;
     }
@@ -473,7 +487,8 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         HandleInvalidGids(msg_ptr);
         auto etime = common::TimeUtils::TimestampMs();
         if (etime - btime > 10000lu) {
-            ZJC_WARN("HandleInvalidGids handle message timeout: %d, %lu", msg_ptr->header.tx_proto().step(), (etime - btime));
+            ZJC_WARN("HandleInvalidGids handle message timeout: %d, %lu", 
+                msg_ptr->header.tx_proto().step(), (etime - btime));
         }
         return;
     }
@@ -1361,6 +1376,10 @@ void TxPoolManager::GetTx(
     //     return;
     // }
 
+    if (tx_pool_[pool_index].tx_size() < now_max_tx_count_) {
+        return;
+    }
+    
     tx_pool_[pool_index].GetTx(res_map, count);
 //     ZJC_DEBUG("success get tx tm: %lu, min tm: %lu, dec: %ld, count: %u, min count: %u, count: %u",
 //         tx_pool_[pool_index].oldest_timestamp(), min_valid_timestamp_,

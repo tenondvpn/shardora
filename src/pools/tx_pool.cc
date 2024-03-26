@@ -117,7 +117,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         return kPoolsTxAdded;
     }
 
-    if (gid_map_.size() >= 1024) {
+    if (gid_map_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
         // ZJC_WARN("add failed extend 1024");
         return kPoolsError;
     }
@@ -135,7 +135,6 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     gid_map_[tx_ptr->tx_info.gid()] = tx_ptr;
-
 #ifndef NDEBUG
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tx_count_tm_us_ == 0) {
@@ -185,9 +184,6 @@ void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
         return;
     }
 
-    if (prio_map_.size() + consensus_tx_map_.size() < 1024) {
-        return;
-    }
     GetTx(prio_map_, res_map, count);
     GetTx(consensus_tx_map_, res_map, count);
 }

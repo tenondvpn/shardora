@@ -62,7 +62,7 @@ public:
     }
 
     uint32_t tx_size() const {
-        return prio_map_.size();
+        return prio_map_.size() + consensus_tx_map_.size() + universal_prio_map_.size();
     }
 
     uint64_t oldest_timestamp() const {

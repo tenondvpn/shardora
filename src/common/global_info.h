@@ -245,6 +245,14 @@ public:
         return common::kInvalidUint8;
     }
 
+    uint32_t pools_each_thread_max_messages() const {
+        return pools_each_thread_max_messages_;
+    }
+
+    uint32_t each_tx_pool_max_txs() const {
+        return each_tx_pool_max_txs_;
+    }
+
 private:
     GlobalInfo();
     ~GlobalInfo();
@@ -288,6 +296,8 @@ private:
     std::unordered_map<int, uint8_t> valid_thread_index_;
     volatile bool global_stoped_ = false;
     volatile bool main_inited_success_ = false;
+    uint32_t pools_each_thread_max_messages_ = 2048u;
+    uint32_t each_tx_pool_max_txs_ = 2048u;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };
