@@ -298,48 +298,7 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     CheckMessageTimeout();
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    // BroadcastInvalidGids();
-    CheckInvalidGids();
 #endif
-}
-
-void BftManager::CheckInvalidGids() {
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
-        if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_idx) {
-            std::vector<std::shared_ptr<pools::InvalidGidItem>> items;
-            pools_mgr_->BftCheckInvalidGids(pool_idx, items);
-            if (items.empty()) {
-                continue;
-            }
-
-            for (auto iter = items.begin(); iter != items.end(); ++iter) {
-                auto& invalid_gid_item = *iter;
-                //                 if (invalid_gid_item->prepare_hashs.size() == invalid_gid_item->precommit_hashs.size()) {
-                //                     continue;
-                //                 }
-                // 
-                ZJC_DEBUG("success add invalid hash: %u, %lu, %s",
-                    invalid_gid_item->max_pool_index,
-                    invalid_gid_item->max_pool_height,
-                    common::Encode::HexEncode(invalid_gid_item->max_precommit_hash).c_str());
-                if (invalid_gid_item->prepare_hashs.size() < (2 * invalid_gid_item->precommit_hashs.size() / 3)) {
-                    pools_mgr_->AddChangeLeaderInvalidHash(
-                        invalid_gid_item->max_pool_index,
-                        invalid_gid_item->max_pool_height,
-                        invalid_gid_item->max_precommit_hash);
-                }
-
-                if (pools_with_zbfts_[pool_idx] != nullptr) {
-                    if (pools_with_zbfts_[pool_idx]->gid() == invalid_gid_item->gid) {
-                        pools_with_zbfts_[pool_idx]->Destroy();
-                        pools_with_zbfts_[pool_idx] = nullptr;
-                        ZJC_DEBUG("remove gid: %s", common::Encode::HexEncode(invalid_gid_item->gid).c_str());
-                    }
-                }
-            }
-        }
-    }
 }
 
 void BftManager::PopAllPoolTxs() {
@@ -3078,72 +3037,6 @@ void BftManager::LeaderBroadcastBlock(
     default:
         break;
     }
-}
-
-void BftManager::BroadcastInvalidGids() {
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    auto now_timestamp_us = common::TimeUtils::TimestampUs();
-    if (prev_broadcast_invalid_gid_tm_[thread_idx] > now_timestamp_us) {
-        return;
-    }
-
-    prev_broadcast_invalid_gid_tm_[thread_idx] = now_timestamp_us + 10000000lu;
-    auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    auto& msg = msg_ptr->header;
-    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    msg.set_type(common::kPoolsMessage);
-    dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
-    msg.set_des_dht_key(dht_key.StrKey());
-    for (uint32_t pool_index = 0; pool_index < common::kInvalidPoolIndex; ++pool_index) {
-        if (common::GlobalInfo::Instance()->pools_with_thread()[pool_index] != thread_idx) {
-            continue;
-        }
-
-        if (pools_with_zbfts_[pool_index] == nullptr) {
-            continue;
-        }
-
-        auto& bft_ptr = pools_with_zbfts_[pool_index];
-        if (bft_ptr->timeout(now_timestamp_us) &&
-                (bft_ptr->consensus_status() == kConsensusPreCommit ||
-                 bft_ptr->consensus_status() == kConsensusPrepare)) {
-            auto iter = broadcasted_gids_[thread_idx].find(bft_ptr->gid());
-            if (iter != broadcasted_gids_[thread_idx].end()) {
-                continue;
-            }
-
-            broadcasted_gids_[thread_idx].insert(bft_ptr->gid());
-            auto invalid_bfts = msg.add_invalid_bfts();
-            invalid_bfts->set_pool_index(pool_index);
-            invalid_bfts->set_gid(bft_ptr->gid());
-            invalid_bfts->set_hash(bft_ptr->prepare_block()->hash());
-            invalid_bfts->set_height(bft_ptr->prepare_block()->height());
-            ZJC_DEBUG("success broadcast invalid gids to pool: %u, gid: %s, hash: %s",
-                pool_index,
-                common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-                common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());
-        }
-    }
-
-    if (msg.invalid_bfts_size() <= 0) {
-        return;
-    }
-
-    auto elect_item_ptr = elect_items_[elect_item_idx_];
-    auto& elect_item = *elect_item_ptr;
-    msg.mutable_zbft()->set_member_index(elect_item.local_node_member_index);
-    msg.mutable_zbft()->set_elect_height(elect_item.elect_height);
-    transport::TcpTransport::Instance()->SetMessageHash(msg);
-    auto* brdcast = msg.mutable_broadcast();
-    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
-    std::string sign;
-    if (security_ptr_->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
-        assert(false);
-        return;
-    }
-
-    msg.set_sign(sign);
-    network::Route::Instance()->Send(msg_ptr);
 }
 
 void BftManager::BroadcastBlock(

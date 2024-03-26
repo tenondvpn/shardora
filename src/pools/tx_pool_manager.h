@@ -236,7 +236,6 @@ private:
     void FlushHeightTree();
     void PopPoolsMessage();
     void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);
-    void HandleInvalidGids(const transport::MessagePtr& msg_ptr);
     void GetMinValidTxCount();
 
     static const uint32_t kPopMessageCountEachTime = 64000u;

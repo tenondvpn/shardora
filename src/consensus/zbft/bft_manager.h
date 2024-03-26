@@ -181,8 +181,6 @@ private:
     void HandleSyncedBlock(std::shared_ptr<block::protobuf::Block>& block_ptr);
     void ReConsensusChangedLeaderBft(ZbftPtr& bft_ptr);
     bool CheckChangedLeaderBftsValid(uint32_t pool, uint64_t height, const std::string& gid);
-    void BroadcastInvalidGids();
-    void CheckInvalidGids();
     void LeaderRemoveTimeoutPrepareBft(ZbftPtr& bft_ptr);
     void BackupSendPrepareMessage(
         const ElectItem& elect_item,
@@ -374,9 +372,6 @@ private:
     std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_blocks_[common::kInvalidPoolIndex];
     std::map<uint64_t, std::shared_ptr<block::protobuf::Block>, std::greater<uint64_t>> waiting_agg_verify_blocks_[common::kInvalidPoolIndex];
     ZbftPtr changed_leader_pools_height_[common::kInvalidPoolIndex] = { nullptr };
-    common::LimitHashMap<std::string, ZbftPtr, 64> removed_preapare_gid_with_hash_[common::kInvalidPoolIndex];
-    uint64_t prev_broadcast_invalid_gid_tm_[common::kMaxThreadCount] = { 0 };
-    std::unordered_set<std::string> broadcasted_gids_[common::kMaxThreadCount];
     std::shared_ptr<BftMessageInfo> gid_with_msg_map_[common::kInvalidPoolIndex];
     uint64_t pools_prev_bft_timeout_[common::kInvalidPoolIndex] = { 0 };
 
