@@ -533,20 +533,22 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::TxMessage, contract_code_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::TxMessage, contract_input_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::TxMessage, contract_from_),
-  10,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::TxMessage, sign_),
+  11,
   0,
   1,
-  8,
   9,
+  10,
   2,
   3,
   4,
-  12,
-  11,
   13,
+  12,
+  14,
   5,
   6,
   7,
+  8,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 12, sizeof(::shardora::pools::protobuf::ToTxHeights)},
@@ -562,7 +564,7 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 138, 145, sizeof(::shardora::pools::protobuf::CrossShardStatistic)},
   { 147, 160, sizeof(::shardora::pools::protobuf::ElectStatistic)},
   { 168, 176, sizeof(::shardora::pools::protobuf::SyncPoolsMaxHeight)},
-  { 179, 198, sizeof(::shardora::pools::protobuf::TxMessage)},
+  { 179, 199, sizeof(::shardora::pools::protobuf::TxMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -647,28 +649,29 @@ void AddDescriptorsImpl() {
       "ossShardStatistic\022\024\n\014elect_height\030\010 \001(\004\""
       "P\n\022SyncPoolsMaxHeight\022\022\n\003req\030\001 \001(\010:\005fals"
       "e\022\017\n\007heights\030\002 \003(\004\022\025\n\rcross_heights\030\003 \003("
-      "\004\"\270\002\n\tTxMessage\022\017\n\007version\030\001 \001(\r\022\013\n\003gid\030"
+      "\004\"\306\002\n\tTxMessage\022\017\n\007version\030\001 \001(\r\022\013\n\003gid\030"
       "\002 \001(\014\022\016\n\006pubkey\030\003 \001(\014\022\021\n\tgas_limit\030\004 \001(\004"
       "\022\021\n\tgas_price\030\005 \001(\004\022\013\n\003key\030\006 \001(\014\022\r\n\005valu"
       "e\030\007 \001(\014\022\n\n\002to\030\010 \001(\014\022\016\n\006amount\030\t \001(\004\022<\n\004s"
       "tep\030\n \001(\0162!.shardora.pools.protobuf.Step"
       "Type:\013kNormalFrom\022\033\n\023contract_prepayment"
       "\030\013 \001(\004\022\025\n\rcontract_code\030\014 \001(\014\022\026\n\016contrac"
-      "t_input\030\r \001(\014\022\025\n\rcontract_from\030\016 \001(\014*\257\003\n"
-      "\010StepType\022\017\n\013kNormalFrom\020\000\022\r\n\tkNormalTo\020"
-      "\001\022\034\n\030kConsensusRootElectShard\020\002\022\033\n\027kCons"
-      "ensusRootTimeBlock\020\003\022!\n\035kConsensusCreate"
-      "GenesisAcount\020\004\022\026\n\022kConsensusLocalTos\020\005\022"
-      "\023\n\017kContractCreate\020\006\022\032\n\026kContractGasPrep"
-      "ayment\020\007\022\023\n\017kContractExcute\020\010\022\026\n\022kRootCr"
-      "eateAddress\020\t\022#\n\037kRootCreateAddressCross"
-      "Sharding\020\013\022\016\n\nkStatistic\020\014\022\016\n\nkJoinElect"
-      "\020\r\022\022\n\016kCreateLibrary\020\016\022\n\n\006kCross\020\017\022\016\n\nkR"
-      "ootCross\020\020\022\033\n\027kContractCreateByRootTo\020\021\022"
-      "\035\n\031kContractCreateByRootFrom\020\022"
+      "t_input\030\r \001(\014\022\025\n\rcontract_from\030\016 \001(\014\022\014\n\004"
+      "sign\030\017 \001(\014*\257\003\n\010StepType\022\017\n\013kNormalFrom\020\000"
+      "\022\r\n\tkNormalTo\020\001\022\034\n\030kConsensusRootElectSh"
+      "ard\020\002\022\033\n\027kConsensusRootTimeBlock\020\003\022!\n\035kC"
+      "onsensusCreateGenesisAcount\020\004\022\026\n\022kConsen"
+      "susLocalTos\020\005\022\023\n\017kContractCreate\020\006\022\032\n\026kC"
+      "ontractGasPrepayment\020\007\022\023\n\017kContractExcut"
+      "e\020\010\022\026\n\022kRootCreateAddress\020\t\022#\n\037kRootCrea"
+      "teAddressCrossSharding\020\013\022\016\n\nkStatistic\020\014"
+      "\022\016\n\nkJoinElect\020\r\022\022\n\016kCreateLibrary\020\016\022\n\n\006"
+      "kCross\020\017\022\016\n\nkRootCross\020\020\022\033\n\027kContractCre"
+      "ateByRootTo\020\021\022\035\n\031kContractCreateByRootFr"
+      "om\020\022"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 2510);
+      descriptor, 2524);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/pools.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
@@ -5684,6 +5687,7 @@ const int TxMessage::kContractPrepaymentFieldNumber;
 const int TxMessage::kContractCodeFieldNumber;
 const int TxMessage::kContractInputFieldNumber;
 const int TxMessage::kContractFromFieldNumber;
+const int TxMessage::kSignFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 TxMessage::TxMessage()
@@ -5730,6 +5734,10 @@ TxMessage::TxMessage(const TxMessage& from)
   if (from.has_contract_from()) {
     contract_from_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.contract_from_);
   }
+  sign_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_sign()) {
+    sign_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sign_);
+  }
   ::memcpy(&gas_limit_, &from.gas_limit_,
     static_cast<size_t>(reinterpret_cast<char*>(&contract_prepayment_) -
     reinterpret_cast<char*>(&gas_limit_)) + sizeof(contract_prepayment_));
@@ -5745,6 +5753,7 @@ void TxMessage::SharedCtor() {
   contract_code_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   contract_input_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   contract_from_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  sign_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&gas_limit_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&contract_prepayment_) -
       reinterpret_cast<char*>(&gas_limit_)) + sizeof(contract_prepayment_));
@@ -5764,6 +5773,7 @@ void TxMessage::SharedDtor() {
   contract_code_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   contract_input_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   contract_from_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  sign_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void TxMessage::SetCachedSize(int size) const {
@@ -5813,7 +5823,10 @@ void TxMessage::Clear() {
       contract_from_.ClearNonDefaultToEmptyNoArena();
     }
   }
-  if (cached_has_bits & 16128u) {
+  if (cached_has_bits & 0x00000100u) {
+    sign_.ClearNonDefaultToEmptyNoArena();
+  }
+  if (cached_has_bits & 32256u) {
     ::memset(&gas_limit_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&contract_prepayment_) -
         reinterpret_cast<char*>(&gas_limit_)) + sizeof(contract_prepayment_));
@@ -6018,6 +6031,18 @@ bool TxMessage::MergePartialFromCodedStream(
         break;
       }
 
+      // optional bytes sign = 15;
+      case 15: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(122u /* 122 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_sign()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -6046,7 +6071,7 @@ void TxMessage::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 version = 1;
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000800u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->version(), output);
   }
 
@@ -6063,12 +6088,12 @@ void TxMessage::SerializeWithCachedSizes(
   }
 
   // optional uint64 gas_limit = 4;
-  if (cached_has_bits & 0x00000100u) {
+  if (cached_has_bits & 0x00000200u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(4, this->gas_limit(), output);
   }
 
   // optional uint64 gas_price = 5;
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000400u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(5, this->gas_price(), output);
   }
 
@@ -6091,18 +6116,18 @@ void TxMessage::SerializeWithCachedSizes(
   }
 
   // optional uint64 amount = 9;
-  if (cached_has_bits & 0x00001000u) {
+  if (cached_has_bits & 0x00002000u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(9, this->amount(), output);
   }
 
   // optional .shardora.pools.protobuf.StepType step = 10 [default = kNormalFrom];
-  if (cached_has_bits & 0x00000800u) {
+  if (cached_has_bits & 0x00001000u) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
       10, this->step(), output);
   }
 
   // optional uint64 contract_prepayment = 11;
-  if (cached_has_bits & 0x00002000u) {
+  if (cached_has_bits & 0x00004000u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(11, this->contract_prepayment(), output);
   }
 
@@ -6124,6 +6149,12 @@ void TxMessage::SerializeWithCachedSizes(
       14, this->contract_from(), output);
   }
 
+  // optional bytes sign = 15;
+  if (cached_has_bits & 0x00000100u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      15, this->sign(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -6140,7 +6171,7 @@ void TxMessage::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 version = 1;
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000800u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->version(), target);
   }
 
@@ -6159,12 +6190,12 @@ void TxMessage::SerializeWithCachedSizes(
   }
 
   // optional uint64 gas_limit = 4;
-  if (cached_has_bits & 0x00000100u) {
+  if (cached_has_bits & 0x00000200u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(4, this->gas_limit(), target);
   }
 
   // optional uint64 gas_price = 5;
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000400u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(5, this->gas_price(), target);
   }
 
@@ -6190,18 +6221,18 @@ void TxMessage::SerializeWithCachedSizes(
   }
 
   // optional uint64 amount = 9;
-  if (cached_has_bits & 0x00001000u) {
+  if (cached_has_bits & 0x00002000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(9, this->amount(), target);
   }
 
   // optional .shardora.pools.protobuf.StepType step = 10 [default = kNormalFrom];
-  if (cached_has_bits & 0x00000800u) {
+  if (cached_has_bits & 0x00001000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       10, this->step(), target);
   }
 
   // optional uint64 contract_prepayment = 11;
-  if (cached_has_bits & 0x00002000u) {
+  if (cached_has_bits & 0x00004000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(11, this->contract_prepayment(), target);
   }
 
@@ -6224,6 +6255,13 @@ void TxMessage::SerializeWithCachedSizes(
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         14, this->contract_from(), target);
+  }
+
+  // optional bytes sign = 15;
+  if (cached_has_bits & 0x00000100u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        15, this->sign(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -6301,7 +6339,14 @@ size_t TxMessage::ByteSizeLong() const {
     }
 
   }
-  if (_has_bits_[8 / 32] & 16128u) {
+  if (_has_bits_[8 / 32] & 32512u) {
+    // optional bytes sign = 15;
+    if (has_sign()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->sign());
+    }
+
     // optional uint64 gas_limit = 4;
     if (has_gas_limit()) {
       total_size += 1 +
@@ -6406,23 +6451,27 @@ void TxMessage::MergeFrom(const TxMessage& from) {
       contract_from_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.contract_from_);
     }
   }
-  if (cached_has_bits & 16128u) {
+  if (cached_has_bits & 32512u) {
     if (cached_has_bits & 0x00000100u) {
-      gas_limit_ = from.gas_limit_;
+      set_has_sign();
+      sign_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sign_);
     }
     if (cached_has_bits & 0x00000200u) {
-      gas_price_ = from.gas_price_;
+      gas_limit_ = from.gas_limit_;
     }
     if (cached_has_bits & 0x00000400u) {
-      version_ = from.version_;
+      gas_price_ = from.gas_price_;
     }
     if (cached_has_bits & 0x00000800u) {
-      step_ = from.step_;
+      version_ = from.version_;
     }
     if (cached_has_bits & 0x00001000u) {
-      amount_ = from.amount_;
+      step_ = from.step_;
     }
     if (cached_has_bits & 0x00002000u) {
+      amount_ = from.amount_;
+    }
+    if (cached_has_bits & 0x00004000u) {
       contract_prepayment_ = from.contract_prepayment_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -6468,6 +6517,8 @@ void TxMessage::InternalSwap(TxMessage* other) {
   contract_input_.Swap(&other->contract_input_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   contract_from_.Swap(&other->contract_from_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  sign_.Swap(&other->sign_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(gas_limit_, other->gas_limit_);
   swap(gas_price_, other->gas_price_);
