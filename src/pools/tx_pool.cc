@@ -320,7 +320,7 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
             uint64_t p100 = common::GetNthElement(latencys_us_, 1);
             uint64_t p0 = latencys_us_[0];
 
-            uint64_t sum;
+            uint64_t sum = 0;
             for (int i = 0; i < latencys_us_.size(); i++) {
                 sum += latencys_us_[i];
             }
