@@ -1,2 +1,2 @@
 # shardora
-Shardora: A Dynamic Blockchain Sharding Platform with Seamless Shards Reconfiguration
+Shardora: A Dynamic and Public Blockchain Sharding Platform with Seamless Shards Reconfiguration
