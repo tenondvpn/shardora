@@ -102,6 +102,7 @@ add_definitions(
 #   -DCLIENT_USE_UV
 #    -DMAKE_CLIENT_LIB
     #-DARMEABI_V7A
+	-DLATENCY
 )
 
 add_compile_options(-fPIC)

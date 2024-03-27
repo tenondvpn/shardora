@@ -13,12 +13,13 @@
 
 using namespace shardora;
 static bool global_stop = false;
-static const std::string kBroadcastIp = "127.0.0.1";
-static const uint16_t kBroadcastPort = 13004;
+static const std::string kBroadcastIp = "10.0.0.16";
+static const uint16_t kBroadcastPort = 13018;
+static const int shardnum = 3;
+static const int delayus = 380;
+static const bool multi_pool = false;
 
-static void SignalCallback(int sig_int) {
-    global_stop = true;
-}
+static void SignalCallback(int sig_int) { global_stop = true; }
 
 void SignalRegister() {
 #ifndef _WIN32
@@ -222,12 +223,13 @@ int tx_main(int argc, char** argv) {
 
     std::string gid = common::Random::RandomString(32);
     std::string prikey = common::Encode::HexDecode("b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708");
-    std::string to = common::Encode::HexDecode("d9ec5aff3001dece14e1f4a35a39ed506bd6274b");
+    std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
     uint32_t prikey_pos = 0;
     auto from_prikey = prikey;
     security->SetPrivateKey(from_prikey);
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
+    uint32_t step_num = 1000;
     for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
         uint64_t* gid_int = (uint64_t*)gid.data();
         gid_int[0] = pos;
@@ -258,18 +260,30 @@ int tx_main(int argc, char** argv) {
             1980,
             10000,
             1,
-            3);
+            shardnum);
         if (transport::TcpTransport::Instance()->Send(kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
         }
 
-        if (pos % 1000 == 0) {
+        if (multi_pool && pos % 1000 == 0) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
             usleep(10000);
         }
+
+
+        count++;
+        if (count == step_num) {
+            auto dur = common::TimeUtils::TimestampUs() - now_tm_us;
+            auto tps = step_num * 1000000 / dur;
+            std::cout << "tps: " << tps << std::endl;
+            now_tm_us = common::TimeUtils::TimestampUs();
+            count = 0;
+        }
+
+        usleep(delayus);
     }
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {

@@ -182,15 +182,26 @@ then
     TARGET=Debug
 fi
 
+# nobuild: no build & no genesis block
+# noblock: build & no genesis block
 NO_BUILD=0
 if [ -n $2 ] && [ $2 = "nobuild" ]
 then
     NO_BUILD="nobuild"
 fi
 
+if [ -n $2 ] && [ $2 = "noblock" ]
+then
+    NO_BUILD="noblock"
+fi
+
 if test $NO_BUILD = 0
 then
 	sh build.sh a $TARGET	
+elif test $NO_BUILD = "noblock"
+then
+	sh build.sh a $TARGET
+	sudo mv -f {datadir}/zjnodes/zjchain /tmp/
 else
 	sudo mv -f {datadir}/zjnodes/zjchain /tmp/
 fi
@@ -201,7 +212,7 @@ sudo cp -rf ./deploy {datadir}
 sudo cp ./fetch.sh {datadir}
 rm -rf {datadir}/zjnodes/*/zjchain {datadir}/zjnodes/*/core* {datadir}/zjnodes/*/log/* {datadir}/zjnodes/*/*db*
 
-if test $NO_BUILD = "nobuild"
+if [ $NO_BUILD = "nobuild" -o $NO_BUILD = "noblock" ]
 then
 	sudo rm -rf {datadir}/zjnodes/zjchain
 	sudo mv -f /tmp/zjchain {datadir}/zjnodes/

@@ -135,7 +135,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     gid_map_[tx_ptr->tx_info.gid()] = tx_ptr;
-#ifndef NDEBUG
+#ifdef LATENCY
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tx_count_tm_us_ == 0) {
         prev_tx_count_tm_us_ = now_tm_us;
@@ -149,7 +149,6 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     gid_start_time_map_[tx_ptr->tx_info.gid()] = common::TimeUtils::TimestampUs(); 
     oldest_timestamp_ = prio_map_.begin()->second->time_valid;
 #endif
-
     timeout_txs_.push(tx_ptr->tx_info.gid());
     return kPoolsSuccess;
 }
@@ -293,7 +292,7 @@ void TxPool::RemoveTx(const std::string& gid) {
 //         common::Encode::HexEncode(giter->second->gid).c_str(),
 //         common::Encode::HexEncode(giter->second->tx_hash).c_str());
     gid_map_.erase(giter);
-#ifndef NDEBUG
+#ifdef LATENCY    
     if (!prio_map_.empty()) {
         oldest_timestamp_ = prio_map_.begin()->second->time_valid;
     } else {
@@ -306,8 +305,7 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         auto& gid = tx_list[i].gid(); 
         RemoveTx(gid);
-
-#ifndef NDEBUG
+#ifdef LATENCY
         // 统计交易确认延迟
         auto now_tm = common::TimeUtils::TimestampUs();
         auto start_tm_iter = gid_start_time_map_.find(gid);
@@ -318,13 +316,11 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
             gid_start_time_map_.erase(gid);
         }
 
-        if (latencys_us_.size() > 1000) {
-            uint64_t p90 = common::GetNthElement(latencys_us_, 0.90);
-            uint64_t p95 = common::GetNthElement(latencys_us_, 0.95);
-            uint64_t p100 = common::GetNthElement(latencys_us_, 1);
+        if (latencys_us_.size() > 10) {
+            uint64_t p50 = common::GetNthElement(latencys_us_, 0.5);
             latencys_us_.clear();
         
-            ZJC_INFO("tx latency p90: %llu, p95: %llu, max: %llu", p90, p95, p100);
+            ZJC_INFO("tx latency p50: %llu", p50);
         }
 #endif
     }
