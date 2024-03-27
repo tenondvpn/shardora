@@ -46,7 +46,11 @@ then
 fi
 root=("r1" "r2" "r3")
 shard3=("s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_6" "s3_7" "s3_8" "s3_9" "s3_10" "s3_11" "s3_12" "s3_13" "s3_14" "s3_15" "s3_16" "s3_17" "s3_18" "s3_19" "s3_20")
-nodes=("r1" "r2" "r3" "s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_6" "s3_7" "s3_8" "s3_9" "s3_10" "s3_11" "s3_12" "s3_13" "s3_14" "s3_15" "s3_16" "s3_17" "s3_18" "s3_19" "s3_20")
+shard4=("s4_1" "s4_2" "s4_3" "s4_4" "s4_5" "s4_6" "s4_7" "s4_8" "s4_9" "s4_10" "s4_11" "s4_12" "s4_13" "s4_14" "s4_15" "s4_16" "s4_17" "s4_18" "s4_19" "s4_20")
+shard5=("s5_1" "s5_2" "s5_3" "s5_4" "s5_5" "s5_6" "s5_7" "s5_8" "s5_9" "s5_10" "s5_11" "s5_12" "s5_13" "s5_14" "s5_15" "s5_16" "s5_17" "s5_18" "s5_19" "s5_20")
+shard6=("s6_1" "s6_2" "s6_3" "s6_4" "s6_5" "s6_6" "s6_7" "s6_8" "s6_9" "s6_10" "s6_11" "s6_12" "s6_13" "s6_14" "s6_15" "s6_16" "s6_17" "s6_18" "s6_19" "s6_20")
+shard7=("s7_1" "s7_2" "s7_3" "s7_4" "s7_5" "s7_6" "s7_7" "s7_8" "s7_9" "s7_10" "s7_11" "s7_12" "s7_13" "s7_14" "s7_15" "s7_16" "s7_17" "s7_18" "s7_19" "s7_20")
+nodes=("r1" "r2" "r3" "s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_6" "s3_7" "s3_8" "s3_9" "s3_10" "s3_11" "s3_12" "s3_13" "s3_14" "s3_15" "s3_16" "s3_17" "s3_18" "s3_19" "s3_20" "s4_1" "s4_2" "s4_3" "s4_4" "s4_5" "s4_6" "s4_7" "s4_8" "s4_9" "s4_10" "s4_11" "s4_12" "s4_13" "s4_14" "s4_15" "s4_16" "s4_17" "s4_18" "s4_19" "s4_20" "s5_1" "s5_2" "s5_3" "s5_4" "s5_5" "s5_6" "s5_7" "s5_8" "s5_9" "s5_10" "s5_11" "s5_12" "s5_13" "s5_14" "s5_15" "s5_16" "s5_17" "s5_18" "s5_19" "s5_20" "s6_1" "s6_2" "s6_3" "s6_4" "s6_5" "s6_6" "s6_7" "s6_8" "s6_9" "s6_10" "s6_11" "s6_12" "s6_13" "s6_14" "s6_15" "s6_16" "s6_17" "s6_18" "s6_19" "s6_20" "s7_1" "s7_2" "s7_3" "s7_4" "s7_5" "s7_6" "s7_7" "s7_8" "s7_9" "s7_10" "s7_11" "s7_12" "s7_13" "s7_14" "s7_15" "s7_16" "s7_17" "s7_18" "s7_19" "s7_20")
 
 for node in "${nodes[@]}"; do
     mkdir -p "/root/xf/zjnodes/${node}/log"
@@ -71,6 +75,10 @@ if test $NO_BUILD = 0
 then
     cd /root/xf/zjnodes/zjchain && ./zjchain -U
     cd /root/xf/zjnodes/zjchain && ./zjchain -S 3 &
+    cd /root/xf/zjnodes/zjchain && ./zjchain -S 4 &
+    cd /root/xf/zjnodes/zjchain && ./zjchain -S 5 &
+    cd /root/xf/zjnodes/zjchain && ./zjchain -S 6 &
+    cd /root/xf/zjnodes/zjchain && ./zjchain -S 7 &
     wait
 fi
 
@@ -81,6 +89,26 @@ fi
 
 #for node in "${shard3[@]}"; do
 #	cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/${node}/db
+#done
+
+
+#for node in "${shard4[@]}"; do
+#	cp -rf /root/xf/zjnodes/zjchain/shard_db_4 /root/xf/zjnodes/${node}/db
+#done
+
+
+#for node in "${shard5[@]}"; do
+#	cp -rf /root/xf/zjnodes/zjchain/shard_db_5 /root/xf/zjnodes/${node}/db
+#done
+
+
+#for node in "${shard6[@]}"; do
+#	cp -rf /root/xf/zjnodes/zjchain/shard_db_6 /root/xf/zjnodes/${node}/db
+#done
+
+
+#for node in "${shard7[@]}"; do
+#	cp -rf /root/xf/zjnodes/zjchain/shard_db_7 /root/xf/zjnodes/${node}/db
 #done
 
 
