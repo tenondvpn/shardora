@@ -10,7 +10,7 @@
 #include "dht/dht_utils.h"
 #include "protos/network.pb.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace block {
     class AccountManager;
@@ -29,13 +29,12 @@ public:
         std::shared_ptr<security::Security>& security,
         dht::BootstrapResponseCallback boot_cb,
         dht::NewNodeJoinCallback node_join_cb);
-    virtual int Join(uint8_t thread_idx, dht::NodePtr& node);
+    virtual int Join(dht::NodePtr& node);
     virtual int Destroy();
     virtual bool CheckDestination(const std::string& des_dht_key, bool closest);
     virtual void HandleMessage(const transport::MessagePtr& msg);
     virtual bool IsUniversal() { return true; }
     void OnNewElectBlock(
-        uint8_t thread_idx,
         uint32_t sharding_id,
         uint64_t elect_height,
         common::MembersPtr& members,
@@ -53,7 +52,7 @@ private:
 
     void ProcessGetNetworkNodesRequest(const transport::MessagePtr& header);
     void ProcessGetNetworkNodesResponse(const transport::MessagePtr& header);
-    int AddNodeToUniversal(uint8_t thread_idx, dht::NodePtr& node);
+    int AddNodeToUniversal(dht::NodePtr& node);
 
     bool* universal_ids_{ nullptr };
     std::condition_variable wait_con_;
@@ -69,4 +68,4 @@ private:
 
 }  // namespace network
 
-}  //namespace zjchain
+}  //namespace shardora

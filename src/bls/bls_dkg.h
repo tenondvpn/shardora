@@ -29,7 +29,7 @@
 #include "security/security.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace bls {
 
@@ -52,6 +52,8 @@ public:
         common::MembersPtr& members,
         std::shared_ptr<TimeBlockItem>& latest_timeblock_info);
     void HandleMessage(const transport::MessagePtr& header);
+    bool CheckBlsMessageValid(transport::MessagePtr& msg_ptr);
+
     uint64_t elect_hegiht() {
         return elect_hegiht_;
     }
@@ -73,7 +75,7 @@ public:
 
     void Destroy();
 
-    void TimerMessage(uint8_t thread_idx);
+    void TimerMessage();
 
 private:
     void HandleVerifyBroadcast(const transport::MessagePtr& header);
@@ -81,22 +83,22 @@ private:
     void HandleCheckVerifyReq(const transport::MessagePtr& header);
     void HandleCheckSwapKeyReq(const transport::MessagePtr& header);
     bool IsSignValid(const transport::MessagePtr& msg_ptr, std::string* msg_hash);
-    void BroadcastVerfify(uint8_t thread_idx);
-    void SwapSecKey(uint8_t thread_idx);
-    void FinishBroadcast(uint8_t thread_idx);
+    void BroadcastVerfify();
+    void SwapSecKey();
+    void FinishBroadcast();
     void CreateContribution(uint32_t valid_n, uint32_t valid_t);
     void CreateDkgMessage(transport::MessagePtr& msg_ptr);
-    void BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap);
+    void BroadcastFinish(const common::Bitmap& bitmap);
     void CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* seckey_len);
-    void CheckVerifyAllValid(uint8_t thread_idx);
-    void SendGetVerifyInfo(uint8_t thread_idx, int32_t index);
-    void CheckSwapKeyAllValid(uint8_t thread_idx);
-    void SendGetSwapKey(uint8_t thread_idx, int32_t index);
+    void CheckVerifyAllValid();
+    void SendGetVerifyInfo(int32_t index);
+    void CheckSwapKeyAllValid();
+    void SendGetSwapKey(int32_t index);
     libff::alt_bn128_G2 GetVerifyG2FromDb(uint32_t first_index, uint32_t* changed_idx);
     void DumpLocalPrivateKey();
     bool VerifySekkeyValid(uint32_t peer_index, const libff::alt_bn128_Fr& seckey);
     bool CheckRecomputeG2s(const std::string& id, bls::protobuf::JoinElectBlsInfo& verfy_final_vals);
-    void PopBlsMessage(uint8_t thread_idx);
+    void PopBlsMessage();
     void HandleBlsMessage(const transport::MessagePtr& msg_ptr);
 
     bool IsVerifyBrdPeriod() {
@@ -187,4 +189,4 @@ private:
 
 };  // namespace bls
 
-};  // namespace zjchain
+};  // namespace shardora

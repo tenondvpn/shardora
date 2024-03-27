@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package zjchain.vss.protobuf;
+package shardora.vss.protobuf;
 
 message VssMessage {
 	optional uint64 random_hash = 1;

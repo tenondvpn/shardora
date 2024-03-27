@@ -9,7 +9,7 @@
 #include "network/network_utils.h"
 #include "transport/processor.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace network {
 
@@ -18,7 +18,8 @@ Route* Route::Instance() {
     return &ins;
 }
 
-void Route::Init() {
+void Route::Init(std::shared_ptr<security::Security> sec_ptr) {
+    sec_ptr_ = sec_ptr;
     broadcast_queue_ = new BroadcastQueue[common::kMaxThreadCount];
     RegisterMessage(
             common::kDhtMessage,
@@ -29,8 +30,7 @@ void Route::Init() {
     broadcast_ = std::make_shared<broadcast::FilterBroadcast>();
     broadcast_thread_ = std::make_shared<std::thread>(std::bind(
         &Route::Broadcasting, 
-        this, 
-        common::GlobalInfo::Instance()->now_valid_thread_index()));
+        this));
 }
 
 void Route::Destroy() {
@@ -62,10 +62,11 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
 
     if (dht_ptr != nullptr) {
         if (message.has_broadcast()) {
+            auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
             assert(message.broadcast().bloomfilter_size() < 64);
 //             broadcast_->Broadcasting(msg_ptr->thread_idx, dht_ptr, msg_ptr);
-            ZJC_DEBUG("0 broadcast: %lu, now size: %u", msg_ptr->header.hash64(), broadcast_queue_[msg_ptr->thread_idx].size());
-            broadcast_queue_[msg_ptr->thread_idx].push(msg_ptr);
+            ZJC_DEBUG("0 broadcast: %lu, now size: %u", msg_ptr->header.hash64(), broadcast_queue_[thread_idx].size());
+            broadcast_queue_[thread_idx].push(msg_ptr);
             broadcast_con_.notify_one();
         } else {
             dht_ptr->SendToClosestNode(msg_ptr);
@@ -84,7 +85,7 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
 
 void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
     auto& header = header_ptr->header;
-    if (header.type() >= common::kLegoMaxMessageTypeCount) {
+    if (header.type() >= common::kMaxMessageTypeCount) {
         return;
     }
 
@@ -99,24 +100,92 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
         return;
     }
 
-    auto dht = GetDht(header.des_dht_key());
-    if (!dht) {
+    auto dht_ptr = GetDht(header.des_dht_key());
+    if (!dht_ptr) {
         RouteByUniversal(header_ptr);
         return;
+    }
+
+    if (header.type() == common::kPoolsMessage) {
+        if (!CheckPoolsMessage(header_ptr, dht_ptr)) {
+            return;
+        }
     }
 
     if (header.has_broadcast()) {
 //         Broadcast(header_ptr->thread_idx, header_ptr);
         auto tmp_ptr = std::make_shared<transport::TransportMessage>(*header_ptr);
-        // ZJC_INFO("====5 broadcast t: %lu, hash: %lu, now size: %u", header_ptr->thread_idx, header_ptr->header.hash64(), broadcast_queue_[header_ptr->thread_idx].size());
-        broadcast_queue_[header_ptr->thread_idx].push(tmp_ptr);
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        // ZJC_INFO("====5 broadcast t: %lu, hash: %lu, now size: %u", thread_idx, header_ptr->header.hash64(), broadcast_queue_[thread_idx].size());
+        broadcast_queue_[thread_idx].push(tmp_ptr);
         broadcast_con_.notify_one();
     }
 
     message_processor_[header.type()](header_ptr);
 }
 
-void Route::Broadcasting(uint8_t thread_idx) {
+bool Route::CheckPoolsMessage(const transport::MessagePtr& header_ptr, dht::BaseDhtPtr dht_ptr) {
+    ZJC_DEBUG("pools message check route coming.");
+    auto& header = header_ptr->header;
+    if (header.has_broadcast()) {
+        assert(false);
+        ZJC_DEBUG("pools message check route coming has broadcast.");
+        return false;
+    }
+
+    if (header_ptr->header.has_sync_heights()) {
+        return true;
+    }
+
+    if (header_ptr->address_info == nullptr || header_ptr->msg_hash.empty()) {
+        ZJC_FATAL("pools message must verify signature and has address info.");
+        return false;
+    }
+
+    // TODO: check is this node tx message or route to nearest consensus node
+    if (header_ptr->address_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+        RouteByUniversal(header_ptr);
+        ZJC_DEBUG("pools message check route coming network invalid.");
+        return false;
+    }
+
+    auto members = all_shard_members_[common::GlobalInfo::Instance()->network_id()];
+    if (members == nullptr) {
+        dht_ptr->SendToClosestNode(header_ptr);
+        ZJC_DEBUG("pools message check route coming no members.");
+        return false;
+    }
+
+    auto store_member_index = common::Hash::Hash32(header_ptr->msg_hash) % members->size();
+    if ((*members)[store_member_index]->id != sec_ptr_->GetAddress()) {
+        dht::DhtKeyManager dht_key(
+            header_ptr->address_info->sharding_id(), 
+            (*members)[store_member_index]->id);
+        header.set_des_dht_key(dht_key.StrKey());
+        dht_ptr->SendToClosestNode(header_ptr);
+        ZJC_DEBUG("pools message check route coming not this node.");
+        return false;
+    }
+
+    ZJC_DEBUG("pools message check route coming success this node.");
+    return true;
+}
+
+void Route::OnNewElectBlock(
+        uint32_t sharding_id,
+        uint64_t elect_height,
+        common::MembersPtr& members,
+        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
+    if (elect_height <= latest_elect_height_[sharding_id]) {
+        return;
+    }
+
+    latest_elect_height_[sharding_id] = elect_height;
+    all_shard_members_[sharding_id] = members;
+}
+
+void Route::Broadcasting() {
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     while (!destroy_) {
         bool has_data = false;
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
@@ -126,7 +195,7 @@ void Route::Broadcasting(uint8_t thread_idx) {
                     break;
                 }
             
-                Broadcast(thread_idx, msg_ptr);
+                Broadcast(msg_ptr);
                 if (!has_data) {
                     has_data = true;
                 }
@@ -152,7 +221,7 @@ void Route::HandleDhtMessage(const transport::MessagePtr& header_ptr) {
 }
 
 void Route::RegisterMessage(uint32_t type, transport::MessageProcessor proc) {
-    if (type >= common::kLegoMaxMessageTypeCount) {
+    if (type >= common::kMaxMessageTypeCount) {
         return;
     }
 
@@ -167,7 +236,7 @@ void Route::RegisterMessage(uint32_t type, transport::MessageProcessor proc) {
 }
 
 void Route::UnRegisterMessage(uint32_t type) {
-    if (type >= common::kLegoMaxMessageTypeCount) {
+    if (type >= common::kMaxMessageTypeCount) {
         return;
     }
 
@@ -175,14 +244,13 @@ void Route::UnRegisterMessage(uint32_t type) {
 }
 
 Route::Route() {
-    Init();
 }
 
 Route::~Route() {
     Destroy();
 }
 
-void Route::Broadcast(uint8_t thread_idx, const transport::MessagePtr& msg_ptr) {
+void Route::Broadcast(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     if (!header.has_broadcast() || !header.has_des_dht_key()) {
         return;
@@ -211,7 +279,7 @@ void Route::Broadcast(uint8_t thread_idx, const transport::MessagePtr& msg_ptr) 
     }
 
     assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
-    broadcast_->Broadcasting(thread_idx, des_dht, msg_ptr);
+    broadcast_->Broadcasting(des_dht, msg_ptr);
 }
 
 dht::BaseDhtPtr Route::GetDht(const std::string& dht_key) {
@@ -243,4 +311,4 @@ void Route::RouteByUniversal(const transport::MessagePtr& msg_ptr) {
 
 }  // namespace network
 
-}  // namespace zjchain
+}  // namespace shardora

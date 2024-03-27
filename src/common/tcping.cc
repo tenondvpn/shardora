@@ -20,7 +20,7 @@
 #include <netdb.h>
 #endif
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -116,4 +116,4 @@ int RemoteReachable(const std::string& ip, uint16_t port, bool* reachable) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

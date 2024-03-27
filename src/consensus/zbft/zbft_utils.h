@@ -16,7 +16,7 @@
 #include "protos/block.pb.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -143,7 +143,6 @@ struct BftMessageInfo {
 };
 
 typedef std::function<void(
-    uint8_t thread_idx,
     std::shared_ptr<block::protobuf::Block>& block,
     db::DbWriteBatch& db_batch)> BlockCacheCallback;
 
@@ -161,4 +160,4 @@ bool IsShardSuperSingleBlockTx(uint32_t tx_type);
 
 }  // namespace consensus
 
-}  //namespace zjchain
+}  //namespace shardora

@@ -1,11 +1,10 @@
 #include "consensus/zbft/join_elect_tx_item.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
 int JoinElectTxItem::HandleTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
@@ -15,9 +14,8 @@ int JoinElectTxItem::HandleTx(
     // gas just consume by from
     uint64_t from_balance = 0;
     uint64_t to_balance = 0;
-    auto& from = msg_ptr->address_info->addr();
-    int balance_status = GetTempAccountBalance(
-        thread_idx, from, acc_balance_map, &from_balance);
+    auto& from = address_info->addr();
+    int balance_status = GetTempAccountBalance(from, acc_balance_map, &from_balance);
     if (balance_status != kConsensusSuccess) {
         block_tx.set_status(balance_status);
         // will never happen
@@ -29,7 +27,7 @@ int JoinElectTxItem::HandleTx(
         gas_used = consensus::kJoinElectGas;
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // TODO(): check key exists and reserve gas
-            gas_used += (block_tx.storages(i).key().size() + msg_ptr->header.tx_proto().value().size()) *
+            gas_used += (block_tx.storages(i).key().size() + tx_info.value().size()) *
                 consensus::kKeyValueStorageEachBytes;
             if (block_tx.storages(i).key() == protos::kJoinElectVerifyG2) {
                 std::string val;
@@ -44,7 +42,7 @@ int JoinElectTxItem::HandleTx(
 
                 if (join_info.shard_id() != network::kRootCongressNetworkId) {
                     if (join_info.shard_id() != common::GlobalInfo::Instance()->network_id() ||
-                            join_info.shard_id() != msg_ptr->address_info->sharding_id()) {
+                            join_info.shard_id() != address_info->sharding_id()) {
                         block_tx.set_status(consensus::kConsensusError);
                         ZJC_DEBUG("shard error: %lu", join_info.shard_id());
                         break;
@@ -114,4 +112,4 @@ int JoinElectTxItem::HandleTx(
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

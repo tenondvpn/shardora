@@ -4,7 +4,7 @@
 #include "elect/elect_manager.h"
 #include "network/network_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -147,4 +147,4 @@ bool IsShardSingleBlockTx(uint32_t tx_type) {
 
 }  // namespace consensus
 
-}  //namespace zjchain
+}  //namespace shardora

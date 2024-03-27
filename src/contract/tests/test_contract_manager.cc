@@ -15,7 +15,7 @@
 #include "security/ecdsa/ecdsa.h"
 #include "zjcvm/zjcvm_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace contract {
 
@@ -714,4 +714,4 @@ TEST_F(TestContractManager, blake2compressionFail) {
 
 }  // namespace bignum
 
-}  // namespace zjchain
+}  // namespace shardora

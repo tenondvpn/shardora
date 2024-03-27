@@ -5,10 +5,9 @@
 #include <atomic>
 #include <chrono>
 #include <mutex>
+#include <set>
 #include <unordered_set>
 #include <vector>
-#include <set>
-#include <deque>
 #include <queue>
 
 #include "common/bloom_filter.h"
@@ -25,7 +24,7 @@
 #include "pools/height_tree_level.h"
 #include "sync/key_value_sync.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
 
@@ -45,14 +44,25 @@ public:
         std::shared_ptr<sync::KeyValueSync>& kv_sync);
     int AddTx(TxItemPtr& tx_ptr);
     void GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count);
+    void GetTx(
+        const std::map<std::string, pools::TxItemPtr>& invalid_txs, 
+        zbft::protobuf::TxBft* txbft, 
+        uint32_t count);
     void TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
     void TxRecover(std::map<std::string, TxItemPtr>& txs);
     void CheckTimeoutTx();
-    uint32_t SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms);
+    uint32_t SyncMissingBlocks(uint64_t now_tm_ms);
     void RemoveTx(const std::string& gid);
 
+    void ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
+        for (uint32_t i = 0; i < txs.size(); ++i) {
+            txs[i]->is_consensus_add_tx = true;
+            consensus_tx_map_[txs[i]->unique_tx_hash] = txs[i];
+        }
+    }
+
     uint32_t tx_size() const {
-        return prio_map_.size();
+        return prio_map_.size() + consensus_tx_map_.size() + universal_prio_map_.size();
     }
 
     uint64_t oldest_timestamp() const {
@@ -68,12 +78,12 @@ public:
     }
 
     std::shared_ptr<consensus::WaitingTxsItem> GetTx(
-            const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
+            const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
             std::vector<uint8_t>* invalid_txs) {
         auto txs_items = std::make_shared<consensus::WaitingTxsItem>();
         auto& tx_map = txs_items->txs;
-        for (int32_t i = 0; i < tx_hash_list.size(); ++i) {
-            auto& txhash = tx_hash_list[i];
+        for (int32_t i = 0; i < txs.size(); ++i) {
+            auto txhash = "";  // txs[i].txhash();
             auto iter = gid_map_.find(txhash);
             if (iter == gid_map_.end()) {
                 ZJC_INFO("failed get tx %u, %s", pool_index_, common::Encode::HexEncode(txhash).c_str());
@@ -193,7 +203,6 @@ public:
     }
 
     uint64_t UpdateLatestInfo(
-            uint8_t thread_idx,
             uint64_t height,
             const std::string& hash,
             const std::string& prehash,
@@ -239,7 +248,7 @@ public:
                 prev_synced_height_ = synced_height_;
             }
         } else {
-            SyncBlock(thread_idx);
+            SyncBlock();
         }
 
         ZJC_DEBUG("pool index: %d, new height: %lu, new synced height: %lu, prev_synced_height_: %lu, to_sync_max_height_: %lu, latest height: %lu",
@@ -256,7 +265,7 @@ public:
         return false;
     }
 
-    void SyncBlock(uint8_t thread_idx) {
+    void SyncBlock() {
         if (height_tree_ptr_ == nullptr) {
             return;
         }
@@ -276,7 +285,6 @@ public:
                 ++prev_synced_height_) {
             if (!height_tree_ptr_->Valid(prev_synced_height_ + 1)) {
                 kv_sync_->AddSyncHeight(
-                    thread_idx,
                     net_id,
                     pool_index_,
                     prev_synced_height_ + 1,
@@ -362,7 +370,7 @@ private:
     std::vector<uint64_t> latencys_us_;
     std::queue<std::string> timeout_txs_;
     std::queue<std::string> timeout_remove_txs_;
-    common::LimitHashSet<std::string> removed_gid_{ 10240 };
+    common::LimitHashSet<std::string> removed_gid_{ 102400 };
     std::map<std::string, TxItemPtr> prio_map_;
     std::map<std::string, TxItemPtr> universal_prio_map_;
     uint64_t latest_height_ = common::kInvalidUint64;
@@ -385,10 +393,11 @@ private:
     std::map<uint64_t, std::string> checked_height_with_prehash_;
     volatile uint64_t oldest_timestamp_ = 0;
     uint64_t prev_tx_count_tm_us_ = 0;
+    std::map<std::string, TxItemPtr> consensus_tx_map_;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };
 
 }  // namespace pools
 
-}  // namespace zjchain
+}  // namespace shardora

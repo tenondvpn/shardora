@@ -2,7 +2,9 @@
 
 #include <functional>
 
-namespace zjchain {
+#include "common/global_info.h"
+
+namespace shardora {
 
 namespace http {
 
@@ -32,6 +34,7 @@ HttpClient::~HttpClient() {
 }
 
 void HttpClient::Start() {
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     while (!destroy_) {
         event_base_loop(evbase_, EVLOOP_NO_EXIT_ON_EMPTY);
         std::this_thread::sleep_for(std::chrono::microseconds(100000l));
@@ -73,4 +76,4 @@ int32_t HttpClient::Request(const char* ip, uint16_t port, const std::string& ms
 
 };  // namespace http
 
-};  // namespace zjchain
+};  // namespace shardora

@@ -9,7 +9,7 @@
 #include "security/security.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace contract {
 
@@ -32,4 +32,4 @@ private:
 
 }  // namespace contract
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -5,7 +5,7 @@
 #include "common/fixed_queue.h"
 #include "common/hash.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -19,6 +19,7 @@ class UniqueMap {
 
 public:
     explicit UniqueMap() {
+        ZJC_FATAL("Code is obsolete and unavailable");
         buckets_ = new common::FixedQueue<Item*, EachBucketSize>[BucketSize];
     }
 
@@ -174,4 +175,4 @@ private:
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

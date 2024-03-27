@@ -8,7 +8,7 @@
 #include "bls/bls_utils.h"
 #include "security/security.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace bls {
 
@@ -65,6 +65,7 @@ public:
     static int GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g1_hash);
     int AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
 private:
     void HandleFinish(const transport::MessagePtr& msg_ptr);
@@ -88,11 +89,12 @@ private:
         BlsFinishItemPtr& finish_item,
         std::vector<libff::alt_bn128_G1>& all_signs,
         std::vector<size_t>& idx_vec);
-    void TimerMessage(uint8_t thread_idx);
+    void TimerMessage();
     void ResetLeaders(
         const common::MembersPtr& members,
         elect::protobuf::PrevMembers* prev_members);
-    void PopFinishMessage(uint8_t thread_idx);
+    void PopFinishMessage();
+    int CheckFinishMessageValid(const transport::MessagePtr& msg_ptr);
 
     std::shared_ptr<bls::BlsDkg> waiting_bls_{ nullptr };
     uint64_t max_height_{ common::kInvalidUint64 };
@@ -112,4 +114,4 @@ private:
 
 };  // namespace bls
 
-};  // namespace zjchain
+};  // namespace shardora

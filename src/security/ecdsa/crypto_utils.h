@@ -2,7 +2,7 @@
 
 #include "security/security_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace security {
 
@@ -23,4 +23,4 @@ static const uint32_t kSignatureSize = 65u;
 
 }  // namespace security
 
-}  // namespace zjchain
+}  // namespace shardora

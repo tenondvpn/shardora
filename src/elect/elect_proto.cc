@@ -14,7 +14,7 @@
 #include "security/security.h"
 #include "transport/tcp_transport.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace elect {
 
@@ -118,4 +118,4 @@ bool ElectProto::CreateWaitingHeartbeat(
 
 }  // namespace elect
 
-}  // namespace zjchain
+}  // namespace shardora

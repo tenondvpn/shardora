@@ -11,7 +11,7 @@
 #include "protos/transport.pb.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace block {
 
@@ -122,4 +122,4 @@ private:
 
 }  // namespace block
 
-}  // namespace zjchain
+}  // namespace shardora

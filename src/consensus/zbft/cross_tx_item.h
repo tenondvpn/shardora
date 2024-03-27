@@ -4,17 +4,18 @@
 #include "consensus/zbft/tx_item_base.h"
 #include "security/security.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
 class CrossTxItem : public TxItemBase {
 public:
     CrossTxItem(
-        const transport::MessagePtr& msg,
+        const pools::protobuf::TxMessage& msg,
         std::shared_ptr<block::AccountManager>& account_mgr,
-        std::shared_ptr<security::Security>& sec_ptr)
-        : TxItemBase(msg, account_mgr, sec_ptr) {}
+        std::shared_ptr<security::Security>& sec_ptr,
+        protos::AddressInfoPtr& addr_info)
+        : TxItemBase(msg, account_mgr, sec_ptr, addr_info) {}
     virtual ~CrossTxItem() {}
 
 private:
@@ -23,4 +24,4 @@ private:
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

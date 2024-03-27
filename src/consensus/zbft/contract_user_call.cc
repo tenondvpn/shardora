@@ -2,12 +2,11 @@
 
 #include "zjcvm/execution.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
 int ContractUserCall::HandleTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
@@ -17,9 +16,8 @@ int ContractUserCall::HandleTx(
     // gas just consume by from
     uint64_t from_balance = 0;
     uint64_t to_balance = 0;
-    auto& from = msg_ptr->address_info->addr();
-    int balance_status = GetTempAccountBalance(
-        thread_idx, from, acc_balance_map, &from_balance);
+    auto& from = address_info->addr();
+    int balance_status = GetTempAccountBalance(from, acc_balance_map, &from_balance);
     if (balance_status != kConsensusSuccess) {
         block_tx.set_status(balance_status);
         // will never happen
@@ -31,7 +29,7 @@ int ContractUserCall::HandleTx(
         gas_used = consensus::kTransferGas;
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // TODO(): check key exists and reserve gas
-            gas_used += (block_tx.storages(i).key().size() + msg_ptr->header.tx_proto().value().size()) *
+            gas_used += (block_tx.storages(i).key().size() + tx_info.value().size()) *
                 consensus::kKeyValueStorageEachBytes;
         }
 
@@ -91,4 +89,4 @@ int ContractUserCall::HandleTx(
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

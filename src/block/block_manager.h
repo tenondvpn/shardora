@@ -20,7 +20,7 @@
 #include "transport/multi_thread.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools{
     class TxPoolManager;
@@ -45,20 +45,16 @@ public:
         DbBlockCallback new_block_callback,
         block::BlockAggValidCallback block_agg_valid_func);
     int NetworkNewBlock(
-        uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         const bool need_valid);
     // just for genesis create new block
     void GenesisNewBlock(
-        uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item);
     void OnTimeBlock(
-        uint8_t thread_idx,
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random);
     void ConsensusAddBlock(
-        uint8_t thread_idx,
         const BlockToDbItemPtr& block_item);
     int GetBlockWithHeight(
         uint32_t network_id,
@@ -66,7 +62,6 @@ public:
         uint64_t height,
         block::protobuf::Block& block_item);
     void NewBlockWithTx(
-        uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
@@ -90,14 +85,14 @@ public:
         cross_tx_cb_ = func;
     }
 
-    void CreateToTx(uint8_t thread_idx);
-    void CreateStatisticTx(uint8_t thread_idx);
+    void CreateToTx();
+    void CreateStatisticTx();
     void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members);
     pools::TxItemPtr GetToTx(uint32_t pool_index, bool leader);
     pools::TxItemPtr GetStatisticTx(uint32_t pool_index, bool leader);
     pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);
     pools::TxItemPtr GetCrossTx(uint32_t pool_index, bool leader);
-    void LoadLatestBlocks(uint8_t thread_idx);
+    void LoadLatestBlocks();
     // just genesis call
     void GenesisAddAllAccount(
         uint32_t des_sharding_id,
@@ -109,77 +104,64 @@ public:
                               db::DbWriteBatch& db_batch);
     void ChangeLeader(int32_t mod_num, common::BftMemberPtr& mem_ptr);
     bool ShouldStopConsensus();
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
 private:
-    void HandleAllNewBlock(uint8_t thread_idx);
+    void HandleAllNewBlock();
     bool AddBlockItemToCache(
-        uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
-    void ConsensusTimerMessage(uint8_t thread_idx);
+    void ConsensusTimerMessage();
     void HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool recreate);
     void HandleStatisticMessage(const transport::MessagePtr& msg_ptr);
-    void HandleAllConsensusBlocks(uint8_t thread_idx);
+    void HandleAllConsensusBlocks();
     void AddNewBlock(
-        uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBatch& db_batch);
     void HandleNormalToTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleStatisticTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleCrossTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleElectTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleLocalNormalToTx(
-        uint8_t thread_idx,
         const pools::protobuf::ToTxMessage& to_txs,
         uint32_t step,
         const std::string& heights_hash);
     void createConsensusLocalToTxs(
-        uint8_t thread_idx,
         std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map,
         const std::string& heights_hash);
     void createContractCreateByRootToTxs(
-        uint8_t thread_idx,
         std::vector<std::shared_ptr<localToTxInfo>> contract_create_tx_infos,
         const std::string& heights_hash);
     void HandleJoinElectTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void AddMiningToken(
         const std::string& block_hash,
-        uint8_t thread_idx,
         const elect::protobuf::ElectBlock& elect_block);
     void RootHandleNormalToTx(
-        uint8_t thread_idx,
         uint64_t height,
         pools::protobuf::ToTxMessage& to_txs,
         db::DbWriteBatch& db_batch);
     void HandleStatisticBlock(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         const pools::protobuf::ElectStatistic& elect_statistic,
         db::DbWriteBatch& db_batch);
     void RootCreateCrossTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         const pools::protobuf::ElectStatistic& elect_statistic,
@@ -188,7 +170,7 @@ private:
     void HandleToTxMessage();
     void HandleStatisticTxMessage();
     void AddWaitingCheckSignBlock(const std::shared_ptr<block::protobuf::Block>& block_ptr);
-    void CheckWaitingBlocks(uint8_t thread_idx, uint32_t shard, uint64_t elect_height);
+    void CheckWaitingBlocks(uint32_t shard, uint64_t elect_height);
 
     static const uint64_t kCreateToTxPeriodMs = 10000lu;
     static const uint64_t kRetryStatisticPeriod = 3000lu;
@@ -254,5 +236,5 @@ private:
 
 }  // namespace block
 
-}  // namespace zjchain
+}  // namespace shardora
 

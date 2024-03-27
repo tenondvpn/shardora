@@ -27,7 +27,7 @@ std::string kDBPath = "C:\\Windows\\TEMP\\rocksdb_simple_example";
 std::string kDBPath = "/tmp/rocksdb_simple_example";
 #endif
 
-namespace zjchain {
+namespace shardora {
 
 namespace db {
 
@@ -119,4 +119,4 @@ TEST_F(TestDbDirect, All) {
 
 }  // namespace db
 
-}  // namespace zjchain
+}  // namespace shardora

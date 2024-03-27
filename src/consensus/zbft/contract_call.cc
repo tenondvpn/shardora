@@ -2,12 +2,11 @@
 
 #include "zjcvm/execution.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
 void ContractCall::GetTempPerpaymentBalance(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& block_tx,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
@@ -15,7 +14,6 @@ void ContractCall::GetTempPerpaymentBalance(
     auto iter = acc_balance_map.find("pre_" + block_tx.from());
     if (iter == acc_balance_map.end()) {
         uint64_t from_balance = prepayment_->GetAddressPrepayment(
-            thread_idx,
             block.pool_index(),
             block_tx.to(),
             block_tx.from());
@@ -27,7 +25,6 @@ void ContractCall::GetTempPerpaymentBalance(
 }
 
 int ContractCall::HandleTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
@@ -36,7 +33,7 @@ int ContractCall::HandleTx(
     // gas just consume from 's prepayment
     ZJC_DEBUG("contract called now.");
     uint64_t from_balance = 0;
-    GetTempPerpaymentBalance(thread_idx, block, block_tx, acc_balance_map, &from_balance);
+    GetTempPerpaymentBalance(block, block_tx, acc_balance_map, &from_balance);
     if (from_balance <= kCallContractDefaultUseGas * block_tx.gas_price()) {
         block_tx.set_status(kConsensusOutOfGas);
         assert(false);
@@ -57,8 +54,7 @@ int ContractCall::HandleTx(
     }
 
     uint64_t to_balance = 0;
-    int balance_status = GetTempAccountBalance(
-        thread_idx, block_tx.to(), acc_balance_map, &to_balance);
+    int balance_status = GetTempAccountBalance(block_tx.to(), acc_balance_map, &to_balance);
     if (balance_status != kConsensusSuccess) {
         block_tx.set_status(balance_status);
         // will never happen
@@ -85,11 +81,11 @@ int ContractCall::HandleTx(
     if (block_tx.contract_input().size() >= protos::kContractBytesStartCode.size()) {
         evmc_result evmc_res = {};
         evmc::Result res{ evmc_res };
-        int call_res = ContractExcute(msg_ptr->address_info, to_balance, zjc_host, block_tx, &res);
+        int call_res = ContractExcute(address_info, to_balance, zjc_host, block_tx, &res);
         if (call_res != kConsensusSuccess || res.status_code != EVMC_SUCCESS) {
             block_tx.set_status(EvmcStatusToZbftStatus(res.status_code));
             ZJC_DEBUG("call contract failed, call_res: %d, evmc res: %d, bytes: %s, input: %s!",
-                call_res, res.status_code, common::Encode::HexEncode(msg_ptr->address_info->bytes_code()).c_str(),
+                call_res, res.status_code, common::Encode::HexEncode(address_info->bytes_code()).c_str(),
                 common::Encode::HexEncode(block_tx.contract_input()).c_str());
         }
 
@@ -104,7 +100,7 @@ int ContractCall::HandleTx(
         from_balance -= gas_used * block_tx.gas_price();
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // TODO(): check key exists and reserve gas
-            gas_used += (block_tx.storages(i).key().size() + msg_ptr->header.tx_proto().value().size()) *
+            gas_used += (block_tx.storages(i).key().size() + tx_info.value().size()) *
                 consensus::kKeyValueStorageEachBytes;
         }
 
@@ -398,4 +394,4 @@ int ContractCall::ContractExcute(
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

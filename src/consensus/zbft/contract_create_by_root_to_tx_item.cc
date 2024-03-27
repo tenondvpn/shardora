@@ -10,14 +10,13 @@
 #include <protos/tx_storage_key.h>
 #include <zjcvm/zjcvm_utils.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
 // 处理 ContractCreate 交易的 Local 部分（to 部分，已经过 root 分配 shard）
 // from 部分已经在 ContractUserCreateCall::HandleTx 处理完成
 int ContractCreateByRootToTxItem::HandleTx(
-		uint8_t thread_idx,
 		const block::protobuf::Block& block,
 		std::shared_ptr<db::DbWriteBatch>& db_batch,
 		zjcvm::ZjchainHost& zjc_host,
@@ -62,7 +61,7 @@ int ContractCreateByRootToTxItem::HandleTx(
 		common::Encode::HexEncode(block_tx.to()).c_str());
 	
 	// TODO 从 kv 中读取 cc tx info
-	auto contract_info = account_mgr_->GetAccountInfo(thread_idx, block_tx.to());
+	auto contract_info = account_mgr_->GetAccountInfo(block_tx.to());
 	if (contract_info != nullptr) {
 		ZJC_ERROR("contract addr already exsit, to: %s", common::Encode::HexEncode(block_tx.to()).c_str());
 		block_tx.set_status(kConsensusAccountExists);
@@ -119,7 +118,7 @@ int ContractCreateByRootToTxItem::HandleTx(
 		from_prepayment -= gas_used * block_tx.gas_price();
 		gas_used = 0;
 		for (int i = 0; i < block_tx.storages_size(); i++) {
-			gas_used += (block_tx.storages(i).key().size() + msg_ptr->header.tx_proto().value().size()) * consensus::kKeyValueStorageEachBytes;
+			gas_used += (block_tx.storages(i).key().size() + tx_info.value().size()) * consensus::kKeyValueStorageEachBytes;
 		}
 
 		if (block_tx.gas_limit() < gas_used) {
@@ -371,7 +370,7 @@ int ContractCreateByRootToTxItem::SaveContractCreateInfo(
 
 }; // namespace consensus
 
-}; // namespace zjchain
+}; // namespace shardora
 
 
 

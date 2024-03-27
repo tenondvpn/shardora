@@ -6,7 +6,7 @@
 #include "common/log.h"
 #include "common/utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace zjcvm {
 
@@ -49,7 +49,7 @@ inline static uint64_t EvmcBytes32ToUint64(const evmc_bytes32& bytes32) {
 
 }  // namespace zjcvm
 
-}  // namespace zjchain
+}  // namespace shardora
 
 #if __cplusplus
 extern "C" {

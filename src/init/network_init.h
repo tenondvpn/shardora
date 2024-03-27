@@ -26,7 +26,7 @@
 #include "vss/vss_manager.h"
 #include <yaml-cpp/node/node.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace init {
 
@@ -49,37 +49,34 @@ private:
     int GenesisCmd(common::ParserArgs& parser_arg, std::string& net_name);
     void GetNetworkNodesFromConf(const YAML::Node&, std::vector<GenisisNodeInfoPtr>&, std::vector<GenisisNodeInfoPtrVector>&);
     void AddBlockItemToCache(
-        uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);
     void InitLocalNetworkId();
     bool DbNewBlockCallback(
-        uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);
     void HandleTimeBlock(
-        uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleElectionBlock(
-        uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
-    void SendJoinElectTransaction(uint8_t thread_idx);
+    void SendJoinElectTransaction();
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void HandleAddrReq(const transport::MessagePtr& msg_ptr);
     void HandleAddrRes(const transport::MessagePtr& msg_ptr);
     void HandleLeaderPools(const transport::MessagePtr& msg_ptr);
-    void GetAddressShardingId(uint8_t thread_idx);
-    void RotationLeaderCallback(uint8_t thread_idx, const std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>>& invalid_pools);
+    void GetAddressShardingId();
+    void RotationLeaderCallback(const std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>>& invalid_pools);
     void CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req);
-    bool BlockBlsAggSignatureValid(uint8_t thread_idx, const block::protobuf::Block& block);
+    bool BlockBlsAggSignatureValid(const block::protobuf::Block& block);
     void BroadcastInvalidPools(
-        uint8_t thread_idx,
         std::shared_ptr<LeaderRotationInfo> leader_rotation,
         int32_t mod_num);
+    void RegisterFirewallCheck();
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
     static const uint32_t kInvalidPoolFactor = 50u;  // 50%
     static const uint32_t kMinValodPoolCount = 4u;  // 64 must finish all
@@ -106,7 +103,6 @@ private:
     std::shared_ptr<pools::ShardStatistic> shard_statistic_ = nullptr;
     http::HttpServer http_server_;
     HttpHandler http_handler_;
-    uint8_t main_thread_idx_ = 255;
     common::Tick init_tick_;
     common::Tick join_elect_tick_;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
@@ -122,4 +118,4 @@ private:
 
 }  // namespace init
 
-}  // namespace zjchain
+}  // namespace shardora

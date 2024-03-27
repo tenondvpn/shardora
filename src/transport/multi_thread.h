@@ -23,9 +23,10 @@
 #include "db/db.h"
 #include "protos/prefix_db.h"
 #include "protos/transport.pb.h"
+#include "security/security.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace transport {
 
@@ -35,7 +36,6 @@ class MultiThreadHandler;
 class ThreadHandler {
 public:
     ThreadHandler(
-        uint32_t thread_idx,
         MultiThreadHandler* msg_handler,
         std::condition_variable& wait_con,
         std::mutex& wait_mutex);
@@ -47,7 +47,6 @@ private:
 
     std::shared_ptr<std::thread> thread_{ nullptr };
     bool destroy_{ false };
-    uint32_t thread_idx_{ 0 };
     MultiThreadHandler* msg_handler_ = nullptr;
     std::condition_variable& wait_con_;
     std::mutex& wait_mutex_;
@@ -64,10 +63,21 @@ public:
     int Init(std::shared_ptr<db::Db>& db);
     void Start();
     void HandleMessage(MessagePtr& msg_ptr);
-    MessagePtr GetMessageFromQueue(uint32_t thread_idx);
+    MessagePtr GetMessageFromQueue(uint32_t thread_idx, bool);
     void Destroy();
     void NewHttpServer(MessagePtr& msg_ptr) {
         http_server_message_queue_.push(msg_ptr);
+    }
+
+    void AddFirewallCheckCallback(int32_t type, FirewallCheckCallback cb) {
+        assert(type < common::kMaxMessageTypeCount);
+        assert(firewall_checks_[type] == nullptr);
+        firewall_checks_[type] = cb;
+    }
+
+    void ThreadWaitNotify() {
+        std::unique_lock<std::mutex> lock(thread_wait_mutex_);
+        thread_wait_con_.notify_one();
     }
 
 private:
@@ -92,6 +102,10 @@ private:
     void CreateConsensusBlockMessage(
         std::shared_ptr<transport::TransportMessage>& new_msg_ptr,
         std::shared_ptr<block::protobuf::Block>& block_ptr);
+    bool IsFromMessageUnique(const std::string& from_ip, uint64_t msg_hash);
+    int CheckMessageValid(MessagePtr& msg_ptr);
+    int CheckSignValid(MessagePtr& msg_ptr);
+    int CheckDhtMessageValid(MessagePtr& msg_ptr);
 
     static const int kQueueObjectCount = 1024 * 1024;
 
@@ -112,10 +126,15 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::unordered_map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_check_block_map_[common::kInvalidPoolIndex];
     std::unordered_set<uint64_t> committed_heights_[common::kInvalidPoolIndex];
+    std::shared_ptr<security::Security> security_ = nullptr;
+    FirewallCheckCallback firewall_checks_[common::kMaxMessageTypeCount] = { nullptr };
+    common::LimitHashSet<uint64_t> from_unique_message_sets_{10240};
+    std::condition_variable thread_wait_con_;
+    std::mutex thread_wait_mutex_;
 
     DISALLOW_COPY_AND_ASSIGN(MultiThreadHandler);
 };
 
 }  // namespace transport
 
-}  // namespace zjchain
+}  // namespace shardora

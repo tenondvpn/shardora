@@ -3,8 +3,8 @@
 #include "common/string_utils.h"
 #include "tcp/tcp_client.h"
 
-using namespace zjchain;
-using namespace zjchain::tcp;
+using namespace shardora;
+using namespace shardora::tcp;
 
 int main(int argc, char* argv[]) {
     int32_t kThreadCount = 10;

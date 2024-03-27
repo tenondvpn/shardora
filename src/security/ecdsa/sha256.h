@@ -7,7 +7,7 @@
 #include "common/utils.h"
 #include "security/ecdsa/crypto_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace security {
 
@@ -56,4 +56,4 @@ private:
 
 }  // namespace security
 
-}  // namespace zjchain
+}  // namespace shardora

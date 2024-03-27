@@ -1,11 +1,14 @@
 #pragma once
 
+#include <condition_variable>
+#include <mutex>
+
 #include <evhtp/evhtp.h>
 #include <evhtp/internal.h>
 
 #include "http/http_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace http {
 
@@ -25,10 +28,12 @@ private:
     evhtp_t* htp_{ nullptr };
     std::thread* http_thread_{ nullptr };
     struct event* ev_sigint_ {nullptr};
+    std::condition_variable con_;
+    std::mutex mutex_;
 
     DISALLOW_COPY_AND_ASSIGN(HttpServer);
 };
 
 };  // namespace http
 
-};  // namespace zjchain
+};  // namespace shardora

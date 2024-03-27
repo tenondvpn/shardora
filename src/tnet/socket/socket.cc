@@ -5,7 +5,7 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace tnet {
 
@@ -278,4 +278,4 @@ int Socket::GetIpPort(std::string* ip, uint16_t* port) {
 
 }  // namespace tnet
 
-}  // namespace zjchain
+}  // namespace shardora

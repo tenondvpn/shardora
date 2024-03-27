@@ -12,7 +12,7 @@
 #include "contract/contract_alt_bn128_pairing_product.h"
 #include "contract/contract_blake2_compression.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace contract {
 
@@ -61,4 +61,4 @@ int ContractManager::call(
 
 }  // namespace contract
 
-}  // namespace zjchain
+}  // namespace shardora

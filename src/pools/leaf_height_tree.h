@@ -9,7 +9,7 @@
 #include "pools/tx_utils.h"
 #include "protos/prefix_db.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
 
@@ -88,4 +88,4 @@ typedef std::shared_ptr<LeafHeightTree> LeafHeightTreePtr;
 
 };  // namespace pools
 
-};  // namespace zjchain
+};  // namespace shardora

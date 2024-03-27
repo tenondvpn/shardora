@@ -10,7 +10,7 @@
 #define private public
 #include "db/db.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace db {
 
@@ -112,4 +112,4 @@ TEST_F(TestDb, All) {
 
 }  // namespace db
 
-}  // namespace zjchain
+}  // namespace shardora

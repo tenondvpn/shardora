@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package zjchain.dht.protobuf;
+package shardora.dht.protobuf;
 
 message BootstrapRequest {
     optional bytes pubkey = 1;

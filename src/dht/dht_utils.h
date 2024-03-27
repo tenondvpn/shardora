@@ -17,7 +17,7 @@
 #define DHT_WARN(fmt, ...) ZJC_WARN("[dht]" fmt, ## __VA_ARGS__)
 #define DHT_ERROR(fmt, ...) ZJC_ERROR("[dht]" fmt, ## __VA_ARGS__)
 
-namespace zjchain {
+namespace shardora {
 
 namespace dht {
 
@@ -106,7 +106,7 @@ typedef std::shared_ptr<Node> NodePtr;
 typedef std::function<void(
     BaseDht* dht,
     const protobuf::DhtMessage& dht_msg)> BootstrapResponseCallback;
-typedef std::function<int(uint8_t, NodePtr& node)> NewNodeJoinCallback;
+typedef std::function<int(NodePtr& node)> NewNodeJoinCallback;
 int DefaultDhtSignCallback(
     const std::string& peer_pubkey,
     const std::string& append_data,
@@ -116,4 +116,4 @@ int DefaultDhtSignCallback(
 
 }  // namespace dht
 
-}  // namespace zjchain
+}  // namespace shardora

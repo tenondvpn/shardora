@@ -6,7 +6,7 @@
 #include "pools/tx_pool_manager.h"
 #include <common/log.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -25,9 +25,9 @@ public:
     }
 
     std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
-            const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
+            const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
             std::vector<uint8_t>* invalid_txs) {
-        txs_items_ = pools_mgr_->GetTx(pool_index_, tx_hash_list, invalid_txs);
+        txs_items_ = pools_mgr_->GetTx(pool_index_, txs, invalid_txs);
         if (txs_items_ != nullptr && txs_items_->txs.empty()) {
             txs_items_ = nullptr;
         }
@@ -61,4 +61,4 @@ private:
 
 }  // namespace consensus
 
-}  // namespace zjchain
+}  // namespace shardora

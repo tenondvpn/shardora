@@ -7,7 +7,7 @@
 #include "common/hash.h"
 #include "common/encode.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -63,4 +63,4 @@ TEST_F(TestHash, Hash256) {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

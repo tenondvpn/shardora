@@ -21,7 +21,7 @@
 #include "security/security.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace block {
     class AccountManager;
@@ -46,17 +46,23 @@ public:
     void TxOver(
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
+    void TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs);
+    void PopTxs(uint32_t pool_index, bool pop_all);
+    void InitCrossPools();
+    void BftCheckInvalidGids(uint32_t pool_index, std::vector<std::shared_ptr<InvalidGidItem>>& items);
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
+    void GetTx(
+        uint32_t pool_index,
+        uint32_t count,
+        const std::map<std::string, pools::TxItemPtr>& invalid_txs,
+        zbft::protobuf::TxBft* txbft);
+    void ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs);
+
     void RemoveTx(uint32_t pool_index, const std::string& gid) {
         tx_pool_[pool_index].RemoveTx(gid);
     }
 
-    void TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs);
-    void PopTxs(uint32_t pool_index);
-    void InitCrossPools();
-    void BftCheckInvalidGids(uint32_t pool_index, std::vector<std::shared_ptr<InvalidGidItem>>& items);
-
     void OnNewCrossBlock(
-            uint8_t thread_idx,
             const std::shared_ptr<block::protobuf::Block>& block_item) {
         ZJC_DEBUG("new cross block coming net: %u, pool: %u, height: %lu",
             block_item->network_id(), block_item->pool_index(), block_item->height());
@@ -82,7 +88,7 @@ public:
             return;
         }
 
-        cross_pools_[index].UpdateLatestInfo(thread_idx, block_item->height());
+        cross_pools_[index].UpdateLatestInfo(block_item->height());
         ZJC_DEBUG("succcess update cross block latest info net: %u, pool: %u, height: %lu",
             block_item->network_id(), block_item->pool_index(), block_item->height());
     }
@@ -119,9 +125,9 @@ public:
 
     std::shared_ptr<consensus::WaitingTxsItem> GetTx(
             uint32_t pool_index,
-            const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
+            const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
             std::vector<uint8_t>* invalid_txs) {
-        return tx_pool_[pool_index].GetTx(tx_hash_list, invalid_txs);
+        return tx_pool_[pool_index].GetTx(txs, invalid_txs);
     }
 
     void RegisterCreateTxFunction(uint32_t type, CreateConsensusItemFunction func) {
@@ -140,6 +146,8 @@ public:
     uint64_t latest_timestamp(uint32_t pool_index) const {
         return tx_pool_[pool_index].latest_timestamp();
     }
+
+#ifdef ZJC_UNITTEST
     // just for test
     int AddTx(uint32_t pool_index, TxItemPtr& tx_ptr) {
         if (pool_index >= common::kInvalidPoolIndex) {
@@ -148,10 +156,10 @@ public:
 
         return tx_pool_[pool_index].AddTx(tx_ptr);
     }
+#endif
 
     // UpdateLatestInfo 当某个 pool 出块后，更新此 shard 的 pool_mgr 状态
     void UpdateLatestInfo(
-            uint8_t thread_idx,
             std::shared_ptr<block::protobuf::Block>& block,
             db::DbWriteBatch& db_batch) {
         uint64_t height = block->height();
@@ -174,7 +182,7 @@ public:
         pool_info.set_hash(hash);
         pool_info.set_timestamp(block->timestamp());
         // 更新对应 pool 的最新状态，主要是高度信息和哈希值
-        uint64_t synced_height = tx_pool_[pool_index].UpdateLatestInfo(thread_idx, height, hash, block->prehash(),block->timestamp());
+        uint64_t synced_height = tx_pool_[pool_index].UpdateLatestInfo(height, hash, block->prehash(),block->timestamp());
         pool_info.set_synced_height(synced_height);
         prefix_db_->SaveLatestPoolInfo(sharding_id, pool_index, pool_info, db_batch);
     }
@@ -202,6 +210,7 @@ public:
         return tx_pool_[pool_index].is_next_block_checked(height, hash);
     }
 
+
 private:
     void DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr);
     void HandleCreateContractTx(const transport::MessagePtr& msg_ptr);
@@ -210,21 +219,20 @@ private:
     void HandleContractExcute(const transport::MessagePtr& msg_ptr);
     void HandleElectTx(const transport::MessagePtr& msg_ptr);
     bool UserTxValid(const transport::MessagePtr& msg_ptr);
-    void ConsensusTimerMessage(uint8_t thread_idx);
-    void SyncPoolsMaxHeight(uint8_t thread_idx);
+    void ConsensusTimerMessage();
+    void SyncPoolsMaxHeight();
     void HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_ptr);
-    void SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms);
-    void SyncBlockWithMaxHeights(uint8_t thread_idx, uint32_t pool_idx, uint64_t height);
+    void SyncMinssingHeights(uint64_t now_tm_ms);
+    void SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height);
     void CheckLeaderValid(const std::vector<double>& factors, std::vector<int32_t>* invalid_pools);
     bool SaveNodeVerfiyVec(
         const std::string& id,
         const bls::protobuf::JoinElectInfo& join_info,
         std::string* new_hash);
-    void SyncCrossPool(uint8_t thread_idx);
+    void SyncCrossPool();
     void FlushHeightTree();
-    void PopPoolsMessage(uint8_t thread_idx);
+    void PopPoolsMessage();
     void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);
-    void HandleInvalidGids(const transport::MessagePtr& msg_ptr);
     void GetMinValidTxCount();
 
     static const uint32_t kPopMessageCountEachTime = 64000u;
@@ -282,10 +290,11 @@ private:
     uint64_t prev_show_tm_ms_ = 0;
     uint64_t prev_msgs_show_tm_ms_ = 0;
     std::weak_ptr<block::AccountManager> acc_mgr_;
+    volatile uint32_t now_max_tx_count_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };
 
 }  // namespace pools
 
-}  // namespace zjchain
+}  // namespace shardora

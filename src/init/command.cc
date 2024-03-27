@@ -26,7 +26,7 @@
 #include "network/network_utils.h"
 #include "init/init_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace init {
 
@@ -183,4 +183,4 @@ void Command::Help() {
 
 }  // namespace init
 
-}  // namespace zjchain
+}  // namespace shardora

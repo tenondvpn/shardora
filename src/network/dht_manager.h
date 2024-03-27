@@ -7,7 +7,7 @@
 #include "common/tick.h"
 #include "dht/base_dht.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace network {
 
@@ -20,7 +20,7 @@ public:
     void Init();
     void Destroy();
     void DropNode(const std::string& ip, uint16_t port);
-    void Join(uint8_t thread_idx, const dht::NodePtr& node);
+    void Join(const dht::NodePtr& node);
 
     uint32_t valid_count(uint32_t net_id) {
         auto dht_ptr = GetDht(net_id);
@@ -47,4 +47,4 @@ private:
 
 }  // namespace network
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -2,24 +2,26 @@
 
 #include "block/account_manager.h"
 #include "pools/tx_pool.h"
+#include "protos/pools.pb.h"
+#include "protos/prefix_db.h"
 #include "security/security.h"
-#include <protos/pools.pb.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
 class TxItemBase : public pools::TxItem {
 protected:
     TxItemBase(
-        const transport::MessagePtr& msg,
+        const pools::protobuf::TxMessage& tx,
         std::shared_ptr<block::AccountManager>& account_mgr,
-        std::shared_ptr<security::Security>& sec_ptr)
-        : pools::TxItem(msg), account_mgr_(account_mgr), sec_ptr_(sec_ptr) {}
+        std::shared_ptr<security::Security>& sec_ptr,
+        protos::AddressInfoPtr& addr_info)
+        : pools::TxItem(tx, addr_info), account_mgr_(account_mgr), sec_ptr_(sec_ptr) {}
+
     virtual ~TxItemBase() {}
 
     virtual int HandleTx(
-            uint8_t thread_idx,
             const block::protobuf::Block& block,
             std::shared_ptr<db::DbWriteBatch>& db_batch,
             zjcvm::ZjchainHost& zjc_host,
@@ -43,7 +45,8 @@ protected:
         if (tx_info.value().size() > 32) {
             auto hash = common::Hash::keccak256(tx_info.value());
             storage->set_val_hash(hash);
-            db_batch->Put(hash, tx_info.value());
+            auto& db_batch_tmp = *db_batch.get();
+            prefix_db_->SaveTemporaryKv(hash, tx_info.value(), db_batch_tmp);
         } else {
             storage->set_val_hash(tx_info.value());
         }
@@ -91,13 +94,12 @@ protected:
     }
 
     int GetTempAccountBalance(
-            uint8_t thread_idx,
             const std::string& id,
             std::unordered_map<std::string, int64_t>& acc_balance_map,
             uint64_t* balance) {
         auto iter = acc_balance_map.find(id);
         if (iter == acc_balance_map.end()) {
-            auto acc_info = account_mgr_->GetAccountInfo(thread_idx, id);
+            auto acc_info = account_mgr_->GetAccountInfo(id);
             if (acc_info == nullptr) {
                 ZJC_DEBUG("account addres not exists[%s]", common::Encode::HexEncode(id).c_str());
                 return consensus::kConsensusAccountNotExists;
@@ -123,11 +125,12 @@ protected:
 
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<security::Security> sec_ptr_ = nullptr;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 };
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora
 
 
 

@@ -30,7 +30,7 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fdht_2eproto ::google::protobuf
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fdht_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_TimerRequest;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fdht_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_RefreshNeighborsResponse;
 }  // namespace protobuf_protos_2fdht_2eproto
-namespace zjchain {
+namespace shardora {
 namespace dht {
 namespace protobuf {
 class BootstrapRequestDefaultTypeInternal {
@@ -85,17 +85,17 @@ class DhtMessageDefaultTypeInternal {
 } _DhtMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace dht
-}  // namespace zjchain
+}  // namespace shardora
 namespace protobuf_protos_2fdht_2eproto {
 static void InitDefaultsBootstrapRequest() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::dht::protobuf::_BootstrapRequest_default_instance_;
-    new (ptr) ::zjchain::dht::protobuf::BootstrapRequest();
+    void* ptr = &::shardora::dht::protobuf::_BootstrapRequest_default_instance_;
+    new (ptr) ::shardora::dht::protobuf::BootstrapRequest();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::dht::protobuf::BootstrapRequest::InitAsDefaultInstance();
+  ::shardora::dht::protobuf::BootstrapRequest::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<0> scc_info_BootstrapRequest =
@@ -105,11 +105,11 @@ static void InitDefaultsBootstrapResponse() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::dht::protobuf::_BootstrapResponse_default_instance_;
-    new (ptr) ::zjchain::dht::protobuf::BootstrapResponse();
+    void* ptr = &::shardora::dht::protobuf::_BootstrapResponse_default_instance_;
+    new (ptr) ::shardora::dht::protobuf::BootstrapResponse();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::dht::protobuf::BootstrapResponse::InitAsDefaultInstance();
+  ::shardora::dht::protobuf::BootstrapResponse::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<0> scc_info_BootstrapResponse =
@@ -119,11 +119,11 @@ static void InitDefaultsNodeInfo() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::dht::protobuf::_NodeInfo_default_instance_;
-    new (ptr) ::zjchain::dht::protobuf::NodeInfo();
+    void* ptr = &::shardora::dht::protobuf::_NodeInfo_default_instance_;
+    new (ptr) ::shardora::dht::protobuf::NodeInfo();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::dht::protobuf::NodeInfo::InitAsDefaultInstance();
+  ::shardora::dht::protobuf::NodeInfo::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<0> scc_info_NodeInfo =
@@ -133,11 +133,11 @@ static void InitDefaultsRefreshNeighborsRequest() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::dht::protobuf::_RefreshNeighborsRequest_default_instance_;
-    new (ptr) ::zjchain::dht::protobuf::RefreshNeighborsRequest();
+    void* ptr = &::shardora::dht::protobuf::_RefreshNeighborsRequest_default_instance_;
+    new (ptr) ::shardora::dht::protobuf::RefreshNeighborsRequest();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::dht::protobuf::RefreshNeighborsRequest::InitAsDefaultInstance();
+  ::shardora::dht::protobuf::RefreshNeighborsRequest::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<0> scc_info_RefreshNeighborsRequest =
@@ -147,11 +147,11 @@ static void InitDefaultsRefreshNeighborsResponse() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::dht::protobuf::_RefreshNeighborsResponse_default_instance_;
-    new (ptr) ::zjchain::dht::protobuf::RefreshNeighborsResponse();
+    void* ptr = &::shardora::dht::protobuf::_RefreshNeighborsResponse_default_instance_;
+    new (ptr) ::shardora::dht::protobuf::RefreshNeighborsResponse();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::dht::protobuf::RefreshNeighborsResponse::InitAsDefaultInstance();
+  ::shardora::dht::protobuf::RefreshNeighborsResponse::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<1> scc_info_RefreshNeighborsResponse =
@@ -162,11 +162,11 @@ static void InitDefaultsHeartbeatRequest() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::dht::protobuf::_HeartbeatRequest_default_instance_;
-    new (ptr) ::zjchain::dht::protobuf::HeartbeatRequest();
+    void* ptr = &::shardora::dht::protobuf::_HeartbeatRequest_default_instance_;
+    new (ptr) ::shardora::dht::protobuf::HeartbeatRequest();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::dht::protobuf::HeartbeatRequest::InitAsDefaultInstance();
+  ::shardora::dht::protobuf::HeartbeatRequest::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<0> scc_info_HeartbeatRequest =
@@ -176,11 +176,11 @@ static void InitDefaultsHeartbeatResponse() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::dht::protobuf::_HeartbeatResponse_default_instance_;
-    new (ptr) ::zjchain::dht::protobuf::HeartbeatResponse();
+    void* ptr = &::shardora::dht::protobuf::_HeartbeatResponse_default_instance_;
+    new (ptr) ::shardora::dht::protobuf::HeartbeatResponse();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::dht::protobuf::HeartbeatResponse::InitAsDefaultInstance();
+  ::shardora::dht::protobuf::HeartbeatResponse::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<0> scc_info_HeartbeatResponse =
@@ -190,11 +190,11 @@ static void InitDefaultsConnectReqeust() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::dht::protobuf::_ConnectReqeust_default_instance_;
-    new (ptr) ::zjchain::dht::protobuf::ConnectReqeust();
+    void* ptr = &::shardora::dht::protobuf::_ConnectReqeust_default_instance_;
+    new (ptr) ::shardora::dht::protobuf::ConnectReqeust();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::dht::protobuf::ConnectReqeust::InitAsDefaultInstance();
+  ::shardora::dht::protobuf::ConnectReqeust::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<0> scc_info_ConnectReqeust =
@@ -204,11 +204,11 @@ static void InitDefaultsTimerRequest() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::dht::protobuf::_TimerRequest_default_instance_;
-    new (ptr) ::zjchain::dht::protobuf::TimerRequest();
+    void* ptr = &::shardora::dht::protobuf::_TimerRequest_default_instance_;
+    new (ptr) ::shardora::dht::protobuf::TimerRequest();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::dht::protobuf::TimerRequest::InitAsDefaultInstance();
+  ::shardora::dht::protobuf::TimerRequest::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<0> scc_info_TimerRequest =
@@ -218,11 +218,11 @@ static void InitDefaultsDhtMessage() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::dht::protobuf::_DhtMessage_default_instance_;
-    new (ptr) ::zjchain::dht::protobuf::DhtMessage();
+    void* ptr = &::shardora::dht::protobuf::_DhtMessage_default_instance_;
+    new (ptr) ::shardora::dht::protobuf::DhtMessage();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::dht::protobuf::DhtMessage::InitAsDefaultInstance();
+  ::shardora::dht::protobuf::DhtMessage::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<8> scc_info_DhtMessage =
@@ -252,116 +252,116 @@ void InitDefaults() {
 ::google::protobuf::Metadata file_level_metadata[10];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::BootstrapRequest, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::BootstrapRequest, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::BootstrapRequest, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::BootstrapRequest, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::BootstrapRequest, pubkey_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::BootstrapRequest, public_ip_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::BootstrapRequest, public_port_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::BootstrapRequest, pubkey_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::BootstrapRequest, public_ip_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::BootstrapRequest, public_port_),
   0,
   1,
   2,
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::BootstrapResponse, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::BootstrapResponse, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::BootstrapResponse, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::BootstrapResponse, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::BootstrapResponse, pubkey_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::BootstrapResponse, public_ip_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::BootstrapResponse, public_port_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::BootstrapResponse, pubkey_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::BootstrapResponse, public_ip_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::BootstrapResponse, public_port_),
   0,
   1,
   2,
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::NodeInfo, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::NodeInfo, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::NodeInfo, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::NodeInfo, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::NodeInfo, public_ip_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::NodeInfo, public_port_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::NodeInfo, pubkey_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::NodeInfo, sharding_id_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::NodeInfo, id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::NodeInfo, public_ip_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::NodeInfo, public_port_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::NodeInfo, pubkey_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::NodeInfo, sharding_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::NodeInfo, id_),
   0,
   3,
   1,
   4,
   2,
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::RefreshNeighborsRequest, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::RefreshNeighborsRequest, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::RefreshNeighborsRequest, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::RefreshNeighborsRequest, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::RefreshNeighborsRequest, count_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::RefreshNeighborsRequest, bloomfilter_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::RefreshNeighborsRequest, pubkey_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::RefreshNeighborsRequest, public_ip_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::RefreshNeighborsRequest, public_port_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::RefreshNeighborsRequest, ids_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::RefreshNeighborsRequest, count_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::RefreshNeighborsRequest, bloomfilter_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::RefreshNeighborsRequest, pubkey_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::RefreshNeighborsRequest, public_ip_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::RefreshNeighborsRequest, public_port_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::RefreshNeighborsRequest, ids_),
   2,
   ~0u,
   0,
   1,
   3,
   ~0u,
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::RefreshNeighborsResponse, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::RefreshNeighborsResponse, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::RefreshNeighborsResponse, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::RefreshNeighborsResponse, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::RefreshNeighborsResponse, nodes_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::RefreshNeighborsResponse, nodes_),
   ~0u,
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::HeartbeatRequest, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::HeartbeatRequest, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::HeartbeatRequest, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::HeartbeatRequest, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::HeartbeatRequest, dht_key_hash_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::HeartbeatRequest, dht_key_hash_),
   0,
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::HeartbeatResponse, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::HeartbeatResponse, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::HeartbeatResponse, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::HeartbeatResponse, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::HeartbeatResponse, dht_key_hash_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::HeartbeatResponse, dht_key_hash_),
   0,
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::ConnectReqeust, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::ConnectReqeust, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::ConnectReqeust, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::ConnectReqeust, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::ConnectReqeust, pubkey_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::ConnectReqeust, is_response_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::ConnectReqeust, public_ip_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::ConnectReqeust, public_port_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::ConnectReqeust, id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::ConnectReqeust, pubkey_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::ConnectReqeust, is_response_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::ConnectReqeust, public_ip_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::ConnectReqeust, public_port_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::ConnectReqeust, id_),
   0,
   3,
   1,
   4,
   2,
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::TimerRequest, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::TimerRequest, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::TimerRequest, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::TimerRequest, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::TimerRequest, tm_milli_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::TimerRequest, tm_milli_),
   0,
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::DhtMessage, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::DhtMessage, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::DhtMessage, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::DhtMessage, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::DhtMessage, bootstrap_req_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::DhtMessage, bootstrap_res_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::DhtMessage, refresh_neighbors_req_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::DhtMessage, refresh_neighbors_res_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::DhtMessage, connect_req_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::DhtMessage, heartbeat_req_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::DhtMessage, heartbeat_res_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::DhtMessage, timer_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::DhtMessage, bootstrap_req_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::DhtMessage, bootstrap_res_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::DhtMessage, refresh_neighbors_req_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::DhtMessage, refresh_neighbors_res_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::DhtMessage, connect_req_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::DhtMessage, heartbeat_req_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::DhtMessage, heartbeat_res_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::dht::protobuf::DhtMessage, timer_),
   0,
   1,
   2,
@@ -372,29 +372,29 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   7,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 8, sizeof(::zjchain::dht::protobuf::BootstrapRequest)},
-  { 11, 19, sizeof(::zjchain::dht::protobuf::BootstrapResponse)},
-  { 22, 32, sizeof(::zjchain::dht::protobuf::NodeInfo)},
-  { 37, 48, sizeof(::zjchain::dht::protobuf::RefreshNeighborsRequest)},
-  { 54, 60, sizeof(::zjchain::dht::protobuf::RefreshNeighborsResponse)},
-  { 61, 67, sizeof(::zjchain::dht::protobuf::HeartbeatRequest)},
-  { 68, 74, sizeof(::zjchain::dht::protobuf::HeartbeatResponse)},
-  { 75, 85, sizeof(::zjchain::dht::protobuf::ConnectReqeust)},
-  { 90, 96, sizeof(::zjchain::dht::protobuf::TimerRequest)},
-  { 97, 110, sizeof(::zjchain::dht::protobuf::DhtMessage)},
+  { 0, 8, sizeof(::shardora::dht::protobuf::BootstrapRequest)},
+  { 11, 19, sizeof(::shardora::dht::protobuf::BootstrapResponse)},
+  { 22, 32, sizeof(::shardora::dht::protobuf::NodeInfo)},
+  { 37, 48, sizeof(::shardora::dht::protobuf::RefreshNeighborsRequest)},
+  { 54, 60, sizeof(::shardora::dht::protobuf::RefreshNeighborsResponse)},
+  { 61, 67, sizeof(::shardora::dht::protobuf::HeartbeatRequest)},
+  { 68, 74, sizeof(::shardora::dht::protobuf::HeartbeatResponse)},
+  { 75, 85, sizeof(::shardora::dht::protobuf::ConnectReqeust)},
+  { 90, 96, sizeof(::shardora::dht::protobuf::TimerRequest)},
+  { 97, 110, sizeof(::shardora::dht::protobuf::DhtMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::dht::protobuf::_BootstrapRequest_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::dht::protobuf::_BootstrapResponse_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::dht::protobuf::_NodeInfo_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::dht::protobuf::_RefreshNeighborsRequest_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::dht::protobuf::_RefreshNeighborsResponse_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::dht::protobuf::_HeartbeatRequest_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::dht::protobuf::_HeartbeatResponse_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::dht::protobuf::_ConnectReqeust_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::dht::protobuf::_TimerRequest_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::dht::protobuf::_DhtMessage_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::dht::protobuf::_BootstrapRequest_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::dht::protobuf::_BootstrapResponse_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::dht::protobuf::_NodeInfo_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::dht::protobuf::_RefreshNeighborsRequest_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::dht::protobuf::_RefreshNeighborsResponse_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::dht::protobuf::_HeartbeatRequest_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::dht::protobuf::_HeartbeatResponse_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::dht::protobuf::_ConnectReqeust_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::dht::protobuf::_TimerRequest_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::dht::protobuf::_DhtMessage_default_instance_),
 };
 
 void protobuf_AssignDescriptors() {
@@ -418,41 +418,41 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\020protos/dht.proto\022\024zjchain.dht.protobuf"
-      "\"J\n\020BootstrapRequest\022\016\n\006pubkey\030\001 \001(\014\022\021\n\t"
-      "public_ip\030\002 \001(\t\022\023\n\013public_port\030\003 \001(\005\"K\n\021"
-      "BootstrapResponse\022\016\n\006pubkey\030\001 \001(\014\022\021\n\tpub"
-      "lic_ip\030\002 \001(\t\022\023\n\013public_port\030\003 \001(\005\"c\n\010Nod"
-      "eInfo\022\021\n\tpublic_ip\030\001 \001(\014\022\023\n\013public_port\030"
-      "\002 \001(\005\022\016\n\006pubkey\030\003 \001(\014\022\023\n\013sharding_id\030\004 \001"
-      "(\005\022\n\n\002id\030\005 \001(\014\"\202\001\n\027RefreshNeighborsReque"
-      "st\022\r\n\005count\030\001 \001(\r\022\023\n\013bloomfilter\030\002 \003(\004\022\016"
-      "\n\006pubkey\030\003 \001(\014\022\021\n\tpublic_ip\030\004 \001(\t\022\023\n\013pub"
-      "lic_port\030\005 \001(\005\022\013\n\003ids\030\006 \003(\014\"I\n\030RefreshNe"
-      "ighborsResponse\022-\n\005nodes\030\001 \003(\0132\036.zjchain"
-      ".dht.protobuf.NodeInfo\"(\n\020HeartbeatReque"
-      "st\022\024\n\014dht_key_hash\030\001 \001(\004\")\n\021HeartbeatRes"
-      "ponse\022\024\n\014dht_key_hash\030\001 \001(\004\"i\n\016ConnectRe"
-      "qeust\022\016\n\006pubkey\030\001 \001(\014\022\023\n\013is_response\030\002 \001"
-      "(\010\022\021\n\tpublic_ip\030\003 \001(\t\022\023\n\013public_port\030\004 \001"
-      "(\005\022\n\n\002id\030\005 \001(\014\" \n\014TimerRequest\022\020\n\010tm_mil"
-      "li\030\001 \001(\004\"\225\004\n\nDhtMessage\022=\n\rbootstrap_req"
-      "\030\001 \001(\0132&.zjchain.dht.protobuf.BootstrapR"
-      "equest\022>\n\rbootstrap_res\030\002 \001(\0132\'.zjchain."
-      "dht.protobuf.BootstrapResponse\022L\n\025refres"
-      "h_neighbors_req\030\003 \001(\0132-.zjchain.dht.prot"
-      "obuf.RefreshNeighborsRequest\022M\n\025refresh_"
-      "neighbors_res\030\004 \001(\0132..zjchain.dht.protob"
-      "uf.RefreshNeighborsResponse\0229\n\013connect_r"
-      "eq\030\005 \001(\0132$.zjchain.dht.protobuf.ConnectR"
-      "eqeust\022=\n\rheartbeat_req\030\006 \001(\0132&.zjchain."
-      "dht.protobuf.HeartbeatRequest\022>\n\rheartbe"
-      "at_res\030\007 \001(\0132\'.zjchain.dht.protobuf.Hear"
-      "tbeatResponse\0221\n\005timer\030\010 \001(\0132\".zjchain.d"
-      "ht.protobuf.TimerRequest"
+      "\n\020protos/dht.proto\022\025shardora.dht.protobu"
+      "f\"J\n\020BootstrapRequest\022\016\n\006pubkey\030\001 \001(\014\022\021\n"
+      "\tpublic_ip\030\002 \001(\t\022\023\n\013public_port\030\003 \001(\005\"K\n"
+      "\021BootstrapResponse\022\016\n\006pubkey\030\001 \001(\014\022\021\n\tpu"
+      "blic_ip\030\002 \001(\t\022\023\n\013public_port\030\003 \001(\005\"c\n\010No"
+      "deInfo\022\021\n\tpublic_ip\030\001 \001(\014\022\023\n\013public_port"
+      "\030\002 \001(\005\022\016\n\006pubkey\030\003 \001(\014\022\023\n\013sharding_id\030\004 "
+      "\001(\005\022\n\n\002id\030\005 \001(\014\"\202\001\n\027RefreshNeighborsRequ"
+      "est\022\r\n\005count\030\001 \001(\r\022\023\n\013bloomfilter\030\002 \003(\004\022"
+      "\016\n\006pubkey\030\003 \001(\014\022\021\n\tpublic_ip\030\004 \001(\t\022\023\n\013pu"
+      "blic_port\030\005 \001(\005\022\013\n\003ids\030\006 \003(\014\"J\n\030RefreshN"
+      "eighborsResponse\022.\n\005nodes\030\001 \003(\0132\037.shardo"
+      "ra.dht.protobuf.NodeInfo\"(\n\020HeartbeatReq"
+      "uest\022\024\n\014dht_key_hash\030\001 \001(\004\")\n\021HeartbeatR"
+      "esponse\022\024\n\014dht_key_hash\030\001 \001(\004\"i\n\016Connect"
+      "Reqeust\022\016\n\006pubkey\030\001 \001(\014\022\023\n\013is_response\030\002"
+      " \001(\010\022\021\n\tpublic_ip\030\003 \001(\t\022\023\n\013public_port\030\004"
+      " \001(\005\022\n\n\002id\030\005 \001(\014\" \n\014TimerRequest\022\020\n\010tm_m"
+      "illi\030\001 \001(\004\"\235\004\n\nDhtMessage\022>\n\rbootstrap_r"
+      "eq\030\001 \001(\0132\'.shardora.dht.protobuf.Bootstr"
+      "apRequest\022\?\n\rbootstrap_res\030\002 \001(\0132(.shard"
+      "ora.dht.protobuf.BootstrapResponse\022M\n\025re"
+      "fresh_neighbors_req\030\003 \001(\0132..shardora.dht"
+      ".protobuf.RefreshNeighborsRequest\022N\n\025ref"
+      "resh_neighbors_res\030\004 \001(\0132/.shardora.dht."
+      "protobuf.RefreshNeighborsResponse\022:\n\013con"
+      "nect_req\030\005 \001(\0132%.shardora.dht.protobuf.C"
+      "onnectReqeust\022>\n\rheartbeat_req\030\006 \001(\0132\'.s"
+      "hardora.dht.protobuf.HeartbeatRequest\022\?\n"
+      "\rheartbeat_res\030\007 \001(\0132(.shardora.dht.prot"
+      "obuf.HeartbeatResponse\0222\n\005timer\030\010 \001(\0132#."
+      "shardora.dht.protobuf.TimerRequest"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1264);
+      descriptor, 1274);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/dht.proto", &protobuf_RegisterTypes);
 }
@@ -468,7 +468,7 @@ struct StaticDescriptorInitializer {
   }
 } static_descriptor_initializer;
 }  // namespace protobuf_protos_2fdht_2eproto
-namespace zjchain {
+namespace shardora {
 namespace dht {
 namespace protobuf {
 
@@ -487,7 +487,7 @@ BootstrapRequest::BootstrapRequest()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fdht_2eproto::scc_info_BootstrapRequest.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.dht.protobuf.BootstrapRequest)
+  // @@protoc_insertion_point(constructor:shardora.dht.protobuf.BootstrapRequest)
 }
 BootstrapRequest::BootstrapRequest(const BootstrapRequest& from)
   : ::google::protobuf::Message(),
@@ -503,7 +503,7 @@ BootstrapRequest::BootstrapRequest(const BootstrapRequest& from)
     public_ip_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.public_ip_);
   }
   public_port_ = from.public_port_;
-  // @@protoc_insertion_point(copy_constructor:zjchain.dht.protobuf.BootstrapRequest)
+  // @@protoc_insertion_point(copy_constructor:shardora.dht.protobuf.BootstrapRequest)
 }
 
 void BootstrapRequest::SharedCtor() {
@@ -513,7 +513,7 @@ void BootstrapRequest::SharedCtor() {
 }
 
 BootstrapRequest::~BootstrapRequest() {
-  // @@protoc_insertion_point(destructor:zjchain.dht.protobuf.BootstrapRequest)
+  // @@protoc_insertion_point(destructor:shardora.dht.protobuf.BootstrapRequest)
   SharedDtor();
 }
 
@@ -537,7 +537,7 @@ const BootstrapRequest& BootstrapRequest::default_instance() {
 
 
 void BootstrapRequest::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.dht.protobuf.BootstrapRequest)
+// @@protoc_insertion_point(message_clear_start:shardora.dht.protobuf.BootstrapRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -560,7 +560,7 @@ bool BootstrapRequest::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.dht.protobuf.BootstrapRequest)
+  // @@protoc_insertion_point(parse_start:shardora.dht.protobuf.BootstrapRequest)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -587,7 +587,7 @@ bool BootstrapRequest::MergePartialFromCodedStream(
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
             this->public_ip().data(), static_cast<int>(this->public_ip().length()),
             ::google::protobuf::internal::WireFormat::PARSE,
-            "zjchain.dht.protobuf.BootstrapRequest.public_ip");
+            "shardora.dht.protobuf.BootstrapRequest.public_ip");
         } else {
           goto handle_unusual;
         }
@@ -620,17 +620,17 @@ bool BootstrapRequest::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.dht.protobuf.BootstrapRequest)
+  // @@protoc_insertion_point(parse_success:shardora.dht.protobuf.BootstrapRequest)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.dht.protobuf.BootstrapRequest)
+  // @@protoc_insertion_point(parse_failure:shardora.dht.protobuf.BootstrapRequest)
   return false;
 #undef DO_
 }
 
 void BootstrapRequest::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.dht.protobuf.BootstrapRequest)
+  // @@protoc_insertion_point(serialize_start:shardora.dht.protobuf.BootstrapRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -646,7 +646,7 @@ void BootstrapRequest::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->public_ip().data(), static_cast<int>(this->public_ip().length()),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "zjchain.dht.protobuf.BootstrapRequest.public_ip");
+      "shardora.dht.protobuf.BootstrapRequest.public_ip");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       2, this->public_ip(), output);
   }
@@ -660,13 +660,13 @@ void BootstrapRequest::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.dht.protobuf.BootstrapRequest)
+  // @@protoc_insertion_point(serialize_end:shardora.dht.protobuf.BootstrapRequest)
 }
 
 ::google::protobuf::uint8* BootstrapRequest::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.dht.protobuf.BootstrapRequest)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.dht.protobuf.BootstrapRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -683,7 +683,7 @@ void BootstrapRequest::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->public_ip().data(), static_cast<int>(this->public_ip().length()),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "zjchain.dht.protobuf.BootstrapRequest.public_ip");
+      "shardora.dht.protobuf.BootstrapRequest.public_ip");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
         2, this->public_ip(), target);
@@ -698,12 +698,12 @@ void BootstrapRequest::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.dht.protobuf.BootstrapRequest)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.dht.protobuf.BootstrapRequest)
   return target;
 }
 
 size_t BootstrapRequest::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.dht.protobuf.BootstrapRequest)
+// @@protoc_insertion_point(message_byte_size_start:shardora.dht.protobuf.BootstrapRequest)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -740,22 +740,22 @@ size_t BootstrapRequest::ByteSizeLong() const {
 }
 
 void BootstrapRequest::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.dht.protobuf.BootstrapRequest)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.dht.protobuf.BootstrapRequest)
   GOOGLE_DCHECK_NE(&from, this);
   const BootstrapRequest* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const BootstrapRequest>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.dht.protobuf.BootstrapRequest)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.dht.protobuf.BootstrapRequest)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.dht.protobuf.BootstrapRequest)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.dht.protobuf.BootstrapRequest)
     MergeFrom(*source);
   }
 }
 
 void BootstrapRequest::MergeFrom(const BootstrapRequest& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.dht.protobuf.BootstrapRequest)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.dht.protobuf.BootstrapRequest)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -779,14 +779,14 @@ void BootstrapRequest::MergeFrom(const BootstrapRequest& from) {
 }
 
 void BootstrapRequest::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.dht.protobuf.BootstrapRequest)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.dht.protobuf.BootstrapRequest)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void BootstrapRequest::CopyFrom(const BootstrapRequest& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.dht.protobuf.BootstrapRequest)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.dht.protobuf.BootstrapRequest)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -832,7 +832,7 @@ BootstrapResponse::BootstrapResponse()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fdht_2eproto::scc_info_BootstrapResponse.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.dht.protobuf.BootstrapResponse)
+  // @@protoc_insertion_point(constructor:shardora.dht.protobuf.BootstrapResponse)
 }
 BootstrapResponse::BootstrapResponse(const BootstrapResponse& from)
   : ::google::protobuf::Message(),
@@ -848,7 +848,7 @@ BootstrapResponse::BootstrapResponse(const BootstrapResponse& from)
     public_ip_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.public_ip_);
   }
   public_port_ = from.public_port_;
-  // @@protoc_insertion_point(copy_constructor:zjchain.dht.protobuf.BootstrapResponse)
+  // @@protoc_insertion_point(copy_constructor:shardora.dht.protobuf.BootstrapResponse)
 }
 
 void BootstrapResponse::SharedCtor() {
@@ -858,7 +858,7 @@ void BootstrapResponse::SharedCtor() {
 }
 
 BootstrapResponse::~BootstrapResponse() {
-  // @@protoc_insertion_point(destructor:zjchain.dht.protobuf.BootstrapResponse)
+  // @@protoc_insertion_point(destructor:shardora.dht.protobuf.BootstrapResponse)
   SharedDtor();
 }
 
@@ -882,7 +882,7 @@ const BootstrapResponse& BootstrapResponse::default_instance() {
 
 
 void BootstrapResponse::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.dht.protobuf.BootstrapResponse)
+// @@protoc_insertion_point(message_clear_start:shardora.dht.protobuf.BootstrapResponse)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -905,7 +905,7 @@ bool BootstrapResponse::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.dht.protobuf.BootstrapResponse)
+  // @@protoc_insertion_point(parse_start:shardora.dht.protobuf.BootstrapResponse)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -932,7 +932,7 @@ bool BootstrapResponse::MergePartialFromCodedStream(
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
             this->public_ip().data(), static_cast<int>(this->public_ip().length()),
             ::google::protobuf::internal::WireFormat::PARSE,
-            "zjchain.dht.protobuf.BootstrapResponse.public_ip");
+            "shardora.dht.protobuf.BootstrapResponse.public_ip");
         } else {
           goto handle_unusual;
         }
@@ -965,17 +965,17 @@ bool BootstrapResponse::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.dht.protobuf.BootstrapResponse)
+  // @@protoc_insertion_point(parse_success:shardora.dht.protobuf.BootstrapResponse)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.dht.protobuf.BootstrapResponse)
+  // @@protoc_insertion_point(parse_failure:shardora.dht.protobuf.BootstrapResponse)
   return false;
 #undef DO_
 }
 
 void BootstrapResponse::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.dht.protobuf.BootstrapResponse)
+  // @@protoc_insertion_point(serialize_start:shardora.dht.protobuf.BootstrapResponse)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -991,7 +991,7 @@ void BootstrapResponse::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->public_ip().data(), static_cast<int>(this->public_ip().length()),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "zjchain.dht.protobuf.BootstrapResponse.public_ip");
+      "shardora.dht.protobuf.BootstrapResponse.public_ip");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       2, this->public_ip(), output);
   }
@@ -1005,13 +1005,13 @@ void BootstrapResponse::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.dht.protobuf.BootstrapResponse)
+  // @@protoc_insertion_point(serialize_end:shardora.dht.protobuf.BootstrapResponse)
 }
 
 ::google::protobuf::uint8* BootstrapResponse::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.dht.protobuf.BootstrapResponse)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.dht.protobuf.BootstrapResponse)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1028,7 +1028,7 @@ void BootstrapResponse::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->public_ip().data(), static_cast<int>(this->public_ip().length()),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "zjchain.dht.protobuf.BootstrapResponse.public_ip");
+      "shardora.dht.protobuf.BootstrapResponse.public_ip");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
         2, this->public_ip(), target);
@@ -1043,12 +1043,12 @@ void BootstrapResponse::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.dht.protobuf.BootstrapResponse)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.dht.protobuf.BootstrapResponse)
   return target;
 }
 
 size_t BootstrapResponse::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.dht.protobuf.BootstrapResponse)
+// @@protoc_insertion_point(message_byte_size_start:shardora.dht.protobuf.BootstrapResponse)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1085,22 +1085,22 @@ size_t BootstrapResponse::ByteSizeLong() const {
 }
 
 void BootstrapResponse::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.dht.protobuf.BootstrapResponse)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.dht.protobuf.BootstrapResponse)
   GOOGLE_DCHECK_NE(&from, this);
   const BootstrapResponse* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const BootstrapResponse>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.dht.protobuf.BootstrapResponse)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.dht.protobuf.BootstrapResponse)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.dht.protobuf.BootstrapResponse)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.dht.protobuf.BootstrapResponse)
     MergeFrom(*source);
   }
 }
 
 void BootstrapResponse::MergeFrom(const BootstrapResponse& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.dht.protobuf.BootstrapResponse)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.dht.protobuf.BootstrapResponse)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -1124,14 +1124,14 @@ void BootstrapResponse::MergeFrom(const BootstrapResponse& from) {
 }
 
 void BootstrapResponse::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.dht.protobuf.BootstrapResponse)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.dht.protobuf.BootstrapResponse)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void BootstrapResponse::CopyFrom(const BootstrapResponse& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.dht.protobuf.BootstrapResponse)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.dht.protobuf.BootstrapResponse)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1179,7 +1179,7 @@ NodeInfo::NodeInfo()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fdht_2eproto::scc_info_NodeInfo.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.dht.protobuf.NodeInfo)
+  // @@protoc_insertion_point(constructor:shardora.dht.protobuf.NodeInfo)
 }
 NodeInfo::NodeInfo(const NodeInfo& from)
   : ::google::protobuf::Message(),
@@ -1201,7 +1201,7 @@ NodeInfo::NodeInfo(const NodeInfo& from)
   ::memcpy(&public_port_, &from.public_port_,
     static_cast<size_t>(reinterpret_cast<char*>(&sharding_id_) -
     reinterpret_cast<char*>(&public_port_)) + sizeof(sharding_id_));
-  // @@protoc_insertion_point(copy_constructor:zjchain.dht.protobuf.NodeInfo)
+  // @@protoc_insertion_point(copy_constructor:shardora.dht.protobuf.NodeInfo)
 }
 
 void NodeInfo::SharedCtor() {
@@ -1214,7 +1214,7 @@ void NodeInfo::SharedCtor() {
 }
 
 NodeInfo::~NodeInfo() {
-  // @@protoc_insertion_point(destructor:zjchain.dht.protobuf.NodeInfo)
+  // @@protoc_insertion_point(destructor:shardora.dht.protobuf.NodeInfo)
   SharedDtor();
 }
 
@@ -1239,7 +1239,7 @@ const NodeInfo& NodeInfo::default_instance() {
 
 
 void NodeInfo::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.dht.protobuf.NodeInfo)
+// @@protoc_insertion_point(message_clear_start:shardora.dht.protobuf.NodeInfo)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -1269,7 +1269,7 @@ bool NodeInfo::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.dht.protobuf.NodeInfo)
+  // @@protoc_insertion_point(parse_start:shardora.dht.protobuf.NodeInfo)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -1351,17 +1351,17 @@ bool NodeInfo::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.dht.protobuf.NodeInfo)
+  // @@protoc_insertion_point(parse_success:shardora.dht.protobuf.NodeInfo)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.dht.protobuf.NodeInfo)
+  // @@protoc_insertion_point(parse_failure:shardora.dht.protobuf.NodeInfo)
   return false;
 #undef DO_
 }
 
 void NodeInfo::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.dht.protobuf.NodeInfo)
+  // @@protoc_insertion_point(serialize_start:shardora.dht.protobuf.NodeInfo)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1398,13 +1398,13 @@ void NodeInfo::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.dht.protobuf.NodeInfo)
+  // @@protoc_insertion_point(serialize_end:shardora.dht.protobuf.NodeInfo)
 }
 
 ::google::protobuf::uint8* NodeInfo::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.dht.protobuf.NodeInfo)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.dht.protobuf.NodeInfo)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1444,12 +1444,12 @@ void NodeInfo::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.dht.protobuf.NodeInfo)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.dht.protobuf.NodeInfo)
   return target;
 }
 
 size_t NodeInfo::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.dht.protobuf.NodeInfo)
+// @@protoc_insertion_point(message_byte_size_start:shardora.dht.protobuf.NodeInfo)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1500,22 +1500,22 @@ size_t NodeInfo::ByteSizeLong() const {
 }
 
 void NodeInfo::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.dht.protobuf.NodeInfo)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.dht.protobuf.NodeInfo)
   GOOGLE_DCHECK_NE(&from, this);
   const NodeInfo* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const NodeInfo>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.dht.protobuf.NodeInfo)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.dht.protobuf.NodeInfo)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.dht.protobuf.NodeInfo)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.dht.protobuf.NodeInfo)
     MergeFrom(*source);
   }
 }
 
 void NodeInfo::MergeFrom(const NodeInfo& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.dht.protobuf.NodeInfo)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.dht.protobuf.NodeInfo)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -1546,14 +1546,14 @@ void NodeInfo::MergeFrom(const NodeInfo& from) {
 }
 
 void NodeInfo::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.dht.protobuf.NodeInfo)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.dht.protobuf.NodeInfo)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void NodeInfo::CopyFrom(const NodeInfo& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.dht.protobuf.NodeInfo)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.dht.protobuf.NodeInfo)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1605,7 +1605,7 @@ RefreshNeighborsRequest::RefreshNeighborsRequest()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fdht_2eproto::scc_info_RefreshNeighborsRequest.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.dht.protobuf.RefreshNeighborsRequest)
+  // @@protoc_insertion_point(constructor:shardora.dht.protobuf.RefreshNeighborsRequest)
 }
 RefreshNeighborsRequest::RefreshNeighborsRequest(const RefreshNeighborsRequest& from)
   : ::google::protobuf::Message(),
@@ -1625,7 +1625,7 @@ RefreshNeighborsRequest::RefreshNeighborsRequest(const RefreshNeighborsRequest& 
   ::memcpy(&count_, &from.count_,
     static_cast<size_t>(reinterpret_cast<char*>(&public_port_) -
     reinterpret_cast<char*>(&count_)) + sizeof(public_port_));
-  // @@protoc_insertion_point(copy_constructor:zjchain.dht.protobuf.RefreshNeighborsRequest)
+  // @@protoc_insertion_point(copy_constructor:shardora.dht.protobuf.RefreshNeighborsRequest)
 }
 
 void RefreshNeighborsRequest::SharedCtor() {
@@ -1637,7 +1637,7 @@ void RefreshNeighborsRequest::SharedCtor() {
 }
 
 RefreshNeighborsRequest::~RefreshNeighborsRequest() {
-  // @@protoc_insertion_point(destructor:zjchain.dht.protobuf.RefreshNeighborsRequest)
+  // @@protoc_insertion_point(destructor:shardora.dht.protobuf.RefreshNeighborsRequest)
   SharedDtor();
 }
 
@@ -1661,7 +1661,7 @@ const RefreshNeighborsRequest& RefreshNeighborsRequest::default_instance() {
 
 
 void RefreshNeighborsRequest::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.dht.protobuf.RefreshNeighborsRequest)
+// @@protoc_insertion_point(message_clear_start:shardora.dht.protobuf.RefreshNeighborsRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -1690,7 +1690,7 @@ bool RefreshNeighborsRequest::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.dht.protobuf.RefreshNeighborsRequest)
+  // @@protoc_insertion_point(parse_start:shardora.dht.protobuf.RefreshNeighborsRequest)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -1750,7 +1750,7 @@ bool RefreshNeighborsRequest::MergePartialFromCodedStream(
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
             this->public_ip().data(), static_cast<int>(this->public_ip().length()),
             ::google::protobuf::internal::WireFormat::PARSE,
-            "zjchain.dht.protobuf.RefreshNeighborsRequest.public_ip");
+            "shardora.dht.protobuf.RefreshNeighborsRequest.public_ip");
         } else {
           goto handle_unusual;
         }
@@ -1795,17 +1795,17 @@ bool RefreshNeighborsRequest::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.dht.protobuf.RefreshNeighborsRequest)
+  // @@protoc_insertion_point(parse_success:shardora.dht.protobuf.RefreshNeighborsRequest)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.dht.protobuf.RefreshNeighborsRequest)
+  // @@protoc_insertion_point(parse_failure:shardora.dht.protobuf.RefreshNeighborsRequest)
   return false;
 #undef DO_
 }
 
 void RefreshNeighborsRequest::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.dht.protobuf.RefreshNeighborsRequest)
+  // @@protoc_insertion_point(serialize_start:shardora.dht.protobuf.RefreshNeighborsRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1832,7 +1832,7 @@ void RefreshNeighborsRequest::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->public_ip().data(), static_cast<int>(this->public_ip().length()),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "zjchain.dht.protobuf.RefreshNeighborsRequest.public_ip");
+      "shardora.dht.protobuf.RefreshNeighborsRequest.public_ip");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       4, this->public_ip(), output);
   }
@@ -1852,13 +1852,13 @@ void RefreshNeighborsRequest::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.dht.protobuf.RefreshNeighborsRequest)
+  // @@protoc_insertion_point(serialize_end:shardora.dht.protobuf.RefreshNeighborsRequest)
 }
 
 ::google::protobuf::uint8* RefreshNeighborsRequest::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.dht.protobuf.RefreshNeighborsRequest)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.dht.protobuf.RefreshNeighborsRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1884,7 +1884,7 @@ void RefreshNeighborsRequest::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->public_ip().data(), static_cast<int>(this->public_ip().length()),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "zjchain.dht.protobuf.RefreshNeighborsRequest.public_ip");
+      "shardora.dht.protobuf.RefreshNeighborsRequest.public_ip");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
         4, this->public_ip(), target);
@@ -1905,12 +1905,12 @@ void RefreshNeighborsRequest::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.dht.protobuf.RefreshNeighborsRequest)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.dht.protobuf.RefreshNeighborsRequest)
   return target;
 }
 
 size_t RefreshNeighborsRequest::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.dht.protobuf.RefreshNeighborsRequest)
+// @@protoc_insertion_point(message_byte_size_start:shardora.dht.protobuf.RefreshNeighborsRequest)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1971,22 +1971,22 @@ size_t RefreshNeighborsRequest::ByteSizeLong() const {
 }
 
 void RefreshNeighborsRequest::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.dht.protobuf.RefreshNeighborsRequest)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.dht.protobuf.RefreshNeighborsRequest)
   GOOGLE_DCHECK_NE(&from, this);
   const RefreshNeighborsRequest* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const RefreshNeighborsRequest>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.dht.protobuf.RefreshNeighborsRequest)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.dht.protobuf.RefreshNeighborsRequest)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.dht.protobuf.RefreshNeighborsRequest)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.dht.protobuf.RefreshNeighborsRequest)
     MergeFrom(*source);
   }
 }
 
 void RefreshNeighborsRequest::MergeFrom(const RefreshNeighborsRequest& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.dht.protobuf.RefreshNeighborsRequest)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.dht.protobuf.RefreshNeighborsRequest)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -2015,14 +2015,14 @@ void RefreshNeighborsRequest::MergeFrom(const RefreshNeighborsRequest& from) {
 }
 
 void RefreshNeighborsRequest::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.dht.protobuf.RefreshNeighborsRequest)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.dht.protobuf.RefreshNeighborsRequest)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void RefreshNeighborsRequest::CopyFrom(const RefreshNeighborsRequest& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.dht.protobuf.RefreshNeighborsRequest)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.dht.protobuf.RefreshNeighborsRequest)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -2069,7 +2069,7 @@ RefreshNeighborsResponse::RefreshNeighborsResponse()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fdht_2eproto::scc_info_RefreshNeighborsResponse.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.dht.protobuf.RefreshNeighborsResponse)
+  // @@protoc_insertion_point(constructor:shardora.dht.protobuf.RefreshNeighborsResponse)
 }
 RefreshNeighborsResponse::RefreshNeighborsResponse(const RefreshNeighborsResponse& from)
   : ::google::protobuf::Message(),
@@ -2077,14 +2077,14 @@ RefreshNeighborsResponse::RefreshNeighborsResponse(const RefreshNeighborsRespons
       _has_bits_(from._has_bits_),
       nodes_(from.nodes_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  // @@protoc_insertion_point(copy_constructor:zjchain.dht.protobuf.RefreshNeighborsResponse)
+  // @@protoc_insertion_point(copy_constructor:shardora.dht.protobuf.RefreshNeighborsResponse)
 }
 
 void RefreshNeighborsResponse::SharedCtor() {
 }
 
 RefreshNeighborsResponse::~RefreshNeighborsResponse() {
-  // @@protoc_insertion_point(destructor:zjchain.dht.protobuf.RefreshNeighborsResponse)
+  // @@protoc_insertion_point(destructor:shardora.dht.protobuf.RefreshNeighborsResponse)
   SharedDtor();
 }
 
@@ -2106,7 +2106,7 @@ const RefreshNeighborsResponse& RefreshNeighborsResponse::default_instance() {
 
 
 void RefreshNeighborsResponse::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.dht.protobuf.RefreshNeighborsResponse)
+// @@protoc_insertion_point(message_clear_start:shardora.dht.protobuf.RefreshNeighborsResponse)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -2120,13 +2120,13 @@ bool RefreshNeighborsResponse::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.dht.protobuf.RefreshNeighborsResponse)
+  // @@protoc_insertion_point(parse_start:shardora.dht.protobuf.RefreshNeighborsResponse)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated .zjchain.dht.protobuf.NodeInfo nodes = 1;
+      // repeated .shardora.dht.protobuf.NodeInfo nodes = 1;
       case 1: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
@@ -2150,21 +2150,21 @@ bool RefreshNeighborsResponse::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.dht.protobuf.RefreshNeighborsResponse)
+  // @@protoc_insertion_point(parse_success:shardora.dht.protobuf.RefreshNeighborsResponse)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.dht.protobuf.RefreshNeighborsResponse)
+  // @@protoc_insertion_point(parse_failure:shardora.dht.protobuf.RefreshNeighborsResponse)
   return false;
 #undef DO_
 }
 
 void RefreshNeighborsResponse::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.dht.protobuf.RefreshNeighborsResponse)
+  // @@protoc_insertion_point(serialize_start:shardora.dht.protobuf.RefreshNeighborsResponse)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // repeated .zjchain.dht.protobuf.NodeInfo nodes = 1;
+  // repeated .shardora.dht.protobuf.NodeInfo nodes = 1;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->nodes_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
@@ -2177,17 +2177,17 @@ void RefreshNeighborsResponse::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.dht.protobuf.RefreshNeighborsResponse)
+  // @@protoc_insertion_point(serialize_end:shardora.dht.protobuf.RefreshNeighborsResponse)
 }
 
 ::google::protobuf::uint8* RefreshNeighborsResponse::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.dht.protobuf.RefreshNeighborsResponse)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.dht.protobuf.RefreshNeighborsResponse)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // repeated .zjchain.dht.protobuf.NodeInfo nodes = 1;
+  // repeated .shardora.dht.protobuf.NodeInfo nodes = 1;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->nodes_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
@@ -2199,12 +2199,12 @@ void RefreshNeighborsResponse::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.dht.protobuf.RefreshNeighborsResponse)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.dht.protobuf.RefreshNeighborsResponse)
   return target;
 }
 
 size_t RefreshNeighborsResponse::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.dht.protobuf.RefreshNeighborsResponse)
+// @@protoc_insertion_point(message_byte_size_start:shardora.dht.protobuf.RefreshNeighborsResponse)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2212,7 +2212,7 @@ size_t RefreshNeighborsResponse::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  // repeated .zjchain.dht.protobuf.NodeInfo nodes = 1;
+  // repeated .shardora.dht.protobuf.NodeInfo nodes = 1;
   {
     unsigned int count = static_cast<unsigned int>(this->nodes_size());
     total_size += 1UL * count;
@@ -2229,22 +2229,22 @@ size_t RefreshNeighborsResponse::ByteSizeLong() const {
 }
 
 void RefreshNeighborsResponse::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.dht.protobuf.RefreshNeighborsResponse)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.dht.protobuf.RefreshNeighborsResponse)
   GOOGLE_DCHECK_NE(&from, this);
   const RefreshNeighborsResponse* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const RefreshNeighborsResponse>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.dht.protobuf.RefreshNeighborsResponse)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.dht.protobuf.RefreshNeighborsResponse)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.dht.protobuf.RefreshNeighborsResponse)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.dht.protobuf.RefreshNeighborsResponse)
     MergeFrom(*source);
   }
 }
 
 void RefreshNeighborsResponse::MergeFrom(const RefreshNeighborsResponse& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.dht.protobuf.RefreshNeighborsResponse)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.dht.protobuf.RefreshNeighborsResponse)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -2254,14 +2254,14 @@ void RefreshNeighborsResponse::MergeFrom(const RefreshNeighborsResponse& from) {
 }
 
 void RefreshNeighborsResponse::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.dht.protobuf.RefreshNeighborsResponse)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.dht.protobuf.RefreshNeighborsResponse)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void RefreshNeighborsResponse::CopyFrom(const RefreshNeighborsResponse& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.dht.protobuf.RefreshNeighborsResponse)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.dht.protobuf.RefreshNeighborsResponse)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -2301,7 +2301,7 @@ HeartbeatRequest::HeartbeatRequest()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fdht_2eproto::scc_info_HeartbeatRequest.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.dht.protobuf.HeartbeatRequest)
+  // @@protoc_insertion_point(constructor:shardora.dht.protobuf.HeartbeatRequest)
 }
 HeartbeatRequest::HeartbeatRequest(const HeartbeatRequest& from)
   : ::google::protobuf::Message(),
@@ -2309,7 +2309,7 @@ HeartbeatRequest::HeartbeatRequest(const HeartbeatRequest& from)
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   dht_key_hash_ = from.dht_key_hash_;
-  // @@protoc_insertion_point(copy_constructor:zjchain.dht.protobuf.HeartbeatRequest)
+  // @@protoc_insertion_point(copy_constructor:shardora.dht.protobuf.HeartbeatRequest)
 }
 
 void HeartbeatRequest::SharedCtor() {
@@ -2317,7 +2317,7 @@ void HeartbeatRequest::SharedCtor() {
 }
 
 HeartbeatRequest::~HeartbeatRequest() {
-  // @@protoc_insertion_point(destructor:zjchain.dht.protobuf.HeartbeatRequest)
+  // @@protoc_insertion_point(destructor:shardora.dht.protobuf.HeartbeatRequest)
   SharedDtor();
 }
 
@@ -2339,7 +2339,7 @@ const HeartbeatRequest& HeartbeatRequest::default_instance() {
 
 
 void HeartbeatRequest::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.dht.protobuf.HeartbeatRequest)
+// @@protoc_insertion_point(message_clear_start:shardora.dht.protobuf.HeartbeatRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -2353,7 +2353,7 @@ bool HeartbeatRequest::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.dht.protobuf.HeartbeatRequest)
+  // @@protoc_insertion_point(parse_start:shardora.dht.protobuf.HeartbeatRequest)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -2385,17 +2385,17 @@ bool HeartbeatRequest::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.dht.protobuf.HeartbeatRequest)
+  // @@protoc_insertion_point(parse_success:shardora.dht.protobuf.HeartbeatRequest)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.dht.protobuf.HeartbeatRequest)
+  // @@protoc_insertion_point(parse_failure:shardora.dht.protobuf.HeartbeatRequest)
   return false;
 #undef DO_
 }
 
 void HeartbeatRequest::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.dht.protobuf.HeartbeatRequest)
+  // @@protoc_insertion_point(serialize_start:shardora.dht.protobuf.HeartbeatRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -2409,13 +2409,13 @@ void HeartbeatRequest::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.dht.protobuf.HeartbeatRequest)
+  // @@protoc_insertion_point(serialize_end:shardora.dht.protobuf.HeartbeatRequest)
 }
 
 ::google::protobuf::uint8* HeartbeatRequest::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.dht.protobuf.HeartbeatRequest)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.dht.protobuf.HeartbeatRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -2429,12 +2429,12 @@ void HeartbeatRequest::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.dht.protobuf.HeartbeatRequest)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.dht.protobuf.HeartbeatRequest)
   return target;
 }
 
 size_t HeartbeatRequest::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.dht.protobuf.HeartbeatRequest)
+// @@protoc_insertion_point(message_byte_size_start:shardora.dht.protobuf.HeartbeatRequest)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2455,22 +2455,22 @@ size_t HeartbeatRequest::ByteSizeLong() const {
 }
 
 void HeartbeatRequest::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.dht.protobuf.HeartbeatRequest)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.dht.protobuf.HeartbeatRequest)
   GOOGLE_DCHECK_NE(&from, this);
   const HeartbeatRequest* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const HeartbeatRequest>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.dht.protobuf.HeartbeatRequest)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.dht.protobuf.HeartbeatRequest)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.dht.protobuf.HeartbeatRequest)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.dht.protobuf.HeartbeatRequest)
     MergeFrom(*source);
   }
 }
 
 void HeartbeatRequest::MergeFrom(const HeartbeatRequest& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.dht.protobuf.HeartbeatRequest)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.dht.protobuf.HeartbeatRequest)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -2482,14 +2482,14 @@ void HeartbeatRequest::MergeFrom(const HeartbeatRequest& from) {
 }
 
 void HeartbeatRequest::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.dht.protobuf.HeartbeatRequest)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.dht.protobuf.HeartbeatRequest)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void HeartbeatRequest::CopyFrom(const HeartbeatRequest& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.dht.protobuf.HeartbeatRequest)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.dht.protobuf.HeartbeatRequest)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -2529,7 +2529,7 @@ HeartbeatResponse::HeartbeatResponse()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fdht_2eproto::scc_info_HeartbeatResponse.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.dht.protobuf.HeartbeatResponse)
+  // @@protoc_insertion_point(constructor:shardora.dht.protobuf.HeartbeatResponse)
 }
 HeartbeatResponse::HeartbeatResponse(const HeartbeatResponse& from)
   : ::google::protobuf::Message(),
@@ -2537,7 +2537,7 @@ HeartbeatResponse::HeartbeatResponse(const HeartbeatResponse& from)
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   dht_key_hash_ = from.dht_key_hash_;
-  // @@protoc_insertion_point(copy_constructor:zjchain.dht.protobuf.HeartbeatResponse)
+  // @@protoc_insertion_point(copy_constructor:shardora.dht.protobuf.HeartbeatResponse)
 }
 
 void HeartbeatResponse::SharedCtor() {
@@ -2545,7 +2545,7 @@ void HeartbeatResponse::SharedCtor() {
 }
 
 HeartbeatResponse::~HeartbeatResponse() {
-  // @@protoc_insertion_point(destructor:zjchain.dht.protobuf.HeartbeatResponse)
+  // @@protoc_insertion_point(destructor:shardora.dht.protobuf.HeartbeatResponse)
   SharedDtor();
 }
 
@@ -2567,7 +2567,7 @@ const HeartbeatResponse& HeartbeatResponse::default_instance() {
 
 
 void HeartbeatResponse::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.dht.protobuf.HeartbeatResponse)
+// @@protoc_insertion_point(message_clear_start:shardora.dht.protobuf.HeartbeatResponse)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -2581,7 +2581,7 @@ bool HeartbeatResponse::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.dht.protobuf.HeartbeatResponse)
+  // @@protoc_insertion_point(parse_start:shardora.dht.protobuf.HeartbeatResponse)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -2613,17 +2613,17 @@ bool HeartbeatResponse::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.dht.protobuf.HeartbeatResponse)
+  // @@protoc_insertion_point(parse_success:shardora.dht.protobuf.HeartbeatResponse)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.dht.protobuf.HeartbeatResponse)
+  // @@protoc_insertion_point(parse_failure:shardora.dht.protobuf.HeartbeatResponse)
   return false;
 #undef DO_
 }
 
 void HeartbeatResponse::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.dht.protobuf.HeartbeatResponse)
+  // @@protoc_insertion_point(serialize_start:shardora.dht.protobuf.HeartbeatResponse)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -2637,13 +2637,13 @@ void HeartbeatResponse::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.dht.protobuf.HeartbeatResponse)
+  // @@protoc_insertion_point(serialize_end:shardora.dht.protobuf.HeartbeatResponse)
 }
 
 ::google::protobuf::uint8* HeartbeatResponse::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.dht.protobuf.HeartbeatResponse)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.dht.protobuf.HeartbeatResponse)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -2657,12 +2657,12 @@ void HeartbeatResponse::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.dht.protobuf.HeartbeatResponse)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.dht.protobuf.HeartbeatResponse)
   return target;
 }
 
 size_t HeartbeatResponse::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.dht.protobuf.HeartbeatResponse)
+// @@protoc_insertion_point(message_byte_size_start:shardora.dht.protobuf.HeartbeatResponse)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2683,22 +2683,22 @@ size_t HeartbeatResponse::ByteSizeLong() const {
 }
 
 void HeartbeatResponse::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.dht.protobuf.HeartbeatResponse)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.dht.protobuf.HeartbeatResponse)
   GOOGLE_DCHECK_NE(&from, this);
   const HeartbeatResponse* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const HeartbeatResponse>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.dht.protobuf.HeartbeatResponse)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.dht.protobuf.HeartbeatResponse)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.dht.protobuf.HeartbeatResponse)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.dht.protobuf.HeartbeatResponse)
     MergeFrom(*source);
   }
 }
 
 void HeartbeatResponse::MergeFrom(const HeartbeatResponse& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.dht.protobuf.HeartbeatResponse)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.dht.protobuf.HeartbeatResponse)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -2710,14 +2710,14 @@ void HeartbeatResponse::MergeFrom(const HeartbeatResponse& from) {
 }
 
 void HeartbeatResponse::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.dht.protobuf.HeartbeatResponse)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.dht.protobuf.HeartbeatResponse)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void HeartbeatResponse::CopyFrom(const HeartbeatResponse& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.dht.protobuf.HeartbeatResponse)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.dht.protobuf.HeartbeatResponse)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -2761,7 +2761,7 @@ ConnectReqeust::ConnectReqeust()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fdht_2eproto::scc_info_ConnectReqeust.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.dht.protobuf.ConnectReqeust)
+  // @@protoc_insertion_point(constructor:shardora.dht.protobuf.ConnectReqeust)
 }
 ConnectReqeust::ConnectReqeust(const ConnectReqeust& from)
   : ::google::protobuf::Message(),
@@ -2783,7 +2783,7 @@ ConnectReqeust::ConnectReqeust(const ConnectReqeust& from)
   ::memcpy(&is_response_, &from.is_response_,
     static_cast<size_t>(reinterpret_cast<char*>(&public_port_) -
     reinterpret_cast<char*>(&is_response_)) + sizeof(public_port_));
-  // @@protoc_insertion_point(copy_constructor:zjchain.dht.protobuf.ConnectReqeust)
+  // @@protoc_insertion_point(copy_constructor:shardora.dht.protobuf.ConnectReqeust)
 }
 
 void ConnectReqeust::SharedCtor() {
@@ -2796,7 +2796,7 @@ void ConnectReqeust::SharedCtor() {
 }
 
 ConnectReqeust::~ConnectReqeust() {
-  // @@protoc_insertion_point(destructor:zjchain.dht.protobuf.ConnectReqeust)
+  // @@protoc_insertion_point(destructor:shardora.dht.protobuf.ConnectReqeust)
   SharedDtor();
 }
 
@@ -2821,7 +2821,7 @@ const ConnectReqeust& ConnectReqeust::default_instance() {
 
 
 void ConnectReqeust::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.dht.protobuf.ConnectReqeust)
+// @@protoc_insertion_point(message_clear_start:shardora.dht.protobuf.ConnectReqeust)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -2851,7 +2851,7 @@ bool ConnectReqeust::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.dht.protobuf.ConnectReqeust)
+  // @@protoc_insertion_point(parse_start:shardora.dht.protobuf.ConnectReqeust)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -2892,7 +2892,7 @@ bool ConnectReqeust::MergePartialFromCodedStream(
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
             this->public_ip().data(), static_cast<int>(this->public_ip().length()),
             ::google::protobuf::internal::WireFormat::PARSE,
-            "zjchain.dht.protobuf.ConnectReqeust.public_ip");
+            "shardora.dht.protobuf.ConnectReqeust.public_ip");
         } else {
           goto handle_unusual;
         }
@@ -2937,17 +2937,17 @@ bool ConnectReqeust::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.dht.protobuf.ConnectReqeust)
+  // @@protoc_insertion_point(parse_success:shardora.dht.protobuf.ConnectReqeust)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.dht.protobuf.ConnectReqeust)
+  // @@protoc_insertion_point(parse_failure:shardora.dht.protobuf.ConnectReqeust)
   return false;
 #undef DO_
 }
 
 void ConnectReqeust::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.dht.protobuf.ConnectReqeust)
+  // @@protoc_insertion_point(serialize_start:shardora.dht.protobuf.ConnectReqeust)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -2968,7 +2968,7 @@ void ConnectReqeust::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->public_ip().data(), static_cast<int>(this->public_ip().length()),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "zjchain.dht.protobuf.ConnectReqeust.public_ip");
+      "shardora.dht.protobuf.ConnectReqeust.public_ip");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       3, this->public_ip(), output);
   }
@@ -2988,13 +2988,13 @@ void ConnectReqeust::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.dht.protobuf.ConnectReqeust)
+  // @@protoc_insertion_point(serialize_end:shardora.dht.protobuf.ConnectReqeust)
 }
 
 ::google::protobuf::uint8* ConnectReqeust::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.dht.protobuf.ConnectReqeust)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.dht.protobuf.ConnectReqeust)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -3016,7 +3016,7 @@ void ConnectReqeust::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->public_ip().data(), static_cast<int>(this->public_ip().length()),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "zjchain.dht.protobuf.ConnectReqeust.public_ip");
+      "shardora.dht.protobuf.ConnectReqeust.public_ip");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
         3, this->public_ip(), target);
@@ -3038,12 +3038,12 @@ void ConnectReqeust::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.dht.protobuf.ConnectReqeust)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.dht.protobuf.ConnectReqeust)
   return target;
 }
 
 size_t ConnectReqeust::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.dht.protobuf.ConnectReqeust)
+// @@protoc_insertion_point(message_byte_size_start:shardora.dht.protobuf.ConnectReqeust)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3092,22 +3092,22 @@ size_t ConnectReqeust::ByteSizeLong() const {
 }
 
 void ConnectReqeust::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.dht.protobuf.ConnectReqeust)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.dht.protobuf.ConnectReqeust)
   GOOGLE_DCHECK_NE(&from, this);
   const ConnectReqeust* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const ConnectReqeust>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.dht.protobuf.ConnectReqeust)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.dht.protobuf.ConnectReqeust)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.dht.protobuf.ConnectReqeust)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.dht.protobuf.ConnectReqeust)
     MergeFrom(*source);
   }
 }
 
 void ConnectReqeust::MergeFrom(const ConnectReqeust& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.dht.protobuf.ConnectReqeust)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.dht.protobuf.ConnectReqeust)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -3138,14 +3138,14 @@ void ConnectReqeust::MergeFrom(const ConnectReqeust& from) {
 }
 
 void ConnectReqeust::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.dht.protobuf.ConnectReqeust)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.dht.protobuf.ConnectReqeust)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void ConnectReqeust::CopyFrom(const ConnectReqeust& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.dht.protobuf.ConnectReqeust)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.dht.protobuf.ConnectReqeust)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -3192,7 +3192,7 @@ TimerRequest::TimerRequest()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fdht_2eproto::scc_info_TimerRequest.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.dht.protobuf.TimerRequest)
+  // @@protoc_insertion_point(constructor:shardora.dht.protobuf.TimerRequest)
 }
 TimerRequest::TimerRequest(const TimerRequest& from)
   : ::google::protobuf::Message(),
@@ -3200,7 +3200,7 @@ TimerRequest::TimerRequest(const TimerRequest& from)
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   tm_milli_ = from.tm_milli_;
-  // @@protoc_insertion_point(copy_constructor:zjchain.dht.protobuf.TimerRequest)
+  // @@protoc_insertion_point(copy_constructor:shardora.dht.protobuf.TimerRequest)
 }
 
 void TimerRequest::SharedCtor() {
@@ -3208,7 +3208,7 @@ void TimerRequest::SharedCtor() {
 }
 
 TimerRequest::~TimerRequest() {
-  // @@protoc_insertion_point(destructor:zjchain.dht.protobuf.TimerRequest)
+  // @@protoc_insertion_point(destructor:shardora.dht.protobuf.TimerRequest)
   SharedDtor();
 }
 
@@ -3230,7 +3230,7 @@ const TimerRequest& TimerRequest::default_instance() {
 
 
 void TimerRequest::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.dht.protobuf.TimerRequest)
+// @@protoc_insertion_point(message_clear_start:shardora.dht.protobuf.TimerRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -3244,7 +3244,7 @@ bool TimerRequest::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.dht.protobuf.TimerRequest)
+  // @@protoc_insertion_point(parse_start:shardora.dht.protobuf.TimerRequest)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -3276,17 +3276,17 @@ bool TimerRequest::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.dht.protobuf.TimerRequest)
+  // @@protoc_insertion_point(parse_success:shardora.dht.protobuf.TimerRequest)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.dht.protobuf.TimerRequest)
+  // @@protoc_insertion_point(parse_failure:shardora.dht.protobuf.TimerRequest)
   return false;
 #undef DO_
 }
 
 void TimerRequest::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.dht.protobuf.TimerRequest)
+  // @@protoc_insertion_point(serialize_start:shardora.dht.protobuf.TimerRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -3300,13 +3300,13 @@ void TimerRequest::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.dht.protobuf.TimerRequest)
+  // @@protoc_insertion_point(serialize_end:shardora.dht.protobuf.TimerRequest)
 }
 
 ::google::protobuf::uint8* TimerRequest::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.dht.protobuf.TimerRequest)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.dht.protobuf.TimerRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -3320,12 +3320,12 @@ void TimerRequest::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.dht.protobuf.TimerRequest)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.dht.protobuf.TimerRequest)
   return target;
 }
 
 size_t TimerRequest::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.dht.protobuf.TimerRequest)
+// @@protoc_insertion_point(message_byte_size_start:shardora.dht.protobuf.TimerRequest)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3346,22 +3346,22 @@ size_t TimerRequest::ByteSizeLong() const {
 }
 
 void TimerRequest::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.dht.protobuf.TimerRequest)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.dht.protobuf.TimerRequest)
   GOOGLE_DCHECK_NE(&from, this);
   const TimerRequest* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const TimerRequest>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.dht.protobuf.TimerRequest)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.dht.protobuf.TimerRequest)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.dht.protobuf.TimerRequest)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.dht.protobuf.TimerRequest)
     MergeFrom(*source);
   }
 }
 
 void TimerRequest::MergeFrom(const TimerRequest& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.dht.protobuf.TimerRequest)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.dht.protobuf.TimerRequest)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -3373,14 +3373,14 @@ void TimerRequest::MergeFrom(const TimerRequest& from) {
 }
 
 void TimerRequest::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.dht.protobuf.TimerRequest)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.dht.protobuf.TimerRequest)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void TimerRequest::CopyFrom(const TimerRequest& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.dht.protobuf.TimerRequest)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.dht.protobuf.TimerRequest)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -3410,22 +3410,22 @@ void TimerRequest::InternalSwap(TimerRequest* other) {
 // ===================================================================
 
 void DhtMessage::InitAsDefaultInstance() {
-  ::zjchain::dht::protobuf::_DhtMessage_default_instance_._instance.get_mutable()->bootstrap_req_ = const_cast< ::zjchain::dht::protobuf::BootstrapRequest*>(
-      ::zjchain::dht::protobuf::BootstrapRequest::internal_default_instance());
-  ::zjchain::dht::protobuf::_DhtMessage_default_instance_._instance.get_mutable()->bootstrap_res_ = const_cast< ::zjchain::dht::protobuf::BootstrapResponse*>(
-      ::zjchain::dht::protobuf::BootstrapResponse::internal_default_instance());
-  ::zjchain::dht::protobuf::_DhtMessage_default_instance_._instance.get_mutable()->refresh_neighbors_req_ = const_cast< ::zjchain::dht::protobuf::RefreshNeighborsRequest*>(
-      ::zjchain::dht::protobuf::RefreshNeighborsRequest::internal_default_instance());
-  ::zjchain::dht::protobuf::_DhtMessage_default_instance_._instance.get_mutable()->refresh_neighbors_res_ = const_cast< ::zjchain::dht::protobuf::RefreshNeighborsResponse*>(
-      ::zjchain::dht::protobuf::RefreshNeighborsResponse::internal_default_instance());
-  ::zjchain::dht::protobuf::_DhtMessage_default_instance_._instance.get_mutable()->connect_req_ = const_cast< ::zjchain::dht::protobuf::ConnectReqeust*>(
-      ::zjchain::dht::protobuf::ConnectReqeust::internal_default_instance());
-  ::zjchain::dht::protobuf::_DhtMessage_default_instance_._instance.get_mutable()->heartbeat_req_ = const_cast< ::zjchain::dht::protobuf::HeartbeatRequest*>(
-      ::zjchain::dht::protobuf::HeartbeatRequest::internal_default_instance());
-  ::zjchain::dht::protobuf::_DhtMessage_default_instance_._instance.get_mutable()->heartbeat_res_ = const_cast< ::zjchain::dht::protobuf::HeartbeatResponse*>(
-      ::zjchain::dht::protobuf::HeartbeatResponse::internal_default_instance());
-  ::zjchain::dht::protobuf::_DhtMessage_default_instance_._instance.get_mutable()->timer_ = const_cast< ::zjchain::dht::protobuf::TimerRequest*>(
-      ::zjchain::dht::protobuf::TimerRequest::internal_default_instance());
+  ::shardora::dht::protobuf::_DhtMessage_default_instance_._instance.get_mutable()->bootstrap_req_ = const_cast< ::shardora::dht::protobuf::BootstrapRequest*>(
+      ::shardora::dht::protobuf::BootstrapRequest::internal_default_instance());
+  ::shardora::dht::protobuf::_DhtMessage_default_instance_._instance.get_mutable()->bootstrap_res_ = const_cast< ::shardora::dht::protobuf::BootstrapResponse*>(
+      ::shardora::dht::protobuf::BootstrapResponse::internal_default_instance());
+  ::shardora::dht::protobuf::_DhtMessage_default_instance_._instance.get_mutable()->refresh_neighbors_req_ = const_cast< ::shardora::dht::protobuf::RefreshNeighborsRequest*>(
+      ::shardora::dht::protobuf::RefreshNeighborsRequest::internal_default_instance());
+  ::shardora::dht::protobuf::_DhtMessage_default_instance_._instance.get_mutable()->refresh_neighbors_res_ = const_cast< ::shardora::dht::protobuf::RefreshNeighborsResponse*>(
+      ::shardora::dht::protobuf::RefreshNeighborsResponse::internal_default_instance());
+  ::shardora::dht::protobuf::_DhtMessage_default_instance_._instance.get_mutable()->connect_req_ = const_cast< ::shardora::dht::protobuf::ConnectReqeust*>(
+      ::shardora::dht::protobuf::ConnectReqeust::internal_default_instance());
+  ::shardora::dht::protobuf::_DhtMessage_default_instance_._instance.get_mutable()->heartbeat_req_ = const_cast< ::shardora::dht::protobuf::HeartbeatRequest*>(
+      ::shardora::dht::protobuf::HeartbeatRequest::internal_default_instance());
+  ::shardora::dht::protobuf::_DhtMessage_default_instance_._instance.get_mutable()->heartbeat_res_ = const_cast< ::shardora::dht::protobuf::HeartbeatResponse*>(
+      ::shardora::dht::protobuf::HeartbeatResponse::internal_default_instance());
+  ::shardora::dht::protobuf::_DhtMessage_default_instance_._instance.get_mutable()->timer_ = const_cast< ::shardora::dht::protobuf::TimerRequest*>(
+      ::shardora::dht::protobuf::TimerRequest::internal_default_instance());
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int DhtMessage::kBootstrapReqFieldNumber;
@@ -3443,7 +3443,7 @@ DhtMessage::DhtMessage()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fdht_2eproto::scc_info_DhtMessage.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.dht.protobuf.DhtMessage)
+  // @@protoc_insertion_point(constructor:shardora.dht.protobuf.DhtMessage)
 }
 DhtMessage::DhtMessage(const DhtMessage& from)
   : ::google::protobuf::Message(),
@@ -3451,46 +3451,46 @@ DhtMessage::DhtMessage(const DhtMessage& from)
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.has_bootstrap_req()) {
-    bootstrap_req_ = new ::zjchain::dht::protobuf::BootstrapRequest(*from.bootstrap_req_);
+    bootstrap_req_ = new ::shardora::dht::protobuf::BootstrapRequest(*from.bootstrap_req_);
   } else {
     bootstrap_req_ = NULL;
   }
   if (from.has_bootstrap_res()) {
-    bootstrap_res_ = new ::zjchain::dht::protobuf::BootstrapResponse(*from.bootstrap_res_);
+    bootstrap_res_ = new ::shardora::dht::protobuf::BootstrapResponse(*from.bootstrap_res_);
   } else {
     bootstrap_res_ = NULL;
   }
   if (from.has_refresh_neighbors_req()) {
-    refresh_neighbors_req_ = new ::zjchain::dht::protobuf::RefreshNeighborsRequest(*from.refresh_neighbors_req_);
+    refresh_neighbors_req_ = new ::shardora::dht::protobuf::RefreshNeighborsRequest(*from.refresh_neighbors_req_);
   } else {
     refresh_neighbors_req_ = NULL;
   }
   if (from.has_refresh_neighbors_res()) {
-    refresh_neighbors_res_ = new ::zjchain::dht::protobuf::RefreshNeighborsResponse(*from.refresh_neighbors_res_);
+    refresh_neighbors_res_ = new ::shardora::dht::protobuf::RefreshNeighborsResponse(*from.refresh_neighbors_res_);
   } else {
     refresh_neighbors_res_ = NULL;
   }
   if (from.has_connect_req()) {
-    connect_req_ = new ::zjchain::dht::protobuf::ConnectReqeust(*from.connect_req_);
+    connect_req_ = new ::shardora::dht::protobuf::ConnectReqeust(*from.connect_req_);
   } else {
     connect_req_ = NULL;
   }
   if (from.has_heartbeat_req()) {
-    heartbeat_req_ = new ::zjchain::dht::protobuf::HeartbeatRequest(*from.heartbeat_req_);
+    heartbeat_req_ = new ::shardora::dht::protobuf::HeartbeatRequest(*from.heartbeat_req_);
   } else {
     heartbeat_req_ = NULL;
   }
   if (from.has_heartbeat_res()) {
-    heartbeat_res_ = new ::zjchain::dht::protobuf::HeartbeatResponse(*from.heartbeat_res_);
+    heartbeat_res_ = new ::shardora::dht::protobuf::HeartbeatResponse(*from.heartbeat_res_);
   } else {
     heartbeat_res_ = NULL;
   }
   if (from.has_timer()) {
-    timer_ = new ::zjchain::dht::protobuf::TimerRequest(*from.timer_);
+    timer_ = new ::shardora::dht::protobuf::TimerRequest(*from.timer_);
   } else {
     timer_ = NULL;
   }
-  // @@protoc_insertion_point(copy_constructor:zjchain.dht.protobuf.DhtMessage)
+  // @@protoc_insertion_point(copy_constructor:shardora.dht.protobuf.DhtMessage)
 }
 
 void DhtMessage::SharedCtor() {
@@ -3500,7 +3500,7 @@ void DhtMessage::SharedCtor() {
 }
 
 DhtMessage::~DhtMessage() {
-  // @@protoc_insertion_point(destructor:zjchain.dht.protobuf.DhtMessage)
+  // @@protoc_insertion_point(destructor:shardora.dht.protobuf.DhtMessage)
   SharedDtor();
 }
 
@@ -3530,7 +3530,7 @@ const DhtMessage& DhtMessage::default_instance() {
 
 
 void DhtMessage::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.dht.protobuf.DhtMessage)
+// @@protoc_insertion_point(message_clear_start:shardora.dht.protobuf.DhtMessage)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -3578,13 +3578,13 @@ bool DhtMessage::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.dht.protobuf.DhtMessage)
+  // @@protoc_insertion_point(parse_start:shardora.dht.protobuf.DhtMessage)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional .zjchain.dht.protobuf.BootstrapRequest bootstrap_req = 1;
+      // optional .shardora.dht.protobuf.BootstrapRequest bootstrap_req = 1;
       case 1: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
@@ -3596,7 +3596,7 @@ bool DhtMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .zjchain.dht.protobuf.BootstrapResponse bootstrap_res = 2;
+      // optional .shardora.dht.protobuf.BootstrapResponse bootstrap_res = 2;
       case 2: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
@@ -3608,7 +3608,7 @@ bool DhtMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .zjchain.dht.protobuf.RefreshNeighborsRequest refresh_neighbors_req = 3;
+      // optional .shardora.dht.protobuf.RefreshNeighborsRequest refresh_neighbors_req = 3;
       case 3: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
@@ -3620,7 +3620,7 @@ bool DhtMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .zjchain.dht.protobuf.RefreshNeighborsResponse refresh_neighbors_res = 4;
+      // optional .shardora.dht.protobuf.RefreshNeighborsResponse refresh_neighbors_res = 4;
       case 4: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(34u /* 34 & 0xFF */)) {
@@ -3632,7 +3632,7 @@ bool DhtMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .zjchain.dht.protobuf.ConnectReqeust connect_req = 5;
+      // optional .shardora.dht.protobuf.ConnectReqeust connect_req = 5;
       case 5: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
@@ -3644,7 +3644,7 @@ bool DhtMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .zjchain.dht.protobuf.HeartbeatRequest heartbeat_req = 6;
+      // optional .shardora.dht.protobuf.HeartbeatRequest heartbeat_req = 6;
       case 6: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(50u /* 50 & 0xFF */)) {
@@ -3656,7 +3656,7 @@ bool DhtMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .zjchain.dht.protobuf.HeartbeatResponse heartbeat_res = 7;
+      // optional .shardora.dht.protobuf.HeartbeatResponse heartbeat_res = 7;
       case 7: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(58u /* 58 & 0xFF */)) {
@@ -3668,7 +3668,7 @@ bool DhtMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .zjchain.dht.protobuf.TimerRequest timer = 8;
+      // optional .shardora.dht.protobuf.TimerRequest timer = 8;
       case 8: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(66u /* 66 & 0xFF */)) {
@@ -3692,64 +3692,64 @@ bool DhtMessage::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.dht.protobuf.DhtMessage)
+  // @@protoc_insertion_point(parse_success:shardora.dht.protobuf.DhtMessage)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.dht.protobuf.DhtMessage)
+  // @@protoc_insertion_point(parse_failure:shardora.dht.protobuf.DhtMessage)
   return false;
 #undef DO_
 }
 
 void DhtMessage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.dht.protobuf.DhtMessage)
+  // @@protoc_insertion_point(serialize_start:shardora.dht.protobuf.DhtMessage)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  // optional .zjchain.dht.protobuf.BootstrapRequest bootstrap_req = 1;
+  // optional .shardora.dht.protobuf.BootstrapRequest bootstrap_req = 1;
   if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       1, this->_internal_bootstrap_req(), output);
   }
 
-  // optional .zjchain.dht.protobuf.BootstrapResponse bootstrap_res = 2;
+  // optional .shardora.dht.protobuf.BootstrapResponse bootstrap_res = 2;
   if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       2, this->_internal_bootstrap_res(), output);
   }
 
-  // optional .zjchain.dht.protobuf.RefreshNeighborsRequest refresh_neighbors_req = 3;
+  // optional .shardora.dht.protobuf.RefreshNeighborsRequest refresh_neighbors_req = 3;
   if (cached_has_bits & 0x00000004u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       3, this->_internal_refresh_neighbors_req(), output);
   }
 
-  // optional .zjchain.dht.protobuf.RefreshNeighborsResponse refresh_neighbors_res = 4;
+  // optional .shardora.dht.protobuf.RefreshNeighborsResponse refresh_neighbors_res = 4;
   if (cached_has_bits & 0x00000008u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       4, this->_internal_refresh_neighbors_res(), output);
   }
 
-  // optional .zjchain.dht.protobuf.ConnectReqeust connect_req = 5;
+  // optional .shardora.dht.protobuf.ConnectReqeust connect_req = 5;
   if (cached_has_bits & 0x00000010u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       5, this->_internal_connect_req(), output);
   }
 
-  // optional .zjchain.dht.protobuf.HeartbeatRequest heartbeat_req = 6;
+  // optional .shardora.dht.protobuf.HeartbeatRequest heartbeat_req = 6;
   if (cached_has_bits & 0x00000020u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       6, this->_internal_heartbeat_req(), output);
   }
 
-  // optional .zjchain.dht.protobuf.HeartbeatResponse heartbeat_res = 7;
+  // optional .shardora.dht.protobuf.HeartbeatResponse heartbeat_res = 7;
   if (cached_has_bits & 0x00000040u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       7, this->_internal_heartbeat_res(), output);
   }
 
-  // optional .zjchain.dht.protobuf.TimerRequest timer = 8;
+  // optional .shardora.dht.protobuf.TimerRequest timer = 8;
   if (cached_has_bits & 0x00000080u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       8, this->_internal_timer(), output);
@@ -3759,67 +3759,67 @@ void DhtMessage::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.dht.protobuf.DhtMessage)
+  // @@protoc_insertion_point(serialize_end:shardora.dht.protobuf.DhtMessage)
 }
 
 ::google::protobuf::uint8* DhtMessage::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.dht.protobuf.DhtMessage)
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.dht.protobuf.DhtMessage)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  // optional .zjchain.dht.protobuf.BootstrapRequest bootstrap_req = 1;
+  // optional .shardora.dht.protobuf.BootstrapRequest bootstrap_req = 1;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
         1, this->_internal_bootstrap_req(), deterministic, target);
   }
 
-  // optional .zjchain.dht.protobuf.BootstrapResponse bootstrap_res = 2;
+  // optional .shardora.dht.protobuf.BootstrapResponse bootstrap_res = 2;
   if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
         2, this->_internal_bootstrap_res(), deterministic, target);
   }
 
-  // optional .zjchain.dht.protobuf.RefreshNeighborsRequest refresh_neighbors_req = 3;
+  // optional .shardora.dht.protobuf.RefreshNeighborsRequest refresh_neighbors_req = 3;
   if (cached_has_bits & 0x00000004u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
         3, this->_internal_refresh_neighbors_req(), deterministic, target);
   }
 
-  // optional .zjchain.dht.protobuf.RefreshNeighborsResponse refresh_neighbors_res = 4;
+  // optional .shardora.dht.protobuf.RefreshNeighborsResponse refresh_neighbors_res = 4;
   if (cached_has_bits & 0x00000008u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
         4, this->_internal_refresh_neighbors_res(), deterministic, target);
   }
 
-  // optional .zjchain.dht.protobuf.ConnectReqeust connect_req = 5;
+  // optional .shardora.dht.protobuf.ConnectReqeust connect_req = 5;
   if (cached_has_bits & 0x00000010u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
         5, this->_internal_connect_req(), deterministic, target);
   }
 
-  // optional .zjchain.dht.protobuf.HeartbeatRequest heartbeat_req = 6;
+  // optional .shardora.dht.protobuf.HeartbeatRequest heartbeat_req = 6;
   if (cached_has_bits & 0x00000020u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
         6, this->_internal_heartbeat_req(), deterministic, target);
   }
 
-  // optional .zjchain.dht.protobuf.HeartbeatResponse heartbeat_res = 7;
+  // optional .shardora.dht.protobuf.HeartbeatResponse heartbeat_res = 7;
   if (cached_has_bits & 0x00000040u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
         7, this->_internal_heartbeat_res(), deterministic, target);
   }
 
-  // optional .zjchain.dht.protobuf.TimerRequest timer = 8;
+  // optional .shardora.dht.protobuf.TimerRequest timer = 8;
   if (cached_has_bits & 0x00000080u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
@@ -3830,12 +3830,12 @@ void DhtMessage::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.dht.protobuf.DhtMessage)
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.dht.protobuf.DhtMessage)
   return target;
 }
 
 size_t DhtMessage::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.dht.protobuf.DhtMessage)
+// @@protoc_insertion_point(message_byte_size_start:shardora.dht.protobuf.DhtMessage)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3844,56 +3844,56 @@ size_t DhtMessage::ByteSizeLong() const {
         _internal_metadata_.unknown_fields());
   }
   if (_has_bits_[0 / 32] & 255u) {
-    // optional .zjchain.dht.protobuf.BootstrapRequest bootstrap_req = 1;
+    // optional .shardora.dht.protobuf.BootstrapRequest bootstrap_req = 1;
     if (has_bootstrap_req()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           *bootstrap_req_);
     }
 
-    // optional .zjchain.dht.protobuf.BootstrapResponse bootstrap_res = 2;
+    // optional .shardora.dht.protobuf.BootstrapResponse bootstrap_res = 2;
     if (has_bootstrap_res()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           *bootstrap_res_);
     }
 
-    // optional .zjchain.dht.protobuf.RefreshNeighborsRequest refresh_neighbors_req = 3;
+    // optional .shardora.dht.protobuf.RefreshNeighborsRequest refresh_neighbors_req = 3;
     if (has_refresh_neighbors_req()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           *refresh_neighbors_req_);
     }
 
-    // optional .zjchain.dht.protobuf.RefreshNeighborsResponse refresh_neighbors_res = 4;
+    // optional .shardora.dht.protobuf.RefreshNeighborsResponse refresh_neighbors_res = 4;
     if (has_refresh_neighbors_res()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           *refresh_neighbors_res_);
     }
 
-    // optional .zjchain.dht.protobuf.ConnectReqeust connect_req = 5;
+    // optional .shardora.dht.protobuf.ConnectReqeust connect_req = 5;
     if (has_connect_req()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           *connect_req_);
     }
 
-    // optional .zjchain.dht.protobuf.HeartbeatRequest heartbeat_req = 6;
+    // optional .shardora.dht.protobuf.HeartbeatRequest heartbeat_req = 6;
     if (has_heartbeat_req()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           *heartbeat_req_);
     }
 
-    // optional .zjchain.dht.protobuf.HeartbeatResponse heartbeat_res = 7;
+    // optional .shardora.dht.protobuf.HeartbeatResponse heartbeat_res = 7;
     if (has_heartbeat_res()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           *heartbeat_res_);
     }
 
-    // optional .zjchain.dht.protobuf.TimerRequest timer = 8;
+    // optional .shardora.dht.protobuf.TimerRequest timer = 8;
     if (has_timer()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
@@ -3907,22 +3907,22 @@ size_t DhtMessage::ByteSizeLong() const {
 }
 
 void DhtMessage::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.dht.protobuf.DhtMessage)
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.dht.protobuf.DhtMessage)
   GOOGLE_DCHECK_NE(&from, this);
   const DhtMessage* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const DhtMessage>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.dht.protobuf.DhtMessage)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.dht.protobuf.DhtMessage)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.dht.protobuf.DhtMessage)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.dht.protobuf.DhtMessage)
     MergeFrom(*source);
   }
 }
 
 void DhtMessage::MergeFrom(const DhtMessage& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.dht.protobuf.DhtMessage)
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.dht.protobuf.DhtMessage)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -3931,41 +3931,41 @@ void DhtMessage::MergeFrom(const DhtMessage& from) {
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
-      mutable_bootstrap_req()->::zjchain::dht::protobuf::BootstrapRequest::MergeFrom(from.bootstrap_req());
+      mutable_bootstrap_req()->::shardora::dht::protobuf::BootstrapRequest::MergeFrom(from.bootstrap_req());
     }
     if (cached_has_bits & 0x00000002u) {
-      mutable_bootstrap_res()->::zjchain::dht::protobuf::BootstrapResponse::MergeFrom(from.bootstrap_res());
+      mutable_bootstrap_res()->::shardora::dht::protobuf::BootstrapResponse::MergeFrom(from.bootstrap_res());
     }
     if (cached_has_bits & 0x00000004u) {
-      mutable_refresh_neighbors_req()->::zjchain::dht::protobuf::RefreshNeighborsRequest::MergeFrom(from.refresh_neighbors_req());
+      mutable_refresh_neighbors_req()->::shardora::dht::protobuf::RefreshNeighborsRequest::MergeFrom(from.refresh_neighbors_req());
     }
     if (cached_has_bits & 0x00000008u) {
-      mutable_refresh_neighbors_res()->::zjchain::dht::protobuf::RefreshNeighborsResponse::MergeFrom(from.refresh_neighbors_res());
+      mutable_refresh_neighbors_res()->::shardora::dht::protobuf::RefreshNeighborsResponse::MergeFrom(from.refresh_neighbors_res());
     }
     if (cached_has_bits & 0x00000010u) {
-      mutable_connect_req()->::zjchain::dht::protobuf::ConnectReqeust::MergeFrom(from.connect_req());
+      mutable_connect_req()->::shardora::dht::protobuf::ConnectReqeust::MergeFrom(from.connect_req());
     }
     if (cached_has_bits & 0x00000020u) {
-      mutable_heartbeat_req()->::zjchain::dht::protobuf::HeartbeatRequest::MergeFrom(from.heartbeat_req());
+      mutable_heartbeat_req()->::shardora::dht::protobuf::HeartbeatRequest::MergeFrom(from.heartbeat_req());
     }
     if (cached_has_bits & 0x00000040u) {
-      mutable_heartbeat_res()->::zjchain::dht::protobuf::HeartbeatResponse::MergeFrom(from.heartbeat_res());
+      mutable_heartbeat_res()->::shardora::dht::protobuf::HeartbeatResponse::MergeFrom(from.heartbeat_res());
     }
     if (cached_has_bits & 0x00000080u) {
-      mutable_timer()->::zjchain::dht::protobuf::TimerRequest::MergeFrom(from.timer());
+      mutable_timer()->::shardora::dht::protobuf::TimerRequest::MergeFrom(from.timer());
     }
   }
 }
 
 void DhtMessage::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.dht.protobuf.DhtMessage)
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.dht.protobuf.DhtMessage)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void DhtMessage::CopyFrom(const DhtMessage& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.dht.protobuf.DhtMessage)
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.dht.protobuf.DhtMessage)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -4002,38 +4002,38 @@ void DhtMessage::InternalSwap(DhtMessage* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace dht
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::dht::protobuf::BootstrapRequest* Arena::CreateMaybeMessage< ::zjchain::dht::protobuf::BootstrapRequest >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::dht::protobuf::BootstrapRequest >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::dht::protobuf::BootstrapRequest* Arena::CreateMaybeMessage< ::shardora::dht::protobuf::BootstrapRequest >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::dht::protobuf::BootstrapRequest >(arena);
 }
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::dht::protobuf::BootstrapResponse* Arena::CreateMaybeMessage< ::zjchain::dht::protobuf::BootstrapResponse >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::dht::protobuf::BootstrapResponse >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::dht::protobuf::BootstrapResponse* Arena::CreateMaybeMessage< ::shardora::dht::protobuf::BootstrapResponse >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::dht::protobuf::BootstrapResponse >(arena);
 }
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::dht::protobuf::NodeInfo* Arena::CreateMaybeMessage< ::zjchain::dht::protobuf::NodeInfo >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::dht::protobuf::NodeInfo >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::dht::protobuf::NodeInfo* Arena::CreateMaybeMessage< ::shardora::dht::protobuf::NodeInfo >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::dht::protobuf::NodeInfo >(arena);
 }
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::dht::protobuf::RefreshNeighborsRequest* Arena::CreateMaybeMessage< ::zjchain::dht::protobuf::RefreshNeighborsRequest >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::dht::protobuf::RefreshNeighborsRequest >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::dht::protobuf::RefreshNeighborsRequest* Arena::CreateMaybeMessage< ::shardora::dht::protobuf::RefreshNeighborsRequest >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::dht::protobuf::RefreshNeighborsRequest >(arena);
 }
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::dht::protobuf::RefreshNeighborsResponse* Arena::CreateMaybeMessage< ::zjchain::dht::protobuf::RefreshNeighborsResponse >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::dht::protobuf::RefreshNeighborsResponse >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::dht::protobuf::RefreshNeighborsResponse* Arena::CreateMaybeMessage< ::shardora::dht::protobuf::RefreshNeighborsResponse >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::dht::protobuf::RefreshNeighborsResponse >(arena);
 }
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::dht::protobuf::HeartbeatRequest* Arena::CreateMaybeMessage< ::zjchain::dht::protobuf::HeartbeatRequest >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::dht::protobuf::HeartbeatRequest >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::dht::protobuf::HeartbeatRequest* Arena::CreateMaybeMessage< ::shardora::dht::protobuf::HeartbeatRequest >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::dht::protobuf::HeartbeatRequest >(arena);
 }
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::dht::protobuf::HeartbeatResponse* Arena::CreateMaybeMessage< ::zjchain::dht::protobuf::HeartbeatResponse >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::dht::protobuf::HeartbeatResponse >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::dht::protobuf::HeartbeatResponse* Arena::CreateMaybeMessage< ::shardora::dht::protobuf::HeartbeatResponse >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::dht::protobuf::HeartbeatResponse >(arena);
 }
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::dht::protobuf::ConnectReqeust* Arena::CreateMaybeMessage< ::zjchain::dht::protobuf::ConnectReqeust >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::dht::protobuf::ConnectReqeust >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::dht::protobuf::ConnectReqeust* Arena::CreateMaybeMessage< ::shardora::dht::protobuf::ConnectReqeust >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::dht::protobuf::ConnectReqeust >(arena);
 }
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::dht::protobuf::TimerRequest* Arena::CreateMaybeMessage< ::zjchain::dht::protobuf::TimerRequest >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::dht::protobuf::TimerRequest >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::dht::protobuf::TimerRequest* Arena::CreateMaybeMessage< ::shardora::dht::protobuf::TimerRequest >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::dht::protobuf::TimerRequest >(arena);
 }
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::dht::protobuf::DhtMessage* Arena::CreateMaybeMessage< ::zjchain::dht::protobuf::DhtMessage >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::dht::protobuf::DhtMessage >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::dht::protobuf::DhtMessage* Arena::CreateMaybeMessage< ::shardora::dht::protobuf::DhtMessage >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::dht::protobuf::DhtMessage >(arena);
 }
 }  // namespace protobuf
 }  // namespace google

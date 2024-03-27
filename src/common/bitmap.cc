@@ -2,7 +2,7 @@
 
 #include "common/bitmap.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -84,4 +84,4 @@ bool Bitmap::operator==(const Bitmap& r) const {
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -11,7 +11,7 @@
 #include "network/dht_manager.h"
 #include "network/network_proto.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace network {
 
@@ -59,17 +59,17 @@ int Universal::Init(
     return kNetworkSuccess;
 }
 
-int Universal::Join(uint8_t thread_idx, dht::NodePtr& node) {
-    int res = BaseDht::Join(thread_idx, node);
+int Universal::Join(dht::NodePtr& node) {
+    int res = BaseDht::Join(node);
     if (!is_universal_) {
         return res;
     }
 
-    AddNodeToUniversal(thread_idx, node);
+    AddNodeToUniversal(node);
     // add to subnetworks
 //     ZJC_DEBUG("universal join node: %s:%d", node->public_ip.c_str(), node->public_port);
-    DhtManager::Instance()->Join(thread_idx, node);
-    UniversalManager::Instance()->Join(thread_idx, node);
+    DhtManager::Instance()->Join(node);
+    UniversalManager::Instance()->Join(node);
     return res;
 }
 
@@ -227,7 +227,6 @@ int Universal::Destroy() {
 }
 
 void Universal::OnNewElectBlock(
-        uint8_t thread_idx,
         uint32_t sharding_id,
         uint64_t elect_height,
         common::MembersPtr& members,
@@ -260,7 +259,7 @@ void Universal::OnNewElectBlock(
         old_id_set.insert(node->id);
         if (new_item->id_set.find((*iter)->id) != new_item->id_set.end()) {
             if (des_dht != nullptr) {
-                des_dht->UniversalJoin(thread_idx, *iter);
+                des_dht->UniversalJoin(*iter);
                 ZJC_DEBUG("expand nodes join network %u add new node: %s:%u, %s",
                     sharding_id,
                     (*iter)->public_ip.c_str(),
@@ -312,7 +311,7 @@ void Universal::OnNewElectBlock(
     }
 }
 
-int Universal::AddNodeToUniversal(uint8_t thread_idx, dht::NodePtr& node) {
+int Universal::AddNodeToUniversal(dht::NodePtr& node) {
     bool elected = false;
     for (auto sharding_iter = sharding_latest_height_map_.begin();
         sharding_iter != sharding_latest_height_map_.end(); ++sharding_iter) {
@@ -324,7 +323,7 @@ int Universal::AddNodeToUniversal(uint8_t thread_idx, dht::NodePtr& node) {
                 node->public_port,
                 node->pubkey_str,
                 node->id);
-            BaseDht::Join(thread_idx, new_node);
+            BaseDht::Join(new_node);
             elected = true;
             ZJC_DEBUG("universal add node: %s, sharding id: %u",
                 common::Encode::HexEncode(node->id).c_str(), sharding_iter->first);
@@ -334,7 +333,7 @@ int Universal::AddNodeToUniversal(uint8_t thread_idx, dht::NodePtr& node) {
     if (!elected &&
             common::GlobalInfo::Instance()->network_id() >= network::kRootCongressNetworkId &&
             common::GlobalInfo::Instance()->network_id() < network::kConsensusShardEndNetworkId) {
-        auto account_info = acc_mgr_->GetAccountInfo(thread_idx, node->id);
+        auto account_info = acc_mgr_->GetAccountInfo(node->id);
         if (account_info != nullptr) {
             auto new_node = std::make_shared<dht::Node>(
                 account_info->sharding_id() + network::kConsensusWaitingShardOffset,
@@ -342,14 +341,14 @@ int Universal::AddNodeToUniversal(uint8_t thread_idx, dht::NodePtr& node) {
                 node->public_port,
                 node->pubkey_str,
                 node->id);
-            BaseDht::Join(thread_idx, new_node);
+            BaseDht::Join(new_node);
             auto root_new_node = std::make_shared<dht::Node>(
                 network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset,
                 node->public_ip,
                 node->public_port,
                 node->pubkey_str,
                 node->id);
-            BaseDht::Join(thread_idx, root_new_node);
+            BaseDht::Join(root_new_node);
         }
     }
 
@@ -358,4 +357,4 @@ int Universal::AddNodeToUniversal(uint8_t thread_idx, dht::NodePtr& node) {
 
 }  // namespace network
 
-}  //namespace zjchain
+}  //namespace shardora

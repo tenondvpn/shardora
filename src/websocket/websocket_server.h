@@ -11,7 +11,7 @@
 
 #include <websocketpp/server.hpp>
 
-namespace zjchain {
+namespace shardora {
 
 namespace ws {
 
@@ -46,4 +46,4 @@ private:
 
 };  // namespace tcp
 
-};  // namespace zjchain
+};  // namespace shardora

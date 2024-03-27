@@ -9,7 +9,7 @@
 #include "network/universal.h"
 #include "security/security.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace block {
     class AccountManager;
@@ -23,17 +23,16 @@ public:
     void RegisterUniversal(uint32_t network_id, dht::BaseDhtPtr& dht);
     void UnRegisterUniversal(uint32_t network_id);
     dht::BaseDhtPtr GetUniversal(uint32_t network_id);
-    int CreateUniversalNetwork(uint8_t thread_idx, const common::Config& config);
-    int CreateNodeNetwork(uint8_t thread_idx, const common::Config& config);
+    int CreateUniversalNetwork(const common::Config& config);
+    int CreateNodeNetwork(const common::Config& config);
     void Init(
         std::shared_ptr<security::Security>& security, 
         std::shared_ptr<db::Db>& db, 
         std::shared_ptr<block::AccountManager>& acc_mgr);
     void Destroy();
     void DropNode(const std::string& ip, uint16_t port);
-    void Join(uint8_t thread_idx, const dht::NodePtr& node);
+    void Join(const dht::NodePtr& node);
     void OnNewElectBlock(
-        uint8_t thread_idx,
         uint32_t sharding_id,
         uint64_t elect_height,
         common::MembersPtr& members,
@@ -42,7 +41,7 @@ public:
 private:
     UniversalManager();
     ~UniversalManager();
-    int CreateNetwork(uint8_t thread_idx, uint32_t network_id, const common::Config& config);
+    int CreateNetwork(uint32_t network_id, const common::Config& config);
     void DhtBootstrapResponseCallback(
         dht::BaseDht* dht_ptr,
         const dht::protobuf::DhtMessage& dht_msg);
@@ -59,4 +58,4 @@ private:
 
 }  // namespace network
 
-}  // namespace zjchain
+}  // namespace shardora

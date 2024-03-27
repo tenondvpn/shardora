@@ -15,7 +15,7 @@
 #include "protos/timeblock.pb.h"
 #include "protos/transport.pb.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace vss {
     class VssManager;
@@ -86,4 +86,4 @@ private:
 
 }  // namespace timeblock
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -1,6 +1,8 @@
 #include "websocket/websocket_client.h"
 
-namespace zjchain {
+#include "common/global_info.h"
+
+namespace shardora {
 
 namespace ws {
 
@@ -19,6 +21,7 @@ int32_t WebSocketClient::Init(WsClient::message_handler cb) {
 
 void WebSocketClient::Start() {
     run_thread_ = new std::thread([&]() { 
+        auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
         client_.run();
     });
 }
@@ -89,4 +92,4 @@ void WebSocketClient::Stop() {
 
 };  // namespace tcp
 
-};  // namespace zjchain
+};  // namespace shardora

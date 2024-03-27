@@ -52,7 +52,7 @@ struct Construct {
 #define ZJC_NETWORK_DEBUG_FOR_PROTOMESSAGE(message, append)
 #endif
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -72,7 +72,7 @@ enum MessageType {
     kInitMessage = 12,
     kC2cMessage = 13,
     // max (message) type
-    kLegoMaxMessageTypeCount = 16,
+    kMaxMessageTypeCount,
 };
 
 enum CommonErrorCode {
@@ -129,14 +129,14 @@ enum VipLevel {
     kVipLevel5 = 5,
 };
 
-static const uint32_t kImmutablePoolSize = 256u;
+static const uint32_t kImmutablePoolSize = 64u;
 static const uint32_t kRootChainPoolIndex = kImmutablePoolSize;
 static const uint32_t kInvalidPoolIndex = kImmutablePoolSize + 1;
 static const uint32_t kTestForNetworkId = 4u;
 static const uint16_t kDefaultVpnPort = 9033u;
 static const uint16_t kDefaultRoutePort = 9034u;
 // static const int64_t kRotationPeriod = 600ll * 1000ll * 1000ll; // epoch time
-static const int64_t kRotationPeriod = 300ll * 1000ll * 1000ll; // for quicker debugging
+static const int64_t kRotationPeriod = 3600ll * 1000ll * 1000ll; // for quicker debugging
 static const int64_t kMessageTimeoutMs = 10000ll;
 static const uint32_t kMaxRotationCount = 4u;
 static const uint16_t kNodePortRangeMin = 1000u;
@@ -172,6 +172,7 @@ static const uint32_t kBroadcastIgnBloomfilter = 1u;
 static const int64_t kInvalidInt64 = (std::numeric_limits<int64_t>::max)();
 static const uint64_t kInvalidUint64 = (std::numeric_limits<uint64_t>::max)();
 static const uint32_t kInvalidUint32 = (std::numeric_limits<uint32_t>::max)();
+static const uint32_t kInvalidUint8 = (std::numeric_limits<uint8_t>::max)();
 static const uint32_t kInvalidInt32 = (std::numeric_limits<int32_t>::max)();
 static const uint32_t kInvalidFloat = (std::numeric_limits<float>::max)();
 static const uint8_t kMaxThreadCount = 16;
@@ -367,5 +368,5 @@ bool Retry(Func func, int maxAttempts, std::chrono::milliseconds delay, Args... 
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora
 

@@ -4,9 +4,10 @@
 #include <functional>
 #include <map>
 
+#include "common/global_info.h"
 #include "common/string_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace http {
 
@@ -49,11 +50,18 @@ int32_t HttpServer::Start() {
     }
 
     http_thread_ = new std::thread(std::bind(&HttpServer::RunHttpServer, this));
+    std::unique_lock<std::mutex> lock(mutex_);
+    con_.wait(lock);
     http_thread_->detach();
     return kHttpSuccess;
 }
 
 void HttpServer::RunHttpServer() {
+    {
+        auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+        std::unique_lock<std::mutex> lock(mutex_);
+        con_.notify_one();
+    }
     event_base_loop(evbase_, 0);
 }
 
@@ -85,4 +93,4 @@ int32_t HttpServer::Stop() {
 
 };  // namespace http
 
-};  // namespace zjchain
+};  // namespace shardora

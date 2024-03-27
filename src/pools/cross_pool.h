@@ -25,7 +25,7 @@
 #include "pools/height_tree_level.h"
 #include "sync/key_value_sync.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
 
@@ -37,7 +37,7 @@ public:
         uint32_t des_sharding_id,
         const std::shared_ptr<db::Db>& db,
         std::shared_ptr<sync::KeyValueSync>& kv_sync);
-    uint32_t SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms);
+    uint32_t SyncMissingBlocks(uint64_t now_tm_ms);
 
     void FlushHeightTree(db::DbWriteBatch& db_batch) {
         if (height_tree_ptr_ != nullptr) {
@@ -49,7 +49,7 @@ public:
         return latest_height_;
     }
 
-    uint64_t UpdateLatestInfo(uint8_t thread_idx, uint64_t height) {
+    uint64_t UpdateLatestInfo(uint64_t height) {
         if (height_tree_ptr_ == nullptr) {
             InitHeightTree();
         }
@@ -75,7 +75,7 @@ public:
                 prev_synced_height_ = synced_height_;
             }
         } else {
-            SyncBlock(thread_idx);
+            SyncBlock();
         }
 
         ZJC_INFO("pool index: %d, new height: %lu, new synced height: %lu,"
@@ -85,7 +85,7 @@ public:
         return synced_height_;
     }
 
-    void SyncBlock(uint8_t thread_idx) {
+    void SyncBlock() {
         if (height_tree_ptr_ == nullptr) {
             return;
         }
@@ -105,7 +105,6 @@ public:
                 ++prev_synced_height_) {
             if (!height_tree_ptr_->Valid(prev_synced_height_ + 1)) {
                 kv_sync_->AddSyncHeight(
-                    thread_idx,
                     net_id,
                     pool_index_,
                     prev_synced_height_ + 1,
@@ -174,4 +173,4 @@ std::shared_ptr<db::Db> db_ = nullptr;
 
 }  // namespace pools
 
-}  // namespace zjchain
+}  // namespace shardora

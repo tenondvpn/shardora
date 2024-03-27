@@ -4,7 +4,7 @@
 #include "transport/msg_encoder.h"
 #include "transport/msg_decoder.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace transport {
 
@@ -25,4 +25,4 @@ public:
 
 }  // namespace transport
 
-}  // namespace zjchain
+}  // namespace shardora

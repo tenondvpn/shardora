@@ -16,7 +16,7 @@
 #include "protos/prefix_db.h"
 #include "protos/init.pb.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace block {
     class AccountManager;
@@ -125,4 +125,4 @@ private:
 
 };  // namespace init
 
-};  // namespace zjchain
+};  // namespace shardora

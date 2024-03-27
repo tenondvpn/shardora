@@ -7,7 +7,7 @@
 #include "common/encode.h"
 #include "common/time_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -27,7 +27,8 @@ GlobalInfo::~GlobalInfo() {
 }
 
 int GlobalInfo::Init(const common::Config& config) {
-    begin_run_timestamp_ms_ = common::TimeUtils::TimestampMs();
+    memset(consensus_thread_index_map_, common::kInvalidUint8, sizeof(consensus_thread_index_map_));
+    begin_run_timestamp_ms_ = common::TimeUtils::TimestampMs() + 10000lu;
     message_handler_thread_count_ = 4;
     config.Get("zjchain", "consensus_thread_count", message_handler_thread_count_);
     ++message_handler_thread_count_;
@@ -70,20 +71,20 @@ int GlobalInfo::Init(const common::Config& config) {
     config.Get("zjchain", "ck_host", ck_host_);
     config.Get("zjchain", "ck_user", ck_user_);
     config.Get("zjchain", "ck_pass", ck_pass_);
+    config.Get("zjchain", "pools_each_thread_max_messages", pools_each_thread_max_messages_);
+    config.Get("zjchain", "each_tx_pool_max_txs", each_tx_pool_max_txs_);
 
     auto bft_thread = message_handler_thread_count_ - 1;
-    thread_with_pools_ = new std::set<uint32_t>[bft_thread];
+    thread_with_pools_ = new std::set<uint32_t>[common::kMaxThreadCount];
     auto each_thread_pools_count = common::kInvalidPoolIndex / bft_thread;
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         auto thread_idx = (i / each_thread_pools_count) % bft_thread;
-        thread_with_pools_[thread_idx].insert(i);
         pools_with_thread_[i] = thread_idx;
     }
 
-    now_valid_thread_index_ = message_handler_thread_count_ + kTickThreadPoolCount;
     return kCommonSuccess;
 }
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

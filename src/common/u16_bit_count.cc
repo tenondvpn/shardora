@@ -1,6 +1,6 @@
 #include "common/u16_bit_count.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -11,4 +11,4 @@ U16BitCount* U16BitCount::Instance() {
     
 };  // namespace common
 
-};  // namespace zjchain
+};  // namespace shardora

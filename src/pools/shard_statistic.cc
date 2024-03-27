@@ -9,7 +9,7 @@
 #include "protos/pools.pb.h"
 #include "pools/tx_pool_manager.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
 
@@ -23,6 +23,9 @@ void ShardStatistic::Init() {
 }
 
 void ShardStatistic::OnNewBlock(const block::protobuf::Block& block) {
+#ifdef TEST_NO_CROSS
+    return;
+#endif
     if (block.network_id() != common::GlobalInfo::Instance()->network_id() &&
             block.network_id() + network::kConsensusWaitingShardOffset != common::GlobalInfo::Instance()->network_id()) {
         ZJC_DEBUG("network invalid %u, %u",
@@ -445,6 +448,9 @@ bool ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
 }
 
 int ShardStatistic::LeaderCreateStatisticHeights(pools::protobuf::StatisticTxItem& to_heights) {
+#ifdef TEST_NO_CROSS
+    return kPoolsError;
+#endif
     bool valid = false;
     std::string heights;
     assert(tx_heights_ptr_->heights_size() == common::kInvalidPoolIndex);
@@ -513,6 +519,9 @@ int ShardStatistic::StatisticWithHeights(
         const pools::protobuf::StatisticTxItem& leader_to_heights,
         std::string* statistic_hash,
         std::string* cross_hash) {
+#ifdef TEST_NO_CROSS
+        return kPoolsError;
+#endif
     bool is_root = (
         common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
         common::GlobalInfo::Instance()->network_id() ==
@@ -1045,4 +1054,4 @@ void ShardStatistic::LoadLatestHeights() {
 
 }  // namespace pools
 
-}  // namespace zjchain
+}  // namespace shardora

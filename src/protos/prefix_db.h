@@ -5,6 +5,7 @@
 #include <libbls/tools/utils.h>
 
 #include "common/encode.h"
+#include "common/global_info.h"
 #include "common/hash.h"
 #include "common/string_utils.h"
 #include "common/tick.h"
@@ -21,7 +22,7 @@
 #include "protos/tx_storage_key.h"
 #include "security/security.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace protos {
 
@@ -80,21 +81,15 @@ public:
     ~PrefixDb() {}
 
     void InitGidManager() {
-        gid_set_[0].reserve(30240);
-        gid_set_[1].reserve(30240);
         db_batch_tick_.CutOff(
             5000000lu,
-            std::bind(&PrefixDb::DumpGidToDb, this, std::placeholders::_1));
+            std::bind(&PrefixDb::DumpGidToDb, this));
     }
 
     void Destroy() {
-        for (int32_t i = 0; i < 2; ++i) {
-            if (!gid_set_[i].empty()) {
-                ZJC_DEBUG("put 4");
-                db_->Put(db_batch[i]);
-                db_batch[i].Clear();
-                gid_set_[i].clear();
-            }
+        for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
+            db_->Put(db_batch_[i]);
+            db_batch_[i].Clear();
         }
     }
 
@@ -109,7 +104,7 @@ public:
             const address::protobuf::AddressInfo& addr_info,
             db::DbWriteBatch& db_batch) {
         db_batch.Put(kAddressPrefix + addr, addr_info.SerializeAsString());
-        ZJC_INFO("success add addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
+        ZJC_DEBUG("success add addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
     }
 
     void AddAddressInfo(const std::string& addr, const std::string& val) {
@@ -616,36 +611,14 @@ public:
     }
 
     bool GidExists(const std::string& gid) {
-        auto now_tm = common::TimeUtils::TimestampUs();
-        if (!gid_set_[valid_index_].empty() && dumped_gid_ && prev_gid_tm_us_ + 3000000lu < now_tm) {
-            ZJC_DEBUG("dump gid: %u", gid_set_[valid_index_].size());
-            valid_index_ = (valid_index_ + 1) % 2;
-            gid_set_[valid_index_].clear();
-            prev_gid_tm_us_ = now_tm;
-            dumped_gid_ = false;
-        }
-
         std::string key = kGidPrefix + gid;
-        auto iter0 = gid_set_[0].find(key);
-        if (iter0 != gid_set_[0].end()) {
-//             assert(false);
-            return true;
-        }
-
-        auto iter1 = gid_set_[1].find(key);
-        if (iter1 != gid_set_[1].end()) {
-//             assert(false);
-            return true;
-        }
 
         if (db_->Exist(key)) {
-//             assert(false);
             return true;
         }
 
-        auto index = valid_index_;
-        gid_set_[index].insert(key);
-        db_batch[index].Put(key, "1");
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        db_batch_[thread_idx].Put(key, "1");
         return false;
     }
 
@@ -1641,26 +1614,25 @@ public:
     }
 
 private:
-    void DumpGidToDb(uint8_t thread_idx) {
+    void DumpGidToDb() {
         if (!dumped_gid_) {
-            uint32_t index = (valid_index_ + 1) % 2;
-            ZJC_DEBUG("put 5");
-            db_->Put(db_batch[index]);
-            db_batch[index].Clear();
+            for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
+                db_->Put(db_batch_[i]);
+                db_batch_[i].Clear();
+            }
+
             dumped_gid_ = true;
         }
 
         db_batch_tick_.CutOff(
             1000000lu,
-            std::bind(&PrefixDb::DumpGidToDb, this, std::placeholders::_1));
+            std::bind(&PrefixDb::DumpGidToDb, this));
     }
 
     static const uint32_t kSaveElectHeightCount = 4u;
 
     std::shared_ptr<db::Db> db_ = nullptr;
-    std::unordered_set<std::string> gid_set_[2];
-    db::DbWriteBatch db_batch[2];
-    uint32_t valid_index_ = 0;
+    db::DbWriteBatch db_batch_[common::kMaxThreadCount];
     uint64_t prev_gid_tm_us_ = 0;
     common::Tick db_batch_tick_;
     volatile bool dumped_gid_ = false;
@@ -1670,4 +1642,4 @@ private:
 
 };  // namespace protos
 
-};  // namespace zjchain
+};  // namespace shardora

@@ -3,7 +3,7 @@
 #include "big_num/snark.h"
 #include "big_num/libsnark.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace contract {
 
@@ -44,4 +44,4 @@ int ContractaltBn128PairingProduct::call(
 
 }  // namespace contract
 
-}  // namespace zjchain
+}  // namespace shardora

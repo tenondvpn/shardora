@@ -15,7 +15,7 @@
 #include "protos/prefix_db.h"
 #include "security/security.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace elect {
     class ElectManager;
@@ -42,9 +42,6 @@ public:
         uint64_t prepare_elect_height,
         uint64_t elect_height);
     void OnNewBlock(const block::protobuf::Block& block);
-    void GetStatisticInfo(
-        uint64_t timeblock_height,
-        block::protobuf::StatisticInfo* statistic_info);
     void OnTimeBlock(
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
@@ -99,4 +96,4 @@ private:
 
 }  // namespace pools
 
-}  // namespace zjchain
+}  // namespace shardora

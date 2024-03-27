@@ -45,7 +45,7 @@ struct TableStruct {
 };
 void AddDescriptors();
 }  // namespace protobuf_protos_2fnetwork_2eproto
-namespace zjchain {
+namespace shardora {
 namespace network {
 namespace protobuf {
 class DropNodeRequest;
@@ -65,23 +65,23 @@ class NodeInfoDefaultTypeInternal;
 extern NodeInfoDefaultTypeInternal _NodeInfo_default_instance_;
 }  // namespace protobuf
 }  // namespace network
-}  // namespace zjchain
+}  // namespace shardora
 namespace google {
 namespace protobuf {
-template<> ::zjchain::network::protobuf::DropNodeRequest* Arena::CreateMaybeMessage<::zjchain::network::protobuf::DropNodeRequest>(Arena*);
-template<> ::zjchain::network::protobuf::GetNetworkNodesRequest* Arena::CreateMaybeMessage<::zjchain::network::protobuf::GetNetworkNodesRequest>(Arena*);
-template<> ::zjchain::network::protobuf::GetNetworkNodesResponse* Arena::CreateMaybeMessage<::zjchain::network::protobuf::GetNetworkNodesResponse>(Arena*);
-template<> ::zjchain::network::protobuf::NetworkMessage* Arena::CreateMaybeMessage<::zjchain::network::protobuf::NetworkMessage>(Arena*);
-template<> ::zjchain::network::protobuf::NodeInfo* Arena::CreateMaybeMessage<::zjchain::network::protobuf::NodeInfo>(Arena*);
+template<> ::shardora::network::protobuf::DropNodeRequest* Arena::CreateMaybeMessage<::shardora::network::protobuf::DropNodeRequest>(Arena*);
+template<> ::shardora::network::protobuf::GetNetworkNodesRequest* Arena::CreateMaybeMessage<::shardora::network::protobuf::GetNetworkNodesRequest>(Arena*);
+template<> ::shardora::network::protobuf::GetNetworkNodesResponse* Arena::CreateMaybeMessage<::shardora::network::protobuf::GetNetworkNodesResponse>(Arena*);
+template<> ::shardora::network::protobuf::NetworkMessage* Arena::CreateMaybeMessage<::shardora::network::protobuf::NetworkMessage>(Arena*);
+template<> ::shardora::network::protobuf::NodeInfo* Arena::CreateMaybeMessage<::shardora::network::protobuf::NodeInfo>(Arena*);
 }  // namespace protobuf
 }  // namespace google
-namespace zjchain {
+namespace shardora {
 namespace network {
 namespace protobuf {
 
 // ===================================================================
 
-class GetNetworkNodesRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.network.protobuf.GetNetworkNodesRequest) */ {
+class GetNetworkNodesRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.network.protobuf.GetNetworkNodesRequest) */ {
  public:
   GetNetworkNodesRequest();
   virtual ~GetNetworkNodesRequest();
@@ -189,7 +189,7 @@ class GetNetworkNodesRequest : public ::google::protobuf::Message /* @@protoc_in
   ::google::protobuf::uint32 count() const;
   void set_count(::google::protobuf::uint32 value);
 
-  // @@protoc_insertion_point(class_scope:zjchain.network.protobuf.GetNetworkNodesRequest)
+  // @@protoc_insertion_point(class_scope:shardora.network.protobuf.GetNetworkNodesRequest)
  private:
   void set_has_net_id();
   void clear_has_net_id();
@@ -205,7 +205,7 @@ class GetNetworkNodesRequest : public ::google::protobuf::Message /* @@protoc_in
 };
 // -------------------------------------------------------------------
 
-class NodeInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.network.protobuf.NodeInfo) */ {
+class NodeInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.network.protobuf.NodeInfo) */ {
  public:
   NodeInfo();
   virtual ~NodeInfo();
@@ -343,7 +343,7 @@ class NodeInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::google::protobuf::int32 public_port() const;
   void set_public_port(::google::protobuf::int32 value);
 
-  // @@protoc_insertion_point(class_scope:zjchain.network.protobuf.NodeInfo)
+  // @@protoc_insertion_point(class_scope:shardora.network.protobuf.NodeInfo)
  private:
   void set_has_sharding_id();
   void clear_has_sharding_id();
@@ -365,7 +365,7 @@ class NodeInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
 };
 // -------------------------------------------------------------------
 
-class GetNetworkNodesResponse : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.network.protobuf.GetNetworkNodesResponse) */ {
+class GetNetworkNodesResponse : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.network.protobuf.GetNetworkNodesResponse) */ {
  public:
   GetNetworkNodesResponse();
   virtual ~GetNetworkNodesResponse();
@@ -459,30 +459,30 @@ class GetNetworkNodesResponse : public ::google::protobuf::Message /* @@protoc_i
 
   // accessors -------------------------------------------------------
 
-  // repeated .zjchain.network.protobuf.NodeInfo nodes = 1;
+  // repeated .shardora.network.protobuf.NodeInfo nodes = 1;
   int nodes_size() const;
   void clear_nodes();
   static const int kNodesFieldNumber = 1;
-  ::zjchain::network::protobuf::NodeInfo* mutable_nodes(int index);
-  ::google::protobuf::RepeatedPtrField< ::zjchain::network::protobuf::NodeInfo >*
+  ::shardora::network::protobuf::NodeInfo* mutable_nodes(int index);
+  ::google::protobuf::RepeatedPtrField< ::shardora::network::protobuf::NodeInfo >*
       mutable_nodes();
-  const ::zjchain::network::protobuf::NodeInfo& nodes(int index) const;
-  ::zjchain::network::protobuf::NodeInfo* add_nodes();
-  const ::google::protobuf::RepeatedPtrField< ::zjchain::network::protobuf::NodeInfo >&
+  const ::shardora::network::protobuf::NodeInfo& nodes(int index) const;
+  ::shardora::network::protobuf::NodeInfo* add_nodes();
+  const ::google::protobuf::RepeatedPtrField< ::shardora::network::protobuf::NodeInfo >&
       nodes() const;
 
-  // @@protoc_insertion_point(class_scope:zjchain.network.protobuf.GetNetworkNodesResponse)
+  // @@protoc_insertion_point(class_scope:shardora.network.protobuf.GetNetworkNodesResponse)
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::RepeatedPtrField< ::zjchain::network::protobuf::NodeInfo > nodes_;
+  ::google::protobuf::RepeatedPtrField< ::shardora::network::protobuf::NodeInfo > nodes_;
   friend struct ::protobuf_protos_2fnetwork_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
-class DropNodeRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.network.protobuf.DropNodeRequest) */ {
+class DropNodeRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.network.protobuf.DropNodeRequest) */ {
  public:
   DropNodeRequest();
   virtual ~DropNodeRequest();
@@ -598,7 +598,7 @@ class DropNodeRequest : public ::google::protobuf::Message /* @@protoc_insertion
   ::google::protobuf::int32 port() const;
   void set_port(::google::protobuf::int32 value);
 
-  // @@protoc_insertion_point(class_scope:zjchain.network.protobuf.DropNodeRequest)
+  // @@protoc_insertion_point(class_scope:shardora.network.protobuf.DropNodeRequest)
  private:
   void set_has_ip();
   void clear_has_ip();
@@ -614,7 +614,7 @@ class DropNodeRequest : public ::google::protobuf::Message /* @@protoc_insertion
 };
 // -------------------------------------------------------------------
 
-class NetworkMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.network.protobuf.NetworkMessage) */ {
+class NetworkMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.network.protobuf.NetworkMessage) */ {
  public:
   NetworkMessage();
   virtual ~NetworkMessage();
@@ -708,43 +708,43 @@ class NetworkMessage : public ::google::protobuf::Message /* @@protoc_insertion_
 
   // accessors -------------------------------------------------------
 
-  // optional .zjchain.network.protobuf.GetNetworkNodesRequest get_net_nodes_req = 1;
+  // optional .shardora.network.protobuf.GetNetworkNodesRequest get_net_nodes_req = 1;
   bool has_get_net_nodes_req() const;
   void clear_get_net_nodes_req();
   static const int kGetNetNodesReqFieldNumber = 1;
   private:
-  const ::zjchain::network::protobuf::GetNetworkNodesRequest& _internal_get_net_nodes_req() const;
+  const ::shardora::network::protobuf::GetNetworkNodesRequest& _internal_get_net_nodes_req() const;
   public:
-  const ::zjchain::network::protobuf::GetNetworkNodesRequest& get_net_nodes_req() const;
-  ::zjchain::network::protobuf::GetNetworkNodesRequest* release_get_net_nodes_req();
-  ::zjchain::network::protobuf::GetNetworkNodesRequest* mutable_get_net_nodes_req();
-  void set_allocated_get_net_nodes_req(::zjchain::network::protobuf::GetNetworkNodesRequest* get_net_nodes_req);
+  const ::shardora::network::protobuf::GetNetworkNodesRequest& get_net_nodes_req() const;
+  ::shardora::network::protobuf::GetNetworkNodesRequest* release_get_net_nodes_req();
+  ::shardora::network::protobuf::GetNetworkNodesRequest* mutable_get_net_nodes_req();
+  void set_allocated_get_net_nodes_req(::shardora::network::protobuf::GetNetworkNodesRequest* get_net_nodes_req);
 
-  // optional .zjchain.network.protobuf.GetNetworkNodesResponse get_net_nodes_res = 2;
+  // optional .shardora.network.protobuf.GetNetworkNodesResponse get_net_nodes_res = 2;
   bool has_get_net_nodes_res() const;
   void clear_get_net_nodes_res();
   static const int kGetNetNodesResFieldNumber = 2;
   private:
-  const ::zjchain::network::protobuf::GetNetworkNodesResponse& _internal_get_net_nodes_res() const;
+  const ::shardora::network::protobuf::GetNetworkNodesResponse& _internal_get_net_nodes_res() const;
   public:
-  const ::zjchain::network::protobuf::GetNetworkNodesResponse& get_net_nodes_res() const;
-  ::zjchain::network::protobuf::GetNetworkNodesResponse* release_get_net_nodes_res();
-  ::zjchain::network::protobuf::GetNetworkNodesResponse* mutable_get_net_nodes_res();
-  void set_allocated_get_net_nodes_res(::zjchain::network::protobuf::GetNetworkNodesResponse* get_net_nodes_res);
+  const ::shardora::network::protobuf::GetNetworkNodesResponse& get_net_nodes_res() const;
+  ::shardora::network::protobuf::GetNetworkNodesResponse* release_get_net_nodes_res();
+  ::shardora::network::protobuf::GetNetworkNodesResponse* mutable_get_net_nodes_res();
+  void set_allocated_get_net_nodes_res(::shardora::network::protobuf::GetNetworkNodesResponse* get_net_nodes_res);
 
-  // optional .zjchain.network.protobuf.DropNodeRequest drop_node = 3;
+  // optional .shardora.network.protobuf.DropNodeRequest drop_node = 3;
   bool has_drop_node() const;
   void clear_drop_node();
   static const int kDropNodeFieldNumber = 3;
   private:
-  const ::zjchain::network::protobuf::DropNodeRequest& _internal_drop_node() const;
+  const ::shardora::network::protobuf::DropNodeRequest& _internal_drop_node() const;
   public:
-  const ::zjchain::network::protobuf::DropNodeRequest& drop_node() const;
-  ::zjchain::network::protobuf::DropNodeRequest* release_drop_node();
-  ::zjchain::network::protobuf::DropNodeRequest* mutable_drop_node();
-  void set_allocated_drop_node(::zjchain::network::protobuf::DropNodeRequest* drop_node);
+  const ::shardora::network::protobuf::DropNodeRequest& drop_node() const;
+  ::shardora::network::protobuf::DropNodeRequest* release_drop_node();
+  ::shardora::network::protobuf::DropNodeRequest* mutable_drop_node();
+  void set_allocated_drop_node(::shardora::network::protobuf::DropNodeRequest* drop_node);
 
-  // @@protoc_insertion_point(class_scope:zjchain.network.protobuf.NetworkMessage)
+  // @@protoc_insertion_point(class_scope:shardora.network.protobuf.NetworkMessage)
  private:
   void set_has_get_net_nodes_req();
   void clear_has_get_net_nodes_req();
@@ -756,9 +756,9 @@ class NetworkMessage : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::zjchain::network::protobuf::GetNetworkNodesRequest* get_net_nodes_req_;
-  ::zjchain::network::protobuf::GetNetworkNodesResponse* get_net_nodes_res_;
-  ::zjchain::network::protobuf::DropNodeRequest* drop_node_;
+  ::shardora::network::protobuf::GetNetworkNodesRequest* get_net_nodes_req_;
+  ::shardora::network::protobuf::GetNetworkNodesResponse* get_net_nodes_res_;
+  ::shardora::network::protobuf::DropNodeRequest* drop_node_;
   friend struct ::protobuf_protos_2fnetwork_2eproto::TableStruct;
 };
 // ===================================================================
@@ -787,13 +787,13 @@ inline void GetNetworkNodesRequest::clear_net_id() {
   clear_has_net_id();
 }
 inline ::google::protobuf::uint32 GetNetworkNodesRequest::net_id() const {
-  // @@protoc_insertion_point(field_get:zjchain.network.protobuf.GetNetworkNodesRequest.net_id)
+  // @@protoc_insertion_point(field_get:shardora.network.protobuf.GetNetworkNodesRequest.net_id)
   return net_id_;
 }
 inline void GetNetworkNodesRequest::set_net_id(::google::protobuf::uint32 value) {
   set_has_net_id();
   net_id_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.network.protobuf.GetNetworkNodesRequest.net_id)
+  // @@protoc_insertion_point(field_set:shardora.network.protobuf.GetNetworkNodesRequest.net_id)
 }
 
 // optional uint32 count = 2;
@@ -811,13 +811,13 @@ inline void GetNetworkNodesRequest::clear_count() {
   clear_has_count();
 }
 inline ::google::protobuf::uint32 GetNetworkNodesRequest::count() const {
-  // @@protoc_insertion_point(field_get:zjchain.network.protobuf.GetNetworkNodesRequest.count)
+  // @@protoc_insertion_point(field_get:shardora.network.protobuf.GetNetworkNodesRequest.count)
   return count_;
 }
 inline void GetNetworkNodesRequest::set_count(::google::protobuf::uint32 value) {
   set_has_count();
   count_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.network.protobuf.GetNetworkNodesRequest.count)
+  // @@protoc_insertion_point(field_set:shardora.network.protobuf.GetNetworkNodesRequest.count)
 }
 
 // -------------------------------------------------------------------
@@ -839,13 +839,13 @@ inline void NodeInfo::clear_sharding_id() {
   clear_has_sharding_id();
 }
 inline ::google::protobuf::int32 NodeInfo::sharding_id() const {
-  // @@protoc_insertion_point(field_get:zjchain.network.protobuf.NodeInfo.sharding_id)
+  // @@protoc_insertion_point(field_get:shardora.network.protobuf.NodeInfo.sharding_id)
   return sharding_id_;
 }
 inline void NodeInfo::set_sharding_id(::google::protobuf::int32 value) {
   set_has_sharding_id();
   sharding_id_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.network.protobuf.NodeInfo.sharding_id)
+  // @@protoc_insertion_point(field_set:shardora.network.protobuf.NodeInfo.sharding_id)
 }
 
 // optional bytes public_ip = 2;
@@ -863,41 +863,41 @@ inline void NodeInfo::clear_public_ip() {
   clear_has_public_ip();
 }
 inline const ::std::string& NodeInfo::public_ip() const {
-  // @@protoc_insertion_point(field_get:zjchain.network.protobuf.NodeInfo.public_ip)
+  // @@protoc_insertion_point(field_get:shardora.network.protobuf.NodeInfo.public_ip)
   return public_ip_.GetNoArena();
 }
 inline void NodeInfo::set_public_ip(const ::std::string& value) {
   set_has_public_ip();
   public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.network.protobuf.NodeInfo.public_ip)
+  // @@protoc_insertion_point(field_set:shardora.network.protobuf.NodeInfo.public_ip)
 }
 #if LANG_CXX11
 inline void NodeInfo::set_public_ip(::std::string&& value) {
   set_has_public_ip();
   public_ip_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.network.protobuf.NodeInfo.public_ip)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.network.protobuf.NodeInfo.public_ip)
 }
 #endif
 inline void NodeInfo::set_public_ip(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_public_ip();
   public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.network.protobuf.NodeInfo.public_ip)
+  // @@protoc_insertion_point(field_set_char:shardora.network.protobuf.NodeInfo.public_ip)
 }
 inline void NodeInfo::set_public_ip(const void* value, size_t size) {
   set_has_public_ip();
   public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.network.protobuf.NodeInfo.public_ip)
+  // @@protoc_insertion_point(field_set_pointer:shardora.network.protobuf.NodeInfo.public_ip)
 }
 inline ::std::string* NodeInfo::mutable_public_ip() {
   set_has_public_ip();
-  // @@protoc_insertion_point(field_mutable:zjchain.network.protobuf.NodeInfo.public_ip)
+  // @@protoc_insertion_point(field_mutable:shardora.network.protobuf.NodeInfo.public_ip)
   return public_ip_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* NodeInfo::release_public_ip() {
-  // @@protoc_insertion_point(field_release:zjchain.network.protobuf.NodeInfo.public_ip)
+  // @@protoc_insertion_point(field_release:shardora.network.protobuf.NodeInfo.public_ip)
   if (!has_public_ip()) {
     return NULL;
   }
@@ -911,7 +911,7 @@ inline void NodeInfo::set_allocated_public_ip(::std::string* public_ip) {
     clear_has_public_ip();
   }
   public_ip_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), public_ip);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.network.protobuf.NodeInfo.public_ip)
+  // @@protoc_insertion_point(field_set_allocated:shardora.network.protobuf.NodeInfo.public_ip)
 }
 
 // optional int32 public_port = 3;
@@ -929,13 +929,13 @@ inline void NodeInfo::clear_public_port() {
   clear_has_public_port();
 }
 inline ::google::protobuf::int32 NodeInfo::public_port() const {
-  // @@protoc_insertion_point(field_get:zjchain.network.protobuf.NodeInfo.public_port)
+  // @@protoc_insertion_point(field_get:shardora.network.protobuf.NodeInfo.public_port)
   return public_port_;
 }
 inline void NodeInfo::set_public_port(::google::protobuf::int32 value) {
   set_has_public_port();
   public_port_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.network.protobuf.NodeInfo.public_port)
+  // @@protoc_insertion_point(field_set:shardora.network.protobuf.NodeInfo.public_port)
 }
 
 // optional bytes pubkey = 4;
@@ -953,41 +953,41 @@ inline void NodeInfo::clear_pubkey() {
   clear_has_pubkey();
 }
 inline const ::std::string& NodeInfo::pubkey() const {
-  // @@protoc_insertion_point(field_get:zjchain.network.protobuf.NodeInfo.pubkey)
+  // @@protoc_insertion_point(field_get:shardora.network.protobuf.NodeInfo.pubkey)
   return pubkey_.GetNoArena();
 }
 inline void NodeInfo::set_pubkey(const ::std::string& value) {
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.network.protobuf.NodeInfo.pubkey)
+  // @@protoc_insertion_point(field_set:shardora.network.protobuf.NodeInfo.pubkey)
 }
 #if LANG_CXX11
 inline void NodeInfo::set_pubkey(::std::string&& value) {
   set_has_pubkey();
   pubkey_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.network.protobuf.NodeInfo.pubkey)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.network.protobuf.NodeInfo.pubkey)
 }
 #endif
 inline void NodeInfo::set_pubkey(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.network.protobuf.NodeInfo.pubkey)
+  // @@protoc_insertion_point(field_set_char:shardora.network.protobuf.NodeInfo.pubkey)
 }
 inline void NodeInfo::set_pubkey(const void* value, size_t size) {
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.network.protobuf.NodeInfo.pubkey)
+  // @@protoc_insertion_point(field_set_pointer:shardora.network.protobuf.NodeInfo.pubkey)
 }
 inline ::std::string* NodeInfo::mutable_pubkey() {
   set_has_pubkey();
-  // @@protoc_insertion_point(field_mutable:zjchain.network.protobuf.NodeInfo.pubkey)
+  // @@protoc_insertion_point(field_mutable:shardora.network.protobuf.NodeInfo.pubkey)
   return pubkey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* NodeInfo::release_pubkey() {
-  // @@protoc_insertion_point(field_release:zjchain.network.protobuf.NodeInfo.pubkey)
+  // @@protoc_insertion_point(field_release:shardora.network.protobuf.NodeInfo.pubkey)
   if (!has_pubkey()) {
     return NULL;
   }
@@ -1001,40 +1001,40 @@ inline void NodeInfo::set_allocated_pubkey(::std::string* pubkey) {
     clear_has_pubkey();
   }
   pubkey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), pubkey);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.network.protobuf.NodeInfo.pubkey)
+  // @@protoc_insertion_point(field_set_allocated:shardora.network.protobuf.NodeInfo.pubkey)
 }
 
 // -------------------------------------------------------------------
 
 // GetNetworkNodesResponse
 
-// repeated .zjchain.network.protobuf.NodeInfo nodes = 1;
+// repeated .shardora.network.protobuf.NodeInfo nodes = 1;
 inline int GetNetworkNodesResponse::nodes_size() const {
   return nodes_.size();
 }
 inline void GetNetworkNodesResponse::clear_nodes() {
   nodes_.Clear();
 }
-inline ::zjchain::network::protobuf::NodeInfo* GetNetworkNodesResponse::mutable_nodes(int index) {
-  // @@protoc_insertion_point(field_mutable:zjchain.network.protobuf.GetNetworkNodesResponse.nodes)
+inline ::shardora::network::protobuf::NodeInfo* GetNetworkNodesResponse::mutable_nodes(int index) {
+  // @@protoc_insertion_point(field_mutable:shardora.network.protobuf.GetNetworkNodesResponse.nodes)
   return nodes_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::zjchain::network::protobuf::NodeInfo >*
+inline ::google::protobuf::RepeatedPtrField< ::shardora::network::protobuf::NodeInfo >*
 GetNetworkNodesResponse::mutable_nodes() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.network.protobuf.GetNetworkNodesResponse.nodes)
+  // @@protoc_insertion_point(field_mutable_list:shardora.network.protobuf.GetNetworkNodesResponse.nodes)
   return &nodes_;
 }
-inline const ::zjchain::network::protobuf::NodeInfo& GetNetworkNodesResponse::nodes(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.network.protobuf.GetNetworkNodesResponse.nodes)
+inline const ::shardora::network::protobuf::NodeInfo& GetNetworkNodesResponse::nodes(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.network.protobuf.GetNetworkNodesResponse.nodes)
   return nodes_.Get(index);
 }
-inline ::zjchain::network::protobuf::NodeInfo* GetNetworkNodesResponse::add_nodes() {
-  // @@protoc_insertion_point(field_add:zjchain.network.protobuf.GetNetworkNodesResponse.nodes)
+inline ::shardora::network::protobuf::NodeInfo* GetNetworkNodesResponse::add_nodes() {
+  // @@protoc_insertion_point(field_add:shardora.network.protobuf.GetNetworkNodesResponse.nodes)
   return nodes_.Add();
 }
-inline const ::google::protobuf::RepeatedPtrField< ::zjchain::network::protobuf::NodeInfo >&
+inline const ::google::protobuf::RepeatedPtrField< ::shardora::network::protobuf::NodeInfo >&
 GetNetworkNodesResponse::nodes() const {
-  // @@protoc_insertion_point(field_list:zjchain.network.protobuf.GetNetworkNodesResponse.nodes)
+  // @@protoc_insertion_point(field_list:shardora.network.protobuf.GetNetworkNodesResponse.nodes)
   return nodes_;
 }
 
@@ -1057,41 +1057,41 @@ inline void DropNodeRequest::clear_ip() {
   clear_has_ip();
 }
 inline const ::std::string& DropNodeRequest::ip() const {
-  // @@protoc_insertion_point(field_get:zjchain.network.protobuf.DropNodeRequest.ip)
+  // @@protoc_insertion_point(field_get:shardora.network.protobuf.DropNodeRequest.ip)
   return ip_.GetNoArena();
 }
 inline void DropNodeRequest::set_ip(const ::std::string& value) {
   set_has_ip();
   ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.network.protobuf.DropNodeRequest.ip)
+  // @@protoc_insertion_point(field_set:shardora.network.protobuf.DropNodeRequest.ip)
 }
 #if LANG_CXX11
 inline void DropNodeRequest::set_ip(::std::string&& value) {
   set_has_ip();
   ip_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.network.protobuf.DropNodeRequest.ip)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.network.protobuf.DropNodeRequest.ip)
 }
 #endif
 inline void DropNodeRequest::set_ip(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_ip();
   ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.network.protobuf.DropNodeRequest.ip)
+  // @@protoc_insertion_point(field_set_char:shardora.network.protobuf.DropNodeRequest.ip)
 }
 inline void DropNodeRequest::set_ip(const void* value, size_t size) {
   set_has_ip();
   ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.network.protobuf.DropNodeRequest.ip)
+  // @@protoc_insertion_point(field_set_pointer:shardora.network.protobuf.DropNodeRequest.ip)
 }
 inline ::std::string* DropNodeRequest::mutable_ip() {
   set_has_ip();
-  // @@protoc_insertion_point(field_mutable:zjchain.network.protobuf.DropNodeRequest.ip)
+  // @@protoc_insertion_point(field_mutable:shardora.network.protobuf.DropNodeRequest.ip)
   return ip_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* DropNodeRequest::release_ip() {
-  // @@protoc_insertion_point(field_release:zjchain.network.protobuf.DropNodeRequest.ip)
+  // @@protoc_insertion_point(field_release:shardora.network.protobuf.DropNodeRequest.ip)
   if (!has_ip()) {
     return NULL;
   }
@@ -1105,7 +1105,7 @@ inline void DropNodeRequest::set_allocated_ip(::std::string* ip) {
     clear_has_ip();
   }
   ip_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ip);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.network.protobuf.DropNodeRequest.ip)
+  // @@protoc_insertion_point(field_set_allocated:shardora.network.protobuf.DropNodeRequest.ip)
 }
 
 // optional int32 port = 2;
@@ -1123,20 +1123,20 @@ inline void DropNodeRequest::clear_port() {
   clear_has_port();
 }
 inline ::google::protobuf::int32 DropNodeRequest::port() const {
-  // @@protoc_insertion_point(field_get:zjchain.network.protobuf.DropNodeRequest.port)
+  // @@protoc_insertion_point(field_get:shardora.network.protobuf.DropNodeRequest.port)
   return port_;
 }
 inline void DropNodeRequest::set_port(::google::protobuf::int32 value) {
   set_has_port();
   port_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.network.protobuf.DropNodeRequest.port)
+  // @@protoc_insertion_point(field_set:shardora.network.protobuf.DropNodeRequest.port)
 }
 
 // -------------------------------------------------------------------
 
 // NetworkMessage
 
-// optional .zjchain.network.protobuf.GetNetworkNodesRequest get_net_nodes_req = 1;
+// optional .shardora.network.protobuf.GetNetworkNodesRequest get_net_nodes_req = 1;
 inline bool NetworkMessage::has_get_net_nodes_req() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -1150,32 +1150,32 @@ inline void NetworkMessage::clear_get_net_nodes_req() {
   if (get_net_nodes_req_ != NULL) get_net_nodes_req_->Clear();
   clear_has_get_net_nodes_req();
 }
-inline const ::zjchain::network::protobuf::GetNetworkNodesRequest& NetworkMessage::_internal_get_net_nodes_req() const {
+inline const ::shardora::network::protobuf::GetNetworkNodesRequest& NetworkMessage::_internal_get_net_nodes_req() const {
   return *get_net_nodes_req_;
 }
-inline const ::zjchain::network::protobuf::GetNetworkNodesRequest& NetworkMessage::get_net_nodes_req() const {
-  const ::zjchain::network::protobuf::GetNetworkNodesRequest* p = get_net_nodes_req_;
-  // @@protoc_insertion_point(field_get:zjchain.network.protobuf.NetworkMessage.get_net_nodes_req)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::network::protobuf::GetNetworkNodesRequest*>(
-      &::zjchain::network::protobuf::_GetNetworkNodesRequest_default_instance_);
+inline const ::shardora::network::protobuf::GetNetworkNodesRequest& NetworkMessage::get_net_nodes_req() const {
+  const ::shardora::network::protobuf::GetNetworkNodesRequest* p = get_net_nodes_req_;
+  // @@protoc_insertion_point(field_get:shardora.network.protobuf.NetworkMessage.get_net_nodes_req)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::network::protobuf::GetNetworkNodesRequest*>(
+      &::shardora::network::protobuf::_GetNetworkNodesRequest_default_instance_);
 }
-inline ::zjchain::network::protobuf::GetNetworkNodesRequest* NetworkMessage::release_get_net_nodes_req() {
-  // @@protoc_insertion_point(field_release:zjchain.network.protobuf.NetworkMessage.get_net_nodes_req)
+inline ::shardora::network::protobuf::GetNetworkNodesRequest* NetworkMessage::release_get_net_nodes_req() {
+  // @@protoc_insertion_point(field_release:shardora.network.protobuf.NetworkMessage.get_net_nodes_req)
   clear_has_get_net_nodes_req();
-  ::zjchain::network::protobuf::GetNetworkNodesRequest* temp = get_net_nodes_req_;
+  ::shardora::network::protobuf::GetNetworkNodesRequest* temp = get_net_nodes_req_;
   get_net_nodes_req_ = NULL;
   return temp;
 }
-inline ::zjchain::network::protobuf::GetNetworkNodesRequest* NetworkMessage::mutable_get_net_nodes_req() {
+inline ::shardora::network::protobuf::GetNetworkNodesRequest* NetworkMessage::mutable_get_net_nodes_req() {
   set_has_get_net_nodes_req();
   if (get_net_nodes_req_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::network::protobuf::GetNetworkNodesRequest>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::network::protobuf::GetNetworkNodesRequest>(GetArenaNoVirtual());
     get_net_nodes_req_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.network.protobuf.NetworkMessage.get_net_nodes_req)
+  // @@protoc_insertion_point(field_mutable:shardora.network.protobuf.NetworkMessage.get_net_nodes_req)
   return get_net_nodes_req_;
 }
-inline void NetworkMessage::set_allocated_get_net_nodes_req(::zjchain::network::protobuf::GetNetworkNodesRequest* get_net_nodes_req) {
+inline void NetworkMessage::set_allocated_get_net_nodes_req(::shardora::network::protobuf::GetNetworkNodesRequest* get_net_nodes_req) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete get_net_nodes_req_;
@@ -1191,10 +1191,10 @@ inline void NetworkMessage::set_allocated_get_net_nodes_req(::zjchain::network::
     clear_has_get_net_nodes_req();
   }
   get_net_nodes_req_ = get_net_nodes_req;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.network.protobuf.NetworkMessage.get_net_nodes_req)
+  // @@protoc_insertion_point(field_set_allocated:shardora.network.protobuf.NetworkMessage.get_net_nodes_req)
 }
 
-// optional .zjchain.network.protobuf.GetNetworkNodesResponse get_net_nodes_res = 2;
+// optional .shardora.network.protobuf.GetNetworkNodesResponse get_net_nodes_res = 2;
 inline bool NetworkMessage::has_get_net_nodes_res() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -1208,32 +1208,32 @@ inline void NetworkMessage::clear_get_net_nodes_res() {
   if (get_net_nodes_res_ != NULL) get_net_nodes_res_->Clear();
   clear_has_get_net_nodes_res();
 }
-inline const ::zjchain::network::protobuf::GetNetworkNodesResponse& NetworkMessage::_internal_get_net_nodes_res() const {
+inline const ::shardora::network::protobuf::GetNetworkNodesResponse& NetworkMessage::_internal_get_net_nodes_res() const {
   return *get_net_nodes_res_;
 }
-inline const ::zjchain::network::protobuf::GetNetworkNodesResponse& NetworkMessage::get_net_nodes_res() const {
-  const ::zjchain::network::protobuf::GetNetworkNodesResponse* p = get_net_nodes_res_;
-  // @@protoc_insertion_point(field_get:zjchain.network.protobuf.NetworkMessage.get_net_nodes_res)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::network::protobuf::GetNetworkNodesResponse*>(
-      &::zjchain::network::protobuf::_GetNetworkNodesResponse_default_instance_);
+inline const ::shardora::network::protobuf::GetNetworkNodesResponse& NetworkMessage::get_net_nodes_res() const {
+  const ::shardora::network::protobuf::GetNetworkNodesResponse* p = get_net_nodes_res_;
+  // @@protoc_insertion_point(field_get:shardora.network.protobuf.NetworkMessage.get_net_nodes_res)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::network::protobuf::GetNetworkNodesResponse*>(
+      &::shardora::network::protobuf::_GetNetworkNodesResponse_default_instance_);
 }
-inline ::zjchain::network::protobuf::GetNetworkNodesResponse* NetworkMessage::release_get_net_nodes_res() {
-  // @@protoc_insertion_point(field_release:zjchain.network.protobuf.NetworkMessage.get_net_nodes_res)
+inline ::shardora::network::protobuf::GetNetworkNodesResponse* NetworkMessage::release_get_net_nodes_res() {
+  // @@protoc_insertion_point(field_release:shardora.network.protobuf.NetworkMessage.get_net_nodes_res)
   clear_has_get_net_nodes_res();
-  ::zjchain::network::protobuf::GetNetworkNodesResponse* temp = get_net_nodes_res_;
+  ::shardora::network::protobuf::GetNetworkNodesResponse* temp = get_net_nodes_res_;
   get_net_nodes_res_ = NULL;
   return temp;
 }
-inline ::zjchain::network::protobuf::GetNetworkNodesResponse* NetworkMessage::mutable_get_net_nodes_res() {
+inline ::shardora::network::protobuf::GetNetworkNodesResponse* NetworkMessage::mutable_get_net_nodes_res() {
   set_has_get_net_nodes_res();
   if (get_net_nodes_res_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::network::protobuf::GetNetworkNodesResponse>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::network::protobuf::GetNetworkNodesResponse>(GetArenaNoVirtual());
     get_net_nodes_res_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.network.protobuf.NetworkMessage.get_net_nodes_res)
+  // @@protoc_insertion_point(field_mutable:shardora.network.protobuf.NetworkMessage.get_net_nodes_res)
   return get_net_nodes_res_;
 }
-inline void NetworkMessage::set_allocated_get_net_nodes_res(::zjchain::network::protobuf::GetNetworkNodesResponse* get_net_nodes_res) {
+inline void NetworkMessage::set_allocated_get_net_nodes_res(::shardora::network::protobuf::GetNetworkNodesResponse* get_net_nodes_res) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete get_net_nodes_res_;
@@ -1249,10 +1249,10 @@ inline void NetworkMessage::set_allocated_get_net_nodes_res(::zjchain::network::
     clear_has_get_net_nodes_res();
   }
   get_net_nodes_res_ = get_net_nodes_res;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.network.protobuf.NetworkMessage.get_net_nodes_res)
+  // @@protoc_insertion_point(field_set_allocated:shardora.network.protobuf.NetworkMessage.get_net_nodes_res)
 }
 
-// optional .zjchain.network.protobuf.DropNodeRequest drop_node = 3;
+// optional .shardora.network.protobuf.DropNodeRequest drop_node = 3;
 inline bool NetworkMessage::has_drop_node() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -1266,32 +1266,32 @@ inline void NetworkMessage::clear_drop_node() {
   if (drop_node_ != NULL) drop_node_->Clear();
   clear_has_drop_node();
 }
-inline const ::zjchain::network::protobuf::DropNodeRequest& NetworkMessage::_internal_drop_node() const {
+inline const ::shardora::network::protobuf::DropNodeRequest& NetworkMessage::_internal_drop_node() const {
   return *drop_node_;
 }
-inline const ::zjchain::network::protobuf::DropNodeRequest& NetworkMessage::drop_node() const {
-  const ::zjchain::network::protobuf::DropNodeRequest* p = drop_node_;
-  // @@protoc_insertion_point(field_get:zjchain.network.protobuf.NetworkMessage.drop_node)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::network::protobuf::DropNodeRequest*>(
-      &::zjchain::network::protobuf::_DropNodeRequest_default_instance_);
+inline const ::shardora::network::protobuf::DropNodeRequest& NetworkMessage::drop_node() const {
+  const ::shardora::network::protobuf::DropNodeRequest* p = drop_node_;
+  // @@protoc_insertion_point(field_get:shardora.network.protobuf.NetworkMessage.drop_node)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::network::protobuf::DropNodeRequest*>(
+      &::shardora::network::protobuf::_DropNodeRequest_default_instance_);
 }
-inline ::zjchain::network::protobuf::DropNodeRequest* NetworkMessage::release_drop_node() {
-  // @@protoc_insertion_point(field_release:zjchain.network.protobuf.NetworkMessage.drop_node)
+inline ::shardora::network::protobuf::DropNodeRequest* NetworkMessage::release_drop_node() {
+  // @@protoc_insertion_point(field_release:shardora.network.protobuf.NetworkMessage.drop_node)
   clear_has_drop_node();
-  ::zjchain::network::protobuf::DropNodeRequest* temp = drop_node_;
+  ::shardora::network::protobuf::DropNodeRequest* temp = drop_node_;
   drop_node_ = NULL;
   return temp;
 }
-inline ::zjchain::network::protobuf::DropNodeRequest* NetworkMessage::mutable_drop_node() {
+inline ::shardora::network::protobuf::DropNodeRequest* NetworkMessage::mutable_drop_node() {
   set_has_drop_node();
   if (drop_node_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::network::protobuf::DropNodeRequest>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::shardora::network::protobuf::DropNodeRequest>(GetArenaNoVirtual());
     drop_node_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.network.protobuf.NetworkMessage.drop_node)
+  // @@protoc_insertion_point(field_mutable:shardora.network.protobuf.NetworkMessage.drop_node)
   return drop_node_;
 }
-inline void NetworkMessage::set_allocated_drop_node(::zjchain::network::protobuf::DropNodeRequest* drop_node) {
+inline void NetworkMessage::set_allocated_drop_node(::shardora::network::protobuf::DropNodeRequest* drop_node) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete drop_node_;
@@ -1307,7 +1307,7 @@ inline void NetworkMessage::set_allocated_drop_node(::zjchain::network::protobuf
     clear_has_drop_node();
   }
   drop_node_ = drop_node;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.network.protobuf.NetworkMessage.drop_node)
+  // @@protoc_insertion_point(field_set_allocated:shardora.network.protobuf.NetworkMessage.drop_node)
 }
 
 #ifdef __GNUC__
@@ -1326,7 +1326,7 @@ inline void NetworkMessage::set_allocated_drop_node(::zjchain::network::protobuf
 
 }  // namespace protobuf
 }  // namespace network
-}  // namespace zjchain
+}  // namespace shardora
 
 // @@protoc_insertion_point(global_scope)
 

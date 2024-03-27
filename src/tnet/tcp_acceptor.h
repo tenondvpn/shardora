@@ -15,7 +15,7 @@
 #include "tnet/socket/server_socket.h"
 #include "tnet/utils/packet_factory.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace tnet {
 
@@ -45,7 +45,7 @@ private:
     void ReleaseByIOThread();
     virtual bool OnRead();
     virtual void OnWrite();
-    void CheckConnectionValid(uint8_t thread_idx);
+    void CheckConnectionValid();
 
     static const uint32_t kEachCheckConnectionCount = 100u;
 
@@ -72,4 +72,4 @@ private:
 
 }  // namespace tnet
 
-}  // namespace zjchain
+}  // namespace shardora

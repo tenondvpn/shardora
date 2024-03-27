@@ -10,7 +10,7 @@
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace ck {
 
@@ -212,9 +212,13 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
                     
                 attr_key->Append(common::Encode::HexEncode(tx_list[i].storages(j).key()));
                 attr_value->Append(common::Encode::HexEncode(val));
+                ZJC_DEBUG("to ck add key: %s, val: %s", tx_list[i].storages(j).key().c_str(), val.c_str());
             } else {
                 attr_key->Append(common::Encode::HexEncode(tx_list[i].storages(j).key()));
                 attr_value->Append(common::Encode::HexEncode(tx_list[i].storages(j).val_hash()));
+                ZJC_DEBUG("hash to ck add key: %s, val: %s", 
+                    tx_list[i].storages(j).key().c_str(), 
+                    common::Encode::HexEncode(tx_list[i].storages(j).val_hash()).c_str());
             }
         }
 
@@ -459,7 +463,6 @@ bool ClickHouseClient::QueryContract(const std::string& from, const std::string&
     zjcvm::Uint64ToEvmcBytes32(
         zjc_host.tx_context_.chain_id,
         chanin_id);
-    zjc_host.thread_idx_ = common::kMaxThreadCount;
     zjc_host.contract_mgr_ = contract_mgr_;
     zjc_host.acc_mgr_ = nullptr;
     zjc_host.my_address_ = contract_addr;
@@ -852,4 +855,4 @@ void ClickHouseClient::Statistic() try {
 
 };  // namespace ck
 
-};  // namespace zjchain
+};  // namespace shardora

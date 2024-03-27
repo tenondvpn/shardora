@@ -2,7 +2,9 @@
 
 #include <evhtp/internal.h>
 
-namespace zjchain {
+#include "common/global_info.h"
+
+namespace shardora {
 
 namespace ws {
 
@@ -52,6 +54,7 @@ void WebSocketServer::RegisterCallback(const std::string& type, WebsocketServerC
 }
 
 void WebSocketServer::Run() {
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     try {
         server_.listen(websocketpp::lib::asio::ip::tcp::endpoint(
             boost::asio::ip::address_v4::from_string(ws_ip_.c_str()),
@@ -102,4 +105,4 @@ void WebSocketServer::Stop() {
 
 };  // namespace ws
 
-};  // namespace zjchain
+};  // namespace shardora

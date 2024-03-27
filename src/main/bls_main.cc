@@ -29,7 +29,7 @@
 #include "protos/bls.pb.h"
 #include "network/network_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace bls {
 
@@ -307,7 +307,6 @@ public:
                         continue;
                     }
                     auto msg_ptr = verify_brd_msgs[i];
-                    msg_ptr->thread_idx = 0;
                     dkg[j].HandleBlsMessage(msg_ptr);
                 }
             }
@@ -342,7 +341,6 @@ public:
                         continue;
                     }
                     auto msg_ptr = swap_seckey_msgs[i];
-                    msg_ptr->thread_idx = 0;
                     dkg[j].HandleBlsMessage(msg_ptr);
                 }
             }
@@ -645,7 +643,7 @@ public:
 
 }  // namespace bls
 
-}  // namespace zjchain
+}  // namespace shardora
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -654,7 +652,7 @@ int main(int argc, char** argv) {
     }
 
     uint32_t kN = 0;
-    using namespace zjchain;
+    using namespace shardora;
     common::StringUtil::ToUint32(argv[1], &kN);
     bls::BlsVerify::Init();
 

@@ -14,7 +14,7 @@
 
 #include <google/protobuf/util/json_util.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace init {
 
@@ -136,6 +136,11 @@ static int CreateTransactionWithAttr(
 
         new_tx->set_contract_prepayment(pepay_val);
     }
+
+    if (key != nullptr && val != nullptr) {
+        ZJC_DEBUG("create transaction key: %s, value: %s", key, val);
+    }
+    
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign = sign_r + sign_s + "0";// http_handler->security_ptr()->GetSign(sign_r, sign_s, sign_v);
     sign[64] = char(sign_v);
@@ -329,7 +334,6 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     zjcvm::Uint64ToEvmcBytes32(
         zjc_host.tx_context_.chain_id,
         chanin_id);
-    zjc_host.thread_idx_ = common::kMaxThreadCount;
     zjc_host.contract_mgr_ = contract_mgr;
     zjc_host.acc_mgr_ = nullptr;
     zjc_host.my_address_ = contract_addr;
@@ -440,4 +444,4 @@ void HttpHandler::Init(
 
 };  // namespace init
 
-};  // namespace zjchain
+};  // namespace shardora

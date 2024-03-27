@@ -4,7 +4,7 @@
 #include <openssl/ecdh.h>
 #include <openssl/evp.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace security {
 
@@ -72,4 +72,4 @@ EcdhCreateKey::~EcdhCreateKey() {
 
 }  // namespace security
 
-}  // namespace zjchain
+}  // namespace shardora

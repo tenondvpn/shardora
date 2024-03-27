@@ -3,7 +3,7 @@
 #include "common/fts_tree.h"
 #include "protos/get_proto_hash.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -18,7 +18,6 @@ inline bool ElectNodeBalanceDiffCompare(
 }
 
 int ElectTxItem::HandleTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
@@ -118,7 +117,6 @@ int ElectTxItem::HandleTx(
                 ZJC_DEBUG("init: %s", ids.c_str());
             }
             int res = CheckWeedout(
-                thread_idx,
                 members,
                 *statistic,
                 &min_area_weight,
@@ -131,7 +129,6 @@ int ElectTxItem::HandleTx(
            
             uint64_t gas_for_root = 0llu;
             MiningToken(
-                thread_idx,
                 elect_statistic.sharding_id(),
                 elect_nodes,
                 elect_statistic.gas_amount(),
@@ -164,14 +161,12 @@ int ElectTxItem::HandleTx(
 
             ChooseNodeForEachIndex(
                 true,
-                thread_idx,
                 min_area_weight,
                 min_tx_count,
                 elect_statistic,
                 elect_nodes);
             ChooseNodeForEachIndex(
                 false,
-                thread_idx,
                 min_area_weight,
                 min_tx_count,
                 elect_statistic,
@@ -236,7 +231,6 @@ int ElectTxItem::HandleTx(
             }
 
             CreateNewElect(
-                thread_idx,
                 block,
                 elect_nodes,
                 elect_statistic,
@@ -267,7 +261,6 @@ int ElectTxItem::HandleTx(
 
 void ElectTxItem::ChooseNodeForEachIndex(
         bool hold_pos,
-        uint8_t thread_idx,
         uint32_t min_area_weight,
         uint32_t min_tx_count,
         const pools::protobuf::ElectStatistic& elect_statistic,
@@ -281,7 +274,6 @@ void ElectTxItem::ChooseNodeForEachIndex(
         if (hold_pos) {
             GetIndexNodes(
                 i,
-                thread_idx,
                 min_area_weight,
                 min_tx_count,
                 elect_statistic,
@@ -289,7 +281,6 @@ void ElectTxItem::ChooseNodeForEachIndex(
         } else {
             GetIndexNodes(
                 common::kInvalidUint32,
-                thread_idx,
                 min_area_weight,
                 min_tx_count,
                 elect_statistic,
@@ -305,7 +296,6 @@ void ElectTxItem::ChooseNodeForEachIndex(
         auto res = GetJoinElectNodesCredit(
             i,
             elect_statistic,
-            thread_idx,
             min_area_weight,
             min_tx_count,
             elect_nodes_to_choose,
@@ -323,7 +313,6 @@ void ElectTxItem::ChooseNodeForEachIndex(
 
 void ElectTxItem::GetIndexNodes(
         uint32_t index,
-        uint8_t thread_idx,
         uint32_t min_area_weight,
         uint32_t min_tx_count,
         const pools::protobuf::ElectStatistic& elect_statistic,
@@ -350,7 +339,6 @@ void ElectTxItem::GetIndexNodes(
 
         auto id = sec_ptr_->GetAddress(elect_statistic.join_elect_nodes(i).pubkey());
         auto account_info = account_mgr_->GetAccountInfo(
-            thread_idx,
             id);
         if (account_info == nullptr) {
             assert(false);
@@ -369,7 +357,6 @@ void ElectTxItem::GetIndexNodes(
 }
 
 void ElectTxItem::MiningToken(
-        uint8_t thread_idx,
         uint32_t statistic_sharding_id,
         std::vector<NodeDetailPtr>& elect_nodes,
         uint64_t all_gas_amount,
@@ -414,7 +401,7 @@ void ElectTxItem::MiningToken(
             }
 
             auto id = sec_ptr_->GetAddress(elect_nodes[i]->pubkey);
-            auto account_info = account_mgr_->GetAccountInfo(thread_idx, id);
+            auto account_info = account_mgr_->GetAccountInfo(id);
             if (account_info == nullptr) {
                 ZJC_DEBUG("get account info failed: %s",
                     common::Encode::HexEncode(id).c_str());
@@ -510,7 +497,6 @@ uint64_t ElectTxItem::GetMiningMaxCount(uint64_t max_tx_count) {
 }
 
 int ElectTxItem::CreateNewElect(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const std::vector<NodeDetailPtr>& elect_nodes,
         const pools::protobuf::ElectStatistic& elect_statistic,
@@ -561,7 +547,6 @@ int ElectTxItem::CreateNewElect(
 }
 
 int ElectTxItem::CheckWeedout(
-        uint8_t thread_idx,
         common::MembersPtr& members,
         const pools::protobuf::PoolStatisticItem& statistic_item,
         uint32_t* min_area_weight,
@@ -618,7 +603,7 @@ int ElectTxItem::CheckWeedout(
             }
         }
 
-        auto account_info = account_mgr_->GetAccountInfo(thread_idx, (*members)[member_idx]->id);
+        auto account_info = account_mgr_->GetAccountInfo((*members)[member_idx]->id);
         if (account_info == nullptr) {
             ZJC_ERROR("get account info failed: %s",
                 common::Encode::HexEncode((*members)[member_idx]->id).c_str());
@@ -677,7 +662,6 @@ int ElectTxItem::CheckWeedout(
 int ElectTxItem::GetJoinElectNodesCredit(
         uint32_t index,
         const pools::protobuf::ElectStatistic& elect_statistic,
-        uint8_t thread_idx,
         uint32_t min_area_weight,
         uint32_t min_tx_count,
         std::vector<NodeDetailPtr>& elect_nodes_to_choose,
@@ -959,4 +943,4 @@ void ElectTxItem::SmoothFtsValue(
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

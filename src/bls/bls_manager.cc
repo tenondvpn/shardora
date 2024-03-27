@@ -20,7 +20,7 @@
 #include "transport/processor.h"
 #include "common/encode.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace bls {
 
@@ -43,20 +43,20 @@ BlsManager::BlsManager(
     network::Route::Instance()->RegisterMessage(
         common::kBlsMessage,
         std::bind(&BlsManager::HandleMessage, this, std::placeholders::_1));
-    tick_.CutOff(1000000lu, std::bind(&BlsManager::TimerMessage, this, std::placeholders::_1));
+    tick_.CutOff(1000000lu, std::bind(&BlsManager::TimerMessage, this));
 }
 
 BlsManager::~BlsManager() {}
 
-void BlsManager::TimerMessage(uint8_t thread_idx) {
+void BlsManager::TimerMessage() {
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) >=
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
         auto now_tm_ms = common::TimeUtils::TimestampMs();
-        PopFinishMessage(thread_idx);
+        PopFinishMessage();
         auto tmp_bls = waiting_bls_;
         if (tmp_bls != nullptr) {
-            tmp_bls->TimerMessage(thread_idx);
+            tmp_bls->TimerMessage();
         }
 
         auto etime = common::TimeUtils::TimestampMs();
@@ -65,7 +65,7 @@ void BlsManager::TimerMessage(uint8_t thread_idx) {
         }
     }
 
-    tick_.CutOff(100000lu, std::bind(&BlsManager::TimerMessage, this, std::placeholders::_1));
+    tick_.CutOff(100000lu, std::bind(&BlsManager::TimerMessage, this));
 }
 
 void BlsManager::OnNewElectBlock(
@@ -145,6 +145,110 @@ void BlsManager::OnNewElectBlock(
         latest_timeblock_info_);
     waiting_bls_ = waiting_bls;
     BLS_DEBUG("success add new bls dkg, elect_height: %lu", elect_height);
+}
+
+
+int BlsManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+    auto& header = msg_ptr->header;
+    auto& bls_msg = header.bls_proto();
+    if (bls_msg.has_finish_req()) {
+        if (CheckFinishMessageValid(msg_ptr) != transport::kFirewallCheckSuccess) {
+            return transport::kFirewallCheckError;
+        }
+    } else {
+        if (waiting_bls_ != nullptr) {
+            if (!waiting_bls_->CheckBlsMessageValid(msg_ptr)) {
+                BLS_ERROR("check firewall failed!");
+                return transport::kFirewallCheckError;
+            }
+        }
+    }
+
+    BLS_DEBUG("check firewall success!");
+    return transport::kFirewallCheckSuccess;
+}
+
+int BlsManager::CheckFinishMessageValid(const transport::MessagePtr& msg_ptr) {
+    auto& header = msg_ptr->header;
+    auto& bls_msg = header.bls_proto();
+    if (bls_msg.finish_req().network_id() < network::kRootCongressNetworkId ||
+            bls_msg.finish_req().network_id() >= network::kConsensusShardEndNetworkId) {
+        ZJC_WARN("finish network error: %d", bls_msg.finish_req().network_id());
+        return transport::kFirewallCheckError;
+    }
+
+    auto elect_iter = elect_members_.find(bls_msg.finish_req().network_id());
+    if (elect_iter == elect_members_.end()) {
+        ZJC_WARN("finish network error: %d", bls_msg.finish_req().network_id());
+        return transport::kFirewallCheckError;
+    }
+
+    if (elect_iter->second->height != bls_msg.elect_height()) {
+        ZJC_WARN("finish network error: %d, elect height now: %lu, req: %lu",
+            bls_msg.finish_req().network_id(),
+            elect_iter->second->height,
+            bls_msg.elect_height());
+        return transport::kFirewallCheckError;
+    }
+
+    common::MembersPtr members = elect_iter->second->members;
+    if (members == nullptr || bls_msg.index() >= members->size()) {
+        BLS_ERROR("not get waiting network members network id: %u, index: %d",
+            bls_msg.finish_req().network_id(), bls_msg.index());
+        return transport::kFirewallCheckError;
+    }
+
+    std::string msg_hash;
+    protos::GetProtoHash(msg_ptr->header, &msg_hash);
+    if (security_->Verify(
+            msg_hash,
+            (*members)[bls_msg.index()]->pubkey,
+            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        BLS_ERROR("verify message failed network id: %u, index: %d",
+            bls_msg.finish_req().network_id(), bls_msg.index());
+        return transport::kFirewallCheckError;
+    }
+
+    std::vector<std::string> pkey_str = {
+            bls_msg.finish_req().pubkey().x_c0(),
+            bls_msg.finish_req().pubkey().x_c1(),
+            bls_msg.finish_req().pubkey().y_c0(),
+            bls_msg.finish_req().pubkey().y_c1()
+    };
+    auto t = common::GetSignerCount(members->size());
+    BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
+    std::vector<std::string> common_pkey_str = {
+            bls_msg.finish_req().common_pubkey().x_c0(),
+            bls_msg.finish_req().common_pubkey().x_c1(),
+            bls_msg.finish_req().common_pubkey().y_c0(),
+            bls_msg.finish_req().common_pubkey().y_c1()
+    };
+    BLSPublicKey common_pkey(std::make_shared<std::vector<std::string>>(common_pkey_str));
+    std::string common_pk_str = bls_msg.finish_req().common_pubkey().x_c0() +
+        bls_msg.finish_req().common_pubkey().x_c1() +
+        bls_msg.finish_req().common_pubkey().y_c0() +
+        bls_msg.finish_req().common_pubkey().y_c1();
+    std::string cpk_hash = common::Hash::keccak256(common_pk_str);
+    libff::alt_bn128_G1 sign;
+    sign.X = libff::alt_bn128_Fq(bls_msg.finish_req().bls_sign_x().c_str());
+    sign.Y = libff::alt_bn128_Fq(bls_msg.finish_req().bls_sign_y().c_str());
+    sign.Z = libff::alt_bn128_Fq::one();
+    std::string verify_hash;
+    libff::alt_bn128_G1 g1_hash;
+    GetLibffHash(cpk_hash, &g1_hash);
+    if (Verify(
+            t,
+            members->size(),
+            *pkey.getPublicKey(),
+            sign,
+            g1_hash,
+            &verify_hash) != bls::kBlsSuccess) {
+        ZJC_WARN("verify bls finish bls sign error t: %d, size: %d, cpk_hash: %s, pk: %s",
+            t, members->size(), common::Encode::HexEncode(cpk_hash).c_str(), common_pk_str.c_str());
+        return transport::kFirewallCheckError;
+    }
+
+    return transport::kFirewallCheckSuccess;
 }
 
 void BlsManager::OnTimeBlock(
@@ -317,14 +421,13 @@ int BlsManager::GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g
     return BlsSign::GetLibffHash(str_hash, g1_hash);
 }
 
-void BlsManager::PopFinishMessage(uint8_t thread_idx) {
+void BlsManager::PopFinishMessage() {
     while (true) {
         transport::MessagePtr msg_ptr = nullptr;
         if (!finish_msg_queue_.pop(&msg_ptr) || msg_ptr == nullptr) {
             break;
         }
 
-        msg_ptr->thread_idx = thread_idx;
         HandleFinish(msg_ptr);
     }
 }
@@ -909,4 +1012,4 @@ void BlsManager::ResetLeaders(
 
 };  // namespace bls
 
-};  // namespace zjchain
+};  // namespace shardora

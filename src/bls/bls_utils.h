@@ -21,7 +21,7 @@
 #define BLS_WARN(fmt, ...) ZJC_WARN("[bls]" fmt, ## __VA_ARGS__)
 #define BLS_ERROR(fmt, ...) ZJC_ERROR("[bls]" fmt, ## __VA_ARGS__)
 
-namespace zjchain {
+namespace shardora {
 
 namespace bls {
 
@@ -82,4 +82,4 @@ static inline bool IsValidBigInt(const std::string& big_int) {
 }
 }  // namespace bls
 
-}  // namespace zjchain
+}  // namespace shardora

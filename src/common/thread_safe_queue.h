@@ -8,7 +8,7 @@
 #include "common/global_info.h"
 #include "common/log.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
@@ -20,19 +20,27 @@ public:
     ~ThreadSafeQueue() {}
 
     void push(T e) {
-        while (!rw_queue_.try_enqueue(e) && !common::GlobalInfo::Instance()->global_stoped()) {
-            std::unique_lock<std::mutex> lock(mutex_);
-            con_.wait_for(lock, std::chrono::milliseconds(100));
-        }
+        // auto btime = common::TimeUtils::TimestampUs();
+        rw_queue_.enqueue(e);
+        // while (!rw_queue_.try_enqueue(e) && !common::GlobalInfo::Instance()->global_stoped()) {
+        //     std::unique_lock<std::mutex> lock(mutex_);
+        //     con_.wait_for(lock, std::chrono::milliseconds(100));
+        // }
+
+        // auto etime = common::TimeUtils::TimestampUs();
+        // if (etime - btime > 10) {
+        //     ZJC_INFO("push queue use time: %lu", (etime - btime));
+        // }
     }
 
     bool pop(T* e) {
         bool res = rw_queue_.try_dequeue(*e);
-        if (res) {
-            if (size() >= kQueueCount - 1) {
-                con_.notify_one();
-            }
-        }
+        // if (res) {
+        //     if (size() >= kQueueCount - 1) {
+        //         std::unique_lock<std::mutex> lock(mutex_);
+        //         con_.notify_one();
+        //     }
+        // }
 
         return res;
     }
@@ -53,4 +61,4 @@ private:
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

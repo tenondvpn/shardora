@@ -2,7 +2,7 @@
 
 #include "elect/elect_manager.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -22,7 +22,7 @@ RootZbft::~RootZbft() {
 void RootZbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
     if (txs_ptr_->txs.size() == 1) {
         auto& tx = *txs_ptr_->txs.begin()->second;
-        switch (tx.msg_ptr->header.tx_proto().step()) {
+        switch (tx.tx_info.step()) {
         case pools::protobuf::kConsensusRootElectShard:
             RootCreateElectConsensusShardBlock(zjc_block);
             break;
@@ -45,7 +45,7 @@ void RootZbft::RootDefaultTx(block::protobuf::Block& zjc_block) {
     auto tx_list = zjc_block.mutable_tx_list();
     auto& tx = *tx_list->Add();
     auto iter = txs_ptr_->txs.begin();
-    iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), db_batch_, &tx);
+    iter->second->TxToBlockTx(iter->second->tx_info, db_batch_, &tx);
 }
 
 void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) {
@@ -54,7 +54,7 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
     std::unordered_map<std::string, int64_t> acc_balance_map;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto& tx = *tx_list->Add();
-        auto& src_tx = iter->second->msg_ptr->header.tx_proto();
+        auto& src_tx = iter->second->tx_info;
         iter->second->TxToBlockTx(src_tx, db_batch_, &tx);
         // create address must to and have transfer amount
         if (tx.step() == pools::protobuf::kRootCreateAddress) {
@@ -68,7 +68,6 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
         }
 
         int do_tx_res = iter->second->HandleTx(
-            txs_ptr_->thread_index,
             zjc_block,
             db_batch_,
             zjc_host,
@@ -90,17 +89,16 @@ void RootZbft::RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_bl
     }
 
     auto iter = tx_map.begin();
-    if (iter->second->msg_ptr->header.tx_proto().step() != pools::protobuf::kConsensusRootElectShard) {
+    if (iter->second->tx_info.step() != pools::protobuf::kConsensusRootElectShard) {
         assert(false);
         return;
     }
 
     auto tx_list = zjc_block.mutable_tx_list();
     auto& tx = *tx_list->Add();
-    iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), db_batch_, &tx);
+    iter->second->TxToBlockTx(iter->second->tx_info, db_batch_, &tx);
     std::unordered_map<std::string, int64_t> acc_balance_map;
     int do_tx_res = iter->second->HandleTx(
-        txs_ptr_->thread_index,
         zjc_block,
         db_batch_,
         zjc_host,
@@ -121,4 +119,4 @@ void RootZbft::RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_bl
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

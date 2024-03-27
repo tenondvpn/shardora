@@ -4,22 +4,22 @@
 #include "consensus/zbft/tx_item_base.h"
 #include "security/security.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
 class FromTxItem : public TxItemBase {
 public:
     FromTxItem(
-            const transport::MessagePtr& msg,
+            const pools::protobuf::TxMessage& tx,
             std::shared_ptr<block::AccountManager>& account_mgr,
-            std::shared_ptr<security::Security>& sec_ptr)
-            : TxItemBase(msg, account_mgr, sec_ptr) {
+            std::shared_ptr<security::Security>& sec_ptr,
+            protos::AddressInfoPtr& addr_info)
+            : TxItemBase(tx, account_mgr, sec_ptr, addr_info) {
     }
 
     virtual ~FromTxItem() {}
     virtual int HandleTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
@@ -33,4 +33,4 @@ private:
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

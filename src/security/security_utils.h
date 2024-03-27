@@ -12,7 +12,7 @@
 #define CRYPTO_WARN(fmt, ...) ZJC_WARN("[crypto]" fmt, ## __VA_ARGS__)
 #define CRYPTO_ERROR(fmt, ...) ZJC_ERROR("[crypto]" fmt, ## __VA_ARGS__)
 
-namespace zjchain {
+namespace shardora {
 
 namespace security {
 
@@ -32,4 +32,4 @@ inline static std::string GetContractAddress(
 
 }  // namespace security
 
-}  // namespace zjchain
+}  // namespace shardora

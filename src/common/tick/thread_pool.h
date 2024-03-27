@@ -11,11 +11,11 @@
 #include "common/spin_mutex.h"
 #include "common/utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace common {
 
-typedef std::function<void(uint8_t thread_idx)> TickCallbackFunction;
+typedef std::function<void()> TickCallbackFunction;
 struct Item {
     Item(
             const std::chrono::steady_clock::time_point& cut,
@@ -47,7 +47,7 @@ private:
 
     static const uint64_t kTickSleepUs = 50000ull;
 
-    void Ticking(uint8_t thread_idx);
+    void Ticking();
     TickItemPtr Get(uint32_t& idx);
 
     bool destroy_{ false };
@@ -63,4 +63,4 @@ private:
 
 }  // namespace common
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -12,7 +12,7 @@ import "protos/sync.proto";
 import "protos/vss.proto";
 import "protos/init.proto";
 import "protos/c2c.proto";
-package zjchain.transport.protobuf;
+package shardora.transport.protobuf;
 
 message BroadcastParam {
     optional uint32 type = 1;
@@ -29,8 +29,8 @@ message BroadcastParam {
     repeated uint64 bloomfilter = 12;
     optional float evil_rate = 13 [default=0];
     optional uint32 ign_bloomfilter_hop = 14 [default=1];
-}
 
+}
 message Header {
     optional int32 src_sharding_id = 1;
     optional bytes des_dht_key = 2;
@@ -59,7 +59,7 @@ message Header {
     optional init.protobuf.InitMessage init_proto = 25;
     optional pools.protobuf.SyncPoolsMaxHeight sync_heights = 26;
     optional block.protobuf.Block block = 27;
-    repeated pools.protobuf.InvalidBftMessage invalid_bfts = 28;
     optional uint32 from_public_port = 29;
     optional c2c.protobuf.C2cMessage c2c = 30;
+    optional bytes pubkey = 31;
 }

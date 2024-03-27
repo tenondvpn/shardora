@@ -9,7 +9,7 @@
 #include "common/encode.h"
 #include <common/log.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -102,6 +102,7 @@ int Zbft::Prepare(bool leader) {
         return LeaderCreatePrepare(leader);
     }
 
+    consensus_prepare_tm_ms_ = common::TimeUtils::TimestampMs();
     if (txs_ptr_->txs.empty()) {
         ZJC_ERROR("pool index invalid[%d], tx empty!", pool_index());
         return kConsensusInvalidPackage;
@@ -163,8 +164,6 @@ int Zbft::LeaderPrecommitOk(
         prepare_hash,
         backup_sign);
 
-    // times_[times_index_++] = common::TimeUtils::TimestampUs();
-    //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
     if ((uint32_t)valid_count >= min_aggree_member_count_) {
         int32_t res = kConsensusAgree;
         if (prepare_block_->hash() != prepare_hash) {
@@ -812,9 +811,8 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
     zjcvm::Uint64ToEvmcBytes32(
         zjc_host.tx_context_.chain_id,
         chanin_id);
-    zjc_host.thread_idx_ = txs_ptr_->thread_index;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) { 
-        auto& tx_info = iter->second->msg_ptr->header.tx_proto();
+        auto& tx_info = iter->second->tx_info;
         auto& block_tx = *tx_list->Add();
         int res = iter->second->TxToBlockTx(tx_info, db_batch_, &block_tx);
         if (res != kConsensusSuccess) {
@@ -824,14 +822,13 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
 
         if (block_tx.step() == pools::protobuf::kContractExcute) {
             block_tx.set_from(security_ptr_->GetAddress(
-                iter->second->msg_ptr->header.tx_proto().pubkey()));
+                iter->second->tx_info.pubkey()));
         } else {
-            block_tx.set_from(iter->second->msg_ptr->address_info->addr());
+            block_tx.set_from(iter->second->address_info->addr());
         }
 
         block_tx.set_status(kConsensusSuccess);
         int do_tx_res = iter->second->HandleTx(
-            txs_ptr_->thread_index,
             zjc_block,
             db_batch_,
             zjc_host,
@@ -858,4 +855,4 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

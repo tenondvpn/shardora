@@ -17,7 +17,7 @@
 #include "common/utils.h"
 #include "protos/prefix_db.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace bls {
 
@@ -96,4 +96,4 @@ private:
 
 }  // namespace bls
 
-}  // namespace zjchain
+}  // namespace shardora

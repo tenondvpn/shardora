@@ -4,7 +4,7 @@
 #include "dht/base_dht.h"
 #include "broadcast/broadcast.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace broadcast {
 
@@ -13,7 +13,6 @@ public:
     FilterBroadcast();
     virtual ~FilterBroadcast();
     virtual void Broadcasting(
-        uint8_t thread_idx,
         dht::BaseDhtPtr& dht_ptr,
         const transport::MessagePtr& message);
 
@@ -30,12 +29,10 @@ private:
         const transport::protobuf::Header& message);
     uint32_t BinarySearch(const dht::Dht& dht, uint64_t val);
     void LayerSend(
-        uint8_t thread_idx,
         dht::BaseDhtPtr& dht_ptr,
         const transport::MessagePtr& message,
         std::vector<dht::NodePtr>& nodes);
     void Send(
-        uint8_t thread_idx,
         dht::BaseDhtPtr& dht_ptr,
         const transport::MessagePtr& message,
         const std::vector<dht::NodePtr>& nodes);
@@ -47,4 +44,4 @@ private:
 
 }  // namespace broadcast
 
-}  // namespace zjchain
+}  // namespace shardora

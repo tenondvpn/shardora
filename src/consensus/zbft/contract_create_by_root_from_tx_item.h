@@ -7,7 +7,7 @@
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
 
-namespace zjchain {
+namespace shardora {
 namespace consensus {
 
 class ContractCreateByRootFromTxItem : public TxItemBase {
@@ -15,17 +15,17 @@ public:
     ContractCreateByRootFromTxItem(
             std::shared_ptr<contract::ContractManager>& contract_mgr,
             std::shared_ptr<db::Db>& db,
-            const transport::MessagePtr& msg,
+            const pools::protobuf::TxMessage& msg,
             std::shared_ptr<block::AccountManager>& account_mgr,
-            std::shared_ptr<security::Security>& sec_ptr)
-            : TxItemBase(msg, account_mgr, sec_ptr) {
+            std::shared_ptr<security::Security>& sec_ptr,
+            protos::AddressInfoPtr& addr_info)
+            : TxItemBase(msg, account_mgr, sec_ptr, addr_info) {
         contract_mgr_ = contract_mgr;
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
     }
 
     virtual ~ContractCreateByRootFromTxItem() {}
     virtual int HandleTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
@@ -40,4 +40,4 @@ private:
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

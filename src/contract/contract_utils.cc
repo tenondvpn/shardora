@@ -2,11 +2,11 @@
 
 #include "common/hash.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace contract {
 
 
 }  // namespace contact
 
-}  // namespace zjchain
+}  // namespace shardora

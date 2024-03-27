@@ -6,7 +6,7 @@
 #include "common/spin_mutex.h"
 #include "tnet/event/epoll_manager.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace tnet {
 
@@ -38,4 +38,4 @@ private:
 
 }  // namespace tnet
 
-}  // namespace zjchain
+}  // namespace shardora

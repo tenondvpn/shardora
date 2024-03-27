@@ -22,7 +22,7 @@
 #define TRANSPORT_WARN(fmt, ...) ZJC_WARN("[transport]" fmt, ## __VA_ARGS__)
 #define TRANSPORT_ERROR(fmt, ...) ZJC_ERROR("[transport]" fmt, ## __VA_ARGS__)
 
-namespace zjchain {
+namespace shardora {
 
 namespace transport {
 
@@ -68,6 +68,11 @@ enum TcpConnnectionType {
     kRemoveClient = 3,
 };
 
+enum FirewallCheckStatus {
+    kFirewallCheckSuccess = 0,
+    kFirewallCheckError = 1,
+};
+
 static const uint64_t kConsensusMessageTimeoutUs = 5000000lu;
 static const uint64_t kHandledTimeoutMs = 10000lu;
 static const uint64_t kMessagePeriodUs = 1500000lu;
@@ -83,7 +88,6 @@ struct TransportMessage {
 
     protobuf::Header header;
     std::shared_ptr<tnet::TcpInterface> conn = nullptr;
-    uint8_t thread_idx = -1;
     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
     std::string msg_hash;
     bool retry;
@@ -97,6 +101,7 @@ struct TransportMessage {
 
 typedef std::shared_ptr<TransportMessage> MessagePtr;
 typedef std::function<void(const transport::MessagePtr& message)> MessageProcessor;
+typedef std::function<int(transport::MessagePtr& message)> FirewallCheckCallback;
 
 struct ClientItem {
     std::string des_ip;
@@ -133,4 +138,4 @@ inline void CloseSocket(int sock) {
 
 }  // namespace transport
 
-}  // namespace zjchain
+}  // namespace shardora

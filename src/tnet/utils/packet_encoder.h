@@ -4,7 +4,7 @@
 #include "tnet/utils/packet.h"
 #include "tnet/utils/bytes_buffer.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace tnet {
 
@@ -21,4 +21,4 @@ protected:
 
 }  // namespace tnet
 
-}  // namespace zjchain
+}  // namespace shardora

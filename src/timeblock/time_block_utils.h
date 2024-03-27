@@ -9,7 +9,7 @@
 #define TMBLOCK_WARN(fmt, ...) ZJC_WARN("[tmblock]" fmt, ## __VA_ARGS__)
 #define TMBLOCK_ERROR(fmt, ...) ZJC_ERROR("[tmblock]" fmt, ## __VA_ARGS__)
 
-namespace zjchain {
+namespace shardora {
 
 namespace timeblock {
 
@@ -27,4 +27,4 @@ static const uint64_t kCheckBftPeriodUs = 1000000llu;
 
 }  // namespace timeblock
 
-}  // namespace zjchain
+}  // namespace shardora

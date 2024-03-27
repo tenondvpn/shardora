@@ -8,7 +8,7 @@
 #include "protos/elect.pb.h"
 #include "protos/prefix_db.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace elect {
 
@@ -75,4 +75,4 @@ private:
 
 };  // namespace elect
 
-};  // namespace zjchain
+};  // namespace shardora

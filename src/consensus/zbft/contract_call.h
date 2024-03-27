@@ -8,7 +8,7 @@
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace contract {
     class ContractManager;
@@ -22,10 +22,11 @@ public:
             std::shared_ptr<contract::ContractManager>& contract_mgr,
             std::shared_ptr<ContractGasPrepayment>& prepayment,
             std::shared_ptr<db::Db>& db,
-            const transport::MessagePtr& msg,
+            const pools::protobuf::TxMessage& msg,
             std::shared_ptr<block::AccountManager>& account_mgr,
-            std::shared_ptr<security::Security>& sec_ptr)
-            : TxItemBase(msg, account_mgr, sec_ptr) {
+            std::shared_ptr<security::Security>& sec_ptr,
+            protos::AddressInfoPtr& addr_info)
+            : TxItemBase(msg, account_mgr, sec_ptr, addr_info) {
         contract_mgr_ = contract_mgr;
         prepayment_ = prepayment;
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
@@ -33,7 +34,6 @@ public:
 
     virtual ~ContractCall() {}
     virtual int HandleTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjchost,
@@ -55,7 +55,6 @@ private:
         int64_t& caller_balance_add,
         int64_t& gas_more);
     void GetTempPerpaymentBalance(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& block_tx,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
@@ -69,4 +68,4 @@ private:
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

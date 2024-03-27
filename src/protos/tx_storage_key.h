@@ -4,7 +4,7 @@
 
 #include "common/encode.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace protos {
 
@@ -44,4 +44,4 @@ static const std::string kStatisticAttr = "__kStatisticAttr";
 
 };  // namespace protos
 
-};  // namespace zjchain
+};  // namespace shardora

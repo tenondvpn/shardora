@@ -5,8 +5,8 @@
 #include "common/time_utils.h"
 #include "tcp/tcp_server.h"
 
-using namespace zjchain;
-using namespace zjchain::tcp;
+using namespace shardora;
+using namespace shardora::tcp;
 
 int main(int argc, char* argv[]) {
     TcpServer tcp_server;

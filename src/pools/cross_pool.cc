@@ -8,7 +8,7 @@
 #include "network/network_utils.h"
 #include "pools/tx_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
     
@@ -47,7 +47,7 @@ void CrossPool::InitHeightTree() {
     }
 }
 
-uint32_t CrossPool::SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms) {
+uint32_t CrossPool::SyncMissingBlocks(uint64_t now_tm_ms) {
     if (height_tree_ptr_ == nullptr) {
         return 0;
     }
@@ -55,7 +55,6 @@ uint32_t CrossPool::SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms) {
     if (latest_height_ == common::kInvalidUint64) {
         // sync latest height from neighbors
         kv_sync_->AddSyncHeight(
-            thread_idx,
             des_sharding_id_,
             pool_index_,
             0,
@@ -84,7 +83,6 @@ uint32_t CrossPool::SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms) {
                 des_sharding_id_, pool_index_, latest_height_,
                 invalid_heights.size(), invalid_heights[i]);
             kv_sync_->AddSyncHeight(
-                thread_idx,
                 des_sharding_id_,
                 pool_index_,
                 invalid_heights[i],
@@ -97,4 +95,4 @@ uint32_t CrossPool::SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms) {
 
 }  // namespace pools
 
-}  // namespace zjchain
+}  // namespace shardora

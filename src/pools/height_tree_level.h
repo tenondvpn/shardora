@@ -6,7 +6,7 @@
 #include "common/utils.h"
 #include "pools/leaf_height_tree.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
 
@@ -50,4 +50,4 @@ private:
 
 };  // namespace pools
 
-};  // namespace zjchain
+};  // namespace shardora

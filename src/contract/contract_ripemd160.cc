@@ -7,7 +7,7 @@
 #include "pbc/pbc.h"
 #include "zjcvm/zjc_host.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace contract {
 
@@ -263,4 +263,4 @@ int Ripemd160::TestPbc(const std::string& param) {
 
 }  // namespace contract
 
-}  // namespace zjchain
+}  // namespace shardora

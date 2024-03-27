@@ -3,11 +3,12 @@
 #include "common/encode.h"
 #include "common/hash.h"
 #include "common/unique_map.h"
+#include "pools/tx_utils.h"
 #include "protos/address.pb.h"
 #include "protos/vss.pb.h"
 #include "protos/zbft.pb.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace protos {
 
@@ -86,9 +87,10 @@ static void GetZbftHash(
             msg_for_hash.append((char*)&height, sizeof(height));
         }
 
-        if (zbft_msg.tx_bft().tx_hash_list_size() > 0) {
-            for (int32_t i = 0; i < zbft_msg.tx_bft().tx_hash_list_size(); ++i) {
-                msg_for_hash.append(zbft_msg.tx_bft().tx_hash_list(i));
+        if (zbft_msg.tx_bft().txs_size() > 0) {
+            for (int32_t i = 0; i < zbft_msg.tx_bft().txs_size(); ++i) {
+                auto txhash = pools::GetTxMessageHash(zbft_msg.tx_bft().txs(i));
+                msg_for_hash.append(txhash);
             }
         }
 
@@ -287,4 +289,4 @@ std::string GetJoinElectReqHash(const bls::protobuf::JoinElectInfo& req) {
 
 };  // namespace protos
 
-};  // namespace zjchain
+};  // namespace shardora

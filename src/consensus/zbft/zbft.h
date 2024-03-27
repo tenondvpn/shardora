@@ -19,7 +19,7 @@
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -387,10 +387,6 @@ public:
     int LeaderPrecommitAggSign(const std::string& hash);
     int LeaderCreateCommitAggSign();
     void RechallengePrecommitClear();
-    uint8_t thread_index() const {
-        return txs_ptr_->thread_index;
-    }
-
     const std::string& precommit_bls_agg_verify_hash() const {
         return precommit_bls_agg_verify_hash_;
     }
@@ -529,6 +525,22 @@ public:
         return invalid_txs_;
     }
 
+    uint64_t get_consensus_use_tm_ms() const {
+        if (consensus_prepare_tm_ms_ <= 0) {
+            return 0;
+        }
+
+        auto now_tm = common::TimeUtils::TimestampMs();
+        if (consensus_prepare_tm_ms_ >= now_tm) {
+            return 0;
+        }
+
+        return now_tm - consensus_prepare_tm_ms_;
+    }
+
+    // TODO: for test
+    transport::MessagePtr msg_ptr = nullptr;
+
 protected:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
@@ -592,6 +604,7 @@ protected:
     std::shared_ptr<ElectItem> elect_item_ptr_ = nullptr;
     uint8_t invalid_prepare_txs_[kMaxTxCount] = { 0 };
     std::set<uint8_t> invalid_txs_;
+    uint64_t consensus_prepare_tm_ms_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(Zbft);
 public:
@@ -614,4 +627,4 @@ typedef std::shared_ptr<Zbft> ZbftPtr;
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

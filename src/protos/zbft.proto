@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package zjchain.zbft.protobuf;
+package shardora.zbft.protobuf;
 import "protos/block.proto";
 import "protos/pools.proto";
 
@@ -8,9 +8,9 @@ message TxBft {
     optional block.protobuf.Block block = 1;
     optional bytes prepare_final_hash = 2;
     optional uint64 height = 3;
-    repeated bytes tx_hash_list = 4;
-    optional pools.protobuf.StepType tx_type = 5 [default=kNormalFrom];
-    optional uint64 time_stamp = 6;
+    optional pools.protobuf.StepType tx_type = 4 [default=kNormalFrom];
+    optional uint64 time_stamp = 5;
+    repeated pools.protobuf.TxMessage txs = 6;
 }
 
 message ZbftMessage {

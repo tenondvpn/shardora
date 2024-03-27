@@ -38,7 +38,7 @@
 #include "timeblock/time_block_manager.h"
 #include "transport/transport_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace vss {
     class VssManager;
@@ -57,7 +57,6 @@ enum class BackupBftStage {
   PRECOMMIT_RECEIVED,
   COMMIT_RECEIVED,
 };
-static const int GET_TXS_RETRY_TIMES = 2;
 
 class WaitingTxsPools;
 class BftManager : public Consensus {
@@ -97,6 +96,7 @@ public:
         int32_t leader_mod_num,
         uint64_t elect_height,
         uint32_t new_leader_idx);
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
 private:
     int AddBft(ZbftPtr& bft_ptr);
@@ -105,7 +105,6 @@ private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
     ZbftPtr Start(
-        uint8_t thread_index,
         ZbftPtr commited_bft_ptr);
     ZbftPtr StartBft(
         const std::shared_ptr<ElectItem>& elect_item,
@@ -123,16 +122,15 @@ private:
         ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr);
     int BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
-    void CheckTimeout(uint8_t thread_index);
-    void CheckMessageTimeout(uint8_t thread_index);
-    int LeaderHandlePrepare(const transport::MessagePtr& msg_ptr);
-    int LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
+    void CheckTimeout();
+    void CheckMessageTimeout();
+    int LeaderHandlePrepare(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
+    int LeaderCallPrecommit(ZbftPtr& bft_ptr);
     ZbftPtr CreateBftPtr(
         const ElectItem& elect_item,
         const transport::MessagePtr& msg_ptr,
         std::vector<uint8_t>* invalid_txs);
     void BackupHandleZbftMessage(
-        uint8_t thread_index,
         const transport::MessagePtr& msg_ptr);
     int BackupPrepare(
         const ElectItem& elect_item,
@@ -152,24 +150,19 @@ private:
         const transport::MessagePtr& msg_ptr,
         const std::string& gid);
     void SyncConsensusBlock(
-        uint8_t thread_idx,
         uint32_t pool_index,
         const std::string& bft_gid);
     void HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr);
     bool AddSyncKeyValue(transport::protobuf::Header* msg, const block::protobuf::Block& block);
     void SaveKeyValue(const transport::protobuf::Header& msg);
-    void PopAllPoolTxs(uint8_t thread_index);
+    void PopAllPoolTxs();
     void LeaderBroadcastBlock(
-        uint8_t thread_index,
         const std::shared_ptr<block::protobuf::Block>& block);
     void BroadcastLocalTosBlock(
-        uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block);
     void BroadcastWaitingBlock(
-        uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block);
     void BroadcastBlock(
-        uint8_t thread_idx,
         uint32_t des_shard,
         const std::shared_ptr<block::protobuf::Block>& block);
     void RegisterCreateTxCallbacks();
@@ -185,11 +178,9 @@ private:
     void AddWaitingBlock(std::shared_ptr<block::protobuf::Block>& block_ptr);
     void RemoveWaitingBlock(uint32_t pool_index, uint64_t height);
     void ReConsensusPrepareBft(const ElectItem& elect_item, ZbftPtr& bft_ptr);
-    void HandleSyncedBlock(uint8_t thread_idx, std::shared_ptr<block::protobuf::Block>& block_ptr);
+    void HandleSyncedBlock(std::shared_ptr<block::protobuf::Block>& block_ptr);
     void ReConsensusChangedLeaderBft(ZbftPtr& bft_ptr);
     bool CheckChangedLeaderBftsValid(uint32_t pool, uint64_t height, const std::string& gid);
-    void BroadcastInvalidGids(uint8_t thread_idx);
-    void CheckInvalidGids(uint8_t thread_idx);
     void LeaderRemoveTimeoutPrepareBft(ZbftPtr& bft_ptr);
     void BackupSendPrepareMessage(
         const ElectItem& elect_item,
@@ -202,44 +193,53 @@ private:
         bool agree);
     void LeaderSendPrecommitMessage(const transport::MessagePtr& leader_msg_ptr, bool agree);
     void LeaderSendCommitMessage(const transport::MessagePtr& leader_msg_ptr, bool agree);
-    void HandleCommitedSyncBlock(uint8_t thread_idx, const zbft::protobuf::ZbftMessage& req_bft_msg);
+    void HandleCommitedSyncBlock(const zbft::protobuf::ZbftMessage& req_bft_msg);
     std::shared_ptr<WaitingTxsItem> get_txs_ptr(
         std::shared_ptr<PoolTxIndexItem>& thread_item,
         ZbftPtr& commited_bft_ptr);
     void CreateTestBlock();
+    void BackupAddLocalTxs(zbft::protobuf::TxBft* txbft, uint32_t pool_index);
+    void LeaderAddBackupTxs(const zbft::protobuf::TxBft& txbft, uint32_t pool_index);
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<FromTxItem>(
+            msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateToTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<ToTxItem>(msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<ToTxItem>(
+            msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateStatisticTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<StatisticTxItem>(msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<StatisticTxItem>(
+            msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateToTxLocal(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ToTxLocalItem>(
-            msg_ptr, db_, gas_prepayment_, account_mgr_, security_ptr_);
+            msg_ptr->header.tx_proto(), db_, gas_prepayment_, 
+            account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateTimeblockTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<TimeBlockTx>(msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<TimeBlockTx>(
+            msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateRootToTxItem(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<RootToTxItem>(
             max_consensus_sharding_id_,
-            msg_ptr,
+            msg_ptr->header.tx_proto(),
             vss_mgr_,
             account_mgr_,
-            security_ptr_);
+            security_ptr_,
+            msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateLibraryTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<CreateLibrary>(msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<CreateLibrary>(
+            msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateElectTx(const transport::MessagePtr& msg_ptr) {
@@ -249,7 +249,7 @@ private:
         }
 
         return std::make_shared<ElectTxItem>(
-            msg_ptr,
+            msg_ptr->header.tx_proto(),
             account_mgr_,
             security_ptr_,
             prefix_db_,
@@ -258,44 +258,74 @@ private:
             bls_mgr_,
             first_timeblock_timestamp_,
             false,
-            max_consensus_sharding_id_ - 1);
+            max_consensus_sharding_id_ - 1,
+            msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateJoinElectTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<JoinElectTxItem>(
-            msg_ptr, account_mgr_, security_ptr_, prefix_db_, elect_mgr_);
+            msg_ptr->header.tx_proto(), 
+            account_mgr_, 
+            security_ptr_, 
+            prefix_db_, 
+            elect_mgr_, 
+            msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateCrossTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<CrossTxItem>(msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<CrossTxItem>(
+            msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateRootCrossTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<RootCrossTxItem>(msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<RootCrossTxItem>(
+            msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateContractUserCreateCallTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ContractUserCreateCall>(
-            contract_mgr_, db_, msg_ptr, account_mgr_, security_ptr_);
+            contract_mgr_, 
+            db_, 
+            msg_ptr->header.tx_proto(), 
+            account_mgr_, 
+            security_ptr_, 
+            msg_ptr->address_info);
     }
 
 	pools::TxItemPtr CreateContractByRootFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ContractCreateByRootFromTxItem>(
-            contract_mgr_, db_, msg_ptr, account_mgr_, security_ptr_);
+            contract_mgr_, 
+            db_, 
+            msg_ptr->header.tx_proto(), 
+            account_mgr_, 
+            security_ptr_, 
+            msg_ptr->address_info);
     }
 
 	pools::TxItemPtr CreateContractByRootToTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ContractCreateByRootToTxItem>(
-            contract_mgr_, db_, msg_ptr, account_mgr_, security_ptr_);
+            contract_mgr_, 
+            db_, 
+            msg_ptr->header.tx_proto(), 
+            account_mgr_, 
+            security_ptr_, 
+            msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateContractUserCallTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<ContractUserCall>(db_, msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<ContractUserCall>(
+            db_, msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateContractCallTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ContractCall>(
-            contract_mgr_, gas_prepayment_, db_, msg_ptr, account_mgr_, security_ptr_);
+            contract_mgr_, 
+            gas_prepayment_, 
+            db_, 
+            msg_ptr->header.tx_proto(), 
+            account_mgr_, 
+            security_ptr_, 
+            msg_ptr->address_info);
     }
 
     static const uint32_t kCheckTimeoutPeriodMilli = 1000lu;
@@ -342,9 +372,6 @@ private:
     std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_blocks_[common::kInvalidPoolIndex];
     std::map<uint64_t, std::shared_ptr<block::protobuf::Block>, std::greater<uint64_t>> waiting_agg_verify_blocks_[common::kInvalidPoolIndex];
     ZbftPtr changed_leader_pools_height_[common::kInvalidPoolIndex] = { nullptr };
-    common::LimitHashMap<std::string, ZbftPtr> removed_preapare_gid_with_hash_[common::kInvalidPoolIndex];
-    uint64_t prev_broadcast_invalid_gid_tm_[common::kMaxThreadCount] = { 0 };
-    std::unordered_set<std::string> broadcasted_gids_[common::kMaxThreadCount];
     std::shared_ptr<BftMessageInfo> gid_with_msg_map_[common::kInvalidPoolIndex];
     uint64_t pools_prev_bft_timeout_[common::kInvalidPoolIndex] = { 0 };
 
@@ -444,4 +471,4 @@ private:
 
 }  // namespace consensus
 
-}  // namespace zjchain
+}  // namespace shardora

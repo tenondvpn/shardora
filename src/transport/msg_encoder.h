@@ -4,7 +4,7 @@
 #include "tnet/utils/packet_encoder.h"
 #include "tnet/utils/msg_packet.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace transport {
 
@@ -44,4 +44,4 @@ public:
 
 }  // namespace transport
 
-}  // namespace zjchain
+}  // namespace shardora

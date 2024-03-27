@@ -4,7 +4,7 @@
 #include "tnet/socket/listen_socket.h"
 #include "tnet/tnet_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace tnet {
 
@@ -77,7 +77,7 @@ bool TcpAcceptor::Start() {
 
     check_conn_tick_.CutOff(
         10000000, 
-        std::bind(&TcpAcceptor::CheckConnectionValid, this, std::placeholders::_1));
+        std::bind(&TcpAcceptor::CheckConnectionValid, this));
     return rc;
 }
 
@@ -208,7 +208,7 @@ bool TcpAcceptor::OnRead() {
     return false;
 }
 
-void TcpAcceptor::CheckConnectionValid(uint8_t thread_idx) {
+void TcpAcceptor::CheckConnectionValid() {
     while (destroy_ == 0) {
         std::shared_ptr<TcpConnection> out_conn = nullptr;
         if (!in_check_queue_.pop(&out_conn) || out_conn == nullptr) {
@@ -220,7 +220,7 @@ void TcpAcceptor::CheckConnectionValid(uint8_t thread_idx) {
 
     uint32_t length = waiting_check_queue_.size();
     uint32_t check_count = 0;
-    while (check_count < kEachCheckConnectionCount && check_count <= length && destroy_ == 0) {
+    while (check_count < kEachCheckConnectionCount && check_count < length && destroy_ == 0) {
         ++check_count;
         auto conn = waiting_check_queue_.front();
         if (conn->ShouldReconnect()) {
@@ -232,7 +232,7 @@ void TcpAcceptor::CheckConnectionValid(uint8_t thread_idx) {
 
     check_conn_tick_.CutOff(
         10000000, 
-        std::bind(&TcpAcceptor::CheckConnectionValid, this, std::placeholders::_1));
+        std::bind(&TcpAcceptor::CheckConnectionValid, this));
 }
 
 void TcpAcceptor::OnWrite()
@@ -258,4 +258,4 @@ std::shared_ptr<TcpConnection> TcpAcceptor::CreateTcpConnection(
 
 }  // namespace tnet
 
-}  // namespace zjchain
+}  // namespace shardora

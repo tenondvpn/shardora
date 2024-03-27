@@ -15,7 +15,7 @@
 #include "transport/processor.h"
 #include <common/log.h>
 
-namespace zjchain {
+namespace shardora {
 
 namespace sync {
 
@@ -24,12 +24,12 @@ KeyValueSync::KeyValueSync() {}
 KeyValueSync::~KeyValueSync() {}
 
 void KeyValueSync::AddSync(
-        uint8_t thread_idx,
         uint32_t network_id,
         const std::string& key,
         uint32_t priority) {
     assert(priority <= kSyncHighest);
     auto item = std::make_shared<SyncItem>(network_id, key, priority);
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     item_queues_[thread_idx].push(item);
     ZJC_DEBUG("queue size thread_idx: %d, item_queues_: %d", thread_idx, item_queues_[thread_idx].size());
 //     ZJC_DEBUG("key value add new sync item key: %s, priority: %u",
@@ -48,41 +48,45 @@ void KeyValueSync::Init(
         std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
     tick_.CutOff(
         100000lu,
-        std::bind(&KeyValueSync::ConsensusTimerMessage, this, std::placeholders::_1));
+        std::bind(&KeyValueSync::ConsensusTimerMessage, this));
+}
+
+int KeyValueSync::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+    return transport::kFirewallCheckSuccess;
 }
 
 void KeyValueSync::AddSyncHeight(
-        uint8_t thread_idx,
         uint32_t network_id,
         uint32_t pool_idx,
         uint64_t height,
         uint32_t priority) {
     assert(priority <= kSyncHighest);
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority);
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     item_queues_[thread_idx].push(item);
     ZJC_DEBUG("block height add new sync item key: %s, priority: %u",
         item->key.c_str(), item->priority);
 }
 
 void KeyValueSync::AddSyncElectBlock(
-        uint8_t thread_idx,
         uint32_t network_id,
         uint32_t elect_network_id,
         uint64_t height,
         uint32_t priority) {
     assert(priority <= kSyncHighest);
     auto item = std::make_shared<SyncItem>(network_id, elect_network_id, height, priority, kElectBlock);
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     item_queues_[thread_idx].push(item);
     ZJC_DEBUG("block height add new sync item key: %s, priority: %u",
         item->key.c_str(), item->priority);
 }
 
-void KeyValueSync::ConsensusTimerMessage(uint8_t thread_idx) {
+void KeyValueSync::ConsensusTimerMessage() {
     auto now_tm_us = common::TimeUtils::TimestampUs();
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    PopKvMessage(thread_idx);
+    PopKvMessage();
     PopItems();
-    CheckSyncItem(thread_idx);
+    CheckSyncItem();
     if (prev_sync_tmout_us_ + kSyncTimeoutPeriodUs < now_tm_us) {
         prev_sync_tmout_us_ = now_tm_us;
         CheckSyncTimeout();
@@ -95,7 +99,7 @@ void KeyValueSync::ConsensusTimerMessage(uint8_t thread_idx) {
 
     tick_.CutOff(
         100000lu,
-        std::bind(&KeyValueSync::ConsensusTimerMessage, this, std::placeholders::_1));
+        std::bind(&KeyValueSync::ConsensusTimerMessage, this));
 }
 
 void KeyValueSync::PopItems() {
@@ -130,7 +134,7 @@ void KeyValueSync::PopItems() {
     }
 }
 
-void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
+void KeyValueSync::CheckSyncItem() {
     std::set<uint64_t> sended_neigbors;
     std::map<uint32_t, sync::protobuf::SyncMessage> sync_dht_map;
     std::set<std::string> added_key;
@@ -176,7 +180,6 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
 
             if (sync_req->keys_size() + sync_req->heights_size() > (int32_t)kEachRequestMaxSyncKeyCount) {
                 uint64_t choose_node = SendSyncRequest(
-                    thread_idx,
                     item->network_id,
                     sync_dht_map[item->network_id],
                     sended_neigbors);
@@ -210,7 +213,6 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
         if (iter->second.sync_value_req().keys_size() > 0 ||
                 iter->second.sync_value_req().heights_size() > 0) {
             uint64_t choose_node = SendSyncRequest(
-                thread_idx,
                 iter->first,
                 iter->second,
                 sended_neigbors);
@@ -222,7 +224,6 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
 }
 
 uint64_t KeyValueSync::SendSyncRequest(
-        uint8_t thread_idx,
         uint32_t network_id,
         const sync::protobuf::SyncMessage& sync_msg,
         const std::set<uint64_t>& sended_neigbors) {
@@ -284,8 +285,7 @@ uint64_t KeyValueSync::SendSyncRequest(
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kSyncMessage);
     *msg.mutable_sync_proto() = sync_msg;
-    transport::TcpTransport::Instance()->Send(
-        thread_idx, node->public_ip, node->public_port, msg);
+    transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);
     ZJC_DEBUG("sync new from %s:%d", node->public_ip.c_str(), node->public_port);
     return node->id_hash;
 }
@@ -302,14 +302,13 @@ void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
     
 }
 
-void KeyValueSync::PopKvMessage(uint8_t thread_idx) {
+void KeyValueSync::PopKvMessage() {
     while (true) {
         transport::MessagePtr msg_ptr = nullptr;
         if (!kv_msg_queue_.pop(&msg_ptr) || msg_ptr == nullptr) {
             break;
         }
 
-        msg_ptr->thread_idx = thread_idx;
         HandleKvMessage(msg_ptr);
     }
 }
@@ -408,8 +407,8 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kSyncMessage);
-    transport::TcpTransport::Instance()->SetMessageHash(msg, msg_ptr->thread_idx);
-    transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn.get(), msg);
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
+    transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
     ZJC_DEBUG("sync response ok des: %u, hash64: %lu", msg_ptr->header.src_sharding_id(), msg.hash64());
 }
 
@@ -436,7 +435,7 @@ void KeyValueSync::ResponseElectBlock(
     }
 
     uint64_t elect_height = elect_net_heights_map_[elect_network_id];
-    while (elect_height > min_height) {
+    while (elect_height >= min_height) {
         block::protobuf::Block block;
         if (!prefix_db_->GetBlockWithHeight(
                 network::kRootCongressNetworkId,
@@ -498,16 +497,16 @@ void KeyValueSync::ResponseElectBlock(
         return;
     }
 
-    ++fiter;
+//    ++fiter;
     for (; fiter != shard_set.end(); ++fiter) {
         block::protobuf::Block block;
         if (!prefix_db_->GetBlockWithHeight(
                 network::kRootCongressNetworkId,
-                network_id % common::kImmutablePoolSize,
+                elect_network_id % common::kImmutablePoolSize,
                 *fiter,
                 &block)) {
             ZJC_DEBUG("block invalid network: %u, pool: %lu, height: %lu",
-                network::kRootCongressNetworkId, network_id % common::kImmutablePoolSize, *fiter);
+                network::kRootCongressNetworkId, elect_network_id % common::kImmutablePoolSize, *fiter);
             return;
         }
 
@@ -580,9 +579,9 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                         common::GlobalInfo::Instance()->network_id()) {
                     // TODO 暂时屏蔽创世选举块的验签，后续通过消息体中的 commom pk 验证
                     ZJC_DEBUG("sync elect block, elect height: %u, height: %u", block_item->electblock_height(), block_item->height());
-                    block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item, need_valid);
+                    block_mgr_->NetworkNewBlock(block_item, need_valid);
                 } else { // TODO 本网络的就不用同步吗？
-                    block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item, need_valid);
+                    block_mgr_->NetworkNewBlock(block_item, need_valid);
                     ZJC_DEBUG("sync normal block, elect height: %u, height: %u, network_id: %u, pool: %u",
                               block_item->electblock_height(),
                               block_item->height(),
@@ -636,4 +635,4 @@ void KeyValueSync::CheckSyncTimeout() {
 
 }  // namespace sync
 
-}  // namespace zjchain
+}  // namespace shardora

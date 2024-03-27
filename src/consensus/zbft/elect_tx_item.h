@@ -6,7 +6,7 @@
 #include "security/security.h"
 #include "vss/vss_manager.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace consensus {
 
@@ -29,7 +29,7 @@ typedef std::shared_ptr<ElectNodeInfo> NodeDetailPtr;
 class ElectTxItem : public TxItemBase {
 public:
     ElectTxItem(
-        const transport::MessagePtr& msg,
+        const pools::protobuf::TxMessage& msg,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<security::Security>& sec_ptr,
         std::shared_ptr<protos::PrefixDb>& prefix_db,
@@ -38,8 +38,9 @@ public:
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         uint64_t first_timeblock_timestamp,
         bool stop_mining,
-        uint32_t network_count)
-        : TxItemBase(msg, account_mgr, sec_ptr),
+        uint32_t network_count,
+        protos::AddressInfoPtr& addr_info)
+        : TxItemBase(msg, account_mgr, sec_ptr, addr_info),
         prefix_db_(prefix_db),
         elect_mgr_(elect_mgr),
         vss_mgr_(vss_mgr),
@@ -49,7 +50,6 @@ public:
         network_count_(network_count) {}
     virtual ~ElectTxItem() {}
     virtual int HandleTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
@@ -58,7 +58,6 @@ public:
 
 private:
     int CheckWeedout(
-        uint8_t thread_idx,
         common::MembersPtr& members,
         const pools::protobuf::PoolStatisticItem& statistic_item,
         uint32_t* min_area_weight,
@@ -67,7 +66,6 @@ private:
     int GetJoinElectNodesCredit(
         uint32_t index,
         const pools::protobuf::ElectStatistic& elect_statistic,
-        uint8_t thread_idx,
         uint32_t min_area_weight,
         uint32_t min_tx_count,
         std::vector<NodeDetailPtr>& elect_nodes_to_choose,
@@ -81,7 +79,6 @@ private:
         std::vector<NodeDetailPtr>& elect_nodes,
         uint64_t* max_fts_val);
     int CreateNewElect(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const std::vector<NodeDetailPtr>& elect_nodes,
         const pools::protobuf::ElectStatistic& elect_statistic,
@@ -89,7 +86,6 @@ private:
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         block::protobuf::BlockTx& block_tx);
     void MiningToken(
-        uint8_t thread_idx,
         uint32_t statistic_sharding_id,
         std::vector<NodeDetailPtr>& elect_nodes,
         uint64_t all_gas_amount,
@@ -97,14 +93,12 @@ private:
     uint64_t GetMiningMaxCount(uint64_t max_tx_count);
     void GetIndexNodes(
         uint32_t index,
-        uint8_t thread_idx,
         uint32_t min_area_weight,
         uint32_t min_tx_count,
         const pools::protobuf::ElectStatistic& elect_statistic,
         std::vector<NodeDetailPtr>* elect_nodes_to_choose);
     void ChooseNodeForEachIndex(
         bool hold_pos,
-        uint8_t thread_idx,
         uint32_t min_area_weight,
         uint32_t min_tx_count,
         const pools::protobuf::ElectStatistic& elect_statistic,
@@ -141,4 +135,4 @@ private:
 
 };  // namespace consensus
 
-};  // namespace zjchain
+};  // namespace shardora

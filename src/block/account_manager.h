@@ -1,6 +1,8 @@
 #pragma once
 
+#include <condition_variable>
 #include <memory>
+#include <mutex>
 #include <queue>
 #include <unordered_map>
 
@@ -16,7 +18,7 @@
 #include "protos/prefix_db.h"
 #include "protos/transport.pb.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace block {
 
@@ -28,18 +30,16 @@ public:
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<pools::TxPoolManager>& pools_mgr);
     void NewBlockWithTx(
-        uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
-    protos::AddressInfoPtr GetAccountInfo(uint8_t thread_idx, const std::string& acc_id);
+    protos::AddressInfoPtr GetAccountInfo(const std::string& acc_id);
     protos::AddressInfoPtr GetAcountInfoFromDb(const std::string& acc_id);
-    bool AccountExists(uint8_t thread_idx, const std::string& acc_id);
+    bool AccountExists(const std::string& acc_id);
     int GetAddressConsensusNetworkId(
-        uint8_t thread_idx,
         const std::string& addr,
         uint32_t* network_id);
-    protos::AddressInfoPtr GetContractInfoByAddress(uint8_t thread_idx, const std::string& address);
+    protos::AddressInfoPtr GetContractInfoByAddress(const std::string& address);
     void PrintPoolHeightTree(uint32_t pool_idx);
     void SetMaxHeight(uint32_t pool_idx, uint64_t height);
     int HandleRefreshHeightsReq(const transport::MessagePtr& msg_ptr);
@@ -62,48 +62,39 @@ private:
     void SendRefreshHeightsRequest();
     void SendRefreshHeightsResponse(const transport::protobuf::Header& header);
     void HandleNormalFromTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleContractPrepayment(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleCreateContract(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleCreateContractByRootFrom(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleContractCreateByRootTo(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleLocalToTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleRootCreateAddressTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleContractExecuteTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void CreatePoolsAddressInfo();
     void HandleJoinElectTx(
-        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
@@ -139,10 +130,12 @@ private:
     std::condition_variable update_acc_con_;
     std::mutex update_acc_mutex_;
     std::shared_ptr<std::thread> update_acc_thread_ = nullptr;
+    std::condition_variable thread_wait_conn_;
+    std::mutex thread_wait_mutex_;
 
     DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };
 
 }  // namespace block
 
-}  // namespace zjchain
+}  // namespace shardora

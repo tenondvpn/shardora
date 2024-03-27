@@ -7,7 +7,7 @@
 #include "common/encode.h"
 #include "security/ecdsa/crypto_utils.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace security {
 
@@ -82,4 +82,4 @@ int Aes::CfbDecrypt(char* str_in, int len, char* key, int key_len, char* out) {
 
 }  // namespace security
 
-}  // namespace zjchain
+}  // namespace shardora

@@ -8,7 +8,7 @@
 #include "network/network_utils.h"
 #include "sync/key_value_sync.h"
 
-namespace zjchain {
+namespace shardora {
 
 namespace pools {
 
@@ -21,7 +21,7 @@ public:
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
         tick_.CutOff(
             10000000lu,
-            std::bind(&CrossBlockManager::Ticking, this, std::placeholders::_1));
+            std::bind(&CrossBlockManager::Ticking, this));
     }
 
     ~CrossBlockManager() {}
@@ -41,9 +41,9 @@ public:
     }
 
 private:
-    void Ticking(uint8_t thread_idx) {
+    void Ticking() {
         auto now_tm_ms = common::TimeUtils::TimestampMs();
-        CheckCrossSharding(thread_idx);
+        CheckCrossSharding();
         auto etime = common::TimeUtils::TimestampMs();
         if (etime - now_tm_ms >= 10) {
             ZJC_DEBUG("CrossBlockManager handle message use time: %lu", (etime - now_tm_ms));
@@ -51,10 +51,10 @@ private:
 
         tick_.CutOff(
             10000000lu,
-            std::bind(&CrossBlockManager::Ticking, this, std::placeholders::_1));
+            std::bind(&CrossBlockManager::Ticking, this));
     }
 
-    void CheckCrossSharding(uint8_t thread_idx) {
+    void CheckCrossSharding() {
         auto local_sharding_id = common::GlobalInfo::Instance()->network_id();
         if (local_sharding_id == common::kInvalidUint32) {
             return;
@@ -67,10 +67,10 @@ private:
         db::DbWriteBatch wbatch;
         if (local_sharding_id == network::kRootCongressNetworkId) {
             for (uint32_t i = network::kConsensusShardBeginNetworkId; i <= max_sharding_id_; ++i) {
-                CheckCross(thread_idx, local_sharding_id, i, wbatch);
+                CheckCross(local_sharding_id, i, wbatch);
             }
         } else {
-            CheckCross(thread_idx, local_sharding_id, network::kRootCongressNetworkId, wbatch);
+            CheckCross(local_sharding_id, network::kRootCongressNetworkId, wbatch);
         }
 
         auto st = db_->Put(wbatch);
@@ -80,7 +80,6 @@ private:
     }
 
     void CheckCross(
-            uint8_t thread_idx,
             uint32_t local_sharding_id,
             uint32_t sharding_id,
             db::DbWriteBatch& wbatch) {
@@ -193,7 +192,6 @@ private:
                                 cross.src_pool(),
                                 cross.height())) {
                             kv_sync_->AddSyncHeight(
-                                thread_idx,
                                 cross.src_shard(),
                                 cross.src_pool(),
                                 cross.height(),
@@ -237,5 +235,5 @@ private:
 
 }  // namespace pools
 
-}  // namespace zjchain
+}  // namespace shardora
 
