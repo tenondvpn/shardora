@@ -4,33 +4,32 @@
 # 确保服务器安装了 sshpass
 echo "==== STEP1: START DEPLOY ===="
 server0=10.0.0.16
-server1=10.0.0.33
-server2=10.0.0.18
+server1=10.0.0.26
+server2=10.0.0.32
 server3=10.0.0.24
-server4=10.0.0.30
-server5=10.0.0.26
-server6=10.0.0.21
+server4=10.0.0.35
+server5=10.0.0.18
+server6=10.0.0.25
 server7=10.0.0.22
-server8=10.0.0.31
-server9=10.0.0.23
-server10=10.0.0.29
-server11=10.0.0.19
-server12=10.0.0.28
-server13=10.0.0.35
-server14=10.0.0.20
-server15=10.0.0.27
-server16=10.0.0.32
-server17=10.0.0.34
-server18=10.0.0.25
-server19=10.0.0.17
+server8=10.0.0.30
+server9=10.0.0.27
+server10=10.0.0.34
+server11=10.0.0.33
+server12=10.0.0.17
+server13=10.0.0.21
+server14=10.0.0.23
+server15=10.0.0.29
+server16=10.0.0.28
+server17=10.0.0.20
+server18=10.0.0.31
 target=$1
 no_build=$2
 
 echo "[$server0]"
 sh ./build_genesis.sh $target $no_build
-cd /root/xf && sh -x fetch.sh 127.0.0.1 ${server0} 'Xf4aGbTaf!' '/root/xf' r1 s3_1;
+cd /root/xf && sh -x fetch.sh 127.0.0.1 ${server0} 'Xf4aGbTaf!' '/root/xf' r1 s3_1 s3_18;
 
-for n in r1 s3_1; do
+for n in r1 s3_1 s3_18; do
     cp -rf /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/conf/log4cpp.properties /root/xf/zjnodes/${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/zjchain /root/xf/zjnodes/${n}
@@ -40,7 +39,7 @@ for n in r1; do
     cp -rf /root/xf/zjnodes/zjchain/root_db /root/xf/zjnodes/${n}/db
 done
 
-for n in s3_1; do
+for n in s3_1 s3_18; do
     cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/${n}/db
 done
 
@@ -50,16 +49,16 @@ sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server1 <<EOF
 mkdir -p /root/xf;
 rm -rf /root/xf/zjnodes;
 sshpass -p 'Xf4aGbTaf!' scp -o StrictHostKeyChecking=no root@"${server0}":/root/xf/fetch.sh /root/xf/
-cd /root/xf && sh -x fetch.sh ${server0} ${server1} 'Xf4aGbTaf!' '/root/xf' s4_5;
+cd /root/xf && sh -x fetch.sh ${server0} ${server1} 'Xf4aGbTaf!' '/root/xf' s3_8;
 
-for n in s4_5; do
+for n in s3_8; do
     cp -rf /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/conf/log4cpp.properties /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/zjchain /root/xf/zjnodes/\${n}
 done
 
-for n in s4_5; do
-    cp -rf /root/xf/zjnodes/zjchain/shard_db_4 /root/xf/zjnodes/\${n}/db
+for n in s3_8; do
+    cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/\${n}/db
 done
 
 EOF
@@ -72,20 +71,16 @@ sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server2 <<EOF
 mkdir -p /root/xf;
 rm -rf /root/xf/zjnodes;
 sshpass -p 'Xf4aGbTaf!' scp -o StrictHostKeyChecking=no root@"${server0}":/root/xf/fetch.sh /root/xf/
-cd /root/xf && sh -x fetch.sh ${server0} ${server2} 'Xf4aGbTaf!' '/root/xf' r3 s4_10;
+cd /root/xf && sh -x fetch.sh ${server0} ${server2} 'Xf4aGbTaf!' '/root/xf' s3_14;
 
-for n in r3 s4_10; do
+for n in s3_14; do
     cp -rf /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/conf/log4cpp.properties /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/zjchain /root/xf/zjnodes/\${n}
 done
 
-for n in r3; do
-    cp -rf /root/xf/zjnodes/zjchain/root_db /root/xf/zjnodes/\${n}/db
-done
-
-for n in s4_10; do
-    cp -rf /root/xf/zjnodes/zjchain/shard_db_4 /root/xf/zjnodes/\${n}/db
+for n in s3_14; do
+    cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/\${n}/db
 done
 
 EOF
@@ -120,16 +115,16 @@ sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server4 <<EOF
 mkdir -p /root/xf;
 rm -rf /root/xf/zjnodes;
 sshpass -p 'Xf4aGbTaf!' scp -o StrictHostKeyChecking=no root@"${server0}":/root/xf/fetch.sh /root/xf/
-cd /root/xf && sh -x fetch.sh ${server0} ${server4} 'Xf4aGbTaf!' '/root/xf' s4_2;
+cd /root/xf && sh -x fetch.sh ${server0} ${server4} 'Xf4aGbTaf!' '/root/xf' s3_17;
 
-for n in s4_2; do
+for n in s3_17; do
     cp -rf /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/conf/log4cpp.properties /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/zjchain /root/xf/zjnodes/\${n}
 done
 
-for n in s4_2; do
-    cp -rf /root/xf/zjnodes/zjchain/shard_db_4 /root/xf/zjnodes/\${n}/db
+for n in s3_17; do
+    cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/\${n}/db
 done
 
 EOF
@@ -142,15 +137,19 @@ sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server5 <<EOF
 mkdir -p /root/xf;
 rm -rf /root/xf/zjnodes;
 sshpass -p 'Xf4aGbTaf!' scp -o StrictHostKeyChecking=no root@"${server0}":/root/xf/fetch.sh /root/xf/
-cd /root/xf && sh -x fetch.sh ${server0} ${server5} 'Xf4aGbTaf!' '/root/xf' s3_8;
+cd /root/xf && sh -x fetch.sh ${server0} ${server5} 'Xf4aGbTaf!' '/root/xf' r3 s3_20;
 
-for n in s3_8; do
+for n in r3 s3_20; do
     cp -rf /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/conf/log4cpp.properties /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/zjchain /root/xf/zjnodes/\${n}
 done
 
-for n in s3_8; do
+for n in r3; do
+    cp -rf /root/xf/zjnodes/zjchain/root_db /root/xf/zjnodes/\${n}/db
+done
+
+for n in s3_20; do
     cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/\${n}/db
 done
 
@@ -164,15 +163,15 @@ sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server6 <<EOF
 mkdir -p /root/xf;
 rm -rf /root/xf/zjnodes;
 sshpass -p 'Xf4aGbTaf!' scp -o StrictHostKeyChecking=no root@"${server0}":/root/xf/fetch.sh /root/xf/
-cd /root/xf && sh -x fetch.sh ${server0} ${server6} 'Xf4aGbTaf!' '/root/xf' s3_3;
+cd /root/xf && sh -x fetch.sh ${server0} ${server6} 'Xf4aGbTaf!' '/root/xf' s3_7;
 
-for n in s3_3; do
+for n in s3_7; do
     cp -rf /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/conf/log4cpp.properties /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/zjchain /root/xf/zjnodes/\${n}
 done
 
-for n in s3_3; do
+for n in s3_7; do
     cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/\${n}/db
 done
 
@@ -208,16 +207,16 @@ sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server8 <<EOF
 mkdir -p /root/xf;
 rm -rf /root/xf/zjnodes;
 sshpass -p 'Xf4aGbTaf!' scp -o StrictHostKeyChecking=no root@"${server0}":/root/xf/fetch.sh /root/xf/
-cd /root/xf && sh -x fetch.sh ${server0} ${server8} 'Xf4aGbTaf!' '/root/xf' s4_3;
+cd /root/xf && sh -x fetch.sh ${server0} ${server8} 'Xf4aGbTaf!' '/root/xf' s3_12;
 
-for n in s4_3; do
+for n in s3_12; do
     cp -rf /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/conf/log4cpp.properties /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/zjchain /root/xf/zjnodes/\${n}
 done
 
-for n in s4_3; do
-    cp -rf /root/xf/zjnodes/zjchain/shard_db_4 /root/xf/zjnodes/\${n}/db
+for n in s3_12; do
+    cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/\${n}/db
 done
 
 EOF
@@ -230,15 +229,15 @@ sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server9 <<EOF
 mkdir -p /root/xf;
 rm -rf /root/xf/zjnodes;
 sshpass -p 'Xf4aGbTaf!' scp -o StrictHostKeyChecking=no root@"${server0}":/root/xf/fetch.sh /root/xf/
-cd /root/xf && sh -x fetch.sh ${server0} ${server9} 'Xf4aGbTaf!' '/root/xf' s3_5;
+cd /root/xf && sh -x fetch.sh ${server0} ${server9} 'Xf4aGbTaf!' '/root/xf' s3_9;
 
-for n in s3_5; do
+for n in s3_9; do
     cp -rf /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/conf/log4cpp.properties /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/zjchain /root/xf/zjnodes/\${n}
 done
 
-for n in s3_5; do
+for n in s3_9; do
     cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/\${n}/db
 done
 
@@ -252,16 +251,16 @@ sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server10 <<EOF
 mkdir -p /root/xf;
 rm -rf /root/xf/zjnodes;
 sshpass -p 'Xf4aGbTaf!' scp -o StrictHostKeyChecking=no root@"${server0}":/root/xf/fetch.sh /root/xf/
-cd /root/xf && sh -x fetch.sh ${server0} ${server10} 'Xf4aGbTaf!' '/root/xf' s4_1;
+cd /root/xf && sh -x fetch.sh ${server0} ${server10} 'Xf4aGbTaf!' '/root/xf' s3_16;
 
-for n in s4_1; do
+for n in s3_16; do
     cp -rf /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/conf/log4cpp.properties /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/zjchain /root/xf/zjnodes/\${n}
 done
 
-for n in s4_1; do
-    cp -rf /root/xf/zjnodes/zjchain/shard_db_4 /root/xf/zjnodes/\${n}/db
+for n in s3_16; do
+    cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/\${n}/db
 done
 
 EOF
@@ -274,16 +273,16 @@ sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server11 <<EOF
 mkdir -p /root/xf;
 rm -rf /root/xf/zjnodes;
 sshpass -p 'Xf4aGbTaf!' scp -o StrictHostKeyChecking=no root@"${server0}":/root/xf/fetch.sh /root/xf/
-cd /root/xf && sh -x fetch.sh ${server0} ${server11} 'Xf4aGbTaf!' '/root/xf' s4_8;
+cd /root/xf && sh -x fetch.sh ${server0} ${server11} 'Xf4aGbTaf!' '/root/xf' s3_15;
 
-for n in s4_8; do
+for n in s3_15; do
     cp -rf /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/conf/log4cpp.properties /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/zjchain /root/xf/zjnodes/\${n}
 done
 
-for n in s4_8; do
-    cp -rf /root/xf/zjnodes/zjchain/shard_db_4 /root/xf/zjnodes/\${n}/db
+for n in s3_15; do
+    cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/\${n}/db
 done
 
 EOF
@@ -296,15 +295,19 @@ sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server12 <<EOF
 mkdir -p /root/xf;
 rm -rf /root/xf/zjnodes;
 sshpass -p 'Xf4aGbTaf!' scp -o StrictHostKeyChecking=no root@"${server0}":/root/xf/fetch.sh /root/xf/
-cd /root/xf && sh -x fetch.sh ${server0} ${server12} 'Xf4aGbTaf!' '/root/xf' s3_10;
+cd /root/xf && sh -x fetch.sh ${server0} ${server12} 'Xf4aGbTaf!' '/root/xf' r2 s3_19;
 
-for n in s3_10; do
+for n in r2 s3_19; do
     cp -rf /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/conf/log4cpp.properties /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/zjchain /root/xf/zjnodes/\${n}
 done
 
-for n in s3_10; do
+for n in r2; do
+    cp -rf /root/xf/zjnodes/zjchain/root_db /root/xf/zjnodes/\${n}/db
+done
+
+for n in s3_19; do
     cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/\${n}/db
 done
 
@@ -318,16 +321,16 @@ sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server13 <<EOF
 mkdir -p /root/xf;
 rm -rf /root/xf/zjnodes;
 sshpass -p 'Xf4aGbTaf!' scp -o StrictHostKeyChecking=no root@"${server0}":/root/xf/fetch.sh /root/xf/
-cd /root/xf && sh -x fetch.sh ${server0} ${server13} 'Xf4aGbTaf!' '/root/xf' s4_7;
+cd /root/xf && sh -x fetch.sh ${server0} ${server13} 'Xf4aGbTaf!' '/root/xf' s3_3;
 
-for n in s4_7; do
+for n in s3_3; do
     cp -rf /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/conf/log4cpp.properties /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/zjchain /root/xf/zjnodes/\${n}
 done
 
-for n in s4_7; do
-    cp -rf /root/xf/zjnodes/zjchain/shard_db_4 /root/xf/zjnodes/\${n}/db
+for n in s3_3; do
+    cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/\${n}/db
 done
 
 EOF
@@ -340,15 +343,15 @@ sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server14 <<EOF
 mkdir -p /root/xf;
 rm -rf /root/xf/zjnodes;
 sshpass -p 'Xf4aGbTaf!' scp -o StrictHostKeyChecking=no root@"${server0}":/root/xf/fetch.sh /root/xf/
-cd /root/xf && sh -x fetch.sh ${server0} ${server14} 'Xf4aGbTaf!' '/root/xf' s3_2;
+cd /root/xf && sh -x fetch.sh ${server0} ${server14} 'Xf4aGbTaf!' '/root/xf' s3_5;
 
-for n in s3_2; do
+for n in s3_5; do
     cp -rf /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/conf/log4cpp.properties /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/zjchain /root/xf/zjnodes/\${n}
 done
 
-for n in s3_2; do
+for n in s3_5; do
     cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/\${n}/db
 done
 
@@ -362,15 +365,15 @@ sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server15 <<EOF
 mkdir -p /root/xf;
 rm -rf /root/xf/zjnodes;
 sshpass -p 'Xf4aGbTaf!' scp -o StrictHostKeyChecking=no root@"${server0}":/root/xf/fetch.sh /root/xf/
-cd /root/xf && sh -x fetch.sh ${server0} ${server15} 'Xf4aGbTaf!' '/root/xf' s3_9;
+cd /root/xf && sh -x fetch.sh ${server0} ${server15} 'Xf4aGbTaf!' '/root/xf' s3_11;
 
-for n in s3_9; do
+for n in s3_11; do
     cp -rf /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/conf/log4cpp.properties /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/zjchain /root/xf/zjnodes/\${n}
 done
 
-for n in s3_9; do
+for n in s3_11; do
     cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/\${n}/db
 done
 
@@ -384,16 +387,16 @@ sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server16 <<EOF
 mkdir -p /root/xf;
 rm -rf /root/xf/zjnodes;
 sshpass -p 'Xf4aGbTaf!' scp -o StrictHostKeyChecking=no root@"${server0}":/root/xf/fetch.sh /root/xf/
-cd /root/xf && sh -x fetch.sh ${server0} ${server16} 'Xf4aGbTaf!' '/root/xf' s4_4;
+cd /root/xf && sh -x fetch.sh ${server0} ${server16} 'Xf4aGbTaf!' '/root/xf' s3_10;
 
-for n in s4_4; do
+for n in s3_10; do
     cp -rf /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/conf/log4cpp.properties /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/zjchain /root/xf/zjnodes/\${n}
 done
 
-for n in s4_4; do
-    cp -rf /root/xf/zjnodes/zjchain/shard_db_4 /root/xf/zjnodes/\${n}/db
+for n in s3_10; do
+    cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/\${n}/db
 done
 
 EOF
@@ -406,16 +409,16 @@ sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server17 <<EOF
 mkdir -p /root/xf;
 rm -rf /root/xf/zjnodes;
 sshpass -p 'Xf4aGbTaf!' scp -o StrictHostKeyChecking=no root@"${server0}":/root/xf/fetch.sh /root/xf/
-cd /root/xf && sh -x fetch.sh ${server0} ${server17} 'Xf4aGbTaf!' '/root/xf' s4_6;
+cd /root/xf && sh -x fetch.sh ${server0} ${server17} 'Xf4aGbTaf!' '/root/xf' s3_2;
 
-for n in s4_6; do
+for n in s3_2; do
     cp -rf /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/conf/log4cpp.properties /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/zjchain /root/xf/zjnodes/\${n}
 done
 
-for n in s4_6; do
-    cp -rf /root/xf/zjnodes/zjchain/shard_db_4 /root/xf/zjnodes/\${n}/db
+for n in s3_2; do
+    cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/\${n}/db
 done
 
 EOF
@@ -428,42 +431,16 @@ sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server18 <<EOF
 mkdir -p /root/xf;
 rm -rf /root/xf/zjnodes;
 sshpass -p 'Xf4aGbTaf!' scp -o StrictHostKeyChecking=no root@"${server0}":/root/xf/fetch.sh /root/xf/
-cd /root/xf && sh -x fetch.sh ${server0} ${server18} 'Xf4aGbTaf!' '/root/xf' s3_7;
+cd /root/xf && sh -x fetch.sh ${server0} ${server18} 'Xf4aGbTaf!' '/root/xf' s3_13;
 
-for n in s3_7; do
+for n in s3_13; do
     cp -rf /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/conf/log4cpp.properties /root/xf/zjnodes/\${n}/conf
     cp -rf /root/xf/zjnodes/zjchain/zjchain /root/xf/zjnodes/\${n}
 done
 
-for n in s3_7; do
+for n in s3_13; do
     cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/\${n}/db
-done
-
-EOF
-) &
-
-
-(
-echo "[$server19]"
-sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server19 <<EOF
-mkdir -p /root/xf;
-rm -rf /root/xf/zjnodes;
-sshpass -p 'Xf4aGbTaf!' scp -o StrictHostKeyChecking=no root@"${server0}":/root/xf/fetch.sh /root/xf/
-cd /root/xf && sh -x fetch.sh ${server0} ${server19} 'Xf4aGbTaf!' '/root/xf' r2 s4_9;
-
-for n in r2 s4_9; do
-    cp -rf /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/\${n}/conf
-    cp -rf /root/xf/zjnodes/zjchain/conf/log4cpp.properties /root/xf/zjnodes/\${n}/conf
-    cp -rf /root/xf/zjnodes/zjchain/zjchain /root/xf/zjnodes/\${n}
-done
-
-for n in r2; do
-    cp -rf /root/xf/zjnodes/zjchain/root_db /root/xf/zjnodes/\${n}/db
-done
-
-for n in s4_9; do
-    cp -rf /root/xf/zjnodes/zjchain/shard_db_4 /root/xf/zjnodes/\${n}/db
 done
 
 EOF
@@ -567,11 +544,6 @@ sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server18 <<"EOF"
 ps -ef | grep zjchain | grep xf | awk -F' ' '{print $2}' | xargs kill -9
 EOF
 
-echo "[$server19]"
-sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@$server19 <<"EOF"
-ps -ef | grep zjchain | grep xf | awk -F' ' '{print $2}' | xargs kill -9
-EOF
-
 echo "==== STEP2: DONE ===="
 
 echo "==== STEP3: EXECUTE ===="
@@ -584,7 +556,7 @@ sleep 3
 echo "[$server1]"
 sshpass -p 'Xf4aGbTaf!' ssh -f -o StrictHostKeyChecking=no root@$server1 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s4_5; do \
+for node in s3_8; do \
     cd /root/xf/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node xf> /dev/null 2>&1 &\
 done \
 '"
@@ -593,7 +565,7 @@ done \
 echo "[$server2]"
 sshpass -p 'Xf4aGbTaf!' ssh -f -o StrictHostKeyChecking=no root@$server2 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in r3 s4_10; do \
+for node in s3_14; do \
     cd /root/xf/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node xf> /dev/null 2>&1 &\
 done \
 '"
@@ -611,7 +583,7 @@ done \
 echo "[$server4]"
 sshpass -p 'Xf4aGbTaf!' ssh -f -o StrictHostKeyChecking=no root@$server4 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s4_2; do \
+for node in s3_17; do \
     cd /root/xf/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node xf> /dev/null 2>&1 &\
 done \
 '"
@@ -620,7 +592,7 @@ done \
 echo "[$server5]"
 sshpass -p 'Xf4aGbTaf!' ssh -f -o StrictHostKeyChecking=no root@$server5 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s3_8; do \
+for node in r3 s3_20; do \
     cd /root/xf/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node xf> /dev/null 2>&1 &\
 done \
 '"
@@ -629,7 +601,7 @@ done \
 echo "[$server6]"
 sshpass -p 'Xf4aGbTaf!' ssh -f -o StrictHostKeyChecking=no root@$server6 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s3_3; do \
+for node in s3_7; do \
     cd /root/xf/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node xf> /dev/null 2>&1 &\
 done \
 '"
@@ -647,7 +619,7 @@ done \
 echo "[$server8]"
 sshpass -p 'Xf4aGbTaf!' ssh -f -o StrictHostKeyChecking=no root@$server8 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s4_3; do \
+for node in s3_12; do \
     cd /root/xf/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node xf> /dev/null 2>&1 &\
 done \
 '"
@@ -656,7 +628,7 @@ done \
 echo "[$server9]"
 sshpass -p 'Xf4aGbTaf!' ssh -f -o StrictHostKeyChecking=no root@$server9 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s3_5; do \
+for node in s3_9; do \
     cd /root/xf/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node xf> /dev/null 2>&1 &\
 done \
 '"
@@ -665,7 +637,7 @@ done \
 echo "[$server10]"
 sshpass -p 'Xf4aGbTaf!' ssh -f -o StrictHostKeyChecking=no root@$server10 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s4_1; do \
+for node in s3_16; do \
     cd /root/xf/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node xf> /dev/null 2>&1 &\
 done \
 '"
@@ -674,7 +646,7 @@ done \
 echo "[$server11]"
 sshpass -p 'Xf4aGbTaf!' ssh -f -o StrictHostKeyChecking=no root@$server11 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s4_8; do \
+for node in s3_15; do \
     cd /root/xf/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node xf> /dev/null 2>&1 &\
 done \
 '"
@@ -683,7 +655,7 @@ done \
 echo "[$server12]"
 sshpass -p 'Xf4aGbTaf!' ssh -f -o StrictHostKeyChecking=no root@$server12 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s3_10; do \
+for node in r2 s3_19; do \
     cd /root/xf/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node xf> /dev/null 2>&1 &\
 done \
 '"
@@ -692,7 +664,7 @@ done \
 echo "[$server13]"
 sshpass -p 'Xf4aGbTaf!' ssh -f -o StrictHostKeyChecking=no root@$server13 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s4_7; do \
+for node in s3_3; do \
     cd /root/xf/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node xf> /dev/null 2>&1 &\
 done \
 '"
@@ -701,7 +673,7 @@ done \
 echo "[$server14]"
 sshpass -p 'Xf4aGbTaf!' ssh -f -o StrictHostKeyChecking=no root@$server14 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s3_2; do \
+for node in s3_5; do \
     cd /root/xf/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node xf> /dev/null 2>&1 &\
 done \
 '"
@@ -710,7 +682,7 @@ done \
 echo "[$server15]"
 sshpass -p 'Xf4aGbTaf!' ssh -f -o StrictHostKeyChecking=no root@$server15 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s3_9; do \
+for node in s3_11; do \
     cd /root/xf/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node xf> /dev/null 2>&1 &\
 done \
 '"
@@ -719,7 +691,7 @@ done \
 echo "[$server16]"
 sshpass -p 'Xf4aGbTaf!' ssh -f -o StrictHostKeyChecking=no root@$server16 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s4_4; do \
+for node in s3_10; do \
     cd /root/xf/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node xf> /dev/null 2>&1 &\
 done \
 '"
@@ -728,7 +700,7 @@ done \
 echo "[$server17]"
 sshpass -p 'Xf4aGbTaf!' ssh -f -o StrictHostKeyChecking=no root@$server17 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s4_6; do \
+for node in s3_2; do \
     cd /root/xf/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node xf> /dev/null 2>&1 &\
 done \
 '"
@@ -737,16 +709,7 @@ done \
 echo "[$server18]"
 sshpass -p 'Xf4aGbTaf!' ssh -f -o StrictHostKeyChecking=no root@$server18 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s3_7; do \
-    cd /root/xf/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node xf> /dev/null 2>&1 &\
-done \
-'"
-
-    
-echo "[$server19]"
-sshpass -p 'Xf4aGbTaf!' ssh -f -o StrictHostKeyChecking=no root@$server19 bash -c "'\
-export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in r2 s4_9; do \
+for node in s3_13; do \
     cd /root/xf/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node xf> /dev/null 2>&1 &\
 done \
 '"
@@ -754,7 +717,7 @@ done \
     
 echo "[$server0]"
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64
-for node in s3_1; do
+for node in s3_1 s3_18; do
 cd /root/xf/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node xf> /dev/null 2>&1 &
 done
 

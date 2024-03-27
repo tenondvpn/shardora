@@ -45,9 +45,8 @@ then
 	sudo mv -f /tmp/zjchain /root/xf/zjnodes/
 fi
 root=("r1" "r2" "r3")
-shard3=("s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_6" "s3_7" "s3_8" "s3_9" "s3_10")
-shard4=("s4_1" "s4_2" "s4_3" "s4_4" "s4_5" "s4_6" "s4_7" "s4_8" "s4_9" "s4_10")
-nodes=("r1" "r2" "r3" "s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_6" "s3_7" "s3_8" "s3_9" "s3_10" "s4_1" "s4_2" "s4_3" "s4_4" "s4_5" "s4_6" "s4_7" "s4_8" "s4_9" "s4_10")
+shard3=("s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_6" "s3_7" "s3_8" "s3_9" "s3_10" "s3_11" "s3_12" "s3_13" "s3_14" "s3_15" "s3_16" "s3_17" "s3_18" "s3_19" "s3_20")
+nodes=("r1" "r2" "r3" "s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_6" "s3_7" "s3_8" "s3_9" "s3_10" "s3_11" "s3_12" "s3_13" "s3_14" "s3_15" "s3_16" "s3_17" "s3_18" "s3_19" "s3_20")
 
 for node in "${nodes[@]}"; do
     mkdir -p "/root/xf/zjnodes/${node}/log"
@@ -72,7 +71,6 @@ if test $NO_BUILD = 0
 then
     cd /root/xf/zjnodes/zjchain && ./zjchain -U
     cd /root/xf/zjnodes/zjchain && ./zjchain -S 3 &
-    cd /root/xf/zjnodes/zjchain && ./zjchain -S 4 &
     wait
 fi
 
@@ -83,11 +81,6 @@ fi
 
 #for node in "${shard3[@]}"; do
 #	cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/${node}/db
-#done
-
-
-#for node in "${shard4[@]}"; do
-#	cp -rf /root/xf/zjnodes/zjchain/shard_db_4 /root/xf/zjnodes/${node}/db
 #done
 
 
