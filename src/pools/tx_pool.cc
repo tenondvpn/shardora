@@ -314,10 +314,10 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
         }
 
         if (latencys_us_.size() > 10) {
-            uint64_t p50 = common::GetNthElement(latencys_us_, 0.50);
-            uint64_t p90 = common::GetNthElement(latencys_us_, 0.90);
-            uint64_t p95 = common::GetNthElement(latencys_us_, 0.95);
+            
             uint64_t p100 = common::GetNthElement(latencys_us_, 1);
+            uint64_t p50 = latencys_us_[int(0.5*latencys_us_.size())];
+            uint64_t p90 = latencys_us_[int(0.9*latencys_us_.size())];
             uint64_t p0 = latencys_us_[0];
 
             uint64_t sum = 0;
@@ -327,7 +327,7 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
             uint64_t aver = sum / latencys_us_.size(); 
             latencys_us_.clear();
         
-            ZJC_INFO("tx latency aver: %llu, p0: %llu, p50: %llu, p90: %llu, p95: %llu, max: %llu", aver, p0, p50, p90, p95, p100);
+            ZJC_INFO("tx latency aver: %llu, p0: %llu, p50: %llu, p90: %llu, max: %llu", aver, p0, p50, p90, p100);
         }
     }
 
