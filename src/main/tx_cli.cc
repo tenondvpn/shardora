@@ -257,7 +257,7 @@ int tx_main(int argc, char** argv) {
             1980,
             10000,
             1,
-            3);
+            4);
         if (transport::TcpTransport::Instance()->Send(kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
