@@ -317,8 +317,7 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
         }
 
         if (latencys_us_.size() > 10) {
-            
-            uint64_t p50 = common::GetNthElement(latencys_us_, 0.5) 
+            uint64_t p50 = common::GetNthElement(latencys_us_, 0.5);
             latencys_us_.clear();
         
             ZJC_INFO("tx latency p50: %llu", p50);
