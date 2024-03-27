@@ -15,9 +15,18 @@ then
     NO_BUILD="nobuild"
 fi
 
+if [ -n $2 ] && [ $2 = "noblock" ]
+then
+    NO_BUILD="noblock"
+fi
+
 if test $NO_BUILD = 0
 then
-	sh build.sh a $TARGET	
+	sh build.sh a $TARGET
+elif test $NO_BUILD = "noblock"
+then
+	sh build.sh a $TARGET
+	sudo mv -f /root/xf/zjnodes/zjchain /tmp/
 else
 	sudo mv -f /root/xf/zjnodes/zjchain /tmp/
 fi
@@ -28,7 +37,7 @@ sudo cp -rf ./deploy /root/xf
 sudo cp ./fetch.sh /root/xf
 rm -rf /root/xf/zjnodes/*/zjchain /root/xf/zjnodes/*/core* /root/xf/zjnodes/*/log/* /root/xf/zjnodes/*/*db*
 
-if test $NO_BUILD = "nobuild"
+if [ $NO_BUILD = "nobuild" -o $NO_BUILD = "noblock" ]
 then
 	sudo rm -rf /root/xf/zjnodes/zjchain
 	sudo mv -f /tmp/zjchain /root/xf/zjnodes/
