@@ -135,7 +135,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     gid_map_[tx_ptr->tx_info.gid()] = tx_ptr;
-#ifndef LATENCY
+#ifdef LATENCY
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tx_count_tm_us_ == 0) {
         prev_tx_count_tm_us_ = now_tm_us;
@@ -292,7 +292,7 @@ void TxPool::RemoveTx(const std::string& gid) {
 //         common::Encode::HexEncode(giter->second->gid).c_str(),
 //         common::Encode::HexEncode(giter->second->tx_hash).c_str());
     gid_map_.erase(giter);
-#ifndef LATENCY    
+#ifdef LATENCY    
     if (!prio_map_.empty()) {
         oldest_timestamp_ = prio_map_.begin()->second->time_valid;
     } else {
@@ -305,7 +305,7 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         auto& gid = tx_list[i].gid(); 
         RemoveTx(gid);
-#ifndef LATENCY
+#ifdef LATENCY
         // 统计交易确认延迟
         auto now_tm = common::TimeUtils::TimestampUs();
         auto start_tm_iter = gid_start_time_map_.find(gid);

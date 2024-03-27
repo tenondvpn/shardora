@@ -228,6 +228,7 @@ int tx_main(int argc, char** argv) {
     security->SetPrivateKey(from_prikey);
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
+    int step_num = 1000;
     for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
         uint64_t* gid_int = (uint64_t*)gid.data();
         gid_int[0] = pos;
@@ -270,6 +271,16 @@ int tx_main(int argc, char** argv) {
             security->SetPrivateKey(from_prikey);
             usleep(10000);
         }
+
+
+        count++;
+        if (count == step_num) {
+            auto dur = common::TimeUtils::TimestampUs() - now_tm_us;
+            auto tps = step_num * 1000000 / dur;
+            std::cout << "tps: " << tps << std::endl;
+        }
+
+        usleep(100);
     }
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {
