@@ -278,6 +278,8 @@ int tx_main(int argc, char** argv) {
             auto dur = common::TimeUtils::TimestampUs() - now_tm_us;
             auto tps = step_num * 1000000 / dur;
             std::cout << "tps: " << tps << std::endl;
+            now_tm_us = common::TimeUtils::TimestampUs();
+            count = 0;
         }
 
         usleep(100);
