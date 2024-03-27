@@ -14,8 +14,8 @@
 using namespace shardora;
 static bool global_stop = false;
 static const int shardnum = 4;
-static const std::string kBroadcastIp = "10.0.0.16";
-static const uint16_t kBroadcastPort = 14008;
+static const std::string kBroadcastIp = "10.0.0.17";
+static const uint16_t kBroadcastPort = 14007;
 
 static void SignalCallback(int sig_int) { global_stop = true; }
 
@@ -281,7 +281,7 @@ int tx_main(int argc, char** argv) {
             count = 0;
         }
 
-        usleep(100);
+        usleep(0);
     }
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {
