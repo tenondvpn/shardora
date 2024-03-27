@@ -228,7 +228,7 @@ int tx_main(int argc, char** argv) {
     security->SetPrivateKey(from_prikey);
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
-    int step_num = 1000;
+    uint32_t step_num = 1000;
     for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
         uint64_t* gid_int = (uint64_t*)gid.data();
         gid_int[0] = pos;
