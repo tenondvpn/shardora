@@ -139,7 +139,7 @@ static std::vector<std::string> g_prikeys;
 static std::vector<std::string> g_addrs;
 static std::unordered_map<std::string, std::string> g_pri_pub_map;
 static void LoadAllAccounts() {
-    FILE* fd = fopen("../addrs3", "r");
+    FILE* fd = fopen("../addrs", "r");
     if (fd == nullptr) {
         std::cout << "invalid init acc file." << std::endl;
         exit(1);
