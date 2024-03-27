@@ -15,7 +15,9 @@ using namespace shardora;
 static bool global_stop = false;
 static const int shardnum = 4;
 static const std::string kBroadcastIp = "10.0.0.17";
-static const uint16_t kBroadcastPort = 14007;
+static const uint16_t kBroadcastPort = 14009;
+static const int delayus = 380;
+static const bool multi_pool = false;
 
 static void SignalCallback(int sig_int) { global_stop = true; }
 
@@ -264,7 +266,7 @@ int tx_main(int argc, char** argv) {
             return 1;
         }
 
-        if (pos % 1000 == 0) {
+        if (multi_pool && pos % 1000 == 0) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
@@ -281,7 +283,7 @@ int tx_main(int argc, char** argv) {
             count = 0;
         }
 
-        usleep(0);
+        usleep(delayus);
     }
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {

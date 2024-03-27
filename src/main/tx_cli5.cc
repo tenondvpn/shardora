@@ -13,9 +13,9 @@
 
 using namespace shardora;
 static bool global_stop = false;
-static const std::string kBroadcastIp = "10.0.0.16";
-static const uint16_t kBroadcastPort = 13018;
-static const int shardnum = 3;
+static const std::string kBroadcastIp = "10.0.0.18";
+static const uint16_t kBroadcastPort = 15008;
+static const int shardnum = 5;
 static const int delayus = 380;
 static const bool multi_pool = false;
 
@@ -141,7 +141,7 @@ static std::vector<std::string> g_prikeys;
 static std::vector<std::string> g_addrs;
 static std::unordered_map<std::string, std::string> g_pri_pub_map;
 static void LoadAllAccounts() {
-    FILE* fd = fopen("../addrs", "r");
+    FILE* fd = fopen("../addrs5", "r");
     if (fd == nullptr) {
         std::cout << "invalid init acc file." << std::endl;
         exit(1);
@@ -222,7 +222,7 @@ int tx_main(int argc, char** argv) {
     }
 
     std::string gid = common::Random::RandomString(32);
-    std::string prikey = common::Encode::HexDecode("b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708");
+    std::string prikey = common::Encode::HexDecode("def895d73dbd1817a9cfffa17086fbe050cbf73f7a2fc5fd544b4011355813ac");
     std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
     uint32_t prikey_pos = 0;
     auto from_prikey = prikey;
