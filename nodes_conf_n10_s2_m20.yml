@@ -17,7 +17,7 @@ nodes:
 - http_port: 8301
   name: s3_1
   net: 3
-  server: 10.0.0.19
+  server: 10.0.0.16
   tcp_port: 13001
 - http_port: 8302
   name: s3_2
@@ -102,7 +102,7 @@ nodes:
 - http_port: 8408
   name: s4_8
   net: 4
-  server: 10.0.0.16
+  server: 10.0.0.19
   tcp_port: 14008
 - http_port: 8409
   name: s4_9
