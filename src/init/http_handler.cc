@@ -156,7 +156,7 @@ static int CreateTransactionWithAttr(
         return kSignatureInvalid;
     }
 
-    msg.set_sign(sign);
+    new_tx->set_sign(sign);
     return kHttpSuccess;
 }
  
