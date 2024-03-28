@@ -257,10 +257,6 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.init_proto().has_addr_res()) {
         HandleAddrRes(msg_ptr);
     }
-
-    if (msg_ptr->header.init_proto().has_pools()) {
-        HandleLeaderPools(msg_ptr);
-    }
 }
 
 void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
