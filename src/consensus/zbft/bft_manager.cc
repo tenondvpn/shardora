@@ -262,7 +262,7 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     CheckTimeout();
     CheckMessageTimeout();
     Start(nullptr);
-    // LeaderBftTimeoutHeartbeat();
+    LeaderBftTimeoutHeartbeat();
 #endif
 }
 
