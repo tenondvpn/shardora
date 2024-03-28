@@ -14,6 +14,7 @@
 #include "db/db.h"
 #include "elect/elect_manager.h"
 #include "http/http_server.h"
+#include "http/http_client.h"
 #include "init/genesis_block_init.h"
 #include "init/init_utils.h"
 #include "network/network_utils.h"
@@ -726,6 +727,15 @@ int NetworkInit::InitSecurity() {
     }
 
     return kInitSuccess;
+}
+
+static std::condition_variable wait_con_;
+static std::mutex wait_mutex_;
+static evhtp_res http_init_callback(evhtp_request_t* req, evbuf_t* buf, void* arg) {
+    ZJC_DEBUG("http init response coming.");
+    std::unique_lock<std::mutex> lock(wait_mutex_);
+    wait_con_.notify_one();
+    return EVHTP_RES_OK;
 }
 
 int NetworkInit::InitHttpServer() {
