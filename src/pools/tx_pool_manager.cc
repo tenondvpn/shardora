@@ -452,6 +452,56 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 #endif
 }
 
+
+int TxPoolManager::BackupConsensusAddTxs(
+        uint32_t pool_index, 
+        const std::map<std::string, pools::TxItemPtr>& txs) {
+    int res = kPoolsSuccess;
+    std::vector<pools::TxItemPtr> valid_txs;
+    for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
+        auto tx_ptr = iter->second;
+        if (tx_pool_[pool_index].TxExists(tx_ptr->tx_info.gid())) {
+            continue;
+        }
+
+        // if (security_->Verify(
+        //         tx_ptr->unique_tx_hash,
+        //         tx_ptr->tx_info.pubkey(),
+        //         tx_ptr->tx_info.sign()) != security::kSecuritySuccess) {
+        //     ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
+        //         "prepayment: %lu, default call contract gas: %lu, txid: %s",
+        //         tx_ptr->address_info->balance(),
+        //         tx_ptr->tx_info.amount(),
+        //         tx_ptr->tx_info.contract_prepayment(),
+        //         consensus::kCallContractDefaultUseGas,
+        //         common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
+        //     assert(false);
+        //     res = kPoolsError;
+        //     continue;
+        // }
+
+        // if (prefix_db_->GidExists(tx_ptr->unique_tx_hash)) {
+        //     // avoid save gid different tx
+        //     ZJC_DEBUG("tx msg hash exists: %s failed!",
+        //         common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str());
+        //     res = kPoolsError;
+        //     continue;
+        // }
+
+        // if (prefix_db_->GidExists(tx_ptr->tx_info.gid())) {
+        //     ZJC_DEBUG("tx gid exists: %s failed!", 
+        //         common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
+        //     res = kPoolsError;
+        //     continue;
+        // }
+
+        valid_txs.push_back(tx_ptr);
+    }
+    
+    tx_pool_[pool_index].ConsensusAddTxs(valid_txs);
+    return res;
+}
+
 void TxPoolManager::ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs) {
     std::vector<pools::TxItemPtr> valid_txs;
     for (uint32_t i = 0; i < txs.size(); ++i) {

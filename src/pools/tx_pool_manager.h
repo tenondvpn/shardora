@@ -55,6 +55,7 @@ public:
         uint32_t count,
         const std::map<std::string, pools::TxItemPtr>& invalid_txs,
         zbft::protobuf::TxBft* txbft);
+    int BackupConsensusAddTxs(uint32_t pool_index, const std::map<std::string, pools::TxItemPtr>& txs);
     void ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs);
 
     uint32_t tx_size(uint32_t pool_index) const {
