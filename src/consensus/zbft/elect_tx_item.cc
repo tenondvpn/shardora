@@ -363,6 +363,7 @@ void ElectTxItem::MiningToken(
         uint64_t* gas_for_root) {
     uint64_t all_tx_count = 0;
     uint64_t max_tx_count = 0;
+    std::vector<NodeDetailPtr> valid_nodes;
     for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
         if (elect_nodes[i] == nullptr) {
             continue;
@@ -378,6 +379,7 @@ void ElectTxItem::MiningToken(
         }
 
         all_tx_count += tx_count;
+        valid_nodes.push_back(elect_nodes[i]);
     }
 
     if (max_tx_count <= 0) {
@@ -395,12 +397,8 @@ void ElectTxItem::MiningToken(
     auto now_ming_count = GetMiningMaxCount(max_tx_count);
     uint64_t tmp_all_gas_amount = 0;
     if (!stop_mining_) {
-        for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
-            if (elect_nodes[i] == nullptr) {
-                continue;
-            }
-
-            auto id = sec_ptr_->GetAddress(elect_nodes[i]->pubkey);
+        for (uint32_t i = 0; i < valid_nodes.size(); ++i) {
+            auto id = sec_ptr_->GetAddress(valid_nodes[i]->pubkey);
             auto account_info = account_mgr_->GetAccountInfo(id);
             if (account_info == nullptr) {
                 ZJC_DEBUG("get account info failed: %s",
@@ -409,20 +407,20 @@ void ElectTxItem::MiningToken(
                 continue;
             }
 
-            auto tx_count = elect_nodes[i]->tx_count;
+            auto tx_count = valid_nodes[i]->tx_count;
             if (tx_count == 0) {
                 tx_count = 1;
             }
 
             auto mining_token = now_ming_count * tx_count / max_tx_count;
-            elect_nodes[i]->mining_token = mining_token;
+            valid_nodes[i]->mining_token = mining_token;
             auto gas_token = tx_count * gas_for_mining / all_tx_count;
-            if (i + 1 == elect_nodes.size()) {
+            if (i + 1 == valid_nodes.size()) {
                 assert(gas_for_mining >= tmp_all_gas_amount);
                 gas_token = gas_for_mining - tmp_all_gas_amount;
             }
 
-            elect_nodes[i]->mining_token += gas_token;
+            valid_nodes[i]->mining_token += gas_token;
             tmp_all_gas_amount += gas_token;
             ZJC_DEBUG("elect mining %s, mining: %lu, gas mining: %lu, all gas: %lu, src: %lu",
                 common::Encode::HexEncode(id).c_str(),
