@@ -92,7 +92,6 @@ public:
 
 typedef std::shared_ptr<TxItem> TxItemPtr;
 typedef std::function<TxItemPtr(const transport::MessagePtr& msg_ptr)> CreateConsensusItemFunction;
-typedef std::function<void(const std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>>& invalid_pools)> RotationLeaderCallback;
 
 struct StatisticElectItem {
     StatisticElectItem() : elect_height(0) {

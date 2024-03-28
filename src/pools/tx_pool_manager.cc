@@ -24,8 +24,7 @@ TxPoolManager::TxPoolManager(
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<sync::KeyValueSync>& kv_sync,
-        std::shared_ptr<block::AccountManager>& acc_mgr,
-        RotationLeaderCallback rotatition_leader_cb) {
+        std::shared_ptr<block::AccountManager>& acc_mgr) {
     security_ = security;
     db_ = db;
     acc_mgr_ = acc_mgr;
@@ -504,7 +503,7 @@ void TxPoolManager::ConsensusAddTxs(uint32_t pool_index, const std::vector<pools
             valid_txs.push_back(tx_ptr);
             continue;
         }
-        
+
         if (security_->Verify(
                 tx_ptr->unique_tx_hash,
                 tx_ptr->tx_info.pubkey(),
