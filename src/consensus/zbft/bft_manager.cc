@@ -1551,11 +1551,16 @@ ZbftPtr BftManager::CreateBftPtr(
                 auto* tx = tmp_bft_msg->mutable_tx_bft()->mutable_txs(i);
                 ZJC_DEBUG("get tx message step: %d", tx->step());
                 protos::AddressInfoPtr address_info = nullptr;
-                if (security_ptr_->IsValidPublicKey(tx->pubkey())) {
-                    address_info = account_mgr_->GetAccountInfo(security_ptr_->GetAddress(tx->pubkey()));
+                if (tx->step() == pools::protobuf::kContractExcute) {
+                    address_info = account_mgr_->GetAccountInfo(tx->to());
                 } else {
-                    address_info = account_mgr_->pools_address_info(bft_msg.pool_index());
+                    if (security_ptr_->IsValidPublicKey(tx->pubkey())) {
+                        address_info = account_mgr_->GetAccountInfo(security_ptr_->GetAddress(tx->pubkey()));
+                    } else {
+                        address_info = account_mgr_->pools_address_info(bft_msg.pool_index());
+                    }
                 }
+                
 
                 assert(address_info != nullptr);
                 pools::TxItemPtr tx_ptr = nullptr;
