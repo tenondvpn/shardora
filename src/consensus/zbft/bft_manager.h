@@ -85,17 +85,8 @@ public:
         common::MembersPtr& members,
         const libff::alt_bn128_G2& common_pk,
         const libff::alt_bn128_Fr& sec_key);
-    void NotifyRotationLeader(
-        uint64_t elect_height,
-        int32_t pool_mod_index,
-        uint32_t old_leader_idx,
-        uint32_t new_leader_idx);
     BftManager();
     virtual ~BftManager();
-    void RotationLeader(
-        int32_t leader_mod_num,
-        uint64_t elect_height,
-        uint32_t new_leader_idx);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
 private:
@@ -200,6 +191,13 @@ private:
     void CreateTestBlock();
     void BackupAddLocalTxs(zbft::protobuf::TxBft* txbft, uint32_t pool_index);
     void LeaderAddBackupTxs(const zbft::protobuf::TxBft& txbft, uint32_t pool_index);
+    void LeaderBftTimeoutHeartbeat();
+    void LeaderSendBftTimeoutMessage(
+        const ElectItem& elect_item, 
+        uint32_t pool_index);
+    void HandleLeaderCollectTxs(
+        const ElectItem& elect_item, 
+        const transport::MessagePtr& leader_msg_ptr);
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(
@@ -328,53 +326,6 @@ private:
             msg_ptr->address_info);
     }
 
-    static const uint32_t kCheckTimeoutPeriodMilli = 1000lu;
-
-    std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
-    std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
-    std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
-    std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
-    std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
-    std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
-    std::queue<ZbftPtr>* bft_queue_ = nullptr;
-    std::atomic<uint32_t> tps_{ 0 };
-    std::atomic<uint32_t> pre_tps_{ 0 };
-    uint64_t tps_btime_{ 0 };
-    common::Tick timeout_tick_;
-    common::Tick block_to_db_tick_;
-    common::Tick verify_block_tick_;
-    common::Tick leader_resend_tick_;
-    std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
-    std::shared_ptr<security::Security> security_ptr_ = nullptr;
-    std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
-    std::shared_ptr<db::Db> db_ = nullptr;
-    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
-    uint8_t thread_count_ = 0;
-    std::shared_ptr<WaitingTxsPools> txs_pools_ = nullptr;
-    std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
-    std::string bft_gids_[common::kMaxThreadCount];
-    uint64_t bft_gids_index_[common::kMaxThreadCount];
-    uint32_t prev_checktime_out_milli_ = 0;
-    uint32_t minimal_node_count_to_consensus_ = common::kInvalidUint32;
-    BlockCacheCallback new_block_cache_callback_ = nullptr;
-    std::shared_ptr<ElectItem> elect_items_[2] = { nullptr };
-    uint32_t elect_item_idx_ = 0;
-    uint64_t prev_tps_tm_us_ = 0;
-    uint32_t prev_count_ = 0;
-    common::SpinMutex prev_count_mutex_;
-    uint64_t prev_test_bft_size_[common::kMaxThreadCount] = { 0 };
-    uint32_t max_consensus_sharding_id_ = 3;
-    uint64_t first_timeblock_timestamp_ = 0;
-    block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
-    ZbftPtr pools_with_zbfts_[common::kInvalidPoolIndex] = { nullptr };
-    std::deque<transport::MessagePtr> backup_prapare_msg_queue_[common::kMaxThreadCount];
-    std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_blocks_[common::kInvalidPoolIndex];
-    std::map<uint64_t, std::shared_ptr<block::protobuf::Block>, std::greater<uint64_t>> waiting_agg_verify_blocks_[common::kInvalidPoolIndex];
-    ZbftPtr changed_leader_pools_height_[common::kInvalidPoolIndex] = { nullptr };
-    std::shared_ptr<BftMessageInfo> gid_with_msg_map_[common::kInvalidPoolIndex];
-    uint64_t pools_prev_bft_timeout_[common::kInvalidPoolIndex] = { 0 };
-
     inline BackupBftStage GetBackupBftStage(std::shared_ptr<BftMessageInfo> bft_msgs) {
         if (bft_msgs == nullptr || bft_msgs->msgs[0] == nullptr) {
             return BackupBftStage::WAITING_PREPARE;
@@ -454,6 +405,55 @@ private:
         }
         return;
     }
+
+    static const uint32_t kCheckTimeoutPeriodMilli = 1000lu;
+    static const uint64_t kSendTxsToLeaderPeriodMs = 3000lu;
+
+    std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
+    std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
+    std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
+    std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
+    std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
+    std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
+    std::queue<ZbftPtr>* bft_queue_ = nullptr;
+    std::atomic<uint32_t> tps_{ 0 };
+    std::atomic<uint32_t> pre_tps_{ 0 };
+    uint64_t tps_btime_{ 0 };
+    common::Tick timeout_tick_;
+    common::Tick block_to_db_tick_;
+    common::Tick verify_block_tick_;
+    common::Tick leader_resend_tick_;
+    std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
+    std::shared_ptr<security::Security> security_ptr_ = nullptr;
+    std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
+    std::shared_ptr<db::Db> db_ = nullptr;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
+    uint8_t thread_count_ = 0;
+    std::shared_ptr<WaitingTxsPools> txs_pools_ = nullptr;
+    std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
+    std::string bft_gids_[common::kMaxThreadCount];
+    uint64_t bft_gids_index_[common::kMaxThreadCount];
+    uint32_t prev_checktime_out_milli_ = 0;
+    uint32_t minimal_node_count_to_consensus_ = common::kInvalidUint32;
+    BlockCacheCallback new_block_cache_callback_ = nullptr;
+    std::shared_ptr<ElectItem> elect_items_[2] = { nullptr };
+    uint32_t elect_item_idx_ = 0;
+    uint64_t prev_tps_tm_us_ = 0;
+    uint32_t prev_count_ = 0;
+    common::SpinMutex prev_count_mutex_;
+    uint64_t prev_test_bft_size_[common::kMaxThreadCount] = { 0 };
+    uint32_t max_consensus_sharding_id_ = 3;
+    uint64_t first_timeblock_timestamp_ = 0;
+    block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
+    ZbftPtr pools_with_zbfts_[common::kInvalidPoolIndex] = { nullptr };
+    std::deque<transport::MessagePtr> backup_prapare_msg_queue_[common::kMaxThreadCount];
+    std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_blocks_[common::kInvalidPoolIndex];
+    std::map<uint64_t, std::shared_ptr<block::protobuf::Block>, std::greater<uint64_t>> waiting_agg_verify_blocks_[common::kInvalidPoolIndex];
+    ZbftPtr changed_leader_pools_height_[common::kInvalidPoolIndex] = { nullptr };
+    std::shared_ptr<BftMessageInfo> gid_with_msg_map_[common::kInvalidPoolIndex];
+    uint64_t pools_prev_bft_timeout_[common::kInvalidPoolIndex] = { 0 };
+    uint64_t pools_send_to_leader_tm_ms_[common::kInvalidPoolIndex] = { 0 };
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {

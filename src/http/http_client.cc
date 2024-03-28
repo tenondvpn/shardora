@@ -27,6 +27,7 @@ static evhtp_res connection_fini_cb(evhtp_connection_t* connection, void* arg) {
 HttpClient::HttpClient() {
     evbase_ = event_base_new();
     http_thread_ = new std::thread(std::bind(&HttpClient::Start, this));
+    // http_thread_->detach();
 }
 
 HttpClient::~HttpClient() {
@@ -34,9 +35,8 @@ HttpClient::~HttpClient() {
 }
 
 void HttpClient::Start() {
-    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     while (!destroy_) {
-        event_base_loop(evbase_, EVLOOP_NO_EXIT_ON_EMPTY);
+        event_base_loop(evbase_, EVLOOP_ONCE);
         std::this_thread::sleep_for(std::chrono::microseconds(100000l));
     }
 }
@@ -69,7 +69,7 @@ int32_t HttpClient::Request(const char* ip, uint16_t port, const std::string& ms
         evhtp_header_new("User-Agent", "libevhtp", 0, 0));
     evhtp_headers_add_header(request->headers_out,
         evhtp_header_new("Connection", "close", 0, 0));
-    std::string req = std::string("/test?msg=") + msg;
+    std::string req = std::string("/query_init?msg=") + msg;
     evhtp_make_request(conn, request, htp_method_GET, req.c_str());
     return kHttpSuccess;
 }

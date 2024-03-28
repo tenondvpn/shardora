@@ -24,15 +24,13 @@ TxPoolManager::TxPoolManager(
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<sync::KeyValueSync>& kv_sync,
-        std::shared_ptr<block::AccountManager>& acc_mgr,
-        RotationLeaderCallback rotatition_leader_cb) {
+        std::shared_ptr<block::AccountManager>& acc_mgr) {
     security_ = security;
     db_ = db;
     acc_mgr_ = acc_mgr;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     prefix_db_->InitGidManager();
     kv_sync_ = kv_sync;
-    rotatition_leader_cb_ = rotatition_leader_cb;
     cross_block_mgr_ = std::make_shared<CrossBlockManager>(db_, kv_sync_);
     tx_pool_ = new TxPool[common::kInvalidPoolIndex];
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
@@ -276,48 +274,6 @@ void TxPoolManager::ConsensusTimerMessage() {
 
     now_max_tx_count_ = tx_count_queue.top();
     ZJC_DEBUG("now max tx count: %d, all: %s", now_max_tx_count_, test_str.c_str());
-
-    if (prev_check_leader_valid_ms_ < now_tm_ms && member_index_ != common::kInvalidUint32) {
-        if (false && network::DhtManager::Instance()->valid_count(
-                common::GlobalInfo::Instance()->network_id()) + 1 >=
-                common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
-            bool get_factor = false;
-            if (prev_cacultate_leader_valid_ms_ < now_tm_ms) {
-                get_factor = true;
-                prev_cacultate_leader_valid_ms_ = now_tm_ms + kCaculateLeaderLofPeriod;
-            }
-
-            std::vector<double> factors(common::kInvalidPoolIndex);
-            auto invalid_pools = std::make_shared<std::vector<std::pair<uint32_t, uint32_t>>>();
-            for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-                uint32_t finish_count = 0;
-                uint32_t tx_count = 0;
-                double res = tx_pool_[i].CheckLeaderValid(get_factor, &finish_count, &tx_count);
-                if (get_factor) {
-                    invalid_pools->push_back(std::make_pair(finish_count, tx_count));
-                }
-            }
-
-            if (get_factor) {
-                if (prev_elect_height_ != latest_elect_height_) {
-                    invalid_pools_.clear();
-                    prev_elect_height_ = latest_elect_height_;
-                }
-
-                if (rotatition_leader_cb_ != nullptr) {
-                    invalid_pools_.push_back(invalid_pools);
-                    if (invalid_pools_.size() > kCaculateLeaderLofPeriod / kCheckLeaderLofPeriod) {
-                        invalid_pools_.pop_front();
-                    }
-
-                    rotatition_leader_cb_(invalid_pools_);
-                }
-            }
-
-            prev_check_leader_valid_ms_ = now_tm_ms + kCheckLeaderLofPeriod;
-        }
-    }
-
     if (prev_sync_check_ms_ < now_tm_ms) {
         SyncMinssingHeights(now_tm_ms);
         prev_sync_check_ms_ = now_tm_ms + kSyncMissingBlockPeriod;
@@ -496,10 +452,65 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 #endif
 }
 
+
+int TxPoolManager::BackupConsensusAddTxs(
+        uint32_t pool_index, 
+        const std::map<std::string, pools::TxItemPtr>& txs) {
+    int res = kPoolsSuccess;
+    std::vector<pools::TxItemPtr> valid_txs;
+    for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
+        auto tx_ptr = iter->second;
+        if (tx_pool_[pool_index].TxExists(tx_ptr->tx_info.gid())) {
+            continue;
+        }
+
+        // if (security_->Verify(
+        //         tx_ptr->unique_tx_hash,
+        //         tx_ptr->tx_info.pubkey(),
+        //         tx_ptr->tx_info.sign()) != security::kSecuritySuccess) {
+        //     ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
+        //         "prepayment: %lu, default call contract gas: %lu, txid: %s",
+        //         tx_ptr->address_info->balance(),
+        //         tx_ptr->tx_info.amount(),
+        //         tx_ptr->tx_info.contract_prepayment(),
+        //         consensus::kCallContractDefaultUseGas,
+        //         common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
+        //     assert(false);
+        //     res = kPoolsError;
+        //     continue;
+        // }
+
+        // if (prefix_db_->GidExists(tx_ptr->unique_tx_hash)) {
+        //     // avoid save gid different tx
+        //     ZJC_DEBUG("tx msg hash exists: %s failed!",
+        //         common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str());
+        //     res = kPoolsError;
+        //     continue;
+        // }
+
+        // if (prefix_db_->GidExists(tx_ptr->tx_info.gid())) {
+        //     ZJC_DEBUG("tx gid exists: %s failed!", 
+        //         common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
+        //     res = kPoolsError;
+        //     continue;
+        // }
+
+        valid_txs.push_back(tx_ptr);
+    }
+    
+    tx_pool_[pool_index].ConsensusAddTxs(valid_txs);
+    return res;
+}
+
 void TxPoolManager::ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs) {
     std::vector<pools::TxItemPtr> valid_txs;
     for (uint32_t i = 0; i < txs.size(); ++i) {
         auto tx_ptr = txs[i];
+        if (tx_ptr->tx_info.pubkey().empty() || tx_ptr->tx_info.sign().empty()) {
+            valid_txs.push_back(tx_ptr);
+            continue;
+        }
+
         if (security_->Verify(
                 tx_ptr->unique_tx_hash,
                 tx_ptr->tx_info.pubkey(),
@@ -800,7 +811,7 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     if (security_->Verify(
             msg_hash,
             tx_msg.pubkey(),
-            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+            tx_msg.sign()) != security::kSecuritySuccess) {
         ZJC_WARN("kElectJoin verify signature failed!");
         return;
     }
@@ -962,7 +973,7 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     if (security_->Verify(
             msg_ptr->msg_hash,
             tx_msg.pubkey(),
-            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+            tx_msg.sign()) != security::kSecuritySuccess) {
         ZJC_DEBUG("verify signature failed address balance invalid: %lu, transfer amount: %lu, "
             "prepayment: %lu, default call contract gas: %lu, txid: %s",
             msg_ptr->address_info->balance(),

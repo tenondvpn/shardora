@@ -14,6 +14,7 @@
 #include "db/db.h"
 #include "elect/elect_manager.h"
 #include "http/http_server.h"
+#include "http/http_client.h"
 #include "init/genesis_block_init.h"
 #include "init/init_utils.h"
 #include "network/network_utils.h"
@@ -138,8 +139,7 @@ int NetworkInit::Init(int argc, char** argv) {
         block_mgr_,
         db_);
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(
-        security_, db_, kv_sync_, account_mgr_,
-        std::bind(&NetworkInit::RotationLeaderCallback, this, std::placeholders::_1));
+        security_, db_, kv_sync_, account_mgr_);
     account_mgr_->Init(db_, pools_mgr_);
     zjcvm::Execution::Instance()->Init(db_, account_mgr_);
     auto new_db_cb = std::bind(
@@ -256,184 +256,6 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     if (msg_ptr->header.init_proto().has_addr_res()) {
         HandleAddrRes(msg_ptr);
-    }
-
-    if (msg_ptr->header.init_proto().has_pools()) {
-        HandleLeaderPools(msg_ptr);
-    }
-}
-
-void NetworkInit::BroadcastInvalidPools(
-        std::shared_ptr<LeaderRotationInfo> rotation,
-        int32_t mod_num) {
-    auto net_id = common::GlobalInfo::Instance()->network_id();
-    if (net_id < network::kRootCongressNetworkId || net_id >= network::kConsensusShardEndNetworkId) {
-        return;
-    }
-
-    if (rotation->rotations[mod_num].version < 0) {
-        rotation->rotations[mod_num].version = 0;
-    }
-
-    uint32_t leader_idx = common::kInvalidUint32;
-    while (true) {
-        auto idx = rotation->rotations[mod_num].version %
-            rotation->rotations[mod_num].rotation_leaders.size();
-        leader_idx = rotation->rotations[mod_num].rotation_leaders[idx];
-        if (!rotation->rotation_used[leader_idx]) {
-            break;
-        }
-
-        ++rotation->rotations[mod_num].version;
-    }
-
-    ZJC_DEBUG("now tm: %lu, old: %lu, kRotationLeaderCount: %u, leader_idx: %u, "
-        "new leader idx: %u",
-        common::TimeUtils::TimestampSeconds(),
-        rotation->tm_block_tm, kRotationLeaderCount, leader_idx,
-        leader_idx);
-    auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    dht::DhtKeyManager dht_key(net_id);
-    msg_ptr->header.set_des_dht_key(dht_key.StrKey());
-    msg_ptr->header.set_type(common::kInitMessage);
-    auto* init_msg = msg_ptr->header.mutable_init_proto();
-    auto* pools = init_msg->mutable_pools();
-    pools->set_elect_height(rotation->elect_height);
-    pools->set_member_index(rotation->local_member_index);
-    pools->set_mod_num(mod_num);
-    pools->set_leader_idx(leader_idx);
-    pools->set_version(rotation->rotations[mod_num].version);
-    msg_ptr->header.mutable_broadcast();
-    transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header);
-    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
-    std::string sign;
-    if (security_->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
-        assert(false);
-        return;
-    }
-
-    msg_ptr->header.set_sign(sign);
-    network::Route::Instance()->Send(msg_ptr);
-    HandleLeaderPools(msg_ptr);
-    ZJC_DEBUG("success broadcast invalid pools.");
-}
-
-void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
-    ZJC_DEBUG("roatation leader message coming..");
-    auto rotation = rotation_leaders_;
-    if (rotation == nullptr) {
-        return;
-    }
-
-    auto& pools = msg_ptr->header.init_proto().pools();
-    if (pools.elect_height() != rotation->elect_height ||
-            pools.member_index() >= rotation->members->size()) {
-        ZJC_WARN("elect height error pools.elect_height(): %lu, rotation->elect_height: %lu, "
-            "pools.member_index(): %u, rotation->members->size(): %u",
-            pools.elect_height(), rotation->elect_height,
-            pools.member_index(), rotation->members->size());
-        return;
-    }
-
-    if (rotation->rotation_used[pools.leader_idx()]) {
-        return;
-    }
-
-    if (pools.mod_num() >= (int32_t)rotation->rotations.size()) {
-        assert(false);
-        return;
-    }
-
-    auto& mem_ptr = (*rotation->members)[pools.member_index()];
-    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
-    if (security_->Verify(
-            msg_hash,
-            mem_ptr->pubkey,
-            msg_ptr->header.sign()) != security::kSecuritySuccess) {
-        //assert(false);
-        return;
-    }
-
-    auto& leader_rotation = rotation->rotations[pools.mod_num()];
-    auto iter = leader_rotation.version_with_count.find(pools.version());
-    if (iter == leader_rotation.version_with_count.end()) {
-        leader_rotation.version_with_count[pools.version()] = RotatitionVersionInfo();
-        iter = leader_rotation.version_with_count.find(pools.version());
-    }
-
-    auto exist_iter = iter->second.handled_set.find(pools.member_index());
-    if (exist_iter != iter->second.handled_set.end()) {
-        return;
-    }
-
-    iter->second.handled_set.insert(pools.member_index());
-    auto count_iter = iter->second.count_map.find(pools.leader_idx());
-    if (count_iter == iter->second.count_map.end()) {
-        iter->second.count_map[pools.leader_idx()] = 0;
-        count_iter = iter->second.count_map.find(pools.leader_idx());
-    }
-
-    ++count_iter->second;
-    uint32_t t = common::GetSignerCount(rotation->members->size());
-    ZJC_DEBUG("roatation leader message coming mod num: %d, elect height: %lu, "
-        "new leader idx: %u, count: %u, t: %u",
-        pools.mod_num(),
-        rotation->elect_height,
-        pools.leader_idx(),
-        count_iter->second,
-        t);
-    if (count_iter->second >= t) {
-        rotation->rotation_used[pools.leader_idx()] = true;
-        auto mem_ptr = (*rotation->members)[pools.leader_idx()];
-        block_mgr_->ChangeLeader(pools.mod_num(), mem_ptr);
-        bft_mgr_->RotationLeader(
-            pools.mod_num(),
-            rotation->elect_height,
-            pools.leader_idx());
-    }
-}
-
-void NetworkInit::RotationLeaderCallback(
-        const std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>>& invalid_pools) {
-    auto rotation = rotation_leaders_;
-    if (rotation == nullptr) {
-        return;
-    }
-
-    if (rotation->rotations.empty()) {
-        return;
-    }
-
-    if (common::TimeUtils::TimestampSeconds() <= rotation->tm_block_tm) {
-        return;
-    }
-
-    uint64_t invalid_leader_mods[rotation->rotations.size()] = { 0 };
-    for (uint32_t pool = 0; pool < invalid_pools.size(); ++pool) {
-        auto& invalid_pool = *(invalid_pools[pool]);
-        std::pair<uint32_t, uint32_t> tx_counts[rotation->rotations.size()];
-        for (uint32_t i = 0; i < invalid_pool.size(); ++i) {
-            auto mod_idx = i % rotation->rotations.size();
-            tx_counts[mod_idx].first += invalid_pool[i].first;
-            tx_counts[mod_idx].second += invalid_pool[i].second;
-        }
-
-        for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
-            if (tx_counts[i].first == 0 && tx_counts[i].second > 0) {
-                ++invalid_leader_mods[i];
-                ZJC_DEBUG("pool mod num: %u, handled: %u, all: %u, count: %lu, need: %lu",
-                    i, tx_counts[i].first, tx_counts[i].second,
-                    invalid_leader_mods[i],
-                    (pools::kCaculateLeaderLofPeriod / pools::kCheckLeaderLofPeriod));
-            }
-        }
-    }
-
-    for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
-        if (invalid_leader_mods[i] + 2 >= (pools::kCaculateLeaderLofPeriod / pools::kCheckLeaderLofPeriod)) {
-            BroadcastInvalidPools(rotation, i);
-        }
     }
 }
 
@@ -728,8 +550,17 @@ int NetworkInit::InitSecurity() {
     return kInitSuccess;
 }
 
+static std::condition_variable wait_con_;
+static std::mutex wait_mutex_;
+static evhtp_res http_init_callback(evhtp_request_t* req, evbuf_t* buf, void* arg) {
+    ZJC_DEBUG("http init response coming.");
+    std::unique_lock<std::mutex> lock(wait_mutex_);
+    wait_con_.notify_one();
+    return EVHTP_RES_OK;
+}
+
 int NetworkInit::InitHttpServer() {
-    std::string http_ip = "0.0.0.0";
+std::string http_ip = "0.0.0.0";
     uint16_t http_port = 0;
     conf_.Get("zjchain", "http_ip", http_ip);
     if (conf_.Get("zjchain", "http_port", http_port) && http_port != 0) {
@@ -738,8 +569,19 @@ int NetworkInit::InitHttpServer() {
             return kInitError;
         }
 
-        http_handler_.Init(&net_handler_, security_, prefix_db_, contract_mgr_, http_server_);
+        http_handler_.Init(account_mgr_, &net_handler_, security_, prefix_db_, contract_mgr_, http_server_);
         http_server_.Start();
+
+        http::HttpClient cli;
+        std::string peer_ip = http_ip;
+        if (peer_ip == "0.0.0.0") {
+            peer_ip = "127.0.0.1";
+        }
+
+        cli.Request(peer_ip.c_str(), http_port, "ok", http_init_callback);
+        ZJC_DEBUG("http init wait response coming.");
+        std::unique_lock<std::mutex> lock(wait_mutex_);
+        wait_con_.wait(lock);
     }
 
     return kInitSuccess;

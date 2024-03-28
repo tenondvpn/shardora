@@ -54,8 +54,19 @@ public:
     uint32_t SyncMissingBlocks(uint64_t now_tm_ms);
     void RemoveTx(const std::string& gid);
 
+    bool TxExists(const std::string& gid) {
+        auto iter = gid_map_.find(gid);
+        return iter != gid_map_.end();
+    }
+
     void ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
         for (uint32_t i = 0; i < txs.size(); ++i) {
+            auto iter = gid_map_.find(txs[i]->tx_info.gid());
+            if (iter != gid_map_.end()) {
+                continue;
+            }
+
+            gid_map_[txs[i]->tx_info.gid()] = txs[i];
             txs[i]->is_consensus_add_tx = true;
             consensus_tx_map_[txs[i]->unique_tx_hash] = txs[i];
         }

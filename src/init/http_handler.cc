@@ -87,8 +87,6 @@ static int CreateTransactionWithAttr(
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kPoolsMessage);
     msg.set_hop_count(0);
-    auto broadcast = msg.mutable_broadcast();
-    broadcast->set_hop_limit(10);
     auto new_tx = msg.mutable_tx_proto();
     new_tx->set_gid(gid);
     new_tx->set_pubkey(from_pk);
@@ -272,6 +270,22 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
         return;
     }
 
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+    ZJC_DEBUG("http handler success get http server thread index: %d, address: %s", 
+        thread_index, 
+        common::Encode::HexEncode(
+            http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk))).c_str());
+    msg_ptr->msg_hash = pools::GetTxMessageHash(msg.tx_proto());
+    msg_ptr->address_info = http_handler->acc_mgr()->GetAccountInfo(
+        http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk)));
+    if (msg_ptr->address_info == nullptr) {
+        std::string res = std::string("address invalid: ") + common::Encode::HexEncode(
+            http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk)));
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+    
     http_handler->net_handler()->NewHttpServer(msg_ptr);
     std::string res = std::string("ok");
     evbuffer_add(req->buffer_out, res.c_str(), res.size());
@@ -421,6 +435,13 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
     return;
 }
 
+static void QueryInit(evhtp_request_t* req, void* data) {
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+    std::string res = "ok";
+    evbuffer_add(req->buffer_out, res.c_str(), res.size());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+}
+
 HttpHandler::HttpHandler() {
     http_handler = this;
 }
@@ -428,11 +449,13 @@ HttpHandler::HttpHandler() {
 HttpHandler::~HttpHandler() {}
 
 void HttpHandler::Init(
+        std::shared_ptr<block::AccountManager>& acc_mgr,
         transport::MultiThreadHandler* net_handler,
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<protos::PrefixDb>& tmp_prefix_db,
         std::shared_ptr<contract::ContractManager>& tmp_contract_mgr,
         http::HttpServer& http_server) {
+    acc_mgr_ = acc_mgr;
     net_handler_ = net_handler;
     security_ptr_ = security_ptr;
     prefix_db = tmp_prefix_db;
@@ -440,6 +463,7 @@ void HttpHandler::Init(
     http_server.AddCallback("/transaction", HttpTransaction);
     http_server.AddCallback("/query_contract", QueryContract);
     http_server.AddCallback("/query_account", QueryAccount);
+    http_server.AddCallback("/query_init", QueryInit);
 }
 
 };  // namespace init

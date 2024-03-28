@@ -67,9 +67,7 @@ private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void HandleAddrReq(const transport::MessagePtr& msg_ptr);
     void HandleAddrRes(const transport::MessagePtr& msg_ptr);
-    void HandleLeaderPools(const transport::MessagePtr& msg_ptr);
     void GetAddressShardingId();
-    void RotationLeaderCallback(const std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>>& invalid_pools);
     void CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req);
     bool BlockBlsAggSignatureValid(const block::protobuf::Block& block);
     void BroadcastInvalidPools(
@@ -80,7 +78,6 @@ private:
 
     static const uint32_t kInvalidPoolFactor = 50u;  // 50%
     static const uint32_t kMinValodPoolCount = 4u;  // 64 must finish all
-    static const uint32_t kRotationLeaderCount = common::kTimeBlockCreatePeriodSeconds / common::kLeaderRotationPeriodSeconds + 1;
 
     common::Config conf_;
     bool inited_{ false };

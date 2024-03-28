@@ -35,8 +35,7 @@ public:
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<sync::KeyValueSync>& kv_sync,
-        std::shared_ptr<block::AccountManager>& acc_mgr,
-        RotationLeaderCallback rotatition_leader_cb);
+        std::shared_ptr<block::AccountManager>& acc_mgr);
     ~TxPoolManager();
     void HandleMessage(const transport::MessagePtr& msg);
     void GetTx(
@@ -56,7 +55,12 @@ public:
         uint32_t count,
         const std::map<std::string, pools::TxItemPtr>& invalid_txs,
         zbft::protobuf::TxBft* txbft);
+    int BackupConsensusAddTxs(uint32_t pool_index, const std::map<std::string, pools::TxItemPtr>& txs);
     void ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs);
+
+    uint32_t tx_size(uint32_t pool_index) const {
+        return tx_pool_[pool_index].tx_size();
+    }
 
     void RemoveTx(uint32_t pool_index, const std::string& gid) {
         tx_pool_[pool_index].RemoveTx(gid);
@@ -274,7 +278,6 @@ private:
     std::shared_ptr<CrossBlockManager> cross_block_mgr_ = nullptr;
     common::Tick tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_[common::kMaxThreadCount];
-    RotationLeaderCallback rotatition_leader_cb_ = nullptr;
     std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>> invalid_pools_;
     uint64_t prev_elect_height_ = common::kInvalidUint64;
     std::shared_ptr<std::thread> pop_message_thread_ = nullptr;
