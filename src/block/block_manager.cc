@@ -343,6 +343,10 @@ bool BlockManager::AddBlockItemToCache(
             block,
             db_batch);
     }
+
+    for (int32_t i = 0; i < tx_list.size(); ++i) {
+        account_mgr_->NewBlockWithTx(block, tx_list[i], db_batch);
+    }
     return true;
 }
 
