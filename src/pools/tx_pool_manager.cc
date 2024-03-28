@@ -500,6 +500,11 @@ void TxPoolManager::ConsensusAddTxs(uint32_t pool_index, const std::vector<pools
     std::vector<pools::TxItemPtr> valid_txs;
     for (uint32_t i = 0; i < txs.size(); ++i) {
         auto tx_ptr = txs[i];
+        if (tx_ptr->tx_info.pubkey().empty() || tx_ptr->tx_info.sign().empty()) {
+            valid_txs.push_back(tx_ptr);
+            continue;
+        }
+        
         if (security_->Verify(
                 tx_ptr->unique_tx_hash,
                 tx_ptr->tx_info.pubkey(),
