@@ -1587,7 +1587,7 @@ ZbftPtr BftManager::CreateBftPtr(
                             contract_mgr_, 
                             gas_prepayment_, 
                             db_, 
-                            tx, 
+                            *tx,
                             account_mgr_, 
                             security_ptr_, 
                             address_info);
@@ -1595,7 +1595,7 @@ ZbftPtr BftManager::CreateBftPtr(
                     case pools::protobuf::kContractGasPrepayment:
                         tx_ptr = std::make_shared<ContractUserCall>(
                             db_, 
-                            tx, 
+                            *tx,
                             account_mgr_, 
                             security_ptr_, 
                             address_info);
