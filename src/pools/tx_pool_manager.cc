@@ -31,7 +31,6 @@ TxPoolManager::TxPoolManager(
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     prefix_db_->InitGidManager();
     kv_sync_ = kv_sync;
-    rotatition_leader_cb_ = rotatition_leader_cb;
     cross_block_mgr_ = std::make_shared<CrossBlockManager>(db_, kv_sync_);
     tx_pool_ = new TxPool[common::kInvalidPoolIndex];
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
@@ -275,48 +274,6 @@ void TxPoolManager::ConsensusTimerMessage() {
 
     now_max_tx_count_ = tx_count_queue.top();
     ZJC_DEBUG("now max tx count: %d, all: %s", now_max_tx_count_, test_str.c_str());
-
-    if (prev_check_leader_valid_ms_ < now_tm_ms && member_index_ != common::kInvalidUint32) {
-        if (false && network::DhtManager::Instance()->valid_count(
-                common::GlobalInfo::Instance()->network_id()) + 1 >=
-                common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
-            bool get_factor = false;
-            if (prev_cacultate_leader_valid_ms_ < now_tm_ms) {
-                get_factor = true;
-                prev_cacultate_leader_valid_ms_ = now_tm_ms + kCaculateLeaderLofPeriod;
-            }
-
-            std::vector<double> factors(common::kInvalidPoolIndex);
-            auto invalid_pools = std::make_shared<std::vector<std::pair<uint32_t, uint32_t>>>();
-            for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-                uint32_t finish_count = 0;
-                uint32_t tx_count = 0;
-                double res = tx_pool_[i].CheckLeaderValid(get_factor, &finish_count, &tx_count);
-                if (get_factor) {
-                    invalid_pools->push_back(std::make_pair(finish_count, tx_count));
-                }
-            }
-
-            if (get_factor) {
-                if (prev_elect_height_ != latest_elect_height_) {
-                    invalid_pools_.clear();
-                    prev_elect_height_ = latest_elect_height_;
-                }
-
-                if (rotatition_leader_cb_ != nullptr) {
-                    invalid_pools_.push_back(invalid_pools);
-                    if (invalid_pools_.size() > kCaculateLeaderLofPeriod / kCheckLeaderLofPeriod) {
-                        invalid_pools_.pop_front();
-                    }
-
-                    rotatition_leader_cb_(invalid_pools_);
-                }
-            }
-
-            prev_check_leader_valid_ms_ = now_tm_ms + kCheckLeaderLofPeriod;
-        }
-    }
-
     if (prev_sync_check_ms_ < now_tm_ms) {
         SyncMinssingHeights(now_tm_ms);
         prev_sync_check_ms_ = now_tm_ms + kSyncMissingBlockPeriod;
