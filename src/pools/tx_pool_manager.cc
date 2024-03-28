@@ -811,7 +811,7 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     if (security_->Verify(
             msg_hash,
             tx_msg.pubkey(),
-            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+            tx_msg.sign()) != security::kSecuritySuccess) {
         ZJC_WARN("kElectJoin verify signature failed!");
         return;
     }
@@ -973,7 +973,7 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     if (security_->Verify(
             msg_ptr->msg_hash,
             tx_msg.pubkey(),
-            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+            tx_msg.sign()) != security::kSecuritySuccess) {
         ZJC_DEBUG("verify signature failed address balance invalid: %lu, transfer amount: %lu, "
             "prepayment: %lu, default call contract gas: %lu, txid: %s",
             msg_ptr->address_info->balance(),
