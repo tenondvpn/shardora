@@ -1582,6 +1582,24 @@ ZbftPtr BftManager::CreateBftPtr(
                             security_ptr_, 
                             address_info);
                         break;
+                    case pools::protobuf::kContractExcute:
+                        tx_ptr = std::make_shared<ContractCall>(
+                            contract_mgr_, 
+                            gas_prepayment_, 
+                            db_, 
+                            tx, 
+                            account_mgr_, 
+                            security_ptr_, 
+                            address_info);
+                        break;
+                    case pools::protobuf::kContractGasPrepayment:
+                        tx_ptr = std::make_shared<ContractUserCall>(
+                            db_, 
+                            tx, 
+                            account_mgr_, 
+                            security_ptr_, 
+                            address_info);
+                        break;
                     case pools::protobuf::kConsensusLocalTos:
                         tx_ptr = std::make_shared<ToTxLocalItem>(
                             *tx, 
@@ -2986,6 +3004,24 @@ void BftManager::LeaderAddBackupTxs(const zbft::protobuf::TxBft& txbft, uint32_t
                     account_mgr_, 
                     security_ptr_, 
                     address_info);;
+                break;
+            case pools::protobuf::kContractExcute:
+                tx_ptr = std::make_shared<ContractCall>(
+                    contract_mgr_, 
+                    gas_prepayment_, 
+                    db_, 
+                    tx, 
+                    account_mgr_, 
+                    security_ptr_, 
+                    address_info);
+                break;
+            case pools::protobuf::kContractGasPrepayment:
+                tx_ptr = std::make_shared<ContractUserCall>(
+                    db_, 
+                    tx, 
+                    account_mgr_, 
+                    security_ptr_, 
+                    address_info);
                 break;
             case pools::protobuf::kConsensusLocalTos:
                 tx_ptr = std::make_shared<ToTxLocalItem>(
