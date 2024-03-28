@@ -36,4 +36,5 @@ message ZbftMessage {
     repeated uint32 ips = 20;
     optional bytes oppose_prepare_gid = 21;
     repeated uint32 invaid_txs = 22;
+    optional bool bft_timeout = 23;
 }
