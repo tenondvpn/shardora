@@ -10,3 +10,7 @@ Shardora: A Dynamic and Public Blockchain Sharding Platform with Seamless Shards
 ## run local shardora network
       git clone git@github.com:tenondvpn/shardora.git
       sh local.sh
+
+## transaction test
+      cd ./cbuild_Debug && make txcli
+      ./txcli
