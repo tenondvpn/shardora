@@ -42,6 +42,7 @@
 #include "protos/vss.pb.h"
 #include "protos/init.pb.h"
 #include "protos/c2c.pb.h"
+#include "protos/view_block.pb.h"
 // @@protoc_insertion_point(includes)
 #define PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2ftransport_2eproto 
 
@@ -738,6 +739,18 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::shardora::c2c::protobuf::C2cMessage* mutable_c2c();
   void set_allocated_c2c(::shardora::c2c::protobuf::C2cMessage* c2c);
 
+  // optional .shardora.view_block.protobuf.ViewBlockMessage view_block_proto = 32;
+  bool has_view_block_proto() const;
+  void clear_view_block_proto();
+  static const int kViewBlockProtoFieldNumber = 32;
+  private:
+  const ::shardora::view_block::protobuf::ViewBlockMessage& _internal_view_block_proto() const;
+  public:
+  const ::shardora::view_block::protobuf::ViewBlockMessage& view_block_proto() const;
+  ::shardora::view_block::protobuf::ViewBlockMessage* release_view_block_proto();
+  ::shardora::view_block::protobuf::ViewBlockMessage* mutable_view_block_proto();
+  void set_allocated_view_block_proto(::shardora::view_block::protobuf::ViewBlockMessage* view_block_proto);
+
   // optional int32 src_sharding_id = 1;
   bool has_src_sharding_id() const;
   void clear_src_sharding_id();
@@ -842,6 +855,8 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   void clear_has_c2c();
   void set_has_pubkey();
   void clear_has_pubkey();
+  void set_has_view_block_proto();
+  void clear_has_view_block_proto();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -870,6 +885,7 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::shardora::pools::protobuf::SyncPoolsMaxHeight* sync_heights_;
   ::shardora::block::protobuf::Block* block_;
   ::shardora::c2c::protobuf::C2cMessage* c2c_;
+  ::shardora::view_block::protobuf::ViewBlockMessage* view_block_proto_;
   ::google::protobuf::int32 src_sharding_id_;
   ::google::protobuf::uint32 hop_count_;
   ::google::protobuf::uint64 hash64_;
@@ -1321,13 +1337,13 @@ inline void BroadcastParam::set_ign_bloomfilter_hop(::google::protobuf::uint32 v
 
 // optional int32 src_sharding_id = 1;
 inline bool Header::has_src_sharding_id() const {
-  return (_has_bits_[0] & 0x01000000u) != 0;
+  return (_has_bits_[0] & 0x02000000u) != 0;
 }
 inline void Header::set_has_src_sharding_id() {
-  _has_bits_[0] |= 0x01000000u;
+  _has_bits_[0] |= 0x02000000u;
 }
 inline void Header::clear_has_src_sharding_id() {
-  _has_bits_[0] &= ~0x01000000u;
+  _has_bits_[0] &= ~0x02000000u;
 }
 inline void Header::clear_src_sharding_id() {
   src_sharding_id_ = 0;
@@ -1411,13 +1427,13 @@ inline void Header::set_allocated_des_dht_key(::std::string* des_dht_key) {
 
 // optional uint32 hop_count = 3 [default = 0];
 inline bool Header::has_hop_count() const {
-  return (_has_bits_[0] & 0x02000000u) != 0;
+  return (_has_bits_[0] & 0x04000000u) != 0;
 }
 inline void Header::set_has_hop_count() {
-  _has_bits_[0] |= 0x02000000u;
+  _has_bits_[0] |= 0x04000000u;
 }
 inline void Header::clear_has_hop_count() {
-  _has_bits_[0] &= ~0x02000000u;
+  _has_bits_[0] &= ~0x04000000u;
 }
 inline void Header::clear_hop_count() {
   hop_count_ = 0u;
@@ -1501,13 +1517,13 @@ inline void Header::set_allocated_debug(::std::string* debug) {
 
 // optional uint64 hash64 = 5;
 inline bool Header::has_hash64() const {
-  return (_has_bits_[0] & 0x04000000u) != 0;
+  return (_has_bits_[0] & 0x08000000u) != 0;
 }
 inline void Header::set_has_hash64() {
-  _has_bits_[0] |= 0x04000000u;
+  _has_bits_[0] |= 0x08000000u;
 }
 inline void Header::clear_has_hash64() {
-  _has_bits_[0] &= ~0x04000000u;
+  _has_bits_[0] &= ~0x08000000u;
 }
 inline void Header::clear_hash64() {
   hash64_ = GOOGLE_ULONGLONG(0);
@@ -1525,13 +1541,13 @@ inline void Header::set_hash64(::google::protobuf::uint64 value) {
 
 // optional uint32 type = 6;
 inline bool Header::has_type() const {
-  return (_has_bits_[0] & 0x08000000u) != 0;
+  return (_has_bits_[0] & 0x10000000u) != 0;
 }
 inline void Header::set_has_type() {
-  _has_bits_[0] |= 0x08000000u;
+  _has_bits_[0] |= 0x10000000u;
 }
 inline void Header::clear_has_type() {
-  _has_bits_[0] &= ~0x08000000u;
+  _has_bits_[0] &= ~0x10000000u;
 }
 inline void Header::clear_type() {
   type_ = 0u;
@@ -1673,13 +1689,13 @@ inline void Header::set_allocated_sign(::std::string* sign) {
 
 // optional int32 version = 9 [default = 0];
 inline bool Header::has_version() const {
-  return (_has_bits_[0] & 0x10000000u) != 0;
+  return (_has_bits_[0] & 0x20000000u) != 0;
 }
 inline void Header::set_has_version() {
-  _has_bits_[0] |= 0x10000000u;
+  _has_bits_[0] |= 0x20000000u;
 }
 inline void Header::clear_has_version() {
-  _has_bits_[0] &= ~0x10000000u;
+  _has_bits_[0] &= ~0x20000000u;
 }
 inline void Header::clear_version() {
   version_ = 0;
@@ -2669,13 +2685,13 @@ inline void Header::set_allocated_block(::shardora::block::protobuf::Block* bloc
 
 // optional uint32 from_public_port = 29;
 inline bool Header::has_from_public_port() const {
-  return (_has_bits_[0] & 0x20000000u) != 0;
+  return (_has_bits_[0] & 0x40000000u) != 0;
 }
 inline void Header::set_has_from_public_port() {
-  _has_bits_[0] |= 0x20000000u;
+  _has_bits_[0] |= 0x40000000u;
 }
 inline void Header::clear_has_from_public_port() {
-  _has_bits_[0] &= ~0x20000000u;
+  _has_bits_[0] &= ~0x40000000u;
 }
 inline void Header::clear_from_public_port() {
   from_public_port_ = 0u;
@@ -2809,6 +2825,60 @@ inline void Header::set_allocated_pubkey(::std::string* pubkey) {
   }
   pubkey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), pubkey);
   // @@protoc_insertion_point(field_set_allocated:shardora.transport.protobuf.Header.pubkey)
+}
+
+// optional .shardora.view_block.protobuf.ViewBlockMessage view_block_proto = 32;
+inline bool Header::has_view_block_proto() const {
+  return (_has_bits_[0] & 0x01000000u) != 0;
+}
+inline void Header::set_has_view_block_proto() {
+  _has_bits_[0] |= 0x01000000u;
+}
+inline void Header::clear_has_view_block_proto() {
+  _has_bits_[0] &= ~0x01000000u;
+}
+inline const ::shardora::view_block::protobuf::ViewBlockMessage& Header::_internal_view_block_proto() const {
+  return *view_block_proto_;
+}
+inline const ::shardora::view_block::protobuf::ViewBlockMessage& Header::view_block_proto() const {
+  const ::shardora::view_block::protobuf::ViewBlockMessage* p = view_block_proto_;
+  // @@protoc_insertion_point(field_get:shardora.transport.protobuf.Header.view_block_proto)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::view_block::protobuf::ViewBlockMessage*>(
+      &::shardora::view_block::protobuf::_ViewBlockMessage_default_instance_);
+}
+inline ::shardora::view_block::protobuf::ViewBlockMessage* Header::release_view_block_proto() {
+  // @@protoc_insertion_point(field_release:shardora.transport.protobuf.Header.view_block_proto)
+  clear_has_view_block_proto();
+  ::shardora::view_block::protobuf::ViewBlockMessage* temp = view_block_proto_;
+  view_block_proto_ = NULL;
+  return temp;
+}
+inline ::shardora::view_block::protobuf::ViewBlockMessage* Header::mutable_view_block_proto() {
+  set_has_view_block_proto();
+  if (view_block_proto_ == NULL) {
+    auto* p = CreateMaybeMessage<::shardora::view_block::protobuf::ViewBlockMessage>(GetArenaNoVirtual());
+    view_block_proto_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:shardora.transport.protobuf.Header.view_block_proto)
+  return view_block_proto_;
+}
+inline void Header::set_allocated_view_block_proto(::shardora::view_block::protobuf::ViewBlockMessage* view_block_proto) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete reinterpret_cast< ::google::protobuf::MessageLite*>(view_block_proto_);
+  }
+  if (view_block_proto) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      view_block_proto = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, view_block_proto, submessage_arena);
+    }
+    set_has_view_block_proto();
+  } else {
+    clear_has_view_block_proto();
+  }
+  view_block_proto_ = view_block_proto;
+  // @@protoc_insertion_point(field_set_allocated:shardora.transport.protobuf.Header.view_block_proto)
 }
 
 #ifdef __GNUC__

@@ -71,6 +71,7 @@ enum MessageType {
     kPoolTimerMessage = 11,
     kInitMessage = 12,
     kC2cMessage = 13,
+    kViewBlockMessage = 14,
     // max (message) type
     kMaxMessageTypeCount,
 };

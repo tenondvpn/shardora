@@ -1,5 +1,6 @@
 #pragma once
 
+#include <sstream>
 #include <common/hash.h>
 #include <consensus/zbft/zbft_utils.h>
 #include <string>
@@ -10,16 +11,30 @@ namespace shardora {
 namespace consensus {
 
 typedef uint64_t View;
+typedef std::string HashStr;
 
 struct QC {
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
     View view;
-    std::string view_block_hash;
+    HashStr view_block_hash;
+
+    std::string to_string() const {
+        std::stringstream ss;
+        if (bls_agg_sign) {
+            auto x = std::to_string(bls_agg_sign->X.as_bigint().as_ulong());
+            auto y = std::to_string(bls_agg_sign->Y.as_bigint().as_ulong());
+            auto z = std::to_string(bls_agg_sign->Z.as_bigint().as_ulong());
+            ss << x << y << z;
+        }
+        ss << view;
+        ss << view_block_hash;
+        return ss.str();
+    }
 };
 
 struct ViewBlock {
-    std::string hash;
-    std::string parent_hash;
+    HashStr hash;
+    HashStr parent_hash;
 
     uint32_t leader_idx;
     std::shared_ptr<block::protobuf::Block> block;
@@ -27,18 +42,42 @@ struct ViewBlock {
     std::shared_ptr<QC> qc;
     View view;
 
-    ViewBlock(const std::string& parent, std::shared_ptr<QC>& qc, std::shared_ptr<block::protobuf::Block>& block, const View& view, const uint32_t& leader_idx) :
+    ViewBlock(const HashStr& parent, const std::shared_ptr<QC>& qc, std::shared_ptr<block::protobuf::Block>& block, const View& view, const uint32_t& leader_idx) :
         parent_hash(parent),
         leader_idx(leader_idx),
         block(block),
         qc(qc),
         view(view) {
-        std::string msg = consensus::GetBlockHash(*block);
-        msg.append((char*)&parent_hash, sizeof(parent_hash));
+        std::string qc_str;
+        std::string block_hash;
+        if (qc) {
+            qc_str = qc->to_string();
+        }
+        if (block) {
+            block_hash = consensus::GetBlockHash(*block);
+        }
+
+        std::string msg;
+        msg.reserve(qc_str.size() + block_hash.size() + parent_hash.size() + sizeof(leader_idx) + sizeof(view));
+        msg.append(qc_str);
+        msg.append(block_hash);
+        msg.append(parent_hash);
         msg.append((char*)&leader_idx, sizeof(leader_idx));
-        
+        msg.append((char*)&view, sizeof(view));
+
+        hash = common::Hash::keccak256(msg);
     };
+
+    inline bool Valid() {
+        return hash != ""; 
+    }
 };
+
+enum class Status : int {
+    kSuccess = 0,
+    kError = 1,
+};
+
     
 }
 }

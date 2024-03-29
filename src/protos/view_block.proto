@@ -1,0 +1,18 @@
+syntax = "proto2";
+
+package shardora.view_block.protobuf;
+
+message ViewBlockRequest {
+    optional uint32 network_id = 1;
+    optional uint32 pool_idx = 2;
+    repeated bytes hashes = 3;
+}
+
+message ViewBlockResponse {
+    
+}
+
+message ViewBlockMessage {
+    optional ViewBlockRequest view_block_req = 1;
+    optional ViewBlockResponse view_block_res = 2;
+}
