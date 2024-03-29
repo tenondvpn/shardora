@@ -2,7 +2,7 @@
       A Dynamic and Public Blockchain Sharding Platform with Seamless Shards Reconfiguration
 
 # Quick Start
-## Requirement
+## Requirements
       centos7
       g++8.3.0
       python3.10+
