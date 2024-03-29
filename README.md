@@ -7,10 +7,10 @@
       g++8.3.0
       python3.10+
 
-## run local shardora network
+## Run local shardora network
       git clone git@github.com:tenondvpn/shardora.git
       sh local.sh
 
-## transaction test
+## Transaction test
       cd ./cbuild_Debug && make txcli
       ./txcli
