@@ -15,7 +15,7 @@
       cd ./cbuild_Debug && make txcli
       ./txcli
 
-## Throughput / TPS（Two Shards, 20 servers and 8cores 50nodes/shard)
+## Throughput(Single Shard) / TPS（50nodes/shard)
 
       2024-03-27 12:33:31,077 [INFO] [bft_manager.cc][HandleLocalCommitBlock][2981] tps: 5924.17
       2024-03-27 12:33:34,155 [INFO] [bft_manager.cc][HandleLocalCommitBlock][2981] tps: 5353.85
@@ -43,7 +43,7 @@
       2024-03-27 12:34:42,515 [INFO] [bft_manager.cc][HandleLocalCommitBlock][2981] tps: 5252.67
       2024-03-27 12:34:45,587 [INFO] [bft_manager.cc][HandleLocalCommitBlock][2981] tps: 5867.65
 
-## Latency 2500 TPS （Two Shards, 20 servers and 8cores 50nodes/shard)
+## Latency 2500 TPS （50nodes/shard)
       2024-03-27 13:05:14,848 [INFO] [tx_pool.cc][TxOver][323] tx latency p50: 1407273 US
       2024-03-27 13:05:14,851 [INFO] [tx_pool.cc][TxOver][323] tx latency p50: 1999590 US
       2024-03-27 13:05:14,852 [INFO] [tx_pool.cc][TxOver][323] tx latency p50: 1410339 US
