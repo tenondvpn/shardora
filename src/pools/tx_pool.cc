@@ -174,11 +174,11 @@ void TxPool::GetTx(
             if (prefix_db_->GetTemporaryKv(iter->second->tx_info.value(), &val)) {
                 tx->set_key(iter->second->tx_info.key());
                 tx->set_value(val);
-                auto* item = kv_sync->add_items();
-                item->set_key(iter->second->tx_info.value());
-                item->set_value(val);
-                ZJC_DEBUG("success get key: %s", 
-                    common::Encode::HexEncode(iter->second->tx_info.value()).c_str());
+                // auto* item = kv_sync->add_items();
+                // item->set_key(iter->second->tx_info.value());
+                // item->set_value(val);
+                ZJC_DEBUG("success get key: %s, val: %s", 
+                    common::Encode::HexEncode(iter->second->tx_info.value()).c_str(), common::Encode::HexEncode(val).c_str());
             }
         }
 
