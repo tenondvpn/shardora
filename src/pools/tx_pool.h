@@ -49,7 +49,7 @@ public:
         std::unordered_map<std::string, std::string>& kvs);
     void GetTx(
         const std::map<std::string, pools::TxItemPtr>& invalid_txs, 
-        zbft::protobuf::TxBft* txbft, 
+        transport::protobuf::Header& header, 
         uint32_t count);
     void TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
     void TxRecover(std::map<std::string, TxItemPtr>& txs);

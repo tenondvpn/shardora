@@ -155,15 +155,28 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
 
 void TxPool::GetTx(
         const std::map<std::string, pools::TxItemPtr>& invalid_txs, 
-        zbft::protobuf::TxBft* txbft, 
+        transport::protobuf::Header& header,
         uint32_t count) {
     std::vector<TxItemPtr> recover_txs;
+    zbft::protobuf::TxBft* txbft = header.mutable_zbft()->mutable_tx_bft();
     auto iter = prio_map_.begin();
+    auto* kv_sync = header.mutable_sync();
     while (iter != prio_map_.end() && txbft->txs_size() < count) {
         auto invalid_iter = invalid_txs.find(iter->second->unique_tx_hash);
         if (invalid_iter != invalid_txs.end()) {
             ++iter;
             continue;
+        }
+
+        if (iter->second->tx_info.value().size() == 32) {
+            std::string val;
+            if (prefix_db_->GetTemporaryKv(iter->second->tx_info.value(), &val)) {
+                auto* item = kv_sync->add_items();
+                item->set_key(iter->second->tx_info.value());
+                item->set_value(val);
+                ZJC_DEBUG("success get key: %s", 
+                    common::Encode::HexEncode(iter->second->tx_info.value()).c_str());
+            }
         }
 
         auto* tx = txbft->add_txs();

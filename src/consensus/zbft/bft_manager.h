@@ -189,7 +189,7 @@ private:
         std::shared_ptr<PoolTxIndexItem>& thread_item,
         ZbftPtr& commited_bft_ptr);
     void CreateTestBlock();
-    void BackupAddLocalTxs(zbft::protobuf::TxBft* txbft, uint32_t pool_index);
+    void BackupAddLocalTxs(transport::protobuf::Header& header, uint32_t pool_index);
     void LeaderAddBackupTxs(const zbft::protobuf::TxBft& txbft, uint32_t pool_index);
     void LeaderBftTimeoutHeartbeat();
     void LeaderSendBftTimeoutMessage(

@@ -1252,12 +1252,12 @@ void TxPoolManager::GetTx(
         uint32_t pool_index,
         uint32_t count,
         const std::map<std::string, pools::TxItemPtr>& invalid_txs,
-        zbft::protobuf::TxBft* txbft) {
+        transport::protobuf::Header& header) {
     if (count > common::kSingleBlockMaxTransactions) {
         count = common::kSingleBlockMaxTransactions;
     }
 
-    tx_pool_[pool_index].GetTx(invalid_txs, txbft, count);
+    tx_pool_[pool_index].GetTx(invalid_txs, header, count);
 }
 
 void TxPoolManager::GetTx(
