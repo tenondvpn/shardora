@@ -40,7 +40,7 @@ namespace protobuf_protos_2fzbft_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[2];
+  static const ::google::protobuf::internal::ParseTable schema[3];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -53,6 +53,9 @@ namespace protobuf {
 class TxBft;
 class TxBftDefaultTypeInternal;
 extern TxBftDefaultTypeInternal _TxBft_default_instance_;
+class TxKeyValue;
+class TxKeyValueDefaultTypeInternal;
+extern TxKeyValueDefaultTypeInternal _TxKeyValue_default_instance_;
 class ZbftMessage;
 class ZbftMessageDefaultTypeInternal;
 extern ZbftMessageDefaultTypeInternal _ZbftMessage_default_instance_;
@@ -62,6 +65,7 @@ extern ZbftMessageDefaultTypeInternal _ZbftMessage_default_instance_;
 namespace google {
 namespace protobuf {
 template<> ::shardora::zbft::protobuf::TxBft* Arena::CreateMaybeMessage<::shardora::zbft::protobuf::TxBft>(Arena*);
+template<> ::shardora::zbft::protobuf::TxKeyValue* Arena::CreateMaybeMessage<::shardora::zbft::protobuf::TxKeyValue>(Arena*);
 template<> ::shardora::zbft::protobuf::ZbftMessage* Arena::CreateMaybeMessage<::shardora::zbft::protobuf::ZbftMessage>(Arena*);
 }  // namespace protobuf
 }  // namespace google
@@ -70,6 +74,146 @@ namespace zbft {
 namespace protobuf {
 
 // ===================================================================
+
+class TxKeyValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.zbft.protobuf.TxKeyValue) */ {
+ public:
+  TxKeyValue();
+  virtual ~TxKeyValue();
+
+  TxKeyValue(const TxKeyValue& from);
+
+  inline TxKeyValue& operator=(const TxKeyValue& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  TxKeyValue(TxKeyValue&& from) noexcept
+    : TxKeyValue() {
+    *this = ::std::move(from);
+  }
+
+  inline TxKeyValue& operator=(TxKeyValue&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const TxKeyValue& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const TxKeyValue* internal_default_instance() {
+    return reinterpret_cast<const TxKeyValue*>(
+               &_TxKeyValue_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    0;
+
+  void Swap(TxKeyValue* other);
+  friend void swap(TxKeyValue& a, TxKeyValue& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline TxKeyValue* New() const final {
+    return CreateMaybeMessage<TxKeyValue>(NULL);
+  }
+
+  TxKeyValue* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<TxKeyValue>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const TxKeyValue& from);
+  void MergeFrom(const TxKeyValue& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(TxKeyValue* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional bytes key = 1;
+  bool has_key() const;
+  void clear_key();
+  static const int kKeyFieldNumber = 1;
+  const ::std::string& key() const;
+  void set_key(const ::std::string& value);
+  #if LANG_CXX11
+  void set_key(::std::string&& value);
+  #endif
+  void set_key(const char* value);
+  void set_key(const void* value, size_t size);
+  ::std::string* mutable_key();
+  ::std::string* release_key();
+  void set_allocated_key(::std::string* key);
+
+  // optional bytes value = 2;
+  bool has_value() const;
+  void clear_value();
+  static const int kValueFieldNumber = 2;
+  const ::std::string& value() const;
+  void set_value(const ::std::string& value);
+  #if LANG_CXX11
+  void set_value(::std::string&& value);
+  #endif
+  void set_value(const char* value);
+  void set_value(const void* value, size_t size);
+  ::std::string* mutable_value();
+  ::std::string* release_value();
+  void set_allocated_value(::std::string* value);
+
+  // @@protoc_insertion_point(class_scope:shardora.zbft.protobuf.TxKeyValue)
+ private:
+  void set_has_key();
+  void clear_has_key();
+  void set_has_value();
+  void clear_has_value();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::internal::ArenaStringPtr key_;
+  ::google::protobuf::internal::ArenaStringPtr value_;
+  friend struct ::protobuf_protos_2fzbft_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
 
 class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.zbft.protobuf.TxBft) */ {
  public:
@@ -113,7 +257,7 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
                &_TxBft_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    0;
+    1;
 
   void Swap(TxBft* other);
   friend void swap(TxBft& a, TxBft& b) {
@@ -176,6 +320,18 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::shardora::pools::protobuf::TxMessage* add_txs();
   const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage >&
       txs() const;
+
+  // repeated .shardora.zbft.protobuf.TxKeyValue kvs = 7;
+  int kvs_size() const;
+  void clear_kvs();
+  static const int kKvsFieldNumber = 7;
+  ::shardora::zbft::protobuf::TxKeyValue* mutable_kvs(int index);
+  ::google::protobuf::RepeatedPtrField< ::shardora::zbft::protobuf::TxKeyValue >*
+      mutable_kvs();
+  const ::shardora::zbft::protobuf::TxKeyValue& kvs(int index) const;
+  ::shardora::zbft::protobuf::TxKeyValue* add_kvs();
+  const ::google::protobuf::RepeatedPtrField< ::shardora::zbft::protobuf::TxKeyValue >&
+      kvs() const;
 
   // optional bytes prepare_final_hash = 2;
   bool has_prepare_final_hash() const;
@@ -242,6 +398,7 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage > txs_;
+  ::google::protobuf::RepeatedPtrField< ::shardora::zbft::protobuf::TxKeyValue > kvs_;
   ::google::protobuf::internal::ArenaStringPtr prepare_final_hash_;
   ::shardora::block::protobuf::Block* block_;
   ::google::protobuf::uint64 height_;
@@ -293,7 +450,7 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
                &_ZbftMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    1;
+    2;
 
   void Swap(ZbftMessage* other);
   friend void swap(ZbftMessage& a, ZbftMessage& b) {
@@ -672,6 +829,142 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
+// TxKeyValue
+
+// optional bytes key = 1;
+inline bool TxKeyValue::has_key() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void TxKeyValue::set_has_key() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void TxKeyValue::clear_has_key() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void TxKeyValue::clear_key() {
+  key_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_key();
+}
+inline const ::std::string& TxKeyValue::key() const {
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.TxKeyValue.key)
+  return key_.GetNoArena();
+}
+inline void TxKeyValue::set_key(const ::std::string& value) {
+  set_has_key();
+  key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.TxKeyValue.key)
+}
+#if LANG_CXX11
+inline void TxKeyValue::set_key(::std::string&& value) {
+  set_has_key();
+  key_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.zbft.protobuf.TxKeyValue.key)
+}
+#endif
+inline void TxKeyValue::set_key(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_key();
+  key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.zbft.protobuf.TxKeyValue.key)
+}
+inline void TxKeyValue::set_key(const void* value, size_t size) {
+  set_has_key();
+  key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.zbft.protobuf.TxKeyValue.key)
+}
+inline ::std::string* TxKeyValue::mutable_key() {
+  set_has_key();
+  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.TxKeyValue.key)
+  return key_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* TxKeyValue::release_key() {
+  // @@protoc_insertion_point(field_release:shardora.zbft.protobuf.TxKeyValue.key)
+  if (!has_key()) {
+    return NULL;
+  }
+  clear_has_key();
+  return key_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void TxKeyValue::set_allocated_key(::std::string* key) {
+  if (key != NULL) {
+    set_has_key();
+  } else {
+    clear_has_key();
+  }
+  key_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), key);
+  // @@protoc_insertion_point(field_set_allocated:shardora.zbft.protobuf.TxKeyValue.key)
+}
+
+// optional bytes value = 2;
+inline bool TxKeyValue::has_value() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void TxKeyValue::set_has_value() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void TxKeyValue::clear_has_value() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void TxKeyValue::clear_value() {
+  value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_value();
+}
+inline const ::std::string& TxKeyValue::value() const {
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.TxKeyValue.value)
+  return value_.GetNoArena();
+}
+inline void TxKeyValue::set_value(const ::std::string& value) {
+  set_has_value();
+  value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.TxKeyValue.value)
+}
+#if LANG_CXX11
+inline void TxKeyValue::set_value(::std::string&& value) {
+  set_has_value();
+  value_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.zbft.protobuf.TxKeyValue.value)
+}
+#endif
+inline void TxKeyValue::set_value(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_value();
+  value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.zbft.protobuf.TxKeyValue.value)
+}
+inline void TxKeyValue::set_value(const void* value, size_t size) {
+  set_has_value();
+  value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.zbft.protobuf.TxKeyValue.value)
+}
+inline ::std::string* TxKeyValue::mutable_value() {
+  set_has_value();
+  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.TxKeyValue.value)
+  return value_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* TxKeyValue::release_value() {
+  // @@protoc_insertion_point(field_release:shardora.zbft.protobuf.TxKeyValue.value)
+  if (!has_value()) {
+    return NULL;
+  }
+  clear_has_value();
+  return value_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void TxKeyValue::set_allocated_value(::std::string* value) {
+  if (value != NULL) {
+    set_has_value();
+  } else {
+    clear_has_value();
+  }
+  value_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set_allocated:shardora.zbft.protobuf.TxKeyValue.value)
+}
+
+// -------------------------------------------------------------------
+
 // TxBft
 
 // optional .shardora.block.protobuf.Block block = 1;
@@ -892,6 +1185,36 @@ inline const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::
 TxBft::txs() const {
   // @@protoc_insertion_point(field_list:shardora.zbft.protobuf.TxBft.txs)
   return txs_;
+}
+
+// repeated .shardora.zbft.protobuf.TxKeyValue kvs = 7;
+inline int TxBft::kvs_size() const {
+  return kvs_.size();
+}
+inline void TxBft::clear_kvs() {
+  kvs_.Clear();
+}
+inline ::shardora::zbft::protobuf::TxKeyValue* TxBft::mutable_kvs(int index) {
+  // @@protoc_insertion_point(field_mutable:shardora.zbft.protobuf.TxBft.kvs)
+  return kvs_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::shardora::zbft::protobuf::TxKeyValue >*
+TxBft::mutable_kvs() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.zbft.protobuf.TxBft.kvs)
+  return &kvs_;
+}
+inline const ::shardora::zbft::protobuf::TxKeyValue& TxBft::kvs(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.TxBft.kvs)
+  return kvs_.Get(index);
+}
+inline ::shardora::zbft::protobuf::TxKeyValue* TxBft::add_kvs() {
+  // @@protoc_insertion_point(field_add:shardora.zbft.protobuf.TxBft.kvs)
+  return kvs_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::shardora::zbft::protobuf::TxKeyValue >&
+TxBft::kvs() const {
+  // @@protoc_insertion_point(field_list:shardora.zbft.protobuf.TxBft.kvs)
+  return kvs_;
 }
 
 // -------------------------------------------------------------------
@@ -1865,6 +2188,8 @@ inline void ZbftMessage::set_bft_timeout(bool value) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 

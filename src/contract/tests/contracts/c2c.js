@@ -36,7 +36,7 @@ function init_private_key() {
     //const privateKeyBuf = Secp256k1.uint256("fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971", 16)
     //manager
     //const privateKeyBuf = Secp256k1.uint256("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 16)
-    const privateKeyBuf = Secp256k1.uint256("b94c93ad2eea328a733de21d1ff052a31bc6b967c10a2d9cc78059ff055d018b", 16)
+    const privateKeyBuf = Secp256k1.uint256("b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708", 16)
     self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
     self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
     var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
@@ -51,7 +51,7 @@ function init_private_key() {
 function PostCode(data) {
     var post_data = querystring.stringify(data);
     var post_options = {
-        host: '10.101.20.29',
+        host: '127.0.0.1',
         port: '8301',
         path: '/transaction',
         method: 'POST',
@@ -312,7 +312,7 @@ function CreatePhr() {
 function QueryPostCode(path, data) {
     var post_data = querystring.stringify(data);
     var post_options = {
-        host: '10.101.20.29',
+        host: '127.0.0.1',
         port: '8301',
         path: path,
         method: 'POST',
