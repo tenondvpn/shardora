@@ -1249,13 +1249,13 @@ void NetworkInit::HandleElectionBlock(
     if (sharding_id + network::kConsensusWaitingShardOffset ==
             common::GlobalInfo::Instance()->network_id()) {
         join_elect_tick_.CutOff(
-            uint64_t(rand()) % (common::kTimeBlockCreatePeriodSeconds / 4 * 3 * 1000000lu),
+            3000000lu,
             std::bind(&NetworkInit::SendJoinElectTransaction, this));
         ZJC_DEBUG("now send join elect request transaction. first message.");
         another_join_elect_msg_needed_ = true;
     } else if (another_join_elect_msg_needed_ && sharding_id == common::GlobalInfo::Instance()->network_id()) {
         join_elect_tick_.CutOff(
-            uint64_t(rand()) % (common::kTimeBlockCreatePeriodSeconds / 4 * 3 * 1000000lu),
+            3000000lu,
             std::bind(&NetworkInit::SendJoinElectTransaction, this));
         ZJC_DEBUG("now send join elect request transaction. second message.");
         another_join_elect_msg_needed_ = false;
