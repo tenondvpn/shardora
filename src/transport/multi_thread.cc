@@ -308,6 +308,16 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
 
         ZJC_FATAL("invalid message thread: %d", msg_ptr->header.zbft().pool_index());
         return common::kMaxThreadCount;
+    case common::kViewBlockMessage:
+        if (msg_ptr->header.view_block_proto().has_view_block_req()) {
+            return common::GlobalInfo::Instance()->pools_with_thread()[
+                    msg_ptr->header.view_block_proto().view_block_req().pool_idx()];
+        }
+        if (msg_ptr->header.view_block_proto().has_view_block_res()) {
+            return common::GlobalInfo::Instance()->pools_with_thread()[
+                    msg_ptr->header.view_block_proto().view_block_res().pool_idx()];
+        }
+        return common::kMaxThreadCount;
     default:
         return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_);
     }

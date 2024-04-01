@@ -20,8 +20,9 @@
 // @@protoc_insertion_point(includes)
 
 namespace protobuf_protos_2fview_5fblock_2eproto {
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fview_5fblock_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_ViewBlockItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fview_5fblock_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_ViewBlockRequest;
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fview_5fblock_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_ViewBlockResponse;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fview_5fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_ViewBlockResponse;
 }  // namespace protobuf_protos_2fview_5fblock_2eproto
 namespace shardora {
 namespace view_block {
@@ -31,6 +32,11 @@ class ViewBlockRequestDefaultTypeInternal {
   ::google::protobuf::internal::ExplicitlyConstructed<ViewBlockRequest>
       _instance;
 } _ViewBlockRequest_default_instance_;
+class ViewBlockItemDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<ViewBlockItem>
+      _instance;
+} _ViewBlockItem_default_instance_;
 class ViewBlockResponseDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<ViewBlockResponse>
@@ -59,6 +65,20 @@ static void InitDefaultsViewBlockRequest() {
 ::google::protobuf::internal::SCCInfo<0> scc_info_ViewBlockRequest =
     {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsViewBlockRequest}, {}};
 
+static void InitDefaultsViewBlockItem() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::shardora::view_block::protobuf::_ViewBlockItem_default_instance_;
+    new (ptr) ::shardora::view_block::protobuf::ViewBlockItem();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::shardora::view_block::protobuf::ViewBlockItem::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<0> scc_info_ViewBlockItem =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsViewBlockItem}, {}};
+
 static void InitDefaultsViewBlockResponse() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -70,8 +90,9 @@ static void InitDefaultsViewBlockResponse() {
   ::shardora::view_block::protobuf::ViewBlockResponse::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<0> scc_info_ViewBlockResponse =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsViewBlockResponse}, {}};
+::google::protobuf::internal::SCCInfo<1> scc_info_ViewBlockResponse =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsViewBlockResponse}, {
+      &protobuf_protos_2fview_5fblock_2eproto::scc_info_ViewBlockItem.base,}};
 
 static void InitDefaultsViewBlockMessage() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -91,11 +112,12 @@ static void InitDefaultsViewBlockMessage() {
 
 void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_ViewBlockRequest.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_ViewBlockItem.base);
   ::google::protobuf::internal::InitSCC(&scc_info_ViewBlockResponse.base);
   ::google::protobuf::internal::InitSCC(&scc_info_ViewBlockMessage.base);
 }
 
-::google::protobuf::Metadata file_level_metadata[3];
+::google::protobuf::Metadata file_level_metadata[4];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockRequest, _has_bits_),
@@ -109,11 +131,34 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   0,
   1,
   ~0u,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockItem, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockItem, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockItem, hash_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockItem, parent_hash_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockItem, leader_idx_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockItem, block_str_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockItem, qc_str_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockItem, view_),
+  0,
+  1,
+  4,
+  2,
+  3,
+  5,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockResponse, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockResponse, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockResponse, network_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockResponse, pool_idx_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockResponse, view_block_items_),
+  0,
+  1,
+  ~0u,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockMessage, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockMessage, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -126,12 +171,14 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 8, sizeof(::shardora::view_block::protobuf::ViewBlockRequest)},
-  { 11, 16, sizeof(::shardora::view_block::protobuf::ViewBlockResponse)},
-  { 16, 23, sizeof(::shardora::view_block::protobuf::ViewBlockMessage)},
+  { 11, 22, sizeof(::shardora::view_block::protobuf::ViewBlockItem)},
+  { 28, 36, sizeof(::shardora::view_block::protobuf::ViewBlockResponse)},
+  { 39, 46, sizeof(::shardora::view_block::protobuf::ViewBlockMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::view_block::protobuf::_ViewBlockRequest_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::view_block::protobuf::_ViewBlockItem_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::view_block::protobuf::_ViewBlockResponse_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::view_block::protobuf::_ViewBlockMessage_default_instance_),
 };
@@ -151,7 +198,7 @@ void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 3);
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 4);
 }
 
 void AddDescriptorsImpl() {
@@ -160,14 +207,20 @@ void AddDescriptorsImpl() {
       "\n\027protos/view_block.proto\022\034shardora.view"
       "_block.protobuf\"H\n\020ViewBlockRequest\022\022\n\nn"
       "etwork_id\030\001 \001(\r\022\020\n\010pool_idx\030\002 \001(\r\022\016\n\006has"
-      "hes\030\003 \003(\014\"\023\n\021ViewBlockResponse\"\243\001\n\020ViewB"
-      "lockMessage\022F\n\016view_block_req\030\001 \001(\0132..sh"
-      "ardora.view_block.protobuf.ViewBlockRequ"
-      "est\022G\n\016view_block_res\030\002 \001(\0132/.shardora.v"
-      "iew_block.protobuf.ViewBlockResponse"
+      "hes\030\003 \003(\014\"w\n\rViewBlockItem\022\014\n\004hash\030\001 \001(\014"
+      "\022\023\n\013parent_hash\030\002 \001(\014\022\022\n\nleader_idx\030\003 \001("
+      "\r\022\021\n\tblock_str\030\004 \001(\014\022\016\n\006qc_str\030\005 \001(\014\022\014\n\004"
+      "view\030\006 \001(\r\"\200\001\n\021ViewBlockResponse\022\022\n\nnetw"
+      "ork_id\030\001 \001(\r\022\020\n\010pool_idx\030\002 \001(\r\022E\n\020view_b"
+      "lock_items\030\003 \003(\0132+.shardora.view_block.p"
+      "rotobuf.ViewBlockItem\"\243\001\n\020ViewBlockMessa"
+      "ge\022F\n\016view_block_req\030\001 \001(\0132..shardora.vi"
+      "ew_block.protobuf.ViewBlockRequest\022G\n\016vi"
+      "ew_block_res\030\002 \001(\0132/.shardora.view_block"
+      ".protobuf.ViewBlockResponse"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 316);
+      descriptor, 547);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/view_block.proto", &protobuf_RegisterTypes);
 }
@@ -505,9 +558,485 @@ void ViewBlockRequest::InternalSwap(ViewBlockRequest* other) {
 
 // ===================================================================
 
+void ViewBlockItem::InitAsDefaultInstance() {
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int ViewBlockItem::kHashFieldNumber;
+const int ViewBlockItem::kParentHashFieldNumber;
+const int ViewBlockItem::kLeaderIdxFieldNumber;
+const int ViewBlockItem::kBlockStrFieldNumber;
+const int ViewBlockItem::kQcStrFieldNumber;
+const int ViewBlockItem::kViewFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+ViewBlockItem::ViewBlockItem()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2fview_5fblock_2eproto::scc_info_ViewBlockItem.base);
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:shardora.view_block.protobuf.ViewBlockItem)
+}
+ViewBlockItem::ViewBlockItem(const ViewBlockItem& from)
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
+      _has_bits_(from._has_bits_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_hash()) {
+    hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.hash_);
+  }
+  parent_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_parent_hash()) {
+    parent_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.parent_hash_);
+  }
+  block_str_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_block_str()) {
+    block_str_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.block_str_);
+  }
+  qc_str_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_qc_str()) {
+    qc_str_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.qc_str_);
+  }
+  ::memcpy(&leader_idx_, &from.leader_idx_,
+    static_cast<size_t>(reinterpret_cast<char*>(&view_) -
+    reinterpret_cast<char*>(&leader_idx_)) + sizeof(view_));
+  // @@protoc_insertion_point(copy_constructor:shardora.view_block.protobuf.ViewBlockItem)
+}
+
+void ViewBlockItem::SharedCtor() {
+  hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  parent_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  block_str_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  qc_str_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::memset(&leader_idx_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&view_) -
+      reinterpret_cast<char*>(&leader_idx_)) + sizeof(view_));
+}
+
+ViewBlockItem::~ViewBlockItem() {
+  // @@protoc_insertion_point(destructor:shardora.view_block.protobuf.ViewBlockItem)
+  SharedDtor();
+}
+
+void ViewBlockItem::SharedDtor() {
+  hash_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  parent_hash_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  block_str_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  qc_str_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+
+void ViewBlockItem::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ::google::protobuf::Descriptor* ViewBlockItem::descriptor() {
+  ::protobuf_protos_2fview_5fblock_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fview_5fblock_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const ViewBlockItem& ViewBlockItem::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2fview_5fblock_2eproto::scc_info_ViewBlockItem.base);
+  return *internal_default_instance();
+}
+
+
+void ViewBlockItem::Clear() {
+// @@protoc_insertion_point(message_clear_start:shardora.view_block.protobuf.ViewBlockItem)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 15u) {
+    if (cached_has_bits & 0x00000001u) {
+      hash_.ClearNonDefaultToEmptyNoArena();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      parent_hash_.ClearNonDefaultToEmptyNoArena();
+    }
+    if (cached_has_bits & 0x00000004u) {
+      block_str_.ClearNonDefaultToEmptyNoArena();
+    }
+    if (cached_has_bits & 0x00000008u) {
+      qc_str_.ClearNonDefaultToEmptyNoArena();
+    }
+  }
+  if (cached_has_bits & 48u) {
+    ::memset(&leader_idx_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&view_) -
+        reinterpret_cast<char*>(&leader_idx_)) + sizeof(view_));
+  }
+  _has_bits_.Clear();
+  _internal_metadata_.Clear();
+}
+
+bool ViewBlockItem::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:shardora.view_block.protobuf.ViewBlockItem)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional bytes hash = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_hash()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bytes parent_hash = 2;
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_parent_hash()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint32 leader_idx = 3;
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u /* 24 & 0xFF */)) {
+          set_has_leader_idx();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &leader_idx_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bytes block_str = 4;
+      case 4: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(34u /* 34 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_block_str()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bytes qc_str = 5;
+      case 5: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_qc_str()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint32 view = 6;
+      case 6: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
+          set_has_view();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &view_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:shardora.view_block.protobuf.ViewBlockItem)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:shardora.view_block.protobuf.ViewBlockItem)
+  return false;
+#undef DO_
+}
+
+void ViewBlockItem::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:shardora.view_block.protobuf.ViewBlockItem)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional bytes hash = 1;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      1, this->hash(), output);
+  }
+
+  // optional bytes parent_hash = 2;
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      2, this->parent_hash(), output);
+  }
+
+  // optional uint32 leader_idx = 3;
+  if (cached_has_bits & 0x00000010u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->leader_idx(), output);
+  }
+
+  // optional bytes block_str = 4;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      4, this->block_str(), output);
+  }
+
+  // optional bytes qc_str = 5;
+  if (cached_has_bits & 0x00000008u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      5, this->qc_str(), output);
+  }
+
+  // optional uint32 view = 6;
+  if (cached_has_bits & 0x00000020u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(6, this->view(), output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:shardora.view_block.protobuf.ViewBlockItem)
+}
+
+::google::protobuf::uint8* ViewBlockItem::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.view_block.protobuf.ViewBlockItem)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional bytes hash = 1;
+  if (cached_has_bits & 0x00000001u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        1, this->hash(), target);
+  }
+
+  // optional bytes parent_hash = 2;
+  if (cached_has_bits & 0x00000002u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        2, this->parent_hash(), target);
+  }
+
+  // optional uint32 leader_idx = 3;
+  if (cached_has_bits & 0x00000010u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->leader_idx(), target);
+  }
+
+  // optional bytes block_str = 4;
+  if (cached_has_bits & 0x00000004u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        4, this->block_str(), target);
+  }
+
+  // optional bytes qc_str = 5;
+  if (cached_has_bits & 0x00000008u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        5, this->qc_str(), target);
+  }
+
+  // optional uint32 view = 6;
+  if (cached_has_bits & 0x00000020u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(6, this->view(), target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.view_block.protobuf.ViewBlockItem)
+  return target;
+}
+
+size_t ViewBlockItem::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:shardora.view_block.protobuf.ViewBlockItem)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  if (_has_bits_[0 / 32] & 63u) {
+    // optional bytes hash = 1;
+    if (has_hash()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->hash());
+    }
+
+    // optional bytes parent_hash = 2;
+    if (has_parent_hash()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->parent_hash());
+    }
+
+    // optional bytes block_str = 4;
+    if (has_block_str()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->block_str());
+    }
+
+    // optional bytes qc_str = 5;
+    if (has_qc_str()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->qc_str());
+    }
+
+    // optional uint32 leader_idx = 3;
+    if (has_leader_idx()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->leader_idx());
+    }
+
+    // optional uint32 view = 6;
+    if (has_view()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->view());
+    }
+
+  }
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void ViewBlockItem::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.view_block.protobuf.ViewBlockItem)
+  GOOGLE_DCHECK_NE(&from, this);
+  const ViewBlockItem* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const ViewBlockItem>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.view_block.protobuf.ViewBlockItem)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.view_block.protobuf.ViewBlockItem)
+    MergeFrom(*source);
+  }
+}
+
+void ViewBlockItem::MergeFrom(const ViewBlockItem& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.view_block.protobuf.ViewBlockItem)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 63u) {
+    if (cached_has_bits & 0x00000001u) {
+      set_has_hash();
+      hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.hash_);
+    }
+    if (cached_has_bits & 0x00000002u) {
+      set_has_parent_hash();
+      parent_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.parent_hash_);
+    }
+    if (cached_has_bits & 0x00000004u) {
+      set_has_block_str();
+      block_str_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.block_str_);
+    }
+    if (cached_has_bits & 0x00000008u) {
+      set_has_qc_str();
+      qc_str_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.qc_str_);
+    }
+    if (cached_has_bits & 0x00000010u) {
+      leader_idx_ = from.leader_idx_;
+    }
+    if (cached_has_bits & 0x00000020u) {
+      view_ = from.view_;
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
+}
+
+void ViewBlockItem::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.view_block.protobuf.ViewBlockItem)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void ViewBlockItem::CopyFrom(const ViewBlockItem& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.view_block.protobuf.ViewBlockItem)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ViewBlockItem::IsInitialized() const {
+  return true;
+}
+
+void ViewBlockItem::Swap(ViewBlockItem* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void ViewBlockItem::InternalSwap(ViewBlockItem* other) {
+  using std::swap;
+  hash_.Swap(&other->hash_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  parent_hash_.Swap(&other->parent_hash_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  block_str_.Swap(&other->block_str_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  qc_str_.Swap(&other->qc_str_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  swap(leader_idx_, other->leader_idx_);
+  swap(view_, other->view_);
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
+::google::protobuf::Metadata ViewBlockItem::GetMetadata() const {
+  protobuf_protos_2fview_5fblock_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fview_5fblock_2eproto::file_level_metadata[kIndexInFileMessages];
+}
+
+
+// ===================================================================
+
 void ViewBlockResponse::InitAsDefaultInstance() {
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int ViewBlockResponse::kNetworkIdFieldNumber;
+const int ViewBlockResponse::kPoolIdxFieldNumber;
+const int ViewBlockResponse::kViewBlockItemsFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ViewBlockResponse::ViewBlockResponse()
@@ -520,12 +1049,19 @@ ViewBlockResponse::ViewBlockResponse()
 ViewBlockResponse::ViewBlockResponse(const ViewBlockResponse& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL),
-      _has_bits_(from._has_bits_) {
+      _has_bits_(from._has_bits_),
+      view_block_items_(from.view_block_items_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::memcpy(&network_id_, &from.network_id_,
+    static_cast<size_t>(reinterpret_cast<char*>(&pool_idx_) -
+    reinterpret_cast<char*>(&network_id_)) + sizeof(pool_idx_));
   // @@protoc_insertion_point(copy_constructor:shardora.view_block.protobuf.ViewBlockResponse)
 }
 
 void ViewBlockResponse::SharedCtor() {
+  ::memset(&network_id_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&pool_idx_) -
+      reinterpret_cast<char*>(&network_id_)) + sizeof(pool_idx_));
 }
 
 ViewBlockResponse::~ViewBlockResponse() {
@@ -556,6 +1092,13 @@ void ViewBlockResponse::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  view_block_items_.Clear();
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 3u) {
+    ::memset(&network_id_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&pool_idx_) -
+        reinterpret_cast<char*>(&network_id_)) + sizeof(pool_idx_));
+  }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
 }
@@ -569,12 +1112,57 @@ bool ViewBlockResponse::MergePartialFromCodedStream(
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
     if (!p.second) goto handle_unusual;
-  handle_unusual:
-    if (tag == 0) {
-      goto success;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional uint32 network_id = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
+          set_has_network_id();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &network_id_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint32 pool_idx = 2;
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
+          set_has_pool_idx();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &pool_idx_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // repeated .shardora.view_block.protobuf.ViewBlockItem view_block_items = 3;
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+                input, add_view_block_items()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
     }
-    DO_(::google::protobuf::internal::WireFormat::SkipField(
-          input, tag, _internal_metadata_.mutable_unknown_fields()));
   }
 success:
   // @@protoc_insertion_point(parse_success:shardora.view_block.protobuf.ViewBlockResponse)
@@ -591,6 +1179,26 @@ void ViewBlockResponse::SerializeWithCachedSizes(
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
+  cached_has_bits = _has_bits_[0];
+  // optional uint32 network_id = 1;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->network_id(), output);
+  }
+
+  // optional uint32 pool_idx = 2;
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->pool_idx(), output);
+  }
+
+  // repeated .shardora.view_block.protobuf.ViewBlockItem view_block_items = 3;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->view_block_items_size()); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      3,
+      this->view_block_items(static_cast<int>(i)),
+      output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -604,6 +1212,25 @@ void ViewBlockResponse::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_to_array_start:shardora.view_block.protobuf.ViewBlockResponse)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint32 network_id = 1;
+  if (cached_has_bits & 0x00000001u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->network_id(), target);
+  }
+
+  // optional uint32 pool_idx = 2;
+  if (cached_has_bits & 0x00000002u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->pool_idx(), target);
+  }
+
+  // repeated .shardora.view_block.protobuf.ViewBlockItem view_block_items = 3;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->view_block_items_size()); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        3, this->view_block_items(static_cast<int>(i)), deterministic, target);
+  }
 
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
@@ -621,6 +1248,33 @@ size_t ViewBlockResponse::ByteSizeLong() const {
     total_size +=
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
+  }
+  // repeated .shardora.view_block.protobuf.ViewBlockItem view_block_items = 3;
+  {
+    unsigned int count = static_cast<unsigned int>(this->view_block_items_size());
+    total_size += 1UL * count;
+    for (unsigned int i = 0; i < count; i++) {
+      total_size +=
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          this->view_block_items(static_cast<int>(i)));
+    }
+  }
+
+  if (_has_bits_[0 / 32] & 3u) {
+    // optional uint32 network_id = 1;
+    if (has_network_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->network_id());
+    }
+
+    // optional uint32 pool_idx = 2;
+    if (has_pool_idx()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->pool_idx());
+    }
+
   }
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
@@ -649,6 +1303,17 @@ void ViewBlockResponse::MergeFrom(const ViewBlockResponse& from) {
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
+  view_block_items_.MergeFrom(from.view_block_items_);
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
+      network_id_ = from.network_id_;
+    }
+    if (cached_has_bits & 0x00000002u) {
+      pool_idx_ = from.pool_idx_;
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
 }
 
 void ViewBlockResponse::CopyFrom(const ::google::protobuf::Message& from) {
@@ -675,6 +1340,9 @@ void ViewBlockResponse::Swap(ViewBlockResponse* other) {
 }
 void ViewBlockResponse::InternalSwap(ViewBlockResponse* other) {
   using std::swap;
+  CastToBase(&view_block_items_)->InternalSwap(CastToBase(&other->view_block_items_));
+  swap(network_id_, other->network_id_);
+  swap(pool_idx_, other->pool_idx_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
@@ -991,6 +1659,9 @@ namespace google {
 namespace protobuf {
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::view_block::protobuf::ViewBlockRequest* Arena::CreateMaybeMessage< ::shardora::view_block::protobuf::ViewBlockRequest >(Arena* arena) {
   return Arena::CreateInternal< ::shardora::view_block::protobuf::ViewBlockRequest >(arena);
+}
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::view_block::protobuf::ViewBlockItem* Arena::CreateMaybeMessage< ::shardora::view_block::protobuf::ViewBlockItem >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::view_block::protobuf::ViewBlockItem >(arena);
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::view_block::protobuf::ViewBlockResponse* Arena::CreateMaybeMessage< ::shardora::view_block::protobuf::ViewBlockResponse >(Arena* arena) {
   return Arena::CreateInternal< ::shardora::view_block::protobuf::ViewBlockResponse >(arena);

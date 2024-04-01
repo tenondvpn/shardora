@@ -16,9 +16,6 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     if (!view_block) {
         return Status::kError;
     }
-    // 由于消息异步到达，会出现并发问题
-    mutex_.lock();
-    defer(mutex_.unlock());
 
     // 检查是否有父块，没有则放入 orphans
     auto it = view_blocks_.find(view_block->parent_hash);
@@ -29,7 +26,7 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     
     
     view_blocks_[view_block->hash] = view_block;
-    view_blocks_at_height_[view_block->view] = view_block;
+    view_blocks_at_height_[view_block->view].push_back(view_block);
 
     auto iter = pending_fetch_.find(view_block->hash);
     if (iter != pending_fetch_.end()) {
@@ -39,20 +36,14 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
 
 Status ViewBlockChain::Get(const HashStr &hash,
                            std::shared_ptr<ViewBlock> &view_block) {
-    mutex_.lock();
     auto it = view_blocks_.find(hash);
     if (it != view_blocks_.end()) {
         view_block = it->second;
-        mutex_.unlock();
         return Status::kSuccess;
     }
     
     pending_fetch_.insert(hash);
-    mutex_.unlock();
     // TODO fetch from neighbors
-
-    mutex_.lock();
-    defer(mutex_.unlock());
     
     auto fetch_it = pending_fetch_.find(hash);
     if (fetch_it != pending_fetch_.end()) {
@@ -70,7 +61,7 @@ Status ViewBlockChain::Get(const HashStr &hash,
     }
 
     view_blocks_[hash] = view_block;
-    view_blocks_at_height_[view_block->view] = view_block;
+    view_blocks_at_height_[view_block->view].push_back(view_block);
 
     return Status::kSuccess;
 }

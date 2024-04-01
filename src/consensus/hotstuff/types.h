@@ -18,7 +18,7 @@ struct QC {
     View view;
     HashStr view_block_hash;
 
-    std::string to_string() const {
+    std::string Serialize() const {
         std::stringstream ss;
         if (bls_agg_sign) {
             auto x = std::to_string(bls_agg_sign->X.as_bigint().as_ulong());
@@ -30,6 +30,11 @@ struct QC {
         ss << view_block_hash;
         return ss.str();
     }
+
+    bool Unserialize(const std::string& str) {
+        return true;
+    }
+        
 };
 
 struct ViewBlock {
@@ -42,16 +47,31 @@ struct ViewBlock {
     std::shared_ptr<QC> qc;
     View view;
 
+    uint64_t synced_time_us; // 来源：同步
+
     ViewBlock(const HashStr& parent, const std::shared_ptr<QC>& qc, std::shared_ptr<block::protobuf::Block>& block, const View& view, const uint32_t& leader_idx) :
         parent_hash(parent),
         leader_idx(leader_idx),
         block(block),
         qc(qc),
-        view(view) {
+        view(view),
+        synced_time_us(0) {};
+
+    ViewBlock() {};
+
+    inline bool Valid() {
+        return hash != "" && hash == GetHash(); 
+    }
+
+    inline bool IsSynced() {
+        return synced_time_us != 0;
+    }
+
+    HashStr GetHash() const {
         std::string qc_str;
         std::string block_hash;
         if (qc) {
-            qc_str = qc->to_string();
+            qc_str = qc->Serialize();
         }
         if (block) {
             block_hash = consensus::GetBlockHash(*block);
@@ -62,16 +82,14 @@ struct ViewBlock {
         msg.append(qc_str);
         msg.append(block_hash);
         msg.append(parent_hash);
-        msg.append((char*)&leader_idx, sizeof(leader_idx));
-        msg.append((char*)&view, sizeof(view));
+        msg.append((char*)&(leader_idx), sizeof(leader_idx));
+        msg.append((char*)&(view), sizeof(view));
 
-        hash = common::Hash::keccak256(msg);
-    };
-
-    inline bool Valid() {
-        return hash != ""; 
+        return common::Hash::keccak256(msg);    
     }
 };
+
+
 
 enum class Status : int {
     kSuccess = 0,

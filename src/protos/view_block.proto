@@ -8,8 +8,19 @@ message ViewBlockRequest {
     repeated bytes hashes = 3;
 }
 
+message ViewBlockItem {
+    optional bytes hash = 1;
+    optional bytes parent_hash = 2;
+    optional uint32 leader_idx = 3;
+    optional bytes block_str = 4;
+    optional bytes qc_str = 5;
+    optional uint32 view = 6;
+}
+
 message ViewBlockResponse {
-    
+    optional uint32 network_id = 1;
+    optional uint32 pool_idx = 2;
+    repeated ViewBlockItem view_block_items = 3;
 }
 
 message ViewBlockMessage {
