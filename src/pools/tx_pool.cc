@@ -169,6 +169,7 @@ void TxPool::GetTx(
         }
 
         auto* tx = txbft->add_txs();
+        *tx = iter->second->tx_info;
         if (iter->second->tx_info.value().size() == 32) {
             std::string val;
             if (prefix_db_->GetTemporaryKv(iter->second->tx_info.value(), &val)) {
@@ -182,7 +183,6 @@ void TxPool::GetTx(
             }
         }
 
-        *tx = iter->second->tx_info;
         ZJC_DEBUG("backup success get local transfer to tx %u, %s, step: %d",
             pool_index_, 
             common::Encode::HexEncode(iter->second->unique_tx_hash).c_str(),
