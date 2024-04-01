@@ -493,7 +493,7 @@ void NetworkInit::SendJoinElectTransaction() {
         msg.hash64(),
         common::Encode::HexEncode(tx_hash).c_str(),
         common::Encode::HexEncode(new_tx->pubkey()).c_str(),
-        common::Encode::HexEncode(msg.sign()).c_str());
+        common::Encode::HexEncode(new_tx->sign()).c_str());
 }
 
 void NetworkInit::CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req) {
