@@ -171,12 +171,12 @@ void TxPool::GetTx(
         auto* tx = txbft->add_txs();
         if (iter->second->tx_info.value().size() == 32) {
             std::string val;
-            if (prefix_db_->GetTemporaryKv(iter->second->tx_info.value(), &val)) {
-                tx->set_key(iter->second->tx_info.key());
-                tx->set_value(val);
-                ZJC_DEBUG("success get key: %s", 
-                    common::Encode::HexEncode(iter->second->tx_info.value()).c_str());
-            }
+            // if (prefix_db_->GetTemporaryKv(iter->second->tx_info.value(), &val)) {
+            //     tx->set_key(iter->second->tx_info.key());
+            //     tx->set_value(val);
+            //     ZJC_DEBUG("success get key: %s", 
+            //         common::Encode::HexEncode(iter->second->tx_info.value()).c_str());
+            // }
         }
 
         *tx = iter->second->tx_info;
@@ -213,13 +213,13 @@ void TxPool::GetTx(
     while (iter != src_prio_map.end() && res_map.size() < count) {
         if (iter->second->tx_info.value().size() == 32) {
             std::string val;
-            if (prefix_db_->GetTemporaryKv(iter->second->tx_info.value(), &val)) {
-                iter->second->tx_info.set_key(iter->second->tx_info.key());
-                iter->second->tx_info.set_value(val);
-                // kvs[iter->second->tx_info.value()] = val;
-                ZJC_DEBUG("success get key: %s", 
-                    common::Encode::HexEncode(iter->second->tx_info.value()).c_str());
-            }
+            // if (prefix_db_->GetTemporaryKv(iter->second->tx_info.value(), &val)) {
+            //     iter->second->tx_info.set_key(iter->second->tx_info.key());
+            //     iter->second->tx_info.set_value(val);
+            //     // kvs[iter->second->tx_info.value()] = val;
+            //     ZJC_DEBUG("success get key: %s", 
+            //         common::Encode::HexEncode(iter->second->tx_info.value()).c_str());
+            // }
         }
 
         res_map[iter->second->unique_tx_hash] = iter->second;
