@@ -177,24 +177,37 @@ void TxPool::GetTx(
     }
 }
 
-void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
-    GetTx(universal_prio_map_, res_map, count);
+void TxPool::GetTx(
+        std::map<std::string, TxItemPtr>& res_map, 
+        uint32_t count, 
+        std::unordered_map<std::string, std::string>& kvs) {
+    GetTx(universal_prio_map_, res_map, count, kvs);
     if (!res_map.empty()) {
         return;
     }
 
-    GetTx(prio_map_, res_map, count);
-    GetTx(consensus_tx_map_, res_map, count);
+    GetTx(prio_map_, res_map, count, kvs);
+    GetTx(consensus_tx_map_, res_map, count, kvs);
 }
 
 void TxPool::GetTx(
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
-        uint32_t count) {
+        uint32_t count,
+        std::unordered_map<std::string, std::string>& kvs) {
     auto timestamp_now = common::TimeUtils::TimestampUs();
     std::vector<TxItemPtr> recover_txs;
     auto iter = src_prio_map.begin();
     while (iter != src_prio_map.end() && res_map.size() < count) {
+        if (iter->second->tx_info.value().size() == 32) {
+            std::string val;
+            if (prefix_db_->GetTemporaryKv(iter->second->tx_info.value(), &val)) {
+                kvs[iter->second->tx_info.value()] = val;
+                ZJC_DEBUG("success get key: %s", 
+                    common::Encode::HexEncode(iter->second->tx_info.value()).c_str());
+            }
+        }
+
         res_map[iter->second->unique_tx_hash] = iter->second;
         ZJC_DEBUG("leader success get local transfer to tx %u, %s, step: %d",
             pool_index_, 

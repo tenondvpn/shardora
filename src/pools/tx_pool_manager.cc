@@ -1263,7 +1263,8 @@ void TxPoolManager::GetTx(
 void TxPoolManager::GetTx(
         uint32_t pool_index,
         uint32_t count,
-        std::map<std::string, TxItemPtr>& res_map) {
+        std::map<std::string, TxItemPtr>& res_map,
+        std::unordered_map<std::string, std::string>& kvs) {
     if (count > common::kSingleBlockMaxTransactions) {
         count = common::kSingleBlockMaxTransactions;
     }
@@ -1285,7 +1286,7 @@ void TxPoolManager::GetTx(
         return;
     }
 
-    tx_pool_[pool_index].GetTx(res_map, count);
+    tx_pool_[pool_index].GetTx(res_map, count, kvs);
 //     ZJC_DEBUG("success get tx tm: %lu, min tm: %lu, dec: %ld, count: %u, min count: %u, count: %u",
 //         tx_pool_[pool_index].oldest_timestamp(), min_valid_timestamp_,
 //         ((int64_t)tx_pool_[pool_index].oldest_timestamp() - (int64_t)min_valid_timestamp_),

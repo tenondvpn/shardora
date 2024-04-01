@@ -43,7 +43,10 @@ public:
         const std::shared_ptr<db::Db>& db,
         std::shared_ptr<sync::KeyValueSync>& kv_sync);
     int AddTx(TxItemPtr& tx_ptr);
-    void GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count);
+    void GetTx(
+        std::map<std::string, TxItemPtr>& res_map, 
+        uint32_t count, 
+        std::unordered_map<std::string, std::string>& kvs);
     void GetTx(
         const std::map<std::string, pools::TxItemPtr>& invalid_txs, 
         zbft::protobuf::TxBft* txbft, 
@@ -90,7 +93,8 @@ public:
 
     std::shared_ptr<consensus::WaitingTxsItem> GetTx(
             const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
-            std::vector<uint8_t>* invalid_txs) {
+            std::vector<uint8_t>* invalid_txs,
+            std::unordered_map<std::string, std::string>& kvs) {
         auto txs_items = std::make_shared<consensus::WaitingTxsItem>();
         auto& tx_map = txs_items->txs;
         for (int32_t i = 0; i < txs.size(); ++i) {
@@ -329,7 +333,8 @@ private:
     void GetTx(
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
-        uint32_t count);
+        uint32_t count,
+        std::unordered_map<std::string, std::string>& kvs);
     void InitHeightTree();
     void InitLatestInfo() {
         pools::protobuf::PoolLatestInfo pool_info;

@@ -161,6 +161,7 @@ struct WaitingTxsItem {
         : max_txs_hash_count(0),
         tx_type(pools::protobuf::kNormalFrom) {}
     std::map<std::string, pools::TxItemPtr> txs;
+    std::unordered_map<std::string, std::string> kvs;
     std::unordered_map<std::string, uint32_t> all_hash_count;
     std::string max_txs_hash;
     uint32_t max_txs_hash_count;
