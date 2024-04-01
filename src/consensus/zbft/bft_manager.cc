@@ -1616,7 +1616,7 @@ ZbftPtr BftManager::CreateBftPtr(
                         break;
                     case pools::protobuf::kJoinElect:
                         tx_ptr = std::make_shared<JoinElectTxItem>(
-                            tx, 
+                            *tx, 
                             account_mgr_, 
                             security_ptr_, 
                             prefix_db_, 
