@@ -4,6 +4,11 @@ package shardora.zbft.protobuf;
 import "protos/block.proto";
 import "protos/pools.proto";
 
+message TxKeyValue {
+    optional bytes key = 0;
+    optional bytes value = 1;
+}
+
 message TxBft {
     optional block.protobuf.Block block = 1;
     optional bytes prepare_final_hash = 2;
@@ -11,6 +16,7 @@ message TxBft {
     optional pools.protobuf.StepType tx_type = 4 [default=kNormalFrom];
     optional uint64 time_stamp = 5;
     repeated pools.protobuf.TxMessage txs = 6;
+    repeated TxKeyValue kvs = 7;
 }
 
 message ZbftMessage {
