@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="CMakePresetLoader">{
+  &quot;useNewFormat&quot;: true
+}</component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="e160ccd5-1f00-43bf-88bf-7daf77ecbc2a" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/build_genesis.sh" beforeDir="false" afterPath="$PROJECT_DIR$/build_genesis.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conf/genesis.yml" beforeDir="false" afterPath="$PROJECT_DIR$/conf/genesis.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deploy_genesis.sh" beforeDir="false" afterPath="$PROJECT_DIR$/deploy_genesis.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/local.sh" beforeDir="false" afterPath="$PROJECT_DIR$/local.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/block/account_manager.cc" beforeDir="false" afterPath="$PROJECT_DIR$/src/block/account_manager.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/block/block_manager.cc" beforeDir="false" afterPath="$PROJECT_DIR$/src/block/block_manager.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/tx_cli.cc" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/tx_cli.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/network/network_utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/network/network_utils.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sync/key_value_sync.cc" beforeDir="false" afterPath="$PROJECT_DIR$/src/sync/key_value_sync.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zjnodes/node/conf/zjchain.conf" beforeDir="false" afterPath="$PROJECT_DIR$/zjnodes/node/conf/zjchain.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zjnodes/r1/conf/zjchain.conf" beforeDir="false" afterPath="$PROJECT_DIR$/zjnodes/r1/conf/zjchain.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zjnodes/r2/conf/zjchain.conf" beforeDir="false" afterPath="$PROJECT_DIR$/zjnodes/r2/conf/zjchain.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zjnodes/r3/conf/zjchain.conf" beforeDir="false" afterPath="$PROJECT_DIR$/zjnodes/r3/conf/zjchain.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zjnodes/s3_1/conf/zjchain.conf" beforeDir="false" afterPath="$PROJECT_DIR$/zjnodes/s3_1/conf/zjchain.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zjnodes/s3_10/conf/zjchain.conf" beforeDir="false" afterPath="$PROJECT_DIR$/zjnodes/s3_10/conf/zjchain.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zjnodes/s3_2/conf/zjchain.conf" beforeDir="false" afterPath="$PROJECT_DIR$/zjnodes/s3_2/conf/zjchain.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zjnodes/s3_3/conf/zjchain.conf" beforeDir="false" afterPath="$PROJECT_DIR$/zjnodes/s3_3/conf/zjchain.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zjnodes/s3_4/conf/zjchain.conf" beforeDir="false" afterPath="$PROJECT_DIR$/zjnodes/s3_4/conf/zjchain.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zjnodes/s3_5/conf/zjchain.conf" beforeDir="false" afterPath="$PROJECT_DIR$/zjnodes/s3_5/conf/zjchain.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zjnodes/s3_6/conf/zjchain.conf" beforeDir="false" afterPath="$PROJECT_DIR$/zjnodes/s3_6/conf/zjchain.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zjnodes/s3_7/conf/zjchain.conf" beforeDir="false" afterPath="$PROJECT_DIR$/zjnodes/s3_7/conf/zjchain.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zjnodes/s3_8/conf/zjchain.conf" beforeDir="false" afterPath="$PROJECT_DIR$/zjnodes/s3_8/conf/zjchain.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zjnodes/s3_9/conf/zjchain.conf" beforeDir="false" afterPath="$PROJECT_DIR$/zjnodes/s3_9/conf/zjchain.conf" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectApplicationVersion">
+    <option name="ide" value="CLion" />
+    <option name="majorVersion" value="2023" />
+    <option name="minorVersion" value="2.3" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
+  <component name="ProjectId" id="2dt9HSNcjBSAC113Mclyi0HyHmq" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "fix__sync",
+    "last_opened_file_path": "/root/lhy/shardora/cbuild_Debug/zjchain",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RdControllerToolWindowsLayoutState" isNewUi="true">
+    <layout>
+      <window_info id="Space Code Reviews" />
+      <window_info id="Bookmarks" side_tool="true" />
+      <window_info id="Merge Requests" />
+      <window_info id="Commit_Guest" />
+      <window_info id="Pull Requests" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.21948242" />
+      <window_info id="Commit" order="1" weight="0.25" />
+      <window_info id="Welcome to GitHub Copilot" order="2" />
+      <window_info id="Structure" order="3" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="CMake" />
+      <window_info anchor="bottom" id="Database Changes" />
+      <window_info anchor="bottom" id="TypeScript" />
+      <window_info anchor="bottom" id="Build" visible="true" weight="0.41393077" />
+      <window_info anchor="bottom" id="Python Packages" />
+      <window_info anchor="bottom" id="TODO" />
+      <window_info anchor="bottom" id="File Transfer" />
+      <window_info anchor="bottom" id="Run" />
+      <window_info anchor="bottom" id="Vcpkg" />
+      <window_info anchor="bottom" id="clangd" />
+      <window_info anchor="bottom" id="Version Control" order="0" weight="0.28657246" />
+      <window_info anchor="bottom" id="Problems View" order="1" />
+      <window_info anchor="bottom" id="Terminal" order="2" weight="0.329682" />
+      <window_info anchor="bottom" id="Services" order="3" />
+      <window_info anchor="right" id="make" side_tool="true" />
+      <window_info anchor="right" id="Meet New UI" side_tool="true" />
+      <window_info anchor="right" content_ui="combo" id="Notifications" order="0" weight="0.25" />
+      <window_info anchor="right" id="Database" order="1" weight="0.25" />
+      <window_info anchor="right" id="PlantUML" order="2" />
+      <window_info anchor="right" id="github.copilotToolWindow" order="3" />
+      <window_info anchor="right" id="GitHub Copilot Chat" order="4" />
+    </layout>
+  </component>
+  <component name="RunManager">
+    <configuration name="test_main.cc" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" temporary="true" PROGRAM_PARAMS="-f 0 -g 0 lhy node" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$USER_HOME$/zjnodes/node" PASS_PARENT_ENVS_2="true" PROJECT_NAME="shardora" TARGET_NAME="zjchain" CONFIG_NAME="test_main.cc">
+      <option name="sourceFile" value="$PROJECT_DIR$/cbuild_Debug/zjchain" />
+      <envs>
+        <env name="CC" value="/usr/local/gcc-8.3.0/bin/gcc" />
+        <env name="CXX" value="/usr/local/gcc-8.3.0/bin/g++" />
+      </envs>
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="C/C++ File.test_main.cc" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e160ccd5-1f00-43bf-88bf-7daf77ecbc2a" name="Changes" comment="" />
+      <created>1710816423412</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1710816423412</updated>
+      <workItem from="1710816428886" duration="15000" />
+      <workItem from="1710818830437" duration="8000" />
+      <workItem from="1710899498085" duration="764000" />
+      <workItem from="1711950028905" duration="610000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>
