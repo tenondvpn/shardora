@@ -484,7 +484,7 @@ void NetworkInit::SendJoinElectTransaction() {
         return;
     }
 
-    msg.set_sign(sign);
+    new_tx->set_sign(sign);
     // msg_ptr->msg_hash = tx_hash; // TxPoolmanager::HandleElectTx 接收端计算了，这里不必传输
     network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("success send join elect request transaction: %u, join: %u, gid: %s, "
