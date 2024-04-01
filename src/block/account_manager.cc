@@ -184,9 +184,16 @@ void AccountManager::HandleNormalFromTx(
     auto& account_id = GetTxValidAddress(tx);
     auto account_info = GetAccountInfo(account_id);
     if (account_info == nullptr) {
-        assert(false);
-        return;
-    }
+            ZJC_INFO("get address info failed create new address to this id: %s,"
+            "shard: %u, local shard: %u",
+            common::Encode::HexEncode(account_id).c_str(), block.network_id(),
+            common::GlobalInfo::Instance()->network_id());
+            account_info = std::make_shared<address::protobuf::AddressInfo>();
+            account_info->set_pool_index(block.pool_index());
+            account_info->set_addr(account_id);
+            account_info->set_type(address::protobuf::kNormal);
+            account_info->set_sharding_id(block.network_id());
+        }
 
     if (account_info->latest_height() >= block.height()) {
         return;

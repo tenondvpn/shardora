@@ -286,7 +286,7 @@ void BlockManager::HandleAllNewBlock() {
 
         db::DbWriteBatch db_batch;
         // TODO 更新 pool info，每次 AddNewBlock 之前需要更新 pool latest info
-        
+        // ZJC_DEBUG("LLLLLL handle new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u", block_ptr->network_id(), block_ptr.pool_index(), block_ptr->height(), block_ptr->tx_list_size());
         if (AddBlockItemToCache(block_ptr, db_batch)) {
             AddNewBlock(block_ptr, db_batch);
         }
@@ -345,7 +345,22 @@ bool BlockManager::AddBlockItemToCache(
     }
 
     for (int32_t i = 0; i < tx_list.size(); ++i) {
-        account_mgr_->NewBlockWithTx(block, tx_list[i], db_batch);
+        try
+        {
+            account_mgr_->NewBlockWithTx(block, tx_list[i], db_batch);
+
+        }
+        catch(const std::exception& e)
+        {
+            ZJC_ERROR("NewBlockWithTx failed, sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
+                block->network_id(),
+                block->pool_index(),
+                block->height(),
+                block->tx_list_size(),
+                common::Encode::HexEncode(block->hash()).c_str());
+            return false;
+        }
+        
     }
     return true;
 }
