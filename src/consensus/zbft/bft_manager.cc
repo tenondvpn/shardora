@@ -2090,17 +2090,16 @@ int BftManager::LeaderPrepare(
     tx_bft.set_height(bft_ptr->prepare_block()->height());
     tx_bft.set_time_stamp(bft_ptr->prepare_block()->timestamp());
     auto& tx_map = bft_ptr->txs_ptr()->txs;
+    auto& kvs = bft_ptr->txs_ptr()->kvs;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto* tx_info = tx_bft.add_txs();
         *tx_info = iter->second->tx_info;
-    }
-
-    auto& kvs = bft_ptr->txs_ptr()->kvs;
-    auto* kv_sync = header.mutable_sync();
-    for (auto iter = kvs.begin(); iter != kvs.end(); ++iter) {
-        auto* kv = kv_sync->add_items();
-        kv->set_key(iter->first);
-        kv->set_value(iter->second);
+        if (!tx_info->value().size() == 32) {
+            auto kv_iter = kvs.find(tx_info->value());
+            if (kv_iter != kvs.end()) {
+                tx_info->set_value(kv_iter->second);
+            }
+        }
     }
 
     bft_msg.set_leader_idx(elect_item.local_node_member_index);
