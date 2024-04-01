@@ -1614,6 +1614,15 @@ ZbftPtr BftManager::CreateBftPtr(
                             security_ptr_, 
                             address_info);
                         break;
+                    case pools::protobuf::kJoinElect:
+                        tx_ptr = std::make_shared<JoinElectTxItem>(
+                            tx, 
+                            account_mgr_, 
+                            security_ptr_, 
+                            prefix_db_, 
+                            elect_mgr_, 
+                            address_info);
+                        break;
                     default:
                         ZJC_FATAL("invalid tx step: %d", tx->step());
                         return nullptr;
@@ -3035,6 +3044,15 @@ void BftManager::LeaderAddBackupTxs(const zbft::protobuf::TxBft& txbft, uint32_t
                     gas_prepayment_, 
                     account_mgr_, 
                     security_ptr_, 
+                    address_info);
+                break;
+            case pools::protobuf::kJoinElect:
+                tx_ptr = std::make_shared<JoinElectTxItem>(
+                    tx, 
+                    account_mgr_, 
+                    security_ptr_, 
+                    prefix_db_, 
+                    elect_mgr_, 
                     address_info);
                 break;
             default:
