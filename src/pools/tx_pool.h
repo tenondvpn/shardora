@@ -93,8 +93,7 @@ public:
 
     std::shared_ptr<consensus::WaitingTxsItem> GetTx(
             const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
-            std::vector<uint8_t>* invalid_txs,
-            std::unordered_map<std::string, std::string>& kvs) {
+            std::vector<uint8_t>* invalid_txs) {
         auto txs_items = std::make_shared<consensus::WaitingTxsItem>();
         auto& tx_map = txs_items->txs;
         for (int32_t i = 0; i < txs.size(); ++i) {
