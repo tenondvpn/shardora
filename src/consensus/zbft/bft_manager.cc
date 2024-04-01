@@ -499,13 +499,14 @@ ZbftPtr BftManager::Start(ZbftPtr commited_bft_ptr) {
     ZJC_INFO("leader start bft success, thread: %d, pool: %d,"
         "thread_item->pools.size(): %d, "
         "elect_item_ptr->elect_height: %lu, "
-        "elect_item_ptr->time_valid: %lu now_tm_ms: %lu, tx size: %u",
+        "elect_item_ptr->time_valid: %lu now_tm_ms: %lu, tx size: %u, kv size: %u",
         thread_index, zbft_ptr->pool_index(),
         thread_item->pools.size(),
         elect_item_ptr->elect_height,
         elect_item_ptr->time_valid,
         now_tm_ms,
-        txs_ptr->txs.size());
+        txs_ptr->txs.size(),
+        txs_ptr->kvs.size());
     return zbft_ptr;
 }
 
@@ -715,11 +716,9 @@ ZbftPtr BftManager::StartBft(
     tmp_gid[0] = bft_gids_index_[thread_idx]++;
     bft_ptr->set_gid(gid);
     bft_ptr->set_network_id(common::GlobalInfo::Instance()->network_id());
-    
     bft_ptr->set_member_count(elect_item.member_size);
     // LeaderPrepare 中会调用到 DoTransaction，本地执行块内交易
     int leader_pre = LeaderPrepare(elect_item, bft_ptr, commited_bft_ptr);
-	
     if (leader_pre != kConsensusSuccess) {
         ZJC_ERROR("leader prepare failed!");
         return nullptr;
@@ -2085,7 +2084,6 @@ int BftManager::LeaderPrepare(
     header.set_des_dht_key(dht_key.StrKey());
     header.set_type(common::kConsensusMessage);
     header.set_hop_count(0);
-
     auto broad_param = header.mutable_broadcast();
     auto& bft_msg = *header.mutable_zbft();
     zbft::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
@@ -2095,6 +2093,14 @@ int BftManager::LeaderPrepare(
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto* tx_info = tx_bft.add_txs();
         *tx_info = iter->second->tx_info;
+    }
+
+    auto& kvs = bft_ptr->txs_ptr()->kvs;
+    auto* kv_sync = header.mutable_sync();
+    for (auto iter = kvs.begin(); iter != kvs.end(); ++iter) {
+        auto* kv = kv_sync->add_items();
+        kv->set_key(iter->first);
+        kv->set_value(iter->second);
     }
 
     bft_msg.set_leader_idx(elect_item.local_node_member_index);
