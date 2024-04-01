@@ -315,7 +315,7 @@ void BftManager::HandleLeaderCollectTxs(const ElectItem& elect_item, const trans
     bft_msg.set_bft_timeout(true);
     auto txbft = bft_msg.mutable_tx_bft();
     std::map<std::string, pools::TxItemPtr> invalid_txs;
-    pools_mgr_->GetTx(pool_index, 1024, invalid_txs, txbft);
+    pools_mgr_->GetTx(pool_index, 1024, invalid_txs, header);
     auto leader_member = (*elect_item.members)[leader_msg_ptr->header.zbft().leader_idx()];
     dht::DhtKeyManager dht_key(
         common::GlobalInfo::Instance()->network_id(),
@@ -2318,7 +2318,7 @@ void BftManager::BackupSendPrecommitMessage(
     }
 
     auto txbft = bft_msg.mutable_tx_bft();
-    BackupAddLocalTxs(txbft, pool_index);
+    BackupAddLocalTxs(header, pool_index);
     auto leader_member = (*elect_item.members)[leader_msg_ptr->header.zbft().leader_idx()];
     dht::DhtKeyManager dht_key(
         common::GlobalInfo::Instance()->network_id(),
@@ -2372,7 +2372,8 @@ void BftManager::BackupAddLocalTxs(transport::protobuf::Header& header, uint32_t
     auto precommit_bft_ptr = pools_with_zbfts_[pool_index];
     auto& txs = precommit_bft_ptr->txs_ptr()->txs;
     pools_mgr_->GetTx(pool_index, 1024, txs, header);
-    ZJC_INFO("send to leader tx size: %u", txbft->txs_size());
+    ZJC_INFO("send to leader tx size: %u, kv size: %u",
+        header.zbft().tx_bft().txs_size(), header.sync().items_size());
 }
 
 int BftManager::BackupPrepare(
