@@ -5,8 +5,8 @@ import "protos/block.proto";
 import "protos/pools.proto";
 
 message TxKeyValue {
-    optional bytes key = 0;
-    optional bytes value = 1;
+    optional bytes key = 1;
+    optional bytes value = 2;
 }
 
 message TxBft {
