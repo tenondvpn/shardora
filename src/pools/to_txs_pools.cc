@@ -389,8 +389,8 @@ void ToTxsPools::HandleNormalToTx(
         }
 
         ZJC_DEBUG("success get normal to key: %s, val: %s, sharding id: %u",
+            common::Encode::HexEncode(tx_info.storages(i).key()).c_str(),
             common::Encode::HexEncode(tx_info.storages(i).value()).c_str(),
-            common::Encode::HexEncode(to_txs_str).c_str(),
             to_tx.to_heights().sharding_id());
         if (to_tx.to_heights().heights_size() != common::kImmutablePoolSize) {
             ZJC_ERROR("invalid heights size: %d, %d",
