@@ -4,8 +4,10 @@
 namespace shardora {
 namespace consensus {
 
-ViewBlockChain::ViewBlockChain(const std::shared_ptr<ViewBlock>& genesis_view_block) : prune_height_(View(1)) {
-    Store(genesis_view_block);
+ViewBlockChain::ViewBlockChain(const std::shared_ptr<ViewBlock>& genesis_block) : prune_height_(View(1)) {
+    assert(genesis_block->view == 1);
+    view_blocks_[genesis_block->hash] = genesis_block;
+    view_blocks_at_height_[genesis_block->view].push_back(genesis_block);
 }
 
 ViewBlockChain::~ViewBlockChain(){}
