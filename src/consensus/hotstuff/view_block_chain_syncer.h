@@ -8,6 +8,7 @@
 #include <transport/transport_utils.h>
 #include "protos/view_block.pb.h"
 #include <queue>
+#include "consensus/hotstuff/view_block_chain.h"
 
 namespace shardora {
 namespace consensus {
@@ -20,16 +21,6 @@ struct ViewBlockItem {
     HashStr hash;
     uint32_t pool_idx;
 };
-
-struct CompareViewBlock {
-    bool operator()(const std::shared_ptr<ViewBlock>& lhs, const std::shared_ptr<ViewBlock>& rhs) const {
-        return lhs->view > rhs->view;
-    }
-};
-
-static const uint64_t ORPHAN_BLOCK_TIMEOUT_US = 10000000lu;
-
-using ViewBlockMinHeap = std::priority_queue<std::shared_ptr<ViewBlock>, std::vector<std::shared_ptr<ViewBlock>>, CompareViewBlock>;
 
 class ViewBlockChainSyncer {
 public:
@@ -44,12 +35,11 @@ public:
 private:
     Status sendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockMessage& view_block_msg);
     void ConsensusTimerMessage();
-    void ConsumeOrphanBlocks();
     void produceMessages();
     void consumeMessages();
     Status processRequest(const transport::MessagePtr&);
     Status processResponse(const transport::MessagePtr&);
-    Status GetViewBlock(uint32_t pool_idx, const std::string& hash, ViewBlock* view_block);
+    Status GetViewBlockChain(uint32_t pool_idx, std::shared_ptr<ViewBlockChain>& view_block_chain);
     
     uint64_t timeout_ms_;
     FetchCallbackFn* fetch_callback_fn_; // fetch 回调函数
@@ -59,7 +49,6 @@ private:
     common::ThreadSafeQueue<std::shared_ptr<ViewBlockItem>> input_queues_[common::kMaxThreadCount];
     common::ThreadSafeQueue<transport::MessagePtr> consume_queue_;
     common::Tick tick_;
-    std::unordered_map<uint32_t, ViewBlockMinHeap> pool_orphan_blocks_map_; // 已经获得但没有父块, TODO 按照 view 排序
 };
 
 }

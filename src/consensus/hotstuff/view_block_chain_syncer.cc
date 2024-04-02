@@ -24,7 +24,7 @@ ViewBlockChainSyncer::ViewBlockChainSyncer(FetchCallbackFn* fetch_cb_) {
     network::Route::Instance()->RegisterMessage(common::kViewBlockMessage,
         std::bind(&ViewBlockChainSyncer::HandleMessage, this, std::placeholders::_1));
     tick_.CutOff(100000lu, std::bind(&ViewBlockChainSyncer::ConsensusTimerMessage, this));
-    tick_.CutOff(100000lu, std::bind(&ViewBlockChainSyncer::ConsumeOrphanBlocks, this));
+    
 }
 
 ViewBlockChainSyncer::~ViewBlockChainSyncer() {}
@@ -152,16 +152,24 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
         std::string hash = view_block_msg.view_block_req().hashes(i);
         uint32_t pool_idx = view_block_msg.view_block_req().pool_idx();
         // TODO Get view block by hash and pool
-        ViewBlock view_block;
-        GetViewBlock(pool_idx, hash, &view_block);
+        auto view_block_chain = std::make_shared<ViewBlockChain>();
+        GetViewBlockChain(pool_idx, view_block_chain);
+        if (!view_block_chain) {
+            continue;
+        }
+        auto view_block = std::make_shared<ViewBlock>();
+        view_block_chain->Get(hash, view_block);
+        if (!view_block) {
+            continue;
+        }
         
         auto view_block_item = view_block_res->add_view_block_items();
-        view_block_item->set_hash(view_block.hash);
-        view_block_item->set_parent_hash(view_block.parent_hash);
-        view_block_item->set_leader_idx(view_block.leader_idx);
-        view_block_item->set_block_str(view_block.block->SerializeAsString());
-        view_block_item->set_qc_str(view_block.qc->Serialize());
-        view_block_item->set_view(view_block.view);
+        view_block_item->set_hash(view_block->hash);
+        view_block_item->set_parent_hash(view_block->parent_hash);
+        view_block_item->set_leader_idx(view_block->leader_idx);
+        view_block_item->set_block_str(view_block->block->SerializeAsString());
+        view_block_item->set_qc_str(view_block->qc->Serialize());
+        view_block_item->set_view(view_block->view);
     }
 
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -193,54 +201,18 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
                 view_block->parent_hash = it->parent_hash();
                 view_block->view = it->view();
                 view_block->leader_idx = it->leader_idx();
-
-
-
-                pool_orphan_blocks_map_[pool_idx].push(view_block);
+                
+                // TODO 根据 pool 获取 block chain
+                auto view_block_chain = std::make_shared<ViewBlockChain>();
+                view_block_chain->Store(view_block);
             }
         }
     }
     return Status::kSuccess;
 }
 
-
-Status ViewBlockChainSyncer::GetViewBlock(uint32_t pool_idx, const std::string& hash, ViewBlock* view_block) {
+Status ViewBlockChainSyncer::GetViewBlockChain(uint32_t pool_idx, std::shared_ptr<ViewBlockChain>& view_block_chain) {
     return Status::kSuccess;
-}
-
-// 定时消费 orphan blocks
-void ViewBlockChainSyncer::ConsumeOrphanBlocks() {
-    // 检测 orphan blocks 合法性
-    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
-        auto& orphan_blocks_queue = pool_orphan_blocks_map_[pool_idx];
-        std::shared_ptr<ViewBlock> top = orphan_blocks_queue.top();
-        orphan_blocks_queue.pop();
-        
-        // 超时
-        if (!top || top->synced_time_us + ORPHAN_BLOCK_TIMEOUT_US < common::TimeUtils::TimestampUs()) {
-            continue;
-        }
-
-        if (!top->Valid()) {
-            continue;
-        }
-
-        // 父块不存在，则同步父块
-        auto view_block_chain = std::make_shared<ViewBlockChain>();
-        auto parent_view_block = std::make_shared<ViewBlock>();
-
-        Status s = view_block_chain->Get(top->parent_hash, parent_view_block);
-        if (s != Status::kSuccess || !parent_view_block) {
-            // 同步父块
-            AsyncFetch(top->parent_hash, pool_idx);
-            orphan_blocks_queue.push(top);
-            continue;
-        }
-        
-        view_block_chain->Store(top);
-    }
-
-    tick_.CutOff(100000lu, std::bind(&ViewBlockChainSyncer::ConsumeOrphanBlocks, this));
 }
 
 } // namespace consensus
