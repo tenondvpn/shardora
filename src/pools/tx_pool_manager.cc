@@ -831,13 +831,13 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
         }
     }
 
-    std::string new_hash;
-    if (!SaveNodeVerfiyVec(msg_ptr->address_info->addr(), join_info, &new_hash)) {
-        assert(false);
-        return;
-    }
-    tx_msg.set_key(protos::kJoinElectVerifyG2);
-    tx_msg.set_value(new_hash);
+    // std::string new_hash;
+    // if (!SaveNodeVerfiyVec(msg_ptr->address_info->addr(), join_info, &new_hash)) {
+    //     assert(false);
+    //     return;
+    // }
+    // tx_msg.set_key(protos::kJoinElectVerifyG2);
+    // tx_msg.set_value(new_hash);
     
     ZJC_DEBUG("elect tx msg hash is %s", 
         common::Encode::HexEncode(msg_ptr->msg_hash).c_str());

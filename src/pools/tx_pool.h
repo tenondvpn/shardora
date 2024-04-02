@@ -352,21 +352,12 @@ private:
             return false;
         }
 
-        uint32_t tmp_shard = join_info.shard_id();
-        if (tmp_shard != network::kRootCongressNetworkId) {
-            if (tmp_shard != msg_ptr->address_info->sharding_id()) {
-                ZJC_DEBUG("join des shard error: %d,  %d.",
-                    tmp_shard, msg_ptr->address_info->sharding_id());
-            return false;
-            }
-        }
-
         std::string new_hash;
         if (!SaveNodeVerfiyVec(msg_ptr->address_info->addr(), join_info, &new_hash)) {
             assert(false);
             return false;
         }
-        
+
         tx_msg.set_key(protos::kJoinElectVerifyG2);
         tx_msg.set_value(new_hash);
         return true;
