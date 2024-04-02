@@ -14,6 +14,7 @@ namespace test {
 class TestViewBlockChain : public testing::Test {
 protected:
     void SetUp() {
+        libff::alt_bn128_pp::init_public_params();
         genesis_ = GenViewBlock("", 1);
         chain_ = std::make_shared<ViewBlockChain>(genesis_);
     }
