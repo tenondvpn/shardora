@@ -471,10 +471,7 @@ void ElectTxItem::SetPrevElectInfo(
 
     auto kv = block_tx.add_storages();
     kv->set_key(protos::kShardElectionPrevInfo);
-    std::string prev_elect_hash = protos::GetElectBlockHash(prev_elect_block);
-    kv->set_value(prev_elect_hash);
-    prefix_db_->SaveTemporaryKv(prev_elect_hash, prev_elect_block.SerializeAsString());
-    return;
+    kv->set_value(prev_elect_block.SerializeAsString());
 }
 
 uint64_t ElectTxItem::GetMiningMaxCount(uint64_t max_tx_count) {
@@ -529,11 +526,9 @@ int ElectTxItem::CreateNewElect(
     }
 
     std::string val = elect_block.SerializeAsString();
-    std::string elect_hash = protos::GetElectBlockHash(elect_block);
     auto& storage = *block_tx.add_storages();
     storage.set_key(protos::kElectNodeAttrElectBlock);
-    storage.set_value(elect_hash);
-    prefix_db_->SaveTemporaryKv(elect_hash, val);
+    storage.set_value(val);
     ZJC_DEBUG("create elect success: %u", elect_statistic.sharding_id());
     return kConsensusSuccess;
 }

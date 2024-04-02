@@ -258,12 +258,6 @@ private:
                         return nullptr;
                     }
 
-                    std::string ec_hash = protos::GetElectBlockHash(elect_block);
-                    if (ec_hash != block.tx_list(tx_idx).storages(i).value()) {
-                        ZJC_FATAL("elect block get temp kv from db failed!");
-                        return nullptr;
-                    }
-
                     eb_valid = true;
                     break;
                 }
