@@ -23,7 +23,6 @@ struct QC {
 
     QC(const std::shared_ptr<libff::alt_bn128_G1>& sign, const View& v, const HashStr& hash) :
         bls_agg_sign(sign), view(v), view_block_hash(hash) {}
-
     ~QC() {}
 
     std::string Serialize() const {

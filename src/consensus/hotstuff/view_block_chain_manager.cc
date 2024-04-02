@@ -4,7 +4,7 @@
 namespace shardora {
 namespace consensus {
 
-ViewBlockChainManager::ViewBlockChainManager(std::shared_ptr<ViewBlockChainSyncer> syncer_ptr) {
+ViewBlockChainManager::ViewBlockChainManager(const std::shared_ptr<ViewBlockChainSyncer>& syncer_ptr) {
     syncer_ptr_ = syncer_ptr;
     tick_.CutOff(100000lu, std::bind(&ViewBlockChainManager::ConsumeOrphanBlocks, this));
 }
@@ -21,11 +21,7 @@ Status ViewBlockChainManager::Store(const uint32_t& pool_idx, const std::shared_
         return Status::kError;
     }
 
-    if (view_block->view >= chain->LatestCommittedHeight()) {
-        return Status::kError;
-    }
-
-    auto parent_block = std::make_shared<ViewBlock>();
+    std::shared_ptr<ViewBlock> parent_block = nullptr;
     Status s = chain->Get(view_block->parent_hash, parent_block);
     if (s != Status::kSuccess || !parent_block) {
         // 父块不存在，将 view_block 加入队列并同步父块

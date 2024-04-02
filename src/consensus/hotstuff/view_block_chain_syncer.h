@@ -21,6 +21,9 @@ const int kEachRequestMaxViewBlocksCount = 8;
 struct ViewBlockItem {
     HashStr hash;
     uint32_t pool_idx;
+
+    ViewBlockItem(const HashStr& h, const uint32_t& p) : hash(h), pool_idx(p) {}
+    ~ViewBlockItem() {};
 };
 
 class ViewBlockChainSyncer {

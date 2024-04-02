@@ -148,16 +148,16 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
     view_block_res->set_network_id(view_block_msg.view_block_req().network_id());
     view_block_res->set_pool_idx(view_block_msg.view_block_req().pool_idx());
 
-    for (uint32_t i = 0; i < view_block_msg.view_block_req().hashes_size(); i++) {
+    for (int i = 0; i < view_block_msg.view_block_req().hashes_size(); i++) {
         std::string hash = view_block_msg.view_block_req().hashes(i);
         uint32_t pool_idx = view_block_msg.view_block_req().pool_idx();
         // TODO Get view block by hash and pool
-        auto view_block_chain = std::make_shared<ViewBlockChain>();
+        std::shared_ptr<ViewBlockChain> view_block_chain = nullptr;
         GetViewBlockChain(pool_idx, view_block_chain);
         if (!view_block_chain) {
             continue;
         }
-        auto view_block = std::make_shared<ViewBlock>();
+        std::shared_ptr<ViewBlock> view_block = nullptr;
         view_block_chain->Get(hash, view_block);
         if (!view_block) {
             continue;
@@ -190,10 +190,10 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
     uint32_t pool_idx = view_block_msg.view_block_res().pool_idx();
 
     for (auto it = view_block_items.begin(); it != view_block_items.end(); it++) {
-        auto view_block = std::make_shared<ViewBlock>();
-        auto block_item = std::make_shared<block::protobuf::Block>();
+        std::shared_ptr<ViewBlock> view_block = nullptr;
+        std::shared_ptr<block::protobuf::Block> block_item = nullptr;
         if (block_item->ParseFromString(it->block_str())) {
-            auto qc = std::make_shared<QC>();
+            std::shared_ptr<QC> qc = nullptr;
             if (qc->Unserialize(it->qc_str())) {
                 view_block->block = block_item;
                 view_block->qc = qc;
@@ -203,8 +203,8 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
                 view_block->leader_idx = it->leader_idx();
                 
                 // TODO 根据 pool 获取 block chain
-                auto view_block_chain = std::make_shared<ViewBlockChain>();
-                view_block_chain->Store(view_block);
+                // auto view_block_chain = std::make_shared<ViewBlockChain>();
+                // view_block_chain->Store(view_block);
             }
         }
     }
