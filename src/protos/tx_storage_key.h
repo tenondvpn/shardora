@@ -23,7 +23,6 @@ static const std::string kShardStatistic = "__shard_statistic";
 static const std::string kShardElection = "__shard_election";
 static const std::string kShardElectionPrevInfo = "__shard_elect_prev";
 static const std::string kElectNodeStoke = "__elect_node_stoke";
-static const std::string kElectJoinShard = "__elect_join_shard";
 static const std::string kShardCross = "__shard_cross";
 static const std::string kJoinElectVerifyG2 = "__join_g2";
 static const std::string kRootCross = "__root_cross";

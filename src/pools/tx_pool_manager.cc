@@ -802,7 +802,7 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    if (!tx_msg.has_key() || tx_msg.key() != protos::kElectJoinShard) {
+    if (!tx_msg.has_key() || tx_msg.key() != protos::kJoinElectVerifyG2) {
         ZJC_DEBUG("key size error now: %d, max: %d.",
             tx_msg.key().size(), kTxStorageKeyMaxSize);
         return;
@@ -836,7 +836,7 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
         assert(false);
         return;
     }
-    tx_msg.set_key(protos::kJoinElectVerifyG2);
+    // tx_msg.set_key(protos::kJoinElectVerifyG2);
     tx_msg.set_value(new_hash);
     
     ZJC_DEBUG("elect tx msg hash is %s", common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
