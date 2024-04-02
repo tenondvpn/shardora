@@ -25,6 +25,7 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     view_blocks_[view_block->hash] = view_block;
     view_blocks_at_height_[view_block->view].push_back(view_block);
     view_block_children_[view_block->parent_hash].push_back(view_block);
+    return Status::kSuccess;
 }
 
 Status ViewBlockChain::Get(const HashStr &hash, std::shared_ptr<ViewBlock> &view_block) {
@@ -120,6 +121,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::PopOrphanBlock() {
     std::shared_ptr<ViewBlock> orphan_block = OrphanBlocks().top();
     OrphanBlocks().pop();
     orphan_added_us_.erase(orphan_block->hash);
+    return orphan_block;
 }
 
 bool ViewBlockChain::IsOrphanBlockTimeout(const std::shared_ptr<ViewBlock> view_block) const {

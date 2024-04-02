@@ -1,5 +1,5 @@
 #pragma once
-#include "consensus/hotstuff/types.h"
+#include <consensus/hotstuff/types.h>
 #include <common/thread_safe_queue.h>
 #include <common/utils.h>
 #include <memory>
@@ -8,9 +8,10 @@
 #include <transport/transport_utils.h>
 #include "protos/view_block.pb.h"
 #include <queue>
-#include "consensus/hotstuff/view_block_chain.h"
+#include <consensus/hotstuff/view_block_chain.h>
 
 namespace shardora {
+
 namespace consensus {
 
 typedef std::function<void(const std::shared_ptr<ViewBlock> &)> FetchCallbackFn;
@@ -51,5 +52,7 @@ private:
     common::Tick tick_;
 };
 
-}
-}
+} // namespace consensus
+
+} // namespace shardora
+
