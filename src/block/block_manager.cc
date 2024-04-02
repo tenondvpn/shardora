@@ -1625,23 +1625,21 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         return;
     }
 
-    std::string tos_hashs;
+    pools::protobuf::AllToTxMessage all_to_txs;
     for (uint32_t sharding_id = network::kRootCongressNetworkId;
             sharding_id <= max_consensus_sharding_id_; ++sharding_id) {
-        std::string tos_hash;
+        auto& to_tx = *all_to_txs.add_to_tx_arr();
         if (to_txs_pool_->CreateToTxWithHeights(
                 sharding_id,
                 leader_to_txs->elect_height,
                 heights,
-                &tos_hash) != pools::kPoolsSuccess) {
+                to_tx) != pools::kPoolsSuccess) {
             all_valid = false;
             continue;
         }
-
-        tos_hashs += tos_hash;
     }
 
-    if (tos_hashs.empty()) {
+    if (all_to_txs.to_tx_arr_size() == 0) {
         return;
     }
     
@@ -1649,7 +1647,9 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     new_msg_ptr->address_info = account_mgr_->pools_address_info(0 % common::kImmutablePoolSize);
     auto* tx = new_msg_ptr->header.mutable_tx_proto();
     tx->set_key(protos::kNormalTos);
-    tx->set_value(tos_hashs);
+    // TODO: fix hash invalid
+    auto tos_hashs = common::Hash::keccak256(all_to_txs.SerializeAsString());
+    tx->set_value(all_to_txs.SerializeAsString());
     tx->set_pubkey("");
     tx->set_to(new_msg_ptr->address_info->addr());
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
@@ -1658,7 +1658,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         tx->set_step(pools::protobuf::kNormalTo);
     }
 
-    auto gid = common::Hash::keccak256(tos_hashs);
+    auto gid = tos_hashs;
     tx->set_gas_limit(0);
     tx->set_amount(0);
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
