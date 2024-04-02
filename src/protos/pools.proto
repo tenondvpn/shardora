@@ -101,6 +101,7 @@ message CrossShardStatisticItem {
 message CrossShardStatistic {
     repeated CrossShardStatisticItem crosses = 1;
     optional uint64 elect_height = 2;
+    optional bytes tx_hash = 3;
 }
 
 message ElectStatistic {

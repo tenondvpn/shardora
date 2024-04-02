@@ -527,21 +527,16 @@ void BlockManager::HandleCrossTx(
         db::DbWriteBatch& db_batch) {
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         if (block_tx.storages(i).key() == protos::kShardCross) {
-            std::string cross_val;
-            if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &cross_val)) {
+            const std::string& cross_val = block_tx.storages(i).value();
+            pools::protobuf::CrossShardStatistic cross_statistic;
+            if (!cross_statistic.ParseFromString(cross_val)) {
                 assert(false);
                 break;
             }
 
             if (latest_cross_statistic_tx_ != nullptr &&
-                    latest_cross_statistic_tx_->tx_hash == block_tx.storages(i).val_hash()) {
+                    latest_cross_statistic_tx_->tx_hash == cross_statistic.tx_hash()) {
                 latest_cross_statistic_tx_ = nullptr;
-            }
-
-            pools::protobuf::CrossShardStatistic cross_statistic;
-            if (!cross_statistic.ParseFromString(cross_val)) {
-                assert(false);
-                break;
             }
 
             auto iter = leader_statistic_txs_.find(cross_statistic.elect_height());
@@ -549,7 +544,7 @@ void BlockManager::HandleCrossTx(
                 iter->second->cross_statistic_tx = nullptr;
                 ZJC_DEBUG("erase statistic elect height: %lu, hash: %s",
                     cross_statistic.elect_height(),
-                    common::Encode::HexEncode(block_tx.storages(i).val_hash()).c_str());
+                    common::Encode::HexEncode(cross_statistic.tx_hash()).c_str());
                 if (iter->second->shard_statistic_tx == nullptr) {
                     leader_statistic_txs_.erase(iter);
                 }
@@ -590,12 +585,7 @@ void BlockManager::HandleStatisticTx(
     pools::protobuf::ElectStatistic elect_statistic;
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         if (block_tx.storages(i).key() == protos::kShardStatistic) {
-            std::string val;
-            if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
-                continue;
-            }
-
-            if (!elect_statistic.ParseFromString(val)) {
+            if (!elect_statistic.ParseFromString(block_tx.storages(i).value())) {
                 continue;
             }
 
@@ -627,7 +617,7 @@ void BlockManager::HandleStatisticTx(
                     ": %lu, net: %u, hash: %s, latest_shard_statistic_tx_ = null: %d",
                     elect_statistic.elect_height(),
                     net_id,
-                    common::Encode::HexEncode(block_tx.storages(i).val_hash()).c_str(),
+                    common::Encode::HexEncode(block_tx.storages(i).value()).c_str(),
                     (latest_shard_statistic_tx_ == nullptr));
                 if (iter->second->cross_statistic_tx == nullptr ||
                         net_id != network::kRootCongressNetworkId) {
@@ -651,20 +641,13 @@ void BlockManager::HandleNormalToTx(
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         ZJC_DEBUG("get normal to tx key: %s, val: %s",
             tx.storages(i).key().c_str(),
-            common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
+            common::Encode::HexEncode(tx.storages(i).value()).c_str());
         if (tx.storages(i).key() != protos::kNormalToShards) {
             continue;
         }
 
-        std::string to_txs_str;
-        if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &to_txs_str)) {
-            ZJC_WARN("normal to get val hash failed: %s",
-                common::Encode::HexEncode(tx.storages(0).val_hash()).c_str());
-            continue;
-        }
-
         pools::protobuf::ToTxMessage to_txs;
-        if (!to_txs.ParseFromString(to_txs_str)) {
+        if (!to_txs.ParseFromString(tx.storages(i).value())) {
             ZJC_WARN("parse to txs failed.");
             continue;
         }
@@ -709,8 +692,8 @@ void BlockManager::HandleNormalToTx(
             }
 
             ZJC_DEBUG("success add local transfer tx tos hash: %s",
-                common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
-            HandleLocalNormalToTx(to_txs, tx.step(), tx.storages(0).val_hash());
+                common::Encode::HexEncode(tx.storages(i).value()).c_str());
+            HandleLocalNormalToTx(to_txs, tx.step(), tx.storages(0).value());
         } else {
             RootHandleNormalToTx(block.height(), to_txs, db_batch);
         }
@@ -1128,16 +1111,9 @@ void BlockManager::HandleJoinElectTx(
         db_batch);
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
-            std::string val;
-            if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
-                ZJC_ERROR("failed get val hash: %s", common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
-                assert(false);
-                break;
-            }
-
             // 解析参与选举的信息
             bls::protobuf::JoinElectInfo join_info;
-            if (!join_info.ParseFromString(val)) {
+            if (!join_info.ParseFromString(tx.storages(i).value())) {
                 assert(false);
                 break;
             }
@@ -1148,28 +1124,28 @@ void BlockManager::HandleJoinElectTx(
                 break;
             }
 
-            std::string str_for_hash;
-            str_for_hash.reserve(join_info.g2_req().verify_vec_size() * 4 * 64 + 8);
-            uint32_t shard_id = join_info.shard_id();
-            uint32_t mem_idx = join_info.member_idx();
-            str_for_hash.append((char*)&shard_id, sizeof(shard_id));
-            str_for_hash.append((char*)&mem_idx, sizeof(mem_idx));
-            for (int32_t i = 0; i < join_info.g2_req().verify_vec_size(); ++i) {
-                auto& item = join_info.g2_req().verify_vec(i);
-                str_for_hash.append(item.x_c0());
-                str_for_hash.append(item.x_c1());
-                str_for_hash.append(item.y_c0());
-                str_for_hash.append(item.y_c1());
-                str_for_hash.append(item.z_c0());
-                str_for_hash.append(item.z_c1());
-            }
+            // std::string str_for_hash;
+            // str_for_hash.reserve(join_info.g2_req().verify_vec_size() * 4 * 64 + 8);
+            // uint32_t shard_id = join_info.shard_id();
+            // uint32_t mem_idx = join_info.member_idx();
+            // str_for_hash.append((char*)&shard_id, sizeof(shard_id));
+            // str_for_hash.append((char*)&mem_idx, sizeof(mem_idx));
+            // for (int32_t i = 0; i < join_info.g2_req().verify_vec_size(); ++i) {
+            //     auto& item = join_info.g2_req().verify_vec(i);
+            //     str_for_hash.append(item.x_c0());
+            //     str_for_hash.append(item.x_c1());
+            //     str_for_hash.append(item.y_c0());
+            //     str_for_hash.append(item.y_c1());
+            //     str_for_hash.append(item.z_c0());
+            //     str_for_hash.append(item.z_c1());
+            // }
 
-            auto check_hash = common::Hash::keccak256(str_for_hash);
-            // 验证交易是否合法
-            if (check_hash != tx.storages(i).val_hash()) {
-                assert(false);
-                break;
-            }
+            // auto check_hash = common::Hash::keccak256(str_for_hash);
+            // // 验证交易是否合法
+            // if (check_hash != join_info.tx_hash()) {
+            //     assert(false);
+            //     break;
+            // }
 
             prefix_db_->SaveNodeVerificationVector(tx.from(), join_info, db_batch);
             ZJC_DEBUG("success handle kElectJoin tx: %s, net: %u, pool: %u, height: %lu",
@@ -1185,13 +1161,8 @@ void BlockManager::HandleElectTx(
         db::DbWriteBatch& db_batch) {
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
-            std::string val;
-            if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
-                return;
-            }
-
             elect::protobuf::ElectBlock elect_block;
-            if (!elect_block.ParseFromString(val)) {
+            if (!elect_block.ParseFromString(tx.storages(i).value())) {
                 return;
             }
 

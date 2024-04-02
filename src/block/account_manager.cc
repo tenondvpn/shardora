@@ -244,26 +244,21 @@ void AccountManager::HandleLocalToTx(
         return;
     }
 
-    std::string to_txs_str;
+    const std::string* to_txs_str = nullptr;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kConsensusLocalNormalTos) {
-            if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &to_txs_str)) {
-                ZJC_DEBUG("handle local to tx failed get val hash error: %s",
-                    common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
-                return;
-            }
-
+            to_txs_str = &tx.storages(i).value();
             break;
         }
     }
 
-    if (to_txs_str.empty()) {
+    if (to_txs_str == nullptr) {
         ZJC_WARN("get local tos info failed!");
         return;
     }
 
     block::protobuf::ConsensusToTxs to_txs;
-    if (!to_txs.ParseFromString(to_txs_str)) {
+    if (!to_txs.ParseFromString(*to_txs_str)) {
         assert(false);
         return;
     }
@@ -330,7 +325,7 @@ void AccountManager::HandleContractCreateByRootTo(
 	for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
             account_info = std::make_shared<address::protobuf::AddressInfo>();
-            auto& bytes_code = tx.storages(i).val_hash();
+            auto& bytes_code = tx.storages(i).value();
             account_info->set_type(address::protobuf::kContract);
             account_info->set_pool_index(block.pool_index());
             account_info->set_addr(tx.to());
@@ -395,7 +390,7 @@ void AccountManager::HandleCreateContract(
         for (int32_t i = 0; i < tx.storages_size(); ++i) {
             if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
                 account_info = std::make_shared<address::protobuf::AddressInfo>();
-                auto& bytes_code = tx.storages(i).val_hash();
+                auto& bytes_code = tx.storages(i).value();
                 account_info->set_type(address::protobuf::kContract);
                 account_info->set_pool_index(block.pool_index());
                 account_info->set_addr(tx.to());
@@ -511,7 +506,7 @@ void AccountManager::HandleRootCreateAddressTx(
     uint32_t sharding_id = common::kInvalidUint32;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kRootCreateAddressKey) {
-            uint32_t* tmp = (uint32_t*)tx.storages(i).val_hash().c_str();
+            uint32_t* tmp = (uint32_t*)tx.storages(i).value().c_str();
             sharding_id = tmp[0];
             break;
         }
@@ -559,14 +554,7 @@ void AccountManager::HandleJoinElectTx(
     bls::protobuf::JoinElectInfo join_info;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
-            std::string val;
-            if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
-                ZJC_DEBUG("handle local to tx failed get val hash error: %s",
-                    common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
-                return;
-            }
-
-            if (!join_info.ParseFromString(val)) {
+            if (!join_info.ParseFromString(tx.storages(i).value())) {
                 assert(false);
                 break;
             }
