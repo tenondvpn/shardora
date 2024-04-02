@@ -34,7 +34,7 @@ TxPoolManager::TxPoolManager(
     cross_block_mgr_ = std::make_shared<CrossBlockManager>(db_, kv_sync_);
     tx_pool_ = new TxPool[common::kInvalidPoolIndex];
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        tx_pool_[i].Init(i, db, kv_sync);
+        tx_pool_[i].Init(this, security_, i, db, kv_sync);
     }
 
     ZJC_INFO("TxPoolManager init success: %d", common::kInvalidPoolIndex);
@@ -773,6 +773,11 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
 
         ZJC_DEBUG("get response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
     }
+}
+
+std::shared_ptr<address::protobuf::AddressInfo> TxPoolManager::GetAddressInfo(const std::string& address) {
+    auto tmp_acc_ptr = acc_mgr_.lock();
+    return tmp_acc_ptr->GetAccountInfo(address);
 }
 
 void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {

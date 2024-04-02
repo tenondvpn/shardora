@@ -58,6 +58,7 @@ public:
         transport::protobuf::Header& header);
     int BackupConsensusAddTxs(uint32_t pool_index, const std::map<std::string, pools::TxItemPtr>& txs);
     void ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs);
+    std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& address);
 
     uint32_t tx_size(uint32_t pool_index) const {
         return tx_pool_[pool_index].tx_size();
