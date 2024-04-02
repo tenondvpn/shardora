@@ -54,7 +54,7 @@ int RootToTxItem::HandleTx(
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // 合约创建，用户指定 sharding
             if (block_tx.storages(i).key() == protos::kCreateContractCallerSharding) {
-                uint32_t* data = (uint32_t*)block_tx.storages(i).val_hash().c_str();
+                uint32_t* data = (uint32_t*)block_tx.storages(i).value().c_str();
                 des_info[0] = data[0];
                 des_info[1] = data[1];
                 break;
@@ -72,7 +72,7 @@ int RootToTxItem::HandleTx(
 
     auto& storage = *block_tx.add_storages();
     storage.set_key(protos::kRootCreateAddressKey);
-    storage.set_val_hash(std::string(des_sharding_and_pool, sizeof(des_sharding_and_pool)));
+    storage.set_value(std::string(des_sharding_and_pool, sizeof(des_sharding_and_pool)));
     ZJC_DEBUG("adress: %s, set sharding id: %u, pool index: %d",
         common::Encode::HexEncode(block_tx.to()).c_str(), des_info[0], des_info[1]);
     return kConsensusSuccess;

@@ -42,7 +42,7 @@ public:
             auto storage = block_tx->add_storages();
             std::string tmp(tx_info.value().c_str() + offset, 32);
             storage->set_key(protos::kNormalToShards);
-            storage->set_val_hash(tmp);
+            storage->set_value(tmp);
             offset += 32;
             ZJC_DEBUG("root to tx add key: %s, value: %s",
                 protos::kNormalToShards.c_str(), common::Encode::HexEncode(tmp).c_str());

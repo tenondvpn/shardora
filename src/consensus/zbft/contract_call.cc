@@ -260,9 +260,6 @@ int ContractCall::SaveContractCreateInfo(
         int64_t& contract_balance_add,
         int64_t& caller_balance_add,
         int64_t& gas_more) {
-//     auto storage = block_tx.add_storages();
-//     storage->set_key(protos::kCreateContractBytesCode);
-//     storage->set_val_hash(zjc_host.create_bytes_code_);
     for (auto account_iter = zjc_host.accounts_.begin();
             account_iter != zjc_host.accounts_.end(); ++account_iter) {
         for (auto storage_iter = account_iter->second.storage.begin();
@@ -276,7 +273,7 @@ int ContractCall::SaveContractCreateInfo(
             auto str_key = std::string((char*)account_iter->first.bytes, sizeof(account_iter->first.bytes)) +
                 std::string((char*)storage_iter->first.bytes, sizeof(storage_iter->first.bytes));
             kv->set_key(str_key);
-            kv->set_val_hash(std::string(
+            kv->set_value(std::string(
                 (char*)storage_iter->second.value.bytes,
                 sizeof(storage_iter->second.value.bytes)));
             gas_more += (sizeof(account_iter->first.bytes) +
@@ -298,14 +295,7 @@ int ContractCall::SaveContractCreateInfo(
                 (char*)account_iter->first.bytes,
                 sizeof(account_iter->first.bytes)) + storage_iter->first;
             kv->set_key(str_key);
-            if (storage_iter->second.str_val.size() > 32) {
-                kv->set_val_hash(common::Hash::keccak256(storage_iter->second.str_val));
-                kv->set_val_size(storage_iter->second.str_val.size());
-                prefix_db_->SaveTemporaryKv(kv->val_hash(), storage_iter->second.str_val);
-            } else {
-                kv->set_val_hash(storage_iter->second.str_val);
-            }
-
+            kv->set_value(storage_iter->second.str_val);
             gas_more += (sizeof(account_iter->first.bytes) +
                 storage_iter->first.size() +
                 storage_iter->second.str_val.size()) *

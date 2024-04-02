@@ -18,19 +18,11 @@ int ToTxLocalItem::HandleTx(
         return consensus::kConsensusSuccess;
     }
 
-    std::string to_txs_str;
-    if (!prefix_db_->GetTemporaryKv(block_tx.storages(0).val_hash(), &to_txs_str)) {
-        block_tx.set_status(kConsensusError);
-        ZJC_WARN("local get to txs info failed: %s",
-            common::Encode::HexEncode(block_tx.storages(0).val_hash()).c_str());
-        return consensus::kConsensusSuccess;
-    }
-
     pools::protobuf::ToTxMessage to_txs;
-    if (!to_txs.ParseFromString(to_txs_str)) {
+    if (!to_txs.ParseFromString(block_tx.storages(0).value())) {
         block_tx.set_status(kConsensusError);
         ZJC_WARN("local get to txs info failed: %s",
-            common::Encode::HexEncode(block_tx.storages(0).val_hash()).c_str());
+            common::Encode::HexEncode(block_tx.storages(0).value()).c_str());
         return consensus::kConsensusSuccess;
     }
 
@@ -79,7 +71,7 @@ int ToTxLocalItem::HandleTx(
     auto tos_hash = common::Hash::keccak256(str_for_hash);
     auto storage = block_tx.add_storages();
     storage->set_key(protos::kConsensusLocalNormalTos);
-    storage->set_val_hash(tos_hash);
+    storage->set_value(tos_hash);
     std::string val = block_to_txs.SerializeAsString();
     prefix_db_->SaveTemporaryKv(tos_hash, val);
     ZJC_DEBUG("success consensus local transfer to");
@@ -98,7 +90,7 @@ int ToTxLocalItem::TxToBlockTx(
 
     auto storage = block_tx->add_storages();
     storage->set_key(tx_info.key());
-    storage->set_val_hash(tx_info.value());
+    storage->set_value(tx_info.value());
     return consensus::kConsensusSuccess;
 }
 

@@ -88,17 +88,10 @@ void ShardStatistic::HandleStatisticBlock(
         const block::protobuf::BlockTx& tx) {
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kShardStatistic) {
-            std::string val;
-            if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
-                ZJC_ERROR("get statistic val failed: %s",
-                    common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
-                return;
-            }
-
             pools::protobuf::ElectStatistic elect_statistic;
-            if (!elect_statistic.ParseFromString(val)) {
+            if (!elect_statistic.ParseFromString(tx.storages(i).value())) {
                 ZJC_ERROR("get statistic val failed: %s",
-                    common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
+                    common::Encode::HexEncode(tx.storages(i).value()).c_str());
                 return;
             }
 
@@ -194,13 +187,8 @@ void ShardStatistic::HandleCrossShard(
         if (!is_root) {
             for (int32_t i = 0; i < tx.storages_size(); ++i) {
                 if (tx.storages(i).key() == protos::kNormalTos) {
-                    std::string val;
-                    if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
-                        return;
-                    }
-
                     pools::protobuf::ToTxMessage to_tx;
-                    if (!to_tx.ParseFromString(val)) {
+                    if (!to_tx.ParseFromString(tx.storages(i).value())) {
                         return;
                     }
 
@@ -219,18 +207,12 @@ void ShardStatistic::HandleCrossShard(
         if (is_root) {
             for (int32_t i = 0; i < tx.storages_size(); ++i) {
                 if (tx.storages(i).key() == protos::kRootCross) {
-                    std::string val;
-                    if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
-                        assert(false);
-                        break;
-                    }
-
                     cross_shard_map_[block.pool_index()][block.height()] = CrossStatisticItem(0);
                     cross_shard_map_[block.pool_index()][block.height()].cross_ptr =
                         std::make_shared<pools::protobuf::CrossShardStatistic>();
                     pools::protobuf::CrossShardStatistic& cross =
                         *cross_shard_map_[block.pool_index()][block.height()].cross_ptr;
-                    if (!cross.ParseFromString(val)) {
+                    if (!cross.ParseFromString(tx.storages(i).value())) {
                         assert(false);
                         break;
                     }
@@ -360,21 +342,13 @@ bool ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
         if (block.tx_list(i).step() == pools::protobuf::kJoinElect) {
             for (int32_t storage_idx = 0; storage_idx < block.tx_list(i).storages_size(); ++storage_idx) {
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kElectNodeStoke) {
-                    uint64_t* tmp_stoke = (uint64_t*)block.tx_list(i).storages(storage_idx).val_hash().c_str();
+                    uint64_t* tmp_stoke = (uint64_t*)block.tx_list(i).storages(storage_idx).value().c_str();
                     statistic_info_ptr->node_stoke_map[block.tx_list(i).from()] = tmp_stoke[0];
                 }
 
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kJoinElectVerifyG2) {
-                    std::string val;
-                    if (!prefix_db_->GetTemporaryKv(block.tx_list(i).storages(storage_idx).val_hash(), &val)) {
-                        ZJC_ERROR("failed get storage val hash: %s", 
-                            common::Encode::HexEncode(block.tx_list(i).storages(storage_idx).val_hash()).c_str());
-                        assert(false);
-                        break;
-                    }
-
                     bls::protobuf::JoinElectInfo join_info;
-                    if (!join_info.ParseFromString(val)) {
+                    if (!join_info.ParseFromString(block.tx_list(i).storages(storage_idx).value())) {
                         assert(false);
                         break;
                     }
@@ -393,16 +367,8 @@ bool ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
             ZJC_DEBUG("success handle kConsensusRootElectShard");
             for (int32_t storage_idx = 0; storage_idx < block.tx_list(i).storages_size(); ++storage_idx) {
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kElectNodeAttrElectBlock) {
-                    std::string val;
-                    if (!prefix_db_->GetTemporaryKv(block.tx_list(i).storages(storage_idx).val_hash(), &val)) {
-                        ZJC_ERROR("failed get storage val hash: %s", 
-                            common::Encode::HexEncode(block.tx_list(i).storages(storage_idx).val_hash()).c_str());
-                        assert(false);
-                        break;
-                    }
-
                     elect::protobuf::ElectBlock elect_block;
-                    if (!elect_block.ParseFromString(val)) {
+                    if (!elect_block.ParseFromString(block.tx_list(i).storages(storage_idx).value())) {
                         assert(false);
                         break;
                     }
@@ -413,7 +379,7 @@ bool ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                 }
 
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kShardElection) {
-                    uint64_t* tmp = (uint64_t*)block.tx_list(i).storages(storage_idx).val_hash().c_str();
+                    uint64_t* tmp = (uint64_t*)block.tx_list(i).storages(storage_idx).value().c_str();
                     pools::protobuf::ElectStatistic elect_statistic;
                     if (!prefix_db_->GetStatisticedShardingHeight(
                             tmp[0],

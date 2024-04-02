@@ -32,28 +32,22 @@ public:
             return;
         }
 
-        std::string to_txs_str;
+        const std::string* to_txs_str = nullptr;
         for (int32_t i = 0; i < tx.storages_size(); ++i) {
             if (tx.storages(i).key() == protos::kConsensusLocalNormalTos) {
-                if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &to_txs_str)) {
-                    ZJC_DEBUG("handle local to tx failed get val hash error: %s",
-                        common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
-                    assert(false);
-                    return;
-                }
-
+                to_txs_str = &tx.storages(i).value();
                 break;
             }
         }
 
-        if (to_txs_str.empty()) {
+        if (to_txs_str == nullptr) {
             ZJC_WARN("get local tos info failed!");
             assert(false);
             return;
         }
 
         block::protobuf::ConsensusToTxs to_txs;
-        if (!to_txs.ParseFromString(to_txs_str)) {
+        if (!to_txs.ParseFromString(*to_txs_str)) {
             assert(false);
             return;
         }

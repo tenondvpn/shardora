@@ -80,7 +80,7 @@ int ContractCreateByRootFromTxItem::HandleTx(
 	if (block_tx.status() == kConsensusSuccess) {
 		auto storage = block_tx.add_storages();
 		storage->set_key(protos::kCreateContractBytesCode);
-		storage->set_val_hash(block_tx.contract_code());
+		storage->set_value(block_tx.contract_code());
 	}
 
     acc_balance_map[from] = from_balance;

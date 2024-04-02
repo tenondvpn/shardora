@@ -119,10 +119,6 @@ private:
     void ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr);
     void PopItems();
     void ConsensusTimerMessage();
-    bool AddSyncKeyValue(
-        transport::protobuf::Header* msg,
-        const block::protobuf::Block& block,
-        uint32_t& add_size);
     void PopKvMessage();
     void HandleKvMessage(const transport::MessagePtr& msg_ptr);
     void ResponseElectBlock(

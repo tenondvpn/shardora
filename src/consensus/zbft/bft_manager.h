@@ -144,7 +144,6 @@ private:
         uint32_t pool_index,
         const std::string& bft_gid);
     void HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr);
-    bool AddSyncKeyValue(transport::protobuf::Header* msg, const block::protobuf::Block& block);
     void SaveKeyValue(const transport::protobuf::Header& msg);
     void PopAllPoolTxs();
     void LeaderBroadcastBlock(

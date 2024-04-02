@@ -162,7 +162,7 @@ void ToTxsPools::HandleJoinElect(
                 0,
                 network::kRootCongressNetworkId,
                 block.pool_index(),
-                tx.storages(i).val_hash(), "", "", 0);
+                tx.storages(i).value(), "", "", 0);
         }
     }
 }
@@ -273,7 +273,7 @@ void ToTxsPools::HandleCreateContractByRootFrom(
     std::string bytes_code;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
-            bytes_code = tx.storages(i).val_hash();
+            bytes_code = tx.storages(i).value();
             break;
         }
     }
@@ -294,7 +294,7 @@ void ToTxsPools::HandleRootCreateAddress(
     int32_t pool_index = common::kInvalidPoolIndex;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kRootCreateAddressKey) {
-            auto* data = (const uint32_t*)tx.storages(i).val_hash().c_str();
+            auto* data = (const uint32_t*)tx.storages(i).value().c_str();
             sharding_id = data[0];
             pool_index  = data[1];
             break;
@@ -379,24 +379,17 @@ void ToTxsPools::HandleNormalToTx(
         if (tx_info.storages(i).key() != protos::kNormalToShards) {
             continue;
         }
-
-        std::string to_txs_str;
-        if (!prefix_db_->GetTemporaryKv(tx_info.storages(i).val_hash(), &to_txs_str)) {
-            ZJC_WARN("get to tx heights failed: %s!",
-                common::Encode::HexEncode(tx_info.storages(i).val_hash()).c_str());
-            continue;
-        }
             
         pools::protobuf::ToTxMessage to_tx;
-        if (!to_tx.ParseFromString(to_txs_str)) {
+        if (!to_tx.ParseFromString(tx_info.storages(i).value())) {
             ZJC_WARN("parse from to txs message failed: %s",
-                common::Encode::HexEncode(tx_info.storages(i).val_hash()).c_str());
+                common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
             assert(false);
             continue;
         }
 
         ZJC_DEBUG("success get normal to key: %s, val: %s, sharding id: %u",
-            common::Encode::HexEncode(tx_info.storages(i).val_hash()).c_str(),
+            common::Encode::HexEncode(tx_info.storages(i).value()).c_str(),
             common::Encode::HexEncode(to_txs_str).c_str(),
             to_tx.to_heights().sharding_id());
         if (to_tx.to_heights().heights_size() != common::kImmutablePoolSize) {

@@ -366,17 +366,6 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                 continue;
             }
 
-
-            if (!AddSyncKeyValue(&msg, block, add_size)) {
-                ZJC_DEBUG("handle sync value add kv failed request hash: %lu, "
-                    "net: %u, pool: %u, height: %lu",
-                    network_id,
-                    sync_msg.sync_value_req().heights(i).pool_idx(),
-                    sync_msg.sync_value_req().heights(i).height(),
-                    msg_ptr->header.hash64());
-                continue;
-            }
-
             auto res = sync_res->add_res();
             res->set_network_id(network_id);
             res->set_pool_idx(sync_msg.sync_value_req().heights(i).pool_idx());
@@ -455,13 +444,7 @@ void KeyValueSync::ResponseElectBlock(
         for (int32_t i = 0; i < block.tx_list(0).storages_size(); ++i) {
             ZJC_DEBUG("get tx storage key: %s, tx size: %d", block.tx_list(0).storages(i).key().c_str(), block.tx_list_size());
             if (block.tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
-                std::string val;
-                if (!prefix_db_->GetTemporaryKv(block.tx_list(0).storages(i).val_hash(), &val)) {
-                    ZJC_ERROR("elect block get temp kv from db failed!");
-                    return;
-                }
-
-                if (!prev_elect_block.ParseFromString(val)) {
+                if (!prev_elect_block.ParseFromString(block.tx_list(0).storages(i).value())) {
                     assert(false);
                     return;
                 }
@@ -512,10 +495,6 @@ void KeyValueSync::ResponseElectBlock(
             return;
         }
 
-        if (!AddSyncKeyValue(&msg, block, add_size)) {
-            return;
-        }
-
         auto res = sync_res->add_res();
         res->set_network_id(block.network_id());
         res->set_pool_idx(block.pool_index());
@@ -529,36 +508,6 @@ void KeyValueSync::ResponseElectBlock(
             break;
         }
     }
-}
-
-bool KeyValueSync::AddSyncKeyValue(
-        transport::protobuf::Header* msg,
-        const block::protobuf::Block& block,
-        uint32_t& add_size) {
-    auto* sync_info = msg->mutable_sync();
-    for (int32_t i = 0; i < block.tx_list_size(); ++i) {
-        auto& tx = block.tx_list(i);
-        for (int32_t j = 0; j < block.tx_list(i).storages_size(); ++j) {
-            auto& storage = block.tx_list(i).storages(j);
-//             ZJC_DEBUG("add storage %s, %s, %d", storage.key().c_str(), common::Encode::HexEncode(storage.val_hash()).c_str(), storage.val_size());
-            if (storage.val_hash().size() == 32) {
-                std::string val;
-                if (!prefix_db_->GetTemporaryKv(storage.val_hash(), &val)) {
-                    continue;
-                }
-
-                auto* sync_item = sync_info->add_items();
-                sync_item->set_key(storage.val_hash());
-                sync_item->set_value(val);
-                add_size += storage.val_hash().size() + val.size();
-                if (add_size >= kSyncPacketMaxSize) {
-                    break;
-                }
-            }
-        }
-    }
-
-    return true;
 }
 
 void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr) {

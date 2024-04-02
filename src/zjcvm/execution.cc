@@ -97,17 +97,7 @@ void Execution::NewBlockWithTx(
             continue;
         }
 
-
-        if (tx.storages(i).val_size() > 32) {
-            std::string val;
-            if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
-                continue;
-            }
-
-            UpdateStorage(tx.storages(i).key(), val, db_batch);
-        } else {
-            UpdateStorage(tx.storages(i).key(), tx.storages(i).val_hash(), db_batch);
-        }
+        UpdateStorage(tx.storages(i).key(), tx.storages(i).value(), db_batch);
     }
 }
 

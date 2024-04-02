@@ -26,7 +26,7 @@ int ElectTxItem::HandleTx(
     g2_ = std::make_shared<std::mt19937_64>(vss_mgr_->EpochRandom());
     for (int32_t storage_idx = 0; storage_idx < block_tx.storages_size(); ++storage_idx) {
         if (block_tx.storages(storage_idx).key() == protos::kShardElection) {
-            uint64_t* tmp = (uint64_t*)block_tx.storages(storage_idx).val_hash().c_str();
+            uint64_t* tmp = (uint64_t*)block_tx.storages(storage_idx).value().c_str();
             pools::protobuf::ElectStatistic elect_statistic;
             if (!prefix_db_->GetStatisticedShardingHeight(
                     tmp[0],
@@ -458,13 +458,7 @@ void ElectTxItem::SetPrevElectInfo(
     bool ec_block_loaded = false;
     for (int32_t i = 0; i < block_item.tx_list(0).storages_size(); ++i) {
         if (block_item.tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
-            std::string val;
-            if (!prefix_db_->GetTemporaryKv(block_item.tx_list(0).storages(i).val_hash(), &val)) {
-                ZJC_ERROR("elect block get temp kv from db failed!");
-                return;
-            }
-
-            prev_elect_block.ParseFromString(val);
+            prev_elect_block.ParseFromString(block_item.tx_list(0).storages(i).value());
             ec_block_loaded = true;
             break;
         }
@@ -477,9 +471,9 @@ void ElectTxItem::SetPrevElectInfo(
 
     auto kv = block_tx.add_storages();
     kv->set_key(protos::kShardElectionPrevInfo);
-    std::string val_hash = protos::GetElectBlockHash(prev_elect_block);
-    kv->set_val_hash(val_hash);
-    prefix_db_->SaveTemporaryKv(val_hash, prev_elect_block.SerializeAsString());
+    std::string prev_elect_hash = protos::GetElectBlockHash(prev_elect_block);
+    kv->set_value(prev_elect_hash);
+    prefix_db_->SaveTemporaryKv(prev_elect_hash, prev_elect_block.SerializeAsString());
     return;
 }
 
@@ -535,11 +529,11 @@ int ElectTxItem::CreateNewElect(
     }
 
     std::string val = elect_block.SerializeAsString();
-    std::string val_hash = protos::GetElectBlockHash(elect_block);
+    std::string elect_hash = protos::GetElectBlockHash(elect_block);
     auto& storage = *block_tx.add_storages();
     storage.set_key(protos::kElectNodeAttrElectBlock);
-    storage.set_val_hash(val_hash);
-    prefix_db_->SaveTemporaryKv(val_hash, val);
+    storage.set_value(elect_hash);
+    prefix_db_->SaveTemporaryKv(elect_hash, val);
     ZJC_DEBUG("create elect success: %u", elect_statistic.sharding_id());
     return kConsensusSuccess;
 }

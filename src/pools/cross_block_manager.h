@@ -136,13 +136,7 @@ private:
                             continue;
                         }
 
-                        std::string cross_val;
-                        if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &cross_val)) {
-                            assert(false);
-                            break;
-                        }
-
-                        if (!tmp_cross_statistic.ParseFromString(cross_val)) {
+                        if (!tmp_cross_statistic.ParseFromString(block_tx.storages(i).value())) {
                             assert(false);
                             break;
                         }
@@ -153,13 +147,7 @@ private:
                             continue;
                         }
 
-                        std::string val;
-                        if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
-                            assert(false);
-                            break;
-                        }
-
-                        if (!statistic.ParseFromString(val)) {
+                        if (!statistic.ParseFromString(block_tx.storages(i).value())) {
                             assert(false);
                             break;
                         }

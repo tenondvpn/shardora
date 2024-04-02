@@ -253,19 +253,13 @@ private:
 
             for (int32_t i = 0; i < block.tx_list(tx_idx).storages_size(); ++i) {
                 if (block.tx_list(tx_idx).storages(i).key() == protos::kElectNodeAttrElectBlock) {
-                    std::string val;
-                    if (!prefix_db_->GetTemporaryKv(block.tx_list(0).storages(i).val_hash(), &val)) {
-                        ZJC_FATAL("elect block get temp kv from db failed!");
-                        return nullptr;
-                    }
-
-                    if (!elect_block.ParseFromString(val)) {
+                    if (!elect_block.ParseFromString(block.tx_list(0).storages(i).value())) {
                         assert(false);
                         return nullptr;
                     }
 
                     std::string ec_hash = protos::GetElectBlockHash(elect_block);
-                    if (ec_hash != block.tx_list(tx_idx).storages(i).val_hash()) {
+                    if (ec_hash != block.tx_list(tx_idx).storages(i).value()) {
                         ZJC_FATAL("elect block get temp kv from db failed!");
                         return nullptr;
                     }

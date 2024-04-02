@@ -312,7 +312,7 @@ void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
         if (block.tx_list(i).to() == security_->GetAddress()) {
             for (int32_t j = 0; j < block.tx_list(i).storages_size(); ++j) {
                 if (block.tx_list(i).storages(j).key() == protos::kRootCreateAddressKey) {
-                    uint32_t* tmp = (uint32_t*)block.tx_list(i).storages(j).val_hash().c_str();
+                    uint32_t* tmp = (uint32_t*)block.tx_list(i).storages(j).value().c_str();
                     sharding_id = tmp[0];
                     break;
                 }
@@ -1073,11 +1073,11 @@ void NetworkInit::HandleTimeBlock(
         db::DbWriteBatch& db_batch) {
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kAttrTimerBlock) {
-            if (tx.storages(i).val_hash().size() != 16) {
+            if (tx.storages(i).value().size() != 16) {
                 return;
             }
 
-            uint64_t* data_arr = (uint64_t*)tx.storages(i).val_hash().c_str();
+            uint64_t* data_arr = (uint64_t*)tx.storages(i).value().c_str();
             vss_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             tm_block_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             bls_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
@@ -1104,38 +1104,14 @@ void NetworkInit::HandleElectionBlock(
     auto prev_elect_block = std::make_shared<elect::protobuf::ElectBlock>();
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         if (block_tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
-            std::string val;
-            if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
-                ZJC_FATAL("elect block get temp kv from db failed!");
-                return;
-            }
-
-            if (!elect_block->ParseFromString(val)) {
-                ZJC_FATAL("parse elect block failed!");
-                return;
-            }
-
-            std::string hash = protos::GetElectBlockHash(*elect_block);
-            if (hash != block_tx.storages(i).val_hash()) {
+            if (!elect_block->ParseFromString(block_tx.storages(i).value())) {
                 ZJC_FATAL("parse elect block failed!");
                 return;
             }
         }
 
         if (block_tx.storages(i).key() == protos::kShardElectionPrevInfo) {
-            std::string val;
-            if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
-                ZJC_FATAL("elect block get temp kv from db failed!");
-                return;
-            }
-
-            if (!prev_elect_block->ParseFromString(val)) {
-                ZJC_FATAL("parse elect block failed!");
-                return;
-            }
-
-            std::string hash = protos::GetElectBlockHash(*prev_elect_block);
-            if (hash != block_tx.storages(i).val_hash()) {
+            if (!prev_elect_block->ParseFromString(block_tx.storages(i).value())) {
                 ZJC_FATAL("parse elect block failed!");
                 return;
             }

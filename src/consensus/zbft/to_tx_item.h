@@ -39,7 +39,7 @@ public:
             auto storage = block_tx->add_storages();
             std::string tmp(tx_info.value().c_str() + offset, 32);
             storage->set_key(protos::kNormalToShards);
-            storage->set_val_hash(tmp);
+            storage->set_value(tmp);
             offset += 32;
         }
         

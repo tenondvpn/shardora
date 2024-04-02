@@ -505,13 +505,7 @@ void GenesisBlockInit::SetPrevElectInfo(
     bool ec_block_loaded = false;
     for (int32_t i = 0; i < block_item.tx_list(0).storages_size(); ++i) {
         if (block_item.tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
-            std::string val;
-            if (!prefix_db_->GetTemporaryKv(block_item.tx_list(0).storages(i).val_hash(), &val)) {
-                ZJC_ERROR("elect block get temp kv from db failed!");
-                return;
-            }
-
-            prev_elect_block.ParseFromString(val);
+            prev_elect_block.ParseFromString(block_item.tx_list(0).storages(i).value());
             ec_block_loaded = true;
             break;
         }
@@ -524,9 +518,7 @@ void GenesisBlockInit::SetPrevElectInfo(
 
     auto kv = block_tx.add_storages();
     kv->set_key(protos::kShardElectionPrevInfo);
-    std::string val_hash = protos::GetElectBlockHash(prev_elect_block);
-    kv->set_val_hash(val_hash);
-    prefix_db_->SaveTemporaryKv(val_hash, prev_elect_block.SerializeAsString());
+    kv->set_value(prev_elect_block.SerializeAsString());
     return;
 }
 
@@ -603,9 +595,7 @@ int GenesisBlockInit::CreateElectBlock(
     auto storage = tx_info->add_storages();
     storage->set_key(protos::kElectNodeAttrElectBlock);
     std::string val = ec_block.SerializeAsString();
-    std::string val_hash = protos::GetElectBlockHash(ec_block);
-    storage->set_val_hash(val_hash);
-    prefix_db_->SaveTemporaryKv(val_hash, val);
+    storage->set_value(ec_block.SerializeAsString());
     tenon_block->set_prehash(root_pre_hash);
     tenon_block->set_version(common::kTransactionVersion);
     // 这个 pool index 用了 shard 的值而已
@@ -733,7 +723,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         uint64_t* u64_data = (uint64_t*)data;
         u64_data[0] = tm_block.timestamp();
         u64_data[1] = tm_block.vss_random();
-        timeblock_storage->set_val_hash(std::string(data, sizeof(data)));
+        timeblock_storage->set_value(std::string(data, sizeof(data)));
         auto genesis_tmblock = tx_info->add_storages();
         genesis_tmblock->set_key(protos::kAttrGenesisTimerBlock);
 //         auto vss_random_attr = tx_info->add_attr();
@@ -830,9 +820,6 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
                         assert(false);
                     }
 
-                    std::string val_hash = protos::GetElectBlockHash(ec_block);
-                    // 同步选举块
-                    prefix_db_->SaveTemporaryKv(val_hash, ec_block_str);
                     prefix_db_->SaveLatestElectBlock(ec_block, db_batch);
                     ZJC_DEBUG("save elect block sharding: %u, height: %u, has prev: %d, has common_pk: %d",
                         ec_block.shard_network_id(),
@@ -982,8 +969,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 join_elect_tx_info->set_status(0);
                 auto storage = join_elect_tx_info->add_storages();
                 storage->set_key(protos::kJoinElectVerifyG2);
-                storage->set_val_hash(root_genesis_nodes[member_idx]->check_hash);
-                storage->set_val_size(33);
+                storage->set_value(root_genesis_nodes[member_idx]->check_hash);
                 // root 节点选举涉及账户分配到 shard3 网络
                 tx2net_map_for_account.insert(std::make_pair(join_elect_tx_info, network::kConsensusShardBeginNetworkId));
             }
@@ -1007,8 +993,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                     join_elect_tx_info->set_status(0);
                     auto storage = join_elect_tx_info->add_storages();
                     storage->set_key(protos::kJoinElectVerifyG2);
-                    storage->set_val_hash(cons_genesis_nodes[member_idx]->check_hash);
-                    storage->set_val_size(33);
+                    storage->set_value(cons_genesis_nodes[member_idx]->check_hash);
                     // 选举交易涉及账户分配到对应 shard
                     tx2net_map_for_account.insert(std::make_pair(join_elect_tx_info, net_id));
                 }
@@ -1327,8 +1312,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
                 join_elect_tx_info->set_status(0);
                 auto storage = join_elect_tx_info->add_storages();
                 storage->set_key(protos::kJoinElectVerifyG2);
-                storage->set_val_hash(cons_genesis_nodes[member_idx]->check_hash);
-                storage->set_val_size(33);
+                storage->set_value(cons_genesis_nodes[member_idx]->check_hash);
                 join_elect_tx_info->set_amount(0);
                 join_elect_tx_info->set_balance(genesis_account_balance);
             }

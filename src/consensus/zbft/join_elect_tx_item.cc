@@ -30,13 +30,8 @@ int JoinElectTxItem::HandleTx(
             gas_used += (block_tx.storages(i).key().size() + tx_info.value().size()) *
                 consensus::kKeyValueStorageEachBytes;
             if (block_tx.storages(i).key() == protos::kJoinElectVerifyG2) {
-                std::string val;
-                if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
-                    break;
-                }
-
                 bls::protobuf::JoinElectInfo join_info;
-                if (!join_info.ParseFromString(val)) {
+                if (!join_info.ParseFromString(block_tx.storages(i).value())) {
                     break;
                 }
 
@@ -92,7 +87,7 @@ int JoinElectTxItem::HandleTx(
         char data[8];
         uint64_t* tmp = (uint64_t*)data;
         tmp[0] = stoke;
-        stoke_storage->set_val_hash(std::string(data, sizeof(data)));
+        stoke_storage->set_value(std::string(data, sizeof(data)));
     }
 
     acc_balance_map[from] = from_balance;
