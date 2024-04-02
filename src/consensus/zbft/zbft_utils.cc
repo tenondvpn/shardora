@@ -26,7 +26,7 @@ std::string StatusToString(uint32_t status) {
 }
 
 std::string GetTxValueProtoHash(const std::string& key, const std::string& value) {
-
+    return "";
 }
 
 std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
