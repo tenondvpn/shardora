@@ -132,6 +132,8 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     auto tmp_acc_ptr = acc_mgr_.lock();
     msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(security_->GetAddress(tx_msg.pubkey()));
     if (msg_ptr->address_info == nullptr) {
+        ZJC_DEBUG("failed get account info: %s", 
+            common::Encode::HexEncode(security_->GetAddress(tx_msg.pubkey())).c_str());
         return transport::kFirewallCheckError;
     }
 
