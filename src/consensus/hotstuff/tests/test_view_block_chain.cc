@@ -130,34 +130,34 @@ TEST_F(TestViewBlockChain, TestStore_Fail) {
 
 TEST_F(TestViewBlockChain, TestGet) {}
 
-// TEST_F(TestViewBlockChain, TestExtends) {
-//     auto vb = GenViewBlock(genesis_->hash, genesis_->view+1);
-//     chain_->Store(vb);
-//     auto vb2 = GenViewBlock(vb->hash, vb->view+1);
-//     chain_->Store(vb2);
-//     auto vb3a = GenViewBlock(vb2->hash, vb2->view+1);
-//     chain_->Store(vb3a);
-//     auto vb3b = GenViewBlock(vb2->hash, vb2->view+1);
-//     chain_->Store(vb3b);
-//     auto vb4a = GenViewBlock(vb3a->hash, vb3a->view+1);
-//     chain_->Store(vb4a);
-//     auto vb4b = GenViewBlock(vb3b->hash, vb3b->view+1);
-//     chain_->Store(vb4b);
+TEST_F(TestViewBlockChain, TestExtends) {
+    auto vb = GenViewBlock(genesis_->hash, genesis_->view+1);
+    chain_->Store(vb);
+    auto vb2 = GenViewBlock(vb->hash, vb->view+1);
+    chain_->Store(vb2);
+    auto vb3a = GenViewBlock(vb2->hash, vb2->view+1);
+    chain_->Store(vb3a);
+    auto vb3b = GenViewBlock(vb2->hash, vb2->view+1);
+    chain_->Store(vb3b);
+    auto vb4a = GenViewBlock(vb3a->hash, vb3a->view+1);
+    chain_->Store(vb4a);
+    auto vb4b = GenViewBlock(vb3b->hash, vb3b->view+1);
+    chain_->Store(vb4b);
 
-//     EXPECT_TRUE(chain_->Extends(vb4a, vb3a));
-//     EXPECT_TRUE(chain_->Extends(vb4a, vb2));
-//     EXPECT_TRUE(chain_->Extends(vb4a, vb));
-//     EXPECT_TRUE(chain_->Extends(vb4a, genesis_));
+    EXPECT_TRUE(chain_->Extends(vb4a, vb3a));
+    EXPECT_TRUE(chain_->Extends(vb4a, vb2));
+    EXPECT_TRUE(chain_->Extends(vb4a, vb));
+    EXPECT_TRUE(chain_->Extends(vb4a, genesis_));
 
-//     EXPECT_TRUE(chain_->Extends(vb4b, vb3b));
-//     EXPECT_TRUE(chain_->Extends(vb4b, vb2));
-//     EXPECT_TRUE(chain_->Extends(vb4b, vb));
-//     EXPECT_TRUE(chain_->Extends(vb4b, genesis_));
+    EXPECT_TRUE(chain_->Extends(vb4b, vb3b));
+    EXPECT_TRUE(chain_->Extends(vb4b, vb2));
+    EXPECT_TRUE(chain_->Extends(vb4b, vb));
+    EXPECT_TRUE(chain_->Extends(vb4b, genesis_));
 
-//     EXPECT_FALSE(chain_->Extends(vb4b, vb3a));
-//     EXPECT_FALSE(chain_->Extends(vb4a, vb3b));
-//     EXPECT_TRUE(chain_->Extends(vb4a, vb4a));
-// }
+    EXPECT_FALSE(chain_->Extends(vb4b, vb3a));
+    EXPECT_FALSE(chain_->Extends(vb4a, vb3b));
+    EXPECT_TRUE(chain_->Extends(vb4a, vb4a));
+}
 
 // TEST_F(TestViewBlockChain, TestPruneLatestCommitted) {
 //     auto vb = GenViewBlock(genesis_->hash, genesis_->view+1);
