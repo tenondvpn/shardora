@@ -393,10 +393,9 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
             str_for_hash.append(verify_item.z_c1());
         }
 
-        genesis_nodes[idx]->check_hash = common::Hash::keccak256(str_for_hash);
+        genesis_nodes[idx]->g2_val = join_info.SerializeAsString();
         prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
         prefix_db_->AddBlsVerifyG2(secptr->GetAddress(), *req);
-        prefix_db_->SaveTemporaryKv(genesis_nodes[idx]->check_hash, join_info.SerializeAsString());
     }
 
     for (size_t i = 0; i < genesis_nodes.size(); ++i) {
@@ -969,7 +968,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 join_elect_tx_info->set_status(0);
                 auto storage = join_elect_tx_info->add_storages();
                 storage->set_key(protos::kJoinElectVerifyG2);
-                storage->set_value(root_genesis_nodes[member_idx]->check_hash);
+                storage->set_value(root_genesis_nodes[member_idx]->g2_val);
                 // root 节点选举涉及账户分配到 shard3 网络
                 tx2net_map_for_account.insert(std::make_pair(join_elect_tx_info, network::kConsensusShardBeginNetworkId));
             }
@@ -993,7 +992,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                     join_elect_tx_info->set_status(0);
                     auto storage = join_elect_tx_info->add_storages();
                     storage->set_key(protos::kJoinElectVerifyG2);
-                    storage->set_value(cons_genesis_nodes[member_idx]->check_hash);
+                    storage->set_value(cons_genesis_nodes[member_idx]->g2_val);
                     // 选举交易涉及账户分配到对应 shard
                     tx2net_map_for_account.insert(std::make_pair(join_elect_tx_info, net_id));
                 }
@@ -1312,7 +1311,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
                 join_elect_tx_info->set_status(0);
                 auto storage = join_elect_tx_info->add_storages();
                 storage->set_key(protos::kJoinElectVerifyG2);
-                storage->set_value(cons_genesis_nodes[member_idx]->check_hash);
+                storage->set_value(cons_genesis_nodes[member_idx]->g2_val);
                 join_elect_tx_info->set_amount(0);
                 join_elect_tx_info->set_balance(genesis_account_balance);
             }
