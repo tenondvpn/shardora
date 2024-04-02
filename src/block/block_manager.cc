@@ -1130,6 +1130,7 @@ void BlockManager::HandleJoinElectTx(
         if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
             std::string val;
             if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+                ZJC_ERROR("failed get val hash: %s", common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
                 assert(false);
                 break;
             }
