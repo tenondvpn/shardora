@@ -85,12 +85,16 @@ Status ViewBlockChain::PruneTo(const HashStr& target_hash, std::vector<std::shar
 
     std::cout << "start: " << start_block->view << std::endl;
     
-    PruneFrom(start_block, hashes_of_branch, forked_blockes);
+    PruneFromBlockToTargetHash(start_block, hashes_of_branch, forked_blockes, target_hash);
     prune_height_ = target_height;
     return Status::kSuccess;
 }
 
-Status ViewBlockChain::PruneFrom(const std::shared_ptr<ViewBlock>& view_block, const std::unordered_set<HashStr>& hashes_of_branch, std::vector<std::shared_ptr<ViewBlock>>& forked_blocks) {
+Status ViewBlockChain::PruneFromBlockToTargetHash(const std::shared_ptr<ViewBlock>& view_block, const std::unordered_set<HashStr>& hashes_of_branch, std::vector<std::shared_ptr<ViewBlock>>& forked_blocks, const HashStr& target_hash) {
+    if (view_block->hash == target_hash) {
+        return Status::kSuccess;
+    }
+    
     std::vector<std::shared_ptr<ViewBlock>> child_blocks;
     GetChildren(view_block->hash, child_blocks);
 
