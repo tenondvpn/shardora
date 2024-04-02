@@ -175,18 +175,18 @@ void TxPool::GetTx(
 
         auto* tx = txbft->add_txs();
         *tx = iter->second->tx_info;
-        if (iter->second->tx_info.value().size() == 32) {
-            std::string val;
-            if (prefix_db_->GetTemporaryKv(iter->second->tx_info.value(), &val)) {
-                tx->set_key(iter->second->tx_info.key());
-                tx->set_value(val);
-                // auto* item = kv_sync->add_items();
-                // item->set_key(iter->second->tx_info.value());
-                // item->set_value(val);
-                ZJC_DEBUG("success get key: %s, val: %s", 
-                    common::Encode::HexEncode(iter->second->tx_info.value()).c_str(), common::Encode::HexEncode(val).c_str());
-            }
-        }
+        // if (iter->second->tx_info.value().size() == 32) {
+        //     std::string val;
+        //     if (prefix_db_->GetTemporaryKv(iter->second->tx_info.value(), &val)) {
+        //         tx->set_key(iter->second->tx_info.key());
+        //         tx->set_value(val);
+        //         // auto* item = kv_sync->add_items();
+        //         // item->set_key(iter->second->tx_info.value());
+        //         // item->set_value(val);
+        //         ZJC_DEBUG("success get key: %s, val: %s", 
+        //             common::Encode::HexEncode(iter->second->tx_info.value()).c_str(), common::Encode::HexEncode(val).c_str());
+        //     }
+        // }
 
         ZJC_DEBUG("backup success get local transfer to tx %u, %s, step: %d",
             pool_index_, 
@@ -219,14 +219,14 @@ void TxPool::GetTx(
     std::vector<TxItemPtr> recover_txs;
     auto iter = src_prio_map.begin();
     while (iter != src_prio_map.end() && res_map.size() < count) {
-        if (iter->second->tx_info.value().size() == 32) {
-            std::string val;
-            if (prefix_db_->GetTemporaryKv(iter->second->tx_info.value(), &val)) {
-                kvs[iter->second->tx_info.value()] = val;
-                ZJC_DEBUG("success get key: %s", 
-                    common::Encode::HexEncode(iter->second->tx_info.value()).c_str());
-            }
-        }
+        // if (iter->second->tx_info.value().size() == 32) {
+        //     std::string val;
+        //     if (prefix_db_->GetTemporaryKv(iter->second->tx_info.value(), &val)) {
+        //         kvs[iter->second->tx_info.value()] = val;
+        //         ZJC_DEBUG("success get key: %s", 
+        //             common::Encode::HexEncode(iter->second->tx_info.value()).c_str());
+        //     }
+        // }
 
         res_map[iter->second->unique_tx_hash] = iter->second;
         ZJC_DEBUG("leader success get local transfer to tx %u, %s, step: %d",
@@ -684,22 +684,22 @@ void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
             continue;
         }
 
-        bool valid = true;
-        switch (txs[i]->tx_info.step()) {
-            case pools::protobuf::kJoinElect:
-                if (!CheckJoinElectTxInfo(txs[i]->tx_info)) {
-                    valid = false;
-                }
+        // bool valid = true;
+        // switch (txs[i]->tx_info.step()) {
+        //     case pools::protobuf::kJoinElect:
+        //         if (!CheckJoinElectTxInfo(txs[i]->tx_info)) {
+        //             valid = false;
+        //         }
 
-                break;
-            default:
-                break;
-        }
+        //         break;
+        //     default:
+        //         break;
+        // }
 
-        if (!valid) {
-            ZJC_FATAL("tx invalid!");
-            continue;
-        }
+        // if (!valid) {
+        //     ZJC_FATAL("tx invalid!");
+        //     continue;
+        // }
 
         gid_map_[txs[i]->tx_info.gid()] = txs[i];
         txs[i]->is_consensus_add_tx = true;
