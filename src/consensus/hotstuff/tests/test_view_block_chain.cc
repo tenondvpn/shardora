@@ -111,8 +111,8 @@ TEST_F(TestViewBlockChain, TestStore_Fail) {
     auto vb2 = GenViewBlock("123", vb->view+1);
     s = chain_->Store(vb2);
     EXPECT_TRUE(s != Status::kSuccess);
-
-    auto actual_vb2 = std::make_shared<ViewBlock>();
+    
+    std::shared_ptr<ViewBlock> actual_vb2 = nullptr;
     s = chain_->Get(vb2->hash, actual_vb2);
     EXPECT_TRUE(s != Status::kSuccess);
     EXPECT_TRUE(actual_vb2 == nullptr);
@@ -122,7 +122,7 @@ TEST_F(TestViewBlockChain, TestStore_Fail) {
     s = chain_->Store(vb3);
     EXPECT_TRUE(s != Status::kSuccess);
 
-    auto actual_vb3 = std::make_shared<ViewBlock>();
+    std::shared_ptr<ViewBlock> actual_vb3 = nullptr;
     s = chain_->Get(vb3->hash, actual_vb3);
     EXPECT_TRUE(s != Status::kSuccess);
     EXPECT_TRUE(actual_vb3 == nullptr);    
