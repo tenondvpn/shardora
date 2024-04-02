@@ -75,10 +75,6 @@ Status ViewBlockChain::PruneTo(const HashStr& target_hash, std::vector<std::shar
         }
         return Status::kError;
     }
-
-    for (auto hash : hashes_of_branch) {
-        std::cout << "hash: " << hash << std::endl;
-    }
     
     auto start_blocks = view_blocks_at_height_[prune_height_];
     if (start_blocks.empty()) {
@@ -86,6 +82,8 @@ Status ViewBlockChain::PruneTo(const HashStr& target_hash, std::vector<std::shar
     }
     
     auto start_block = start_blocks[0];
+
+    std::cout << "start: " << start_block->view << std::endl;
     
     PruneFrom(start_block, hashes_of_branch, forked_blockes);
     prune_height_ = target_height;
@@ -104,7 +102,8 @@ Status ViewBlockChain::PruneFrom(const std::shared_ptr<ViewBlock>& view_block, c
         // delete the view block that is not on the same branch
         if (hashes_of_branch.find((*child_iter)->hash) == hashes_of_branch.end()) {
             DeleteViewBlock(*child_iter);
-    
+
+            std::cout << "push: " << (*child_iter)->view << std::endl;
             forked_blocks.push_back(*child_iter);
             PruneFrom((*child_iter), hashes_of_branch, forked_blocks);
         }
