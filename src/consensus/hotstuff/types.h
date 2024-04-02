@@ -3,7 +3,6 @@
 #include <common/time_utils.h>
 #include <sstream>
 #include <common/hash.h>
-#include <consensus/zbft/zbft_utils.h>
 #include <string>
 #include <protos/block.pb.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
