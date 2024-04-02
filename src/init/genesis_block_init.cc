@@ -968,6 +968,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 join_elect_tx_info->set_status(0);
                 auto storage = join_elect_tx_info->add_storages();
                 storage->set_key(protos::kJoinElectVerifyG2);
+                bls::protobuf::JoinElectInfo join_info;
+                assert(join_info.ParseFromString(root_genesis_nodes[member_idx]->g2_val));
                 storage->set_value(root_genesis_nodes[member_idx]->g2_val);
                 // root 节点选举涉及账户分配到 shard3 网络
                 tx2net_map_for_account.insert(std::make_pair(join_elect_tx_info, network::kConsensusShardBeginNetworkId));
@@ -991,6 +993,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                     join_elect_tx_info->set_status(0);
                     auto storage = join_elect_tx_info->add_storages();
                     storage->set_key(protos::kJoinElectVerifyG2);
+                    bls::protobuf::JoinElectInfo join_info;
+                    assert(join_info.ParseFromString(cons_genesis_nodes[member_idx]->g2_val));
                     storage->set_value(cons_genesis_nodes[member_idx]->g2_val);
                     // 选举交易涉及账户分配到对应 shard
                     tx2net_map_for_account.insert(std::make_pair(join_elect_tx_info, net_id));
@@ -1310,6 +1314,8 @@ int GenesisBlockInit::CreateShardNodesBlocks(
                 join_elect_tx_info->set_status(0);
                 auto storage = join_elect_tx_info->add_storages();
                 storage->set_key(protos::kJoinElectVerifyG2);
+                bls::protobuf::JoinElectInfo join_info;
+                assert(join_info.ParseFromString(cons_genesis_nodes[member_idx]->g2_val));
                 storage->set_value(cons_genesis_nodes[member_idx]->g2_val);
                 join_elect_tx_info->set_amount(0);
                 join_elect_tx_info->set_balance(genesis_account_balance);
