@@ -106,8 +106,8 @@ Status ViewBlockChain::PruneFrom(const std::shared_ptr<ViewBlock>& view_block, c
 
             std::cout << "push: " << (*child_iter)->view << std::endl;
             forked_blocks.push_back(*child_iter);
-            PruneFrom((*child_iter), hashes_of_branch, forked_blocks);
         }
+        PruneFrom((*child_iter), hashes_of_branch, forked_blocks);
     }
 
     return Status::kSuccess;
