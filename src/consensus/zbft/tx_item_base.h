@@ -42,14 +42,14 @@ protected:
 
         auto storage = block_tx->add_storages();
         storage->set_key(tx_info.key());
-        if (tx_info.value().size() > 32) {
-            auto hash = common::Hash::keccak256(tx_info.value());
-            storage->set_val_hash(hash);
-            auto& db_batch_tmp = *db_batch.get();
-            prefix_db_->SaveTemporaryKv(hash, tx_info.value(), db_batch_tmp);
-        } else {
+        // if (tx_info.value().size() > 32) {
+        //     auto hash = common::Hash::keccak256(tx_info.value());
+        //     storage->set_val_hash(hash);
+        //     auto& db_batch_tmp = *db_batch.get();
+        //     prefix_db_->SaveTemporaryKv(hash, tx_info.value(), db_batch_tmp);
+        // } else {
             storage->set_val_hash(tx_info.value());
-        }
+        // }
         return consensus::kConsensusSuccess;
     }
 
