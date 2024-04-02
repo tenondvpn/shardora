@@ -219,7 +219,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(uint32_t pool_index, b
         auto txs_item = std::make_shared<WaitingTxsItem>();
         txs_item->pool_index = pool_index;
         txs_item->txs[tx_ptr->unique_tx_hash] = tx_ptr;
-        assert(tx_ptr->unique_tx_hash.size() == 32);
         txs_item->tx_type = pools::protobuf::kNormalTo;
         ZJC_DEBUG("single tx success get to tx %u, %d, txhash: %s, gid: %s", 
             pool_index, leader, 

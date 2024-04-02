@@ -2064,12 +2064,6 @@ int BftManager::LeaderPrepare(
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto* tx_info = tx_bft.add_txs();
         *tx_info = iter->second->tx_info;
-        if (!tx_info->value().size() == 32) {
-            auto kv_iter = kvs.find(tx_info->value());
-            if (kv_iter != kvs.end()) {
-                tx_info->set_value(kv_iter->second);
-            }
-        }
     }
 
     bft_msg.set_leader_idx(elect_item.local_node_member_index);
