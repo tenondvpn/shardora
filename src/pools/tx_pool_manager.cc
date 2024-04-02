@@ -839,7 +839,9 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     // tx_msg.set_key(protos::kJoinElectVerifyG2);
     tx_msg.set_value(new_hash);
     
-    ZJC_DEBUG("elect tx msg hash is %s", common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
+    ZJC_DEBUG("elect tx msg hash is %s, new_hash: %s", 
+        common::Encode::HexEncode(msg_ptr->msg_hash).c_str(), 
+        common::Encode::HexEncode(new_hash).c_str());
     msg_ptr->msg_hash = msg_hash;
     
     // TODO msg_ptr->msg_hash 为空
