@@ -588,7 +588,7 @@ int ToTxsPools::CreateToTxWithHeights(
         uint32_t sharding_id,
         uint64_t elect_height,
         const pools::protobuf::ShardToTxItem& leader_to_heights,
-        std::string* to_hash) {
+        pools::protobuf::ToTxMessage& to_tx) {
 #ifdef TEST_NO_CROSS
     return kPoolsError;
 #endif
@@ -688,23 +688,16 @@ int ToTxsPools::CreateToTxWithHeights(
         return kPoolsError;
     }
 
-    std::string str_for_hash;
-    str_for_hash.reserve(common::kImmutablePoolSize * 8 + acc_amount_map.size() * 48);
     std::string test_heights;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto height = leader_to_heights.heights(i);
-        str_for_hash.append((char*)&height, sizeof(height));
         test_heights += std::to_string(height) + " ";
     }
 
-    pools::protobuf::ToTxMessage to_tx;
     for (auto iter = acc_amount_map.begin(); iter != acc_amount_map.end(); ++iter) {
         uint32_t* tmp_data = (uint32_t*)iter->first.c_str();
         uint32_t step = tmp_data[0];
         std::string to(iter->first.c_str() + 4, iter->first.size() - 4);
-        str_for_hash.append(to);
-        str_for_hash.append((char*)&iter->second.amount, sizeof(iter->second.amount));
-        str_for_hash.append((char*)&iter->second.type, sizeof(iter->second.type));
         auto to_item = to_tx.add_tos();
         to_item->set_des(to); // 20 bytes，对于 prepayment tx 是 to + from（40 bytes）
         to_item->set_amount(iter->second.amount);
@@ -723,12 +716,10 @@ int ToTxsPools::CreateToTxWithHeights(
                     protos::kContractBytesStartCode.c_str(),
                     protos::kContractBytesStartCode.size()) == 0) {
                 to_item->set_library_bytes(account_info->bytes_code());
-                str_for_hash.append(account_info->bytes_code());
             }
 
             auto net_id = common::GlobalInfo::Instance()->network_id();
             to_item->set_sharding_id(net_id);
-            str_for_hash.append((char*)&net_id, sizeof(net_id));
             ZJC_DEBUG("create contract use caller sharding address: %s, %u",
                 common::Encode::HexEncode(to).c_str(),
                 common::GlobalInfo::Instance()->network_id());        
@@ -742,16 +733,12 @@ int ToTxsPools::CreateToTxWithHeights(
                     protos::kContractBytesStartCode.c_str(),
                     protos::kContractBytesStartCode.size()) == 0) {
                 to_item->set_library_bytes(iter->second.library_bytes);
-                str_for_hash.append(iter->second.library_bytes);
                 // ContractCreate 需要 from 地址，用于 prepayment 创建
                 to_item->set_contract_from(iter->second.from);
-                str_for_hash.append(iter->second.from);
                 to_item->set_prepayment(iter->second.prepayment);
-                str_for_hash.append((char*)&iter->second.prepayment, sizeof(iter->second.prepayment));	
             }
             auto net_id = common::kInvalidUint32; // ContractCreate 不在直接分配 sharding，由 root 分配
             to_item->set_sharding_id(net_id);
-            str_for_hash.append((char*)&net_id, sizeof(net_id));
             ZJC_DEBUG("create contract use caller sharding address: %s, %u",
                 common::Encode::HexEncode(to).c_str(),
                 common::GlobalInfo::Instance()->network_id());
@@ -767,49 +754,36 @@ int ToTxsPools::CreateToTxWithHeights(
                     protos::kContractBytesStartCode.c_str(),
                     protos::kContractBytesStartCode.size()) == 0) {
                 to_item->set_library_bytes(iter->second.library_bytes);
-                str_for_hash.append(iter->second.library_bytes);
                 to_item->set_contract_from(iter->second.from);
-                str_for_hash.append(iter->second.from);
                 to_item->set_prepayment(iter->second.prepayment);
-                str_for_hash.append((char*)&iter->second.prepayment, sizeof(iter->second.prepayment));
             }
             to_item->set_sharding_id(sharding_id);
-            str_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
             ZJC_DEBUG("root create sharding address: %s, %u, pool: %u",
                 common::Encode::HexEncode(to).c_str(),
                 sharding_id,
                 iter->second.pool_index);
         } else if (iter->second.type == pools::protobuf::kJoinElect) {
             to_item->set_sharding_id(sharding_id);
-            str_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
             for (uint32_t i = 0; i < iter->second.verify_reqs.size(); ++i) {
                 auto* req = to_item->add_join_infos();
                 *req = iter->second.verify_reqs[i];
-                str_for_hash.append(protos::GetJoinElectReqHash(*req));
             }
         } else {
             auto net_id = common::kInvalidUint32;
             to_item->set_sharding_id(net_id);
-            str_for_hash.append((char*)&net_id, sizeof(net_id));
         }
 
-        str_for_hash.append((char*)&iter->second.pool_index, sizeof(iter->second.pool_index));
         ZJC_DEBUG("set to %s amount %lu, sharding id: %u, des sharding id: %u, pool index: %d",
             common::Encode::HexEncode(to).c_str(),
             iter->second.amount, to_item->sharding_id(), sharding_id, iter->second.pool_index);
     }
 
-    *to_hash = common::Hash::keccak256(str_for_hash);
-    ZJC_DEBUG("backup sharding: %u to_hash: %s, test_heights: %s",
-        sharding_id,
-        common::Encode::HexEncode(*to_hash).c_str(),
-        test_heights.c_str());
-    to_tx.set_heights_hash(*to_hash);
     to_tx.set_elect_height(elect_height);
     *to_tx.mutable_to_heights() = leader_to_heights;
     to_tx.mutable_to_heights()->set_sharding_id(sharding_id);
-    auto val = to_tx.SerializeAsString();
-    prefix_db_->SaveTemporaryKv(*to_hash, val);
+    ZJC_DEBUG("backup sharding: %u test_heights: %s",
+        sharding_id,
+        test_heights.c_str());
     return kPoolsSuccess;
 }
 

@@ -65,6 +65,10 @@ message ToTxMessage {
     optional uint64 elect_height = 4;
 }
 
+message AllToTxMessage {
+    repeated ToTxMessage to_tx_arr = 1;
+}
+
 message PoolLatestInfo {
     optional uint64 height = 1;
     optional bytes hash = 2;

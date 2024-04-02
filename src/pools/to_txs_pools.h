@@ -31,7 +31,7 @@ public:
         uint32_t sharding_id,
         uint64_t elect_height,
         const pools::protobuf::ShardToTxItem& leader_to_heights,
-        std::string* to_hash);
+        pools::protobuf::ToTxMessage& to_tx);
     int LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights);
     bool StatisticTos(const pools::protobuf::ShardToTxItem& to_heights);
 
