@@ -40,7 +40,7 @@ namespace protobuf_protos_2fpools_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[14];
+  static const ::google::protobuf::internal::ParseTable schema[15];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -50,6 +50,9 @@ void AddDescriptors();
 namespace shardora {
 namespace pools {
 namespace protobuf {
+class AllToTxMessage;
+class AllToTxMessageDefaultTypeInternal;
+extern AllToTxMessageDefaultTypeInternal _AllToTxMessage_default_instance_;
 class AreaInfo;
 class AreaInfoDefaultTypeInternal;
 extern AreaInfoDefaultTypeInternal _AreaInfo_default_instance_;
@@ -97,6 +100,7 @@ extern TxMessageDefaultTypeInternal _TxMessage_default_instance_;
 }  // namespace shardora
 namespace google {
 namespace protobuf {
+template<> ::shardora::pools::protobuf::AllToTxMessage* Arena::CreateMaybeMessage<::shardora::pools::protobuf::AllToTxMessage>(Arena*);
 template<> ::shardora::pools::protobuf::AreaInfo* Arena::CreateMaybeMessage<::shardora::pools::protobuf::AreaInfo>(Arena*);
 template<> ::shardora::pools::protobuf::CrossShardStatistic* Arena::CreateMaybeMessage<::shardora::pools::protobuf::CrossShardStatistic>(Arena*);
 template<> ::shardora::pools::protobuf::CrossShardStatisticItem* Arena::CreateMaybeMessage<::shardora::pools::protobuf::CrossShardStatisticItem>(Arena*);
@@ -1002,6 +1006,123 @@ class ToTxMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
 };
 // -------------------------------------------------------------------
 
+class AllToTxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.pools.protobuf.AllToTxMessage) */ {
+ public:
+  AllToTxMessage();
+  virtual ~AllToTxMessage();
+
+  AllToTxMessage(const AllToTxMessage& from);
+
+  inline AllToTxMessage& operator=(const AllToTxMessage& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  AllToTxMessage(AllToTxMessage&& from) noexcept
+    : AllToTxMessage() {
+    *this = ::std::move(from);
+  }
+
+  inline AllToTxMessage& operator=(AllToTxMessage&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const AllToTxMessage& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const AllToTxMessage* internal_default_instance() {
+    return reinterpret_cast<const AllToTxMessage*>(
+               &_AllToTxMessage_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    5;
+
+  void Swap(AllToTxMessage* other);
+  friend void swap(AllToTxMessage& a, AllToTxMessage& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline AllToTxMessage* New() const final {
+    return CreateMaybeMessage<AllToTxMessage>(NULL);
+  }
+
+  AllToTxMessage* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<AllToTxMessage>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const AllToTxMessage& from);
+  void MergeFrom(const AllToTxMessage& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(AllToTxMessage* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated .shardora.pools.protobuf.ToTxMessage to_tx_arr = 1;
+  int to_tx_arr_size() const;
+  void clear_to_tx_arr();
+  static const int kToTxArrFieldNumber = 1;
+  ::shardora::pools::protobuf::ToTxMessage* mutable_to_tx_arr(int index);
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::ToTxMessage >*
+      mutable_to_tx_arr();
+  const ::shardora::pools::protobuf::ToTxMessage& to_tx_arr(int index) const;
+  ::shardora::pools::protobuf::ToTxMessage* add_to_tx_arr();
+  const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::ToTxMessage >&
+      to_tx_arr() const;
+
+  // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.AllToTxMessage)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::ToTxMessage > to_tx_arr_;
+  friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class PoolLatestInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.pools.protobuf.PoolLatestInfo) */ {
  public:
   PoolLatestInfo();
@@ -1044,7 +1165,7 @@ class PoolLatestInfo : public ::google::protobuf::Message /* @@protoc_insertion_
                &_PoolLatestInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    6;
 
   void Swap(PoolLatestInfo* other);
   friend void swap(PoolLatestInfo& a, PoolLatestInfo& b) {
@@ -1196,7 +1317,7 @@ class AreaInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
                &_AreaInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    7;
 
   void Swap(AreaInfo* other);
   friend void swap(AreaInfo& a, AreaInfo& b) {
@@ -1320,7 +1441,7 @@ class PoolStatisticItem : public ::google::protobuf::Message /* @@protoc_inserti
                &_PoolStatisticItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    8;
 
   void Swap(PoolStatisticItem* other);
   friend void swap(PoolStatisticItem& a, PoolStatisticItem& b) {
@@ -1473,7 +1594,7 @@ class JoinElectNode : public ::google::protobuf::Message /* @@protoc_insertion_p
                &_JoinElectNode_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    9;
 
   void Swap(JoinElectNode* other);
   friend void swap(JoinElectNode& a, JoinElectNode& b) {
@@ -1625,7 +1746,7 @@ class CrossShardStatisticItem : public ::google::protobuf::Message /* @@protoc_i
                &_CrossShardStatisticItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    10;
 
   void Swap(CrossShardStatisticItem* other);
   friend void swap(CrossShardStatisticItem& a, CrossShardStatisticItem& b) {
@@ -1769,7 +1890,7 @@ class CrossShardStatistic : public ::google::protobuf::Message /* @@protoc_inser
                &_CrossShardStatistic_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    11;
 
   void Swap(CrossShardStatistic* other);
   friend void swap(CrossShardStatistic& a, CrossShardStatistic& b) {
@@ -1914,7 +2035,7 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
                &_ElectStatistic_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    12;
 
   void Swap(ElectStatistic* other);
   friend void swap(ElectStatistic& a, ElectStatistic& b) {
@@ -2117,7 +2238,7 @@ class SyncPoolsMaxHeight : public ::google::protobuf::Message /* @@protoc_insert
                &_SyncPoolsMaxHeight_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    13;
 
   void Swap(SyncPoolsMaxHeight* other);
   friend void swap(SyncPoolsMaxHeight& a, SyncPoolsMaxHeight& b) {
@@ -2257,7 +2378,7 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
                &_TxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    14;
 
   void Swap(TxMessage* other);
   friend void swap(TxMessage& a, TxMessage& b) {
@@ -3501,6 +3622,40 @@ inline void ToTxMessage::set_elect_height(::google::protobuf::uint64 value) {
   set_has_elect_height();
   elect_height_ = value;
   // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ToTxMessage.elect_height)
+}
+
+// -------------------------------------------------------------------
+
+// AllToTxMessage
+
+// repeated .shardora.pools.protobuf.ToTxMessage to_tx_arr = 1;
+inline int AllToTxMessage::to_tx_arr_size() const {
+  return to_tx_arr_.size();
+}
+inline void AllToTxMessage::clear_to_tx_arr() {
+  to_tx_arr_.Clear();
+}
+inline ::shardora::pools::protobuf::ToTxMessage* AllToTxMessage::mutable_to_tx_arr(int index) {
+  // @@protoc_insertion_point(field_mutable:shardora.pools.protobuf.AllToTxMessage.to_tx_arr)
+  return to_tx_arr_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::ToTxMessage >*
+AllToTxMessage::mutable_to_tx_arr() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.pools.protobuf.AllToTxMessage.to_tx_arr)
+  return &to_tx_arr_;
+}
+inline const ::shardora::pools::protobuf::ToTxMessage& AllToTxMessage::to_tx_arr(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.AllToTxMessage.to_tx_arr)
+  return to_tx_arr_.Get(index);
+}
+inline ::shardora::pools::protobuf::ToTxMessage* AllToTxMessage::add_to_tx_arr() {
+  // @@protoc_insertion_point(field_add:shardora.pools.protobuf.AllToTxMessage.to_tx_arr)
+  return to_tx_arr_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::ToTxMessage >&
+AllToTxMessage::to_tx_arr() const {
+  // @@protoc_insertion_point(field_list:shardora.pools.protobuf.AllToTxMessage.to_tx_arr)
+  return to_tx_arr_;
 }
 
 // -------------------------------------------------------------------
@@ -5297,6 +5452,8 @@ inline void TxMessage::set_allocated_sign(::std::string* sign) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
