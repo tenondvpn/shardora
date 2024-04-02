@@ -196,30 +196,11 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
 //             attr_value->Append(common::Encode::HexEncode(tx_list[i].storages(j).val_hash()));
 
             std::string val;
-            if (prefix_db_->GetTemporaryKv(tx_list[i].storages(j).val_hash(), &val)) {
-                if (tx_list[i].storages(j).key() == protos::kElectNodeAttrElectBlock) {
-                    elect::protobuf::ElectBlock elect_block;
-                    if (elect_block.ParseFromString(val)) {
-                        std::string json_str;
-                        auto st = google::protobuf::util::MessageToJsonString(elect_block, &json_str);
-                        if (st.ok()) {
-                            attr_key->Append(tx_list[i].storages(j).key());
-                            attr_value->Append(json_str);
-                            continue;
-                        }
-                    }
-                }
-                    
-                attr_key->Append(common::Encode::HexEncode(tx_list[i].storages(j).key()));
-                attr_value->Append(common::Encode::HexEncode(val));
-                ZJC_DEBUG("to ck add key: %s, val: %s", tx_list[i].storages(j).key().c_str(), val.c_str());
-            } else {
-                attr_key->Append(common::Encode::HexEncode(tx_list[i].storages(j).key()));
-                attr_value->Append(common::Encode::HexEncode(tx_list[i].storages(j).val_hash()));
-                ZJC_DEBUG("hash to ck add key: %s, val: %s", 
-                    tx_list[i].storages(j).key().c_str(), 
-                    common::Encode::HexEncode(tx_list[i].storages(j).val_hash()).c_str());
-            }
+            attr_key->Append(common::Encode::HexEncode(tx_list[i].storages(j).key()));
+            attr_value->Append(common::Encode::HexEncode(tx_list[i].storages(j).value()));
+            ZJC_DEBUG("hash to ck add key: %s, val: %s", 
+                tx_list[i].storages(j).key().c_str(), 
+                common::Encode::HexEncode(tx_list[i].storages(j).value()).c_str());
         }
 
         if (tx_list[i].step() == pools::protobuf::kContractExcute /*&& tx_list[i].to() == common::GlobalInfo::Instance()->c2c_to()*/) {
@@ -266,27 +247,22 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
 
         while (tx_list[i].step() == pools::protobuf::kConsensusLocalTos) {
             ZJC_DEBUG("now handle local to txs.");
-            std::string to_txs_str;
+            const std::string* to_txs_str = nullptr;
             auto& tx = tx_list[i];
             for (int32_t i = 0; i < tx.storages_size(); ++i) {
                 if (tx.storages(i).key() == protos::kConsensusLocalNormalTos) {
-                    if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &to_txs_str)) {
-                        ZJC_DEBUG("handle local to tx failed get val hash error: %s",
-                            common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
-                        break;
-                    }
-
+                    to_txs_str = &tx.storages(i).value();
                     break;
                 }
             }
 
-            if (to_txs_str.empty()) {
+            if (to_txs_str == nullptr) {
                 ZJC_WARN("get local tos info failed!");
                 break;
             }
 
             block::protobuf::ConsensusToTxs to_txs;
-            if (!to_txs.ParseFromString(to_txs_str)) {
+            if (!to_txs.ParseFromString(*to_txs_str)) {
                 assert(false);
                 break;
             }
