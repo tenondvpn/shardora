@@ -50,9 +50,9 @@ protected:
 
     static void AssertEq(const std::shared_ptr<ViewBlock>& expect, const std::shared_ptr<ViewBlock>& actual) {
         EXPECT_TRUE(actual != nullptr);
-        EXPECT_EQ(actual->hash, expect->hash);
-        EXPECT_EQ(actual->parent_hash, expect->hash);
-        EXPECT_EQ(actual->view, expect->view);
+        EXPECT_EQ(expect->hash, actual->hash);
+        EXPECT_EQ(expect->parent_hash, actual->parent_hash);
+        EXPECT_EQ(expect->view, actual->view);
     }
 
     static bool ContainBlock(const std::vector<std::shared_ptr<ViewBlock>>& slice, const std::shared_ptr<ViewBlock>& target) {
