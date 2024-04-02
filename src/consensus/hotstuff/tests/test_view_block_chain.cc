@@ -1,0 +1,219 @@
+#include <consensus/hotstuff/types.h>
+#include <consensus/hotstuff/view_block_chain.h>
+#include <gtest/gtest.h>
+#include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
+#include <memory>
+#include <protos/block.pb.h>
+
+namespace shardora {
+
+namespace consensus {
+
+namespace test {
+
+class TestViewBlockChain : public testing::Test {
+protected:
+    void SetUp() {
+        genesis_ = GenViewBlock("", 1);
+        chain_ = std::make_shared<ViewBlockChain>(genesis_);
+    }
+
+    void TearDown() {}
+
+    static std::shared_ptr<ViewBlock> GenViewBlock(const HashStr& parent_hash, const View& view) {
+        auto vb = std::make_shared<ViewBlock>(parent_hash,
+            GenQC(view, parent_hash),
+            GenBlock(),
+            view,
+            GenLeaderIdx());
+        vb->hash = vb->GetHash();
+        return vb;
+    }
+
+    static std::shared_ptr<QC> GenQC(const View& view, const HashStr& view_block_hash) {
+        auto sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::random_element());
+        return std::make_shared<QC>(sign, view, view_block_hash);
+    }
+
+    static std::shared_ptr<block::protobuf::Block> GenBlock() {
+        auto block = std::make_shared<block::protobuf::Block>();
+        return block;
+    }
+
+    static uint32_t GenLeaderIdx() {
+        return 0;
+    }
+
+    std::shared_ptr<ViewBlockChain> chain_;
+    std::shared_ptr<ViewBlock> genesis_;
+
+    static void AssertEq(const std::shared_ptr<ViewBlock>& expect, const std::shared_ptr<ViewBlock>& actual) {
+        EXPECT_TRUE(actual != nullptr);
+        EXPECT_EQ(actual->hash, expect->hash);
+        EXPECT_EQ(actual->parent_hash, expect->hash);
+        EXPECT_EQ(actual->view, expect->view);
+    }
+
+    static bool ContainBlock(const std::vector<std::shared_ptr<ViewBlock>>& slice, const std::shared_ptr<ViewBlock>& target) {
+        for (auto& b : slice) {
+            if (b->hash == target->hash) {
+                return true;
+            }
+        }
+        return false;
+    }
+};
+
+TEST_F(TestViewBlockChain, TestStore_Success) {
+    Status s = Status::kSuccess;
+    
+    auto vb = GenViewBlock(genesis_->hash, genesis_->view+1);
+    s = chain_->Store(vb);
+    EXPECT_TRUE(s == Status::kSuccess);
+
+    auto actual_vb = std::make_shared<ViewBlock>();
+    chain_->Get(vb->hash, actual_vb);
+    AssertEq(vb, actual_vb);
+
+    auto vb2 = GenViewBlock(vb->hash, vb->view+1);
+    s = chain_->Store(vb2);
+    EXPECT_TRUE(s == Status::kSuccess);
+    
+    auto actual_vb2 = std::make_shared<ViewBlock>();
+    chain_->Get(vb2->hash, actual_vb2);
+    AssertEq(vb2, actual_vb2);
+
+    auto vb3 = GenViewBlock(genesis_->hash, genesis_->view+1);
+    s = chain_->Store(vb3);
+    EXPECT_TRUE(s == Status::kSuccess);
+    
+    auto actual_vb3 = std::make_shared<ViewBlock>();
+    chain_->Get(vb3->hash, actual_vb3);
+    AssertEq(vb3, actual_vb3);
+}
+
+TEST_F(TestViewBlockChain, TestStore_Fail) {
+    Status s = Status::kSuccess;
+    
+    auto vb = GenViewBlock(genesis_->hash, genesis_->view+1);
+    s = chain_->Store(vb);
+    EXPECT_TRUE(s == Status::kSuccess);
+
+    // invalid parent hash
+    auto vb2 = GenViewBlock("123", vb->view+1);
+    s = chain_->Store(vb2);
+    EXPECT_TRUE(s != Status::kSuccess);
+
+    auto actual_vb2 = std::make_shared<ViewBlock>();
+    s = chain_->Get(vb2->hash, actual_vb2);
+    EXPECT_TRUE(s != Status::kSuccess);
+    EXPECT_TRUE(actual_vb2 == nullptr);
+
+    // invalid view
+    auto vb3 = GenViewBlock(vb->hash, vb->view+2);
+    s = chain_->Store(vb3);
+    EXPECT_TRUE(s != Status::kSuccess);
+
+    auto actual_vb3 = std::make_shared<ViewBlock>();
+    s = chain_->Get(vb3->hash, actual_vb3);
+    EXPECT_TRUE(s != Status::kSuccess);
+    EXPECT_TRUE(actual_vb3 == nullptr);    
+}
+
+TEST_F(TestViewBlockChain, TestGet) {}
+
+TEST_F(TestViewBlockChain, TestExtends) {
+    auto vb = GenViewBlock(genesis_->hash, genesis_->view+1);
+    chain_->Store(vb);
+    auto vb2 = GenViewBlock(vb->hash, vb->view+1);
+    chain_->Store(vb2);
+    auto vb3a = GenViewBlock(vb2->hash, vb2->view+1);
+    chain_->Store(vb3a);
+    auto vb3b = GenViewBlock(vb2->hash, vb2->view+1);
+    chain_->Store(vb3b);
+    auto vb4a = GenViewBlock(vb3a->hash, vb3a->view+1);
+    chain_->Store(vb4a);
+    auto vb4b = GenViewBlock(vb3b->hash, vb3b->view+1);
+    chain_->Store(vb4b);
+
+    EXPECT_TRUE(chain_->Extends(vb4a, vb3a));
+    EXPECT_TRUE(chain_->Extends(vb4a, vb2));
+    EXPECT_TRUE(chain_->Extends(vb4a, vb));
+    EXPECT_TRUE(chain_->Extends(vb4a, genesis_));
+
+    EXPECT_TRUE(chain_->Extends(vb4b, vb3b));
+    EXPECT_TRUE(chain_->Extends(vb4b, vb2));
+    EXPECT_TRUE(chain_->Extends(vb4b, vb));
+    EXPECT_TRUE(chain_->Extends(vb4b, genesis_));
+
+    EXPECT_FALSE(chain_->Extends(vb4b, vb3a));
+    EXPECT_FALSE(chain_->Extends(vb4a, vb3b));
+    EXPECT_TRUE(chain_->Extends(vb4a, vb4a));
+}
+
+TEST_F(TestViewBlockChain, TestPruneLatestCommitted) {
+    auto vb = GenViewBlock(genesis_->hash, genesis_->view+1);
+    chain_->Store(vb);
+    auto vb2 = GenViewBlock(vb->hash, vb->view+1);
+    chain_->Store(vb2);
+    auto vb3a = GenViewBlock(vb2->hash, vb2->view+1);
+    chain_->Store(vb3a);
+    auto vb3b = GenViewBlock(vb2->hash, vb2->view+1);
+    chain_->Store(vb3b);
+    auto vb4a = GenViewBlock(vb3a->hash, vb3a->view+1);
+    chain_->Store(vb4a);
+    auto vb4b = GenViewBlock(vb3b->hash, vb3b->view+1);
+    chain_->Store(vb4b);
+    auto vb5b_x = GenViewBlock(vb4b->hash, vb4b->view+1);
+    chain_->Store(vb5b_x);
+    auto vb5b_y = GenViewBlock(vb4b->hash, vb4b->view+1);
+    chain_->Store(vb5b_y);    
+
+    std::vector<std::shared_ptr<ViewBlock>> forked_blocks;
+    // prune vb3a and vb4a
+    chain_->PruneTo(vb4b->hash, forked_blocks);
+
+    EXPECT_EQ(2, forked_blocks.size());
+    EXPECT_TRUE(ContainBlock(forked_blocks, vb3a));
+    EXPECT_TRUE(ContainBlock(forked_blocks, vb4a));    
+
+    auto actual_vb3a = std::make_shared<ViewBlock>();
+    chain_->Get(vb3a->hash, actual_vb3a);
+    EXPECT_TRUE(actual_vb3a == nullptr);
+    auto actual_vb4a = std::make_shared<ViewBlock>();
+    chain_->Get(vb4a->hash, actual_vb4a);
+    EXPECT_TRUE(actual_vb4a == nullptr);
+
+    // vb5b_x and vb5b_y still exist
+    auto actual_vb5b_x = std::make_shared<ViewBlock>();
+    chain_->Get(vb5b_x->hash, actual_vb5b_x);
+    AssertEq(vb5b_x, actual_vb5b_x);
+    auto actual_vb5b_y = std::make_shared<ViewBlock>();
+    chain_->Get(vb5b_y->hash, actual_vb5b_y);
+    AssertEq(vb5b_y, actual_vb5b_y);
+
+    std::vector<std::shared_ptr<ViewBlock>> forked_blocks2; 
+    // prune vb5b_y
+    chain_->PruneTo(vb5b_x->hash, forked_blocks2);
+    EXPECT_EQ(1, forked_blocks2.size());
+    EXPECT_TRUE(ContainBlock(forked_blocks2, vb5b_y));
+
+    // has vb5b_x
+    actual_vb5b_x = std::make_shared<ViewBlock>();
+    chain_->Get(vb5b_x->hash, actual_vb5b_x);
+    AssertEq(vb5b_x, actual_vb5b_x);
+
+    // no vb5b_y
+    actual_vb5b_y = std::make_shared<ViewBlock>();
+    chain_->Get(vb5b_y->hash, actual_vb5b_y);
+    EXPECT_TRUE(actual_vb5b_x == nullptr);
+}
+
+
+
+} // namespace test
+
+} // namespace consensus
+
+} // namespace shardora
+

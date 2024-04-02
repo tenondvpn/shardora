@@ -4,9 +4,8 @@
 namespace shardora {
 namespace consensus {
 
-ViewBlockChain::ViewBlockChain() : latest_committed_height_(View(0)), prune_height_(View(0)) {
-    // TODO genesis block
-    Store(GetGenesisViewBlock());
+ViewBlockChain::ViewBlockChain(const std::shared_ptr<ViewBlock>& genesis_view_block) : prune_height_(View(1)) {
+    Store(genesis_view_block);
 }
 
 ViewBlockChain::~ViewBlockChain(){}
@@ -17,6 +16,12 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     if (it == view_blocks_.end()) {
         return Status::kError;
     }
+
+    // view 必须连续
+    if (it->second->view + 1 != view_block->view) {
+        return Status::kError;
+    }
+    
     view_blocks_[view_block->hash] = view_block;
     view_blocks_at_height_[view_block->view].push_back(view_block);
     view_block_children_[view_block->parent_hash].push_back(view_block);
@@ -43,27 +48,26 @@ bool ViewBlockChain::Extends(const std::shared_ptr<ViewBlock>& block, const std:
 }
 
 // 剪掉从上次 prune_height 到 height 之间，latest_committed 之前的所有分叉，并返回这些分叉上的 blocks
-Status ViewBlockChain::PruneToLatestCommitted(std::vector<std::shared_ptr<ViewBlock>>& forked_blockes) {
-    if (prune_height_ == LatestCommittedHeight()) {
-        return Status::kSuccess;
-    }
-    // 计算 prune_height 到 latestcommittedheight 中间所有的 committed_hashes
-    auto blocks = view_blocks_at_height_[LatestCommittedHeight()];
-    if (blocks.empty()) {
+Status ViewBlockChain::PruneTo(const HashStr& target_hash, std::vector<std::shared_ptr<ViewBlock>>& forked_blockes) {
+    auto target_it = view_blocks_.find(target_hash);
+    if (target_it == view_blocks_.end()) {
         return Status::kError;
     }
-    // 每个 committed_height 只会有一个 block，就是 committed_block
-    std::unordered_set<HashStr> committed_hashes;
-    auto latest_committed_block = blocks[0];
-    auto current = latest_committed_block;
-    // auto current = std::make_shared<ViewBlock>();
-    // Get(latest_committed_block->parent_hash, current);
+
+    auto current = target_it->second;
+    auto target_height = current->view;
+
+    if (prune_height_ >= target_height) {
+        return Status::kSuccess;
+    }
+    
+    std::unordered_set<HashStr> hashes_of_branch;
     
     Status s = Status::kSuccess;
     while (s == Status::kSuccess && current->view > prune_height_) {
         s = Get(current->parent_hash, current);
         if (s == Status::kSuccess && !current) {
-            committed_hashes.insert(current->hash);
+            hashes_of_branch.insert(current->hash);
             continue;
         }
         return Status::kError;
@@ -75,12 +79,12 @@ Status ViewBlockChain::PruneToLatestCommitted(std::vector<std::shared_ptr<ViewBl
     }
     auto start_block = start_blocks[0];
     
-    PruneFrom(start_block, committed_hashes, forked_blockes);
-    prune_height_ = LatestCommittedHeight();
+    PruneFrom(start_block, hashes_of_branch, forked_blockes);
+    prune_height_ = target_height;
     return Status::kSuccess;
 }
 
-Status ViewBlockChain::PruneFrom(const std::shared_ptr<ViewBlock>& view_block, const std::unordered_set<HashStr>& committed_hashes, std::vector<std::shared_ptr<ViewBlock>>& forked_blocks) {
+Status ViewBlockChain::PruneFrom(const std::shared_ptr<ViewBlock>& view_block, const std::unordered_set<HashStr>& hashes_of_branch, std::vector<std::shared_ptr<ViewBlock>>& forked_blocks) {
     auto it = view_block_children_.find(view_block->hash);
     if (it == view_block_children_.end()) {
         return Status::kSuccess;
@@ -88,7 +92,7 @@ Status ViewBlockChain::PruneFrom(const std::shared_ptr<ViewBlock>& view_block, c
 
     auto& child_blocks = it->second;
     for (auto child_iter = child_blocks.begin(); child_iter < child_blocks.end();) {
-        if (committed_hashes.find((*child_iter)->hash) == committed_hashes.end()) {
+        if (hashes_of_branch.find((*child_iter)->hash) == hashes_of_branch.end()) {
             auto hash = (*child_iter)->hash;
             auto view = (*child_iter)->view;            
             // 删除 it2 节点
@@ -98,7 +102,7 @@ Status ViewBlockChain::PruneFrom(const std::shared_ptr<ViewBlock>& view_block, c
             child_iter = child_blocks.erase(child_iter);
 
             forked_blocks.push_back(*child_iter);
-            PruneFrom((*child_iter), committed_hashes, forked_blocks);
+            PruneFrom((*child_iter), hashes_of_branch, forked_blocks);
             continue;
         }
         ++child_iter;

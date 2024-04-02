@@ -56,13 +56,13 @@ bool ViewBlockChainManager::Extends(const uint32_t& pool_idx, const std::shared_
     return chain->Extends(block, target);
 }
 
-Status ViewBlockChainManager::PruneToLatestCommitted(const uint32_t &pool_idx, std::vector<std::shared_ptr<ViewBlock>> &forked_blockes) {
+Status ViewBlockChainManager::PruneTo(const uint32_t &pool_idx, const HashStr& target, std::vector<std::shared_ptr<ViewBlock>> &forked_blockes) {
     auto chain = Chain(pool_idx);
     if (!chain) {
         return Status::kError;
     }
 
-    return chain->PruneToLatestCommitted(forked_blockes);
+    return chain->PruneTo(target, forked_blockes);
 }
 
 

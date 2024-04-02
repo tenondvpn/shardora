@@ -19,7 +19,7 @@ public:
     Status Store(const uint32_t& pool_idx, const std::shared_ptr<ViewBlock>& view_block);
     Status Get(const uint32_t& pool_idx, const HashStr& hash, std::shared_ptr<ViewBlock>& view_block);
     bool Extends(const uint32_t& pool_idx, const std::shared_ptr<ViewBlock>& block, const std::shared_ptr<ViewBlock>& target);
-    Status PruneToLatestCommitted(const uint32_t& pool_idx, std::vector<std::shared_ptr<ViewBlock>>& forked_blockes);
+    Status PruneTo(const uint32_t& pool_idx, const HashStr& target, std::vector<std::shared_ptr<ViewBlock>>& forked_blockes);
     
 private:
     void ConsumeOrphanBlocks();

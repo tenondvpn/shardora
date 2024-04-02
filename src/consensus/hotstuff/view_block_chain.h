@@ -21,9 +21,11 @@ using ViewBlockMinHeap =
                         std::vector<std::shared_ptr<ViewBlock>>,
                         CompareViewBlock>;
 
+// Tree of view blocks, showing the parent-child relationship of view blocks
+// Notice: the status of view block is not memorized here.
 class ViewBlockChain {
 public:
-    ViewBlockChain();
+    explicit ViewBlockChain(const std::shared_ptr<ViewBlock>&);
     ~ViewBlockChain();
     
     ViewBlockChain(const ViewBlockChain&) = delete;
@@ -35,12 +37,8 @@ public:
     Status Get(const HashStr& hash, std::shared_ptr<ViewBlock>& view_block);
     // if in the same branch
     bool Extends(const std::shared_ptr<ViewBlock>& block, const std::shared_ptr<ViewBlock>& target);
-    // prune to latest committed block and return the dirty blocks
-    Status PruneToLatestCommitted(std::vector<std::shared_ptr<ViewBlock>>& forked_blockes);
-
-    inline View LatestCommittedHeight() const {
-        return latest_committed_height_;
-    }
+    // prune from last prune height to target view block
+    Status PruneTo(const HashStr& target_hash, std::vector<std::shared_ptr<ViewBlock>>& forked_blockes);
 
     inline ViewBlockMinHeap OrphanBlocks() const {
         return orphan_blocks_;
@@ -52,9 +50,7 @@ public:
     
 private:
     // prune the branch starting from view_block
-    Status PruneFrom(const std::shared_ptr<ViewBlock>& view_block, const std::unordered_set<HashStr>& committed_hashes, std::vector<std::shared_ptr<ViewBlock>>& forked_blocks);
-    
-    View latest_committed_height_;
+    Status PruneFrom(const std::shared_ptr<ViewBlock>& view_block, const std::unordered_set<HashStr>& hashes_of_branch, std::vector<std::shared_ptr<ViewBlock>>& forked_blocks);
     View prune_height_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlock>> view_blocks_;
     std::unordered_map<View, std::vector<std::shared_ptr<ViewBlock>>> view_blocks_at_height_;
@@ -64,6 +60,7 @@ private:
     std::unordered_map<HashStr, uint64_t> orphan_added_us_;
 };
 
+// from db
 std::shared_ptr<ViewBlock> GetGenesisViewBlock() {}
     
         

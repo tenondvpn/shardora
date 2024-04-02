@@ -18,8 +18,13 @@ typedef std::string HashStr;
 
 struct QC {
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
-    View view;
+    View view; // view_block_hash 对应的 view
     HashStr view_block_hash;
+
+    QC(const std::shared_ptr<libff::alt_bn128_G1>& sign, const View& v, const HashStr& hash) :
+        bls_agg_sign(sign), view(v), view_block_hash(hash) {}
+
+    ~QC() {}
 
     std::string Serialize() const {
         std::stringstream ss;
@@ -51,7 +56,7 @@ struct ViewBlock {
 
     uint64_t created_time_us;
 
-    ViewBlock(const HashStr& parent, const std::shared_ptr<QC>& qc, std::shared_ptr<block::protobuf::Block>& block, const View& view, const uint32_t& leader_idx) :
+    ViewBlock(const HashStr& parent, const std::shared_ptr<QC>& qc, const std::shared_ptr<block::protobuf::Block>& block, const View& view, const uint32_t& leader_idx) :
         parent_hash(parent),
         leader_idx(leader_idx),
         block(block),
