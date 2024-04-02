@@ -92,7 +92,7 @@ private:
         uint32_t sharding_id;
         pools::protobuf::StepType type;
         int32_t src_step;
-        std::string elect_join_g2_key;
+        std::string elect_join_g2_value;
         std::vector<bls::protobuf::JoinElectInfo> verify_reqs;
          // for kContractCreate
         std::string library_bytes;

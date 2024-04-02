@@ -348,8 +348,7 @@ void ToTxsPools::AddTxToMap(
         item.pool_index = pool_index;
         item.type = type;
         item.sharding_id = sharding_id;
-        item.elect_join_g2_key = key;
-
+        item.elect_join_g2_value = key;
         // for ContractCreate Tx
         if (library_bytes != "") {
             item.library_bytes = library_bytes;
@@ -511,16 +510,10 @@ void ToTxsPools::LoadLatestHeights() {
 }
 
 void ToTxsPools::HandleElectJoinVerifyVec(
-        const std::string& verify_hash,
+        const std::string& g2_value,
         std::vector<bls::protobuf::JoinElectInfo>& verify_reqs) {
     bls::protobuf::JoinElectInfo join_info;
-    std::string val;
-    if (!prefix_db_->GetTemporaryKv(verify_hash, &val)) {
-        assert(false);
-        return;
-    }
-
-    if (!join_info.ParseFromString(val)) {
+    if (!join_info.ParseFromString(g2_value)) {
         assert(false);
         return;
     }
@@ -672,16 +665,16 @@ int ToTxsPools::CreateToTxWithHeights(
                     ZJC_DEBUG("len: %u, addr: %s",
                         to_iter->first.size(), common::Encode::HexEncode(to_iter->first).c_str());
                     acc_amount_map[to_iter->first] = to_iter->second;
-                    if (!to_iter->second.elect_join_g2_key.empty()) {
+                    if (!to_iter->second.elect_join_g2_value.empty()) {
                         HandleElectJoinVerifyVec(
-                            to_iter->second.elect_join_g2_key,
+                            to_iter->second.elect_join_g2_value,
                             acc_amount_map[to_iter->first].verify_reqs);
                     }
                 } else {
                     amount_iter->second.amount += to_iter->second.amount;
-                    if (!to_iter->second.elect_join_g2_key.empty()) {
+                    if (!to_iter->second.elect_join_g2_value.empty()) {
                         HandleElectJoinVerifyVec(
-                            to_iter->second.elect_join_g2_key,
+                            to_iter->second.elect_join_g2_value,
                             amount_iter->second.verify_reqs);
                     }
                 }
