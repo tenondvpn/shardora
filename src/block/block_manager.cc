@@ -1102,6 +1102,7 @@ void BlockManager::HandleJoinElectTx(
         if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
             // 解析参与选举的信息
             bls::protobuf::JoinElectInfo join_info;
+            ZJC_DEBUG("now parse join elect info: %u", tx.storages(i).value().size());
             if (!join_info.ParseFromString(tx.storages(i).value())) {
                 assert(false);
                 break;
@@ -1112,29 +1113,6 @@ void BlockManager::HandleJoinElectTx(
                     common::Encode::HexEncode(tx.from()).c_str());
                 break;
             }
-
-            // std::string str_for_hash;
-            // str_for_hash.reserve(join_info.g2_req().verify_vec_size() * 4 * 64 + 8);
-            // uint32_t shard_id = join_info.shard_id();
-            // uint32_t mem_idx = join_info.member_idx();
-            // str_for_hash.append((char*)&shard_id, sizeof(shard_id));
-            // str_for_hash.append((char*)&mem_idx, sizeof(mem_idx));
-            // for (int32_t i = 0; i < join_info.g2_req().verify_vec_size(); ++i) {
-            //     auto& item = join_info.g2_req().verify_vec(i);
-            //     str_for_hash.append(item.x_c0());
-            //     str_for_hash.append(item.x_c1());
-            //     str_for_hash.append(item.y_c0());
-            //     str_for_hash.append(item.y_c1());
-            //     str_for_hash.append(item.z_c0());
-            //     str_for_hash.append(item.z_c1());
-            // }
-
-            // auto check_hash = common::Hash::keccak256(str_for_hash);
-            // // 验证交易是否合法
-            // if (check_hash != join_info.tx_hash()) {
-            //     assert(false);
-            //     break;
-            // }
 
             prefix_db_->SaveNodeVerificationVector(tx.from(), join_info, db_batch);
             ZJC_DEBUG("success handle kElectJoin tx: %s, net: %u, pool: %u, height: %lu",
