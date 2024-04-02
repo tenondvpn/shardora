@@ -214,7 +214,7 @@ TEST_F(TestViewBlockChain, TestPruneLatestCommitted) {
     // no vb5b_y
     actual_vb5b_y = nullptr;
     chain_->Get(vb5b_y->hash, actual_vb5b_y);
-    EXPECT_TRUE(actual_vb5b_x == nullptr);
+    EXPECT_TRUE(actual_vb5b_y == nullptr);
 }
 
 
