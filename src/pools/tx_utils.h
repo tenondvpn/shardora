@@ -245,6 +245,21 @@ static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_
         }
     }
 
+    ZJC_DEBUG("gid: %s, pk: %s, to: %s, amount: %lu, gas limit: %lu, gas price: %lu, "
+        "step: %d, contract code: %s, input: %s, prepayment: %lu, key: %s, value: %s", 
+        common::Encode::HexEncode(tx_info.gid()).c_str(),
+        common::Encode::HexEncode(tx_info.pubkey()).c_str(),
+        common::Encode::HexEncode(tx_info.to()).c_str(),
+        tx_info.amount(),
+        tx_info.gas_limit(),
+        tx_info.gas_price(),
+        tx_info.step(),
+        common::Encode::HexEncode(tx_info.contract_code()).c_str(),
+        common::Encode::HexEncode(tx_info.contract_input()).c_str(),
+        tx_info.contract_prepayment(),
+        common::Encode::HexEncode(tx_info.key()).c_str(),
+        common::Encode::HexEncode(tx_info.value()).c_str());
+
     ZJC_DEBUG("message: %s", common::Encode::HexEncode(message).c_str());
     return common::Hash::keccak256(message);
 }
