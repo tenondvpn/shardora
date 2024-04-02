@@ -65,6 +65,7 @@ Status ViewBlockChain::PruneTo(const HashStr& target_hash, std::vector<std::shar
     }
     
     std::unordered_set<HashStr> hashes_of_branch;
+    hashes_of_branch.insert(current->hash);
     
     Status s = Status::kSuccess;
     while (s == Status::kSuccess && current->view > prune_height_) {
