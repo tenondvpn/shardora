@@ -137,5 +137,9 @@ bool ViewBlockChain::IsOrphanBlockTimeout(const std::shared_ptr<ViewBlock> view_
     return added_us + ORPHAN_BLOCK_TIMEOUT_US <= common::TimeUtils::TimestampUs();
 }
 
+std::shared_ptr<ViewBlock> GetGenesisViewBlock() {
+    return nullptr;
+}
+
 }
 }
