@@ -210,6 +210,7 @@ add_subdirectory(${SRC_DIR}/ck ck)
 add_subdirectory(${SRC_DIR}/vss vss)
 add_subdirectory(${SRC_DIR}/sync sync)
 
+
 add_subdirectory(${SRC_DIR}/common/tests common_test)
 add_subdirectory(${SRC_DIR}/http/tests http_test)
 add_subdirectory(${SRC_DIR}/websocket/tests websocket_test)
