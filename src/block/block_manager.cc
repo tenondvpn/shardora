@@ -1356,26 +1356,29 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
         return;
     }
 
-    std::string statistic_hash;
-    std::string cross_hash;
+    pools::protobuf::ElectStatistic elect_statistic;
+    pools::protobuf::CrossShardStatistic cross_statistic;
     if (statistic_mgr_->StatisticWithHeights(
             msg_ptr->header.block_proto().statistic_tx().elect_height(),
             heights,
-            &statistic_hash,
-            &cross_hash) != pools::kPoolsSuccess) {
+            elect_statistic,
+            cross_statistic) != pools::kPoolsSuccess) {
         ZJC_DEBUG("error to txs sharding create statistic tx");
         statistic_item->shard_statistic_tx = nullptr;
         statistic_item->cross_statistic_tx = nullptr;
         return;
     }
 
+    // TODO: fix invalid hash
+    std::string statistic_hash = common::Hash::keccak256(elect_statistic.SerializeAsString());
+    std::string cross_hash = common::Hash::keccak256(cross_statistic.SerializeAsString());
     if (!statistic_hash.empty()) {
         if (statistic_item->shard_statistic_tx == nullptr ||
                 statistic_item->shard_statistic_tx->tx_hash != statistic_hash) {
             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
             auto* tx = new_msg_ptr->header.mutable_tx_proto();
             tx->set_key(protos::kShardStatistic);
-            tx->set_value(statistic_hash);
+            tx->set_value(elect_statistic.SerializeAsString());
             tx->set_pubkey("");
             tx->set_step(pools::protobuf::kStatistic);
             auto gid = common::Hash::keccak256(
@@ -1408,7 +1411,7 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
             auto* tx = new_msg_ptr->header.mutable_tx_proto();
             tx->set_key(protos::kShardCross);
-            tx->set_value(cross_hash);
+            tx->set_value(cross_statistic.SerializeAsString());
             tx->set_pubkey("");
             tx->set_step(pools::protobuf::kCross);
             auto gid = common::Hash::keccak256(

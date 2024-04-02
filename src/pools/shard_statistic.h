@@ -49,8 +49,8 @@ public:
     int StatisticWithHeights(
         uint64_t elect_height,
         const pools::protobuf::StatisticTxItem& leader_to_heights,
-        std::string* statistic_hash,
-        std::string* cross_hash);
+        pools::protobuf::ElectStatistic& elect_statistic,
+        pools::protobuf::CrossShardStatistic& cross_statistic);
     int LeaderCreateStatisticHeights(pools::protobuf::StatisticTxItem& to_heights);
 
 private:

@@ -488,8 +488,8 @@ bool ShardStatistic::LoadAndStatisticBlock(uint32_t poll_index, uint64_t height)
 int ShardStatistic::StatisticWithHeights(
         uint64_t elect_height,
         const pools::protobuf::StatisticTxItem& leader_to_heights,
-        std::string* statistic_hash,
-        std::string* cross_hash) {
+        pools::protobuf::ElectStatistic& elect_statistic,
+        pools::protobuf::CrossShardStatistic& cross_statistic) {
 #ifdef TEST_NO_CROSS
         return kPoolsError;
 #endif
@@ -550,7 +550,6 @@ int ShardStatistic::StatisticWithHeights(
     uint64_t root_all_gas_amount = 0;
     std::string cross_string_for_hash;
     std::string heights_hash;
-    pools::protobuf::CrossShardStatistic cross_statistic;
     for (uint32_t pool_idx = 0; pool_idx < max_pool; ++pool_idx) {
         uint64_t min_height = 1;
         if (tx_heights_ptr_ != nullptr) {
@@ -721,7 +720,6 @@ int ShardStatistic::StatisticWithHeights(
     
     std::string str_for_hash;
     std::string debug_for_str;
-    pools::protobuf::ElectStatistic elect_statistic;
     auto r_hiter = height_node_count_map.rbegin();
     if (r_hiter == height_node_count_map.rend() || r_hiter->first < now_elect_height_) {
         height_node_count_map[now_elect_height_] = std::unordered_map<std::string, uint32_t>();
@@ -913,26 +911,21 @@ int ShardStatistic::StatisticWithHeights(
     cross_statistic.set_elect_height(elect_height);
     if (!cross_string_for_hash.empty()) {
         if (is_root) {
-            *cross_hash = common::Hash::keccak256(cross_string_for_hash);
-            prefix_db_->SaveTemporaryKv(*cross_hash, cross_statistic.SerializeAsString());
         } else {
             *elect_statistic.mutable_cross() = cross_statistic;
             str_for_hash.append(common::Hash::keccak256(cross_string_for_hash));
         }
     }
 
-    *statistic_hash = common::Hash::keccak256(str_for_hash);
     std::string heights;
     for (int32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
         heights += std::to_string(leader_to_heights.heights(i)) + " ";
     }
 
     *elect_statistic.mutable_heights() = leader_to_heights;
-    prefix_db_->SaveTemporaryKv(*statistic_hash, elect_statistic.SerializeAsString());
-    ZJC_DEBUG("success create statistic message: %s, heights: %s, hash: %s",
+    ZJC_DEBUG("success create statistic message: %s, heights: %s",
         debug_for_str.c_str(),
-        heights.c_str(),
-        common::Encode::HexEncode(*statistic_hash).c_str());
+        heights.c_str());
     return kPoolsSuccess;
 }
 
