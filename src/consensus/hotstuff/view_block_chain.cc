@@ -1,5 +1,6 @@
 #include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/hotstuff/types.h>
+#include <iostream>
 
 namespace shardora {
 namespace consensus {
@@ -74,6 +75,10 @@ Status ViewBlockChain::PruneTo(const HashStr& target_hash, std::vector<std::shar
         }
         return Status::kError;
     }
+
+    for (auto hash : hashes_of_branch) {
+        std::cout << "hash: " << hash << std::endl;
+    }
     
     auto start_blocks = view_blocks_at_height_[prune_height_];
     if (start_blocks.empty()) {
@@ -138,7 +143,6 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
     } catch (...) {
         view_block_children_[view_block->parent_hash] = original_child_blocks;
         view_blocks_at_height_[view_block->view] = original_blocks_at_height;
-        view_blocks_[hash] = view_block;
         throw;
     }
     
