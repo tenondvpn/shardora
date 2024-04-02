@@ -6,4 +6,4 @@ aux_source_directory(./ hotstuff_test_src)
 add_executable(hotstuff_test ${hotstuff_test_src})
 
 add_dependencies(hotstuff_test consensus timeblock vss)
-target_link_libraries(hotstuff_test PRIVATE gtest gtest_main gmock gmock_main pthread dl vss timeblock consensus)
+target_link_libraries(hotstuff_test PRIVATE vss timeblock consensus gtest gtest_main gmock gmock_main pthread dl)
