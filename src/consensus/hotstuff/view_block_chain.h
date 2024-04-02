@@ -2,10 +2,9 @@
 
 #include <common/time_utils.h>
 #include <consensus/hotstuff/types.h>
-#include <consensus/hotstuff/view_block_chain_manager.h>
 #include <protos/prefix_db.h>
-
 #include <queue>
+
 namespace shardora {
 
 namespace consensus {
