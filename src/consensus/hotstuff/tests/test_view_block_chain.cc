@@ -100,35 +100,35 @@ TEST_F(TestViewBlockChain, TestStore_Success) {
     AssertEq(vb3, actual_vb3);
 }
 
-// TEST_F(TestViewBlockChain, TestStore_Fail) {
-//     Status s = Status::kSuccess;
+TEST_F(TestViewBlockChain, TestStore_Fail) {
+    Status s = Status::kSuccess;
     
-//     auto vb = GenViewBlock(genesis_->hash, genesis_->view+1);
-//     s = chain_->Store(vb);
-//     EXPECT_TRUE(s == Status::kSuccess);
+    auto vb = GenViewBlock(genesis_->hash, genesis_->view+1);
+    s = chain_->Store(vb);
+    EXPECT_TRUE(s == Status::kSuccess);
 
-//     // invalid parent hash
-//     auto vb2 = GenViewBlock("123", vb->view+1);
-//     s = chain_->Store(vb2);
-//     EXPECT_TRUE(s != Status::kSuccess);
+    // invalid parent hash
+    auto vb2 = GenViewBlock("123", vb->view+1);
+    s = chain_->Store(vb2);
+    EXPECT_TRUE(s != Status::kSuccess);
 
-//     auto actual_vb2 = std::make_shared<ViewBlock>();
-//     s = chain_->Get(vb2->hash, actual_vb2);
-//     EXPECT_TRUE(s != Status::kSuccess);
-//     EXPECT_TRUE(actual_vb2 == nullptr);
+    auto actual_vb2 = std::make_shared<ViewBlock>();
+    s = chain_->Get(vb2->hash, actual_vb2);
+    EXPECT_TRUE(s != Status::kSuccess);
+    EXPECT_TRUE(actual_vb2 == nullptr);
 
-//     // invalid view
-//     auto vb3 = GenViewBlock(vb->hash, vb->view+2);
-//     s = chain_->Store(vb3);
-//     EXPECT_TRUE(s != Status::kSuccess);
+    // invalid view
+    auto vb3 = GenViewBlock(vb->hash, vb->view+2);
+    s = chain_->Store(vb3);
+    EXPECT_TRUE(s != Status::kSuccess);
 
-//     auto actual_vb3 = std::make_shared<ViewBlock>();
-//     s = chain_->Get(vb3->hash, actual_vb3);
-//     EXPECT_TRUE(s != Status::kSuccess);
-//     EXPECT_TRUE(actual_vb3 == nullptr);    
-// }
+    auto actual_vb3 = std::make_shared<ViewBlock>();
+    s = chain_->Get(vb3->hash, actual_vb3);
+    EXPECT_TRUE(s != Status::kSuccess);
+    EXPECT_TRUE(actual_vb3 == nullptr);    
+}
 
-// TEST_F(TestViewBlockChain, TestGet) {}
+TEST_F(TestViewBlockChain, TestGet) {}
 
 // TEST_F(TestViewBlockChain, TestExtends) {
 //     auto vb = GenViewBlock(genesis_->hash, genesis_->view+1);
