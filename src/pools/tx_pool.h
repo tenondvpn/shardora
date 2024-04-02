@@ -69,6 +69,23 @@ public:
                 continue;
             }
 
+            bool valid = true;
+            switch (txs[i]->tx_info.step()) {
+                case pools::protobuf::kJoinElect:
+                    if (!CheckJoinElectTxInfo(txs[i]->tx_info)) {
+                        valid = false;
+                    }
+
+                    break;
+                default:
+                    break;
+            }
+
+            if (!valid) {
+                ZJC_FATAL("tx invalid!");
+                continue;
+            }
+
             gid_map_[txs[i]->tx_info.gid()] = txs[i];
             txs[i]->is_consensus_add_tx = true;
             consensus_tx_map_[txs[i]->unique_tx_hash] = txs[i];
@@ -329,6 +346,63 @@ public:
     }
 
 private:
+    bool CheckJoinElectTxInfo(pools::protobuf::TxMessage& tx_msg) {
+        bls::protobuf::JoinElectInfo join_info;
+        if (!join_info.ParseFromString(tx_msg.value())) {
+            return false;
+        }
+
+        uint32_t tmp_shard = join_info.shard_id();
+        if (tmp_shard != network::kRootCongressNetworkId) {
+            if (tmp_shard != msg_ptr->address_info->sharding_id()) {
+                ZJC_DEBUG("join des shard error: %d,  %d.",
+                    tmp_shard, msg_ptr->address_info->sharding_id());
+            return false;
+            }
+        }
+
+        std::string new_hash;
+        if (!SaveNodeVerfiyVec(msg_ptr->address_info->addr(), join_info, &new_hash)) {
+            assert(false);
+            return false;
+        }
+        
+        tx_msg.set_key(protos::kJoinElectVerifyG2);
+        tx_msg.set_value(new_hash);
+        return true;
+    }
+
+    bool SaveNodeVerfiyVec(
+            const std::string& id,
+            const bls::protobuf::JoinElectInfo& join_info,
+            std::string* new_hash) {
+        int32_t t = common::GetSignerCount(common::GlobalInfo::Instance()->each_shard_max_members());
+        if (join_info.g2_req().verify_vec_size() > 0 && join_info.g2_req().verify_vec_size() != t) {
+            return false;
+        }
+
+        std::string str_for_hash;
+        str_for_hash.reserve(join_info.g2_req().verify_vec_size() * 4 * 64 + 8);
+        uint32_t shard_id = join_info.shard_id();
+        uint32_t mem_idx = join_info.member_idx();
+        str_for_hash.append((char*)&shard_id, sizeof(shard_id));
+        str_for_hash.append((char*)&mem_idx, sizeof(mem_idx));
+        for (int32_t i = 0; i < join_info.g2_req().verify_vec_size(); ++i) {
+            auto& item = join_info.g2_req().verify_vec(i);
+            str_for_hash.append(item.x_c0());
+            str_for_hash.append(item.x_c1());
+            str_for_hash.append(item.y_c0());
+            str_for_hash.append(item.y_c1());
+            str_for_hash.append(item.z_c0());
+            str_for_hash.append(item.z_c1());
+        }
+
+        *new_hash = common::Hash::keccak256(str_for_hash);
+        auto str = join_info.SerializeAsString();
+        prefix_db_->SaveTemporaryKv(*new_hash, str);
+        return true;
+    }
+
     void GetTx(
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
