@@ -299,43 +299,33 @@ class StorageItem : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::std::string* release_key();
   void set_allocated_key(::std::string* key);
 
-  // optional bytes val_hash = 2;
-  bool has_val_hash() const;
-  void clear_val_hash();
-  static const int kValHashFieldNumber = 2;
-  const ::std::string& val_hash() const;
-  void set_val_hash(const ::std::string& value);
+  // optional bytes value = 2;
+  bool has_value() const;
+  void clear_value();
+  static const int kValueFieldNumber = 2;
+  const ::std::string& value() const;
+  void set_value(const ::std::string& value);
   #if LANG_CXX11
-  void set_val_hash(::std::string&& value);
+  void set_value(::std::string&& value);
   #endif
-  void set_val_hash(const char* value);
-  void set_val_hash(const void* value, size_t size);
-  ::std::string* mutable_val_hash();
-  ::std::string* release_val_hash();
-  void set_allocated_val_hash(::std::string* val_hash);
-
-  // optional uint32 val_size = 3 [default = 0];
-  bool has_val_size() const;
-  void clear_val_size();
-  static const int kValSizeFieldNumber = 3;
-  ::google::protobuf::uint32 val_size() const;
-  void set_val_size(::google::protobuf::uint32 value);
+  void set_value(const char* value);
+  void set_value(const void* value, size_t size);
+  ::std::string* mutable_value();
+  ::std::string* release_value();
+  void set_allocated_value(::std::string* value);
 
   // @@protoc_insertion_point(class_scope:shardora.block.protobuf.StorageItem)
  private:
   void set_has_key();
   void clear_has_key();
-  void set_has_val_hash();
-  void clear_has_val_hash();
-  void set_has_val_size();
-  void clear_has_val_size();
+  void set_has_value();
+  void clear_has_value();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr key_;
-  ::google::protobuf::internal::ArenaStringPtr val_hash_;
-  ::google::protobuf::uint32 val_size_;
+  ::google::protobuf::internal::ArenaStringPtr value_;
   friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -5349,94 +5339,70 @@ inline void StorageItem::set_allocated_key(::std::string* key) {
   // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.StorageItem.key)
 }
 
-// optional bytes val_hash = 2;
-inline bool StorageItem::has_val_hash() const {
+// optional bytes value = 2;
+inline bool StorageItem::has_value() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void StorageItem::set_has_val_hash() {
+inline void StorageItem::set_has_value() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void StorageItem::clear_has_val_hash() {
+inline void StorageItem::clear_has_value() {
   _has_bits_[0] &= ~0x00000002u;
 }
-inline void StorageItem::clear_val_hash() {
-  val_hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_val_hash();
+inline void StorageItem::clear_value() {
+  value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_value();
 }
-inline const ::std::string& StorageItem::val_hash() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.StorageItem.val_hash)
-  return val_hash_.GetNoArena();
+inline const ::std::string& StorageItem::value() const {
+  // @@protoc_insertion_point(field_get:shardora.block.protobuf.StorageItem.value)
+  return value_.GetNoArena();
 }
-inline void StorageItem::set_val_hash(const ::std::string& value) {
-  set_has_val_hash();
-  val_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.StorageItem.val_hash)
+inline void StorageItem::set_value(const ::std::string& value) {
+  set_has_value();
+  value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.block.protobuf.StorageItem.value)
 }
 #if LANG_CXX11
-inline void StorageItem::set_val_hash(::std::string&& value) {
-  set_has_val_hash();
-  val_hash_.SetNoArena(
+inline void StorageItem::set_value(::std::string&& value) {
+  set_has_value();
+  value_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:shardora.block.protobuf.StorageItem.val_hash)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.block.protobuf.StorageItem.value)
 }
 #endif
-inline void StorageItem::set_val_hash(const char* value) {
+inline void StorageItem::set_value(const char* value) {
   GOOGLE_DCHECK(value != NULL);
-  set_has_val_hash();
-  val_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:shardora.block.protobuf.StorageItem.val_hash)
+  set_has_value();
+  value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.block.protobuf.StorageItem.value)
 }
-inline void StorageItem::set_val_hash(const void* value, size_t size) {
-  set_has_val_hash();
-  val_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+inline void StorageItem::set_value(const void* value, size_t size) {
+  set_has_value();
+  value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:shardora.block.protobuf.StorageItem.val_hash)
+  // @@protoc_insertion_point(field_set_pointer:shardora.block.protobuf.StorageItem.value)
 }
-inline ::std::string* StorageItem::mutable_val_hash() {
-  set_has_val_hash();
-  // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.StorageItem.val_hash)
-  return val_hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+inline ::std::string* StorageItem::mutable_value() {
+  set_has_value();
+  // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.StorageItem.value)
+  return value_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* StorageItem::release_val_hash() {
-  // @@protoc_insertion_point(field_release:shardora.block.protobuf.StorageItem.val_hash)
-  if (!has_val_hash()) {
+inline ::std::string* StorageItem::release_value() {
+  // @@protoc_insertion_point(field_release:shardora.block.protobuf.StorageItem.value)
+  if (!has_value()) {
     return NULL;
   }
-  clear_has_val_hash();
-  return val_hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_value();
+  return value_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void StorageItem::set_allocated_val_hash(::std::string* val_hash) {
-  if (val_hash != NULL) {
-    set_has_val_hash();
+inline void StorageItem::set_allocated_value(::std::string* value) {
+  if (value != NULL) {
+    set_has_value();
   } else {
-    clear_has_val_hash();
+    clear_has_value();
   }
-  val_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), val_hash);
-  // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.StorageItem.val_hash)
-}
-
-// optional uint32 val_size = 3 [default = 0];
-inline bool StorageItem::has_val_size() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void StorageItem::set_has_val_size() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void StorageItem::clear_has_val_size() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void StorageItem::clear_val_size() {
-  val_size_ = 0u;
-  clear_has_val_size();
-}
-inline ::google::protobuf::uint32 StorageItem::val_size() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.StorageItem.val_size)
-  return val_size_;
-}
-inline void StorageItem::set_val_size(::google::protobuf::uint32 value) {
-  set_has_val_size();
-  val_size_ = value;
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.StorageItem.val_size)
+  value_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.StorageItem.value)
 }
 
 // -------------------------------------------------------------------
