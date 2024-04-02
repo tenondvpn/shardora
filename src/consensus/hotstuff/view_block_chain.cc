@@ -97,8 +97,9 @@ Status ViewBlockChain::PruneFrom(const std::shared_ptr<ViewBlock>& view_block, c
     if (child_blocks.empty()) {
         return Status::kSuccess;
     }
-
+    
     for (auto child_iter = child_blocks.begin(); child_iter < child_blocks.end(); child_iter++) {
+        std::cout << "view: " << (*child_iter)->view << std::endl;
         // delete the view block that is not on the same branch
         if (hashes_of_branch.find((*child_iter)->hash) == hashes_of_branch.end()) {
             DeleteViewBlock(*child_iter);
