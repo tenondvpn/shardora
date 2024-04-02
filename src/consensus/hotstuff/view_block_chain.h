@@ -50,6 +50,9 @@ public:
 private:
     // prune the branch starting from view_block
     Status PruneFrom(const std::shared_ptr<ViewBlock>& view_block, const std::unordered_set<HashStr>& hashes_of_branch, std::vector<std::shared_ptr<ViewBlock>>& forked_blocks);
+    Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
+    Status DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_block);
+    
     View prune_height_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlock>> view_blocks_;
     std::unordered_map<View, std::vector<std::shared_ptr<ViewBlock>>> view_blocks_at_height_;

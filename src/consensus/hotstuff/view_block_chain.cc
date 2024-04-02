@@ -36,7 +36,7 @@ Status ViewBlockChain::Get(const HashStr &hash, std::shared_ptr<ViewBlock> &view
         view_block = it->second;
         return Status::kSuccess;
     }
-
+    
     return Status::kError;
 }
 
@@ -52,14 +52,13 @@ bool ViewBlockChain::Extends(const std::shared_ptr<ViewBlock>& block, const std:
 
 // 剪掉从上次 prune_height 到 height 之间，latest_committed 之前的所有分叉，并返回这些分叉上的 blocks
 Status ViewBlockChain::PruneTo(const HashStr& target_hash, std::vector<std::shared_ptr<ViewBlock>>& forked_blockes) {
-    auto target_it = view_blocks_.find(target_hash);
-    if (target_it == view_blocks_.end()) {
+    std::shared_ptr<ViewBlock> current = nullptr;
+    Get(target_hash, current);
+    if (!current) {
         return Status::kError;
     }
-
-    auto current = target_it->second;
+    
     auto target_height = current->view;
-
     if (prune_height_ >= target_height) {
         return Status::kSuccess;
     }
@@ -69,17 +68,18 @@ Status ViewBlockChain::PruneTo(const HashStr& target_hash, std::vector<std::shar
     Status s = Status::kSuccess;
     while (s == Status::kSuccess && current->view > prune_height_) {
         s = Get(current->parent_hash, current);
-        if (s == Status::kSuccess && !current) {
+        if (s == Status::kSuccess && current) {
             hashes_of_branch.insert(current->hash);
             continue;
         }
         return Status::kError;
     }
-
+    
     auto start_blocks = view_blocks_at_height_[prune_height_];
     if (start_blocks.empty()) {
         return Status::kError;
     }
+    
     auto start_block = start_blocks[0];
     
     PruneFrom(start_block, hashes_of_branch, forked_blockes);
@@ -88,29 +88,60 @@ Status ViewBlockChain::PruneTo(const HashStr& target_hash, std::vector<std::shar
 }
 
 Status ViewBlockChain::PruneFrom(const std::shared_ptr<ViewBlock>& view_block, const std::unordered_set<HashStr>& hashes_of_branch, std::vector<std::shared_ptr<ViewBlock>>& forked_blocks) {
-    auto it = view_block_children_.find(view_block->hash);
-    if (it == view_block_children_.end()) {
+    std::vector<std::shared_ptr<ViewBlock>> child_blocks;
+    GetChildren(view_block->hash, child_blocks);
+
+    if (child_blocks.empty()) {
         return Status::kSuccess;
     }
 
-    auto& child_blocks = it->second;
-    for (auto child_iter = child_blocks.begin(); child_iter < child_blocks.end();) {
+    for (auto child_iter = child_blocks.begin(); child_iter < child_blocks.end(); child_iter++) {
+        // delete the view block that is not on the same branch
         if (hashes_of_branch.find((*child_iter)->hash) == hashes_of_branch.end()) {
-            auto hash = (*child_iter)->hash;
-            auto view = (*child_iter)->view;            
-            // 删除 it2 节点
-
-            view_blocks_at_height_[view].erase(child_iter);
-            view_blocks_.erase(hash);
-            child_iter = child_blocks.erase(child_iter);
-
+            DeleteViewBlock(*child_iter);
+    
             forked_blocks.push_back(*child_iter);
             PruneFrom((*child_iter), hashes_of_branch, forked_blocks);
-            continue;
         }
-        ++child_iter;
     }
 
+    return Status::kSuccess;
+}
+
+Status ViewBlockChain::GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children) {
+    auto it = view_block_children_.find(hash);
+    if (it == view_block_children_.end()) {
+        return Status::kSuccess;
+    }
+    children = it->second;
+    return Status::kSuccess;
+}
+
+Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_block) {
+    auto original_child_blocks = view_block_children_[view_block->parent_hash];
+    auto original_blocks_at_height = view_blocks_at_height_[view_block->view];
+    auto hash = view_block->hash;
+    auto view = view_block->view;
+
+    try {
+        auto& child_blocks = view_block_children_[view_block->parent_hash];
+        child_blocks.erase(std::remove_if(child_blocks.begin(), child_blocks.end(),
+            [&hash](const std::shared_ptr<ViewBlock>& item) { return item->hash == hash; }),
+            child_blocks.end());
+
+        auto& blocks = view_blocks_at_height_[view];
+        blocks.erase(std::remove_if(blocks.begin(), blocks.end(),
+            [&hash](const std::shared_ptr<ViewBlock>& item) { return item->hash == hash; }),
+            blocks.end());
+
+        view_blocks_.erase(hash);
+    } catch (...) {
+        view_block_children_[view_block->parent_hash] = original_child_blocks;
+        view_blocks_at_height_[view_block->view] = original_blocks_at_height;
+        view_blocks_[hash] = view_block;
+        throw;
+    }
+    
     return Status::kSuccess;
 }
 
