@@ -97,6 +97,8 @@ Status ViewBlockChain::PruneFrom(const std::shared_ptr<ViewBlock>& view_block, c
     if (child_blocks.empty()) {
         return Status::kSuccess;
     }
+
+    std::cout << "hash size: " << hashes_of_branch.size() << std::endl;
     
     for (auto child_iter = child_blocks.begin(); child_iter < child_blocks.end(); child_iter++) {
         std::cout << "view: " << (*child_iter)->view << std::endl;
