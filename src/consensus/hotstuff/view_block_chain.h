@@ -60,7 +60,9 @@ private:
 };
 
 // from db
-std::shared_ptr<ViewBlock> GetGenesisViewBlock() {}
+std::shared_ptr<ViewBlock> GetGenesisViewBlock() {
+    return nullptr;
+}
     
         
 } // namespace consensus

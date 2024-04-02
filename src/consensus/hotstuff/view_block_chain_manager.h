@@ -23,7 +23,9 @@ public:
     
 private:
     void ConsumeOrphanBlocks();
-    std::shared_ptr<ViewBlockChain> Chain(const uint32_t& pool_idx);
+    inline std::shared_ptr<ViewBlockChain> Chain(const uint32_t& pool_idx) const {
+        return pool_chain_map_[pool_idx];
+    }
 
     std::unordered_map<uint32_t, std::shared_ptr<ViewBlockChain>> pool_chain_map_;
     std::shared_ptr<ViewBlockChainSyncer> syncer_ptr_;
