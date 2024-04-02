@@ -367,6 +367,8 @@ bool ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kJoinElectVerifyG2) {
                     std::string val;
                     if (!prefix_db_->GetTemporaryKv(block.tx_list(i).storages(storage_idx).val_hash(), &val)) {
+                        ZJC_ERROR("failed get storage val hash: %s", 
+                            common::Encode::HexEncode(block.tx_list(i).storages(storage_idx).val_hash()).c_str());
                         assert(false);
                         break;
                     }
@@ -393,6 +395,8 @@ bool ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kElectNodeAttrElectBlock) {
                     std::string val;
                     if (!prefix_db_->GetTemporaryKv(block.tx_list(i).storages(storage_idx).val_hash(), &val)) {
+                        ZJC_ERROR("failed get storage val hash: %s", 
+                            common::Encode::HexEncode(block.tx_list(i).storages(storage_idx).val_hash()).c_str());
                         assert(false);
                         break;
                     }
