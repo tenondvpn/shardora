@@ -1592,6 +1592,13 @@ ZbftPtr BftManager::CreateBftPtr(
                             elect_mgr_, 
                             address_info);
                         break;
+                    case pools::protobuf::kRootCross:
+                        tx_ptr = std::make_shared<RootCrossTxItem>(
+                            *tx, 
+                            account_mgr_, 
+                            security_ptr_, 
+                            address_info);
+                        break;
                     default:
                         ZJC_FATAL("invalid tx step: %d", tx->step());
                         return nullptr;
@@ -3023,6 +3030,13 @@ void BftManager::LeaderAddBackupTxs(const zbft::protobuf::TxBft& txbft, uint32_t
                     security_ptr_, 
                     prefix_db_, 
                     elect_mgr_, 
+                    address_info);
+                break;
+            case pools::protobuf::kRootCross:
+                tx_ptr = std::make_shared<RootCrossTxItem>(
+                    tx, 
+                    account_mgr_, 
+                    security_ptr_, 
                     address_info);
                 break;
             default:
