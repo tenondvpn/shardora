@@ -64,8 +64,8 @@ void ThreadHandler::HandleMessage() {
                 break;
             }
 
-//             ZJC_DEBUG("start message handled msg hash: %lu, thread idx: %d",
-//                 msg_ptr->header.hash64(), msg_ptr->thread_idx);
+            ZJC_DEBUG("start message handled msg hash: %lu, thread idx: %d",
+                msg_ptr->header.hash64(), msg_ptr->thread_idx);
             msg_ptr->times_idx = 0;
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
             msg_ptr->times[msg_ptr->times_idx++] = btime;
@@ -85,7 +85,7 @@ void ThreadHandler::HandleMessage() {
                     (etime - btime), 
                     t.c_str());
             }
-//             ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
+            ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
         }
 
         if (maping_thread_idx != common::GlobalInfo::Instance()->message_handler_thread_count() - 1) {
@@ -260,7 +260,6 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
             msg_ptr->conn->PeerPort());
         return;
     }
-
 
     // all key value must temp kv
 	// 将收到的 sync kv 先持久化
