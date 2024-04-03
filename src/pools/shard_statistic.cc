@@ -804,18 +804,21 @@ int ShardStatistic::StatisticWithHeights(
         std::string pubkey = elect_nodes[i];
         if (pubkey.size() == security::kUnicastAddressLength) {
             if (!prefix_db_->GetAddressPubkey(elect_nodes[i], &pubkey)) {
+            assert(false);
                 continue;
             }
         }
 
         auto addr_info = prefix_db_->GetAddressInfo(secptr_->GetAddress(pubkey));
         if (addr_info == nullptr) {
+            assert(false);
             continue;
         }
 
         if (addr_info->elect_pos() != common::kInvalidUint32) {
             if (addr_info->elect_pos() < 0 ||
                     addr_info->elect_pos() >= common::GlobalInfo::Instance()->each_shard_max_members()) {
+                assert(false);
                 continue;
             }
         }
