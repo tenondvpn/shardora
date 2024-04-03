@@ -802,14 +802,13 @@ int ShardStatistic::StatisticWithHeights(
     debug_for_str += "stoke: ";
     for (uint32_t i = 0; i < elect_nodes.size() && i < kWaitingElectNodesMaxCount; ++i) {
         std::string pubkey = elect_nodes[i];
+        std::shared_ptr<address::protobuf::AddressInfo> addr_info = nullptr;
         if (pubkey.size() == security::kUnicastAddressLength) {
-            if (!prefix_db_->GetAddressPubkey(elect_nodes[i], &pubkey)) {
-            assert(false);
-                continue;
-            }
+            addr_info = prefix_db_->GetAddressInfo(pubkey);
+        } else {
+            addr_info = prefix_db_->GetAddressInfo(secptr_->GetAddress(pubkey));
         }
 
-        auto addr_info = prefix_db_->GetAddressInfo(secptr_->GetAddress(pubkey));
         if (addr_info == nullptr) {
             assert(false);
             continue;

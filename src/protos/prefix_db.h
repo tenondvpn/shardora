@@ -1074,31 +1074,6 @@ public:
         }
     }
 
-    void SaveAddressPubkey(const std::string& id, const std::string& pubkey) {
-        std::string key;
-        key.reserve(64);
-        key.append(kAddressPubkeyPrefex);
-        key.append(id);
-        auto st = db_->Put(key, pubkey);
-        if (!st.ok()) {
-            ZJC_FATAL("write db failed!");
-        }
-    }
-
-    bool GetAddressPubkey(const std::string& id, std::string* pubkey) {
-        std::string key;
-        key.reserve(64);
-        key.append(kAddressPubkeyPrefex);
-        key.append(id);
-        auto st = db_->Get(key, pubkey);
-        if (!st.ok()) {
-            ZJC_ERROR("write db failed!");
-            return false;
-        }
-
-        return true;
-    }
-
     void SaveJoinShard(uint32_t sharding_id, uint32_t des_sharding_id) {
         std::string key;
         key.reserve(64);
