@@ -1520,13 +1520,12 @@ void BlockManager::HandleStatisticBlock(
     for (uint32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
         ZJC_DEBUG("sharding: %u, new elect node: %s, balance: %lu, shard: %u, pos: %u", 
             elect_statistic.sharding_id(), 
-            common::Encode::HexEncode(security_->GetAddress(
-                elect_statistic.join_elect_nodes(i).pubkey())).c_str(),
+            common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).pubkey()).c_str(),
             elect_statistic.join_elect_nodes(i).stoke(),
             elect_statistic.join_elect_nodes(i).shard(),
             elect_statistic.join_elect_nodes(i).elect_pos());
     }
-    
+
     assert(block.network_id() == elect_statistic.sharding_id());
     if (network::kRootCongressNetworkId == common::GlobalInfo::Instance()->network_id() &&
             block.network_id() != network::kRootCongressNetworkId &&
