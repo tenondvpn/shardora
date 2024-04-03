@@ -1851,6 +1851,8 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
         }
 
         tmp_to_txs->tx_ptr->in_consensus = true;
+        ZJC_DEBUG("success get to tx: %s", 
+            common::Encode::HexEncode(latest_to_tx_->to_tx->tx_hash).c_str());
         return tmp_to_txs->tx_ptr;
     }
 
