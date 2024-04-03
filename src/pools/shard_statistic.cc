@@ -675,7 +675,10 @@ int ShardStatistic::StatisticWithHeights(
                 for (auto elect_iter = hiter->second->node_stoke_map.begin();
                         elect_iter != hiter->second->node_stoke_map.end(); ++elect_iter) {
                     elect_stoke_map[elect_iter->first] = elect_iter->second;
-                    ZJC_DEBUG("kJoinElect add new elect node elect_height: %lu", elect_height);
+                    ZJC_DEBUG("kJoinElect add new elect node elect_height: %lu, %s, %lu", 
+                        elect_height, 
+                        common::Encode::HexEncode(elect_iter->first).c_str(), 
+                        elect_iter->second);
                 }
 
                 auto shard_iter = join_elect_shard_map.find(elect_height);
@@ -687,7 +690,9 @@ int ShardStatistic::StatisticWithHeights(
                 for (auto tmp_shard_iter = hiter->second->node_shard_map.begin();
                         tmp_shard_iter != hiter->second->node_shard_map.end(); ++tmp_shard_iter) {
                     elect_shard_map[tmp_shard_iter->first] = tmp_shard_iter->second;
-                    ZJC_DEBUG("kJoinElect add new elect node shard: %lu", tmp_shard_iter->second);
+                    ZJC_DEBUG("kJoinElect add new elect node shard: %u , %s", 
+                        tmp_shard_iter->second, 
+                        common::Encode::HexEncode(tmp_shard_iter->first).c_str());
                 }
             }
 
@@ -705,15 +710,19 @@ int ShardStatistic::StatisticWithHeights(
         for (auto iter = r_eiter->second.begin(); iter != r_eiter->second.end(); ++iter) {
             auto shard_iter = r_siter->second.find(iter->first);
             if (shard_iter == r_siter->second.end()) {
+                ZJC_DEBUG("failed get shard: %s", common::Encode::HexEncode(iter->first).c_str());
                 continue;
             }
 
             auto inc_iter = added_id_set.find(iter->first);
             if (inc_iter != added_id_set.end()) {
+                ZJC_DEBUG("not added id: %s", common::Encode::HexEncode(iter->first).c_str());
                 continue;
             }
 
             elect_nodes.push_back(iter->first);
+            ZJC_DEBUG("elect nodes add: %s, %lu", 
+                common::Encode::HexEncode(iter->first).c_str(), iter->second);
             added_id_set.insert(iter->first);
         }
     }
