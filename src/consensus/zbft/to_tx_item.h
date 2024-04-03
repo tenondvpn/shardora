@@ -45,6 +45,7 @@ public:
             ZJC_DEBUG("success add normal to %s, %s", 
                 protos::kNormalToShards.c_str(), 
                 common::Encode::HexEncode(storage->value()).c_str());
+            assert(!storage->value().empty());
         }
         
         return consensus::kConsensusSuccess;
