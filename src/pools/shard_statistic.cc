@@ -691,7 +691,8 @@ int ShardStatistic::StatisticWithHeights(
                         pk_iter != hiter->second->node_pubkey_map.end();
                         ++pk_iter) {
                     auto tmp_id = secptr_->GetAddress(pk_iter->second);
-                    if (tmp_id != pk_iter->second) {
+                    if (tmp_id != pk_iter->first) {
+                        assert(false);
                         continue;
                     }
 
