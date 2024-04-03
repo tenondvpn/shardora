@@ -883,15 +883,10 @@ void BlockManager::createConsensusLocalToTxs(
 
     // 一个 pool 生成一个 Consensuslocaltos
     for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {
-        std::string str_for_hash;
         // 48 ? des = to(20) + from(20)  = 40, 40 + pool(4) + amount(8) = 52
-        str_for_hash.reserve(iter->second.tos_size() * 48); 
         for (int32_t i = 0; i < iter->second.tos_size(); ++i) {
-            str_for_hash.append(iter->second.tos(i).des());
             uint32_t pool_idx = iter->second.tos(i).pool_index();
-            str_for_hash.append((char*)&pool_idx, sizeof(pool_idx));
             uint64_t amount = iter->second.tos(i).amount();
-            str_for_hash.append((char*)&amount, sizeof(amount));
             ZJC_DEBUG("heights_hash: %s, ammount success add local transfer to %s, %lu",
                 common::Encode::HexEncode(heights_hash).c_str(),
                 common::Encode::HexEncode(iter->second.tos(i).des()).c_str(), amount);
@@ -900,14 +895,14 @@ void BlockManager::createConsensusLocalToTxs(
         // 由于是异步的，因此需要持久化 kv 来传递数据，但是 to 需要填充以分配交易池
         // pool index 是指定好的，而不是 shard 分配的，所以需要将 to 设置为 pool addr
         auto val = iter->second.SerializeAsString();
-        auto tos_hash = common::Hash::keccak256(str_for_hash);
+        auto tos_hash = common::Hash::keccak256(val);
         prefix_db_->SaveTemporaryKv(tos_hash, val);
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         msg_ptr->address_info = account_mgr_->pools_address_info(iter->first);
         auto tx = msg_ptr->header.mutable_tx_proto();
         // 将 tos_hash 存入 kv，用于 HandleTx 时获取 val
         tx->set_key(protos::kLocalNormalTos);
-        tx->set_value(tos_hash);
+        tx->set_value(val);
         tx->set_pubkey("");
         tx->set_to(msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kConsensusLocalTos);
