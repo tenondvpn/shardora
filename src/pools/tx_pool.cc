@@ -128,9 +128,10 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     if (tx_ptr->unique_tx_hash.empty()) {
+        ZJC_WARN("add failed unique hash empty: %d", tx_ptr->tx_info.step());
         tx_ptr->unique_tx_hash = pools::GetTxMessageHash(tx_ptr->tx_info);
     }
-    
+
     assert(tx_ptr != nullptr);
     auto iter = gid_map_.find(tx_ptr->tx_info.gid());
     if (iter != gid_map_.end()) {
