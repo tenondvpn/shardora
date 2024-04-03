@@ -185,6 +185,10 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(uint32_t pool_in
             tx_ptr->prev_consensus_tm_us = now_tm;
         }
 
+        if (tx_ptr->unique_tx_hash.empty()) {
+            tx_ptr->unique_tx_hash = pools::GetTxMessageHash(tx_ptr->tx_info);
+        }
+        
         auto txs_item = std::make_shared<WaitingTxsItem>();
         txs_item->pool_index = pool_index;
         txs_item->txs[tx_ptr->unique_tx_hash] = tx_ptr;
