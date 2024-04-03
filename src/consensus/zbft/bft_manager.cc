@@ -3237,8 +3237,8 @@ void BftManager::BroadcastLocalTosBlock(
         *msg.mutable_block() = *block_item;
         auto* brdcast = msg.mutable_broadcast();
         network::Route::Instance()->Send(msg_ptr);
-        ZJC_DEBUG("success broadcast cross tos height: %lu, sharding id: %u",
-            block_item->height(), to_tx.to_heights().sharding_id());
+        ZJC_DEBUG("success broadcast cross tos height: %lu, sharding id: %u, hash64: %lu",
+            block_item->height(), to_tx.to_heights().sharding_id(), msg.hash64());
     }
 }
 
