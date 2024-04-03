@@ -1638,7 +1638,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
                 heights,
                 to_tx) != pools::kPoolsSuccess) {
             all_valid = false;
-            continue;
+            all_to_txs.mutable_to_tx_arr()->RemoveLast();
         }
     }
 
