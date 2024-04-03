@@ -1478,23 +1478,8 @@ void BlockManager::RootCreateCrossTx(
     tx->set_amount(0);
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
     tx->set_gid(gid);
-    std::string cross_string_for_hash;
-    cross_string_for_hash.reserve(elect_statistic.cross().crosses_size() * 48);
-    for (int32_t i = 0; i < elect_statistic.cross().crosses_size(); ++i) {
-        uint32_t src_shard = elect_statistic.cross().crosses(i).src_shard();
-        uint32_t src_pool = elect_statistic.cross().crosses(i).src_pool();
-        uint64_t height = elect_statistic.cross().crosses(i).height();
-        uint32_t des_shard = elect_statistic.cross().crosses(i).des_shard();
-        cross_string_for_hash.append((char*)&src_shard, sizeof(src_shard));
-        cross_string_for_hash.append((char*)&src_pool, sizeof(src_pool));
-        cross_string_for_hash.append((char*)&height, sizeof(height));
-        cross_string_for_hash.append((char*)&des_shard, sizeof(des_shard));
-    }
-
-    auto hash = common::Hash::keccak256(cross_string_for_hash);
-    prefix_db_->SaveTemporaryKv(hash, elect_statistic.cross().SerializeAsString());
     tx->set_key(protos::kRootCross);
-    tx->set_value(hash);
+    tx->set_value(elect_statistic.cross().SerializeAsString());
     pools_mgr_->HandleMessage(msg_ptr);
     ZJC_INFO("create cross tx %s, gid: %s",
         common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
