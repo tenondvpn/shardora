@@ -587,10 +587,12 @@ void BlockManager::HandleStatisticTx(
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         if (block_tx.storages(i).key() == protos::kShardStatistic) {
             if (!elect_statistic.ParseFromString(block_tx.storages(i).value())) {
+                assert(false);
                 continue;
             }
 
             if (elect_statistic.sharding_id() != net_id) {
+                ZJC_DEBUG("invalid sharding id %u, %u", elect_statistic.sharding_id(), net_id);
                 continue;
             }
 
@@ -1515,6 +1517,16 @@ void BlockManager::HandleStatisticBlock(
         block.timeblock_height(),
         elect_statistic,
         db_batch);
+    for (uint32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
+        ZJC_DEBUG("sharding: %u, new elect node: %s, balance: %lu, shard: %u, pos: %u", 
+            elect_statistic.sharding_id(), 
+            common::Encode::HexEncode(security_->GetAddress(
+                elect_statistic.join_elect_nodes(i).pubkey())).c_str(),
+            elect_statistic.join_elect_nodes(i).stoke(),
+            elect_statistic.join_elect_nodes(i).shard(),
+            elect_statistic.join_elect_nodes(i).elect_pos());
+    }
+    
     assert(block.network_id() == elect_statistic.sharding_id());
     if (network::kRootCongressNetworkId == common::GlobalInfo::Instance()->network_id() &&
             block.network_id() != network::kRootCongressNetworkId &&
