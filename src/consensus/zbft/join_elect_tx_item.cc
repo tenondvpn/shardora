@@ -14,7 +14,15 @@ int JoinElectTxItem::HandleTx(
     // gas just consume by from
     uint64_t from_balance = 0;
     uint64_t to_balance = 0;
+    auto tmp_id = sec_ptr_->GetAddress(from_pk_);
     auto& from = address_info->addr();
+    if (tmp_id != from) {
+        block_tx.set_status(consensus::kConsensusError);
+        // will never happen
+        assert(false);
+        return kConsensusSuccess;
+    }
+
     int balance_status = GetTempAccountBalance(from, acc_balance_map, &from_balance);
     if (balance_status != kConsensusSuccess) {
         block_tx.set_status(balance_status);
@@ -88,6 +96,9 @@ int JoinElectTxItem::HandleTx(
         uint64_t* tmp = (uint64_t*)data;
         tmp[0] = stoke;
         stoke_storage->set_value(std::string(data, sizeof(data)));
+        auto pk_storage = block_tx.add_storages();
+        pk_storage->set_key(protos::kNodePublicKey);
+        pk_storage->set_value(from_pk_);
     }
 
     acc_balance_map[from] = from_balance;

@@ -1590,7 +1590,8 @@ ZbftPtr BftManager::CreateBftPtr(
                             security_ptr_, 
                             prefix_db_, 
                             elect_mgr_, 
-                            address_info);
+                            address_info,
+                            tx->pubkey());
                         break;
                     case pools::protobuf::kRootCross:
                         tx_ptr = std::make_shared<RootCrossTxItem>(
@@ -3030,7 +3031,8 @@ void BftManager::LeaderAddBackupTxs(const zbft::protobuf::TxBft& txbft, uint32_t
                     security_ptr_, 
                     prefix_db_, 
                     elect_mgr_, 
-                    address_info);
+                    address_info,
+                    tx.pubkey());
                 break;
             case pools::protobuf::kRootCross:
                 tx_ptr = std::make_shared<RootCrossTxItem>(

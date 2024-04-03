@@ -40,6 +40,7 @@ static const std::string kAttrGenesisTimerBlock = "__tmblock_genesis";
 static const std::string kVssRandomAttr = "__vssrandomattr";
 
 static const std::string kStatisticAttr = "__kStatisticAttr";
+static const std::string kNodePublicKey = "__node_pk";
 
 };  // namespace protos
 

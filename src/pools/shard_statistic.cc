@@ -347,6 +347,11 @@ bool ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                     statistic_info_ptr->node_stoke_map[block.tx_list(i).from()] = tmp_stoke[0];
                 }
 
+                if (block.tx_list(i).storages(storage_idx).key() == protos::kNodePublicKey) {
+                    statistic_info_ptr->node_pubkey_map[block.tx_list(i).from()] = 
+                        block.tx_list(i).storages(storage_idx).value();
+                }
+
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kJoinElectVerifyG2) {
                     bls::protobuf::JoinElectInfo join_info;
                     if (!join_info.ParseFromString(block.tx_list(i).storages(storage_idx).value())) {
@@ -523,6 +528,7 @@ int ShardStatistic::StatisticWithHeights(
     std::map<uint64_t, std::unordered_map<std::string, uint32_t>> height_node_count_map;
     std::map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
     std::map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
+    std::unordered_map<std::string, std::string> id_pk_map;
     auto prepare_members = elect_mgr_->GetNetworkMembersWithHeight(
         prepare_elect_height_,
         common::GlobalInfo::Instance()->network_id(),
@@ -681,6 +687,17 @@ int ShardStatistic::StatisticWithHeights(
                         elect_iter->second);
                 }
 
+                for (auto pk_iter = hiter->second->node_pubkey_map.begin();
+                        pk_iter != hiter->second->node_pubkey_map.end();
+                        ++pk_iter) {
+                    auto tmp_id = secptr_->GetAddress(pk_iter->second);
+                    if (tmp_id != pk_iter->second) {
+                        continue;
+                    }
+
+                    id_pk_map[pk_iter->first] = pk_iter->second;
+                }
+
                 auto shard_iter = join_elect_shard_map.find(elect_height);
                 if (shard_iter == join_elect_shard_map.end()) {
                     join_elect_shard_map[elect_height] = std::unordered_map<std::string, uint32_t>();
@@ -804,11 +821,16 @@ int ShardStatistic::StatisticWithHeights(
         std::string pubkey = elect_nodes[i];
         std::shared_ptr<address::protobuf::AddressInfo> addr_info = nullptr;
         if (pubkey.size() == security::kUnicastAddressLength) {
-            addr_info = prefix_db_->GetAddressInfo(pubkey);
-        } else {
-            addr_info = prefix_db_->GetAddressInfo(secptr_->GetAddress(pubkey));
+            auto iter = id_pk_map.find(pubkey);
+            if (iter == id_pk_map.end()) {
+                assert(false);
+                continue;
+            }
+
+            pubkey = iter->second;
         }
 
+        auto addr_info = prefix_db_->GetAddressInfo(secptr_->GetAddress(pubkey));
         if (addr_info == nullptr) {
             assert(false);
             continue;
