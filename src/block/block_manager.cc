@@ -270,7 +270,8 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         if (block_agg_valid_func_(*block_ptr)) {
             // just one thread
             block_from_network_queue_.push(block_ptr);
-            ZJC_DEBUG("queue size add new block message hash: %lu, block_from_network_queue_ size: %d", msg_ptr->header.hash64(), block_from_network_queue_.size());
+            ZJC_DEBUG("queue size add new block message hash: %lu, block_from_network_queue_ size: %d", 
+                msg_ptr->header.hash64(), block_from_network_queue_.size());
         }
     }
 }
@@ -684,6 +685,7 @@ void BlockManager::HandleNormalToTx(
                 common::Encode::HexEncode(tx.storages(i).value()).c_str());
             HandleLocalNormalToTx(to_txs, tx.step(), tx.storages(0).value());
         } else {
+            ZJC_DEBUG("root handle normal to tx.");
             RootHandleNormalToTx(block.height(), to_txs, db_batch);
         }
     }
@@ -694,7 +696,9 @@ void BlockManager::RootHandleNormalToTx(
         pools::protobuf::ToTxMessage& to_txs,
         db::DbWriteBatch& db_batch) {
     // 将 NormalTo 中的多个 tx 拆分成多个 kRootCreateAddress tx
+    assert(to_txs.tos_size() > 0);
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
+        ZJC_DEBUG("now handle normal to tx.");
         auto tos_item = to_txs.tos(i);
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto tx = msg_ptr->header.mutable_tx_proto();
@@ -731,6 +735,7 @@ void BlockManager::RootHandleNormalToTx(
                     db_batch);
                 ZJC_DEBUG("success handle kElectJoin tx: %s", common::Encode::HexEncode(tos_item.des()).c_str());
             }
+
             continue;
         }
         
