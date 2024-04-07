@@ -18,23 +18,14 @@
 namespace shardora {
 namespace consensus {
 
-ViewBlockChainSyncer::ViewBlockChainSyncer(FetchCallbackFn* fetch_cb_) {
-    fetch_callback_fn_ = fetch_cb_;
+ViewBlockChainSyncer::ViewBlockChainSyncer() {
     // start consumeloop thread
     network::Route::Instance()->RegisterMessage(common::kViewBlockMessage,
         std::bind(&ViewBlockChainSyncer::HandleMessage, this, std::placeholders::_1));
     tick_.CutOff(100000lu, std::bind(&ViewBlockChainSyncer::ConsensusTimerMessage, this));
-    
 }
 
 ViewBlockChainSyncer::~ViewBlockChainSyncer() {}
-
-Status ViewBlockChainSyncer::AsyncFetch(const HashStr& view_block_hash, uint32_t pool_idx) {
-    auto block_item = std::make_shared<ViewBlockItem>(view_block_hash, pool_idx);
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    input_queues_[thread_idx].push(block_item);
-    return Status::kSuccess;
-}
 
 void ViewBlockChainSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // TODO 放入消息队列，等待消费
@@ -46,55 +37,25 @@ void ViewBlockChainSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
 // 批量异步处理，提高 tps
 void ViewBlockChainSyncer::ConsensusTimerMessage() {
-    produceMessages();
-    consumeMessages();
+    SyncChains();
+    ConsumeMessages();
 
     tick_.CutOff(
         100000lu,
         std::bind(&ViewBlockChainSyncer::ConsensusTimerMessage, this));    
 }
 
-void ViewBlockChainSyncer::produceMessages() {
-    // 消息消费线程，根据类型分发给不同的方法
-    uint32_t pop_count = 0;
-    for (uint8_t thread_idx = 0; thread_idx < common::kMaxThreadCount; thread_idx++) {
-        while (pop_count++) {
-            std::shared_ptr<ViewBlockItem> block_item = nullptr;
-            input_queues_[thread_idx].pop(&block_item);
-            if (!block_item) {
-                break;
-            }
-            
-            item_queue_.push(block_item);
-        }
-    }
-
-    std::unordered_map<uint32_t, view_block::protobuf::ViewBlockMessage> pool_msg_map;
-    while (!item_queue_.empty()) {
-        std::shared_ptr<ViewBlockItem> block_item = item_queue_.front();
-        item_queue_.pop();
-        
-        auto it = pool_msg_map.find(block_item->pool_idx);
-        if (it == pool_msg_map.end()) {
-            pool_msg_map[block_item->pool_idx] = view_block::protobuf::ViewBlockMessage();
-        }
-
-        auto req = pool_msg_map[block_item->pool_idx].mutable_view_block_req();
-        req->add_hashes(block_item->hash);
-        req->set_pool_idx(block_item->pool_idx);
+void ViewBlockChainSyncer::SyncChains() {
+    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
+        auto vb_msg = view_block::protobuf::ViewBlockMessage();
+        auto req = vb_msg.mutable_view_block_req();
+        req->set_pool_idx(pool_idx);
         req->set_network_id(common::GlobalInfo::Instance()->network_id());
-
-        // batch send request
-        if (req->hashes_size() > kEachRequestMaxViewBlocksCount) {
-            sendRequest(common::GlobalInfo::Instance()->network_id(),
-                pool_msg_map[block_item->pool_idx]);
-
-            req->clear_hashes();
-        }
+        SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg);
     }
 }
 
-void ViewBlockChainSyncer::consumeMessages() {
+void ViewBlockChainSyncer::ConsumeMessages() {
     // Consume Messages
     while (true) {
         transport::MessagePtr msg_ptr = nullptr;
@@ -110,7 +71,7 @@ void ViewBlockChainSyncer::consumeMessages() {
     }    
 }
 
-Status ViewBlockChainSyncer::sendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockMessage& view_block_msg) {
+Status ViewBlockChainSyncer::SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockMessage& view_block_msg) {
     // 只有共识池节点才能同步 ViewBlock
     if (network_id >= network::kConsensusWaitingShardBeginNetworkId) {
         return Status::kError;
@@ -142,34 +103,31 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
     auto& view_block_msg = msg_ptr->header.view_block_proto();
     assert(view_block_msg.has_view_block_req());
 
+    // TODO 同步全部的 ViewBlockChain，不再按照 hash 同步
+
     transport::protobuf::Header msg;
     view_block::protobuf::ViewBlockMessage&  res_view_block_msg = *msg.mutable_view_block_proto();
     auto view_block_res = res_view_block_msg.mutable_view_block_res();
+    uint32_t pool_idx = view_block_msg.view_block_req().pool_idx();
     view_block_res->set_network_id(view_block_msg.view_block_req().network_id());
-    view_block_res->set_pool_idx(view_block_msg.view_block_req().pool_idx());
+    view_block_res->set_pool_idx(pool_idx);
 
-    for (int i = 0; i < view_block_msg.view_block_req().hashes_size(); i++) {
-        std::string hash = view_block_msg.view_block_req().hashes(i);
-        uint32_t pool_idx = view_block_msg.view_block_req().pool_idx();
-        // TODO Get view block by hash and pool
-        std::shared_ptr<ViewBlockChain> view_block_chain = nullptr;
-        GetViewBlockChain(pool_idx, view_block_chain);
-        if (!view_block_chain) {
-            continue;
-        }
-        std::shared_ptr<ViewBlock> view_block = nullptr;
-        view_block_chain->Get(hash, view_block);
-        if (!view_block) {
-            continue;
-        }
-        
+    auto chain = view_block_chain_mgr_->Chain(pool_idx);
+    if (!chain) {
+        return Status::kError;
+    }
+
+    std::vector<std::shared_ptr<ViewBlock>> all;
+    chain->GetAll(all);
+
+    for (auto& view_block : all) {
         auto view_block_item = view_block_res->add_view_block_items();
         view_block_item->set_hash(view_block->hash);
         view_block_item->set_parent_hash(view_block->parent_hash);
         view_block_item->set_leader_idx(view_block->leader_idx);
         view_block_item->set_block_str(view_block->block->SerializeAsString());
         view_block_item->set_qc_str(view_block->qc->Serialize());
-        view_block_item->set_view(view_block->view);
+        view_block_item->set_view(view_block->view);        
     }
 
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -189,6 +147,12 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
     auto& view_block_items = view_block_msg.view_block_res().view_block_items();
     uint32_t pool_idx = view_block_msg.view_block_res().pool_idx();
 
+    auto chain = view_block_chain_mgr_->Chain(pool_idx);
+    if (!chain) {
+        return Status::kError;
+    }
+
+    ViewBlockMinHeap min_heap;
     for (auto it = view_block_items.begin(); it != view_block_items.end(); it++) {
         std::shared_ptr<ViewBlock> view_block = nullptr;
         std::shared_ptr<block::protobuf::Block> block_item = nullptr;
@@ -201,17 +165,87 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
                 view_block->parent_hash = it->parent_hash();
                 view_block->view = it->view();
                 view_block->leader_idx = it->leader_idx();
-                
-                // TODO 根据 pool 获取 block chain
-                // auto view_block_chain = std::make_shared<ViewBlockChain>();
-                // view_block_chain->Store(view_block);
+
+                min_heap.push(view_block);
             }
         }
+    }
+
+    if (min_heap.empty()) {
+        return Status::kSuccess;
+    }
+
+    auto start = min_heap.top();
+    min_heap.pop();
+    auto sync_chain = std::make_shared<ViewBlockChain>(start);
+    
+    while (!min_heap.empty()) {
+        auto& view_block = min_heap.top();
+        min_heap.pop();
+
+        sync_chain->Store(view_block);
+    }
+
+    if (!sync_chain->IsValid()) {
+        return Status::kSuccess;
+    }
+
+    MergeChain(chain, sync_chain);
+    
+    return Status::kSuccess;
+}
+
+Status ViewBlockChainSyncer::MergeChain(std::shared_ptr<ViewBlockChain>& ori_chain, const std::shared_ptr<ViewBlockChain>& sync_chain) {
+    // 寻找交点
+    std::vector<std::shared_ptr<ViewBlock>> view_blocks;
+    ori_chain->GetAll(view_blocks);
+    std::shared_ptr<ViewBlock> cross_block = nullptr;
+    for (auto it = view_blocks.begin(); it != view_blocks.end(); it++) {
+        sync_chain->Get((*it)->hash, cross_block);
+        if (cross_block) {
+            break;
+        }
+    }
+
+    // 两条链存在交点，则从交点之后开始 merge 
+    if (cross_block) {
+        std::vector<std::shared_ptr<ViewBlock>> sync_all_blocks;
+        sync_chain->GetOrderedAll(sync_all_blocks);
+
+        for (auto sync_block : sync_all_blocks) {
+            if (sync_block->view <= cross_block->view) {
+                continue;
+            }
+            if (StoreViewBlock(sync_block) != Status::kSuccess) {
+                break;
+            }
+        }
+        
+        return Status::kSuccess;
+    }
+
+    // 两条链不存在交点，则替换为 max_view 更大的链
+    auto ori_max_height = ori_chain->GetMaxHeight();
+    auto sync_max_height = sync_chain->GetMaxHeight();
+    if (ori_max_height >= sync_max_height) {
+        return Status::kSuccess;
+    }
+
+    std::vector<std::shared_ptr<ViewBlock>> sync_all_blocks;
+    sync_chain->GetOrderedAll(sync_all_blocks);
+    for (auto sync_block : sync_all_blocks) {
+        if (StoreViewBlock(sync_block) != Status::kSuccess) {
+            break;
+        }        
     }
     return Status::kSuccess;
 }
 
-Status ViewBlockChainSyncer::GetViewBlockChain(uint32_t pool_idx, std::shared_ptr<ViewBlockChain>& view_block_chain) {
+Status ViewBlockChainSyncer::StoreViewBlock(const std::shared_ptr<ViewBlock>&) {
+    // TODO OnPropose 逻辑
+    // 1. 验证 block
+    // 2. CommitRule
+    // 3. 视图切换    
     return Status::kSuccess;
 }
 

@@ -171,28 +171,6 @@ class ViewBlockRequest : public ::google::protobuf::Message /* @@protoc_insertio
 
   // accessors -------------------------------------------------------
 
-  // repeated bytes hashes = 3;
-  int hashes_size() const;
-  void clear_hashes();
-  static const int kHashesFieldNumber = 3;
-  const ::std::string& hashes(int index) const;
-  ::std::string* mutable_hashes(int index);
-  void set_hashes(int index, const ::std::string& value);
-  #if LANG_CXX11
-  void set_hashes(int index, ::std::string&& value);
-  #endif
-  void set_hashes(int index, const char* value);
-  void set_hashes(int index, const void* value, size_t size);
-  ::std::string* add_hashes();
-  void add_hashes(const ::std::string& value);
-  #if LANG_CXX11
-  void add_hashes(::std::string&& value);
-  #endif
-  void add_hashes(const char* value);
-  void add_hashes(const void* value, size_t size);
-  const ::google::protobuf::RepeatedPtrField< ::std::string>& hashes() const;
-  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_hashes();
-
   // optional uint32 network_id = 1;
   bool has_network_id() const;
   void clear_network_id();
@@ -217,7 +195,6 @@ class ViewBlockRequest : public ::google::protobuf::Message /* @@protoc_insertio
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> hashes_;
   ::google::protobuf::uint32 network_id_;
   ::google::protobuf::uint32 pool_idx_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
@@ -746,75 +723,6 @@ inline void ViewBlockRequest::set_pool_idx(::google::protobuf::uint32 value) {
   set_has_pool_idx();
   pool_idx_ = value;
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockRequest.pool_idx)
-}
-
-// repeated bytes hashes = 3;
-inline int ViewBlockRequest::hashes_size() const {
-  return hashes_.size();
-}
-inline void ViewBlockRequest::clear_hashes() {
-  hashes_.Clear();
-}
-inline const ::std::string& ViewBlockRequest::hashes(int index) const {
-  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockRequest.hashes)
-  return hashes_.Get(index);
-}
-inline ::std::string* ViewBlockRequest::mutable_hashes(int index) {
-  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.ViewBlockRequest.hashes)
-  return hashes_.Mutable(index);
-}
-inline void ViewBlockRequest::set_hashes(int index, const ::std::string& value) {
-  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockRequest.hashes)
-  hashes_.Mutable(index)->assign(value);
-}
-#if LANG_CXX11
-inline void ViewBlockRequest::set_hashes(int index, ::std::string&& value) {
-  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockRequest.hashes)
-  hashes_.Mutable(index)->assign(std::move(value));
-}
-#endif
-inline void ViewBlockRequest::set_hashes(int index, const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  hashes_.Mutable(index)->assign(value);
-  // @@protoc_insertion_point(field_set_char:shardora.view_block.protobuf.ViewBlockRequest.hashes)
-}
-inline void ViewBlockRequest::set_hashes(int index, const void* value, size_t size) {
-  hashes_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_set_pointer:shardora.view_block.protobuf.ViewBlockRequest.hashes)
-}
-inline ::std::string* ViewBlockRequest::add_hashes() {
-  // @@protoc_insertion_point(field_add_mutable:shardora.view_block.protobuf.ViewBlockRequest.hashes)
-  return hashes_.Add();
-}
-inline void ViewBlockRequest::add_hashes(const ::std::string& value) {
-  hashes_.Add()->assign(value);
-  // @@protoc_insertion_point(field_add:shardora.view_block.protobuf.ViewBlockRequest.hashes)
-}
-#if LANG_CXX11
-inline void ViewBlockRequest::add_hashes(::std::string&& value) {
-  hashes_.Add(std::move(value));
-  // @@protoc_insertion_point(field_add:shardora.view_block.protobuf.ViewBlockRequest.hashes)
-}
-#endif
-inline void ViewBlockRequest::add_hashes(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  hashes_.Add()->assign(value);
-  // @@protoc_insertion_point(field_add_char:shardora.view_block.protobuf.ViewBlockRequest.hashes)
-}
-inline void ViewBlockRequest::add_hashes(const void* value, size_t size) {
-  hashes_.Add()->assign(reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_add_pointer:shardora.view_block.protobuf.ViewBlockRequest.hashes)
-}
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-ViewBlockRequest::hashes() const {
-  // @@protoc_insertion_point(field_list:shardora.view_block.protobuf.ViewBlockRequest.hashes)
-  return hashes_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-ViewBlockRequest::mutable_hashes() {
-  // @@protoc_insertion_point(field_mutable_list:shardora.view_block.protobuf.ViewBlockRequest.hashes)
-  return &hashes_;
 }
 
 // -------------------------------------------------------------------

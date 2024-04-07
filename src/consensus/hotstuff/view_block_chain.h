@@ -1,5 +1,6 @@
 #pragma once
 
+#include <__algorithm/remove_if.h>
 #include <common/time_utils.h>
 #include <consensus/hotstuff/types.h>
 #include <protos/prefix_db.h>
@@ -39,27 +40,88 @@ public:
     // prune from last prune height to target view block
     Status PruneTo(const HashStr& target_hash, std::vector<std::shared_ptr<ViewBlock>>& forked_blockes);
 
-    inline ViewBlockMinHeap OrphanBlocks() const {
-        return orphan_blocks_;
+    Status GetAll(std::vector<std::shared_ptr<ViewBlock>>&);
+
+    Status GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>&);
+
+    inline std::shared_ptr<ViewBlock> LatestCommittedBlock() const {
+        return latest_committed_block_;
     }
 
-    void AddOrphanBlock(const std::shared_ptr<ViewBlock>& view_block);
-    std::shared_ptr<ViewBlock> PopOrphanBlock();
-    bool IsOrphanBlockTimeout(const std::shared_ptr<ViewBlock> view_block) const;
+    inline std::unordered_set<std::shared_ptr<ViewBlock>> LatestLockedBlocks() const {
+        return latest_locked_blocks_;
+    }
+
+    inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlock>& view_block) {
+        latest_locked_blocks_.erase(std::remove_if(latest_locked_blocks_.begin(), latest_locked_blocks_.end(),
+                [&view_block](const std::shared_ptr<ViewBlock>& item) {return item->hash == view_block->hash; }),
+            latest_locked_blocks_.end());
+        latest_committed_block_ = view_block;
+    }
+
+    inline void AddLockedBlock(const std::shared_ptr<ViewBlock>& view_block) {
+        latest_locked_blocks_.insert(view_block);
+    }
+
+    // inline ViewBlockMinHeap OrphanBlocks() const {
+    //     return orphan_blocks_;
+    // }
+
+    // void AddOrphanBlock(const std::shared_ptr<ViewBlock>& view_block);
+    // std::shared_ptr<ViewBlock> PopOrphanBlock();
+    // bool IsOrphanBlockTimeout(const std::shared_ptr<ViewBlock> view_block) const;
+    // If a chain is valid
+    bool IsValid();
+
+    View GetMinHeight() const {
+        View min = 0;
+        for (auto it = view_blocks_at_height_.begin(); it != view_blocks_at_height_.end(); it++) {
+            if (it->first < min) {
+                min = it->first;
+            }
+        }
+        return min;
+    }    
+
+    View GetMaxHeight() const {
+        View max = 0;
+        for (auto it = view_blocks_at_height_.begin(); it != view_blocks_at_height_.end(); it++) {
+            if (it->first > max) {
+                max = it->first;
+            }
+        }
+        return max;
+    }
+
+    inline void Clear() {
+        view_blocks_.clear();
+        view_blocks_at_height_.clear();
+        view_block_children_.clear();
+        prune_height_ = View(1);
+
+        latest_committed_block_ = nullptr;
+        latest_locked_blocks_.clear();
+    }    
     
 private:
     // prune the branch starting from view_block
     Status PruneFromBlockToTargetHash(const std::shared_ptr<ViewBlock>& view_block, const std::unordered_set<HashStr>& hashes_of_branch, std::vector<std::shared_ptr<ViewBlock>>& forked_blocks, const HashStr& target_hash);
     Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
     Status DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_block);
+    inline uint32_t Size() const {
+        return view_blocks_.size();
+    }
     
     View prune_height_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlock>> view_blocks_;
     std::unordered_map<View, std::vector<std::shared_ptr<ViewBlock>>> view_blocks_at_height_;
     std::unordered_map<HashStr, std::vector<std::shared_ptr<ViewBlock>>> view_block_children_;
 
-    ViewBlockMinHeap orphan_blocks_; // 已经获得但没有父块, 按照 view 排序
-    std::unordered_map<HashStr, uint64_t> orphan_added_us_;
+    // ViewBlockMinHeap orphan_blocks_; // 已经获得但没有父块, 按照 view 排序
+    // std::unordered_map<HashStr, uint64_t> orphan_added_us_;
+
+    std::shared_ptr<ViewBlock> latest_committed_block_; // 最新 committed block
+    std::unordered_set<std::shared_ptr<ViewBlock>> latest_locked_blocks_; // locked_blocks_;
 };
 
 // from db

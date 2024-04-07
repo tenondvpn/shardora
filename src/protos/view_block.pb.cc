@@ -127,10 +127,8 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockRequest, network_id_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockRequest, pool_idx_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockRequest, hashes_),
   0,
   1,
-  ~0u,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockItem, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockItem, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -170,10 +168,10 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   1,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 8, sizeof(::shardora::view_block::protobuf::ViewBlockRequest)},
-  { 11, 22, sizeof(::shardora::view_block::protobuf::ViewBlockItem)},
-  { 28, 36, sizeof(::shardora::view_block::protobuf::ViewBlockResponse)},
-  { 39, 46, sizeof(::shardora::view_block::protobuf::ViewBlockMessage)},
+  { 0, 7, sizeof(::shardora::view_block::protobuf::ViewBlockRequest)},
+  { 9, 20, sizeof(::shardora::view_block::protobuf::ViewBlockItem)},
+  { 26, 34, sizeof(::shardora::view_block::protobuf::ViewBlockResponse)},
+  { 37, 44, sizeof(::shardora::view_block::protobuf::ViewBlockMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -205,22 +203,22 @@ void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
       "\n\027protos/view_block.proto\022\034shardora.view"
-      "_block.protobuf\"H\n\020ViewBlockRequest\022\022\n\nn"
-      "etwork_id\030\001 \001(\r\022\020\n\010pool_idx\030\002 \001(\r\022\016\n\006has"
-      "hes\030\003 \003(\014\"w\n\rViewBlockItem\022\014\n\004hash\030\001 \001(\014"
-      "\022\023\n\013parent_hash\030\002 \001(\014\022\022\n\nleader_idx\030\003 \001("
-      "\r\022\021\n\tblock_str\030\004 \001(\014\022\016\n\006qc_str\030\005 \001(\014\022\014\n\004"
-      "view\030\006 \001(\r\"\200\001\n\021ViewBlockResponse\022\022\n\nnetw"
-      "ork_id\030\001 \001(\r\022\020\n\010pool_idx\030\002 \001(\r\022E\n\020view_b"
-      "lock_items\030\003 \003(\0132+.shardora.view_block.p"
-      "rotobuf.ViewBlockItem\"\243\001\n\020ViewBlockMessa"
-      "ge\022F\n\016view_block_req\030\001 \001(\0132..shardora.vi"
-      "ew_block.protobuf.ViewBlockRequest\022G\n\016vi"
-      "ew_block_res\030\002 \001(\0132/.shardora.view_block"
-      ".protobuf.ViewBlockResponse"
+      "_block.protobuf\"8\n\020ViewBlockRequest\022\022\n\nn"
+      "etwork_id\030\001 \001(\r\022\020\n\010pool_idx\030\002 \001(\r\"w\n\rVie"
+      "wBlockItem\022\014\n\004hash\030\001 \001(\014\022\023\n\013parent_hash\030"
+      "\002 \001(\014\022\022\n\nleader_idx\030\003 \001(\r\022\021\n\tblock_str\030\004"
+      " \001(\014\022\016\n\006qc_str\030\005 \001(\014\022\014\n\004view\030\006 \001(\r\"\200\001\n\021V"
+      "iewBlockResponse\022\022\n\nnetwork_id\030\001 \001(\r\022\020\n\010"
+      "pool_idx\030\002 \001(\r\022E\n\020view_block_items\030\003 \003(\013"
+      "2+.shardora.view_block.protobuf.ViewBloc"
+      "kItem\"\243\001\n\020ViewBlockMessage\022F\n\016view_block"
+      "_req\030\001 \001(\0132..shardora.view_block.protobu"
+      "f.ViewBlockRequest\022G\n\016view_block_res\030\002 \001"
+      "(\0132/.shardora.view_block.protobuf.ViewBl"
+      "ockResponse"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 547);
+      descriptor, 531);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/view_block.proto", &protobuf_RegisterTypes);
 }
@@ -247,7 +245,6 @@ void ViewBlockRequest::InitAsDefaultInstance() {
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int ViewBlockRequest::kNetworkIdFieldNumber;
 const int ViewBlockRequest::kPoolIdxFieldNumber;
-const int ViewBlockRequest::kHashesFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ViewBlockRequest::ViewBlockRequest()
@@ -260,8 +257,7 @@ ViewBlockRequest::ViewBlockRequest()
 ViewBlockRequest::ViewBlockRequest(const ViewBlockRequest& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL),
-      _has_bits_(from._has_bits_),
-      hashes_(from.hashes_) {
+      _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::memcpy(&network_id_, &from.network_id_,
     static_cast<size_t>(reinterpret_cast<char*>(&pool_idx_) -
@@ -303,7 +299,6 @@ void ViewBlockRequest::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  hashes_.Clear();
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 3u) {
     ::memset(&network_id_, 0, static_cast<size_t>(
@@ -352,18 +347,6 @@ bool ViewBlockRequest::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated bytes hashes = 3;
-      case 3: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->add_hashes()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -401,12 +384,6 @@ void ViewBlockRequest::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->pool_idx(), output);
   }
 
-  // repeated bytes hashes = 3;
-  for (int i = 0, n = this->hashes_size(); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteBytes(
-      3, this->hashes(i), output);
-  }
-
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -432,12 +409,6 @@ void ViewBlockRequest::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->pool_idx(), target);
   }
 
-  // repeated bytes hashes = 3;
-  for (int i = 0, n = this->hashes_size(); i < n; i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteBytesToArray(3, this->hashes(i), target);
-  }
-
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -455,14 +426,6 @@ size_t ViewBlockRequest::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  // repeated bytes hashes = 3;
-  total_size += 1 *
-      ::google::protobuf::internal::FromIntSize(this->hashes_size());
-  for (int i = 0, n = this->hashes_size(); i < n; i++) {
-    total_size += ::google::protobuf::internal::WireFormatLite::BytesSize(
-      this->hashes(i));
-  }
-
   if (_has_bits_[0 / 32] & 3u) {
     // optional uint32 network_id = 1;
     if (has_network_id()) {
@@ -506,7 +469,6 @@ void ViewBlockRequest::MergeFrom(const ViewBlockRequest& from) {
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  hashes_.MergeFrom(from.hashes_);
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 3u) {
     if (cached_has_bits & 0x00000001u) {
@@ -543,7 +505,6 @@ void ViewBlockRequest::Swap(ViewBlockRequest* other) {
 }
 void ViewBlockRequest::InternalSwap(ViewBlockRequest* other) {
   using std::swap;
-  hashes_.InternalSwap(CastToBase(&other->hashes_));
   swap(network_id_, other->network_id_);
   swap(pool_idx_, other->pool_idx_);
   swap(_has_bits_[0], other->_has_bits_[0]);

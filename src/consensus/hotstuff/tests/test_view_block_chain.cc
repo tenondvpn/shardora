@@ -159,7 +159,7 @@ TEST_F(TestViewBlockChain, TestExtends) {
     EXPECT_TRUE(chain_->Extends(vb4a, vb4a));
 }
 
-TEST_F(TestViewBlockChain, TestPruneLatestCommitted) {
+TEST_F(TestViewBlockChain, TestPruneTo) {
     auto vb = GenViewBlock(genesis_->hash, genesis_->view+1);
     chain_->Store(vb);
     auto vb2 = GenViewBlock(vb->hash, vb->view+1);

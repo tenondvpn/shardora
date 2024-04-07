@@ -5,7 +5,6 @@ package shardora.view_block.protobuf;
 message ViewBlockRequest {
     optional uint32 network_id = 1;
     optional uint32 pool_idx = 2;
-    repeated bytes hashes = 3;
 }
 
 message ViewBlockItem {
