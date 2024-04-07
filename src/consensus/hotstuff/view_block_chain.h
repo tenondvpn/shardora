@@ -52,9 +52,7 @@ public:
     }
 
     inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlock>& view_block) {
-        latest_locked_blocks_.erase(std::remove_if(latest_locked_blocks_.begin(), latest_locked_blocks_.end(),
-                [&view_block](const std::shared_ptr<ViewBlock>& item) {return item->hash == view_block->hash; }),
-            latest_locked_blocks_.end());
+        latest_locked_blocks_.erase(view_block);
         latest_committed_block_ = view_block;
     }
 
