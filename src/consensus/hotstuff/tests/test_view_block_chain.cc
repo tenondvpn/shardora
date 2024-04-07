@@ -112,26 +112,19 @@ TEST_F(TestViewBlockChain, TestStore_Fail) {
     auto vb = GenViewBlock(genesis_->hash, genesis_->view+1);
     s = chain_->Store(vb);
     EXPECT_TRUE(s == Status::kSuccess);
+    EXPECT_TRUE(chain_->Has(vb->hash));
 
     // invalid parent hash
     auto vb2 = GenViewBlock("123", vb->view+1);
     s = chain_->Store(vb2);
-    EXPECT_TRUE(s != Status::kSuccess);
-    
-    std::shared_ptr<ViewBlock> actual_vb2 = nullptr;
-    s = chain_->Get(vb2->hash, actual_vb2);
-    EXPECT_TRUE(s != Status::kSuccess);
-    EXPECT_TRUE(actual_vb2 == nullptr);
+    EXPECT_TRUE(s != Status::kSuccess);    
+    EXPECT_FALSE(chain_->Has(vb2->hash));
 
     // invalid view
     auto vb3 = GenViewBlock(vb->hash, vb->view+2);
     s = chain_->Store(vb3);
     EXPECT_TRUE(s != Status::kSuccess);
-
-    std::shared_ptr<ViewBlock> actual_vb3 = nullptr;
-    s = chain_->Get(vb3->hash, actual_vb3);
-    EXPECT_TRUE(s != Status::kSuccess);
-    EXPECT_TRUE(actual_vb3 == nullptr);    
+    EXPECT_FALSE(chain_->Has(vb3->hash));    
 }
 
 TEST_F(TestViewBlockChain, TestGet) {}
@@ -191,20 +184,12 @@ TEST_F(TestViewBlockChain, TestPruneTo_OnlyForks) {
     EXPECT_TRUE(ContainBlock(forked_blocks, vb3a));
     EXPECT_TRUE(ContainBlock(forked_blocks, vb4a));    
 
-    std::shared_ptr<ViewBlock> actual_vb3a = nullptr;
-    chain_->Get(vb3a->hash, actual_vb3a);
-    EXPECT_TRUE(actual_vb3a == nullptr);
-    std::shared_ptr<ViewBlock> actual_vb4a = nullptr;
-    chain_->Get(vb4a->hash, actual_vb4a);
-    EXPECT_TRUE(actual_vb4a == nullptr);
-
+    EXPECT_FALSE(chain_->Has(vb3a->hash));
+    EXPECT_FALSE(chain_->Has(vb4a->hash));
+    
     // vb5b_x and vb5b_y still exist
-    std::shared_ptr<ViewBlock> actual_vb5b_x = nullptr;
-    chain_->Get(vb5b_x->hash, actual_vb5b_x);
-    AssertEq(vb5b_x, actual_vb5b_x);
-    std::shared_ptr<ViewBlock> actual_vb5b_y = nullptr;
-    chain_->Get(vb5b_y->hash, actual_vb5b_y);
-    AssertEq(vb5b_y, actual_vb5b_y);
+    EXPECT_TRUE(chain_->Has(vb5b_x->hash));
+    EXPECT_TRUE(chain_->Has(vb5b_y->hash));
 
     std::vector<std::shared_ptr<ViewBlock>> forked_blocks2; 
     // prune vb5b_y
@@ -213,14 +198,9 @@ TEST_F(TestViewBlockChain, TestPruneTo_OnlyForks) {
     EXPECT_TRUE(ContainBlock(forked_blocks2, vb5b_y));
 
     // has vb5b_x
-    actual_vb5b_x = nullptr;
-    chain_->Get(vb5b_x->hash, actual_vb5b_x);
-    AssertEq(vb5b_x, actual_vb5b_x);
-
+    EXPECT_TRUE(chain_->Has(vb5b_x->hash));
     // no vb5b_y
-    actual_vb5b_y = nullptr;
-    chain_->Get(vb5b_y->hash, actual_vb5b_y);
-    EXPECT_TRUE(actual_vb5b_y == nullptr);
+    EXPECT_FALSE(chain_->Has(vb5b_y->hash));
 }
 
 TEST_F(TestViewBlockChain, TestPruneTo_ForksAndHistory) {
