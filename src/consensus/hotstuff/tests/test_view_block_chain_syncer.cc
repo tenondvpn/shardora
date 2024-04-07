@@ -1,0 +1,91 @@
+#include <consensus/hotstuff/view_block_chain_manager.h>
+#include <consensus/hotstuff/view_block_chain_syncer.h>
+#include <dht/dht_key.h>
+#include <gtest/gtest.h>
+#include <memory>
+#include <transport/transport_utils.h>
+
+namespace shardora {
+
+namespace consensus {
+
+namespace test {
+
+extern std::shared_ptr<ViewBlock> GenViewBlock(const HashStr &parent_hash, const View &view);
+extern std::shared_ptr<QC> GenQC(const View &view, const HashStr &view_block_hash);
+extern std::shared_ptr<block::protobuf::Block> GenBlock();
+extern uint32_t GenLeaderIdx();
+
+
+class TestViewBlockChainSyncer : public testing::Test {
+protected:
+    static const uint32_t NET_ID = 3;
+    static const uint32_t POOL = 63;
+    
+    void SetUp() {
+        view_block_chain_mgr_ = std::make_shared<ViewBlockChainManager>();
+        syncer_ = std::make_shared<ViewBlockChainSyncer>(view_block_chain_mgr_);
+    }
+
+    void TearDown() {
+        
+    }
+
+    static transport::MessagePtr CreateRequestMsg() {
+        transport::protobuf::Header msg;
+        msg.set_src_sharding_id(NET_ID);
+        dht::DhtKeyManager dht_key(NET_ID);
+        msg.set_des_dht_key(dht_key.StrKey());
+        msg.set_type(common::kViewBlockMessage);
+
+        auto vb_msg = view_block::protobuf::ViewBlockMessage();
+        auto req = vb_msg.mutable_view_block_req();
+        req->set_pool_idx(POOL);
+        req->set_network_id(NET_ID);
+
+        *msg.mutable_view_block_proto() = vb_msg;
+
+        transport::MessagePtr trans = nullptr;
+        trans->header = msg;
+        return trans;
+    }
+
+    std::shared_ptr<ViewBlockChainSyncer> syncer_;
+    std::shared_ptr<ViewBlockChainManager> view_block_chain_mgr_;
+};
+
+TEST_F(TestViewBlockChainSyncer, TestMergeChain_HasCross) {
+    // build ori chain
+    auto b1 = GenViewBlock("", 1);
+    auto b2 = GenViewBlock(b1->hash, b1->view+1);
+    auto b3 = GenViewBlock(b2->hash, b2->view+1);
+    auto b4 = GenViewBlock(b3->hash, b3->view+1);
+    
+    auto ori_chain = std::make_shared<ViewBlockChain>(b1);
+    ori_chain->Store(b2);
+    ori_chain->Store(b3);
+
+    auto sync_chain = std::make_shared<ViewBlockChain>(b2);
+    sync_chain->Store(b3);
+    sync_chain->Store(b4);
+
+    syncer_->MergeChain(ori_chain, sync_chain);
+    EXPECT_EQ(4, ori_chain->Size());
+    EXPECT_EQ(3, sync_chain->Size());
+
+    std::shared_ptr<ViewBlock> act_b4 = nullptr;
+    ori_chain->Get(b4->hash, act_b4);
+    EXPECT_TRUE(act_b4 != nullptr);
+    
+}
+
+TEST_F(TestViewBlockChainSyncer, TestProcessResponse) {}
+
+
+
+} // namespace test
+
+} // namespace consensus
+
+} // namespace shardora
+

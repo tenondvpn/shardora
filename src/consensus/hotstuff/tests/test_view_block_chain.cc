@@ -11,6 +11,36 @@ namespace consensus {
 
 namespace test {
 
+std::shared_ptr<ViewBlock> GenViewBlock(const HashStr &parent_hash, const View &view);
+std::shared_ptr<QC> GenQC(const View &view, const HashStr &view_block_hash);
+std::shared_ptr<block::protobuf::Block> GenBlock();
+uint32_t GenLeaderIdx();
+
+
+std::shared_ptr<ViewBlock> GenViewBlock(const HashStr& parent_hash, const View& view) {
+    auto vb = std::make_shared<ViewBlock>(parent_hash,
+        GenQC(view, parent_hash),
+        GenBlock(),
+        view,
+        GenLeaderIdx());
+    vb->hash = vb->GetHash();
+    return vb;
+}
+
+uint32_t GenLeaderIdx() {
+    return 0;
+}
+
+std::shared_ptr<QC> GenQC(const View& view, const HashStr& view_block_hash) {
+    auto sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::random_element());
+    return std::make_shared<QC>(sign, view, view_block_hash);
+}
+
+std::shared_ptr<block::protobuf::Block> GenBlock() {
+    auto block = std::make_shared<block::protobuf::Block>();
+    return block;
+}
+
 class TestViewBlockChain : public testing::Test {
 protected:
     void SetUp() {
@@ -20,30 +50,6 @@ protected:
     }
 
     void TearDown() {}
-
-    static std::shared_ptr<ViewBlock> GenViewBlock(const HashStr& parent_hash, const View& view) {
-        auto vb = std::make_shared<ViewBlock>(parent_hash,
-            GenQC(view, parent_hash),
-            GenBlock(),
-            view,
-            GenLeaderIdx());
-        vb->hash = vb->GetHash();
-        return vb;
-    }
-
-    static std::shared_ptr<QC> GenQC(const View& view, const HashStr& view_block_hash) {
-        auto sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::random_element());
-        return std::make_shared<QC>(sign, view, view_block_hash);
-    }
-
-    static std::shared_ptr<block::protobuf::Block> GenBlock() {
-        auto block = std::make_shared<block::protobuf::Block>();
-        return block;
-    }
-
-    static uint32_t GenLeaderIdx() {
-        return 0;
-    }
 
     std::shared_ptr<ViewBlockChain> chain_;
     std::shared_ptr<ViewBlock> genesis_;

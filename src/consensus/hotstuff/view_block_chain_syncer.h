@@ -28,7 +28,7 @@ struct ViewBlockItem {
 
 class ViewBlockChainSyncer {
 public:
-    ViewBlockChainSyncer();
+    explicit ViewBlockChainSyncer(const std::shared_ptr<ViewBlockChainManager>&);
     ViewBlockChainSyncer(const ViewBlockChainSyncer&) = delete;
     ViewBlockChainSyncer& operator=(const ViewBlockChainSyncer&) = delete;
 
@@ -36,18 +36,18 @@ public:
     
     // Status AsyncFetch(const HashStr& view_block_hash, uint32_t pool_idx);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
+    void ConsumeMessages();
+    Status MergeChain(std::shared_ptr<ViewBlockChain>& ori_chain, const std::shared_ptr<ViewBlockChain>& sync_chain);
 private:
     Status SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockMessage& view_block_msg);
     void ConsensusTimerMessage();
     void SyncChains();
-    void ConsumeMessages();
-    Status MergeChain(std::shared_ptr<ViewBlockChain>& ori_chain, const std::shared_ptr<ViewBlockChain>& sync_chain);
-    Status StoreViewBlock(const std::shared_ptr<ViewBlock>&);
+    
+    Status StoreViewBlock(std::shared_ptr<ViewBlockChain>&, const std::shared_ptr<ViewBlock>&);
     Status processRequest(const transport::MessagePtr&);
     Status processResponse(const transport::MessagePtr&);
     
     uint64_t timeout_ms_;
-    transport::TcpTransport* trans_;
     std::queue<std::shared_ptr<ViewBlockItem>> item_queue_;
     common::ThreadSafeQueue<std::shared_ptr<ViewBlockItem>> input_queues_[common::kMaxThreadCount];
     common::ThreadSafeQueue<transport::MessagePtr> consume_queue_;

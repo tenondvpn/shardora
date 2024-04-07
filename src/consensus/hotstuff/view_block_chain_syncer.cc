@@ -18,7 +18,7 @@
 namespace shardora {
 namespace consensus {
 
-ViewBlockChainSyncer::ViewBlockChainSyncer() {
+ViewBlockChainSyncer::ViewBlockChainSyncer(const std::shared_ptr<ViewBlockChainManager>& c_mgr) : view_block_chain_mgr_(c_mgr) {
     // start consumeloop thread
     network::Route::Instance()->RegisterMessage(common::kViewBlockMessage,
         std::bind(&ViewBlockChainSyncer::HandleMessage, this, std::placeholders::_1));
@@ -216,7 +216,7 @@ Status ViewBlockChainSyncer::MergeChain(std::shared_ptr<ViewBlockChain>& ori_cha
             if (sync_block->view <= cross_block->view) {
                 continue;
             }
-            if (StoreViewBlock(sync_block) != Status::kSuccess) {
+            if (StoreViewBlock(ori_chain, sync_block) != Status::kSuccess) {
                 break;
             }
         }
@@ -234,18 +234,19 @@ Status ViewBlockChainSyncer::MergeChain(std::shared_ptr<ViewBlockChain>& ori_cha
     std::vector<std::shared_ptr<ViewBlock>> sync_all_blocks;
     sync_chain->GetOrderedAll(sync_all_blocks);
     for (auto sync_block : sync_all_blocks) {
-        if (StoreViewBlock(sync_block) != Status::kSuccess) {
+        if (StoreViewBlock(ori_chain, sync_block) != Status::kSuccess) {
             break;
         }        
     }
     return Status::kSuccess;
 }
 
-Status ViewBlockChainSyncer::StoreViewBlock(const std::shared_ptr<ViewBlock>&) {
+Status ViewBlockChainSyncer::StoreViewBlock(std::shared_ptr<ViewBlockChain>& chain, const std::shared_ptr<ViewBlock>& view_block) {
     // TODO OnPropose 逻辑
     // 1. 验证 block
     // 2. CommitRule
-    // 3. 视图切换    
+    // 3. 视图切换
+    chain->Store(view_block);
     return Status::kSuccess;
 }
 

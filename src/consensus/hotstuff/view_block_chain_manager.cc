@@ -1,12 +1,16 @@
+#include <common/utils.h>
 #include <consensus/hotstuff/types.h>
+#include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/hotstuff/view_block_chain_manager.h>
 
 namespace shardora {
 namespace consensus {
 
 ViewBlockChainManager::ViewBlockChainManager() {
-    // TODO Init 64 ViewBlockChains
-    // tick_.CutOff(100000lu, std::bind(&ViewBlockChainManager::ConsumeOrphanBlocks, this));
+    // Init 64 ViewBlockChains
+    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
+        pool_chain_map_[pool_idx] = std::make_shared<ViewBlockChain>(GetGenesisViewBlock());;
+    }
 }
 
 ViewBlockChainManager::~ViewBlockChainManager() {}
