@@ -52,7 +52,7 @@ protected:
     }
 
     static Status StoreViewBlock(const std::shared_ptr<ViewBlockChain>& chain, const std::shared_ptr<ViewBlock>& view_block) {
-        chain->Store(view_block);
+        return chain->Store(view_block);
     }
 
     std::shared_ptr<ViewBlockChainSyncer> syncer_;
