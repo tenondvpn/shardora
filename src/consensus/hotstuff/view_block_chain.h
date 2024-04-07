@@ -101,6 +101,7 @@ public:
 
         latest_committed_block_ = nullptr;
         latest_locked_blocks_.clear();
+        start_block_ = nullptr;
     }
 
     inline uint32_t Size() const {
@@ -115,6 +116,7 @@ private:
     Status DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_block);
     
     View prune_height_;
+    std::shared_ptr<ViewBlock> start_block_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlock>> view_blocks_;
     std::unordered_map<View, std::vector<std::shared_ptr<ViewBlock>>> view_blocks_at_height_;
     std::unordered_map<HashStr, std::vector<std::shared_ptr<ViewBlock>>> view_block_children_;

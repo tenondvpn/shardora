@@ -231,12 +231,17 @@ Status ViewBlockChainSyncer::MergeChain(std::shared_ptr<ViewBlockChain>& ori_cha
         return Status::kSuccess;
     }
 
+    ori_chain->Clear();
     std::vector<std::shared_ptr<ViewBlock>> sync_all_blocks;
     sync_chain->GetOrderedAll(sync_all_blocks);
-    for (auto sync_block : sync_all_blocks) {
-        if (StoreViewBlock(ori_chain, sync_block) != Status::kSuccess) {
-            break;
-        }        
+    for (auto it = sync_all_blocks.begin(); it != sync_all_blocks.end(); it++) {
+        if (it == sync_all_blocks.begin()) {
+            ori_chain = std::make_shared<ViewBlockChain>(*it);
+        } else {
+            if (StoreViewBlock(ori_chain, *it) != Status::kSuccess) {
+                break;
+            }
+        }
     }
     return Status::kSuccess;
 }
@@ -246,8 +251,7 @@ Status ViewBlockChainSyncer::StoreViewBlock(std::shared_ptr<ViewBlockChain>& cha
     // 1. 验证 block
     // 2. CommitRule
     // 3. 视图切换
-    chain->Store(view_block);
-    return Status::kSuccess;
+    return chain->Store(view_block);
 }
 
 } // namespace consensus
