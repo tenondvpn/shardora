@@ -216,7 +216,7 @@ Status ViewBlockChainSyncer::MergeChain(std::shared_ptr<ViewBlockChain>& ori_cha
             if (sync_block->view <= cross_block->view) {
                 continue;
             }
-            if (StoreViewBlock(ori_chain, sync_block) != Status::kSuccess) {
+            if (on_recv_vb_fn_ && on_recv_vb_fn_(ori_chain, sync_block) != Status::kSuccess) {
                 break;
             }
         }
@@ -238,20 +238,12 @@ Status ViewBlockChainSyncer::MergeChain(std::shared_ptr<ViewBlockChain>& ori_cha
         if (it == sync_all_blocks.begin()) {
             ori_chain = std::make_shared<ViewBlockChain>(*it);
         } else {
-            if (StoreViewBlock(ori_chain, *it) != Status::kSuccess) {
+            if (on_recv_vb_fn_ && on_recv_vb_fn_(ori_chain, *it) != Status::kSuccess) {
                 break;
             }
         }
     }
     return Status::kSuccess;
-}
-
-Status ViewBlockChainSyncer::StoreViewBlock(std::shared_ptr<ViewBlockChain>& chain, const std::shared_ptr<ViewBlock>& view_block) {
-    // TODO OnPropose 逻辑
-    // 1. 验证 block
-    // 2. CommitRule
-    // 3. 视图切换
-    return chain->Store(view_block);
 }
 
 } // namespace consensus

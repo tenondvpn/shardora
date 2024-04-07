@@ -26,11 +26,11 @@ struct ViewBlockItem {
     ~ViewBlockItem() {};
 };
 
-using OnRecvViewBlockFn = std::function<Status(const std::shared_ptr<ViewBlockChain>&, const std::shared_ptr<ViewBlock>&)>;
+using OnRecvViewBlockFn = std::function<Status(const std::shared_ptr<ViewBlock>&)>;
 
 class ViewBlockChainSyncer {
 public:
-    explicit ViewBlockChainSyncer(const std::shared_ptr<ViewBlockChainManager>&);
+    ViewBlockChainSyncer(const std::shared_ptr<ViewBlockChainManager>&,);
     ViewBlockChainSyncer(const ViewBlockChainSyncer&) = delete;
     ViewBlockChainSyncer& operator=(const ViewBlockChainSyncer&) = delete;
 
@@ -40,16 +40,12 @@ public:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void ConsumeMessages();
     Status MergeChain(std::shared_ptr<ViewBlockChain>& ori_chain, const std::shared_ptr<ViewBlockChain>& sync_chain);
-
-    inline void SetOnRecvViewBlockFn(const OnRecvViewBlockFn& fn) {
-        on_recv_vb_fn_ = fn;
-    }    
-    
 private:
     Status SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockMessage& view_block_msg);
     void ConsensusTimerMessage();
     void SyncChains();
     
+    Status StoreViewBlock(std::shared_ptr<ViewBlockChain>&, const std::shared_ptr<ViewBlock>&);
     Status processRequest(const transport::MessagePtr&);
     Status processResponse(const transport::MessagePtr&);
     
@@ -60,7 +56,7 @@ private:
     common::Tick tick_;
     std::shared_ptr<ViewBlockChainManager> view_block_chain_mgr_;
     std::shared_ptr<Rule> rule_; // rule of view block receiving
-    OnRecvViewBlockFn on_recv_vb_fn_;
+    OnRecvViewBlockFn on_recv_view_block_fn_;
 };
 
 } // namespace consensus

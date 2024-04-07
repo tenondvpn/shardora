@@ -25,6 +25,7 @@ protected:
     void SetUp() {
         view_block_chain_mgr_ = std::make_shared<ViewBlockChainManager>(GenViewBlock("", 1));
         syncer_ = std::make_shared<ViewBlockChainSyncer>(view_block_chain_mgr_);
+        syncer_->SetOnRecvViewBlockFn(StoreViewBlock);
     }
 
     void TearDown() {
@@ -48,6 +49,10 @@ protected:
         transport::MessagePtr trans = nullptr;
         trans->header = msg;
         return trans;
+    }
+
+    static Status StoreViewBlock(const std::shared_ptr<ViewBlockChain>& chain, const std::shared_ptr<ViewBlock>& view_block) {
+        chain->Store(view_block);
     }
 
     std::shared_ptr<ViewBlockChainSyncer> syncer_;
