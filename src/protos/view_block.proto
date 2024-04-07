@@ -16,6 +16,14 @@ message ViewBlockItem {
     optional uint32 view = 6;
 }
 
+message QC {
+    optional bytes sign_x = 1;
+    optional bytes sign_y = 2;
+    optional bytes sign_z = 3;
+    optional uint32 view = 4;
+    optional bytes view_block_hash = 5;
+}
+
 message ViewBlockResponse {
     optional uint32 network_id = 1;
     optional uint32 pool_idx = 2;

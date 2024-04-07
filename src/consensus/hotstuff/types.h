@@ -6,6 +6,7 @@
 #include <consensus/zbft/zbft_utils.h>
 #include <string>
 #include <protos/block.pb.h>
+#include <protos/view_block.pb.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
 
 namespace shardora {
@@ -26,19 +27,38 @@ struct QC {
     ~QC() {}
 
     std::string Serialize() const {
+        auto qc_proto = view_block::protobuf::QC();
+        
         std::stringstream ss;
         if (bls_agg_sign) {
-            auto x = std::to_string(bls_agg_sign->X.as_bigint().as_ulong());
-            auto y = std::to_string(bls_agg_sign->Y.as_bigint().as_ulong());
-            auto z = std::to_string(bls_agg_sign->Z.as_bigint().as_ulong());
-            ss << x << y << z;
+            qc_proto.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->X));
+            qc_proto.set_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->Y));
+            qc_proto.set_sign_z(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->Z));
         }
-        ss << view;
-        ss << view_block_hash;
-        return ss.str();
+        qc_proto.set_view(view);
+        qc_proto.set_view_block_hash(view_block_hash);
+        return qc_proto.SerializeAsString();
     }
 
     bool Unserialize(const std::string& str) {
+        auto qc_proto = view_block::protobuf::QC();
+        bool ok = qc_proto.ParseFromString(str);
+        if (!ok) {
+            return false;
+        }
+        libff::alt_bn128_G1 sign;
+        sign.X = libff::alt_bn128_Fq(qc_proto.sign_x().c_str());
+        sign.Y = libff::alt_bn128_Fq(qc_proto.sign_y().c_str());
+        sign.Z = libff::alt_bn128_Fq(qc_proto.sign_z().c_str());
+        
+        if (!bls_agg_sign) {
+            bls_agg_sign = std::make_shared<libff::alt_bn128_G1>();
+        }
+        *bls_agg_sign = sign;
+
+        *bls_agg_sign = sign;
+        view = qc_proto.view();
+        view_block_hash = qc_proto.view_block_hash();
         return true;
     }
 };
