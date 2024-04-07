@@ -159,7 +159,7 @@ TEST_F(TestViewBlockChain, TestExtends) {
     EXPECT_TRUE(chain_->Extends(vb4a, vb4a));
 }
 
-TEST_F(TestViewBlockChain, TestPruneTo) {
+TEST_F(TestViewBlockChain, TestPruneTo_OnlyForks) {
     auto vb = GenViewBlock(genesis_->hash, genesis_->view+1);
     chain_->Store(vb);
     auto vb2 = GenViewBlock(vb->hash, vb->view+1);
@@ -179,7 +179,7 @@ TEST_F(TestViewBlockChain, TestPruneTo) {
 
     std::vector<std::shared_ptr<ViewBlock>> forked_blocks;
     // prune vb3a and vb4a
-    chain_->PruneTo(vb4b->hash, forked_blocks);
+    chain_->PruneTo(vb4b->hash, forked_blocks, false);
 
     EXPECT_EQ(2, forked_blocks.size());
     EXPECT_TRUE(ContainBlock(forked_blocks, vb3a));
@@ -202,7 +202,7 @@ TEST_F(TestViewBlockChain, TestPruneTo) {
 
     std::vector<std::shared_ptr<ViewBlock>> forked_blocks2; 
     // prune vb5b_y
-    chain_->PruneTo(vb5b_x->hash, forked_blocks2);
+    chain_->PruneTo(vb5b_x->hash, forked_blocks2, false);
     EXPECT_EQ(1, forked_blocks2.size());
     EXPECT_TRUE(ContainBlock(forked_blocks2, vb5b_y));
 
@@ -217,7 +217,38 @@ TEST_F(TestViewBlockChain, TestPruneTo) {
     EXPECT_TRUE(actual_vb5b_y == nullptr);
 }
 
+TEST_F(TestViewBlockChain, TestPruneTo_ForksAndHistory) {
+    auto vb = GenViewBlock(genesis_->hash, genesis_->view+1);
+    chain_->Store(vb);
+    auto vb2 = GenViewBlock(vb->hash, vb->view+1);
+    chain_->Store(vb2);
+    auto vb3a = GenViewBlock(vb2->hash, vb2->view+1);
+    chain_->Store(vb3a);
+    auto vb3b = GenViewBlock(vb2->hash, vb2->view+1);
+    chain_->Store(vb3b);
+    auto vb4a = GenViewBlock(vb3a->hash, vb3a->view+1);
+    chain_->Store(vb4a);
+    auto vb4b = GenViewBlock(vb3b->hash, vb3b->view+1);
+    chain_->Store(vb4b);
+    auto vb5b_x = GenViewBlock(vb4b->hash, vb4b->view+1);
+    chain_->Store(vb5b_x);
+    auto vb5b_y = GenViewBlock(vb4b->hash, vb4b->view+1);
+    chain_->Store(vb5b_y);    
 
+    std::vector<std::shared_ptr<ViewBlock>> forked_blocks;
+    // prune vb3a and vb4a
+    chain_->PruneTo(vb4b->hash, forked_blocks, true);
+
+    EXPECT_EQ(2, forked_blocks.size());
+    EXPECT_TRUE(ContainBlock(forked_blocks, vb3a));
+    EXPECT_TRUE(ContainBlock(forked_blocks, vb4a));
+
+    EXPECT_EQ(3, chain_->Size());
+
+    std::shared_ptr<ViewBlock> actual_vb3b = nullptr;
+    chain_->Get(vb3b->hash, actual_vb3b);
+    EXPECT_TRUE(actual_vb3b == nullptr);
+}
 
 } // namespace test
 

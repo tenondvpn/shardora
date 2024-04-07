@@ -36,8 +36,9 @@ public:
     Status Get(const HashStr& hash, std::shared_ptr<ViewBlock>& view_block);
     // if in the same branch
     bool Extends(const std::shared_ptr<ViewBlock>& block, const std::shared_ptr<ViewBlock>& target);
+    
     // prune from last prune height to target view block
-    Status PruneTo(const HashStr& target_hash, std::vector<std::shared_ptr<ViewBlock>>& forked_blockes);
+    Status PruneTo(const HashStr& target_hash, std::vector<std::shared_ptr<ViewBlock>>& forked_blockes, bool include_history);
 
     Status GetAll(std::vector<std::shared_ptr<ViewBlock>>&);
 
@@ -98,16 +99,18 @@ public:
 
         latest_committed_block_ = nullptr;
         latest_locked_blocks_.clear();
-    }    
+    }
+
+    inline uint32_t Size() const {
+        return view_blocks_.size();
+    }
     
 private:
     // prune the branch starting from view_block
     Status PruneFromBlockToTargetHash(const std::shared_ptr<ViewBlock>& view_block, const std::unordered_set<HashStr>& hashes_of_branch, std::vector<std::shared_ptr<ViewBlock>>& forked_blocks, const HashStr& target_hash);
+    Status PruneHistoryTo(const std::shared_ptr<ViewBlock>&);
     Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
     Status DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_block);
-    inline uint32_t Size() const {
-        return view_blocks_.size();
-    }
     
     View prune_height_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlock>> view_blocks_;

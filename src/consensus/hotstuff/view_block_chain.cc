@@ -42,7 +42,7 @@ Status ViewBlockChain::Get(const HashStr &hash, std::shared_ptr<ViewBlock> &view
         return Status::kSuccess;
     }
 
-    return Status::kError;
+    return Status::kNotFound;
 }
 
 bool ViewBlockChain::Extends(const std::shared_ptr<ViewBlock>& block, const std::shared_ptr<ViewBlock>& target) {
@@ -71,7 +71,7 @@ Status ViewBlockChain::GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>& vi
 }
 
 // 剪掉从上次 prune_height 到 height 之间，latest_committed 之前的所有分叉，并返回这些分叉上的 blocks
-Status ViewBlockChain::PruneTo(const HashStr& target_hash, std::vector<std::shared_ptr<ViewBlock>>& forked_blockes) {
+Status ViewBlockChain::PruneTo(const HashStr& target_hash, std::vector<std::shared_ptr<ViewBlock>>& forked_blockes, bool include_history) {
     std::shared_ptr<ViewBlock> current = nullptr;
     Get(target_hash, current);
     if (!current) {
@@ -108,7 +108,10 @@ Status ViewBlockChain::PruneTo(const HashStr& target_hash, std::vector<std::shar
     PruneFromBlockToTargetHash(start_block, hashes_of_branch, forked_blockes, target_hash);
     prune_height_ = target_height;
 
-    // TODO 剪掉 target_hash 之前的块
+    if (include_history) {
+        PruneHistoryTo(target_block);
+    }
+
     return Status::kSuccess;
 }
 
@@ -134,8 +137,20 @@ Status ViewBlockChain::PruneFromBlockToTargetHash(const std::shared_ptr<ViewBloc
         PruneFromBlockToTargetHash((*child_iter), hashes_of_branch, forked_blocks, target_hash);
     }
 
-    // delete view_block it self
-    // DeleteViewBlock(view_block);
+    return Status::kSuccess;
+}
+
+Status ViewBlockChain::PruneHistoryTo(const std::shared_ptr<ViewBlock>& target_block) {
+    if (!target_block) {
+        return Status::kError;
+    }
+
+    auto current = target_block;
+    Status s = Status::kSuccess;
+    while (s == Status::kSuccess && current) {
+        s = Get(current->parent_hash, current);
+        DeleteViewBlock(current);
+    }
 
     return Status::kSuccess;
 }

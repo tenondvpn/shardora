@@ -96,6 +96,7 @@ struct ViewBlock {
 enum class Status : int {
     kSuccess = 0,
     kError = 1,
+    kNotFound = 2,
 };
 
     
