@@ -7,11 +7,13 @@ namespace shardora {
 namespace consensus {
 
 ViewBlockChain::ViewBlockChain(const std::shared_ptr<ViewBlock>& start_block) {
-    start_block_ = start_block;
-    view_blocks_[start_block->hash] = start_block;
-    view_blocks_at_height_[start_block->view].push_back(start_block);
-
-    prune_height_ = start_block->view;
+    if (start_block) {
+        start_block_ = start_block;
+        view_blocks_[start_block->hash] = start_block;
+        view_blocks_at_height_[start_block->view].push_back(start_block);
+        
+        prune_height_ = start_block->view;
+    }
 }
 
 ViewBlockChain::~ViewBlockChain(){}

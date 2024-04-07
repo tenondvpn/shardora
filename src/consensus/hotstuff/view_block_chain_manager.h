@@ -9,7 +9,7 @@ namespace consensus {
 
 class ViewBlockChainManager {
 public:
-    ViewBlockChainManager();
+    explicit ViewBlockChainManager(const std::shared_ptr<ViewBlock>&);
     ~ViewBlockChainManager();
 
     ViewBlockChainManager(const ViewBlockChainManager&) = delete;

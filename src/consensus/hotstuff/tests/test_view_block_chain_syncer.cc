@@ -23,7 +23,7 @@ protected:
     static const uint32_t POOL = 63;
     
     void SetUp() {
-        view_block_chain_mgr_ = std::make_shared<ViewBlockChainManager>();
+        view_block_chain_mgr_ = std::make_shared<ViewBlockChainManager>(GenViewBlock("", 1));
         syncer_ = std::make_shared<ViewBlockChainSyncer>(view_block_chain_mgr_);
     }
 
@@ -56,7 +56,7 @@ protected:
 
 TEST_F(TestViewBlockChainSyncer, TestMergeChain_HasCross) {
     // build ori chain
-    auto b1 = GenViewBlock("", 1);
+    auto b1 = GenViewBlock("", 2);
     auto b2 = GenViewBlock(b1->hash, b1->view+1);
     auto b3 = GenViewBlock(b2->hash, b2->view+1);
     auto b4 = GenViewBlock(b3->hash, b3->view+1);

@@ -6,10 +6,10 @@
 namespace shardora {
 namespace consensus {
 
-ViewBlockChainManager::ViewBlockChainManager() {
+ViewBlockChainManager::ViewBlockChainManager(const std::shared_ptr<ViewBlock>& start_block) {
     // Init 64 ViewBlockChains
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
-        pool_chain_map_[pool_idx] = std::make_shared<ViewBlockChain>(GetGenesisViewBlock());;
+        pool_chain_map_[pool_idx] = std::make_shared<ViewBlockChain>(start_block);;
     }
 }
 
