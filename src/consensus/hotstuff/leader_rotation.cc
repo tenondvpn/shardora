@@ -14,8 +14,18 @@ LeaderRotation::~LeaderRotation() {}
 
 uint32_t LeaderRotation::GetLeaderIdx() {
     auto committedBlock = chain_->LatestCommittedBlock();
-    uint64_t random_hash = common::Hash::Hash64(committedBlock->qc->Serialize());
+    auto qc = committedBlock->qc;
+    uint64_t random_hash = common::Hash::Hash64(qc->Serialize());
     random_hash += common::TimeUtils::TimestampMs() / (30 * 1000);
+
+    auto idx = qc->participants[random_hash % qc->participants.size()];
+    // check if idx is one of members_ in case that a new epoch starts
+    for (uint32_t i = 0; i < members_->size(); i++) {
+        if ((*members_)[i]->index == idx) {
+            return idx;
+        }
+    }
+    
     return random_hash % members_->size();
 }
 
