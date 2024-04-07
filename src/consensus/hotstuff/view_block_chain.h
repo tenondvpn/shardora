@@ -1,6 +1,5 @@
 #pragma once
 
-#include <__algorithm/remove_if.h>
 #include <common/time_utils.h>
 #include <consensus/hotstuff/types.h>
 #include <protos/prefix_db.h>
