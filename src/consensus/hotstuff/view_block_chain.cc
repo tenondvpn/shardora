@@ -67,6 +67,7 @@ Status ViewBlockChain::GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>& vi
     std::sort(view_blocks.begin(), view_blocks.end(), [](const std::shared_ptr<ViewBlock>& a, const std::shared_ptr<ViewBlock>& b) {
         return a->view < b->view;
     });
+    return Status::kSuccess;
 }
 
 // 剪掉从上次 prune_height 到 height 之间，latest_committed 之前的所有分叉，并返回这些分叉上的 blocks
