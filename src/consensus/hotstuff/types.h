@@ -19,6 +19,7 @@ typedef std::string HashStr;
 
 struct QC {
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
+    std::vector<uint32_t> participants; // 与之签名的贡献者
     View view; // view_block_hash 对应的 view
     HashStr view_block_hash;
 
@@ -37,6 +38,10 @@ struct QC {
         }
         qc_proto.set_view(view);
         qc_proto.set_view_block_hash(view_block_hash);
+        for (auto parti : participants) {
+            qc_proto.add_participants(parti);
+        }
+        
         return qc_proto.SerializeAsString();
     }
 
@@ -55,10 +60,14 @@ struct QC {
             bls_agg_sign = std::make_shared<libff::alt_bn128_G1>();
         }
         *bls_agg_sign = sign;
-
-        *bls_agg_sign = sign;
         view = qc_proto.view();
         view_block_hash = qc_proto.view_block_hash();
+
+        participants.clear();
+        for (uint32_t i = 0; i < qc_proto.participants_size(); i++) {
+            participants.push_back(qc_proto.participants(i));
+        }
+        
         return true;
     }
 };

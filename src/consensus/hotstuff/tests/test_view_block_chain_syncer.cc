@@ -110,7 +110,9 @@ TEST_F(TestViewBlockChainSyncer, TestMergeChain_NoCross) {
     EXPECT_TRUE(ori_chain->Has(b6->hash));
 }
 
-TEST_F(TestViewBlockChainSyncer, TestProcessResponse) {}
+TEST_F(TestViewBlockChainSyncer, TestProcessResponse) {
+    
+}
 
 
 
