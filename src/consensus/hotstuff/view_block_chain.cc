@@ -45,6 +45,11 @@ Status ViewBlockChain::Get(const HashStr &hash, std::shared_ptr<ViewBlock> &view
     return Status::kNotFound;
 }
 
+bool ViewBlockChain::Has(const HashStr& hash) {
+    auto it = view_blocks_.find(hash);
+    return it != view_blocks_.end();
+}
+
 bool ViewBlockChain::Extends(const std::shared_ptr<ViewBlock>& block, const std::shared_ptr<ViewBlock>& target) {
     auto current = block;
     Status s = Status::kSuccess;

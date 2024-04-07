@@ -34,6 +34,8 @@ public:
     Status Store(const std::shared_ptr<ViewBlock>& view_block);
     // Get Block by hash value, fetch from neighbor nodes if necessary
     Status Get(const HashStr& hash, std::shared_ptr<ViewBlock>& view_block);
+    // If has block
+    bool Has(const HashStr& hash);
     // if in the same branch
     bool Extends(const std::shared_ptr<ViewBlock>& block, const std::shared_ptr<ViewBlock>& target);
     
