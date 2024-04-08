@@ -1397,7 +1397,7 @@ void BlockManager::HandleStatisticBlock(
     ZJC_DEBUG("success handle statistic block net: %u, sharding: %u, "
         "pool: %u, height: %lu, elect height: %lu",
         block.network_id(), elect_statistic.sharding_id(), block.pool_index(), 
-        block.timeblock_height(), elect_statistic.statistics(0).elect_height());
+        block.timeblock_height(), elect_statistic.statistics(elect_statistic.statistics_size() - 1).elect_height());
     // create elect transaction now for block.network_id
     auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
     new_msg_ptr->address_info = account_mgr_->pools_address_info(elect_statistic.sharding_id());
