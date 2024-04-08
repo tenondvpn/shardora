@@ -3,7 +3,6 @@
 #include <common/time_utils.h>
 #include <consensus/hotstuff/leader_rotation.h>
 
-
 namespace shardora {
 
 namespace consensus {
