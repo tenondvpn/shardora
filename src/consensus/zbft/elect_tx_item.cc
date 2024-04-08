@@ -116,6 +116,7 @@ int ElectTxItem::HandleTx(
 
                 ZJC_DEBUG("init: %s", ids.c_str());
             }
+            // TODO: add weedout
             int res = CheckWeedout(
                 members,
                 *statistic,
@@ -630,7 +631,8 @@ int ElectTxItem::CheckWeedout(
         ZJC_DEBUG("before weedout: %s, weed_out_count: %u", ids.c_str(), weed_out_count);
     }
     std::set<uint32_t> weedout_nodes;
-    FtsGetNodes(elect_nodes_to_choose, true, weed_out_count - invalid_nodes.size(), weedout_nodes);
+    // TODO: add weedout nodes
+    // FtsGetNodes(elect_nodes_to_choose, true, weed_out_count - invalid_nodes.size(), weedout_nodes);
     for (auto iter = elect_nodes_to_choose.begin(); iter != elect_nodes_to_choose.end(); ++iter) {
         if (weedout_nodes.find((*iter)->index) != weedout_nodes.end()) {
             ZJC_DEBUG("fts weedout: %s, tx count: %u, max_tx_count: %u",

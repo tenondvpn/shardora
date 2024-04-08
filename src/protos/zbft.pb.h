@@ -733,6 +733,13 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::uint64 prepare_height() const;
   void set_prepare_height(::google::protobuf::uint64 value);
 
+  // optional bool leader_sync_txs = 24;
+  bool has_leader_sync_txs() const;
+  void clear_leader_sync_txs();
+  static const int kLeaderSyncTxsFieldNumber = 24;
+  bool leader_sync_txs() const;
+  void set_leader_sync_txs(bool value);
+
   // optional int32 leader_idx = 4 [default = -1];
   bool has_leader_idx() const;
   void clear_leader_idx();
@@ -791,6 +798,8 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   void clear_has_oppose_prepare_gid();
   void set_has_bft_timeout();
   void clear_has_bft_timeout();
+  void set_has_leader_sync_txs();
+  void clear_has_leader_sync_txs();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -816,6 +825,7 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   bool sync_block_;
   bool bft_timeout_;
   ::google::protobuf::uint64 prepare_height_;
+  bool leader_sync_txs_;
   ::google::protobuf::int32 leader_idx_;
   ::google::protobuf::uint32 pool_index_;
   friend struct ::protobuf_protos_2fzbft_2eproto::TableStruct;
@@ -1421,13 +1431,13 @@ inline void ZbftMessage::set_allocated_commit_gid(::std::string* commit_gid) {
 
 // optional int32 leader_idx = 4 [default = -1];
 inline bool ZbftMessage::has_leader_idx() const {
-  return (_has_bits_[0] & 0x00080000u) != 0;
+  return (_has_bits_[0] & 0x00100000u) != 0;
 }
 inline void ZbftMessage::set_has_leader_idx() {
-  _has_bits_[0] |= 0x00080000u;
+  _has_bits_[0] |= 0x00100000u;
 }
 inline void ZbftMessage::clear_has_leader_idx() {
-  _has_bits_[0] &= ~0x00080000u;
+  _has_bits_[0] &= ~0x00100000u;
 }
 inline void ZbftMessage::clear_leader_idx() {
   leader_idx_ = -1;
@@ -1517,13 +1527,13 @@ inline void ZbftMessage::set_agree_commit(bool value) {
 
 // optional uint32 pool_index = 8 [default = 4294967295];
 inline bool ZbftMessage::has_pool_index() const {
-  return (_has_bits_[0] & 0x00100000u) != 0;
+  return (_has_bits_[0] & 0x00200000u) != 0;
 }
 inline void ZbftMessage::set_has_pool_index() {
-  _has_bits_[0] |= 0x00100000u;
+  _has_bits_[0] |= 0x00200000u;
 }
 inline void ZbftMessage::clear_has_pool_index() {
-  _has_bits_[0] &= ~0x00100000u;
+  _has_bits_[0] &= ~0x00200000u;
 }
 inline void ZbftMessage::clear_pool_index() {
   pool_index_ = 4294967295u;
@@ -2183,6 +2193,30 @@ inline void ZbftMessage::set_bft_timeout(bool value) {
   set_has_bft_timeout();
   bft_timeout_ = value;
   // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.bft_timeout)
+}
+
+// optional bool leader_sync_txs = 24;
+inline bool ZbftMessage::has_leader_sync_txs() const {
+  return (_has_bits_[0] & 0x00080000u) != 0;
+}
+inline void ZbftMessage::set_has_leader_sync_txs() {
+  _has_bits_[0] |= 0x00080000u;
+}
+inline void ZbftMessage::clear_has_leader_sync_txs() {
+  _has_bits_[0] &= ~0x00080000u;
+}
+inline void ZbftMessage::clear_leader_sync_txs() {
+  leader_sync_txs_ = false;
+  clear_has_leader_sync_txs();
+}
+inline bool ZbftMessage::leader_sync_txs() const {
+  // @@protoc_insertion_point(field_get:shardora.zbft.protobuf.ZbftMessage.leader_sync_txs)
+  return leader_sync_txs_;
+}
+inline void ZbftMessage::set_leader_sync_txs(bool value) {
+  set_has_leader_sync_txs();
+  leader_sync_txs_ = value;
+  // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.ZbftMessage.leader_sync_txs)
 }
 
 #ifdef __GNUC__

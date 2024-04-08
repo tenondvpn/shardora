@@ -453,7 +453,7 @@ private:
     ZbftPtr changed_leader_pools_height_[common::kInvalidPoolIndex] = { nullptr };
     std::shared_ptr<BftMessageInfo> gid_with_msg_map_[common::kInvalidPoolIndex];
     uint64_t pools_prev_bft_timeout_[common::kInvalidPoolIndex] = { 0 };
-    uint64_t pools_send_to_leader_tm_ms_[common::kInvalidPoolIndex] = { 0 };
+    uint64_t pools_send_to_leader_tm_ms_ = { 0 };
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {

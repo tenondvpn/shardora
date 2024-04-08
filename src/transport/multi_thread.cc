@@ -274,6 +274,11 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
         HandleSyncBlockResponse(msg_ptr);
     }
 
+    if (msg_ptr->header.type() == common::kConsensusMessage && msg_ptr->header.zbft().bft_timeout()) {
+        HandleSyncBftTimeout(msg_ptr);
+        return;
+    }
+
     auto thread_index = GetThreadIndex(msg_ptr);
     if (thread_index >= common::kMaxThreadCount) {
         assert(false);
@@ -309,6 +314,35 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
         return common::kMaxThreadCount;
     default:
         return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_);
+    }
+}
+
+void MultiThreadHandler::HandleSyncBftTimeout(MessagePtr& msg_ptr) {
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+        auto& msg = new_msg_ptr->header;
+        msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+        common::DhtKey dht_key;
+        dht_key.construct.net_id = common::GlobalInfo::Instance()->network_id();
+        std::string str_key = std::string(dht_key.dht_key, sizeof(dht_key.dht_key));
+        msg.set_des_dht_key(str_key);
+        msg.set_type(common::kConsensusMessage);
+        auto& bft_msg = *msg.mutable_zbft();
+        bft_msg.set_sync_block(true);
+        bft_msg.set_member_index(-1);
+        bft_msg.set_leader_idx(msg_ptr->header.zbft().leader_idx());
+        bft_msg.set_pool_index(i);
+        bft_msg.set_bft_timeout(true);
+        auto queue_idx = GetThreadIndex(new_msg_ptr);
+        if (queue_idx >= common::kMaxThreadCount) {
+            assert(false);
+            return;
+        }
+
+        transport::TcpTransport::Instance()->SetMessageHash(new_msg_ptr->header);
+        uint32_t priority = GetPriority(new_msg_ptr);
+        threads_message_queues_[queue_idx][priority].push(new_msg_ptr);
+        wait_con_[queue_idx % all_thread_count_].notify_one();
     }
 }
 

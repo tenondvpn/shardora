@@ -760,12 +760,16 @@ int Zbft::DoTransaction(bool leader) {
             ZJC_ERROR("timestamp is error. cur_time = %lu, preblock_time = %lu, leader_timestamp = %lu ", cur_time, preblock_time, leader_timestamp_);
             return kConsensusError;
         }
+
         zjc_block.set_timestamp(leader_timestamp_);
     }
     
-    if (txs_ptr_->tx_type != pools::protobuf::kNormalFrom) {
+    // if (txs_ptr_->tx_type != pools::protobuf::kNormalFrom) {
+        assert(tm_block_mgr_->LatestTimestampHeight() > 0);
         zjc_block.set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
-    }
+    // } else {
+    //     assert(false);
+    // }
 
     zjc_block.set_electblock_height(elect_height_);
     assert(elect_height_ >= 1);

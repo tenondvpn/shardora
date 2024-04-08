@@ -153,16 +153,29 @@ struct CrossStatisticItem {
     std::shared_ptr<pools::protobuf::CrossShardStatistic> cross_ptr;
 };
 
-struct HeightStatisticInfo {
-    HeightStatisticInfo() : elect_height(0), all_gas_amount(0), all_gas_for_root(0) {}
-    std::unordered_map<std::string, StatisticMemberInfoItem> node_tx_count_map;
-    std::unordered_map<std::string, uint64_t> node_stoke_map;
-    std::unordered_map<std::string, uint32_t> node_shard_map;
-    std::unordered_map<std::string, std::string> node_pubkey_map;
-    std::unordered_map<uint32_t, std::unordered_map<uint64_t, uint32_t>> pool_cross_shard_heights;
-    uint64_t elect_height;
+struct ElectNodeStatisticInfo {
+    ElectNodeStatisticInfo() : all_gas_amount(0), 
+        all_gas_for_root(0) {}
+    std::map<std::string, StatisticMemberInfoItem> node_tx_count_map;
+    std::map<std::string, uint64_t> node_stoke_map;
+    std::map<std::string, uint32_t> node_shard_map;
+    std::map<std::string, std::string> node_pubkey_map;
     uint64_t all_gas_amount;
     uint64_t all_gas_for_root;
+};
+
+struct HeightStatisticInfo {
+    HeightStatisticInfo() : tm_height(0), max_height(0) {}
+    uint64_t tm_height;
+    uint64_t max_height;
+    pools::protobuf::CrossShardStatistic cross_statistic;
+    std::map<uint64_t, std::shared_ptr<ElectNodeStatisticInfo>> elect_node_info_map;
+};
+
+struct PoolBlocksInfo {
+    PoolBlocksInfo() : latest_consensus_height_(0) {}
+    std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> blocks;
+    uint64_t latest_consensus_height_;
 };
 
 struct RootStatisticItem {
@@ -246,22 +259,22 @@ static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_
         }
     }
 
-    ZJC_DEBUG("gid: %s, pk: %s, to: %s, amount: %lu, gas limit: %lu, gas price: %lu, "
-        "step: %d, contract code: %s, input: %s, prepayment: %lu, key: %s, value: %s", 
-        common::Encode::HexEncode(tx_info.gid()).c_str(),
-        common::Encode::HexEncode(tx_info.pubkey()).c_str(),
-        common::Encode::HexEncode(tx_info.to()).c_str(),
-        tx_info.amount(),
-        tx_info.gas_limit(),
-        tx_info.gas_price(),
-        tx_info.step(),
-        common::Encode::HexEncode(tx_info.contract_code()).c_str(),
-        common::Encode::HexEncode(tx_info.contract_input()).c_str(),
-        tx_info.contract_prepayment(),
-        common::Encode::HexEncode(tx_info.key()).c_str(),
-        common::Encode::HexEncode(tx_info.value()).c_str());
+    // ZJC_DEBUG("gid: %s, pk: %s, to: %s, amount: %lu, gas limit: %lu, gas price: %lu, "
+    //     "step: %d, contract code: %s, input: %s, prepayment: %lu, key: %s, value: %s", 
+    //     common::Encode::HexEncode(tx_info.gid()).c_str(),
+    //     common::Encode::HexEncode(tx_info.pubkey()).c_str(),
+    //     common::Encode::HexEncode(tx_info.to()).c_str(),
+    //     tx_info.amount(),
+    //     tx_info.gas_limit(),
+    //     tx_info.gas_price(),
+    //     tx_info.step(),
+    //     common::Encode::HexEncode(tx_info.contract_code()).c_str(),
+    //     common::Encode::HexEncode(tx_info.contract_input()).c_str(),
+    //     tx_info.contract_prepayment(),
+    //     common::Encode::HexEncode(tx_info.key()).c_str(),
+    //     common::Encode::HexEncode(tx_info.value()).c_str());
 
-    ZJC_DEBUG("message: %s", common::Encode::HexEncode(message).c_str());
+    // ZJC_DEBUG("message: %s", common::Encode::HexEncode(message).c_str());
     return common::Hash::keccak256(message);
 }
 

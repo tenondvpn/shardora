@@ -56,6 +56,7 @@ message StatisticTxItem {
     optional uint32 sharding_id = 1;
     repeated uint64 heights = 2;
     optional uint64 block_height = 3;
+    optional uint64 tm_height = 4;
 }
 
 message ToTxMessage {
@@ -110,13 +111,12 @@ message CrossShardStatistic {
 
 message ElectStatistic {
     repeated PoolStatisticItem statistics = 1;
-    optional StatisticTxItem heights = 2;
+    optional StatisticTxItem height_info = 2;
     repeated JoinElectNode join_elect_nodes = 3;
     optional uint32 sharding_id = 4;
     optional uint64 gas_amount = 5;
     repeated uint32 lof_leaders = 6;
     optional CrossShardStatistic cross = 7;
-    optional uint64 elect_height = 8;
 }
 
 message SyncPoolsMaxHeight {

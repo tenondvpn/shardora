@@ -87,10 +87,12 @@ public:
     }
 
     void FlushHeightTree(db::DbWriteBatch& db_batch) {
+        // TODO: fix bug
         if (height_tree_ptr_ != nullptr) {
-            height_tree_ptr_->FlushToDb(db_batch);
+            auto tmp_tree_ptr = height_tree_ptr_;
+            tmp_tree_ptr->FlushToDb(db_batch);
             // 清理内存
-            height_tree_ptr_.reset();
+            height_tree_ptr_ = nullptr;
         }
     }
 

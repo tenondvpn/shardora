@@ -32,6 +32,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool
     std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(pool_index);
     #endif
     if (txs_item == nullptr) {
+        ZJC_DEBUG("failed get single leader get txs coming thread: %d, pool index: %d", thread_id, pool_index);
         txs_item = wtxs[pool_index].LeaderGetValidTxs();
     }
 

@@ -47,23 +47,23 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
         message.append(tx_info.storages(i).key());
         message.append(
             GetTxValueProtoHash(tx_info.storages(i).key(), tx_info.storages(i).value()));
-        ZJC_DEBUG("add tx key: %s, %s, value: %s",
-            tx_info.storages(i).key().c_str(),
-            common::Encode::HexEncode(tx_info.storages(i).key()).c_str(),
-            common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
+        // ZJC_DEBUG("add tx key: %s, %s, value: %s",
+        //     tx_info.storages(i).key().c_str(),
+        //     common::Encode::HexEncode(tx_info.storages(i).key()).c_str(),
+        //     common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
     }
 
-#ifndef NDEBUG
-    for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
-        ZJC_DEBUG("amount: %lu, gas_limit: %lu, gas_price: %lu, step: %u, key: %s, %s, val: %s, block tx hash: %s, message: %s",
-            amount, gas_limit, gas_price, step,
-            common::Encode::HexEncode(tx_info.storages(i).key()).c_str(),
-            tx_info.storages(i).key().c_str(),
-            common::Encode::HexEncode(tx_info.storages(i).value()).c_str(),
-            common::Encode::HexEncode(common::Hash::keccak256(message)).c_str(),
-            common::Encode::HexEncode(message).c_str());
-    }
-#endif
+// #ifndef NDEBUG
+//     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
+//         ZJC_DEBUG("amount: %lu, gas_limit: %lu, gas_price: %lu, step: %u, key: %s, %s, val: %s, block tx hash: %s, message: %s",
+//             amount, gas_limit, gas_price, step,
+//             common::Encode::HexEncode(tx_info.storages(i).key()).c_str(),
+//             tx_info.storages(i).key().c_str(),
+//             common::Encode::HexEncode(tx_info.storages(i).value()).c_str(),
+//             common::Encode::HexEncode(common::Hash::keccak256(message)).c_str(),
+//             common::Encode::HexEncode(message).c_str());
+//     }
+// #endif
 
     return common::Hash::keccak256(message);
 }

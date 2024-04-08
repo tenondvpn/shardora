@@ -200,8 +200,8 @@ int NetworkInit::Init(int argc, char** argv) {
         }
     }
 
-    block_mgr_->LoadLatestBlocks();
     shard_statistic_->Init();
+    block_mgr_->LoadLatestBlocks();
     RegisterFirewallCheck();
     transport::TcpTransport::Instance()->Start(false);
     if (InitHttpServer() != kInitSuccess) {
@@ -1063,7 +1063,7 @@ bool NetworkInit::DbNewBlockCallback(
         }
     }
 
-    shard_statistic_->OnNewBlock(*block);
+    shard_statistic_->OnNewBlock(block);
     return true;
 }
 
@@ -1245,12 +1245,6 @@ bool NetworkInit::BlockBlsAggSignatureValid(
         return false;
     }
 
-    auto block_hash = consensus::GetBlockHash(block);
-    if (block_hash != block.hash()) {
-        assert(false);
-        return false;
-    }
-
     libff::alt_bn128_G2 common_pk = libff::alt_bn128_G2::zero();
     auto members = elect_mgr_->GetNetworkMembersWithHeight(
         block.electblock_height(),
@@ -1267,6 +1261,12 @@ bool NetworkInit::BlockBlsAggSignatureValid(
            block.network_id(),
            block.electblock_height(),
            sync::kSyncHigh);
+        return false;
+    }
+
+    auto block_hash = consensus::GetBlockHash(block);
+    if (block_hash != block.hash()) {
+        assert(false);
         return false;
     }
 

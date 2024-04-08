@@ -98,6 +98,7 @@ private:
     void InitThreadPriorityMessageQueues();
     uint8_t GetThreadIndex(MessagePtr& msg_ptr);
     void HandleSyncBlockResponse(MessagePtr& msg_ptr);
+    void HandleSyncBftTimeout(MessagePtr& msg_ptr);
     void SaveKeyValue(const transport::protobuf::Header& msg, db::DbWriteBatch& db_batch);
     void CreateConsensusBlockMessage(
         std::shared_ptr<transport::TransportMessage>& new_msg_ptr,

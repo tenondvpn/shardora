@@ -822,6 +822,13 @@ class StatisticTxItem : public ::google::protobuf::Message /* @@protoc_insertion
   ::google::protobuf::uint64 block_height() const;
   void set_block_height(::google::protobuf::uint64 value);
 
+  // optional uint64 tm_height = 4;
+  bool has_tm_height() const;
+  void clear_tm_height();
+  static const int kTmHeightFieldNumber = 4;
+  ::google::protobuf::uint64 tm_height() const;
+  void set_tm_height(::google::protobuf::uint64 value);
+
   // optional uint32 sharding_id = 1;
   bool has_sharding_id() const;
   void clear_sharding_id();
@@ -835,12 +842,15 @@ class StatisticTxItem : public ::google::protobuf::Message /* @@protoc_insertion
   void clear_has_sharding_id();
   void set_has_block_height();
   void clear_has_block_height();
+  void set_has_tm_height();
+  void clear_has_tm_height();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > heights_;
   ::google::protobuf::uint64 block_height_;
+  ::google::protobuf::uint64 tm_height_;
   ::google::protobuf::uint32 sharding_id_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
@@ -2123,17 +2133,17 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
       mutable_lof_leaders();
 
-  // optional .shardora.pools.protobuf.StatisticTxItem heights = 2;
-  bool has_heights() const;
-  void clear_heights();
-  static const int kHeightsFieldNumber = 2;
+  // optional .shardora.pools.protobuf.StatisticTxItem height_info = 2;
+  bool has_height_info() const;
+  void clear_height_info();
+  static const int kHeightInfoFieldNumber = 2;
   private:
-  const ::shardora::pools::protobuf::StatisticTxItem& _internal_heights() const;
+  const ::shardora::pools::protobuf::StatisticTxItem& _internal_height_info() const;
   public:
-  const ::shardora::pools::protobuf::StatisticTxItem& heights() const;
-  ::shardora::pools::protobuf::StatisticTxItem* release_heights();
-  ::shardora::pools::protobuf::StatisticTxItem* mutable_heights();
-  void set_allocated_heights(::shardora::pools::protobuf::StatisticTxItem* heights);
+  const ::shardora::pools::protobuf::StatisticTxItem& height_info() const;
+  ::shardora::pools::protobuf::StatisticTxItem* release_height_info();
+  ::shardora::pools::protobuf::StatisticTxItem* mutable_height_info();
+  void set_allocated_height_info(::shardora::pools::protobuf::StatisticTxItem* height_info);
 
   // optional .shardora.pools.protobuf.CrossShardStatistic cross = 7;
   bool has_cross() const;
@@ -2154,13 +2164,6 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::uint64 gas_amount() const;
   void set_gas_amount(::google::protobuf::uint64 value);
 
-  // optional uint64 elect_height = 8;
-  bool has_elect_height() const;
-  void clear_elect_height();
-  static const int kElectHeightFieldNumber = 8;
-  ::google::protobuf::uint64 elect_height() const;
-  void set_elect_height(::google::protobuf::uint64 value);
-
   // optional uint32 sharding_id = 4;
   bool has_sharding_id() const;
   void clear_sharding_id();
@@ -2170,16 +2173,14 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
 
   // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.ElectStatistic)
  private:
-  void set_has_heights();
-  void clear_has_heights();
+  void set_has_height_info();
+  void clear_has_height_info();
   void set_has_sharding_id();
   void clear_has_sharding_id();
   void set_has_gas_amount();
   void clear_has_gas_amount();
   void set_has_cross();
   void clear_has_cross();
-  void set_has_elect_height();
-  void clear_has_elect_height();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -2187,10 +2188,9 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::PoolStatisticItem > statistics_;
   ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::JoinElectNode > join_elect_nodes_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > lof_leaders_;
-  ::shardora::pools::protobuf::StatisticTxItem* heights_;
+  ::shardora::pools::protobuf::StatisticTxItem* height_info_;
   ::shardora::pools::protobuf::CrossShardStatistic* cross_;
   ::google::protobuf::uint64 gas_amount_;
-  ::google::protobuf::uint64 elect_height_;
   ::google::protobuf::uint32 sharding_id_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
@@ -3366,13 +3366,13 @@ inline void ShardToTxItem::set_block_height(::google::protobuf::uint64 value) {
 
 // optional uint32 sharding_id = 1;
 inline bool StatisticTxItem::has_sharding_id() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void StatisticTxItem::set_has_sharding_id() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void StatisticTxItem::clear_has_sharding_id() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void StatisticTxItem::clear_sharding_id() {
   sharding_id_ = 0u;
@@ -3440,6 +3440,30 @@ inline void StatisticTxItem::set_block_height(::google::protobuf::uint64 value) 
   set_has_block_height();
   block_height_ = value;
   // @@protoc_insertion_point(field_set:shardora.pools.protobuf.StatisticTxItem.block_height)
+}
+
+// optional uint64 tm_height = 4;
+inline bool StatisticTxItem::has_tm_height() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void StatisticTxItem::set_has_tm_height() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void StatisticTxItem::clear_has_tm_height() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void StatisticTxItem::clear_tm_height() {
+  tm_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_tm_height();
+}
+inline ::google::protobuf::uint64 StatisticTxItem::tm_height() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.StatisticTxItem.tm_height)
+  return tm_height_;
+}
+inline void StatisticTxItem::set_tm_height(::google::protobuf::uint64 value) {
+  set_has_tm_height();
+  tm_height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.StatisticTxItem.tm_height)
 }
 
 // -------------------------------------------------------------------
@@ -4370,62 +4394,62 @@ ElectStatistic::statistics() const {
   return statistics_;
 }
 
-// optional .shardora.pools.protobuf.StatisticTxItem heights = 2;
-inline bool ElectStatistic::has_heights() const {
+// optional .shardora.pools.protobuf.StatisticTxItem height_info = 2;
+inline bool ElectStatistic::has_height_info() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void ElectStatistic::set_has_heights() {
+inline void ElectStatistic::set_has_height_info() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void ElectStatistic::clear_has_heights() {
+inline void ElectStatistic::clear_has_height_info() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void ElectStatistic::clear_heights() {
-  if (heights_ != NULL) heights_->Clear();
-  clear_has_heights();
+inline void ElectStatistic::clear_height_info() {
+  if (height_info_ != NULL) height_info_->Clear();
+  clear_has_height_info();
 }
-inline const ::shardora::pools::protobuf::StatisticTxItem& ElectStatistic::_internal_heights() const {
-  return *heights_;
+inline const ::shardora::pools::protobuf::StatisticTxItem& ElectStatistic::_internal_height_info() const {
+  return *height_info_;
 }
-inline const ::shardora::pools::protobuf::StatisticTxItem& ElectStatistic::heights() const {
-  const ::shardora::pools::protobuf::StatisticTxItem* p = heights_;
-  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ElectStatistic.heights)
+inline const ::shardora::pools::protobuf::StatisticTxItem& ElectStatistic::height_info() const {
+  const ::shardora::pools::protobuf::StatisticTxItem* p = height_info_;
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ElectStatistic.height_info)
   return p != NULL ? *p : *reinterpret_cast<const ::shardora::pools::protobuf::StatisticTxItem*>(
       &::shardora::pools::protobuf::_StatisticTxItem_default_instance_);
 }
-inline ::shardora::pools::protobuf::StatisticTxItem* ElectStatistic::release_heights() {
-  // @@protoc_insertion_point(field_release:shardora.pools.protobuf.ElectStatistic.heights)
-  clear_has_heights();
-  ::shardora::pools::protobuf::StatisticTxItem* temp = heights_;
-  heights_ = NULL;
+inline ::shardora::pools::protobuf::StatisticTxItem* ElectStatistic::release_height_info() {
+  // @@protoc_insertion_point(field_release:shardora.pools.protobuf.ElectStatistic.height_info)
+  clear_has_height_info();
+  ::shardora::pools::protobuf::StatisticTxItem* temp = height_info_;
+  height_info_ = NULL;
   return temp;
 }
-inline ::shardora::pools::protobuf::StatisticTxItem* ElectStatistic::mutable_heights() {
-  set_has_heights();
-  if (heights_ == NULL) {
+inline ::shardora::pools::protobuf::StatisticTxItem* ElectStatistic::mutable_height_info() {
+  set_has_height_info();
+  if (height_info_ == NULL) {
     auto* p = CreateMaybeMessage<::shardora::pools::protobuf::StatisticTxItem>(GetArenaNoVirtual());
-    heights_ = p;
+    height_info_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:shardora.pools.protobuf.ElectStatistic.heights)
-  return heights_;
+  // @@protoc_insertion_point(field_mutable:shardora.pools.protobuf.ElectStatistic.height_info)
+  return height_info_;
 }
-inline void ElectStatistic::set_allocated_heights(::shardora::pools::protobuf::StatisticTxItem* heights) {
+inline void ElectStatistic::set_allocated_height_info(::shardora::pools::protobuf::StatisticTxItem* height_info) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
-    delete heights_;
+    delete height_info_;
   }
-  if (heights) {
+  if (height_info) {
     ::google::protobuf::Arena* submessage_arena = NULL;
     if (message_arena != submessage_arena) {
-      heights = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, heights, submessage_arena);
+      height_info = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, height_info, submessage_arena);
     }
-    set_has_heights();
+    set_has_height_info();
   } else {
-    clear_has_heights();
+    clear_has_height_info();
   }
-  heights_ = heights;
-  // @@protoc_insertion_point(field_set_allocated:shardora.pools.protobuf.ElectStatistic.heights)
+  height_info_ = height_info;
+  // @@protoc_insertion_point(field_set_allocated:shardora.pools.protobuf.ElectStatistic.height_info)
 }
 
 // repeated .shardora.pools.protobuf.JoinElectNode join_elect_nodes = 3;
@@ -4460,13 +4484,13 @@ ElectStatistic::join_elect_nodes() const {
 
 // optional uint32 sharding_id = 4;
 inline bool ElectStatistic::has_sharding_id() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void ElectStatistic::set_has_sharding_id() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void ElectStatistic::clear_has_sharding_id() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void ElectStatistic::clear_sharding_id() {
   sharding_id_ = 0u;
@@ -4592,30 +4616,6 @@ inline void ElectStatistic::set_allocated_cross(::shardora::pools::protobuf::Cro
   }
   cross_ = cross;
   // @@protoc_insertion_point(field_set_allocated:shardora.pools.protobuf.ElectStatistic.cross)
-}
-
-// optional uint64 elect_height = 8;
-inline bool ElectStatistic::has_elect_height() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void ElectStatistic::set_has_elect_height() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void ElectStatistic::clear_has_elect_height() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void ElectStatistic::clear_elect_height() {
-  elect_height_ = GOOGLE_ULONGLONG(0);
-  clear_has_elect_height();
-}
-inline ::google::protobuf::uint64 ElectStatistic::elect_height() const {
-  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ElectStatistic.elect_height)
-  return elect_height_;
-}
-inline void ElectStatistic::set_elect_height(::google::protobuf::uint64 value) {
-  set_has_elect_height();
-  elect_height_ = value;
-  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ElectStatistic.elect_height)
 }
 
 // -------------------------------------------------------------------

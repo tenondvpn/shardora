@@ -318,7 +318,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
     uint32_t valid_n = genesis_nodes.size();
     uint32_t valid_t = common::GetSignerCount(valid_n);
     std::vector<std::vector<libff::alt_bn128_Fr>> secret_key_contribution(valid_n);
-    for (uint32_t idx = 0; idx < genesis_nodes.size(); ++idx) {
+    auto callback = [&](uint32_t idx) -> void {
         std::string file = std::string("./") + common::Encode::HexEncode(genesis_nodes[idx]->id);
         bool file_valid = true;
         bls::protobuf::LocalPolynomial local_poly;
@@ -327,7 +327,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
             char* data = new char[1024 * 1024 * 10];
             if (fgets(data, 1024 * 1024 * 10, fd) == nullptr) {
                 ZJC_FATAL("load bls init info failed: %s", file.c_str());
-                return false;
+                return;
             }
 
             fclose(fd);
@@ -335,7 +335,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
             std::string val = common::Encode::HexDecode(tmp_data);
             if (!local_poly.ParseFromString(val)) {
                 ZJC_FATAL("load bls init info failed!");
-                return false;
+                return;
             }
         }
 
@@ -368,9 +368,6 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
         join_info.set_shard_id(sharding_id);
         auto* req = join_info.mutable_g2_req();
         auto g2_vec = dkg_instance.VerificationVector(genesis_nodes[idx]->polynomial);
-        std::string str_for_hash;
-        str_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
-        str_for_hash.append((char*)&idx, sizeof(idx));
         for (uint32_t i = 0; i < t; ++i) {
             bls::protobuf::VerifyVecItem& verify_item = *req->add_verify_vec();
             verify_item.set_x_c0(common::Encode::HexDecode(
@@ -385,17 +382,24 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
                 libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
             verify_item.set_z_c1(common::Encode::HexDecode(
                 libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
-            str_for_hash.append(verify_item.x_c0());
-            str_for_hash.append(verify_item.x_c1());
-            str_for_hash.append(verify_item.y_c0());
-            str_for_hash.append(verify_item.y_c1());
-            str_for_hash.append(verify_item.z_c0());
-            str_for_hash.append(verify_item.z_c1());
         }
 
         genesis_nodes[idx]->g2_val = join_info.SerializeAsString();
         prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
         prefix_db_->AddBlsVerifyG2(secptr->GetAddress(), *req);
+    };
+
+    std::vector<std::shared_ptr<std::thread>> thread_vec;
+    for (uint32_t idx = 0; idx < genesis_nodes.size(); ++idx) {
+        thread_vec.push_back(std::make_shared<std::thread>(callback, idx));
+        if (thread_vec.size() >= 8 || idx == genesis_nodes.size() - 1) {
+            for (uint32_t i = 0; i < thread_vec.size(); ++i) {
+                thread_vec[i]->join();
+            }
+
+            thread_vec.clear();
+        }
+        // callback(idx);
     }
 
     for (size_t i = 0; i < genesis_nodes.size(); ++i) {
@@ -1100,7 +1104,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     // 这也应该是 pool_index，其实就是选了 root network 的 pool 2 和 pool 3 ?
     pool_prev_hash_map[network::kRootCongressNetworkId] = prehashes[network::kRootCongressNetworkId];
     init_heights.set_heights(network::kRootCongressNetworkId, 2);
-
+    init_heights.set_tm_height(0);
     // prehashes 不是 pool 当中前一个块的 hash 吗，为什么是 prehashes[network_id] 而不是 prehashes[pool_index]
     for (uint32_t i = 0; i < cons_genesis_nodes_of_shards.size(); i++) {
         uint32_t net_id = i + network::kConsensusShardBeginNetworkId;
