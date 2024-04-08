@@ -1555,7 +1555,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
 pools::TxItemPtr BlockManager::GetCrossTx(
         uint32_t pool_index, 
         bool leader) {
-    auto statistic_map_ptr = shard_statistics_map_ptr_;
+    auto statistic_map_ptr = cross_statistics_map_ptr_;
     if (statistic_map_ptr == nullptr) {
         return nullptr;
     }
@@ -1586,7 +1586,7 @@ pools::TxItemPtr BlockManager::GetCrossTx(
 pools::TxItemPtr BlockManager::GetStatisticTx(
         uint32_t pool_index, 
         bool leader) {
-    auto statistic_map_ptr = cross_statistics_map_ptr_;
+    auto statistic_map_ptr = shard_statistics_map_ptr_;
     if (statistic_map_ptr == nullptr) {
         return nullptr;
     }
