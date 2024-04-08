@@ -281,7 +281,6 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
     }
 
     if (block_ptr->timeblock_height() < latest_timeblock_height_) {
-        new_block_changed_ = true;
         ZJC_DEBUG("new_block_changed_ = true timeblock not less than latest timeblock: %lu, %lu", 
             block_ptr->timeblock_height(), latest_timeblock_height_);
     }
@@ -427,11 +426,11 @@ void ShardStatistic::OnTimeBlock(
         return;
     }
 
-    new_block_changed_ = true;
     ZJC_DEBUG("new_block_changed_ = true new timeblcok coming and should statistic new tx %lu, %lu.", 
         latest_timeblock_height_, latest_time_block_height);
     prev_timeblock_height_ = latest_timeblock_height_;
     latest_timeblock_height_ = latest_time_block_height;
+    tick_to_statistic_.CutOff(10000000lu, std::bind(&ShardStatistic::SetCanStastisticTx, this));
 }
 
 bool ShardStatistic::CheckAllBlockStatisticed(uint32_t local_net_id) {
@@ -686,7 +685,7 @@ int ShardStatistic::StatisticWithHeights(
         }
 
         statistic_item.set_elect_height(hiter->first);
-        debug_for_str += std::to_string(hiter->first) + ",";
+        debug_for_str += " elect height: " + std::to_string(hiter->first) + ",";
     }
 
     debug_for_str += "stoke: ";

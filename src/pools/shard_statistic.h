@@ -65,6 +65,9 @@ private:
     void LoadLatestHeights();
     bool LoadAndStatisticBlock(uint32_t poll_index, uint64_t height);
     bool CheckAllBlockStatisticed(uint32_t local_net_id);
+    void SetCanStastisticTx() {
+        new_block_changed_ = true;
+    }
 
     static const uint32_t kLofRation = 5;
     static const uint32_t kLofMaxNodes = 8;
@@ -87,6 +90,7 @@ private:
     std::shared_ptr<security::Security> secptr_ = nullptr;
     volatile bool new_block_changed_ = false;
     uint64_t statisticed_timeblock_height_ = 0;
+    common::Tick tick_to_statistic_;
 
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };
