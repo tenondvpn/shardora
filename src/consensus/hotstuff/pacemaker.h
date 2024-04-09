@@ -7,11 +7,13 @@
 #include <consensus/hotstuff/leader_rotation.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_duration.h>
+#include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
+#include <libff/algebra/curves/alt_bn128/alt_bn128_init.hpp>
 #include <transport/transport_utils.h>
 
 namespace shardora {
 
-namespace consensus {
+namespace hotstuff {
 
 class Pacemaker {
 public:
@@ -49,6 +51,26 @@ private:
             return;
         }
         one_shot_tick_->Destroy();
+    }
+
+    inline uint32_t minAgreeMemberCount() const {
+        // TODO
+        return 0;
+    }
+
+    inline uint32_t memberCount() const {
+        // TODO
+        return 0;
+    }
+
+    inline libff::alt_bn128_Fr localSecKey() const {
+        // TODO
+        return libff::alt_bn128_Fr::one();
+    }
+
+    inline libff::alt_bn128_G1 g1Hash() const {
+        // TODO
+        return libff::alt_bn128_G1::one();
     }
     
     std::shared_ptr<QC> high_qc_;

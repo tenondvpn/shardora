@@ -10,7 +10,8 @@
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
 
 namespace shardora {
-namespace consensus {
+
+namespace hotstuff {
 
 static const uint64_t ORPHAN_BLOCK_TIMEOUT_US = 10000000lu;
 

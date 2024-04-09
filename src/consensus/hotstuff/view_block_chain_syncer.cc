@@ -16,7 +16,8 @@
 #include "consensus/hotstuff/view_block_chain.h"
 
 namespace shardora {
-namespace consensus {
+
+namespace hotstuff {
 
 ViewBlockChainSyncer::ViewBlockChainSyncer(const std::shared_ptr<ViewBlockChainManager>& c_mgr) : view_block_chain_mgr_(c_mgr) {
     // start consumeloop thread

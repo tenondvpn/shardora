@@ -1,16 +1,17 @@
 #pragma once
 
 #include <common/node_members.h>
+#include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
 
 namespace shardora {
 
-namespace consensus {
+namespace hotstuff {
 
 class LeaderRotation {
 public:
-    explicit LeaderRotation(const std::shared_ptr<ViewBlockChain>&);
+    LeaderRotation(const std::shared_ptr<ViewBlockChain>&, const std::shared_ptr<CryptoInfo>&);
     ~LeaderRotation();
 
     LeaderRotation(const LeaderRotation&) = delete;
@@ -20,16 +21,15 @@ public:
     common::BftMemberPtr GetLeader();
     
     inline uint32_t GetLocalMemberIdx() const {
-        return local_member_idx_;
+        return crypto_info_->LocalMember()->index;
+    }
+private:
+    inline common::MembersPtr Members() const {
+        return crypto_info_->Members(); 
     }
     
-    void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, const common::MembersPtr& members);
-private:
-    common::MembersPtr members_;
-    uint32_t local_member_idx_;
-    uint64_t latest_elect_height_;
-    std::shared_ptr<ViewBlockChain> chain_;
-    std::shared_ptr<security::Security> security_ptr_ = nullptr;
+    std::shared_ptr<ViewBlockChain> chain_ = nullptr;
+    std::shared_ptr<CryptoInfo> crypto_info_ = nullptr;
 };
 
 } // namespace consensus

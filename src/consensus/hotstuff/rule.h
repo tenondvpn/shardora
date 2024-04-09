@@ -3,7 +3,7 @@
 
 namespace shardora {
 
-namespace consensus {
+namespace hotstuff {
 
 class Rule {
     Rule() = default;

@@ -14,7 +14,7 @@
 
 namespace shardora {
 
-namespace consensus {
+namespace hotstuff {
 
 const int kEachRequestMaxViewBlocksCount = 8; 
 

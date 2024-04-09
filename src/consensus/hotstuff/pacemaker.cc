@@ -10,7 +10,7 @@
 
 namespace shardora {
 
-namespace consensus {
+namespace hotstuff {
 
 Pacemaker::Pacemaker() {}
 
@@ -54,18 +54,17 @@ void Pacemaker::OnLocalTimeout() {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header; 
     
-    // TODO 对 highQC 所在 block bls 签名
     std::string bls_sign_x;
     std::string bls_sign_y;
-    // if (bls_mgr_->Sign(
-    //             bft_ptr->min_aggree_member_count(),
-    //             bft_ptr->member_count(),
-    //             bft_ptr->local_sec_key(),
-    //             bft_ptr->g1_prepare_hash(),
-    //             &bls_sign_x,
-    //             &bls_sign_y) != bls::kBlsSuccess) {
-    //         return;
-    //     }
+    if (bls_mgr_->Sign(
+                minAgreeMemberCount(),
+                memberCount(),
+                localSecKey(),
+                g1Hash(),
+                &bls_sign_x,
+                &bls_sign_y) != bls::kBlsSuccess) {
+        return;
+    }
     
     
     view_block::protobuf::TimeoutMessage& timeout_msg = *msg.mutable_hotstuff_timeout_proto();
