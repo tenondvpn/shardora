@@ -134,8 +134,8 @@ void KeyValueSync::CheckSyncItem() {
             SyncItemPtr item = prio_sync_queue_[i].front();
             prio_sync_queue_[i].pop();
             auto& block_map = net_with_pool_blocks_[item->network_id]->pool_blocks[item->pool_idx];
-            auto iter = block_map.find(item->height);
-            if (iter != block_map.end()) {
+            auto block_iter = block_map.find(item->height);
+            if (block_iter != block_map.end()) {
                 continue;
             }
 
@@ -570,7 +570,7 @@ void KeyValueSync::CheckNotCheckedBlocks() {
                     break;
                 }
 
-                pool_blocks[iter->second->pool_index()][iter->second->height()] = nullptr;
+                pool_blocks[iter->second->height()] = nullptr;
                 block_mgr_->NetworkNewBlock(iter->second, false);
                 auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[
                     iter->second->pool_index()];
