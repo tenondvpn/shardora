@@ -143,7 +143,6 @@ private:
     void SyncConsensusBlock(
         uint32_t pool_index,
         const std::string& bft_gid);
-    void HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr);
     void SaveKeyValue(const transport::protobuf::Header& msg);
     void PopAllPoolTxs();
     void LeaderBroadcastBlock(
@@ -183,7 +182,6 @@ private:
         bool agree);
     void LeaderSendPrecommitMessage(const transport::MessagePtr& leader_msg_ptr, bool agree);
     void LeaderSendCommitMessage(const transport::MessagePtr& leader_msg_ptr, bool agree);
-    void HandleCommitedSyncBlock(const zbft::protobuf::ZbftMessage& req_bft_msg);
     std::shared_ptr<WaitingTxsItem> get_txs_ptr(
         std::shared_ptr<PoolTxIndexItem>& thread_item,
         ZbftPtr& commited_bft_ptr);
@@ -197,6 +195,7 @@ private:
     void HandleLeaderCollectTxs(
         const ElectItem& elect_item, 
         const transport::MessagePtr& leader_msg_ptr);
+    void HandleSyncedBlocks();
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(

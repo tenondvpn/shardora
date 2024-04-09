@@ -23,25 +23,13 @@ KeyValueSync::KeyValueSync() {}
 
 KeyValueSync::~KeyValueSync() {}
 
-void KeyValueSync::AddSync(
-        uint32_t network_id,
-        const std::string& key,
-        uint32_t priority) {
-    assert(priority <= kSyncHighest);
-    auto item = std::make_shared<SyncItem>(network_id, key, priority);
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    item_queues_[thread_idx].push(item);
-    ZJC_DEBUG("queue size thread_idx: %d, item_queues_: %d", thread_idx, item_queues_[thread_idx].size());
-//     ZJC_DEBUG("key value add new sync item key: %s, priority: %u",
-//         item->key.c_str(), item->priority);
-
-}
-
 void KeyValueSync::Init(
         const std::shared_ptr<block::BlockManager>& block_mgr,
-        const std::shared_ptr<db::Db>& db) {
+        const std::shared_ptr<db::Db>& db,
+        block::BlockAggValidCallback block_agg_valid_func) {
     block_mgr_ = block_mgr;
     db_ = db;
+    block_agg_valid_func_ = block_agg_valid_func;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db);
     network::Route::Instance()->RegisterMessage(
         common::kSyncMessage,
@@ -97,6 +85,7 @@ void KeyValueSync::ConsensusTimerMessage() {
         ZJC_DEBUG("KeyValueSync handle message use time: %lu", (etime - now_tm_ms));
     }
 
+    CheckNotCheckedBlocks();
     tick_.CutOff(
         100000lu,
         std::bind(&KeyValueSync::ConsensusTimerMessage, this));
@@ -144,6 +133,12 @@ void KeyValueSync::CheckSyncItem() {
         while (!prio_sync_queue_[i].empty()) {
             SyncItemPtr item = prio_sync_queue_[i].front();
             prio_sync_queue_[i].pop();
+            auto& block_map = net_with_pool_blocks_[item->network_id]->pool_blocks[item->pool_idx];
+            auto iter = block_map.find(item->height);
+            if (iter != block_map.end()) {
+                continue;
+            }
+
             if (synced_map_.find(item->key) != synced_map_.end()) {
                 continue;
             }
@@ -520,27 +515,21 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 std::to_string(iter->height());
             auto block_item = std::make_shared<block::protobuf::Block>();
             if (block_item->ParseFromString(iter->value())) {
-                // 对于选举块同步来说，创世选举块不需要验签
-                bool need_valid = (block_item->electblock_height() != 1);
-                // 针对 root 网络的选举块同步
-                if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
-                        block_item->network_id() + network::kConsensusWaitingShardOffset !=
-                        common::GlobalInfo::Instance()->network_id()) {
-                    // TODO 暂时屏蔽创世选举块的验签，后续通过消息体中的 commom pk 验证
-                    ZJC_DEBUG("sync elect block, elect height: %u, height: %u, key: %s, block hash: %s", 
-                        block_item->electblock_height(), block_item->height(), 
-                        key.c_str(), common::Encode::HexEncode(block_item->hash()).c_str());
-                    block_mgr_->NetworkNewBlock(block_item, need_valid);
-                } else { // TODO 本网络的就不用同步吗？
-                    block_mgr_->NetworkNewBlock(block_item, need_valid);
-                    ZJC_DEBUG("sync normal block, elect height: %u, height: %u, network_id: %u, "
-                        "pool: %u, key: %s, block hash: %s",
-                        block_item->electblock_height(),
-                        block_item->height(),
-                        block_item->network_id(),
-                        block_item->pool_index(),
-                        key.c_str(), 
-                        common::Encode::HexEncode(block_item->hash()).c_str());
+                if (block_agg_valid_func_ != nullptr) {
+                    int res = block_agg_valid_func_(*block_item);
+                    if (res == -1) {
+                        continue;
+                    }
+
+                    auto& pool_blocks = net_with_pool_blocks_[block_item->network_id()]->pool_blocks;
+                    if (res == 0) {
+                        pool_blocks[block_item->pool_index()][block_item->height()] = nullptr;
+                        block_mgr_->NetworkNewBlock(block_item, false);
+                        auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[block_item->pool_index()];
+                        bft_block_queues_[thread_idx].push(block_item);
+                    } else {
+                        pool_blocks[block_item->pool_index()][block_item->height()] = block_item;
+                    }
                 }
             }
         }
@@ -565,8 +554,36 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
     }
 }
 
+void KeyValueSync::CheckNotCheckedBlocks() {
+    if (block_agg_valid_func_ == nullptr) {
+        return;
+    }
+
+    for (uint32_t sharding_id = network::kRootCongressNetworkId;
+            sharding_id <= max_sharding_id_; ++sharding_id) {
+        for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
+            auto& pool_blocks = net_with_pool_blocks_[sharding_id]->pool_blocks[pool_idx];
+            auto iter = pool_blocks.begin();
+            while (iter != pool_blocks.end()) {
+                int res = block_agg_valid_func_(*iter->second);
+                if (res == -1) {
+                    break;
+                }
+
+                pool_blocks[iter->second->pool_index()][iter->second->height()] = nullptr;
+                block_mgr_->NetworkNewBlock(iter->second, false);
+                auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[
+                    iter->second->pool_index()];
+                bft_block_queues_[thread_idx].push(iter->second);
+                ZJC_DEBUG("check not signed blocks success: %u, %u, %lu",
+                    sharding_id, pool_idx, iter->first);
+                iter = pool_blocks.erase(iter);
+            }
+        }
+    }
+}
+
 void KeyValueSync::CheckSyncTimeout() {
-    
     auto now_tm = common::TimeUtils::TimestampUs();
     for (auto iter = synced_map_.begin(); iter != synced_map_.end();) {
         if (iter->second->sync_times >= kSyncMaxRetryTimes) {

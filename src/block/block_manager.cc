@@ -218,7 +218,7 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         auto block_ptr = std::make_shared<block::protobuf::Block>(header.block());
-        if (block_agg_valid_func_(*block_ptr)) {
+        if (block_agg_valid_func_(*block_ptr) == 0) {
             // just one thread
             block_from_network_queue_.push(block_ptr);
             ZJC_DEBUG("queue size add new block message hash: %lu, block_from_network_queue_ size: %d", 
@@ -360,7 +360,7 @@ void BlockManager::CheckWaitingBlocks(uint32_t shard, uint64_t elect_height) {
     while (!height_iter->second.empty()) {
         auto block_item = height_iter->second.front();
         height_iter->second.pop();
-        if (block_agg_valid_func_ != nullptr && !block_agg_valid_func_(*block_item)) {
+        if (block_agg_valid_func_ != nullptr && block_agg_valid_func_(*block_item) == 0) {
             ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, "
                 "net: %u, pool: %u, height: %lu",
                 common::Encode::HexEncode(block_item->hash()).c_str(),
@@ -390,7 +390,7 @@ int BlockManager::NetworkNewBlock(
             return kBlockError;
         }
 
-        if (need_valid && block_agg_valid_func_ != nullptr && !block_agg_valid_func_(*block_item)) {
+        if (need_valid && block_agg_valid_func_ != nullptr && block_agg_valid_func_(*block_item) == 0) {
             ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, net: %u, pool: %u, height: %lu",
                 common::Encode::HexEncode(block_item->hash()).c_str(),
                 common::Encode::HexEncode(block_item->bls_agg_sign_x()).c_str(),

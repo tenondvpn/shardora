@@ -137,7 +137,8 @@ int NetworkInit::Init(int argc, char** argv) {
         nullptr);
     kv_sync_->Init(
         block_mgr_,
-        db_);
+        db_,
+        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(
         security_, db_, kv_sync_, account_mgr_);
     account_mgr_->Init(db_, pools_mgr_);
@@ -1238,11 +1239,16 @@ void NetworkInit::HandleElectionBlock(
     }
 }
 
-bool NetworkInit::BlockBlsAggSignatureValid(
+int NetworkInit::BlockBlsAggSignatureValid(
         const block::protobuf::Block& block) try {
+    // TODO: fix check genesis block
+    if (block.height() == 0) {
+        return 0;
+    }
+    
     if (block.bls_agg_sign_x().empty() || block.bls_agg_sign_y().empty()) {
         assert(false);
-        return false;
+        return -1;
     }
 
     libff::alt_bn128_G2 common_pk = libff::alt_bn128_G2::zero();
@@ -1261,13 +1267,13 @@ bool NetworkInit::BlockBlsAggSignatureValid(
            block.network_id(),
            block.electblock_height(),
            sync::kSyncHigh);
-        return false;
+        return 1;
     }
 
     auto block_hash = consensus::GetBlockHash(block);
     if (block_hash != block.hash()) {
         assert(false);
-        return false;
+        return -1;
     }
 
     libff::alt_bn128_G1 sign;
@@ -1288,7 +1294,7 @@ bool NetworkInit::BlockBlsAggSignatureValid(
         //assert(check_res);
     }
 
-    return check_res;
+    return check_res ? 0 : -1;
 } catch (std::exception& e) {
     ZJC_ERROR("get invalid bls sign: %s, net: %u, height: %lu, prehash: %s, hash: %s, sign: %s, %s",
         e.what(), block.network_id(), block.height(),
@@ -1296,7 +1302,7 @@ bool NetworkInit::BlockBlsAggSignatureValid(
         common::Encode::HexEncode(block.hash()).c_str(),
         common::Encode::HexEncode(block.bls_agg_sign_x()).c_str(),
         common::Encode::HexEncode(block.bls_agg_sign_y()).c_str());
-    return false;
+    return -1;
 }
 
 }  // namespace init

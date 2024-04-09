@@ -74,10 +74,6 @@ class KeyValueSync {
 public:
     KeyValueSync();
     ~KeyValueSync();
-    void AddSync(
-        uint32_t network_id,
-        const std::string& key,
-        uint32_t priority);
     void AddSyncHeight(
         uint32_t network_id,
         uint32_t pool_idx,
@@ -90,7 +86,8 @@ public:
         uint32_t priority);
     void Init(
         const std::shared_ptr<block::BlockManager>& block_mgr,
-        const std::shared_ptr<db::Db>& db);
+        const std::shared_ptr<db::Db>& db,
+        block::BlockAggValidCallback block_agg_valid_func);
     void HandleMessage(const transport::MessagePtr& msg);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
@@ -106,6 +103,11 @@ public:
         if (sharding_id > max_sharding_id_) {
             max_sharding_id_ = sharding_id;
         }
+    }
+
+    common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>>& bft_block_queue() {
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        return bft_block_queues_[thread_idx];
     }
 
 private:
@@ -127,6 +129,7 @@ private:
         transport::protobuf::Header& msg,
         sync::protobuf::SyncValueResponse* res,
         uint32_t& add_size);
+    void CheckNotCheckedBlocks();
 
     static const uint64_t kSyncPeriodUs = 300000lu;
     static const uint64_t kSyncTimeoutPeriodUs = 300000lu;
@@ -147,6 +150,9 @@ private:
     std::unordered_set<std::string> synced_keys_;
     std::deque<std::string> timeout_queue_;
     uint32_t max_sharding_id_ = network::kConsensusShardBeginNetworkId;
+    std::shared_ptr<PoolWithBlocks> net_with_pool_blocks_[network::kConsensusShardEndNetworkId];
+    block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
+    common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> bft_block_queues_[common::kMaxThreadCount];
 
     DISALLOW_COPY_AND_ASSIGN(KeyValueSync);
 };
