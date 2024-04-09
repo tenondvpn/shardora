@@ -64,4 +64,5 @@ message Header {
     optional c2c.protobuf.C2cMessage c2c = 30;
     optional bytes pubkey = 31;
     optional view_block.protobuf.ViewBlockMessage view_block_proto = 32;
+    optional view_block.protobuf.TimeoutMessage hotstuff_timeout_proto = 33;
 }

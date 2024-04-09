@@ -1,4 +1,5 @@
 #pragma once
+#include <consensus/hotstuff/types.h>
 
 namespace shardora {
 
@@ -12,9 +13,9 @@ public:
     Crypto(const Crypto&) = delete;
     Crypto& operator=(const Crypto&) = delete;
 
-    virtual void Sign() = 0;
-    virtual bool Verify() = 0;
-    virtual void RecoverSign() = 0;
+    void Sign(const std::string&);
+    bool Verify();
+    void RecoverSign();
 };
 
 } // namespace consensus

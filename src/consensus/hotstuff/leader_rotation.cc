@@ -1,5 +1,6 @@
 #include <common/global_info.h>
 #include <common/hash.h>
+#include <common/node_members.h>
 #include <common/time_utils.h>
 #include <consensus/hotstuff/leader_rotation.h>
 
@@ -11,7 +12,7 @@ LeaderRotation::LeaderRotation(const std::shared_ptr<ViewBlockChain>& chain) : c
 
 LeaderRotation::~LeaderRotation() {}
 
-uint32_t LeaderRotation::GetLeaderIdx() {
+common::BftMemberPtr LeaderRotation::GetLeader() {
     auto committedBlock = chain_->LatestCommittedBlock();
     auto qc = committedBlock->qc;
     uint64_t random_hash = common::Hash::Hash64(qc->Serialize());
@@ -21,11 +22,11 @@ uint32_t LeaderRotation::GetLeaderIdx() {
     // check if idx is one of members_ in case that a new epoch starts
     for (uint32_t i = 0; i < members_->size(); i++) {
         if ((*members_)[i]->index == idx) {
-            return idx;
+            return (*members_)[i];
         }
     }
     
-    return random_hash % members_->size();
+    return (*members_)[random_hash % members_->size()];
 }
 
 void LeaderRotation::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, const common::MembersPtr& members) {
@@ -38,6 +39,13 @@ void LeaderRotation::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height
     }
 
     members_ = members;
+
+    for (uint32_t i = 0; i < members->size(); i++) {
+        if ((*members)[i]->id == security_ptr_->GetAddress()) {
+            local_member_idx_ = i;
+            break;
+        }
+    }
 }
 
 }

@@ -17,12 +17,19 @@ public:
     LeaderRotation& operator=(const LeaderRotation&) = delete;
 
     // Generally committed_view_block.view is used
-    uint32_t GetLeaderIdx();
+    common::BftMemberPtr GetLeader();
+    
+    inline uint32_t GetLocalMemberIdx() const {
+        return local_member_idx_;
+    }
+    
     void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, const common::MembersPtr& members);
 private:
     common::MembersPtr members_;
+    uint32_t local_member_idx_;
     uint64_t latest_elect_height_;
     std::shared_ptr<ViewBlockChain> chain_;
+    std::shared_ptr<security::Security> security_ptr_ = nullptr;
 };
 
 } // namespace consensus

@@ -1,4 +1,12 @@
+#include <common/global_info.h>
+#include <common/log.h>
+#include <common/utils.h>
 #include <consensus/hotstuff/pacemaker.h>
+#include <consensus/hotstuff/types.h>
+#include <dht/dht_key.h>
+#include <protos/transport.pb.h>
+#include <protos/view_block.pb.h>
+#include <transport/tcp_transport.h>
 
 namespace shardora {
 
@@ -8,9 +16,102 @@ Pacemaker::Pacemaker() {}
 
 Pacemaker::~Pacemaker() {}
 
-void Pacemaker::AdvanceView(const std::shared_ptr<QC> qc) {
-    
+Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info, bool is_timeout) {
+    if (!sync_info || !sync_info->view_block || !sync_info->view_block->qc) {
+        return Status::kSuccess;
+    }
+
+    auto qc = sync_info->view_block->qc;
+    UpdateHighQC(sync_info->view_block);
+    if (qc->view < cur_view_) {
+        return Status::kSuccess;
+    }
+
+    StopTimeoutTimer();
+    if (!is_timeout) {
+        duration_->ViewSucceeded();
+    } else {
+        duration_->ViewTimeout();
+    }
+
+    cur_view_ = qc->view + 1;
+
+    duration_->ViewStarted();
+    StartTimeoutTimer();
+    return Status::kSuccess;
 }
+
+void Pacemaker::UpdateHighQC(const std::shared_ptr<ViewBlock>& qc_wrapper_block) {
+    auto qc = qc_wrapper_block->qc;
+    if (high_qc_->view < qc->view) {
+        high_qc_ = qc;
+        high_qc_wrapper_block_ = qc_wrapper_block;
+    }
+}
+
+void Pacemaker::OnLocalTimeout() {
+    ZJC_DEBUG("OnLocalTimeout view: %d", CurView());
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& msg = msg_ptr->header; 
+    
+    // TODO 对 highQC 所在 block bls 签名
+    std::string bls_sign_x;
+    std::string bls_sign_y;
+    // if (bls_mgr_->Sign(
+    //             bft_ptr->min_aggree_member_count(),
+    //             bft_ptr->member_count(),
+    //             bft_ptr->local_sec_key(),
+    //             bft_ptr->g1_prepare_hash(),
+    //             &bls_sign_x,
+    //             &bls_sign_y) != bls::kBlsSuccess) {
+    //         return;
+    //     }
+    
+    
+    view_block::protobuf::TimeoutMessage& timeout_msg = *msg.mutable_hotstuff_timeout_proto();
+    timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());
+    
+    auto wrapper_block = timeout_msg.mutable_high_qc_wrapper_block();
+    wrapper_block->set_hash(high_qc_wrapper_block_->hash);
+    wrapper_block->set_parent_hash(high_qc_wrapper_block_->parent_hash);
+    wrapper_block->set_leader_idx(high_qc_wrapper_block_->leader_idx);
+    wrapper_block->set_block_str(high_qc_wrapper_block_->block->SerializeAsString());
+    wrapper_block->set_qc_str(high_qc_wrapper_block_->qc->Serialize());
+    wrapper_block->set_view(high_qc_wrapper_block_->view);
+
+    timeout_msg.set_sign_x(bls_sign_x);
+    timeout_msg.set_sign_y(bls_sign_y);
+
+    // TODO Stop Voting
+
+    auto leader = leader_rotation_->GetLeader();
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    dht::DhtKeyManager dht_key(leader->net_id);
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
+
+    // TODO ecdh sign
+
+    if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
+        transport::TcpTransport::Instance()->Send(common::Uint32ToIp(leader->public_ip), leader->public_port, msg);
+        return;
+    }
+    
+    HandleMessage(msg_ptr);
+    return;
+}
+
+void Pacemaker::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    // TODO verify ecdh
+
+    // TODO 统计 bls 签名
+
+    // TODO Create QC
+
+    // TODO 视图切换
+
+    // TODO New Propose
+}
+
 
 } // namespace consensus
 

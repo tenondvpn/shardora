@@ -123,15 +123,23 @@ HashStr ViewBlock::GetHash() const {
     msg.append((char*)&(leader_idx), sizeof(leader_idx));
     msg.append((char*)&(view), sizeof(view));
 
-    return common::Hash::keccak256(msg);    
+    return common::Hash::keccak256(msg);
 }
+
+struct SyncInfo {
+    // std::shared_ptr<QC> qc;
+    std::shared_ptr<ViewBlock> view_block;
+
+    SyncInfo() {};
+};
 
 
 
 enum class Status : int {
-    kSuccess = 0,
-    kError = 1,
-    kNotFound = 2,
+  kSuccess = 0,
+  kError = 1,
+  kNotFound = 2,
+  kInvalidArgument = 3,
 };
 
     

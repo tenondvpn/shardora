@@ -1,0 +1,33 @@
+#pragma once
+#include <consensus/hotstuff/types.h>
+
+namespace shardora {
+
+namespace consensus {
+
+class ViewDuration {
+public:
+    ViewDuration();
+    ~ViewDuration();
+
+    ViewDuration(const ViewDuration&) = delete;
+    ViewDuration& operator=(const ViewDuration&) = delete;
+
+    void ViewStarted();
+
+    void ViewSucceeded();
+
+    void ViewTimeout();
+
+    inline uint64_t Duration() const {
+        return duration_;
+    }
+
+private:
+    uint64_t duration_;
+};
+
+} // namespace consensus
+
+} // namespace shardora
+    
