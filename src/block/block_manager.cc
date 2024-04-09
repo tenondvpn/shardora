@@ -1087,6 +1087,15 @@ void BlockManager::HandleElectTx(
                     elect_block.prev_members(),
                     db_batch);
             }
+
+            ZJC_DEBUG("success add elect block elect height: %lu, net: %u, "
+                "pool: %u, height: %lu, common pk: %s", 
+                block.electblock_height(),
+                block.network_id(),
+                block.pool_index(),
+                block.height(),
+                common::Encode::HexEncode(
+                elect_block.prev_members().common_pubkey().SerializeAsString()).c_str());
         }
     }
 }

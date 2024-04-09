@@ -113,13 +113,11 @@ void KeyValueSync::PopItems() {
             }
             
             auto iter = added_key_set_.find(item->key);
-
-            
-            // if (iter != added_key_set_.end()) {
-            //     ZJC_DEBUG("key exists add new sync item key: %s, priority: %u",
-            //         item->key.c_str(), item->priority);
-            //     continue;
-            // }
+            if (iter != added_key_set_.end()) {
+                ZJC_DEBUG("key exists add new sync item key: %s, priority: %u",
+                    item->key.c_str(), item->priority);
+                continue;
+            }
 
             added_key_set_.insert(item->key);
             auto tmp_iter = synced_map_.find(item->key);
@@ -529,16 +527,20 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                         block_item->network_id() + network::kConsensusWaitingShardOffset !=
                         common::GlobalInfo::Instance()->network_id()) {
                     // TODO 暂时屏蔽创世选举块的验签，后续通过消息体中的 commom pk 验证
-                    ZJC_DEBUG("sync elect block, elect height: %u, height: %u", block_item->electblock_height(), block_item->height());
+                    ZJC_DEBUG("sync elect block, elect height: %u, height: %u, key: %s, block hash: %s", 
+                        block_item->electblock_height(), block_item->height(), 
+                        key.c_str(), common::Encode::HexEncode(block_item->hash()).c_str());
                     block_mgr_->NetworkNewBlock(block_item, need_valid);
                 } else { // TODO 本网络的就不用同步吗？
                     block_mgr_->NetworkNewBlock(block_item, need_valid);
-                    ZJC_DEBUG("sync normal block, elect height: %u, height: %u, network_id: %u, pool: %u",
-                              block_item->electblock_height(),
-                              block_item->height(),
-                              block_item->network_id(),
-                              block_item->pool_index());
-                    
+                    ZJC_DEBUG("sync normal block, elect height: %u, height: %u, network_id: %u, "
+                        "pool: %u, key: %s, block hash: %s",
+                        block_item->electblock_height(),
+                        block_item->height(),
+                        block_item->network_id(),
+                        block_item->pool_index(),
+                        key.c_str(), 
+                        common::Encode::HexEncode(block_item->hash()).c_str());
                 }
             }
         }

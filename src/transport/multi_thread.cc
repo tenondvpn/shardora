@@ -318,6 +318,7 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
 }
 
 void MultiThreadHandler::HandleSyncBftTimeout(MessagePtr& msg_ptr) {
+    ZJC_DEBUG("success get pool bft timeout hash64: %lu", msg_ptr->header.hash64());
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
         auto& msg = new_msg_ptr->header;
@@ -339,6 +340,7 @@ void MultiThreadHandler::HandleSyncBftTimeout(MessagePtr& msg_ptr) {
             return;
         }
 
+        ZJC_DEBUG("success handle pool: %u, bft timeout hash64: %lu", i, msg_ptr->header.hash64());
         transport::TcpTransport::Instance()->SetMessageHash(new_msg_ptr->header);
         uint32_t priority = GetPriority(new_msg_ptr);
         threads_message_queues_[queue_idx][priority].push(new_msg_ptr);

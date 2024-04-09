@@ -858,6 +858,10 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 return;
             }
             if (new_height > latest_commit_height(zbft.pool_index()) + 1) {
+                ZJC_DEBUG("add sync block height net: %u, pool: %u, height: %lu",
+                    common::GlobalInfo::Instance()->network_id(),
+                    zbft.pool_index(),
+                    new_height);
                 kv_sync_->AddSyncHeight(
                         common::GlobalInfo::Instance()->network_id(),
                         zbft.pool_index(),

@@ -179,6 +179,10 @@ private:
                                 cross.src_shard(),
                                 cross.src_pool(),
                                 cross.height())) {
+                            ZJC_DEBUG("add sync block height net: %u, pool: %u, height: %lu",
+                                cross.src_shard(),
+                                cross.src_pool(),
+                                cross.height());
                             kv_sync_->AddSyncHeight(
                                 cross.src_shard(),
                                 cross.src_pool(),

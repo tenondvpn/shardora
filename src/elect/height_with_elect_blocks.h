@@ -111,8 +111,12 @@ public:
             uint32_t network_id,
             libff::alt_bn128_G2* common_pk,
             libff::alt_bn128_Fr* local_sec_key) {
-        ZJC_DEBUG("get bls pk and secret key success.height: %lu, network_id: %u",
-            height, network_id);
+        ZJC_DEBUG("get bls pk and secret key success.height: %lu, "
+            "network_id: %u, end net id: %u, offset: %u",
+            height, 
+            network_id, 
+            network::kConsensusShardEndNetworkId, 
+            network::kConsensusWaitingShardOffset);
         if (network_id >= network::kConsensusShardEndNetworkId) {
             network_id -= network::kConsensusWaitingShardOffset;
         }
