@@ -34,7 +34,8 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info, bool i
         duration_->ViewTimeout();
     }
 
-    // TODO 如果交易池为空，则直接 return，不开启新视图
+    
+    
     cur_view_ = qc->view + 1;
     duration_->ViewStarted();
     StartTimeoutTimer();

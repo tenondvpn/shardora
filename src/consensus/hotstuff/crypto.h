@@ -1,86 +1,96 @@
 #pragma once
+#include <bls/bls_manager.h>
+#include <bls/bls_utils.h>
 #include <common/node_members.h>
 #include <consensus/hotstuff/types.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g2.hpp>
 #include <security/security.h>
+#include <consensus/hotstuff/elect_info.h>
 
 namespace shardora {
 
 namespace hotstuff {
 
-class CryptoInfo {
-public:
-    explicit CryptoInfo(const std::shared_ptr<security::Security>& security) :
-        members_(nullptr), local_member_(nullptr), elect_height_(0), security_ptr_(security) {
+// Bls vote collection
+struct BlsCollection {
+    HashStr msg_hash;
+    View view;
+    common::Bitmap ok_bitmap{ common::kEachShardMaxNodeCount };
+    libff::alt_bn128_G1 partial_signs[common::kEachShardMaxNodeCount];
+
+    inline uint32_t OkCount() const {
+        return ok_bitmap.valid_count();
     }
-    ~CryptoInfo() {};
-
-    CryptoInfo(const CryptoInfo&) = delete;
-    CryptoInfo& operator=(const CryptoInfo&) = delete;
-
-    void OnNewElectBlock(
-            uint32_t sharding_id,
-            uint64_t elect_height,
-            const common::MembersPtr& members,
-            const libff::alt_bn128_G2& common_pk,
-            const libff::alt_bn128_Fr& sk) {
-        if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
-            return;
-        }
-
-        if (elect_height_ >= elect_height) {
-            return;
-        }
-
-        members_ = members;
-
-        for (uint32_t i = 0; i < members->size(); i++) {
-            if ((*members)[i]->id == security_ptr_->GetAddress()) {
-                local_member_ = (*members)[i];
-                if (local_member_->bls_publick_key != libff::alt_bn128_G2::zero()) {
-                    bls_valid_ = true;
-                }
-                break;
-            }
-        }
-
-        elect_height_ = elect_height;
-        common_pk_ = common_pk;
-        sk_ = sk;
-    }
-
-    inline common::MembersPtr Members() const {
-        return members_;
-    }
-
-    inline common::BftMemberPtr LocalMember() const {
-        return local_member_;
-    }
-
-private:
-    common::MembersPtr members_;
-    common::BftMemberPtr local_member_;
-    uint64_t elect_height_;
-    libff::alt_bn128_G2 common_pk_;
-    libff::alt_bn128_Fr sk_;
-    std::shared_ptr<security::Security> security_ptr_ = nullptr;
-    bool bls_valid_{false};
 };
 
+// Every ViewBlockChain's hotstuff has a Crypto
 class Crypto {
 public:
-    Crypto() = default;
-    virtual ~Crypto() = 0;
+    Crypto() {};
+    ~Crypto() {};
 
     Crypto(const Crypto&) = delete;
     Crypto& operator=(const Crypto&) = delete;
 
-    void Sign(const std::string&);
-    bool Verify();
-    void RecoverSign();
+    Status Sign(const uint64_t& elect_height, const HashStr& msg_hash, std::string* sign_x, std::string* sign_y);
+    bool Verify(const uint64_t& elect_height, const View& view, const HashStr& msg_hash, const uint32_t& index, const libff::alt_bn128_G1& partial_sign) {
+        // old vote
+        if (bls_collection_ && bls_collection_->view > view) {
+            return false;
+        }
+        
+        if (!bls_collection_ || bls_collection_->view < view) {
+            bls_collection_ = std::make_shared<BlsCollection>();
+            bls_collection_->view = view; 
+        }
 
-private:
+        bls_collection_->ok_bitmap.Set(index);
+        bls_collection_->partial_signs[index] = partial_sign;
+        
+        auto elect_item = elect_info_->GetElectItem(elect_height);
+        if (!elect_item) {
+            return false;
+        }
+        
+        if (bls_collection_->OkCount() < elect_item->t()) {
+            return false;
+        }
+
+        // TODO Restore sig and verify
+        
+        return true;
+    };
     
+private:
+    void GetG1Hash(const HashStr& msg_hash, libff::alt_bn128_G1* g1_hash) {
+        bls_mgr_->GetLibffHash(msg_hash, g1_hash);
+    }
+
+    void GetVerifyHash(const uint64_t& elect_height, const HashStr& msg_hash, std::string* verify_hash) {
+        libff::alt_bn128_G1 g1_hash;
+        GetG1Hash(msg_hash, &g1_hash);
+        auto elect_item = elect_info_->GetElectItem(elect_height);
+        if (!elect_item) {
+            return;
+        }
+        
+        if (bls_mgr_->GetVerifyHash(
+                elect_item->t(),
+                elect_item->n(),
+                g1_hash,
+                elect_item->common_pk(),
+                verify_hash) != bls::kBlsSuccess) {
+            ZJC_ERROR("get verify hash failed!");
+        }
+    }
+
+    
+
+    // 保留上一次 elect_item，避免 epoch 切换的影响
+    std::shared_ptr<ElectInfo> elect_info_ = nullptr;
+    std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
+    std::shared_ptr<security::Security> security_ptr_ = nullptr;
+    std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
 };
 
 } // namespace consensus
