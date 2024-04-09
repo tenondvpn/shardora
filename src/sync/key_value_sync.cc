@@ -573,13 +573,12 @@ void KeyValueSync::CheckNotCheckedBlocks() {
                     iter = pool_blocks.erase(iter);
                     continue;
                 }
-                
+
                 int res = block_agg_valid_func_(*iter->second);
                 if (res == -1) {
                     break;
                 }
 
-                pool_blocks[iter->second->height()] = nullptr;
                 block_mgr_->NetworkNewBlock(iter->second, false);
                 auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[
                     iter->second->pool_index()];
