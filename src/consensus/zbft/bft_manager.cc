@@ -3075,7 +3075,7 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
     auto& zjc_block = bft_ptr->prepare_block();
     assert(zjc_block->timeblock_height() > 0);
     ZJC_DEBUG("commit block net: %u, pool: %u, height: %lu, tm height: %lu", 
-        zjc_block->network_id(), zjc_block->pool_index())
+        zjc_block->network_id(), zjc_block->pool_index());
     // TODO: for test
     {
         auto& block = *bft_ptr->prepare_block();
