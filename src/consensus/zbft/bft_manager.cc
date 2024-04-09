@@ -258,6 +258,7 @@ void BftManager::SetThreadItem(
 
 void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 #ifndef ZJC_UNITTEST
+    HandleSyncedBlocks();
     PopAllPoolTxs();
     CheckTimeout();
     CheckMessageTimeout();
