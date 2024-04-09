@@ -107,7 +107,7 @@ public:
 
 private:
     void HandleAllNewBlock();
-    bool AddBlockItemToCache(
+    bool UpdateBlockItemToCache(
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);
     void HandleMessage(const transport::MessagePtr& msg_ptr);

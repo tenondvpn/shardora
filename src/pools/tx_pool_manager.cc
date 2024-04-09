@@ -372,7 +372,8 @@ void TxPoolManager::SyncMinssingHeights(uint64_t now_tm_ms) {
                 prev_synced_pool_index_, synced_max_heights_[prev_synced_pool_index_]);
             ZJC_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
                 prev_synced_pool_index_,
-                res, tx_pool_[prev_synced_pool_index_].latest_height(),
+                res, 
+                tx_pool_[prev_synced_pool_index_].latest_height(),
                 synced_max_heights_[prev_synced_pool_index_]);
         }
 

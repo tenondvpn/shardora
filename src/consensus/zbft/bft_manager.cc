@@ -341,6 +341,7 @@ void BftManager::HandleLeaderCollectTxs(const ElectItem& elect_item, const trans
     header.set_type(common::kConsensusMessage);
     header.set_hop_count(0);
     bft_msg.set_pool_index(pool_index);
+    assert(pool_index < common::kInvalidPoolIndex);
     bft_msg.clear_prepare_gid();
     bft_msg.set_leader_idx(-1);
     bft_msg.set_member_index(elect_item.local_node_member_index);
@@ -374,24 +375,24 @@ void BftManager::HandleLeaderCollectTxs(const ElectItem& elect_item, const trans
 
     if (leader_member->public_ip == 0 || leader_member->public_port == 0) {
         network::Route::Instance()->Send(msg_ptr);
-        ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d",
+        ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, tx size: %u, to: %s",
             common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
             header.hash64(),
             leader_msg_ptr->header.hash64(),
-            0,
-            0);
+            header.zbft().tx_bft().txs_size(),
+            common::Encode::HexEncode(header.zbft().tx_bft().txs(0).to()).c_str());
     } else {
         auto to_ip = common::Uint32ToIp(leader_member->public_ip);
         transport::TcpTransport::Instance()->Send(
             to_ip,
             leader_member->public_port,
             header);
-        ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d, %s:%u",
+        ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, tx size: %u to: %s, %s:%u",
             common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
             header.hash64(),
             leader_msg_ptr->header.hash64(),
-            0,
-            0,
+            header.zbft().tx_bft().txs_size(),
+            common::Encode::HexEncode(header.zbft().tx_bft().txs(0).to()).c_str(),
             to_ip.c_str(), leader_member->public_port);
     }    
 }
@@ -435,10 +436,10 @@ ZbftPtr BftManager::Start(ZbftPtr commited_bft_ptr) {
             return nullptr;
         }
 
-        ZJC_DEBUG("elect time valid use old new elect height: %lu, "
-            "old elect height: %lu, time valid: %l, now: %lu",
-            elect_item_ptr->elect_height, item_ptr->elect_height,
-            elect_item_ptr->time_valid, now_tm_ms);
+        // ZJC_DEBUG("elect time valid use old new elect height: %lu, "
+        //     "old elect height: %lu, time valid: %l, now: %lu",
+        //     elect_item_ptr->elect_height, item_ptr->elect_height,
+        //     elect_item_ptr->time_valid, now_tm_ms);
         elect_item_ptr = item_ptr;
     }
     
@@ -952,12 +953,15 @@ void BftManager::HandleSyncedBlock(std::shared_ptr<block::protobuf::Block>& bloc
             pools_mgr_->latest_height(block_ptr->pool_index()) == common::kInvalidUint64)) {
         AddWaitingBlock(block_ptr);
         RemoveWaitingBlock(block_ptr->pool_index(), block_ptr->height() - 1);
+        ZJC_DEBUG("success add waiting block");
         return;
     }
 
     if (block_ptr->network_id() != common::GlobalInfo::Instance()->network_id() &&
-        block_ptr->network_id() + network::kConsensusWaitingShardOffset !=
-        common::GlobalInfo::Instance()->network_id()) {
+            block_ptr->network_id() + network::kConsensusWaitingShardOffset !=
+            common::GlobalInfo::Instance()->network_id()) {
+        ZJC_DEBUG("network invalid %d, %d", 
+            block_ptr->network_id(), common::GlobalInfo::Instance()->network_id());
         return;
     }
 
@@ -1111,6 +1115,7 @@ void BftManager::HandleCommitedSyncBlock(const zbft::protobuf::ZbftMessage& req_
             block_ptr->height(),
             block_ptr->hash())) {
         HandleSyncedBlock(block_ptr);
+        ZJC_DEBUG("next block cheched.");
         return;
     }
 
@@ -1144,6 +1149,7 @@ void BftManager::HandleCommitedSyncBlock(const zbft::protobuf::ZbftMessage& req_
     }
 
     HandleSyncedBlock(block_ptr);
+    ZJC_DEBUG("success block cheched.");
 }
 
 void BftManager::AddWaitingBlock(std::shared_ptr<block::protobuf::Block>& block_ptr) {

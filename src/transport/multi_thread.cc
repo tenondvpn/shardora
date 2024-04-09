@@ -274,7 +274,9 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
         HandleSyncBlockResponse(msg_ptr);
     }
 
-    if (msg_ptr->header.type() == common::kConsensusMessage && msg_ptr->header.zbft().bft_timeout()) {
+    if (msg_ptr->header.type() == common::kConsensusMessage && 
+            msg_ptr->header.zbft().bft_timeout() && 
+            msg_ptr->header.zbft().leader_idx() != -1) {
         HandleSyncBftTimeout(msg_ptr);
         return;
     }
