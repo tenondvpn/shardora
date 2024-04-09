@@ -133,7 +133,7 @@ void KeyValueSync::CheckSyncItem() {
         while (!prio_sync_queue_[i].empty()) {
             SyncItemPtr item = prio_sync_queue_[i].front();
             prio_sync_queue_[i].pop();
-            auto& block_map = net_with_pool_blocks_[item->network_id]->pool_blocks[item->pool_idx];
+            auto& block_map = net_with_pool_blocks_[item->network_id].pool_blocks[item->pool_idx];
             auto block_iter = block_map.find(item->height);
             if (block_iter != block_map.end()) {
                 continue;
@@ -521,7 +521,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                         continue;
                     }
 
-                    auto& pool_blocks = net_with_pool_blocks_[block_item->network_id()]->pool_blocks;
+                    auto& pool_blocks = net_with_pool_blocks_[block_item->network_id()].pool_blocks;
                     if (res == 0) {
                         pool_blocks[block_item->pool_index()][block_item->height()] = nullptr;
                         block_mgr_->NetworkNewBlock(block_item, false);
@@ -562,9 +562,18 @@ void KeyValueSync::CheckNotCheckedBlocks() {
     for (uint32_t sharding_id = network::kRootCongressNetworkId;
             sharding_id <= max_sharding_id_; ++sharding_id) {
         for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
-            auto& pool_blocks = net_with_pool_blocks_[sharding_id]->pool_blocks[pool_idx];
+            auto& pool_blocks = net_with_pool_blocks_[sharding_id].pool_blocks[pool_idx];
+            if (pool_blocks.empty()) {
+                continue;
+            }
+
             auto iter = pool_blocks.begin();
             while (iter != pool_blocks.end()) {
+                if (iter->second == nullptr) {
+                    iter = pool_blocks.erase(iter);
+                    continue;
+                }
+                
                 int res = block_agg_valid_func_(*iter->second);
                 if (res == -1) {
                     break;

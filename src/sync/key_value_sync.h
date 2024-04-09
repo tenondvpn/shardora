@@ -150,7 +150,7 @@ private:
     std::unordered_set<std::string> synced_keys_;
     std::deque<std::string> timeout_queue_;
     uint32_t max_sharding_id_ = network::kConsensusShardBeginNetworkId;
-    std::shared_ptr<PoolWithBlocks> net_with_pool_blocks_[network::kConsensusShardEndNetworkId];
+    PoolWithBlocks net_with_pool_blocks_[network::kConsensusShardEndNetworkId];
     block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
     common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> bft_block_queues_[common::kMaxThreadCount];
 
