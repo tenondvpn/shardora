@@ -343,11 +343,12 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
                         }
 
                         elect_static_info_item->node_shard_map[block.tx_list(i).from()] = join_info.shard_id();
-                        ZJC_DEBUG("kJoinElect add new elect node: %s, shard: %u, pool: %u, height: %lu",
+                        ZJC_DEBUG("kJoinElect add new elect node: %s, shard: %u, pool: %u, height: %lu, elect height: %lu",
                             common::Encode::HexEncode(block.tx_list(i).from()).c_str(),
                             join_info.shard_id(),
                             block.pool_index(),
-                            block.height());
+                            block.height(),
+                            block_ptr->electblock_height());
                     }
                 }
             }
@@ -527,6 +528,8 @@ int ShardStatistic::StatisticWithHeights(
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
         for (auto tm_iter = node_height_count_map_[pool_idx].begin(); 
                 tm_iter != node_height_count_map_[pool_idx].end(); ++tm_iter) {
+            ZJC_DEBUG("0 pool: %u, elect height: %lu, tm height: %lu, latest tm height: %lu", 
+                pool_idx, 0, tm_iter->first, latest_timeblock_height_);
             if (tm_iter->first >= latest_timeblock_height_) {
                 break;
             }
@@ -543,11 +546,17 @@ int ShardStatistic::StatisticWithHeights(
             for (auto elect_iter = tm_iter->second->elect_node_info_map.begin(); 
                     elect_iter != tm_iter->second->elect_node_info_map.end(); ++elect_iter) {
                 auto elect_height = elect_iter->first;
+                ZJC_DEBUG("1 pool: %u, elect height: %lu, tm height: %lu, latest tm height: %lu", 
+                    pool_idx, elect_height, tm_iter->first, latest_timeblock_height_);
                 auto iter = height_node_count_map.find(elect_height);
                 if (iter == height_node_count_map.end()) {
                     height_node_count_map[elect_height] = std::unordered_map<std::string, uint32_t>();
                 }
 
+                ZJC_DEBUG("handle elect height: %lu, node stake size: %u, node shard map: %u", 
+                    elect_height, 
+                    elect_iter->second->node_stoke_map.size(), 
+                    elect_iter->second->node_shard_map.size());
                 if (!elect_iter->second->node_stoke_map.empty() && !elect_iter->second->node_shard_map.empty()) {
                     auto eiter = join_elect_stoke_map.find(elect_height);
                     if (eiter == join_elect_stoke_map.end()) {
@@ -701,8 +710,11 @@ int ShardStatistic::StatisticWithHeights(
             pubkey = iter->second;
         }
 
-        auto addr_info = prefix_db_->GetAddressInfo(secptr_->GetAddress(pubkey));
+        auto addr_info = pools_mgr_->GetAddressInfo(secptr_->GetAddress(pubkey));
         if (addr_info == nullptr) {
+            ZJC_WARN("failed get address info pk: %s, addr: %s", 
+                common::Encode::HexEncode(pubkey).c_str(), 
+                common::Encode::HexEncode(secptr_->GetAddress(pubkey)).c_str());
             assert(false);
             continue;
         }
@@ -733,7 +745,7 @@ int ShardStatistic::StatisticWithHeights(
                 continue;
             }
 
-            auto addr_info = prefix_db_->GetAddressInfo(secptr_->GetAddress((*prepare_members)[i]->pubkey));
+            auto addr_info = pools_mgr_->GetAddressInfo(secptr_->GetAddress((*prepare_members)[i]->pubkey));
             if (addr_info == nullptr) {
                 continue;
             }

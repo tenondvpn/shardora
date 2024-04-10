@@ -220,27 +220,30 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         auto block_ptr = std::make_shared<block::protobuf::Block>(header.block());
         if (block_agg_valid_func_(*block_ptr) == 0) {
             // just one thread
-            block_from_network_queue_.push(block_ptr);
+            auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+            block_from_network_queue_[thread_idx].push(block_ptr);
             ZJC_DEBUG("queue size add new block message hash: %lu, block_from_network_queue_ size: %d", 
-                msg_ptr->header.hash64(), block_from_network_queue_.size());
+                msg_ptr->header.hash64(), block_from_network_queue_[thread_idx].size());
         }
     }
 }
 
 void BlockManager::HandleAllNewBlock() {
     // 同步的 NetworkNewBlock 也会走这个逻辑
-    while (true) {
-        std::shared_ptr<block::protobuf::Block> block_ptr = nullptr;
-        block_from_network_queue_.pop(&block_ptr);
-        if (block_ptr == nullptr) {
-            break;
-        }
+    for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+        while (true) {
+            std::shared_ptr<block::protobuf::Block> block_ptr = nullptr;
+            block_from_network_queue_[i].pop(&block_ptr);
+            if (block_ptr == nullptr) {
+                break;
+            }
 
-        db::DbWriteBatch db_batch;
-        // TODO 更新 pool info，每次 AddNewBlock 之前需要更新 pool latest info
-        // ZJC_DEBUG("LLLLLL handle new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u", block_ptr->network_id(), block_ptr.pool_index(), block_ptr->height(), block_ptr->tx_list_size());
-        if (UpdateBlockItemToCache(block_ptr, db_batch)) {
-            AddNewBlock(block_ptr, db_batch);
+            db::DbWriteBatch db_batch;
+            // TODO 更新 pool info，每次 AddNewBlock 之前需要更新 pool latest info
+            // ZJC_DEBUG("LLLLLL handle new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u", block_ptr->network_id(), block_ptr.pool_index(), block_ptr->height(), block_ptr->tx_list_size());
+            if (UpdateBlockItemToCache(block_ptr, db_batch)) {
+                AddNewBlock(block_ptr, db_batch);
+            }   
         }
     }
 
@@ -357,6 +360,7 @@ void BlockManager::CheckWaitingBlocks(uint32_t shard, uint64_t elect_height) {
         return;
     }
 
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     while (!height_iter->second.empty()) {
         auto block_item = height_iter->second.front();
         height_iter->second.pop();
@@ -371,7 +375,7 @@ void BlockManager::CheckWaitingBlocks(uint32_t shard, uint64_t elect_height) {
             continue;
         }
 
-        block_from_network_queue_.push(block_item);
+        block_from_network_queue_[thread_idx].push(block_item);
     }
 }
 
@@ -405,7 +409,8 @@ int BlockManager::NetworkNewBlock(
         }
 
         CheckWaitingBlocks(block_item->network_id(), block_item->electblock_height());
-        block_from_network_queue_.push(block_item);
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        block_from_network_queue_[thread_idx].push(block_item);
     }
 
     return kBlockSuccess;

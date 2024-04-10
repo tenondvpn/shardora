@@ -816,6 +816,10 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     }
 
     if (msg_ptr->address_info->balance() < consensus::kJoinElectGas) {
+        ZJC_WARN("address info join elect gas invalid: %s %lu %lu", 
+            common::Encode::HexEncode(addr).c_str(), 
+            msg_ptr->address_info->balance(), 
+            consensus::kJoinElectGas);
         return;
     }
 
@@ -843,6 +847,7 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
 
     bls::protobuf::JoinElectInfo join_info;
     if (!join_info.ParseFromString(tx_msg.value())) {
+        ZJC_WARN("join_info parse failed address info: %s", common::Encode::HexEncode(addr).c_str());
         return;
     }
 
