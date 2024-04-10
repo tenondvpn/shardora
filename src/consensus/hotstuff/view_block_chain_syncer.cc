@@ -21,7 +21,7 @@ namespace hotstuff {
 
 ViewBlockChainSyncer::ViewBlockChainSyncer(const std::shared_ptr<ViewBlockChainManager>& c_mgr) : view_block_chain_mgr_(c_mgr) {
     // start consumeloop thread
-    network::Route::Instance()->RegisterMessage(common::kViewBlockMessage,
+    network::Route::Instance()->RegisterMessage(common::kViewBlockSyncMessage,
         std::bind(&ViewBlockChainSyncer::HandleMessage, this, std::placeholders::_1));
     tick_.CutOff(100000lu, std::bind(&ViewBlockChainSyncer::ConsensusTimerMessage, this));
 }
@@ -31,7 +31,7 @@ ViewBlockChainSyncer::~ViewBlockChainSyncer() {}
 void ViewBlockChainSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // TODO 放入消息队列，等待消费
     auto header = msg_ptr->header;
-    assert(header.type() == common::kViewBlockMessage);
+    assert(header.type() == common::kViewBlockSyncMessage);
 
     consume_queue_.push(msg_ptr);
 }
@@ -48,7 +48,7 @@ void ViewBlockChainSyncer::ConsensusTimerMessage() {
 
 void ViewBlockChainSyncer::SyncChains() {
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
-        auto vb_msg = view_block::protobuf::ViewBlockMessage();
+        auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
         auto req = vb_msg.mutable_view_block_req();
         req->set_pool_idx(pool_idx);
         req->set_network_id(common::GlobalInfo::Instance()->network_id());
@@ -72,7 +72,7 @@ void ViewBlockChainSyncer::ConsumeMessages() {
     }    
 }
 
-Status ViewBlockChainSyncer::SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockMessage& view_block_msg) {
+Status ViewBlockChainSyncer::SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {
     // 只有共识池节点才能同步 ViewBlock
     if (network_id >= network::kConsensusWaitingShardBeginNetworkId) {
         return Status::kError;
@@ -92,7 +92,7 @@ Status ViewBlockChainSyncer::SendRequest(uint32_t network_id, const view_block::
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     dht::DhtKeyManager dht_key(network_id);
     msg.set_des_dht_key(dht_key.StrKey());
-    msg.set_type(common::kViewBlockMessage);
+    msg.set_type(common::kViewBlockSyncMessage);
     *msg.mutable_view_block_proto() = view_block_msg;
 
     transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);    
@@ -107,7 +107,7 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
     // TODO 同步全部的 ViewBlockChain，不再按照 hash 同步
 
     transport::protobuf::Header msg;
-    view_block::protobuf::ViewBlockMessage&  res_view_block_msg = *msg.mutable_view_block_proto();
+    view_block::protobuf::ViewBlockSyncMessage&  res_view_block_msg = *msg.mutable_view_block_proto();
     auto view_block_res = res_view_block_msg.mutable_view_block_res();
     uint32_t pool_idx = view_block_msg.view_block_req().pool_idx();
     view_block_res->set_network_id(view_block_msg.view_block_req().network_id());
@@ -134,7 +134,7 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
     msg.set_des_dht_key(dht_key.StrKey());
-    msg.set_type(common::kViewBlockMessage);
+    msg.set_type(common::kViewBlockSyncMessage);
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
     

@@ -2,7 +2,7 @@ syntax = "proto2";
 
 package shardora.view_block.protobuf;
 
-message ViewBlockRequest {
+message ViewBlockSyncRequest {
     optional uint32 network_id = 1;
     optional uint32 pool_idx = 2;
 }
@@ -25,15 +25,15 @@ message QC {
     repeated uint32 participants = 6;
 }
 
-message ViewBlockResponse {
+message ViewBlockSyncResponse {
     optional uint32 network_id = 1;
     optional uint32 pool_idx = 2;
     repeated ViewBlockItem view_block_items = 3;
 }
 
-message ViewBlockMessage {
-    optional ViewBlockRequest view_block_req = 1;
-    optional ViewBlockResponse view_block_res = 2;
+message ViewBlockSyncMessage {
+    optional ViewBlockSyncRequest view_block_req = 1;
+    optional ViewBlockSyncResponse view_block_res = 2;
 }
 
 message TimeoutMessage {

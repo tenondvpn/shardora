@@ -46,7 +46,7 @@ public:
     }    
     
 private:
-    Status SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockMessage& view_block_msg);
+    Status SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg);
     void ConsensusTimerMessage();
     void SyncChains();
     
