@@ -9,7 +9,7 @@
 
 namespace shardora {
 
-namespace consensus {
+namespace hotstuff {
 
 // ElectItem 
 class ElectItem {

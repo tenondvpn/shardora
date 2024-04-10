@@ -2,7 +2,7 @@
 
 namespace shardora {
 
-namespace consensus {
+namespace hotstuff {
 
 std::string QC::Serialize() const {
     auto qc_proto = view_block::protobuf::QC();

@@ -7,7 +7,7 @@
 
 namespace shardora {
 
-namespace consensus {
+namespace hotstuff {
 
 class LeaderRotation {
 public:

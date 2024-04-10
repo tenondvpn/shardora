@@ -5,7 +5,7 @@
 
 namespace shardora {
 
-namespace consensus {
+namespace hotstuff {
 
 ViewBlockChain::ViewBlockChain(const std::shared_ptr<ViewBlock>& start_block) {
     if (start_block) {

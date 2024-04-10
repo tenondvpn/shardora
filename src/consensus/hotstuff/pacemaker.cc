@@ -10,7 +10,7 @@
 
 namespace shardora {
 
-namespace consensus {
+namespace hotstuff {
 
 Pacemaker::Pacemaker() {}
 

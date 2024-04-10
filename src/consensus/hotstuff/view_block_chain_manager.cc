@@ -5,7 +5,7 @@
 
 namespace shardora {
 
-namespace consensus {
+namespace hotstuff {
 
 ViewBlockChainManager::ViewBlockChainManager(const std::shared_ptr<ViewBlock>& start_block) {
     // Init 64 ViewBlockChains

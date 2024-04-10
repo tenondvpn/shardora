@@ -9,7 +9,7 @@
 
 namespace shardora {
 
-namespace consensus {
+namespace hotstuff {
 
 // Bls vote collection
 struct BlsCollection {

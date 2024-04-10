@@ -2,7 +2,7 @@
 
 namespace shardora {
 
-namespace consensus {
+namespace hotstuff {
 
 std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
     std::string message;

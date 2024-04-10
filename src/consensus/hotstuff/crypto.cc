@@ -3,7 +3,7 @@
 
 namespace shardora {
 
-namespace consensus {
+namespace hotstuff {
 
 Status Crypto::Sign(const uint64_t& elect_height, const HashStr& msg_hash, std::string* sign_x, std::string* sign_y) {
     auto elect_item = GetElectItem(elect_height);
