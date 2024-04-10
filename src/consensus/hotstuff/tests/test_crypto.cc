@@ -16,7 +16,7 @@ namespace test {
 
 static std::shared_ptr<security::Security> security_ptr = nullptr;
 static std::shared_ptr<db::Db> db_ptr = nullptr;
-static bls::BlsManager *bls_manager = nullptr;
+static std::shared_ptr<bls::BlsManager> bls_manager = nullptr;
 static const uint32_t sharding_id = network::kConsensusShardBeginNetworkId;
 
 class TestCrypto : public testing::Test {
@@ -29,7 +29,7 @@ protected:
         security_ptr->SetPrivateKey(common::Encode::HexDecode(
             "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"));
         db_ptr = std::make_shared<db::Db>();
-        bls_manager = new bls::BlsManager(security_ptr, db_ptr);
+        bls_manager = std::make_shared<bls::BlsManager>(security_ptr, db_ptr);
         elect_info_ = std::make_shared<ElectInfo>(security_ptr);
         crypto_ = std::make_shared<Crypto>(elect_info_, bls_manager);
 
