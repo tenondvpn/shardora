@@ -414,8 +414,14 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
 
     std::string addr = common::Encode::HexDecode(tmp_addr);
     auto addr_info = prefix_db->GetAddressInfo(addr);
+
     if (addr_info == nullptr) {
-        std::string res = "get address failed: " + addr;
+        std::string res = "get address failed from db: " + addr;
+        addr_info =  http_handler->acc_mgr()->GetAccountInfo(addr);
+    }
+
+    if (addr_info == nullptr) {
+        std::string res = "get address failed from cache: " + addr;
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
         return;
