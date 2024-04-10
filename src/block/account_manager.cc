@@ -122,7 +122,7 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(
     if (iter != thread_address_map_[thread_idx].end()) {
         return iter->second;
     }
-
+    BLOCK_ERROR("get account failed[%s] in thread_idx:", common::Encode::HexEncode(addr).c_str(), thread_idx);
     return nullptr;
 }
 
