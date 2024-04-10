@@ -335,6 +335,7 @@ public:
             return false;
         }
 
+        ZJC_DEBUG("success save block to db %u, %u, %lu", block.network_id(), block.pool_index(), block.height());
         assert(block.has_bls_agg_sign_x() && block.has_bls_agg_sign_y());
         std::string key;
         key.reserve(48);

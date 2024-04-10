@@ -378,6 +378,8 @@ void BlockManager::CheckWaitingBlocks(uint32_t shard, uint64_t elect_height) {
 int BlockManager::NetworkNewBlock(
         const std::shared_ptr<block::protobuf::Block>& block_item,
         const bool need_valid) {
+    ZJC_DEBUG("success add new network block net: %u, pool: %u, height: %lu",
+        block_item->network_id(), block_item->pool_index(), block_item->height());
     if (block_item != nullptr) {
         if (!block_item->is_commited_block()) {
             ZJC_ERROR("not cross block coming: %s, signx: %s, net: %u, pool: %u, height: %lu",

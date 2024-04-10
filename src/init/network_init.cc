@@ -1018,6 +1018,7 @@ void NetworkInit::AddBlockItemToCache(
             db_batch);
     }
     
+    block_mgr_->NetworkNewBlock(block, false);
     // one block must be one consensus pool
     for (int32_t i = 0; i < tx_list.size(); ++i) {
 //         if (tx_list[i].status() != consensus::kConsensusSuccess) {
@@ -1245,7 +1246,7 @@ int NetworkInit::BlockBlsAggSignatureValid(
     if (block.height() == 0) {
         return 0;
     }
-    
+
     if (block.bls_agg_sign_x().empty() || block.bls_agg_sign_y().empty()) {
         assert(false);
         return -1;

@@ -255,8 +255,11 @@ private:
                 continue;
             }
 
+            ZJC_DEBUG("success get elect block step: %d", block.tx_list(tx_idx).step());
             for (int32_t i = 0; i < block.tx_list(tx_idx).storages_size(); ++i) {
+                ZJC_DEBUG("get elect block key: %s", block.tx_list(tx_idx).storages(i).key().c_str());
                 if (block.tx_list(tx_idx).storages(i).key() == protos::kElectNodeAttrElectBlock) {
+                    ZJC_DEBUG("success get elect block key: %s", block.tx_list(tx_idx).storages(i).key().c_str());
                     if (!elect_block.ParseFromString(block.tx_list(0).storages(i).value())) {
                         assert(false);
                         return nullptr;

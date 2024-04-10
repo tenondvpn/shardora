@@ -523,8 +523,9 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
 
                     auto& pool_blocks = net_with_pool_blocks_[block_item->network_id()].pool_blocks;
                     if (res == 0) {
+                        ZJC_DEBUG("0 success handle network new block: %u, %u, %lu", 
+                            block_item->network_id(), block_item->pool_index(), block_item->height());
                         pool_blocks[block_item->pool_index()][block_item->height()] = nullptr;
-                        block_mgr_->NetworkNewBlock(block_item, false);
                         auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[block_item->pool_index()];
                         bft_block_queues_[thread_idx].push(block_item);
                     } else {
@@ -579,7 +580,8 @@ void KeyValueSync::CheckNotCheckedBlocks() {
                     break;
                 }
 
-                block_mgr_->NetworkNewBlock(iter->second, false);
+                ZJC_DEBUG("0 success handle network new block: %u, %u, %lu", 
+                    iter->second->network_id(), iter->second->pool_index(), iter->second->height());
                 auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[
                     iter->second->pool_index()];
                 bft_block_queues_[thread_idx].push(iter->second);
