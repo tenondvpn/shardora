@@ -53,7 +53,7 @@ TEST_F(TestCrypto, GetElectItem) {
 
     EXPECT_TRUE(elect_item != nullptr);
     EXPECT_EQ(1, elect_item->ElectHeight());
-    EXPECT_EQ("pk1", elect_item->common_pk());
+    EXPECT_EQ("pk1", (*elect_item->Members())[0]->pubkey);
 
     auto member = std::make_shared<common::BftMember>(2, "2", "pk2", 2, 0);
     auto members = std::make_shared<common::Members>();
@@ -65,12 +65,12 @@ TEST_F(TestCrypto, GetElectItem) {
     auto elect_item2 = crypto_->GetElectItem(2);
     EXPECT_TRUE(elect_item2 != nullptr);
     EXPECT_EQ(2, elect_item2->ElectHeight());
-    EXPECT_EQ("pk2", elect_item2->common_pk());
+    EXPECT_EQ("pk2", (*elect_item2->Members())[0]->pubkey);
 
     auto elect_item1 = crypto_->GetElectItem(1);
     EXPECT_TRUE(elect_item1 != nullptr);
     EXPECT_EQ(1, elect_item1->ElectHeight());
-    EXPECT_EQ("pk1", elect_item1->common_pk());
+    EXPECT_EQ("pk1", (*elect_item1->Members())[0]->pubkey);
 }
 
 } // namespace test
