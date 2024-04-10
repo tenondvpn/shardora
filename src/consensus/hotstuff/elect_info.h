@@ -70,7 +70,7 @@ public:
         return local_sk_;
     }
 
-    inline const libff::alt_bn128_G2& common_pk() const {
+    inline libff::alt_bn128_G2 common_pk() const {
         return common_pk_;
     }
 

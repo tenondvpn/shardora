@@ -2,10 +2,8 @@
 #include <consensus/hotstuff/crypto.h>
 
 namespace shardora {
+
 namespace hotstuff {
-
-
-/******** Crypto *********/
 
 Status Crypto::Sign(const uint64_t& elect_height, const HashStr& msg_hash, std::string* sign_x, std::string* sign_y) {
     auto elect_item = elect_info_->GetElectItem(elect_height);
@@ -28,5 +26,85 @@ Status Crypto::Sign(const uint64_t& elect_height, const HashStr& msg_hash, std::
     return Status::kSuccess;
 }
 
-}
-}
+Status Crypto::ReconstructAndVerify(
+        const uint64_t& elect_height,
+        const View& view,
+        const HashStr& msg_hash,
+        const uint32_t& index,
+        const std::shared_ptr<libff::alt_bn128_G1>& partial_sign,
+        std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign) {
+    assert(msg_hash.size() == 32);
+    // old vote
+    if (bls_collection_ && bls_collection_->view > view) {
+        return Status::kInvalidArgument;
+    }
+        
+    if (!bls_collection_ || bls_collection_->view < view) {
+        bls_collection_ = std::make_shared<BlsCollection>();
+        bls_collection_->view = view; 
+    }
+
+    if (bls_collection_->handled) {
+        return Status::kSuccess;
+    }
+
+    // Reconstruct sign
+    bls_collection_->ok_bitmap.Set(index);
+    bls_collection_->partial_signs[index] = partial_sign;
+        
+    auto elect_item = elect_info_->GetElectItem(elect_height);
+    if (!elect_item) {
+        return Status::kError;
+    }
+        
+    if (bls_collection_->OkCount() < elect_item->t()) {
+        return Status::kBlsVerifyWaiting;
+    }
+
+    std::vector<libff::alt_bn128_G1> all_signs;
+    std::vector<size_t> idx_vec;
+    for (uint32_t i = 0; i < elect_item->n(); i++) {
+        if (!bls_collection_->ok_bitmap.Valid(i)) {
+            continue;
+        }
+
+        all_signs.push_back(bls_collection_->partial_signs[i]);
+        idx_vec.push_back(i+1);
+        if (idx_vec.size() >= elect_item->t()) {
+            break;
+        }
+    }
+
+    libBLS::Bls bls_instance = libBLS::Bls(elect_item->t(), elect_item->n());
+    std::vector<libff::alt_bn128_Fr> lagrange_coeffs(elect_item->t());
+    libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, elect_item->t(), lagrange_coeffs);
+    bls_collection_->reconstructed_sign = std::make_shared<libff::alt_bn128_G1>(
+            bls_instance.SignatureRecover(all_signs, lagrange_coeffs));
+    bls_collection_->reconstructed_sign->to_affine_coordinates();
+
+    // Verify
+    std::string verify_hash_a = "";
+    std::string verify_hash_b = "";
+    Status s = GetVerifyHashA(elect_height, msg_hash, &verify_hash_a);
+    if (s != Status::kSuccess) {
+        return s;
+    }
+    s = GetVerifyHashB(elect_height, *bls_collection_->reconstructed_sign, &verify_hash_b);
+    if (s != Status::kSuccess) {
+        return s;
+    }
+
+    if (verify_hash_a != verify_hash_b) {
+        return Status::kBlsVerifyFailed;
+    }
+
+    bls_collection_->handled = true;
+    *reconstructed_sign = *bls_collection_->reconstructed_sign; 
+        
+    return Status::kSuccess;
+};
+
+} // namespace hotstuff
+
+} // namespace shardora
+

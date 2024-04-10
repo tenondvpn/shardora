@@ -141,6 +141,8 @@ enum class Status : int {
   kError = 1,
   kNotFound = 2,
   kInvalidArgument = 3,
+  kBlsVerifyWaiting = 4,
+  kBlsVerifyFailed = 5,
 };
 
     

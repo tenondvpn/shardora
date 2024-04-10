@@ -17,6 +17,8 @@ struct BlsCollection {
     View view;
     common::Bitmap ok_bitmap{ common::kEachShardMaxNodeCount };
     libff::alt_bn128_G1 partial_signs[common::kEachShardMaxNodeCount];
+    std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
+    bool handled;
 
     inline uint32_t OkCount() const {
         return ok_bitmap.valid_count();
@@ -32,46 +34,40 @@ public:
     Crypto(const Crypto&) = delete;
     Crypto& operator=(const Crypto&) = delete;
 
-    Status Sign(const uint64_t& elect_height, const HashStr& msg_hash, std::string* sign_x, std::string* sign_y);
-    bool Verify(const uint64_t& elect_height, const View& view, const HashStr& msg_hash, const uint32_t& index, const libff::alt_bn128_G1& partial_sign) {
-        // old vote
-        if (bls_collection_ && bls_collection_->view > view) {
-            return false;
-        }
-        
-        if (!bls_collection_ || bls_collection_->view < view) {
-            bls_collection_ = std::make_shared<BlsCollection>();
-            bls_collection_->view = view; 
-        }
-
-        bls_collection_->ok_bitmap.Set(index);
-        bls_collection_->partial_signs[index] = partial_sign;
-        
-        auto elect_item = elect_info_->GetElectItem(elect_height);
-        if (!elect_item) {
-            return false;
-        }
-        
-        if (bls_collection_->OkCount() < elect_item->t()) {
-            return false;
-        }
-
-        // TODO Restore sig and verify
-        
-        return true;
-    };
+    Status Sign(
+            const uint64_t& elect_height,
+            const HashStr& msg_hash,
+            std::string* sign_x,
+            std::string* sign_y);
+    Status ReconstructAndVerify(
+            const uint64_t& elect_height,
+            const View& view,
+            const HashStr& msg_hash,
+            const uint32_t& member_idx,
+            const std::shared_ptr<libff::alt_bn128_G1>& partial_sign,
+            std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign);
     
 private:
+    // 保留上一次 elect_item，避免 epoch 切换的影响
+    std::shared_ptr<ElectInfo> elect_info_ = nullptr;
+    std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
+    std::shared_ptr<security::Security> security_ptr_ = nullptr;
+    std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
+    
     void GetG1Hash(const HashStr& msg_hash, libff::alt_bn128_G1* g1_hash) {
         bls_mgr_->GetLibffHash(msg_hash, g1_hash);
     }
 
-    void GetVerifyHash(const uint64_t& elect_height, const HashStr& msg_hash, std::string* verify_hash) {
+    Status GetVerifyHashA(const uint64_t& elect_height, const HashStr& msg_hash, std::string* verify_hash) {
+        if (!elect_info_) {
+            return Status::kError;
+        }
+        
         libff::alt_bn128_G1 g1_hash;
         GetG1Hash(msg_hash, &g1_hash);
         auto elect_item = elect_info_->GetElectItem(elect_height);
         if (!elect_item) {
-            return;
+            return Status::kError;
         }
         
         if (bls_mgr_->GetVerifyHash(
@@ -80,17 +76,40 @@ private:
                 g1_hash,
                 elect_item->common_pk(),
                 verify_hash) != bls::kBlsSuccess) {
-            ZJC_ERROR("get verify hash failed!");
+            ZJC_ERROR("get verify hash a failed!");
+            return Status::kError;
         }
+        return Status::kSuccess;
     }
 
-    
+    Status GetVerifyHashB(const uint64_t& elect_height, const libff::alt_bn128_G1& reconstructed_sign, std::string* verify_hash) {
+        if (!elect_info_) {
+            return Status::kError;
+        }
 
-    // 保留上一次 elect_item，避免 epoch 切换的影响
-    std::shared_ptr<ElectInfo> elect_info_ = nullptr;
-    std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
-    std::shared_ptr<security::Security> security_ptr_ = nullptr;
-    std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
+        auto elect_item = elect_info_->GetElectItem(elect_height);
+        if (!elect_item) {
+            return Status::kError;
+        }
+
+        if (bls_mgr_->GetVerifyHash(
+                    elect_item->t(),
+                    elect_item->n(),
+                    reconstructed_sign,
+                    verify_hash) != bls::kBlsSuccess) {
+            elect_item->common_pk().to_affine_coordinates();
+            auto cpk = std::make_shared<BLSPublicKey>(elect_item->common_pk());
+            auto cpk_strs = cpk->toString();
+            ZJC_ERROR("failed leader verify leader precommit agg sign! t: %u, n: %u,"
+                "common public key: %s, %s, %s, %s, elect height: %lu, ",
+                elect_item->t(), elect_item->n(), cpk_strs->at(0).c_str(), cpk_strs->at(1).c_str(),
+                cpk_strs->at(2).c_str(), cpk_strs->at(3).c_str(),
+                elect_height);
+            return Status::kError;
+        }
+
+        return Status::kSuccess;
+    }
 };
 
 } // namespace consensus
