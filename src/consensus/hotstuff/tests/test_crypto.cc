@@ -20,11 +20,10 @@ static bls::BlsManager *bls_manager = nullptr;
 static const uint32_t sharding_id = network::kConsensusShardBeginNetworkId;
 
 class TestCrypto : public testing::Test {
-private:
+protected:
     std::shared_ptr<Crypto> crypto_ = nullptr;
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     
-protected:
     void SetUp() {
         security_ptr = std::make_shared<security::Ecdsa>();
         security_ptr->SetPrivateKey(common::Encode::HexDecode(
@@ -34,17 +33,12 @@ protected:
         elect_info_ = std::make_shared<ElectInfo>(security_ptr);
         crypto_ = std::make_shared<Crypto>(elect_info_, bls_manager);
 
-        auto member = std::make_shared<common::BftMember>(1, "1", "pk", 1, 0);
+        auto member = std::make_shared<common::BftMember>(1, "1", "pk1", 1, 0);
         auto members = std::make_shared<common::Members>();
         members->push_back(member);
         auto common_pk = libff::alt_bn128_G2::one();
         auto sk = libff::alt_bn128_Fr::one();
-        elect_info_->OnNewElectBlock(
-                sharding_id,
-                1,
-                members,
-                common_pk,
-                sk);
+        elect_info_->OnNewElectBlock(sharding_id, 1, members, common_pk, sk);
     }
 
     void TearDown() {}
@@ -55,7 +49,28 @@ TEST_F(TestCrypto, Sign_Verify) {
 }
 
 TEST_F(TestCrypto, GetElectItem) {
-    crypto_->GetElectItem(1)
+    auto elect_item = crypto_->GetElectItem(1);
+
+    EXPECT_TRUE(elect_item != nullptr);
+    EXPECT_EQ(1, elect_item->ElectHeight());
+    EXPECT_EQ("pk1", elect_item->common_pk());
+
+    auto member = std::make_shared<common::BftMember>(2, "2", "pk2", 2, 0);
+    auto members = std::make_shared<common::Members>();
+    members->push_back(member);
+    auto common_pk = libff::alt_bn128_G2::one();
+    auto sk = libff::alt_bn128_Fr::one();
+    elect_info_->OnNewElectBlock(sharding_id, 2, members, common_pk, sk);
+
+    auto elect_item2 = crypto_->GetElectItem(2);
+    EXPECT_TRUE(elect_item2 != nullptr);
+    EXPECT_EQ(2, elect_item2->ElectHeight());
+    EXPECT_EQ("pk2", elect_item2->common_pk());
+
+    auto elect_item1 = crypto_->GetElectItem(1);
+    EXPECT_TRUE(elect_item1 != nullptr);
+    EXPECT_EQ(1, elect_item1->ElectHeight());
+    EXPECT_EQ("pk1", elect_item1->common_pk());
 }
 
 } // namespace test
