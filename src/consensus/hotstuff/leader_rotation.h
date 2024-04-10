@@ -20,10 +20,9 @@ public:
     // Generally committed_view_block.view is used
     common::BftMemberPtr GetLeader();
     
-    inline int32_t GetLocalMemberIdx() const {
-        if (!elect_info_->GetElectItem()) {
-            return -1;
-        }
+    inline uint32_t GetLocalMemberIdx() const {
+        assert(elect_info_ != nullptr);
+        assert(elect_info_->GetElectItem());
         return elect_info_->GetElectItem()->LocalMember()->index;
     }
 private:

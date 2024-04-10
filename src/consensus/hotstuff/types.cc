@@ -41,7 +41,7 @@ bool QC::Unserialize(const std::string& str) {
     view_block_hash = qc_proto.view_block_hash();
 
     participants.clear();
-    for (uint32_t i = 0; i < qc_proto.participants_size(); i++) {
+    for (int i = 0; i < qc_proto.participants_size(); i++) {
         participants.push_back(qc_proto.participants(i));
     }
         
