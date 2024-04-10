@@ -29,7 +29,7 @@ struct BlsCollection {
 class Crypto {
 public:
     Crypto(const std::shared_ptr<ElectInfo>& elect_info,
-        const std::shared_ptr<bls::BlsManager> bls_mgr) :
+        const std::shared_ptr<bls::BlsManager>& bls_mgr) :
         elect_info_(elect_info), bls_mgr_(bls_mgr) {};
     ~Crypto() {};
 
