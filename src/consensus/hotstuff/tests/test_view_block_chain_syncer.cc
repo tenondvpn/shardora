@@ -39,7 +39,7 @@ protected:
         msg.set_des_dht_key(dht_key.StrKey());
         msg.set_type(common::kViewBlockSyncMessage);
 
-        auto vb_msg = view_block::protobuf::ViewBlockMessage();
+        auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
         auto req = vb_msg.mutable_view_block_req();
         req->set_pool_idx(POOL);
         req->set_network_id(NET_ID);
