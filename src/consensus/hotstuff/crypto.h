@@ -9,7 +9,7 @@
 
 namespace shardora {
 
-namespace hotstuff {
+namespace consensus {
 
 // Bls vote collection
 struct BlsCollection {
@@ -29,9 +29,8 @@ struct BlsCollection {
 class Crypto {
 public:
     Crypto(const std::shared_ptr<ElectInfo>& elect_info,
-        const std::shared_ptr<bls::BlsManager> bls_mgr,
-        const std::shared_ptr<security::Security> security) :
-        elect_info_(elect_info), bls_mgr_(bls_mgr), security_ptr_(security) {};
+        const std::shared_ptr<bls::BlsManager> bls_mgr) :
+        elect_info_(elect_info), bls_mgr_(bls_mgr) {};
     ~Crypto() {};
 
     Crypto(const Crypto&) = delete;
@@ -49,12 +48,14 @@ public:
             const uint32_t& member_idx,
             const std::shared_ptr<libff::alt_bn128_G1>& partial_sign,
             std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign);
+    inline std::shared_ptr<ElectItem> GetElectItem(const uint64_t& elect_height) {
+        return elect_info_->GetElectItem(elect_height);
+    }
     
 private:
     // 保留上一次 elect_item，避免 epoch 切换的影响
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
-    std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
     
     void GetG1Hash(const HashStr& msg_hash, libff::alt_bn128_G1* g1_hash) {
@@ -62,23 +63,19 @@ private:
     }
 
     Status GetVerifyHashA(const uint64_t& elect_height, const HashStr& msg_hash, std::string* verify_hash) {
-        if (!elect_info_) {
-            return Status::kError;
-        }
-        
-        libff::alt_bn128_G1 g1_hash;
-        GetG1Hash(msg_hash, &g1_hash);
-        auto elect_item = elect_info_->GetElectItem(elect_height);
+        auto elect_item = GetElectItem(elect_height);
         if (!elect_item) {
             return Status::kError;
-        }
+        }        
+        libff::alt_bn128_G1 g1_hash;
+        GetG1Hash(msg_hash, &g1_hash);
         
         if (bls_mgr_->GetVerifyHash(
-                elect_item->t(),
-                elect_item->n(),
-                g1_hash,
-                elect_item->common_pk(),
-                verify_hash) != bls::kBlsSuccess) {
+                    elect_item->t(),
+                    elect_item->n(),
+                    g1_hash,
+                    elect_item->common_pk(),
+                    verify_hash) != bls::kBlsSuccess) {
             ZJC_ERROR("get verify hash a failed!");
             return Status::kError;
         }
@@ -86,11 +83,7 @@ private:
     }
 
     Status GetVerifyHashB(const uint64_t& elect_height, const libff::alt_bn128_G1& reconstructed_sign, std::string* verify_hash) {
-        if (!elect_info_) {
-            return Status::kError;
-        }
-
-        auto elect_item = elect_info_->GetElectItem(elect_height);
+        auto elect_item = GetElectItem(elect_height);
         if (!elect_item) {
             return Status::kError;
         }

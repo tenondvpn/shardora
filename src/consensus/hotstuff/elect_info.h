@@ -4,11 +4,12 @@
 #include <common/node_members.h>
 #include <consensus/hotstuff/types.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g2.hpp>
+#include <memory>
 #include <security/security.h>
 
 namespace shardora {
 
-namespace hotstuff {
+namespace consensus {
 
 // ElectItem 
 class ElectItem {
@@ -98,7 +99,7 @@ private:
 
 class ElectInfo {
 public:
-    ElectInfo() {}
+    explicit ElectInfo(const std::shared_ptr<security::Security>& sec) : security_ptr_(sec) {}
     ~ElectInfo() {}
 
     ElectInfo(const ElectInfo&) = delete;
@@ -132,7 +133,8 @@ public:
             return prev_elect_item_;
         }
         return nullptr;
-    }    
+    }
+    
 private:
     std::shared_ptr<ElectItem> prev_elect_item_ = nullptr; 
     std::shared_ptr<ElectItem> elect_item_ = nullptr;

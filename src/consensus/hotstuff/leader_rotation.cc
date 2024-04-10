@@ -7,7 +7,7 @@
 
 namespace shardora {
 
-namespace hotstuff {
+namespace consensus {
 
 LeaderRotation::LeaderRotation(const std::shared_ptr<ViewBlockChain>& chain, const std::shared_ptr<CryptoInfo>& crypto_info) :
     chain_(chain), crypto_info_(crypto_info) {}

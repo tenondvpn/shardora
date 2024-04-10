@@ -5,7 +5,7 @@
 
 namespace shardora {
 
-namespace hotstuff {
+namespace consensus {
 
 class ViewBlockChainManager {
 public:

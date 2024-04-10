@@ -7,7 +7,7 @@
 
 namespace shardora {
 
-namespace hotstuff {
+namespace consensus {
 
 struct CompareViewBlock {
     bool operator()(const std::shared_ptr<ViewBlock>& lhs, const std::shared_ptr<ViewBlock>& rhs) const {

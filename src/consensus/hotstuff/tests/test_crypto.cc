@@ -1,25 +1,61 @@
+#include <bls/bls_dkg.h>
+#include <common/node_members.h>
 #include <consensus/hotstuff/crypto.h>
+#include <consensus/hotstuff/elect_info.h>
 #include <gtest/gtest.h>
+#include <libff/algebra/curves/alt_bn128/alt_bn128_g2.hpp>
+#include <network/network_utils.h>
+#include <security/ecdsa/ecdsa.h>
+#include <security/security.h>
 
 namespace shardora {
 
-namespace hotstuff {
+namespace consensus {
 
 namespace test {
 
+static std::shared_ptr<security::Security> security_ptr = nullptr;
+static std::shared_ptr<db::Db> db_ptr = nullptr;
+static bls::BlsManager *bls_manager = nullptr;
+static const uint32_t sharding_id = network::kConsensusShardBeginNetworkId;
+
 class TestCrypto : public testing::Test {
+private:
+    std::shared_ptr<Crypto> crypto_ = nullptr;
+    std::shared_ptr<ElectInfo> elect_info_ = nullptr;
+    
 protected:
     void SetUp() {
-        
+        security_ptr = std::make_shared<security::Ecdsa>();
+        security_ptr->SetPrivateKey(common::Encode::HexDecode(
+            "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"));
+        db_ptr = std::make_shared<db::Db>();
+        bls_manager = new bls::BlsManager(security_ptr, db_ptr);
+        elect_info_ = std::make_shared<ElectInfo>(security_ptr);
+        crypto_ = std::make_shared<Crypto>(elect_info_, bls_manager);
+
+        auto member = std::make_shared<common::BftMember>(1, "1", "pk", 1, 0);
+        auto members = std::make_shared<common::Members>();
+        members->push_back(member);
+        auto common_pk = libff::alt_bn128_G2::one();
+        auto sk = libff::alt_bn128_Fr::one();
+        elect_info_->OnNewElectBlock(
+                sharding_id,
+                1,
+                members,
+                common_pk,
+                sk);
     }
 
     void TearDown() {}
-
-    std::shared_ptr<Crypto> crypto_;
 };
 
 TEST_F(TestCrypto, Sign_Verify) {
-    
+    // tested in test_bls.cc
+}
+
+TEST_F(TestCrypto, GetElectItem) {
+    crypto_->GetElectItem(1)
 }
 
 } // namespace test

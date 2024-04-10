@@ -13,7 +13,7 @@
 
 namespace shardora {
 
-namespace hotstuff {
+namespace consensus {
 
 class Pacemaker {
 public:

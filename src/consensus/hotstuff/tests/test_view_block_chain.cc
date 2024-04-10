@@ -7,7 +7,7 @@
 
 namespace shardora {
 
-namespace hotstuff {
+namespace consensus {
 
 namespace test {
 

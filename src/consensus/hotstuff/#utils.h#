@@ -1,0 +1,15 @@
+#pragma once
+
+#include <common/hash.h>
+#include <protos/block.pb.h>
+
+namespace shardora {
+
+namespace consensus {
+
+
+
+} // namespace consensus
+
+} // namespace shardora
+

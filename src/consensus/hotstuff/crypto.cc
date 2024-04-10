@@ -3,10 +3,10 @@
 
 namespace shardora {
 
-namespace hotstuff {
+namespace consensus {
 
 Status Crypto::Sign(const uint64_t& elect_height, const HashStr& msg_hash, std::string* sign_x, std::string* sign_y) {
-    auto elect_item = elect_info_->GetElectItem(elect_height);
+    auto elect_item = GetElectItem(elect_height);
     if (!elect_item) {
         return Status::kError;
     }
@@ -51,12 +51,11 @@ Status Crypto::ReconstructAndVerify(
     // Reconstruct sign
     bls_collection_->ok_bitmap.Set(index);
     bls_collection_->partial_signs[index] = partial_sign;
-        
-    auto elect_item = elect_info_->GetElectItem(elect_height);
+    auto elect_item = GetElectItem(elect_height);
     if (!elect_item) {
         return Status::kError;
     }
-        
+    
     if (bls_collection_->OkCount() < elect_item->t()) {
         return Status::kBlsVerifyWaiting;
     }

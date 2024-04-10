@@ -3,7 +3,7 @@
 
 namespace shardora {
 
-namespace hotstuff {
+namespace consensus {
 
 class ViewDuration {
 public:
