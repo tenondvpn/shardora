@@ -49,7 +49,7 @@ TEST_F(TestCrypto, Sign_Verify) {
 }
 
 TEST_F(TestCrypto, GetElectItem) {
-    auto elect_item = crypto_->GetElectItem(1);
+    auto elect_item = elect_info_->GetElectItem(1);
 
     EXPECT_TRUE(elect_item != nullptr);
     EXPECT_EQ(1, elect_item->ElectHeight());
