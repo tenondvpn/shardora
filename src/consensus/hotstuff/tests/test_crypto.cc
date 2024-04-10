@@ -1,4 +1,5 @@
 #include <bls/bls_dkg.h>
+#include <common/global_info.h>
 #include <common/node_members.h>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/elect_info.h>
@@ -25,6 +26,7 @@ protected:
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     
     void SetUp() {
+        common::GlobalInfo::Instance()->set_network_id(sharding_id);
         security_ptr = std::make_shared<security::Ecdsa>();
         security_ptr->SetPrivateKey(common::Encode::HexDecode(
             "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"));
@@ -49,7 +51,7 @@ TEST_F(TestCrypto, Sign_Verify) {
 }
 
 TEST_F(TestCrypto, GetElectItem) {
-    auto elect_item = elect_info_->GetElectItem(1);
+    auto elect_item = crypto_->GetElectItem(1);
 
     EXPECT_TRUE(elect_item != nullptr);
     EXPECT_EQ(1, elect_item->ElectHeight());
