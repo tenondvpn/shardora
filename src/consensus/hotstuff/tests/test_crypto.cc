@@ -10,11 +10,17 @@ namespace test {
 class TestCrypto : public testing::Test {
 protected:
     void SetUp() {
-                
+        
     }
 
     void TearDown() {}
+
+    std::shared_ptr<Crypto> crypto_;
 };
+
+TEST_F(TestCrypto, Sign_Verify) {
+    
+}
 
 } // namespace test
 

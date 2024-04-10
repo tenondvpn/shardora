@@ -68,7 +68,7 @@ Status Crypto::ReconstructAndVerify(
             continue;
         }
 
-        all_signs.push_back(bls_collection_->partial_signs[i]);
+        all_signs.push_back(*bls_collection_->partial_signs[i]);
         idx_vec.push_back(i+1);
         if (idx_vec.size() >= elect_item->t()) {
             break;

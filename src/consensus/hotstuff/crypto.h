@@ -16,7 +16,7 @@ struct BlsCollection {
     HashStr msg_hash;
     View view;
     common::Bitmap ok_bitmap{ common::kEachShardMaxNodeCount };
-    libff::alt_bn128_G1 partial_signs[common::kEachShardMaxNodeCount];
+    std::shared_ptr<libff::alt_bn128_G1> partial_signs[common::kEachShardMaxNodeCount];
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
     bool handled;
 
@@ -28,7 +28,10 @@ struct BlsCollection {
 // Every ViewBlockChain's hotstuff has a Crypto
 class Crypto {
 public:
-    Crypto() {};
+    Crypto(const std::shared_ptr<ElectInfo>& elect_info,
+        const std::shared_ptr<bls::BlsManager> bls_mgr,
+        const std::shared_ptr<security::Security> security) :
+        elect_info_(elect_info), bls_mgr_(bls_mgr), security_ptr_(security) {};
     ~Crypto() {};
 
     Crypto(const Crypto&) = delete;
