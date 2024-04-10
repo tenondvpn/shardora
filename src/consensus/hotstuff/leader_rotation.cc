@@ -2,15 +2,14 @@
 #include <common/hash.h>
 #include <common/node_members.h>
 #include <common/time_utils.h>
-#include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/leader_rotation.h>
 
 namespace shardora {
 
 namespace consensus {
 
-LeaderRotation::LeaderRotation(const std::shared_ptr<ViewBlockChain>& chain, const std::shared_ptr<CryptoInfo>& crypto_info) :
-    chain_(chain), crypto_info_(crypto_info) {}
+LeaderRotation::LeaderRotation(const std::shared_ptr<ViewBlockChain>& chain, const std::shared_ptr<ElectInfo>& elect_info) :
+    chain_(chain), elect_info_(elect_info) {}
 
 LeaderRotation::~LeaderRotation() {}
 

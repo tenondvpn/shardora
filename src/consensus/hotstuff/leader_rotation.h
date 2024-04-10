@@ -1,7 +1,7 @@
 #pragma once
 
 #include <common/node_members.h>
-#include <consensus/hotstuff/crypto.h>
+#include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
 
@@ -11,7 +11,7 @@ namespace consensus {
 
 class LeaderRotation {
 public:
-    LeaderRotation(const std::shared_ptr<ViewBlockChain>&, const std::shared_ptr<CryptoInfo>&);
+    LeaderRotation(const std::shared_ptr<ViewBlockChain>&, const std::shared_ptr<ElectInfo>&);
     ~LeaderRotation();
 
     LeaderRotation(const LeaderRotation&) = delete;
@@ -20,16 +20,19 @@ public:
     // Generally committed_view_block.view is used
     common::BftMemberPtr GetLeader();
     
-    inline uint32_t GetLocalMemberIdx() const {
-        return crypto_info_->LocalMember()->index;
+    inline int32_t GetLocalMemberIdx() const {
+        if (!elect_info_->GetElectItem()) {
+            return -1;
+        }
+        return elect_info_->GetElectItem()->LocalMember()->index;
     }
 private:
     inline common::MembersPtr Members() const {
-        return crypto_info_->Members(); 
+        return elect_info_->GetElectItem()->Members(); 
     }
     
     std::shared_ptr<ViewBlockChain> chain_ = nullptr;
-    std::shared_ptr<CryptoInfo> crypto_info_ = nullptr;
+    std::shared_ptr<ElectInfo> elect_info_ = nullptr;
 };
 
 } // namespace consensus

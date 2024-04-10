@@ -134,6 +134,10 @@ public:
         }
         return nullptr;
     }
+
+    inline std::shared_ptr<ElectItem> GetElectItem() const {
+        return elect_item_;
+    }
     
 private:
     std::shared_ptr<ElectItem> prev_elect_item_ = nullptr; 
