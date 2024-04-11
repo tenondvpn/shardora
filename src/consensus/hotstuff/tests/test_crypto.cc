@@ -18,12 +18,13 @@ namespace hotstuff {
 
 namespace test {
 
-// using ::testing::_;
+using ::testing::_;
 // using ::testing::Return;
 // using ::testing::Invoke;
 
 class MockBlsManager : public bls::IBlsManager {
 public:
+    MockBlsManager(std::shared_ptr<security::Security>& security, std::shared_ptr<db::Db>& db);
     MOCK_METHOD6(Sign, int(
                 uint32_t t,
                 uint32_t n,
@@ -49,7 +50,7 @@ public:
 
 static std::shared_ptr<security::Security> security_ptr = nullptr;
 static std::shared_ptr<db::Db> db_ptr = nullptr;
-static std::shared_ptr<bls::BlsManager> bls_manager = nullptr;
+static std::shared_ptr<MockBlsManager> bls_manager = nullptr;
 static const uint32_t sharding_id = network::kConsensusShardBeginNetworkId;
 
 class TestCrypto : public testing::Test {
@@ -63,7 +64,7 @@ protected:
         security_ptr->SetPrivateKey(common::Encode::HexDecode(
             "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"));
         db_ptr = std::make_shared<db::Db>();
-        bls_manager = std::make_shared<bls::BlsManager>(security_ptr, db_ptr);
+        bls_manager = std::make_shared<MockBlsManager>(security_ptr, db_ptr);
         elect_info_ = std::make_shared<ElectInfo>(security_ptr);
         crypto_ = std::make_shared<Crypto>(elect_info_, bls_manager);
 
@@ -79,17 +80,17 @@ protected:
 };
 
 TEST_F(TestCrypto, Sign_Verify) {
-    // EXPECT_CALL(*bls_manager, Sign(_, _, _, _, _, _)).WillRepeatedly(
-    //         Invoke([](uint32_t t,
-    //                 uint32_t n,
-    //                 const libff::alt_bn128_Fr& local_sec_key, 
-    //                 const libff::alt_bn128_G1& g1_hash,
-    //                 std::string* sign_x,
-    //                 std::string* sign_y) {
-    //             *sign_x = "x";
-    //             *sign_y = "y";
-    //             return bls::kBlsSuccess;
-    //         }));
+    EXPECT_CALL(*bls_manager, Sign(_, _, _, _, _, _)).WillRepeatedly(
+            testing::Invoke([](uint32_t t,
+                    uint32_t n,
+                    const libff::alt_bn128_Fr& local_sec_key, 
+                    const libff::alt_bn128_G1& g1_hash,
+                    std::string* sign_x,
+                    std::string* sign_y) {
+                *sign_x = "x";
+                *sign_y = "y";
+                return bls::kBlsSuccess;
+            }));
     // EXPECT_CALL(*bls_manager, GetVerifyHash(_, _, _, _, _)).WillRepeatedly(
     //         Invoke([](uint32_t t,
     //                 uint32_t n,
