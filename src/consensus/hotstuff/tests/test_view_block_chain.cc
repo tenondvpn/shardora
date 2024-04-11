@@ -23,7 +23,7 @@ std::shared_ptr<ViewBlock> GenViewBlock(const HashStr& parent_hash, const View& 
         GenBlock(),
         view,
         GenLeaderIdx());
-    vb->hash = vb->GetHash();
+    vb->hash = vb->DoHash();
     return vb;
 }
 
