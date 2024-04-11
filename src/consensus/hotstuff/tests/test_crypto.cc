@@ -20,8 +20,8 @@ namespace hotstuff {
 namespace test {
 
 using ::testing::_;
-using ::testing::Return;
 using ::testing::Invoke;
+using ::testing::Return;
 
 class MockBlsManager : public bls::IBlsManager {
 public:
@@ -80,47 +80,44 @@ protected:
 };
 
 TEST_F(TestCrypto, Sign_Verify) {
-    // EXPECT_CALL(*bls_manager, Sign(_, _, _, _, _, _)).WillRepeatedly(
-    //         testing::Invoke([](uint32_t t,
-    //                 uint32_t n,
-    //                 const libff::alt_bn128_Fr& local_sec_key, 
-    //                 const libff::alt_bn128_G1& g1_hash,
-    //                 std::string* sign_x,
-    //                 std::string* sign_y) {
-    //             *sign_x = "x";
-    //             *sign_y = "y";
-    //             return bls::kBlsSuccess;
-    //         }));
-    // EXPECT_CALL(*bls_manager, GetVerifyHash(_, _, _, _, _)).WillRepeatedly(
-    //         Invoke([](uint32_t t,
-    //                 uint32_t n,
-    //                 const libff::alt_bn128_G1& g1_hash,
-    //                 const libff::alt_bn128_G2& pkey,
-    //                 std::string* verify_hash
-    //                 ) {
-    //             *verify_hash = "test_hash";
-    //             return bls::kBlsSuccess;
-    //         }));
-    // EXPECT_CALL(*bls_manager, GetVerifyHash(_, _, _, _)).WillRepeatedly(
-    //         Invoke([](uint32_t t,
-    //                 uint32_t n,
-    //                 const libff::alt_bn128_G1& sign,
-    //                 std::string* verify_hash
-    //                 ) {
-    //             *verify_hash = "test_hash";
-    //             return bls::kBlsSuccess;
-    //         }));
-    // EXPECT_CALL(*bls_manager, GetLibffHash(_, _)).WillRepeatedly(
-    //         Invoke([](const std::string& str_hash, libff::alt_bn128_G1* g1_hash) {
-    //             *g1_hash = libff::alt_bn128_G1::one();
-    //             return bls::kBlsSuccess;
-    //         }));
+    ON_CALL(*bls_manager, Sign(_, _, _, _, _, _))
+        .WillByDefault([](uint32_t t, uint32_t n, const libff::alt_bn128_Fr& local_sec_key, const libff::alt_bn128_G1& g1_hash, std::string* sign_x, std::string* sign_y) {
+            *sign_x = "x";
+            *sign_y = "y";
+            return 1;
+        });
 
-    // std::string sign_x;
-    // std::string sign_y;
-    // crypto_->Sign(1, "msg_hash", &sign_x, &sign_y);
-    // EXPECT_EQ("x", sign_x);
-    // EXPECT_EQ("y", sign_y);
+
+    ON_CALL(*bls_manager, GetVerifyHash(_, _, _, _, _))
+        .WillByDefault([](uint32_t t,
+                uint32_t n,
+                const libff::alt_bn128_G1& g1_hash,
+                const libff::alt_bn128_G2& pkey,
+                std::string* verify_hash
+                ) {
+            *verify_hash = "test_hash";
+            return bls::kBlsSuccess;
+        });
+    ON_CALL(*bls_manager, GetVerifyHash(_, _, _, _))
+        .WillByDefault([](uint32_t t,
+                uint32_t n,
+                const libff::alt_bn128_G1& sign,
+                std::string* verify_hash
+                ) {
+            *verify_hash = "test_hash";
+            return bls::kBlsSuccess;
+        });
+    ON_CALL(*bls_manager, GetLibffHash(_, _))
+        .WillByDefault([](const std::string& str_hash, libff::alt_bn128_G1* g1_hash) {
+            *g1_hash = libff::alt_bn128_G1::one();
+            return bls::kBlsSuccess;
+        });
+
+    std::string sign_x;
+    std::string sign_y;
+    crypto_->Sign(1, "msg_hash", &sign_x, &sign_y);
+    EXPECT_EQ("x", sign_x);
+    EXPECT_EQ("y", sign_y);
 }
 
 TEST_F(TestCrypto, GetElectItem) {
