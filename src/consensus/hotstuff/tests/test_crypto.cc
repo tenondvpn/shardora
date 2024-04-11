@@ -17,7 +17,7 @@ namespace test {
 
 static std::shared_ptr<security::Security> security_ptr = nullptr;
 static std::shared_ptr<db::Db> db_ptr = nullptr;
-static std::shared_ptr<bls::BlsManager> bls_manager = nullptr;
+static std::shared_ptr<bls::IBlsManager> bls_manager = nullptr;
 static const uint32_t sharding_id = network::kConsensusShardBeginNetworkId;
 
 class TestCrypto : public testing::Test {

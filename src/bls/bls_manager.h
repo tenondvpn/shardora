@@ -14,7 +14,7 @@ namespace bls {
 
 class IBlsManager {
 public:
-    IBlsManager() = default;
+    IBlsManager() {};
     virtual ~IBlsManager() {};
 
     virtual int Sign(
@@ -41,7 +41,7 @@ public:
     virtual int GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g1_hash) = 0;
 };
 
-class BlsManager : IBlsManager {
+class BlsManager : public IBlsManager {
 public:
     BlsManager(
         std::shared_ptr<security::Security>& security,
