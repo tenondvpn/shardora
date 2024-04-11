@@ -23,7 +23,7 @@ typedef std::string HashStr;
 
 struct QC {
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
-    // std::vector<uint32_t> participants; // 与之签名的贡献者，没有用，因为 bls 无法验证正确性
+    std::vector<uint32_t> participants; // 与之签名的贡献者，没有用，因为 bls 无法验证正确性
     View view; // view_block_hash 对应的 view
     HashStr view_block_hash;
 
