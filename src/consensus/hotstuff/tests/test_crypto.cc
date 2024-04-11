@@ -24,7 +24,6 @@ using ::testing::_;
 
 class MockBlsManager : public bls::IBlsManager {
 public:
-    MockBlsManager(std::shared_ptr<security::Security>& security, std::shared_ptr<db::Db>& db);
     MOCK_METHOD6(Sign, int(
                 uint32_t t,
                 uint32_t n,
@@ -64,7 +63,7 @@ protected:
         security_ptr->SetPrivateKey(common::Encode::HexDecode(
             "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"));
         db_ptr = std::make_shared<db::Db>();
-        bls_manager = std::make_shared<MockBlsManager>(security_ptr, db_ptr);
+        bls_manager = std::make_shared<MockBlsManager>();
         elect_info_ = std::make_shared<ElectInfo>(security_ptr);
         crypto_ = std::make_shared<Crypto>(elect_info_, bls_manager);
 
