@@ -22,34 +22,34 @@ namespace test {
 // using ::testing::Return;
 // using ::testing::Invoke;
 
-class MockBlsManager : public bls::IBlsManager {
-public:
-    MOCK_METHOD6(Sign, int(
-                uint32_t t,
-                uint32_t n,
-                const libff::alt_bn128_Fr& local_sec_key,
-                const libff::alt_bn128_G1& g1_hash,
-                std::string* sign_x,
-                std::string* sign_y));
-    MOCK_METHOD5(GetVerifyHash, int(
-                uint32_t t,
-                uint32_t n,
-                const libff::alt_bn128_G1& g1_hash,
-                const libff::alt_bn128_G2& pkey,
-                std::string* verify_hash));
-    MOCK_METHOD4(GetVerifyHash, int(
-                uint32_t t,
-                uint32_t n,
-                const libff::alt_bn128_G1& sign,
-                std::string* verify_hash));
-    MOCK_METHOD2(GetLibffHash, int(
-               const std::string& str_hash,
-               libff::alt_bn128_G1* g1_hash));
-};
+// class MockBlsManager : public bls::IBlsManager {
+// public:
+//     MOCK_METHOD6(Sign, int(
+//                 uint32_t t,
+//                 uint32_t n,
+//                 const libff::alt_bn128_Fr& local_sec_key,
+//                 const libff::alt_bn128_G1& g1_hash,
+//                 std::string* sign_x,
+//                 std::string* sign_y));
+//     MOCK_METHOD5(GetVerifyHash, int(
+//                 uint32_t t,
+//                 uint32_t n,
+//                 const libff::alt_bn128_G1& g1_hash,
+//                 const libff::alt_bn128_G2& pkey,
+//                 std::string* verify_hash));
+//     MOCK_METHOD4(GetVerifyHash, int(
+//                 uint32_t t,
+//                 uint32_t n,
+//                 const libff::alt_bn128_G1& sign,
+//                 std::string* verify_hash));
+//     MOCK_METHOD2(GetLibffHash, int(
+//                const std::string& str_hash,
+//                libff::alt_bn128_G1* g1_hash));
+// };
 
 static std::shared_ptr<security::Security> security_ptr = nullptr;
 static std::shared_ptr<db::Db> db_ptr = nullptr;
-static std::shared_ptr<MockBlsManager> bls_manager = nullptr;
+static std::shared_ptr<bls::BlsManager> bls_manager = nullptr;
 static const uint32_t sharding_id = network::kConsensusShardBeginNetworkId;
 
 class TestCrypto : public testing::Test {
@@ -63,7 +63,7 @@ protected:
         security_ptr->SetPrivateKey(common::Encode::HexDecode(
             "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"));
         db_ptr = std::make_shared<db::Db>();
-        bls_manager = std::make_shared<MockBlsManager>();
+        bls_manager = std::make_shared<bls::BlsManager>(security_ptr, db_ptr);
         elect_info_ = std::make_shared<ElectInfo>(security_ptr);
         crypto_ = std::make_shared<Crypto>(elect_info_, bls_manager);
 
