@@ -49,7 +49,7 @@ bool QC::Unserialize(const std::string& str) {
     return true;
 }
 
-HashStr ViewBlock::GetHash() const {
+HashStr ViewBlock::DoHash() const {
     std::string qc_str;
     std::string block_hash;
     if (qc) {

@@ -53,16 +53,16 @@ struct ViewBlock {
         qc(qc),
         view(view),
         created_time_us(common::TimeUtils::TimestampUs()) {
-        hash = GetHash();
+        hash = DoHash();
     };
 
     ViewBlock() {};
 
     inline bool Valid() {
-        return hash != "" && hash == GetHash(); 
+        return hash != "" && hash == DoHash(); 
     }
     
-    HashStr GetHash() const;
+    HashStr DoHash() const;
 
     inline uint64_t ElectHeight() const {
         return block->electblock_height();
