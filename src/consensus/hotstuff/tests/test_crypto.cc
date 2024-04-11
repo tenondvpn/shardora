@@ -6,11 +6,12 @@
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g2.hpp>
 #include <network/network_utils.h>
 #include <security/ecdsa/ecdsa.h>
 #include <security/security.h>
-#include <gmock/gmock.h>
+
 
 namespace shardora {
 

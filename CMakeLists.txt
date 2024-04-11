@@ -103,7 +103,6 @@ add_definitions(
 #    -DMAKE_CLIENT_LIB
     #-DARMEABI_V7A
 	-DLATENCY
-	-DGTEST_LINKED_AS_SHARED_LIBRARY
 )
 
 add_compile_options(-fPIC)
