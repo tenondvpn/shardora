@@ -1,6 +1,5 @@
 #pragma once
 
-#include <bls/bls_manager.h>
 #include <common/tick.h>
 #include <functional>
 #include <consensus/hotstuff/crypto.h>
@@ -17,7 +16,9 @@ namespace hotstuff {
 
 class Pacemaker {
 public:
-    Pacemaker();
+    Pacemaker(const std::shared_ptr<Crypto>&,
+        const std::shared_ptr<LeaderRotation>&,
+        const std::shared_ptr<ViewDuration>&);
     ~Pacemaker();
 
     Pacemaker(const Pacemaker&) = delete;
@@ -73,14 +74,13 @@ private:
         return libff::alt_bn128_G1::one();
     }
     
-    std::shared_ptr<QC> high_qc_;
-    std::shared_ptr<ViewBlock> high_qc_wrapper_block_;
+    std::shared_ptr<QC> high_qc_ = nullptr;
+    std::shared_ptr<ViewBlock> high_qc_wrapper_block_ = nullptr;
     View cur_view_;
-    std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
+    std::shared_ptr<Crypto> crypto_;
     std::shared_ptr<LeaderRotation> leader_rotation_ = nullptr;
     std::shared_ptr<common::Tick> one_shot_tick_ = nullptr;
     std::shared_ptr<ViewDuration> duration_;
-    // std::shared_ptr<Consensus> consensus_; 获取本 epoch 共识的 elect 信息，用于签名之类
 };
 
 } // namespace consensus

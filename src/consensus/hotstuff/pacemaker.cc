@@ -12,7 +12,9 @@ namespace shardora {
 
 namespace hotstuff {
 
-Pacemaker::Pacemaker() {}
+Pacemaker::Pacemaker(const std::shared_ptr<Crypto>& c,
+    const std::shared_ptr<LeaderRotation>& lr,
+    const std::shared_ptr<ViewDuration>& d) : crypto_(c), leader_rotation_(lr), duration_(d) {}
 
 Pacemaker::~Pacemaker() {}
 
@@ -52,34 +54,30 @@ void Pacemaker::UpdateHighQC(const std::shared_ptr<ViewBlock>& qc_wrapper_block)
 void Pacemaker::OnLocalTimeout() {
     ZJC_DEBUG("OnLocalTimeout view: %d", CurView());
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    auto& msg = msg_ptr->header; 
-    
-    std::string bls_sign_x;
-    std::string bls_sign_y;
-    if (bls_mgr_->Sign(
-                minAgreeMemberCount(),
-                memberCount(),
-                localSecKey(),
-                g1Hash(),
-                &bls_sign_x,
-                &bls_sign_y) != bls::kBlsSuccess) {
-        return;
-    }
-    
+    auto& msg = msg_ptr->header;
     
     view_block::protobuf::TimeoutMessage& timeout_msg = *msg.mutable_hotstuff_timeout_proto();
     timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());
+
+    if (!high_qc_wrapper_block_ || !high_qc_wrapper_block_->block) {
+        return;
+    }
     
     auto wrapper_block = timeout_msg.mutable_high_qc_wrapper_block();
-    wrapper_block->set_hash(high_qc_wrapper_block_->hash);
-    wrapper_block->set_parent_hash(high_qc_wrapper_block_->parent_hash);
-    wrapper_block->set_leader_idx(high_qc_wrapper_block_->leader_idx);
-    wrapper_block->set_block_str(high_qc_wrapper_block_->block->SerializeAsString());
-    wrapper_block->set_qc_str(high_qc_wrapper_block_->qc->Serialize());
-    wrapper_block->set_view(high_qc_wrapper_block_->view);
+    ViewBlock2Proto(high_qc_wrapper_block_, wrapper_block);
 
+    auto elect_height = high_qc_wrapper_block_->block->electblock_height();
+    auto msg_hash = high_qc_wrapper_block_->hash;
+
+    std::string bls_sign_x;
+    std::string bls_sign_y;
+    if (crypto_->Sign(elect_height, msg_hash, &bls_sign_x, &bls_sign_y) != Status::kSuccess) {
+        return;
+    }
+    
     timeout_msg.set_sign_x(bls_sign_x);
     timeout_msg.set_sign_y(bls_sign_y);
+    timeout_msg.set_msg_hash(msg_hash);
 
     // TODO Stop Voting
 
@@ -101,14 +99,41 @@ void Pacemaker::OnLocalTimeout() {
 
 void Pacemaker::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // TODO verify ecdh
-
+    auto msg = msg_ptr->header;
+    if (!msg.has_hotstuff_timeout_proto()) {
+        return;
+    }
+    
+    auto timeout_proto = msg.hotstuff_timeout_proto();
     // TODO 统计 bls 签名
+    auto view_block = std::make_shared<ViewBlock>();
+    Proto2ViewBlock(timeout_proto.high_qc_wrapper_block(), view_block);
 
-    // TODO Create QC
+    std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
+    // participants 暂时没用
+    auto participants = std::make_shared<std::vector<uint32_t>>();
+    Status s = crypto_->ReconstructAndVerify(view_block->ElectHeight(),
+        view_block->view,
+        timeout_proto.msg_hash(),
+        timeout_proto.member_id(),
+        timeout_proto.sign_x(),
+        timeout_proto.sign_y(),
+        reconstructed_sign,
+        participants);
+    if (s != Status::kSuccess) {
+        return;
+    }
 
     // TODO 视图切换
+    auto sync_info = std::make_shared<SyncInfo>();
+    sync_info->view_block = view_block;
+    AdvanceView(sync_info, true);
 
+    // TODO Create QC
+    std::shared_ptr<QC> qc = nullptr;
+    crypto_->CreateQC(view_block, reconstructed_sign, qc);
     // TODO New Propose
+    // Propose(qc);
 }
 
 

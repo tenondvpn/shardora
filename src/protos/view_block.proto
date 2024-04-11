@@ -41,4 +41,5 @@ message TimeoutMessage {
     optional ViewBlockItem high_qc_wrapper_block = 2;
     optional bytes sign_x = 3;
     optional bytes sign_y = 4;
+    optional bytes msg_hash = 5;
 }

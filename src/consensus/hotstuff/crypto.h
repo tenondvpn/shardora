@@ -29,7 +29,7 @@ struct BlsCollection {
 class Crypto {
 public:
     Crypto(const std::shared_ptr<ElectInfo>& elect_info,
-        const std::shared_ptr<bls::BlsManager>& bls_mgr) :
+        const std::shared_ptr<bls::IBlsManager>& bls_mgr) :
         elect_info_(elect_info), bls_mgr_(bls_mgr) {};
     ~Crypto() {};
 
@@ -46,8 +46,16 @@ public:
             const View& view,
             const HashStr& msg_hash,
             const uint32_t& member_idx,
-            const std::shared_ptr<libff::alt_bn128_G1>& partial_sign,
-            std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign);
+            const std::string& partial_sign_x,
+            const std::string& partial_sign_y,
+            std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign,
+            std::shared_ptr<std::vector<uint32_t>> participants);
+    Status CreateQC(
+            const std::shared_ptr<ViewBlock>& view_block,
+            const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
+            std::shared_ptr<QC> qc);
+    
+    
     inline std::shared_ptr<ElectItem> GetElectItem(const uint64_t& elect_height) {
         return elect_info_->GetElectItem(elect_height);
     }
@@ -55,7 +63,7 @@ public:
 private:
     // 保留上一次 elect_item，避免 epoch 切换的影响
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
-    std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
+    std::shared_ptr<bls::IBlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
     
     void GetG1Hash(const HashStr& msg_hash, libff::alt_bn128_G1* g1_hash) {

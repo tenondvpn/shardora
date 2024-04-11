@@ -1,4 +1,5 @@
 #include <consensus/hotstuff/types.h>
+#include <protos/view_block.pb.h>
 
 namespace shardora {
 
@@ -67,6 +68,24 @@ HashStr ViewBlock::GetHash() const {
     msg.append((char*)&(view), sizeof(view));
 
     return common::Hash::keccak256(msg);
+}
+
+void ViewBlock2Proto(const std::shared_ptr<ViewBlock>& view_block, view_block::protobuf::ViewBlockItem* view_block_proto) {
+    view_block_proto->set_hash(view_block->hash);
+    view_block_proto->set_parent_hash(view_block->parent_hash);
+    view_block_proto->set_leader_idx(view_block->leader_idx);
+    view_block_proto->set_block_str(view_block->block->SerializeAsString());
+    view_block_proto->set_qc_str(view_block->qc->Serialize());
+    view_block_proto->set_view(view_block->view);
+}
+
+void Proto2ViewBlock(const view_block::protobuf::ViewBlockItem& view_block_proto, std::shared_ptr<ViewBlock> view_block) {
+    view_block->hash = view_block_proto.hash();
+    view_block->parent_hash = view_block_proto.parent_hash();
+    view_block->leader_idx = view_block_proto.leader_idx();
+    view_block->block->ParseFromString(view_block_proto.block_str());
+    view_block->qc->Unserialize(view_block_proto.qc_str());
+    view_block->view = view_block_proto.view();
 }
 
 }

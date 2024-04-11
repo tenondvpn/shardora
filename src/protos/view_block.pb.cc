@@ -233,10 +233,12 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, high_qc_wrapper_block_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, sign_x_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, sign_y_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, msg_hash_),
+  4,
   3,
-  2,
   0,
   1,
+  2,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 7, sizeof(::shardora::view_block::protobuf::ViewBlockSyncRequest)},
@@ -244,7 +246,7 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 26, 37, sizeof(::shardora::view_block::protobuf::QC)},
   { 43, 51, sizeof(::shardora::view_block::protobuf::ViewBlockSyncResponse)},
   { 54, 61, sizeof(::shardora::view_block::protobuf::ViewBlockSyncMessage)},
-  { 63, 72, sizeof(::shardora::view_block::protobuf::TimeoutMessage)},
+  { 63, 73, sizeof(::shardora::view_block::protobuf::TimeoutMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -293,14 +295,14 @@ void AddDescriptorsImpl() {
       "w_block_req\030\001 \001(\01322.shardora.view_block."
       "protobuf.ViewBlockSyncRequest\022K\n\016view_bl"
       "ock_res\030\002 \001(\01323.shardora.view_block.prot"
-      "obuf.ViewBlockSyncResponse\"\217\001\n\016TimeoutMe"
+      "obuf.ViewBlockSyncResponse\"\241\001\n\016TimeoutMe"
       "ssage\022\021\n\tmember_id\030\001 \001(\r\022J\n\025high_qc_wrap"
       "per_block\030\002 \001(\0132+.shardora.view_block.pr"
       "otobuf.ViewBlockItem\022\016\n\006sign_x\030\003 \001(\014\022\016\n\006"
-      "sign_y\030\004 \001(\014"
+      "sign_y\030\004 \001(\014\022\020\n\010msg_hash\030\005 \001(\014"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 812);
+      descriptor, 830);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/view_block.proto", &protobuf_RegisterTypes);
 }
@@ -2177,6 +2179,7 @@ const int TimeoutMessage::kMemberIdFieldNumber;
 const int TimeoutMessage::kHighQcWrapperBlockFieldNumber;
 const int TimeoutMessage::kSignXFieldNumber;
 const int TimeoutMessage::kSignYFieldNumber;
+const int TimeoutMessage::kMsgHashFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 TimeoutMessage::TimeoutMessage()
@@ -2199,6 +2202,10 @@ TimeoutMessage::TimeoutMessage(const TimeoutMessage& from)
   if (from.has_sign_y()) {
     sign_y_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sign_y_);
   }
+  msg_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_msg_hash()) {
+    msg_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.msg_hash_);
+  }
   if (from.has_high_qc_wrapper_block()) {
     high_qc_wrapper_block_ = new ::shardora::view_block::protobuf::ViewBlockItem(*from.high_qc_wrapper_block_);
   } else {
@@ -2211,6 +2218,7 @@ TimeoutMessage::TimeoutMessage(const TimeoutMessage& from)
 void TimeoutMessage::SharedCtor() {
   sign_x_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   sign_y_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  msg_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&high_qc_wrapper_block_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&member_id_) -
       reinterpret_cast<char*>(&high_qc_wrapper_block_)) + sizeof(member_id_));
@@ -2224,6 +2232,7 @@ TimeoutMessage::~TimeoutMessage() {
 void TimeoutMessage::SharedDtor() {
   sign_x_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   sign_y_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  msg_hash_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != internal_default_instance()) delete high_qc_wrapper_block_;
 }
 
@@ -2248,7 +2257,7 @@ void TimeoutMessage::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 7u) {
+  if (cached_has_bits & 15u) {
     if (cached_has_bits & 0x00000001u) {
       sign_x_.ClearNonDefaultToEmptyNoArena();
     }
@@ -2256,6 +2265,9 @@ void TimeoutMessage::Clear() {
       sign_y_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000004u) {
+      msg_hash_.ClearNonDefaultToEmptyNoArena();
+    }
+    if (cached_has_bits & 0x00000008u) {
       GOOGLE_DCHECK(high_qc_wrapper_block_ != NULL);
       high_qc_wrapper_block_->Clear();
     }
@@ -2325,6 +2337,18 @@ bool TimeoutMessage::MergePartialFromCodedStream(
         break;
       }
 
+      // optional bytes msg_hash = 5;
+      case 5: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_msg_hash()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -2353,12 +2377,12 @@ void TimeoutMessage::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 member_id = 1;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->member_id(), output);
   }
 
   // optional .shardora.view_block.protobuf.ViewBlockItem high_qc_wrapper_block = 2;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000008u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       2, this->_internal_high_qc_wrapper_block(), output);
   }
@@ -2373,6 +2397,12 @@ void TimeoutMessage::SerializeWithCachedSizes(
   if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
       4, this->sign_y(), output);
+  }
+
+  // optional bytes msg_hash = 5;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      5, this->msg_hash(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2391,12 +2421,12 @@ void TimeoutMessage::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 member_id = 1;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->member_id(), target);
   }
 
   // optional .shardora.view_block.protobuf.ViewBlockItem high_qc_wrapper_block = 2;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000008u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
         2, this->_internal_high_qc_wrapper_block(), deterministic, target);
@@ -2416,6 +2446,13 @@ void TimeoutMessage::SerializeWithCachedSizes(
         4, this->sign_y(), target);
   }
 
+  // optional bytes msg_hash = 5;
+  if (cached_has_bits & 0x00000004u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        5, this->msg_hash(), target);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -2433,7 +2470,7 @@ size_t TimeoutMessage::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 15u) {
+  if (_has_bits_[0 / 32] & 31u) {
     // optional bytes sign_x = 3;
     if (has_sign_x()) {
       total_size += 1 +
@@ -2446,6 +2483,13 @@ size_t TimeoutMessage::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::BytesSize(
           this->sign_y());
+    }
+
+    // optional bytes msg_hash = 5;
+    if (has_msg_hash()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->msg_hash());
     }
 
     // optional .shardora.view_block.protobuf.ViewBlockItem high_qc_wrapper_block = 2;
@@ -2491,7 +2535,7 @@ void TimeoutMessage::MergeFrom(const TimeoutMessage& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 15u) {
+  if (cached_has_bits & 31u) {
     if (cached_has_bits & 0x00000001u) {
       set_has_sign_x();
       sign_x_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sign_x_);
@@ -2501,9 +2545,13 @@ void TimeoutMessage::MergeFrom(const TimeoutMessage& from) {
       sign_y_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sign_y_);
     }
     if (cached_has_bits & 0x00000004u) {
-      mutable_high_qc_wrapper_block()->::shardora::view_block::protobuf::ViewBlockItem::MergeFrom(from.high_qc_wrapper_block());
+      set_has_msg_hash();
+      msg_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.msg_hash_);
     }
     if (cached_has_bits & 0x00000008u) {
+      mutable_high_qc_wrapper_block()->::shardora::view_block::protobuf::ViewBlockItem::MergeFrom(from.high_qc_wrapper_block());
+    }
+    if (cached_has_bits & 0x00000010u) {
       member_id_ = from.member_id_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -2537,6 +2585,8 @@ void TimeoutMessage::InternalSwap(TimeoutMessage* other) {
   sign_x_.Swap(&other->sign_x_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   sign_y_.Swap(&other->sign_y_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  msg_hash_.Swap(&other->msg_hash_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(high_qc_wrapper_block_, other->high_qc_wrapper_block_);
   swap(member_id_, other->member_id_);

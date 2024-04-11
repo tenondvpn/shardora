@@ -1,5 +1,6 @@
 #include <bls/bls_utils.h>
 #include <consensus/hotstuff/crypto.h>
+#include <exception>
 
 namespace shardora {
 
@@ -31,8 +32,10 @@ Status Crypto::ReconstructAndVerify(
         const View& view,
         const HashStr& msg_hash,
         const uint32_t& index,
-        const std::shared_ptr<libff::alt_bn128_G1>& partial_sign,
-        std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign) {
+        const std::string& partial_sign_x,
+        const std::string& partial_sign_y,
+        std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign,
+        std::shared_ptr<std::vector<uint32_t>> participants) {
     assert(msg_hash.size() == 32);
     // old vote
     if (bls_collection_ && bls_collection_->view > view) {
@@ -46,6 +49,15 @@ Status Crypto::ReconstructAndVerify(
 
     if (bls_collection_->handled) {
         return Status::kSuccess;
+    }
+
+    auto partial_sign = std::make_shared<libff::alt_bn128_G1>();
+    try {
+        partial_sign->X = libff::alt_bn128_Fq(partial_sign_x.c_str());
+        partial_sign->Y = libff::alt_bn128_Fq(partial_sign_y.c_str());
+        partial_sign->Z = libff::alt_bn128_Fq::one();        
+    } catch (std::exception& e) {
+        return Status::kError;
     }
 
     // Reconstruct sign
@@ -98,10 +110,23 @@ Status Crypto::ReconstructAndVerify(
     }
 
     bls_collection_->handled = true;
-    *reconstructed_sign = *bls_collection_->reconstructed_sign; 
+    *reconstructed_sign = *bls_collection_->reconstructed_sign;
+    for (uint32_t d : bls_collection_->ok_bitmap.data()) {
+        participants->push_back(d);
+    }
         
     return Status::kSuccess;
 };
+
+Status Crypto::CreateQC(
+        const std::shared_ptr<ViewBlock>& view_block,
+        const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
+        std::shared_ptr<QC> qc) {    
+    qc->bls_agg_sign = reconstructed_sign;
+    qc->view = view_block->view;
+    qc->view_block_hash = view_block->hash;
+    return Status::kSuccess;
+}
 
 } // namespace hotstuff
 
