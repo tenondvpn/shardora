@@ -190,7 +190,6 @@ TEST_F(TestCrypto, Sign_Verify_Change_Epoch) {
     Status s = crypto_->Sign(elect_height, msg_hash, &sign_x, &sign_y);
     EXPECT_EQ(Status::kSuccess, s);
 
-    View old_view = 1;
     View view = 2;
 
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
