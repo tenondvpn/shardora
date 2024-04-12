@@ -125,9 +125,9 @@ Status Crypto::ReconstructAndVerify(
 
     bls_collection_->handled = true;
     reconstructed_sign = bls_collection_->reconstructed_sign;
-    for (uint32_t d : bls_collection_->ok_bitmap.data()) {
-        participants->push_back(d);
-    }
+    // for (uint32_t d : bls_collection_->ok_bitmap.data()) {
+    //     participants->push_back(d);
+    // }
         
     return Status::kSuccess;
 } catch (std::exception& e) {
