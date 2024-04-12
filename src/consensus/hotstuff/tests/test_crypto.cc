@@ -13,6 +13,7 @@
 #include <security/ecdsa/ecdsa.h>
 #include <security/security.h>
 
+#define HOTSTUFF_TEST 1
 
 namespace shardora {
 

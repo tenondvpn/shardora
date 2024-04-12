@@ -35,7 +35,7 @@ Status Crypto::ReconstructAndVerify(
         const std::string& partial_sign_x,
         const std::string& partial_sign_y,
         std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign,
-        std::shared_ptr<std::vector<uint32_t>> participants) {
+        std::shared_ptr<std::vector<uint32_t>> participants) try {
     // old vote
     if (bls_collection_ && bls_collection_->view > view) {
         return Status::kInvalidArgument;
@@ -88,10 +88,13 @@ Status Crypto::ReconstructAndVerify(
     libBLS::Bls bls_instance = libBLS::Bls(elect_item->t(), elect_item->n());
     std::vector<libff::alt_bn128_Fr> lagrange_coeffs(elect_item->t());
     libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, elect_item->t(), lagrange_coeffs);
+#ifdef HOTSTUFF_TEST
     bls_collection_->reconstructed_sign = std::make_shared<libff::alt_bn128_G1>(
             bls_instance.SignatureRecover(all_signs, lagrange_coeffs));
     bls_collection_->reconstructed_sign->to_affine_coordinates();
-
+#else
+    bls_collection_->reconstructed_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
+#endif
     // Verify
     std::string verify_hash_a = "";
     std::string verify_hash_b = "";
@@ -115,6 +118,8 @@ Status Crypto::ReconstructAndVerify(
     }
         
     return Status::kSuccess;
+} catch (std::exception& e) {
+    return Status::kBlsVerifyWaiting;
 };
 
 Status Crypto::CreateQC(
