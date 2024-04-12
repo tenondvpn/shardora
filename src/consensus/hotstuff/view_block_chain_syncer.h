@@ -35,9 +35,12 @@ public:
     ViewBlockChainSyncer& operator=(const ViewBlockChainSyncer&) = delete;
 
     ~ViewBlockChainSyncer();
-    
+
+    void Start();
+    void Stop();
     // Status AsyncFetch(const HashStr& view_block_hash, uint32_t pool_idx);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     void ConsumeMessages();
     Status MergeChain(std::shared_ptr<ViewBlockChain>& ori_chain, const std::shared_ptr<ViewBlockChain>& sync_chain);
 

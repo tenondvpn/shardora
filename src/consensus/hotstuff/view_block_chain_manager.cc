@@ -13,6 +13,7 @@ ViewBlockChainManager::ViewBlockChainManager(const std::shared_ptr<db::Db>& db) 
 ViewBlockChainManager::~ViewBlockChainManager() {}
 
 Status ViewBlockChainManager::Init() {
+    // Always start from genesis block, waiting for syncs if the view is too old
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         auto start_block = GetGenesisViewBlock(db_, pool_idx);
         if (!start_block) {

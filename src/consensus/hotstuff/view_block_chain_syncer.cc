@@ -23,10 +23,19 @@ ViewBlockChainSyncer::ViewBlockChainSyncer(const std::shared_ptr<ViewBlockChainM
     // start consumeloop thread
     network::Route::Instance()->RegisterMessage(common::kViewBlockSyncMessage,
         std::bind(&ViewBlockChainSyncer::HandleMessage, this, std::placeholders::_1));
-    tick_.CutOff(100000lu, std::bind(&ViewBlockChainSyncer::ConsensusTimerMessage, this));
 }
 
 ViewBlockChainSyncer::~ViewBlockChainSyncer() {}
+
+void ViewBlockChainSyncer::Start() {
+    tick_.CutOff(100000lu, std::bind(&ViewBlockChainSyncer::ConsensusTimerMessage, this));
+}
+
+void ViewBlockChainSyncer::Stop() { tick_.Destroy(); }
+
+int ViewBlockChainSyncer::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+    return transport::kFirewallCheckSuccess;
+}
 
 void ViewBlockChainSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // TODO 放入消息队列，等待消费

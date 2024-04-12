@@ -1,5 +1,7 @@
 #include "init/network_init.h"
 #include <common/log.h>
+#include <common/utils.h>
+#include <consensus/hotstuff/view_block_chain_syncer.h>
 #include <functional>
 #include <protos/pools.pb.h>
 
@@ -207,6 +209,8 @@ int NetworkInit::Init(int argc, char** argv) {
     if (view_block_chain_mgr_->Init() != hotstuff::Status::kSuccess) {
         return kInitError;
     }
+    view_block_chain_syncer_ = std::make_shared<hotstuff::ViewBlockChainSyncer>(view_block_chain_mgr_);
+    view_block_chain_syncer_->Start();
 #endif
     RegisterFirewallCheck();
     transport::TcpTransport::Instance()->Start(false);
@@ -249,6 +253,12 @@ void NetworkInit::RegisterFirewallCheck() {
     net_handler_.AddFirewallCheckCallback(
         common::kInitMessage,
         std::bind(&NetworkInit::FirewallCheckMessage, this, std::placeholders::_1));
+
+#ifdef HOTSTUFF_V2
+    net_handler_.AddFirewallCheckCallback(
+        common::kViewBlockSyncMessage,
+        std::bind(&hotstuff::ViewBlockChainSyncer::FirewallCheckMessage, view_block_chain_syncer_.get(), std::placeholders::_1));    
+#endif
 }
 
 int NetworkInit::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {

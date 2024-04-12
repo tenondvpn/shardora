@@ -25,6 +25,7 @@
 #include "transport/multi_thread.h"
 #include "vss/vss_manager.h"
 #include <consensus/hotstuff/view_block_chain_manager.h>
+#include <consensus/hotstuff/view_block_chain_syncer.h>
 #include <yaml-cpp/node/node.h>
 
 namespace shardora {
@@ -103,6 +104,7 @@ private:
     std::shared_ptr<pools::ShardStatistic> shard_statistic_ = nullptr;
 #ifdef HOTSTUFF_V2    
     std::shared_ptr<hotstuff::ViewBlockChainManager> view_block_chain_mgr_ = nullptr;
+    std::shared_ptr<hotstuff::ViewBlockChainSyncer> view_block_chain_syncer_ = nullptr;
 #endif    
     http::HttpServer http_server_;
     HttpHandler http_handler_;
