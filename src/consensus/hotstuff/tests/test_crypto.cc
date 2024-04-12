@@ -102,8 +102,10 @@ TEST_F(TestCrypto, Sign_Verify) {
         
     ON_CALL(*bls_manager, Sign(_, _, _, _, _, _))
         .WillByDefault([](uint32_t t, uint32_t n, const libff::alt_bn128_Fr& local_sec_key, const libff::alt_bn128_G1& g1_hash, std::string* sign_x, std::string* sign_y) {
-            *sign_x = "x";
-            *sign_y = "y";
+            auto sign = libff::alt_bn128_G1::random_element();
+            sign.to_affine_coordinates();
+            *sign_x = libBLS::ThresholdUtils::fieldElementToString(sign.X);
+            *sign_y = libBLS::ThresholdUtils::fieldElementToString(sign.Y);
             return bls::kBlsSuccess;
         });
 
