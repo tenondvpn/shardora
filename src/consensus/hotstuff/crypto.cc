@@ -66,9 +66,6 @@ Status Crypto::ReconstructAndVerify(
         return Status::kError;
     }
 
-    
-    std::cout << elect_item->t() << elect_item->n() << elect_item->ElectHeight() << std::endl;
-    
     if (bls_collection_->OkCount() < elect_item->t()) {
         return Status::kBlsVerifyWaiting;
     }
