@@ -71,6 +71,8 @@ Status Crypto::ReconstructAndVerify(
         return Status::kBlsVerifyWaiting;
     }
 
+    std::cout << "ok" << bls_collection_->OkCount() << std::endl;
+
     std::vector<libff::alt_bn128_G1> all_signs;
     std::vector<size_t> idx_vec;
     for (uint32_t i = 0; i < elect_item->n(); i++) {
