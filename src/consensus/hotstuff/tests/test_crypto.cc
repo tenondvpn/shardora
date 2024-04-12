@@ -82,7 +82,6 @@ protected:
 
 TEST_F(TestCrypto, Sign_Verify) {
     uint32_t n = 10;
-    uint32_t t = common::GetSignerCount(n);
     auto members = std::make_shared<common::Members>();
 
     for (uint32_t i = 0; i < n; i++) {
@@ -93,6 +92,7 @@ TEST_F(TestCrypto, Sign_Verify) {
     auto common_pk = libff::alt_bn128_G2::one();
     auto sk = libff::alt_bn128_Fr::one();
     elect_info_->OnNewElectBlock(sharding_id, 2, members, common_pk, sk);
+    uint32_t t = elect_info_->GetElectItem()->t();
         
     ON_CALL(*bls_manager, Sign(_, _, _, _, _, _))
         .WillByDefault([](uint32_t t, uint32_t n, const libff::alt_bn128_Fr& local_sec_key, const libff::alt_bn128_G1& g1_hash, std::string* sign_x, std::string* sign_y) {
