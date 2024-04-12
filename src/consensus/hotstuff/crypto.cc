@@ -97,6 +97,7 @@ Status Crypto::ReconstructAndVerify(
     bls_collection_->reconstructed_sign->to_affine_coordinates();
 #else
     bls_collection_->reconstructed_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
+    bls_collection_->reconstructed_sign->to_affine_coordinates();
 #endif
     // Verify
     std::string verify_hash_a;
@@ -116,6 +117,10 @@ Status Crypto::ReconstructAndVerify(
 
     bls_collection_->handled = true;
     reconstructed_sign = bls_collection_->reconstructed_sign;
+
+    if (reconstructed_sign != nullptr) {
+        return Status::kBlsVerifyWaiting;
+    }
 
     return Status::kSuccess;
 } catch (std::exception& e) {
