@@ -99,13 +99,16 @@ TEST_F(TestCrypto, Sign_Verify) {
     auto sk = libff::alt_bn128_Fr::one();
     elect_info_->OnNewElectBlock(sharding_id, elect_height, members, common_pk, sk);
     uint32_t t = elect_info_->GetElectItem()->t();
+
+    auto sign = libff::alt_bn128_G1::one();
+    sign.to_affine_coordinates();
+    std::string x = libBLS::ThresholdUtils::fieldElementToString(sign.X);
+    std::string y = libBLS::ThresholdUtils::fieldElementToString(sign.Y);
         
     ON_CALL(*bls_manager, Sign(_, _, _, _, _, _))
-        .WillByDefault([](uint32_t t, uint32_t n, const libff::alt_bn128_Fr& local_sec_key, const libff::alt_bn128_G1& g1_hash, std::string* sign_x, std::string* sign_y) {
-            auto sign = libff::alt_bn128_G1::one();
-            sign.to_affine_coordinates();
-            *sign_x = libBLS::ThresholdUtils::fieldElementToString(sign.X);
-            *sign_y = libBLS::ThresholdUtils::fieldElementToString(sign.Y);
+        .WillByDefault([&x, &y](uint32_t t, uint32_t n, const libff::alt_bn128_Fr& local_sec_key, const libff::alt_bn128_G1& g1_hash, std::string* sign_x, std::string* sign_y) {
+            *sign_x = x;
+            *sign_y = y;
             return bls::kBlsSuccess;
         });
 
@@ -142,8 +145,8 @@ TEST_F(TestCrypto, Sign_Verify) {
      
     Status s = crypto_->Sign(elect_height, msg_hash, &sign_x, &sign_y);
     EXPECT_EQ(Status::kSuccess, s);
-    EXPECT_EQ("x", sign_x);
-    EXPECT_EQ("y", sign_y);
+    EXPECT_EQ(x, sign_x);
+    EXPECT_EQ(y, sign_y);
 
     View view = 1;
 
