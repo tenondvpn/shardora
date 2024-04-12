@@ -91,10 +91,10 @@ Status Crypto::ReconstructAndVerify(
 #ifdef HOTSTUFF_TEST
     bls_collection_->reconstructed_sign = std::make_shared<libff::alt_bn128_G1>(
             bls_instance.SignatureRecover(all_signs, lagrange_coeffs));
-    bls_collection_->reconstructed_sign->to_affine_coordinates();
 #else
     bls_collection_->reconstructed_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
 #endif
+    bls_collection_->reconstructed_sign->to_affine_coordinates();
     // Verify
     std::string verify_hash_a = "";
     std::string verify_hash_b = "";
