@@ -2,6 +2,7 @@
 #include <bls/bls_manager.h>
 #include <bls/bls_utils.h>
 #include <common/node_members.h>
+#include <common/utils.h>
 #include <consensus/hotstuff/types.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g2.hpp>
 #include <memory>
@@ -51,10 +52,6 @@ public:
         return local_member_;
     }
 
-    inline uint32_t MemberCount() const {
-        return member_count_;
-    }
-
     inline uint64_t ElectHeight() const {
         return elect_height_;
     }
@@ -77,15 +74,11 @@ public:
 
 private:
     void SetMemberCount(uint32_t mem_cnt) {
-        member_count_ = mem_cnt;
-        bls_t_ = member_count_ * 2 / 3;
-        if ((member_count_ * 2) % 3 > 0) {
-            bls_t_ += 1;
-        }        
+        bls_n_ = mem_cnt;
+        bls_t_ = common::GetSignerCount(mem_cnt);
     }
     
     common::MembersPtr members_;
-    uint32_t member_count_{0};
     common::BftMemberPtr local_member_;
     uint64_t elect_height_;
     libff::alt_bn128_G2 common_pk_;
