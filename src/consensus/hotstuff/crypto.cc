@@ -66,7 +66,7 @@ Status Crypto::ReconstructAndVerify(
     if (!elect_item) {
         return Status::kError;
     }
-    std::cout << "index" << index << "sign" << std::endl;
+    std::cout << "index" << index << bls_collection_->ok_bitmap.Valid(index) << std::endl;
     
     if (bls_collection_->OkCount() < elect_item->t()) {
         return Status::kBlsVerifyWaiting;
