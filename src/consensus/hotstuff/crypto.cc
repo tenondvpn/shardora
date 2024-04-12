@@ -1,4 +1,3 @@
-#include <_types/_uint32_t.h>
 #include <bls/bls_utils.h>
 #include <consensus/hotstuff/crypto.h>
 #include <exception>
