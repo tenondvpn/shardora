@@ -64,24 +64,8 @@ class TestCrypto : public testing::Test {
 protected:
     std::shared_ptr<Crypto> crypto_ = nullptr;
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
-    
-    void SetUp() {
-        common::GlobalInfo::Instance()->set_network_id(sharding_id);
-        security_ptr = std::make_shared<security::Ecdsa>();
-        security_ptr->SetPrivateKey(common::Encode::HexDecode(
-            "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"));
-        db_ptr = std::make_shared<db::Db>();
-        bls_manager = std::make_shared<MockBlsManager>();
-        elect_info_ = std::make_shared<ElectInfo>(security_ptr);
-        crypto_ = std::make_shared<Crypto>(elect_info_, bls_manager);
 
-        auto member = std::make_shared<common::BftMember>(1, "1", "pk1", 1, 0);
-        auto members = std::make_shared<common::Members>();
-        members->push_back(member);
-        auto common_pk = libff::alt_bn128_G2::one();
-        auto sk = libff::alt_bn128_Fr::one();
-        elect_info_->OnNewElectBlock(sharding_id, 1, members, common_pk, sk);
-
+    static void SetUpTestCase() {
         auto sign = libff::alt_bn128_G1::one();
         sign.to_affine_coordinates();
         std::string x = libBLS::ThresholdUtils::fieldElementToString(sign.X);
@@ -119,6 +103,24 @@ protected:
                 *g1_hash = libff::alt_bn128_G1::one();
                 return bls::kBlsSuccess;
             }));        
+    }
+    
+    void SetUp() {
+        common::GlobalInfo::Instance()->set_network_id(sharding_id);
+        security_ptr = std::make_shared<security::Ecdsa>();
+        security_ptr->SetPrivateKey(common::Encode::HexDecode(
+            "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"));
+        db_ptr = std::make_shared<db::Db>();
+        bls_manager = std::make_shared<MockBlsManager>();
+        elect_info_ = std::make_shared<ElectInfo>(security_ptr);
+        crypto_ = std::make_shared<Crypto>(elect_info_, bls_manager);
+
+        auto member = std::make_shared<common::BftMember>(1, "1", "pk1", 1, 0);
+        auto members = std::make_shared<common::Members>();
+        members->push_back(member);
+        auto common_pk = libff::alt_bn128_G2::one();
+        auto sk = libff::alt_bn128_Fr::one();
+        elect_info_->OnNewElectBlock(sharding_id, 1, members, common_pk, sk);
     }
 
     void TearDown() {}
