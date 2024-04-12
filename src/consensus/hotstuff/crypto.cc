@@ -36,7 +36,6 @@ Status Crypto::ReconstructAndVerify(
         const std::string& partial_sign_y,
         std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign,
         std::shared_ptr<std::vector<uint32_t>> participants) {
-    assert(msg_hash.size() == 32);
     // old vote
     if (bls_collection_ && bls_collection_->view > view) {
         return Status::kInvalidArgument;
