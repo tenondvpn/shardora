@@ -71,7 +71,7 @@ Status Crypto::ReconstructAndVerify(
         return Status::kBlsVerifyWaiting;
     }
 
-    std::cout << "ok" << bls_collection_->OkCount() << std::endl;
+    std::cout << "index" << index << "sign" << std::endl;
 
     std::vector<libff::alt_bn128_G1> all_signs;
     std::vector<size_t> idx_vec;
@@ -82,6 +82,7 @@ Status Crypto::ReconstructAndVerify(
 
         all_signs.push_back(*bls_collection_->partial_signs[i]);
         idx_vec.push_back(i+1);
+        std::cout << "id_vec" << idx_vec.size() << std::endl;
         if (idx_vec.size() >= elect_item->t()) {
             break;
         }
