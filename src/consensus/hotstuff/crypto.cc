@@ -118,7 +118,7 @@ Status Crypto::ReconstructAndVerify(
     bls_collection_->handled = true;
     reconstructed_sign = bls_collection_->reconstructed_sign;
 
-    if (reconstructed_sign != nullptr) {
+    if (reconstructed_sign == nullptr) {
         return Status::kBlsVerifyWaiting;
     }
 
