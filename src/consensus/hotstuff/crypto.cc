@@ -106,8 +106,8 @@ Status Crypto::ReconstructAndVerify(
     bls_collection_->reconstructed_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
 #endif
     // Verify
-    std::string verify_hash_a = "";
-    std::string verify_hash_b = "";
+    std::string verify_hash_a;
+    std::string verify_hash_b;
     Status s = GetVerifyHashA(elect_height, msg_hash, &verify_hash_a);
     std::cout << "a" << verify_hash_a << std::endl;
     if (s != Status::kSuccess) {

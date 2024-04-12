@@ -87,6 +87,8 @@ private:
             ZJC_ERROR("get verify hash a failed!");
             return Status::kError;
         }
+
+        std::cout << "ret" << *verify_hash << std::endl;
         return Status::kSuccess;
     }
 
