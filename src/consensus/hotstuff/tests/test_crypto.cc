@@ -3,6 +3,7 @@
 #include <bls/bls_utils.h>
 #include <common/global_info.h>
 #include <common/node_members.h>
+#include <common/utils.h>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <gtest/gtest.h>
@@ -80,6 +81,19 @@ protected:
 };
 
 TEST_F(TestCrypto, Sign_Verify) {
+    uint32_t n = 10;
+    uint32_t t = common::GetSignerCount(n);
+    auto members = std::make_shared<common::Members>();
+
+    for (uint32_t i = 0; i < n; i++) {
+        auto member = std::make_shared<common::BftMember>(i, "1", "pk", i, i);
+        members->push_back(member);
+    }
+    
+    auto common_pk = libff::alt_bn128_G2::one();
+    auto sk = libff::alt_bn128_Fr::one();
+    elect_info_->OnNewElectBlock(sharding_id, 2, members, common_pk, sk);
+        
     ON_CALL(*bls_manager, Sign(_, _, _, _, _, _))
         .WillByDefault([](uint32_t t, uint32_t n, const libff::alt_bn128_Fr& local_sec_key, const libff::alt_bn128_G1& g1_hash, std::string* sign_x, std::string* sign_y) {
             *sign_x = "x";
@@ -115,9 +129,26 @@ TEST_F(TestCrypto, Sign_Verify) {
 
     std::string sign_x;
     std::string sign_y;
-    crypto_->Sign(1, "msg_hash", &sign_x, &sign_y);
+    Status s = crypto_->Sign(1, "msg_hash", &sign_x, &sign_y);
+    EXPECT_EQ(Status::kSuccess, s);
     EXPECT_EQ("x", sign_x);
     EXPECT_EQ("y", sign_y);
+
+    View view = 1;
+    auto msg_hash = "msg_hash";
+
+    std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
+    std::shared_ptr<std::vector<uint32_t>> participants;
+
+    for (uint32_t i = 0; i < t-1; i++) {
+        s = crypto_->ReconstructAndVerify(2, view, msg_hash, i, sign_x, sign_y, reconstructed_sign, participants);
+        EXPECT_FALSE(s == Status::kSuccess);
+        EXPECT_TRUE(reconstructed_sign == nullptr);
+    }
+
+    s = crypto_->ReconstructAndVerify(2, view, msg_hash, t-1, sign_x, sign_y, reconstructed_sign, participants);
+    EXPECT_TRUE(s == Status::kSuccess);
+    EXPECT_TRUE(reconstructed_sign != nullptr);
 }
 
 TEST_F(TestCrypto, GetElectItem) {
