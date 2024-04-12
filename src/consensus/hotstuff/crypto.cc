@@ -81,6 +81,10 @@ Status Crypto::ReconstructAndVerify(
 
         all_signs.push_back(*bls_collection_->partial_signs[i]);
         idx_vec.push_back(i+1);
+
+        for (auto j : idx_vec) {
+            std::cout << "j" << j << std::endl;
+        }
         std::cout << "id_vec" << idx_vec.size() << std::endl;
         if (idx_vec.size() >= elect_item->t()) {
             break;
