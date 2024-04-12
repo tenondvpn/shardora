@@ -34,8 +34,7 @@ Status Crypto::ReconstructAndVerify(
         const uint32_t& index,
         const std::string& partial_sign_x,
         const std::string& partial_sign_y,
-        std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign,
-        std::shared_ptr<std::vector<uint32_t>> participants) try {
+        std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign) try {
     // old vote
     if (bls_collection_ && bls_collection_->view > view) {
         return Status::kInvalidArgument;
@@ -77,7 +76,6 @@ Status Crypto::ReconstructAndVerify(
     std::vector<libff::alt_bn128_G1> all_signs;
     std::vector<size_t> idx_vec;
     for (uint32_t i = 0; i < elect_item->n(); i++) {
-        std::cout << "before" << i << bls_collection_->ok_bitmap.Valid(i) << std::endl;
         if (!bls_collection_->ok_bitmap.Valid(i)) {
             continue;
         }
@@ -85,16 +83,11 @@ Status Crypto::ReconstructAndVerify(
         all_signs.push_back(*bls_collection_->partial_signs[i]);
         idx_vec.push_back(i+1);
 
-        for (auto j : idx_vec) {
-            std::cout << "j" << j << std::endl;
-        }
-        std::cout << "id_vec" << idx_vec.size() << std::endl;
         if (idx_vec.size() >= elect_item->t()) {
             break;
         }
     }
 
-    std::cout << "id_vec" << idx_vec.size() << std::endl;
     std::vector<libff::alt_bn128_Fr> lagrange_coeffs(elect_item->t());
     libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, elect_item->t(), lagrange_coeffs);
 #ifndef HOTSTUFF_TEST
@@ -109,12 +102,10 @@ Status Crypto::ReconstructAndVerify(
     std::string verify_hash_a;
     std::string verify_hash_b;
     Status s = GetVerifyHashA(elect_height, msg_hash, &verify_hash_a);
-    std::cout << "a" << verify_hash_a << std::endl;
     if (s != Status::kSuccess) {
         return s;
     }
     s = GetVerifyHashB(elect_height, *bls_collection_->reconstructed_sign, &verify_hash_b);
-    std::cout << "b" << verify_hash_b << std::endl;
     if (s != Status::kSuccess) {
         return s;
     }
@@ -125,10 +116,7 @@ Status Crypto::ReconstructAndVerify(
 
     bls_collection_->handled = true;
     reconstructed_sign = bls_collection_->reconstructed_sign;
-    // for (uint32_t d : bls_collection_->ok_bitmap.data()) {
-    //     participants->push_back(d);
-    // }
-        
+
     return Status::kSuccess;
 } catch (std::exception& e) {
     return Status::kBlsVerifyWaiting;

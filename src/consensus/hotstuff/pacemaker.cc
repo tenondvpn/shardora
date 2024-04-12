@@ -110,16 +110,13 @@ void Pacemaker::HandleMessage(const transport::MessagePtr& msg_ptr) {
     Proto2ViewBlock(timeout_proto.high_qc_wrapper_block(), view_block);
 
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
-    // participants 暂时没用
-    auto participants = std::make_shared<std::vector<uint32_t>>();
     Status s = crypto_->ReconstructAndVerify(view_block->ElectHeight(),
         view_block->view,
         timeout_proto.msg_hash(),
         timeout_proto.member_id(),
         timeout_proto.sign_x(),
         timeout_proto.sign_y(),
-        reconstructed_sign,
-        participants);
+        reconstructed_sign);
     if (s != Status::kSuccess) {
         return;
     }
