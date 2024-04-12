@@ -20,6 +20,11 @@ namespace hotstuff {
 
 namespace test {
 
+extern std::shared_ptr<ViewBlock> GenViewBlock(const HashStr &parent_hash, const View &view);
+extern std::shared_ptr<QC> GenQC(const View &view, const HashStr &view_block_hash);
+extern std::shared_ptr<block::protobuf::Block> GenBlock();
+extern uint32_t GenLeaderIdx();
+
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
@@ -129,24 +134,25 @@ TEST_F(TestCrypto, Sign_Verify) {
 
     std::string sign_x;
     std::string sign_y;
-    Status s = crypto_->Sign(1, "msg_hash", &sign_x, &sign_y);
+    auto b1 = GenViewBlock("", 2);
+     
+    Status s = crypto_->Sign(1, b1->hash, &sign_x, &sign_y);
     EXPECT_EQ(Status::kSuccess, s);
     EXPECT_EQ("x", sign_x);
     EXPECT_EQ("y", sign_y);
 
     View view = 1;
-    auto msg_hash = "msg_hash";
 
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
     std::shared_ptr<std::vector<uint32_t>> participants;
 
     for (uint32_t i = 0; i < t-1; i++) {
-        s = crypto_->ReconstructAndVerify(2, view, msg_hash, i, sign_x, sign_y, reconstructed_sign, participants);
+        s = crypto_->ReconstructAndVerify(2, view, b1->hash, i, sign_x, sign_y, reconstructed_sign, participants);
         EXPECT_FALSE(s == Status::kSuccess);
         EXPECT_TRUE(reconstructed_sign == nullptr);
     }
 
-    s = crypto_->ReconstructAndVerify(2, view, msg_hash, t-1, sign_x, sign_y, reconstructed_sign, participants);
+    s = crypto_->ReconstructAndVerify(2, view, b1->hash, t-1, sign_x, sign_y, reconstructed_sign, participants);
     EXPECT_TRUE(s == Status::kSuccess);
     EXPECT_TRUE(reconstructed_sign != nullptr);
 }
