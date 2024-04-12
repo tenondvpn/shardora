@@ -98,7 +98,7 @@ TEST_F(TestCrypto, Sign_Verify) {
         .WillByDefault([](uint32_t t, uint32_t n, const libff::alt_bn128_Fr& local_sec_key, const libff::alt_bn128_G1& g1_hash, std::string* sign_x, std::string* sign_y) {
             *sign_x = "x";
             *sign_y = "y";
-            return 1;
+            return bls::kBlsSuccess;
         });
 
 
