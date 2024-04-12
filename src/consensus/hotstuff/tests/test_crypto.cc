@@ -149,7 +149,8 @@ TEST_F(TestCrypto, Sign_Verify) {
     EXPECT_EQ(x, sign_x);
     EXPECT_EQ(y, sign_y);
 
-    View view = 1;
+    View old_view = 1;
+    View view = 2;
 
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
 
@@ -162,7 +163,99 @@ TEST_F(TestCrypto, Sign_Verify) {
     s = crypto_->ReconstructAndVerify(elect_height, view, msg_hash, t-1, sign_x, sign_y, reconstructed_sign);
     EXPECT_TRUE(s == Status::kSuccess);
     EXPECT_TRUE(reconstructed_sign != nullptr);
+
+    // old view not valid
+    s = crypto_->ReconstructAndVerify(elect_height, old_view, msg_hash, 0, sign_x, sign_y, reconstructed_sign);
+    EXPECT_TRUE(s == Status::kInvalidArgument);
 }
+
+TEST_F(TestCrypto, Sign_Verify_Change_Epoch) {
+    uint32_t n = 10;
+    auto members = std::make_shared<common::Members>();
+    uint64_t elect_height = 2;
+
+    for (uint32_t i = 0; i < n; i++) {
+        auto member = std::make_shared<common::BftMember>(i, "1", "pk", i, i);
+        members->push_back(member);
+    }
+    
+    auto common_pk = libff::alt_bn128_G2::one();
+    auto sk = libff::alt_bn128_Fr::one();
+    elect_info_->OnNewElectBlock(sharding_id, elect_height, members, common_pk, sk);
+    uint32_t t = elect_info_->GetElectItem()->t();
+
+    auto sign = libff::alt_bn128_G1::one();
+    sign.to_affine_coordinates();
+    std::string x = libBLS::ThresholdUtils::fieldElementToString(sign.X);
+    std::string y = libBLS::ThresholdUtils::fieldElementToString(sign.Y);
+        
+    EXPECT_CALL(*bls_manager, Sign(_, _, _, _, _, _))
+        .WillRepeatedly(Invoke([&x, &y](uint32_t t, uint32_t n, const libff::alt_bn128_Fr& local_sec_key, const libff::alt_bn128_G1& g1_hash, std::string* sign_x, std::string* sign_y) {
+            *sign_x = x;
+            *sign_y = y;
+            return bls::kBlsSuccess;
+        }));
+
+    EXPECT_CALL(*bls_manager, GetVerifyHash(_, _, _, _, _))
+        .WillRepeatedly(Invoke([](uint32_t t,
+                uint32_t n,
+                const libff::alt_bn128_G1& g1_hash,
+                const libff::alt_bn128_G2& pkey,
+                std::string* verify_hash
+                ) {
+            *verify_hash = "test_hash";
+            return bls::kBlsSuccess;
+        }));
+    EXPECT_CALL(*bls_manager, GetVerifyHash(_, _, _, _))
+        .WillRepeatedly(Invoke([](uint32_t t,
+                uint32_t n,
+                const libff::alt_bn128_G1& sign,
+                std::string* verify_hash
+                ) {
+            *verify_hash = "test_hash";
+            return bls::kBlsSuccess;
+        }));
+
+    EXPECT_CALL(*bls_manager, GetLibffHash(_, _))
+        .WillRepeatedly(Invoke([](const std::string& str_hash, libff::alt_bn128_G1* g1_hash) {
+            *g1_hash = libff::alt_bn128_G1::one();
+            return bls::kBlsSuccess;
+        }));    
+
+    std::string sign_x;
+    std::string sign_y;
+    std::string msg = "msg";
+    HashStr msg_hash = common::Hash::keccak256(msg);
+     
+    Status s = crypto_->Sign(elect_height, msg_hash, &sign_x, &sign_y);
+    EXPECT_EQ(Status::kSuccess, s);
+    EXPECT_EQ(x, sign_x);
+    EXPECT_EQ(y, sign_y);
+
+    View old_view = 1;
+    View view = 2;
+
+    std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
+
+    for (uint32_t i = 0; i < t-3; i++) {
+        s = crypto_->ReconstructAndVerify(elect_height, view, msg_hash, i, sign_x, sign_y, reconstructed_sign);
+        EXPECT_FALSE(s == Status::kSuccess);
+        EXPECT_TRUE(reconstructed_sign == nullptr);
+    }
+    
+    elect_info_->OnNewElectBlock(sharding_id, elect_height+1, members, common_pk, sk);
+    
+    for (uint32_t i = t-3; i < t-1; i++) {
+        s = crypto_->ReconstructAndVerify(elect_height, view, msg_hash, i, sign_x, sign_y, reconstructed_sign);
+        EXPECT_FALSE(s == Status::kSuccess);
+        EXPECT_TRUE(reconstructed_sign == nullptr);
+    }
+    
+    s = crypto_->ReconstructAndVerify(elect_height, view, msg_hash, t-1, sign_x, sign_y, reconstructed_sign);
+    EXPECT_TRUE(s == Status::kSuccess);
+    EXPECT_TRUE(reconstructed_sign != nullptr);
+}
+
 
 TEST_F(TestCrypto, GetElectItem) {
     auto elect_item = crypto_->GetElectItem(1);
