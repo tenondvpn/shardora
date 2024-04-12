@@ -80,45 +80,7 @@ protected:
         members->push_back(member);
         auto common_pk = libff::alt_bn128_G2::one();
         auto sk = libff::alt_bn128_Fr::one();
-        elect_info_->OnNewElectBlock(sharding_id, 1, members, common_pk, sk);
-
-        auto sign = libff::alt_bn128_G1::one();
-        sign.to_affine_coordinates();
-        std::string x = libBLS::ThresholdUtils::fieldElementToString(sign.X);
-        std::string y = libBLS::ThresholdUtils::fieldElementToString(sign.Y);
-        
-        EXPECT_CALL(*bls_manager, Sign(_, _, _, _, _, _))
-            .WillRepeatedly(Invoke([&x, &y](uint32_t t, uint32_t n, const libff::alt_bn128_Fr& local_sec_key, const libff::alt_bn128_G1& g1_hash, std::string* sign_x, std::string* sign_y) {
-                *sign_x = x;
-                *sign_y = y;
-                return bls::kBlsSuccess;
-            }));
-
-        EXPECT_CALL(*bls_manager, GetVerifyHash(_, _, _, _, _))
-            .WillRepeatedly(Invoke([](uint32_t t,
-                        uint32_t n,
-                        const libff::alt_bn128_G1& g1_hash,
-                        const libff::alt_bn128_G2& pkey,
-                        std::string* verify_hash
-                        ) {
-                *verify_hash = "test_hash";
-                return bls::kBlsSuccess;
-            }));
-        EXPECT_CALL(*bls_manager, GetVerifyHash(_, _, _, _))
-            .WillRepeatedly(Invoke([](uint32_t t,
-                        uint32_t n,
-                        const libff::alt_bn128_G1& sign,
-                        std::string* verify_hash
-                        ) {
-                *verify_hash = "test_hash";
-                return bls::kBlsSuccess;
-            }));
-
-        EXPECT_CALL(*bls_manager, GetLibffHash(_, _))
-            .WillRepeatedly(Invoke([](const std::string& str_hash, libff::alt_bn128_G1* g1_hash) {
-                *g1_hash = libff::alt_bn128_G1::one();
-                return bls::kBlsSuccess;
-            }));        
+        elect_info_->OnNewElectBlock(sharding_id, 1, members, common_pk, sk);        
     }
 
     void TearDown() {}
