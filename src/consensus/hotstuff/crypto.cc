@@ -34,7 +34,7 @@ Status Crypto::ReconstructAndVerify(
         const uint32_t& index,
         const std::string& partial_sign_x,
         const std::string& partial_sign_y,
-        std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign) try {
+        std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign) try {
     // old vote
     if (bls_collection_ && bls_collection_->view > view) {
         return Status::kInvalidArgument;
@@ -117,7 +117,6 @@ Status Crypto::ReconstructAndVerify(
 
     bls_collection_->handled = true;
     reconstructed_sign = bls_collection_->reconstructed_sign;
-
     if (reconstructed_sign == nullptr) {
         return Status::kBlsVerifyWaiting;
     }

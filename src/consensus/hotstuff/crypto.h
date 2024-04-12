@@ -48,7 +48,7 @@ public:
             const uint32_t& member_idx,
             const std::string& partial_sign_x,
             const std::string& partial_sign_y,
-            std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign);
+            std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
     Status CreateQC(
             const std::shared_ptr<ViewBlock>& view_block,
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
