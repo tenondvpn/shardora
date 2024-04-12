@@ -88,6 +88,7 @@ protected:
 TEST_F(TestCrypto, Sign_Verify) {
     uint32_t n = 10;
     auto members = std::make_shared<common::Members>();
+    uint64_t elect_height = 2;
 
     for (uint32_t i = 0; i < n; i++) {
         auto member = std::make_shared<common::BftMember>(i, "1", "pk", i, i);
@@ -96,7 +97,7 @@ TEST_F(TestCrypto, Sign_Verify) {
     
     auto common_pk = libff::alt_bn128_G2::one();
     auto sk = libff::alt_bn128_Fr::one();
-    elect_info_->OnNewElectBlock(sharding_id, 2, members, common_pk, sk);
+    elect_info_->OnNewElectBlock(sharding_id, elect_height, members, common_pk, sk);
     uint32_t t = elect_info_->GetElectItem()->t();
         
     ON_CALL(*bls_manager, Sign(_, _, _, _, _, _))
@@ -134,26 +135,26 @@ TEST_F(TestCrypto, Sign_Verify) {
 
     std::string sign_x;
     std::string sign_y;
-    auto b1 = GenViewBlock("", 1);
-    auto b2 = GenViewBlock(b1->hash, 2);
+    std::string msg = "msg";
+    HashStr msg_hash = common::Hash::keccak256(msg);
      
-    Status s = crypto_->Sign(1, b2->hash, &sign_x, &sign_y);
+    Status s = crypto_->Sign(elect_height, msg_hash, &sign_x, &sign_y);
     EXPECT_EQ(Status::kSuccess, s);
     EXPECT_EQ("x", sign_x);
     EXPECT_EQ("y", sign_y);
 
-    View view = b2->view;
+    View view = 1;
 
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
     std::shared_ptr<std::vector<uint32_t>> participants;
 
     for (uint32_t i = 0; i < t-1; i++) {
-        s = crypto_->ReconstructAndVerify(2, view, b2->hash, i, sign_x, sign_y, reconstructed_sign, participants);
+        s = crypto_->ReconstructAndVerify(elect_height, view, msg_hash, i, sign_x, sign_y, reconstructed_sign, participants);
         EXPECT_FALSE(s == Status::kSuccess);
         EXPECT_TRUE(reconstructed_sign == nullptr);
     }
 
-    s = crypto_->ReconstructAndVerify(2, view, b2->hash, t-1, sign_x, sign_y, reconstructed_sign, participants);
+    s = crypto_->ReconstructAndVerify(elect_height, view, msg_hash, t-1, sign_x, sign_y, reconstructed_sign, participants);
     EXPECT_TRUE(s == Status::kSuccess);
     EXPECT_TRUE(reconstructed_sign != nullptr);
 }
