@@ -87,7 +87,7 @@ Status Crypto::ReconstructAndVerify(
         }
     }
 
-    
+    std::cout << "id_vec" << idx_vec.size() << std::endl;
     std::vector<libff::alt_bn128_Fr> lagrange_coeffs(elect_item->t());
     libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, elect_item->t(), lagrange_coeffs);
 #ifdef HOTSTUFF_TEST
@@ -102,10 +102,12 @@ Status Crypto::ReconstructAndVerify(
     std::string verify_hash_a = "";
     std::string verify_hash_b = "";
     Status s = GetVerifyHashA(elect_height, msg_hash, &verify_hash_a);
+    std::cout << "a" << verify_hash_a << std::endl;
     if (s != Status::kSuccess) {
         return s;
     }
     s = GetVerifyHashB(elect_height, *bls_collection_->reconstructed_sign, &verify_hash_b);
+    std::cout << "b" << verify_hash_b << std::endl;
     if (s != Status::kSuccess) {
         return s;
     }
