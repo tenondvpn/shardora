@@ -1,3 +1,4 @@
+#include <_types/_uint32_t.h>
 #include <bls/bls_utils.h>
 #include <consensus/hotstuff/crypto.h>
 #include <exception>
@@ -75,6 +76,7 @@ Status Crypto::ReconstructAndVerify(
     std::vector<libff::alt_bn128_G1> all_signs;
     std::vector<size_t> idx_vec;
     for (uint32_t i = 0; i < elect_item->n(); i++) {
+        std::cout << "before" << i << bls_collection_->ok_bitmap.Valid(i) << std::endl;
         if (!bls_collection_->ok_bitmap.Valid(i)) {
             continue;
         }
