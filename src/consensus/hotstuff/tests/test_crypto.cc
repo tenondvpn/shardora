@@ -154,13 +154,13 @@ TEST_F(TestCrypto, Sign_Verify) {
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
     std::shared_ptr<std::vector<uint32_t>> participants;
 
-    for (uint32_t i = 0; i < t-1; i++) {
+    for (uint32_t i = 0; i < t; i++) {
         s = crypto_->ReconstructAndVerify(elect_height, view, msg_hash, i, sign_x, sign_y, reconstructed_sign, participants);
         EXPECT_FALSE(s == Status::kSuccess);
         EXPECT_TRUE(reconstructed_sign == nullptr);
     }
 
-    s = crypto_->ReconstructAndVerify(elect_height, view, msg_hash, t-1, sign_x, sign_y, reconstructed_sign, participants);
+    s = crypto_->ReconstructAndVerify(elect_height, view, msg_hash, t, sign_x, sign_y, reconstructed_sign, participants);
     EXPECT_TRUE(s == Status::kSuccess);
     EXPECT_TRUE(reconstructed_sign != nullptr);
 }
