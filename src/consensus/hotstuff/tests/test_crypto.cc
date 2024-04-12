@@ -134,25 +134,26 @@ TEST_F(TestCrypto, Sign_Verify) {
 
     std::string sign_x;
     std::string sign_y;
-    auto b1 = GenViewBlock("", 2);
+    auto b1 = GenViewBlock("", 1);
+    auto b2 = GenViewBlock(b1->hash, 2);
      
-    Status s = crypto_->Sign(1, b1->hash, &sign_x, &sign_y);
+    Status s = crypto_->Sign(1, b2->hash, &sign_x, &sign_y);
     EXPECT_EQ(Status::kSuccess, s);
     EXPECT_EQ("x", sign_x);
     EXPECT_EQ("y", sign_y);
 
-    View view = 1;
+    View view = b2->view;
 
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
     std::shared_ptr<std::vector<uint32_t>> participants;
 
     for (uint32_t i = 0; i < t-1; i++) {
-        s = crypto_->ReconstructAndVerify(2, view, b1->hash, i, sign_x, sign_y, reconstructed_sign, participants);
+        s = crypto_->ReconstructAndVerify(2, view, b2->hash, i, sign_x, sign_y, reconstructed_sign, participants);
         EXPECT_FALSE(s == Status::kSuccess);
         EXPECT_TRUE(reconstructed_sign == nullptr);
     }
 
-    s = crypto_->ReconstructAndVerify(2, view, b1->hash, t-1, sign_x, sign_y, reconstructed_sign, participants);
+    s = crypto_->ReconstructAndVerify(2, view, b2->hash, t-1, sign_x, sign_y, reconstructed_sign, participants);
     EXPECT_TRUE(s == Status::kSuccess);
     EXPECT_TRUE(reconstructed_sign != nullptr);
 }
