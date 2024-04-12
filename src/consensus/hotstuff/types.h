@@ -32,6 +32,9 @@ struct QC {
     
     std::string Serialize() const;
     bool Unserialize(const std::string& str);
+    inline bool IsGenesisQC() const {
+        return view == View(0);
+    }
 };
 
 struct ViewBlock {
@@ -94,6 +97,7 @@ enum WaitingBlockType {
     kToBlock,
 };
 
+static const View GenesisView  = 1; 
     
 }
 }

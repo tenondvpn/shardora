@@ -1,3 +1,4 @@
+#include <common/global_info.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/hotstuff/types.h>
 #include <iostream>
@@ -203,31 +204,6 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
     return Status::kSuccess;
 }
 
-// void ViewBlockChain::AddOrphanBlock(const std::shared_ptr<ViewBlock>& view_block) {
-//     orphan_blocks_.push(view_block);
-//     orphan_added_us_[view_block->hash] = common::TimeUtils::TimestampUs();
-// }
-
-// std::shared_ptr<ViewBlock> ViewBlockChain::PopOrphanBlock() {
-//     std::shared_ptr<ViewBlock> orphan_block = OrphanBlocks().top();
-//     OrphanBlocks().pop();
-//     orphan_added_us_.erase(orphan_block->hash);
-//     return orphan_block;
-// }
-
-// bool ViewBlockChain::IsOrphanBlockTimeout(const std::shared_ptr<ViewBlock> view_block) const {
-//     if (!view_block) {
-//         return false;
-//     }
-//     auto it = orphan_added_us_.find(view_block->hash);
-//     if (it == orphan_added_us_.end()) {
-//         return false;
-//     }
-
-//     uint64_t added_us = it->second;
-//     return added_us + ORPHAN_BLOCK_TIMEOUT_US <= common::TimeUtils::TimestampUs();
-// }
-
 bool ViewBlockChain::IsValid() {
     if (Size() == 0) {
         return false;
@@ -247,8 +223,24 @@ bool ViewBlockChain::IsValid() {
     return num == 1;
 }
 
-std::shared_ptr<ViewBlock> GetGenesisViewBlock() {
-    return nullptr;
+std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db, uint32_t pool_index) {
+    auto prefix_db = std::make_shared<protos::PrefixDb>(db);
+    uint32_t sharding_id = common::GlobalInfo::Instance()->network_id();
+        
+    std::shared_ptr<block::protobuf::Block> block;
+    bool r = prefix_db->GetBlockWithHeight(sharding_id, pool_index, 1, block.get());
+    if (!r) {
+        return nullptr;
+    }
+    return std::make_shared<ViewBlock>("", GetGenesisQC(), block, GenesisView, 0);
+}
+
+std::shared_ptr<QC> GetGenesisQC() {
+    std::shared_ptr<QC> qc = nullptr;
+    qc->bls_agg_sign = nullptr;
+    qc->view = 0;
+    qc->view_block_hash = "";
+    return qc;
 }
 
 }

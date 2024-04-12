@@ -24,11 +24,14 @@
 #include "timeblock/time_block_manager.h"
 #include "transport/multi_thread.h"
 #include "vss/vss_manager.h"
+#include <consensus/hotstuff/view_block_chain_manager.h>
 #include <yaml-cpp/node/node.h>
 
 namespace shardora {
 
 namespace init {
+
+#define HOTSTUFF_V2 1
 
 class NetworkInit {
 public:
@@ -98,6 +101,9 @@ private:
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
     std::shared_ptr<pools::ShardStatistic> shard_statistic_ = nullptr;
+#ifdef HOTSTUFF_V2    
+    std::shared_ptr<hotstuff::ViewBlockChainManager> view_block_chain_mgr_ = nullptr;
+#endif    
     http::HttpServer http_server_;
     HttpHandler http_handler_;
     common::Tick init_tick_;

@@ -2,6 +2,7 @@
 
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
+#include <db/db.h>
 
 namespace shardora {
 
@@ -9,11 +10,13 @@ namespace hotstuff {
 
 class ViewBlockChainManager {
 public:
-    explicit ViewBlockChainManager(const std::shared_ptr<ViewBlock>&);
+    explicit ViewBlockChainManager(const std::shared_ptr<db::Db>&);
     ~ViewBlockChainManager();
 
     ViewBlockChainManager(const ViewBlockChainManager&) = delete;
     ViewBlockChainManager& operator=(const ViewBlockChainManager&) = delete;
+
+    Status Init();
     
     inline std::shared_ptr<ViewBlockChain> Chain(const uint32_t& pool_idx) const {
         return pool_chain_map_.at(pool_idx);
@@ -25,6 +28,7 @@ public:
     
 private:
     std::unordered_map<uint32_t, std::shared_ptr<ViewBlockChain>> pool_chain_map_;
+    std::shared_ptr<db::Db> db_;
     // common::Tick tick_;
 };
 

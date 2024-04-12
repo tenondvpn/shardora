@@ -202,6 +202,12 @@ int NetworkInit::Init(int argc, char** argv) {
 
     block_mgr_->LoadLatestBlocks();
     shard_statistic_->Init();
+#ifdef HOTSTUFF_V2
+    view_block_chain_mgr_ = std::make_shared<hotstuff::ViewBlockChainManager>(db_);
+    if (view_block_chain_mgr_->Init() != hotstuff::Status::kSuccess) {
+        return kInitError;
+    }
+#endif
     RegisterFirewallCheck();
     transport::TcpTransport::Instance()->Start(false);
     if (InitHttpServer() != kInitSuccess) {
