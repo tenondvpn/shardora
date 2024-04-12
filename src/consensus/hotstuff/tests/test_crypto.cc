@@ -106,16 +106,15 @@ TEST_F(TestCrypto, Sign_Verify) {
     std::string x = libBLS::ThresholdUtils::fieldElementToString(sign.X);
     std::string y = libBLS::ThresholdUtils::fieldElementToString(sign.Y);
         
-    ON_CALL(*bls_manager, Sign(_, _, _, _, _, _))
-        .WillByDefault([&x, &y](uint32_t t, uint32_t n, const libff::alt_bn128_Fr& local_sec_key, const libff::alt_bn128_G1& g1_hash, std::string* sign_x, std::string* sign_y) {
+    EXPECT_CALL(*bls_manager, Sign(_, _, _, _, _, _))
+        .WillRepeatedly(Invoke([&x, &y](uint32_t t, uint32_t n, const libff::alt_bn128_Fr& local_sec_key, const libff::alt_bn128_G1& g1_hash, std::string* sign_x, std::string* sign_y) {
             *sign_x = x;
             *sign_y = y;
             return bls::kBlsSuccess;
-        });
+        }));
 
-
-    ON_CALL(*bls_manager, GetVerifyHash(_, _, _, _, _))
-        .WillByDefault([](uint32_t t,
+    EXPECT_CALL(*bls_manager, GetVerifyHash(_, _, _, _, _))
+        .WillRepeatedly(Invoke([](uint32_t t,
                 uint32_t n,
                 const libff::alt_bn128_G1& g1_hash,
                 const libff::alt_bn128_G2& pkey,
@@ -123,21 +122,22 @@ TEST_F(TestCrypto, Sign_Verify) {
                 ) {
             *verify_hash = "test_hash";
             return bls::kBlsSuccess;
-        });
-    ON_CALL(*bls_manager, GetVerifyHash(_, _, _, _))
-        .WillByDefault([](uint32_t t,
+        }));
+    EXPECT_CALL(*bls_manager, GetVerifyHash(_, _, _, _))
+        .WillRepeatedly(Invoke([](uint32_t t,
                 uint32_t n,
                 const libff::alt_bn128_G1& sign,
                 std::string* verify_hash
                 ) {
             *verify_hash = "test_hash";
             return bls::kBlsSuccess;
-        });
-    ON_CALL(*bls_manager, GetLibffHash(_, _))
-        .WillByDefault([](const std::string& str_hash, libff::alt_bn128_G1* g1_hash) {
+        }));
+
+    EXPECT_CALL(*bls_manager, GetLibffHash(_, _))
+        .WillRepeatedly(Invoke([](const std::string& str_hash, libff::alt_bn128_G1* g1_hash) {
             *g1_hash = libff::alt_bn128_G1::one();
             return bls::kBlsSuccess;
-        });
+        }));    
 
     std::string sign_x;
     std::string sign_y;
