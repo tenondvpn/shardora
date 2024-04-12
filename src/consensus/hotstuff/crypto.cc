@@ -85,16 +85,17 @@ Status Crypto::ReconstructAndVerify(
         }
     }
 
-    libBLS::Bls bls_instance = libBLS::Bls(elect_item->t(), elect_item->n());
+    
     std::vector<libff::alt_bn128_Fr> lagrange_coeffs(elect_item->t());
     libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, elect_item->t(), lagrange_coeffs);
 #ifdef HOTSTUFF_TEST
+    libBLS::Bls bls_instance = libBLS::Bls(elect_item->t(), elect_item->n());
     bls_collection_->reconstructed_sign = std::make_shared<libff::alt_bn128_G1>(
             bls_instance.SignatureRecover(all_signs, lagrange_coeffs));
+    bls_collection_->reconstructed_sign->to_affine_coordinates();
 #else
     bls_collection_->reconstructed_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
 #endif
-    bls_collection_->reconstructed_sign->to_affine_coordinates();
     // Verify
     std::string verify_hash_a = "";
     std::string verify_hash_b = "";
