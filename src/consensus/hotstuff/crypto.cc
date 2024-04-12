@@ -66,12 +66,11 @@ Status Crypto::ReconstructAndVerify(
     if (!elect_item) {
         return Status::kError;
     }
+    std::cout << "index" << index << "sign" << std::endl;
     
     if (bls_collection_->OkCount() < elect_item->t()) {
         return Status::kBlsVerifyWaiting;
     }
-
-    std::cout << "index" << index << "sign" << std::endl;
 
     std::vector<libff::alt_bn128_G1> all_signs;
     std::vector<size_t> idx_vec;
