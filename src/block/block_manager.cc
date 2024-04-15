@@ -291,15 +291,6 @@ bool BlockManager::UpdateBlockItemToCache(
               block->height(),
               block->tx_list_size(),
               common::Encode::HexEncode(block->hash()).c_str());
-    // TODO: invalid thread to update pools
-    // if (block->network_id() == common::GlobalInfo::Instance()->network_id() ||
-    //     block->network_id() + network::kConsensusWaitingShardOffset ==
-    //     common::GlobalInfo::Instance()->network_id()) {
-    //     pools_mgr_->UpdateLatestInfo(
-    //         block,
-    //         db_batch);
-    // }
-
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         try
         {

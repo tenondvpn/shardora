@@ -474,6 +474,10 @@ common::MembersPtr ElectManager::GetNetworkMembersWithHeight(
         uint32_t network_id,
         libff::alt_bn128_G2* common_pk,
         libff::alt_bn128_Fr* sec_key) {
+    if (elect_height == 0) {
+        return nullptr;
+    }
+    
     return height_with_block_->GetMembersPtr(
         security_, elect_height, network_id, common_pk, sec_key);
 }

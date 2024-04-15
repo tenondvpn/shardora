@@ -68,7 +68,7 @@ public:
         tx_pool_[pool_index].RemoveTx(gid);
     }
 
-    void OnNewCrossBlock(
+    void  OnNewCrossBlock(
             const std::shared_ptr<block::protobuf::Block>& block_item) {
         ZJC_DEBUG("new cross block coming net: %u, pool: %u, height: %lu",
             block_item->network_id(), block_item->pool_index(), block_item->height());

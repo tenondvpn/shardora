@@ -111,6 +111,10 @@ public:
             uint32_t network_id,
             libff::alt_bn128_G2* common_pk,
             libff::alt_bn128_Fr* local_sec_key) {
+        if (height == 0) {
+            return nullptr;
+        }
+        
         ZJC_DEBUG("get bls pk and secret key success.height: %lu, "
             "network_id: %u, end net id: %u, offset: %u",
             height, 

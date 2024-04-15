@@ -494,6 +494,10 @@ int ShardStatistic::StatisticWithHeights(
         return kPoolsError;
     }
 
+    if (prepare_elect_height_ == 0) {
+        return kPoolsError;
+    }
+
     auto prepare_members = elect_mgr_->GetNetworkMembersWithHeight(
         prepare_elect_height_,
         common::GlobalInfo::Instance()->network_id(),
