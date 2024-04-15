@@ -251,6 +251,8 @@ private:
         bool eb_valid = false;
         elect::protobuf::ElectBlock elect_block;
         for (int32_t tx_idx = 0; tx_idx < block.tx_list_size(); ++tx_idx) {
+            ZJC_DEBUG("get tx step %d, %d, network_id: %u",
+                tx_idx, block.tx_list(tx_idx).step(), network_id);
             if (block.tx_list(tx_idx).step() != pools::protobuf::kConsensusRootElectShard) {
                 continue;
             }
