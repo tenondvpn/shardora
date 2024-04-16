@@ -1,4 +1,5 @@
 #include <consensus/hotstuff/types.h>
+#include <protos/block.pb.h>
 #include <protos/view_block.pb.h>
 
 namespace shardora {
@@ -83,9 +84,11 @@ Status Proto2ViewBlock(const view_block::protobuf::ViewBlockItem& view_block_pro
     view_block->hash = view_block_proto.hash();
     view_block->parent_hash = view_block_proto.parent_hash();
     view_block->leader_idx = view_block_proto.leader_idx();
+    view_block->block = std::make_shared<block::protobuf::Block>();
     if (!view_block->block->ParseFromString(view_block_proto.block_str())) {
         return Status::kError;
     }
+    view_block->qc = std::make_shared<QC>();
     if (!view_block->qc->Unserialize(view_block_proto.qc_str())) {
         return Status::kError;
     }
