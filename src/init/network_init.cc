@@ -260,6 +260,20 @@ int NetworkInit::Init(int argc, char** argv) {
         }
         chain->Store(view_block);
     });
+
+    cmd_.AddCommand("printchain", [this](const std::vector<std::string>& args){
+        uint32_t pool_idx = std::stoi(args[0]);
+        auto consensus = consensus_mgr_->consensus(pool_idx);
+        if (!consensus) {
+            return;
+        }
+                
+        auto chain = consensus->chain();
+        if (!chain) {
+            return;
+        }
+        chain->Print();
+    });    
 #endif
     RegisterFirewallCheck();
     transport::TcpTransport::Instance()->Start(false);
