@@ -45,7 +45,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info, bool i
 
 void Pacemaker::UpdateHighQC(const std::shared_ptr<ViewBlock>& qc_wrapper_block) {
     auto qc = qc_wrapper_block->qc;
-    if (high_qc_->view < qc->view) {
+    if (!high_qc_ || high_qc_->view < qc->view) {
         high_qc_ = qc;
         high_qc_wrapper_block_ = qc_wrapper_block;
     }
