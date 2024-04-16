@@ -1,0 +1,204 @@
+import argparse
+import os
+
+import toml
+import yaml
+import configparser
+import gen_genesis_script as genesis
+
+
+def gen_new_zjnodes_conf_files(server_conf: dict):
+    zjnodes_folder = "./zjnodes"
+    bootstrap = get_root_boostrap_strs()
+    bootstrap = bootstrap.replace('"', '')
+    print(bootstrap)
+
+    for node in server_conf['new_nodes']:
+        addr = genesis.sk2account(node['prikey'])
+        node["addr"] = addr
+        zjchain_conf = {
+            'db': {
+                'path': './db',
+            },
+            'log': {
+                'path': 'log/zjchain.log',
+            },
+            'zjchain': {
+                'bootstrap': bootstrap,
+                'ck_ip': '127.0.0.1',
+                'ck_passworkd': '',
+                'ck_user': 'default',
+                'country': 'NL',
+                'first_node': 1 if node['name'] == 'r1' else 0,
+                'http_port': node['http_port'],
+                'local_ip': node['server'],
+                'local_port': node['tcp_port'],
+                'net_id': node['net'],
+                'prikey': node['prikey'],
+                '_addr': addr,
+                'show_cmd': 0,
+                'for_ck': False
+            },
+            'tx_block': {
+                'network_id': node['net']
+            }
+        }
+
+        sub_folder = f'{zjnodes_folder}/{node["name"]}'
+        sub_conf_folder = f'{sub_folder}/conf'
+        if not os.path.exists(sub_folder):
+            os.makedirs(sub_folder)
+            if not os.path.exists(sub_conf_folder):
+                os.makedirs(sub_conf_folder)
+        filename = f'{sub_conf_folder}/zjchain.conf'
+        print(os.path.abspath(filename))
+
+        with open(filename, 'w') as f:
+            toml.dump(zjchain_conf, f)
+
+
+def gen_dispatch_coin_sh(content):
+    filename = "new_nodes_dispatch_coin.sh"
+    all_addr = []
+
+    for node in content['new_nodes']:
+        all_addr.append('"' + node['addr'] + '"')
+
+    all_addr_str = '\n '.join(all_addr)
+    all_addr_str = f"addrs=({all_addr_str})\n"
+    sh_str = f"""#!/bin/bash
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/
+cd ./cbuild_Debug
+make txcli
+{all_addr_str}
+
+for n in  "${{addrs[@]}}"; do
+      ./txcli 5 ${{n}} 
+done
+
+
+"""
+    with open(filename, 'w') as f:
+        f.write(sh_str)
+    pass
+
+
+def gen_nodes_conf_file(node_num_per_shard, shard_num, servers):
+    content = build_yam_content(node_num_per_shard, servers, shard_num)
+
+    gen_new_zjnodes_conf_files(content)
+    gen_new_node_deploy_sh(content)
+    gen_dispatch_coin_sh(content)
+
+    filename = f"new_nodes_conf_n{node_num_per_shard}_s{shard_num}_m{len(servers)}.yml"
+    with open(filename, "w") as f:
+        yaml.dump(content, f)
+    return
+
+
+def gen_new_node_deploy_sh(server_conf):
+    all_names = []
+    for node in server_conf['new_nodes']:
+        all_names.append('"' + node['name'] + '"')
+
+    all_names_str = ' '.join(all_names)
+    node_list = f"nodes=({all_names_str})\n"
+    code_str = f"""#!/bin/bash
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/
+ps -ef | grep zjchain | grep new_node | awk -F' ' '{{print $2}}' | xargs kill -9
+
+{node_list}
+
+for n in  "${{nodes[@]}}"; do
+    rm -rf /root/zjnodes/${{n}}/zjchain /root/zjnodes/${{n}}/core* /root/zjnodes/${{n}}/log/* /root/zjnodes/${{n}}/*db*
+
+    mkdir -p "/root/zjnodes/${{n}}/log"
+    cp -rf ./zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/${{n}}/conf
+    cp -rf ./zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/${{n}}/conf
+    cp -rf ./zjnodes/zjchain/zjchain /root/zjnodes/${{n}}
+    cp -rf ./zjnodes/${{n}}/conf/zjchain.conf /root/zjnodes/${{n}}/conf/zjchain.conf
+done
+
+
+
+
+for node in "${{nodes[@]}}"; do
+  cd /root/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node new_node> /dev/null 2>&1 &
+done
+"""
+    full_path = "new_node_deploy.sh"
+    # full_path = os.path.abspath(file_path)
+    print(full_path)
+    with open(full_path, 'w') as f:
+        f.write(code_str)
+
+
+def build_yam_content(node_num_per_shard, servers, shard_num):
+    shard_start_idx = 3
+    shard_end_idx = shard_start_idx + shard_num - 1
+    new_nodes = []
+    prikeys = gen_prikeys(shard_num * node_num_per_shard)
+    for shard_idx in range(shard_start_idx, shard_end_idx + 1):
+        for node_idx in range(node_num_per_shard):
+            node_idx += 1
+            node_name = f"new_{node_idx}"
+            new_nodes.append({
+                "name": node_name,
+                "net": shard_idx,
+                "server": "",
+                "http_port": get_new_http_port(node_idx, shard_idx),
+                "tcp_port": get_new_tcp_port(node_idx, shard_idx),
+            })
+    for idx, node in enumerate(new_nodes):
+        server = servers[idx % len(servers)]
+        node["server"] = server
+        node["prikey"] = prikeys[idx]
+    content = {
+        'new_nodes': new_nodes,
+        'prikeys': prikeys,
+    }
+    return content
+
+
+def gen_prikeys(count):
+    prikeys = []
+    s = "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b3000000"
+
+    for i in range(count):
+        new_string = s[:-len(str(i))] + str(i)
+        prikeys.append(new_string)
+    return prikeys
+
+
+def get_new_http_port(node_idx, net_id):
+    return 7000 + net_id * 100 + node_idx
+
+
+def get_new_tcp_port(node_idx, net_id):
+    return 20000 + net_id * 1000 + node_idx
+
+
+def get_root_boostrap_strs():
+    filepath = "zjnodes/r1/conf/zjchain.conf"
+    config = configparser.ConfigParser()
+    config.read(filepath)
+    bootstrap = config.get('zjchain', 'bootstrap')
+    print(f"bootstrap: {bootstrap}")
+    return bootstrap
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-n', '--node_num_per_shard', help='node_num_per_shard', type=int, default=10)
+    parser.add_argument('-s', '--shard_num', help='shard_num', default=1, type=int)
+    parser.add_argument('-m', '--machines', help='machines', default="127.0.0.1", type=str)
+    parser.add_argument('-m0', '--machine0', help='source machine', default='127.0.0.1', type=str)
+    args = parser.parse_args()
+
+    servers = args.machines.split(",")
+    print(f"shard_num $s：{args.shard_num}")
+    print(f"node_num_per_shard $n：{args.node_num_per_shard}")
+    print(f"servers $m：{servers}")
+    gen_nodes_conf_file(args.node_num_per_shard, args.shard_num, servers)
