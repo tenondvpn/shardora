@@ -18,7 +18,7 @@ addrs=("38d2a932186ba9f9b2aa74c4c1ee8090a51b49a0"
 
 
 for n in  "${addrs[@]}"; do
-      ./txcli 5 ${n} 
+./txcli 5 ${n} 
 done
 
 

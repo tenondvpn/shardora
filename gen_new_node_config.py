@@ -115,10 +115,10 @@ for n in  "${{nodes[@]}}"; do
     rm -rf /root/zjnodes/${{n}}/zjchain /root/zjnodes/${{n}}/core* /root/zjnodes/${{n}}/log/* /root/zjnodes/${{n}}/*db*
 
     mkdir -p "/root/zjnodes/${{n}}/log"
-    cp -rf ./zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/${{n}}/conf
-    cp -rf ./zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/${{n}}/conf
-    cp -rf ./zjnodes/zjchain/zjchain /root/zjnodes/${{n}}
-    cp -rf ./zjnodes/${{n}}/conf/zjchain.conf /root/zjnodes/${{n}}/conf/zjchain.conf
+    cp -rf /root/zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/${{n}}/conf
+    cp -rf /root/zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/${{n}}/conf
+    cp -rf /root/zjnodes/zjchain/zjchain /root/zjnodes/${{n}}
+    cp -rf /root/zjnodes/${{n}}/conf/zjchain.conf /root/zjnodes/${{n}}/conf/zjchain.conf
 done
 
 
