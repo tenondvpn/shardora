@@ -39,7 +39,6 @@ int ViewBlockChainSyncer::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 }
 
 void ViewBlockChainSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    // TODO 放入消息队列，等待消费
     auto header = msg_ptr->header;
     assert(header.type() == common::kViewBlockSyncMessage);
     
@@ -74,7 +73,7 @@ void ViewBlockChainSyncer::ConsumeMessages() {
         if (!consume_queues_[thread_idx].pop(&msg_ptr) || msg_ptr == nullptr) {
             continue;
         }
-
+        ZJC_DEBUG("====1.5, thread: %d", thread_idx);
         if (msg_ptr->header.view_block_proto().has_view_block_req()) {
             processRequest(msg_ptr);
         } else if (msg_ptr->header.view_block_proto().has_view_block_res()) {
@@ -105,6 +104,8 @@ Status ViewBlockChainSyncer::SendRequest(uint32_t network_id, const view_block::
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kViewBlockSyncMessage);
     *msg.mutable_view_block_proto() = view_block_msg;
+    
+    ZJC_DEBUG("====0.1, ip: %s, port: %d", node->public_ip.c_str(), node->public_port);
 
     transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);    
     return Status::kSuccess;
@@ -122,10 +123,14 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
     view_block_res->set_network_id(view_block_msg.view_block_req().network_id());
     view_block_res->set_pool_idx(pool_idx);
 
+    ZJC_DEBUG("====1.1 pool_idx: %d", pool_idx);
+
     auto chain = view_block_chain_mgr_->Chain(pool_idx);
     if (!chain) {
         return Status::kError;
     }
+
+    ZJC_DEBUG("====1.2 pool_idx: %d", pool_idx);
 
     std::vector<std::shared_ptr<ViewBlock>> all;
     chain->GetAll(all);
@@ -157,7 +162,7 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
         return Status::kError;
     }
 
-    ZJC_DEBUG("pool_idx: %d, view_blocks: %d", pool_idx, view_block_items.size());
+    ZJC_DEBUG("====2.1 pool_idx: %d, view_blocks: %d", pool_idx, view_block_items.size());
 
     ViewBlockMinHeap min_heap;
     for (auto it = view_block_items.begin(); it != view_block_items.end(); it++) {
