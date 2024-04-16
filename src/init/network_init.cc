@@ -1106,6 +1106,11 @@ void NetworkInit::HandleElectionBlock(
     auto prev_elect_block = std::make_shared<elect::protobuf::ElectBlock>();
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         if (block_tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
+            ZJC_DEBUG("now handle storage index: %d, key: %s, val size: %u, value: %s",
+                i,
+                block_tx.storages(i).key().c_str(),
+                block_tx.storages(i).value().size(),
+                common::Encode::HexEncode(block_tx.storages(i).value()).c_str());
             if (!elect_block->ParseFromString(block_tx.storages(i).value())) {
                 ZJC_FATAL("parse elect block failed!");
                 return;
@@ -1138,8 +1143,8 @@ void NetworkInit::HandleElectionBlock(
         ZJC_ERROR("elect manager handle elect block failed!");
         return;
     }
-    // TODO log members
 
+    // TODO log members
     auto sharding_id = elect_block->shard_network_id();
     auto elect_height = elect_mgr_->latest_height(sharding_id);
     libff::alt_bn128_G2 common_pk;

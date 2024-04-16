@@ -111,6 +111,10 @@ public:
             uint32_t network_id,
             libff::alt_bn128_G2* common_pk,
             libff::alt_bn128_Fr* local_sec_key) {
+        if (height == 0) {
+            return nullptr;
+        }
+        
         ZJC_DEBUG("get bls pk and secret key success.height: %lu, "
             "network_id: %u, end net id: %u, offset: %u",
             height, 
@@ -251,6 +255,8 @@ private:
         bool eb_valid = false;
         elect::protobuf::ElectBlock elect_block;
         for (int32_t tx_idx = 0; tx_idx < block.tx_list_size(); ++tx_idx) {
+            ZJC_DEBUG("get tx step %d, %d, network_id: %u",
+                tx_idx, block.tx_list(tx_idx).step(), network_id);
             if (block.tx_list(tx_idx).step() != pools::protobuf::kConsensusRootElectShard) {
                 continue;
             }

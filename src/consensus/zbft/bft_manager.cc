@@ -327,7 +327,9 @@ void BftManager::LeaderSendBftTimeoutMessage(
         header.hash64());
 }
 
-void BftManager::HandleLeaderCollectTxs(const ElectItem& elect_item, const transport::MessagePtr& leader_msg_ptr) {
+void BftManager::HandleLeaderCollectTxs(
+        const ElectItem& elect_item, 
+        const transport::MessagePtr& leader_msg_ptr) {
     auto pool_index = leader_msg_ptr->header.zbft().pool_index();
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
@@ -348,6 +350,12 @@ void BftManager::HandleLeaderCollectTxs(const ElectItem& elect_item, const trans
     bft_msg.set_member_index(elect_item.local_node_member_index);
     bft_msg.set_bft_timeout(true);
     auto txbft = bft_msg.mutable_tx_bft();
+    if (leader_msg_ptr->header.zbft().leader_idx() >= elect_item.members->size()) {
+        ZJC_ERROR("leader member index invalid: %u, member size: %u",
+            leader_msg_ptr->header.zbft().leader_idx(), elect_item.members->size());
+        return;
+    }
+    
     auto leader_member = (*elect_item.members)[leader_msg_ptr->header.zbft().leader_idx()];
     dht::DhtKeyManager dht_key(
         common::GlobalInfo::Instance()->network_id(),
@@ -376,7 +384,8 @@ void BftManager::HandleLeaderCollectTxs(const ElectItem& elect_item, const trans
 
     if (leader_member->public_ip == 0 || leader_member->public_port == 0) {
         network::Route::Instance()->Send(msg_ptr);
-        ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, tx size: %u, to: %s",
+        ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, "
+            "src hash64: %lu, tx size: %u, to: %s",
             common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
             header.hash64(),
             leader_msg_ptr->header.hash64(),
@@ -388,7 +397,8 @@ void BftManager::HandleLeaderCollectTxs(const ElectItem& elect_item, const trans
             to_ip,
             leader_member->public_port,
             header);
-        ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, tx size: %u to: %s, %s:%u",
+        ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, "
+            "src hash64: %lu, tx size: %u to: %s, %s:%u",
             common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
             header.hash64(),
             leader_msg_ptr->header.hash64(),
