@@ -3,6 +3,7 @@
 #include <bls/bls_utils.h>
 #include <common/node_members.h>
 #include <consensus/hotstuff/types.h>
+#include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g2.hpp>
 #include <security/security.h>
 #include <consensus/hotstuff/elect_info.h>
@@ -41,6 +42,7 @@ public:
             const HashStr& msg_hash,
             std::string* sign_x,
             std::string* sign_y);
+    
     Status ReconstructAndVerify(
             const uint64_t& elect_height,
             const View& view,
@@ -49,6 +51,12 @@ public:
             const std::string& partial_sign_x,
             const std::string& partial_sign_y,
             std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
+    
+    Status Verify(
+            const uint64_t& elect_height,
+            const HashStr& msg_hash,
+            const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
+    
     Status CreateQC(
             const std::shared_ptr<ViewBlock>& view_block,
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,

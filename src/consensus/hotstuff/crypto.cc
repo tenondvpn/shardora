@@ -96,7 +96,21 @@ Status Crypto::ReconstructAndVerify(
     bls_collection_->reconstructed_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
     bls_collection_->reconstructed_sign->to_affine_coordinates();
 #endif
-    // Verify
+    Status s = Verify(elect_height, msg_hash, bls_collection_->reconstructed_sign);
+    if (s == Status::kSuccess) {
+        bls_collection_->handled = true;
+    }
+
+    return s;
+} catch (std::exception& e) {
+    return Status::kBlsVerifyWaiting;
+};
+
+Status Crypto::Verify(const uint64_t& elect_height, const HashStr& msg_hash, const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign) {
+    if (reconstructed_sign == nullptr) {
+        return Status::kBlsVerifyFailed;
+    }
+    
     std::string verify_hash_a;
     std::string verify_hash_b;
     Status s = GetVerifyHashA(elect_height, msg_hash, &verify_hash_a);
@@ -112,16 +126,8 @@ Status Crypto::ReconstructAndVerify(
         return Status::kBlsVerifyFailed;
     }
 
-    bls_collection_->handled = true;
-    reconstructed_sign = bls_collection_->reconstructed_sign;
-    if (reconstructed_sign == nullptr) {
-        return Status::kBlsVerifyWaiting;
-    }
-
     return Status::kSuccess;
-} catch (std::exception& e) {
-    return Status::kBlsVerifyWaiting;
-};
+}
 
 Status Crypto::CreateQC(
         const std::shared_ptr<ViewBlock>& view_block,

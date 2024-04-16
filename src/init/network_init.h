@@ -24,6 +24,8 @@
 #include "timeblock/time_block_manager.h"
 #include "transport/multi_thread.h"
 #include "vss/vss_manager.h"
+#include <consensus/hotstuff/elect_info.h>
+#include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/view_block_chain_manager.h>
 #include <consensus/hotstuff/view_block_chain_syncer.h>
 #include <yaml-cpp/node/node.h>
@@ -105,6 +107,8 @@ private:
 #ifdef HOTSTUFF_V2    
     std::shared_ptr<hotstuff::ViewBlockChainManager> view_block_chain_mgr_ = nullptr;
     std::shared_ptr<hotstuff::ViewBlockChainSyncer> view_block_chain_syncer_ = nullptr;
+    std::shared_ptr<hotstuff::Pacemaker> pacemaker_ = nullptr;
+    std::shared_ptr<hotstuff::ElectInfo> elect_info_ = nullptr;
 #endif    
     http::HttpServer http_server_;
     HttpHandler http_handler_;

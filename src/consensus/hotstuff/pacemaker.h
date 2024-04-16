@@ -35,6 +35,10 @@ public:
         return high_qc_;
     }
 
+    inline std::shared_ptr<ViewBlock> HighQCWrapperBlock() const {
+        return high_qc_wrapper_block_;
+    }
+
     inline View CurView() const {
         return cur_view_;
     }

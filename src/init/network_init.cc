@@ -1,6 +1,10 @@
 #include "init/network_init.h"
 #include <common/log.h>
 #include <common/utils.h>
+#include <consensus/hotstuff/crypto.h>
+#include <consensus/hotstuff/elect_info.h>
+#include <consensus/hotstuff/leader_rotation.h>
+#include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/hotstuff/view_block_chain_syncer.h>
@@ -208,13 +212,18 @@ int NetworkInit::Init(int argc, char** argv) {
     shard_statistic_->Init();
 #ifdef HOTSTUFF_V2
     view_block_chain_mgr_ = std::make_shared<hotstuff::ViewBlockChainManager>(db_);
-    if (view_block_chain_mgr_->Init(hotstuff::GetGenesisViewBlock) != hotstuff::Status::kSuccess) {
+    if (view_block_chain_mgr_->Init() != hotstuff::Status::kSuccess) {
         return kInitError;
     }
     view_block_chain_syncer_ = std::make_shared<hotstuff::ViewBlockChainSyncer>(view_block_chain_mgr_);
     view_block_chain_syncer_->Start();
 
     // TODO pacemaker
+    elect_info_ = std::make_shared<hotstuff::ElectInfo>(security_);
+    auto crypto = std::make_shared<hotstuff::Crypto>(elect_info_, bls_mgr_);
+    
+    auto leader_rotation = std::make_shared<hotstuff::LeaderRotation>();
+    pacemaker_ = std::make_shared<hotstuff::Pacemaker>();
 
     // 以上应该放入 hotstuff 实例初始化中，并接收创世块
 
@@ -225,7 +234,11 @@ int NetworkInit::Init(int argc, char** argv) {
             ZJC_ERROR("no chain found, pool: %d", pool_idx);
             return;
         }
-        auto view_block = std::make_shared<hotstuff::ViewBlock>()
+        // 打包块
+        auto view_block = std::make_shared<hotstuff::ViewBlock>(
+                pacemaker_->HighQC()->view_block_hash,
+                
+            );
     });
 #endif
     RegisterFirewallCheck();
@@ -242,8 +255,6 @@ int NetworkInit::Init(int argc, char** argv) {
 
     inited_ = true;
     common::GlobalInfo::Instance()->set_main_inited_success();
-    
-    
     
     cmd_.Run();
     // std::this_thread::sleep_for(std::chrono::seconds(120));
@@ -1271,6 +1282,9 @@ void NetworkInit::HandleElectionBlock(
     pools_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     shard_statistic_->OnNewElectBlock(sharding_id, block->height(), elect_height);
     kv_sync_->OnNewElectBlock(sharding_id, block->height());
+#ifdef HOTSTUFF_V2
+    elect_info_->OnNewElectBlock(sharding_id, elect_height, members, common_pk, sec_key);
+#endif
     network::UniversalManager::Instance()->OnNewElectBlock(
         sharding_id,
         elect_height,
