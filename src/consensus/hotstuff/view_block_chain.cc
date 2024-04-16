@@ -250,9 +250,11 @@ void ViewBlockChain::Print() const {
 std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db, uint32_t pool_index) {
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
     uint32_t sharding_id = common::GlobalInfo::Instance()->network_id();
-        
-    std::shared_ptr<block::protobuf::Block> block;
-    bool r = prefix_db->GetBlockWithHeight(sharding_id, pool_index, 1, block.get());
+
+    std::shared_ptr<block::protobuf::Block> block_ptr = nullptr;
+    block_ptr = std::make_shared<block::protobuf::Block>();
+    auto& block = *block_ptr;
+    bool r = prefix_db->GetBlockWithHeight(sharding_id, pool_index, 1, &block);
     if (!r) {
         ZJC_ERROR("no genesis block found");
         return nullptr;
