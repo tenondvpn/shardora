@@ -107,6 +107,7 @@ Status ViewBlockChainSyncer::SendRequest(uint32_t network_id, const view_block::
     
     ZJC_DEBUG("====0.1, ip: %s, port: %d", node->public_ip.c_str(), node->public_port);
 
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
     transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);    
     return Status::kSuccess;
 }
