@@ -98,6 +98,7 @@ Status Crypto::ReconstructAndVerify(
 #endif
     Status s = Verify(elect_height, msg_hash, bls_collection_->reconstructed_sign);
     if (s == Status::kSuccess) {
+        reconstructed_sign = bls_collection_->reconstructed_sign;
         bls_collection_->handled = true;
     }
 
