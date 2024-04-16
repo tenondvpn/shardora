@@ -563,9 +563,9 @@ void BlockManager::HandleNormalToTx(
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        ZJC_DEBUG("get normal to tx key: %s, val: %s",
-            tx.storages(i).key().c_str(),
-            common::Encode::HexEncode(tx.storages(i).value()).c_str());
+        // ZJC_DEBUG("get normal to tx key: %s, val: %s",
+        //     tx.storages(i).key().c_str(),
+        //     common::Encode::HexEncode(tx.storages(i).value()).c_str());
         if (tx.storages(i).key() != protos::kNormalToShards) {
             continue;
         }
@@ -1620,12 +1620,16 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
 
     if (shard_statistic_tx != nullptr && !shard_statistic_tx->tx_ptr->in_consensus) {
         auto now_tm = common::TimeUtils::TimestampUs();
-        if (latest_timeblock_tm_sec_ + (common::kRotationPeriod / (1000lu * 1000lu)) > (now_tm / 1000000lu)) {
+        if (iter->first >= latest_timeblock_height_) {
+            return nullptr;
+        }
+
+        if (prev_timeblock_tm_sec_ + (common::kRotationPeriod / (1000lu * 1000lu)) > (now_tm / 1000000lu)) {
             static uint64_t prev_get_tx_tm1 = common::TimeUtils::TimestampMs();
             if (now_tx_tm > prev_get_tx_tm1 + 10000) {
                 if (leader) {
                     ZJC_DEBUG("failed get statistic tx: %lu, %lu, %lu", 
-                        latest_timeblock_tm_sec_, 
+                        prev_timeblock_tm_sec_, 
                         (common::kRotationPeriod / 1000000lu), 
                         (now_tm / 1000000lu));
                 }
@@ -1646,8 +1650,10 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         auto& tx = shard_statistic_tx->tx_ptr->tx_info;
         tx.set_to(shard_statistic_tx->tx_ptr->address_info->addr());
         shard_statistic_tx->tx_ptr->in_consensus = true;
-        ZJC_DEBUG("success get statistic tx hash: %s, latest_timeblock_tm_sec_: %lu",
-            common::Encode::HexEncode(shard_statistic_tx->tx_hash).c_str(), latest_timeblock_tm_sec_);
+        ZJC_DEBUG("success get statistic tx hash: %s, prev_timeblock_tm_sec_: %lu, "
+            "height: %lu, latest time block height: %lu",
+            common::Encode::HexEncode(shard_statistic_tx->tx_hash).c_str(),
+            prev_timeblock_tm_sec_, iter->first, latest_timeblock_height_);
         return shard_statistic_tx->tx_ptr;
     }
 

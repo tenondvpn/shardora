@@ -48,6 +48,7 @@ NetworkInit::~NetworkInit() {
 }
 
 int NetworkInit::Init(int argc, char** argv) {
+    ZJC_DEBUG("init 0 0");
     auto b_time = common::TimeUtils::TimestampMs();
     if (inited_) {
         INIT_ERROR("network inited!");
@@ -69,6 +70,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    ZJC_DEBUG("init 0 1");
     contract_mgr_ = std::make_shared<contract::ContractManager>();
     contract_mgr_->Init(security_);
     common::ParserArgs parser_arg;
@@ -84,6 +86,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return genesis_check;
     }
 
+    ZJC_DEBUG("init 0 2");
     std::string db_path = "./db";
     conf_.Get("zjchain", "db_path", db_path);
     db_ = std::make_shared<db::Db>();
@@ -92,32 +95,39 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    ZJC_DEBUG("init 0 3");
     common::Ip::Instance();
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     // 随机数
     vss_mgr_ = std::make_shared<vss::VssManager>(security_);
     kv_sync_ = std::make_shared<sync::KeyValueSync>();
     gas_prepayment_ = std::make_shared<consensus::ContractGasPrepayment>(db_);
+    ZJC_DEBUG("init 0 4");
     InitLocalNetworkId();
     ZJC_DEBUG("id: %s, init sharding id: %u",
         common::Encode::HexEncode(security_->GetAddress()).c_str(),
         common::GlobalInfo::Instance()->network_id());
+    ZJC_DEBUG("init 0 5");
     if (net_handler_.Init(db_) != transport::kTransportSuccess) {
         return kInitError;
     }
 
+    ZJC_DEBUG("init 0 6");
     net_handler_.Start();
+    ZJC_DEBUG("init 0 7");
     int transport_res = transport::TcpTransport::Instance()->Init(
         common::GlobalInfo::Instance()->config_local_ip() + ":" +
         std::to_string(common::GlobalInfo::Instance()->config_local_port()),
         128,
         true,
         &net_handler_);
+    ZJC_DEBUG("init 0 8");
     if (transport_res != transport::kTransportSuccess) {
         INIT_ERROR("int tcp transport failed!");
         return kInitError;
     }
 
+    ZJC_DEBUG("init 0 9");
     network::DhtManager::Instance();
     network::Route::Instance()->Init(security_);
     network::Route::Instance()->RegisterMessage(
@@ -125,6 +135,7 @@ int NetworkInit::Init(int argc, char** argv) {
         std::bind(&NetworkInit::HandleMessage, this, std::placeholders::_1));
     account_mgr_ = std::make_shared<block::AccountManager>();
     network::UniversalManager::Instance()->Init(security_, db_, account_mgr_);
+    ZJC_DEBUG("init 0 10");
     if (InitNetworkSingleton() != kInitSuccess) {
         INIT_ERROR("InitNetworkSingleton failed!");
         return kInitError;
@@ -135,14 +146,19 @@ int NetworkInit::Init(int argc, char** argv) {
     elect_mgr_ = std::make_shared<elect::ElectManager>(
         vss_mgr_, account_mgr_, block_mgr_, security_, bls_mgr_, db_,
         nullptr);
+    ZJC_DEBUG("init 0 11");
     kv_sync_->Init(
         block_mgr_,
         db_,
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
+    ZJC_DEBUG("init 0 12");
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(
         security_, db_, kv_sync_, account_mgr_);
+    ZJC_DEBUG("init 0 13");
     account_mgr_->Init(db_, pools_mgr_);
+    ZJC_DEBUG("init 0 14");
     zjcvm::Execution::Instance()->Init(db_, account_mgr_);
+    ZJC_DEBUG("init 0 15");
     auto new_db_cb = std::bind(
         &NetworkInit::DbNewBlockCallback,
         this,
@@ -150,6 +166,7 @@ int NetworkInit::Init(int argc, char** argv) {
         std::placeholders::_2);
     shard_statistic_ = std::make_shared<pools::ShardStatistic>(
         elect_mgr_, db_, security_, pools_mgr_);
+    ZJC_DEBUG("init 0 16");
     block_mgr_->Init(
         account_mgr_,
         db_,
@@ -160,8 +177,10 @@ int NetworkInit::Init(int argc, char** argv) {
         security_->GetAddress(),
         new_db_cb,
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
+    ZJC_DEBUG("init 0 14");
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     bft_mgr_ = std::make_shared<consensus::BftManager>();
+    ZJC_DEBUG("init 0");
     auto bft_init_res = bft_mgr_->Init(
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1),
         contract_mgr_,
@@ -185,12 +204,14 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    ZJC_DEBUG("init 1");
     tm_block_mgr_->Init(vss_mgr_,account_mgr_);
     if (elect_mgr_->Init() != elect::kElectSuccess) {
         INIT_ERROR("init elect manager failed!");
         return kInitError;
     }
 
+    ZJC_DEBUG("init 2");
     if (common::GlobalInfo::Instance()->network_id() != common::kInvalidUint32 &&
             common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
         if (elect_mgr_->Join(
@@ -201,14 +222,19 @@ int NetworkInit::Init(int argc, char** argv) {
         }
     }
 
+    ZJC_DEBUG("init 3");
     shard_statistic_->Init();
+    ZJC_DEBUG("init 4");
     block_mgr_->LoadLatestBlocks();
+    ZJC_DEBUG("init 5");
     RegisterFirewallCheck();
     transport::TcpTransport::Instance()->Start(false);
+    ZJC_DEBUG("init 6");
     if (InitHttpServer() != kInitSuccess) {
         INIT_ERROR("InitHttpServer failed!");
         return kInitError;
     }
+    ZJC_DEBUG("init 7");
     GetAddressShardingId();
     if (InitCommand() != kInitSuccess) {
         INIT_ERROR("InitCommand failed!");
@@ -581,7 +607,7 @@ std::string http_ip = "0.0.0.0";
         cli.Request(peer_ip.c_str(), http_port, "ok", http_init_callback);
         ZJC_DEBUG("http init wait response coming.");
         std::unique_lock<std::mutex> lock(wait_mutex_);
-        wait_con_.wait(lock);
+        wait_con_.wait_for(lock, std::chrono::milliseconds(1000));
     }
 
     return kInitSuccess;

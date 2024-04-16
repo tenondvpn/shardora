@@ -40,10 +40,13 @@ int AccountManager::Init(
     pools_mgr_ = pools_mgr;
     CreatePoolsAddressInfo();
     inited_ = true;
+    ZJC_DEBUG("thread init acc wait 0");
     update_acc_thread_ = std::make_shared<std::thread>(
         std::bind(&AccountManager::RunUpdateAccounts, this));
+    ZJC_DEBUG("thread init acc wait 1");
     std::unique_lock<std::mutex> lock(thread_wait_mutex_);
-    thread_wait_conn_.wait(lock);
+    thread_wait_conn_.wait_for(lock, std::chrono::milliseconds(1000));
+    ZJC_DEBUG("thread init acc wait 2");
     return kBlockSuccess;
 }
 
@@ -605,10 +608,14 @@ void AccountManager::HandleJoinElectTx(
 }
 
 void AccountManager::RunUpdateAccounts() {
+    ZJC_DEBUG("thread init acc 0");
     {
         auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+        ZJC_DEBUG("thread init acc 1");
         std::unique_lock<std::mutex> lock(thread_wait_mutex_);
+        ZJC_DEBUG("thread init acc 2");
         thread_wait_conn_.notify_one();
+        ZJC_DEBUG("thread init acc 3");
     }
     
     while (!destroy_) {

@@ -126,7 +126,8 @@ int Zbft::Prepare(bool leader) {
 int Zbft::LeaderCreatePrepare(bool leader) {
     local_member_index_ = leader_index_;
     if (LeaderCallTransaction(leader) != kConsensusSuccess) {
-        assert(false);
+        // assert(false);
+        ZJC_ERROR("not all tx valid!");
         return kConsensusError;
     }
 

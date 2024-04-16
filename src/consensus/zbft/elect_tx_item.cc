@@ -73,6 +73,7 @@ int ElectTxItem::HandleTx(
                 added_nodes_.insert((*iter)->pubkey);
             }
 
+            // TODO: check if elect height valid
             if (max_elect_height != now_elect_height) {
                 ZJC_DEBUG("old elect coming max_elect_height: %lu, now_elect_height: %lu",
                     max_elect_height, now_elect_height);
