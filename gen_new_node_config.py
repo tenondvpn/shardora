@@ -111,16 +111,18 @@ ps -ef | grep zjchain | grep new_node | awk -F' ' '{{print $2}}' | xargs kill -9
 
 {node_list}
 
+rm -rf /root/zjnodes/new*
+
 for n in  "${{nodes[@]}}"; do
-    rm -rf /root/zjnodes/${{n}}/zjchain /root/zjnodes/${{n}}/core* /root/zjnodes/${{n}}/log/* /root/zjnodes/${{n}}/*db*
+
 
     mkdir -p "/root/zjnodes/${{n}}/log"
-    cp -rf /root/zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/${{n}}/conf
-    cp -rf /root/zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/${{n}}/conf
-    cp -rf /root/zjnodes/zjchain/zjchain /root/zjnodes/${{n}}
-    cp -rf /root/zjnodes/${{n}}/conf/zjchain.conf /root/zjnodes/${{n}}/conf/zjchain.conf
+    mkdir -p "/root/zjnodes/${{n}}/conf"
+    cp -rf /root/zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/${{n}}/conf/
+    cp -rf /root/zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/${{n}}/conf/
+    cp -rf /root/zjnodes/zjchain/zjchain /root/zjnodes/${{n}}/
+    cp -rf ./zjnodes/${{n}}/conf/zjchain.conf /root/zjnodes/${{n}}/conf/zjchain.conf
     echo "cp $n"
-
 done
 
 
@@ -131,6 +133,8 @@ for node in "${{nodes[@]}}"; do
   echo "start $node"
 
 done
+
+sh ./dispatch_coin.sh
 """
     full_path = "new_node_deploy.sh"
     # full_path = os.path.abspath(file_path)
