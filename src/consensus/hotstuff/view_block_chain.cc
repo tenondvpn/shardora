@@ -241,9 +241,18 @@ void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const s
     }
 }
 
+// void ViewBlockChain::Print() const {
+//     if (start_block_) {
+//         PrintBlock(start_block_);
+//     }
+// }
+
 void ViewBlockChain::Print() const {
-    if (start_block_) {
-        PrintBlock(start_block_);
+    for (const auto& heightAndBlocks : view_blocks_at_height_) {
+        std::cout << "Height " << heightAndBlocks.first << ":\n";
+        for (const auto& block : heightAndBlocks.second) {
+            std::cout << "  Block " << block->hash << " (parent: " << block->parent_hash << ")\n";
+        }
     }
 }
 
