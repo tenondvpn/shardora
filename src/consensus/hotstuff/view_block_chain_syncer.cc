@@ -193,10 +193,12 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
         sync_chain->Store(view_block);
     }
 
+    ZJC_DEBUG("====2.2 pool_idx: %d, view_blocks: %d", pool_idx, sync_chain->Size());
     if (!sync_chain->IsValid()) {
         return Status::kSuccess;
     }
 
+    ZJC_DEBUG("====2.3 pool_idx: %d, view_blocks: %d", pool_idx, sync_chain->Size());
     return MergeChain(chain, sync_chain);
 }
 
