@@ -157,7 +157,7 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
 
     ViewBlockMinHeap min_heap;
     for (auto it = view_block_items.begin(); it != view_block_items.end(); it++) {
-        std::shared_ptr<ViewBlock> view_block;
+        auto view_block = std::make_shared<ViewBlock>();
         Status s = Proto2ViewBlock(*it, view_block);
         if (s != Status::kSuccess) {
             return s;
