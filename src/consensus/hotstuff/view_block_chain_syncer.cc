@@ -69,17 +69,21 @@ void ViewBlockChainSyncer::SyncChains() {
 
 void ViewBlockChainSyncer::ConsumeMessages() {
     // Consume Messages
+    uint32_t pop_count = 0;
     for (uint8_t thread_idx = 0; thread_idx < common::kMaxThreadCount; ++thread_idx) {
-        transport::MessagePtr msg_ptr = nullptr;
-        if (!consume_queues_[thread_idx].pop(&msg_ptr) || msg_ptr == nullptr) {
-            continue;
-        }
-        ZJC_DEBUG("====1.5, thread: %d", thread_idx);
-        if (msg_ptr->header.view_block_proto().has_view_block_req()) {
-            processRequest(msg_ptr);
-        } else if (msg_ptr->header.view_block_proto().has_view_block_res()) {
-            processResponse(msg_ptr);
-        }
+        while (pop_count++ < 64) {
+            transport::MessagePtr msg_ptr = nullptr;
+            consume_queues_[thread_idx].pop(&msg_ptr);
+            if (msg_ptr == nullptr) {
+                break;
+            }
+            ZJC_DEBUG("====1.5, thread: %d", thread_idx);
+            if (msg_ptr->header.view_block_proto().has_view_block_req()) {
+                processRequest(msg_ptr);
+            } else if (msg_ptr->header.view_block_proto().has_view_block_res()) {
+                processResponse(msg_ptr);
+            }
+        }   
     }
 }
 
