@@ -2,6 +2,7 @@
 #include <common/log.h>
 #include <common/utils.h>
 #include <consensus/hotstuff/types.h>
+#include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/hotstuff/view_block_chain_syncer.h>
 #include <functional>
 #include <protos/pools.pb.h>
@@ -207,11 +208,15 @@ int NetworkInit::Init(int argc, char** argv) {
     shard_statistic_->Init();
 #ifdef HOTSTUFF_V2
     view_block_chain_mgr_ = std::make_shared<hotstuff::ViewBlockChainManager>(db_);
-    if (view_block_chain_mgr_->Init() != hotstuff::Status::kSuccess) {
+    if (view_block_chain_mgr_->Init(hotstuff::GetGenesisViewBlock) != hotstuff::Status::kSuccess) {
         return kInitError;
     }
     view_block_chain_syncer_ = std::make_shared<hotstuff::ViewBlockChainSyncer>(view_block_chain_mgr_);
     view_block_chain_syncer_->Start();
+
+    // TODO pacemaker
+
+    // 以上应该放入 hotstuff 实例初始化中，并接收创世块
 
     cmd_.AddCommand("addblock", [this](const std::vector<std::string>& args){
         uint32_t pool_idx = std::stoi(args[0]);

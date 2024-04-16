@@ -8,8 +8,6 @@ namespace shardora {
 
 namespace hotstuff {
 
-using InitBlockFunc = std::shared_ptr<ViewBlock>(const std::shared_ptr<db::Db>& db, uint32_t pool_index);
-
 class ViewBlockChainManager {
 public:
     explicit ViewBlockChainManager(const std::shared_ptr<db::Db>&);
@@ -18,7 +16,7 @@ public:
     ViewBlockChainManager(const ViewBlockChainManager&) = delete;
     ViewBlockChainManager& operator=(const ViewBlockChainManager&) = delete;
 
-    Status Init(InitBlockFunc);
+    Status Init();
     
     inline std::shared_ptr<ViewBlockChain> Chain(const uint32_t& pool_idx) const {
         return pool_chain_map_.at(pool_idx);

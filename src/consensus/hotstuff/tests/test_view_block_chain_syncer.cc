@@ -24,7 +24,7 @@ protected:
     
     void SetUp() {
         view_block_chain_mgr_ = std::make_shared<ViewBlockChainManager>(std::make_shared<db::Db>());
-        view_block_chain_mgr_->Init(nullptr);
+        view_block_chain_mgr_->Init();
         syncer_ = std::make_shared<ViewBlockChainSyncer>(view_block_chain_mgr_);
         syncer_->SetOnRecvViewBlockFn(StoreViewBlock);
     }
