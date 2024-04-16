@@ -263,7 +263,7 @@ std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db
 }
 
 std::shared_ptr<QC> GetGenesisQC() {
-    std::shared_ptr<QC> qc = nullptr;
+    auto qc = std::make_shared<QC>();
     qc->bls_agg_sign = nullptr;
     qc->view = 0;
     qc->view_block_hash = "";
