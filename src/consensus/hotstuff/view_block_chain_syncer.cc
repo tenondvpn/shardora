@@ -71,7 +71,7 @@ void ViewBlockChainSyncer::ConsumeMessages() {
     // Consume Messages
     uint32_t pop_count = 0;
     for (uint8_t thread_idx = 0; thread_idx < common::kMaxThreadCount; ++thread_idx) {
-        while (pop_count++ < 64) {
+        while (pop_count++ < 128) {
             transport::MessagePtr msg_ptr = nullptr;
             consume_queues_[thread_idx].pop(&msg_ptr);
             if (msg_ptr == nullptr) {
