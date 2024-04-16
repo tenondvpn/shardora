@@ -223,7 +223,6 @@ int NetworkInit::Init(int argc, char** argv) {
     elect_info_ = std::make_shared<hotstuff::ElectInfo>(security_);
     crypto_ = std::make_shared<hotstuff::Crypto>(elect_info_, bls_mgr_);
     
-    auto leader_rotation = std::make_shared<hotstuff::LeaderRotation>();
     consensus_mgr_ = std::make_shared<hotstuff::ConsensusManager>(
             view_block_chain_mgr_, elect_info_, crypto_, db_);
     consensus_mgr_->Init();
