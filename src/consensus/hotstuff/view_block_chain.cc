@@ -221,6 +221,25 @@ bool ViewBlockChain::IsValid() {
     return num == 1;
 }
 
+void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent = "") const {
+    std::cout << indent << block->hash << "\n";
+    auto childrenIt = view_block_children_.find(block->hash);
+    if (childrenIt != view_block_children_.end()) {
+        std::string childIndent = indent + "  ";
+        for (const auto& child : childrenIt->second) {
+            std::cout << indent << "|\n";
+            std::cout << indent << "+--";
+            PrintBlock(child, childIndent);
+        }
+    }
+}
+
+void ViewBlockChain::Print() const {
+    if (start_block_) {
+        PrintBlock(start_block_);
+    }
+}
+
 std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db, uint32_t pool_index) {
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
     uint32_t sharding_id = common::GlobalInfo::Instance()->network_id();

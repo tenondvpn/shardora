@@ -62,14 +62,7 @@ public:
     inline void AddLockedBlock(const std::shared_ptr<ViewBlock>& view_block) {
         latest_locked_blocks_.insert(view_block);
     }
-
-    // inline ViewBlockMinHeap OrphanBlocks() const {
-    //     return orphan_blocks_;
-    // }
-
-    // void AddOrphanBlock(const std::shared_ptr<ViewBlock>& view_block);
-    // std::shared_ptr<ViewBlock> PopOrphanBlock();
-    // bool IsOrphanBlockTimeout(const std::shared_ptr<ViewBlock> view_block) const;
+    
     // If a chain is valid
     bool IsValid();
 
@@ -107,6 +100,9 @@ public:
     inline uint32_t Size() const {
         return view_blocks_.size();
     }
+
+    void Print() const;
+    void PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent = "") const;
     
 private:
     // prune the branch starting from view_block
