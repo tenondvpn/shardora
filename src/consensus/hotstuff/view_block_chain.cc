@@ -5,6 +5,7 @@
 #include <consensus/hotstuff/types.h>
 #include <iostream>
 #include <algorithm>
+#include <protos/block.pb.h>
 
 namespace shardora {
 
@@ -260,14 +261,17 @@ std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
     uint32_t sharding_id = common::GlobalInfo::Instance()->network_id();
 
-    auto block_ptr = std::make_shared<block::protobuf::Block>();
-    bool r = prefix_db->GetBlockWithHeight(sharding_id, pool_index, 0, block_ptr.get());
+    block::protobuf::Block block;
+    bool r = prefix_db->GetBlockWithHeight(sharding_id, pool_index, 0, &block);
     if (!r) {
         ZJC_ERROR("no genesis block found");
         return nullptr;
     }
-    auto block = block_ptr;
-    return std::make_shared<ViewBlock>("", GetGenesisQC(), block, GenesisView, 0);
+
+    std::cout << "from: " << block.tx_list(0).from() << std::endl;
+
+    auto block_ptr = std::make_shared<block::protobuf::Block>(block);
+    return std::make_shared<ViewBlock>("", GetGenesisQC(), block_ptr, GenesisView, 0);
 }
 
 std::shared_ptr<QC> GetGenesisQC() {
