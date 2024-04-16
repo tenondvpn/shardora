@@ -72,7 +72,18 @@ public:
     ConsensusManager(const ConsensusManager&) = delete;
     ConsensusManager& operator=(const ConsensusManager&) = delete;
 
-    Status Init();
+    Status Init() {
+        for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
+            auto chain = view_block_chain_mgr_->Chain(pool_idx);
+            auto leader_rotation = std::make_shared<LeaderRotation>(chain, elect_info_);
+            auto view_duration = std::make_shared<ViewDuration>();
+            auto pacemaker = std::make_shared<Pacemaker>(crypto_, leader_rotation, view_duration);
+            pool_consensus_map_[pool_idx] = std::make_shared<Consensus>(
+                    chain, pacemaker, leader_rotation, db_, pool_idx);
+        }
+
+        return Status::kSuccess;
+    }
 
     inline std::shared_ptr<Consensus> consensus(const uint32_t& pool_idx) const {
         return pool_consensus_map_.at(pool_idx);
@@ -86,16 +97,7 @@ private:
     std::shared_ptr<db::Db> db_;
 };
 
-Status ConsensusManager::Init() {
-    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
-        auto chain = view_block_chain_mgr_->Chain(pool_idx);
-        auto leader_rotation = std::make_shared<LeaderRotation>(chain, elect_info_);
-        auto view_duration = std::make_shared<ViewDuration>();
-        auto pacemaker = std::make_shared<Pacemaker>(crypto_, leader_rotation, view_duration);
-        pool_consensus_map_[pool_idx] = std::make_shared<Consensus>(
-                chain, pacemaker, leader_rotation, db_, pool_idx);
-    }
-}
+
 
 } // namespace hotstuff
 
