@@ -10,6 +10,7 @@
 #include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/hotstuff/view_block_chain_syncer.h>
 #include <functional>
+#include <memory>
 #include <protos/pools.pb.h>
 
 #include "block/block_manager.h"
@@ -240,17 +241,23 @@ int NetworkInit::Init(int argc, char** argv) {
         auto fake_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
         auto qc = std::make_shared<hotstuff::QC>();
         hotstuff::Status s = this->crypto_->CreateQC(pacemaker->HighQCWrapperBlock(), fake_sign, qc);
+        
         if (s != hotstuff::Status::kSuccess) {
             std::cout << "error!" << std::endl;
             return;
         }
         
         auto view_block = std::make_shared<hotstuff::ViewBlock>(
-                pacemaker->HighQC()->view_block_hash,
+                pacemaker->HighQCWrapperBlock()->hash,
                 qc,
                 nullptr,
-                pacemaker->CurView(),
+                pacemaker->CurView()+1, // 此时为 0
                 0);
+
+        auto sync_info = std::make_shared<hotstuff::SyncInfo>();
+        sync_info->view_block = view_block;
+        pacemaker->AdvanceView(sync_info, false);
+        
 
         ZJC_DEBUG("addblock view_block, parent: %s, view: %s",
             common::Encode::HexEncode(pacemaker->HighQC()->view_block_hash).c_str(),

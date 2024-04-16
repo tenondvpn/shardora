@@ -229,7 +229,7 @@ bool ViewBlockChain::IsValid() {
 }
 
 void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent) const {
-    std::cout << indent << block->hash << "\n";
+    std::cout << indent << common::Encode::HexEncode(block->hash).c_str() << "\n";
     auto childrenIt = view_block_children_.find(block->hash);
     if (childrenIt != view_block_children_.end()) {
         std::string childIndent = indent + "  ";
@@ -251,7 +251,7 @@ void ViewBlockChain::Print() const {
     for (const auto& heightAndBlocks : view_blocks_at_height_) {
         std::cout << "Height " << heightAndBlocks.first << ":\n";
         for (const auto& block : heightAndBlocks.second) {
-            std::cout << "  Block " << block->hash << " (parent: " << block->parent_hash << ")\n";
+            std::cout << "  Block " << common::Encode::HexEncode(block->hash).c_str() << " (parent: " << block->parent_hash << ")\n";
         }
     }
 }
