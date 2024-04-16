@@ -37,14 +37,14 @@ echo "==== STEP2: DONE ===="
 echo "==== STEP3: EXECUTE ===="
 
 echo "[$server0]"
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd /root/xf/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1 xf> /dev/null 2>&1 &
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && ulimit -c unlimited && cd /root/xf/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1 xf> /dev/null 2>&1 &
 
 sleep 3
 
 echo "[$server0]"
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64
 for node in r2 r3 s3_1 s3_2 s3_3; do
-cd /root/xf/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node xf> /dev/null 2>&1 &
+cd /root/xf/zjnodes/$node/ && ulimit -c unlimited && nohup ./zjchain -f 0 -g 0 $node xf> /dev/null 2>&1 &
 done
 
 
