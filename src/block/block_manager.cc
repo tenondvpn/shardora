@@ -1595,12 +1595,24 @@ pools::TxItemPtr BlockManager::GetCrossTx(
 pools::TxItemPtr BlockManager::GetStatisticTx(
         uint32_t pool_index, 
         bool leader) {
+    if (!leader) {
+        ZJC_DEBUG("backup get statistic tx coming.");
+    }
+
     auto statistic_map_ptr = shard_statistics_map_ptr_;
     if (statistic_map_ptr == nullptr) {
+        if (!leader) {
+            ZJC_DEBUG("statistic_map_ptr == nullptr");
+        }
+
         return nullptr;
     }
 
     if (statistic_map_ptr->empty()) {
+        if (!leader) {
+            ZJC_DEBUG("statistic_map_ptr->empty()");
+        }
+
         return nullptr;
     }
 
@@ -1621,19 +1633,21 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
     if (shard_statistic_tx != nullptr && !shard_statistic_tx->tx_ptr->in_consensus) {
         auto now_tm = common::TimeUtils::TimestampUs();
         if (iter->first >= latest_timeblock_height_) {
+            if (!leader) {
+                ZJC_DEBUG("iter->first >= latest_timeblock_height_: %lu, %lu",
+                    iter->first, latest_timeblock_height_);
+            }
+
             return nullptr;
         }
 
         if (prev_timeblock_tm_sec_ + (common::kRotationPeriod / (1000lu * 1000lu)) > (now_tm / 1000000lu)) {
             static uint64_t prev_get_tx_tm1 = common::TimeUtils::TimestampMs();
             if (now_tx_tm > prev_get_tx_tm1 + 10000) {
-                if (leader) {
-                    ZJC_DEBUG("failed get statistic tx: %lu, %lu, %lu", 
-                        prev_timeblock_tm_sec_, 
-                        (common::kRotationPeriod / 1000000lu), 
-                        (now_tm / 1000000lu));
-                }
-                    
+                ZJC_DEBUG("failed get statistic tx: %lu, %lu, %lu", 
+                    prev_timeblock_tm_sec_, 
+                    (common::kRotationPeriod / 1000000lu), 
+                    (now_tm / 1000000lu));
                 prev_get_tx_tm1 = now_tx_tm;
             }
             
@@ -1657,6 +1671,9 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         return shard_statistic_tx->tx_ptr;
     }
 
+    if (!leader) {
+        ZJC_DEBUG("failed get statistic tx");
+    }
     return nullptr;
 }
 
