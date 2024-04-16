@@ -1,4 +1,6 @@
+#include <common/encode.h>
 #include <common/global_info.h>
+#include <common/log.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/hotstuff/types.h>
 #include <iostream>
@@ -14,6 +16,11 @@ ViewBlockChain::ViewBlockChain() {
 ViewBlockChain::~ViewBlockChain(){}
 
 Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
+    if (!view_block->Valid()) {
+        ZJC_ERROR("view block is not valid, hash: %s",
+            common::Encode::HexEncode(view_block->hash).c_str());
+        return Status::kError;
+    }
     if (!start_block_) {
         start_block_ = view_block;
         view_blocks_[view_block->hash] = view_block;
@@ -221,7 +228,7 @@ bool ViewBlockChain::IsValid() {
     return num == 1;
 }
 
-void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent = "") const {
+void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent) const {
     std::cout << indent << block->hash << "\n";
     auto childrenIt = view_block_children_.find(block->hash);
     if (childrenIt != view_block_children_.end()) {
@@ -247,6 +254,7 @@ std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db
     std::shared_ptr<block::protobuf::Block> block;
     bool r = prefix_db->GetBlockWithHeight(sharding_id, pool_index, 1, block.get());
     if (!r) {
+        ZJC_ERROR("no genesis block found");
         return nullptr;
     }
     return std::make_shared<ViewBlock>("", GetGenesisQC(), block, GenesisView, 0);
