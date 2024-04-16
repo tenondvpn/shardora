@@ -1,5 +1,6 @@
 #include "consensus/hotstuff/view_block_chain_syncer.h"
 #include <common/global_info.h>
+#include <common/log.h>
 #include <common/time_utils.h>
 #include <common/utils.h>
 #include <consensus/hotstuff/types.h>
@@ -52,7 +53,7 @@ void ViewBlockChainSyncer::ConsensusTimerMessage() {
     ConsumeMessages();
 
     tick_.CutOff(
-        100000lu,
+        1000000lu,
         std::bind(&ViewBlockChainSyncer::ConsensusTimerMessage, this));    
 }
 
@@ -155,6 +156,8 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
     if (!chain) {
         return Status::kError;
     }
+
+    ZJC_DEBUG("pool_idx: %d, view_blocks: %d", pool_idx, view_block_items.size());
 
     ViewBlockMinHeap min_heap;
     for (auto it = view_block_items.begin(); it != view_block_items.end(); it++) {
