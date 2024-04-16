@@ -7,8 +7,8 @@ namespace hotstuff {
 
 class ViewDuration {
 public:
-    ViewDuration();
-    ~ViewDuration();
+    ViewDuration() = default;
+    ~ViewDuration() {};
 
     ViewDuration(const ViewDuration&) = delete;
     ViewDuration& operator=(const ViewDuration&) = delete;
