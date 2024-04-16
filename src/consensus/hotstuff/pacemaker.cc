@@ -127,8 +127,7 @@ void Pacemaker::HandleMessage(const transport::MessagePtr& msg_ptr) {
     AdvanceView(sync_info, true);
 
     // TODO Create QC
-    std::shared_ptr<QC> qc = nullptr;
-    crypto_->CreateQC(view_block, reconstructed_sign, qc);
+    auto qc = crypto_->CreateQC(view_block, reconstructed_sign);
     // TODO New Propose
     // Propose(qc);
 }

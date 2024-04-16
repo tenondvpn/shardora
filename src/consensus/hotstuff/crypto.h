@@ -56,12 +56,10 @@ public:
             const uint64_t& elect_height,
             const HashStr& msg_hash,
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
-    
-    Status CreateQC(
-            const std::shared_ptr<ViewBlock>& view_block,
-            const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
-            std::shared_ptr<QC>& qc);
-    
+
+    std::shared_ptr<QC> CreateQC(
+        const std::shared_ptr<ViewBlock>& view_block,
+        const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
     
     inline std::shared_ptr<ElectItem> GetElectItem(const uint64_t& elect_height) {
         return elect_info_->GetElectItem(elect_height);
