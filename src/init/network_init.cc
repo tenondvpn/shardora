@@ -208,9 +208,7 @@ int NetworkInit::Init(int argc, char** argv) {
             return kInitError;
         }
     }
-
-    block_mgr_->LoadLatestBlocks();
-    shard_statistic_->Init();
+    
 #ifdef HOTSTUFF_V2
     view_block_chain_mgr_ = std::make_shared<hotstuff::ViewBlockChainManager>(db_);
     if (view_block_chain_mgr_->Init() != hotstuff::Status::kSuccess) {
@@ -275,6 +273,9 @@ int NetworkInit::Init(int argc, char** argv) {
         chain->Print();
     });    
 #endif
+
+    block_mgr_->LoadLatestBlocks();
+    shard_statistic_->Init();
     RegisterFirewallCheck();
     transport::TcpTransport::Instance()->Start(false);
     if (InitHttpServer() != kInitSuccess) {
