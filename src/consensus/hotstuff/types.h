@@ -70,9 +70,6 @@ struct ViewBlock {
     }
 };
 
-void ViewBlock2Proto(const std::shared_ptr<ViewBlock> &view_block, view_block::protobuf::ViewBlockItem *view_block_proto);
-Status Proto2ViewBlock(const view_block::protobuf::ViewBlockItem& view_block_proto, std::shared_ptr<ViewBlock>& view_block);
-
 struct SyncInfo {
     // std::shared_ptr<QC> qc;
     std::shared_ptr<ViewBlock> view_block;
@@ -95,7 +92,10 @@ enum WaitingBlockType {
     kToBlock,
 };
 
-static const View GenesisView  = 1; 
+static const View GenesisView  = 1;
+
+void ViewBlock2Proto(const std::shared_ptr<ViewBlock> &view_block, view_block::protobuf::ViewBlockItem *view_block_proto);
+Status Proto2ViewBlock(const view_block::protobuf::ViewBlockItem& view_block_proto, std::shared_ptr<ViewBlock>& view_block);
     
 }
 }

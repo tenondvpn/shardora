@@ -1,6 +1,7 @@
 #include "init/network_init.h"
 #include <common/log.h>
 #include <common/utils.h>
+#include <consensus/hotstuff/consensus.h>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/leader_rotation.h>
@@ -220,25 +221,45 @@ int NetworkInit::Init(int argc, char** argv) {
 
     // TODO pacemaker
     elect_info_ = std::make_shared<hotstuff::ElectInfo>(security_);
-    auto crypto = std::make_shared<hotstuff::Crypto>(elect_info_, bls_mgr_);
+    crypto_ = std::make_shared<hotstuff::Crypto>(elect_info_, bls_mgr_);
     
     auto leader_rotation = std::make_shared<hotstuff::LeaderRotation>();
-    pacemaker_ = std::make_shared<hotstuff::Pacemaker>();
-
+    consensus_mgr_ = std::make_shared<hotstuff::ConsensusManager>(
+            view_block_chain_mgr_, elect_info_, crypto_, db_);
+    consensus_mgr_->Init();
     // 以上应该放入 hotstuff 实例初始化中，并接收创世块
 
     cmd_.AddCommand("addblock", [this](const std::vector<std::string>& args){
         uint32_t pool_idx = std::stoi(args[0]);
-        auto chain = this->view_block_chain_mgr_->Chain(pool_idx);
-        if (!chain) {
-            ZJC_ERROR("no chain found, pool: %d", pool_idx);
+        auto consensus = consensus_mgr_->consensus(pool_idx);
+        if (!consensus) {
+            return;
+        }
+        auto pacemaker = consensus->pacemaker();
+        if (!pacemaker) {
             return;
         }
         // 打包块
+        auto fake_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
+        std::shared_ptr<hotstuff::QC> qc = nullptr;
+        this->crypto_->CreateQC(pacemaker->HighQCWrapperBlock(), fake_sign, qc);
+        
         auto view_block = std::make_shared<hotstuff::ViewBlock>(
-                pacemaker_->HighQC()->view_block_hash,
-                
-            );
+                pacemaker->HighQC()->view_block_hash,
+                qc,
+                nullptr,
+                pacemaker->CurView(),
+                0);
+
+        ZJC_DEBUG("addblock view_block, parent: %s, view: %s",
+            common::Encode::HexEncode(pacemaker->HighQC()->view_block_hash).c_str(),
+            pacemaker->CurView());
+        
+        auto chain = consensus->chain();
+        if (!chain) {
+            return;
+        }
+        chain->Store(view_block);
     });
 #endif
     RegisterFirewallCheck();

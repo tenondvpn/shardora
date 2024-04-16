@@ -60,7 +60,7 @@ public:
     Status CreateQC(
             const std::shared_ptr<ViewBlock>& view_block,
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
-            std::shared_ptr<QC> qc);
+            std::shared_ptr<QC>& qc);
     
     
     inline std::shared_ptr<ElectItem> GetElectItem(const uint64_t& elect_height) {

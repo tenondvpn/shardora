@@ -132,7 +132,7 @@ Status Crypto::Verify(const uint64_t& elect_height, const HashStr& msg_hash, con
 Status Crypto::CreateQC(
         const std::shared_ptr<ViewBlock>& view_block,
         const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
-        std::shared_ptr<QC> qc) {    
+        std::shared_ptr<QC>& qc) {    
     qc->bls_agg_sign = reconstructed_sign;
     qc->view = view_block->view;
     qc->view_block_hash = view_block->hash;
