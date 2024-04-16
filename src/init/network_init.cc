@@ -258,11 +258,6 @@ int NetworkInit::Init(int argc, char** argv) {
         sync_info->view_block = view_block;
         pacemaker->AdvanceView(sync_info, false);
         
-
-        ZJC_DEBUG("addblock view_block, parent: %s, view: %s",
-            common::Encode::HexEncode(pacemaker->HighQC()->view_block_hash).c_str(),
-            pacemaker->CurView());
-        
         auto chain = consensus->chain();
         if (!chain) {
             return;
