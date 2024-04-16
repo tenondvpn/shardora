@@ -16,7 +16,7 @@ namespace hotstuff {
 
 static const uint64_t ORPHAN_BLOCK_TIMEOUT_US = 10000000lu;
 
-typedef uint64_t View;
+typedef int64_t View;
 typedef std::string HashStr;
 
 struct QC {
@@ -94,7 +94,7 @@ enum WaitingBlockType {
     kToBlock,
 };
 
-static const View GenesisView  = 1;
+static const View GenesisView  = 0;
 
 void ViewBlock2Proto(const std::shared_ptr<ViewBlock> &view_block, view_block::protobuf::ViewBlockItem *view_block_proto);
 Status Proto2ViewBlock(const view_block::protobuf::ViewBlockItem& view_block_proto, std::shared_ptr<ViewBlock>& view_block);
