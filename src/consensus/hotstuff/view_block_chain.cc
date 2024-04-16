@@ -8,21 +8,19 @@ namespace shardora {
 
 namespace hotstuff {
 
-ViewBlockChain::ViewBlockChain(const std::shared_ptr<ViewBlock>& start_block) {
-    if (start_block) {
-        start_block_ = start_block;
-        view_blocks_[start_block->hash] = start_block;
-        view_blocks_at_height_[start_block->view].push_back(start_block);
-        
-        prune_height_ = start_block->view;
-    }
+ViewBlockChain::ViewBlockChain() {
 }
 
 ViewBlockChain::~ViewBlockChain(){}
 
 Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     if (!start_block_) {
-        return Status::kError;
+        start_block_ = view_block;
+        view_blocks_[view_block->hash] = view_block;
+        view_blocks_at_height_[view_block->view].push_back(view_block);
+        
+        prune_height_ = view_block->view;        
+        return Status::kSuccess;
     }
     // 父块必须存在
     auto it = view_blocks_.find(view_block->parent_hash);

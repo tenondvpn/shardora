@@ -79,13 +79,18 @@ void ViewBlock2Proto(const std::shared_ptr<ViewBlock>& view_block, view_block::p
     view_block_proto->set_view(view_block->view);
 }
 
-void Proto2ViewBlock(const view_block::protobuf::ViewBlockItem& view_block_proto, std::shared_ptr<ViewBlock> view_block) {
+Status Proto2ViewBlock(const view_block::protobuf::ViewBlockItem& view_block_proto, std::shared_ptr<ViewBlock>& view_block) {
     view_block->hash = view_block_proto.hash();
     view_block->parent_hash = view_block_proto.parent_hash();
     view_block->leader_idx = view_block_proto.leader_idx();
-    view_block->block->ParseFromString(view_block_proto.block_str());
-    view_block->qc->Unserialize(view_block_proto.qc_str());
+    if (!view_block->block->ParseFromString(view_block_proto.block_str())) {
+        return Status::kError;
+    }
+    if (!view_block->qc->Unserialize(view_block_proto.qc_str())) {
+        return Status::kError;
+    }
     view_block->view = view_block_proto.view();
+    return Status::kSuccess;
 }
 
 }

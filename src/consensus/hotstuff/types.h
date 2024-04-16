@@ -19,8 +19,6 @@ static const uint64_t ORPHAN_BLOCK_TIMEOUT_US = 10000000lu;
 typedef uint64_t View;
 typedef std::string HashStr;
 
-
-
 struct QC {
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
     std::vector<uint32_t> participants; // 与之签名的贡献者，没有用，因为 bls 无法验证正确性
@@ -73,7 +71,7 @@ struct ViewBlock {
 };
 
 void ViewBlock2Proto(const std::shared_ptr<ViewBlock> &view_block, view_block::protobuf::ViewBlockItem *view_block_proto);
-void Proto2ViewBlock(const view_block::protobuf::ViewBlockItem& view_block_proto, std::shared_ptr<ViewBlock> view_block);
+Status Proto2ViewBlock(const view_block::protobuf::ViewBlockItem& view_block_proto, std::shared_ptr<ViewBlock>& view_block);
 
 struct SyncInfo {
     // std::shared_ptr<QC> qc;

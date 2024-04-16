@@ -21,6 +21,7 @@ public:
     ~Command();
 
     bool Init(bool first_node, bool show_cmd, bool period_tick = false);
+    void AddCommand(const std::string& cmd_name, CommandFunction cmd_func);
     void Run();
     void Destroy() { destroy_ = true; }
     void Help();
@@ -35,7 +36,7 @@ private:
     };
 
     void ProcessCommand(const std::string& cmdline);
-    void AddCommand(const std::string& cmd_name, CommandFunction cmd_func);
+    
     void AddBaseCommands();
     void PrintDht(uint32_t network_id);
 

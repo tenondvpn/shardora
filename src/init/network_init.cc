@@ -1,6 +1,7 @@
 #include "init/network_init.h"
 #include <common/log.h>
 #include <common/utils.h>
+#include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain_syncer.h>
 #include <functional>
 #include <protos/pools.pb.h>
@@ -211,6 +212,16 @@ int NetworkInit::Init(int argc, char** argv) {
     }
     view_block_chain_syncer_ = std::make_shared<hotstuff::ViewBlockChainSyncer>(view_block_chain_mgr_);
     view_block_chain_syncer_->Start();
+
+    cmd_.AddCommand("addblock", [this](const std::vector<std::string>& args){
+        uint32_t pool_idx = std::stoi(args[0]);
+        auto chain = this->view_block_chain_mgr_->Chain(pool_idx);
+        if (!chain) {
+            ZJC_ERROR("no chain found, pool: %d", pool_idx);
+            return;
+        }
+        auto view_block = std::make_shared<hotstuff::ViewBlock>()
+    });
 #endif
     RegisterFirewallCheck();
     transport::TcpTransport::Instance()->Start(false);
@@ -226,6 +237,9 @@ int NetworkInit::Init(int argc, char** argv) {
 
     inited_ = true;
     common::GlobalInfo::Instance()->set_main_inited_success();
+    
+    
+    
     cmd_.Run();
     // std::this_thread::sleep_for(std::chrono::seconds(120));
     return kInitSuccess;

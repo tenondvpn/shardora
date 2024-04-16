@@ -67,7 +67,7 @@ void ViewBlockChainSyncer::SyncChains() {
 
 void ViewBlockChainSyncer::ConsumeMessages() {
     // Consume Messages
-    while (true) {
+    while (consume_queue_.size() != 0) {
         transport::MessagePtr msg_ptr = nullptr;
         if (!consume_queue_.pop(&msg_ptr) || msg_ptr == nullptr) {
             break;
@@ -113,8 +113,6 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
     auto& view_block_msg = msg_ptr->header.view_block_proto();
     assert(view_block_msg.has_view_block_req());
 
-    // TODO 同步全部的 ViewBlockChain，不再按照 hash 同步
-
     transport::protobuf::Header msg;
     view_block::protobuf::ViewBlockSyncMessage&  res_view_block_msg = *msg.mutable_view_block_proto();
     auto view_block_res = res_view_block_msg.mutable_view_block_res();
@@ -132,12 +130,7 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
 
     for (auto& view_block : all) {
         auto view_block_item = view_block_res->add_view_block_items();
-        view_block_item->set_hash(view_block->hash);
-        view_block_item->set_parent_hash(view_block->parent_hash);
-        view_block_item->set_leader_idx(view_block->leader_idx);
-        view_block_item->set_block_str(view_block->block->SerializeAsString());
-        view_block_item->set_qc_str(view_block->qc->Serialize());
-        view_block_item->set_view(view_block->view);        
+        ViewBlock2Proto(view_block, view_block_item);        
     }
 
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -166,19 +159,12 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
     for (auto it = view_block_items.begin(); it != view_block_items.end(); it++) {
         std::shared_ptr<ViewBlock> view_block = nullptr;
         std::shared_ptr<block::protobuf::Block> block_item = nullptr;
-        if (block_item->ParseFromString(it->block_str())) {
-            std::shared_ptr<QC> qc = nullptr;
-            if (qc->Unserialize(it->qc_str())) {
-                view_block->block = block_item;
-                view_block->qc = qc;
-                view_block->hash = it->hash();
-                view_block->parent_hash = it->parent_hash();
-                view_block->view = it->view();
-                view_block->leader_idx = it->leader_idx();
 
-                min_heap.push(view_block);
-            }
+        Status s = Proto2ViewBlock(*it, view_block);
+        if (s != Status::kSuccess) {
+            return s;
         }
+        min_heap.push(view_block);
     }
 
     if (min_heap.empty()) {
@@ -200,9 +186,7 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
         return Status::kSuccess;
     }
 
-    MergeChain(chain, sync_chain);
-    
-    return Status::kSuccess;
+    return MergeChain(chain, sync_chain);
 }
 
 Status ViewBlockChainSyncer::MergeChain(std::shared_ptr<ViewBlockChain>& ori_chain, const std::shared_ptr<ViewBlockChain>& sync_chain) {

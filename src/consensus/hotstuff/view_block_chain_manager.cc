@@ -12,14 +12,17 @@ ViewBlockChainManager::ViewBlockChainManager(const std::shared_ptr<db::Db>& db) 
 
 ViewBlockChainManager::~ViewBlockChainManager() {}
 
-Status ViewBlockChainManager::Init() {
+Status ViewBlockChainManager::Init(InitBlockFunc init_block_func) {
     // Always start from genesis block, waiting for syncs if the view is too old
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
-        auto start_block = GetGenesisViewBlock(db_, pool_idx);
-        if (!start_block) {
-            return Status::kNotFound;
+        pool_chain_map_[pool_idx] = std::make_shared<ViewBlockChain>();
+        if (!init_block_func) {
+            continue;
         }
-        pool_chain_map_[pool_idx] = std::make_shared<ViewBlockChain>(start_block);;
+        auto start_block = init_block_func(db_, pool_idx);
+        if (!start_block) {
+            continue;
+        }
     }
     return Status::kSuccess;
 }

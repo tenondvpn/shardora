@@ -24,7 +24,7 @@ using ViewBlockMinHeap =
 // Notice: the status of view block is not memorized here.
 class ViewBlockChain {
 public:
-    explicit ViewBlockChain(const std::shared_ptr<ViewBlock>&);
+    ViewBlockChain();
     ~ViewBlockChain();
     
     ViewBlockChain(const ViewBlockChain&) = delete;
