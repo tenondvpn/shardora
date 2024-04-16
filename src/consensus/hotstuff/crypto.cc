@@ -1,5 +1,6 @@
 #include <bls/bls_utils.h>
 #include <consensus/hotstuff/crypto.h>
+#include <consensus/hotstuff/types.h>
 #include <exception>
 
 namespace shardora {
@@ -130,10 +131,17 @@ Status Crypto::Verify(const uint64_t& elect_height, const HashStr& msg_hash, con
     return Status::kSuccess;
 }
 
-std::shared_ptr<QC> Crypto::CreateQC(
+Status Crypto::CreateQC(
         const std::shared_ptr<ViewBlock>& view_block,
-        const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign) {
-    return std::make_shared<QC>(reconstructed_sign, view_block->view, view_block->hash);
+        const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
+        std::shared_ptr<QC>& qc) {
+    if (!reconstructed_sign || !view_block) {
+        return Status::kInvalidArgument;
+    }
+    qc->bls_agg_sign = reconstructed_sign;
+    qc->view = view_block->view;
+    qc->view_block_hash = view_block->hash;
+    return Status::kSuccess;
 }
 
 } // namespace hotstuff

@@ -238,7 +238,12 @@ int NetworkInit::Init(int argc, char** argv) {
         }
         // 打包块
         auto fake_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
-        auto qc = this->crypto_->CreateQC(pacemaker->HighQCWrapperBlock(), fake_sign);
+        auto qc = std::make_shared<hotstuff::QC>();
+        hotstuff::Status s = this->crypto_->CreateQC(pacemaker->HighQCWrapperBlock(), fake_sign, qc);
+        if (s != hotstuff::Status::kSuccess) {
+            std::cout << "error!" << std::endl;
+            return;
+        }
         
         auto view_block = std::make_shared<hotstuff::ViewBlock>(
                 pacemaker->HighQC()->view_block_hash,
