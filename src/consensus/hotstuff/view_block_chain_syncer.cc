@@ -170,11 +170,8 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
     if (min_heap.empty()) {
         return Status::kSuccess;
     }
-
-    auto start = min_heap.top();
-    min_heap.pop();
-    auto sync_chain = std::make_shared<ViewBlockChain>(start);
     
+    auto sync_chain = std::make_shared<ViewBlockChain>();
     while (!min_heap.empty()) {
         auto& view_block = min_heap.top();
         min_heap.pop();
