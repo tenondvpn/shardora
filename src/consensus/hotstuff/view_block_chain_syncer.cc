@@ -172,7 +172,7 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
     
     auto sync_chain = std::make_shared<ViewBlockChain>();
     while (!min_heap.empty()) {
-        auto& view_block = min_heap.top();
+        auto view_block = min_heap.top();
         min_heap.pop();
 
         sync_chain->Store(view_block);
