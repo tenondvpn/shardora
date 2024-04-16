@@ -62,6 +62,7 @@ void ViewBlockChainSyncer::SyncChains() {
         auto req = vb_msg.mutable_view_block_req();
         req->set_pool_idx(pool_idx);
         req->set_network_id(common::GlobalInfo::Instance()->network_id());
+        vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
         SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg);
     }
 }
@@ -119,6 +120,7 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
 
     transport::protobuf::Header msg;
     view_block::protobuf::ViewBlockSyncMessage&  res_view_block_msg = *msg.mutable_view_block_proto();
+    res_view_block_msg.set_create_time_us(common::TimeUtils::TimestampUs());
     auto view_block_res = res_view_block_msg.mutable_view_block_res();
     uint32_t pool_idx = view_block_msg.view_block_req().pool_idx();
     view_block_res->set_network_id(view_block_msg.view_block_req().network_id());

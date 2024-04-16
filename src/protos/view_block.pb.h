@@ -859,18 +859,28 @@ class ViewBlockSyncMessage : public ::google::protobuf::Message /* @@protoc_inse
   ::shardora::view_block::protobuf::ViewBlockSyncResponse* mutable_view_block_res();
   void set_allocated_view_block_res(::shardora::view_block::protobuf::ViewBlockSyncResponse* view_block_res);
 
+  // optional uint32 create_time_us = 3;
+  bool has_create_time_us() const;
+  void clear_create_time_us();
+  static const int kCreateTimeUsFieldNumber = 3;
+  ::google::protobuf::uint32 create_time_us() const;
+  void set_create_time_us(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.ViewBlockSyncMessage)
  private:
   void set_has_view_block_req();
   void clear_has_view_block_req();
   void set_has_view_block_res();
   void clear_has_view_block_res();
+  void set_has_create_time_us();
+  void clear_has_create_time_us();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::shardora::view_block::protobuf::ViewBlockSyncRequest* view_block_req_;
   ::shardora::view_block::protobuf::ViewBlockSyncResponse* view_block_res_;
+  ::google::protobuf::uint32 create_time_us_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -1953,6 +1963,30 @@ inline void ViewBlockSyncMessage::set_allocated_view_block_res(::shardora::view_
   }
   view_block_res_ = view_block_res;
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockSyncMessage.view_block_res)
+}
+
+// optional uint32 create_time_us = 3;
+inline bool ViewBlockSyncMessage::has_create_time_us() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void ViewBlockSyncMessage::set_has_create_time_us() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void ViewBlockSyncMessage::clear_has_create_time_us() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void ViewBlockSyncMessage::clear_create_time_us() {
+  create_time_us_ = 0u;
+  clear_has_create_time_us();
+}
+inline ::google::protobuf::uint32 ViewBlockSyncMessage::create_time_us() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockSyncMessage.create_time_us)
+  return create_time_us_;
+}
+inline void ViewBlockSyncMessage::set_create_time_us(::google::protobuf::uint32 value) {
+  set_has_create_time_us();
+  create_time_us_ = value;
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncMessage.create_time_us)
 }
 
 // -------------------------------------------------------------------

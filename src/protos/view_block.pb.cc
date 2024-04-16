@@ -222,8 +222,10 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockSyncMessage, view_block_req_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockSyncMessage, view_block_res_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockSyncMessage, create_time_us_),
   0,
   1,
+  2,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -245,8 +247,8 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 9, 20, sizeof(::shardora::view_block::protobuf::ViewBlockItem)},
   { 26, 37, sizeof(::shardora::view_block::protobuf::QC)},
   { 43, 51, sizeof(::shardora::view_block::protobuf::ViewBlockSyncResponse)},
-  { 54, 61, sizeof(::shardora::view_block::protobuf::ViewBlockSyncMessage)},
-  { 63, 73, sizeof(::shardora::view_block::protobuf::TimeoutMessage)},
+  { 54, 62, sizeof(::shardora::view_block::protobuf::ViewBlockSyncMessage)},
+  { 65, 75, sizeof(::shardora::view_block::protobuf::TimeoutMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -291,18 +293,19 @@ void AddDescriptorsImpl() {
       "ewBlockSyncResponse\022\022\n\nnetwork_id\030\001 \001(\r\022"
       "\020\n\010pool_idx\030\002 \001(\r\022E\n\020view_block_items\030\003 "
       "\003(\0132+.shardora.view_block.protobuf.ViewB"
-      "lockItem\"\257\001\n\024ViewBlockSyncMessage\022J\n\016vie"
+      "lockItem\"\307\001\n\024ViewBlockSyncMessage\022J\n\016vie"
       "w_block_req\030\001 \001(\01322.shardora.view_block."
       "protobuf.ViewBlockSyncRequest\022K\n\016view_bl"
       "ock_res\030\002 \001(\01323.shardora.view_block.prot"
-      "obuf.ViewBlockSyncResponse\"\241\001\n\016TimeoutMe"
-      "ssage\022\021\n\tmember_id\030\001 \001(\r\022J\n\025high_qc_wrap"
-      "per_block\030\002 \001(\0132+.shardora.view_block.pr"
-      "otobuf.ViewBlockItem\022\016\n\006sign_x\030\003 \001(\014\022\016\n\006"
-      "sign_y\030\004 \001(\014\022\020\n\010msg_hash\030\005 \001(\014"
+      "obuf.ViewBlockSyncResponse\022\026\n\016create_tim"
+      "e_us\030\003 \001(\r\"\241\001\n\016TimeoutMessage\022\021\n\tmember_"
+      "id\030\001 \001(\r\022J\n\025high_qc_wrapper_block\030\002 \001(\0132"
+      "+.shardora.view_block.protobuf.ViewBlock"
+      "Item\022\016\n\006sign_x\030\003 \001(\014\022\016\n\006sign_y\030\004 \001(\014\022\020\n\010"
+      "msg_hash\030\005 \001(\014"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 830);
+      descriptor, 854);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/view_block.proto", &protobuf_RegisterTypes);
 }
@@ -1881,6 +1884,7 @@ void ViewBlockSyncMessage::InitAsDefaultInstance() {
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int ViewBlockSyncMessage::kViewBlockReqFieldNumber;
 const int ViewBlockSyncMessage::kViewBlockResFieldNumber;
+const int ViewBlockSyncMessage::kCreateTimeUsFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ViewBlockSyncMessage::ViewBlockSyncMessage()
@@ -1905,13 +1909,14 @@ ViewBlockSyncMessage::ViewBlockSyncMessage(const ViewBlockSyncMessage& from)
   } else {
     view_block_res_ = NULL;
   }
+  create_time_us_ = from.create_time_us_;
   // @@protoc_insertion_point(copy_constructor:shardora.view_block.protobuf.ViewBlockSyncMessage)
 }
 
 void ViewBlockSyncMessage::SharedCtor() {
   ::memset(&view_block_req_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&view_block_res_) -
-      reinterpret_cast<char*>(&view_block_req_)) + sizeof(view_block_res_));
+      reinterpret_cast<char*>(&create_time_us_) -
+      reinterpret_cast<char*>(&view_block_req_)) + sizeof(create_time_us_));
 }
 
 ViewBlockSyncMessage::~ViewBlockSyncMessage() {
@@ -1955,6 +1960,7 @@ void ViewBlockSyncMessage::Clear() {
       view_block_res_->Clear();
     }
   }
+  create_time_us_ = 0u;
   _has_bits_.Clear();
   _internal_metadata_.Clear();
 }
@@ -1987,6 +1993,20 @@ bool ViewBlockSyncMessage::MergePartialFromCodedStream(
             static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
                input, mutable_view_block_res()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint32 create_time_us = 3;
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u /* 24 & 0xFF */)) {
+          set_has_create_time_us();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &create_time_us_)));
         } else {
           goto handle_unusual;
         }
@@ -2032,6 +2052,11 @@ void ViewBlockSyncMessage::SerializeWithCachedSizes(
       2, this->_internal_view_block_res(), output);
   }
 
+  // optional uint32 create_time_us = 3;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->create_time_us(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -2061,6 +2086,11 @@ void ViewBlockSyncMessage::SerializeWithCachedSizes(
         2, this->_internal_view_block_res(), deterministic, target);
   }
 
+  // optional uint32 create_time_us = 3;
+  if (cached_has_bits & 0x00000004u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->create_time_us(), target);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -2078,7 +2108,7 @@ size_t ViewBlockSyncMessage::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 3u) {
+  if (_has_bits_[0 / 32] & 7u) {
     // optional .shardora.view_block.protobuf.ViewBlockSyncRequest view_block_req = 1;
     if (has_view_block_req()) {
       total_size += 1 +
@@ -2091,6 +2121,13 @@ size_t ViewBlockSyncMessage::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           *view_block_res_);
+    }
+
+    // optional uint32 create_time_us = 3;
+    if (has_create_time_us()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->create_time_us());
     }
 
   }
@@ -2122,13 +2159,17 @@ void ViewBlockSyncMessage::MergeFrom(const ViewBlockSyncMessage& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 3u) {
+  if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
       mutable_view_block_req()->::shardora::view_block::protobuf::ViewBlockSyncRequest::MergeFrom(from.view_block_req());
     }
     if (cached_has_bits & 0x00000002u) {
       mutable_view_block_res()->::shardora::view_block::protobuf::ViewBlockSyncResponse::MergeFrom(from.view_block_res());
     }
+    if (cached_has_bits & 0x00000004u) {
+      create_time_us_ = from.create_time_us_;
+    }
+    _has_bits_[0] |= cached_has_bits;
   }
 }
 
@@ -2158,6 +2199,7 @@ void ViewBlockSyncMessage::InternalSwap(ViewBlockSyncMessage* other) {
   using std::swap;
   swap(view_block_req_, other->view_block_req_);
   swap(view_block_res_, other->view_block_res_);
+  swap(create_time_us_, other->create_time_us_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
