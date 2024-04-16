@@ -34,6 +34,7 @@ public:
         auto genesis = GetGenesisViewBlock(db_, pool_idx_);
         if (genesis) {
             view_block_chain_->Store(genesis);
+            view_block_chain_->SetLatestCommittedBlock(genesis);
             auto sync_info = std::make_shared<SyncInfo>();
             sync_info->view_block = genesis;
             pacemaker_->AdvanceView(sync_info, false);

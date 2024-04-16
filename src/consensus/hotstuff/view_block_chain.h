@@ -50,17 +50,17 @@ public:
         return latest_committed_block_;
     }
 
-    inline std::unordered_set<std::shared_ptr<ViewBlock>> LatestLockedBlocks() const {
-        return latest_locked_blocks_;
+    inline std::shared_ptr<ViewBlock> LatestLockedBlock() const {
+        return latest_locked_block_;
     }
 
     inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlock>& view_block) {
-        latest_locked_blocks_.erase(view_block);
+        latest_locked_block_ = nullptr;
         latest_committed_block_ = view_block;
     }
 
-    inline void AddLockedBlock(const std::shared_ptr<ViewBlock>& view_block) {
-        latest_locked_blocks_.insert(view_block);
+    inline void SetLatestLockedBlock(const std::shared_ptr<ViewBlock>& view_block) {
+        latest_locked_block_ = view_block;
     }
     
     // If a chain is valid
@@ -93,7 +93,7 @@ public:
         prune_height_ = View(1);
 
         latest_committed_block_ = nullptr;
-        latest_locked_blocks_.clear();
+        latest_locked_block_ = nullptr;
         start_block_ = nullptr;
     }
 
@@ -121,7 +121,7 @@ private:
     // std::unordered_map<HashStr, uint64_t> orphan_added_us_;
 
     std::shared_ptr<ViewBlock> latest_committed_block_; // 最新 committed block
-    std::unordered_set<std::shared_ptr<ViewBlock>> latest_locked_blocks_; // locked_blocks_;
+    std::shared_ptr<ViewBlock> latest_locked_block_; // locked_block_;
 };
 
 // from db
