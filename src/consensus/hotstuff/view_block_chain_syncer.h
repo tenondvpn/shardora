@@ -59,7 +59,7 @@ private:
     uint64_t timeout_ms_;
     std::queue<std::shared_ptr<ViewBlockItem>> item_queue_;
     common::ThreadSafeQueue<std::shared_ptr<ViewBlockItem>> input_queues_[common::kMaxThreadCount];
-    common::ThreadSafeQueue<transport::MessagePtr> consume_queue_;
+    common::ThreadSafeQueue<transport::MessagePtr> consume_queues_[common::kMaxThreadCount];
     common::Tick tick_;
     std::shared_ptr<ViewBlockChainManager> view_block_chain_mgr_;
     std::shared_ptr<Rule> rule_; // rule of view block receiving

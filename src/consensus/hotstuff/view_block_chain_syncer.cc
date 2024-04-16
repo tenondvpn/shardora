@@ -41,8 +41,9 @@ void ViewBlockChainSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // TODO 放入消息队列，等待消费
     auto header = msg_ptr->header;
     assert(header.type() == common::kViewBlockSyncMessage);
-
-    consume_queue_.push(msg_ptr);
+    
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    consume_queues_[thread_idx].push(msg_ptr);
 }
 
 // 批量异步处理，提高 tps
@@ -67,10 +68,10 @@ void ViewBlockChainSyncer::SyncChains() {
 
 void ViewBlockChainSyncer::ConsumeMessages() {
     // Consume Messages
-    while (consume_queue_.size() != 0) {
+    for (uint8_t thread_idx = 0; thread_idx < common::kMaxThreadCount; ++thread_idx) {
         transport::MessagePtr msg_ptr = nullptr;
-        if (!consume_queue_.pop(&msg_ptr) || msg_ptr == nullptr) {
-            break;
+        if (!consume_queues_[thread_idx].pop(&msg_ptr) || msg_ptr == nullptr) {
+            continue;
         }
 
         if (msg_ptr->header.view_block_proto().has_view_block_req()) {
@@ -78,7 +79,7 @@ void ViewBlockChainSyncer::ConsumeMessages() {
         } else if (msg_ptr->header.view_block_proto().has_view_block_res()) {
             processResponse(msg_ptr);
         }
-    }    
+    }
 }
 
 Status ViewBlockChainSyncer::SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {
