@@ -75,7 +75,9 @@ void ViewBlock2Proto(const std::shared_ptr<ViewBlock>& view_block, view_block::p
     view_block_proto->set_hash(view_block->hash);
     view_block_proto->set_parent_hash(view_block->parent_hash);
     view_block_proto->set_leader_idx(view_block->leader_idx);
-    view_block_proto->set_block_str(view_block->block->SerializeAsString());
+    if (view_block->block) {
+        view_block_proto->set_block_str(view_block->block->SerializeAsString());
+    }
     view_block_proto->set_qc_str(view_block->qc->Serialize());
     view_block_proto->set_view(view_block->view);
 }
