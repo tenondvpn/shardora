@@ -37,6 +37,8 @@ public:
             auto sync_info = std::make_shared<SyncInfo>();
             sync_info->view_block = genesis;
             pacemaker_->AdvanceView(sync_info, false);
+        } else {
+            std::cout << "no genesis, pool_idx: " << pool_idx << std::endl;
         }
     }
     ~Consensus() {};
