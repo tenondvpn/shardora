@@ -259,7 +259,7 @@ std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db
         ZJC_ERROR("no genesis block found");
         return nullptr;
     }
-    return std::make_shared<ViewBlock>("", GetGenesisQC(), block, GenesisView, 0);
+    return std::make_shared<ViewBlock>("", GetGenesisQC(), block_ptr, GenesisView, 0);
 }
 
 std::shared_ptr<QC> GetGenesisQC() {
