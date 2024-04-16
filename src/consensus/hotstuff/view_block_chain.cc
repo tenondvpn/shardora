@@ -261,13 +261,13 @@ std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db
     uint32_t sharding_id = common::GlobalInfo::Instance()->network_id();
 
     auto block_ptr = std::make_shared<block::protobuf::Block>();
-    auto& block = *block_ptr;
+    auto block = *block_ptr;
     bool r = prefix_db->GetBlockWithHeight(sharding_id, pool_index, 0, &block);
     if (!r) {
         ZJC_ERROR("no genesis block found");
         return nullptr;
     }
-    return std::make_shared<ViewBlock>("", GetGenesisQC(), block_ptr, GenesisView, 0);
+    return std::make_shared<ViewBlock>("", GetGenesisQC(), &block, GenesisView, 0);
 }
 
 std::shared_ptr<QC> GetGenesisQC() {
