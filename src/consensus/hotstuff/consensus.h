@@ -110,6 +110,7 @@ public:
         return Status::kSuccess;
     }
 
+    // 共识相关消息由 ConsensusManager::HandleMessage 统一分发
     void HandleMessage(const transport::MessagePtr& msg_ptr) {
         auto msg = msg_ptr->header;
         if (msg.type() == common::kHotstuffTimeoutMessage) {

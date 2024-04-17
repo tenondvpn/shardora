@@ -66,7 +66,7 @@ private:
     uint32_t pool_idx_;
     std::shared_ptr<QC> high_qc_ = nullptr;
     std::shared_ptr<TC> high_tc_ = nullptr;
-    View cur_view_ = GenesisView-1;
+    View cur_view_;
     std::shared_ptr<Crypto> crypto_;
     std::shared_ptr<LeaderRotation> leader_rotation_ = nullptr;
     std::shared_ptr<common::Tick> one_shot_tick_ = nullptr;

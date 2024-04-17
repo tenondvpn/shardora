@@ -20,6 +20,7 @@ typedef uint64_t View;
 typedef std::string HashStr;
 
 static const View GenesisView = 0;
+static const View BeforeGenesisView = std::numeric_limits<uint64_t>::max();
 
 HashStr GetViewHash(View view);
 
