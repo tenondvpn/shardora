@@ -67,13 +67,13 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
 }
 
 void Pacemaker::UpdateHighQC(const std::shared_ptr<QC>& qc) {
-    if (!high_qc_ || high_qc_->view < qc->view || high_qc_->view == GenesisView - 1) {
+    if (!high_qc_ || high_qc_->view < qc->view || high_qc_->view == BeforeGenesisView) {
         high_qc_ = qc;
     }
 }
 
 void Pacemaker::UpdateHighTC(const std::shared_ptr<TC>& tc) {
-    if (!high_tc_ || high_tc_->view < tc->view || high_tc_->view == GenesisView - 1) {
+    if (!high_tc_ || high_tc_->view < tc->view || high_tc_->view == BeforeGenesisView) {
         high_tc_ = tc;
     }
 }
