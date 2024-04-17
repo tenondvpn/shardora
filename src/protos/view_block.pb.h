@@ -367,19 +367,19 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::std::string* release_qc_str();
   void set_allocated_qc_str(::std::string* qc_str);
 
+  // optional uint64 view = 6;
+  bool has_view() const;
+  void clear_view();
+  static const int kViewFieldNumber = 6;
+  ::google::protobuf::uint64 view() const;
+  void set_view(::google::protobuf::uint64 value);
+
   // optional uint32 leader_idx = 3;
   bool has_leader_idx() const;
   void clear_leader_idx();
   static const int kLeaderIdxFieldNumber = 3;
   ::google::protobuf::uint32 leader_idx() const;
   void set_leader_idx(::google::protobuf::uint32 value);
-
-  // optional uint32 view = 6;
-  bool has_view() const;
-  void clear_view();
-  static const int kViewFieldNumber = 6;
-  ::google::protobuf::uint32 view() const;
-  void set_view(::google::protobuf::uint32 value);
 
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.ViewBlockItem)
  private:
@@ -403,8 +403,8 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::google::protobuf::internal::ArenaStringPtr parent_hash_;
   ::google::protobuf::internal::ArenaStringPtr block_str_;
   ::google::protobuf::internal::ArenaStringPtr qc_str_;
+  ::google::protobuf::uint64 view_;
   ::google::protobuf::uint32 leader_idx_;
-  ::google::protobuf::uint32 view_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -563,12 +563,12 @@ class QC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
   ::std::string* release_view_block_hash();
   void set_allocated_view_block_hash(::std::string* view_block_hash);
 
-  // optional uint32 view = 4;
+  // optional uint64 view = 4;
   bool has_view() const;
   void clear_view();
   static const int kViewFieldNumber = 4;
-  ::google::protobuf::uint32 view() const;
-  void set_view(::google::protobuf::uint32 value);
+  ::google::protobuf::uint64 view() const;
+  void set_view(::google::protobuf::uint64 value);
 
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.QC)
  private:
@@ -590,7 +590,7 @@ class QC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
   ::google::protobuf::internal::ArenaStringPtr sign_y_;
   ::google::protobuf::internal::ArenaStringPtr sign_z_;
   ::google::protobuf::internal::ArenaStringPtr view_block_hash_;
-  ::google::protobuf::uint32 view_;
+  ::google::protobuf::uint64 view_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -734,12 +734,12 @@ class TC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
   ::std::string* release_sign_z();
   void set_allocated_sign_z(::std::string* sign_z);
 
-  // optional uint32 view = 4;
+  // optional uint64 view = 4;
   bool has_view() const;
   void clear_view();
   static const int kViewFieldNumber = 4;
-  ::google::protobuf::uint32 view() const;
-  void set_view(::google::protobuf::uint32 value);
+  ::google::protobuf::uint64 view() const;
+  void set_view(::google::protobuf::uint64 value);
 
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.TC)
  private:
@@ -758,7 +758,7 @@ class TC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
   ::google::protobuf::internal::ArenaStringPtr sign_x_;
   ::google::protobuf::internal::ArenaStringPtr sign_y_;
   ::google::protobuf::internal::ArenaStringPtr sign_z_;
-  ::google::protobuf::uint32 view_;
+  ::google::protobuf::uint64 view_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -1183,6 +1183,13 @@ class TimeoutMessage : public ::google::protobuf::Message /* @@protoc_insertion_
   ::std::string* release_view_hash();
   void set_allocated_view_hash(::std::string* view_hash);
 
+  // optional uint64 view = 2;
+  bool has_view() const;
+  void clear_view();
+  static const int kViewFieldNumber = 2;
+  ::google::protobuf::uint64 view() const;
+  void set_view(::google::protobuf::uint64 value);
+
   // optional uint32 member_id = 1;
   bool has_member_id() const;
   void clear_member_id();
@@ -1190,26 +1197,19 @@ class TimeoutMessage : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::uint32 member_id() const;
   void set_member_id(::google::protobuf::uint32 value);
 
-  // optional uint32 view = 2;
-  bool has_view() const;
-  void clear_view();
-  static const int kViewFieldNumber = 2;
-  ::google::protobuf::uint32 view() const;
-  void set_view(::google::protobuf::uint32 value);
-
-  // optional uint32 elect_height = 6;
-  bool has_elect_height() const;
-  void clear_elect_height();
-  static const int kElectHeightFieldNumber = 6;
-  ::google::protobuf::uint32 elect_height() const;
-  void set_elect_height(::google::protobuf::uint32 value);
-
   // optional uint32 pool_idx = 7;
   bool has_pool_idx() const;
   void clear_pool_idx();
   static const int kPoolIdxFieldNumber = 7;
   ::google::protobuf::uint32 pool_idx() const;
   void set_pool_idx(::google::protobuf::uint32 value);
+
+  // optional uint64 elect_height = 6;
+  bool has_elect_height() const;
+  void clear_elect_height();
+  static const int kElectHeightFieldNumber = 6;
+  ::google::protobuf::uint64 elect_height() const;
+  void set_elect_height(::google::protobuf::uint64 value);
 
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.TimeoutMessage)
  private:
@@ -1234,10 +1234,10 @@ class TimeoutMessage : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::internal::ArenaStringPtr sign_x_;
   ::google::protobuf::internal::ArenaStringPtr sign_y_;
   ::google::protobuf::internal::ArenaStringPtr view_hash_;
+  ::google::protobuf::uint64 view_;
   ::google::protobuf::uint32 member_id_;
-  ::google::protobuf::uint32 view_;
-  ::google::protobuf::uint32 elect_height_;
   ::google::protobuf::uint32 pool_idx_;
+  ::google::protobuf::uint64 elect_height_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // ===================================================================
@@ -1437,13 +1437,13 @@ inline void ViewBlockItem::set_allocated_parent_hash(::std::string* parent_hash)
 
 // optional uint32 leader_idx = 3;
 inline bool ViewBlockItem::has_leader_idx() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void ViewBlockItem::set_has_leader_idx() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void ViewBlockItem::clear_has_leader_idx() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void ViewBlockItem::clear_leader_idx() {
   leader_idx_ = 0u;
@@ -1591,25 +1591,25 @@ inline void ViewBlockItem::set_allocated_qc_str(::std::string* qc_str) {
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockItem.qc_str)
 }
 
-// optional uint32 view = 6;
+// optional uint64 view = 6;
 inline bool ViewBlockItem::has_view() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void ViewBlockItem::set_has_view() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void ViewBlockItem::clear_has_view() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void ViewBlockItem::clear_view() {
-  view_ = 0u;
+  view_ = GOOGLE_ULONGLONG(0);
   clear_has_view();
 }
-inline ::google::protobuf::uint32 ViewBlockItem::view() const {
+inline ::google::protobuf::uint64 ViewBlockItem::view() const {
   // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockItem.view)
   return view_;
 }
-inline void ViewBlockItem::set_view(::google::protobuf::uint32 value) {
+inline void ViewBlockItem::set_view(::google::protobuf::uint64 value) {
   set_has_view();
   view_ = value;
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockItem.view)
@@ -1817,7 +1817,7 @@ inline void QC::set_allocated_sign_z(::std::string* sign_z) {
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.QC.sign_z)
 }
 
-// optional uint32 view = 4;
+// optional uint64 view = 4;
 inline bool QC::has_view() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -1828,14 +1828,14 @@ inline void QC::clear_has_view() {
   _has_bits_[0] &= ~0x00000010u;
 }
 inline void QC::clear_view() {
-  view_ = 0u;
+  view_ = GOOGLE_ULONGLONG(0);
   clear_has_view();
 }
-inline ::google::protobuf::uint32 QC::view() const {
+inline ::google::protobuf::uint64 QC::view() const {
   // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.QC.view)
   return view_;
 }
-inline void QC::set_view(::google::protobuf::uint32 value) {
+inline void QC::set_view(::google::protobuf::uint64 value) {
   set_has_view();
   view_ = value;
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.QC.view)
@@ -2109,7 +2109,7 @@ inline void TC::set_allocated_sign_z(::std::string* sign_z) {
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.TC.sign_z)
 }
 
-// optional uint32 view = 4;
+// optional uint64 view = 4;
 inline bool TC::has_view() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -2120,14 +2120,14 @@ inline void TC::clear_has_view() {
   _has_bits_[0] &= ~0x00000008u;
 }
 inline void TC::clear_view() {
-  view_ = 0u;
+  view_ = GOOGLE_ULONGLONG(0);
   clear_has_view();
 }
-inline ::google::protobuf::uint32 TC::view() const {
+inline ::google::protobuf::uint64 TC::view() const {
   // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.TC.view)
   return view_;
 }
-inline void TC::set_view(::google::protobuf::uint32 value) {
+inline void TC::set_view(::google::protobuf::uint64 value) {
   set_has_view();
   view_ = value;
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.TC.view)
@@ -2365,13 +2365,13 @@ inline void ViewBlockSyncMessage::set_create_time_us(::google::protobuf::uint32 
 
 // optional uint32 member_id = 1;
 inline bool TimeoutMessage::has_member_id() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void TimeoutMessage::set_has_member_id() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void TimeoutMessage::clear_has_member_id() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void TimeoutMessage::clear_member_id() {
   member_id_ = 0u;
@@ -2387,25 +2387,25 @@ inline void TimeoutMessage::set_member_id(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.TimeoutMessage.member_id)
 }
 
-// optional uint32 view = 2;
+// optional uint64 view = 2;
 inline bool TimeoutMessage::has_view() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void TimeoutMessage::set_has_view() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void TimeoutMessage::clear_has_view() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void TimeoutMessage::clear_view() {
-  view_ = 0u;
+  view_ = GOOGLE_ULONGLONG(0);
   clear_has_view();
 }
-inline ::google::protobuf::uint32 TimeoutMessage::view() const {
+inline ::google::protobuf::uint64 TimeoutMessage::view() const {
   // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.TimeoutMessage.view)
   return view_;
 }
-inline void TimeoutMessage::set_view(::google::protobuf::uint32 value) {
+inline void TimeoutMessage::set_view(::google::protobuf::uint64 value) {
   set_has_view();
   view_ = value;
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.TimeoutMessage.view)
@@ -2609,25 +2609,25 @@ inline void TimeoutMessage::set_allocated_view_hash(::std::string* view_hash) {
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.TimeoutMessage.view_hash)
 }
 
-// optional uint32 elect_height = 6;
+// optional uint64 elect_height = 6;
 inline bool TimeoutMessage::has_elect_height() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void TimeoutMessage::set_has_elect_height() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void TimeoutMessage::clear_has_elect_height() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void TimeoutMessage::clear_elect_height() {
-  elect_height_ = 0u;
+  elect_height_ = GOOGLE_ULONGLONG(0);
   clear_has_elect_height();
 }
-inline ::google::protobuf::uint32 TimeoutMessage::elect_height() const {
+inline ::google::protobuf::uint64 TimeoutMessage::elect_height() const {
   // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.TimeoutMessage.elect_height)
   return elect_height_;
 }
-inline void TimeoutMessage::set_elect_height(::google::protobuf::uint32 value) {
+inline void TimeoutMessage::set_elect_height(::google::protobuf::uint64 value) {
   set_has_elect_height();
   elect_height_ = value;
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.TimeoutMessage.elect_height)
@@ -2635,13 +2635,13 @@ inline void TimeoutMessage::set_elect_height(::google::protobuf::uint32 value) {
 
 // optional uint32 pool_idx = 7;
 inline bool TimeoutMessage::has_pool_idx() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void TimeoutMessage::set_has_pool_idx() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void TimeoutMessage::clear_has_pool_idx() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void TimeoutMessage::clear_pool_idx() {
   pool_idx_ = 0u;

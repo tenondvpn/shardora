@@ -202,10 +202,10 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockItem, view_),
   0,
   1,
-  4,
+  5,
   2,
   3,
-  5,
+  4,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::QC, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::QC, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -268,13 +268,13 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, view_hash_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, elect_height_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, pool_idx_),
-  3,
   4,
+  3,
   0,
   1,
   2,
-  5,
   6,
+  5,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 7, sizeof(::shardora::view_block::protobuf::ViewBlockSyncRequest)},
@@ -322,11 +322,11 @@ void AddDescriptorsImpl() {
       "\022\n\nnetwork_id\030\001 \001(\r\022\020\n\010pool_idx\030\002 \001(\r\"w\n"
       "\rViewBlockItem\022\014\n\004hash\030\001 \001(\014\022\023\n\013parent_h"
       "ash\030\002 \001(\014\022\022\n\nleader_idx\030\003 \001(\r\022\021\n\tblock_s"
-      "tr\030\004 \001(\014\022\016\n\006qc_str\030\005 \001(\014\022\014\n\004view\030\006 \001(\r\"["
+      "tr\030\004 \001(\014\022\016\n\006qc_str\030\005 \001(\014\022\014\n\004view\030\006 \001(\004\"["
       "\n\002QC\022\016\n\006sign_x\030\001 \001(\014\022\016\n\006sign_y\030\002 \001(\014\022\016\n\006"
-      "sign_z\030\003 \001(\014\022\014\n\004view\030\004 \001(\r\022\027\n\017view_block"
+      "sign_z\030\003 \001(\014\022\014\n\004view\030\004 \001(\004\022\027\n\017view_block"
       "_hash\030\005 \001(\014\"B\n\002TC\022\016\n\006sign_x\030\001 \001(\014\022\016\n\006sig"
-      "n_y\030\002 \001(\014\022\016\n\006sign_z\030\003 \001(\014\022\014\n\004view\030\004 \001(\r\""
+      "n_y\030\002 \001(\014\022\016\n\006sign_z\030\003 \001(\014\022\014\n\004view\030\004 \001(\004\""
       "\204\001\n\025ViewBlockSyncResponse\022\022\n\nnetwork_id\030"
       "\001 \001(\r\022\020\n\010pool_idx\030\002 \001(\r\022E\n\020view_block_it"
       "ems\030\003 \003(\0132+.shardora.view_block.protobuf"
@@ -336,9 +336,9 @@ void AddDescriptorsImpl() {
       "iew_block_res\030\002 \001(\01323.shardora.view_bloc"
       "k.protobuf.ViewBlockSyncResponse\022\026\n\016crea"
       "te_time_us\030\003 \001(\r\"\214\001\n\016TimeoutMessage\022\021\n\tm"
-      "ember_id\030\001 \001(\r\022\014\n\004view\030\002 \001(\r\022\016\n\006sign_x\030\003"
+      "ember_id\030\001 \001(\r\022\014\n\004view\030\002 \001(\004\022\016\n\006sign_x\030\003"
       " \001(\014\022\016\n\006sign_y\030\004 \001(\014\022\021\n\tview_hash\030\005 \001(\014\022"
-      "\024\n\014elect_height\030\006 \001(\r\022\020\n\010pool_idx\030\007 \001(\r"
+      "\024\n\014elect_height\030\006 \001(\004\022\020\n\010pool_idx\030\007 \001(\r"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
       descriptor, 879);
@@ -681,9 +681,9 @@ ViewBlockItem::ViewBlockItem(const ViewBlockItem& from)
   if (from.has_qc_str()) {
     qc_str_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.qc_str_);
   }
-  ::memcpy(&leader_idx_, &from.leader_idx_,
-    static_cast<size_t>(reinterpret_cast<char*>(&view_) -
-    reinterpret_cast<char*>(&leader_idx_)) + sizeof(view_));
+  ::memcpy(&view_, &from.view_,
+    static_cast<size_t>(reinterpret_cast<char*>(&leader_idx_) -
+    reinterpret_cast<char*>(&view_)) + sizeof(leader_idx_));
   // @@protoc_insertion_point(copy_constructor:shardora.view_block.protobuf.ViewBlockItem)
 }
 
@@ -692,9 +692,9 @@ void ViewBlockItem::SharedCtor() {
   parent_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   block_str_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   qc_str_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  ::memset(&leader_idx_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&view_) -
-      reinterpret_cast<char*>(&leader_idx_)) + sizeof(view_));
+  ::memset(&view_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&leader_idx_) -
+      reinterpret_cast<char*>(&view_)) + sizeof(leader_idx_));
 }
 
 ViewBlockItem::~ViewBlockItem() {
@@ -745,9 +745,9 @@ void ViewBlockItem::Clear() {
     }
   }
   if (cached_has_bits & 48u) {
-    ::memset(&leader_idx_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&view_) -
-        reinterpret_cast<char*>(&leader_idx_)) + sizeof(view_));
+    ::memset(&view_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&leader_idx_) -
+        reinterpret_cast<char*>(&view_)) + sizeof(leader_idx_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -825,13 +825,13 @@ bool ViewBlockItem::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint32 view = 6;
+      // optional uint64 view = 6;
       case 6: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
           set_has_view();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
                  input, &view_)));
         } else {
           goto handle_unusual;
@@ -879,7 +879,7 @@ void ViewBlockItem::SerializeWithCachedSizes(
   }
 
   // optional uint32 leader_idx = 3;
-  if (cached_has_bits & 0x00000010u) {
+  if (cached_has_bits & 0x00000020u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->leader_idx(), output);
   }
 
@@ -895,9 +895,9 @@ void ViewBlockItem::SerializeWithCachedSizes(
       5, this->qc_str(), output);
   }
 
-  // optional uint32 view = 6;
-  if (cached_has_bits & 0x00000020u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(6, this->view(), output);
+  // optional uint64 view = 6;
+  if (cached_has_bits & 0x00000010u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(6, this->view(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -930,7 +930,7 @@ void ViewBlockItem::SerializeWithCachedSizes(
   }
 
   // optional uint32 leader_idx = 3;
-  if (cached_has_bits & 0x00000010u) {
+  if (cached_has_bits & 0x00000020u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->leader_idx(), target);
   }
 
@@ -948,9 +948,9 @@ void ViewBlockItem::SerializeWithCachedSizes(
         5, this->qc_str(), target);
   }
 
-  // optional uint32 view = 6;
-  if (cached_has_bits & 0x00000020u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(6, this->view(), target);
+  // optional uint64 view = 6;
+  if (cached_has_bits & 0x00000010u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(6, this->view(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -999,18 +999,18 @@ size_t ViewBlockItem::ByteSizeLong() const {
           this->qc_str());
     }
 
+    // optional uint64 view = 6;
+    if (has_view()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->view());
+    }
+
     // optional uint32 leader_idx = 3;
     if (has_leader_idx()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
           this->leader_idx());
-    }
-
-    // optional uint32 view = 6;
-    if (has_view()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->view());
     }
 
   }
@@ -1060,10 +1060,10 @@ void ViewBlockItem::MergeFrom(const ViewBlockItem& from) {
       qc_str_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.qc_str_);
     }
     if (cached_has_bits & 0x00000010u) {
-      leader_idx_ = from.leader_idx_;
+      view_ = from.view_;
     }
     if (cached_has_bits & 0x00000020u) {
-      view_ = from.view_;
+      leader_idx_ = from.leader_idx_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -1101,8 +1101,8 @@ void ViewBlockItem::InternalSwap(ViewBlockItem* other) {
     GetArenaNoVirtual());
   qc_str_.Swap(&other->qc_str_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
-  swap(leader_idx_, other->leader_idx_);
   swap(view_, other->view_);
+  swap(leader_idx_, other->leader_idx_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
@@ -1162,7 +1162,7 @@ void QC::SharedCtor() {
   sign_y_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   sign_z_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   view_block_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  view_ = 0u;
+  view_ = GOOGLE_ULONGLONG(0);
 }
 
 QC::~QC() {
@@ -1212,7 +1212,7 @@ void QC::Clear() {
       view_block_hash_.ClearNonDefaultToEmptyNoArena();
     }
   }
-  view_ = 0u;
+  view_ = GOOGLE_ULONGLONG(0);
   _has_bits_.Clear();
   _internal_metadata_.Clear();
 }
@@ -1263,13 +1263,13 @@ bool QC::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint32 view = 4;
+      // optional uint64 view = 4;
       case 4: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(32u /* 32 & 0xFF */)) {
           set_has_view();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
                  input, &view_)));
         } else {
           goto handle_unusual;
@@ -1334,9 +1334,9 @@ void QC::SerializeWithCachedSizes(
       3, this->sign_z(), output);
   }
 
-  // optional uint32 view = 4;
+  // optional uint64 view = 4;
   if (cached_has_bits & 0x00000010u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->view(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(4, this->view(), output);
   }
 
   // optional bytes view_block_hash = 5;
@@ -1381,9 +1381,9 @@ void QC::SerializeWithCachedSizes(
         3, this->sign_z(), target);
   }
 
-  // optional uint32 view = 4;
+  // optional uint64 view = 4;
   if (cached_has_bits & 0x00000010u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->view(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(4, this->view(), target);
   }
 
   // optional bytes view_block_hash = 5;
@@ -1439,10 +1439,10 @@ size_t QC::ByteSizeLong() const {
           this->view_block_hash());
     }
 
-    // optional uint32 view = 4;
+    // optional uint64 view = 4;
     if (has_view()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
           this->view());
     }
 
@@ -1585,7 +1585,7 @@ void TC::SharedCtor() {
   sign_x_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   sign_y_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   sign_z_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  view_ = 0u;
+  view_ = GOOGLE_ULONGLONG(0);
 }
 
 TC::~TC() {
@@ -1631,7 +1631,7 @@ void TC::Clear() {
       sign_z_.ClearNonDefaultToEmptyNoArena();
     }
   }
-  view_ = 0u;
+  view_ = GOOGLE_ULONGLONG(0);
   _has_bits_.Clear();
   _internal_metadata_.Clear();
 }
@@ -1682,13 +1682,13 @@ bool TC::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint32 view = 4;
+      // optional uint64 view = 4;
       case 4: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(32u /* 32 & 0xFF */)) {
           set_has_view();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
                  input, &view_)));
         } else {
           goto handle_unusual;
@@ -1741,9 +1741,9 @@ void TC::SerializeWithCachedSizes(
       3, this->sign_z(), output);
   }
 
-  // optional uint32 view = 4;
+  // optional uint64 view = 4;
   if (cached_has_bits & 0x00000008u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->view(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(4, this->view(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1782,9 +1782,9 @@ void TC::SerializeWithCachedSizes(
         3, this->sign_z(), target);
   }
 
-  // optional uint32 view = 4;
+  // optional uint64 view = 4;
   if (cached_has_bits & 0x00000008u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->view(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(4, this->view(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1826,10 +1826,10 @@ size_t TC::ByteSizeLong() const {
           this->sign_z());
     }
 
-    // optional uint32 view = 4;
+    // optional uint64 view = 4;
     if (has_view()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
           this->view());
     }
 
@@ -2622,9 +2622,9 @@ TimeoutMessage::TimeoutMessage(const TimeoutMessage& from)
   if (from.has_view_hash()) {
     view_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.view_hash_);
   }
-  ::memcpy(&member_id_, &from.member_id_,
-    static_cast<size_t>(reinterpret_cast<char*>(&pool_idx_) -
-    reinterpret_cast<char*>(&member_id_)) + sizeof(pool_idx_));
+  ::memcpy(&view_, &from.view_,
+    static_cast<size_t>(reinterpret_cast<char*>(&elect_height_) -
+    reinterpret_cast<char*>(&view_)) + sizeof(elect_height_));
   // @@protoc_insertion_point(copy_constructor:shardora.view_block.protobuf.TimeoutMessage)
 }
 
@@ -2632,9 +2632,9 @@ void TimeoutMessage::SharedCtor() {
   sign_x_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   sign_y_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   view_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  ::memset(&member_id_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&pool_idx_) -
-      reinterpret_cast<char*>(&member_id_)) + sizeof(pool_idx_));
+  ::memset(&view_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&elect_height_) -
+      reinterpret_cast<char*>(&view_)) + sizeof(elect_height_));
 }
 
 TimeoutMessage::~TimeoutMessage() {
@@ -2681,9 +2681,9 @@ void TimeoutMessage::Clear() {
     }
   }
   if (cached_has_bits & 120u) {
-    ::memset(&member_id_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&pool_idx_) -
-        reinterpret_cast<char*>(&member_id_)) + sizeof(pool_idx_));
+    ::memset(&view_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&elect_height_) -
+        reinterpret_cast<char*>(&view_)) + sizeof(elect_height_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -2713,13 +2713,13 @@ bool TimeoutMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint32 view = 2;
+      // optional uint64 view = 2;
       case 2: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
           set_has_view();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
                  input, &view_)));
         } else {
           goto handle_unusual;
@@ -2763,13 +2763,13 @@ bool TimeoutMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint32 elect_height = 6;
+      // optional uint64 elect_height = 6;
       case 6: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
           set_has_elect_height();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
                  input, &elect_height_)));
         } else {
           goto handle_unusual;
@@ -2819,13 +2819,13 @@ void TimeoutMessage::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 member_id = 1;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->member_id(), output);
   }
 
-  // optional uint32 view = 2;
-  if (cached_has_bits & 0x00000010u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->view(), output);
+  // optional uint64 view = 2;
+  if (cached_has_bits & 0x00000008u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->view(), output);
   }
 
   // optional bytes sign_x = 3;
@@ -2846,13 +2846,13 @@ void TimeoutMessage::SerializeWithCachedSizes(
       5, this->view_hash(), output);
   }
 
-  // optional uint32 elect_height = 6;
-  if (cached_has_bits & 0x00000020u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(6, this->elect_height(), output);
+  // optional uint64 elect_height = 6;
+  if (cached_has_bits & 0x00000040u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(6, this->elect_height(), output);
   }
 
   // optional uint32 pool_idx = 7;
-  if (cached_has_bits & 0x00000040u) {
+  if (cached_has_bits & 0x00000020u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(7, this->pool_idx(), output);
   }
 
@@ -2872,13 +2872,13 @@ void TimeoutMessage::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 member_id = 1;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->member_id(), target);
   }
 
-  // optional uint32 view = 2;
-  if (cached_has_bits & 0x00000010u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->view(), target);
+  // optional uint64 view = 2;
+  if (cached_has_bits & 0x00000008u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->view(), target);
   }
 
   // optional bytes sign_x = 3;
@@ -2902,13 +2902,13 @@ void TimeoutMessage::SerializeWithCachedSizes(
         5, this->view_hash(), target);
   }
 
-  // optional uint32 elect_height = 6;
-  if (cached_has_bits & 0x00000020u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(6, this->elect_height(), target);
+  // optional uint64 elect_height = 6;
+  if (cached_has_bits & 0x00000040u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(6, this->elect_height(), target);
   }
 
   // optional uint32 pool_idx = 7;
-  if (cached_has_bits & 0x00000040u) {
+  if (cached_has_bits & 0x00000020u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(7, this->pool_idx(), target);
   }
 
@@ -2951,6 +2951,13 @@ size_t TimeoutMessage::ByteSizeLong() const {
           this->view_hash());
     }
 
+    // optional uint64 view = 2;
+    if (has_view()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->view());
+    }
+
     // optional uint32 member_id = 1;
     if (has_member_id()) {
       total_size += 1 +
@@ -2958,25 +2965,18 @@ size_t TimeoutMessage::ByteSizeLong() const {
           this->member_id());
     }
 
-    // optional uint32 view = 2;
-    if (has_view()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->view());
-    }
-
-    // optional uint32 elect_height = 6;
-    if (has_elect_height()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->elect_height());
-    }
-
     // optional uint32 pool_idx = 7;
     if (has_pool_idx()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
           this->pool_idx());
+    }
+
+    // optional uint64 elect_height = 6;
+    if (has_elect_height()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->elect_height());
     }
 
   }
@@ -3022,16 +3022,16 @@ void TimeoutMessage::MergeFrom(const TimeoutMessage& from) {
       view_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.view_hash_);
     }
     if (cached_has_bits & 0x00000008u) {
-      member_id_ = from.member_id_;
-    }
-    if (cached_has_bits & 0x00000010u) {
       view_ = from.view_;
     }
+    if (cached_has_bits & 0x00000010u) {
+      member_id_ = from.member_id_;
+    }
     if (cached_has_bits & 0x00000020u) {
-      elect_height_ = from.elect_height_;
+      pool_idx_ = from.pool_idx_;
     }
     if (cached_has_bits & 0x00000040u) {
-      pool_idx_ = from.pool_idx_;
+      elect_height_ = from.elect_height_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -3067,10 +3067,10 @@ void TimeoutMessage::InternalSwap(TimeoutMessage* other) {
     GetArenaNoVirtual());
   view_hash_.Swap(&other->view_hash_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
-  swap(member_id_, other->member_id_);
   swap(view_, other->view_);
-  swap(elect_height_, other->elect_height_);
+  swap(member_id_, other->member_id_);
   swap(pool_idx_, other->pool_idx_);
+  swap(elect_height_, other->elect_height_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
