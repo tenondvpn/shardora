@@ -117,6 +117,17 @@ void ShardStatistic::HandleStatisticBlock(
             auto& heights = elect_statistic.height_info();
             if (heights.tm_height() > statisticed_timeblock_height_) {
                 statisticed_timeblock_height_ = heights.tm_height();
+
+                for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
+                    auto tm_iter = node_height_count_map_[pool_idx].begin();
+                    while (tm_iter != node_height_count_map_[pool_idx].end()) {
+                        if (tm_iter->first > statisticed_timeblock_height_) {
+                            break;
+                        }
+
+                        tm_iter = node_height_count_map_[pool_idx].erase(tm_iter);
+                    }
+                }
             }
 
             if (tx_heights_ptr_ != nullptr) {
