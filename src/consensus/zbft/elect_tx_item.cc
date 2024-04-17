@@ -2,6 +2,7 @@
 
 #include "common/fts_tree.h"
 #include "protos/get_proto_hash.h"
+#include <google/protobuf/util/json_util.h>
 
 namespace shardora {
 
@@ -36,6 +37,14 @@ int ElectTxItem::HandleTx(
                     tmp[0],
                     tmp[1]);
                 return kConsensusError;
+            }
+
+            {
+                std::string json_str;
+                auto st = google::protobuf::util::MessageToJsonString(elect_statistic, &json_str);
+                if (!st.ok()) {
+                    ZJC_DEBUG("LLLLL elect_statistic:%s", json_str.c_str() );
+                }
             }
 
             ZJC_DEBUG("get sharding statistic sharding id: %u, tm height: %lu, info sharding: %u",
@@ -108,14 +117,14 @@ int ElectTxItem::HandleTx(
             uint32_t min_area_weight = common::kInvalidUint32;
             uint32_t min_tx_count = common::kInvalidUint32;
             std::vector<NodeDetailPtr> elect_nodes(members->size(), nullptr);
-            {
-                std::string ids;
-                for (uint32_t i = 0; i < members->size(); ++i) {
-                    ids += common::Encode::HexEncode((*members)[i]->pubkey) + ",";
-                }
-
-                ZJC_DEBUG("init: %s", ids.c_str());
-            }
+//            {
+//                std::string ids;
+//                for (uint32_t i = 0; i < members->size(); ++i) {
+//                    ids += common::Encode::HexEncode((*members)[i]->pubkey) + ",";
+//                }
+//
+//                ZJC_DEBUG("init: %s", ids.c_str());
+//            }
             // TODO: add weedout
             int res = CheckWeedout(
                 members,
@@ -136,6 +145,7 @@ int ElectTxItem::HandleTx(
                 &gas_for_root);
             min_area_weight += 1;
             min_tx_count += 1;
+
             std::vector<NodeDetailPtr> src_elect_nodes_to_choose;
             for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
                 if (elect_nodes[i] != nullptr) {
@@ -143,6 +153,9 @@ int ElectTxItem::HandleTx(
                 }
             }
 
+
+            // 计算新加入节点数量
+            // 如果未到达最大节点数量，新加入的节点为当前节点数量 * 10%
             uint32_t join_count = 0;
             if (members->size() < common::kEachShardMaxNodeCount) {
                 join_count += members->size() * kFtsNewElectJoinRate / 100;
@@ -159,7 +172,7 @@ int ElectTxItem::HandleTx(
             for (uint32_t i = 0; i < join_count; ++i) {
                 elect_nodes.push_back(nullptr);
             }
-
+            // 先填满有固定位置的新节点，再填满随机节点
             ChooseNodeForEachIndex(
                 true,
                 min_area_weight,
@@ -323,6 +336,8 @@ void ElectTxItem::GetIndexNodes(
             common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).pubkey()).c_str(),
             elect_statistic.join_elect_nodes(i).shard(),
             elect_statistic.sharding_id());
+
+        // 已经在委员会中跳过
         auto iter = added_nodes_.find(elect_statistic.join_elect_nodes(i).pubkey());
         if (iter != added_nodes_.end()) {
             continue;
@@ -333,6 +348,8 @@ void ElectTxItem::GetIndexNodes(
         }
 
         if (index != common::kInvalidUint32) {
+            // 当指定了index时，只选择指定index的节点
+            // 不指定 index 时，选择所有节点
             if (elect_statistic.join_elect_nodes(i).elect_pos() != (int32_t)index) {
                 continue;
             }
@@ -533,15 +550,24 @@ int ElectTxItem::CreateNewElect(
     ZJC_DEBUG("create elect success: %u", elect_statistic.sharding_id());
     return kConsensusSuccess;
 }
-
+/**
+ * @param members
+ * @param statistic_item 来自共识节点的统计信息
+ * @param min_area_weight return 节点间的最小逻辑距离
+ * @param min_tx_count 返回结果 最小交易量
+ * @param elect_nodes 返回结果 剔除了少于 max_tx_count/2 的节点，原节点位置保持不变
+ * @return
+ */
 int ElectTxItem::CheckWeedout(
         common::MembersPtr& members,
         const pools::protobuf::PoolStatisticItem& statistic_item,
         uint32_t* min_area_weight,
         uint32_t* min_tx_count,
         std::vector<NodeDetailPtr>& elect_nodes) {
-    uint32_t weed_out_count = statistic_item.tx_count_size() * kFtsWeedoutDividRate / 100;
+    uint32_t weed_out_count = statistic_item.tx_count_size() * kFtsWeedoutDividRate / 100; // 旧委员会有 10% 会被淘汰
     uint32_t direct_weed_out_count = weed_out_count / 2;
+
+    // 计算最大交易量 按交易量降序排列
     uint32_t max_tx_count = 0;
     typedef std::pair<uint32_t, uint32_t> TxItem;
     std::vector<TxItem> member_tx_count;
@@ -554,13 +580,15 @@ int ElectTxItem::CheckWeedout(
             member_idx,
             statistic_item.tx_count(member_idx)));
     }
-
-    uint32_t direct_weedout_tx_count = max_tx_count / 2;
     std::stable_sort(
         member_tx_count.begin(),
         member_tx_count.end(), [](const TxItem& l, const TxItem& r) {
         return l.second > r.second; });
+
+    uint32_t direct_weedout_tx_count = max_tx_count / 2;
     std::set<uint32_t> invalid_nodes;
+
+    // 最多因为交易量少直接淘汰 direct_weedout_count 个节点
     for (uint32_t i = 0; i < direct_weed_out_count; ++i) {
         if (member_tx_count[i].second < direct_weedout_tx_count) {
             invalid_nodes.insert(member_tx_count[i].first);
@@ -576,6 +604,7 @@ int ElectTxItem::CheckWeedout(
             continue;
         }
 
+        // 计算当前于其他节点之间的最小距离
         uint32_t min_dis = common::kInvalidUint32;
         for (int32_t idx = 0; idx < statistic_item.tx_count_size(); ++idx) {
             if (member_idx == idx) {
@@ -590,7 +619,7 @@ int ElectTxItem::CheckWeedout(
                 min_dis = dis;
             }
         }
-
+        // 构建节点信息，并更新全局最小节点距离和最小交易量
         auto account_info = account_mgr_->GetAccountInfo((*members)[member_idx]->id);
         if (account_info == nullptr) {
             ZJC_ERROR("get account info failed: %s",
