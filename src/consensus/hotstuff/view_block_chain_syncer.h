@@ -16,7 +16,8 @@ namespace shardora {
 
 namespace hotstuff {
 
-const int kEachRequestMaxViewBlocksCount = 8; 
+const int kPopCountMax = 128;
+const uint64_t kSyncTimerCycleUs = 100000lu;
 
 struct ViewBlockItem {
     HashStr hash;

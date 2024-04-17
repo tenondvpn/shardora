@@ -30,7 +30,7 @@ ViewBlockChainSyncer::ViewBlockChainSyncer(const std::shared_ptr<ViewBlockChainM
 ViewBlockChainSyncer::~ViewBlockChainSyncer() {}
 
 void ViewBlockChainSyncer::Start() {
-    tick_.CutOff(100000lu, std::bind(&ViewBlockChainSyncer::ConsensusTimerMessage, this));
+    tick_.CutOff(kSyncTimerCycleUs, std::bind(&ViewBlockChainSyncer::ConsensusTimerMessage, this));
 }
 
 void ViewBlockChainSyncer::Stop() { tick_.Destroy(); }
@@ -53,7 +53,7 @@ void ViewBlockChainSyncer::ConsensusTimerMessage() {
     ConsumeMessages();
 
     tick_.CutOff(
-        1000000lu,
+        kSyncTimerCycleUs,
         std::bind(&ViewBlockChainSyncer::ConsensusTimerMessage, this));    
 }
 
@@ -72,13 +72,12 @@ void ViewBlockChainSyncer::ConsumeMessages() {
     // Consume Messages
     uint32_t pop_count = 0;
     for (uint8_t thread_idx = 0; thread_idx < common::kMaxThreadCount; ++thread_idx) {
-        while (pop_count++ < 128) {
+        while (pop_count++ < kPopCountMax) {
             transport::MessagePtr msg_ptr = nullptr;
             consume_queues_[thread_idx].pop(&msg_ptr);
             if (msg_ptr == nullptr) {
                 break;
             }
-            ZJC_DEBUG("====1.5, thread: %d", thread_idx);
             if (msg_ptr->header.view_block_proto().has_view_block_req()) {
                 processRequest(msg_ptr);
             } else if (msg_ptr->header.view_block_proto().has_view_block_res()) {
@@ -111,8 +110,6 @@ Status ViewBlockChainSyncer::SendRequest(uint32_t network_id, const view_block::
     msg.set_type(common::kViewBlockSyncMessage);
     *msg.mutable_view_block_proto() = view_block_msg;
     
-    ZJC_DEBUG("====0.1, ip: %s, port: %d", node->public_ip.c_str(), node->public_port);
-
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);    
     return Status::kSuccess;
@@ -131,14 +128,10 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
     view_block_res->set_network_id(view_block_msg.view_block_req().network_id());
     view_block_res->set_pool_idx(pool_idx);
 
-    ZJC_DEBUG("====1.1 pool_idx: %d", pool_idx);
-
     auto chain = view_block_chain_mgr_->Chain(pool_idx);
     if (!chain) {
         return Status::kError;
     }
-
-    ZJC_DEBUG("====1.2 pool_idx: %d", pool_idx);
 
     std::vector<std::shared_ptr<ViewBlock>> all;
     chain->GetAll(all);
@@ -146,12 +139,6 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
     for (auto& view_block : all) {
         auto view_block_item = view_block_res->add_view_block_items();
         ViewBlock2Proto(view_block, view_block_item);
-
-        if (view_block->DoHash() != view_block_item->hash()) {
-            ZJC_ERROR("====1.9 do hash: %s, hash: %s",
-                common::Encode::HexEncode(view_block->DoHash()).c_str(),
-                common::Encode::HexEncode(view_block_item->hash()).c_str());
-        }
     }
 
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -176,7 +163,7 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
         return Status::kError;
     }
 
-    ZJC_DEBUG("====2.1 pool_idx: %d, view_blocks: %d", pool_idx, view_block_items.size());
+    
 
     ViewBlockMinHeap min_heap;
     for (auto it = view_block_items.begin(); it != view_block_items.end(); it++) {
@@ -185,13 +172,7 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
         if (s != Status::kSuccess) {
             return s;
         }
-        min_heap.push(view_block);
-
-        if (view_block->DoHash() != view_block->hash) {
-            ZJC_ERROR("====2.9 do hash: %s, hash: %s",
-                common::Encode::HexEncode(view_block->DoHash()).c_str(),
-                common::Encode::HexEncode(view_block->hash).c_str());
-        }        
+        min_heap.push(view_block);        
     }
 
     if (min_heap.empty()) {
@@ -206,12 +187,13 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
         sync_chain->Store(view_block);
     }
 
-    ZJC_DEBUG("====2.2 pool_idx: %d, view_blocks: %d", pool_idx, sync_chain->Size());
+    ZJC_DEBUG("Sync blocks to chain, pool_idx: %d, view_blocks: %d",
+        pool_idx, view_block_items.size());
+
     if (!sync_chain->IsValid()) {
         return Status::kSuccess;
     }
 
-    ZJC_DEBUG("====2.3 pool_idx: %d, view_blocks: %d", pool_idx, sync_chain->Size());
     return MergeChain(chain, sync_chain);
 }
 

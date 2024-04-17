@@ -22,6 +22,11 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
             common::Encode::HexEncode(view_block->hash).c_str());
         return Status::kError;
     }
+
+    if (Has(view_block->hash)) {
+        return Status::kSuccess;
+    }
+    
     if (!start_block_) {
         start_block_ = view_block;
         view_blocks_[view_block->hash] = view_block;
