@@ -227,10 +227,17 @@ int NetworkInit::Init(int argc, char** argv) {
     consensus_mgr_->Init();
 
     view_block_chain_syncer_ = std::make_shared<hotstuff::ViewBlockChainSyncer>(view_block_chain_mgr_);
-    view_block_chain_syncer_->SetOnRecvViewBlockFn([](
+    view_block_chain_syncer_->SetOnRecvViewBlockFn([this](
+                const uint32_t& pool_idx, 
                 const std::shared_ptr<hotstuff::ViewBlockChain>& chain,
                 const std::shared_ptr<hotstuff::ViewBlock>& block) -> hotstuff::Status {
-        return chain->Store(block);
+        hotstuff::Status s = chain->Store(block);
+        if (s == hotstuff::Status::kSuccess) {
+            auto sync_info = std::make_shared<hotstuff::SyncInfo>();
+            sync_info->qc = block->qc;
+            return this->consensus_mgr_->consensus(pool_idx)->pacemaker()->AdvanceView(sync_info);
+        }
+        return s;
         // Advanceview
     });
     view_block_chain_syncer_->Start();    

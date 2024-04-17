@@ -194,10 +194,13 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
         return Status::kSuccess;
     }
 
-    return MergeChain(chain, sync_chain);
+    return MergeChain(pool_idx, chain, sync_chain);
 }
 
-Status ViewBlockChainSyncer::MergeChain(std::shared_ptr<ViewBlockChain>& ori_chain, const std::shared_ptr<ViewBlockChain>& sync_chain) {
+Status ViewBlockChainSyncer::MergeChain(
+        const uint32_t& pool_idx,
+        std::shared_ptr<ViewBlockChain>& ori_chain,
+        const std::shared_ptr<ViewBlockChain>& sync_chain) {
     // 寻找交点
     std::vector<std::shared_ptr<ViewBlock>> view_blocks;
     ori_chain->GetAll(view_blocks);
@@ -221,7 +224,7 @@ Status ViewBlockChainSyncer::MergeChain(std::shared_ptr<ViewBlockChain>& ori_cha
             if (ori_chain->Has(sync_block->hash)) {
                 continue;
             }
-            if (on_recv_vb_fn_ && on_recv_vb_fn_(ori_chain, sync_block) != Status::kSuccess) {
+            if (on_recv_vb_fn_ && on_recv_vb_fn_(pool_idx, ori_chain, sync_block) != Status::kSuccess) {
                 break;
             }
         }
@@ -240,7 +243,7 @@ Status ViewBlockChainSyncer::MergeChain(std::shared_ptr<ViewBlockChain>& ori_cha
     std::vector<std::shared_ptr<ViewBlock>> sync_all_blocks;
     sync_chain->GetOrderedAll(sync_all_blocks);
     for (auto it = sync_all_blocks.begin(); it != sync_all_blocks.end(); it++) {
-        if (on_recv_vb_fn_ && on_recv_vb_fn_(ori_chain, *it) != Status::kSuccess) {
+        if (on_recv_vb_fn_ && on_recv_vb_fn_(pool_idx, ori_chain, *it) != Status::kSuccess) {
             break;
         }
     }

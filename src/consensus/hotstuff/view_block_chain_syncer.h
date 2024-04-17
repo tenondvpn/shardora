@@ -27,7 +27,10 @@ struct ViewBlockItem {
     ~ViewBlockItem() {};
 };
 
-using OnRecvViewBlockFn = std::function<Status(const std::shared_ptr<ViewBlockChain>&, const std::shared_ptr<ViewBlock>&)>;
+using OnRecvViewBlockFn = std::function<Status(
+        const uint32_t& pool_idx,
+        const std::shared_ptr<ViewBlockChain>& chain,
+        const std::shared_ptr<ViewBlock>& view_block)>;
 
 class ViewBlockChainSyncer {
 public:
@@ -44,7 +47,7 @@ public:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     void ConsumeMessages();
-    Status MergeChain(std::shared_ptr<ViewBlockChain>& ori_chain, const std::shared_ptr<ViewBlockChain>& sync_chain);
+    Status MergeChain(const uint32_t& pool_idx, std::shared_ptr<ViewBlockChain>& ori_chain, const std::shared_ptr<ViewBlockChain>& sync_chain);
 
     inline void SetOnRecvViewBlockFn(const OnRecvViewBlockFn& fn) {
         on_recv_vb_fn_ = fn;
