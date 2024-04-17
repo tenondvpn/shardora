@@ -546,7 +546,7 @@ void BlockManager::HandleStatisticTx(
                 ZJC_DEBUG("success remove shard statistic block tm height: %lu", iter->first);
                 shard_statistics_map_.erase(iter);
             }
-            
+
             break;
         }
     }
@@ -1268,6 +1268,7 @@ void BlockManager::CreateStatisticTx() {
             tx->set_amount(0);
             tx->set_gas_price(common::kBuildinTransactionGasPrice);
             tx->set_gid(gid);
+            tx->set_timeblock_height(timeblock_height);
             auto tx_ptr = std::make_shared<BlockTxsItem>();
             tx_ptr->tx_ptr = create_statistic_tx_cb_(new_msg_ptr);
             tx_ptr->tx_ptr->time_valid += kStatisticValidTimeout;
@@ -1594,7 +1595,8 @@ pools::TxItemPtr BlockManager::GetCrossTx(
 
 pools::TxItemPtr BlockManager::GetStatisticTx(
         uint32_t pool_index, 
-        bool leader) {
+        bool leader,
+        uint64_t tm_height) {
     if (!leader) {
         ZJC_DEBUG("backup get statistic tx coming.");
     }
@@ -1616,7 +1618,16 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         return nullptr;
     }
 
-    auto iter = statistic_map_ptr->begin();
+    if (!leader && tm_height <= 0) {
+        return nullptr;
+    }
+
+    auto iter = statistic_map_ptr->find(tm_height);
+    if (iter == statistic_map_ptr->end()) {
+        ZJC_ERROR("failed get statistic timestamp height: %lu", tm_height);
+        return nullptr;
+    }
+
     auto shard_statistic_tx = iter->second;
     static uint64_t prev_get_tx_tm = common::TimeUtils::TimestampMs();
     auto now_tx_tm = common::TimeUtils::TimestampMs();
