@@ -42,7 +42,7 @@ int ElectTxItem::HandleTx(
             {
                 std::string json_str;
                 auto st = google::protobuf::util::MessageToJsonString(elect_statistic, &json_str);
-                if (!st.ok()) {
+                if (st.ok()) {
                     ZJC_DEBUG("LLLLL elect_statistic:%s", json_str.c_str() );
                 }
             }
