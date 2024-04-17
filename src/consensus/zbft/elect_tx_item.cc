@@ -60,7 +60,6 @@ int ElectTxItem::HandleTx(
                 elect_statistic.sharding_id(),
                 nullptr,
                 nullptr);
-            
             if (members == nullptr) {
                 ZJC_WARN("get members failed, elect height: %lu, net: %u",
                     now_elect_height, elect_statistic.sharding_id());
@@ -71,6 +70,9 @@ int ElectTxItem::HandleTx(
             elect_members_ = members;
             for (auto iter = members->begin(); iter != members->end(); ++iter) {
                 added_nodes_.insert((*iter)->pubkey);
+                ZJC_DEBUG("success add now elect member: %s, %s",
+                    common::Encode::HexEncode(sec_ptr_->GetAddress((*iter)->pubkey)).c_str(),
+                    common::Encode::HexEncode((*iter)->pubkey).c_str());
             }
 
             // TODO: check if elect height valid

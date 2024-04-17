@@ -1234,6 +1234,11 @@ int BlockManager::GetBlockWithHeight(
 }
 
 void BlockManager::CreateStatisticTx() {
+#ifndef NDEBUG
+    static auto now_thread_id_tmp = std::this_thread::get_id();
+    auto tmp_thread_id_tmp = std::this_thread::get_id();
+    assert(now_thread_id_tmp == tmp_thread_id_tmp);
+#endif
     if (create_statistic_tx_cb_ == nullptr) {
         return;
     }
