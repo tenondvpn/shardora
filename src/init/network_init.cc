@@ -237,14 +237,15 @@ int NetworkInit::Init(int argc, char** argv) {
         }
         uint32_t pool_idx = std::stoi(args[0]);
         std::string parent_hash = "";
+        hotstuff::View view = 0;
         uint32_t leader_idx = 0;
-        if (args.size() >= 2) {
-            parent_hash = common::Encode::HexDecode(args[1]); 
+        if (args.size() >= 4) {
+            parent_hash = common::Encode::HexDecode(args[1]);
+            leader_idx = std::stoi(args[2]);
+            view = std::stoi(args[3]);
         }
 
-        if (args.size() >= 3) {
-            leader_idx = std::stoi(args[2]);
-        }
+        
         auto consensus = consensus_mgr_->consensus(pool_idx);
         if (!consensus) {
             return;
@@ -267,11 +268,15 @@ int NetworkInit::Init(int argc, char** argv) {
         if (parent_hash == "") {
             parent_hash = pacemaker->HighQCWrapperBlock()->hash; 
         }
+
+        if (view == 0) {
+            view = pacemaker->CurView()+1;
+        }
         auto view_block = std::make_shared<hotstuff::ViewBlock>(
                 parent_hash,
                 qc,
                 nullptr,
-                pacemaker->CurView()+1, // 此时为 0
+                view, // 此时为 0
                 leader_idx);
 
         auto sync_info = std::make_shared<hotstuff::SyncInfo>();
