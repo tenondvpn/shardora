@@ -158,7 +158,9 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetCrossTx(uint32_t pool_index,
     return nullptr;
 }
 
-std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(uint32_t pool_index, bool leader) {
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
+        uint32_t pool_index, 
+        bool leader) {
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         if (pool_index != common::kRootChainPoolIndex) {
             return nullptr;
@@ -168,10 +170,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(uint32_t pool_in
             return nullptr;
         }
     }
-
-//     if (leader) {
-//         ZJC_DEBUG("leader now get statistic tx.");
-//     }
 
     auto tx_ptr = block_mgr_->GetStatisticTx(pool_index, leader);
     if (tx_ptr != nullptr) {

@@ -534,19 +534,17 @@ void BlockManager::HandleStatisticTx(
                 continue;
             }
 
-            for (auto iter = shard_statistics_map_.begin(); iter != shard_statistics_map_.end(); ++iter) {
-                if (iter->first == elect_statistic.height_info().tm_height()) {
-                    shard_statistics_map_.erase(iter);
-                    auto tmp_ptr = std::make_shared<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>>(shard_statistics_map_);
-                    shard_statistics_map_ptr_ = tmp_ptr;
-                    ZJC_DEBUG("success get shard statistic block tm height: %lu", iter->first);
-                    break;
-                }
-            }
-
             if (elect_statistic.sharding_id() != net_id) {
                 ZJC_DEBUG("invalid sharding id %u, %u", elect_statistic.sharding_id(), net_id);
                 continue;
+            }
+
+            auto iter = shard_statistics_map_.find(elect_statistic.height_info().tm_height());
+            if (iter != shard_statistics_map_.end()) {
+                auto tmp_ptr = std::make_shared<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>>(shard_statistics_map_);
+                shard_statistics_map_ptr_ = tmp_ptr;
+                ZJC_DEBUG("success remove shard statistic block tm height: %lu", iter->first);
+                shard_statistics_map_.erase(iter);
             }
 
             break;
@@ -1278,12 +1276,14 @@ void BlockManager::CreateStatisticTx() {
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
             tx_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
             ZJC_INFO("success add statistic tx: %s, statistic elect height: %lu, "
-                "heights: %s, timeout: %lu, kStatisticTimeoutMs: %lu, now: %lu, gid: %s",
+                "heights: %s, timeout: %lu, kStatisticTimeoutMs: %lu, now: %lu, "
+                "gid: %s, timeblock_height: %lu",
                 common::Encode::HexEncode(statistic_hash).c_str(),
                 0,
                 "", tx_ptr->timeout,
                 kStatisticTimeoutMs, common::TimeUtils::TimestampMs(),
-                common::Encode::HexEncode(gid).c_str());
+                common::Encode::HexEncode(gid).c_str(),
+                timeblock_height);
             shard_statistics_map_[timeblock_height] = tx_ptr;
             auto tmp_ptr = std::make_shared<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>>(shard_statistics_map_);
             shard_statistics_map_ptr_ = tmp_ptr;
@@ -1595,16 +1595,28 @@ pools::TxItemPtr BlockManager::GetCrossTx(
 pools::TxItemPtr BlockManager::GetStatisticTx(
         uint32_t pool_index, 
         bool leader) {
+    if (!leader) {
+        ZJC_DEBUG("backup get statistic tx coming.");
+    }
+
     auto statistic_map_ptr = shard_statistics_map_ptr_;
     if (statistic_map_ptr == nullptr) {
+        if (!leader) {
+            ZJC_DEBUG("statistic_map_ptr == nullptr");
+        }
+
         return nullptr;
     }
 
     if (statistic_map_ptr->empty()) {
+        if (!leader) {
+            ZJC_DEBUG("statistic_map_ptr->empty()");
+        }
+
         return nullptr;
     }
 
-    auto iter = statistic_map_ptr->begin();
+    auto iter = statistic_map_ptr->rbegin();
     auto shard_statistic_tx = iter->second;
     static uint64_t prev_get_tx_tm = common::TimeUtils::TimestampMs();
     auto now_tx_tm = common::TimeUtils::TimestampMs();
@@ -1621,19 +1633,21 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
     if (shard_statistic_tx != nullptr && !shard_statistic_tx->tx_ptr->in_consensus) {
         auto now_tm = common::TimeUtils::TimestampUs();
         if (iter->first >= latest_timeblock_height_) {
+            if (!leader) {
+                ZJC_DEBUG("iter->first >= latest_timeblock_height_: %lu, %lu",
+                    iter->first, latest_timeblock_height_);
+            }
+
             return nullptr;
         }
 
         if (prev_timeblock_tm_sec_ + (common::kRotationPeriod / (1000lu * 1000lu)) > (now_tm / 1000000lu)) {
             static uint64_t prev_get_tx_tm1 = common::TimeUtils::TimestampMs();
             if (now_tx_tm > prev_get_tx_tm1 + 10000) {
-                if (leader) {
-                    ZJC_DEBUG("failed get statistic tx: %lu, %lu, %lu", 
-                        prev_timeblock_tm_sec_, 
-                        (common::kRotationPeriod / 1000000lu), 
-                        (now_tm / 1000000lu));
-                }
-                    
+                ZJC_DEBUG("failed get statistic tx: %lu, %lu, %lu", 
+                    prev_timeblock_tm_sec_, 
+                    (common::kRotationPeriod / 1000000lu), 
+                    (now_tm / 1000000lu));
                 prev_get_tx_tm1 = now_tx_tm;
             }
             
@@ -1657,6 +1671,9 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         return shard_statistic_tx->tx_ptr;
     }
 
+    if (!leader) {
+        ZJC_DEBUG("failed get statistic tx");
+    }
     return nullptr;
 }
 
