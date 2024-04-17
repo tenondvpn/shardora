@@ -260,7 +260,7 @@ int NetworkInit::Init(int argc, char** argv) {
 void NetworkInit::AddCmds() {
 #ifdef HOTSTUFF_V2    
     cmd_.AddCommand("addblock", [this](const std::vector<std::string>& args){
-        if (args.size() < 4) {
+        if (args.size() < 3) {
             return;
         }
         uint32_t pool_idx = std::stoi(args[0]);
