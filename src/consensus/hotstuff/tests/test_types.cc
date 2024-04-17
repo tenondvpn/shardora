@@ -1,3 +1,4 @@
+#include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <gtest/gtest.h>
 
@@ -18,7 +19,7 @@ protected:
     }
 };
 
-TEST_F(TestTypes, QC) {
+TEST_F(TestTypes, QCSerialization) {
     auto qc = GetGenesisQC();
     auto qc_str = qc->Serialize();
 
