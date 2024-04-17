@@ -230,7 +230,33 @@ int NetworkInit::Init(int argc, char** argv) {
             view_block_chain_mgr_, elect_info_, crypto_, db_);
     consensus_mgr_->Init();
     // 以上应该放入 hotstuff 实例初始化中，并接收创世块
+    AddCmds();
+#endif
 
+    block_mgr_->LoadLatestBlocks();
+    shard_statistic_->Init();
+    RegisterFirewallCheck();
+    transport::TcpTransport::Instance()->Start(false);
+    if (InitHttpServer() != kInitSuccess) {
+        INIT_ERROR("InitHttpServer failed!");
+        return kInitError;
+    }
+    GetAddressShardingId();
+    if (InitCommand() != kInitSuccess) {
+        INIT_ERROR("InitCommand failed!");
+        return kInitError;
+    }
+
+    inited_ = true;
+    common::GlobalInfo::Instance()->set_main_inited_success();
+    
+    cmd_.Run();
+    // std::this_thread::sleep_for(std::chrono::seconds(120));
+    return kInitSuccess;
+}
+
+void NetworkInit::AddCmds() {
+#ifdef HOTSTUFF_V2    
     cmd_.AddCommand("addblock", [this](const std::vector<std::string>& args){
         if (args.size() < 1) {
             return;
@@ -305,29 +331,8 @@ int NetworkInit::Init(int argc, char** argv) {
             return;
         }
         chain->Print();
-    });    
-#endif
-
-    block_mgr_->LoadLatestBlocks();
-    shard_statistic_->Init();
-    RegisterFirewallCheck();
-    transport::TcpTransport::Instance()->Start(false);
-    if (InitHttpServer() != kInitSuccess) {
-        INIT_ERROR("InitHttpServer failed!");
-        return kInitError;
-    }
-    GetAddressShardingId();
-    if (InitCommand() != kInitSuccess) {
-        INIT_ERROR("InitCommand failed!");
-        return kInitError;
-    }
-
-    inited_ = true;
-    common::GlobalInfo::Instance()->set_main_inited_success();
-    
-    cmd_.Run();
-    // std::this_thread::sleep_for(std::chrono::seconds(120));
-    return kInitSuccess;
+    });
+#endif    
 }
 
 void NetworkInit::RegisterFirewallCheck() {
