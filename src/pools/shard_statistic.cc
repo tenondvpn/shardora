@@ -535,8 +535,8 @@ int ShardStatistic::StatisticWithHeights(
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
         for (auto tm_iter = node_height_count_map_[pool_idx].begin(); 
                 tm_iter != node_height_count_map_[pool_idx].end(); ++tm_iter) {
-            ZJC_DEBUG("0 pool: %u, elect height: %lu, tm height: %lu, latest tm height: %lu", 
-                pool_idx, 0, tm_iter->first, latest_timeblock_height_);
+            ZJC_DEBUG("0 pool: %u, elect height: %lu, tm height: %lu, latest tm height: %lu, statisticed_timeblock_height_: %lu", 
+                pool_idx, 0, tm_iter->first, latest_timeblock_height_, statisticed_timeblock_height_);
             if (tm_iter->first >= latest_timeblock_height_) {
                 break;
             }
