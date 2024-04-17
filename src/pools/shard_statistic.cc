@@ -546,12 +546,13 @@ int ShardStatistic::StatisticWithHeights(
             ZJC_DEBUG("0 pool: %u, elect height: %lu, tm height: %lu, latest tm height: %lu, "
                 "statisticed_timeblock_height_: %lu", 
                 pool_idx, 0, tm_iter->first, latest_timeblock_height_, statisticed_timeblock_height_);
-            if (tm_iter->first >= latest_timeblock_height_) {
+            if (tm_iter->first > latest_timeblock_height_) {
+                assert(false);
                 break;
             }
 
             if (tm_iter->first <= statisticed_timeblock_height_) {
-                break;
+                continue;
             }
 
             if (tm_iter->first > max_tm_height) {
