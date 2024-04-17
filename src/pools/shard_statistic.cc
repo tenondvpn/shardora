@@ -851,6 +851,10 @@ int ShardStatistic::StatisticWithHeights(
         }
     }
 
+    {
+        ZJC_DEBUG("LLLLLL statistic :%s", ProtobufToJson(elect_statistic).c_str());
+    }
+
     ZJC_DEBUG("success create statistic message: %s, heights: %s, prev_timeblock_height_: %lu",
         debug_for_str.c_str(),
         "heights.c_str()",
