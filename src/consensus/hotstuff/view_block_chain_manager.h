@@ -8,6 +8,7 @@ namespace shardora {
 
 namespace hotstuff {
 
+// 用于构造 ViewBlockChainSyncer 和 HotStuffManager
 class ViewBlockChainManager {
 public:
     explicit ViewBlockChainManager(const std::shared_ptr<db::Db>&);
@@ -29,7 +30,6 @@ public:
 private:
     std::unordered_map<uint32_t, std::shared_ptr<ViewBlockChain>> pool_chain_map_;
     std::shared_ptr<db::Db> db_;
-    // common::Tick tick_;
 };
 
 }

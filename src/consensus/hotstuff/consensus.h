@@ -10,6 +10,7 @@
 #include <consensus/hotstuff/view_block_chain_manager.h>
 #include <consensus/hotstuff/view_duration.h>
 #include <db/db.h>
+#include <network/route.h>
 #include <transport/transport_utils.h>
 
 // 临时文件，用于测试同步，最后替换为 hotstuff_manager
@@ -89,7 +90,7 @@ public:
     ~ConsensusManager() {};
     ConsensusManager(const ConsensusManager&) = delete;
     ConsensusManager& operator=(const ConsensusManager&) = delete;
-
+    
     Status Init() {
         for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
             auto chain = view_block_chain_mgr_->Chain(pool_idx);
@@ -100,7 +101,32 @@ public:
                     chain, pacemaker, leader_rotation, db_, pool_idx);
         }
 
+        network::Route::Instance()->RegisterMessage(common::kHotstuffTimeoutMessage,
+            std::bind(&ConsensusManager::HandleMessage, this, std::placeholders::_1));
+        // network::Route::Instance()->RegisterMessage(common::kHotstuffMessage,
+        //     std::bind(&ConsensusManager::HandleMessage, this, std::placeholders::_1));
+        
+
         return Status::kSuccess;
+    }
+
+    void HandleMessage(const transport::MessagePtr& msg_ptr) {
+        auto msg = msg_ptr->header;
+        if (msg.type() == common::kHotstuffTimeoutMessage) {
+            if (!msg.has_hotstuff_timeout_proto()) {
+                return;
+            }
+
+            auto consen = consensus(msg.hotstuff_timeout_proto().pool_idx());
+            if (!consen) {
+                return;
+            }
+            if (!consen->pacemaker()) {
+                return;
+            }
+            consen->pacemaker()->OnRemoteTimeout(msg_ptr);
+            return;
+        }
     }
 
     inline std::shared_ptr<Consensus> consensus(const uint32_t& pool_idx) const {

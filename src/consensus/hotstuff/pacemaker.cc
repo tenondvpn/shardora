@@ -125,7 +125,7 @@ void Pacemaker::OnLocalTimeout() {
             common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port);
         transport::TcpTransport::Instance()->Send(common::Uint32ToIp(leader->public_ip), leader->public_port, msg);
     } else {
-        HandleMessage(msg_ptr);
+        OnRemoteTimeout(msg_ptr);
     }    
     
     return;
