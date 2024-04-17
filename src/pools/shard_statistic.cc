@@ -115,7 +115,10 @@ void ShardStatistic::HandleStatisticBlock(
 
             assert(elect_statistic.height_info().heights_size() > 0);
             auto& heights = elect_statistic.height_info();
-            statisticed_timeblock_height_ = heights.tm_height();
+            if (heights.tm_height() > statisticed_timeblock_height_) {
+                statisticed_timeblock_height_ = heights.tm_height();
+            }
+
             if (tx_heights_ptr_ != nullptr) {
                 if (tx_heights_ptr_->heights_size() == heights.heights_size()) {
                     for (int32_t i = 0; i < heights.heights_size(); ++i) {
@@ -536,6 +539,7 @@ int ShardStatistic::StatisticWithHeights(
     std::map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
     std::unordered_map<std::string, std::string> id_pk_map;
     uint64_t pools_max_height[common::kInvalidPoolIndex] = {0};
+    uint64_t max_tm_height = 0;
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
         for (auto tm_iter = node_height_count_map_[pool_idx].begin(); 
                 tm_iter != node_height_count_map_[pool_idx].end(); ++tm_iter) {
@@ -548,6 +552,10 @@ int ShardStatistic::StatisticWithHeights(
 
             if (tm_iter->first <= statisticed_timeblock_height_) {
                 break;
+            }
+
+            if (tm_iter->first > max_tm_height) {
+                max_tm_height = tm_iter->first;
             }
 
             for (uint32_t i = 0; i < tm_iter->second->cross_statistic.crosses_size(); ++i) {
@@ -802,6 +810,7 @@ int ShardStatistic::StatisticWithHeights(
     auto net_id = common::GlobalInfo::Instance()->network_id();
     elect_statistic.set_sharding_id(net_id);
     auto* heights_ptr = elect_statistic.mutable_height_info();
+    heights_ptr->set_tm_height(max_tm_height);
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
         bool valid = false;
         for (auto tm_iter = node_height_count_map_[pool_idx].rbegin(); 
