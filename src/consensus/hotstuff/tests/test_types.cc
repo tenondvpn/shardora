@@ -35,7 +35,7 @@ protected:
     static std::shared_ptr<ViewBlock> CreateViewBlock() {
         return std::make_shared<hotstuff::ViewBlock>(
                 "parent hash",
-                GetGenesisQC(),
+                GetQCWrappedByGenesis(),
                 nullptr,
                 0,
                 0);
@@ -43,7 +43,7 @@ protected:
 };
 
 TEST_F(TestTypes, QCSerialization) {
-    auto qc = GetGenesisQC();
+    auto qc = GetQCWrappedByGenesis();
     auto qc_str = qc->Serialize();
 
     auto qc2 = std::make_shared<QC>();

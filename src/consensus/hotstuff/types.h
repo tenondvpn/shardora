@@ -16,7 +16,7 @@ namespace hotstuff {
 
 static const uint64_t ORPHAN_BLOCK_TIMEOUT_US = 10000000lu;
 
-typedef int64_t View;
+typedef uint64_t View;
 typedef std::string HashStr;
 
 static const View GenesisView = 0;

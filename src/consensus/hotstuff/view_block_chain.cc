@@ -274,11 +274,11 @@ std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db
     }
 
     auto block_ptr = std::make_shared<block::protobuf::Block>(block);
-    return std::make_shared<ViewBlock>("", GetGenesisQC(), block_ptr, GenesisView, 0);
+    return std::make_shared<ViewBlock>("", GetQCWrappedByGenesis(), block_ptr, GenesisView, 0);
 }
 
-std::shared_ptr<QC> GetGenesisQC() {
-    return std::make_shared<QC>(nullptr, View(-1), "");
+std::shared_ptr<QC> GetQCWrappedByGenesis() {
+    return std::make_shared<QC>(nullptr, GenesisView-1, "");
 }
 
 }

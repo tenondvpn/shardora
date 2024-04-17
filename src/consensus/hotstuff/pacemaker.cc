@@ -56,13 +56,13 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
 }
 
 void Pacemaker::UpdateHighQC(const std::shared_ptr<QC>& qc) {
-    if (!high_qc_ || high_qc_->view < qc->view) {
+    if (!high_qc_ || high_qc_->view < qc->view || high_qc_->view == GenesisView - 1) {
         high_qc_ = qc;
     }
 }
 
 void Pacemaker::UpdateHighTC(const std::shared_ptr<TC>& tc) {
-    if (!high_tc_ || high_tc_->view < tc->view) {
+    if (!high_tc_ || high_tc_->view < tc->view || high_tc_->view == GenesisView - 1) {
         high_tc_ = tc;
     }
 }
@@ -117,6 +117,7 @@ void Pacemaker::OnLocalTimeout() {
 }
 
 void Pacemaker::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    
     // TODO verify ecdh
     auto msg = msg_ptr->header;
     if (!msg.has_hotstuff_timeout_proto()) {
@@ -124,6 +125,7 @@ void Pacemaker::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
     
     auto timeout_proto = msg.hotstuff_timeout_proto();
+    ZJC_DEBUG("OnRemoteTimeout view: %d, member: %d", timeout_proto.view(), timeout_proto.member_id());;
     // TODO 统计 bls 签名
     
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
