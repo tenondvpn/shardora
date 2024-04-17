@@ -215,7 +215,7 @@ Status ViewBlockChainSyncer::MergeChain(std::shared_ptr<ViewBlockChain>& ori_cha
         sync_chain->GetOrderedAll(sync_all_blocks);
 
         for (auto sync_block : sync_all_blocks) {
-            if (sync_block->view <= cross_block->view) {
+            if (sync_block->view < cross_block->view) {
                 continue;
             }
             if (ori_chain->Has(sync_block->hash)) {
