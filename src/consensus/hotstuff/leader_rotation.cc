@@ -26,7 +26,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         elect_info_->RefreshMemberAddrs();
     }
 
-    ZJC_DEBUG("leader is %d, ip: %s, port: %d", leader->index, common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port);
+    ZJC_DEBUG("Leader is %d, ip: %s, port: %d", leader->index, common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port);
     return leader;
 }
 
