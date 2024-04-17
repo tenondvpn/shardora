@@ -324,6 +324,7 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
             }
 
             if (block.tx_list(i).step() == pools::protobuf::kJoinElect) {
+                ZJC_DEBUG("join elect tx comming.");
                 for (int32_t storage_idx = 0; storage_idx < block.tx_list(i).storages_size(); ++storage_idx) {
                     if (block.tx_list(i).storages(storage_idx).key() == protos::kElectNodeStoke) {
                         uint64_t* tmp_stoke = (uint64_t*)block.tx_list(i).storages(storage_idx).value().c_str();
