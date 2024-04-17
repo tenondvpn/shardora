@@ -102,18 +102,34 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
 void ShardStatistic::HandleStatisticBlock(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx) {
+    ZJC_DEBUG("now handle statisticed block.");
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kShardStatistic) {
             pools::protobuf::ElectStatistic elect_statistic;
             if (!elect_statistic.ParseFromString(tx.storages(i).value())) {
                 ZJC_ERROR("get statistic val failed: %s",
                     common::Encode::HexEncode(tx.storages(i).value()).c_str());
+                assert(false);
                 return;
             }
 
             assert(elect_statistic.height_info().heights_size() > 0);
             auto& heights = elect_statistic.height_info();
-            statisticed_timeblock_height_ = heights.tm_height();
+            if (heights.tm_height() > statisticed_timeblock_height_) {
+                statisticed_timeblock_height_ = heights.tm_height();
+
+                for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
+                    auto tm_iter = node_height_count_map_[pool_idx].begin();
+                    while (tm_iter != node_height_count_map_[pool_idx].end()) {
+                        if (tm_iter->first > statisticed_timeblock_height_) {
+                            break;
+                        }
+
+                        tm_iter = node_height_count_map_[pool_idx].erase(tm_iter);
+                    }
+                }
+            }
+
             if (tx_heights_ptr_ != nullptr) {
                 if (tx_heights_ptr_->heights_size() == heights.heights_size()) {
                     for (int32_t i = 0; i < heights.heights_size(); ++i) {
@@ -136,6 +152,7 @@ void ShardStatistic::HandleStatisticBlock(
                 } else {
                     ZJC_WARN("statistic heights size not equal: %u, %u",
                         tx_heights_ptr_->heights_size(), heights.heights_size());
+                    assert(false);
                 }
             }
 
@@ -149,7 +166,8 @@ void ShardStatistic::HandleStatisticBlock(
                 init_consensus_height += std::to_string(tx_heights_ptr_->heights(i)) + " ";
             }
 
-            ZJC_DEBUG("success change min elect statistic heights: %s", init_consensus_height.c_str());
+            ZJC_DEBUG("success change min elect statistic heights: %s, statisticed_timeblock_height_: %lu",
+                init_consensus_height.c_str(), statisticed_timeblock_height_);
             break;
         }
     }
@@ -324,6 +342,7 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
             }
 
             if (block.tx_list(i).step() == pools::protobuf::kJoinElect) {
+                ZJC_DEBUG("join elect tx comming.");
                 for (int32_t storage_idx = 0; storage_idx < block.tx_list(i).storages_size(); ++storage_idx) {
                     if (block.tx_list(i).storages(storage_idx).key() == protos::kElectNodeStoke) {
                         uint64_t* tmp_stoke = (uint64_t*)block.tx_list(i).storages(storage_idx).value().c_str();
@@ -343,12 +362,14 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
                         }
 
                         elect_static_info_item->node_shard_map[block.tx_list(i).from()] = join_info.shard_id();
-                        ZJC_DEBUG("kJoinElect add new elect node: %s, shard: %u, pool: %u, height: %lu, elect height: %lu",
+                        ZJC_DEBUG("kJoinElect add new elect node: %s, shard: %u, pool: %u, height: %lu, "
+                            "elect height: %lu, tm height: %lu",
                             common::Encode::HexEncode(block.tx_list(i).from()).c_str(),
                             join_info.shard_id(),
                             block.pool_index(),
                             block.height(),
-                            block_ptr->electblock_height());
+                            block_ptr->electblock_height(),
+                            block.timeblock_height());
                     }
                 }
             }
@@ -529,17 +550,24 @@ int ShardStatistic::StatisticWithHeights(
     std::map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
     std::unordered_map<std::string, std::string> id_pk_map;
     uint64_t pools_max_height[common::kInvalidPoolIndex] = {0};
+    uint64_t max_tm_height = 0;
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
         for (auto tm_iter = node_height_count_map_[pool_idx].begin(); 
                 tm_iter != node_height_count_map_[pool_idx].end(); ++tm_iter) {
-            ZJC_DEBUG("0 pool: %u, elect height: %lu, tm height: %lu, latest tm height: %lu", 
-                pool_idx, 0, tm_iter->first, latest_timeblock_height_);
-            if (tm_iter->first >= latest_timeblock_height_) {
+            ZJC_DEBUG("0 pool: %u, elect height: %lu, tm height: %lu, latest tm height: %lu, "
+                "statisticed_timeblock_height_: %lu", 
+                pool_idx, 0, tm_iter->first, latest_timeblock_height_, statisticed_timeblock_height_);
+            if (tm_iter->first > latest_timeblock_height_) {
+                assert(false);
                 break;
             }
 
             if (tm_iter->first <= statisticed_timeblock_height_) {
-                break;
+                continue;
+            }
+
+            if (tm_iter->first > max_tm_height) {
+                max_tm_height = tm_iter->first;
             }
 
             for (uint32_t i = 0; i < tm_iter->second->cross_statistic.crosses_size(); ++i) {
@@ -794,6 +822,7 @@ int ShardStatistic::StatisticWithHeights(
     auto net_id = common::GlobalInfo::Instance()->network_id();
     elect_statistic.set_sharding_id(net_id);
     auto* heights_ptr = elect_statistic.mutable_height_info();
+    heights_ptr->set_tm_height(max_tm_height);
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
         bool valid = false;
         for (auto tm_iter = node_height_count_map_[pool_idx].rbegin(); 
