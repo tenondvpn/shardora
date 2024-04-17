@@ -1,6 +1,7 @@
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <gtest/gtest.h>
+#include <protos/view_block.pb.h>
 
 namespace shardora {
 
@@ -23,6 +24,15 @@ protected:
         qc->bls_agg_sign = fake_sign;
         qc->view = 1;
         qc->view_block_hash = "hash str";        
+    }
+
+    static std::shared_ptr<ViewBlock> CreateViewBlock() {
+        std::make_shared<hotstuff::ViewBlock>(
+                "parent hash",
+                GetGenesisQC(),
+                nullptr,
+                0,
+                0);
     }
 };
 
@@ -48,7 +58,23 @@ TEST_F(TestTypes, QCSerialization) {
 
     qc2_str = qc2->Serialize();
 
-    EXPECT_EQ(qc_str, qc2_str);    
+    EXPECT_EQ(qc_str, qc2_str);
+}
+
+TEST_F(TestTypes, ViewBlock2Proto) {
+    auto view_block = CreateViewBlock();
+    EXPECT_EQ(view_block->DoHash(), view_block->hash);
+
+    view_block::protobuf::ViewBlockItem vb_proto;
+    ViewBlock2Proto(view_block, &vb_proto);
+    EXPECT_EQ(view_block->DoHash(), vb_proto.hash());
+
+    auto view_block2 = std::make_shared<ViewBlock>();
+    Status s = Proto2ViewBlock(vb_proto, view_block2);
+    
+    EXPECT_EQ(s, Status::kSuccess);
+    EXPECT_EQ(view_block2->DoHash(), view_block2->hash);
+    EXPECT_EQ(view_block2->DoHash(), view_block->hash);
 }
 
 } // namespace test
