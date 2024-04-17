@@ -29,7 +29,7 @@ public:
     // 本地超时
     void OnLocalTimeout();
     // 收到超时消息
-    void HandleMessage(const transport::MessagePtr& msg_ptr);
+    void OnRemoteTimeout(const transport::MessagePtr& msg_ptr);
     // 视图切换
     Status AdvanceView(const std::shared_ptr<SyncInfo>& sync_info);
 

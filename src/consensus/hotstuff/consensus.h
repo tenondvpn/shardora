@@ -50,8 +50,14 @@ public:
     Consensus& operator=(const Consensus&) = delete;
 
     void Propose() {};
+    
+    // 通过 ConsensusManager 分发
     void OnPropose(const transport::MessagePtr& msg_ptr) {};
     void OnVote() {};
+    void OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
+        pacemaker_->OnRemoteTimeout(msg_ptr);
+    }
+
     void StopVoting() {};
 
     inline std::shared_ptr<Pacemaker> pacemaker() const {

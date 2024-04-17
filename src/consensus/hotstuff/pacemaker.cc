@@ -131,8 +131,8 @@ void Pacemaker::OnLocalTimeout() {
     return;
 }
 
-// HandleMessage 由 Consensus 调用
-void Pacemaker::HandleMessage(const transport::MessagePtr& msg_ptr) {
+// OnRemoteTimeout 由 Consensus 调用
+void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     // TODO ecdh decrypt
     auto msg = msg_ptr->header;
     assert(msg.type() == common::kHotstuffTimeoutMessage);
