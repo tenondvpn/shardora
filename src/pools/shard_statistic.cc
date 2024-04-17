@@ -102,12 +102,14 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
 void ShardStatistic::HandleStatisticBlock(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx) {
+    ZJC_DEBUG("now handle statisticed block.");
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kShardStatistic) {
             pools::protobuf::ElectStatistic elect_statistic;
             if (!elect_statistic.ParseFromString(tx.storages(i).value())) {
                 ZJC_ERROR("get statistic val failed: %s",
                     common::Encode::HexEncode(tx.storages(i).value()).c_str());
+                assert(false);
                 return;
             }
 
@@ -136,6 +138,7 @@ void ShardStatistic::HandleStatisticBlock(
                 } else {
                     ZJC_WARN("statistic heights size not equal: %u, %u",
                         tx_heights_ptr_->heights_size(), heights.heights_size());
+                    assert(false);
                 }
             }
 
@@ -149,7 +152,8 @@ void ShardStatistic::HandleStatisticBlock(
                 init_consensus_height += std::to_string(tx_heights_ptr_->heights(i)) + " ";
             }
 
-            ZJC_DEBUG("success change min elect statistic heights: %s", init_consensus_height.c_str());
+            ZJC_DEBUG("success change min elect statistic heights: %s, statisticed_timeblock_height_: %lu",
+                init_consensus_height.c_str(), statisticed_timeblock_height_);
             break;
         }
     }
@@ -535,7 +539,8 @@ int ShardStatistic::StatisticWithHeights(
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
         for (auto tm_iter = node_height_count_map_[pool_idx].begin(); 
                 tm_iter != node_height_count_map_[pool_idx].end(); ++tm_iter) {
-            ZJC_DEBUG("0 pool: %u, elect height: %lu, tm height: %lu, latest tm height: %lu, statisticed_timeblock_height_: %lu", 
+            ZJC_DEBUG("0 pool: %u, elect height: %lu, tm height: %lu, latest tm height: %lu, "
+                "statisticed_timeblock_height_: %lu", 
                 pool_idx, 0, tm_iter->first, latest_timeblock_height_, statisticed_timeblock_height_);
             if (tm_iter->first >= latest_timeblock_height_) {
                 break;
