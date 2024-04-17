@@ -1268,7 +1268,6 @@ void BlockManager::CreateStatisticTx() {
             tx->set_amount(0);
             tx->set_gas_price(common::kBuildinTransactionGasPrice);
             tx->set_gid(gid);
-            tx->set_timeblock_height(timeblock_height);
             auto tx_ptr = std::make_shared<BlockTxsItem>();
             tx_ptr->tx_ptr = create_statistic_tx_cb_(new_msg_ptr);
             tx_ptr->tx_ptr->time_valid += kStatisticValidTimeout;
@@ -1617,16 +1616,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         return nullptr;
     }
 
-    if (!leader && tm_height <= 0) {
-        return nullptr;
-    }
-
     auto iter = statistic_map_ptr->rbegin();
-    if (iter == statistic_map_ptr->rend()) {
-        ZJC_ERROR("failed get statistic timestamp height: %lu", tm_height);
-        return nullptr;
-    }
-
     auto shard_statistic_tx = iter->second;
     static uint64_t prev_get_tx_tm = common::TimeUtils::TimestampMs();
     auto now_tx_tm = common::TimeUtils::TimestampMs();
