@@ -74,7 +74,7 @@ struct ViewBlock {
         hash = DoHash();
     };
 
-    ViewBlock() {};
+    ViewBlock() : qc(nullptr) {};
 
     inline bool Valid() {
         return hash != "" && hash == DoHash(); 
@@ -92,7 +92,7 @@ struct SyncInfo {
     std::shared_ptr<TC> tc;
     // std::shared_ptr<ViewBlock> view_block;
 
-    SyncInfo() {};
+    SyncInfo() : qc(nullptr), tc(nullptr) {};
 };
 
 enum class Status : int {
