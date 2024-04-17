@@ -150,7 +150,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     }
     
     auto timeout_proto = msg.hotstuff_timeout_proto();
-    ZJC_DEBUG("OnRemoteTimeout pool: %d, view: %d, member: %d", pool_idx_, timeout_proto.view(), timeout_proto.member_id());;
+    ZJC_DEBUG("OnRemoteTimeout pool: %d, view: %d, member: %d", pool_idx_, timeout_proto.view(), timeout_proto.member_id());
     // TODO 统计 bls 签名
     
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
@@ -165,13 +165,14 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     if (s != Status::kSuccess) {
         return;
     }
-
     // TODO 视图切换
+    
     auto tc = std::make_shared<TC>();
     crypto_->CreateTC(timeout_proto.view(), reconstructed_sign, tc);
     auto sync_info = std::make_shared<SyncInfo>();
     sync_info->tc = tc;
-    
+
+    ZJC_DEBUG("====3 pool: %d, view: %d, member: %d, view: %d", pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
     AdvanceView(sync_info);
     
     // TODO New Propose
