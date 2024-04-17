@@ -534,21 +534,19 @@ void BlockManager::HandleStatisticTx(
                 continue;
             }
 
-            for (auto iter = shard_statistics_map_.begin(); iter != shard_statistics_map_.end(); ++iter) {
-                if (iter->first == elect_statistic.height_info().tm_height()) {
-                    shard_statistics_map_.erase(iter);
-                    auto tmp_ptr = std::make_shared<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>>(shard_statistics_map_);
-                    shard_statistics_map_ptr_ = tmp_ptr;
-                    ZJC_DEBUG("success get shard statistic block tm height: %lu", iter->first);
-                    break;
-                }
-            }
-
             if (elect_statistic.sharding_id() != net_id) {
                 ZJC_DEBUG("invalid sharding id %u, %u", elect_statistic.sharding_id(), net_id);
                 continue;
             }
 
+            auto iter = shard_statistics_map_.find(elect_statistic.height_info().tm_height());
+            if (iter != shard_statistics_map_.end()) {
+                auto tmp_ptr = std::make_shared<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>>(shard_statistics_map_);
+                shard_statistics_map_ptr_ = tmp_ptr;
+                ZJC_DEBUG("success remove shard statistic block tm height: %lu", iter->first);
+                shard_statistics_map_.erase(iter);
+            }
+            
             break;
         }
     }
@@ -1278,12 +1276,14 @@ void BlockManager::CreateStatisticTx() {
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
             tx_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
             ZJC_INFO("success add statistic tx: %s, statistic elect height: %lu, "
-                "heights: %s, timeout: %lu, kStatisticTimeoutMs: %lu, now: %lu, gid: %s",
+                "heights: %s, timeout: %lu, kStatisticTimeoutMs: %lu, now: %lu, "
+                "gid: %s, timeblock_height: %lu",
                 common::Encode::HexEncode(statistic_hash).c_str(),
                 0,
                 "", tx_ptr->timeout,
                 kStatisticTimeoutMs, common::TimeUtils::TimestampMs(),
-                common::Encode::HexEncode(gid).c_str());
+                common::Encode::HexEncode(gid).c_str(),
+                timeblock_height);
             shard_statistics_map_[timeblock_height] = tx_ptr;
             auto tmp_ptr = std::make_shared<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>>(shard_statistics_map_);
             shard_statistics_map_ptr_ = tmp_ptr;
