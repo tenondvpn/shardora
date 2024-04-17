@@ -1257,6 +1257,9 @@ void BlockManager::CreateStatisticTx() {
     std::string statistic_hash = common::Hash::keccak256(elect_statistic.SerializeAsString());
     ZJC_DEBUG("success create statistic message hash: %s, timeblock_height: %lu", 
         common::Encode::HexEncode(statistic_hash).c_str(), timeblock_height);
+    {
+        ZJC_DEBUG("LLLLLL statistic :%S", ProtobufToJson(elect_statistic).c_str());
+    }
     std::string cross_hash = common::Hash::keccak256(cross_statistic.SerializeAsString());
     if (!statistic_hash.empty()) {
         auto tm_statistic_iter = shard_statistics_map_.find(timeblock_height);
