@@ -67,8 +67,6 @@ HashStr ViewBlock::DoHash() const {
     msg.append((char*)&(leader_idx), sizeof(leader_idx));
     msg.append((char*)&(view), sizeof(view));
 
-    ZJC_DEBUG("====3.1 qc_str: %s", qc_str.c_str());
-
     return common::Hash::keccak256(msg);
 }
 

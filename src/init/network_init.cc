@@ -237,8 +237,13 @@ int NetworkInit::Init(int argc, char** argv) {
         }
         uint32_t pool_idx = std::stoi(args[0]);
         std::string parent_hash = "";
-        if (args.size() == 2) {
+        uint32_t leader_idx = 0;
+        if (args.size() >= 2) {
             parent_hash = common::Encode::HexDecode(args[1]); 
+        }
+
+        if (args.size() >= 3) {
+            leader_idx = std::stoi(args[2]);
         }
         auto consensus = consensus_mgr_->consensus(pool_idx);
         if (!consensus) {
@@ -267,7 +272,7 @@ int NetworkInit::Init(int argc, char** argv) {
                 qc,
                 nullptr,
                 pacemaker->CurView()+1, // 此时为 0
-                0);
+                leader_idx);
 
         auto sync_info = std::make_shared<hotstuff::SyncInfo>();
         sync_info->view_block = view_block;
