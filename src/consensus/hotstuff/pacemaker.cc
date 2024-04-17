@@ -76,6 +76,9 @@ void Pacemaker::UpdateHighTC(const std::shared_ptr<TC>& tc) {
 
 void Pacemaker::OnLocalTimeout() {
     ZJC_DEBUG("OnLocalTimeout view: %d", CurView());
+    // start a new timer for the timeout case
+    StartTimeoutTimer();
+    
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
     
