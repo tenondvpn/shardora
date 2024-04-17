@@ -35,27 +35,30 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
         return Status::kInvalidArgument;
     }
 
+    auto view = 0;
     if (sync_info->qc) {
         UpdateHighQC(sync_info->qc);
         if (sync_info->qc->view < cur_view_ && cur_view_ != BeforeGenesisView) {
             return Status::kSuccess;
         }
-
+        view = sync_info->qc->view;
         StopTimeoutTimer();
         duration_->ViewSucceeded();
-
-        // TODO 如果交易池为空，则直接 return，不开启新视图
-        cur_view_ = sync_info->qc->view + 1;
     } else {
         UpdateHighTC(sync_info->tc);
         if (sync_info->tc->view < cur_view_ && cur_view_ != BeforeGenesisView) {
             return Status::kSuccess;
         }
-
+        view = sync_info->tc->view;
         StopTimeoutTimer();
         duration_->ViewTimeout();
+    }
 
-        cur_view_ = sync_info->tc->view + 1;
+    // TODO 如果交易池为空，则直接 return，不开启新视图
+    if (cur_view_ == BeforeGenesisView) {
+        cur_view_ = GenesisView;
+    } else {
+        cur_view_ = view + 1;
     }
     
     duration_->ViewStarted();
@@ -76,7 +79,7 @@ void Pacemaker::UpdateHighTC(const std::shared_ptr<TC>& tc) {
 }
 
 void Pacemaker::OnLocalTimeout() {
-    ZJC_DEBUG("OnLocalTimeout view: %d", CurView());
+    ZJC_DEBUG("OnLocalTimeout pool: %d, view: %d", pool_idx_, CurView());
     // start a new timer for the timeout case
     StartTimeoutTimer();
     
