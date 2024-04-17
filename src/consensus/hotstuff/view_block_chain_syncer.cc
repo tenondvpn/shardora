@@ -227,7 +227,6 @@ Status ViewBlockChainSyncer::MergeChain(std::shared_ptr<ViewBlockChain>& ori_cha
         }
     }
 
-    ZJC_DEBUG("====2.4 cross_block: %s", common::Encode::HexEncode(cross_block->hash).c_str());
     // 两条链存在交点，则从交点之后开始 merge 
     if (cross_block) {
         std::vector<std::shared_ptr<ViewBlock>> sync_all_blocks;
@@ -235,6 +234,9 @@ Status ViewBlockChainSyncer::MergeChain(std::shared_ptr<ViewBlockChain>& ori_cha
 
         for (auto sync_block : sync_all_blocks) {
             if (sync_block->view <= cross_block->view) {
+                continue;
+            }
+            if (ori_chain->Has(sync_block->hash)) {
                 continue;
             }
             if (on_recv_vb_fn_ && on_recv_vb_fn_(ori_chain, sync_block) != Status::kSuccess) {
