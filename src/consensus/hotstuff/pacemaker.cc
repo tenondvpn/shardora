@@ -169,6 +169,9 @@ void Pacemaker::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // Propose(qc);
 }
 
+int Pacemaker::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+    return transport::kFirewallCheckSuccess;
+}
 
 } // namespace consensus
 

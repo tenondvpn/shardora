@@ -45,6 +45,8 @@ public:
         return cur_view_;
     }
 
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
+
 private:
     void UpdateHighQC(const std::shared_ptr<QC>& qc);
     void UpdateHighTC(const std::shared_ptr<TC>& tc);
