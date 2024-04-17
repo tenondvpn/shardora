@@ -230,7 +230,7 @@ int NetworkInit::Init(int argc, char** argv) {
     view_block_chain_syncer_->SetOnRecvViewBlockFn([](
                 const std::shared_ptr<hotstuff::ViewBlockChain>& chain,
                 const std::shared_ptr<hotstuff::ViewBlock>& block) -> hotstuff::Status {
-        chain->Store(block);
+        return chain->Store(block);
         // Advanceview
     });
     view_block_chain_syncer_->Start();    
