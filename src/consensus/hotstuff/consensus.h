@@ -36,8 +36,8 @@ public:
             view_block_chain_->Store(genesis);
             view_block_chain_->SetLatestCommittedBlock(genesis);
             auto sync_info = std::make_shared<SyncInfo>();
-            sync_info->view_block = genesis;
-            pacemaker_->AdvanceView(sync_info, false);
+            sync_info->qc = genesis->qc;
+            pacemaker_->AdvanceView(sync_info);
         } else {
             std::cout << "no genesis, pool_idx: " << pool_idx << std::endl;
         }

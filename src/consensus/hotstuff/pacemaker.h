@@ -29,10 +29,14 @@ public:
     // 收到超时消息
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     // 视图切换
-    Status AdvanceView(const std::shared_ptr<SyncInfo>& sync_info, bool is_timeout);
+    Status AdvanceView(const std::shared_ptr<SyncInfo>& sync_info);
 
     inline std::shared_ptr<QC> HighQC() const {
         return high_qc_;
+    }
+
+    inline std::shared_ptr<TC> HighTC() const {
+        return high_tc_;
     }
 
     inline std::shared_ptr<ViewBlock> HighQCWrapperBlock() const {
@@ -44,7 +48,8 @@ public:
     }
 
 private:
-    void UpdateHighQC(const std::shared_ptr<ViewBlock>& qc_wrapper_block);
+    void UpdateHighQC(const std::shared_ptr<QC>& qc);
+    void UpdateHighTC(const std::shared_ptr<TC>& tc);
 
     inline void StartTimeoutTimer() {
         one_shot_tick_ = std::make_shared<common::Tick>();
@@ -80,6 +85,7 @@ private:
     
     std::shared_ptr<QC> high_qc_ = nullptr;
     std::shared_ptr<ViewBlock> high_qc_wrapper_block_ = nullptr;
+    std::shared_ptr<TC> high_tc_ = nullptr;
     View cur_view_ = -1;
     std::shared_ptr<Crypto> crypto_;
     std::shared_ptr<LeaderRotation> leader_rotation_ = nullptr;

@@ -26,6 +26,12 @@ protected:
         qc->view_block_hash = "hash str";        
     }
 
+    static void CreateTC(std::shared_ptr<TC>& tc) {
+        auto fake_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
+        tc->bls_agg_sign = fake_sign;
+        tc->view = 1;
+    }
+
     static std::shared_ptr<ViewBlock> CreateViewBlock() {
         return std::make_shared<hotstuff::ViewBlock>(
                 "parent hash",
@@ -59,6 +65,20 @@ TEST_F(TestTypes, QCSerialization) {
     qc2_str = qc2->Serialize();
 
     EXPECT_EQ(qc_str, qc2_str);
+}
+
+TEST_F(TestTypes, TCSerialization) {
+    auto tc = std::make_shared<hotstuff::TC>();
+    CreateTC(tc);
+
+    auto tc_str = tc->Serialize();
+    
+    auto tc2 = std::make_shared<TC>();
+    tc2->Unserialize(tc_str);
+
+    auto tc2_str = tc2->Serialize();
+
+    EXPECT_EQ(tc_str, tc2_str);
 }
 
 TEST_F(TestTypes, ViewBlock2Proto) {

@@ -24,6 +24,13 @@ message QC {
     optional bytes view_block_hash = 5;
 }
 
+message TC {
+    optional bytes sign_x = 1;
+    optional bytes sign_y = 2;
+    optional bytes sign_z = 3;
+    optional uint32 view = 4;    
+}
+
 message ViewBlockSyncResponse {
     optional uint32 network_id = 1;
     optional uint32 pool_idx = 2;
@@ -38,8 +45,9 @@ message ViewBlockSyncMessage {
 
 message TimeoutMessage {
     optional uint32 member_id = 1;
-    optional ViewBlockItem high_qc_wrapper_block = 2;
+    optional uint32 view = 2;
     optional bytes sign_x = 3;
     optional bytes sign_y = 4;
     optional bytes msg_hash = 5;
+    optional uint32 elect_height = 6;
 }

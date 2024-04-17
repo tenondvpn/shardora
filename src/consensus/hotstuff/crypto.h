@@ -61,10 +61,19 @@ public:
             const std::shared_ptr<ViewBlock>& view_block,
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
             std::shared_ptr<QC>& qc);
+
+    Status CreateTC(
+            const View& view,
+            const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
+            std::shared_ptr<TC>& tc);    
     
     
     inline std::shared_ptr<ElectItem> GetElectItem(const uint64_t& elect_height) {
         return elect_info_->GetElectItem(elect_height);
+    }
+
+    inline std::shared_ptr<ElectItem> GetLatestElectItem() {
+        return elect_info_->GetElectItem();
     }
     
 private:

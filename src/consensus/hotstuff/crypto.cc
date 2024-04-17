@@ -144,6 +144,18 @@ Status Crypto::CreateQC(
     return Status::kSuccess;
 }
 
+Status Crypto::CreateTC(
+        const View& view,
+        const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
+        std::shared_ptr<TC>& tc) {
+    if (!reconstructed_sign) {
+        return Status::kInvalidArgument;
+    }
+    tc->bls_agg_sign = reconstructed_sign;
+    tc->view = view;
+    return Status::kSuccess;    
+}
+
 } // namespace hotstuff
 
 } // namespace shardora

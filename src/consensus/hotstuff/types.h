@@ -41,6 +41,14 @@ struct QC {
     bool Unserialize(const std::string& str);
 };
 
+struct TC : public QC {
+    TC(const std::shared_ptr<libff::alt_bn128_G1>& sign, const View& v) :
+        QC(sign, v, "") {
+    }
+
+    TC() : QC() {}
+};
+
 struct ViewBlock {
     HashStr hash;
     HashStr parent_hash;
@@ -77,8 +85,9 @@ struct ViewBlock {
 };
 
 struct SyncInfo {
-    // std::shared_ptr<QC> qc;
-    std::shared_ptr<ViewBlock> view_block;
+    std::shared_ptr<QC> qc;
+    std::shared_ptr<TC> tc;
+    // std::shared_ptr<ViewBlock> view_block;
 
     SyncInfo() {};
 };
@@ -102,6 +111,8 @@ enum WaitingBlockType {
 
 void ViewBlock2Proto(const std::shared_ptr<ViewBlock> &view_block, view_block::protobuf::ViewBlockItem *view_block_proto);
 Status Proto2ViewBlock(const view_block::protobuf::ViewBlockItem& view_block_proto, std::shared_ptr<ViewBlock>& view_block);
-    
-}
-}
+
+} // namespace hotstuff
+
+} // namespace shardora
+

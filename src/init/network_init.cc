@@ -308,8 +308,8 @@ void NetworkInit::AddCmds() {
                 leader_idx);
 
         auto sync_info = std::make_shared<hotstuff::SyncInfo>();
-        sync_info->view_block = view_block;
-        pacemaker->AdvanceView(sync_info, false);
+        sync_info->qc = qc;
+        pacemaker->AdvanceView(sync_info);
         
         auto chain = consensus->chain();
         if (!chain) {
