@@ -2607,6 +2607,13 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::google::protobuf::uint64 contract_prepayment() const;
   void set_contract_prepayment(::google::protobuf::uint64 value);
 
+  // optional uint64 timeblock_height = 16;
+  bool has_timeblock_height() const;
+  void clear_timeblock_height();
+  static const int kTimeblockHeightFieldNumber = 16;
+  ::google::protobuf::uint64 timeblock_height() const;
+  void set_timeblock_height(::google::protobuf::uint64 value);
+
   // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.TxMessage)
  private:
   void set_has_version();
@@ -2639,6 +2646,8 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   void clear_has_contract_from();
   void set_has_sign();
   void clear_has_sign();
+  void set_has_timeblock_height();
+  void clear_has_timeblock_height();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -2658,6 +2667,7 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   int step_;
   ::google::protobuf::uint64 amount_;
   ::google::protobuf::uint64 contract_prepayment_;
+  ::google::protobuf::uint64 timeblock_height_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // ===================================================================
@@ -5447,6 +5457,30 @@ inline void TxMessage::set_allocated_sign(::std::string* sign) {
   }
   sign_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), sign);
   // @@protoc_insertion_point(field_set_allocated:shardora.pools.protobuf.TxMessage.sign)
+}
+
+// optional uint64 timeblock_height = 16;
+inline bool TxMessage::has_timeblock_height() const {
+  return (_has_bits_[0] & 0x00008000u) != 0;
+}
+inline void TxMessage::set_has_timeblock_height() {
+  _has_bits_[0] |= 0x00008000u;
+}
+inline void TxMessage::clear_has_timeblock_height() {
+  _has_bits_[0] &= ~0x00008000u;
+}
+inline void TxMessage::clear_timeblock_height() {
+  timeblock_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_timeblock_height();
+}
+inline ::google::protobuf::uint64 TxMessage::timeblock_height() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.TxMessage.timeblock_height)
+  return timeblock_height_;
+}
+inline void TxMessage::set_timeblock_height(::google::protobuf::uint64 value) {
+  set_has_timeblock_height();
+  timeblock_height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.TxMessage.timeblock_height)
 }
 
 #ifdef __GNUC__
