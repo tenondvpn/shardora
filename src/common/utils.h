@@ -72,6 +72,7 @@ enum MessageType {
     kInitMessage = 12,
     kC2cMessage = 13,
     kViewBlockSyncMessage = 14,
+    kHotstuffTimeoutMessage = 15,
     // max (message) type
     kMaxMessageTypeCount,
 };

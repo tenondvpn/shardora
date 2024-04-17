@@ -16,9 +16,11 @@ namespace hotstuff {
 
 class Pacemaker {
 public:
-    Pacemaker(const std::shared_ptr<Crypto>&,
-        const std::shared_ptr<LeaderRotation>&,
-        const std::shared_ptr<ViewDuration>&);
+    Pacemaker(
+            const uint32_t& pool_idx,
+            const std::shared_ptr<Crypto>&,
+            const std::shared_ptr<LeaderRotation>&,
+            const std::shared_ptr<ViewDuration>&);
     ~Pacemaker();
 
     Pacemaker(const Pacemaker&) = delete;
@@ -58,7 +60,8 @@ private:
         }
         one_shot_tick_->Destroy();
     }
-    
+
+    uint32_t pool_idx_;
     std::shared_ptr<QC> high_qc_ = nullptr;
     std::shared_ptr<TC> high_tc_ = nullptr;
     View cur_view_ = GenesisView-1;
@@ -66,6 +69,7 @@ private:
     std::shared_ptr<LeaderRotation> leader_rotation_ = nullptr;
     std::shared_ptr<common::Tick> one_shot_tick_ = nullptr;
     std::shared_ptr<ViewDuration> duration_;
+    
 };
 
 } // namespace consensus

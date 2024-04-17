@@ -4,6 +4,7 @@
 #include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h>
 #include <dht/dht_key.h>
+#include <network/route.h>
 #include <protos/transport.pb.h>
 #include <protos/view_block.pb.h>
 #include <transport/tcp_transport.h>
@@ -12,9 +13,15 @@ namespace shardora {
 
 namespace hotstuff {
 
-Pacemaker::Pacemaker(const std::shared_ptr<Crypto>& c,
-    const std::shared_ptr<LeaderRotation>& lr,
-    const std::shared_ptr<ViewDuration>& d) : crypto_(c), leader_rotation_(lr), duration_(d) {}
+Pacemaker::Pacemaker(
+        const uint32_t& pool_idx,
+        const std::shared_ptr<Crypto>& c,
+        const std::shared_ptr<LeaderRotation>& lr,
+        const std::shared_ptr<ViewDuration>& d) :
+    pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d) {
+    network::Route::Instance()->RegisterMessage(common::kHotstuffTimeoutMessage,
+        std::bind(&Pacemaker::HandleMessage, this, std::placeholders::_1));
+}
 
 Pacemaker::~Pacemaker() {}
 
@@ -97,17 +104,21 @@ void Pacemaker::OnLocalTimeout() {
     timeout_msg.set_view_hash(GetViewHash(CurView()));
     timeout_msg.set_view(CurView());
     timeout_msg.set_elect_height(elect_item->ElectHeight());
+    timeout_msg.set_pool_idx(pool_idx_); // 用于分配线程
 
     // TODO Stop Voting
 
     auto leader = leader_rotation_->GetLeader();
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     dht::DhtKeyManager dht_key(leader->net_id);
+    msg.set_des_dht_key(dht_key.StrKey());
+    msg.set_type(common::kHotstuffTimeoutMessage);
     transport::TcpTransport::Instance()->SetMessageHash(msg);
 
-    // TODO ecdh sign
+    // TODO ecdh encrypt
 
     if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
+        ZJC_DEBUG("====0.1 ip: %s, port: %d", common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port);
         transport::TcpTransport::Instance()->Send(common::Uint32ToIp(leader->public_ip), leader->public_port, msg);
         return;
     }
@@ -117,9 +128,10 @@ void Pacemaker::OnLocalTimeout() {
 }
 
 void Pacemaker::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    
-    // TODO verify ecdh
+    // TODO ecdh decrypt
     auto msg = msg_ptr->header;
+    assert(msg.type() == common::kHotstuffTimeoutMessage);
+    
     if (!msg.has_hotstuff_timeout_proto()) {
         return;
     }

@@ -318,6 +318,11 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
                     msg_ptr->header.view_block_proto().view_block_res().pool_idx()];
         }
         return common::kMaxThreadCount;
+    case common::kHotstuffTimeoutMessage:
+        if (msg_ptr->header.hotstuff_timeout_proto().pool_idx() < common::kInvalidPoolIndex) {
+            return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.hotstuff_timeout_proto().pool_idx()];
+        }
+        return common::kMaxThreadCount;
     default:
         return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_);
     }

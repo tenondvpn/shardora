@@ -50,4 +50,5 @@ message TimeoutMessage {
     optional bytes sign_y = 4;
     optional bytes view_hash = 5;
     optional uint32 elect_height = 6;
+    optional uint32 pool_idx = 7;
 }

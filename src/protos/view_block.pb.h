@@ -1204,6 +1204,13 @@ class TimeoutMessage : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::uint32 elect_height() const;
   void set_elect_height(::google::protobuf::uint32 value);
 
+  // optional uint32 pool_idx = 7;
+  bool has_pool_idx() const;
+  void clear_pool_idx();
+  static const int kPoolIdxFieldNumber = 7;
+  ::google::protobuf::uint32 pool_idx() const;
+  void set_pool_idx(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.TimeoutMessage)
  private:
   void set_has_member_id();
@@ -1218,6 +1225,8 @@ class TimeoutMessage : public ::google::protobuf::Message /* @@protoc_insertion_
   void clear_has_view_hash();
   void set_has_elect_height();
   void clear_has_elect_height();
+  void set_has_pool_idx();
+  void clear_has_pool_idx();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -1228,6 +1237,7 @@ class TimeoutMessage : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::uint32 member_id_;
   ::google::protobuf::uint32 view_;
   ::google::protobuf::uint32 elect_height_;
+  ::google::protobuf::uint32 pool_idx_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // ===================================================================
@@ -2621,6 +2631,30 @@ inline void TimeoutMessage::set_elect_height(::google::protobuf::uint32 value) {
   set_has_elect_height();
   elect_height_ = value;
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.TimeoutMessage.elect_height)
+}
+
+// optional uint32 pool_idx = 7;
+inline bool TimeoutMessage::has_pool_idx() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void TimeoutMessage::set_has_pool_idx() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void TimeoutMessage::clear_has_pool_idx() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void TimeoutMessage::clear_pool_idx() {
+  pool_idx_ = 0u;
+  clear_has_pool_idx();
+}
+inline ::google::protobuf::uint32 TimeoutMessage::pool_idx() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.TimeoutMessage.pool_idx)
+  return pool_idx_;
+}
+inline void TimeoutMessage::set_pool_idx(::google::protobuf::uint32 value) {
+  set_has_pool_idx();
+  pool_idx_ = value;
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.TimeoutMessage.pool_idx)
 }
 
 #ifdef __GNUC__

@@ -82,7 +82,7 @@ public:
             auto chain = view_block_chain_mgr_->Chain(pool_idx);
             auto leader_rotation = std::make_shared<LeaderRotation>(chain, elect_info_);
             auto view_duration = std::make_shared<ViewDuration>();
-            auto pacemaker = std::make_shared<Pacemaker>(crypto_, leader_rotation, view_duration);
+            auto pacemaker = std::make_shared<Pacemaker>(pool_idx, crypto_, leader_rotation, view_duration);
             pool_consensus_map_[pool_idx] = std::make_shared<Consensus>(
                     chain, pacemaker, leader_rotation, db_, pool_idx);
         }
