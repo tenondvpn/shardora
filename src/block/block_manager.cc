@@ -1595,8 +1595,7 @@ pools::TxItemPtr BlockManager::GetCrossTx(
 
 pools::TxItemPtr BlockManager::GetStatisticTx(
         uint32_t pool_index, 
-        bool leader,
-        uint64_t tm_height) {
+        bool leader) {
     if (!leader) {
         ZJC_DEBUG("backup get statistic tx coming.");
     }
@@ -1622,12 +1621,8 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         return nullptr;
     }
 
-    if (leader) {
-        tm_height = statistic_map_ptr->rbegin()->first;
-    }
-
-    auto iter = statistic_map_ptr->find(tm_height);
-    if (iter == statistic_map_ptr->end()) {
+    auto iter = statistic_map_ptr->rbegin();
+    if (iter == statistic_map_ptr->rend()) {
         ZJC_ERROR("failed get statistic timestamp height: %lu", tm_height);
         return nullptr;
     }
