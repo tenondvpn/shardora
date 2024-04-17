@@ -278,7 +278,7 @@ std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db
 }
 
 std::shared_ptr<QC> GetQCWrappedByGenesis() {
-    return std::make_shared<QC>(nullptr, GenesisView-1, "");
+    return std::make_shared<QC>(nullptr, BeforeGenesisView, "");
 }
 
 }

@@ -19,8 +19,9 @@ Pacemaker::Pacemaker(
         const std::shared_ptr<LeaderRotation>& lr,
         const std::shared_ptr<ViewDuration>& d) :
     pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d) {
-    network::Route::Instance()->RegisterMessage(common::kHotstuffTimeoutMessage,
-        std::bind(&Pacemaker::HandleMessage, this, std::placeholders::_1));
+    cur_view_ = BeforeGenesisView;
+    // network::Route::Instance()->RegisterMessage(common::kHotstuffTimeoutMessage,
+    //     std::bind(&Pacemaker::HandleMessage, this, std::placeholders::_1));
 }
 
 Pacemaker::~Pacemaker() {}
@@ -34,27 +35,30 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
         return Status::kInvalidArgument;
     }
 
+    auto view = 0;
     if (sync_info->qc) {
         UpdateHighQC(sync_info->qc);
-        if (sync_info->qc->view < cur_view_) {
+        if (sync_info->qc->view < cur_view_ && cur_view_ != BeforeGenesisView) {
             return Status::kSuccess;
         }
-
+        view = sync_info->qc->view;
         StopTimeoutTimer();
         duration_->ViewSucceeded();
-
-        // TODO 如果交易池为空，则直接 return，不开启新视图
-        cur_view_ = sync_info->qc->view + 1;
     } else {
         UpdateHighTC(sync_info->tc);
-        if (sync_info->tc->view < cur_view_) {
+        if (sync_info->tc->view < cur_view_ && cur_view_ != BeforeGenesisView) {
             return Status::kSuccess;
         }
-
+        view = sync_info->tc->view;
         StopTimeoutTimer();
         duration_->ViewTimeout();
+    }
 
-        cur_view_ = sync_info->tc->view + 1;
+    // TODO 如果交易池为空，则直接 return，不开启新视图
+    if (cur_view_ == BeforeGenesisView) {
+        cur_view_ = GenesisView;
+    } else {
+        cur_view_ = view + 1;
     }
     
     duration_->ViewStarted();
@@ -63,19 +67,19 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
 }
 
 void Pacemaker::UpdateHighQC(const std::shared_ptr<QC>& qc) {
-    if (!high_qc_ || high_qc_->view < qc->view || high_qc_->view == GenesisView - 1) {
+    if (!high_qc_ || high_qc_->view < qc->view || high_qc_->view == BeforeGenesisView) {
         high_qc_ = qc;
     }
 }
 
 void Pacemaker::UpdateHighTC(const std::shared_ptr<TC>& tc) {
-    if (!high_tc_ || high_tc_->view < tc->view || high_tc_->view == GenesisView - 1) {
+    if (!high_tc_ || high_tc_->view < tc->view || high_tc_->view == BeforeGenesisView) {
         high_tc_ = tc;
     }
 }
 
 void Pacemaker::OnLocalTimeout() {
-    ZJC_DEBUG("OnLocalTimeout view: %d", CurView());
+    ZJC_DEBUG("OnLocalTimeout pool: %d, view: %d", pool_idx_, CurView());
     // start a new timer for the timeout case
     StartTimeoutTimer();
     
@@ -125,13 +129,14 @@ void Pacemaker::OnLocalTimeout() {
             common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port);
         transport::TcpTransport::Instance()->Send(common::Uint32ToIp(leader->public_ip), leader->public_port, msg);
     } else {
-        HandleMessage(msg_ptr);
+        OnRemoteTimeout(msg_ptr);
     }    
     
     return;
 }
 
-void Pacemaker::HandleMessage(const transport::MessagePtr& msg_ptr) {
+// OnRemoteTimeout 由 Consensus 调用
+void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     // TODO ecdh decrypt
     auto msg = msg_ptr->header;
     assert(msg.type() == common::kHotstuffTimeoutMessage);
@@ -139,9 +144,13 @@ void Pacemaker::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (!msg.has_hotstuff_timeout_proto()) {
         return;
     }
+
+    if (msg.hotstuff_timeout_proto().pool_idx() != pool_idx_) {
+        return;
+    }
     
     auto timeout_proto = msg.hotstuff_timeout_proto();
-    ZJC_DEBUG("OnRemoteTimeout view: %d, member: %d", timeout_proto.view(), timeout_proto.member_id());;
+    ZJC_DEBUG("OnRemoteTimeout pool: %d, view: %d, member: %d", pool_idx_, timeout_proto.view(), timeout_proto.member_id());
     // TODO 统计 bls 签名
     
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
@@ -156,19 +165,27 @@ void Pacemaker::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (s != Status::kSuccess) {
         return;
     }
-
     // TODO 视图切换
+    
     auto tc = std::make_shared<TC>();
-    crypto_->CreateTC(timeout_proto.view(), reconstructed_sign, tc);
+    s = crypto_->CreateTC(timeout_proto.view(), reconstructed_sign, tc);
+    if (s != Status::kSuccess || !tc) {
+        return;
+    }
     auto sync_info = std::make_shared<SyncInfo>();
     sync_info->tc = tc;
-    
+
+    ZJC_DEBUG("CreateTC pool: %d, view: %d, member: %d, view: %d",
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
     AdvanceView(sync_info);
     
     // TODO New Propose
     // Propose(qc);
 }
 
+int Pacemaker::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+    return transport::kFirewallCheckSuccess;
+}
 
 } // namespace consensus
 

@@ -20,6 +20,7 @@ typedef uint64_t View;
 typedef std::string HashStr;
 
 static const View GenesisView = 0;
+static const View BeforeGenesisView = std::numeric_limits<uint64_t>::max();
 
 HashStr GetViewHash(View view);
 
@@ -73,7 +74,7 @@ struct ViewBlock {
         hash = DoHash();
     };
 
-    ViewBlock() {};
+    ViewBlock() : qc(nullptr) {};
 
     inline bool Valid() {
         return hash != "" && hash == DoHash(); 
@@ -91,7 +92,7 @@ struct SyncInfo {
     std::shared_ptr<TC> tc;
     // std::shared_ptr<ViewBlock> view_block;
 
-    SyncInfo() {};
+    SyncInfo() : qc(nullptr), tc(nullptr) {};
 };
 
 enum class Status : int {
