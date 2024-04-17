@@ -217,7 +217,9 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
     view_block_chain_syncer_ = std::make_shared<hotstuff::ViewBlockChainSyncer>(view_block_chain_mgr_);
-    view_block_chain_syncer_->SetOnRecvViewBlockFn([](const std::shared_ptr<hotstuff::ViewBlockChain>& chain, const std::shared_ptr<hotstuff::ViewBlock>& block) -> hotstuff::Status {
+    view_block_chain_syncer_->SetOnRecvViewBlockFn([](
+                const std::shared_ptr<hotstuff::ViewBlockChain>& chain,
+                const std::shared_ptr<hotstuff::ViewBlock>& block) -> hotstuff::Status {
         return chain->Store(block);
     });
     view_block_chain_syncer_->Start();
@@ -258,19 +260,12 @@ int NetworkInit::Init(int argc, char** argv) {
 void NetworkInit::AddCmds() {
 #ifdef HOTSTUFF_V2    
     cmd_.AddCommand("addblock", [this](const std::vector<std::string>& args){
-        if (args.size() < 1) {
+        if (args.size() < 3) {
             return;
         }
         uint32_t pool_idx = std::stoi(args[0]);
-        std::string parent_hash = "";
-        hotstuff::View view = 0;
-        uint32_t leader_idx = 0;
-        if (args.size() >= 4) {
-            parent_hash = common::Encode::HexDecode(args[1]);
-            leader_idx = std::stoi(args[2]);
-            view = std::stoi(args[3]);
-        }
-
+        auto parent_hash = common::Encode::HexDecode(args[1]);
+        auto leader_idx = std::stoi(args[2]);
         
         auto consensus = consensus_mgr_->consensus(pool_idx);
         if (!consensus) {
@@ -280,39 +275,39 @@ void NetworkInit::AddCmds() {
         if (!pacemaker) {
             return;
         }
-        // 打包块
-        auto fake_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
-        auto qc = std::make_shared<hotstuff::QC>();
-        hotstuff::Status s = this->crypto_->CreateQC(
-                pacemaker->HighQCWrapperBlock(), fake_sign, qc);
-        
-        if (s != hotstuff::Status::kSuccess) {
-            std::cout << "error!" << std::endl;
-            return;
-        }
-
-        if (parent_hash == "") {
-            parent_hash = pacemaker->HighQCWrapperBlock()->hash; 
-        }
-
-        if (view == 0) {
-            view = pacemaker->CurView()+1;
-        }
-        auto view_block = std::make_shared<hotstuff::ViewBlock>(
-                parent_hash,
-                qc,
-                nullptr,
-                view, // 此时为 0
-                leader_idx);
-
-        auto sync_info = std::make_shared<hotstuff::SyncInfo>();
-        sync_info->view_block = view_block;
-        pacemaker->AdvanceView(sync_info, false);
-        
         auto chain = consensus->chain();
         if (!chain) {
             return;
         }
+
+        auto parent_block = std::make_shared<hotstuff::ViewBlock>();
+        hotstuff::Status s = chain->Get(parent_hash, parent_block);
+        if (s != hotstuff::Status::kSuccess) {
+            return;
+        }
+
+        auto view = parent_block->view;
+        
+        // 打包块
+        auto fake_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
+        
+        auto qc = std::make_shared<hotstuff::QC>();
+        s = this->crypto_->CreateQC(parent_block, fake_sign, qc);        
+        if (s != hotstuff::Status::kSuccess) {
+            return;
+        }
+
+        auto sync_info = std::make_shared<hotstuff::SyncInfo>();
+        sync_info->qc = qc;
+        pacemaker->AdvanceView(sync_info);
+        
+        auto view_block = std::make_shared<hotstuff::ViewBlock>(
+                parent_hash,
+                pacemaker->HighQC(),
+                nullptr,
+                pacemaker->CurView(), // 此时为 0
+                leader_idx);
+        
         chain->Store(view_block);
     });
 

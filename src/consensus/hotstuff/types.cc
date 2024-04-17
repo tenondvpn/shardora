@@ -7,6 +7,13 @@ namespace shardora {
 
 namespace hotstuff {
 
+HashStr GetViewHash(View view) {
+    std::string msg;
+    msg.reserve(sizeof(view));
+    msg.append((char*)&(view), sizeof(view));
+    return common::Hash::keccak256(msg);    
+}
+
 std::string QC::Serialize() const {
     auto qc_proto = view_block::protobuf::QC();
         

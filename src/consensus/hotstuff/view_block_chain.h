@@ -126,7 +126,7 @@ private:
 
 // from db
 std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db, uint32_t pool_index);
-std::shared_ptr<QC> GetGenesisQC();    
+std::shared_ptr<QC> GetQCWrappedByGenesis();    
         
 } // namespace consensus
     

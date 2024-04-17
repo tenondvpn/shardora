@@ -16,9 +16,11 @@ namespace hotstuff {
 
 class Pacemaker {
 public:
-    Pacemaker(const std::shared_ptr<Crypto>&,
-        const std::shared_ptr<LeaderRotation>&,
-        const std::shared_ptr<ViewDuration>&);
+    Pacemaker(
+            const uint32_t& pool_idx,
+            const std::shared_ptr<Crypto>&,
+            const std::shared_ptr<LeaderRotation>&,
+            const std::shared_ptr<ViewDuration>&);
     ~Pacemaker();
 
     Pacemaker(const Pacemaker&) = delete;
@@ -29,14 +31,14 @@ public:
     // 收到超时消息
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     // 视图切换
-    Status AdvanceView(const std::shared_ptr<SyncInfo>& sync_info, bool is_timeout);
+    Status AdvanceView(const std::shared_ptr<SyncInfo>& sync_info);
 
     inline std::shared_ptr<QC> HighQC() const {
         return high_qc_;
     }
 
-    inline std::shared_ptr<ViewBlock> HighQCWrapperBlock() const {
-        return high_qc_wrapper_block_;
+    inline std::shared_ptr<TC> HighTC() const {
+        return high_tc_;
     }
 
     inline View CurView() const {
@@ -44,7 +46,8 @@ public:
     }
 
 private:
-    void UpdateHighQC(const std::shared_ptr<ViewBlock>& qc_wrapper_block);
+    void UpdateHighQC(const std::shared_ptr<QC>& qc);
+    void UpdateHighTC(const std::shared_ptr<TC>& tc);
 
     inline void StartTimeoutTimer() {
         one_shot_tick_ = std::make_shared<common::Tick>();
@@ -58,33 +61,15 @@ private:
         one_shot_tick_->Destroy();
     }
 
-    inline uint32_t minAgreeMemberCount() const {
-        // TODO
-        return 0;
-    }
-
-    inline uint32_t memberCount() const {
-        // TODO
-        return 0;
-    }
-
-    inline libff::alt_bn128_Fr localSecKey() const {
-        // TODO
-        return libff::alt_bn128_Fr::one();
-    }
-
-    inline libff::alt_bn128_G1 g1Hash() const {
-        // TODO
-        return libff::alt_bn128_G1::one();
-    }
-    
+    uint32_t pool_idx_;
     std::shared_ptr<QC> high_qc_ = nullptr;
-    std::shared_ptr<ViewBlock> high_qc_wrapper_block_ = nullptr;
-    View cur_view_ = -1;
+    std::shared_ptr<TC> high_tc_ = nullptr;
+    View cur_view_ = GenesisView-1;
     std::shared_ptr<Crypto> crypto_;
     std::shared_ptr<LeaderRotation> leader_rotation_ = nullptr;
     std::shared_ptr<common::Tick> one_shot_tick_ = nullptr;
     std::shared_ptr<ViewDuration> duration_;
+    
 };
 
 } // namespace consensus

@@ -16,10 +16,12 @@ namespace hotstuff {
 
 static const uint64_t ORPHAN_BLOCK_TIMEOUT_US = 10000000lu;
 
-typedef int64_t View;
+typedef uint64_t View;
 typedef std::string HashStr;
 
-static const View GenesisView  = 0;
+static const View GenesisView = 0;
+
+HashStr GetViewHash(View view);
 
 struct QC {
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
@@ -39,6 +41,14 @@ struct QC {
     
     std::string Serialize() const;
     bool Unserialize(const std::string& str);
+};
+
+struct TC : public QC {
+    TC(const std::shared_ptr<libff::alt_bn128_G1>& sign, const View& v) :
+        QC(sign, v, "") {
+    }
+
+    TC() : QC() {}
 };
 
 struct ViewBlock {
@@ -77,8 +87,9 @@ struct ViewBlock {
 };
 
 struct SyncInfo {
-    // std::shared_ptr<QC> qc;
-    std::shared_ptr<ViewBlock> view_block;
+    std::shared_ptr<QC> qc;
+    std::shared_ptr<TC> tc;
+    // std::shared_ptr<ViewBlock> view_block;
 
     SyncInfo() {};
 };
@@ -102,6 +113,8 @@ enum WaitingBlockType {
 
 void ViewBlock2Proto(const std::shared_ptr<ViewBlock> &view_block, view_block::protobuf::ViewBlockItem *view_block_proto);
 Status Proto2ViewBlock(const view_block::protobuf::ViewBlockItem& view_block_proto, std::shared_ptr<ViewBlock>& view_block);
-    
-}
-}
+
+} // namespace hotstuff
+
+} // namespace shardora
+
