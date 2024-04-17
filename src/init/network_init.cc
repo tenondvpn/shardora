@@ -303,9 +303,9 @@ void NetworkInit::AddCmds() {
         
         auto view_block = std::make_shared<hotstuff::ViewBlock>(
                 parent_hash,
-                qc,
+                pacemaker->HighQC(),
                 nullptr,
-                view, // 此时为 0
+                pacemaker->CurView(), // 此时为 0
                 leader_idx);
         
         chain->Store(view_block);
