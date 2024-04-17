@@ -19,7 +19,11 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
     uint64_t random_hash = common::Hash::Hash64(qc->Serialize() +
         std::to_string(common::TimeUtils::TimestampSeconds() / 30));
     
-    return (*Members())[random_hash % Members()->size()];
+    auto leader = (*Members())[random_hash % Members()->size()];
+    if (leader->public_ip == 0 || leader->public_port == 0) {
+        elect_info_->RefreshMemberAddrs();
+    }
+    return leader;
 }
 
 } // namespace hotstuff
