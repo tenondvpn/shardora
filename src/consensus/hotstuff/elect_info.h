@@ -1,14 +1,12 @@
 #pragma once
 #include <bls/bls_manager.h>
 #include <bls/bls_utils.h>
-#include <common/global_info.h>
 #include <common/log.h>
 #include <common/node_members.h>
 #include <common/utils.h>
 #include <consensus/hotstuff/types.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g2.hpp>
 #include <memory>
-#include <network/dht_manager.h>
 #include <network/network_utils.h>
 #include <network/universal_manager.h>
 #include <security/security.h>
@@ -123,10 +121,8 @@ public:
         prev_elect_item_ = elect_item_;
         elect_item_ = elect_item;
 
-        SetMemberAddrs();
-
-        for (auto member : *(elect_item_->Members())) {
-            ZJC_DEBUG("member net: %d, ip: %s, idx: %d", member->net_id, common::Uint32ToIp(member->public_ip).c_str(), member->index);
+        for (auto member : *(elect_item->Members())) {
+            ZJC_DEBUG("====1.0 member net: %d, ip: %s, idx: %d", member->net_id, common::Uint32ToIp(member->public_ip).c_str(), member->index);
         }
     }
 
@@ -142,17 +138,15 @@ public:
     inline std::shared_ptr<ElectItem> GetElectItem() const {
         return elect_item_;
     }
-    
-private:
-    std::shared_ptr<ElectItem> prev_elect_item_ = nullptr; 
-    std::shared_ptr<ElectItem> elect_item_ = nullptr;
-    std::shared_ptr<security::Security> security_ptr_ = nullptr;
 
     void SetMemberAddrs() {
+        if (!elect_item_) {
+            return;
+        }
         for (auto& member : *(elect_item_->Members())) {
             if (member->public_ip == 0 || member->public_port == 0) {
-                auto dht_ptr = network::DhtManager::Instance()->GetDht(
-                        common::GlobalInfo::Instance()->network_id());
+                auto dht_ptr = network::UniversalManager::Instance()->GetUniversal(
+                        network::kUniversalNetworkId);
                 if (dht_ptr != nullptr) {
                     auto nodes = dht_ptr->readonly_hash_sort_dht();
                     for (auto iter = nodes->begin(); iter != nodes->end(); ++iter) {
@@ -164,7 +158,12 @@ private:
                 }
             }
         }        
-    }    
+    }
+    
+private:
+    std::shared_ptr<ElectItem> prev_elect_item_ = nullptr; 
+    std::shared_ptr<ElectItem> elect_item_ = nullptr;
+    std::shared_ptr<security::Security> security_ptr_ = nullptr;
 };
 
 } // namespace consensus
