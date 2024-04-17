@@ -17,6 +17,13 @@ protected:
     void TearDown() {
         
     }
+
+    static void CreateQC(std::shared_ptr<QC>& qc) {
+        auto fake_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
+        qc->bls_agg_sign = fake_sign;
+        qc->view = 1;
+        qc->view_block_hash = "hash str";        
+    }
 };
 
 TEST_F(TestTypes, QCSerialization) {
@@ -29,6 +36,19 @@ TEST_F(TestTypes, QCSerialization) {
     auto qc2_str = qc2->Serialize();
 
     EXPECT_EQ(qc_str, qc2_str);
+
+    
+    qc = std::make_shared<hotstuff::QC>();
+    CreateQC(qc);
+
+    qc_str = qc->Serialize();
+    
+    qc2 = std::make_shared<QC>();
+    qc2->Unserialize(qc_str);
+
+    qc2_str = qc2->Serialize();
+
+    EXPECT_EQ(qc_str, qc2_str);    
 }
 
 } // namespace test
