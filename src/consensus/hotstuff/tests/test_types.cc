@@ -27,7 +27,7 @@ protected:
     }
 
     static std::shared_ptr<ViewBlock> CreateViewBlock() {
-        std::make_shared<hotstuff::ViewBlock>(
+        return std::make_shared<hotstuff::ViewBlock>(
                 "parent hash",
                 GetGenesisQC(),
                 nullptr,
