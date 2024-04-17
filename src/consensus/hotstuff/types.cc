@@ -11,16 +11,12 @@ std::string QC::Serialize() const {
     auto qc_proto = view_block::protobuf::QC();
         
     std::stringstream ss;
-    if (bls_agg_sign) {
-        qc_proto.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->X));
-        qc_proto.set_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->Y));
-        qc_proto.set_sign_z(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->Z));
-    }
+    
+    qc_proto.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->X));
+    qc_proto.set_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->Y));
+    qc_proto.set_sign_z(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->Z));
     qc_proto.set_view(view);
     qc_proto.set_view_block_hash(view_block_hash);
-    for (auto parti : participants) {
-        qc_proto.add_participants(parti);
-    }
         
     return qc_proto.SerializeAsString();
 }
@@ -31,23 +27,25 @@ bool QC::Unserialize(const std::string& str) {
     if (!ok) {
         return false;
     }
-    libff::alt_bn128_G1 sign;
-    sign.X = libff::alt_bn128_Fq(qc_proto.sign_x().c_str());
-    sign.Y = libff::alt_bn128_Fq(qc_proto.sign_y().c_str());
-    sign.Z = libff::alt_bn128_Fq(qc_proto.sign_z().c_str());
-        
-    if (!bls_agg_sign) {
-        bls_agg_sign = std::make_shared<libff::alt_bn128_G1>();
+    libff::alt_bn128_G1 sign = libff::alt_bn128_G1::zero();
+    try {
+        if (qc_proto.sign_x() != "") {
+            sign.X = libff::alt_bn128_Fq(qc_proto.sign_x().c_str());
+        }
+        if (qc_proto.sign_y() != "") {
+            sign.Y = libff::alt_bn128_Fq(qc_proto.sign_y().c_str());
+        }
+        if (qc_proto.sign_z() != "") {
+            sign.Z = libff::alt_bn128_Fq(qc_proto.sign_z().c_str());
+        }
+    } catch (...) {
+        return false;
     }
+    
     *bls_agg_sign = sign;
     view = qc_proto.view();
     view_block_hash = qc_proto.view_block_hash();
-
-    participants.clear();
-    for (int i = 0; i < qc_proto.participants_size(); i++) {
-        participants.push_back(qc_proto.participants(i));
-    }
-        
+    
     return true;
 }
 

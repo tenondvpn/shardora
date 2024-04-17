@@ -19,22 +19,26 @@ static const uint64_t ORPHAN_BLOCK_TIMEOUT_US = 10000000lu;
 typedef int64_t View;
 typedef std::string HashStr;
 
+static const View GenesisView  = 0;
+
 struct QC {
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
-    std::vector<uint32_t> participants; // 与之签名的贡献者，没有用，因为 bls 无法验证正确性
     View view; // view_block_hash 对应的 view
     HashStr view_block_hash;
 
     QC(const std::shared_ptr<libff::alt_bn128_G1>& sign, const View& v, const HashStr& hash) :
-        bls_agg_sign(sign), view(v), view_block_hash(hash) {}
+        bls_agg_sign(sign), view(v), view_block_hash(hash) {
+        if (sign == nullptr) {
+            bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
+        }
+    }
 
-    QC() {};
+    QC() {
+        bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
+    };
     
     std::string Serialize() const;
     bool Unserialize(const std::string& str);
-    inline bool IsGenesisQC() const {
-        return view == View(0);
-    }
 };
 
 struct ViewBlock {
@@ -94,7 +98,7 @@ enum WaitingBlockType {
     kToBlock,
 };
 
-static const View GenesisView  = 0;
+
 
 void ViewBlock2Proto(const std::shared_ptr<ViewBlock> &view_block, view_block::protobuf::ViewBlockItem *view_block_proto);
 Status Proto2ViewBlock(const view_block::protobuf::ViewBlockItem& view_block_proto, std::shared_ptr<ViewBlock>& view_block);

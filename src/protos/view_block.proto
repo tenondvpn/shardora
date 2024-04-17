@@ -22,7 +22,6 @@ message QC {
     optional bytes sign_z = 3;
     optional uint32 view = 4;
     optional bytes view_block_hash = 5;
-    repeated uint32 participants = 6;
 }
 
 message ViewBlockSyncResponse {

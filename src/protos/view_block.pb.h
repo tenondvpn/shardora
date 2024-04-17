@@ -499,18 +499,6 @@ class QC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
 
   // accessors -------------------------------------------------------
 
-  // repeated uint32 participants = 6;
-  int participants_size() const;
-  void clear_participants();
-  static const int kParticipantsFieldNumber = 6;
-  ::google::protobuf::uint32 participants(int index) const;
-  void set_participants(int index, ::google::protobuf::uint32 value);
-  void add_participants(::google::protobuf::uint32 value);
-  const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
-      participants() const;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
-      mutable_participants();
-
   // optional bytes sign_x = 1;
   bool has_sign_x() const;
   void clear_sign_x();
@@ -594,7 +582,6 @@ class QC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > participants_;
   ::google::protobuf::internal::ArenaStringPtr sign_x_;
   ::google::protobuf::internal::ArenaStringPtr sign_y_;
   ::google::protobuf::internal::ArenaStringPtr sign_z_;
@@ -1731,36 +1718,6 @@ inline void QC::set_allocated_view_block_hash(::std::string* view_block_hash) {
   }
   view_block_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), view_block_hash);
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.QC.view_block_hash)
-}
-
-// repeated uint32 participants = 6;
-inline int QC::participants_size() const {
-  return participants_.size();
-}
-inline void QC::clear_participants() {
-  participants_.Clear();
-}
-inline ::google::protobuf::uint32 QC::participants(int index) const {
-  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.QC.participants)
-  return participants_.Get(index);
-}
-inline void QC::set_participants(int index, ::google::protobuf::uint32 value) {
-  participants_.Set(index, value);
-  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.QC.participants)
-}
-inline void QC::add_participants(::google::protobuf::uint32 value) {
-  participants_.Add(value);
-  // @@protoc_insertion_point(field_add:shardora.view_block.protobuf.QC.participants)
-}
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
-QC::participants() const {
-  // @@protoc_insertion_point(field_list:shardora.view_block.protobuf.QC.participants)
-  return participants_;
-}
-inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
-QC::mutable_participants() {
-  // @@protoc_insertion_point(field_mutable_list:shardora.view_block.protobuf.QC.participants)
-  return &participants_;
 }
 
 // -------------------------------------------------------------------
