@@ -216,13 +216,7 @@ int NetworkInit::Init(int argc, char** argv) {
     if (view_block_chain_mgr_->Init() != hotstuff::Status::kSuccess) {
         return kInitError;
     }
-    view_block_chain_syncer_ = std::make_shared<hotstuff::ViewBlockChainSyncer>(view_block_chain_mgr_);
-    view_block_chain_syncer_->SetOnRecvViewBlockFn([](
-                const std::shared_ptr<hotstuff::ViewBlockChain>& chain,
-                const std::shared_ptr<hotstuff::ViewBlock>& block) -> hotstuff::Status {
-        return chain->Store(block);
-    });
-    view_block_chain_syncer_->Start();
+
 
     // TODO pacemaker
     elect_info_ = std::make_shared<hotstuff::ElectInfo>(security_);
@@ -231,6 +225,15 @@ int NetworkInit::Init(int argc, char** argv) {
     consensus_mgr_ = std::make_shared<hotstuff::ConsensusManager>(
             view_block_chain_mgr_, elect_info_, crypto_, db_);
     consensus_mgr_->Init();
+
+    view_block_chain_syncer_ = std::make_shared<hotstuff::ViewBlockChainSyncer>(view_block_chain_mgr_);
+    view_block_chain_syncer_->SetOnRecvViewBlockFn([](
+                const std::shared_ptr<hotstuff::ViewBlockChain>& chain,
+                const std::shared_ptr<hotstuff::ViewBlock>& block) -> hotstuff::Status {
+        chain->Store(block);
+        // Advanceview
+    });
+    view_block_chain_syncer_->Start();    
     // 以上应该放入 hotstuff 实例初始化中，并接收创世块
     AddCmds();
 #endif

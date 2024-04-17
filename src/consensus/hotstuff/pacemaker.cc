@@ -168,11 +168,15 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     // TODO 视图切换
     
     auto tc = std::make_shared<TC>();
-    crypto_->CreateTC(timeout_proto.view(), reconstructed_sign, tc);
+    s = crypto_->CreateTC(timeout_proto.view(), reconstructed_sign, tc);
+    if (s != Status::kSuccess || !tc) {
+        return;
+    }
     auto sync_info = std::make_shared<SyncInfo>();
     sync_info->tc = tc;
 
-    ZJC_DEBUG("====3 pool: %d, view: %d, member: %d, view: %d", pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
+    ZJC_DEBUG("CreateTC pool: %d, view: %d, member: %d, view: %d",
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
     AdvanceView(sync_info);
     
     // TODO New Propose

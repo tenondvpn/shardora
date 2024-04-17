@@ -31,6 +31,7 @@ using OnRecvViewBlockFn = std::function<Status(const std::shared_ptr<ViewBlockCh
 
 class ViewBlockChainSyncer {
 public:
+    // TODO 将 ViewBlockChainManager 换成 HotstuffManager
     explicit ViewBlockChainSyncer(const std::shared_ptr<ViewBlockChainManager>&);
     ViewBlockChainSyncer(const ViewBlockChainSyncer&) = delete;
     ViewBlockChainSyncer& operator=(const ViewBlockChainSyncer&) = delete;
