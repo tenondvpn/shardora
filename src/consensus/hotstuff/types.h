@@ -19,7 +19,9 @@ static const uint64_t ORPHAN_BLOCK_TIMEOUT_US = 10000000lu;
 typedef int64_t View;
 typedef std::string HashStr;
 
-static const View GenesisView  = 0;
+static const View GenesisView = 0;
+
+HashStr GetViewHash(View view);
 
 struct QC {
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;

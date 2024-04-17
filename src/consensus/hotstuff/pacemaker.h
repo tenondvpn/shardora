@@ -39,10 +39,6 @@ public:
         return high_tc_;
     }
 
-    inline std::shared_ptr<ViewBlock> HighQCWrapperBlock() const {
-        return high_qc_wrapper_block_;
-    }
-
     inline View CurView() const {
         return cur_view_;
     }
@@ -62,29 +58,8 @@ private:
         }
         one_shot_tick_->Destroy();
     }
-
-    inline uint32_t minAgreeMemberCount() const {
-        // TODO
-        return 0;
-    }
-
-    inline uint32_t memberCount() const {
-        // TODO
-        return 0;
-    }
-
-    inline libff::alt_bn128_Fr localSecKey() const {
-        // TODO
-        return libff::alt_bn128_Fr::one();
-    }
-
-    inline libff::alt_bn128_G1 g1Hash() const {
-        // TODO
-        return libff::alt_bn128_G1::one();
-    }
     
     std::shared_ptr<QC> high_qc_ = nullptr;
-    std::shared_ptr<ViewBlock> high_qc_wrapper_block_ = nullptr;
     std::shared_ptr<TC> high_tc_ = nullptr;
     View cur_view_ = -1;
     std::shared_ptr<Crypto> crypto_;

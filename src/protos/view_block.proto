@@ -48,6 +48,6 @@ message TimeoutMessage {
     optional uint32 view = 2;
     optional bytes sign_x = 3;
     optional bytes sign_y = 4;
-    optional bytes msg_hash = 5;
+    optional bytes view_hash = 5;
     optional uint32 elect_height = 6;
 }

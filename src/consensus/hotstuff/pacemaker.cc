@@ -80,18 +80,21 @@ void Pacemaker::OnLocalTimeout() {
         return;
     }
     
-    auto msg_hash = high_qc_wrapper_block_->hash;
-
     std::string bls_sign_x;
     std::string bls_sign_y;
+    auto view_hash = GetViewHash(CurView());
     // 使用最新的 elect_height 签名
-    if (crypto_->Sign(elect_item->ElectHeight(), msg_hash, &bls_sign_x, &bls_sign_y) != Status::kSuccess) {
+    if (crypto_->Sign(
+                elect_item->ElectHeight(),
+                view_hash,
+                &bls_sign_x,
+                &bls_sign_y) != Status::kSuccess) {
         return;
     }
     
     timeout_msg.set_sign_x(bls_sign_x);
     timeout_msg.set_sign_y(bls_sign_y);
-    timeout_msg.set_msg_hash(msg_hash);
+    timeout_msg.set_view_hash(GetViewHash(CurView()));
     timeout_msg.set_view(CurView());
     timeout_msg.set_elect_height(elect_item->ElectHeight());
 
@@ -127,7 +130,7 @@ void Pacemaker::HandleMessage(const transport::MessagePtr& msg_ptr) {
     Status s = crypto_->ReconstructAndVerify(
             timeout_proto.elect_height(),
             timeout_proto.view(),
-            timeout_proto.msg_hash(),
+            timeout_proto.view_hash(),
             timeout_proto.member_id(),
             timeout_proto.sign_x(),
             timeout_proto.sign_y(),
