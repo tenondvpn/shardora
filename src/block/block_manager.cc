@@ -1622,6 +1622,10 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         return nullptr;
     }
 
+    if (leader) {
+        tm_height = statistic_map_ptr->rbegin()->first;
+    }
+
     auto iter = statistic_map_ptr->find(tm_height);
     if (iter == statistic_map_ptr->end()) {
         ZJC_ERROR("failed get statistic timestamp height: %lu", tm_height);
