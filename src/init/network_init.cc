@@ -231,7 +231,14 @@ int NetworkInit::Init(int argc, char** argv) {
     // 以上应该放入 hotstuff 实例初始化中，并接收创世块
 
     cmd_.AddCommand("addblock", [this](const std::vector<std::string>& args){
+        if (args.size() < 1) {
+            return;
+        }
         uint32_t pool_idx = std::stoi(args[0]);
+        std::string parent_hash = "";
+        if (args.size() == 2) {
+            parent_hash = args[1]; 
+        }
         auto consensus = consensus_mgr_->consensus(pool_idx);
         if (!consensus) {
             return;
@@ -243,15 +250,19 @@ int NetworkInit::Init(int argc, char** argv) {
         // 打包块
         auto fake_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
         auto qc = std::make_shared<hotstuff::QC>();
-        hotstuff::Status s = this->crypto_->CreateQC(pacemaker->HighQCWrapperBlock(), fake_sign, qc);
+        hotstuff::Status s = this->crypto_->CreateQC(
+                pacemaker->HighQCWrapperBlock(), fake_sign, qc);
         
         if (s != hotstuff::Status::kSuccess) {
             std::cout << "error!" << std::endl;
             return;
         }
-        
+
+        if (parent_hash == "") {
+            parent_hash = pacemaker->HighQCWrapperBlock()->hash; 
+        }
         auto view_block = std::make_shared<hotstuff::ViewBlock>(
-                pacemaker->HighQCWrapperBlock()->hash,
+                parent_hash,
                 qc,
                 nullptr,
                 pacemaker->CurView()+1, // 此时为 0
@@ -269,6 +280,9 @@ int NetworkInit::Init(int argc, char** argv) {
     });
 
     cmd_.AddCommand("printchain", [this](const std::vector<std::string>& args){
+        if (args.size() < 1) {
+            return;
+        }
         uint32_t pool_idx = std::stoi(args[0]);
         auto consensus = consensus_mgr_->consensus(pool_idx);
         if (!consensus) {
