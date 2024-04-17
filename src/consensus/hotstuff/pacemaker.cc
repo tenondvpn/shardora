@@ -37,7 +37,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
 
     if (sync_info->qc) {
         UpdateHighQC(sync_info->qc);
-        if (sync_info->qc->view < cur_view_) {
+        if (sync_info->qc->view < cur_view_ && cur_view_ != BeforeGenesisView) {
             return Status::kSuccess;
         }
 
@@ -48,7 +48,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
         cur_view_ = sync_info->qc->view + 1;
     } else {
         UpdateHighTC(sync_info->tc);
-        if (sync_info->tc->view < cur_view_) {
+        if (sync_info->tc->view < cur_view_ && cur_view_ != BeforeGenesisView) {
             return Status::kSuccess;
         }
 
@@ -147,7 +147,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     }
     
     auto timeout_proto = msg.hotstuff_timeout_proto();
-    ZJC_DEBUG("OnRemoteTimeout view: %d, member: %d", timeout_proto.view(), timeout_proto.member_id());;
+    ZJC_DEBUG("OnRemoteTimeout pool: %d, view: %d, member: %d", pool_idx_, timeout_proto.view(), timeout_proto.member_id());;
     // TODO 统计 bls 签名
     
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
