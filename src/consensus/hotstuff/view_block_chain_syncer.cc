@@ -227,6 +227,7 @@ Status ViewBlockChainSyncer::MergeChain(std::shared_ptr<ViewBlockChain>& ori_cha
         }
     }
 
+    ZJC_DEBUG("====2.4 cross_block: %s", common::Encode::HexEncode(cross_block->hash).c_str());
     // 两条链存在交点，则从交点之后开始 merge 
     if (cross_block) {
         std::vector<std::shared_ptr<ViewBlock>> sync_all_blocks;

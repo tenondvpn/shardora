@@ -216,6 +216,9 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
     view_block_chain_syncer_ = std::make_shared<hotstuff::ViewBlockChainSyncer>(view_block_chain_mgr_);
+    view_block_chain_syncer_->SetOnRecvViewBlockFn([](const std::shared_ptr<hotstuff::ViewBlockChain>& chain, const std::shared_ptr<hotstuff::ViewBlock>& block) -> hotstuff::Status {
+        return chain->Store(block);
+    });
     view_block_chain_syncer_->Start();
 
     // TODO pacemaker
