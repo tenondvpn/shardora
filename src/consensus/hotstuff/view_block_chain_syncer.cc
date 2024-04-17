@@ -1,4 +1,5 @@
 #include "consensus/hotstuff/view_block_chain_syncer.h"
+#include <common/encode.h>
 #include <common/global_info.h>
 #include <common/log.h>
 #include <common/time_utils.h>
@@ -144,7 +145,13 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
 
     for (auto& view_block : all) {
         auto view_block_item = view_block_res->add_view_block_items();
-        ViewBlock2Proto(view_block, view_block_item);        
+        ViewBlock2Proto(view_block, view_block_item);
+
+        if (view_block->DoHash() != view_block_item->hash()) {
+            ZJC_ERROR("====1.9 do hash: %s, hash: %s",
+                common::Encode::HexEncode(view_block->DoHash()).c_str(),
+                common::Encode::HexEncode(view_block_item->hash()).c_str());
+        }
     }
 
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -179,6 +186,12 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
             return s;
         }
         min_heap.push(view_block);
+
+        if (view_block->DoHash() != view_block->hash) {
+            ZJC_ERROR("====2.9 do hash: %s, hash: %s",
+                common::Encode::HexEncode(view_block->DoHash()).c_str(),
+                common::Encode::HexEncode(view_block->hash).c_str());
+        }        
     }
 
     if (min_heap.empty()) {

@@ -1,3 +1,4 @@
+#include <common/log.h>
 #include <consensus/hotstuff/types.h>
 #include <protos/block.pb.h>
 #include <protos/view_block.pb.h>
@@ -67,6 +68,8 @@ HashStr ViewBlock::DoHash() const {
     msg.append(parent_hash);
     msg.append((char*)&(leader_idx), sizeof(leader_idx));
     msg.append((char*)&(view), sizeof(view));
+
+    ZJC_DEBUG("====3.1 qc_str: %s", qc_str.c_str());
 
     return common::Hash::keccak256(msg);
 }
