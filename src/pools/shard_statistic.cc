@@ -344,12 +344,14 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
                         }
 
                         elect_static_info_item->node_shard_map[block.tx_list(i).from()] = join_info.shard_id();
-                        ZJC_DEBUG("kJoinElect add new elect node: %s, shard: %u, pool: %u, height: %lu, elect height: %lu",
+                        ZJC_DEBUG("kJoinElect add new elect node: %s, shard: %u, pool: %u, height: %lu, "
+                            "elect height: %lu, tm height: %lu",
                             common::Encode::HexEncode(block.tx_list(i).from()).c_str(),
                             join_info.shard_id(),
                             block.pool_index(),
                             block.height(),
-                            block_ptr->electblock_height());
+                            block_ptr->electblock_height(),
+                            block.timeblock_height());
                     }
                 }
             }
