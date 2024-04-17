@@ -1,6 +1,7 @@
 #pragma once
 #include <bls/bls_manager.h>
 #include <bls/bls_utils.h>
+#include <common/log.h>
 #include <common/node_members.h>
 #include <common/utils.h>
 #include <consensus/hotstuff/types.h>
@@ -116,7 +117,11 @@ public:
             sharding_id, elect_height, members, common_pk, sk);
 
         prev_elect_item_ = elect_item_;
-        elect_item_ = elect_item;        
+        elect_item_ = elect_item;
+
+        for (auto member : *(elect_item->Members())) {
+            ZJC_DEBUG("member net: %d, ip: %s, idx: %d", member->net_id, common::Uint32ToIp(member->public_ip).c_str(), member->index);
+        }
     }
 
     std::shared_ptr<ElectItem> GetElectItem(const uint64_t elect_height) const {
