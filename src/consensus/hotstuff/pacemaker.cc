@@ -19,8 +19,8 @@ Pacemaker::Pacemaker(
         const std::shared_ptr<LeaderRotation>& lr,
         const std::shared_ptr<ViewDuration>& d) :
     pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d) {
-    network::Route::Instance()->RegisterMessage(common::kHotstuffTimeoutMessage,
-        std::bind(&Pacemaker::HandleMessage, this, std::placeholders::_1));
+    // network::Route::Instance()->RegisterMessage(common::kHotstuffTimeoutMessage,
+    //     std::bind(&Pacemaker::HandleMessage, this, std::placeholders::_1));
 }
 
 Pacemaker::~Pacemaker() {}
@@ -131,12 +131,17 @@ void Pacemaker::OnLocalTimeout() {
     return;
 }
 
+// HandleMessage 由 Consensus 调用
 void Pacemaker::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // TODO ecdh decrypt
     auto msg = msg_ptr->header;
     assert(msg.type() == common::kHotstuffTimeoutMessage);
     
     if (!msg.has_hotstuff_timeout_proto()) {
+        return;
+    }
+
+    if (msg.hotstuff_timeout_proto().pool_idx() != pool_idx_) {
         return;
     }
     

@@ -1,4 +1,5 @@
 #pragma once
+#include <common/log.h>
 #include <common/utils.h>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/elect_info.h>
@@ -9,6 +10,7 @@
 #include <consensus/hotstuff/view_block_chain_manager.h>
 #include <consensus/hotstuff/view_duration.h>
 #include <db/db.h>
+#include <transport/transport_utils.h>
 
 // 临时文件，用于测试同步，最后替换为 hotstuff_manager
 
@@ -39,7 +41,7 @@ public:
             sync_info->qc = genesis->qc;
             pacemaker_->AdvanceView(sync_info);
         } else {
-            std::cout << "no genesis, pool_idx: " << pool_idx << std::endl;
+            ZJC_DEBUG("no genesis, pool_idx: %d", pool_idx_);
         }
     }
     ~Consensus() {};
@@ -47,11 +49,16 @@ public:
     Consensus(const Consensus&) = delete;
     Consensus& operator=(const Consensus&) = delete;
 
-    std::shared_ptr<Pacemaker> pacemaker() const {
+    void Propose() {};
+    void OnPropose(const transport::MessagePtr& msg_ptr) {};
+    void OnVote() {};
+    void StopVoting() {};
+
+    inline std::shared_ptr<Pacemaker> pacemaker() const {
         return pacemaker_;
     }
 
-    std::shared_ptr<ViewBlockChain> chain() const {
+    inline std::shared_ptr<ViewBlockChain> chain() const {
         return view_block_chain_;
     }
 private:
