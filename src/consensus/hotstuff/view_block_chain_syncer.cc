@@ -1,5 +1,7 @@
 #include "consensus/hotstuff/view_block_chain_syncer.h"
+#include <common/encode.h>
 #include <common/global_info.h>
+#include <common/log.h>
 #include <common/time_utils.h>
 #include <common/utils.h>
 #include <consensus/hotstuff/types.h>
@@ -28,7 +30,7 @@ ViewBlockChainSyncer::ViewBlockChainSyncer(const std::shared_ptr<ViewBlockChainM
 ViewBlockChainSyncer::~ViewBlockChainSyncer() {}
 
 void ViewBlockChainSyncer::Start() {
-    tick_.CutOff(100000lu, std::bind(&ViewBlockChainSyncer::ConsensusTimerMessage, this));
+    tick_.CutOff(kSyncTimerCycleUs, std::bind(&ViewBlockChainSyncer::ConsensusTimerMessage, this));
 }
 
 void ViewBlockChainSyncer::Stop() { tick_.Destroy(); }
@@ -38,11 +40,11 @@ int ViewBlockChainSyncer::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 }
 
 void ViewBlockChainSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    // TODO 放入消息队列，等待消费
     auto header = msg_ptr->header;
     assert(header.type() == common::kViewBlockSyncMessage);
-
-    consume_queue_.push(msg_ptr);
+    
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    consume_queues_[thread_idx].push(msg_ptr);
 }
 
 // 批量异步处理，提高 tps
@@ -51,7 +53,7 @@ void ViewBlockChainSyncer::ConsensusTimerMessage() {
     ConsumeMessages();
 
     tick_.CutOff(
-        100000lu,
+        kSyncTimerCycleUs,
         std::bind(&ViewBlockChainSyncer::ConsensusTimerMessage, this));    
 }
 
@@ -61,24 +63,28 @@ void ViewBlockChainSyncer::SyncChains() {
         auto req = vb_msg.mutable_view_block_req();
         req->set_pool_idx(pool_idx);
         req->set_network_id(common::GlobalInfo::Instance()->network_id());
+        vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
         SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg);
     }
 }
 
 void ViewBlockChainSyncer::ConsumeMessages() {
     // Consume Messages
-    while (consume_queue_.size() != 0) {
-        transport::MessagePtr msg_ptr = nullptr;
-        if (!consume_queue_.pop(&msg_ptr) || msg_ptr == nullptr) {
-            break;
-        }
-
-        if (msg_ptr->header.view_block_proto().has_view_block_req()) {
-            processRequest(msg_ptr);
-        } else if (msg_ptr->header.view_block_proto().has_view_block_res()) {
-            processResponse(msg_ptr);
-        }
-    }    
+    uint32_t pop_count = 0;
+    for (uint8_t thread_idx = 0; thread_idx < common::kMaxThreadCount; ++thread_idx) {
+        while (pop_count++ < kPopCountMax) {
+            transport::MessagePtr msg_ptr = nullptr;
+            consume_queues_[thread_idx].pop(&msg_ptr);
+            if (msg_ptr == nullptr) {
+                break;
+            }
+            if (msg_ptr->header.view_block_proto().has_view_block_req()) {
+                processRequest(msg_ptr);
+            } else if (msg_ptr->header.view_block_proto().has_view_block_res()) {
+                processResponse(msg_ptr);
+            }
+        }   
+    }
 }
 
 Status ViewBlockChainSyncer::SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {
@@ -103,7 +109,8 @@ Status ViewBlockChainSyncer::SendRequest(uint32_t network_id, const view_block::
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kViewBlockSyncMessage);
     *msg.mutable_view_block_proto() = view_block_msg;
-
+    
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
     transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);    
     return Status::kSuccess;
 }
@@ -115,6 +122,7 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
 
     transport::protobuf::Header msg;
     view_block::protobuf::ViewBlockSyncMessage&  res_view_block_msg = *msg.mutable_view_block_proto();
+    res_view_block_msg.set_create_time_us(common::TimeUtils::TimestampUs());
     auto view_block_res = res_view_block_msg.mutable_view_block_res();
     uint32_t pool_idx = view_block_msg.view_block_req().pool_idx();
     view_block_res->set_network_id(view_block_msg.view_block_req().network_id());
@@ -130,7 +138,7 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
 
     for (auto& view_block : all) {
         auto view_block_item = view_block_res->add_view_block_items();
-        ViewBlock2Proto(view_block, view_block_item);        
+        ViewBlock2Proto(view_block, view_block_item);
     }
 
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -155,16 +163,16 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
         return Status::kError;
     }
 
+    
+
     ViewBlockMinHeap min_heap;
     for (auto it = view_block_items.begin(); it != view_block_items.end(); it++) {
-        std::shared_ptr<ViewBlock> view_block = nullptr;
-        std::shared_ptr<block::protobuf::Block> block_item = nullptr;
-
+        auto view_block = std::make_shared<ViewBlock>();
         Status s = Proto2ViewBlock(*it, view_block);
         if (s != Status::kSuccess) {
             return s;
         }
-        min_heap.push(view_block);
+        min_heap.push(view_block);        
     }
 
     if (min_heap.empty()) {
@@ -173,11 +181,14 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
     
     auto sync_chain = std::make_shared<ViewBlockChain>();
     while (!min_heap.empty()) {
-        auto& view_block = min_heap.top();
+        auto view_block = min_heap.top();
         min_heap.pop();
 
         sync_chain->Store(view_block);
     }
+
+    ZJC_DEBUG("Sync blocks to chain, pool_idx: %d, view_blocks: %d",
+        pool_idx, view_block_items.size());
 
     if (!sync_chain->IsValid()) {
         return Status::kSuccess;
@@ -205,6 +216,9 @@ Status ViewBlockChainSyncer::MergeChain(std::shared_ptr<ViewBlockChain>& ori_cha
 
         for (auto sync_block : sync_all_blocks) {
             if (sync_block->view <= cross_block->view) {
+                continue;
+            }
+            if (ori_chain->Has(sync_block->hash)) {
                 continue;
             }
             if (on_recv_vb_fn_ && on_recv_vb_fn_(ori_chain, sync_block) != Status::kSuccess) {

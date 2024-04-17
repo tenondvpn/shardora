@@ -32,10 +32,15 @@ public:
         pool_idx_(pool_idx) {
         // TODO 从 db 加载最近的 vb，验证后执行 OnPropose 逻辑
         auto genesis = GetGenesisViewBlock(db_, pool_idx_);
-        view_block_chain_->Store(genesis);
-        auto sync_info = std::make_shared<SyncInfo>();
-        sync_info->view_block = genesis;
-        pacemaker_->AdvanceView(sync_info, false);
+        if (genesis) {
+            view_block_chain_->Store(genesis);
+            view_block_chain_->SetLatestCommittedBlock(genesis);
+            auto sync_info = std::make_shared<SyncInfo>();
+            sync_info->view_block = genesis;
+            pacemaker_->AdvanceView(sync_info, false);
+        } else {
+            std::cout << "no genesis, pool_idx: " << pool_idx << std::endl;
+        }
     }
     ~Consensus() {};
 

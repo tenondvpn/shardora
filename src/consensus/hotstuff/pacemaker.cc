@@ -45,7 +45,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info, bool i
 
 void Pacemaker::UpdateHighQC(const std::shared_ptr<ViewBlock>& qc_wrapper_block) {
     auto qc = qc_wrapper_block->qc;
-    if (high_qc_->view < qc->view) {
+    if (!high_qc_ || high_qc_->view < qc->view) {
         high_qc_ = qc;
         high_qc_wrapper_block_ = qc_wrapper_block;
     }
@@ -127,7 +127,7 @@ void Pacemaker::HandleMessage(const transport::MessagePtr& msg_ptr) {
     AdvanceView(sync_info, true);
 
     // TODO Create QC
-    std::shared_ptr<QC> qc = nullptr;
+    auto qc = std::make_shared<QC>();
     crypto_->CreateQC(view_block, reconstructed_sign, qc);
     // TODO New Propose
     // Propose(qc);

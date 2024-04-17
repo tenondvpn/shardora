@@ -108,7 +108,7 @@ public:
             return;
         }
 
-        if (elect_item_ && elect_item_->ElectHeight() >= elect_height) {
+        if (elect_item_ != nullptr && elect_item_->ElectHeight() >= elect_height) {
             return;
         }
 

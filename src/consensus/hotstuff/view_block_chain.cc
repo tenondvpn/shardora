@@ -1,8 +1,11 @@
+#include <common/encode.h>
 #include <common/global_info.h>
+#include <common/log.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/hotstuff/types.h>
 #include <iostream>
 #include <algorithm>
+#include <protos/block.pb.h>
 
 namespace shardora {
 
@@ -14,6 +17,16 @@ ViewBlockChain::ViewBlockChain() {
 ViewBlockChain::~ViewBlockChain(){}
 
 Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
+    if (!view_block->Valid()) {
+        ZJC_ERROR("view block is not valid, hash: %s",
+            common::Encode::HexEncode(view_block->hash).c_str());
+        return Status::kError;
+    }
+
+    if (Has(view_block->hash)) {
+        return Status::kSuccess;
+    }
+    
     if (!start_block_) {
         start_block_ = view_block;
         view_blocks_[view_block->hash] = view_block;
@@ -221,24 +234,51 @@ bool ViewBlockChain::IsValid() {
     return num == 1;
 }
 
+void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent) const {
+    std::cout << indent << block->view << ":" << common::Encode::HexEncode(block->hash).c_str() << "\n";
+    auto childrenIt = view_block_children_.find(block->hash);
+    if (childrenIt != view_block_children_.end()) {
+        std::string childIndent = indent + "  ";
+        for (const auto& child : childrenIt->second) {
+            std::cout << indent << "|\n";
+            std::cout << indent << "+--";
+            PrintBlock(child, childIndent);
+        }
+    }
+}
+
+void ViewBlockChain::Print() const {
+    if (start_block_) {
+        PrintBlock(start_block_);
+    }
+}
+
+// void ViewBlockChain::Print() const {
+//     for (const auto& heightAndBlocks : view_blocks_at_height_) {
+//         std::cout << "Height " << heightAndBlocks.first << ":\n";
+//         for (const auto& block : heightAndBlocks.second) {
+//             std::cout << "  Block " << common::Encode::HexEncode(block->hash).c_str() << " (parent: " << common::Encode::HexEncode(block->parent_hash) << ")\n";
+//         }
+//     }
+// }
+
 std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db, uint32_t pool_index) {
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
     uint32_t sharding_id = common::GlobalInfo::Instance()->network_id();
-        
-    std::shared_ptr<block::protobuf::Block> block;
-    bool r = prefix_db->GetBlockWithHeight(sharding_id, pool_index, 1, block.get());
+
+    block::protobuf::Block block;
+    bool r = prefix_db->GetBlockWithHeight(sharding_id, pool_index, 0, &block);
     if (!r) {
+        ZJC_ERROR("no genesis block found");
         return nullptr;
     }
-    return std::make_shared<ViewBlock>("", GetGenesisQC(), block, GenesisView, 0);
+
+    auto block_ptr = std::make_shared<block::protobuf::Block>(block);
+    return std::make_shared<ViewBlock>("", GetGenesisQC(), block_ptr, GenesisView, 0);
 }
 
 std::shared_ptr<QC> GetGenesisQC() {
-    std::shared_ptr<QC> qc = nullptr;
-    qc->bls_agg_sign = nullptr;
-    qc->view = 0;
-    qc->view_block_hash = "";
-    return qc;
+    return std::make_shared<QC>(nullptr, View(-1), "");
 }
 
 }

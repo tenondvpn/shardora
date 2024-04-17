@@ -80,7 +80,7 @@ private:
     
     std::shared_ptr<QC> high_qc_ = nullptr;
     std::shared_ptr<ViewBlock> high_qc_wrapper_block_ = nullptr;
-    View cur_view_;
+    View cur_view_ = -1;
     std::shared_ptr<Crypto> crypto_;
     std::shared_ptr<LeaderRotation> leader_rotation_ = nullptr;
     std::shared_ptr<common::Tick> one_shot_tick_ = nullptr;

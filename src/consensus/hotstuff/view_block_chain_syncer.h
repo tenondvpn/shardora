@@ -16,7 +16,8 @@ namespace shardora {
 
 namespace hotstuff {
 
-const int kEachRequestMaxViewBlocksCount = 8; 
+const int kPopCountMax = 128;
+const uint64_t kSyncTimerCycleUs = 500000lu;
 
 struct ViewBlockItem {
     HashStr hash;
@@ -58,8 +59,7 @@ private:
     
     uint64_t timeout_ms_;
     std::queue<std::shared_ptr<ViewBlockItem>> item_queue_;
-    common::ThreadSafeQueue<std::shared_ptr<ViewBlockItem>> input_queues_[common::kMaxThreadCount];
-    common::ThreadSafeQueue<transport::MessagePtr> consume_queue_;
+    common::ThreadSafeQueue<transport::MessagePtr> consume_queues_[common::kMaxThreadCount];
     common::Tick tick_;
     std::shared_ptr<ViewBlockChainManager> view_block_chain_mgr_;
     std::shared_ptr<Rule> rule_; // rule of view block receiving

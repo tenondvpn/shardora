@@ -66,6 +66,7 @@ TEST_F(TestViewBlockChainSyncer, TestMergeChain_HasCross) {
     auto b2 = GenViewBlock(b1->hash, b1->view+1);
     auto b3 = GenViewBlock(b2->hash, b2->view+1);
     auto b4 = GenViewBlock(b3->hash, b3->view+1);
+    auto b5 = GenViewBlock(b4->hash, b4->view+1);
     
     auto ori_chain = std::make_shared<ViewBlockChain>();
     ori_chain->Store(b1);
