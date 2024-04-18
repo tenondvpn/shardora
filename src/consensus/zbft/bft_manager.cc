@@ -1365,7 +1365,7 @@ ZbftPtr BftManager::CreateBftPtr(
                     bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
             }
         } else if (bft_msg.tx_bft().tx_type() == pools::protobuf::kStatistic) {
-            txs_ptr = txs_pools_->GetStatisticTx(bft_msg.pool_index(), false);
+            txs_ptr = txs_pools_->GetStatisticTx(bft_msg.pool_index(),  false);
             if (txs_ptr == nullptr) {
                 ZJC_ERROR("invalid consensus kStatistic, txs not equal to leader. pool_index: %d, gid: %s",
                     bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
@@ -1405,7 +1405,6 @@ ZbftPtr BftManager::CreateBftPtr(
                     }
                 }
                 
-
                 assert(address_info != nullptr);
                 pools::TxItemPtr tx_ptr = nullptr;
                 switch (tx->step()) {

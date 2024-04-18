@@ -1039,9 +1039,7 @@ void NetworkInit::AddBlockItemToCache(
     if (block->network_id() == common::GlobalInfo::Instance()->network_id() ||
             block->network_id() + network::kConsensusWaitingShardOffset ==
             common::GlobalInfo::Instance()->network_id()) {
-        pools_mgr_->UpdateLatestInfo(
-            block,
-            db_batch);
+        pools_mgr_->UpdateLatestInfo(block, db_batch);
     }
     
     block_mgr_->NetworkNewBlock(block, false);
