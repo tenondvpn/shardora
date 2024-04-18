@@ -337,21 +337,28 @@ int one_tx_main(int argc, char** argv) {
 
     std::string gid = common::Random::RandomString(32);
     std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
+    uint32_t prikey_pos = 0;
+    auto from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
+    security->SetPrivateKey(from_prikey);
+    uint64_t now_tm_us = common::TimeUtils::TimestampUs();
+    uint32_t count = 0;
+    uint32_t step_num = 1000;
 
     for (int i = 2; i < argc ; ++i) {
         std::string to = common::Encode::HexDecode(argv[i]);
-        uint32_t prikey_pos = 0;
-        auto from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
-        security->SetPrivateKey(from_prikey);
-        uint64_t now_tm_us = common::TimeUtils::TimestampUs();
-        uint32_t count = 0;
+
         uint64_t* gid_int = (uint64_t*)gid.data();
         gid_int[0] = pos;
         if (g_pri_addrs_map[from_prikey] == to) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
-            return 1;
+        }
+
+        if (security->GetAddress() == common::Encode::HexDecode("f1cd7abb586966d500d91329658ec48aa2094702")) {
+            ++prikey_pos;
+            from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
+            security->SetPrivateKey(from_prikey);
         }
 
         auto tx_msg_ptr = CreateTransactionWithAttr(
@@ -361,8 +368,8 @@ int one_tx_main(int argc, char** argv) {
                 to,
                 "",
                 "",
-                100000000lu,
-                10000000,
+                1980,
+                10000,
                 ((uint32_t)(1000 - pos)) % 1000 + 1,
                 3);
         if (transport::TcpTransport::Instance()->Send(kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
