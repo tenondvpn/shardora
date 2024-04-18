@@ -1,4 +1,3 @@
-#include <__functional/bind.h>
 #include <common/utils.h>
 #include <consensus/consensus_utils.h>
 #include <consensus/hotstuff/block_acceptor_manager.h>
