@@ -371,8 +371,8 @@ int one_tx_main(int argc, char** argv) {
                 to,
                 "",
                 "",
-                1980,
-                10000,
+                100000000lu,
+                10000000,
                 ((uint32_t)(1000 - pos)) % 1000 + 1,
                 3);
         if (transport::TcpTransport::Instance()->Send(kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
