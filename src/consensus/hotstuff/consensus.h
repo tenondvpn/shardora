@@ -131,7 +131,11 @@ public:
     }
 
     inline std::shared_ptr<Consensus> consensus(const uint32_t& pool_idx) const {
-        return pool_consensus_map_.at(pool_idx);
+        auto it = pool_consensus_map_.find(pool_idx);
+        if (it == pool_consensus_map_.end()) {
+            return nullptr;
+        }
+        return it->second;
     }
     
 private:

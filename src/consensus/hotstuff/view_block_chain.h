@@ -2,6 +2,7 @@
 
 #include <common/time_utils.h>
 #include <consensus/hotstuff/types.h>
+#include <limits>
 #include <protos/prefix_db.h>
 #include <queue>
 
@@ -67,7 +68,7 @@ public:
     bool IsValid();
 
     View GetMinHeight() const {
-        View min = 0;
+        View min = std::numeric_limits<View>::max();
         for (auto it = view_blocks_at_height_.begin(); it != view_blocks_at_height_.end(); it++) {
             if (it->first < min) {
                 min = it->first;
