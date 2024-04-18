@@ -1,6 +1,5 @@
 #pragma once
 
-#include <__functional/bind.h>
 #include <block/account_manager.h>
 #include <consensus/consensus_utils.h>
 #include <consensus/hotstuff/elect_info.h>
