@@ -349,6 +349,9 @@ int one_tx_main(int argc, char** argv) {
 
         uint64_t* gid_int = (uint64_t*)gid.data();
         gid_int[0] = pos;
+        ++prikey_pos;
+        from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
+        security->SetPrivateKey(from_prikey);
         if (g_pri_addrs_map[from_prikey] == to) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
@@ -376,7 +379,7 @@ int one_tx_main(int argc, char** argv) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
         }
-        std::cout << "send tx from: " << common::Encode::HexEncode(security->GetAddress() ) << " to addr :" << argv[i] << "count: " << i -1  << std::endl;
+        std::cout << "send tx from: " << common::Encode::HexEncode(security->GetAddress() ) << " to addr :" << argv[i] << " count: " << i -1  << std::endl;
         usleep(delayus);
 
     }
