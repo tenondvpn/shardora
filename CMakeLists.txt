@@ -103,6 +103,8 @@ add_definitions(
 #    -DMAKE_CLIENT_LIB
     #-DARMEABI_V7A
 	-DLATENCY
+	-DHOTSTUFF_TEST
+	-DHOTSTUFF_V2
 )
 
 add_compile_options(-fPIC)

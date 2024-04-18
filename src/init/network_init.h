@@ -36,8 +36,6 @@ namespace shardora {
 
 namespace init {
 
-#define HOTSTUFF_V2 1
-
 class NetworkInit {
 public:
     NetworkInit();
