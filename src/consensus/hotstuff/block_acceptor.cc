@@ -64,7 +64,12 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
         return Status::kSuccess;
     }
     
-    // Get txs from local pool
+    // 1. verify block
+    if (!IsBlockValid(block_info->block)) {
+        return Status::kAcceptorBlockInvalid;
+    }
+    
+    // 2. Get txs from local pool
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
 
     Status s = Status::kSuccess;
@@ -74,22 +79,13 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
             block_info->tx_type, pool_idx(), block_info->view);
         return s;
     }
+
+    if (!AreTxsValid(txs_ptr)) {
+        return Status::kAcceptorBlockInvalid; 
+    }
     
-    // Do txs and create block_tx
+    // 3. Do txs and create block_tx
     auto& zjc_block = block_info->block;
-
-    std::string pool_hash = tx_pools_->latest_hash(pool_idx());
-    uint64_t pool_height = tx_pools_->latest_height(pool_idx());
-    if (pool_hash.empty() || pool_height == common::kInvalidUint64) {
-        return Status::kError;
-    }
-
-    // replica 自己创建 block 还是 leader 传过来？传过来，也没多多少带宽。
-    // 验证 zjc_block 合法性
-    if (!IsBlockValid(block_info->block)) {
-        return Status::kAcceptorBlockInvalid;
-    }
-
     return DoTransactions(txs_ptr, zjc_block);
 }
 
@@ -116,8 +112,32 @@ Status BlockAcceptor::GetTxsFromLocal(
     return Status::kSuccess;
 }
 
-bool BlockAcceptor::IsBlockValid(const std::shared_ptr<block::protobuf::Block>&) {
+bool BlockAcceptor::IsBlockValid(const std::shared_ptr<block::protobuf::Block>& zjc_block) {
     // TODO 校验 block prehash，latest height 等
+    uint64_t pool_height = pools_mgr_->latest_height(pool_idx());
+    if (zjc_block->height() <= pool_height || pool_height == common::kInvalidUint64) {
+        return false;
+    }
+    // 新块的时间戳必须大于上一个块的时间戳
+    uint64_t preblock_time = pools_mgr_->latest_timestamp(pool_idx());
+    if (zjc_block->timestamp() <= preblock_time) {
+        return false;
+    }
+
+    // 新块的 prehash 必须等于上一个块的 hash
+    std::string pool_hash = pools_mgr_->latest_hash(pool_idx());
+    if (pool_hash.empty() || zjc_block->prehash() != pool_hash) {
+        return false;
+    }
+    
+    return true;
+}
+
+bool BlockAcceptor::AreTxsValid(const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    if (!txs_ptr) {
+        return false;
+    }
+    // TODO 验签
     return true;
 }
 
