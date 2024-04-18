@@ -141,7 +141,6 @@ void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, 
 
         latest_members_ = members;
         latest_elect_height_ = elect_height;
-        statistic_message_ = nullptr;
     }
 }
 
@@ -489,7 +488,7 @@ void BlockManager::HandleCrossTx(
                 if (iter->second->tx_hash == cross_statistic.tx_hash()) {
                     cross_statistics_map_.erase(iter);
                     auto tmp_ptr = std::make_shared<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>>(cross_statistics_map_);
-                    cross_statistics_map_ptr_ = tmp_ptr;
+                    cross_statistics_map_ptr_queue_.push(tmp_ptr);
                     break;
                 }
             }
@@ -542,7 +541,7 @@ void BlockManager::HandleStatisticTx(
             auto iter = shard_statistics_map_.find(elect_statistic.height_info().tm_height());
             if (iter != shard_statistics_map_.end()) {
                 auto tmp_ptr = std::make_shared<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>>(shard_statistics_map_);
-                shard_statistics_map_ptr_ = tmp_ptr;
+                shard_statistics_map_ptr_queue_.push(tmp_ptr);
                 ZJC_DEBUG("success remove shard statistic block tm height: %lu", iter->first);
                 shard_statistics_map_.erase(iter);
             }
@@ -1291,7 +1290,7 @@ void BlockManager::CreateStatisticTx() {
                 timeblock_height);
             shard_statistics_map_[timeblock_height] = tx_ptr;
             auto tmp_ptr = std::make_shared<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>>(shard_statistics_map_);
-            shard_statistics_map_ptr_ = tmp_ptr;
+            shard_statistics_map_ptr_queue_.push(tmp_ptr);
         }
     }
 
@@ -1322,7 +1321,7 @@ void BlockManager::CreateStatisticTx() {
                 common::Encode::HexEncode(gid).c_str());
             cross_statistics_map_[timeblock_height] = tx_ptr;
             auto tmp_ptr = std::make_shared<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>>(cross_statistics_map_);
-            cross_statistics_map_ptr_ = tmp_ptr;
+            cross_statistics_map_ptr_queue_.push(tmp_ptr);
         }
     }
 }
@@ -1569,7 +1568,13 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
 pools::TxItemPtr BlockManager::GetCrossTx(
         uint32_t pool_index, 
         bool leader) {
-    auto statistic_map_ptr = cross_statistics_map_ptr_;
+    std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> tmp_map = nullptr;
+    while (cross_statistics_map_ptr_queue_.pop(&tmp_map)) {}
+    if (tmp_map != nullptr) {
+        got_latest_cross_map_ptr_ = tmp_map;
+    }
+
+    auto statistic_map_ptr = got_latest_cross_map_ptr_;
     if (statistic_map_ptr == nullptr) {
         return nullptr;
     }
@@ -1604,7 +1609,13 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         ZJC_DEBUG("backup get statistic tx coming.");
     }
 
-    auto statistic_map_ptr = shard_statistics_map_ptr_;
+    std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> tmp_map = nullptr;
+    while (shard_statistics_map_ptr_queue_.pop(&tmp_map)) {}
+    if (tmp_map != nullptr) {
+        got_latest_statistic_map_ptr_ = tmp_map;
+    }
+
+    auto statistic_map_ptr = got_latest_statistic_map_ptr_;
     if (statistic_map_ptr == nullptr) {
         if (!leader) {
             ZJC_DEBUG("statistic_map_ptr == nullptr");

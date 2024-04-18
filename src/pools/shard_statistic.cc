@@ -437,7 +437,8 @@ void ShardStatistic::OnNewElectBlock(
     prev_elect_height_ = now_elect_height_;
     now_elect_height_ = elect_height;
     prepare_elect_height_ = prepare_elect_height;
-    ZJC_INFO("new elect block: %lu, %lu", prev_elect_height_, now_elect_height_);
+    ZJC_INFO("new elect block: %lu, %lu, prepare_elect_height_: %lu",
+        prev_elect_height_, now_elect_height_, prepare_elect_height_);
 }
 
 void ShardStatistic::OnTimeBlock(
@@ -540,6 +541,8 @@ int ShardStatistic::StatisticWithHeights(
             added_id_set.insert((*now_elect_members)[i]->id);
             added_id_set.insert((*now_elect_members)[i]->pubkey);
         }
+    } else {
+        ZJC_DEBUG("failed get prepare members prepare_elect_height_: %lu", prepare_elect_height_);
     }
 
     uint64_t all_gas_amount = 0;
@@ -557,8 +560,9 @@ int ShardStatistic::StatisticWithHeights(
             ZJC_DEBUG("0 pool: %u, elect height: %lu, tm height: %lu, latest tm height: %lu, "
                 "statisticed_timeblock_height_: %lu", 
                 pool_idx, 0, tm_iter->first, latest_timeblock_height_, statisticed_timeblock_height_);
-            if (tm_iter->first > latest_timeblock_height_) {
-                assert(false);
+            if (tm_iter->first >= latest_timeblock_height_) {
+                ZJC_DEBUG("failed statistic %lu, %lu", tm_iter->first, latest_timeblock_height_);
+                // assert(false);
                 break;
             }
 
@@ -767,6 +771,10 @@ int ShardStatistic::StatisticWithHeights(
         join_elect_node->set_shard(shard_iter->second);
         join_elect_node->set_elect_pos(addr_info->elect_pos());
         debug_for_str += common::Encode::HexEncode(elect_nodes[i]) + "," + std::to_string(iter->second) + "," + std::to_string(shard_iter->second) + ",";
+        ZJC_DEBUG("add node to election new member: %s, %s, stoke: %lu, shard: %u", 
+            common::Encode::HexEncode(pubkey).c_str(),
+            common::Encode::HexEncode(secptr_->GetAddress(pubkey)).c_str(),
+            iter->second, shard_iter->second);
         ZJC_DEBUG("add new elect node: %s, stoke: %lu, shard: %u", common::Encode::HexEncode(pubkey).c_str(), iter->second, shard_iter->second);
     }
 
@@ -774,17 +782,20 @@ int ShardStatistic::StatisticWithHeights(
         for (uint32_t i = 0; i < prepare_members->size(); ++i) {
             auto inc_iter = added_id_set.find((*prepare_members)[i]->pubkey);
             if (inc_iter != added_id_set.end()) {
+                ZJC_DEBUG("id is in elect: %s", common::Encode::HexEncode(secptr_->GetAddress((*prepare_members)[i]->pubkey)).c_str());
                 continue;
             }
 
             auto addr_info = pools_mgr_->GetAddressInfo(secptr_->GetAddress((*prepare_members)[i]->pubkey));
             if (addr_info == nullptr) {
+                ZJC_DEBUG("id is in elect get addr failed: %s", common::Encode::HexEncode(secptr_->GetAddress((*prepare_members)[i]->pubkey)).c_str());
                 continue;
             }
 
             if (addr_info->elect_pos() != common::kInvalidUint32) {
                 if (addr_info->elect_pos() < 0 ||
                         addr_info->elect_pos() >= common::GlobalInfo::Instance()->each_shard_max_members()) {
+                    ZJC_DEBUG("id is in elect get pos failed: %s", common::Encode::HexEncode(secptr_->GetAddress((*prepare_members)[i]->pubkey)).c_str());
                     continue;
                 }
             }
@@ -798,6 +809,10 @@ int ShardStatistic::StatisticWithHeights(
             join_elect_node->set_shard(shard);
             debug_for_str += common::Encode::HexEncode((*prepare_members)[i]->pubkey) + "," +
                 std::to_string(stoke) + "," + std::to_string(shard) + ",";
+            ZJC_DEBUG("add node to election prepare member: %s, %s, stoke: %lu, shard: %u", 
+                common::Encode::HexEncode((*prepare_members)[i]->pubkey).c_str(),
+                common::Encode::HexEncode(secptr_->GetAddress((*prepare_members)[i]->pubkey)).c_str(),
+                stoke, shard);
         }
     }
 
