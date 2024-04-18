@@ -224,7 +224,6 @@ private:
     std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> got_latest_statistic_map_ptr_ = nullptr;
     common::ThreadSafeQueue<std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>>> cross_statistics_map_ptr_queue_;
     std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> got_latest_cross_map_ptr_ = nullptr;
-    std::shared_ptr<transport::TransportMessage> statistic_message_ = nullptr;
     common::Tick test_sync_block_tick_;
     common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> block_from_network_queue_[common::kMaxThreadCount];
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> to_tx_msg_queue_;

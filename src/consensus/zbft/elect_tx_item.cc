@@ -38,8 +38,9 @@ int ElectTxItem::HandleTx(
                 return kConsensusError;
             }
 
-            ZJC_DEBUG("get sharding statistic sharding id: %u, tm height: %lu, info sharding: %u",
-                tmp[0], tmp[1], elect_statistic.sharding_id());
+            ZJC_DEBUG("get sharding statistic sharding id: %u, tm height: %lu, "
+                "info sharding: %u, new node size: %u",
+                tmp[0], tmp[1], elect_statistic.sharding_id(), elect_statistic.join_elect_nodes_size());
             uint64_t now_elect_height = elect_mgr_->latest_height(elect_statistic.sharding_id());
             const pools::protobuf::PoolStatisticItem* statistic = nullptr;
             uint64_t max_elect_height = 0;
@@ -147,7 +148,12 @@ int ElectTxItem::HandleTx(
 
             uint32_t join_count = 0;
             if (members->size() < common::kEachShardMaxNodeCount) {
-                join_count += members->size() * kFtsNewElectJoinRate / 100;
+                if (members->size() < kFtsMinDoubleNodeCount) {
+                    join_count += members->size();
+                } else {
+                    join_count += members->size() * kFtsNewElectJoinRate / 100;
+                }
+
                 if (join_count <= 0) {
                     ++join_count;
                 }
@@ -290,7 +296,7 @@ void ElectTxItem::ChooseNodeForEachIndex(
                 &elect_nodes_to_choose);
         }
 
-        ZJC_DEBUG("add new node: %u, index: %d, hold pos: %d",
+        ZJC_DEBUG("elect add new node: %u, index: %d, hold pos: %d",
             elect_nodes_to_choose.size(), i, hold_pos);
         if (elect_nodes_to_choose.empty()) {
             continue;
