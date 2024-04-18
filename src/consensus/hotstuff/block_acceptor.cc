@@ -29,23 +29,35 @@ BlockAcceptor::BlockAcceptor(
 BlockAcceptor::~BlockAcceptor(){};
 
 Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_info) {
-    if (!block_info || !block_info->block || block_info->txs.empty()) {
+    if (!block_info || !block_info->block) {
+        return Status::kError;
+    }
+    
+    if (block_info->block->pool_index() != pool_idx()) {
+        return Status::kError;
+    }
+
+    if (block_info->txs.empty()) {
+        // 允许不打包任何交易，但 block 必须存在
         return Status::kSuccess;
     }
+    
     // Get txs from local pool
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
 
     Status s = Status::kSuccess;
     s = GetTxsFromLocal(block_info, txs_ptr);
     if (s != Status::kSuccess) {
+        ZJC_ERROR("invalid tx_type: %d, txs empty. pool_index: %d, view: %lu",
+            block_info->tx_type, pool_idx(), block_info->view);
         return s;
     }
     
     // Do txs and create block_tx
     auto& zjc_block = block_info->block;
 
-    std::string pool_hash = tx_pools_->latest_hash(block_info->block->pool_index());
-    uint64_t pool_height = tx_pools_->latest_height(block_info->block->pool_index());
+    std::string pool_hash = tx_pools_->latest_hash(pool_idx());
+    uint64_t pool_height = tx_pools_->latest_height(pool_idx());
     if (pool_hash.empty() || pool_height == common::kInvalidUint64) {
         return Status::kError;
     }
@@ -63,7 +75,7 @@ Status BlockAcceptor::GetTxsFromLocal(
         const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
     auto txs_func = GetTxsFunc(block_info->tx_type);
-    Status s = txs_func(txs_ptr);
+    Status s = txs_func(block_info, txs_ptr);
     if (s != Status::kSuccess) {
         return s;
     }
@@ -148,28 +160,48 @@ Status BlockAcceptor::DoTransactions(
     return Status::kSuccess;
 }
 
-Status BlockAcceptor::GetDefaultTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+Status BlockAcceptor::GetDefaultTxs(
+        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
+        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
     return Status::kSuccess;
 }
 
-Status BlockAcceptor::GetToTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    return Status::kSuccess;
+Status BlockAcceptor::GetToTxs(
+        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
+        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    txs_ptr = tx_pools_->GetToTxs(pool_idx(), false);
+    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
 }
 
-Status BlockAcceptor::GetStatisticTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    return Status::kSuccess;
+Status BlockAcceptor::GetStatisticTxs(
+        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
+        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    txs_ptr = tx_pools_->GetStatisticTx(pool_idx(), false);
+    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
 }
 
-Status BlockAcceptor::GetCrossTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    return Status::kSuccess;
+Status BlockAcceptor::GetCrossTxs(
+        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
+        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    txs_ptr = tx_pools_->GetCrossTx(pool_idx(), false);
+    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess; 
 }
 
-Status BlockAcceptor::GetElectTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    return Status::kSuccess;
+Status BlockAcceptor::GetElectTxs(
+        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
+        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    if (block_info->txs.size() == 1) {
+        auto txhash = pools::GetTxMessageHash(*block_info->txs[0]);
+        txs_ptr = tx_pools_->GetElectTx(pool_idx(), txhash);           
+    }
+    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
 }
 
-Status BlockAcceptor::GetTimeBlockTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    return Status::kSuccess;
+Status BlockAcceptor::GetTimeBlockTxs(
+        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
+        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    txs_ptr = tx_pools_->GetTimeblockTx(pool_idx(), false);
+    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
 }
 
 } // namespace hotstuff

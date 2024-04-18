@@ -1,5 +1,6 @@
 #pragma once
 
+#include <__functional/bind.h>
 #include <consensus/consensus_utils.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/zbft/waiting_txs_pools.h>
@@ -16,6 +17,7 @@ class IBlockAcceptor {
 public:
     // the block info struct used in BlockAcceptor
     struct blockInfo {
+        View view;
         std::shared_ptr<block::protobuf::Block> block;
         pools::protobuf::StepType tx_type;
         std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
@@ -32,7 +34,9 @@ private:
 
 class BlockAcceptor : public IBlockAcceptor {
 public:
-    using TxsFunc = std::function<Status(std::shared_ptr<consensus::WaitingTxsItem>&)>;
+    using TxsFunc = std::function<Status(
+            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
+            std::shared_ptr<consensus::WaitingTxsItem>&)>;
     
     BlockAcceptor(const uint32_t& pool_idx, const std::shared_ptr<security::Security>& security);
     ~BlockAcceptor();
@@ -58,12 +62,24 @@ private:
             const std::shared_ptr<consensus::WaitingTxsItem>&,
             std::shared_ptr<block::protobuf::Block>&);
 
-    Status GetDefaultTxs(std::shared_ptr<consensus::WaitingTxsItem>&);
-    Status GetToTxs(std::shared_ptr<consensus::WaitingTxsItem>&);
-    Status GetStatisticTxs(std::shared_ptr<consensus::WaitingTxsItem>&);
-    Status GetCrossTxs(std::shared_ptr<consensus::WaitingTxsItem>&);
-    Status GetElectTxs(std::shared_ptr<consensus::WaitingTxsItem>&);
-    Status GetTimeBlockTxs(std::shared_ptr<consensus::WaitingTxsItem>&);
+    Status GetDefaultTxs(
+            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
+            std::shared_ptr<consensus::WaitingTxsItem>&);
+    Status GetToTxs(
+            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
+            std::shared_ptr<consensus::WaitingTxsItem>&);
+    Status GetStatisticTxs(
+            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
+            std::shared_ptr<consensus::WaitingTxsItem>&);
+    Status GetCrossTxs(
+            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
+            std::shared_ptr<consensus::WaitingTxsItem>&);
+    Status GetElectTxs(
+            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
+            std::shared_ptr<consensus::WaitingTxsItem>&);
+    Status GetTimeBlockTxs(
+            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
+            std::shared_ptr<consensus::WaitingTxsItem>&);
 
     void RegisterTxsFunc(pools::protobuf::StepType tx_type, TxsFunc txs_func) {
         txs_func_map_[tx_type] = txs_func;
@@ -74,8 +90,16 @@ private:
         if (it != txs_func_map_.end()) {
             return it->second;
         }
-        return std::bind(&BlockAcceptor::GetDefaultTxs, this, std::placeholders::_1);
+        return std::bind(
+                &BlockAcceptor::GetDefaultTxs,
+                this,
+                std::placeholders::_1,
+                std::placeholders::_2);
     }
+
+    inline uint32_t pool_idx() const {
+        return pool_idx_;
+    }  
 };
 
 } // namespace hotstuff
