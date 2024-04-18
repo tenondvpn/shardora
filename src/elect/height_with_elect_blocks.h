@@ -176,7 +176,7 @@ public:
         new_item->common_bls_publick_key = GetCommonPublicKey(network_id, height);
         if (new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()) {
             ZJC_DEBUG("ew_item->common_bls_publick_key == libff::alt_bn128_G2::zero().");
-            return nullptr;
+            return shard_members;
         }
 
         height_with_members_[network_id][height] = new_item;
