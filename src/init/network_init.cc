@@ -10,6 +10,7 @@
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/hotstuff/view_block_chain_syncer.h>
+#include <consensus/consensus_utils.h>
 #include <functional>
 #include <memory>
 #include <protos/pools.pb.h>
@@ -171,8 +172,9 @@ int NetworkInit::Init(int argc, char** argv) {
         new_db_cb,
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
-    bft_mgr_ = std::make_shared<consensus::BftManager>();
-    auto bft_init_res = bft_mgr_->Init(
+#ifdef ENABLE_HOTSTUFF
+    hotstuf_mgr_ = std::make_shared<consensus::HotstuffManager>();
+    auto consensus_init_res = hotstuf_mgr_->Init(
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1),
         contract_mgr_,
         gas_prepayment_,
@@ -190,7 +192,28 @@ int NetworkInit::Init(int argc, char** argv) {
         common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
         std::bind(&NetworkInit::AddBlockItemToCache, this,
             std::placeholders::_1, std::placeholders::_2));
-    if (bft_init_res != consensus::kConsensusSuccess) {
+#else
+    bft_mgr_ = std::make_shared<consensus::BftManager>();
+    auto consensus_init_res = bft_mgr_->Init(
+        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1),
+        contract_mgr_,
+        gas_prepayment_,
+        vss_mgr_,
+        account_mgr_,
+        block_mgr_,
+        elect_mgr_,
+        pools_mgr_,
+        security_,
+        tm_block_mgr_,
+        bls_mgr_,
+        kv_sync_,
+        db_,
+        nullptr,
+        common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
+        std::bind(&NetworkInit::AddBlockItemToCache, this,
+            std::placeholders::_1, std::placeholders::_2));
+#endif
+    if (consensus_init_res != consensus::kConsensusSuccess) {
         INIT_ERROR("init bft failed!");
         return kInitError;
     }
@@ -347,9 +370,15 @@ void NetworkInit::RegisterFirewallCheck() {
     net_handler_.AddFirewallCheckCallback(
         common::kBlsMessage,
         std::bind(&bls::BlsManager::FirewallCheckMessage, bls_mgr_.get(), std::placeholders::_1));
+#ifdef ENABLE_HOTSTUFF
+    net_handler_.AddFirewallCheckCallback(
+        common::kConsensusMessage,
+        std::bind(&consensus::HotstuffManager::FirewallCheckMessage, hotstuf_mgr_.get(), std::placeholders::_1));
+#else
     net_handler_.AddFirewallCheckCallback(
         common::kConsensusMessage,
         std::bind(&consensus::BftManager::FirewallCheckMessage, bft_mgr_.get(), std::placeholders::_1));
+#endif
     net_handler_.AddFirewallCheckCallback(
         common::kBlockMessage,
         std::bind(&block::BlockManager::FirewallCheckMessage, block_mgr_.get(), std::placeholders::_1));
@@ -1354,7 +1383,11 @@ void NetworkInit::HandleElectionBlock(
         elect_height,
         members,
         elect_block);
+#ifdef ENABLE_HOTSTUFF
+    hotstuf_mgr_->OnNewElectBlock(block->timestamp(),sharding_id, elect_height, members, common_pk, sec_key);
+#else
     bft_mgr_->OnNewElectBlock(block->timestamp(),sharding_id, elect_height, members, common_pk, sec_key);
+#endif
     block_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     bls_mgr_->OnNewElectBlock(sharding_id, block->height(), elect_block);

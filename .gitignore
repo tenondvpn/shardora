@@ -18,3 +18,4 @@ third_party/include
 src/contract/tests/contracts/*.bin
 .cache
 .vscode
+build

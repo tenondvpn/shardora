@@ -15,6 +15,14 @@ namespace shardora {
 
 namespace consensus {
 
+// hash128(gid + from + to + amount + type + attrs(k:v))
+std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info);
+// prehash + network_id + height + random + elect version + txes's hash
+std::string GetBlockHash(const block::protobuf::Block& block);
+typedef std::function<void(
+    std::shared_ptr<block::protobuf::Block>& block,
+    db::DbWriteBatch& db_batch)> BlockCacheCallback;
+
 enum ConsensusErrorCode {
     kConsensusSuccess = 0,
     kConsensusError = 1,

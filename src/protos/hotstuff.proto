@@ -1,0 +1,24 @@
+syntax = "proto2";
+import "protos/view_block.proto";
+package shardora.hotstuff.protobuf;
+
+message HotstuffMessage {
+    optional uint32 type = 1;
+    optional ProposeMsg  pro_msg = 2;
+    optional VoteMsg   vote_msg = 3;
+    optional uint32 net_id = 5;
+    optional uint32 pool_index = 8 [default=4294967295];
+}
+
+message ProposeMsg {
+    optional uint32 elect_height = 1;
+    optional view_block.protobuf.ViewBlockItem  view_item = 2;
+}
+
+message VoteMsg {
+    optional uint32 replica_idx = 1;
+    optional bytes view_block_hash = 2;
+    optional uint32 elect_height = 3;
+    optional bytes sign_x = 4;
+    optional bytes sign_y = 5;
+}
