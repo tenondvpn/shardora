@@ -62,20 +62,17 @@ def gen_dispatch_coin_sh(content):
     all_addr = []
 
     for node in content['new_nodes']:
-        all_addr.append('"' + node['addr'] + '"')
+        all_addr.append(node['addr'])
 
-    all_addr_str = '\n '.join(all_addr)
-    all_addr_str = f"addrs=({all_addr_str})\n"
+    all_addr_str = ' '.join(all_addr)
+
     sh_str = f"""#!/bin/bash
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/
 cd ./cbuild_Debug
 make txcli
-{all_addr_str}
+./txcli 5 {all_addr_str}
 
-for n in  "${{addrs[@]}}"; do
-      ./txcli 5 ${{n}} 
-done
 
 
 """

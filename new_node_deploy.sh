@@ -29,4 +29,4 @@ for node in "${nodes[@]}"; do
 
 done
 
-sh ./dispatch_coin.sh
+sh ./new_nodes_dispatch_coin.sh
