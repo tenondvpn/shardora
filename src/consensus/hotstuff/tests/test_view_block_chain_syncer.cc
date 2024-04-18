@@ -15,12 +15,13 @@ extern std::shared_ptr<ViewBlock> GenViewBlock(const HashStr &parent_hash, const
 extern std::shared_ptr<QC> GenQC(const View &view, const HashStr &view_block_hash);
 extern std::shared_ptr<block::protobuf::Block> GenBlock();
 extern uint32_t GenLeaderIdx();
+static const uint32_t NET_ID = 3;
+static const uint32_t POOL = 63;
 
 
 class TestViewBlockChainSyncer : public testing::Test {
 protected:
-    static const uint32_t NET_ID = 3;
-    static const uint32_t POOL = 63;
+    
     
     void SetUp() {
         view_block_chain_mgr_ = std::make_shared<ViewBlockChainManager>(std::make_shared<db::Db>());
@@ -52,7 +53,10 @@ protected:
         return trans;
     }
 
-    static Status StoreViewBlock(const std::shared_ptr<ViewBlockChain>& chain, const std::shared_ptr<ViewBlock>& view_block) {
+    static Status StoreViewBlock(
+            const uint32_t& pool_idx,
+            const std::shared_ptr<ViewBlockChain>& chain,
+            const std::shared_ptr<ViewBlock>& view_block) {
         return chain->Store(view_block);
     }
 
@@ -78,7 +82,7 @@ TEST_F(TestViewBlockChainSyncer, TestMergeChain_HasCross) {
     sync_chain->Store(b3);
     sync_chain->Store(b4);
 
-    syncer_->MergeChain(ori_chain, sync_chain);
+    syncer_->MergeChain(POOL, ori_chain, sync_chain);
     EXPECT_EQ(4, ori_chain->Size());
     EXPECT_EQ(3, sync_chain->Size());
 
@@ -107,7 +111,7 @@ TEST_F(TestViewBlockChainSyncer, TestMergeChain_NoCross) {
     sync_chain->Store(b5);
     sync_chain->Store(b6);
 
-    syncer_->MergeChain(ori_chain, sync_chain);
+    syncer_->MergeChain(POOL, ori_chain, sync_chain);
     EXPECT_EQ(3, ori_chain->Size());
     EXPECT_EQ(3, sync_chain->Size());
 

@@ -12,23 +12,40 @@ namespace shardora {
 
 namespace hotstuff {
 
-// Bls vote collection
-struct BlsCollection {
-    HashStr msg_hash;
-    View view;
-    common::Bitmap ok_bitmap{ common::kEachShardMaxNodeCount };
-    std::shared_ptr<libff::alt_bn128_G1> partial_signs[common::kEachShardMaxNodeCount];
-    std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
-    bool handled;
-
-    inline uint32_t OkCount() const {
-        return ok_bitmap.valid_count();
-    }
-};
-
 // Every ViewBlockChain's hotstuff has a Crypto
 class Crypto {
 public:
+    struct BlsCollectionItem {
+        HashStr msg_hash;
+        common::Bitmap ok_bitmap{ common::kEachShardMaxNodeCount };
+        std::shared_ptr<libff::alt_bn128_G1> partial_signs[common::kEachShardMaxNodeCount];
+        std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
+
+        inline uint32_t OkCount() const {
+            return ok_bitmap.valid_count();
+        }    
+    };
+    // Bls vote collection
+    struct BlsCollection {
+        View view;
+        // may receive different msg_hashs per view because of unexpected inconsistency.
+        std::unordered_map<HashStr, std::shared_ptr<BlsCollectionItem>> msg_collection_map;
+        bool handled;
+
+        std::shared_ptr<BlsCollectionItem> GetItem(const HashStr& msg_hash) {
+            std::shared_ptr<BlsCollectionItem> collection_item = nullptr;
+            auto it = msg_collection_map.find(msg_hash);
+            if (it == msg_collection_map.end()) {
+                collection_item = std::make_shared<BlsCollectionItem>();
+                collection_item->msg_hash = msg_hash;
+                msg_collection_map[msg_hash] = collection_item; 
+            } else {
+                collection_item = it->second;
+            }
+            return collection_item;
+        }
+    };
+    
     Crypto(const std::shared_ptr<ElectInfo>& elect_info,
         const std::shared_ptr<bls::IBlsManager>& bls_mgr) :
         elect_info_(elect_info), bls_mgr_(bls_mgr) {};
