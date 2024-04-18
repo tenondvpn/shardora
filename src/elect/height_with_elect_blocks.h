@@ -168,13 +168,15 @@ public:
 
         auto shard_members = GetMembers(security, network_id, height);
         if (shard_members == nullptr) {
+            ZJC_DEBUG("failed get members.");
             return nullptr;
         }
 
         auto new_item = std::make_shared<HeightMembersItem>(shard_members, height);
         new_item->common_bls_publick_key = GetCommonPublicKey(network_id, height);
         if (new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()) {
-            return nullptr;
+            ZJC_DEBUG("ew_item->common_bls_publick_key == libff::alt_bn128_G2::zero().");
+            return shard_members;
         }
 
         height_with_members_[network_id][height] = new_item;
