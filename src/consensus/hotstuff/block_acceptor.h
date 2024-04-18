@@ -51,9 +51,9 @@ public:
             const std::shared_ptr<contract::ContractManager>& contract_mgr,
             const std::shared_ptr<db::Db>& db,
             const std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
-            const std::shared_ptr<pools::TxPoolManager>& pools_mgr,
-            const std::shared_ptr<block::BlockManager>& block_mgr,
-            const std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr);
+            std::shared_ptr<pools::TxPoolManager>& pools_mgr,
+            std::shared_ptr<block::BlockManager>& block_mgr,
+            std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr);
     ~BlockAcceptor();
 
     BlockAcceptor(const BlockAcceptor&) = delete;

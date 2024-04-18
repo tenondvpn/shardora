@@ -24,9 +24,9 @@ BlockAcceptor::BlockAcceptor(
         const std::shared_ptr<contract::ContractManager> &contract_mgr,
         const std::shared_ptr<db::Db> &db,
         const std::shared_ptr<consensus::ContractGasPrepayment> &gas_prepayment,
-        const std::shared_ptr<pools::TxPoolManager> &pools_mgr,
-        const std::shared_ptr<block::BlockManager> &block_mgr,
-        const std::shared_ptr<timeblock::TimeBlockManager> &tm_block_mgr):
+        std::shared_ptr<pools::TxPoolManager> &pools_mgr,
+        std::shared_ptr<block::BlockManager> &block_mgr,
+        std::shared_ptr<timeblock::TimeBlockManager> &tm_block_mgr):
     pool_idx_(pool_idx), security_ptr_(security), account_mgr_(account_mgr),
     elect_info_(elect_info), vss_mgr_(vss_mgr), contract_mgr_(contract_mgr),
     db_(db), gas_prepayment_(gas_prepayment), pools_mgr_(pools_mgr),
@@ -34,7 +34,7 @@ BlockAcceptor::BlockAcceptor(
     tm_block_mgr_(tm_block_mgr) {
     
     db_batch_ = std::make_shared<db::DbWriteBatch>();
-    tx_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr_, block_mgr, tm_block_mgr);
+    tx_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr_, block_mgr_, tm_block_mgr_);
     
     RegisterTxsFunc(pools::protobuf::kNormalTo,
         std::bind(&BlockAcceptor::GetToTxs, this, std::placeholders::_1, std::placeholders::_2));
