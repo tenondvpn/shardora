@@ -1,8 +1,11 @@
 #pragma once
 
 #include <__functional/bind.h>
+#include <block/account_manager.h>
 #include <consensus/consensus_utils.h>
+#include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/types.h>
+#include <consensus/zbft/contract_gas_prepayment.h>
 #include <consensus/zbft/waiting_txs_pools.h>
 #include <functional>
 #include <protos/block.pb.h>
@@ -38,7 +41,16 @@ public:
             const std::shared_ptr<IBlockAcceptor::blockInfo>&,
             std::shared_ptr<consensus::WaitingTxsItem>&)>;
     
-    BlockAcceptor(const uint32_t& pool_idx, const std::shared_ptr<security::Security>& security);
+    BlockAcceptor(
+            const uint32_t& pool_idx,
+            const std::shared_ptr<security::Security>& security,
+            const std::shared_ptr<block::AccountManager>& account_mgr,
+            const std::shared_ptr<ElectInfo>& elect_info,
+            const std::shared_ptr<vss::VssManager>& vss_mgr,
+            const std::shared_ptr<contract::ContractManager>& contract_mgr,
+            const std::shared_ptr<db::Db>& db,
+            const std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
+            const std::shared_ptr<pools::TxPoolManager>& pools_mgr);
     ~BlockAcceptor();
 
     BlockAcceptor(const BlockAcceptor&) = delete;
@@ -52,6 +64,13 @@ private:
     zjcvm::ZjchainHost zjc_host;
     std::shared_ptr<db::DbWriteBatch> db_batch_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
+    std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
+    std::shared_ptr<ElectInfo> elect_info_ = nullptr;
+    std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
+    std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
+    std::shared_ptr<db::Db> db_ = nullptr;
+    std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
+    std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
 
     Status GetTxsFromLocal(
             const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
