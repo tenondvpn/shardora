@@ -47,12 +47,18 @@ public:
 private:
     std::shared_ptr<consensus::WaitingTxsPools> tx_pools_ = nullptr;
     std::unordered_map<pools::protobuf::StepType, TxsFunc> txs_func_map_;
+    zjcvm::ZjchainHost zjc_host;
+    std::shared_ptr<db::DbWriteBatch> db_batch_ = nullptr;
+    std::shared_ptr<security::Security> security_ptr_ = nullptr;
 
     Status GetTxsFromLocal(
             const std::shared_ptr<IBlockAcceptorManager::blockInfo>& block_info,
             std::shared_ptr<consensus::WaitingTxsItem>&);
 
     bool IsBlockValid(const std::shared_ptr<block::protobuf::Block>&);
+    Status DoTransactions(
+            const std::shared_ptr<consensus::WaitingTxsItem>&,
+            std::shared_ptr<block::protobuf::Block>&);
 
     Status GetDefaultTxs(std::shared_ptr<consensus::WaitingTxsItem>&);
     Status GetToTxs(std::shared_ptr<consensus::WaitingTxsItem>&);

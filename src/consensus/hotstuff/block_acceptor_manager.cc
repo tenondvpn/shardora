@@ -4,17 +4,25 @@
 #include <consensus/hotstuff/block_acceptor_manager.h>
 #include <consensus/hotstuff/types.h>
 #include <protos/pools.pb.h>
+#include <zjcvm/zjcvm_utils.h>
 
 namespace shardora {
 
 namespace hotstuff {
 
 BlockAcceptorManager::BlockAcceptorManager() {
-    RegisterTxsFunc(pools::protobuf::kNormalTo, std::bind(&BlockAcceptorManager::GetToTxs, this, std::placeholders::_1));
-    RegisterTxsFunc(pools::protobuf::kStatistic, std::bind(&BlockAcceptorManager::GetStatisticTxs, this, std::placeholders::_1));
-    RegisterTxsFunc(pools::protobuf::kCross, std::bind(&BlockAcceptorManager::GetCrossTxs, this, std::placeholders::_1));
-    RegisterTxsFunc(pools::protobuf::kConsensusRootElectShard, std::bind(&BlockAcceptorManager::GetElectTxs, this, std::placeholders::_1));
-    RegisterTxsFunc(pools::protobuf::kConsensusRootTimeBlock, std::bind(&BlockAcceptorManager::GetTimeBlockTxs, this, std::placeholders::_1));
+    db_batch_ = std::make_shared<db::DbWriteBatch>();
+    
+    RegisterTxsFunc(pools::protobuf::kNormalTo,
+        std::bind(&BlockAcceptorManager::GetToTxs, this, std::placeholders::_1));
+    RegisterTxsFunc(pools::protobuf::kStatistic,
+        std::bind(&BlockAcceptorManager::GetStatisticTxs, this, std::placeholders::_1));
+    RegisterTxsFunc(pools::protobuf::kCross,
+        std::bind(&BlockAcceptorManager::GetCrossTxs, this, std::placeholders::_1));
+    RegisterTxsFunc(pools::protobuf::kConsensusRootElectShard,
+        std::bind(&BlockAcceptorManager::GetElectTxs, this, std::placeholders::_1));
+    RegisterTxsFunc(pools::protobuf::kConsensusRootTimeBlock,
+        std::bind(&BlockAcceptorManager::GetTimeBlockTxs, this, std::placeholders::_1));
 };
 
 BlockAcceptorManager::~BlockAcceptorManager(){};
@@ -47,11 +55,7 @@ Status BlockAcceptorManager::Accept(std::shared_ptr<IBlockAcceptorManager::block
         return Status::kAcceptorBlockInvalid;
     }
 
-    // 执行交易
-    
-
-    // TODO verify txs result hash
-    return Status::kSuccess;
+    return DoTransactions(txs_ptr, zjc_block);
 }
 
 Status BlockAcceptorManager::GetTxsFromLocal(
@@ -74,6 +78,96 @@ Status BlockAcceptorManager::GetTxsFromLocal(
     }
     
     txs_ptr->pool_index = block_info->block->pool_index();
+    return Status::kSuccess;
+}
+
+bool BlockAcceptorManager::IsBlockValid(const std::shared_ptr<block::protobuf::Block>&) {
+    // TODO 校验 block prehash，latest height 等
+    return true;
+}
+
+Status BlockAcceptorManager::DoTransactions(
+        const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
+        std::shared_ptr<block::protobuf::Block>& zjc_block) {
+    // 执行交易
+    auto tx_list = zjc_block->mutable_tx_list();
+    auto& tx_map = txs_ptr->txs;
+    tx_list->Reserve(tx_map.size());
+    std::unordered_map<std::string, int64_t> acc_balance_map;
+    zjc_host.tx_context_.tx_origin = evmc::address{};
+    zjc_host.tx_context_.block_coinbase = evmc::address{};
+    zjc_host.tx_context_.block_number = zjc_block->height();
+    zjc_host.tx_context_.block_timestamp = zjc_block->timestamp() / 1000;
+    uint64_t chain_id = (((uint64_t)zjc_block->network_id()) << 32 | (uint64_t)zjc_block->pool_index());
+    zjcvm::Uint64ToEvmcBytes32(
+        zjc_host.tx_context_.chain_id,
+        chain_id);
+
+    for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) { 
+        auto& tx_info = iter->second->tx_info;
+        auto& block_tx = *tx_list->Add();
+        int res = iter->second->TxToBlockTx(tx_info, db_batch_, &block_tx);
+        if (res != consensus::kConsensusSuccess) {
+            tx_list->RemoveLast();
+            continue;
+        }
+
+        if (block_tx.step() == pools::protobuf::kContractExcute) {
+            block_tx.set_from(security_ptr_->GetAddress(
+                iter->second->tx_info.pubkey()));
+        } else {
+            block_tx.set_from(iter->second->address_info->addr());
+        }
+
+        block_tx.set_status(consensus::kConsensusSuccess);
+        int do_tx_res = iter->second->HandleTx(
+            *zjc_block,
+            db_batch_,
+            zjc_host,
+            acc_balance_map,
+            block_tx);
+        if (do_tx_res != consensus::kConsensusSuccess) {
+            tx_list->RemoveLast();
+            continue;
+        }
+
+        for (auto event_iter = zjc_host.recorded_logs_.begin();
+                event_iter != zjc_host.recorded_logs_.end(); ++event_iter) {
+            auto log = block_tx.add_events();
+            log->set_data((*event_iter).data);
+            for (auto topic_iter = (*event_iter).topics.begin();
+                    topic_iter != (*event_iter).topics.end(); ++topic_iter) {
+                log->add_topics(std::string((char*)(*topic_iter).bytes, sizeof((*topic_iter).bytes)));
+            }
+        }
+
+        zjc_host.recorded_logs_.clear();
+    }
+    
+    return Status::kSuccess;
+}
+
+Status BlockAcceptorManager::GetDefaultTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    return Status::kSuccess;
+}
+
+Status BlockAcceptorManager::GetToTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    return Status::kSuccess;
+}
+
+Status BlockAcceptorManager::GetStatisticTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    return Status::kSuccess;
+}
+
+Status BlockAcceptorManager::GetCrossTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    return Status::kSuccess;
+}
+
+Status BlockAcceptorManager::GetElectTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    return Status::kSuccess;
+}
+
+Status BlockAcceptorManager::GetTimeBlockTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
     return Status::kSuccess;
 }
 
