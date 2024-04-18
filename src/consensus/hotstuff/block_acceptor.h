@@ -11,20 +11,18 @@ namespace shardora {
 
 namespace hotstuff {
 
-
-
 // Block 及 Txs 处理模块
-class IBlockAcceptorManager {
+class IBlockAcceptor {
 public:
-    // the block info struct used in BlockAcceptorManager
+    // the block info struct used in BlockAcceptor
     struct blockInfo {
         std::shared_ptr<block::protobuf::Block> block;
         pools::protobuf::StepType tx_type;
         std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
     };
     
-    IBlockAcceptorManager() = default;
-    virtual ~IBlockAcceptorManager() {};
+    IBlockAcceptor() = default;
+    virtual ~IBlockAcceptor() {};
 
     // Accept a block and txs in it.
     virtual Status Accept(std::shared_ptr<blockInfo>&) = 0;
@@ -32,18 +30,19 @@ private:
     
 };
 
-class BlockAcceptorManager : public IBlockAcceptorManager {
+class BlockAcceptor : public IBlockAcceptor {
 public:
     using TxsFunc = std::function<Status(std::shared_ptr<consensus::WaitingTxsItem>&)>;
     
-    BlockAcceptorManager();
-    ~BlockAcceptorManager();
+    BlockAcceptor(const uint32_t& pool_idx, const std::shared_ptr<security::Security>& security);
+    ~BlockAcceptor();
 
-    BlockAcceptorManager(const BlockAcceptorManager&) = delete;
-    BlockAcceptorManager& operator=(const BlockAcceptorManager&) = delete;
+    BlockAcceptor(const BlockAcceptor&) = delete;
+    BlockAcceptor& operator=(const BlockAcceptor&) = delete;
 
-    Status Accept(std::shared_ptr<IBlockAcceptorManager::blockInfo>& blockInfo) override;
+    Status Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& blockInfo) override;
 private:
+    uint32_t pool_idx_;
     std::shared_ptr<consensus::WaitingTxsPools> tx_pools_ = nullptr;
     std::unordered_map<pools::protobuf::StepType, TxsFunc> txs_func_map_;
     zjcvm::ZjchainHost zjc_host;
@@ -51,7 +50,7 @@ private:
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
 
     Status GetTxsFromLocal(
-            const std::shared_ptr<IBlockAcceptorManager::blockInfo>& block_info,
+            const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
             std::shared_ptr<consensus::WaitingTxsItem>&);
 
     bool IsBlockValid(const std::shared_ptr<block::protobuf::Block>&);
@@ -75,7 +74,7 @@ private:
         if (it != txs_func_map_.end()) {
             return it->second;
         }
-        return std::bind(&BlockAcceptorManager::GetDefaultTxs, this, std::placeholders::_1);
+        return std::bind(&BlockAcceptor::GetDefaultTxs, this, std::placeholders::_1);
     }
 };
 

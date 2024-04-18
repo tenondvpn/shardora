@@ -1,6 +1,6 @@
 #include <common/utils.h>
 #include <consensus/consensus_utils.h>
-#include <consensus/hotstuff/block_acceptor_manager.h>
+#include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/types.h>
 #include <protos/pools.pb.h>
 #include <zjcvm/zjcvm_utils.h>
@@ -9,28 +9,30 @@ namespace shardora {
 
 namespace hotstuff {
 
-BlockAcceptorManager::BlockAcceptorManager() {
+BlockAcceptor::BlockAcceptor(
+        const uint32_t& pool_idx,
+        const std::shared_ptr<security::Security>& security) :
+    pool_idx_(pool_idx), security_ptr_(security) {
     db_batch_ = std::make_shared<db::DbWriteBatch>();
-    
     RegisterTxsFunc(pools::protobuf::kNormalTo,
-        std::bind(&BlockAcceptorManager::GetToTxs, this, std::placeholders::_1));
+        std::bind(&BlockAcceptor::GetToTxs, this, std::placeholders::_1));
     RegisterTxsFunc(pools::protobuf::kStatistic,
-        std::bind(&BlockAcceptorManager::GetStatisticTxs, this, std::placeholders::_1));
+        std::bind(&BlockAcceptor::GetStatisticTxs, this, std::placeholders::_1));
     RegisterTxsFunc(pools::protobuf::kCross,
-        std::bind(&BlockAcceptorManager::GetCrossTxs, this, std::placeholders::_1));
+        std::bind(&BlockAcceptor::GetCrossTxs, this, std::placeholders::_1));
     RegisterTxsFunc(pools::protobuf::kConsensusRootElectShard,
-        std::bind(&BlockAcceptorManager::GetElectTxs, this, std::placeholders::_1));
+        std::bind(&BlockAcceptor::GetElectTxs, this, std::placeholders::_1));
     RegisterTxsFunc(pools::protobuf::kConsensusRootTimeBlock,
-        std::bind(&BlockAcceptorManager::GetTimeBlockTxs, this, std::placeholders::_1));
+        std::bind(&BlockAcceptor::GetTimeBlockTxs, this, std::placeholders::_1));
 };
 
-BlockAcceptorManager::~BlockAcceptorManager(){};
+BlockAcceptor::~BlockAcceptor(){};
 
-Status BlockAcceptorManager::Accept(std::shared_ptr<IBlockAcceptorManager::blockInfo>& block_info) {
+Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_info) {
     if (!block_info || !block_info->block || block_info->txs.empty()) {
         return Status::kSuccess;
     }
-    // TODO Get txs from local pool
+    // Get txs from local pool
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
 
     Status s = Status::kSuccess;
@@ -39,7 +41,7 @@ Status BlockAcceptorManager::Accept(std::shared_ptr<IBlockAcceptorManager::block
         return s;
     }
     
-    // TODO Do txs and create block_tx
+    // Do txs and create block_tx
     auto& zjc_block = block_info->block;
 
     std::string pool_hash = tx_pools_->latest_hash(block_info->block->pool_index());
@@ -49,7 +51,7 @@ Status BlockAcceptorManager::Accept(std::shared_ptr<IBlockAcceptorManager::block
     }
 
     // replica 自己创建 block 还是 leader 传过来？传过来，也没多多少带宽。
-    // TODO 验证 zjc_block 合法性
+    // 验证 zjc_block 合法性
     if (!IsBlockValid(block_info->block)) {
         return Status::kAcceptorBlockInvalid;
     }
@@ -57,8 +59,8 @@ Status BlockAcceptorManager::Accept(std::shared_ptr<IBlockAcceptorManager::block
     return DoTransactions(txs_ptr, zjc_block);
 }
 
-Status BlockAcceptorManager::GetTxsFromLocal(
-        const std::shared_ptr<IBlockAcceptorManager::blockInfo>& block_info,
+Status BlockAcceptor::GetTxsFromLocal(
+        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
     auto txs_func = GetTxsFunc(block_info->tx_type);
     Status s = txs_func(txs_ptr);
@@ -80,12 +82,12 @@ Status BlockAcceptorManager::GetTxsFromLocal(
     return Status::kSuccess;
 }
 
-bool BlockAcceptorManager::IsBlockValid(const std::shared_ptr<block::protobuf::Block>&) {
+bool BlockAcceptor::IsBlockValid(const std::shared_ptr<block::protobuf::Block>&) {
     // TODO 校验 block prehash，latest height 等
     return true;
 }
 
-Status BlockAcceptorManager::DoTransactions(
+Status BlockAcceptor::DoTransactions(
         const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
         std::shared_ptr<block::protobuf::Block>& zjc_block) {
     // 执行交易
@@ -146,27 +148,27 @@ Status BlockAcceptorManager::DoTransactions(
     return Status::kSuccess;
 }
 
-Status BlockAcceptorManager::GetDefaultTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+Status BlockAcceptor::GetDefaultTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
     return Status::kSuccess;
 }
 
-Status BlockAcceptorManager::GetToTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+Status BlockAcceptor::GetToTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
     return Status::kSuccess;
 }
 
-Status BlockAcceptorManager::GetStatisticTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+Status BlockAcceptor::GetStatisticTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
     return Status::kSuccess;
 }
 
-Status BlockAcceptorManager::GetCrossTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+Status BlockAcceptor::GetCrossTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
     return Status::kSuccess;
 }
 
-Status BlockAcceptorManager::GetElectTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+Status BlockAcceptor::GetElectTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
     return Status::kSuccess;
 }
 
-Status BlockAcceptorManager::GetTimeBlockTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+Status BlockAcceptor::GetTimeBlockTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
     return Status::kSuccess;
 }
 
