@@ -369,7 +369,7 @@ int one_tx_main(int argc, char** argv) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
         }
-        std::cout << "send tx to addr :" << to.c_str() << "count: " << i -1  << std::endl;
+        std::cout << "send tx to addr :" << argv[i] << "count: " << i -1  << std::endl;
     }
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {
