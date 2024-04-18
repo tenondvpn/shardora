@@ -187,7 +187,7 @@ Status BlockAcceptor::GetDefaultTxs(
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
     txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
     assert(block_info->txs.size() > 0);
-    for (auto i = 0; i < block_info->txs.size(); i++) {
+    for (uint32_t i = 0; i < uint32_t(block_info->txs.size()); i++) {
         auto& tx = block_info->txs[i];
         ZJC_DEBUG("get tx message step: %d", tx->step());
         protos::AddressInfoPtr address_info = nullptr;
