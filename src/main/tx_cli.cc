@@ -370,6 +370,8 @@ int one_tx_main(int argc, char** argv) {
             return 1;
         }
         std::cout << "send tx to addr :" << argv[i] << "count: " << i -1  << std::endl;
+        usleep(delayus);
+
     }
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {
