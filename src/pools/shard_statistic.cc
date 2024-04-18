@@ -437,7 +437,8 @@ void ShardStatistic::OnNewElectBlock(
     prev_elect_height_ = now_elect_height_;
     now_elect_height_ = elect_height;
     prepare_elect_height_ = prepare_elect_height;
-    ZJC_INFO("new elect block: %lu, %lu", prev_elect_height_, now_elect_height_);
+    ZJC_INFO("new elect block: %lu, %lu, prepare_elect_height_: %lu",
+        prev_elect_height_, now_elect_height_, prepare_elect_height_);
 }
 
 void ShardStatistic::OnTimeBlock(
