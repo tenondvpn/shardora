@@ -1,6 +1,7 @@
 #pragma once
 
 #include <block/account_manager.h>
+#include <block/block_manager.h>
 #include <consensus/consensus_utils.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/types.h>
@@ -9,6 +10,7 @@
 #include <functional>
 #include <protos/block.pb.h>
 #include <protos/pools.pb.h>
+#include <timeblock/time_block_manager.h>
 
 namespace shardora {
 
@@ -49,7 +51,9 @@ public:
             const std::shared_ptr<contract::ContractManager>& contract_mgr,
             const std::shared_ptr<db::Db>& db,
             const std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
-            const std::shared_ptr<pools::TxPoolManager>& pools_mgr);
+            const std::shared_ptr<pools::TxPoolManager>& pools_mgr,
+            const std::shared_ptr<block::BlockManager>& block_mgr,
+            const std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr);
     ~BlockAcceptor();
 
     BlockAcceptor(const BlockAcceptor&) = delete;
@@ -70,6 +74,8 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
+    std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
+    std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
 
     Status GetTxsFromLocal(
             const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
