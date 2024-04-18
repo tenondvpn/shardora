@@ -222,6 +222,12 @@ bool BlsDkg::IsSignValid(const transport::MessagePtr& msg_ptr, std::string* cont
     return true;
 #endif // ZJC_UNITTEST
     protos::GetProtoHash(msg_ptr->header, content_to_hash);
+    if (msg_ptr->header.bls_proto().index() >= members_->size()) {
+        ZJC_ERROR("invalid member index: %u, %u",
+            msg_ptr->header.bls_proto().index(), members_->size());
+        return false;
+    }
+
     auto& pubkey = (*members_)[msg_ptr->header.bls_proto().index()]->pubkey;
     if (security_->Verify(
             *content_to_hash,
