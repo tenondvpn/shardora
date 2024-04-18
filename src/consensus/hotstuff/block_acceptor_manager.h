@@ -1,6 +1,5 @@
 #pragma once
 
-#include <__functional/bind.h>
 #include <consensus/consensus_utils.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/zbft/waiting_txs_pools.h>
