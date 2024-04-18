@@ -81,7 +81,7 @@ TEST_F(TestViewBlockChainSyncer, TestMergeChain_HasCross) {
     sync_chain->Store(b3);
     sync_chain->Store(b4);
 
-    syncer_->MergeChain(POOL, ori_chain, sync_chain);
+    syncer_->MergeChain(TestViewBlockChainSyncer::POOL, ori_chain, sync_chain);
     EXPECT_EQ(4, ori_chain->Size());
     EXPECT_EQ(3, sync_chain->Size());
 
@@ -110,7 +110,7 @@ TEST_F(TestViewBlockChainSyncer, TestMergeChain_NoCross) {
     sync_chain->Store(b5);
     sync_chain->Store(b6);
 
-    syncer_->MergeChain(POOL, ori_chain, sync_chain);
+    syncer_->MergeChain(TestViewBlockChainSyncer::POOL, ori_chain, sync_chain);
     EXPECT_EQ(3, ori_chain->Size());
     EXPECT_EQ(3, sync_chain->Size());
 
