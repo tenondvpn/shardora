@@ -1398,12 +1398,12 @@ ZbftPtr BftManager::CreateBftPtr(
                 if (tx->step() == pools::protobuf::kContractExcute) {
                     address_info = account_mgr_->GetAccountInfo(tx->to());
                     if (address_info == nullptr) {
-                        ZJC_WARN("invalid address: %s, step: %d", 
+                        ZJC_ERROR("invalid address: %s, step: %d", 
                             common::Encode::HexEncode(tx->to()).c_str(), tx->step());
                     }
                 } else {
                     if (security_ptr_->IsValidPublicKey(tx->pubkey())) {
-                        ZJC_WARN("invalid address: %s, step: %d", 
+                        ZJC_ERROR("invalid address: %s, step: %d", 
                             common::Encode::HexEncode(security_ptr_->GetAddress(tx->pubkey())).c_str(), tx->step());
                         address_info = account_mgr_->GetAccountInfo(security_ptr_->GetAddress(tx->pubkey()));
                     } else {
