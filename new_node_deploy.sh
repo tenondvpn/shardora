@@ -21,7 +21,7 @@ for n in  "${nodes[@]}"; do
 done
 
 
-
+ulimit -c unlimited
 
 for node in "${nodes[@]}"; do
   cd /root/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node new_node> /dev/null 2>&1 &

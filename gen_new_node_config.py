@@ -123,6 +123,7 @@ for n in  "${{nodes[@]}}"; do
 done
 
 
+ulimit -c unlimited
 
 
 for node in "${{nodes[@]}}"; do
