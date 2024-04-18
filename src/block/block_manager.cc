@@ -69,7 +69,7 @@ int BlockManager::Init(
     //     std::bind(&BlockManager::ConsensusTimerMessage, this));
 
     transport::Processor::Instance()->RegisterProcessor(
-        common::kConsensusTimerMessage,
+        common::kPoolTimerMessage,
         std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
     bool genesis = false;
     return kBlockSuccess;
@@ -81,7 +81,7 @@ int BlockManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 
 void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& message) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    if (prev_timer_ms_ + 100000lu > now_tm_ms) {
+    if (prev_timer_ms_ + 100lu > now_tm_ms) {
         return;
     }
 
