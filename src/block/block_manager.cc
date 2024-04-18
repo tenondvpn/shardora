@@ -1649,7 +1649,11 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         prev_get_tx_tm = now_tx_tm;
     }
 
-    if (shard_statistic_tx != nullptr && !shard_statistic_tx->tx_ptr->in_consensus) {
+    if (shard_statistic_tx != nullptr) {
+        if (leader && shard_statistic_tx->tx_ptr->in_consensus) {
+            return nullptr;
+        }
+        
         auto now_tm = common::TimeUtils::TimestampUs();
         if (iter->first >= latest_timeblock_height_) {
             if (!leader) {
