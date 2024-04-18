@@ -102,6 +102,8 @@ enum class Status : int {
   kInvalidArgument = 3,
   kBlsVerifyWaiting = 4,
   kBlsVerifyFailed = 5,
+  kAcceptorTxsEmpty = 6,
+  kAcceptorBlockInvalid = 7,
 };
 
 enum WaitingBlockType {

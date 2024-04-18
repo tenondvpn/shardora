@@ -59,26 +59,27 @@ Status Crypto::ReconstructAndVerify(
         return Status::kError;
     }
 
+    auto collection_item = bls_collection_->GetItem(msg_hash);
     // Reconstruct sign
-    bls_collection_->ok_bitmap.Set(index);
-    bls_collection_->partial_signs[index] = partial_sign;
+    collection_item->ok_bitmap.Set(index);
+    collection_item->partial_signs[index] = partial_sign;
     auto elect_item = GetElectItem(elect_height);
     if (!elect_item) {
         return Status::kError;
     }
 
-    if (bls_collection_->OkCount() < elect_item->t()) {
+    if (collection_item->OkCount() < elect_item->t()) {
         return Status::kBlsVerifyWaiting;
     }
 
     std::vector<libff::alt_bn128_G1> all_signs;
     std::vector<size_t> idx_vec;
     for (uint32_t i = 0; i < elect_item->n(); i++) {
-        if (!bls_collection_->ok_bitmap.Valid(i)) {
+        if (!collection_item->ok_bitmap.Valid(i)) {
             continue;
         }
 
-        all_signs.push_back(*bls_collection_->partial_signs[i]);
+        all_signs.push_back(*collection_item->partial_signs[i]);
         idx_vec.push_back(i+1);
 
         if (idx_vec.size() >= elect_item->t()) {
@@ -89,17 +90,17 @@ Status Crypto::ReconstructAndVerify(
     std::vector<libff::alt_bn128_Fr> lagrange_coeffs(elect_item->t());
     libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, elect_item->t(), lagrange_coeffs);
 #ifdef HOTSTUFF_TEST
-    bls_collection_->reconstructed_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
-    bls_collection_->reconstructed_sign->to_affine_coordinates();   
+    collection_item->reconstructed_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
+    collection_item->reconstructed_sign->to_affine_coordinates();   
 #else
     libBLS::Bls bls_instance = libBLS::Bls(elect_item->t(), elect_item->n());
-    bls_collection_->reconstructed_sign = std::make_shared<libff::alt_bn128_G1>(
+    collection_item->reconstructed_sign = std::make_shared<libff::alt_bn128_G1>(
             bls_instance.SignatureRecover(all_signs, lagrange_coeffs));
-    bls_collection_->reconstructed_sign->to_affine_coordinates();
+    collection_item->reconstructed_sign->to_affine_coordinates();
 #endif
-    Status s = Verify(elect_height, msg_hash, bls_collection_->reconstructed_sign);
+    Status s = Verify(elect_height, msg_hash, collection_item->reconstructed_sign);
     if (s == Status::kSuccess) {
-        reconstructed_sign = bls_collection_->reconstructed_sign;
+        reconstructed_sign = collection_item->reconstructed_sign;
         bls_collection_->handled = true;
     }
 
@@ -119,7 +120,9 @@ Status Crypto::Verify(const uint64_t& elect_height, const HashStr& msg_hash, con
     if (s != Status::kSuccess) {
         return s;
     }
-    s = GetVerifyHashB(elect_height, *bls_collection_->reconstructed_sign, &verify_hash_b);
+
+    auto collection_item = bls_collection_->GetItem(msg_hash);
+    s = GetVerifyHashB(elect_height, *collection_item->reconstructed_sign, &verify_hash_b);
     if (s != Status::kSuccess) {
         return s;
     }

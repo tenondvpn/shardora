@@ -48,6 +48,12 @@ private:
     std::shared_ptr<consensus::WaitingTxsPools> tx_pools_ = nullptr;
     std::unordered_map<pools::protobuf::StepType, TxsFunc> txs_func_map_;
 
+    Status GetTxsFromLocal(
+            const std::shared_ptr<IBlockAcceptorManager::blockInfo>& block_info,
+            std::shared_ptr<consensus::WaitingTxsItem>&);
+
+    bool IsBlockValid(const std::shared_ptr<block::protobuf::Block>&);
+
     Status GetDefaultTxs(std::shared_ptr<consensus::WaitingTxsItem>&);
     Status GetToTxs(std::shared_ptr<consensus::WaitingTxsItem>&);
     Status GetStatisticTxs(std::shared_ptr<consensus::WaitingTxsItem>&);
