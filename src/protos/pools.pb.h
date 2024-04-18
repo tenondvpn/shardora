@@ -1539,6 +1539,18 @@ class PoolStatisticItem : public ::google::protobuf::Message /* @@protoc_inserti
   const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::AreaInfo >&
       area_point() const;
 
+  // repeated uint64 gas_sum = 5;
+  int gas_sum_size() const;
+  void clear_gas_sum();
+  static const int kGasSumFieldNumber = 5;
+  ::google::protobuf::uint64 gas_sum(int index) const;
+  void set_gas_sum(int index, ::google::protobuf::uint64 value);
+  void add_gas_sum(::google::protobuf::uint64 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+      gas_sum() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+      mutable_gas_sum();
+
   // optional uint64 elect_height = 3;
   bool has_elect_height() const;
   void clear_elect_height();
@@ -1557,6 +1569,7 @@ class PoolStatisticItem : public ::google::protobuf::Message /* @@protoc_inserti
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > tx_count_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > stokes_;
   ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::AreaInfo > area_point_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > gas_sum_;
   ::google::protobuf::uint64 elect_height_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
@@ -3992,6 +4005,36 @@ inline const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::
 PoolStatisticItem::area_point() const {
   // @@protoc_insertion_point(field_list:shardora.pools.protobuf.PoolStatisticItem.area_point)
   return area_point_;
+}
+
+// repeated uint64 gas_sum = 5;
+inline int PoolStatisticItem::gas_sum_size() const {
+  return gas_sum_.size();
+}
+inline void PoolStatisticItem::clear_gas_sum() {
+  gas_sum_.Clear();
+}
+inline ::google::protobuf::uint64 PoolStatisticItem::gas_sum(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.PoolStatisticItem.gas_sum)
+  return gas_sum_.Get(index);
+}
+inline void PoolStatisticItem::set_gas_sum(int index, ::google::protobuf::uint64 value) {
+  gas_sum_.Set(index, value);
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.PoolStatisticItem.gas_sum)
+}
+inline void PoolStatisticItem::add_gas_sum(::google::protobuf::uint64 value) {
+  gas_sum_.Add(value);
+  // @@protoc_insertion_point(field_add:shardora.pools.protobuf.PoolStatisticItem.gas_sum)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+PoolStatisticItem::gas_sum() const {
+  // @@protoc_insertion_point(field_list:shardora.pools.protobuf.PoolStatisticItem.gas_sum)
+  return gas_sum_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+PoolStatisticItem::mutable_gas_sum() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.pools.protobuf.PoolStatisticItem.gas_sum)
+  return &gas_sum_;
 }
 
 // -------------------------------------------------------------------
