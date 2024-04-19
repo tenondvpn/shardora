@@ -213,6 +213,39 @@ void AccountManager::HandleNormalFromTx(
         block.height(), block.pool_index());
 }
 
+void AccountManager::HandleCreateGenesisAcount(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
+    auto& account_id = tx.to();
+    auto account_info = GetAccountInfo(account_id);
+    if (account_info == nullptr) {
+        ZJC_INFO("get address info failed create new address to this id: %s,"
+            "shard: %u, local shard: %u",
+            common::Encode::HexEncode(account_id).c_str(), block.network_id(),
+            common::GlobalInfo::Instance()->network_id());
+        account_info = std::make_shared<address::protobuf::AddressInfo>();
+        account_info->set_pool_index(block.pool_index());
+        account_info->set_addr(account_id);
+        account_info->set_type(address::protobuf::kNormal);
+        account_info->set_sharding_id(block.network_id());
+    }
+
+    if (account_info->latest_height() >= block.height()) {
+        return;
+    }
+
+    account_info->set_latest_height(block.height());
+    account_info->set_balance(tx.balance());
+    prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    thread_update_accounts_queue_[thread_idx].push(account_info);
+    update_acc_con_.notify_one();
+    ZJC_DEBUG("transfer from address new balance %s: %lu, height: %lu, pool: %u",
+        common::Encode::HexEncode(account_id).c_str(), tx.balance(),
+        block.height(), block.pool_index());
+}
+
 void AccountManager::HandleContractPrepayment(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
@@ -688,7 +721,11 @@ void AccountManager::NewBlockWithTx(
     case pools::protobuf::kContractCreateByRootTo:
         HandleContractCreateByRootTo(*block_item, tx, db_batch);
         break;
+    case pools::protobuf::kConsensusCreateGenesisAcount:
+        HandleCreateGenesisAcount(*block_item, tx, db_batch);
+        break;
     default:
+        // ZJC_FATAL("invalid step: %d", tx.step());
         break;
     }
 }

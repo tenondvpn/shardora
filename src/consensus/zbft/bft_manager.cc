@@ -1365,7 +1365,7 @@ ZbftPtr BftManager::CreateBftPtr(
                     bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
             }
         } else if (bft_msg.tx_bft().tx_type() == pools::protobuf::kStatistic) {
-            txs_ptr = txs_pools_->GetStatisticTx(bft_msg.pool_index(), false);
+            txs_ptr = txs_pools_->GetStatisticTx(bft_msg.pool_index(),  false);
             if (txs_ptr == nullptr) {
                 ZJC_ERROR("invalid consensus kStatistic, txs not equal to leader. pool_index: %d, gid: %s",
                     bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
@@ -1397,14 +1397,23 @@ ZbftPtr BftManager::CreateBftPtr(
                 protos::AddressInfoPtr address_info = nullptr;
                 if (tx->step() == pools::protobuf::kContractExcute) {
                     address_info = account_mgr_->GetAccountInfo(tx->to());
+                    if (address_info == nullptr) {
+                        ZJC_ERROR("invalid address: %s, step: %d", 
+                            common::Encode::HexEncode(tx->to()).c_str(), tx->step());
+                    }
                 } else {
                     if (security_ptr_->IsValidPublicKey(tx->pubkey())) {
+                        ZJC_ERROR("invalid address: %s, step: %d", 
+                            common::Encode::HexEncode(security_ptr_->GetAddress(tx->pubkey())).c_str(), tx->step());
                         address_info = account_mgr_->GetAccountInfo(security_ptr_->GetAddress(tx->pubkey()));
                     } else {
                         address_info = account_mgr_->pools_address_info(bft_msg.pool_index());
                     }
                 }
                 
+                if (address_info == nullptr) {
+                    return nullptr;
+                }
 
                 assert(address_info != nullptr);
                 pools::TxItemPtr tx_ptr = nullptr;
@@ -2838,8 +2847,16 @@ void BftManager::LeaderAddBackupTxs(const zbft::protobuf::TxBft& txbft, uint32_t
         protos::AddressInfoPtr address_info = nullptr;
         if (security_ptr_->IsValidPublicKey(tx.pubkey())) {
             address_info = account_mgr_->GetAccountInfo(security_ptr_->GetAddress(tx.pubkey()));
+            ZJC_DEBUG("get address info %s, %s", 
+                common::Encode::HexEncode(security_ptr_->GetAddress(tx.pubkey())).c_str(), 
+                common::Encode::HexEncode(tx.pubkey()).c_str());
         } else {
             address_info = account_mgr_->pools_address_info(pool_index);
+            assert(address_info != nullptr);
+        }
+
+        if (address_info == nullptr) {
+            continue;
         }
 
         if (address_info->pool_index() != pool_index) {

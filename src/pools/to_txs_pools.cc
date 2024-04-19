@@ -154,10 +154,13 @@ void ToTxsPools::HandleJoinElect(
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
             // distinct with transfer transaction
-            std::string elect_to = tx.from();
+            ZJC_DEBUG("success add join elect value: %d, %s, %d",
+                network::kRootCongressNetworkId, 
+                tx.storages(i).key().c_str(), 
+                tx.storages(i).value().size());
             AddTxToMap(
                 block,
-                elect_to,
+                tx.from(),
                 tx.step(),
                 0,
                 network::kRootCongressNetworkId,
@@ -768,6 +771,9 @@ int ToTxsPools::CreateToTxWithHeights(
                 auto* req = to_item->add_join_infos();
                 *req = iter->second.verify_reqs[i];
             }
+
+            ZJC_DEBUG("send join elect to other shard des: %u, iter->second.verify_reqs.size: %u",
+                sharding_id, iter->second.verify_reqs.size());
         } else {
             auto net_id = common::kInvalidUint32;
             to_item->set_sharding_id(net_id);

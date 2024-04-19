@@ -31,14 +31,14 @@ int JoinElectTxItem::HandleTx(
         return kConsensusSuccess;
     }
 
-    do  {
+    bls::protobuf::JoinElectInfo join_info;
+    do {
         gas_used = consensus::kJoinElectGas;
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // TODO(): check key exists and reserve gas
             gas_used += (block_tx.storages(i).key().size() + tx_info.value().size()) *
                 consensus::kKeyValueStorageEachBytes;
             if (block_tx.storages(i).key() == protos::kJoinElectVerifyG2) {
-                bls::protobuf::JoinElectInfo join_info;
                 if (!join_info.ParseFromString(block_tx.storages(i).value())) {
                     break;
                 }
@@ -104,15 +104,23 @@ int JoinElectTxItem::HandleTx(
     acc_balance_map[from] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
-    ZJC_DEBUG("status: %d, success join elect: %s, pool: %u, height: %lu",
+    ZJC_DEBUG("status: %d, success join elect: %s, pool: %u, height: %lu, des shard: %d",
         block_tx.status(), common::Encode::HexEncode(from).c_str(),
         block.pool_index(),
-        block.height());
-//     ZJC_DEBUG("handle tx success: %s, %lu, %lu, status: %d",
-//         common::Encode::HexEncode(block_tx.gid()).c_str(),
-//         block_tx.balance(),
-//         block_tx.gas_used(),
-//         block_tx.status());
+        block.height(),
+        join_info.shard_id());
+#ifndef NDEBUG
+    for (uint32_t i = 0; i < block_tx.storages_size(); ++i) {
+        ZJC_DEBUG("status: %d, success join elect: %s, pool: %u, height: %lu, des shard: %d, key: %s, value size: %d",
+            block_tx.status(), common::Encode::HexEncode(from).c_str(),
+            block.pool_index(),
+            block.height(),
+            join_info.shard_id(),
+            block_tx.storages(i).key().c_str(),
+            block_tx.storages(i).value().size());
+    }
+#endif
+
     return kConsensusSuccess;
 }
 

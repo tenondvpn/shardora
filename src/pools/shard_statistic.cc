@@ -178,6 +178,12 @@ void ShardStatistic::HandleCrossShard(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         pools::protobuf::CrossShardStatistic& cross_statistic) {
+    if (tx.status() != consensus::kConsensusSuccess) {
+        ZJC_DEBUG("success handle block pool: %u, height: %lu, tm height: %lu, status: %d", 
+            block.pool_index(), block.height(), block.timeblock_height(), tx.status());
+        return;
+    }
+
     CrossStatisticItem cross_item;
     switch (tx.step()) {
     case pools::protobuf::kNormalTo: {
@@ -327,6 +333,10 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
 
     auto callback = [&](const block::protobuf::Block& block) {
         for (int32_t i = 0; i < block.tx_list_size(); ++i) {
+            if (tm_statistic_ptr->max_height < block.height()) {
+                tm_statistic_ptr->max_height = block.height();
+            }
+
             HandleCrossShard(is_root, block, block.tx_list(i), tm_statistic_ptr->cross_statistic);
             if (block.tx_list(i).step() == pools::protobuf::kNormalFrom ||
                     block.tx_list(i).step() == pools::protobuf::kContractCreate ||
@@ -337,8 +347,10 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
                 elect_static_info_item->all_gas_amount += block.tx_list(i).gas_price() * block.tx_list(i).gas_used();
             }
 
-            if (tm_statistic_ptr->max_height < block.height()) {
-                tm_statistic_ptr->max_height = block.height();
+            if (block.tx_list(i).status() != consensus::kConsensusSuccess) {
+                ZJC_DEBUG("success handle block pool: %u, height: %lu, tm height: %lu, tx: %d, status: %d", 
+                    block.pool_index(), block.height(), block.timeblock_height(), i, block.tx_list(i).status());
+                continue;
             }
 
             if (block.tx_list(i).step() == pools::protobuf::kJoinElect) {
