@@ -191,6 +191,7 @@ TEST_F(TestBlockAcceptor, Accept_InvalidTxs_NormalFromTx) {
     
     EXPECT_EQ(s, Status::kSuccess);
     EXPECT_EQ(1, block_info->block->tx_list_size());
+    EXPECT_EQ(block_info->txs[0]->amount(), block_info->block->tx_list(0).amount());
 }
 
 } // namespace test
