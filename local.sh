@@ -16,7 +16,7 @@ fi
 
 echo $formart_date > modify_time
 
-python gen_nodes_conf.py -n 20 -s 1 -m 127.0.0.1 -r 3 -m0 127.0.0.1
+python3 gen_nodes_conf.py -n 20 -s 1 -m 127.0.0.1 -r 3 -m0 127.0.0.1
 tail -n 265 nodes_conf_n50_s1_m5.yml >> ./nodes_conf_n20_s1_m1.yml
 python3 gen_genesis_script.py --config "./nodes_conf_n20_s1_m1.yml"
 sh deploy_genesis.sh Debug
