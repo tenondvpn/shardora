@@ -76,7 +76,6 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
 
     Status s = Status::kSuccess;
     s = GetTxsFromLocal(block_info, txs_ptr);
-    std::cout << "====2" << std::endl;
     if (s != Status::kSuccess) {
         ZJC_ERROR("invalid tx_type: %d, txs empty. pool_index: %d, view: %lu",
             block_info->tx_type, pool_idx(), block_info->view);
@@ -218,6 +217,7 @@ Status BlockAcceptor::GetDefaultTxs(
             address_info = account_mgr_->GetAccountInfo(tx->to());
         } else {
             if (security_ptr_->IsValidPublicKey(tx->pubkey())) {
+                std::cout << "====2" << tx->pubkey() << std::endl;
                 std::cout << "====2" << security_ptr_->GetAddress(tx->pubkey()) << std::endl;
                 address_info = account_mgr_->GetAccountInfo(security_ptr_->GetAddress(tx->pubkey()));
                 std::cout << "====3" << address_info->addr() << std::endl;
