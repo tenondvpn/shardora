@@ -16,7 +16,7 @@ namespace test {
 static const uint32_t POOL = 0;
 static const std::string sk_ =
     "b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708";
-static const std::string from_ = "431be10b3a0e46f8a46686c6b0c29bc743f715fa";
+// static const std::string from_ = "431be10b3a0e46f8a46686c6b0c29bc743f715fa";
 
 transport::MultiThreadHandler net_handler_;
 std::shared_ptr<security::Security> security_ = nullptr;
@@ -77,7 +77,7 @@ protected:
         auto account_info = std::make_shared<address::protobuf::AddressInfo>();
         account_info->set_pubkey(security_->GetPublicKeyUnCompressed());
         account_info->set_pool_index(POOL);
-        account_info->set_addr(from_);
+        account_info->set_addr(security_->GetAddress(security_->GetPublicKeyUnCompressed()));
         account_info->set_type(address::protobuf::kNormal);
         account_info->set_sharding_id(3);
         account_info->set_latest_height(0);
@@ -108,12 +108,11 @@ protected:
         uint32_t* test_arr = (uint32_t*)random_prefix.data();
         auto tx_info = std::make_shared<pools::protobuf::TxMessage>();
         tx_info->set_step(pools::protobuf::kNormalFrom);
-        auto pk = security_->GetPublicKeyUnCompressed(); 
-        tx_info->set_pubkey(pk);
+        tx_info->set_pubkey(security_->GetPublicKeyUnCompressed());
         tx_info->set_to("27d4c39244f26c157b5a87898569ef4ce5807413");
         auto gid = std::string((char*)test_arr, 32);
         tx_info->set_gid(gid);
-        tx_info->set_gas_limit(0llu);
+        tx_info->set_gas_limit(10000llu);
         tx_info->set_amount(1);
         tx_info->set_gas_price(common::kBuildinTransactionGasPrice);
         return tx_info;
