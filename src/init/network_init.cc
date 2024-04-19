@@ -493,6 +493,7 @@ void NetworkInit::SendJoinElectTransaction() {
         join_info.set_shard_id(common::GlobalInfo::Instance()->network_id());
     }
     
+    join_info.set_shard_id(network::kRootCongressNetworkId);
     if (pos == common::kInvalidUint32) {
         auto* req = join_info.mutable_g2_req();
         auto res = prefix_db_->GetBlsVerifyG2(security_->GetAddress(), req);
