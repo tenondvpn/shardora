@@ -1,3 +1,4 @@
+#include <consensus/hotstuff/utils.h>
 #include <gtest/gtest.h>
 #include <consensus/hotstuff/block_acceptor.h>
 #include <protos/block.pb.h>
@@ -29,7 +30,9 @@ std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
 std::shared_ptr<BlockAcceptor> block_acceptor_ = nullptr;
 
 class TestBlockAcceptor : public testing::Test {
-public:
+protected:
+    std::shared_ptr<block::protobuf::Block> prev_block_ = nullptr;
+    
     static void SetUpTestCase() {
         security_ = std::make_shared<security::Ecdsa>();
         security_->SetPrivateKey(common::Encode::HexDecode(sk));
@@ -65,11 +68,21 @@ public:
                 pools_mgr_,
                 block_mgr_,
                 tm_block_mgr_);
-        
+
+
     }
 
     static void TearDownTestCase() {
         system("rm -rf ./core.* ./db");
+    }
+
+    void SetUp() {
+        db::DbWriteBatch db_batch;
+        prev_block_ = CreateBlock(POOL, 10, "prev_block_hash");
+        pools_mgr_->UpdateLatestInfo(prev_block_, db_batch);        
+    }
+
+    void TearDown() {
     }
 
     static std::shared_ptr<pools::protobuf::TxMessage> CreateTxMessage() {
@@ -88,20 +101,20 @@ public:
         return tx_info;
     }
 
-    static std::shared_ptr<block::protobuf::Block> CreateBlock(uint32_t pool_idx, uint64_t height) {
+    static std::shared_ptr<block::protobuf::Block> CreateBlock(uint32_t pool_idx, uint64_t height, std::string prehash) {
         auto block = std::make_shared<block::protobuf::Block>();
         block->set_pool_index(pool_idx);
         block->set_height(height);
+        block->set_prehash(prehash);
+        block->set_hash(GetBlockHash(*block));
         return block;
     }
-
-
 };
 
 TEST_F(TestBlockAcceptor, Accept_NotSamePool) {
     auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
     block_info->view = View(10);
-    block_info->block = CreateBlock(POOL+1, 10);
+    block_info->block = CreateBlock(POOL+1, 10, prev_block_->hash());
     block_info->tx_type = pools::protobuf::kNormalFrom;
     block_info->txs.push_back(CreateTxMessage());
 
@@ -112,7 +125,7 @@ TEST_F(TestBlockAcceptor, Accept_NotSamePool) {
 TEST_F(TestBlockAcceptor, Accept_NoWrappedTxs) {
     auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
     block_info->view = View(10);
-    block_info->block = CreateBlock(POOL, 10);
+    block_info->block = CreateBlock(POOL, 10, prev_block_->hash());
     block_info->tx_type = pools::protobuf::kNormalFrom;
 
     Status s = block_acceptor_->Accept(block_info);
@@ -120,14 +133,24 @@ TEST_F(TestBlockAcceptor, Accept_NoWrappedTxs) {
 }
 
 TEST_F(TestBlockAcceptor, Accept_InvalidBlock_OldHeightBlock) {
-    db::DbWriteBatch db_batch;
-    auto prev_block = CreateBlock(POOL, 10);
-    pools_mgr_->UpdateLatestInfo(prev_block, db_batch);
     EXPECT_EQ(10, pools_mgr_->latest_height(POOL));
         
     auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
     block_info->view = View(10);
-    block_info->block = CreateBlock(POOL, prev_block->height());
+    block_info->block = CreateBlock(POOL, prev_block_->height(), prev_block_->hash());
+    block_info->tx_type = pools::protobuf::kNormalFrom;
+    block_info->txs.push_back(CreateTxMessage());
+
+    Status s = block_acceptor_->Accept(block_info);
+    EXPECT_TRUE(s == Status::kAcceptorBlockInvalid);
+}
+
+TEST_F(TestBlockAcceptor, Accept_InvalidBlock_WrongPreHash) {
+    EXPECT_EQ(10, pools_mgr_->latest_height(POOL));
+        
+    auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
+    block_info->view = View(10);
+    block_info->block = CreateBlock(POOL, prev_block_->height()+1, "wrong_prehash");
     block_info->tx_type = pools::protobuf::kNormalFrom;
     block_info->txs.push_back(CreateTxMessage());
 
