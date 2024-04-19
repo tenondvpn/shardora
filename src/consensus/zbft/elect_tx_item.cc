@@ -413,7 +413,8 @@ void ElectTxItem::MiningToken(
         return;
     }
 
-    uint64_t gas_for_mining = all_gas_amount - (all_gas_amount / network_count_);
+//    uint64_t gas_for_mining = all_gas_amount - (all_gas_amount / network_count_);
+    uint64_t gas_for_mining = all_gas_amount;
     // root shard use statistic gas amount.
     if (statistic_sharding_id == network::kRootCongressNetworkId) {
         gas_for_mining = all_gas_amount;

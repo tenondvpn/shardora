@@ -380,7 +380,12 @@ int one_tx_main(int argc, char** argv) {
             return 1;
         }
         std::cout << "send tx from: " << common::Encode::HexEncode(security->GetAddress() ) << " to addr :" << argv[i] << " count: " << i -1  << ", gas limit: " << tx_msg_ptr->header.tx_proto().gas_limit() << std::endl;
-        usleep(delayus);
+
+        if(i % 50 == 0) {
+            usleep(5*1000 * 1000);
+        } else {
+            usleep(delayus);
+        }
 
     }
 
