@@ -12,11 +12,25 @@ namespace hotstuff {
 namespace test {
 
 static const uint32_t POOL = 3;
-static const std::string sk = "8bd064dde62eb50cdb1d8ec9c10043d6ac8a57b3c9b7b0178e4c63938d8ab0da";
+static const std::string sk =
+    "8bd064dde62eb50cdb1d8ec9c10043d6ac8a57b3c9b7b0178e4c63938d8ab0da";
+transport::MultiThreadHandler net_handler_;
+std::shared_ptr<security::Security> security_ = nullptr;
+std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
+std::shared_ptr<hotstuff::ElectInfo> elect_info_ = nullptr;
+std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
+std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
+std::shared_ptr<db::Db> db_ = nullptr;
+std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
+std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
+std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
+std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
+std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
+std::shared_ptr<BlockAcceptor> block_acceptor_ = nullptr;
 
 class TestBlockAcceptor : public testing::Test {
-protected:
-    void SetUpTestCase() {
+public:
+    static void SetUpTestCase() {
         security_ = std::make_shared<security::Ecdsa>();
         security_->SetPrivateKey(common::Encode::HexDecode(sk));
         account_mgr_ = std::make_shared<block::AccountManager>();
@@ -54,7 +68,7 @@ protected:
         
     }
 
-    void TearDownTestCase() {
+    static void TearDownTestCase() {
         system("rm -rf ./core.* ./db");
     }
 
@@ -81,19 +95,7 @@ protected:
         return block;
     }
 
-    transport::MultiThreadHandler net_handler_;
-    std::shared_ptr<security::Security> security_ = nullptr;
-    std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
-    std::shared_ptr<hotstuff::ElectInfo> elect_info_ = nullptr;
-    std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
-    std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
-    std::shared_ptr<db::Db> db_ = nullptr;
-    std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
-    std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
-    std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
-    std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
-    std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
-    std::shared_ptr<BlockAcceptor> block_acceptor_ = nullptr;
+
 };
 
 TEST_F(TestBlockAcceptor, Accept_NotSamePool) {
