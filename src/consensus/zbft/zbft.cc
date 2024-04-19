@@ -164,7 +164,6 @@ int Zbft::LeaderPrecommitOk(
         index,
         prepare_hash,
         backup_sign);
-
     if ((uint32_t)valid_count >= min_aggree_member_count_) {
         int32_t res = kConsensusAgree;
         if (prepare_block_->hash() != prepare_hash) {

@@ -477,7 +477,7 @@ void NetworkInit::SendJoinElectTransaction() {
     new_tx->set_gid(gid);
     new_tx->set_pubkey(security_->GetPublicKeyUnCompressed());
     new_tx->set_step(pools::protobuf::kJoinElect);
-    new_tx->set_gas_limit(consensus::kJoinElectGas + 100000);
+    new_tx->set_gas_limit(consensus::kJoinElectGas + 10000000lu);
     new_tx->set_gas_price(10);
     new_tx->set_key(protos::kJoinElectVerifyG2);
     bls::protobuf::JoinElectInfo join_info;
@@ -1039,9 +1039,7 @@ void NetworkInit::AddBlockItemToCache(
     if (block->network_id() == common::GlobalInfo::Instance()->network_id() ||
             block->network_id() + network::kConsensusWaitingShardOffset ==
             common::GlobalInfo::Instance()->network_id()) {
-        pools_mgr_->UpdateLatestInfo(
-            block,
-            db_batch);
+        pools_mgr_->UpdateLatestInfo(block, db_batch);
     }
     
     block_mgr_->NetworkNewBlock(block, false);

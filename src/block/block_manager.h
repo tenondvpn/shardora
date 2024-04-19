@@ -111,7 +111,7 @@ private:
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
-    void ConsensusTimerMessage();
+    void ConsensusTimerMessage(const transport::MessagePtr& message);
     void HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool recreate);
     void HandleAllConsensusBlocks();
     void AddNewBlock(
@@ -224,13 +224,13 @@ private:
     std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> got_latest_statistic_map_ptr_ = nullptr;
     common::ThreadSafeQueue<std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>>> cross_statistics_map_ptr_queue_;
     std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> got_latest_cross_map_ptr_ = nullptr;
-    common::Tick test_sync_block_tick_;
     common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> block_from_network_queue_[common::kMaxThreadCount];
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> to_tx_msg_queue_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> statistic_tx_msg_queue_;
     std::map<uint32_t, std::map<uint64_t, std::queue<std::shared_ptr<block::protobuf::Block>>>> waiting_check_sign_blocks_;
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     uint64_t prev_create_statistic_tx_tm_us_ = 0;
+    uint64_t prev_timer_ms_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

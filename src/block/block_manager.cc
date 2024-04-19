@@ -64,9 +64,13 @@ int BlockManager::Init(
     network::Route::Instance()->RegisterMessage(
         common::kBlockMessage,
         std::bind(&BlockManager::HandleMessage, this, std::placeholders::_1));
-    test_sync_block_tick_.CutOff(
-        100000lu,
-        std::bind(&BlockManager::ConsensusTimerMessage, this));
+    // test_sync_block_tick_.CutOff(
+    //     100000lu,
+    //     std::bind(&BlockManager::ConsensusTimerMessage, this));
+
+    transport::Processor::Instance()->RegisterProcessor(
+        common::kPoolTimerMessage,
+        std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
     bool genesis = false;
     return kBlockSuccess;
 }
@@ -75,8 +79,14 @@ int BlockManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     return transport::kFirewallCheckSuccess;
 }
 
-void BlockManager::ConsensusTimerMessage() {
+void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& message) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
+    if (prev_timer_ms_ + 100lu > now_tm_ms) {
+        return;
+    }
+
+    ZJC_DEBUG("timer coming.");
+    prev_timer_ms_ = now_tm_ms;
     auto now_tm = common::TimeUtils::TimestampUs();
     if (now_tm > prev_to_txs_tm_us_ + 5000000) {
         if (leader_to_txs_.size() >= 4) {
@@ -112,8 +122,6 @@ void BlockManager::ConsensusTimerMessage() {
     if (etime - now_tm_ms >= 10) {
         ZJC_DEBUG("BlockManager handle message use time: %lu", (etime - now_tm_ms));
     }
-
-    test_sync_block_tick_.CutOff(100000lu, std::bind(&BlockManager::ConsensusTimerMessage, this));
 }
 
 void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members) {
@@ -1649,7 +1657,11 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         prev_get_tx_tm = now_tx_tm;
     }
 
-    if (shard_statistic_tx != nullptr && !shard_statistic_tx->tx_ptr->in_consensus) {
+    if (shard_statistic_tx != nullptr) {
+        if (leader && shard_statistic_tx->tx_ptr->in_consensus) {
+            return nullptr;
+        }
+        
         auto now_tm = common::TimeUtils::TimestampUs();
         if (iter->first >= latest_timeblock_height_) {
             if (!leader) {
