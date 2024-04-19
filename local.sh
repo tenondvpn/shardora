@@ -1,10 +1,7 @@
 export LD_LIBRARY_PATH=/usr/local/python3/lib/python3.10/:$LD_LIBRARY_PATH
 
-#文件名
 FILE_NAME='./local.sh'
-#获取文件做后修改时间戳
 LAST_MODIFY_TIMESTAMP=`stat -c %Y  $FILE_NAME`
-#格式化时间戳
 formart_date=`date '+%Y%m%d%H%M%S' -d @$LAST_MODIFY_TIMESTAMP`
 old_tm=`cat modify_time`
 echo $old_tm
