@@ -371,7 +371,7 @@ int one_tx_main(int argc, char** argv) {
                 to,
                 "",
                 "",
-                100000000lu,
+                10000000000lu,
                 10000000,
                 ((uint32_t)(1000 - pos)) % 1000 + 1,
                 3);
