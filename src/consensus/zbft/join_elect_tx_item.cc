@@ -109,6 +109,18 @@ int JoinElectTxItem::HandleTx(
         block.pool_index(),
         block.height(),
         join_info.shard_id());
+#ifndef NDEBUG
+    for (uint32_t i = 0; i < block_tx.storages_size(); ++i) {
+        ZJC_DEBUG("status: %d, success join elect: %s, pool: %u, height: %lu, des shard: %d, key: %s, value size: %d",
+            block_tx.status(), common::Encode::HexEncode(from).c_str(),
+            block.pool_index(),
+            block.height(),
+            join_info.shard_id(),
+            block_tx.storages(i).key().c_str(),
+            block_tx.storages(i).value().size());
+    }
+#endif
+
     return kConsensusSuccess;
 }
 
