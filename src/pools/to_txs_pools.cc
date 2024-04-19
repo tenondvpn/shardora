@@ -767,6 +767,9 @@ int ToTxsPools::CreateToTxWithHeights(
                 auto* req = to_item->add_join_infos();
                 *req = iter->second.verify_reqs[i];
             }
+
+            ZJC_DEBUG("send join elect to other shard des: %u, iter->second.verify_reqs.size: %u",
+                sharding_id, iter->second.verify_reqs.size());
         } else {
             auto net_id = common::kInvalidUint32;
             to_item->set_sharding_id(net_id);

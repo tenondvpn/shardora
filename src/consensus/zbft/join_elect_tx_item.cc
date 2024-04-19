@@ -32,7 +32,7 @@ int JoinElectTxItem::HandleTx(
     }
 
     bls::protobuf::JoinElectInfo join_info;
-    do  {
+    do {
         gas_used = consensus::kJoinElectGas;
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // TODO(): check key exists and reserve gas
