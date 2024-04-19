@@ -13,7 +13,7 @@ namespace hotstuff {
 
 namespace test {
 
-static const uint32_t POOL = 3;
+static const uint32_t POOL = 0;
 static const std::string sk_ =
     "b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708";
 static const std::string from_ = "431be10b3a0e46f8a46686c6b0c29bc743f715fa";
@@ -75,14 +75,15 @@ protected:
                 tm_block_mgr_);
 
         auto account_info = std::make_shared<address::protobuf::AddressInfo>();
+        account_info->set_pubkey(security_->GetPublicKeyUnCompressed());
         account_info->set_pool_index(POOL);
         account_info->set_addr(from_);
         account_info->set_type(address::protobuf::kNormal);
         account_info->set_sharding_id(3);
-        account_info->set_latest_height(9);
-        account_info->set_balance(100000);
+        account_info->set_latest_height(0);
+        account_info->set_balance(100000000lu);
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-        prefix_db_->AddAddressInfo(account_info->addr(), *account_info, db_batch);
+        prefix_db_->AddAddressInfo(account_info->addr(), *account_info);
         account_mgr_->Init(db_, pools_mgr_);
 
         auto address_info = account_mgr_->GetAccountInfo(account_info->addr());
