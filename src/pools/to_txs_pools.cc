@@ -154,6 +154,10 @@ void ToTxsPools::HandleJoinElect(
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
             // distinct with transfer transaction
+            ZJC_DEBUG("success add join elect value: %d, %s, %d",
+                network::kRootCongressNetworkId, 
+                tx.storages(i).key().c_str(), 
+                tx.storages(i).value().size());
             AddTxToMap(
                 block,
                 tx.from(),
