@@ -9,8 +9,7 @@ nodes=("new_1" "new_2" "new_3" "new_4" "new_5" "new_6" "new_7" "new_8" "new_9" "
 rm -rf /root/zjnodes/new*
 
 for n in  "${nodes[@]}"; do
-
-
+   (
     mkdir -p "/root/zjnodes/${n}/log"
     mkdir -p "/root/zjnodes/${n}/conf"
     cp -rf /root/zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/${n}/conf/
@@ -18,8 +17,9 @@ for n in  "${nodes[@]}"; do
     cp -rf /root/zjnodes/zjchain/zjchain /root/zjnodes/${n}/
     cp -rf ./zjnodes/${n}/conf/zjchain.conf /root/zjnodes/${n}/conf/zjchain.conf
     echo "cp $n"
+    ) &
 done
-
+wait
 
 ulimit -c unlimited
 
