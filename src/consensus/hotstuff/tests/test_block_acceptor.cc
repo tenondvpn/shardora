@@ -158,6 +158,19 @@ TEST_F(TestBlockAcceptor, Accept_InvalidBlock_WrongPreHash) {
     EXPECT_TRUE(s == Status::kAcceptorBlockInvalid);
 }
 
+TEST_F(TestBlockAcceptor, Accept_InvalidTxs_EmptyTxs) {
+    EXPECT_EQ(10, pools_mgr_->latest_height(POOL));
+        
+    auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
+    block_info->view = View(10);
+    block_info->block = CreateBlock(POOL, prev_block_->height()+1, prev_block_->hash());
+    block_info->tx_type = pools::protobuf::kNormalFrom;
+    block_info->txs.push_back(CreateTxMessage());
+
+    Status s = block_acceptor_->Accept(block_info);
+    EXPECT_EQ(s, Status::kSuccess);
+}
+
 } // namespace test
 
 } // namespace hotstuff
