@@ -178,9 +178,9 @@ void ShardStatistic::HandleCrossShard(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         pools::protobuf::CrossShardStatistic& cross_statistic) {
-    if (block.tx_list(i).status() != consensus::kConsensusSuccess) {
+    if (tx.status() != consensus::kConsensusSuccess) {
         ZJC_DEBUG("success handle block pool: %u, height: %lu, tm height: %lu, status: %d", 
-            block.pool_index(), block.height(), block.timeblock_height(), block.tx_list(i).status());
+            block.pool_index(), block.height(), block.timeblock_height(), tx.status());
         return;
     }
 
