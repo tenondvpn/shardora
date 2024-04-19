@@ -736,6 +736,8 @@ int ShardStatistic::StatisticWithHeights(
                 gas_sum = iter->second;
             }
 
+
+            statistic_item.add_tx_count(0);
             statistic_item.add_gas_sum(gas_sum);
             debug_for_str += "tx_gas_sum: " + std::to_string(gas_sum) + ", ";
             uint64_t stoke = 0;
