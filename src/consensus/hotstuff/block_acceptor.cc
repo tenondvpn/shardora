@@ -230,6 +230,8 @@ Status BlockAcceptor::GetDefaultTxs(
             return Status::kError;
         }
 
+        std::cout << "====5" << address_info->addr() << std::endl;
+
         pools::TxItemPtr tx_ptr = nullptr;
         switch (tx->step()) {
         case pools::protobuf::kNormalFrom:
