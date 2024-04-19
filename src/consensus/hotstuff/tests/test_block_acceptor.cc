@@ -176,6 +176,7 @@ TEST_F(TestBlockAcceptor, Accept_InvalidBlock_WrongPreHash) {
 
 TEST_F(TestBlockAcceptor, Accept_InvalidTxs_NormalFromTx) {
     EXPECT_EQ(10, pools_mgr_->latest_height(POOL));
+    
         
     auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
     block_info->view = View(10);
@@ -183,8 +184,13 @@ TEST_F(TestBlockAcceptor, Accept_InvalidTxs_NormalFromTx) {
     block_info->tx_type = pools::protobuf::kNormalFrom;
     block_info->txs.push_back(CreateTxMessage());
 
+    EXPECT_EQ(0, block_info->block->tx_list_size());
+
     Status s = block_acceptor_->Accept(block_info);
+
+    
     EXPECT_EQ(s, Status::kSuccess);
+    EXPECT_EQ(1, block_info->block->tx_list_size());
 }
 
 } // namespace test
