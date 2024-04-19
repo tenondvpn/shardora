@@ -349,8 +349,6 @@ void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
         }
     }
 
-    std::cout << "success handle init res message. response shard: " << sharding_id
-        << ", join type: " << common::GlobalInfo::Instance()->join_root() <<  std::endl;
     if (sharding_id == common::kInvalidUint32) {
         return;
     }
@@ -364,8 +362,8 @@ void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
         sharding_id = network::kRootCongressNetworkId;
     }
         
-    std::cout << "success handle init res message. response shard: " << sharding_id
-        << ", join type: " << common::GlobalInfo::Instance()->join_root() << ", rand join: " << sharding_id << std::endl;
+    // TODO: remove now test
+    sharding_id = network::kRootCongressNetworkId;
     prefix_db_->SaveJoinShard(sharding_id, des_sharding_id_);
     ZJC_DEBUG("success set local sharding %u, %u", sharding_id, des_sharding_id_);
     auto waiting_network_id = sharding_id + network::kConsensusWaitingShardOffset;
@@ -374,8 +372,6 @@ void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    std::cout << "success handle init res message. join waiting shard: " << waiting_network_id
-        << ", des_sharding_id_: " << des_sharding_id_ <<std::endl;
     common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
 }
 
