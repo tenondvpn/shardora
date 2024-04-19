@@ -90,7 +90,7 @@ public:
 
     static std::shared_ptr<block::protobuf::Block> CreateBlock(uint32_t pool_idx, uint64_t height) {
         auto block = std::make_shared<block::protobuf::Block>();
-        block->set_pool_index(POOL+1);
+        block->set_pool_index(pool_idx);
         block->set_height(height);
         return block;
     }
