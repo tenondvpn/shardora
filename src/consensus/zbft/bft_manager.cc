@@ -2847,8 +2847,16 @@ void BftManager::LeaderAddBackupTxs(const zbft::protobuf::TxBft& txbft, uint32_t
         protos::AddressInfoPtr address_info = nullptr;
         if (security_ptr_->IsValidPublicKey(tx.pubkey())) {
             address_info = account_mgr_->GetAccountInfo(security_ptr_->GetAddress(tx.pubkey()));
+            ZJC_DEBUG("get address info %s, %s", 
+                common::Encode::HexEncode(security_ptr_->GetAddress(tx.pubkey())).c_str(), 
+                common::Encode::HexEncode(tx.pubkey()).c_str());
         } else {
             address_info = account_mgr_->pools_address_info(pool_index);
+            assert(address_info != nullptr);
+        }
+
+        if (address_info == nullptr) {
+            continue;
         }
 
         if (address_info->pool_index() != pool_index) {
