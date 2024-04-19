@@ -100,7 +100,7 @@ protected:
         uint32_t* test_arr = (uint32_t*)random_prefix.data();
         auto tx_info = std::make_shared<pools::protobuf::TxMessage>();
         tx_info->set_step(pools::protobuf::kNormalFrom);
-        auto pk = security_->GetPublicKey(); 
+        auto pk = security_->GetPublicKeyUnCompressed(); 
         tx_info->set_pubkey(pk);
         tx_info->set_to("27d4c39244f26c157b5a87898569ef4ce5807413");
         auto gid = std::string((char*)test_arr, 32);
