@@ -16,7 +16,7 @@ static const std::string sk = "8bd064dde62eb50cdb1d8ec9c10043d6ac8a57b3c9b7b0178
 
 class TestBlockAcceptor : public testing::Test {
 protected:
-    void SetUp() {
+    void SetUpTestCase() {
         security_ = std::make_shared<security::Ecdsa>();
         security_->SetPrivateKey(common::Encode::HexDecode(sk));
         account_mgr_ = std::make_shared<block::AccountManager>();
@@ -54,7 +54,9 @@ protected:
         
     }
 
-    void TearDown() {}
+    void TearDownTestCase() {
+        system("rm -rf ./core.* ./db");
+    }
 
     static std::shared_ptr<pools::protobuf::TxMessage> CreateTxMessage() {
         std::string random_prefix = common::Random::RandomString(33);
