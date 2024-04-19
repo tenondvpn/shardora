@@ -56,6 +56,29 @@ protected:
 
     void TearDown() {}
 
+    static std::shared_ptr<pools::protobuf::TxMessage> CreateTxMessage() {
+        std::string random_prefix = common::Random::RandomString(33);
+        uint32_t* test_arr = (uint32_t*)random_prefix.data();
+        auto tx_info = std::make_shared<pools::protobuf::TxMessage>();
+        tx_info->set_step(pools::protobuf::kNormalFrom);
+        auto pk = std::string((char*)test_arr, 33);
+        tx_info->set_pubkey(pk);
+        tx_info->set_to("");
+        auto gid = std::string((char*)test_arr, 32);
+        tx_info->set_gid(gid);
+        tx_info->set_gas_limit(0llu);
+        tx_info->set_amount(0);
+        tx_info->set_gas_price(common::kBuildinTransactionGasPrice);
+        return tx_info;
+    }
+
+    static std::shared_ptr<block::protobuf::Block> CreateBlock(uint32_t pool_idx, uint64_t height) {
+        auto block = std::make_shared<block::protobuf::Block>();
+        block->set_pool_index(POOL+1);
+        block->set_height(height);
+        return block;
+    }
+
     transport::MultiThreadHandler net_handler_;
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
@@ -74,12 +97,38 @@ protected:
 TEST_F(TestBlockAcceptor, Accept_NotSamePool) {
     auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
     block_info->view = View(10);
-    block_info->block = std::make_shared<block::protobuf::Block>();
-    block_info->block->set_pool_index(POOL+1);
+    block_info->block = CreateBlock(POOL+1, 10);
     block_info->tx_type = pools::protobuf::kNormalFrom;
+    block_info->txs.push_back(CreateTxMessage());
 
     Status s = block_acceptor_->Accept(block_info);
     EXPECT_TRUE(s == Status::kError);
+}
+
+TEST_F(TestBlockAcceptor, Accept_NoWrappedTxs) {
+    auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
+    block_info->view = View(10);
+    block_info->block = CreateBlock(POOL, 10);
+    block_info->tx_type = pools::protobuf::kNormalFrom;
+
+    Status s = block_acceptor_->Accept(block_info);
+    EXPECT_TRUE(s == Status::kSuccess);
+}
+
+TEST_F(TestBlockAcceptor, Accept_InvalidBlock_OldHeightBlock) {
+    db::DbWriteBatch db_batch;
+    auto prev_block = CreateBlock(POOL, 10);
+    pools_mgr_->UpdateLatestInfo(prev_block, db_batch);
+    EXPECT_EQ(10, pools_mgr_->latest_height(POOL));
+        
+    auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
+    block_info->view = View(10);
+    block_info->block = CreateBlock(POOL, prev_block->height());
+    block_info->tx_type = pools::protobuf::kNormalFrom;
+    block_info->txs.push_back(CreateTxMessage());
+
+    Status s = block_acceptor_->Accept(block_info);
+    EXPECT_TRUE(s == Status::kAcceptorBlockInvalid);
 }
 
 } // namespace test
