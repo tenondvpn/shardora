@@ -379,7 +379,7 @@ int one_tx_main(int argc, char** argv) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
         }
-        std::cout << "send tx from: " << common::Encode::HexEncode(security->GetAddress() ) << " to addr :" << argv[i] << " count: " << i -1  << std::endl;
+        std::cout << "send tx from: " << common::Encode::HexEncode(security->GetAddress() ) << " to addr :" << argv[i] << " count: " << i -1  << ", gas limit: " << tx_msg_ptr->header.tx_proto().gas_limit() << std::endl;
         usleep(delayus);
 
     }
