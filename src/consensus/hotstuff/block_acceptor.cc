@@ -68,12 +68,15 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
     if (!IsBlockValid(block_info->block)) {
         return Status::kAcceptorBlockInvalid;
     }
+
+    std::cout << "====1" << std::endl;
     
     // 2. Get txs from local pool
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
 
     Status s = Status::kSuccess;
     s = GetTxsFromLocal(block_info, txs_ptr);
+    std::cout << "====2" << std::endl;
     if (s != Status::kSuccess) {
         ZJC_ERROR("invalid tx_type: %d, txs empty. pool_index: %d, view: %lu",
             block_info->tx_type, pool_idx(), block_info->view);

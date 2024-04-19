@@ -1,3 +1,4 @@
+#include <common/time_utils.h>
 #include <consensus/hotstuff/utils.h>
 #include <gtest/gtest.h>
 #include <consensus/hotstuff/block_acceptor.h>
@@ -107,6 +108,7 @@ protected:
         block->set_height(height);
         block->set_prehash(prehash);
         block->set_hash(GetBlockHash(*block));
+        block->set_timestamp(common::TimeUtils::TimestampUs());
         return block;
     }
 };
