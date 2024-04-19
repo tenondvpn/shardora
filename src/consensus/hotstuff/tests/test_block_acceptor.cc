@@ -85,6 +85,8 @@ protected:
         prefix_db_->AddAddressInfo(account_info->addr(), *account_info, db_batch);
         account_mgr_->Init(db_, pools_mgr_);
 
+        auto address_info = account_mgr_->GetAccountInfo(account_info->addr());
+        std::cout << "=====0" << address_info->addr() << std::endl;
     }
 
     static void TearDownTestCase() {
