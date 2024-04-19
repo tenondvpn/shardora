@@ -20,13 +20,13 @@ protected:
         security_ = std::make_shared<security::Ecdsa>();
         security_->SetPrivateKey(common::Encode::HexDecode(sk));
         account_mgr_ = std::make_shared<block::AccountManager>();
-        std::string db_path = "./db";
+        system("rm -rf ./core.* ./db");
         db_ = std::make_shared<db::Db>();
-        db_->Init(db_path);
+        db_->Init("./db");
         
         kv_sync_ = std::make_shared<sync::KeyValueSync>();
         pools_mgr_ = std::make_shared<pools::TxPoolManager>(
-        security_, db_, kv_sync_, account_mgr_);        
+                security_, db_, kv_sync_, account_mgr_);        
         block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
         account_mgr_->Init(db_, pools_mgr_);
         elect_info_ = std::make_shared<ElectInfo>(security_);
