@@ -327,6 +327,10 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
 
     auto callback = [&](const block::protobuf::Block& block) {
         for (int32_t i = 0; i < block.tx_list_size(); ++i) {
+            if (block.tx_list(i).status() != consensus::kConsensusSuccess) {
+                continue;
+            }
+            
             HandleCrossShard(is_root, block, block.tx_list(i), tm_statistic_ptr->cross_statistic);
             if (block.tx_list(i).step() == pools::protobuf::kNormalFrom ||
                     block.tx_list(i).step() == pools::protobuf::kContractCreate ||
