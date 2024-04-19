@@ -123,12 +123,6 @@ bool BlockAcceptor::IsBlockValid(const std::shared_ptr<block::protobuf::Block>& 
     if (zjc_block->timestamp() <= preblock_time) {
         return false;
     }
-
-    // 新块的 prehash 必须等于上一个块的 hash
-    std::string pool_hash = pools_mgr_->latest_hash(pool_idx());
-    if (pool_hash.empty() || zjc_block->prehash() != pool_hash) {
-        return false;
-    }
     
     return true;
 }

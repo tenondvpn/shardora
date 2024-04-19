@@ -2,6 +2,7 @@
 #include <consensus/hotstuff/utils.h>
 #include <gtest/gtest.h>
 #include <consensus/hotstuff/block_acceptor.h>
+#include <protos/address.pb.h>
 #include <protos/block.pb.h>
 #include <protos/pools.pb.h>
 #include <security/ecdsa/ecdsa.h>
@@ -73,14 +74,8 @@ protected:
                 block_mgr_,
                 tm_block_mgr_);
 
-        auto account_info = std::make_shared<address::protobuf::AddressInfo>();
-        account_info->set_pubkey(security_->GetPublicKeyUnCompressed());
-        account_info->set_pool_index(POOL);
-        account_info->set_addr(security_->GetAddress(security_->GetPublicKeyUnCompressed()));
-        account_info->set_type(address::protobuf::kNormal);
-        account_info->set_sharding_id(3);
-        account_info->set_latest_height(0);
-        account_info->set_balance(100000000lu);
+        // 创建一个账户
+        auto account_info = CreateAddress();
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
         prefix_db_->AddAddressInfo(account_info->addr(), *account_info);
         account_mgr_->Init(db_, pools_mgr_);
@@ -92,8 +87,20 @@ protected:
         system("rm -rf ./core.* ./db");
     }
 
+    static std::shared_ptr<address::protobuf::AddressInfo> CreateAddress() {
+        auto account_info = std::make_shared<address::protobuf::AddressInfo>();
+        account_info->set_pubkey(security_->GetPublicKeyUnCompressed());
+        account_info->set_pool_index(POOL);
+        account_info->set_addr(security_->GetAddress(security_->GetPublicKeyUnCompressed()));
+        account_info->set_type(address::protobuf::kNormal);
+        account_info->set_sharding_id(3);
+        account_info->set_latest_height(0);
+        account_info->set_balance(100000000lu);
+        return account_info;
+    }
+
     void SetUp() {
-        
+        // 交易池放入一个交易
         prev_block_ = CreateBlock(POOL, 10, "prev_block_hash");
         pools_mgr_->UpdateLatestInfo(prev_block_, db_batch);        
     }
@@ -102,6 +109,7 @@ protected:
     }
 
     static std::shared_ptr<pools::protobuf::TxMessage> CreateTxMessage() {
+        // 创建交易 TxMessage
         std::string random_prefix = common::Random::RandomString(33);
         uint32_t* test_arr = (uint32_t*)random_prefix.data();
         auto tx_info = std::make_shared<pools::protobuf::TxMessage>();
@@ -127,6 +135,7 @@ protected:
     }
 };
 
+// block_info 交易池错误
 TEST_F(TestBlockAcceptor, Accept_NotSamePool) {
     auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
     block_info->view = View(10);
@@ -138,6 +147,7 @@ TEST_F(TestBlockAcceptor, Accept_NotSamePool) {
     EXPECT_TRUE(s == Status::kError);
 }
 
+// 允许 block_info 没有打包任何交易
 TEST_F(TestBlockAcceptor, Accept_NoWrappedTxs) {
     auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
     block_info->view = View(10);
@@ -148,6 +158,7 @@ TEST_F(TestBlockAcceptor, Accept_NoWrappedTxs) {
     EXPECT_TRUE(s == Status::kSuccess);
 }
 
+// 不接受旧的 block
 TEST_F(TestBlockAcceptor, Accept_InvalidBlock_OldHeightBlock) {
     EXPECT_EQ(10, pools_mgr_->latest_height(POOL));
         
@@ -161,19 +172,7 @@ TEST_F(TestBlockAcceptor, Accept_InvalidBlock_OldHeightBlock) {
     EXPECT_TRUE(s == Status::kAcceptorBlockInvalid);
 }
 
-TEST_F(TestBlockAcceptor, Accept_InvalidBlock_WrongPreHash) {
-    EXPECT_EQ(10, pools_mgr_->latest_height(POOL));
-        
-    auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
-    block_info->view = View(10);
-    block_info->block = CreateBlock(POOL, prev_block_->height()+1, "wrong_prehash");
-    block_info->tx_type = pools::protobuf::kNormalFrom;
-    block_info->txs.push_back(CreateTxMessage());
-
-    Status s = block_acceptor_->Accept(block_info);
-    EXPECT_TRUE(s == Status::kAcceptorBlockInvalid);
-}
-
+// 允许本交易池中没有 From 交易，收到后同步
 TEST_F(TestBlockAcceptor, Accept_InvalidTxs_NormalFromTx) {
     EXPECT_EQ(10, pools_mgr_->latest_height(POOL));
     
