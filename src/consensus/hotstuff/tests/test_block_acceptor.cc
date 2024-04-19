@@ -48,7 +48,7 @@ protected:
         pools_mgr_ = std::make_shared<pools::TxPoolManager>(
                 security_, db_, kv_sync_, account_mgr_);        
         block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
-        account_mgr_->Init(db_, pools_mgr_);
+        
         elect_info_ = std::make_shared<ElectInfo>(security_);
         vss_mgr_ = std::make_shared<vss::VssManager>(security_);
         contract_mgr_ = std::make_shared<contract::ContractManager>();
@@ -79,6 +79,8 @@ protected:
         account_info->set_sharding_id(3);
         account_info->set_latest_height(9);
         account_info->set_balance(100000);
+
+        account_mgr_->Init(db_, pools_mgr_);
 
     }
 
