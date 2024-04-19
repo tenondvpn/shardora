@@ -104,19 +104,19 @@ int ElectTxItem::HandleTx(
                 return kConsensusError;
             }
 
-            {
-                std::string ids;
-                for (int32_t i = 0; i < statistic->tx_count_size(); ++i) {
-                    ZJC_DEBUG("now debug for pubkey: %s", common::Encode::HexEncode((*members)[i]->pubkey).c_str());
-                    ids += common::Encode::HexEncode(sec_ptr_->GetAddress((*members)[i]->pubkey)) +
-                        ":" + std::to_string(statistic->area_point(i).x()) +
-                        ":" + std::to_string(statistic->area_point(i).y()) +
-                        ":" + std::to_string(statistic->tx_count(i)) +
-                        ":" + std::to_string(statistic->stokes(i)) + ",";
-                }
-
-                ZJC_DEBUG("elect info: %s", ids.c_str());
-            }
+//            {
+//                std::string ids;
+//                for (int32_t i = 0; i < statistic->tx_count_size(); ++i) {
+//                    ZJC_DEBUG("now debug for pubkey: %s", common::Encode::HexEncode((*members)[i]->pubkey).c_str());
+//                    ids += common::Encode::HexEncode(sec_ptr_->GetAddress((*members)[i]->pubkey)) +
+//                        ":" + std::to_string(statistic->area_point(i).x()) +
+//                        ":" + std::to_string(statistic->area_point(i).y()) +
+//                        ":" + std::to_string(statistic->tx_count(i)) +
+//                        ":" + std::to_string(statistic->stokes(i)) + ",";
+//                }
+//
+//                ZJC_DEBUG("elect info: %s", ids.c_str());
+//            }
 
             uint32_t min_area_weight = common::kInvalidUint32;
             uint32_t min_tx_count = common::kInvalidUint32;
@@ -441,7 +441,9 @@ void ElectTxItem::MiningToken(
 
             auto mining_token = now_ming_count * tx_count / max_tx_count;
             valid_nodes[i]->mining_token = mining_token;
-            auto gas_token = tx_count * gas_for_mining / all_tx_count;
+//            auto gas_token = tx_count * gas_for_mining / all_tx_count;
+//          只有 leader 节点才会获得所有的 gas
+            auto gas_token = valid_nodes[i]->gas_sum;
             if (i + 1 == valid_nodes.size()) {
                 assert(gas_for_mining >= tmp_all_gas_amount);
                 gas_token = gas_for_mining - tmp_all_gas_amount;
@@ -581,18 +583,13 @@ int ElectTxItem::CheckWeedout(
     typedef std::pair<uint32_t, uint32_t> TxItem;
     std::vector<TxItem> member_tx_count;
     for (int32_t member_idx = 0; member_idx < statistic_item.tx_count_size(); ++member_idx) {
-        if (statistic_item.tx_count(member_idx) > max_tx_count) {
-            max_tx_count = statistic_item.tx_count(member_idx);
-        }
+        max_tx_count = std::max(max_tx_count, statistic_item.tx_count(member_idx));
+        *min_tx_count = std::min(*min_tx_count, statistic_item.tx_count(member_idx));
 
-        member_tx_count.push_back(std::make_pair(
-            member_idx,
-            statistic_item.tx_count(member_idx)));
+        member_tx_count.push_back(std::make_pair( member_idx, statistic_item.tx_count(member_idx)));
     }
-    std::stable_sort(
-        member_tx_count.begin(),
-        member_tx_count.end(), [](const TxItem& l, const TxItem& r) {
-        return l.second > r.second; });
+    std::stable_sort( member_tx_count.begin(), member_tx_count.end(),
+                      [](const TxItem& l, const TxItem& r) { return l.second > r.second; });
 
     uint32_t direct_weedout_tx_count = max_tx_count / 2;
     std::set<uint32_t> invalid_nodes;
@@ -628,7 +625,7 @@ int ElectTxItem::CheckWeedout(
                 min_dis = dis;
             }
         }
-        // 构建节点信息，并更新全局最小节点距离和最小交易量
+        // 构建节点信息，并更新全局最小节点距离
         auto account_info = account_mgr_->GetAccountInfo((*members)[member_idx]->id);
         if (account_info == nullptr) {
             ZJC_ERROR("get account info failed: %s",
@@ -638,15 +635,14 @@ int ElectTxItem::CheckWeedout(
         }
 
         auto node_info = std::make_shared<ElectNodeInfo>();
+        node_info -> gas_sum =statistic_item.gas_sum(member_idx);
         node_info->area_weight = min_dis;
         node_info->tx_count = statistic_item.tx_count(member_idx);
         node_info->stoke = statistic_item.stokes(member_idx);
         node_info->credit = account_info->credit();
         node_info->index = member_idx;
         node_info->pubkey = (*members)[member_idx]->pubkey;
-        if (*min_tx_count > node_info->tx_count) {
-            *min_tx_count = node_info->tx_count;
-        }
+
 
         if (*min_area_weight > min_dis) {
             *min_area_weight = min_dis;
@@ -668,6 +664,7 @@ int ElectTxItem::CheckWeedout(
 
         ZJC_DEBUG("before weedout: %s, weed_out_count: %u", ids.c_str(), weed_out_count);
     }
+
     std::set<uint32_t> weedout_nodes;
     // TODO: add weedout nodes
     // FtsGetNodes(elect_nodes_to_choose, true, weed_out_count - invalid_nodes.size(), weedout_nodes);

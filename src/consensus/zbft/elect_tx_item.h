@@ -16,6 +16,7 @@ struct ElectNodeInfo {
     uint64_t stoke;
     uint64_t stoke_diff;
     uint64_t tx_count;
+    uint64_t gas_sum;
     int32_t credit;
     int32_t area_weight;
     std::string pubkey;
