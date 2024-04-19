@@ -346,7 +346,14 @@ public:
     }
 
     bool PrepareHashNotConsensus() {
-        if (consensus_prepare_all_count_  > min_oppose_member_count_ + consensus_prepare_max_count_) {
+        uint32_t diff_count = 0;
+        for (auto iter = prepare_block_map_.begin(); iter != prepare_block_map_.end(); ++iter) {
+            if (iter->second->precommit_aggree_set_.size() != consensus_prepare_max_count_) {
+                diff_count += iter->second->precommit_aggree_set_.size();
+            }
+        }
+
+        if (diff_count  >= min_oppose_member_count_) {
             return true;
         }
 
