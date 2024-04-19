@@ -16,7 +16,6 @@ namespace test {
 static const uint32_t POOL = 3;
 static const std::string sk_ =
     "b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708";
-static const std::string pk_ = "042702ef617e594b27fac7cba1953470ee2f9774cfb73b44a43d866b36c61900351e5b41f1143be2031a6b632c34cbe37ac4e8a40c925395e44c40b99e2f6e85fc";
 static const std::string from_ = "431be10b3a0e46f8a46686c6b0c29bc743f715fa";
 
 transport::MultiThreadHandler net_handler_;
@@ -101,7 +100,8 @@ protected:
         uint32_t* test_arr = (uint32_t*)random_prefix.data();
         auto tx_info = std::make_shared<pools::protobuf::TxMessage>();
         tx_info->set_step(pools::protobuf::kNormalFrom);
-        tx_info->set_pubkey(pk_);
+        auto pk = security_->GetPublicKey(); 
+        tx_info->set_pubkey(pk);
         tx_info->set_to("27d4c39244f26c157b5a87898569ef4ce5807413");
         auto gid = std::string((char*)test_arr, 32);
         tx_info->set_gid(gid);
