@@ -31,6 +31,8 @@ std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
 std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
 std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
 std::shared_ptr<BlockAcceptor> block_acceptor_ = nullptr;
+std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+db::DbWriteBatch db_batch;
 
 class TestBlockAcceptor : public testing::Test {
 protected:
@@ -79,7 +81,8 @@ protected:
         account_info->set_sharding_id(3);
         account_info->set_latest_height(9);
         account_info->set_balance(100000);
-
+        prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+        prefix_db_->AddAddressInfo(account_info->addr(), *account_info, db_batch);
         account_mgr_->Init(db_, pools_mgr_);
 
     }
@@ -89,7 +92,7 @@ protected:
     }
 
     void SetUp() {
-        db::DbWriteBatch db_batch;
+        
         prev_block_ = CreateBlock(POOL, 10, "prev_block_hash");
         pools_mgr_->UpdateLatestInfo(prev_block_, db_batch);        
     }
