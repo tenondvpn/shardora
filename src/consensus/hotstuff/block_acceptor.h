@@ -16,7 +16,7 @@ namespace shardora {
 
 namespace hotstuff {
 
-// Block 及 Txs 处理模块
+// Block 及 Txs 处理模块, One BlockAcceptor Per Pool
 class IBlockAcceptor {
 public:
     // the block info struct used in BlockAcceptor
@@ -32,8 +32,6 @@ public:
 
     // Accept a block and txs in it.
     virtual Status Accept(std::shared_ptr<blockInfo>&) = 0;
-private:
-    
 };
 
 class BlockAcceptor : public IBlockAcceptor {
@@ -60,6 +58,7 @@ public:
     BlockAcceptor& operator=(const BlockAcceptor&) = delete;
 
     Status Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& blockInfo) override;
+    
 private:
     uint32_t pool_idx_;
     std::shared_ptr<consensus::WaitingTxsPools> tx_pools_ = nullptr;
@@ -82,6 +81,8 @@ private:
             std::shared_ptr<consensus::WaitingTxsItem>&);
 
     bool IsBlockValid(const std::shared_ptr<block::protobuf::Block>&);
+    bool AreTxsValid(const std::shared_ptr<consensus::WaitingTxsItem>&);
+    
     Status DoTransactions(
             const std::shared_ptr<consensus::WaitingTxsItem>&,
             std::shared_ptr<block::protobuf::Block>&);
