@@ -218,6 +218,7 @@ Status BlockAcceptor::GetDefaultTxs(
             address_info = account_mgr_->GetAccountInfo(tx->to());
         } else {
             if (security_ptr_->IsValidPublicKey(tx->pubkey())) {
+                std::cout << "====2" << security_ptr_->GetAddress(tx->pubkey()) << std::endl;
                 address_info = account_mgr_->GetAccountInfo(security_ptr_->GetAddress(tx->pubkey()));
                 std::cout << "====3" << address_info->addr() << std::endl;
                 std::cout << "====3" << address_info->pubkey() << std::endl;
