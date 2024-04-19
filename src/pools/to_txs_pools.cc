@@ -154,10 +154,9 @@ void ToTxsPools::HandleJoinElect(
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
             // distinct with transfer transaction
-            std::string elect_to = tx.from();
             AddTxToMap(
                 block,
-                elect_to,
+                tx.from(),
                 tx.step(),
                 0,
                 network::kRootCongressNetworkId,

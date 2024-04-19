@@ -109,11 +109,6 @@ int JoinElectTxItem::HandleTx(
         block.pool_index(),
         block.height(),
         join_info.shard_id());
-//     ZJC_DEBUG("handle tx success: %s, %lu, %lu, status: %d",
-//         common::Encode::HexEncode(block_tx.gid()).c_str(),
-//         block_tx.balance(),
-//         block_tx.gas_used(),
-//         block_tx.status());
     return kConsensusSuccess;
 }
 
