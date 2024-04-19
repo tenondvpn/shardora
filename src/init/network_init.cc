@@ -367,6 +367,7 @@ void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
     std::cout << "success handle init res message. response shard: " << sharding_id
         << ", join type: " << common::GlobalInfo::Instance()->join_root() << ", rand join: " << sharding_id << std::endl;
     prefix_db_->SaveJoinShard(sharding_id, des_sharding_id_);
+    ZJC_DEBUG("success set local sharding %u, %u", sharding_id, des_sharding_id_);
     auto waiting_network_id = sharding_id + network::kConsensusWaitingShardOffset;
     if (elect_mgr_->Join(waiting_network_id) != elect::kElectSuccess) {
         INIT_ERROR("join waiting pool network[%u] failed!", waiting_network_id);
@@ -409,6 +410,7 @@ void NetworkInit::InitLocalNetworkId() {
         got_sharding_id = local_node_account_info->sharding_id();
         des_sharding_id_ = got_sharding_id;
         prefix_db_->SaveJoinShard(got_sharding_id, des_sharding_id_);
+        ZJC_DEBUG("success save local sharding %u, %u", got_sharding_id, des_sharding_id_);
         std::cout << "success handle init res message. join waiting shard: " << got_sharding_id
             << ", des_sharding_id_: " << des_sharding_id_ << std::endl;
     }
@@ -486,14 +488,13 @@ void NetworkInit::SendJoinElectTransaction() {
     join_info.set_member_idx(pos);
     
     if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
-            join_info.set_shard_id(
-                common::GlobalInfo::Instance()->network_id() -
-                network::kConsensusWaitingShardOffset);
+        join_info.set_shard_id(
+            common::GlobalInfo::Instance()->network_id() -
+            network::kConsensusWaitingShardOffset);
     } else {
         join_info.set_shard_id(common::GlobalInfo::Instance()->network_id());
     }
     
-    join_info.set_shard_id(network::kRootCongressNetworkId);
     if (pos == common::kInvalidUint32) {
         auto* req = join_info.mutable_g2_req();
         auto res = prefix_db_->GetBlsVerifyG2(security_->GetAddress(), req);

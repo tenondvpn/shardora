@@ -575,9 +575,19 @@ bool BlsDkg::VerifySekkeyValid(
     all_verified_val = all_verified_val - old_g2_val + new_g2_val;
     if (all_verified_val != seckey * libff::alt_bn128_G2::one()) {
         for_common_pk_g2s_[peer_index] = libff::alt_bn128_G2::zero();
+        ZJC_DEBUG("failed verified g2 local_member_index_: %d, id: %s, min_aggree_member_count_: %d, net: %d",
+            local_member_index_, 
+            common::Encode::HexEncode((*members_)[peer_index]->id).c_str(), 
+            min_aggree_member_count_, 
+            (*members_)[0]->net_id);
         return false;
     }
 
+    ZJC_DEBUG("success verified g2 local_member_index_: %d, id: %s, min_aggree_member_count_: %d, net: %d",
+        local_member_index_, 
+        common::Encode::HexEncode((*members_)[peer_index]->id).c_str(), 
+        min_aggree_member_count_, 
+        (*members_)[0]->net_id);
     return true;
 }
 
