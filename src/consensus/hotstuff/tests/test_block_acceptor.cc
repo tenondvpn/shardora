@@ -16,7 +16,6 @@ namespace test {
 static const uint32_t POOL = 0;
 static const std::string sk_ =
     "b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708";
-// static const std::string from_ = "431be10b3a0e46f8a46686c6b0c29bc743f715fa";
 
 transport::MultiThreadHandler net_handler_;
 std::shared_ptr<security::Security> security_ = nullptr;
@@ -86,7 +85,6 @@ protected:
         prefix_db_->AddAddressInfo(account_info->addr(), *account_info);
         account_mgr_->Init(db_, pools_mgr_);
 
-        std::cout << "====0" << account_info->addr() << std::endl;
         auto address_info = account_mgr_->GetAccountInfo(account_info->addr());
     }
 
@@ -176,7 +174,7 @@ TEST_F(TestBlockAcceptor, Accept_InvalidBlock_WrongPreHash) {
     EXPECT_TRUE(s == Status::kAcceptorBlockInvalid);
 }
 
-TEST_F(TestBlockAcceptor, Accept_InvalidTxs_EmptyTxs) {
+TEST_F(TestBlockAcceptor, Accept_InvalidTxs_NormalFromTx) {
     EXPECT_EQ(10, pools_mgr_->latest_height(POOL));
         
     auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();

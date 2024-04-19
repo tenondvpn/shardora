@@ -69,8 +69,6 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
         return Status::kAcceptorBlockInvalid;
     }
 
-    std::cout << "====1" << std::endl;
-    
     // 2. Get txs from local pool
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
 
@@ -217,22 +215,15 @@ Status BlockAcceptor::GetDefaultTxs(
             address_info = account_mgr_->GetAccountInfo(tx->to());
         } else {
             if (security_ptr_->IsValidPublicKey(tx->pubkey())) {
-                std::cout << "====2" << tx->pubkey() << std::endl;
-                std::cout << "====2" << security_ptr_->GetAddress(tx->pubkey()) << std::endl;
                 address_info = account_mgr_->GetAccountInfo(security_ptr_->GetAddress(tx->pubkey()));
-                std::cout << "====3" << address_info->addr() << std::endl;
-                std::cout << "====3" << address_info->pubkey() << std::endl;
             } else {
                 address_info = account_mgr_->pools_address_info(pool_idx());
-                std::cout << "====4" << std::endl;
             }
         }
 
         if (!address_info) {
             return Status::kError;
         }
-
-        std::cout << "====5" << address_info->addr() << std::endl;
 
         pools::TxItemPtr tx_ptr = nullptr;
         switch (tx->step()) {
