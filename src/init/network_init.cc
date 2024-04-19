@@ -477,7 +477,7 @@ void NetworkInit::SendJoinElectTransaction() {
     new_tx->set_gid(gid);
     new_tx->set_pubkey(security_->GetPublicKeyUnCompressed());
     new_tx->set_step(pools::protobuf::kJoinElect);
-    new_tx->set_gas_limit(consensus::kJoinElectGas + 100000);
+    new_tx->set_gas_limit(consensus::kJoinElectGas + 10000000lu);
     new_tx->set_gas_price(10);
     new_tx->set_key(protos::kJoinElectVerifyG2);
     bls::protobuf::JoinElectInfo join_info;
