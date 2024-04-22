@@ -2,12 +2,15 @@
 
 #include <block/account_manager.h>
 #include <block/block_manager.h>
+#include <common/utils.h>
 #include <consensus/consensus_utils.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/zbft/contract_gas_prepayment.h>
 #include <consensus/zbft/waiting_txs_pools.h>
+#include <dht/dht_key.h>
 #include <functional>
+#include <network/route.h>
 #include <protos/block.pb.h>
 #include <protos/pools.pb.h>
 #include <timeblock/time_block_manager.h>
@@ -16,7 +19,8 @@ namespace shardora {
 
 namespace hotstuff {
 
-// Block 及 Txs 处理模块, One BlockAcceptor Per Pool
+// One BlockAcceptor Per Pool
+// IBlockAcceptor is for block verification, block committion and block_txs' rollback
 class IBlockAcceptor {
 public:
     // the block info struct used in BlockAcceptor
@@ -32,6 +36,12 @@ public:
 
     // Accept a block and txs in it.
     virtual Status Accept(std::shared_ptr<blockInfo>&) = 0;
+    // Commit a block
+    virtual Status Commit(std::shared_ptr<block::protobuf::Block>&) = 0;
+    // Fetch local txs to send
+    virtual Status FetchTxsFromPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>) = 0;
+    // Add txs to local pool
+    virtual Status AddTxsToPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>) = 0;
 };
 
 class BlockAcceptor : public IBlockAcceptor {
@@ -51,13 +61,21 @@ public:
             const std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
             std::shared_ptr<pools::TxPoolManager>& pools_mgr,
             std::shared_ptr<block::BlockManager>& block_mgr,
-            std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr);
+            std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
+            consensus::BlockCacheCallback new_block_cache_callback);
     ~BlockAcceptor();
 
     BlockAcceptor(const BlockAcceptor&) = delete;
     BlockAcceptor& operator=(const BlockAcceptor&) = delete;
 
+    // Accept a block and txs in it.
     Status Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& blockInfo) override;
+    // Commit a block and execute its txs.
+    Status Commit(std::shared_ptr<block::protobuf::Block>& block) override;
+    // Fetch local txs to send
+    Status FetchTxsFromPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) override;
+    // Add txs to local pool
+    Status AddTxsToPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) override;
     
 private:
     uint32_t pool_idx_;
@@ -75,17 +93,27 @@ private:
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
+    consensus::BlockCacheCallback new_block_cache_callback_ = nullptr;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 
-    Status GetTxsFromLocal(
-            const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
-            std::shared_ptr<consensus::WaitingTxsItem>&);
+    inline uint32_t pool_idx() const {
+        return pool_idx_;
+    }
 
+    Status addTxsToPool(
+        std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs,
+        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr);
+    
     bool IsBlockValid(const std::shared_ptr<block::protobuf::Block>&);
-    bool AreTxsValid(const std::shared_ptr<consensus::WaitingTxsItem>&);
+    void FilterInvalidTxs(std::shared_ptr<consensus::WaitingTxsItem>&);
     
     Status DoTransactions(
             const std::shared_ptr<consensus::WaitingTxsItem>&,
             std::shared_ptr<block::protobuf::Block>&);
+
+    Status GetTxsFromLocal(
+            const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
+            std::shared_ptr<consensus::WaitingTxsItem>&);    
 
     Status GetDefaultTxs(
             const std::shared_ptr<IBlockAcceptor::blockInfo>&,
@@ -122,9 +150,9 @@ private:
                 std::placeholders::_2);
     }
 
-    inline uint32_t pool_idx() const {
-        return pool_idx_;
-    }  
+    void LeaderBroadcastBlock(const std::shared_ptr<block::protobuf::Block>& block);
+    void BroadcastBlock(uint32_t des_shard, const std::shared_ptr<block::protobuf::Block>& block_item);
+    void BroadcastLocalTosBlock(const std::shared_ptr<block::protobuf::Block>& block_item);    
 };
 
 } // namespace hotstuff
