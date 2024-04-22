@@ -72,7 +72,10 @@ protected:
                 gas_prepayment_,
                 pools_mgr_,
                 block_mgr_,
-                tm_block_mgr_);
+                tm_block_mgr_,
+                [](std::shared_ptr<block::protobuf::Block>& block, db::DbWriteBatch& db_batch) {
+                    return;
+                });
 
         // 创建一个账户
         auto account_info = CreateAddress();
