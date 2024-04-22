@@ -19,7 +19,7 @@ public:
 
 class BlockWrapper : public IBlockWrapper {
 public:
-    explicit BlockWrapper(const std::shared_ptr<IBlockAcceptor>& acceptor);;
+    BlockWrapper();
     ~BlockWrapper();
 
     BlockWrapper(const BlockWrapper&) = delete;
@@ -27,9 +27,6 @@ public:
 
     Status Wrap(std::shared_ptr<block::protobuf::Block>& block) override;
     Status Return(const std::shared_ptr<block::protobuf::Block>& block) override;
-
-private:
-    std::shared_ptr<IBlockAcceptor> acceptor_;
 };
 
 } // namespace hotstuff
