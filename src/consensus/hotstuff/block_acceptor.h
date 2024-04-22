@@ -38,8 +38,6 @@ public:
     virtual Status Accept(std::shared_ptr<blockInfo>&) = 0;
     // Commit a block
     virtual Status Commit(const std::shared_ptr<block::protobuf::Block>&) = 0;
-    // Return a block and its txs to pool
-    virtual Status Return(const std::shared_ptr<block::protobuf::Block>&) = 0;
     // Fetch local txs to send
     virtual Status FetchTxsFromPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>) = 0;
     // Add txs to local pool
@@ -74,8 +72,6 @@ public:
     Status Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& blockInfo) override;
     // Commit a block and execute its txs.
     Status Commit(const std::shared_ptr<block::protobuf::Block>& block) override;
-    // Return a block and its txs to pool.
-    Status Return(const std::shared_ptr<block::protobuf::Block>& block) override;
     // Fetch local txs to send
     Status FetchTxsFromPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) override;
     // Add txs to local pool
@@ -109,7 +105,7 @@ private:
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr);
     
     bool IsBlockValid(const std::shared_ptr<block::protobuf::Block>&);
-    bool AreTxsValid(const std::shared_ptr<consensus::WaitingTxsItem>&);
+    void FilterInvalidTxs(std::shared_ptr<consensus::WaitingTxsItem>&);
     
     Status DoTransactions(
             const std::shared_ptr<consensus::WaitingTxsItem>&,

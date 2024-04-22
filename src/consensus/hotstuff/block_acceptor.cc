@@ -84,9 +84,7 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
         return s;
     }
 
-    if (!AreTxsValid(txs_ptr)) {
-        return Status::kAcceptorBlockInvalid; 
-    }
+    FilterInvalidTxs(txs_ptr);
     
     // 3. Do txs and create block_tx
     s = DoTransactions(txs_ptr, block);
@@ -126,11 +124,6 @@ Status BlockAcceptor::Commit(const std::shared_ptr<block::protobuf::Block>& bloc
         block->electblock_height(),
         block->timestamp(),
         block->tx_list_size());
-    return Status::kSuccess;
-}
-
-Status BlockAcceptor::Return(const std::shared_ptr<block::protobuf::Block>& block) {
-    
     return Status::kSuccess;
 }
 
@@ -288,12 +281,11 @@ bool BlockAcceptor::IsBlockValid(const std::shared_ptr<block::protobuf::Block>& 
     return true;
 }
 
-bool BlockAcceptor::AreTxsValid(const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+void BlockAcceptor::FilterInvalidTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
     if (!txs_ptr) {
-        return false;
+        return;
     }
     // TODO 验签
-    return true;
 }
 
 Status BlockAcceptor::DoTransactions(
