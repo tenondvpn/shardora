@@ -3,6 +3,8 @@
 #include "elect_info.h"
 #include "view_block_chain_manager.h"
 #include "crypto.h"
+#include "pacemaker.h"
+
 
 // #include "tx/contract_gas_prepayment.h"
 // #include "tx/from_tx_item.h"
@@ -97,8 +99,8 @@ private:
     Status VerifyProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, const uint32_t& pool_index);
     Status VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg, const uint32_t& pool_index, 
         std::shared_ptr<ViewBlock>& view_block);
-
-    view_block::protobuf::QC heigh_qc_;
+    
+    std::unordered_map<uint32_t, std::shared_ptr<Pacemaker>> pool_Pacemaker_;
     std::shared_ptr<ViewBlockChainManager> v_block_mgr_;
     std::shared_ptr<ElectInfo> elect_info_;
     std::shared_ptr<Crypto> crypto_;
@@ -230,9 +232,6 @@ private:
     //         msg_ptr->address_info);
     // }
 
-    static const uint32_t kCheckTimeoutPeriodMilli = 1000lu;
-    static const uint64_t kSendTxsToLeaderPeriodMs = 3000lu;
-
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
@@ -256,7 +255,7 @@ private:
     uint8_t thread_count_ = 0;
     std::shared_ptr<WaitingTxsPools> txs_pools_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
-    std::string bft_gids_[common::kMaxThreadCount];
+
     uint64_t bft_gids_index_[common::kMaxThreadCount];
     uint32_t prev_checktime_out_milli_ = 0;
     uint32_t minimal_node_count_to_consensus_ = common::kInvalidUint32;
