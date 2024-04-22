@@ -85,6 +85,10 @@ struct ViewBlock {
     inline uint64_t ElectHeight() const {
         return block->electblock_height();
     }
+
+    inline void UpdateHash() {
+        hash = DoHash();
+    }
 };
 
 struct SyncInfo {
