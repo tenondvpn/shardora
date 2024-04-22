@@ -19,7 +19,7 @@ def check_addresses(addresses):
             if data is None:
                 print(f"Failed address: {address} , response:{response}")
                 res = address
-            if data.get("balance") is not None:
+            elif data.get("balance") is not None:
                 print(f"Succeeded address: {address} , balance:{data.get('balance')}")
                 res = None
         except Exception as e:
