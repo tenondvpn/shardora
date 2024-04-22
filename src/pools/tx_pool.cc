@@ -265,6 +265,21 @@ void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
     }
 }
 
+void TxPool::RecoverTx(const std::string& gid) {
+    auto miter = gid_map_.find(gid);
+    if (miter != gid_map_.end()) {
+        if (miter->second->is_consensus_add_tx) {
+            consensus_tx_map_[miter->second->unique_tx_hash] = miter->second;
+            return;
+        }
+        if (miter->second->step == pools::protobuf::kCreateLibrary) {
+            universal_prio_map_[miter->second->prio_key] = miter->second;
+        } else {
+            prio_map_[miter->second->prio_key] = miter->second;
+        }        
+    }
+}
+
 void TxPool::RemoveTx(const std::string& gid) {
     removed_gid_.Push(gid);
     auto giter = gid_map_.find(gid);

@@ -282,10 +282,7 @@ bool BlockAcceptor::IsBlockValid(const std::shared_ptr<block::protobuf::Block>& 
 }
 
 void BlockAcceptor::FilterInvalidTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    if (!txs_ptr) {
-        return;
-    }
-    // TODO 验签
+    return;
 }
 
 Status BlockAcceptor::DoTransactions(
