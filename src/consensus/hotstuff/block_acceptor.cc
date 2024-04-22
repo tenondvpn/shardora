@@ -95,7 +95,7 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
     return Status::kSuccess;
 }
 
-Status BlockAcceptor::Commit(const std::shared_ptr<block::protobuf::Block>& block) {
+Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
     // commit block
     auto db_batch = std::make_shared<db::DbWriteBatch>();
     auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block, db_batch);
