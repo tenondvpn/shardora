@@ -120,7 +120,6 @@ ps -ef | grep zjchain | grep new_node | awk -F' ' '{{print $2}}' | xargs kill -9
 rm -rf /root/zjnodes/new*
 
 for n in  "${{nodes[@]}}"; do
-    (
 
         mkdir -p "/root/zjnodes/${{n}}/log"
         mkdir -p "/root/zjnodes/${{n}}/conf"
@@ -129,9 +128,7 @@ for n in  "${{nodes[@]}}"; do
         cp -rf /root/zjnodes/zjchain/zjchain /root/zjnodes/${{n}}/
         cp -rf ./zjnodes/${{n}}/conf/zjchain.conf /root/zjnodes/${{n}}/conf/zjchain.conf
         echo "cp $n"
-    ) &
 done
-wait
 
 ulimit -c unlimited
 
@@ -142,7 +139,7 @@ for node in "${{nodes[@]}}"; do
 
 done
 
-sh ./dispatch_coin.sh
+sh ./new_nodes_dispatch_coin.sh
 """
     full_path = "new_node_deploy.sh"
     # full_path = os.path.abspath(file_path)
