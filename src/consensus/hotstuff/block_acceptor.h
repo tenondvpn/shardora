@@ -36,7 +36,10 @@ public:
 
     // Accept a block and txs in it.
     virtual Status Accept(std::shared_ptr<blockInfo>&) = 0;
+    // Commit a block
     virtual Status Commit(const std::shared_ptr<block::protobuf::Block>&) = 0;
+    // Return a block and its txs to pool
+    virtual Status Return(const std::shared_ptr<block::protobuf::Block>&) = 0;
 };
 
 class BlockAcceptor : public IBlockAcceptor {
@@ -63,8 +66,12 @@ public:
     BlockAcceptor(const BlockAcceptor&) = delete;
     BlockAcceptor& operator=(const BlockAcceptor&) = delete;
 
+    // Accept a block and txs in it.
     Status Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& blockInfo) override;
+    // Commit a block and execute its txs.
     Status Commit(const std::shared_ptr<block::protobuf::Block>& block) override;
+    // Return a block and its txs to pool.
+    Status Return(const std::shared_ptr<block::protobuf::Block>& block) override;
     
 private:
     uint32_t pool_idx_;
@@ -87,18 +94,18 @@ private:
 
     inline uint32_t pool_idx() const {
         return pool_idx_;
-    }    
-
-    Status GetTxsFromLocal(
-            const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
-            std::shared_ptr<consensus::WaitingTxsItem>&);
-
+    }
+    
     bool IsBlockValid(const std::shared_ptr<block::protobuf::Block>&);
     bool AreTxsValid(const std::shared_ptr<consensus::WaitingTxsItem>&);
     
     Status DoTransactions(
             const std::shared_ptr<consensus::WaitingTxsItem>&,
             std::shared_ptr<block::protobuf::Block>&);
+
+    Status GetTxsFromLocal(
+            const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
+            std::shared_ptr<consensus::WaitingTxsItem>&);    
 
     Status GetDefaultTxs(
             const std::shared_ptr<IBlockAcceptor::blockInfo>&,
