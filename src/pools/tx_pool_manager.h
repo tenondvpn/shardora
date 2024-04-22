@@ -66,6 +66,10 @@ public:
         tx_pool_[pool_index].RemoveTx(gid);
     }
 
+    void RecoverTx(uint32_t pool_index, const std::string& gid) {
+        tx_pool_[pool_index].RecoverTx(gid);
+    }    
+
     void OnNewCrossBlock(
             const std::shared_ptr<block::protobuf::Block>& block_item) {
         ZJC_DEBUG("new cross block coming net: %u, pool: %u, height: %lu",

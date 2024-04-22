@@ -53,6 +53,7 @@ public:
     void CheckTimeoutTx();
     uint32_t SyncMissingBlocks(uint64_t now_tm_ms);
     void RemoveTx(const std::string& gid);
+    void RecoverTx(const std::string& gid);
 
     bool TxExists(const std::string& gid) {
         auto iter = gid_map_.find(gid);
