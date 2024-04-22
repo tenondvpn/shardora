@@ -26,15 +26,16 @@ BlockAcceptor::BlockAcceptor(
         const std::shared_ptr<consensus::ContractGasPrepayment> &gas_prepayment,
         std::shared_ptr<pools::TxPoolManager> &pools_mgr,
         std::shared_ptr<block::BlockManager> &block_mgr,
-        std::shared_ptr<timeblock::TimeBlockManager> &tm_block_mgr):
+        std::shared_ptr<timeblock::TimeBlockManager> &tm_block_mgr,
+        consensus::BlockCacheCallback new_block_cache_callback):
     pool_idx_(pool_idx), security_ptr_(security), account_mgr_(account_mgr),
     elect_info_(elect_info), vss_mgr_(vss_mgr), contract_mgr_(contract_mgr),
     db_(db), gas_prepayment_(gas_prepayment), pools_mgr_(pools_mgr),
-    block_mgr_(block_mgr),
-    tm_block_mgr_(tm_block_mgr) {
+    block_mgr_(block_mgr), tm_block_mgr_(tm_block_mgr), new_block_cache_callback_(new_block_cache_callback) {
     
     db_batch_ = std::make_shared<db::DbWriteBatch>();
     tx_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr_, block_mgr_, tm_block_mgr_);
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     
     RegisterTxsFunc(pools::protobuf::kNormalTo,
         std::bind(&BlockAcceptor::GetToTxs, this, std::placeholders::_1, std::placeholders::_2));
@@ -97,6 +98,32 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
 
 Status BlockAcceptor::Commit(const std::shared_ptr<block::protobuf::Block>& block) {
     // TODO commit block
+    auto db_batch = std::make_shared<db::DbWriteBatch>();
+    auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block, db_batch);
+    new_block_cache_callback_(
+            queue_item_ptr->block_ptr,
+            *queue_item_ptr->db_batch);
+    block_mgr_->ConsensusAddBlock(queue_item_ptr);
+    // TODO if local node is leader, broadcast block
+    auto elect_item = elect_info_->GetElectItem(block->electblock_height());
+    if (!elect_item) {
+        return Status::kError;
+    }
+    if (block->leader_index() == elect_item->LocalMember()->index) {
+        LeaderBroadcastBlock(block);
+    }
+    pools_mgr_->TxOver(block->pool_index(), block->tx_list());
+
+    // TODO tps measurement
+
+    ZJC_DEBUG("[NEW BLOCK] hash: %s, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu",
+        common::Encode::HexEncode(block->hash()).c_str(),
+        block->network_id(),
+        block->pool_index(),
+        block->height(),
+        block->electblock_height(),
+        block->timestamp(),
+        block->tx_list_size());
     return Status::kSuccess;
 }
 
@@ -336,6 +363,108 @@ Status BlockAcceptor::GetTimeBlockTxs(
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
     txs_ptr = tx_pools_->GetTimeblockTx(pool_idx(), false);
     return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
+}
+
+void BlockAcceptor::LeaderBroadcastBlock(const std::shared_ptr<block::protobuf::Block>& block) {
+    if (block->pool_index() == common::kRootChainPoolIndex) {
+        if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+            BroadcastBlock(network::kNodeNetworkId, block);
+        } else {
+            BroadcastBlock(network::kRootCongressNetworkId, block);
+        }
+
+        return;
+    }
+
+    if (block->tx_list_size() != 1) {
+        return;
+    }
+
+    switch (block->tx_list(0).step()) {
+    case pools::protobuf::kRootCreateAddressCrossSharding:
+    case pools::protobuf::kNormalTo:
+        ZJC_DEBUG("broadcast to block step: %u, height: %lu",
+            block->tx_list(0).step(), block->height());
+        BroadcastLocalTosBlock(block);
+        break;
+    case pools::protobuf::kConsensusRootElectShard:
+        BroadcastBlock(network::kNodeNetworkId, block);
+        break;
+    default:
+        break;
+    }    
+}
+
+void BlockAcceptor::BroadcastBlock(
+        uint32_t des_shard,
+        const std::shared_ptr<block::protobuf::Block>& block_item) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& msg = msg_ptr->header;
+    msg.set_src_sharding_id(des_shard);
+    msg.set_type(common::kBlockMessage);
+    dht::DhtKeyManager dht_key(des_shard);
+    msg.set_des_dht_key(dht_key.StrKey());
+    auto& tx = block_item->tx_list(0);
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        std::string val;
+        if (prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+            auto kv = msg.mutable_sync()->add_items();
+            kv->set_key(tx.storages(i).val_hash());
+            kv->set_value(val);
+        }
+    }
+
+    *msg.mutable_block() = *block_item;
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
+    auto* brdcast = msg.mutable_broadcast();
+    network::Route::Instance()->Send(msg_ptr);
+    ZJC_DEBUG("success broadcast to %u, pool: %u, height: %lu, hash64: %lu",
+        des_shard, block_item->pool_index(), block_item->height(), msg.hash64());
+}
+
+void BlockAcceptor::BroadcastLocalTosBlock(
+        const std::shared_ptr<block::protobuf::Block>& block_item) {
+    auto& tx = block_item->tx_list(0);
+    pools::protobuf::ToTxMessage to_tx;
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        std::string val;
+        if (prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+            ZJC_DEBUG("get to tx storage key: %s, value: %s",
+                common::Encode::HexEncode(tx.storages(i).val_hash()).c_str(),
+                common::Encode::HexEncode(val).c_str());
+            if (tx.storages(i).key() != protos::kNormalToShards) {
+                assert(false);
+                continue;
+            }
+
+            if (!to_tx.ParseFromString(val)) {
+                assert(false);
+                continue;
+            }
+
+            if (to_tx.to_heights().sharding_id() == common::GlobalInfo::Instance()->network_id()) {
+                continue;
+            }
+
+            auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            auto& msg = msg_ptr->header;
+            auto kv = msg.mutable_sync()->add_items();
+            kv->set_key(tx.storages(i).val_hash());
+            kv->set_value(val);
+            msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+            msg.set_type(common::kBlockMessage);
+            dht::DhtKeyManager dht_key(to_tx.to_heights().sharding_id());
+            msg.set_des_dht_key(dht_key.StrKey());
+            transport::TcpTransport::Instance()->SetMessageHash(msg);
+            *msg.mutable_block() = *block_item;
+            auto* brdcast = msg.mutable_broadcast();
+            network::Route::Instance()->Send(msg_ptr);
+            ZJC_DEBUG("success broadcast cross tos height: %lu, sharding id: %u",
+                block_item->height(), to_tx.to_heights().sharding_id());
+        } else {
+            assert(false);
+        }
+    }
 }
 
 } // namespace hotstuff

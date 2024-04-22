@@ -2,13 +2,15 @@
 
 #include <block/account_manager.h>
 #include <block/block_manager.h>
+#include <common/utils.h>
 #include <consensus/consensus_utils.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/types.h>
-#include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/zbft/contract_gas_prepayment.h>
 #include <consensus/zbft/waiting_txs_pools.h>
+#include <dht/dht_key.h>
 #include <functional>
+#include <network/route.h>
 #include <protos/block.pb.h>
 #include <protos/pools.pb.h>
 #include <timeblock/time_block_manager.h>
@@ -54,7 +56,8 @@ public:
             const std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
             std::shared_ptr<pools::TxPoolManager>& pools_mgr,
             std::shared_ptr<block::BlockManager>& block_mgr,
-            std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr);
+            std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
+            consensus::BlockCacheCallback new_block_cache_callback);
     ~BlockAcceptor();
 
     BlockAcceptor(const BlockAcceptor&) = delete;
@@ -79,6 +82,12 @@ private:
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
+    consensus::BlockCacheCallback new_block_cache_callback_ = nullptr;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+
+    inline uint32_t pool_idx() const {
+        return pool_idx_;
+    }    
 
     Status GetTxsFromLocal(
             const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
@@ -126,9 +135,9 @@ private:
                 std::placeholders::_2);
     }
 
-    inline uint32_t pool_idx() const {
-        return pool_idx_;
-    }
+    void LeaderBroadcastBlock(const std::shared_ptr<block::protobuf::Block>& block);
+    void BroadcastBlock(uint32_t des_shard, const std::shared_ptr<block::protobuf::Block>& block_item);
+    void BroadcastLocalTosBlock(const std::shared_ptr<block::protobuf::Block>& block_item);    
 };
 
 } // namespace hotstuff
