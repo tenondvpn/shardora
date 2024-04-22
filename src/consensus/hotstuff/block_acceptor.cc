@@ -9,6 +9,7 @@
 #include <consensus/zbft/root_to_tx_item.h>
 #include <consensus/zbft/to_tx_local_item.h>
 #include <protos/pools.pb.h>
+#include <protos/zbft.pb.h>
 #include <zjcvm/zjcvm_utils.h>
 
 namespace shardora {
@@ -97,7 +98,7 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
 }
 
 Status BlockAcceptor::Commit(const std::shared_ptr<block::protobuf::Block>& block) {
-    // TODO commit block
+    // commit block
     auto db_batch = std::make_shared<db::DbWriteBatch>();
     auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block, db_batch);
     new_block_cache_callback_(
@@ -110,6 +111,7 @@ Status BlockAcceptor::Commit(const std::shared_ptr<block::protobuf::Block>& bloc
         return Status::kError;
     }
     if (block->leader_index() == elect_item->LocalMember()->index) {
+        // leader broadcast block to other shards
         LeaderBroadcastBlock(block);
     }
     pools_mgr_->TxOver(block->pool_index(), block->tx_list());
@@ -124,6 +126,127 @@ Status BlockAcceptor::Commit(const std::shared_ptr<block::protobuf::Block>& bloc
         block->electblock_height(),
         block->timestamp(),
         block->tx_list_size());
+    return Status::kSuccess;
+}
+
+Status BlockAcceptor::Return(const std::shared_ptr<block::protobuf::Block>& block) {
+    
+    return Status::kSuccess;
+}
+
+Status BlockAcceptor::FetchTxsFromPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) {
+    // TODO 不应该和 zbft 耦合
+    zbft::protobuf::TxBft txbft;
+    std::map<std::string, pools::TxItemPtr> invalid_txs;
+    pools_mgr_->GetTx(pool_idx(), 1024, invalid_txs, &txbft);
+    
+    for (auto it = txbft.txs().begin(); it != txbft.txs().end(); it++) {
+        txs.push_back(std::make_shared<pools::protobuf::TxMessage>(*it));
+    }
+    return Status::kSuccess;
+}
+
+Status BlockAcceptor::AddTxsToPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) {
+    auto txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
+    return addTxsToPool(txs, txs_ptr);
+};
+
+Status BlockAcceptor::addTxsToPool(
+        std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs,
+        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    assert(txs.size() > 0);
+    std::map<std::string, pools::TxItemPtr> txs_map;
+    for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
+        auto& tx = txs[i];
+        ZJC_DEBUG("get tx message step: %d", tx->step());
+        protos::AddressInfoPtr address_info = nullptr;
+        if (tx->step() == pools::protobuf::kContractExcute) {
+            address_info = account_mgr_->GetAccountInfo(tx->to());
+        } else {
+            if (security_ptr_->IsValidPublicKey(tx->pubkey())) {
+                address_info = account_mgr_->GetAccountInfo(security_ptr_->GetAddress(tx->pubkey()));
+            } else {
+                address_info = account_mgr_->pools_address_info(pool_idx());
+            }
+        }
+
+        if (!address_info) {
+            return Status::kError;
+        }
+
+        pools::TxItemPtr tx_ptr = nullptr;
+        switch (tx->step()) {
+        case pools::protobuf::kNormalFrom:
+            tx_ptr = std::make_shared<consensus::FromTxItem>(
+                    *tx, account_mgr_, security_ptr_, address_info);
+            break;
+        case pools::protobuf::kRootCreateAddress:
+            tx_ptr = std::make_shared<consensus::RootToTxItem>(
+                    elect_info_->max_consensus_sharding_id(),
+                    *tx,
+                    vss_mgr_,
+                    account_mgr_,
+                    security_ptr_,
+                    address_info);
+            break;
+        case pools::protobuf::kContractCreate:
+            tx_ptr = std::make_shared<consensus::ContractUserCreateCall>(
+                    contract_mgr_, 
+                    db_, 
+                    *tx, 
+                    account_mgr_, 
+                    security_ptr_, 
+                    address_info);
+            break;
+        case pools::protobuf::kContractExcute:
+            tx_ptr = std::make_shared<consensus::ContractCall>(
+                    contract_mgr_, 
+                    gas_prepayment_, 
+                    db_, 
+                    *tx,
+                    account_mgr_, 
+                    security_ptr_, 
+                    address_info);
+            break;
+        case pools::protobuf::kContractGasPrepayment:
+            tx_ptr = std::make_shared<consensus::ContractUserCall>(
+                    db_, 
+                    *tx,
+                    account_mgr_, 
+                    security_ptr_, 
+                    address_info);
+            break;
+        case pools::protobuf::kConsensusLocalTos:
+            tx_ptr = std::make_shared<consensus::ToTxLocalItem>(
+                    *tx, 
+                    db_, 
+                    gas_prepayment_, 
+                    account_mgr_, 
+                    security_ptr_, 
+                    address_info);
+            break;
+        default:
+            ZJC_FATAL("invalid tx step: %d", tx->step());
+            return Status::kError;
+        }
+
+        if (tx_ptr != nullptr) {
+            tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
+            // TODO: verify signature
+            txs_map[tx_ptr->unique_tx_hash] = tx_ptr;
+        }
+    }
+
+    if (txs_ptr != nullptr) {
+        txs_ptr->txs = txs_map;
+    }
+
+    int res = pools_mgr_->BackupConsensusAddTxs(pool_idx(), txs_map);
+    if (res != pools::kPoolsSuccess) {
+        ZJC_ERROR("invalid consensus, txs invalid.");
+        return Status::kError;
+    }
+
     return Status::kSuccess;
 }
 
@@ -151,7 +274,7 @@ Status BlockAcceptor::GetTxsFromLocal(
 }
 
 bool BlockAcceptor::IsBlockValid(const std::shared_ptr<block::protobuf::Block>& zjc_block) {
-    // TODO 校验 block prehash，latest height 等
+    // 校验 block prehash，latest height 等
     uint64_t pool_height = pools_mgr_->latest_height(pool_idx());
     if (zjc_block->height() <= pool_height || pool_height == common::kInvalidUint64) {
         return false;
@@ -238,93 +361,7 @@ Status BlockAcceptor::GetDefaultTxs(
         const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
     txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
-    assert(block_info->txs.size() > 0);
-    for (uint32_t i = 0; i < uint32_t(block_info->txs.size()); i++) {
-        auto& tx = block_info->txs[i];
-        ZJC_DEBUG("get tx message step: %d", tx->step());
-        protos::AddressInfoPtr address_info = nullptr;
-        if (tx->step() == pools::protobuf::kContractExcute) {
-            address_info = account_mgr_->GetAccountInfo(tx->to());
-        } else {
-            if (security_ptr_->IsValidPublicKey(tx->pubkey())) {
-                address_info = account_mgr_->GetAccountInfo(security_ptr_->GetAddress(tx->pubkey()));
-            } else {
-                address_info = account_mgr_->pools_address_info(pool_idx());
-            }
-        }
-
-        if (!address_info) {
-            return Status::kError;
-        }
-
-        pools::TxItemPtr tx_ptr = nullptr;
-        switch (tx->step()) {
-        case pools::protobuf::kNormalFrom:
-            tx_ptr = std::make_shared<consensus::FromTxItem>(
-                    *tx, account_mgr_, security_ptr_, address_info);
-            break;
-        case pools::protobuf::kRootCreateAddress:
-            tx_ptr = std::make_shared<consensus::RootToTxItem>(
-                    elect_info_->max_consensus_sharding_id(),
-                    *tx,
-                    vss_mgr_,
-                    account_mgr_,
-                    security_ptr_,
-                    address_info);
-            break;
-        case pools::protobuf::kContractCreate:
-            tx_ptr = std::make_shared<consensus::ContractUserCreateCall>(
-                    contract_mgr_, 
-                    db_, 
-                    *tx, 
-                    account_mgr_, 
-                    security_ptr_, 
-                    address_info);
-            break;
-        case pools::protobuf::kContractExcute:
-            tx_ptr = std::make_shared<consensus::ContractCall>(
-                    contract_mgr_, 
-                    gas_prepayment_, 
-                    db_, 
-                    *tx,
-                    account_mgr_, 
-                    security_ptr_, 
-                    address_info);
-            break;
-        case pools::protobuf::kContractGasPrepayment:
-            tx_ptr = std::make_shared<consensus::ContractUserCall>(
-                    db_, 
-                    *tx,
-                    account_mgr_, 
-                    security_ptr_, 
-                    address_info);
-            break;
-        case pools::protobuf::kConsensusLocalTos:
-            tx_ptr = std::make_shared<consensus::ToTxLocalItem>(
-                    *tx, 
-                    db_, 
-                    gas_prepayment_, 
-                    account_mgr_, 
-                    security_ptr_, 
-                    address_info);
-            break;
-        default:
-            ZJC_FATAL("invalid tx step: %d", tx->step());
-            return Status::kError;
-        }
-                
-        tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
-        // TODO: verify signature
-        txs_ptr->txs[tx_ptr->unique_tx_hash] = tx_ptr;
-    }
-
-    int res = pools_mgr_->BackupConsensusAddTxs(pool_idx(), txs_ptr->txs);
-    if (res != pools::kPoolsSuccess) {
-        ZJC_ERROR("invalid consensus, txs invalid.");
-        return Status::kError;
-    }
-
-    return Status::kSuccess;
+    return addTxsToPool(block_info->txs, txs_ptr);
 }
 
 Status BlockAcceptor::GetToTxs(
