@@ -11,14 +11,34 @@
 #include <dht/dht_key.h>
 #include <functional>
 #include <network/route.h>
+#include <pools/tx_pool_manager.h>
 #include <protos/block.pb.h>
 #include <protos/pools.pb.h>
 #include <timeblock/time_block_manager.h>
 
 namespace shardora {
 
-namespace hotstuff {
+namespace vss {
+class VssManager;
+}
 
+namespace contract {
+class ContractManager;
+}
+
+namespace consensus {
+class ContractGasPrepayment;
+}
+
+namespace pools {
+class TxPoolManager;
+}
+
+namespace block {
+class BlockManager;
+}
+
+namespace hotstuff {
 // One BlockAcceptor Per Pool
 // IBlockAcceptor is for block verification, block committion and block_txs' rollback
 class IBlockAcceptor {
@@ -68,7 +88,7 @@ public:
     BlockAcceptor(const BlockAcceptor&) = delete;
     BlockAcceptor& operator=(const BlockAcceptor&) = delete;
 
-    // Accept a block and txs in it.
+    // Accept a block and exec txs in it.
     Status Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& blockInfo) override;
     // Commit a block and execute its txs.
     Status Commit(std::shared_ptr<block::protobuf::Block>& block) override;
