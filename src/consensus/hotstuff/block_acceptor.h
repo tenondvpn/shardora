@@ -16,13 +16,14 @@ namespace shardora {
 
 namespace hotstuff {
 
-// Block 及 Txs 处理模块, One BlockAcceptor Per Pool
+// One BlockAcceptor Per Pool
+// IBlockAcceptor is for block verification, block committion and block_txs' rollback
 class IBlockAcceptor {
 public:
     // the block info struct used in BlockAcceptor
     struct blockInfo {
         View view;
-        std::shared_ptr<block::protobuf::Block> block;
+        std::shared_ptr<ViewBlock> view_block;
         pools::protobuf::StepType tx_type;
         std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
     };
@@ -32,6 +33,7 @@ public:
 
     // Accept a block and txs in it.
     virtual Status Accept(std::shared_ptr<blockInfo>&) = 0;
+    virtual Status Commit(const std::shared_ptr<block::protobuf::Block>&) = 0;
 };
 
 class BlockAcceptor : public IBlockAcceptor {
@@ -58,6 +60,7 @@ public:
     BlockAcceptor& operator=(const BlockAcceptor&) = delete;
 
     Status Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& blockInfo) override;
+    Status Commit(const std::shared_ptr<block::protobuf::Block>& block) override;
     
 private:
     uint32_t pool_idx_;

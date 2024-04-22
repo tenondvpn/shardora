@@ -51,11 +51,13 @@ BlockAcceptor::BlockAcceptor(
 BlockAcceptor::~BlockAcceptor(){};
 
 Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_info) {
-    if (!block_info || !block_info->block) {
+    if (!block_info || !block_info->view_block || !block_info->view_block->block) {
         return Status::kError;
     }
+
+    auto& view_block = block_info->view_block;
     
-    if (block_info->block->pool_index() != pool_idx()) {
+    if (view_block->block->pool_index() != pool_idx()) {
         return Status::kError;
     }
 
@@ -65,7 +67,7 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
     }
     
     // 1. verify block
-    if (!IsBlockValid(block_info->block)) {
+    if (!IsBlockValid(view_block->block)) {
         return Status::kAcceptorBlockInvalid;
     }
 
@@ -85,8 +87,15 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
     }
     
     // 3. Do txs and create block_tx
-    auto& zjc_block = block_info->block;
-    return DoTransactions(txs_ptr, zjc_block);
+    auto& zjc_block = view_block->block;
+    s = DoTransactions(txs_ptr, zjc_block);
+    if (s != Status::kSuccess) {
+        return s;
+    }
+
+    // 4. update view_block hash
+    view_block->UpdateHash();
+    return Status::kSuccess;
 }
 
 Status BlockAcceptor::GetTxsFromLocal(
@@ -108,7 +117,7 @@ Status BlockAcceptor::GetTxsFromLocal(
         return Status::kAcceptorTxsEmpty;
     }
     
-    txs_ptr->pool_index = block_info->block->pool_index();
+    txs_ptr->pool_index = block_info->view_block->block->pool_index();
     return Status::kSuccess;
 }
 
