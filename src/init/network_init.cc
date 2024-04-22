@@ -362,8 +362,6 @@ void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
         sharding_id = network::kRootCongressNetworkId;
     }
         
-    // TODO: remove now test
-    sharding_id = network::kRootCongressNetworkId;
     prefix_db_->SaveJoinShard(sharding_id, des_sharding_id_);
     ZJC_DEBUG("success set local sharding %u, %u", sharding_id, des_sharding_id_);
     auto waiting_network_id = sharding_id + network::kConsensusWaitingShardOffset;
