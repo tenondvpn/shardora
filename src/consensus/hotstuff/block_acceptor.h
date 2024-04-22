@@ -5,6 +5,7 @@
 #include <consensus/consensus_utils.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/types.h>
+#include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/zbft/contract_gas_prepayment.h>
 #include <consensus/zbft/waiting_txs_pools.h>
 #include <functional>
@@ -23,7 +24,7 @@ public:
     // the block info struct used in BlockAcceptor
     struct blockInfo {
         View view;
-        std::shared_ptr<ViewBlock> view_block;
+        std::shared_ptr<block::protobuf::Block> block;
         pools::protobuf::StepType tx_type;
         std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
     };
@@ -127,7 +128,7 @@ private:
 
     inline uint32_t pool_idx() const {
         return pool_idx_;
-    }  
+    }
 };
 
 } // namespace hotstuff
