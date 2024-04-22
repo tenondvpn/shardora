@@ -361,9 +361,11 @@ void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
             common::Random::RandomInt32() % 4 == 1) {
         sharding_id = network::kRootCongressNetworkId;
     }
-        
+
+    // TODO: remove test    
+    sharding_id = network::kRootCongressNetworkId;
     prefix_db_->SaveJoinShard(sharding_id, des_sharding_id_);
-    ZJC_DEBUG("success set local sharding %u, %u", sharding_id, des_sharding_id_);
+    ZJC_DEBUG("success save local sharding %u, %u", sharding_id, des_sharding_id_);
     auto waiting_network_id = sharding_id + network::kConsensusWaitingShardOffset;
     if (elect_mgr_->Join(waiting_network_id) != elect::kElectSuccess) {
         INIT_ERROR("join waiting pool network[%u] failed!", waiting_network_id);
