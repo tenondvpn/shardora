@@ -307,7 +307,6 @@ Status HotstuffManager::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_ms
         ZJC_ERROR("view_block_hash message is not exited.");
         return Status::kError;
     }
-    std::shared_ptr<ViewBlock> view_block;
     v_block_mgr_->Chain(pool_index)->Get(vote_msg.view_block_hash(), view_block);
     if (view_block->view > pool_Pacemaker_[pool_index]->HighQC()->view) {
         ZJC_ERROR("view message is not exited.");
