@@ -18,6 +18,7 @@ def check_addresses(addresses):
         # 检查返回的数据是否符合成功的条件
             if data is None:
                 print(f"Failed address: {address} , response:{response}")
+                res = address
             if data.get("balance") is not None:
                 print(f"Succeeded address: {address} , balance:{data.get('balance')}")
                 res = None
