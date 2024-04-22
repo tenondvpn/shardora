@@ -39,8 +39,7 @@ def check_addresses(addresses):
             failed_addresses = [result for result in results if result is not None]
             if failed_addresses:
                 print(f"Some addresses failed, retrying... all:{allcount}, try:{len(results)},fail:{len(failed_addresses)}")
-                result = subprocess.run(['/bin/bash', "cbuild_Debug/txcli", "5", ' '.join(failed_addresses)
-                ], capture_output=True, text=True, cwd="cbuild_Debug")
+                result = subprocess.run([ "/root/shardora/cbuild_Debug/txcli", "5", ' '.join(failed_addresses) ], capture_output=True, text=True, cwd="/root/shardora/cbuild_Debug")
                 print('Have a look at stdout:\n', result.stdout)
                 addresses = failed_addresses
                 time.sleep(5)
