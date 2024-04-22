@@ -97,7 +97,7 @@ def gen_nodes_conf_file(node_num_per_shard, shard_num, servers, join_root_nums):
     gen_new_node_deploy_sh(content)
     gen_dispatch_coin_sh(content)
 
-    filename = f"new_nodes_conf_n{node_num_per_shard}_s{shard_num}_m{len(servers)}.yml"
+    filename = f"new_nodes_conf.yml"
     with open(filename, "w") as f:
         yaml.dump(content, f)
     return

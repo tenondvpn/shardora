@@ -51,7 +51,7 @@ def parse_server_yml_file(file_path: str):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--config_file', help='config_path', default='', type=str)
+    parser.add_argument('-c', '--config_file', help='config_path', default='new_nodes_conf.yml', type=str)
     args = parser.parse_args()
     data = parse_server_yml_file(args.config_file)
     addrs = []
