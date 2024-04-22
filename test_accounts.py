@@ -14,13 +14,12 @@ def check_addresses(addresses):
         res = address
         try:
             response = requests.post(f'http://localhost:8301/query_account?address={address}')
-            data = response.json()
-        # 检查返回的数据是否符合成功的条件
-            if data is None:
+            if response.status_code != 200 or response.json() is None:
                 print(f"Failed address: {address} , response:{response}")
-                res = address
-            elif data.get("balance") is not None:
-                print(f"Succeeded address: {address} , balance:{data.get('balance')}")
+                return address
+            bdata = response.json()
+            if response.json().get("balance") is not None:
+                print(f"Succeeded address: {address} , balance:{bdata.get('balance')}")
                 res = None
         except Exception as e:
             print(f"Failed address: {address} , error:{e}")
