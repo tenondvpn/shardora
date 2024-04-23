@@ -87,7 +87,9 @@ public:
     HotstuffManager();
     virtual ~HotstuffManager();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
-
+    Status HotstuffManager::VerifyViewBlockItem(const view_block::protobuf::ViewBlockItem& pb_view_block, 
+        const uint32_t& pool_index, const uint32_t& elect_height);
+    void DoCommitBlock(const view_block::protobuf::ViewBlockItem& pb_view_block, const uint32_t& pool_index);
 private:
 
     void HandleMessage(const transport::MessagePtr& msg_ptr);
@@ -96,7 +98,7 @@ private:
     void DoProposeMsg(const hotstuff::protobuf::VoteMsg& vote_msg, const uint32_t& pool_index);
     void DoVoteMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, const uint32_t& pool_index);
     Status SendTranMsg(hotstuff::protobuf::HotstuffMessage& hotstuff_msg);
-    Status VerifyProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, const uint32_t& pool_index);
+
     Status VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg, const uint32_t& pool_index, 
         std::shared_ptr<ViewBlock>& view_block);
     
