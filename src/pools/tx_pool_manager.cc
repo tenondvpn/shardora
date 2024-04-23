@@ -648,7 +648,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                 
                 ZJC_DEBUG("net: %u, get response pool heights, cross pool heights: %s, update_height: %lu, "
                     "cross_synced_max_heights_[i]: %lu, cross_pools_[i].latest_height(): %lu, cross_heights[i]: %lu",
-                    (i + network::kConsensusShardBeginNetworkId), cross_debug.c_str(), update_height,
+                    (i + network::kRootCongressNetworkId), cross_debug.c_str(), update_height,
                     cross_synced_max_heights_[sharding_id], cross_pools_[sharding_id].latest_height(),
                     cross_heights[i]);
                 cross_synced_max_heights_[sharding_id] = cross_heights[i];

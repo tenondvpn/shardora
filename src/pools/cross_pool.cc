@@ -110,7 +110,6 @@ uint32_t CrossPool::SyncMissingBlocks(uint64_t now_tm_ms) {
         }
     }
 
-    ZJC_DEBUG("invalid_heights.size(): %u", invalid_heights.size());
     return invalid_heights.size();
 }
 
