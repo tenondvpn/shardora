@@ -710,7 +710,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
 
         transport::TcpTransport::Instance()->SetMessageHash(msg);
         transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
-//         ZJC_DEBUG("response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
+        ZJC_DEBUG("response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
     } else {
         auto& heights = msg_ptr->header.sync_heights().heights();
         if (heights.size() != common::kInvalidPoolIndex) {
@@ -776,9 +776,9 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                     }
                 } while (0);
                 
-                ZJC_DEBUG("net: %u, get response pool heights: %s, cross pool heights: %s, update_height: %lu, "
+                ZJC_DEBUG("net: %u, get response pool heights, cross pool heights: %s, update_height: %lu, "
                     "cross_synced_max_heights_[i]: %lu, cross_pools_[i].latest_height(): %lu, cross_heights[i]: %lu",
-                    (i + network::kConsensusShardBeginNetworkId), sync_debug.c_str(), cross_debug.c_str(), update_height,
+                    (i + network::kConsensusShardBeginNetworkId), cross_debug.c_str(), update_height,
                     cross_synced_max_heights_[i], cross_pools_[i].latest_height(),
                     cross_heights[i]);
                 cross_synced_max_heights_[i] = cross_heights[i];
