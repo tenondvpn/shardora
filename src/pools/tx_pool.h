@@ -334,9 +334,9 @@ private:
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count);
-    void GetTxById(
+    void GetTxByHash(
         std::map<std::string, TxItemPtr>& src_prio_map,
-        const std::string& gid,
+        const std::string& hash,
         pools::TxItemPtr& tx);    
     void InitHeightTree();
     void InitLatestInfo() {

@@ -209,27 +209,32 @@ void TxPool::GetTxByIds(
         std::vector<std::string> gids,
         std::map<std::string, TxItemPtr>& res_map) {
     for (const auto& gid : gids) {
+        auto it = gid_map_.find(gid);
+        if (it == gid_map_.end()) {
+            continue;
+        }
+        auto hash = it->second->unique_tx_hash;
         TxItemPtr tx = nullptr;
-        GetTxById(universal_prio_map_, gid, tx);
+        GetTxByHash(universal_prio_map_, hash, tx);
         if (tx) {
             res_map[tx->unique_tx_hash] = tx;
             continue;
         }
-        GetTxById(prio_map_, gid, tx);
+        GetTxByHash(prio_map_, hash, tx);
         if (tx) {
             res_map[tx->unique_tx_hash] = tx;
             continue;
         }
-        GetTxById(consensus_tx_map_, gid, tx);
+        GetTxByHash(consensus_tx_map_, hash, tx);
         res_map[tx->unique_tx_hash] = tx;
     }
 }
 
-void TxPool::GetTxById(
+void TxPool::GetTxByHash(
         std::map<std::string, TxItemPtr>& src_prio_map,
-        const std::string& gid,
+        const std::string& hash,
         TxItemPtr& tx) {
-    auto iter = src_prio_map.find(gid);
+    auto iter = src_prio_map.find(hash);
     if (iter == src_prio_map.end()) {
         return;
     }
