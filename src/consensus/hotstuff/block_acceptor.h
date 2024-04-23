@@ -5,6 +5,7 @@
 #include <consensus/consensus_utils.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/types.h>
+#include <consensus/zbft/contract_gas_prepayment.h>
 #include <consensus/zbft/waiting_txs_pools.h>
 #include <dht/dht_key.h>
 #include <functional>
@@ -21,10 +22,6 @@ class VssManager;
 
 namespace contract {
 class ContractManager;
-}
-
-namespace consensus {
-class ContractGasPrepayment;
 }
 
 namespace pools {
