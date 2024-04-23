@@ -46,10 +46,10 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
         return Status::kError;
     }
 
-    // // 如果有 qc，则 qc 指向的块必须存在
-    // if (view_block->qc && !QCRef(view_block)) {
-    //     return Status::kError;
-    // }
+    // 如果有 qc，则 qc 指向的块必须存在
+    if (view_block->qc && !QCRef(view_block)) {
+        return Status::kError;
+    }
 
     // 分叉数上限验证，避免恶意的无用分叉消耗内存
     if (view_blocks_at_height_[view_block->view].size() > MaxBlockNumForView) {
