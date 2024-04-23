@@ -841,7 +841,8 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     }
 
     if (prepayment < tx_msg.amount() + tx_msg.gas_limit() * tx_msg.gas_price()) {
-        ZJC_DEBUG("failed add contract call. %s, prepayment: %lu, tx_msg.amount(): %lu, tx_msg.gas_limit(): %lu, tx_msg.gas_price(): %lu, all: %lu",
+        ZJC_DEBUG("failed add contract call. %s, prepayment: %lu, tx_msg.amount(): %lu, "
+            "tx_msg.gas_limit(): %lu, tx_msg.gas_price(): %lu, all: %lu",
             common::Encode::HexEncode(tx_msg.to()).c_str(),
             prepayment,
             tx_msg.amount(),
@@ -882,7 +883,9 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-    ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
+    ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", 
+        msg_ptr->address_info->pool_index(), 
+        msg_queues_[msg_ptr->address_info->pool_index()].size());
     //     ZJC_INFO("success add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
 }
 
