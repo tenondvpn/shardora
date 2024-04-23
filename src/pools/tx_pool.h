@@ -48,6 +48,9 @@ public:
         const std::map<std::string, pools::TxItemPtr>& invalid_txs, 
         zbft::protobuf::TxBft* txbft, 
         uint32_t count);
+    void GetTxByIds(
+            std::vector<std::string> gids,
+            std::map<std::string, TxItemPtr>& res_map);    
     void TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
     void TxRecover(std::map<std::string, TxItemPtr>& txs);
     void CheckTimeoutTx();
@@ -331,6 +334,10 @@ private:
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count);
+    void GetTxByHash(
+        std::map<std::string, TxItemPtr>& src_prio_map,
+        const std::string& hash,
+        pools::TxItemPtr& tx);    
     void InitHeightTree();
     void InitLatestInfo() {
         pools::protobuf::PoolLatestInfo pool_info;

@@ -102,7 +102,6 @@ private:
     std::shared_ptr<consensus::WaitingTxsPools> tx_pools_ = nullptr;
     std::unordered_map<pools::protobuf::StepType, TxsFunc> txs_func_map_;
     zjcvm::ZjchainHost zjc_host;
-    std::shared_ptr<db::DbWriteBatch> db_batch_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
