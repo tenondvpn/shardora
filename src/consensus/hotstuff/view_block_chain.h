@@ -21,6 +21,9 @@ using ViewBlockMinHeap =
                         std::vector<std::shared_ptr<ViewBlock>>,
                         CompareViewBlock>;
 
+
+static const int MaxBlockNumForView = 7;
+
 // Tree of view blocks, showing the parent-child relationship of view blocks
 // Notice: the status of view block is not memorized here.
 class ViewBlockChain {
@@ -104,6 +107,17 @@ public:
 
     void Print() const;
     void PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent = "") const;
+
+    std::shared_ptr<ViewBlock> QCRef(const std::shared_ptr<ViewBlock>& view_block) {
+        if (view_block->qc) {
+            auto it2 = view_blocks_.find(view_block->qc->view_block_hash);
+            if (it2 == view_blocks_.end()) {
+                return nullptr;
+            }
+            return it2->second;
+        }
+        return nullptr;
+    }
     
 private:
     // prune the branch starting from view_block
@@ -111,6 +125,7 @@ private:
     Status PruneHistoryTo(const std::shared_ptr<ViewBlock>&);
     Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
     Status DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_block);
+    
     
     View prune_height_;
     std::shared_ptr<ViewBlock> start_block_;
