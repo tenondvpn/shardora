@@ -141,11 +141,6 @@ int HotstuffManager::Init(
         common::kConsensusMessage,
         std::bind(&HotstuffManager::HandleMessage, this, std::placeholders::_1));
 
-        // todo (定时出发共识逻辑待梳理
-    // transport::Processor::Instance()->RegisterProcessor(
-    //     common::kConsensusTimerMessage,
-    //     std::bind(&HotstuffManager::ConsensusTimerMessage, this, std::placeholders::_1));
-
     return kConsensusSuccess;
 }
 
@@ -164,9 +159,36 @@ enum MsgType {
     VOTE,
 };
 
-Status HotstuffManager::VerifyProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, const uint32_t& pool_index) {
+void HotstuffManager::DoCommitBlock(const view_block::protobuf::ViewBlockItem& pb_view_block, const uint32_t& pool_index) {
+    std::shared_ptr<ViewBlock> v_block;
+    Proto2ViewBlock(pb_view_block, v_block);
+    auto qc = v_block->qc;
+    std::shared_ptr<ViewBlock> pre_vb;
+    auto view_block_chain = v_block_mgr_->Chain(pool_index);
+    view_block_chain->Get(pb_view_block.parent_hash(), pre_vb);
+    auto f_view = qc->view;
+    auto s_viwe = pre_vb->qc->view;
+    if (f_view == s_viwe + 1) {
+        auto t_view = s_viwe -1;
+        auto p_pre_hash = pre_vb->parent_hash;
+        std::shared_ptr<ViewBlock> p_pre_vb;
+        if (view_block_chain->Has(p_pre_hash)) {
+            view_block_chain->Get(p_pre_hash, p_pre_vb);
+            if (p_pre_vb->qc->view == t_view) {
+                // todo 执行commit块之间的交易信息
+                std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
+                view_block_chain->PruneTo(p_pre_vb->hash, forked_blockes, true);
+                // todo forked_blockes交易回退
+                view_block_chain->SetLatestCommittedBlock(p_pre_vb);
+                view_block_chain->SetLatestLockedBlock(pre_vb);
+            }
+        }
+    } 
+}
+
+Status HotstuffManager::VerifyViewBlockItem(const view_block::protobuf::ViewBlockItem& pb_view_block, 
+    const uint32_t& pool_index, const uint32_t& elect_height) {
     Status ret = Status::kSuccess;
-    view_block::protobuf::ViewBlockItem pb_view_block = pro_msg.view_item();
     auto block_view = pb_view_block.view();
     auto view_block_chain = v_block_mgr_->Chain(pool_index);
     if (view_block_chain->GetMaxHeight() >= block_view) {
@@ -192,7 +214,7 @@ Status HotstuffManager::VerifyProposeMsg(const hotstuff::protobuf::ProposeMsg& p
         return Status::kError;
     }
     auto qc = v_block->qc;
-    if (crypto_->Verify(pro_msg.elect_height(), qc->view_block_hash, qc->bls_agg_sign) != Status::kSuccess) {
+    if (crypto_->Verify(elect_height, qc->view_block_hash, qc->bls_agg_sign) != Status::kSuccess) {
         ZJC_ERROR("Verify qc is error.");
         return Status::kError; 
     }
@@ -200,13 +222,6 @@ Status HotstuffManager::VerifyProposeMsg(const hotstuff::protobuf::ProposeMsg& p
         ZJC_ERROR("qc view is error.");
         return Status::kError; 
     }
-
-    block::protobuf::Block block;
-    if (!block.ParseFromString(pb_view_block.block_str())) {
-        ZJC_ERROR("block_str message is error.");
-        return Status::kError;
-    }
-    // todo ret = block 交易信息验证 + 执行（kv内存）
 
     // hotstuff condition
     std::shared_ptr<ViewBlock> qc_view_block;
@@ -225,29 +240,7 @@ Status HotstuffManager::VerifyProposeMsg(const hotstuff::protobuf::ProposeMsg& p
         ZJC_ERROR("add view block error.");
         return Status::kError;
     }
-    // 1、验证是否存在3个连续qc，设置commit，lock qc状态；2、提交commit块之间的交易信息；3、减枝保留最新commit块，回退分支的交易信息
-    auto f_view = qc->view;
-    auto s_viwe = pre_vb->qc->view;
-    if (f_view == s_viwe + 1) {
-        auto t_view = s_viwe -1;
-        auto p_pre_hash = pre_vb->parent_hash;
-        std::shared_ptr<ViewBlock> p_pre_vb;
-        if (view_block_chain->Has(p_pre_hash)) {
-            view_block_chain->Get(p_pre_hash, p_pre_vb);
-            if (p_pre_vb->qc->view == t_view) {
-                // todo 执行commit块之间的交易信息
-                std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
-                view_block_chain->PruneTo(p_pre_vb->hash, forked_blockes, true);
-                // todo forked_blockes交易回退
-                view_block_chain->SetLatestCommittedBlock(p_pre_vb);
-                view_block_chain->SetLatestLockedBlock(pre_vb);
-            }
-        }
-    }
-    // 切换视图
-    auto sync_info = std::make_shared<SyncInfo>();
-    sync_info->qc = qc;
-    pool_Pacemaker_[pool_index]->AdvanceView(sync_info);
+
     return ret;
 }
 
@@ -259,15 +252,34 @@ void HotstuffManager::DoVoteMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, c
         ZJC_ERROR("leader_idx message is error.");
         return;
     }
-    if (VerifyProposeMsg(pro_msg, pool_index) != Status::kSuccess) {
-        ZJC_ERROR("propose message is error.");
+    if (VerifyViewBlockItem(pb_view_block, pool_index, pro_msg.elect_height()) != Status::kSuccess) {
+        ZJC_ERROR("VerifyViewBlockItem is error.");
         return;
     }
-    
+        // 拆分
+    block::protobuf::Block block;
+    if (!block.ParseFromString(pb_view_block.block_str())) {
+        ZJC_ERROR("block_str message is error.");
+        // return Status::kError;
+    }
+    // todo ret = block 交易信息验证 + 执行（kv内存）
+    // 拆分
+    // 1、验证是否存在3个连续qc，设置commit，lock qc状态；2、提交commit块之间的交易信息；3、减枝保留最新commit块，回退分支的交易信息
+    DoCommitBlock(pb_view_block, pool_index);
+
+    // 切换视图
+    std::shared_ptr<ViewBlock> v_block;
+    Proto2ViewBlock(pb_view_block, v_block);
+    auto qc = v_block->qc;
+    auto sync_info = std::make_shared<SyncInfo>();
+    sync_info->qc = qc;
+    pool_Pacemaker_[pool_index]->AdvanceView(sync_info);
+
     hotstuff::protobuf::VoteMsg vote_msg;
     uint32_t replica_idx = elect_info_->GetElectItem()->LocalMember()->index;
     vote_msg.set_replica_idx(replica_idx);
     // todo 执行tx，block发生变化，更新view_block hash
+
     view_block::protobuf::ViewBlockItem view_block = pro_msg.view_item();
     HashStr view_block_hash = view_block.hash();
     vote_msg.set_view_block_hash(view_block_hash);
@@ -385,12 +397,17 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     assert(header.type() == common::kConsensusMessage);
 
     if (!header.has_hotstuff()) {
-        ZJC_WARN("transport message is error.");
+        ZJC_ERROR("transport message is error.");
         return;
     }
     auto& hotstuff_msg = header.hotstuff();
     if (hotstuff_msg.net_id() != common::GlobalInfo::Instance()->network_id()) {
+        ZJC_ERROR("net_id is error.");
         return;
+    }
+    if (hotstuff_msg.pool_index() >= common::kInvalidPoolIndex) {
+        ZJC_ERROR("pool index invalid[%d]!", hotstuff_msg.pool_index());
+        return ;
     }
     switch (hotstuff_msg.type())
     {
