@@ -481,4 +481,3 @@ void BlockAcceptor::BroadcastLocalTosBlock(
 } // namespace hotstuff
 
 } // namespace shardora
-

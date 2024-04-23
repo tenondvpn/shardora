@@ -144,6 +144,7 @@ Status Crypto::CreateQC(
     qc->bls_agg_sign = reconstructed_sign;
     qc->view = view_block->view;
     qc->view_block_hash = view_block->hash;
+    qc->msg_hash = GetQCMsgHash(qc->view, qc->view_block_hash);
     return Status::kSuccess;
 }
 
@@ -157,6 +158,7 @@ Status Crypto::CreateTC(
     }
     tc->bls_agg_sign = reconstructed_sign;
     tc->view = view;
+    tc->msg_hash = GetViewHash(tc->view);
     return Status::kSuccess;    
 }
 

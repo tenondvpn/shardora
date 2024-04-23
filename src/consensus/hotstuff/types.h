@@ -22,18 +22,21 @@ typedef std::string HashStr;
 static const View GenesisView = 0;
 static const View BeforeGenesisView = std::numeric_limits<uint64_t>::max();
 
-HashStr GetViewHash(View view);
+HashStr GetViewHash(const View& view);
+HashStr GetQCMsgHash(const View& view, const HashStr& view_block_hash);
 
 struct QC {
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
     View view; // view_block_hash 对应的 view
     HashStr view_block_hash;
+    HashStr msg_hash; // 对 view 和 view_block_hash 一起取 hash
 
     QC(const std::shared_ptr<libff::alt_bn128_G1>& sign, const View& v, const HashStr& hash) :
         bls_agg_sign(sign), view(v), view_block_hash(hash) {
         if (sign == nullptr) {
             bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
         }
+        msg_hash = GetQCMsgHash(view, view_block_hash);
     }
 
     QC() {
@@ -42,6 +45,10 @@ struct QC {
     
     std::string Serialize() const;
     bool Unserialize(const std::string& str);
+
+    inline bool Valid() const {
+        return msg_hash == GetQCMsgHash(view, view_block_hash);
+    }
 };
 
 struct TC : public QC {
@@ -77,6 +84,9 @@ struct ViewBlock {
     ViewBlock() : qc(nullptr) {};
 
     inline bool Valid() {
+        if (qc && !qc->Valid()) {
+            return false;
+        }
         return hash != "" && hash == DoHash(); 
     }
     

@@ -7,10 +7,18 @@ namespace shardora {
 
 namespace hotstuff {
 
-HashStr GetViewHash(View view) {
+HashStr GetViewHash(const View& view) {
     std::string msg;
     msg.reserve(sizeof(view));
     msg.append((char*)&(view), sizeof(view));
+    return common::Hash::keccak256(msg);
+}
+
+HashStr GetQCMsgHash(const View &view, const HashStr &view_block_hash) {
+    std::string msg;
+    msg.reserve(sizeof(view) + sizeof(view_block_hash));
+    msg.append((char*)&(view), sizeof(view));
+    msg.append((char*)&(view_block_hash), sizeof(view_block_hash));
     return common::Hash::keccak256(msg);    
 }
 
@@ -24,6 +32,7 @@ std::string QC::Serialize() const {
     qc_proto.set_sign_z(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->Z));
     qc_proto.set_view(view);
     qc_proto.set_view_block_hash(view_block_hash);
+    qc_proto.set_msg_hash(msg_hash);
         
     return qc_proto.SerializeAsString();
 }
@@ -52,6 +61,7 @@ bool QC::Unserialize(const std::string& str) {
     *bls_agg_sign = sign;
     view = qc_proto.view();
     view_block_hash = qc_proto.view_block_hash();
+    msg_hash = qc_proto.msg_hash();
     
     return true;
 }
