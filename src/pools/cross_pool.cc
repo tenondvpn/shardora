@@ -30,10 +30,6 @@ void CrossPool::Init(
 }
 
 void CrossPool::InitHeightTree() {
-    if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
-        return;
-    }
-
     height_tree_ptr_ = std::make_shared<HeightTreeLevel>(
         des_sharding_id_,
         pool_index_,
