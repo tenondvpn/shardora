@@ -150,7 +150,7 @@ void TxPoolManager::FlushHeightTree() {
     }
 
     if (cross_pools_ != nullptr) {
-        for (uint32_t i = network::kRootCongressNetworkId; i < now_max_sharding_id_; ++i) {
+        for (uint32_t i = network::kRootCongressNetworkId; i <= now_max_sharding_id_; ++i) {
             cross_pools_[i].FlushHeightTree(db_batch);
         }
     }
@@ -585,7 +585,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             sync_debug += std::to_string(tx_pool_[i].latest_height()) + " ";
         }
 
-        for (uint32_t i = network::kRootCongressNetworkId; i < now_max_sharding_id_; ++i) {
+        for (uint32_t i = network::kRootCongressNetworkId; i <= now_max_sharding_id_; ++i) {
             sync_heights->add_cross_heights(cross_pools_[i].latest_height());
             cross_debug += std::to_string(cross_pools_[i].latest_height()) + " ";
         }
