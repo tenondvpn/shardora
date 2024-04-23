@@ -105,7 +105,10 @@ public:
         }
 
         ZJC_DEBUG("succcess set elect max sharding id: %u", sharding_id);
-        now_max_sharding_id_ = sharding_id;
+        if (sharding_id > now_max_sharding_id_) {
+            now_max_sharding_id_ = sharding_id;
+        }
+        
         cross_block_mgr_->UpdateMaxShardingId(sharding_id);
     }
 
