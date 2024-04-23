@@ -87,7 +87,7 @@ public:
     HotstuffManager();
     virtual ~HotstuffManager();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
-    Status HotstuffManager::VerifyViewBlockItem(const view_block::protobuf::ViewBlockItem& pb_view_block, 
+    Status VerifyViewBlockItem(const view_block::protobuf::ViewBlockItem& pb_view_block, 
         const uint32_t& pool_index, const uint32_t& elect_height);
     void DoCommitBlock(const view_block::protobuf::ViewBlockItem& pb_view_block, const uint32_t& pool_index);
 private:
