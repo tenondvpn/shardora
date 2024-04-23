@@ -187,7 +187,7 @@ void HotstuffManager::DoCommitBlock(const view_block::protobuf::ViewBlockItem& p
     } 
 }
 
-Status HotstuffManager::VerifyViewBlockItem(const std::shared_ptr<ViewBlock>& v_block, 
+Status HotstuffManager::VerifyViewBlock(const std::shared_ptr<ViewBlock>& v_block, 
     const std::shared_ptr<ViewBlockChain>& view_block_chain, const uint32_t& elect_height) {
     Status ret = Status::kSuccess;
     auto block_view = v_block->view;
@@ -252,7 +252,7 @@ void HotstuffManager::DoVoteMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, c
     }
     
     if (VerifyViewBlock(v_block, view_block_chain, pro_msg.elect_height()) != Status::kSuccess) {
-        ZJC_ERROR("VerifyViewBlockItem is error.");
+        ZJC_ERROR("VerifyViewBlock is error.");
         return;
     }
     
