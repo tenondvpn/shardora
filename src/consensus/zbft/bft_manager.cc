@@ -3050,7 +3050,7 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
 
 void BftManager::LeaderBroadcastBlock(
         const std::shared_ptr<block::protobuf::Block>& block) {
-//     BroadcastWaitingBlock(thread_index, block);
+    BroadcastWaitingBlock(block);
     if (block->pool_index() == common::kRootChainPoolIndex) {
         if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
             BroadcastBlock(network::kNodeNetworkId, block);
