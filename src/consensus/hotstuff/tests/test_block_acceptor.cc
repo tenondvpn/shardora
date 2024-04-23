@@ -21,8 +21,13 @@ namespace pools {
 class TxPoolManager;
 }
 
+namespace consensus {
+class ContractGasPrepayment;
+}
+
 namespace block {
 class BlockManager;
+class AccountManager;
 }
 
 namespace hotstuff {
