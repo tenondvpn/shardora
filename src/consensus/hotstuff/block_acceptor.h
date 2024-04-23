@@ -1,5 +1,6 @@
 #pragma once
 
+#include <block/account_manager.h>
 #include <common/utils.h>
 #include <consensus/consensus_utils.h>
 #include <consensus/hotstuff/elect_info.h>
@@ -32,7 +33,6 @@ class TxPoolManager;
 
 namespace block {
 class BlockManager;
-class AccountManager;
 }
 
 namespace hotstuff {
