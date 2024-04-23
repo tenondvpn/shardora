@@ -770,7 +770,12 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     assert(header.type() == common::kConsensusMessage);
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (msg_ptr->header.zbft().sync_block() && msg_ptr->header.zbft().has_block()) {
-        assert(false);
+        if (!msg_ptr->header.zbft().block().is_commited_block()) {
+            return;
+        }
+
+        auto block_ptr = std::make_shared<block::protobuf::Block>(msg_ptr->header.zbft().block());
+        HandleSyncedBlock(block_ptr);
         return;
     }
 
