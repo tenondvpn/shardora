@@ -592,8 +592,8 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
 
         transport::TcpTransport::Instance()->SetMessageHash(msg);
         transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
-        ZJC_DEBUG("response pool heights: %s, cross pool heights: %s",
-            sync_debug.c_str(), cross_debug.c_str());
+        ZJC_DEBUG("response pool heights: %s, cross pool heights: %s, now_max_sharding_id_: %u",
+            sync_debug.c_str(), cross_debug.c_str(), now_max_sharding_id_);
     } else {
         auto& heights = msg_ptr->header.sync_heights().heights();
         if (heights.size() != common::kInvalidPoolIndex) {
