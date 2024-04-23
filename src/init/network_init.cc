@@ -1097,6 +1097,7 @@ void NetworkInit::HandleTimeBlock(
         const std::shared_ptr<block::protobuf::Block>& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
+    ZJC_DEBUG("time block coming.");
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kAttrTimerBlock) {
             if (tx.storages(i).value().size() != 16) {
