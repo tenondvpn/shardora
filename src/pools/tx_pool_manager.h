@@ -86,7 +86,6 @@ public:
             index = block_item->network_id() - network::kConsensusShardBeginNetworkId;
         } else {
             if (block_item->network_id() != network::kRootCongressNetworkId) {
-                assert(false);
                 return;
             }
         }
