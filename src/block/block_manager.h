@@ -151,7 +151,7 @@ private:
         const std::string& block_hash,
         const elect::protobuf::ElectBlock& elect_block);
     void RootHandleNormalToTx(
-        uint64_t height,
+        const block::protobuf::Block& block,
         pools::protobuf::ToTxMessage& to_txs,
         db::DbWriteBatch& db_batch);
     void HandleStatisticBlock(

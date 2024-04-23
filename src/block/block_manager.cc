@@ -625,13 +625,13 @@ void BlockManager::HandleNormalToTx(
             HandleLocalNormalToTx(to_txs, tx.step(), tx.storages(0).value());
         } else {
             ZJC_DEBUG("root handle normal to tx.");
-            RootHandleNormalToTx(block.height(), to_txs, db_batch);
+            RootHandleNormalToTx(block, to_txs, db_batch);
         }
     }
 }
 
 void BlockManager::RootHandleNormalToTx(
-        uint64_t height,
+        const block::protobuf::Block& block,
         pools::protobuf::ToTxMessage& to_txs,
         db::DbWriteBatch& db_batch) {
     // 将 NormalTo 中的多个 tx 拆分成多个 kRootCreateAddress tx
@@ -651,7 +651,7 @@ void BlockManager::RootHandleNormalToTx(
             account_info->set_addr(tos_item.des());
             account_info->set_type(address::protobuf::kContract);
             account_info->set_sharding_id(tos_item.sharding_id());
-            account_info->set_latest_height(height);
+            account_info->set_latest_height(block.height());
             account_info->set_balance(tos_item.amount());
             prefix_db_->AddAddressInfo(tos_item.des(), *account_info);
             ZJC_DEBUG("create add contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
@@ -672,7 +672,11 @@ void BlockManager::RootHandleNormalToTx(
                     tos_item.des(),
                     tos_item.join_infos(i),
                     db_batch);
-                ZJC_DEBUG("success handle kElectJoin tx: %s", common::Encode::HexEncode(tos_item.des()).c_str());
+                ZJC_DEBUG("success handle kElectJoin tx: %s, net: %u, pool: %u, block net: %u, block pool: %u, block height: %lu", 
+                    common::Encode::HexEncode(tos_item.des()).c_str(), 
+                    tos_item.sharding_id(),
+                    tos_item.pool_index(),
+                    block.network_id(), block.pool_index(), block.height());
             }
 
             continue;
@@ -689,7 +693,7 @@ void BlockManager::RootHandleNormalToTx(
         tx->set_to(tos_item.des());
         auto gid = common::Hash::keccak256(
             tos_item.des() + "_" +
-            std::to_string(height) + "_" +
+            std::to_string(block.height()) + "_" +
             std::to_string(i));
         tx->set_gas_limit(0);
         tx->set_amount(tos_item.amount());
