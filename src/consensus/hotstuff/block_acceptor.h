@@ -95,17 +95,17 @@ public:
     BlockAcceptor(const BlockAcceptor&) = delete;
     BlockAcceptor& operator=(const BlockAcceptor&) = delete;
 
-    // Accept a block and exec txs in it.
+    // Accept a proposed block and exec txs in it.
     Status Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& blockInfo) override;
-    // Accept a block and txs in it from sync msg.
+    // Accept a synced block.
     Status AcceptSync(const std::shared_ptr<blockInfoSync>& blockInfoSync) override;
     // Commit a block and execute its txs.
     Status Commit(std::shared_ptr<block::protobuf::Block>& block) override;
-    // Fetch local txs to send to leader
+    // Fetch local txs and sync them to leader
     Status FetchTxsFromPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) override;
-    // Add txs to local pool
+    // Add txs from hotstuff msg to local pool
     Status AddTxsToPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) override;
-
+    // Return expired or invalid block txs to pool
     Status Return(const std::shared_ptr<block::protobuf::Block>& block) override {
         // return txs to the pool
         for (uint32_t i = 0; i < block->tx_list().size(); i++) {

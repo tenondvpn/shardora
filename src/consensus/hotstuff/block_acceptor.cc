@@ -307,7 +307,7 @@ bool BlockAcceptor::IsBlockValid(const std::shared_ptr<block::protobuf::Block>& 
 void BlockAcceptor::MarkBlockTxsAsUsed(const std::shared_ptr<block::protobuf::Block>& block) {
     // mark txs as used
     std::vector<std::string> gids;
-    for (uint32_t i = 0; i < block->tx_list_size(); i++) {
+    for (uint32_t i = 0; i < block->tx_list().size(); i++) {
         auto& tx = block->tx_list(i);
         gids.push_back(tx.gid());
     }
