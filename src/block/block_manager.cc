@@ -610,7 +610,9 @@ void BlockManager::HandleNormalToTx(
             }
         }
 
-        if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
+        if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId && 
+                common::GlobalInfo::Instance()->network_id() != 
+                (network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
             if (to_txs.to_heights().sharding_id() != common::GlobalInfo::Instance()->network_id()) {
                 ZJC_WARN("sharding invalid: %u, %u, to hash: %s",
                     to_txs.to_heights().sharding_id(),
@@ -1059,7 +1061,10 @@ void BlockManager::HandleJoinElectTx(
 
             prefix_db_->SaveNodeVerificationVector(tx.from(), join_info, db_batch);
             ZJC_DEBUG("success handle kElectJoin tx: %s, net: %u, pool: %u, height: %lu",
-                common::Encode::HexEncode(tx.from()).c_str(), block.network_id(), block.pool_index(), block.height());
+                common::Encode::HexEncode(tx.from()).c_str(), 
+                block.network_id(), 
+                block.pool_index(), 
+                block.height());
             break;
         }
     }
