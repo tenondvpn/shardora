@@ -205,6 +205,38 @@ void TxPool::GetTx(
     }
 }
 
+void TxPool::GetTxByIds(
+        std::vector<std::string> gids,
+        std::map<std::string, TxItemPtr>& res_map) {
+    for (const auto& gid : gids) {
+        TxItemPtr tx = nullptr;
+        GetTxById(universal_prio_map_, gid, tx);
+        if (tx) {
+            res_map[tx->unique_tx_hash] = tx;
+            continue;
+        }
+        GetTxById(prio_map_, gid, tx);
+        if (tx) {
+            res_map[tx->unique_tx_hash] = tx;
+            continue;
+        }
+        GetTxById(consensus_tx_map_, gid, tx);
+        res_map[tx->unique_tx_hash] = tx;
+    }
+}
+
+void TxPool::GetTxById(
+        std::map<std::string, TxItemPtr>& src_prio_map,
+        const std::string& gid,
+        TxItemPtr& tx) {
+    auto iter = src_prio_map.find(gid);
+    if (iter == src_prio_map.end()) {
+        return;
+    }
+    assert(!iter->second->unique_tx_hash.empty());
+    iter = src_prio_map.erase(iter);
+}
+
 void TxPool::CheckTimeoutTx() {
 //     common::AutoSpinLock auto_lock(mutex_);
     auto now_tm = common::TimeUtils::TimestampUs();

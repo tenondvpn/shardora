@@ -234,7 +234,8 @@ Status BlockAcceptor::addTxsToPool(
         txs_ptr->txs = txs_map;
     }
 
-    int res = pools_mgr_->BackupConsensusAddTxs(pool_idx(), txs_map);
+    // 放入交易池并弹出（避免重复打包）
+    int res = pools_mgr_->BackupConsensusAddTxsWithPop(pool_idx(), txs_map);
     if (res != pools::kPoolsSuccess) {
         ZJC_ERROR("invalid consensus, txs invalid.");
         return Status::kError;
