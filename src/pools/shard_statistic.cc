@@ -274,6 +274,8 @@ void ShardStatistic::HandleCrossShard(
         proto_cross_item->set_src_pool(block.pool_index());
         proto_cross_item->set_height(block.height());
         proto_cross_item->set_des_shard(cross_item.des_net);
+        ZJC_DEBUG("succcess add cross statistic shard: %u, pool: %u, height: %lu, des: %u",
+            src_shard, block.pool_index(), block.height(), cross_item.des_net);
     } else if (cross_item.cross_ptr != nullptr) {
         for (int32_t i = 0; i < cross_item.cross_ptr->crosses_size(); ++i) {
             auto* proto_cross_item = cross_statistic.add_crosses();
@@ -281,6 +283,11 @@ void ShardStatistic::HandleCrossShard(
             proto_cross_item->set_src_pool(cross_item.cross_ptr->crosses(i).src_pool());
             proto_cross_item->set_height(cross_item.cross_ptr->crosses(i).height());
             proto_cross_item->set_des_shard(cross_item.cross_ptr->crosses(i).des_shard());
+            ZJC_DEBUG("succcess add cross statistic shard: %u, pool: %u, height: %lu, des: %u",
+                cross_item.cross_ptr->crosses(i).src_shard(), 
+                cross_item.cross_ptr->crosses(i).src_pool(), 
+                cross_item.cross_ptr->crosses(i).height(),
+                cross_item.cross_ptr->crosses(i).des_shard());
         }
     }
 }
