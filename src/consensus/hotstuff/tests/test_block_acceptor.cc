@@ -10,6 +10,23 @@
 
 namespace shardora {
 
+namespace contract {
+class ContractManager;
+}
+
+namespace pools {
+class TxPoolManager;
+}
+
+namespace consensus {
+class ContractGasPrepayment;
+}
+
+namespace block {
+class BlockManager;
+class AccountManager;
+}
+
 namespace hotstuff {
 
 namespace test {

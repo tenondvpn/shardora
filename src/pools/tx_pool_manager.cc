@@ -471,23 +471,6 @@ int TxPoolManager::BackupConsensusAddTxs(
     return res;
 }
 
-int TxPoolManager::BackupConsensusAddTxsWithPop(
-        uint32_t pool_index, 
-        const std::map<std::string, pools::TxItemPtr>& txs) {
-    int res = kPoolsSuccess;
-    BackupConsensusAddTxs(pool_index, txs);
-
-    // Pop txs from pool
-    std::vector<std::string> gids;
-    for (const auto& tx : txs) {
-        gids.push_back(tx.second->tx_info.gid());
-    }
-    
-    std::map<std::string, pools::TxItemPtr> res_map;
-    tx_pool_[pool_index].GetTxByIds(gids, res_map);
-    return res;
-}
-
 void TxPoolManager::ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs) {
     std::vector<pools::TxItemPtr> valid_txs;
     for (uint32_t i = 0; i < txs.size(); ++i) {
@@ -1275,6 +1258,10 @@ void TxPoolManager::GetTx(
 //         tx_pool_[pool_index].oldest_timestamp(), min_valid_timestamp_,
 //         ((int64_t)tx_pool_[pool_index].oldest_timestamp() - (int64_t)min_valid_timestamp_),
 //         tx_pool_[pool_index].tx_size(), min_valid_tx_count_, res_map.size());
+}
+
+void TxPoolManager::GetTxByGids(uint32_t pool_index, std::vector<std::string> gids, std::map<std::string, pools::TxItemPtr>& res_map) {
+    tx_pool_[pool_index].GetTxByIds(gids, res_map);
 }
 
 void TxPoolManager::TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs) {

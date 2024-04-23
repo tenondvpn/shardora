@@ -1,7 +1,5 @@
 #pragma once
 
-#include <block/account_manager.h>
-#include <block/block_manager.h>
 #include <common/utils.h>
 #include <consensus/consensus_utils.h>
 #include <consensus/hotstuff/elect_info.h>
@@ -11,7 +9,6 @@
 #include <dht/dht_key.h>
 #include <functional>
 #include <network/route.h>
-#include <pools/tx_pool_manager.h>
 #include <protos/block.pb.h>
 #include <protos/pools.pb.h>
 #include <timeblock/time_block_manager.h>
@@ -26,16 +23,17 @@ namespace contract {
 class ContractManager;
 }
 
-namespace consensus {
-class ContractGasPrepayment;
-}
-
 namespace pools {
 class TxPoolManager;
 }
 
+namespace consensus {
+class ContractGasPrepayment;
+}
+
 namespace block {
 class BlockManager;
+class AccountManager;
 }
 
 namespace hotstuff {
@@ -43,25 +41,35 @@ namespace hotstuff {
 // IBlockAcceptor is for block verification, block committion and block_txs' rollback
 class IBlockAcceptor {
 public:
-    // the block info struct used in BlockAcceptor
+    // proposed block info
     struct blockInfo {
         View view;
         std::shared_ptr<block::protobuf::Block> block;
         pools::protobuf::StepType tx_type;
         std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
     };
+
+    // synced block info
+    struct blockInfoSync {
+        View view;
+        std::shared_ptr<block::protobuf::Block> block;
+    };
     
     IBlockAcceptor() = default;
     virtual ~IBlockAcceptor() {};
 
-    // Accept a block and txs in it.
+    // Accept a block and txs in it from propose msg.
     virtual Status Accept(std::shared_ptr<blockInfo>&) = 0;
+    // Accept a block and txs in it from sync msg.
+    virtual Status AcceptSync(const std::shared_ptr<blockInfoSync>&) = 0;
     // Commit a block
     virtual Status Commit(std::shared_ptr<block::protobuf::Block>&) = 0;
     // Fetch local txs to send
     virtual Status FetchTxsFromPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>) = 0;
     // Add txs to local pool
     virtual Status AddTxsToPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>) = 0;
+    // Return block txs to pool
+    virtual Status Return(const std::shared_ptr<block::protobuf::Block>&) = 0;
 };
 
 class BlockAcceptor : public IBlockAcceptor {
@@ -88,14 +96,25 @@ public:
     BlockAcceptor(const BlockAcceptor&) = delete;
     BlockAcceptor& operator=(const BlockAcceptor&) = delete;
 
-    // Accept a block and exec txs in it.
+    // Accept a proposed block and exec txs in it.
     Status Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& blockInfo) override;
+    // Accept a synced block.
+    Status AcceptSync(const std::shared_ptr<blockInfoSync>& blockInfoSync) override;
     // Commit a block and execute its txs.
     Status Commit(std::shared_ptr<block::protobuf::Block>& block) override;
-    // Fetch local txs to send
+    // Fetch local txs and sync them to leader
     Status FetchTxsFromPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) override;
-    // Add txs to local pool
+    // Add txs from hotstuff msg to local pool
     Status AddTxsToPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) override;
+    // Return expired or invalid block txs to pool
+    Status Return(const std::shared_ptr<block::protobuf::Block>& block) override {
+        // return txs to the pool
+        for (uint32_t i = 0; i < uint32_t(block->tx_list().size()); i++) {
+            auto& gid = block->tx_list(i).gid();
+            pools_mgr_->RecoverTx(pool_idx_, gid);
+        }
+        return Status::kSuccess;
+    }    
     
 private:
     uint32_t pool_idx_;
@@ -124,7 +143,8 @@ private:
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr);
     
     bool IsBlockValid(const std::shared_ptr<block::protobuf::Block>&);
-    void FilterInvalidTxs(std::shared_ptr<consensus::WaitingTxsItem>&);
+    // 将 block txs 从交易池中取出
+    void MarkBlockTxsAsUsed(const std::shared_ptr<block::protobuf::Block>&);
     
     Status DoTransactions(
             const std::shared_ptr<consensus::WaitingTxsItem>&,
