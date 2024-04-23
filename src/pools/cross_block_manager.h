@@ -36,7 +36,7 @@ public:
         if (height == common::kInvalidUint64) {
             return;
         }
-        
+
         assert(shard_id < network::kConsensusShardEndNetworkId);
         if (cross_synced_max_heights_[shard_id] < height ||
                 cross_synced_max_heights_[shard_id] == common::kInvalidUint64) {
@@ -45,7 +45,7 @@ public:
         }
     }
 
-private:
+private: 
     void Ticking() {
         auto now_tm_ms = common::TimeUtils::TimestampMs();
         CheckCrossSharding();
@@ -115,6 +115,17 @@ private:
                     &block)) {
                 ZJC_DEBUG("failed get block net: %u, pool: %u, height: %lu",
                     sharding_id, common::kRootChainPoolIndex, check_height);
+
+                if (cross_checked_max_heights_[sharding_id] != common::kInvalidUint64) {
+                    uint32_t count = 0;
+                    for (uint64_t h = check_height; h <= cross_checked_max_heights_[sharding_id] && ++count < 64; ++h) {
+                        kv_sync_->AddSyncHeight(
+                                sharding_id,
+                                common::kRootChainPoolIndex,
+                                h,
+                                sync::kSyncPriLow);
+                    }
+                }
                 break;
             }
 
