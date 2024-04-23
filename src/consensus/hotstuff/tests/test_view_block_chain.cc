@@ -101,7 +101,7 @@ TEST_F(TestViewBlockChain, TestStore_Success) {
     // same block hash
     auto vb3 = GenViewBlock(genesis_->hash, genesis_->view+1);
     s = chain_->Store(vb3);
-    EXPECT_TRUE(s == Status::kError);
+    EXPECT_EQ(s, Status::kError);
     
     std::shared_ptr<ViewBlock> actual_vb3 = nullptr;
     chain_->Get(vb3->hash, actual_vb3);
