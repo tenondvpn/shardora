@@ -972,7 +972,7 @@ void NetworkInit::GetNetworkNodesFromConf(const YAML::Node& genesis_config,
             assert(genesis_config["shards"].size() == shard_num);
             
             for (uint32_t net_i = 0; net_i < genesis_config["shards"].size(); net_i++) {
-                auto shard_config = genesis_config["scross_pools_hards"][net_i];
+                auto shard_config = genesis_config["shards"][net_i];
                 std::vector<GenisisNodeInfoPtr> cons_genesis_nodes;
                 uint32_t net_id = shard_config["net_id"].as<uint32_t>();
                 
