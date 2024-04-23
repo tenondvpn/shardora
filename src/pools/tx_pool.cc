@@ -226,7 +226,10 @@ void TxPool::GetTxByIds(
             continue;
         }
         GetTxByHash(consensus_tx_map_, hash, tx);
-        res_map[tx->unique_tx_hash] = tx;
+        if (tx) {
+            res_map[tx->unique_tx_hash] = tx;
+            continue;
+        }
     }
 }
 
