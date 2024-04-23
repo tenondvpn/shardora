@@ -98,13 +98,18 @@ TEST_F(TestViewBlockChain, TestStore_Success) {
     chain_->Get(vb2->hash, actual_vb2);
     AssertEq(vb2, actual_vb2);
 
-    auto vb3 = GenViewBlock(genesis_->hash, genesis_->view+1);
-    s = chain_->Store(vb3);
+    // same block hash
+    s = chain_->Store(vb);
+    EXPECT_EQ(s, Status::kError);
+
+    // 允许不连续的 view
+    auto vb4 = GenViewBlock(vb->hash, vb2->view+10);
+    s = chain_->Store(vb4);
     EXPECT_TRUE(s == Status::kSuccess);
     
-    std::shared_ptr<ViewBlock> actual_vb3 = nullptr;
-    chain_->Get(vb3->hash, actual_vb3);
-    AssertEq(vb3, actual_vb3);
+    std::shared_ptr<ViewBlock> actual_vb4 = nullptr;
+    chain_->Get(vb4->hash, actual_vb4);
+    AssertEq(vb4, actual_vb4);    
 }
 
 TEST_F(TestViewBlockChain, TestStore_Fail) {
@@ -120,12 +125,6 @@ TEST_F(TestViewBlockChain, TestStore_Fail) {
     s = chain_->Store(vb2);
     EXPECT_TRUE(s != Status::kSuccess);    
     EXPECT_FALSE(chain_->Has(vb2->hash));
-
-    // invalid view
-    auto vb3 = GenViewBlock(vb->hash, vb->view+2);
-    s = chain_->Store(vb3);
-    EXPECT_TRUE(s != Status::kSuccess);
-    EXPECT_FALSE(chain_->Has(vb3->hash));    
 }
 
 TEST_F(TestViewBlockChain, TestGet) {}
