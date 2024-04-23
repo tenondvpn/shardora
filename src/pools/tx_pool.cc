@@ -238,6 +238,7 @@ void TxPool::GetTxByHash(
     if (iter == src_prio_map.end()) {
         return;
     }
+    tx = iter->second;
     assert(!iter->second->unique_tx_hash.empty());
     iter = src_prio_map.erase(iter);
 }
