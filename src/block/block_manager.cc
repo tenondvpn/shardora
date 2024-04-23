@@ -981,6 +981,8 @@ void BlockManager::AddNewBlock(
                 block_item->network_id() + network::kConsensusWaitingShardOffset !=
                 common::GlobalInfo::Instance()->network_id()) {
             pools_mgr_->OnNewCrossBlock(block_item);
+            ZJC_DEBUG("new cross block coming: %u, %u, %lu",
+                block_item->network_id(), block_item->pool_index(), block_item->height());
         }
     }
 
