@@ -1265,6 +1265,7 @@ void BlockManager::CreateStatisticTx() {
     assert(now_thread_id_tmp == tmp_thread_id_tmp);
 #endif
     if (create_statistic_tx_cb_ == nullptr) {
+        ZJC_DEBUG("create_statistic_tx_cb_ == nullptr");
         return;
     }
 
@@ -1275,6 +1276,7 @@ void BlockManager::CreateStatisticTx() {
             elect_statistic,
             cross_statistic,
             &timeblock_height) != pools::kPoolsSuccess) {
+        ZJC_DEBUG("failed StatisticWithHeights!");
         return;
     }
 
