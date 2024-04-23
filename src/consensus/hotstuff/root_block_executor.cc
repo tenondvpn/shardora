@@ -26,6 +26,7 @@ Status RootBlockExecutor::DoTransactionAndCreateTxBlock(
     } else {
         RootCreateAccountAddressBlock(txs_ptr, block);
     }
+    
     return Status::kSuccess;
 }
 

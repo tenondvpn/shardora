@@ -43,19 +43,27 @@ namespace hotstuff {
 // IBlockAcceptor is for block verification, block committion and block_txs' rollback
 class IBlockAcceptor {
 public:
-    // the block info struct used in BlockAcceptor
+    // proposed block info
     struct blockInfo {
         View view;
         std::shared_ptr<block::protobuf::Block> block;
         pools::protobuf::StepType tx_type;
         std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
     };
+
+    // synced block info
+    struct blockInfoSync {
+        View view;
+        std::shared_ptr<block::protobuf::Block> block;
+    };
     
     IBlockAcceptor() = default;
     virtual ~IBlockAcceptor() {};
 
-    // Accept a block and txs in it.
+    // Accept a block and txs in it from propose msg.
     virtual Status Accept(std::shared_ptr<blockInfo>&) = 0;
+    // Accept a block and txs in it from sync msg.
+    virtual Status AcceptSync(const std::shared_ptr<blockInfoSync>&) = 0;
     // Commit a block
     virtual Status Commit(std::shared_ptr<block::protobuf::Block>&) = 0;
     // Fetch local txs to send
@@ -90,6 +98,8 @@ public:
 
     // Accept a block and exec txs in it.
     Status Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& blockInfo) override;
+    // Accept a block and txs in it from sync msg.
+    Status AcceptSync(const std::shared_ptr<blockInfoSync>& blockInfoSync) override;
     // Commit a block and execute its txs.
     Status Commit(std::shared_ptr<block::protobuf::Block>& block) override;
     // Fetch local txs to send
@@ -124,7 +134,8 @@ private:
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr);
     
     bool IsBlockValid(const std::shared_ptr<block::protobuf::Block>&);
-    void FilterInvalidTxs(std::shared_ptr<consensus::WaitingTxsItem>&);
+    // 将 block txs 从交易池中取出
+    void MarkBlockTxsAsUsed(const std::shared_ptr<block::protobuf::Block>&);
     
     Status DoTransactions(
             const std::shared_ptr<consensus::WaitingTxsItem>&,

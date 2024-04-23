@@ -52,6 +52,7 @@ BlockAcceptor::BlockAcceptor(
 
 BlockAcceptor::~BlockAcceptor(){};
 
+// Accept 验证 Leader 新提案信息，并执行 txs，修改 block
 Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_info) {
     if (!block_info || !block_info->block) {
         return Status::kError;
@@ -83,15 +84,36 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
             block_info->tx_type, pool_idx(), block_info->view);
         return s;
     }
-
-    FilterInvalidTxs(txs_ptr);
     
     // 3. Do txs and create block_tx
     s = DoTransactions(txs_ptr, block);
     if (s != Status::kSuccess) {
         return s;
     }
+
+    // mark txs as used
+    MarkBlockTxsAsUsed(block);
     
+    return Status::kSuccess;
+}
+
+// AcceptSync 验证同步来的 block 信息，并更新交易池
+Status BlockAcceptor::AcceptSync(const std::shared_ptr<IBlockAcceptor::blockInfoSync>& block_info) {
+    if (!block_info || !block_info->block) {
+        return Status::kError;
+    }
+
+    auto& block = block_info->block;
+    
+    if (block->pool_index() != pool_idx()) {
+        return Status::kError;
+    }
+
+    if (!IsBlockValid(block)) {
+        return Status::kAcceptorBlockInvalid;
+    }
+
+    MarkBlockTxsAsUsed(block);
     return Status::kSuccess;
 }
 
@@ -235,7 +257,7 @@ Status BlockAcceptor::addTxsToPool(
     }
 
     // 放入交易池并弹出（避免重复打包）
-    int res = pools_mgr_->BackupConsensusAddTxsWithPop(pool_idx(), txs_map);
+    int res = pools_mgr_->BackupConsensusAddTxs(pool_idx(), txs_map);
     if (res != pools::kPoolsSuccess) {
         ZJC_ERROR("invalid consensus, txs invalid.");
         return Status::kError;
@@ -282,15 +304,31 @@ bool BlockAcceptor::IsBlockValid(const std::shared_ptr<block::protobuf::Block>& 
     return true;
 }
 
-void BlockAcceptor::FilterInvalidTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    return;
+void BlockAcceptor::MarkBlockTxsAsUsed(const std::shared_ptr<block::protobuf::Block>& block) {
+    // mark txs as used
+    std::vector<std::string> gids;
+    for (uint32_t i = 0; i < block->tx_list_size(); i++) {
+        auto& tx = block->tx_list(i);
+        gids.push_back(tx.gid());
+    }
+
+    std::map<std::string, pools::TxItemPtr> _;
+    pools_mgr_->GetTxByGids(pool_idx(), gids, _);    
 }
 
 Status BlockAcceptor::DoTransactions(
         const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-        std::shared_ptr<block::protobuf::Block>& zjc_block) {
-    return BlockExecutorFactory().Create(security_ptr_)->DoTransactionAndCreateTxBlock(
-            txs_ptr, zjc_block);
+        std::shared_ptr<block::protobuf::Block>& block) {
+    Status s = BlockExecutorFactory().Create(security_ptr_)->DoTransactionAndCreateTxBlock(
+            txs_ptr, block);
+    if (s != Status::kSuccess) {
+        return s;
+    }
+
+    // recalculate hash
+    block->set_is_commited_block(false);
+    block->set_hash(GetBlockHash(*block));
+    return s;
 }
 
 Status BlockAcceptor::GetDefaultTxs(
