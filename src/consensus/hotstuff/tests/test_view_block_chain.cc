@@ -99,13 +99,8 @@ TEST_F(TestViewBlockChain, TestStore_Success) {
     AssertEq(vb2, actual_vb2);
 
     // same block hash
-    auto vb3 = GenViewBlock(genesis_->hash, genesis_->view+1);
-    s = chain_->Store(vb3);
+    s = chain_->Store(vb);
     EXPECT_EQ(s, Status::kError);
-    
-    std::shared_ptr<ViewBlock> actual_vb3 = nullptr;
-    chain_->Get(vb3->hash, actual_vb3);
-    AssertEq(vb3, actual_vb3);
 
     // 允许不连续的 view
     auto vb4 = GenViewBlock(vb->hash, vb2->view+10);
