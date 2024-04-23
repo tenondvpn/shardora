@@ -6,12 +6,9 @@
 #include <protos/block.pb.h>
 #include <protos/pools.pb.h>
 #include <security/ecdsa/ecdsa.h>
+#include <vss/vss_manager.h>
 
 namespace shardora {
-
-namespace vss {
-class VssManager;
-}
 
 namespace contract {
 class ContractManager;
