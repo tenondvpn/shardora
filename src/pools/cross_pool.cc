@@ -48,6 +48,10 @@ void CrossPool::InitHeightTree() {
 }
 
 uint32_t CrossPool::SyncMissingBlocks(uint64_t now_tm_ms) {
+    if (kv_sync_ == nullptr) {
+        return 0;
+    }
+    
     if (height_tree_ptr_ == nullptr) {
         return 0;
     }
