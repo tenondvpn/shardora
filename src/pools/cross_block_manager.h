@@ -176,6 +176,8 @@ private:
                         continue;
                     }
 
+                    ZJC_DEBUG("handle cross tx sharding id: %u, key: %s, crosses_size: %u",
+                        sharding_id, block_tx.storages(i).key().c_str(), cross_statistic->crosses_size());
                     for (int32_t cross_idx = 0; cross_idx < cross_statistic->crosses_size(); ++cross_idx) {
                         auto& cross = cross_statistic->crosses(cross_idx);
                         ZJC_DEBUG("cross shard block src net: %u, src pool: %u, height: %lu,"
