@@ -108,7 +108,7 @@ public:
     // Return expired or invalid block txs to pool
     Status Return(const std::shared_ptr<block::protobuf::Block>& block) override {
         // return txs to the pool
-        for (uint32_t i = 0; i < block->tx_list().size(); i++) {
+        for (uint32_t i = 0; i < uint32_t(block->tx_list().size()); i++) {
             auto& gid = block->tx_list(i).gid();
             pools_mgr_->RecoverTx(pool_idx_, gid);
         }
