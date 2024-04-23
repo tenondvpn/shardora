@@ -49,6 +49,7 @@ void ViewBlockChainSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
 // 批量异步处理，提高 tps
 void ViewBlockChainSyncer::ConsensusTimerMessage() {
+    // TODO 仅共识池节点参与 view_block_chain 的同步
     SyncChains();
     ConsumeMessages();
 
@@ -134,7 +135,11 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
     }
 
     std::vector<std::shared_ptr<ViewBlock>> all;
+    // 将所有的块同步过去（即最后一个 committed block 及其后续分支
     chain->GetAll(all);
+    if (all.size() <= 0 || all.size() > kMaxSyncBlockNum) {
+        return Status::kError;
+    }
 
     for (auto& view_block : all) {
         auto view_block_item = view_block_res->add_view_block_items();
@@ -156,14 +161,16 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
     auto& view_block_msg = msg_ptr->header.view_block_proto();
     assert(view_block_msg.has_view_block_res());
     auto& view_block_items = view_block_msg.view_block_res().view_block_items();
+    // 对块数量限制
+    if (view_block_items.size() > kMaxSyncBlockNum || view_block_items.size() <= 0) {
+        return Status::kError;
+    }
     uint32_t pool_idx = view_block_msg.view_block_res().pool_idx();
 
     auto chain = view_block_chain_mgr_->Chain(pool_idx);
     if (!chain) {
         return Status::kError;
     }
-
-    
 
     ViewBlockMinHeap min_heap;
     for (auto it = view_block_items.begin(); it != view_block_items.end(); it++) {

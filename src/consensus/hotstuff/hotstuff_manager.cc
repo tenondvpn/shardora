@@ -5,6 +5,7 @@
 #include <chrono>
 #include <common/log.h>
 #include <common/utils.h>
+#include <consensus/hotstuff/view_block_chain.h>
 #include <libbls/tools/utils.h>
 #include <protos/pools.pb.h>
 
@@ -186,29 +187,11 @@ void HotstuffManager::DoCommitBlock(const view_block::protobuf::ViewBlockItem& p
     } 
 }
 
-Status HotstuffManager::VerifyViewBlockItem(const view_block::protobuf::ViewBlockItem& pb_view_block, 
-    const uint32_t& pool_index, const uint32_t& elect_height) {
+Status HotstuffManager::VerifyViewBlockItem(const std::shared_ptr<ViewBlock>& v_block, 
+    const std::shared_ptr<ViewBlockChain>& view_block_chain, const uint32_t& elect_height) {
     Status ret = Status::kSuccess;
-    auto block_view = pb_view_block.view();
-    auto view_block_chain = v_block_mgr_->Chain(pool_index);
-    if (view_block_chain->GetMaxHeight() >= block_view) {
-        ZJC_ERROR("block view is error.");
-        return Status::kError; 
-    }
-    auto parent_hash = pb_view_block.parent_hash();
-    if (!view_block_chain->Has(parent_hash)) {
-        ZJC_ERROR("parent_hash message is error.");
-        return Status::kError;
-    }
-    std::shared_ptr<ViewBlock> pre_vb;
-    view_block_chain->Get(parent_hash, pre_vb);
-    if (pre_vb->view + 1 != block_view) {
-        ZJC_ERROR("parent_hash view is error.");
-        return Status::kError; 
-    }
+    auto block_view = v_block->view;
 
-    std::shared_ptr<ViewBlock> v_block;
-    Proto2ViewBlock(pb_view_block, v_block);
     if (!v_block->Valid()) {
         ZJC_ERROR("view block hash is error.");
         return Status::kError;
@@ -236,10 +219,6 @@ Status HotstuffManager::VerifyViewBlockItem(const view_block::protobuf::ViewBloc
         return Status::kError;
     }
     
-    if (v_block_mgr_->Chain(pool_index)->Store(v_block) != Status::kSuccess) {
-        ZJC_ERROR("add view block error.");
-        return Status::kError;
-    }
 
     return ret;
 }
@@ -252,10 +231,29 @@ void HotstuffManager::DoVoteMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, c
         ZJC_ERROR("leader_idx message is error.");
         return;
     }
-    if (VerifyViewBlockItem(pb_view_block, pool_index, pro_msg.elect_height()) != Status::kSuccess) {
+
+    auto view_block_chain = v_block_mgr_->Chain(pool_index);
+    if (view_block_chain->GetMaxHeight() >= pb_view_block.view()) {
+        ZJC_ERROR("block view is error.");
+        return;
+    }
+
+    std::shared_ptr<ViewBlock> v_block;
+    Status s = Proto2ViewBlock(pb_view_block, v_block);
+    if (s != Status::kSuccess) {
+        return;
+    }
+    
+    if (VerifyViewBlockItem(v_block, view_block_chain, pro_msg.elect_height()) != Status::kSuccess) {
         ZJC_ERROR("VerifyViewBlockItem is error.");
         return;
     }
+    
+    
+    if (view_block_chain->Store(v_block) != Status::kSuccess) {
+        ZJC_ERROR("add view block error.");
+        return;
+    }    
         // 拆分
     block::protobuf::Block block;
     if (!block.ParseFromString(pb_view_block.block_str())) {
@@ -268,7 +266,6 @@ void HotstuffManager::DoVoteMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, c
     DoCommitBlock(pb_view_block, pool_index);
 
     // 切换视图
-    std::shared_ptr<ViewBlock> v_block;
     Proto2ViewBlock(pb_view_block, v_block);
     auto qc = v_block->qc;
     auto sync_info = std::make_shared<SyncInfo>();
