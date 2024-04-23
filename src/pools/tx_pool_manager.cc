@@ -480,7 +480,7 @@ int TxPoolManager::BackupConsensusAddTxsWithPop(
     // Pop txs from pool
     std::vector<std::string> gids;
     for (const auto& tx : txs) {
-        gids.push_back(tx.first);
+        gids.push_back(tx.second->tx_info.gid());
     }
     
     std::map<std::string, pools::TxItemPtr> res_map;
