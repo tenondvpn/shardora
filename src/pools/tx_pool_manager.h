@@ -193,6 +193,27 @@ public:
         prefix_db_->SaveLatestPoolInfo(sharding_id, pool_index, pool_info, db_batch);
     }
 
+    void UpdateCrossLatestInfo(
+            std::shared_ptr<block::protobuf::Block>& block,
+            db::DbWriteBatch& db_batch) {
+        uint32_t pool_index = block->pool_index();
+        if (pool_index != common::kImmutablePoolSize) {
+            return;
+        }
+
+        if (max_cross_pools_size_ == 1) {
+            if (block->network_id() != network::kRootCongressNetworkId) {
+                return;
+            }
+        } else {
+            if (block->network_id() == network::kRootCongressNetworkId) {
+                return;
+            }
+        }
+
+        cross_block_mgr_->UpdateMaxHeight(block->network_id(), block->height());
+    }
+
     void CheckTimeoutTx(uint32_t pool_index) {
         if (pool_index >= common::kInvalidPoolIndex) {
             return;
