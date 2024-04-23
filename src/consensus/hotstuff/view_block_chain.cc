@@ -24,7 +24,7 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     }
 
     if (Has(view_block->hash)) {
-        return Status::kSuccess;
+        return Status::kError;
     }
     
     if (!start_block_) {
@@ -41,13 +41,8 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
         return Status::kError;
     }
 
-    // view 必须连续return false;
-    if (it->second->view + 1 != view_block->view) {
-        return Status::kError;
-    }
-
     // 如果有 qc，则 qc 指向的块必须存在
-    if (view_block->qc && !QCRef(view_block)) {
+    if (view_block->qc && !view_block->qc->view_block_hash.empty() && !QCRef(view_block)) {
         return Status::kError;
     }
 
