@@ -596,6 +596,9 @@ int ShardStatistic::StatisticWithHeights(
             for (uint32_t i = 0; i < tm_iter->second->cross_statistic.crosses_size(); ++i) {
                 auto* cross_item = cross_statistic.add_crosses();
                 *cross_item = tm_iter->second->cross_statistic.crosses(i);
+                ZJC_DEBUG("0 succcess add cross statistic shard: %u, pool: %u, height: %lu, des: %u",
+                    cross_item->src_shard(), cross_item->src_pool(), 
+                    cross_item->height(), cross_item->des_shard());
             }
             
             for (auto elect_iter = tm_iter->second->elect_node_info_map.begin(); 
