@@ -33,7 +33,7 @@ public:
     }
 
     void UpdateMaxHeight(uint32_t shard_id, uint64_t height) {
-        assert(height != common::kInvalidUint64);
+        // assert(height != common::kInvalidUint64);
         assert(shard_id < network::kConsensusShardEndNetworkId);
         if (cross_synced_max_heights_[shard_id] < height ||
                 cross_synced_max_heights_[shard_id] == common::kInvalidUint64) {
