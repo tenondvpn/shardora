@@ -104,6 +104,7 @@ public:
             }
         }
 
+        ZJC_DEBUG("succcess set elect max sharding id: %u", sharding_id);
         now_max_sharding_id_ = sharding_id;
         cross_block_mgr_->UpdateMaxShardingId(sharding_id);
     }
@@ -264,7 +265,7 @@ private:
     uint32_t latest_leader_count_ = 0;
     uint32_t member_index_ = common::kInvalidUint32;
     CrossPool* cross_pools_ = nullptr;
-    uint32_t now_max_sharding_id_ = 1;
+    uint32_t now_max_sharding_id_ = network::kConsensusShardBeginNetworkId;
     uint32_t prev_cross_sync_index_ = 0;
     std::shared_ptr<CrossBlockManager> cross_block_mgr_ = nullptr;
     common::Tick tick_;
