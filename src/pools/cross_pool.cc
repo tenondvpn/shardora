@@ -30,10 +30,6 @@ void CrossPool::Init(
 }
 
 void CrossPool::InitHeightTree() {
-    if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
-        return;
-    }
-
     height_tree_ptr_ = std::make_shared<HeightTreeLevel>(
         des_sharding_id_,
         pool_index_,
@@ -48,7 +44,23 @@ void CrossPool::InitHeightTree() {
 }
 
 uint32_t CrossPool::SyncMissingBlocks(uint64_t now_tm_ms) {
+    if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
+        return 0;
+    }
+
+    if (des_sharding_id_ == common::GlobalInfo::Instance()->network_id() || 
+            (des_sharding_id_ + network::kConsensusWaitingShardOffset) == 
+            common::GlobalInfo::Instance()->network_id()) {
+        return 0;
+    }
+
+    if (kv_sync_ == nullptr) {
+        ZJC_DEBUG("kv_sync_ == nullptr");
+        return 0;
+    }
+
     if (height_tree_ptr_ == nullptr) {
+        ZJC_DEBUG("height_tree_ptr_ == nullptr");
         return 0;
     }
 

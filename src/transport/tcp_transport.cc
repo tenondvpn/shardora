@@ -313,22 +313,27 @@ void TcpTransport::Output() {
                     break;
                 }
 
-                auto tcp_conn = GetConnection(item_ptr->des_ip, item_ptr->port);
-                if (tcp_conn == nullptr) {
-                    TRANSPORT_ERROR("get tcp connection failed[%s][%d][hash64: %llu]",
-                        item_ptr->des_ip.c_str(), item_ptr->port, 0);
-                    continue;
-                }
-
-                int res = tcp_conn->Send(item_ptr->hash64, item_ptr->msg);
-                if (res != 0) {
-                    TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu] res: %d",
-                        item_ptr->des_ip.c_str(), item_ptr->port, 0, res);
-                    if (res <= 0) {
-                        tcp_conn->Destroy(true);
+                int32_t try_times = 0;
+                while (try_times++ < 3) {
+                    auto tcp_conn = GetConnection(item_ptr->des_ip, item_ptr->port);
+                    if (tcp_conn == nullptr) {
+                        TRANSPORT_ERROR("get tcp connection failed[%s][%d][hash64: %llu]",
+                            item_ptr->des_ip.c_str(), item_ptr->port, 0);
+                        continue;
                     }
-                    
-                    continue;
+
+                    int res = tcp_conn->Send(item_ptr->hash64, item_ptr->msg);
+                    if (res != 0) {
+                        TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu] res: %d",
+                            item_ptr->des_ip.c_str(), item_ptr->port, 0, res);
+                        if (res <= 0) {
+                            tcp_conn->Destroy(true);
+                        }
+                        
+                        continue;
+                    }
+
+                    break;
                 }
 
                 if (item_ptr->msg.size() > 100000) {

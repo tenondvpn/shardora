@@ -148,8 +148,7 @@ public:
         //     return true;
         // }
 
-        if (GetTcpState() == tnet::TcpConnection::kTcpClosed &&
-                now_tm_ms >= (create_timestamp_ms_ + kConnectTimeoutMs)) {
+        if (GetTcpState() == tnet::TcpConnection::kTcpClosed) {
             ZJC_DEBUG("should remove connect lost.");
             return true;
         }
