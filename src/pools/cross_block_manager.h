@@ -37,6 +37,7 @@ public:
         if (cross_synced_max_heights_[shard_id] < height ||
                 cross_synced_max_heights_[shard_id] == common::kInvalidUint64) {
             cross_synced_max_heights_[shard_id] = height;
+            ZJC_DEBUG("success update cross synced max height net: %u, height: %lu", shard_id, height);
         }
     }
 
