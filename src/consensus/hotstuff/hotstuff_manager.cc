@@ -251,7 +251,7 @@ void HotstuffManager::DoVoteMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, c
         return;
     }
     
-    if (VerifyViewBlockItem(v_block, view_block_chain, pro_msg.elect_height()) != Status::kSuccess) {
+    if (VerifyViewBlock(v_block, view_block_chain, pro_msg.elect_height()) != Status::kSuccess) {
         ZJC_ERROR("VerifyViewBlockItem is error.");
         return;
     }

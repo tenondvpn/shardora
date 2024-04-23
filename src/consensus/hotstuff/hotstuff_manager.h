@@ -87,7 +87,7 @@ public:
     HotstuffManager();
     virtual ~HotstuffManager();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
-    Status VerifyViewBlockItem(
+    Status VerifyViewBlock(
             const std::shared_ptr<ViewBlock>& v_block,
             const std::shared_ptr<ViewBlockChain>& view_block_chain,
             const uint32_t& elect_height);
