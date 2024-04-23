@@ -191,18 +191,31 @@ Status HotstuffManager::VerifyViewBlockItem(const std::shared_ptr<ViewBlock>& v_
     const std::shared_ptr<ViewBlockChain>& view_block_chain, const uint32_t& elect_height) {
     Status ret = Status::kSuccess;
     auto block_view = v_block->view;
-
     if (!v_block->Valid()) {
         ZJC_ERROR("view block hash is error.");
         return Status::kError;
     }
-    auto qc = v_block->qc;
-    if (crypto_->Verify(elect_height, qc->view_block_hash, qc->bls_agg_sign) != Status::kSuccess) {
-        ZJC_ERROR("Verify qc is error.");
-        return Status::kError; 
+    // view 必须最新
+    if (view_block_chain->GetMaxHeight() >= v_block->view) {
+        ZJC_ERROR("block view is error.");
+        return Status::kError;
     }
-    if (block_view != qc->view + 1) {
-        ZJC_ERROR("qc view is error.");
+    
+    auto qc = v_block->qc;
+    if (!qc) {
+        ZJC_ERROR("qc 必须存在.");
+        return Status::kError;
+    }
+    
+    // qc 指针和哈希指针一致
+    if (qc->view_block_hash != v_block->parent_hash) {
+        ZJC_ERROR("qc ref is different from hash ref");
+        return Status::kError;        
+    }
+
+    // 验证 qc
+    if (crypto_->Verify(elect_height, qc->msg_hash, qc->bls_agg_sign) != Status::kSuccess) {
+        ZJC_ERROR("Verify qc is error.");
         return Status::kError; 
     }
 
@@ -217,8 +230,7 @@ Status HotstuffManager::VerifyViewBlockItem(const std::shared_ptr<ViewBlock>& v_
         v_block->qc->view <= view_block_chain->LatestLockedBlock()->view) {
         ZJC_ERROR("block view message is error.");
         return Status::kError;
-    }
-    
+    }    
 
     return ret;
 }
@@ -233,11 +245,6 @@ void HotstuffManager::DoVoteMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, c
     }
 
     auto view_block_chain = v_block_mgr_->Chain(pool_index);
-    if (view_block_chain->GetMaxHeight() >= pb_view_block.view()) {
-        ZJC_ERROR("block view is error.");
-        return;
-    }
-
     std::shared_ptr<ViewBlock> v_block;
     Status s = Proto2ViewBlock(pb_view_block, v_block);
     if (s != Status::kSuccess) {
@@ -283,7 +290,7 @@ void HotstuffManager::DoVoteMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, c
     uint32_t elect_height = pro_msg.elect_height();
     vote_msg.set_elect_height(elect_height);
     std::string sign_x, sign_y;
-    if (crypto_->Sign(elect_height, view_block_hash,&sign_x, &sign_y) != Status::kSuccess) {
+    if (crypto_->Sign(elect_height, GetQCMsgHash(v_block->view, v_block->hash) ,&sign_x, &sign_y) != Status::kSuccess) {
         ZJC_ERROR("Sign message is error.");
         return;
     }
