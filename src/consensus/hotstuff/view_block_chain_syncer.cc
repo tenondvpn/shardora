@@ -177,6 +177,10 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
     assert(view_block_msg.has_view_block_res());
     auto& view_block_items = view_block_msg.view_block_res().view_block_items();
     auto& view_block_qc_strs = view_block_msg.view_block_res().view_block_qc_strs();
+    uint32_t pool_idx = view_block_msg.view_block_res().pool_idx();
+
+    ZJC_DEBUG("====1.1 pool_idx: %d, view_blocks: %d, qc: %d",
+        pool_idx, view_block_items.size(), view_block_qc_strs.size());
     
     // 对块数量限制
     if (view_block_items.size() > kMaxSyncBlockNum || view_block_items.size() <= 0) {
@@ -185,8 +189,9 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
     if (view_block_items.size() != view_block_qc_strs.size()) {
         return Status::kError;
     }
-    
-    uint32_t pool_idx = view_block_msg.view_block_res().pool_idx();
+
+    ZJC_DEBUG("====1.2 pool_idx: %d, view_blocks: %d, qc: %d",
+        pool_idx, view_block_items.size(), view_block_qc_strs.size());
 
     auto chain = view_block_chain(pool_idx);
     if (!chain) {
@@ -205,6 +210,8 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
     // 将 view_block 放入小根堆排序
     ViewBlockMinHeap min_heap;
     for (auto it = view_block_items.begin(); it != view_block_items.end(); it++) {
+        ZJC_DEBUG("====1.3 pool_idx: %d, view_blocks: %d, qc: %d",
+            pool_idx, view_block_items.size(), view_block_qc_strs.size());
         auto view_block = std::make_shared<ViewBlock>();
         Status s = Proto2ViewBlock(*it, view_block);
         if (s != Status::kSuccess) {
