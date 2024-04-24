@@ -285,7 +285,7 @@ private:
     std::string ck_pass_ = "";
     uint32_t each_shard_max_members_ = 1024u;
     uint32_t sharding_min_nodes_count_ = 2u;
-    int32_t join_root_ = common::kRandom;
+    int32_t join_root_ = common::kJoinRoot;
     std::set<uint32_t>* thread_with_pools_ = nullptr;
     uint8_t consensus_thread_index_map_[common::kMaxThreadCount] = {common::kInvalidUint8};
     uint32_t pools_with_thread_[common::kInvalidPoolIndex] = { 0 };
