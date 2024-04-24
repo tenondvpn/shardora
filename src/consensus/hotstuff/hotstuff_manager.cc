@@ -118,7 +118,7 @@ int HotstuffManager::Init(
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
 
-    elect_info_ = std::make_shared<ElectInfo>(security_ptr);
+    elect_info_ = std::make_shared<ElectInfo>(security_ptr, elect_mgr_);
     crypto_ = std::make_shared<Crypto>(elect_info_, bls_mgr);
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         PoolManager pool_manager;
