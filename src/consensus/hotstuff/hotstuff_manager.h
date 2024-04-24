@@ -1,7 +1,6 @@
 #pragma once
 #include "consensus/consensus.h"
 #include "elect_info.h"
-#include "view_block_chain_manager.h"
 #include "crypto.h"
 #include "pacemaker.h"
 #include "block_acceptor.h"
@@ -62,7 +61,6 @@ class WaitingTxsPools;
 class HotstuffManager : public Consensus {
 public:
     int Init(
-        block::BlockAggValidCallback block_agg_valid_func,
         std::shared_ptr<contract::ContractManager>& contract_mgr,
         std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
         std::shared_ptr<vss::VssManager>& vss_mgr,
@@ -73,10 +71,7 @@ public:
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
-        std::shared_ptr<sync::KeyValueSync>& kv_sync,
         std::shared_ptr<db::Db>& db,
-        BlockCallback block_cb,
-        uint8_t thread_count,
         BlockCacheCallback new_block_cache_callback);
     void OnNewElectBlock(
         uint64_t block_tm_ms,
@@ -93,6 +88,39 @@ public:
             const std::shared_ptr<ViewBlockChain>& view_block_chain,
             const uint32_t& elect_height);
     void DoCommitBlock(const view_block::protobuf::ViewBlockItem& pb_view_block, const uint32_t& pool_index);
+
+    inline std::shared_ptr<Pacemaker> pacemaker(uint32_t pool_idx) const {
+        auto pool_mgr = pool_manager(pool_idx);
+        if (!pool_mgr) {
+            return nullptr;
+        }
+        return pool_mgr->pace_maker;
+    }
+
+    inline std::shared_ptr<ViewBlockChain> chain(uint32_t pool_idx) const {
+        auto pool_mgr = pool_manager(pool_idx);
+        if (!pool_mgr) {
+            return nullptr;
+        }
+        return pool_mgr->view_block_chain;
+    }
+
+    inline std::shared_ptr<IBlockAcceptor> acceptor(uint32_t pool_idx) const {
+        auto pool_mgr = pool_manager(pool_idx);
+        if (!pool_mgr) {
+            return nullptr;
+        }
+        return pool_mgr->block_acceptor;
+    }
+
+    inline std::shared_ptr<Crypto> crypto() const {
+        return crypto_;
+    }
+
+    inline std::shared_ptr<ElectInfo> elect_info() const {
+        return elect_info_;
+    }
+
 private:
 
     void HandleMessage(const transport::MessagePtr& msg_ptr);
@@ -108,9 +136,17 @@ private:
     struct PoolManager
     {
         std::shared_ptr<Pacemaker> pace_maker;
-        std::shared_ptr<BlockAcceptor> block_acceptor;
+        std::shared_ptr<IBlockAcceptor> block_acceptor;
         std::shared_ptr<ViewBlockChain> view_block_chain;
     };
+
+    inline std::shared_ptr<PoolManager> pool_manager(uint32_t pool_idx) const {
+        auto it = pool_managers_.find(pool_idx);
+        if (it == pool_managers_.end()) {
+            return nullptr;
+        }
+        return std::make_shared<PoolManager>(it->second);
+    }
     
     std::unordered_map<uint32_t, PoolManager> pool_managers_;
     std::shared_ptr<ElectInfo> elect_info_;
@@ -253,38 +289,14 @@ private:
     std::atomic<uint32_t> tps_{ 0 };
     std::atomic<uint32_t> pre_tps_{ 0 };
     uint64_t tps_btime_{ 0 };
-    common::Tick timeout_tick_;
-    common::Tick block_to_db_tick_;
-    common::Tick verify_block_tick_;
-    common::Tick leader_resend_tick_;
+    
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
-    uint8_t thread_count_ = 0;
-    std::shared_ptr<WaitingTxsPools> txs_pools_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
-
-    uint64_t bft_gids_index_[common::kMaxThreadCount];
-    uint32_t prev_checktime_out_milli_ = 0;
-    uint32_t minimal_node_count_to_consensus_ = common::kInvalidUint32;
     BlockCacheCallback new_block_cache_callback_ = nullptr;
-    // std::shared_ptr<ElectItem> elect_items_[2] = { nullptr };
-    uint32_t elect_item_idx_ = 0;
-    uint64_t prev_tps_tm_us_ = 0;
-    uint32_t prev_count_ = 0;
-    common::SpinMutex prev_count_mutex_;
-    uint64_t prev_test_bft_size_[common::kMaxThreadCount] = { 0 };
-    uint32_t max_consensus_sharding_id_ = 3;
-    uint64_t first_timeblock_timestamp_ = 0;
-    block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
-    std::deque<transport::MessagePtr> backup_prapare_msg_queue_[common::kMaxThreadCount];
-    std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_blocks_[common::kInvalidPoolIndex];
-    std::map<uint64_t, std::shared_ptr<block::protobuf::Block>, std::greater<uint64_t>> waiting_agg_verify_blocks_[common::kInvalidPoolIndex];
-    uint64_t pools_prev_bft_timeout_[common::kInvalidPoolIndex] = { 0 };
-    uint64_t pools_send_to_leader_tm_ms_[common::kInvalidPoolIndex] = { 0 };
 
     DISALLOW_COPY_AND_ASSIGN(HotstuffManager);
 };

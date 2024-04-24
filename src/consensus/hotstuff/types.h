@@ -55,6 +55,10 @@ struct TC : public QC {
     }
 
     TC() : QC() {}
+
+    inline HashStr msg_hash() const {
+        return GetViewHash(view);
+    }
 };
 
 struct ViewBlock {
@@ -134,7 +138,8 @@ enum WaitingBlockType {
 
 
 void ViewBlock2Proto(const std::shared_ptr<ViewBlock> &view_block, view_block::protobuf::ViewBlockItem *view_block_proto);
-Status Proto2ViewBlock(const view_block::protobuf::ViewBlockItem& view_block_proto, std::shared_ptr<ViewBlock>& view_block);
+Status
+Proto2ViewBlock(const view_block::protobuf::ViewBlockItem &view_block_proto, std::shared_ptr<ViewBlock> &view_block);
 
 } // namespace hotstuff
 

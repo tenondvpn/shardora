@@ -6,6 +6,7 @@
 #include <common/node_members.h>
 #include <common/utils.h>
 #include <consensus/hotstuff/types.h>
+#include <elect/elect_manager.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g2.hpp>
 #include <memory>
 #include <network/dht_manager.h>
@@ -97,7 +98,10 @@ private:
 
 class ElectInfo {
 public:
-    explicit ElectInfo(const std::shared_ptr<security::Security>& sec) : security_ptr_(sec) {}
+    ElectInfo(
+            const std::shared_ptr<security::Security>& sec,
+            const std::shared_ptr<elect::ElectManager>& elect_mgr) :
+        security_ptr_(sec), elect_mgr_(elect_mgr) {}
     ~ElectInfo() {}
 
     ElectInfo(const ElectInfo&) = delete;
@@ -136,7 +140,35 @@ public:
         } else if (prev_elect_item_ && elect_height == prev_elect_item_->ElectHeight()) {
             return prev_elect_item_;
         }
-        return nullptr;
+        // 内存中没有从 ElectManager 获取
+        auto net_id = common::GlobalInfo::Instance()->network_id(); 
+        libff::alt_bn128_G2 common_pk = libff::alt_bn128_G2::zero();
+        libff::alt_bn128_Fr sec_key;
+
+        if (!elect_mgr_) {
+            return nullptr;
+        }
+        
+        auto members = elect_mgr_->GetNetworkMembersWithHeight(
+                elect_height,
+                net_id,
+                &common_pk,
+                &sec_key);
+        if (members == nullptr || common_pk == libff::alt_bn128_G2::zero()) {
+            ZJC_ERROR("failed get elect members or common pk: %u, %lu, %d",
+                net_id,
+                elect_height,
+                (common_pk == libff::alt_bn128_G2::zero()));            
+            return nullptr;
+        }
+        
+        return std::make_shared<ElectItem>(
+                security_ptr_,
+                net_id,
+                elect_height,
+                members,
+                common_pk,
+                sec_key);
     }
 
     inline std::shared_ptr<ElectItem> GetElectItem() const {
@@ -172,6 +204,7 @@ private:
     std::shared_ptr<ElectItem> prev_elect_item_ = nullptr; 
     std::shared_ptr<ElectItem> elect_item_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
+    std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
     uint32_t max_consensus_sharding_id_ = 3;
     
 };

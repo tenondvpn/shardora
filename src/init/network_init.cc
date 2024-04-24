@@ -2,7 +2,6 @@
 #include <common/encode.h>
 #include <common/log.h>
 #include <common/utils.h>
-#include <consensus/hotstuff/consensus.h>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/leader_rotation.h>
@@ -175,7 +174,6 @@ int NetworkInit::Init(int argc, char** argv) {
 #ifdef ENABLE_HOTSTUFF
     hotstuf_mgr_ = std::make_shared<consensus::HotstuffManager>();
     auto consensus_init_res = hotstuf_mgr_->Init(
-        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1),
         contract_mgr_,
         gas_prepayment_,
         vss_mgr_,
@@ -186,10 +184,7 @@ int NetworkInit::Init(int argc, char** argv) {
         security_,
         tm_block_mgr_,
         bls_mgr_,
-        kv_sync_,
         db_,
-        nullptr,
-        common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
         std::bind(&NetworkInit::AddBlockItemToCache, this,
             std::placeholders::_1, std::placeholders::_2));
 #else
@@ -234,22 +229,9 @@ int NetworkInit::Init(int argc, char** argv) {
         }
     }
     
-#ifdef HOTSTUFF_V2
-    view_block_chain_mgr_ = std::make_shared<hotstuff::ViewBlockChainManager>(db_);
-    if (view_block_chain_mgr_->Init() != hotstuff::Status::kSuccess) {
-        return kInitError;
-    }
-
-
+#ifdef ENABLE_HOTSTUFF
     // TODO pacemaker
-    elect_info_ = std::make_shared<hotstuff::ElectInfo>(security_);
-    crypto_ = std::make_shared<hotstuff::Crypto>(elect_info_, bls_mgr_);
-    
-    consensus_mgr_ = std::make_shared<hotstuff::ConsensusManager>(
-            view_block_chain_mgr_, elect_info_, crypto_, db_);
-    consensus_mgr_->Init();
-
-    view_block_chain_syncer_ = std::make_shared<hotstuff::ViewBlockChainSyncer>(view_block_chain_mgr_);
+    view_block_chain_syncer_ = std::make_shared<hotstuff::ViewBlockChainSyncer>(hotstuf_mgr_);
     view_block_chain_syncer_->SetOnRecvViewBlockFn([this](
                 const uint32_t& pool_idx, 
                 const std::shared_ptr<hotstuff::ViewBlockChain>& chain,
@@ -257,8 +239,7 @@ int NetworkInit::Init(int argc, char** argv) {
         hotstuff::Status s = chain->Store(block);
         if (s == hotstuff::Status::kSuccess) {
             auto sync_info = std::make_shared<hotstuff::SyncInfo>();
-            sync_info->qc = block->qc;
-            return this->consensus_mgr_->consensus(pool_idx)->pacemaker()->AdvanceView(sync_info);
+            return this->hotstuf_mgr_->pacemaker(pool_idx)->AdvanceView(sync_info->WithQC(block->qc));
         }
         return s;
         // Advanceview
@@ -291,7 +272,7 @@ int NetworkInit::Init(int argc, char** argv) {
 }
 
 void NetworkInit::AddCmds() {
-#ifdef HOTSTUFF_V2    
+#ifdef ENABLE_HOTSTUFF
     cmd_.AddCommand("addblock", [this](const std::vector<std::string>& args){
         if (args.size() < 3) {
             return;
@@ -300,15 +281,11 @@ void NetworkInit::AddCmds() {
         auto parent_hash = common::Encode::HexDecode(args[1]);
         auto leader_idx = std::stoi(args[2]);
         
-        auto consensus = consensus_mgr_->consensus(pool_idx);
-        if (!consensus) {
-            return;
-        }
-        auto pacemaker = consensus->pacemaker();
+        auto pacemaker = hotstuf_mgr_->pacemaker(pool_idx);
         if (!pacemaker) {
             return;
         }
-        auto chain = consensus->chain();
+        auto chain = hotstuf_mgr_->chain(pool_idx);
         if (!chain) {
             return;
         }
@@ -325,7 +302,7 @@ void NetworkInit::AddCmds() {
         auto fake_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
         
         auto qc = std::make_shared<hotstuff::QC>();
-        s = this->crypto_->CreateQC(parent_block, fake_sign, qc);        
+        s = hotstuf_mgr_->crypto()->CreateQC(parent_block, fake_sign, qc);        
         if (s != hotstuff::Status::kSuccess) {
             return;
         }
@@ -349,12 +326,8 @@ void NetworkInit::AddCmds() {
             return;
         }
         uint32_t pool_idx = std::stoi(args[0]);
-        auto consensus = consensus_mgr_->consensus(pool_idx);
-        if (!consensus) {
-            return;
-        }
-                
-        auto chain = consensus->chain();
+                        
+        auto chain = hotstuf_mgr_->chain(pool_idx);
         if (!chain) {
             return;
         }
@@ -1394,9 +1367,7 @@ void NetworkInit::HandleElectionBlock(
     pools_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     shard_statistic_->OnNewElectBlock(sharding_id, block->height(), elect_height);
     kv_sync_->OnNewElectBlock(sharding_id, block->height());
-#ifdef HOTSTUFF_V2
-    elect_info_->OnNewElectBlock(sharding_id, elect_height, members, common_pk, sec_key);
-#endif
+
     network::UniversalManager::Instance()->OnNewElectBlock(
         sharding_id,
         elect_height,

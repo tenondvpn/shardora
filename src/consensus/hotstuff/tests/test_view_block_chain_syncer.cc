@@ -1,9 +1,11 @@
-#include <consensus/hotstuff/view_block_chain_manager.h>
+#include <consensus/hotstuff/hotstuff_manager.h>
 #include <consensus/hotstuff/view_block_chain_syncer.h>
 #include <dht/dht_key.h>
 #include <gtest/gtest.h>
 #include <memory>
+#include <security/ecdsa/ecdsa.h>
 #include <transport/transport_utils.h>
+#include <vss/vss_manager.h>
 
 namespace shardora {
 
@@ -18,15 +20,74 @@ extern uint32_t GenLeaderIdx();
 static const uint32_t NET_ID = 3;
 static const uint32_t POOL = 63;
 
+static const std::string sk_ =
+    "b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708";
+
+transport::MultiThreadHandler net_handler_;
+std::shared_ptr<security::Security> security_ = nullptr;
+std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
+std::shared_ptr<hotstuff::ElectInfo> elect_info_ = nullptr;
+std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
+std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
+std::shared_ptr<db::Db> db_ = nullptr;
+std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
+std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
+std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
+std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
+std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
+std::shared_ptr<BlockAcceptor> block_acceptor_ = nullptr;
+std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
+std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
+db::DbWriteBatch db_batch;
+
 
 class TestViewBlockChainSyncer : public testing::Test {
 protected:
-    
-    
     void SetUp() {
-        view_block_chain_mgr_ = std::make_shared<ViewBlockChainManager>(std::make_shared<db::Db>());
-        view_block_chain_mgr_->Init();
-        syncer_ = std::make_shared<ViewBlockChainSyncer>(view_block_chain_mgr_);
+        security_ = std::make_shared<security::Ecdsa>();
+        security_->SetPrivateKey(common::Encode::HexDecode(sk_));
+        
+        account_mgr_ = std::make_shared<block::AccountManager>();
+        system("rm -rf ./core.* ./db");
+        db_ = std::make_shared<db::Db>();
+        db_->Init("./db");
+        
+        kv_sync_ = std::make_shared<sync::KeyValueSync>();
+        pools_mgr_ = std::make_shared<pools::TxPoolManager>(
+                security_, db_, kv_sync_, account_mgr_);        
+        block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
+        
+        vss_mgr_ = std::make_shared<vss::VssManager>(security_);
+        contract_mgr_ = std::make_shared<contract::ContractManager>();
+        gas_prepayment_ = std::make_shared<consensus::ContractGasPrepayment>(db_);
+        tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
+        bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_);
+        elect_mgr_ = std::make_shared<elect::ElectManager>(
+                vss_mgr_, account_mgr_, block_mgr_, security_, bls_mgr_, db_,
+                nullptr);
+        elect_info_ = std::make_shared<ElectInfo>(security_, nullptr);
+        
+        kv_sync_->Init(block_mgr_, db_);
+        contract_mgr_->Init(security_);
+        tm_block_mgr_->Init(vss_mgr_,account_mgr_);
+
+        hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
+        hotstuff_mgr_->Init(
+                contract_mgr_,
+                gas_prepayment_,
+                vss_mgr_,
+                account_mgr_,
+                block_mgr_,
+                elect_mgr_,
+                pools_mgr_,
+                security_,
+                tm_block_mgr_,
+                bls_mgr_,
+                db_,
+                [](std::shared_ptr<block::protobuf::Block>& block, db::DbWriteBatch& db_batch){});
+    
+        syncer_ = std::make_shared<ViewBlockChainSyncer>(hotstuff_mgr_);
         syncer_->SetOnRecvViewBlockFn(StoreViewBlock);
     }
 
@@ -61,7 +122,7 @@ protected:
     }
 
     std::shared_ptr<ViewBlockChainSyncer> syncer_;
-    std::shared_ptr<ViewBlockChainManager> view_block_chain_mgr_;
+    std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_;
 };
 
 TEST_F(TestViewBlockChainSyncer, TestMergeChain_HasCross) {

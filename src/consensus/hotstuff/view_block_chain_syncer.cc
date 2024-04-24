@@ -4,6 +4,8 @@
 #include <common/log.h>
 #include <common/time_utils.h>
 #include <common/utils.h>
+#include <consensus/hotstuff/hotstuff_manager.h>
+#include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h>
 #include <dht/dht_function.h>
 #include <dht/dht_key.h>
@@ -21,7 +23,9 @@ namespace shardora {
 
 namespace hotstuff {
 
-ViewBlockChainSyncer::ViewBlockChainSyncer(const std::shared_ptr<ViewBlockChainManager>& c_mgr) : view_block_chain_mgr_(c_mgr) {
+ViewBlockChainSyncer::ViewBlockChainSyncer(
+        const std::shared_ptr<consensus::HotstuffManager>& h_mgr) :
+    hotstuff_mgr_(h_mgr) {
     // start consumeloop thread
     network::Route::Instance()->RegisterMessage(common::kViewBlockSyncMessage,
         std::bind(&ViewBlockChainSyncer::HandleMessage, this, std::placeholders::_1));
@@ -123,13 +127,17 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
 
     transport::protobuf::Header msg;
     view_block::protobuf::ViewBlockSyncMessage&  res_view_block_msg = *msg.mutable_view_block_proto();
+    
     res_view_block_msg.set_create_time_us(common::TimeUtils::TimestampUs());
     auto view_block_res = res_view_block_msg.mutable_view_block_res();
     uint32_t pool_idx = view_block_msg.view_block_req().pool_idx();
+    
     view_block_res->set_network_id(view_block_msg.view_block_req().network_id());
     view_block_res->set_pool_idx(pool_idx);
+    view_block_res->set_high_qc_str(pacemaker(pool_idx)->HighQC()->Serialize());
+    view_block_res->set_high_tc_str(pacemaker(pool_idx)->HighTC()->Serialize());
 
-    auto chain = view_block_chain_mgr_->Chain(pool_idx);
+    auto chain = view_block_chain(pool_idx);
     if (!chain) {
         return Status::kError;
     }
@@ -142,8 +150,14 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
     }
 
     for (auto& view_block : all) {
-        auto view_block_item = view_block_res->add_view_block_items();
-        ViewBlock2Proto(view_block, view_block_item);
+        // 仅同步已经有 qc 的 view_block
+        auto view_block_qc_str = view_block_res->add_view_block_qc_strs();
+        auto view_block_qc = chain->GetQcOf(view_block);
+        if (!view_block_qc) {
+            *view_block_qc_str = view_block_qc->Serialize();
+            auto view_block_item = view_block_res->add_view_block_items();
+            ViewBlock2Proto(view_block, view_block_item);
+        }
     }
 
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -161,17 +175,33 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
     auto& view_block_msg = msg_ptr->header.view_block_proto();
     assert(view_block_msg.has_view_block_res());
     auto& view_block_items = view_block_msg.view_block_res().view_block_items();
+    auto& view_block_qc_strs = view_block_msg.view_block_res().view_block_qc_strs();
+    
     // 对块数量限制
     if (view_block_items.size() > kMaxSyncBlockNum || view_block_items.size() <= 0) {
         return Status::kError;
     }
+    if (view_block_items.size() != view_block_qc_strs.size()) {
+        return Status::kError;
+    }
+    
     uint32_t pool_idx = view_block_msg.view_block_res().pool_idx();
 
-    auto chain = view_block_chain_mgr_->Chain(pool_idx);
+    auto chain = view_block_chain(pool_idx);
     if (!chain) {
         return Status::kError;
     }
 
+    // 将 view_block_qc 放入 map 方便查询
+    std::unordered_map<HashStr, std::shared_ptr<QC>> view_block_qc_map;
+    for (const auto& qc_str : view_block_qc_strs) {
+        auto view_block_qc = std::make_shared<QC>();
+        if (view_block_qc->Unserialize(qc_str)) {
+            view_block_qc_map[view_block_qc->view_block_hash] = view_block_qc;
+        }
+    }    
+
+    // 将 view_block 放入小根堆排序
     ViewBlockMinHeap min_heap;
     for (auto it = view_block_items.begin(); it != view_block_items.end(); it++) {
         auto view_block = std::make_shared<ViewBlock>();
@@ -179,6 +209,20 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
         if (s != Status::kSuccess) {
             return s;
         }
+
+        // 验证 view_block 的 qc 是否合法
+        auto qc_it = view_block_qc_map.find(view_block->hash);
+        if (qc_it == view_block_qc_map.end()) {
+            continue;
+        }
+        auto view_block_qc = qc_it->second;
+        if (crypto()->Verify(
+                    view_block->ElectHeight(),
+                    view_block_qc->msg_hash(),
+                    view_block_qc->bls_agg_sign) != Status::kSuccess) {
+            continue;
+        }
+        
         min_heap.push(view_block);        
     }
 

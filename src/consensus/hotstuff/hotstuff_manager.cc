@@ -93,7 +93,6 @@ void HotstuffManager::RegisterCreateTxCallbacks() {
 }
 
 int HotstuffManager::Init(
-        block::BlockAggValidCallback block_agg_valid_func,
         std::shared_ptr<contract::ContractManager>& contract_mgr,
         std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
         std::shared_ptr<vss::VssManager>& vss_mgr,
@@ -104,12 +103,8 @@ int HotstuffManager::Init(
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
-        std::shared_ptr<sync::KeyValueSync>& kv_sync,
         std::shared_ptr<db::Db>& db,
-        BlockCallback block_cb, // 无用处，可不传
-        uint8_t thread_count, // 无用处，可不传
         BlockCacheCallback new_block_cache_callback) {
-    block_agg_valid_func_ = block_agg_valid_func;
     contract_mgr_ = contract_mgr;
     gas_prepayment_ = gas_prepayment;
     vss_mgr_ = vss_mgr;
@@ -120,17 +115,10 @@ int HotstuffManager::Init(
     security_ptr_ = security_ptr;
     tm_block_mgr_ = tm_block_mgr;
     bls_mgr_ = bls_mgr;
-    kv_sync_ = kv_sync;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-    new_block_cache_callback_ = new_block_cache_callback;
-    
-    // txs_pools_ = std::make_shared<WaitingTxsPools>(pools_mgr_, block_mgr, tm_block_mgr);
-    // bft_queue_ = new std::queue<ZbftPtr>[common::kMaxThreadCount];
-    // elect_items_[0] = std::make_shared<ElectItem>();
-    // elect_items_[1] = std::make_shared<ElectItem>();
 
-    elect_info_ = std::make_shared<ElectInfo>(security_ptr);
+    elect_info_ = std::make_shared<ElectInfo>(security_ptr, elect_mgr_);
     crypto_ = std::make_shared<Crypto>(elect_info_, bls_mgr);
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         PoolManager pool_manager;

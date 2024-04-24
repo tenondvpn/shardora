@@ -1,8 +1,11 @@
 #pragma once
+#include <consensus/hotstuff/crypto.h>
+#include <consensus/hotstuff/elect_info.h>
+#include <consensus/hotstuff/hotstuff_manager.h>
+#include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h>
 #include <common/thread_safe_queue.h>
 #include <common/utils.h>
-#include <consensus/hotstuff/view_block_chain_manager.h>
 #include <memory>
 #include <queue>
 #include <transport/tcp_transport.h>
@@ -36,7 +39,7 @@ using OnRecvViewBlockFn = std::function<Status(
 class ViewBlockChainSyncer {
 public:
     // TODO 将 ViewBlockChainManager 换成 HotstuffManager
-    explicit ViewBlockChainSyncer(const std::shared_ptr<ViewBlockChainManager>&);
+    ViewBlockChainSyncer(const std::shared_ptr<consensus::HotstuffManager>&);
     ViewBlockChainSyncer(const ViewBlockChainSyncer&) = delete;
     ViewBlockChainSyncer& operator=(const ViewBlockChainSyncer&) = delete;
 
@@ -48,13 +51,28 @@ public:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     void ConsumeMessages();
-    Status MergeChain(const uint32_t& pool_idx, std::shared_ptr<ViewBlockChain>& ori_chain, const std::shared_ptr<ViewBlockChain>& sync_chain);
+    Status MergeChain(
+            const uint32_t& pool_idx,
+            std::shared_ptr<ViewBlockChain>& ori_chain,
+            const std::shared_ptr<ViewBlockChain>& sync_chain);
 
     inline void SetOnRecvViewBlockFn(const OnRecvViewBlockFn& fn) {
         on_recv_vb_fn_ = fn;
-    }    
+    }
     
 private:
+    inline std::shared_ptr<ViewBlockChain> view_block_chain(uint32_t pool_idx) const {
+        return hotstuff_mgr_->chain(pool_idx);
+    }
+
+    inline std::shared_ptr<Pacemaker> pacemaker(uint32_t pool_idx) const {
+        return hotstuff_mgr_->pacemaker(pool_idx);
+    }
+    
+    inline std::shared_ptr<Crypto> crypto() const {
+        return hotstuff_mgr_->crypto();
+    }
+    
     Status SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg);
     void ConsensusTimerMessage();
     void SyncChains();
@@ -66,8 +84,7 @@ private:
     std::queue<std::shared_ptr<ViewBlockItem>> item_queue_;
     common::ThreadSafeQueue<transport::MessagePtr> consume_queues_[common::kMaxThreadCount];
     common::Tick tick_;
-    std::shared_ptr<ViewBlockChainManager> view_block_chain_mgr_;
-    std::shared_ptr<Rule> rule_; // rule of view block receiving
+    std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
     OnRecvViewBlockFn on_recv_vb_fn_;
 };
 
