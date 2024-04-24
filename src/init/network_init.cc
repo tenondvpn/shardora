@@ -2,7 +2,6 @@
 #include <common/encode.h>
 #include <common/log.h>
 #include <common/utils.h>
-#include <consensus/hotstuff/consensus.h>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/leader_rotation.h>
