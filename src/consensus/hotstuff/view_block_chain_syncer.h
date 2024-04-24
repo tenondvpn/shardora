@@ -6,7 +6,6 @@
 #include <consensus/hotstuff/types.h>
 #include <common/thread_safe_queue.h>
 #include <common/utils.h>
-#include <consensus/hotstuff/view_block_chain_manager.h>
 #include <memory>
 #include <queue>
 #include <transport/tcp_transport.h>

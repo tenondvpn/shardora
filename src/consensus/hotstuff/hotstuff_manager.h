@@ -1,7 +1,5 @@
 #pragma once
-#include "consensus/consensus.h"
 #include "elect_info.h"
-#include "view_block_chain_manager.h"
 #include "crypto.h"
 #include "pacemaker.h"
 #include "block_acceptor.h"

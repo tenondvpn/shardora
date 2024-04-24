@@ -31,7 +31,6 @@
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/pacemaker.h>
-#include <consensus/hotstuff/view_block_chain_manager.h>
 #include <consensus/hotstuff/view_block_chain_syncer.h>
 #include <yaml-cpp/node/node.h>
 

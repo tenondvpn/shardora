@@ -1,5 +1,4 @@
 #include <consensus/hotstuff/hotstuff_manager.h>
-#include <consensus/hotstuff/view_block_chain_manager.h>
 #include <consensus/hotstuff/view_block_chain_syncer.h>
 #include <dht/dht_key.h>
 #include <gtest/gtest.h>
