@@ -151,11 +151,7 @@ int HotstuffManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 }
 
 void HotstuffManager::OnNewElectBlock(uint64_t block_tm_ms, uint32_t sharding_id, uint64_t elect_height,
-    common::MembersPtr& members, const libff::alt_bn128_G2& common_pk, const libff::alt_bn128_Fr& sec_key) {
-        if (sharding_id > max_consensus_sharding_id_) {
-            max_consensus_sharding_id_ = sharding_id;
-        }
-        
+    common::MembersPtr& members, const libff::alt_bn128_G2& common_pk, const libff::alt_bn128_Fr& sec_key) {        
         elect_info_->OnNewElectBlock(sharding_id, elect_height, members, common_pk, sec_key);
     }
 
