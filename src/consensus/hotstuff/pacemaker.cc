@@ -36,30 +36,38 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
         return Status::kInvalidArgument;
     }
 
-    auto view = 0;
+    View qc_view = 0;
+    bool timeout = false;
     if (sync_info->qc) {
         UpdateHighQC(sync_info->qc);
         if (sync_info->qc->view < cur_view_ && cur_view_ != BeforeGenesisView) {
             return Status::kSuccess;
         }
-        view = sync_info->qc->view;
-        StopTimeoutTimer();
-        duration_->ViewSucceeded();
-    } else {
+        qc_view = sync_info->qc->view;
+    }
+
+    View tc_view = 0;
+    if (sync_info->tc) {
+        timeout = false;
         UpdateHighTC(sync_info->tc);
         if (sync_info->tc->view < cur_view_ && cur_view_ != BeforeGenesisView) {
             return Status::kSuccess;
         }
-        view = sync_info->tc->view;
-        StopTimeoutTimer();
-        duration_->ViewTimeout();
+        tc_view = sync_info->tc->view;
     }
 
+    StopTimeoutTimer();
+    if (timeout) {
+        duration_->ViewTimeout();
+    } else {
+        duration_->ViewSucceeded();
+    }
+    
     // TODO 如果交易池为空，则直接 return，不开启新视图
     if (cur_view_ == BeforeGenesisView) {
         cur_view_ = GenesisView;
     } else {
-        cur_view_ = view + 1;
+        cur_view_ = std::max(qc_view, tc_view) + 1;
     }
     
     duration_->ViewStarted();
