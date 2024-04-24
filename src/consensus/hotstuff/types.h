@@ -29,14 +29,12 @@ struct QC {
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
     View view; // view_block_hash 对应的 view
     HashStr view_block_hash;
-    HashStr msg_hash; // 对 view 和 view_block_hash 一起取 hash
 
     QC(const std::shared_ptr<libff::alt_bn128_G1>& sign, const View& v, const HashStr& hash) :
         bls_agg_sign(sign), view(v), view_block_hash(hash) {
         if (sign == nullptr) {
             bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
         }
-        msg_hash = GetQCMsgHash(view, view_block_hash);
     }
 
     QC() {
@@ -46,8 +44,8 @@ struct QC {
     std::string Serialize() const;
     bool Unserialize(const std::string& str);
 
-    inline bool Valid() const {
-        return msg_hash == GetQCMsgHash(view, view_block_hash);
+    inline HashStr msg_hash() const {
+        return GetQCMsgHash(view, view_block_hash);
     }
 };
 
@@ -84,9 +82,6 @@ struct ViewBlock {
     ViewBlock() : qc(nullptr) {};
 
     inline bool Valid() {
-        if (qc && !qc->Valid()) {
-            return false;
-        }
         return hash != "" && hash == DoHash(); 
     }
     
@@ -101,12 +96,22 @@ struct ViewBlock {
     }
 };
 
-struct SyncInfo {
+struct SyncInfo : public std::enable_shared_from_this<SyncInfo> {
     std::shared_ptr<QC> qc;
     std::shared_ptr<TC> tc;
     // std::shared_ptr<ViewBlock> view_block;
 
     SyncInfo() : qc(nullptr), tc(nullptr) {};
+
+    std::shared_ptr<SyncInfo> WithQC(const std::shared_ptr<QC>& q) {
+        qc = q;
+        return shared_from_this();
+    }
+
+    std::shared_ptr<SyncInfo> WithTC(const std::shared_ptr<TC>& t) {
+        tc = t;
+        return shared_from_this();
+    }    
 };
 
 enum class Status : int {

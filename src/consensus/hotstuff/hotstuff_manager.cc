@@ -214,7 +214,7 @@ Status HotstuffManager::VerifyViewBlock(const std::shared_ptr<ViewBlock>& v_bloc
     }
 
     // 验证 qc
-    if (crypto_->Verify(elect_height, qc->msg_hash, qc->bls_agg_sign) != Status::kSuccess) {
+    if (crypto_->Verify(elect_height, qc->msg_hash(), qc->bls_agg_sign) != Status::kSuccess) {
         ZJC_ERROR("Verify qc is error.");
         return Status::kError; 
     }
