@@ -51,9 +51,9 @@ protected:
         security_->SetPrivateKey(common::Encode::HexDecode(sk_));
         
         account_mgr_ = std::make_shared<block::AccountManager>();
-        system("rm -rf ./core.* ./db");
+        system("rm -rf ./core.* ./db_syncer");
         db_ = std::make_shared<db::Db>();
-        db_->Init("./db");
+        db_->Init("./db_syncer");
         
         kv_sync_ = std::make_shared<sync::KeyValueSync>();
         pools_mgr_ = std::make_shared<pools::TxPoolManager>(
@@ -94,7 +94,7 @@ protected:
     }
 
     static void TearDownTestCase() {
-        system("rm -rf ./core.* ./db");
+        system("rm -rf ./core.* ./db_syncer");
     }
 
     static transport::MessagePtr CreateRequestMsg() {

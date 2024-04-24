@@ -41,7 +41,7 @@ static std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
 static std::shared_ptr<hotstuff::ElectInfo> elect_info_ = nullptr;
 static std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
 static std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
-static std::shared_ptr<db::Db> db2_ = nullptr;
+static std::shared_ptr<db::Db> db_ = nullptr;
 static std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
 static std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
 static std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
@@ -59,22 +59,22 @@ protected:
         security_ = std::make_shared<security::Ecdsa>();
         security_->SetPrivateKey(common::Encode::HexDecode(sk_));
         account_mgr_ = std::make_shared<block::AccountManager>();
-        system("rm -rf ./core.* ./db");
-        db2_ = std::make_shared<db::Db>();
-        db2_->Init("./db");
+        system("rm -rf ./core.* ./db_acceptor");
+        db_ = std::make_shared<db::Db>();
+        db_->Init("./db_acceptor");
         
         kv_sync_ = std::make_shared<sync::KeyValueSync>();
         pools_mgr_ = std::make_shared<pools::TxPoolManager>(
-                security_, db2_, kv_sync_, account_mgr_);        
+                security_, db_, kv_sync_, account_mgr_);        
         block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
         
         elect_info_ = std::make_shared<ElectInfo>(security_, nullptr);
         vss_mgr_ = std::make_shared<vss::VssManager>(security_);
         contract_mgr_ = std::make_shared<contract::ContractManager>();
-        gas_prepayment_ = std::make_shared<consensus::ContractGasPrepayment>(db2_);
+        gas_prepayment_ = std::make_shared<consensus::ContractGasPrepayment>(db_);
         tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
         
-        kv_sync_->Init(block_mgr_, db2_);
+        kv_sync_->Init(block_mgr_, db_);
         contract_mgr_->Init(security_);
         tm_block_mgr_->Init(vss_mgr_,account_mgr_);
         
@@ -85,7 +85,7 @@ protected:
                 elect_info_,
                 vss_mgr_,
                 contract_mgr_,
-                db2_,
+                db_,
                 gas_prepayment_,
                 pools_mgr_,
                 block_mgr_,
@@ -96,15 +96,15 @@ protected:
 
         // 创建一个账户
         auto account_info = CreateAddress();
-        prefix_db_ = std::make_shared<protos::PrefixDb>(db2_);
+        prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
         prefix_db_->AddAddressInfo(account_info->addr(), *account_info);
-        account_mgr_->Init(db2_, pools_mgr_);
+        account_mgr_->Init(db_, pools_mgr_);
 
         auto address_info = account_mgr_->GetAccountInfo(account_info->addr());
     }
 
     static void TearDownTestCase() {
-        system("rm -rf ./core.* ./db");
+        system("rm -rf ./core.* ./db_acceptor");
     }
 
     static std::shared_ptr<address::protobuf::AddressInfo> CreateAddress() {
