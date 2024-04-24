@@ -223,7 +223,7 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
                     view_block_qc->bls_agg_sign) != Status::kSuccess) {
             continue;
         }
-        
+
         min_heap.push(view_block);        
     }
 
