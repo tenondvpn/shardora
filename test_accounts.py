@@ -36,15 +36,16 @@ def check_addresses(addresses):
             results = list(executor.map(check_address, addresses))
             # 过滤出失败的地址
             print(f"Checking {count}th addresses...")
+            count += 1
             failed_addresses = [result for result in results if result is not None]
             if failed_addresses:
                 print(f"Some addresses failed, retrying... all:{allcount}, try:{len(results)},fail:{len(failed_addresses)}")
-                result = subprocess.run([ "/root/shardora/cbuild_Debug/txcli", "5", ' '.join(failed_addresses) ], capture_output=True, text=True, cwd="/root/shardora/cbuild_Debug")
+                result = subprocess.run([ "/root/shardora/cbuild_Debug/txcli", "5"] + failed_addresses , capture_output=True, text=True, cwd="/root/shardora/cbuild_Debug")
                 print('Have a look at stdout:\n', result.stdout)
                 addresses = failed_addresses
                 time.sleep(5)
             else:
-                print("All addresses succeeded.")
+                print(f"All {allcount} addresses succeeded.")
                 break
 
 
