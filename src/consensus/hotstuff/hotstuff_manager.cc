@@ -122,12 +122,17 @@ int HotstuffManager::Init(
     crypto_ = std::make_shared<Crypto>(elect_info_, bls_mgr);
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         PoolManager pool_manager;
+        pool_manager.pool_idx = pool_idx;
         pool_manager.view_block_chain = std::make_shared<ViewBlockChain>();
+        
         auto leader_rotation = std::make_shared<LeaderRotation>(pool_manager.view_block_chain, elect_info_);
         auto pace_maker = std::make_shared<Pacemaker>(pool_idx, crypto_, leader_rotation, std::make_shared<ViewDuration>());
         
         pool_manager.block_acceptor = std::make_shared<BlockAcceptor>(pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
             contract_mgr, db, gas_prepayment, pool_mgr, block_mgr, tm_block_mgr, new_block_cache_callback);
+
+        // 初始化
+        pool_manager.Init(db_);
         pool_managers_[pool_idx] = pool_manager;
     }
 

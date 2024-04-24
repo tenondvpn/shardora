@@ -135,9 +135,22 @@ private:
 
     struct PoolManager
     {
+        uint32_t pool_idx;
         std::shared_ptr<Pacemaker> pace_maker;
         std::shared_ptr<IBlockAcceptor> block_acceptor;
         std::shared_ptr<ViewBlockChain> view_block_chain;
+
+        void Init(std::shared_ptr<db::Db>& db_) {
+            auto genesis = GetGenesisViewBlock(db_, pool_idx);
+            if (genesis) {
+                view_block_chain->Store(genesis);
+                view_block_chain->SetLatestCommittedBlock(genesis);
+                auto sync_info = std::make_shared<SyncInfo>();
+                pace_maker->AdvanceView(sync_info->WithQC(genesis->qc));
+            } else {
+                ZJC_DEBUG("no genesis, pool_idx: %d", pool_idx);
+            }
+        }
     };
 
     inline std::shared_ptr<PoolManager> pool_manager(uint32_t pool_idx) const {
