@@ -35,21 +35,22 @@ static const uint32_t POOL = 0;
 static const std::string sk_ =
     "b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708";
 
-transport::MultiThreadHandler net_handler_;
-std::shared_ptr<security::Security> security_ = nullptr;
-std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
-std::shared_ptr<hotstuff::ElectInfo> elect_info_ = nullptr;
-std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
-std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
-std::shared_ptr<db::Db> db_ = nullptr;
-std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
-std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
-std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
-std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
-std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
+extern transport::MultiThreadHandler net_handler_;
+extern std::shared_ptr<security::Security> security_;
+extern std::shared_ptr<block::AccountManager> account_mgr_;
+extern std::shared_ptr<hotstuff::ElectInfo> elect_info_;
+extern std::shared_ptr<vss::VssManager> vss_mgr_;
+extern std::shared_ptr<contract::ContractManager> contract_mgr_;
+extern std::shared_ptr<db::Db> db_;
+extern std::shared_ptr<pools::TxPoolManager> pools_mgr_;
+extern std::shared_ptr<sync::KeyValueSync> kv_sync_;
+extern std::shared_ptr<block::BlockManager> block_mgr_;
+extern std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_;
+extern std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_;
+extern std::shared_ptr<protos::PrefixDb> prefix_db_;
+extern db::DbWriteBatch db_batch;
+
 std::shared_ptr<BlockAcceptor> block_acceptor_ = nullptr;
-std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-db::DbWriteBatch db_batch;
 
 class TestBlockAcceptor : public testing::Test {
 protected:
