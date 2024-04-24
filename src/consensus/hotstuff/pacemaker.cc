@@ -3,6 +3,7 @@
 #include <common/utils.h>
 #include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h>
+#include <consensus/hotstuff/view_block_chain.h>
 #include <dht/dht_key.h>
 #include <network/route.h>
 #include <protos/transport.pb.h>
@@ -20,8 +21,8 @@ Pacemaker::Pacemaker(
         const std::shared_ptr<ViewDuration>& d) :
     pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d) {
     cur_view_ = BeforeGenesisView;
-    high_qc_ = std::make_shared<QC>(nullptr, BeforeGenesisView, "");
-    high_tc_ = std::make_shared<TC>(nullptr, BeforeGenesisView, "");
+    high_qc_ = GetQCWrappedByGenesis();
+    high_tc_ = std::make_shared<TC>(nullptr, BeforeGenesisView);
 }
 
 Pacemaker::~Pacemaker() {}
