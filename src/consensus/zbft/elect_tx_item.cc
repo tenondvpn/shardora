@@ -349,10 +349,12 @@ void ElectTxItem::GetIndexNodes(
         // 已经在委员会中跳过
         auto iter = added_nodes_.find(elect_statistic.join_elect_nodes(i).pubkey());
         if (iter != added_nodes_.end()) {
+            ZJC_DEBUG("join new node failed: %s, already in committee",  common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).pubkey()).c_str());
             continue;
         }
 
         if (elect_statistic.join_elect_nodes(i).shard() != elect_statistic.sharding_id()) {
+            ZJC_DEBUG("join new node failed: %s, not in this sharding",  common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).pubkey()).c_str());
             continue;
         }
 
@@ -360,6 +362,10 @@ void ElectTxItem::GetIndexNodes(
             // 当指定了index时，只选择指定index的节点
             // 不指定 index 时，选择所有节点
             if (elect_statistic.join_elect_nodes(i).elect_pos() != (int32_t)index) {
+                ZJC_DEBUG("join new node failed: %s, not in this index, new node index :%d, need index:%d",
+                          common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).pubkey()).c_str(),
+                          elect_statistic.join_elect_nodes(i).elect_pos(),
+                          index);
                 continue;
             }
         }
