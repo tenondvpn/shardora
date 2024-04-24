@@ -49,8 +49,7 @@ extern std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_;
 extern std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_;
 extern std::shared_ptr<protos::PrefixDb> prefix_db_;
 extern db::DbWriteBatch db_batch;
-
-std::shared_ptr<BlockAcceptor> block_acceptor_ = nullptr;
+extern std::shared_ptr<BlockAcceptor> block_acceptor_;
 
 class TestBlockAcceptor : public testing::Test {
 protected:
