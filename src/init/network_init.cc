@@ -279,15 +279,11 @@ void NetworkInit::AddCmds() {
         auto parent_hash = common::Encode::HexDecode(args[1]);
         auto leader_idx = std::stoi(args[2]);
         
-        auto consensus = consensus_mgr_->consensus(pool_idx);
-        if (!consensus) {
-            return;
-        }
-        auto pacemaker = consensus->pacemaker();
+        auto pacemaker = hotstuf_mgr_->pacemaker(pool_idx);
         if (!pacemaker) {
             return;
         }
-        auto chain = consensus->chain();
+        auto chain = hotstuf_mgr_->chain(pool_idx);
         if (!chain) {
             return;
         }
@@ -304,7 +300,7 @@ void NetworkInit::AddCmds() {
         auto fake_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
         
         auto qc = std::make_shared<hotstuff::QC>();
-        s = this->crypto_->CreateQC(parent_block, fake_sign, qc);        
+        s = hotstuf_mgr_->crypto()->CreateQC(parent_block, fake_sign, qc);        
         if (s != hotstuff::Status::kSuccess) {
             return;
         }
@@ -328,12 +324,8 @@ void NetworkInit::AddCmds() {
             return;
         }
         uint32_t pool_idx = std::stoi(args[0]);
-        auto consensus = consensus_mgr_->consensus(pool_idx);
-        if (!consensus) {
-            return;
-        }
-                
-        auto chain = consensus->chain();
+                        
+        auto chain = hotstuf_mgr_->chain(pool_idx);
         if (!chain) {
             return;
         }

@@ -1,4 +1,5 @@
 #pragma once
+#include "consensus/consensus.h"
 #include "elect_info.h"
 #include "crypto.h"
 #include "pacemaker.h"
