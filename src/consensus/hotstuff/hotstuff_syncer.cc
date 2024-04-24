@@ -177,10 +177,7 @@ Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
     assert(view_block_msg.has_view_block_res());
     uint32_t pool_idx = view_block_msg.view_block_res().pool_idx();
     
-    Status s = processResponseQcTc(pool_idx, view_block_msg.view_block_res());
-    if (s != Status::kSuccess) {
-        return s;
-    }
+    processResponseQcTc(pool_idx, view_block_msg.view_block_res());
     return processResponseChain(pool_idx, view_block_msg.view_block_res());
 }
 
@@ -199,6 +196,7 @@ Status HotstuffSyncer::processResponseQcTc(
 
     auto sync_info = std::make_shared<SyncInfo>();
     pm->AdvanceView(sync_info->WithQC(highqc)->WithTC(hightc));
+    return Status::kSuccess;
 }
 
 Status HotstuffSyncer::processResponseChain(
