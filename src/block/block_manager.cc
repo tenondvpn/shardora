@@ -1587,11 +1587,14 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     auto rbegin = leader_to_txs_.begin();
     if (rbegin != leader_to_txs_.end()) {
         latest_to_tx_ = rbegin->second;
-        ZJC_DEBUG("set success add txs: %s, leader idx: %u, leader to index: %d, gid: %s, elect height: %lu",
+        ZJC_DEBUG("set success add txs: %s, leader idx: %u, leader to index: %d, gid: %s, elect height: %lu, ByteSize: %u",
             common::Encode::HexEncode(tos_hashs).c_str(),
             shard_to.leader_idx(), shard_to.leader_to_idx(),
             common::Encode::HexEncode(gid).c_str(),
-            rbegin->first);
+            rbegin->first,
+            leader_to_txs->to_tx->tx_ptr->tx_info.ByteSize());
+        assert(tx->value().size() < 1000000u);
+        assert(leader_to_txs->to_tx->tx_ptr->tx_info.ByteSize() < 1000000u);
         assert(latest_to_tx_->to_tx != nullptr);
     }
 }
