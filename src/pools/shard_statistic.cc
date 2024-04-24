@@ -423,15 +423,15 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
 
                         for (int32_t node_idx = 0; node_idx < elect_statistic.join_elect_nodes_size(); ++node_idx) {
                             ZJC_DEBUG("success get shard election: %lu, %lu, join nodes size: %u, shard: %u",
-                                tmp[0], tmp[1], elect_statistic.join_elect_nodes_size(), elect_statistic.join_elect_nodes(i).shard());
-                            if (elect_statistic.join_elect_nodes(i).shard() == network::kRootCongressNetworkId) {
-                                elect_static_info_item->node_stoke_map[elect_statistic.join_elect_nodes(i).pubkey()] =
-                                    elect_statistic.join_elect_nodes(i).stoke();
+                                tmp[0], tmp[1], elect_statistic.join_elect_nodes_size(), elect_statistic.join_elect_nodes(node_idx).shard());
+                            if (elect_statistic.join_elect_nodes(node_idx).shard() == network::kRootCongressNetworkId) {
+                                elect_static_info_item->node_stoke_map[elect_statistic.join_elect_nodes(node_idx).pubkey()] =
+                                    elect_statistic.join_elect_nodes(node_idx).stoke();
                                 ZJC_DEBUG("root sharding kJoinElect add new elect node: %s, stoke: %lu, elect height: %lu",
-                                    common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).pubkey()).c_str(),
-                                    elect_statistic.join_elect_nodes(i).stoke(),
+                                    common::Encode::HexEncode(elect_statistic.join_elect_nodes(node_idx).pubkey()).c_str(),
+                                    elect_statistic.join_elect_nodes(node_idx).stoke(),
                                     block.electblock_height());
-                                elect_static_info_item->node_shard_map[elect_statistic.join_elect_nodes(i).pubkey()] = network::kRootCongressNetworkId;
+                                elect_static_info_item->node_shard_map[elect_statistic.join_elect_nodes(node_idx).pubkey()] = network::kRootCongressNetworkId;
                             }
                         }
                     }
