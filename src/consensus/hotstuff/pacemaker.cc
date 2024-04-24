@@ -20,8 +20,8 @@ Pacemaker::Pacemaker(
         const std::shared_ptr<ViewDuration>& d) :
     pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d) {
     cur_view_ = BeforeGenesisView;
-    // network::Route::Instance()->RegisterMessage(common::kHotstuffTimeoutMessage,
-    //     std::bind(&Pacemaker::HandleMessage, this, std::placeholders::_1));
+    high_qc_ = std::make_shared<QC>(nullptr, BeforeGenesisView, "");
+    high_tc_ = std::make_shared<TC>(nullptr, BeforeGenesisView, "");
 }
 
 Pacemaker::~Pacemaker() {}

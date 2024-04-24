@@ -289,5 +289,9 @@ std::shared_ptr<QC> GetQCWrappedByGenesis() {
     return std::make_shared<QC>(nullptr, BeforeGenesisView, "");
 }
 
+std::shared_ptr<QC> GetQCWrappedByGenesis() {
+    return std::make_shared<QC>(nullptr, BeforeGenesisView, "");
+}
+
 }
 }
