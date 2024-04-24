@@ -1762,7 +1762,7 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
         }
     }
 
-    ZJC_DEBUG("failed get elect tx pool index: %s, tx hash: %s",
+    ZJC_DEBUG("failed get elect tx pool index: %u, tx hash: %s",
         pool_index, common::Encode::HexEncode(tx_hash).c_str());
     return nullptr;
 }
