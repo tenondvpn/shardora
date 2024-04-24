@@ -1,4 +1,4 @@
-#include "consensus/hotstuff/view_block_chain_syncer.h"
+#include "consensus/hotstuff/hotstuff_syncer.h"
 #include <common/encode.h>
 #include <common/global_info.h>
 #include <common/log.h>
@@ -23,27 +23,27 @@ namespace shardora {
 
 namespace hotstuff {
 
-ViewBlockChainSyncer::ViewBlockChainSyncer(
+HotstuffSyncer::HotstuffSyncer(
         const std::shared_ptr<consensus::HotstuffManager>& h_mgr) :
     hotstuff_mgr_(h_mgr) {
     // start consumeloop thread
     network::Route::Instance()->RegisterMessage(common::kViewBlockSyncMessage,
-        std::bind(&ViewBlockChainSyncer::HandleMessage, this, std::placeholders::_1));
+        std::bind(&HotstuffSyncer::HandleMessage, this, std::placeholders::_1));
 }
 
-ViewBlockChainSyncer::~ViewBlockChainSyncer() {}
+HotstuffSyncer::~HotstuffSyncer() {}
 
-void ViewBlockChainSyncer::Start() {
-    tick_.CutOff(kSyncTimerCycleUs, std::bind(&ViewBlockChainSyncer::ConsensusTimerMessage, this));
+void HotstuffSyncer::Start() {
+    tick_.CutOff(kSyncTimerCycleUs, std::bind(&HotstuffSyncer::ConsensusTimerMessage, this));
 }
 
-void ViewBlockChainSyncer::Stop() { tick_.Destroy(); }
+void HotstuffSyncer::Stop() { tick_.Destroy(); }
 
-int ViewBlockChainSyncer::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+int HotstuffSyncer::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     return transport::kFirewallCheckSuccess;
 }
 
-void ViewBlockChainSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
+void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto header = msg_ptr->header;
     assert(header.type() == common::kViewBlockSyncMessage);
     
@@ -52,17 +52,17 @@ void ViewBlockChainSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 // 批量异步处理，提高 tps
-void ViewBlockChainSyncer::ConsensusTimerMessage() {
+void HotstuffSyncer::ConsensusTimerMessage() {
     // TODO 仅共识池节点参与 view_block_chain 的同步
     SyncChains();
     ConsumeMessages();
 
     tick_.CutOff(
         kSyncTimerCycleUs,
-        std::bind(&ViewBlockChainSyncer::ConsensusTimerMessage, this));    
+        std::bind(&HotstuffSyncer::ConsensusTimerMessage, this));    
 }
 
-void ViewBlockChainSyncer::SyncChains() {
+void HotstuffSyncer::SyncChains() {
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
         auto req = vb_msg.mutable_view_block_req();
@@ -73,7 +73,7 @@ void ViewBlockChainSyncer::SyncChains() {
     }
 }
 
-void ViewBlockChainSyncer::ConsumeMessages() {
+void HotstuffSyncer::ConsumeMessages() {
     // Consume Messages
     uint32_t pop_count = 0;
     for (uint8_t thread_idx = 0; thread_idx < common::kMaxThreadCount; ++thread_idx) {
@@ -92,7 +92,7 @@ void ViewBlockChainSyncer::ConsumeMessages() {
     }
 }
 
-Status ViewBlockChainSyncer::SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {
+Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {
     // 只有共识池节点才能同步 ViewBlock
     if (network_id >= network::kConsensusWaitingShardBeginNetworkId) {
         return Status::kError;
@@ -121,7 +121,7 @@ Status ViewBlockChainSyncer::SendRequest(uint32_t network_id, const view_block::
 }
 
 // 处理 request 类型消息
-Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
+Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     auto& view_block_msg = msg_ptr->header.view_block_proto();
     assert(view_block_msg.has_view_block_req());
 
@@ -172,16 +172,41 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
 }
 
 // 处理 response 类型消息
-Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
+Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
     auto& view_block_msg = msg_ptr->header.view_block_proto();
     assert(view_block_msg.has_view_block_res());
-    auto& view_block_items = view_block_msg.view_block_res().view_block_items();
-    auto& view_block_qc_strs = view_block_msg.view_block_res().view_block_qc_strs();
     uint32_t pool_idx = view_block_msg.view_block_res().pool_idx();
+    
+    processResponseQcTc(pool_idx, view_block_msg.view_block_res());
+    return processResponseChain(pool_idx, view_block_msg.view_block_res());
+}
+
+Status HotstuffSyncer::processResponseQcTc(
+        const uint32_t& pool_idx,
+        const view_block::protobuf::ViewBlockSyncResponse& view_block_res) {
+    // 更新 highqc 和 hightc
+    auto pm = pacemaker(pool_idx);
+    if (!pm) {
+        return Status::kError;
+    }
+    auto highqc = std::make_shared<QC>();
+    auto hightc = std::make_shared<TC>();
+    highqc->Unserialize(view_block_res.high_qc_str());
+    hightc->Unserialize(view_block_res.high_tc_str());
+
+    auto sync_info = std::make_shared<SyncInfo>();
+    pm->AdvanceView(sync_info->WithQC(highqc)->WithTC(hightc));
+    return Status::kSuccess;
+}
+
+Status HotstuffSyncer::processResponseChain(
+        const uint32_t& pool_idx,
+        const view_block::protobuf::ViewBlockSyncResponse& view_block_res) {
+    auto& view_block_items = view_block_res.view_block_items();
+    auto& view_block_qc_strs = view_block_res.view_block_qc_strs();
 
     ZJC_DEBUG("response received pool_idx: %d, view_blocks: %d, qc: %d",
-        pool_idx, view_block_items.size(), view_block_qc_strs.size());
-    
+        pool_idx, view_block_items.size(), view_block_qc_strs.size());    
     // 对块数量限制
     if (view_block_items.size() > kMaxSyncBlockNum || view_block_items.size() <= 0) {
         return Status::kError;
@@ -248,10 +273,10 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
         return Status::kSuccess;
     }
 
-    return MergeChain(pool_idx, chain, sync_chain);
+    return MergeChain(pool_idx, chain, sync_chain);    
 }
 
-Status ViewBlockChainSyncer::MergeChain(
+Status HotstuffSyncer::MergeChain(
         const uint32_t& pool_idx,
         std::shared_ptr<ViewBlockChain>& ori_chain,
         const std::shared_ptr<ViewBlockChain>& sync_chain) {

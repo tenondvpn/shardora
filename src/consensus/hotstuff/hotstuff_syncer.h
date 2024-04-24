@@ -36,14 +36,14 @@ using OnRecvViewBlockFn = std::function<Status(
         const std::shared_ptr<ViewBlockChain>& chain,
         const std::shared_ptr<ViewBlock>& view_block)>;
 
-class ViewBlockChainSyncer {
+class HotstuffSyncer {
 public:
     // TODO 将 ViewBlockChainManager 换成 HotstuffManager
-    ViewBlockChainSyncer(const std::shared_ptr<consensus::HotstuffManager>&);
-    ViewBlockChainSyncer(const ViewBlockChainSyncer&) = delete;
-    ViewBlockChainSyncer& operator=(const ViewBlockChainSyncer&) = delete;
+    HotstuffSyncer(const std::shared_ptr<consensus::HotstuffManager>&);
+    HotstuffSyncer(const HotstuffSyncer&) = delete;
+    HotstuffSyncer& operator=(const HotstuffSyncer&) = delete;
 
-    ~ViewBlockChainSyncer();
+    ~HotstuffSyncer();
 
     void Start();
     void Stop();
@@ -79,6 +79,13 @@ private:
     
     Status processRequest(const transport::MessagePtr&);
     Status processResponse(const transport::MessagePtr&);
+
+    Status processResponseQcTc(
+            const uint32_t& pool_idx,
+            const view_block::protobuf::ViewBlockSyncResponse& view_block_res);
+    Status processResponseChain(
+            const uint32_t& pool_idx,
+            const view_block::protobuf::ViewBlockSyncResponse& view_block_res);
     
     uint64_t timeout_ms_;
     std::queue<std::shared_ptr<ViewBlockItem>> item_queue_;
