@@ -275,6 +275,8 @@ void ShardStatistic::HandleCrossShard(
         proto_cross_item->set_src_pool(block.pool_index());
         proto_cross_item->set_height(block.height());
         proto_cross_item->set_des_shard(cross_item.des_net);
+        ZJC_DEBUG("succcess add cross statistic shard: %u, pool: %u, height: %lu, des: %u",
+            src_shard, block.pool_index(), block.height(), cross_item.des_net);
     } else if (cross_item.cross_ptr != nullptr) {
         for (int32_t i = 0; i < cross_item.cross_ptr->crosses_size(); ++i) {
             auto* proto_cross_item = cross_statistic.add_crosses();
@@ -282,6 +284,11 @@ void ShardStatistic::HandleCrossShard(
             proto_cross_item->set_src_pool(cross_item.cross_ptr->crosses(i).src_pool());
             proto_cross_item->set_height(cross_item.cross_ptr->crosses(i).height());
             proto_cross_item->set_des_shard(cross_item.cross_ptr->crosses(i).des_shard());
+            ZJC_DEBUG("succcess add cross statistic shard: %u, pool: %u, height: %lu, des: %u",
+                cross_item.cross_ptr->crosses(i).src_shard(),
+                cross_item.cross_ptr->crosses(i).src_pool(),
+                cross_item.cross_ptr->crosses(i).height(),
+                cross_item.cross_ptr->crosses(i).des_shard());
         }
     }
 }
@@ -440,7 +447,7 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
     if (leader_id.empty()) {
         return;
     }
-    
+
     auto [it, inserted] = elect_static_info_item->node_tx_count_map.try_emplace(leader_id, pools::StatisticMemberInfoItem());
     auto& staticMemberInfo = it->second;
     staticMemberInfo.tx_count += block.tx_list_size();
@@ -465,7 +472,7 @@ std::string ShardStatistic::getLeaderIdFromBlock(shardora::block::protobuf::Bloc
                   block.network_id());
         return "";
     }
-    
+
     auto leader_id = (*members)[block.leader_index()]->id;
     return leader_id;
 }
@@ -591,7 +598,7 @@ int ShardStatistic::StatisticWithHeights(
 
     uint64_t all_gas_amount = 0;
     uint64_t root_all_gas_amount = 0;
-    std::string cross_string_for_hash;
+    std::map<uint64_t, std::unordered_map<std::string, uint32_t>> height_node_count_map;
     std::map<uint64_t, std::unordered_map<std::string, uint64_t>> height_node_gas_map;
     std::map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
     std::map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
@@ -621,6 +628,9 @@ int ShardStatistic::StatisticWithHeights(
             for (uint32_t i = 0; i < tm_iter->second->cross_statistic.crosses_size(); ++i) {
                 auto* cross_item = cross_statistic.add_crosses();
                 *cross_item = tm_iter->second->cross_statistic.crosses(i);
+                ZJC_DEBUG("0 succcess add cross statistic shard: %u, pool: %u, height: %lu, des: %u",
+                    cross_item->src_shard(), cross_item->src_pool(),
+                    cross_item->height(), cross_item->des_shard());
             }
             
             for (auto elect_iter = tm_iter->second->elect_node_info_map.begin(); 
@@ -634,7 +644,7 @@ int ShardStatistic::StatisticWithHeights(
                     height_node_gas_map[elect_height] = std::unordered_map<std::string, uint64_t>();
                 }
 
-            
+
                 // 聚合每个选举高度，每个节点在各个pool 中完成交易的gas总和
                 auto &node_gas_map = height_node_gas_map[elect_height];
                 for (auto node_count_iter = elect_iter->second->node_tx_count_map.begin();
@@ -917,17 +927,11 @@ int ShardStatistic::StatisticWithHeights(
     heights_ptr->set_tm_height(prev_timeblock_height_);
     debug_for_str += std::to_string(all_gas_amount) + ",";
     debug_for_str += std::to_string(net_id) + ",";
-    if (!cross_string_for_hash.empty()) {
-        if (is_root) {
-        } else {
-            *elect_statistic.mutable_cross() = cross_statistic;
-        }
+    if (!is_root) {
+        *elect_statistic.mutable_cross() = cross_statistic;
     }
 
-    {
-        ZJC_DEBUG("LLLLLL statistic :%s", ProtobufToJson(elect_statistic).c_str());
-    }
-
+    ZJC_DEBUG("LLLLLL statistic :%s", ProtobufToJson(elect_statistic).c_str());
     ZJC_DEBUG("success create statistic message: %s, heights: %s, prev_timeblock_height_: %lu",
         debug_for_str.c_str(),
         "heights.c_str()",

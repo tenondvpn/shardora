@@ -1092,6 +1092,8 @@ public:
         if (!st.ok()) {
             ZJC_FATAL("write db failed!");
         }
+
+        ZJC_DEBUG("success set local network id %u, des %u", sharding_id, des_sharding_id);
     }
 
     bool GetJoinShard(uint32_t* sharding_id, uint32_t* des_sharding_id) {

@@ -349,8 +349,6 @@ void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
         }
     }
 
-    std::cout << "success handle init res message. response shard: " << sharding_id
-        << ", join type: " << common::GlobalInfo::Instance()->join_root() <<  std::endl;
     if (sharding_id == common::kInvalidUint32) {
         return;
     }
@@ -363,18 +361,15 @@ void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
             common::Random::RandomInt32() % 4 == 1) {
         sharding_id = network::kRootCongressNetworkId;
     }
-        
-    std::cout << "success handle init res message. response shard: " << sharding_id
-        << ", join type: " << common::GlobalInfo::Instance()->join_root() << ", rand join: " << sharding_id << std::endl;
+
     prefix_db_->SaveJoinShard(sharding_id, des_sharding_id_);
+    ZJC_DEBUG("success save local sharding %u, %u", sharding_id, des_sharding_id_);
     auto waiting_network_id = sharding_id + network::kConsensusWaitingShardOffset;
     if (elect_mgr_->Join(waiting_network_id) != elect::kElectSuccess) {
         INIT_ERROR("join waiting pool network[%u] failed!", waiting_network_id);
         return;
     }
 
-    std::cout << "success handle init res message. join waiting shard: " << waiting_network_id
-        << ", des_sharding_id_: " << des_sharding_id_ <<std::endl;
     common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
 }
 
@@ -409,6 +404,7 @@ void NetworkInit::InitLocalNetworkId() {
         got_sharding_id = local_node_account_info->sharding_id();
         des_sharding_id_ = got_sharding_id;
         prefix_db_->SaveJoinShard(got_sharding_id, des_sharding_id_);
+        ZJC_DEBUG("success save local sharding %u, %u", got_sharding_id, des_sharding_id_);
         std::cout << "success handle init res message. join waiting shard: " << got_sharding_id
             << ", des_sharding_id_: " << des_sharding_id_ << std::endl;
     }
@@ -486,9 +482,9 @@ void NetworkInit::SendJoinElectTransaction() {
     join_info.set_member_idx(pos);
     
     if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
-            join_info.set_shard_id(
-                common::GlobalInfo::Instance()->network_id() -
-                network::kConsensusWaitingShardOffset);
+        join_info.set_shard_id(
+            common::GlobalInfo::Instance()->network_id() -
+            network::kConsensusWaitingShardOffset);
     } else {
         join_info.set_shard_id(common::GlobalInfo::Instance()->network_id());
     }
@@ -1040,6 +1036,8 @@ void NetworkInit::AddBlockItemToCache(
             block->network_id() + network::kConsensusWaitingShardOffset ==
             common::GlobalInfo::Instance()->network_id()) {
         pools_mgr_->UpdateLatestInfo(block, db_batch);
+    } else {
+        pools_mgr_->UpdateCrossLatestInfo(block, db_batch);
     }
     
     block_mgr_->NetworkNewBlock(block, false);
@@ -1097,6 +1095,7 @@ void NetworkInit::HandleTimeBlock(
         const std::shared_ptr<block::protobuf::Block>& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
+    ZJC_DEBUG("time block coming.");
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kAttrTimerBlock) {
             if (tx.storages(i).value().size() != 16) {

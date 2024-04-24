@@ -193,6 +193,10 @@ bool TcpAcceptor::OnRead() {
                 break;
             }
 
+            if (out_conn->GetSocket() == nullptr) {
+                break;
+            }
+
             std::string from_ip;
             uint16_t from_port;
             out_conn->GetSocket()->GetIpPort(&from_ip, &from_port);

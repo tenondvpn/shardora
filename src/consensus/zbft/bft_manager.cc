@@ -770,7 +770,12 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     assert(header.type() == common::kConsensusMessage);
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (msg_ptr->header.zbft().sync_block() && msg_ptr->header.zbft().has_block()) {
-        assert(false);
+        if (!msg_ptr->header.zbft().block().is_commited_block()) {
+            return;
+        }
+
+        auto block_ptr = std::make_shared<block::protobuf::Block>(msg_ptr->header.zbft().block());
+        HandleSyncedBlock(block_ptr);
         return;
     }
 
@@ -3050,7 +3055,7 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
 
 void BftManager::LeaderBroadcastBlock(
         const std::shared_ptr<block::protobuf::Block>& block) {
-//     BroadcastWaitingBlock(thread_index, block);
+    BroadcastWaitingBlock(block);
     if (block->pool_index() == common::kRootChainPoolIndex) {
         if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
             BroadcastBlock(network::kNodeNetworkId, block);

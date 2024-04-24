@@ -610,7 +610,9 @@ void BlockManager::HandleNormalToTx(
             }
         }
 
-        if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
+        if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId && 
+                common::GlobalInfo::Instance()->network_id() != 
+                (network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
             if (to_txs.to_heights().sharding_id() != common::GlobalInfo::Instance()->network_id()) {
                 ZJC_WARN("sharding invalid: %u, %u, to hash: %s",
                     to_txs.to_heights().sharding_id(),
@@ -625,13 +627,13 @@ void BlockManager::HandleNormalToTx(
             HandleLocalNormalToTx(to_txs, tx.step(), tx.storages(0).value());
         } else {
             ZJC_DEBUG("root handle normal to tx.");
-            RootHandleNormalToTx(block.height(), to_txs, db_batch);
+            RootHandleNormalToTx(block, to_txs, db_batch);
         }
     }
 }
 
 void BlockManager::RootHandleNormalToTx(
-        uint64_t height,
+        const block::protobuf::Block& block,
         pools::protobuf::ToTxMessage& to_txs,
         db::DbWriteBatch& db_batch) {
     // 将 NormalTo 中的多个 tx 拆分成多个 kRootCreateAddress tx
@@ -651,7 +653,7 @@ void BlockManager::RootHandleNormalToTx(
             account_info->set_addr(tos_item.des());
             account_info->set_type(address::protobuf::kContract);
             account_info->set_sharding_id(tos_item.sharding_id());
-            account_info->set_latest_height(height);
+            account_info->set_latest_height(block.height());
             account_info->set_balance(tos_item.amount());
             prefix_db_->AddAddressInfo(tos_item.des(), *account_info);
             ZJC_DEBUG("create add contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
@@ -672,7 +674,13 @@ void BlockManager::RootHandleNormalToTx(
                     tos_item.des(),
                     tos_item.join_infos(i),
                     db_batch);
-                ZJC_DEBUG("success handle kElectJoin tx: %s", common::Encode::HexEncode(tos_item.des()).c_str());
+                ZJC_DEBUG("success handle kElectJoin tx: %s, net: %u, pool: %u, block net: %u, "
+                    "block pool: %u, block height: %lu, local net id: %u", 
+                    common::Encode::HexEncode(tos_item.des()).c_str(), 
+                    tos_item.sharding_id(),
+                    tos_item.pool_index(),
+                    block.network_id(), block.pool_index(), block.height(),
+                    common::GlobalInfo::Instance()->network_id());
             }
 
             continue;
@@ -689,7 +697,7 @@ void BlockManager::RootHandleNormalToTx(
         tx->set_to(tos_item.des());
         auto gid = common::Hash::keccak256(
             tos_item.des() + "_" +
-            std::to_string(height) + "_" +
+            std::to_string(block.height()) + "_" +
             std::to_string(i));
         tx->set_gas_limit(0);
         tx->set_amount(tos_item.amount());
@@ -973,6 +981,8 @@ void BlockManager::AddNewBlock(
                 block_item->network_id() + network::kConsensusWaitingShardOffset !=
                 common::GlobalInfo::Instance()->network_id()) {
             pools_mgr_->OnNewCrossBlock(block_item);
+            ZJC_DEBUG("new cross block coming: %u, %u, %lu",
+                block_item->network_id(), block_item->pool_index(), block_item->height());
         }
     }
 
@@ -983,6 +993,10 @@ void BlockManager::AddNewBlock(
 
     // 处理交易信息
     for (int32_t i = 0; i < tx_list.size(); ++i) {
+        if (tx_list[i].status() != consensus::kConsensusSuccess) {
+            continue;
+        }
+
         switch (tx_list[i].step()) {
         case pools::protobuf::kRootCreateAddressCrossSharding:
         case pools::protobuf::kNormalTo:
@@ -1054,8 +1068,12 @@ void BlockManager::HandleJoinElectTx(
             }
 
             prefix_db_->SaveNodeVerificationVector(tx.from(), join_info, db_batch);
-            ZJC_DEBUG("success handle kElectJoin tx: %s, net: %u, pool: %u, height: %lu",
-                common::Encode::HexEncode(tx.from()).c_str(), block.network_id(), block.pool_index(), block.height());
+            ZJC_DEBUG("success handle kElectJoin tx: %s, net: %u, pool: %u, height: %lu, local net id: %u",
+                common::Encode::HexEncode(tx.from()).c_str(), 
+                block.network_id(), 
+                block.pool_index(), 
+                block.height(),
+                common::GlobalInfo::Instance()->network_id());
             break;
         }
     }
@@ -1247,6 +1265,7 @@ void BlockManager::CreateStatisticTx() {
     assert(now_thread_id_tmp == tmp_thread_id_tmp);
 #endif
     if (create_statistic_tx_cb_ == nullptr) {
+        ZJC_DEBUG("create_statistic_tx_cb_ == nullptr");
         return;
     }
 
@@ -1257,6 +1276,7 @@ void BlockManager::CreateStatisticTx() {
             elect_statistic,
             cross_statistic,
             &timeblock_height) != pools::kPoolsSuccess) {
+        ZJC_DEBUG("failed StatisticWithHeights!");
         return;
     }
 
