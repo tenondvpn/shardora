@@ -206,7 +206,6 @@ private:
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
     uint32_t max_consensus_sharding_id_ = 3;
-    
 };
 
 } // namespace consensus

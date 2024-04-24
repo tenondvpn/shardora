@@ -86,7 +86,7 @@ struct ViewBlock {
     ViewBlock() : qc(nullptr) {};
 
     inline bool Valid() {
-        return hash != "" && hash == DoHash(); 
+        return hash != "" && hash == DoHash() && block != nullptr; 
     }
     
     HashStr DoHash() const;

@@ -151,13 +151,14 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
 
     for (auto& view_block : all) {
         // 仅同步已经有 qc 的 view_block
-        auto view_block_qc_str = view_block_res->add_view_block_qc_strs();
         auto view_block_qc = chain->GetQcOf(view_block);
         if (!view_block_qc) {
-            *view_block_qc_str = view_block_qc->Serialize();
-            auto view_block_item = view_block_res->add_view_block_items();
-            ViewBlock2Proto(view_block, view_block_item);
+            continue;
         }
+        auto view_block_qc_str = view_block_res->add_view_block_qc_strs();
+        *view_block_qc_str = view_block_qc->Serialize();
+        auto view_block_item = view_block_res->add_view_block_items();
+        ViewBlock2Proto(view_block, view_block_item);
     }
 
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -176,6 +177,10 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
     assert(view_block_msg.has_view_block_res());
     auto& view_block_items = view_block_msg.view_block_res().view_block_items();
     auto& view_block_qc_strs = view_block_msg.view_block_res().view_block_qc_strs();
+    uint32_t pool_idx = view_block_msg.view_block_res().pool_idx();
+
+    ZJC_DEBUG("response received pool_idx: %d, view_blocks: %d, qc: %d",
+        pool_idx, view_block_items.size(), view_block_qc_strs.size());
     
     // 对块数量限制
     if (view_block_items.size() > kMaxSyncBlockNum || view_block_items.size() <= 0) {
@@ -184,8 +189,6 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
     if (view_block_items.size() != view_block_qc_strs.size()) {
         return Status::kError;
     }
-    
-    uint32_t pool_idx = view_block_msg.view_block_res().pool_idx();
 
     auto chain = view_block_chain(pool_idx);
     if (!chain) {
@@ -222,7 +225,7 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
                     view_block_qc->bls_agg_sign) != Status::kSuccess) {
             continue;
         }
-        
+
         min_heap.push(view_block);        
     }
 
