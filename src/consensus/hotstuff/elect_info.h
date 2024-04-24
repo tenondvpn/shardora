@@ -113,10 +113,6 @@ public:
             const common::MembersPtr& members,
             const libff::alt_bn128_G2& common_pk,
             const libff::alt_bn128_Fr& sk) {
-        if (sharding_id > max_consensus_sharding_id_) {
-            max_consensus_sharding_id_ = sharding_id;
-        }
-        
         if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
             return;
         }
@@ -195,18 +191,12 @@ public:
             }
         }        
     }
-
-    inline uint32_t max_consensus_sharding_id() const {
-        return max_consensus_sharding_id_;
-    }
     
 private:
     std::shared_ptr<ElectItem> prev_elect_item_ = nullptr; 
     std::shared_ptr<ElectItem> elect_item_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
-    uint32_t max_consensus_sharding_id_ = 3;
-    
 };
 
 } // namespace consensus

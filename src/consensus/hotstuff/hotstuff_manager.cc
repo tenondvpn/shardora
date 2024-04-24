@@ -40,56 +40,55 @@ namespace {
 
 HotstuffManager::HotstuffManager() {}
 
-HotstuffManager::~HotstuffManager() {
-}
-// todo
+HotstuffManager::~HotstuffManager() {}
+
 void HotstuffManager::RegisterCreateTxCallbacks() {
-    // pools_mgr_->RegisterCreateTxFunction(
-    //     pools::protobuf::kNormalFrom,
-    //     std::bind(&HotstuffManager::CreateFromTx, this, std::placeholders::_1));
-    // pools_mgr_->RegisterCreateTxFunction(
-    //     pools::protobuf::kNormalTo,
-    //     std::bind(&HotstuffManager::CreateToTx, this, std::placeholders::_1));
-    // pools_mgr_->RegisterCreateTxFunction(
-    //     pools::protobuf::kConsensusLocalTos,
-    //     std::bind(&HotstuffManager::CreateToTxLocal, this, std::placeholders::_1));
-    // pools_mgr_->RegisterCreateTxFunction(
-    //     pools::protobuf::kContractCreateByRootTo,
-    //     std::bind(&HotstuffManager::CreateContractByRootToTx, this, std::placeholders::_1));
-    // pools_mgr_->RegisterCreateTxFunction(
-    //     pools::protobuf::kRootCreateAddress,
-    //     std::bind(&HotstuffManager::CreateRootToTxItem, this, std::placeholders::_1));
-    // pools_mgr_->RegisterCreateTxFunction(
-    //     pools::protobuf::kContractCreate,
-    //     std::bind(&HotstuffManager::CreateContractUserCreateCallTx, this, std::placeholders::_1));
-    // pools_mgr_->RegisterCreateTxFunction(
-    //     pools::protobuf::kContractCreateByRootFrom,
-    //     std::bind(&HotstuffManager::CreateContractByRootFromTx, this, std::placeholders::_1));
-    // pools_mgr_->RegisterCreateTxFunction(
-    //     pools::protobuf::kContractGasPrepayment,
-    //     std::bind(&HotstuffManager::CreateContractUserCallTx, this, std::placeholders::_1));
-    // pools_mgr_->RegisterCreateTxFunction(
-    //     pools::protobuf::kContractExcute,
-    //     std::bind(&HotstuffManager::CreateContractCallTx, this, std::placeholders::_1));
-    // pools_mgr_->RegisterCreateTxFunction(
-    //     pools::protobuf::kJoinElect,
-    //     std::bind(&HotstuffManager::CreateJoinElectTx, this, std::placeholders::_1));
-    // pools_mgr_->RegisterCreateTxFunction(
-    //     pools::protobuf::kCreateLibrary,
-    //     std::bind(&HotstuffManager::CreateLibraryTx, this, std::placeholders::_1));
-    // pools_mgr_->RegisterCreateTxFunction(
-    //     pools::protobuf::kRootCross,
-    //     std::bind(&HotstuffManager::CreateRootCrossTx, this, std::placeholders::_1));
-    // block_mgr_->SetCreateToTxFunction(
-    //     std::bind(&HotstuffManager::CreateToTx, this, std::placeholders::_1));
-    // block_mgr_->SetCreateStatisticTxFunction(
-    //     std::bind(&HotstuffManager::CreateStatisticTx, this, std::placeholders::_1));
-    // block_mgr_->SetCreateElectTxFunction(
-    //     std::bind(&HotstuffManager::CreateElectTx, this, std::placeholders::_1));
-    // block_mgr_->SetCreateCrossTxFunction(
-    //     std::bind(&HotstuffManager::CreateCrossTx, this, std::placeholders::_1));
-    // tm_block_mgr_->SetCreateTmTxFunction(
-    //     std::bind(&HotstuffManager::CreateTimeblockTx, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kNormalFrom,
+        std::bind(&HotstuffManager::CreateFromTx, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kNormalTo,
+        std::bind(&HotstuffManager::CreateToTx, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kConsensusLocalTos,
+        std::bind(&HotstuffManager::CreateToTxLocal, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kContractCreateByRootTo,
+        std::bind(&HotstuffManager::CreateContractByRootToTx, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kRootCreateAddress,
+        std::bind(&HotstuffManager::CreateRootToTxItem, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kContractCreate,
+        std::bind(&HotstuffManager::CreateContractUserCreateCallTx, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kContractCreateByRootFrom,
+        std::bind(&HotstuffManager::CreateContractByRootFromTx, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kContractGasPrepayment,
+        std::bind(&HotstuffManager::CreateContractUserCallTx, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kContractExcute,
+        std::bind(&HotstuffManager::CreateContractCallTx, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kJoinElect,
+        std::bind(&HotstuffManager::CreateJoinElectTx, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kCreateLibrary,
+        std::bind(&HotstuffManager::CreateLibraryTx, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kRootCross,
+        std::bind(&HotstuffManager::CreateRootCrossTx, this, std::placeholders::_1));
+    block_mgr_->SetCreateToTxFunction(
+        std::bind(&HotstuffManager::CreateToTx, this, std::placeholders::_1));
+    block_mgr_->SetCreateStatisticTxFunction(
+        std::bind(&HotstuffManager::CreateStatisticTx, this, std::placeholders::_1));
+    block_mgr_->SetCreateElectTxFunction(
+        std::bind(&HotstuffManager::CreateElectTx, this, std::placeholders::_1));
+    block_mgr_->SetCreateCrossTxFunction(
+        std::bind(&HotstuffManager::CreateCrossTx, this, std::placeholders::_1));
+    tm_block_mgr_->SetCreateTmTxFunction(
+        std::bind(&HotstuffManager::CreateTimeblockTx, this, std::placeholders::_1));
 }
 
 int HotstuffManager::Init(
@@ -153,6 +152,10 @@ int HotstuffManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 
 void HotstuffManager::OnNewElectBlock(uint64_t block_tm_ms, uint32_t sharding_id, uint64_t elect_height,
     common::MembersPtr& members, const libff::alt_bn128_G2& common_pk, const libff::alt_bn128_Fr& sec_key) {
+        if (sharding_id > max_consensus_sharding_id_) {
+            max_consensus_sharding_id_ = sharding_id;
+        }
+        
         elect_info_->OnNewElectBlock(sharding_id, elect_height, members, common_pk, sec_key);
     }
 
