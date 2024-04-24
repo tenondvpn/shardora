@@ -46,6 +46,7 @@ protected:
     void SetUp() {
         security_ = std::make_shared<security::Ecdsa>();
         security_->SetPrivateKey(common::Encode::HexDecode(sk_));
+        
         account_mgr_ = std::make_shared<block::AccountManager>();
         system("rm -rf ./core.* ./db");
         db_ = std::make_shared<db::Db>();
@@ -64,7 +65,7 @@ protected:
         elect_mgr_ = std::make_shared<elect::ElectManager>(
                 vss_mgr_, account_mgr_, block_mgr_, security_, bls_mgr_, db_,
                 nullptr);
-        elect_info_ = std::make_shared<ElectInfo>(security_, elect_mgr_);
+        elect_info_ = std::make_shared<ElectInfo>(security_, nullptr);
         
         kv_sync_->Init(block_mgr_, db_);
         contract_mgr_->Init(security_);
