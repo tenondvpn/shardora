@@ -184,7 +184,9 @@ int NetworkInit::Init(int argc, char** argv) {
         security_,
         tm_block_mgr_,
         bls_mgr_,
-        db_);
+        db_,
+        std::bind(&NetworkInit::AddBlockItemToCache, this,
+            std::placeholders::_1, std::placeholders::_2));
 #else
     bft_mgr_ = std::make_shared<consensus::BftManager>();
     auto consensus_init_res = bft_mgr_->Init(
