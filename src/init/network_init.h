@@ -34,8 +34,6 @@
 #include <consensus/hotstuff/view_block_chain_syncer.h>
 #include <yaml-cpp/node/node.h>
 
-#define ENABLE_HOTSTUFF 1
-
 namespace shardora {
 
 namespace init {
