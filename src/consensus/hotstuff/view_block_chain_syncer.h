@@ -53,14 +53,17 @@ public:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     void ConsumeMessages();
-    Status MergeChain(const uint32_t& pool_idx, std::shared_ptr<ViewBlockChain>& ori_chain, const std::shared_ptr<ViewBlockChain>& sync_chain);
+    Status MergeChain(
+            const uint32_t& pool_idx,
+            std::shared_ptr<ViewBlockChain>& ori_chain,
+            const std::shared_ptr<ViewBlockChain>& sync_chain);
 
     inline void SetOnRecvViewBlockFn(const OnRecvViewBlockFn& fn) {
         on_recv_vb_fn_ = fn;
     }
 
     inline std::shared_ptr<ViewBlockChain> Chain(uint32_t pool_idx) const {
-        return nullptr;
+        return hotstuff_mgr_->chain(pool_idx);
     }
 
     inline std::shared_ptr<Pacemaker> Pacemaker(uint32_t pool_idx) const {
