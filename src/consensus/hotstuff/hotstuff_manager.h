@@ -4,6 +4,7 @@
 #include "view_block_chain_manager.h"
 #include "crypto.h"
 #include "pacemaker.h"
+#include "block_acceptor.h"
 
 
 // #include "tx/contract_gas_prepayment.h"
@@ -103,9 +104,15 @@ private:
 
     Status VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg, const uint32_t& pool_index, 
         std::shared_ptr<ViewBlock>& view_block);
+
+    struct PoolManager
+    {
+        std::shared_ptr<Pacemaker> pace_maker;
+        std::shared_ptr<BlockAcceptor> block_acceptor;
+        std::shared_ptr<ViewBlockChain> view_block_chain;
+    };
     
-    std::unordered_map<uint32_t, std::shared_ptr<Pacemaker>> pool_Pacemaker_;
-    std::shared_ptr<ViewBlockChainManager> v_block_mgr_;
+    std::unordered_map<uint32_t, PoolManager> pool_managers_;
     std::shared_ptr<ElectInfo> elect_info_;
     std::shared_ptr<Crypto> crypto_;
     
