@@ -104,7 +104,7 @@ add_definitions(
     #-DARMEABI_V7A
 	-DLATENCY
 	-DHOTSTUFF_TEST
-	#-DENABLE_HOTSTUFF
+	-DENABLE_HOTSTUFF
 )
 
 add_compile_options(-fPIC)
