@@ -175,13 +175,40 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
 Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
     auto& view_block_msg = msg_ptr->header.view_block_proto();
     assert(view_block_msg.has_view_block_res());
-    auto& view_block_items = view_block_msg.view_block_res().view_block_items();
-    auto& view_block_qc_strs = view_block_msg.view_block_res().view_block_qc_strs();
     uint32_t pool_idx = view_block_msg.view_block_res().pool_idx();
+    
+    Status s = processResponseQcTc(pool_idx, view_block_msg.view_block_res());
+    if (s != Status::kSuccess) {
+        return s;
+    }
+    return processResponseChain(pool_idx, view_block_msg.view_block_res());
+}
+
+Status HotstuffSyncer::processResponseQcTc(
+        const uint32_t& pool_idx,
+        const view_block::protobuf::ViewBlockSyncResponse& view_block_res) {
+    // 更新 highqc 和 hightc
+    auto pm = pacemaker(pool_idx);
+    if (!pm) {
+        return Status::kError;
+    }
+    auto highqc = std::make_shared<QC>();
+    auto hightc = std::make_shared<TC>();
+    highqc->Unserialize(view_block_res.high_qc_str());
+    hightc->Unserialize(view_block_res.high_tc_str());
+
+    auto sync_info = std::make_shared<SyncInfo>();
+    pm->AdvanceView(sync_info->WithQC(highqc)->WithTC(hightc));
+}
+
+Status HotstuffSyncer::processResponseChain(
+        const uint32_t& pool_idx,
+        const view_block::protobuf::ViewBlockSyncResponse& view_block_res) {
+    auto& view_block_items = view_block_res.view_block_items();
+    auto& view_block_qc_strs = view_block_res.view_block_qc_strs();
 
     ZJC_DEBUG("response received pool_idx: %d, view_blocks: %d, qc: %d",
-        pool_idx, view_block_items.size(), view_block_qc_strs.size());
-    
+        pool_idx, view_block_items.size(), view_block_qc_strs.size());    
     // 对块数量限制
     if (view_block_items.size() > kMaxSyncBlockNum || view_block_items.size() <= 0) {
         return Status::kError;
@@ -248,7 +275,7 @@ Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
         return Status::kSuccess;
     }
 
-    return MergeChain(pool_idx, chain, sync_chain);
+    return MergeChain(pool_idx, chain, sync_chain);    
 }
 
 Status HotstuffSyncer::MergeChain(

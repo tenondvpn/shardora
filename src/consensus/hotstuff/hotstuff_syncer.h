@@ -79,6 +79,13 @@ private:
     
     Status processRequest(const transport::MessagePtr&);
     Status processResponse(const transport::MessagePtr&);
+
+    Status processResponseQcTc(
+            const uint32_t& pool_idx,
+            const view_block::protobuf::ViewBlockSyncResponse& view_block_res);
+    Status processResponseChain(
+            const uint32_t& pool_idx,
+            const view_block::protobuf::ViewBlockSyncResponse& view_block_res);
     
     uint64_t timeout_ms_;
     std::queue<std::shared_ptr<ViewBlockItem>> item_queue_;
