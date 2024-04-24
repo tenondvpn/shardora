@@ -104,7 +104,7 @@ private:
 #ifdef ENABLE_HOTSTUFF
     std::shared_ptr<consensus::HotstuffManager> hotstuf_mgr_ = nullptr;
     std::shared_ptr<hotstuff::ViewBlockChainSyncer> view_block_chain_syncer_ = nullptr;
-#end 
+#endif
     std::shared_ptr<consensus::BftManager> bft_mgr_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
