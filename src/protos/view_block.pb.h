@@ -38,7 +38,7 @@ namespace protobuf_protos_2fview_5fblock_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[7];
+  static const ::google::protobuf::internal::ParseTable schema[6];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -51,9 +51,6 @@ namespace protobuf {
 class QC;
 class QCDefaultTypeInternal;
 extern QCDefaultTypeInternal _QC_default_instance_;
-class TC;
-class TCDefaultTypeInternal;
-extern TCDefaultTypeInternal _TC_default_instance_;
 class TimeoutMessage;
 class TimeoutMessageDefaultTypeInternal;
 extern TimeoutMessageDefaultTypeInternal _TimeoutMessage_default_instance_;
@@ -75,7 +72,6 @@ extern ViewBlockSyncResponseDefaultTypeInternal _ViewBlockSyncResponse_default_i
 namespace google {
 namespace protobuf {
 template<> ::shardora::view_block::protobuf::QC* Arena::CreateMaybeMessage<::shardora::view_block::protobuf::QC>(Arena*);
-template<> ::shardora::view_block::protobuf::TC* Arena::CreateMaybeMessage<::shardora::view_block::protobuf::TC>(Arena*);
 template<> ::shardora::view_block::protobuf::TimeoutMessage* Arena::CreateMaybeMessage<::shardora::view_block::protobuf::TimeoutMessage>(Arena*);
 template<> ::shardora::view_block::protobuf::ViewBlockItem* Arena::CreateMaybeMessage<::shardora::view_block::protobuf::ViewBlockItem>(Arena*);
 template<> ::shardora::view_block::protobuf::ViewBlockSyncMessage* Arena::CreateMaybeMessage<::shardora::view_block::protobuf::ViewBlockSyncMessage>(Arena*);
@@ -595,174 +591,6 @@ class QC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
 };
 // -------------------------------------------------------------------
 
-class TC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.view_block.protobuf.TC) */ {
- public:
-  TC();
-  virtual ~TC();
-
-  TC(const TC& from);
-
-  inline TC& operator=(const TC& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  #if LANG_CXX11
-  TC(TC&& from) noexcept
-    : TC() {
-    *this = ::std::move(from);
-  }
-
-  inline TC& operator=(TC&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-  #endif
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const TC& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const TC* internal_default_instance() {
-    return reinterpret_cast<const TC*>(
-               &_TC_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    3;
-
-  void Swap(TC* other);
-  friend void swap(TC& a, TC& b) {
-    a.Swap(&b);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline TC* New() const final {
-    return CreateMaybeMessage<TC>(NULL);
-  }
-
-  TC* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<TC>(arena);
-  }
-  void CopyFrom(const ::google::protobuf::Message& from) final;
-  void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const TC& from);
-  void MergeFrom(const TC& from);
-  void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input) final;
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const final;
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(TC* other);
-  private:
-  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return NULL;
-  }
-  inline void* MaybeArenaPtr() const {
-    return NULL;
-  }
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional bytes sign_x = 1;
-  bool has_sign_x() const;
-  void clear_sign_x();
-  static const int kSignXFieldNumber = 1;
-  const ::std::string& sign_x() const;
-  void set_sign_x(const ::std::string& value);
-  #if LANG_CXX11
-  void set_sign_x(::std::string&& value);
-  #endif
-  void set_sign_x(const char* value);
-  void set_sign_x(const void* value, size_t size);
-  ::std::string* mutable_sign_x();
-  ::std::string* release_sign_x();
-  void set_allocated_sign_x(::std::string* sign_x);
-
-  // optional bytes sign_y = 2;
-  bool has_sign_y() const;
-  void clear_sign_y();
-  static const int kSignYFieldNumber = 2;
-  const ::std::string& sign_y() const;
-  void set_sign_y(const ::std::string& value);
-  #if LANG_CXX11
-  void set_sign_y(::std::string&& value);
-  #endif
-  void set_sign_y(const char* value);
-  void set_sign_y(const void* value, size_t size);
-  ::std::string* mutable_sign_y();
-  ::std::string* release_sign_y();
-  void set_allocated_sign_y(::std::string* sign_y);
-
-  // optional bytes sign_z = 3;
-  bool has_sign_z() const;
-  void clear_sign_z();
-  static const int kSignZFieldNumber = 3;
-  const ::std::string& sign_z() const;
-  void set_sign_z(const ::std::string& value);
-  #if LANG_CXX11
-  void set_sign_z(::std::string&& value);
-  #endif
-  void set_sign_z(const char* value);
-  void set_sign_z(const void* value, size_t size);
-  ::std::string* mutable_sign_z();
-  ::std::string* release_sign_z();
-  void set_allocated_sign_z(::std::string* sign_z);
-
-  // optional uint64 view = 4;
-  bool has_view() const;
-  void clear_view();
-  static const int kViewFieldNumber = 4;
-  ::google::protobuf::uint64 view() const;
-  void set_view(::google::protobuf::uint64 value);
-
-  // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.TC)
- private:
-  void set_has_sign_x();
-  void clear_has_sign_x();
-  void set_has_sign_y();
-  void clear_has_sign_y();
-  void set_has_sign_z();
-  void clear_has_sign_z();
-  void set_has_view();
-  void clear_has_view();
-
-  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::HasBits<1> _has_bits_;
-  mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::internal::ArenaStringPtr sign_x_;
-  ::google::protobuf::internal::ArenaStringPtr sign_y_;
-  ::google::protobuf::internal::ArenaStringPtr sign_z_;
-  ::google::protobuf::uint64 view_;
-  friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
-};
-// -------------------------------------------------------------------
-
 class ViewBlockSyncResponse : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.view_block.protobuf.ViewBlockSyncResponse) */ {
  public:
   ViewBlockSyncResponse();
@@ -805,7 +633,7 @@ class ViewBlockSyncResponse : public ::google::protobuf::Message /* @@protoc_ins
                &_ViewBlockSyncResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    3;
 
   void Swap(ViewBlockSyncResponse* other);
   friend void swap(ViewBlockSyncResponse& a, ViewBlockSyncResponse& b) {
@@ -869,6 +697,58 @@ class ViewBlockSyncResponse : public ::google::protobuf::Message /* @@protoc_ins
   const ::google::protobuf::RepeatedPtrField< ::shardora::view_block::protobuf::ViewBlockItem >&
       view_block_items() const;
 
+  // repeated bytes view_block_qc_strs = 4;
+  int view_block_qc_strs_size() const;
+  void clear_view_block_qc_strs();
+  static const int kViewBlockQcStrsFieldNumber = 4;
+  const ::std::string& view_block_qc_strs(int index) const;
+  ::std::string* mutable_view_block_qc_strs(int index);
+  void set_view_block_qc_strs(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_view_block_qc_strs(int index, ::std::string&& value);
+  #endif
+  void set_view_block_qc_strs(int index, const char* value);
+  void set_view_block_qc_strs(int index, const void* value, size_t size);
+  ::std::string* add_view_block_qc_strs();
+  void add_view_block_qc_strs(const ::std::string& value);
+  #if LANG_CXX11
+  void add_view_block_qc_strs(::std::string&& value);
+  #endif
+  void add_view_block_qc_strs(const char* value);
+  void add_view_block_qc_strs(const void* value, size_t size);
+  const ::google::protobuf::RepeatedPtrField< ::std::string>& view_block_qc_strs() const;
+  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_view_block_qc_strs();
+
+  // optional bytes high_qc_str = 5;
+  bool has_high_qc_str() const;
+  void clear_high_qc_str();
+  static const int kHighQcStrFieldNumber = 5;
+  const ::std::string& high_qc_str() const;
+  void set_high_qc_str(const ::std::string& value);
+  #if LANG_CXX11
+  void set_high_qc_str(::std::string&& value);
+  #endif
+  void set_high_qc_str(const char* value);
+  void set_high_qc_str(const void* value, size_t size);
+  ::std::string* mutable_high_qc_str();
+  ::std::string* release_high_qc_str();
+  void set_allocated_high_qc_str(::std::string* high_qc_str);
+
+  // optional bytes high_tc_str = 6;
+  bool has_high_tc_str() const;
+  void clear_high_tc_str();
+  static const int kHighTcStrFieldNumber = 6;
+  const ::std::string& high_tc_str() const;
+  void set_high_tc_str(const ::std::string& value);
+  #if LANG_CXX11
+  void set_high_tc_str(::std::string&& value);
+  #endif
+  void set_high_tc_str(const char* value);
+  void set_high_tc_str(const void* value, size_t size);
+  ::std::string* mutable_high_tc_str();
+  ::std::string* release_high_tc_str();
+  void set_allocated_high_tc_str(::std::string* high_tc_str);
+
   // optional uint32 network_id = 1;
   bool has_network_id() const;
   void clear_network_id();
@@ -889,11 +769,18 @@ class ViewBlockSyncResponse : public ::google::protobuf::Message /* @@protoc_ins
   void clear_has_network_id();
   void set_has_pool_idx();
   void clear_has_pool_idx();
+  void set_has_high_qc_str();
+  void clear_has_high_qc_str();
+  void set_has_high_tc_str();
+  void clear_has_high_tc_str();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::shardora::view_block::protobuf::ViewBlockItem > view_block_items_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> view_block_qc_strs_;
+  ::google::protobuf::internal::ArenaStringPtr high_qc_str_;
+  ::google::protobuf::internal::ArenaStringPtr high_tc_str_;
   ::google::protobuf::uint32 network_id_;
   ::google::protobuf::uint32 pool_idx_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
@@ -942,7 +829,7 @@ class ViewBlockSyncMessage : public ::google::protobuf::Message /* @@protoc_inse
                &_ViewBlockSyncMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    4;
 
   void Swap(ViewBlockSyncMessage* other);
   friend void swap(ViewBlockSyncMessage& a, ViewBlockSyncMessage& b) {
@@ -1086,7 +973,7 @@ class TimeoutMessage : public ::google::protobuf::Message /* @@protoc_insertion_
                &_TimeoutMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    5;
 
   void Swap(TimeoutMessage* other);
   friend void swap(TimeoutMessage& a, TimeoutMessage& b) {
@@ -1909,243 +1796,17 @@ inline void QC::set_allocated_view_block_hash(::std::string* view_block_hash) {
 
 // -------------------------------------------------------------------
 
-// TC
-
-// optional bytes sign_x = 1;
-inline bool TC::has_sign_x() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void TC::set_has_sign_x() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void TC::clear_has_sign_x() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void TC::clear_sign_x() {
-  sign_x_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_sign_x();
-}
-inline const ::std::string& TC::sign_x() const {
-  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.TC.sign_x)
-  return sign_x_.GetNoArena();
-}
-inline void TC::set_sign_x(const ::std::string& value) {
-  set_has_sign_x();
-  sign_x_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.TC.sign_x)
-}
-#if LANG_CXX11
-inline void TC::set_sign_x(::std::string&& value) {
-  set_has_sign_x();
-  sign_x_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:shardora.view_block.protobuf.TC.sign_x)
-}
-#endif
-inline void TC::set_sign_x(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_sign_x();
-  sign_x_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:shardora.view_block.protobuf.TC.sign_x)
-}
-inline void TC::set_sign_x(const void* value, size_t size) {
-  set_has_sign_x();
-  sign_x_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:shardora.view_block.protobuf.TC.sign_x)
-}
-inline ::std::string* TC::mutable_sign_x() {
-  set_has_sign_x();
-  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.TC.sign_x)
-  return sign_x_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* TC::release_sign_x() {
-  // @@protoc_insertion_point(field_release:shardora.view_block.protobuf.TC.sign_x)
-  if (!has_sign_x()) {
-    return NULL;
-  }
-  clear_has_sign_x();
-  return sign_x_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void TC::set_allocated_sign_x(::std::string* sign_x) {
-  if (sign_x != NULL) {
-    set_has_sign_x();
-  } else {
-    clear_has_sign_x();
-  }
-  sign_x_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), sign_x);
-  // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.TC.sign_x)
-}
-
-// optional bytes sign_y = 2;
-inline bool TC::has_sign_y() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void TC::set_has_sign_y() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void TC::clear_has_sign_y() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void TC::clear_sign_y() {
-  sign_y_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_sign_y();
-}
-inline const ::std::string& TC::sign_y() const {
-  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.TC.sign_y)
-  return sign_y_.GetNoArena();
-}
-inline void TC::set_sign_y(const ::std::string& value) {
-  set_has_sign_y();
-  sign_y_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.TC.sign_y)
-}
-#if LANG_CXX11
-inline void TC::set_sign_y(::std::string&& value) {
-  set_has_sign_y();
-  sign_y_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:shardora.view_block.protobuf.TC.sign_y)
-}
-#endif
-inline void TC::set_sign_y(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_sign_y();
-  sign_y_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:shardora.view_block.protobuf.TC.sign_y)
-}
-inline void TC::set_sign_y(const void* value, size_t size) {
-  set_has_sign_y();
-  sign_y_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:shardora.view_block.protobuf.TC.sign_y)
-}
-inline ::std::string* TC::mutable_sign_y() {
-  set_has_sign_y();
-  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.TC.sign_y)
-  return sign_y_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* TC::release_sign_y() {
-  // @@protoc_insertion_point(field_release:shardora.view_block.protobuf.TC.sign_y)
-  if (!has_sign_y()) {
-    return NULL;
-  }
-  clear_has_sign_y();
-  return sign_y_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void TC::set_allocated_sign_y(::std::string* sign_y) {
-  if (sign_y != NULL) {
-    set_has_sign_y();
-  } else {
-    clear_has_sign_y();
-  }
-  sign_y_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), sign_y);
-  // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.TC.sign_y)
-}
-
-// optional bytes sign_z = 3;
-inline bool TC::has_sign_z() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void TC::set_has_sign_z() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void TC::clear_has_sign_z() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void TC::clear_sign_z() {
-  sign_z_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_sign_z();
-}
-inline const ::std::string& TC::sign_z() const {
-  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.TC.sign_z)
-  return sign_z_.GetNoArena();
-}
-inline void TC::set_sign_z(const ::std::string& value) {
-  set_has_sign_z();
-  sign_z_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.TC.sign_z)
-}
-#if LANG_CXX11
-inline void TC::set_sign_z(::std::string&& value) {
-  set_has_sign_z();
-  sign_z_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:shardora.view_block.protobuf.TC.sign_z)
-}
-#endif
-inline void TC::set_sign_z(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_sign_z();
-  sign_z_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:shardora.view_block.protobuf.TC.sign_z)
-}
-inline void TC::set_sign_z(const void* value, size_t size) {
-  set_has_sign_z();
-  sign_z_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:shardora.view_block.protobuf.TC.sign_z)
-}
-inline ::std::string* TC::mutable_sign_z() {
-  set_has_sign_z();
-  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.TC.sign_z)
-  return sign_z_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* TC::release_sign_z() {
-  // @@protoc_insertion_point(field_release:shardora.view_block.protobuf.TC.sign_z)
-  if (!has_sign_z()) {
-    return NULL;
-  }
-  clear_has_sign_z();
-  return sign_z_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void TC::set_allocated_sign_z(::std::string* sign_z) {
-  if (sign_z != NULL) {
-    set_has_sign_z();
-  } else {
-    clear_has_sign_z();
-  }
-  sign_z_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), sign_z);
-  // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.TC.sign_z)
-}
-
-// optional uint64 view = 4;
-inline bool TC::has_view() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void TC::set_has_view() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void TC::clear_has_view() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void TC::clear_view() {
-  view_ = GOOGLE_ULONGLONG(0);
-  clear_has_view();
-}
-inline ::google::protobuf::uint64 TC::view() const {
-  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.TC.view)
-  return view_;
-}
-inline void TC::set_view(::google::protobuf::uint64 value) {
-  set_has_view();
-  view_ = value;
-  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.TC.view)
-}
-
-// -------------------------------------------------------------------
-
 // ViewBlockSyncResponse
 
 // optional uint32 network_id = 1;
 inline bool ViewBlockSyncResponse::has_network_id() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void ViewBlockSyncResponse::set_has_network_id() {
-  _has_bits_[0] |= 0x00000001u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void ViewBlockSyncResponse::clear_has_network_id() {
-  _has_bits_[0] &= ~0x00000001u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void ViewBlockSyncResponse::clear_network_id() {
   network_id_ = 0u;
@@ -2163,13 +1824,13 @@ inline void ViewBlockSyncResponse::set_network_id(::google::protobuf::uint32 val
 
 // optional uint32 pool_idx = 2;
 inline bool ViewBlockSyncResponse::has_pool_idx() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void ViewBlockSyncResponse::set_has_pool_idx() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void ViewBlockSyncResponse::clear_has_pool_idx() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void ViewBlockSyncResponse::clear_pool_idx() {
   pool_idx_ = 0u;
@@ -2213,6 +1874,207 @@ inline const ::google::protobuf::RepeatedPtrField< ::shardora::view_block::proto
 ViewBlockSyncResponse::view_block_items() const {
   // @@protoc_insertion_point(field_list:shardora.view_block.protobuf.ViewBlockSyncResponse.view_block_items)
   return view_block_items_;
+}
+
+// repeated bytes view_block_qc_strs = 4;
+inline int ViewBlockSyncResponse::view_block_qc_strs_size() const {
+  return view_block_qc_strs_.size();
+}
+inline void ViewBlockSyncResponse::clear_view_block_qc_strs() {
+  view_block_qc_strs_.Clear();
+}
+inline const ::std::string& ViewBlockSyncResponse::view_block_qc_strs(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockSyncResponse.view_block_qc_strs)
+  return view_block_qc_strs_.Get(index);
+}
+inline ::std::string* ViewBlockSyncResponse::mutable_view_block_qc_strs(int index) {
+  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.ViewBlockSyncResponse.view_block_qc_strs)
+  return view_block_qc_strs_.Mutable(index);
+}
+inline void ViewBlockSyncResponse::set_view_block_qc_strs(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncResponse.view_block_qc_strs)
+  view_block_qc_strs_.Mutable(index)->assign(value);
+}
+#if LANG_CXX11
+inline void ViewBlockSyncResponse::set_view_block_qc_strs(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncResponse.view_block_qc_strs)
+  view_block_qc_strs_.Mutable(index)->assign(std::move(value));
+}
+#endif
+inline void ViewBlockSyncResponse::set_view_block_qc_strs(int index, const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  view_block_qc_strs_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:shardora.view_block.protobuf.ViewBlockSyncResponse.view_block_qc_strs)
+}
+inline void ViewBlockSyncResponse::set_view_block_qc_strs(int index, const void* value, size_t size) {
+  view_block_qc_strs_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:shardora.view_block.protobuf.ViewBlockSyncResponse.view_block_qc_strs)
+}
+inline ::std::string* ViewBlockSyncResponse::add_view_block_qc_strs() {
+  // @@protoc_insertion_point(field_add_mutable:shardora.view_block.protobuf.ViewBlockSyncResponse.view_block_qc_strs)
+  return view_block_qc_strs_.Add();
+}
+inline void ViewBlockSyncResponse::add_view_block_qc_strs(const ::std::string& value) {
+  view_block_qc_strs_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:shardora.view_block.protobuf.ViewBlockSyncResponse.view_block_qc_strs)
+}
+#if LANG_CXX11
+inline void ViewBlockSyncResponse::add_view_block_qc_strs(::std::string&& value) {
+  view_block_qc_strs_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:shardora.view_block.protobuf.ViewBlockSyncResponse.view_block_qc_strs)
+}
+#endif
+inline void ViewBlockSyncResponse::add_view_block_qc_strs(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  view_block_qc_strs_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:shardora.view_block.protobuf.ViewBlockSyncResponse.view_block_qc_strs)
+}
+inline void ViewBlockSyncResponse::add_view_block_qc_strs(const void* value, size_t size) {
+  view_block_qc_strs_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:shardora.view_block.protobuf.ViewBlockSyncResponse.view_block_qc_strs)
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+ViewBlockSyncResponse::view_block_qc_strs() const {
+  // @@protoc_insertion_point(field_list:shardora.view_block.protobuf.ViewBlockSyncResponse.view_block_qc_strs)
+  return view_block_qc_strs_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+ViewBlockSyncResponse::mutable_view_block_qc_strs() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.view_block.protobuf.ViewBlockSyncResponse.view_block_qc_strs)
+  return &view_block_qc_strs_;
+}
+
+// optional bytes high_qc_str = 5;
+inline bool ViewBlockSyncResponse::has_high_qc_str() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ViewBlockSyncResponse::set_has_high_qc_str() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ViewBlockSyncResponse::clear_has_high_qc_str() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ViewBlockSyncResponse::clear_high_qc_str() {
+  high_qc_str_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_high_qc_str();
+}
+inline const ::std::string& ViewBlockSyncResponse::high_qc_str() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockSyncResponse.high_qc_str)
+  return high_qc_str_.GetNoArena();
+}
+inline void ViewBlockSyncResponse::set_high_qc_str(const ::std::string& value) {
+  set_has_high_qc_str();
+  high_qc_str_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncResponse.high_qc_str)
+}
+#if LANG_CXX11
+inline void ViewBlockSyncResponse::set_high_qc_str(::std::string&& value) {
+  set_has_high_qc_str();
+  high_qc_str_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.view_block.protobuf.ViewBlockSyncResponse.high_qc_str)
+}
+#endif
+inline void ViewBlockSyncResponse::set_high_qc_str(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_high_qc_str();
+  high_qc_str_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.view_block.protobuf.ViewBlockSyncResponse.high_qc_str)
+}
+inline void ViewBlockSyncResponse::set_high_qc_str(const void* value, size_t size) {
+  set_has_high_qc_str();
+  high_qc_str_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.view_block.protobuf.ViewBlockSyncResponse.high_qc_str)
+}
+inline ::std::string* ViewBlockSyncResponse::mutable_high_qc_str() {
+  set_has_high_qc_str();
+  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.ViewBlockSyncResponse.high_qc_str)
+  return high_qc_str_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ViewBlockSyncResponse::release_high_qc_str() {
+  // @@protoc_insertion_point(field_release:shardora.view_block.protobuf.ViewBlockSyncResponse.high_qc_str)
+  if (!has_high_qc_str()) {
+    return NULL;
+  }
+  clear_has_high_qc_str();
+  return high_qc_str_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ViewBlockSyncResponse::set_allocated_high_qc_str(::std::string* high_qc_str) {
+  if (high_qc_str != NULL) {
+    set_has_high_qc_str();
+  } else {
+    clear_has_high_qc_str();
+  }
+  high_qc_str_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), high_qc_str);
+  // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockSyncResponse.high_qc_str)
+}
+
+// optional bytes high_tc_str = 6;
+inline bool ViewBlockSyncResponse::has_high_tc_str() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ViewBlockSyncResponse::set_has_high_tc_str() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ViewBlockSyncResponse::clear_has_high_tc_str() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ViewBlockSyncResponse::clear_high_tc_str() {
+  high_tc_str_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_high_tc_str();
+}
+inline const ::std::string& ViewBlockSyncResponse::high_tc_str() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockSyncResponse.high_tc_str)
+  return high_tc_str_.GetNoArena();
+}
+inline void ViewBlockSyncResponse::set_high_tc_str(const ::std::string& value) {
+  set_has_high_tc_str();
+  high_tc_str_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncResponse.high_tc_str)
+}
+#if LANG_CXX11
+inline void ViewBlockSyncResponse::set_high_tc_str(::std::string&& value) {
+  set_has_high_tc_str();
+  high_tc_str_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.view_block.protobuf.ViewBlockSyncResponse.high_tc_str)
+}
+#endif
+inline void ViewBlockSyncResponse::set_high_tc_str(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_high_tc_str();
+  high_tc_str_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.view_block.protobuf.ViewBlockSyncResponse.high_tc_str)
+}
+inline void ViewBlockSyncResponse::set_high_tc_str(const void* value, size_t size) {
+  set_has_high_tc_str();
+  high_tc_str_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.view_block.protobuf.ViewBlockSyncResponse.high_tc_str)
+}
+inline ::std::string* ViewBlockSyncResponse::mutable_high_tc_str() {
+  set_has_high_tc_str();
+  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.ViewBlockSyncResponse.high_tc_str)
+  return high_tc_str_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ViewBlockSyncResponse::release_high_tc_str() {
+  // @@protoc_insertion_point(field_release:shardora.view_block.protobuf.ViewBlockSyncResponse.high_tc_str)
+  if (!has_high_tc_str()) {
+    return NULL;
+  }
+  clear_has_high_tc_str();
+  return high_tc_str_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ViewBlockSyncResponse::set_allocated_high_tc_str(::std::string* high_tc_str) {
+  if (high_tc_str != NULL) {
+    set_has_high_tc_str();
+  } else {
+    clear_has_high_tc_str();
+  }
+  high_tc_str_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), high_tc_str);
+  // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockSyncResponse.high_tc_str)
 }
 
 // -------------------------------------------------------------------
@@ -2660,8 +2522,6 @@ inline void TimeoutMessage::set_pool_idx(::google::protobuf::uint32 value) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
-// -------------------------------------------------------------------
-
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

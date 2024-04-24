@@ -242,7 +242,7 @@ int NetworkInit::Init(int argc, char** argv) {
 
 
     // TODO pacemaker
-    elect_info_ = std::make_shared<hotstuff::ElectInfo>(security_);
+    elect_info_ = std::make_shared<hotstuff::ElectInfo>(security_, elect_mgr_);
     crypto_ = std::make_shared<hotstuff::Crypto>(elect_info_, bls_mgr_);
     
     consensus_mgr_ = std::make_shared<hotstuff::ConsensusManager>(

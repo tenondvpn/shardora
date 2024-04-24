@@ -66,6 +66,15 @@ public:
     inline void SetLatestLockedBlock(const std::shared_ptr<ViewBlock>& view_block) {
         latest_locked_block_ = view_block;
     }
+
+    // 获取 view_block 的 QC
+    std::shared_ptr<QC> GetQcOf(const std::shared_ptr<ViewBlock>& view_block) const {
+        auto it = view_block_qc_map_.find(view_block->hash);
+        if (it == view_block_qc_map_.end()) {
+            return nullptr;
+        }
+        return it->second;
+    }
     
     // If a chain is valid
     bool IsValid();
@@ -94,6 +103,7 @@ public:
         view_blocks_.clear();
         view_blocks_at_height_.clear();
         view_block_children_.clear();
+        view_block_qc_map_.clear();
         prune_height_ = View(1);
 
         latest_committed_block_ = nullptr;
@@ -132,6 +142,7 @@ private:
     std::unordered_map<HashStr, std::shared_ptr<ViewBlock>> view_blocks_;
     std::unordered_map<View, std::vector<std::shared_ptr<ViewBlock>>> view_blocks_at_height_;
     std::unordered_map<HashStr, std::vector<std::shared_ptr<ViewBlock>>> view_block_children_;
+    std::unordered_map<HashStr, std::shared_ptr<QC>> view_block_qc_map_; // 存放 view_block 及它的 QC
 
     // ViewBlockMinHeap orphan_blocks_; // 已经获得但没有父块, 按照 view 排序
     // std::unordered_map<HashStr, uint64_t> orphan_added_us_;

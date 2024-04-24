@@ -93,6 +93,14 @@ public:
             const std::shared_ptr<ViewBlockChain>& view_block_chain,
             const uint32_t& elect_height);
     void DoCommitBlock(const view_block::protobuf::ViewBlockItem& pb_view_block, const uint32_t& pool_index);
+
+    inline std::shared_ptr<Pacemaker> pacemaker(uint32_t pool_idx) const {
+        auto it = pool_Pacemaker_.find(pool_idx);
+        if (it != pool_Pacemaker_.end()) {
+            return it->second;
+        }
+        return nullptr;
+    }
 private:
 
     void HandleMessage(const transport::MessagePtr& msg_ptr);
