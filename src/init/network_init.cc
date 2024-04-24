@@ -8,7 +8,7 @@
 #include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
-#include <consensus/hotstuff/view_block_chain_syncer.h>
+#include <consensus/hotstuff/hotstuff_syncer.h>
 #include <consensus/consensus_utils.h>
 #include <functional>
 #include <memory>
@@ -233,8 +233,8 @@ int NetworkInit::Init(int argc, char** argv) {
     
 #ifdef ENABLE_HOTSTUFF
     // TODO pacemaker
-    view_block_chain_syncer_ = std::make_shared<hotstuff::ViewBlockChainSyncer>(hotstuf_mgr_);
-    view_block_chain_syncer_->SetOnRecvViewBlockFn([this](
+    hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(hotstuf_mgr_);
+    hotstuff_syncer_->SetOnRecvViewBlockFn([this](
                 const uint32_t& pool_idx, 
                 const std::shared_ptr<hotstuff::ViewBlockChain>& chain,
                 const std::shared_ptr<hotstuff::ViewBlock>& block) -> hotstuff::Status {
@@ -246,7 +246,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return s;
         // Advanceview
     });
-    view_block_chain_syncer_->Start();    
+    hotstuff_syncer_->Start();    
     // 以上应该放入 hotstuff 实例初始化中，并接收创世块
     AddCmds();
 #endif
@@ -368,7 +368,7 @@ void NetworkInit::RegisterFirewallCheck() {
         std::bind(&consensus::HotstuffManager::FirewallCheckMessage, hotstuf_mgr_.get(), std::placeholders::_1));
     net_handler_.AddFirewallCheckCallback(
         common::kViewBlockSyncMessage,
-        std::bind(&hotstuff::ViewBlockChainSyncer::FirewallCheckMessage, view_block_chain_syncer_.get(), std::placeholders::_1));    
+        std::bind(&hotstuff::HotstuffSyncer::FirewallCheckMessage, hotstuff_syncer_.get(), std::placeholders::_1));    
 #endif
     net_handler_.AddFirewallCheckCallback(
         common::kConsensusMessage,

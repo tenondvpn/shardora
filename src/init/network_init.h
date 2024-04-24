@@ -31,7 +31,7 @@
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/pacemaker.h>
-#include <consensus/hotstuff/view_block_chain_syncer.h>
+#include <consensus/hotstuff/hotstuff_syncer.h>
 #include <yaml-cpp/node/node.h>
 
 // #define ENABLE_HOTSTUFF 1
@@ -105,7 +105,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
 #ifdef ENABLE_HOTSTUFF
     std::shared_ptr<consensus::HotstuffManager> hotstuf_mgr_ = nullptr;
-    std::shared_ptr<hotstuff::ViewBlockChainSyncer> view_block_chain_syncer_ = nullptr;
+    std::shared_ptr<hotstuff::HotstuffSyncer> hotstuff_syncer_ = nullptr;
 #endif
     std::shared_ptr<consensus::BftManager> bft_mgr_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;

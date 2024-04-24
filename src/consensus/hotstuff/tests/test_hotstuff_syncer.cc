@@ -1,5 +1,5 @@
 #include <consensus/hotstuff/hotstuff_manager.h>
-#include <consensus/hotstuff/view_block_chain_syncer.h>
+#include <consensus/hotstuff/hotstuff_syncer.h>
 #include <dht/dht_key.h>
 #include <gtest/gtest.h>
 #include <memory>
@@ -40,7 +40,7 @@ static std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 static std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
 static std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
 static db::DbWriteBatch db_batch;
-static std::shared_ptr<ViewBlockChainSyncer> syncer_ = nullptr;
+static std::shared_ptr<HotstuffSyncer> syncer_ = nullptr;
 static std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
 
 
@@ -89,7 +89,7 @@ protected:
                 db_,
                 [](std::shared_ptr<block::protobuf::Block>& block, db::DbWriteBatch& db_batch){});
     
-        syncer_ = std::make_shared<ViewBlockChainSyncer>(hotstuff_mgr_);
+        syncer_ = std::make_shared<HotstuffSyncer>(hotstuff_mgr_);
         syncer_->SetOnRecvViewBlockFn(StoreViewBlock);
     }
 
