@@ -56,7 +56,6 @@ protected:
                 security_, db_, kv_sync_, account_mgr_);        
         block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
         
-        elect_info_ = std::make_shared<ElectInfo>(security_);
         vss_mgr_ = std::make_shared<vss::VssManager>(security_);
         contract_mgr_ = std::make_shared<contract::ContractManager>();
         gas_prepayment_ = std::make_shared<consensus::ContractGasPrepayment>(db_);
@@ -65,6 +64,7 @@ protected:
         elect_mgr_ = std::make_shared<elect::ElectManager>(
                 vss_mgr_, account_mgr_, block_mgr_, security_, bls_mgr_, db_,
                 nullptr);
+        elect_info_ = std::make_shared<ElectInfo>(security_, elect_mgr_);
         
         kv_sync_->Init(block_mgr_, db_);
         contract_mgr_->Init(security_);
@@ -82,7 +82,8 @@ protected:
                 security_,
                 tm_block_mgr_,
                 bls_mgr_,
-                db_);
+                db_,
+                [](std::shared_ptr<block::protobuf::Block>& block, db::DbWriteBatch& db_batch){});
     
         syncer_ = std::make_shared<ViewBlockChainSyncer>(hotstuff_mgr_);
         syncer_->SetOnRecvViewBlockFn(StoreViewBlock);

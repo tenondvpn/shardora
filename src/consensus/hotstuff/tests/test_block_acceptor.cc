@@ -48,6 +48,8 @@ std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
 std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
 std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
 std::shared_ptr<BlockAcceptor> block_acceptor_ = nullptr;
+std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
+std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
 std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 db::DbWriteBatch db_batch;
 
@@ -67,8 +69,13 @@ protected:
         pools_mgr_ = std::make_shared<pools::TxPoolManager>(
                 security_, db_, kv_sync_, account_mgr_);        
         block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
+        bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_);
+
+        elect_mgr_ = std::make_shared<elect::ElectManager>(
+                vss_mgr_, account_mgr_, block_mgr_, security_, bls_mgr_, db_,
+                nullptr);        
         
-        elect_info_ = std::make_shared<ElectInfo>(security_);
+        elect_info_ = std::make_shared<ElectInfo>(security_, elect_mgr_);
         vss_mgr_ = std::make_shared<vss::VssManager>(security_);
         contract_mgr_ = std::make_shared<contract::ContractManager>();
         gas_prepayment_ = std::make_shared<consensus::ContractGasPrepayment>(db_);
