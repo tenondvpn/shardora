@@ -40,11 +40,13 @@ std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
 std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
 db::DbWriteBatch db_batch;
+std::shared_ptr<ViewBlockChainSyncer> syncer_ = nullptr;
+std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
 
 
 class TestViewBlockChainSyncer : public testing::Test {
 protected:
-    void SetUp() {
+    static void SetUpTestCase() {
         security_ = std::make_shared<security::Ecdsa>();
         security_->SetPrivateKey(common::Encode::HexDecode(sk_));
         
@@ -91,8 +93,8 @@ protected:
         syncer_->SetOnRecvViewBlockFn(StoreViewBlock);
     }
 
-    void TearDown() {
-        
+    static void TearDownTestCase() {
+        system("rm -rf ./core.* ./db");
     }
 
     static transport::MessagePtr CreateRequestMsg() {
@@ -121,8 +123,7 @@ protected:
         return chain->Store(view_block);
     }
 
-    std::shared_ptr<ViewBlockChainSyncer> syncer_;
-    std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_;
+
 };
 
 TEST_F(TestViewBlockChainSyncer, TestMergeChain_HasCross) {
