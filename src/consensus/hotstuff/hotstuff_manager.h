@@ -90,27 +90,27 @@ public:
     void DoCommitBlock(const view_block::protobuf::ViewBlockItem& pb_view_block, const uint32_t& pool_index);
 
     inline std::shared_ptr<Pacemaker> pacemaker(uint32_t pool_idx) const {
-        auto pool_mgr = pool_manager(pool_idx);
-        if (!pool_mgr) {
+        auto hf = hotstuff(pool_idx);
+        if (!hf) {
             return nullptr;
         }
-        return pool_mgr->pace_maker;
+        return hf->pace_maker;
     }
 
     inline std::shared_ptr<ViewBlockChain> chain(uint32_t pool_idx) const {
-        auto pool_mgr = pool_manager(pool_idx);
-        if (!pool_mgr) {
+        auto hf = hotstuff(pool_idx);
+        if (!hf) {
             return nullptr;
         }
-        return pool_mgr->view_block_chain;
+        return hf->view_block_chain;
     }
 
     inline std::shared_ptr<IBlockAcceptor> acceptor(uint32_t pool_idx) const {
-        auto pool_mgr = pool_manager(pool_idx);
-        if (!pool_mgr) {
+        auto hf = hotstuff(pool_idx);
+        if (!hf) {
             return nullptr;
         }
-        return pool_mgr->block_acceptor;
+        return hf->block_acceptor;
     }
 
     inline std::shared_ptr<Crypto> crypto() const {
@@ -133,7 +133,7 @@ private:
     Status VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg, const uint32_t& pool_index, 
         std::shared_ptr<ViewBlock>& view_block);
 
-    struct PoolManager
+    struct HotStuff
     {
         uint32_t pool_idx;
         std::shared_ptr<Pacemaker> pace_maker;
@@ -153,15 +153,15 @@ private:
         }
     };
 
-    inline std::shared_ptr<PoolManager> pool_manager(uint32_t pool_idx) const {
-        auto it = pool_managers_.find(pool_idx);
-        if (it == pool_managers_.end()) {
+    inline std::shared_ptr<HotStuff> hotstuff(uint32_t pool_idx) const {
+        auto it = pool_hotstuff_.find(pool_idx);
+        if (it == pool_hotstuff_.end()) {
             return nullptr;
         }
-        return std::make_shared<PoolManager>(it->second);
+        return std::make_shared<HotStuff>(it->second);
     }
     
-    std::unordered_map<uint32_t, PoolManager> pool_managers_;
+    std::unordered_map<uint32_t, HotStuff> pool_hotstuff_;
     std::shared_ptr<ElectInfo> elect_info_;
     std::shared_ptr<Crypto> crypto_;
     

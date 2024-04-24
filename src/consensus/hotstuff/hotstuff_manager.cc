@@ -121,19 +121,19 @@ int HotstuffManager::Init(
     elect_info_ = std::make_shared<ElectInfo>(security_ptr, elect_mgr_);
     crypto_ = std::make_shared<Crypto>(elect_info_, bls_mgr);
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
-        PoolManager pool_manager;
-        pool_manager.pool_idx = pool_idx;
-        pool_manager.view_block_chain = std::make_shared<ViewBlockChain>();
+        HotStuff hf;
+        hf.pool_idx = pool_idx;
+        hf.view_block_chain = std::make_shared<ViewBlockChain>();
         
-        auto leader_rotation = std::make_shared<LeaderRotation>(pool_manager.view_block_chain, elect_info_);
+        auto leader_rotation = std::make_shared<LeaderRotation>(hf.view_block_chain, elect_info_);
         auto pace_maker = std::make_shared<Pacemaker>(pool_idx, crypto_, leader_rotation, std::make_shared<ViewDuration>());
         
-        pool_manager.block_acceptor = std::make_shared<BlockAcceptor>(pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
+        hf.block_acceptor = std::make_shared<BlockAcceptor>(pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
             contract_mgr, db, gas_prepayment, pool_mgr, block_mgr, tm_block_mgr, new_block_cache_callback);
-
+        hf.pace_maker = pace_maker;
         // 初始化
-        pool_manager.Init(db_);
-        pool_managers_[pool_idx] = pool_manager;
+        hf.Init(db_);
+        pool_hotstuff_[pool_idx] = hf;
     }
 
     RegisterCreateTxCallbacks();
@@ -162,7 +162,7 @@ void HotstuffManager::DoCommitBlock(const view_block::protobuf::ViewBlockItem& p
     Proto2ViewBlock(pb_view_block, v_block);
     auto qc = v_block->qc;
     std::shared_ptr<ViewBlock> pre_vb;
-    auto view_block_chain = pool_managers_[pool_index].view_block_chain;
+    auto view_block_chain = pool_hotstuff_[pool_index].view_block_chain;
     view_block_chain->Get(pb_view_block.parent_hash(), pre_vb);
     auto f_view = qc->view;
     auto s_viwe = pre_vb->qc->view;
@@ -235,13 +235,13 @@ Status HotstuffManager::VerifyViewBlock(const std::shared_ptr<ViewBlock>& v_bloc
 void HotstuffManager::DoVoteMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, const uint32_t& pool_index) {
     view_block::protobuf::ViewBlockItem pb_view_block = pro_msg.view_item();
     uint32_t leader_idx = pb_view_block.leader_idx();
-    auto leader_rotation = std::make_shared<LeaderRotation>(pool_managers_[pool_index].view_block_chain, elect_info_);
+    auto leader_rotation = std::make_shared<LeaderRotation>(pool_hotstuff_[pool_index].view_block_chain, elect_info_);
     if (leader_idx != leader_rotation->GetLeader()->index) {
         ZJC_ERROR("leader_idx message is error.");
         return;
     }
 
-    auto view_block_chain = pool_managers_[pool_index].view_block_chain;
+    auto view_block_chain = pool_hotstuff_[pool_index].view_block_chain;
     if (view_block_chain->GetMaxHeight() >= pb_view_block.view()) {
         ZJC_ERROR("block view is error.");
         return;
@@ -278,7 +278,7 @@ void HotstuffManager::DoVoteMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, c
     auto qc = v_block->qc;
     auto sync_info = std::make_shared<SyncInfo>();
     sync_info->qc = qc;
-    pool_managers_[pool_index].pace_maker->AdvanceView(sync_info);
+    pool_hotstuff_[pool_index].pace_maker->AdvanceView(sync_info);
 
     hotstuff::protobuf::VoteMsg vote_msg;
     uint32_t replica_idx = elect_info_->GetElectItem()->LocalMember()->index;
@@ -320,12 +320,12 @@ Status HotstuffManager::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_ms
         return Status::kError;
     }
     // 1、根据hash查找view_block；2、view_block.view <= heighQC.view
-    if (!pool_managers_[pool_index].view_block_chain->Has(vote_msg.view_block_hash())) {
+    if (!pool_hotstuff_[pool_index].view_block_chain->Has(vote_msg.view_block_hash())) {
         ZJC_ERROR("view_block_hash message is not exited.");
         return Status::kError;
     }
-    pool_managers_[pool_index].view_block_chain->Get(vote_msg.view_block_hash(), view_block);
-    if (view_block->view > pool_managers_[pool_index].pace_maker->HighQC()->view) {
+    pool_hotstuff_[pool_index].view_block_chain->Get(vote_msg.view_block_hash(), view_block);
+    if (view_block->view > pool_hotstuff_[pool_index].pace_maker->HighQC()->view) {
         ZJC_ERROR("view message is not exited.");
         return Status::kError;
     }
@@ -361,7 +361,7 @@ void HotstuffManager::DoProposeMsg(const hotstuff::protobuf::VoteMsg& vote_msg, 
         ZJC_ERROR("ReconstructAndVerify error");
         return;
     }
-    auto high_view = pool_managers_[pool_index].pace_maker->HighQC()->view;
+    auto high_view = pool_hotstuff_[pool_index].pace_maker->HighQC()->view;
     auto qc = std::make_shared<QC>(reconstructed_sign, high_view + 1, view_block_hash);
 
     view_block::protobuf::ViewBlockItem view_block;
