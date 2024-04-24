@@ -103,7 +103,8 @@ int HotstuffManager::Init(
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
-        std::shared_ptr<db::Db>& db) {
+        std::shared_ptr<db::Db>& db,
+        BlockCacheCallback new_block_cache_callback) {
     contract_mgr_ = contract_mgr;
     gas_prepayment_ = gas_prepayment;
     vss_mgr_ = vss_mgr;

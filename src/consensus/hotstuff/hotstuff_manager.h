@@ -71,7 +71,8 @@ public:
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
-        std::shared_ptr<db::Db>& db);
+        std::shared_ptr<db::Db>& db,
+        BlockCacheCallback new_block_cache_callback);
     void OnNewElectBlock(
         uint64_t block_tm_ms,
         uint32_t sharding_id,
@@ -295,6 +296,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
+    BlockCacheCallback new_block_cache_callback_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(HotstuffManager);
 };
