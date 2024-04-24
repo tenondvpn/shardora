@@ -312,11 +312,14 @@ void NetworkInit::AddCmds() {
         auto sync_info = std::make_shared<hotstuff::SyncInfo>();
         sync_info->qc = qc;
         pacemaker->AdvanceView(sync_info);
+
+        auto block = std::make_shared<block::protobuf::Block>();
+        block->set_electblock_height(1);
         
         auto view_block = std::make_shared<hotstuff::ViewBlock>(
                 parent_hash,
                 pacemaker->HighQC(),
-                nullptr,
+                block,
                 pacemaker->CurView(), // 此时为 0
                 leader_idx);
         

@@ -111,7 +111,7 @@ Status Crypto::ReconstructAndVerify(
 
 Status Crypto::Verify(const uint64_t &elect_height, const HashStr &msg_hash,
                const std::shared_ptr<libff::alt_bn128_G1> &reconstructed_sign) {
-#ifdef HOTSTUFF_DEBUG
+#ifdef HOTSTUFF_TEST
     return Status::kSuccess;
 #endif
     if (reconstructed_sign == nullptr) {
