@@ -1,5 +1,6 @@
 #pragma once
 #include <consensus/hotstuff/crypto.h>
+#include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/hotstuff_manager.h>
 #include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h>
@@ -39,9 +40,7 @@ using OnRecvViewBlockFn = std::function<Status(
 class ViewBlockChainSyncer {
 public:
     // TODO 将 ViewBlockChainManager 换成 HotstuffManager
-    ViewBlockChainSyncer(
-            const std::shared_ptr<consensus::HotstuffManager>&,
-            const std::shared_ptr<Crypto>&);
+    ViewBlockChainSyncer(const std::shared_ptr<consensus::HotstuffManager>&);
     ViewBlockChainSyncer(const ViewBlockChainSyncer&) = delete;
     ViewBlockChainSyncer& operator=(const ViewBlockChainSyncer&) = delete;
 
@@ -61,7 +60,8 @@ public:
     inline void SetOnRecvViewBlockFn(const OnRecvViewBlockFn& fn) {
         on_recv_vb_fn_ = fn;
     }
-
+    
+private:
     inline std::shared_ptr<ViewBlockChain> Chain(uint32_t pool_idx) const {
         return hotstuff_mgr_->chain(pool_idx);
     }
@@ -70,7 +70,10 @@ public:
         return hotstuff_mgr_->pacemaker(pool_idx);
     }
     
-private:
+    inline std::shared_ptr<Crypto> crypto() const {
+        return hotstuff_mgr_->crypto();
+    }
+    
     Status SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg);
     void ConsensusTimerMessage();
     void SyncChains();
@@ -83,7 +86,6 @@ private:
     common::ThreadSafeQueue<transport::MessagePtr> consume_queues_[common::kMaxThreadCount];
     common::Tick tick_;
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
-    std::shared_ptr<Crypto> crypto_ = nullptr;
     OnRecvViewBlockFn on_recv_vb_fn_;
 };
 

@@ -55,6 +55,10 @@ struct TC : public QC {
     }
 
     TC() : QC() {}
+
+    inline HashStr msg_hash() const {
+        return GetViewHash(view);
+    }
 };
 
 struct ViewBlock {

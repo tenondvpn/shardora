@@ -24,9 +24,8 @@ namespace shardora {
 namespace hotstuff {
 
 ViewBlockChainSyncer::ViewBlockChainSyncer(
-        const std::shared_ptr<consensus::HotstuffManager>& h_mgr,
-        const std::shared_ptr<Crypto>& c) :
-    hotstuff_mgr_(h_mgr), crypto_(c) {
+        const std::shared_ptr<consensus::HotstuffManager>& h_mgr) :
+    hotstuff_mgr_(h_mgr) {
     // start consumeloop thread
     network::Route::Instance()->RegisterMessage(common::kViewBlockSyncMessage,
         std::bind(&ViewBlockChainSyncer::HandleMessage, this, std::placeholders::_1));
@@ -217,7 +216,7 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
             continue;
         }
         auto view_block_qc = qc_it->second;
-        if (crypto_->Verify(
+        if (crypto()->Verify(
                     view_block->ElectHeight(),
                     view_block_qc->msg_hash(),
                     view_block_qc->bls_agg_sign) != Status::kSuccess) {

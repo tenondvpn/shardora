@@ -117,6 +117,15 @@ public:
         }
         return pool_mgr->block_acceptor;
     }
+
+    inline std::shared_ptr<Crypto> crypto() const {
+        return crypto_;
+    }
+
+    inline std::shared_ptr<ElectInfo> elect_info() const {
+        return elect_info_;
+    }
+
 private:
 
     void HandleMessage(const transport::MessagePtr& msg_ptr);
