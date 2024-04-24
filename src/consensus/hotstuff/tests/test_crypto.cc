@@ -72,7 +72,7 @@ protected:
             "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"));
         db_ptr = std::make_shared<db::Db>();
         bls_manager = std::make_shared<MockBlsManager>();
-        elect_info_ = std::make_shared<ElectInfo>(security_ptr);
+        elect_info_ = std::make_shared<ElectInfo>(security_ptr, nullptr);
         crypto_ = std::make_shared<Crypto>(elect_info_, bls_manager);
 
         auto member = std::make_shared<common::BftMember>(1, "1", "pk1", 1, 0);

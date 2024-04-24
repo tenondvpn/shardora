@@ -144,6 +144,11 @@ public:
         auto net_id = common::GlobalInfo::Instance()->network_id(); 
         libff::alt_bn128_G2 common_pk = libff::alt_bn128_G2::zero();
         libff::alt_bn128_Fr sec_key;
+
+        if (!elect_mgr_) {
+            return nullptr;
+        }
+        
         auto members = elect_mgr_->GetNetworkMembersWithHeight(
                 elect_height,
                 net_id,
