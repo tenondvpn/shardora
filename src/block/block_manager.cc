@@ -1735,9 +1735,8 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
         }
 
         if (shard_elect_tx_[i] == nullptr) {
-//             if (tx_hash.empty() && (pool_index == 2 || pool_index == 3)) {
-//                 ZJC_DEBUG("failed get elect tx: %u", pool_index);
-//             }
+            ZJC_DEBUG("0 failed get elect tx pool index: %u, tx hash: %s",
+                pool_index, common::Encode::HexEncode(tx_hash).c_str());
             continue;
         }
 
@@ -1749,11 +1748,15 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
                     return shard_elect_tx->tx_ptr;
                 }
 
+                ZJC_DEBUG("1 failed get elect tx pool index: %u, tx hash: %s",
+                    pool_index, common::Encode::HexEncode(tx_hash).c_str());
                 continue;
             }
 
             auto now_tm = common::TimeUtils::TimestampUs();
             if (shard_elect_tx->tx_ptr->time_valid > now_tm) {
+                ZJC_DEBUG("2 failed get elect tx pool index: %u, tx hash: %s",
+                    pool_index, common::Encode::HexEncode(tx_hash).c_str());
                 continue;
             }
 
