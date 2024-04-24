@@ -95,11 +95,27 @@ public:
     void DoCommitBlock(const view_block::protobuf::ViewBlockItem& pb_view_block, const uint32_t& pool_index);
 
     inline std::shared_ptr<Pacemaker> pacemaker(uint32_t pool_idx) const {
-        auto it = pool_Pacemaker_.find(pool_idx);
-        if (it != pool_Pacemaker_.end()) {
-            return it->second;
+        auto pool_mgr = pool_manager(pool_idx);
+        if (!pool_mgr) {
+            return nullptr;
         }
-        return nullptr;
+        return pool_mgr->pace_maker;
+    }
+
+    inline std::shared_ptr<ViewBlockChain> chain(uint32_t pool_idx) const {
+        auto pool_mgr = pool_manager(pool_idx);
+        if (!pool_mgr) {
+            return nullptr;
+        }
+        return pool_mgr->view_block_chain;
+    }
+
+    inline std::shared_ptr<IBlockAcceptor> acceptor(uint32_t pool_idx) const {
+        auto pool_mgr = pool_manager(pool_idx);
+        if (!pool_mgr) {
+            return nullptr;
+        }
+        return pool_mgr->block_acceptor;
     }
 private:
 
@@ -116,9 +132,17 @@ private:
     struct PoolManager
     {
         std::shared_ptr<Pacemaker> pace_maker;
-        std::shared_ptr<BlockAcceptor> block_acceptor;
+        std::shared_ptr<IBlockAcceptor> block_acceptor;
         std::shared_ptr<ViewBlockChain> view_block_chain;
     };
+
+    inline std::shared_ptr<PoolManager> pool_manager(uint32_t pool_idx) const {
+        auto it = pool_managers_.find(pool_idx);
+        if (it == pool_managers_.end()) {
+            return nullptr;
+        }
+        return std::make_shared<PoolManager>(it->second);
+    }
     
     std::unordered_map<uint32_t, PoolManager> pool_managers_;
     std::shared_ptr<ElectInfo> elect_info_;
