@@ -151,11 +151,11 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
 
     for (auto& view_block : all) {
         // 仅同步已经有 qc 的 view_block
-        auto view_block_qc_str = view_block_res->add_view_block_qc_strs();
         auto view_block_qc = chain->GetQcOf(view_block);
         if (!view_block_qc) {
             continue;
         }
+        auto view_block_qc_str = view_block_res->add_view_block_qc_strs();
         *view_block_qc_str = view_block_qc->Serialize();
         auto view_block_item = view_block_res->add_view_block_items();
         ViewBlock2Proto(view_block, view_block_item);
