@@ -134,10 +134,10 @@ Status ViewBlockChainSyncer::processRequest(const transport::MessagePtr& msg_ptr
     
     view_block_res->set_network_id(view_block_msg.view_block_req().network_id());
     view_block_res->set_pool_idx(pool_idx);
-    view_block_res->set_high_qc_str(Pacemaker(pool_idx)->HighQC()->Serialize());
-    view_block_res->set_high_tc_str(Pacemaker(pool_idx)->HighTC()->Serialize());
+    view_block_res->set_high_qc_str(pacemaker(pool_idx)->HighQC()->Serialize());
+    view_block_res->set_high_tc_str(pacemaker(pool_idx)->HighTC()->Serialize());
 
-    auto chain = Chain(pool_idx);
+    auto chain = view_block_chain(pool_idx);
     if (!chain) {
         return Status::kError;
     }
@@ -187,7 +187,7 @@ Status ViewBlockChainSyncer::processResponse(const transport::MessagePtr& msg_pt
     
     uint32_t pool_idx = view_block_msg.view_block_res().pool_idx();
 
-    auto chain = Chain(pool_idx);
+    auto chain = view_block_chain(pool_idx);
     if (!chain) {
         return Status::kError;
     }

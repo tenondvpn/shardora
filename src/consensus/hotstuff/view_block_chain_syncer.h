@@ -61,11 +61,11 @@ public:
     }
     
 private:
-    inline std::shared_ptr<ViewBlockChain> Chain(uint32_t pool_idx) const {
+    inline std::shared_ptr<ViewBlockChain> view_block_chain(uint32_t pool_idx) const {
         return hotstuff_mgr_->chain(pool_idx);
     }
 
-    inline std::shared_ptr<Pacemaker> Pacemaker(uint32_t pool_idx) const {
+    inline std::shared_ptr<Pacemaker> pacemaker(uint32_t pool_idx) const {
         return hotstuff_mgr_->pacemaker(pool_idx);
     }
     
