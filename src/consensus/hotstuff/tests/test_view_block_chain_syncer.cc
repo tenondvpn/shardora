@@ -23,35 +23,37 @@ static const uint32_t POOL = 63;
 static const std::string sk_ =
     "b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708";
 
-transport::MultiThreadHandler net_handler_;
-std::shared_ptr<security::Security> security_ = nullptr;
-std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
-std::shared_ptr<hotstuff::ElectInfo> elect_info_ = nullptr;
-std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
-std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
-std::shared_ptr<db::Db> db_ = nullptr;
-std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
-std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
-std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
-std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
-std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
-std::shared_ptr<BlockAcceptor> block_acceptor_ = nullptr;
-std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
-std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
-db::DbWriteBatch db_batch;
+static transport::MultiThreadHandler net_handler_;
+static std::shared_ptr<security::Security> security_ = nullptr;
+static std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
+static std::shared_ptr<hotstuff::ElectInfo> elect_info_ = nullptr;
+static std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
+static std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
+static std::shared_ptr<db::Db> db_ = nullptr;
+static std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
+static std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
+static std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
+static std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
+static std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
+static std::shared_ptr<BlockAcceptor> block_acceptor_ = nullptr;
+static std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+static std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
+static std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
+static db::DbWriteBatch db_batch;
+static std::shared_ptr<ViewBlockChainSyncer> syncer_ = nullptr;
+static std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
 
 
 class TestViewBlockChainSyncer : public testing::Test {
 protected:
-    void SetUp() {
+    static void SetUpTestCase() {
         security_ = std::make_shared<security::Ecdsa>();
         security_->SetPrivateKey(common::Encode::HexDecode(sk_));
         
         account_mgr_ = std::make_shared<block::AccountManager>();
-        system("rm -rf ./core.* ./db");
+        system("rm -rf ./core.* ./db_syncer");
         db_ = std::make_shared<db::Db>();
-        db_->Init("./db");
+        db_->Init("./db_syncer");
         
         kv_sync_ = std::make_shared<sync::KeyValueSync>();
         pools_mgr_ = std::make_shared<pools::TxPoolManager>(
@@ -91,8 +93,8 @@ protected:
         syncer_->SetOnRecvViewBlockFn(StoreViewBlock);
     }
 
-    void TearDown() {
-        
+    static void TearDownTestCase() {
+        system("rm -rf ./core.* ./db_syncer");
     }
 
     static transport::MessagePtr CreateRequestMsg() {
@@ -121,8 +123,7 @@ protected:
         return chain->Store(view_block);
     }
 
-    std::shared_ptr<ViewBlockChainSyncer> syncer_;
-    std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_;
+
 };
 
 TEST_F(TestViewBlockChainSyncer, TestMergeChain_HasCross) {

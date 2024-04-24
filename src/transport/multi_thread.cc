@@ -214,6 +214,7 @@ int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
         }
 
         return kTransportPriorityLow;
+    case common::kHotstuffMessage:
     case common::kPoolsMessage:
         return kTransportPrioritySystem;
     case common::kInitMessage:
@@ -316,6 +317,11 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
         if (msg_ptr->header.view_block_proto().has_view_block_res()) {
             return common::GlobalInfo::Instance()->pools_with_thread()[
                     msg_ptr->header.view_block_proto().view_block_res().pool_idx()];
+        }
+        return common::kMaxThreadCount;
+    case common::kHotstuffMessage:
+        if (msg_ptr->header.hotstuff().pool_index() < common::kInvalidPoolIndex) {
+            return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.hotstuff().pool_index()];
         }
         return common::kMaxThreadCount;
     case common::kHotstuffTimeoutMessage:

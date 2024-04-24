@@ -122,19 +122,26 @@ int HotstuffManager::Init(
     crypto_ = std::make_shared<Crypto>(elect_info_, bls_mgr);
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         PoolManager pool_manager;
+        pool_manager.pool_idx = pool_idx;
         pool_manager.view_block_chain = std::make_shared<ViewBlockChain>();
+        
         auto leader_rotation = std::make_shared<LeaderRotation>(pool_manager.view_block_chain, elect_info_);
         auto pace_maker = std::make_shared<Pacemaker>(pool_idx, crypto_, leader_rotation, std::make_shared<ViewDuration>());
+        
         pool_manager.block_acceptor = std::make_shared<BlockAcceptor>(pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
             contract_mgr, db, gas_prepayment, pool_mgr, block_mgr, tm_block_mgr, new_block_cache_callback);
+
+        // 初始化
+        pool_manager.Init(db_);
         pool_managers_[pool_idx] = pool_manager;
     }
 
     RegisterCreateTxCallbacks();
 
-    network::Route::Instance()->RegisterMessage(
-        common::kConsensusMessage,
+    network::Route::Instance()->RegisterMessage(common::kHotstuffMessage,
         std::bind(&HotstuffManager::HandleMessage, this, std::placeholders::_1));
+    network::Route::Instance()->RegisterMessage(common::kHotstuffTimeoutMessage,
+        std::bind(&HotstuffManager::HandleMessage, this, std::placeholders::_1));    
 
     return kConsensusSuccess;
 }
@@ -392,33 +399,43 @@ void HotstuffManager::DoProposeMsg(const hotstuff::protobuf::VoteMsg& vote_msg, 
 
 void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
-    assert(header.type() == common::kConsensusMessage);
 
-    if (!header.has_hotstuff()) {
+    if (!header.has_hotstuff() || header.has_hotstuff_timeout_proto()) {
         ZJC_ERROR("transport message is error.");
         return;
     }
-    auto& hotstuff_msg = header.hotstuff();
-    if (hotstuff_msg.net_id() != common::GlobalInfo::Instance()->network_id()) {
-        ZJC_ERROR("net_id is error.");
+
+    if (header.has_hotstuff()) {
+        auto& hotstuff_msg = header.hotstuff();
+        if (hotstuff_msg.net_id() != common::GlobalInfo::Instance()->network_id()) {
+            ZJC_ERROR("net_id is error.");
+            return;
+        }
+        if (hotstuff_msg.pool_index() >= common::kInvalidPoolIndex) {
+            ZJC_ERROR("pool index invalid[%d]!", hotstuff_msg.pool_index());
+            return ;
+        }
+        switch (hotstuff_msg.type())
+        {
+        case PROPOSE:
+            DoVoteMsg(hotstuff_msg.pro_msg(), hotstuff_msg.pool_index());
+            break;
+        case VOTE:
+            DoProposeMsg(hotstuff_msg.vote_msg(), hotstuff_msg.pool_index());
+            break;
+        default:
+            ZJC_WARN("consensus message type is error.");
+            break;
+        }
         return;
     }
-    if (hotstuff_msg.pool_index() >= common::kInvalidPoolIndex) {
-        ZJC_ERROR("pool index invalid[%d]!", hotstuff_msg.pool_index());
-        return ;
+
+    if (header.has_hotstuff_timeout_proto()) {
+        auto pool_idx = header.hotstuff_timeout_proto().pool_idx();
+        auto pace = pacemaker(pool_idx);
+        pace->OnRemoteTimeout(msg_ptr);
     }
-    switch (hotstuff_msg.type())
-    {
-    case PROPOSE:
-        DoVoteMsg(hotstuff_msg.pro_msg(), hotstuff_msg.pool_index());
-        break;
-    case VOTE:
-        DoProposeMsg(hotstuff_msg.vote_msg(), hotstuff_msg.pool_index());
-        break;
-    default:
-        ZJC_WARN("consensus message type is error.");
-        break;
-    }
+
 }
 
 }  // namespace consensus
