@@ -171,23 +171,7 @@ int NetworkInit::Init(int argc, char** argv) {
         new_db_cb,
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
-#ifdef ENABLE_HOTSTUFF
-    hotstuf_mgr_ = std::make_shared<consensus::HotstuffManager>();
-    auto consensus_init_res = hotstuf_mgr_->Init(
-        contract_mgr_,
-        gas_prepayment_,
-        vss_mgr_,
-        account_mgr_,
-        block_mgr_,
-        elect_mgr_,
-        pools_mgr_,
-        security_,
-        tm_block_mgr_,
-        bls_mgr_,
-        db_,
-        std::bind(&NetworkInit::AddBlockItemToCache, this,
-            std::placeholders::_1, std::placeholders::_2));
-#endif
+
     bft_mgr_ = std::make_shared<consensus::BftManager>();
     auto consensus_init_res = bft_mgr_->Init(
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1),
@@ -207,6 +191,24 @@ int NetworkInit::Init(int argc, char** argv) {
         common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
         std::bind(&NetworkInit::AddBlockItemToCache, this,
             std::placeholders::_1, std::placeholders::_2));
+
+#ifdef ENABLE_HOTSTUFF
+    hotstuf_mgr_ = std::make_shared<consensus::HotstuffManager>();
+    auto _ = hotstuf_mgr_->Init(
+        contract_mgr_,
+        gas_prepayment_,
+        vss_mgr_,
+        account_mgr_,
+        block_mgr_,
+        elect_mgr_,
+        pools_mgr_,
+        security_,
+        tm_block_mgr_,
+        bls_mgr_,
+        db_,
+        std::bind(&NetworkInit::AddBlockItemToCache, this,
+            std::placeholders::_1, std::placeholders::_2));
+#endif    
 
     if (consensus_init_res != consensus::kConsensusSuccess) {
         INIT_ERROR("init bft failed!");
