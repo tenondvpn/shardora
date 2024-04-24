@@ -5,6 +5,7 @@
 #include <memory>
 #include <security/ecdsa/ecdsa.h>
 #include <transport/transport_utils.h>
+#include <vss/vss_manager.h>
 
 namespace shardora {
 
