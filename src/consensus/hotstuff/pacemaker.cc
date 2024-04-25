@@ -153,17 +153,14 @@ void Pacemaker::OnLocalTimeout() {
 void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     // TODO ecdh decrypt
     auto msg = msg_ptr->header;
-    ZJC_DEBUG("====1.2 msg received, pool_idx: %d", pool_idx_);
     assert(msg.type() == common::kHotstuffTimeoutMessage);
     
     if (!msg.has_hotstuff_timeout_proto()) {
         return;
     }
-    ZJC_DEBUG("====1.3 msg received, pool_idx: %d", pool_idx_);
     if (msg.hotstuff_timeout_proto().pool_idx() != pool_idx_) {
         return;
     }
-    ZJC_DEBUG("====1.4 msg received, pool_idx: %d", pool_idx_);
     
     auto timeout_proto = msg.hotstuff_timeout_proto();
     ZJC_DEBUG("OnRemoteTimeout pool: %d, view: %d, member: %d", pool_idx_, timeout_proto.view(), timeout_proto.member_id());
@@ -179,6 +176,11 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
             timeout_proto.sign_y(),
             reconstructed_sign);
     if (s != Status::kSuccess) {
+        ZJC_WARN("bls verify failed, s: %d, view: %d, view_hash: %s, member_id: %s, elect_height: %lu", s,
+            timeout_proto.view(),
+            common::Encode::HexEncode(timeout_proto.view_hash()).c_str(),
+            timeout_proto.member_id(),
+            timeout_proto.elect_height());
         return;
     }
     // TODO 视图切换
