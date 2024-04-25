@@ -82,6 +82,7 @@ public:
     virtual ~HotstuffManager();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     Status VerifyViewBlock(
+            const uint32_t& pool_idx,
             const std::shared_ptr<ViewBlock>& v_block,
             const std::shared_ptr<ViewBlockChain>& view_block_chain,
             const uint32_t& elect_height);
@@ -114,8 +115,12 @@ public:
         return hf->block_acceptor;
     }
 
-    inline std::shared_ptr<Crypto> crypto() const {
-        return crypto_;
+    inline std::shared_ptr<Crypto> crypto(uint32_t pool_idx) const {
+        auto hf = hotstuff(pool_idx);
+        if (!hf) {
+            return nullptr;
+        }
+        return hf->crypto;        
     }
 
     inline std::shared_ptr<ElectInfo> elect_info() const {
@@ -145,6 +150,7 @@ private:
         std::shared_ptr<Pacemaker> pace_maker;
         std::shared_ptr<IBlockAcceptor> block_acceptor;
         std::shared_ptr<ViewBlockChain> view_block_chain;
+        std::shared_ptr<Crypto> crypto;
 
         void Init(std::shared_ptr<db::Db>& db_) {
             auto genesis = GetGenesisViewBlock(db_, pool_idx);
@@ -301,7 +307,7 @@ private:
 
     std::unordered_map<uint32_t, HotStuff> pool_hotstuff_;
     std::shared_ptr<ElectInfo> elect_info_;
-    std::shared_ptr<Crypto> crypto_;
+    
 
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;

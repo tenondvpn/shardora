@@ -120,20 +120,22 @@ int HotstuffManager::Init(
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
 
     elect_info_ = std::make_shared<ElectInfo>(security_ptr, elect_mgr_);
-    crypto_ = std::make_shared<Crypto>(elect_info_, bls_mgr);
+    
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         HotStuff hf;
         hf.pool_idx = pool_idx;
         hf.view_block_chain = std::make_shared<ViewBlockChain>();
+        auto crypto = std::make_shared<Crypto>(elect_info_, bls_mgr);
         
         auto leader_rotation = std::make_shared<LeaderRotation>(hf.view_block_chain, elect_info_);
 
         auto pace_maker = std::make_shared<Pacemaker>(
-                pool_idx, crypto_, leader_rotation, std::make_shared<ViewDuration>());
+                pool_idx, crypto, leader_rotation, std::make_shared<ViewDuration>());
         
         hf.block_acceptor = std::make_shared<BlockAcceptor>(pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
             contract_mgr, db, gas_prepayment, pool_mgr, block_mgr, tm_block_mgr, new_block_cache_callback);
         hf.pace_maker = pace_maker;
+        hf.crypto = crypto;
         // 初始化
         hf.Init(db_);
         pool_hotstuff_[pool_idx] = hf;
@@ -258,8 +260,11 @@ std::shared_ptr<ViewBlock> HotstuffManager::CheckCommit(
     return nullptr;
 }
 
-Status HotstuffManager::VerifyViewBlock(const std::shared_ptr<ViewBlock>& v_block, 
-    const std::shared_ptr<ViewBlockChain>& view_block_chain, const uint32_t& elect_height) {
+Status HotstuffManager::VerifyViewBlock(
+        const uint32_t& pool_idx,
+        const std::shared_ptr<ViewBlock>& v_block, 
+        const std::shared_ptr<ViewBlockChain>& view_block_chain,
+        const uint32_t& elect_height) {
     Status ret = Status::kSuccess;
     auto block_view = v_block->view;
     if (!v_block->Valid()) {
@@ -285,7 +290,7 @@ Status HotstuffManager::VerifyViewBlock(const std::shared_ptr<ViewBlock>& v_bloc
     }
 
     // 验证 qc
-    if (crypto_->Verify(elect_height, qc->msg_hash(), qc->bls_agg_sign) != Status::kSuccess) {
+    if (crypto(pool_idx)->Verify(elect_height, qc->msg_hash(), qc->bls_agg_sign) != Status::kSuccess) {
         ZJC_ERROR("Verify qc is error.");
         return Status::kError; 
     }
@@ -378,7 +383,7 @@ void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro
     uint32_t elect_height = pro_msg.elect_height();
     vote_msg.set_elect_height(elect_height);
     std::string sign_x, sign_y;
-    if (crypto_->Sign(elect_height, GetQCMsgHash(v_block->view, v_block->hash) ,&sign_x, &sign_y) != Status::kSuccess) {
+    if (crypto(pool_index)->Sign(elect_height, GetQCMsgHash(v_block->view, v_block->hash) ,&sign_x, &sign_y) != Status::kSuccess) {
         ZJC_ERROR("Sign message is error.");
         return;
     }
@@ -438,8 +443,9 @@ void HotstuffManager::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg,
     auto replica_idx = vote_msg.replica_idx();
     auto view_block_hash = vote_msg.view_block_hash();
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
-    Status ret = crypto_->ReconstructAndVerify(elect_height, v_block->view, view_block_hash, replica_idx, 
-        vote_msg.sign_x(), vote_msg.sign_y(), reconstructed_sign);
+    Status ret = crypto(pool_index)->ReconstructAndVerify(
+            elect_height, v_block->view, view_block_hash, replica_idx, 
+            vote_msg.sign_x(), vote_msg.sign_y(), reconstructed_sign);
     if (ret != Status::kSuccess) {
         if (ret == Status::kBlsVerifyWaiting) {
             ZJC_INFO("kBlsVerifyWaiting");

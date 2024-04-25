@@ -346,7 +346,7 @@ Status HotstuffSyncer::onRecViewBlock(
         const std::shared_ptr<ViewBlockChain>& ori_chain,
         const std::shared_ptr<ViewBlock>& view_block) {
     // 1. 验证 view_block
-    Status s = hotstuff_mgr_->VerifyViewBlock(view_block, ori_chain, view_block->ElectHeight());
+    Status s = hotstuff_mgr_->VerifyViewBlock(pool_idx, view_block, ori_chain, view_block->ElectHeight());
     if (s != Status::kSuccess) {
         return s;
     }
