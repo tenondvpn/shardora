@@ -259,25 +259,34 @@ bool ElectManager::ProcessPrevElectMembers(
         return false;
     }
 
+    int32_t expect_leader_count = (int32_t)pow(
+        2.0,
+        (double)((int32_t)log2(double(in.size() / 3))));
+    if (expect_leader_count > (int32_t)common::kImmutablePoolSize) {
+        expect_leader_count = (int32_t)common::kImmutablePoolSize;
+    }
+
     uint32_t leader_count = 0;
     for (int32_t i = 0; i < in.size(); ++i) {
         auto id = security_->GetAddress(in[i].pubkey());
-        int32_t pool_idx_mod_num = in[i].pool_idx_mod_num();  // elect_block.prev_members().bls_pubkey(i).pool_idx_mod_num();
+        int32_t pool_idx_mod_num = leader_count;  // elect_block.prev_members().bls_pubkey(i).pool_idx_mod_num();
+        if (leader_count >= expect_leader_count) {
+            pool_idx_mod_num = -1;
+        } else {
+            ++leader_count;
+        }
+
         shard_members_ptr->push_back(std::make_shared<common::BftMember>(
             prev_elect_block.shard_network_id(),
             id,
             in[i].pubkey(),
             i,
             pool_idx_mod_num));
-        if (pool_idx_mod_num >= 0) {
-            ++leader_count;
-        }
-
         now_elected_ids_.insert(id);
         AddNewNodeWithIdAndIp(prev_elect_block.shard_network_id(), id);
     }
 
-    latest_leader_count_[prev_elect_block.shard_network_id()] = leader_count;
+    latest_leader_count_[prev_elect_block.shard_network_id()] = expect_leader_count;
     std::vector<std::string> pk_vec;
     UpdatePrevElectMembers(shard_members_ptr, elect_block, elected, &pk_vec);
     auto common_pk = BLSPublicKey(std::make_shared<std::vector<std::string>>(pk_vec));

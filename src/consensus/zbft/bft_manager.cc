@@ -1169,11 +1169,11 @@ bool BftManager::VerifyLeaderIdValid(const ElectItem& elect_item, const transpor
     }
 
     auto& mem_ptr = (*elect_item.members)[msg_ptr->header.zbft().member_index()];
-    if (mem_ptr->bls_publick_key == libff::alt_bn128_G2::zero()) {
-        ZJC_DEBUG("verify sign failed, backup invalid bls pk: %s",
-            common::Encode::HexEncode(mem_ptr->id).c_str());
-        return false;
-    }
+    // if (mem_ptr->bls_publick_key == libff::alt_bn128_G2::zero()) {
+    //     ZJC_DEBUG("verify sign failed, backup invalid bls pk: %s",
+    //         common::Encode::HexEncode(mem_ptr->id).c_str());
+    //     return false;
+    // }
 
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
     if (security_ptr_->Verify(
@@ -1931,20 +1931,12 @@ int BftManager::LeaderPrepare(
         ZbftPtr& commited_bft_ptr) {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
-    ZJC_DEBUG("now leader call prepare: %s",
-        common::Encode::HexEncode(bft_ptr->gid()).c_str());
-    int res = bft_ptr->Prepare(true);
-    if (res != kConsensusSuccess) {
-        assert(false);
-        return kConsensusError;
-    }
-
     ZJC_DEBUG("now leader add bft: %s",
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
-    res = AddBft(bft_ptr);
-    if (res != kConsensusSuccess) {
-        ZJC_ERROR("AddBft failed[%u].", res);
-        return res;
+    int add_res = AddBft(bft_ptr);
+    if (add_res != kConsensusSuccess) {
+        ZJC_ERROR("AddBft failed[%u].", add_res);
+        return add_res;
     }
 
     header.set_src_sharding_id(bft_ptr->network_id());
@@ -1955,8 +1947,8 @@ int BftManager::LeaderPrepare(
     auto broad_param = header.mutable_broadcast();
     auto& bft_msg = *header.mutable_zbft();
     zbft::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
-    tx_bft.set_height(bft_ptr->prepare_block()->height());
-    tx_bft.set_time_stamp(bft_ptr->prepare_block()->timestamp());
+    tx_bft.set_height(bft_ptr->block_new_height());
+    tx_bft.set_time_stamp(bft_ptr->block_new_timestamp());
     auto& tx_map = bft_ptr->txs_ptr()->txs;
     auto& kvs = bft_ptr->txs_ptr()->kvs;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
@@ -1993,11 +1985,26 @@ int BftManager::LeaderPrepare(
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
     if (!LeaderSignMessage(msg_ptr)) {
         assert(false);
-        return kConsensusError;
+        return kConsensusSuccess;
     }
 
     ZJC_DEBUG("now leader send prepare: %s",
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
+#ifdef ZJC_UNITTEST
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    now_msg_[thread_idx] = msg_ptr;
+#else
+    network::Route::Instance()->Send(msg_ptr);
+#endif
+
+    ZJC_DEBUG("now leader call prepare: %s",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str());
+    int prepare_res = bft_ptr->Prepare(true);
+    if (prepare_res != kConsensusSuccess) {
+        assert(false);
+        return kConsensusSuccess;
+    }
+
 #ifdef ZJC_UNITTEST
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     now_msg_[thread_idx] = msg_ptr;
@@ -2011,7 +2018,6 @@ int BftManager::LeaderPrepare(
         bft_ptr->prepare_block() == nullptr ? "" : common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
         elect_item.elect_height,
         msg_ptr->header.hash64());
-    network::Route::Instance()->Send(msg_ptr);
 #endif
 
     bft_ptr->AfterNetwork();
