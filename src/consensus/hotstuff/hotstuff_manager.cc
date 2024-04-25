@@ -334,7 +334,7 @@ void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro
         return;
     }
     
-    if (VerifyViewBlock(v_block, view_block_chain, pro_msg.elect_height()) != Status::kSuccess) {
+    if (VerifyViewBlock(pool_index, v_block, view_block_chain, pro_msg.elect_height()) != Status::kSuccess) {
         ZJC_ERROR("VerifyViewBlock is error. hash: %s",
             common::Encode::HexEncode(v_block->hash).c_str());
         return;
