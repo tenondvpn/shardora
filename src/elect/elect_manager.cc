@@ -262,7 +262,7 @@ bool ElectManager::ProcessPrevElectMembers(
     uint32_t leader_count = 0;
     for (int32_t i = 0; i < in.size(); ++i) {
         auto id = security_->GetAddress(in[i].pubkey());
-        int32_t pool_idx_mod_num = in[i].pool_idx_mod_num();// elect_block.prev_members().bls_pubkey(i).pool_idx_mod_num();
+        int32_t pool_idx_mod_num = in[i].pool_idx_mod_num();  // elect_block.prev_members().bls_pubkey(i).pool_idx_mod_num();
         shard_members_ptr->push_back(std::make_shared<common::BftMember>(
             prev_elect_block.shard_network_id(),
             id,
