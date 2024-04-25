@@ -22,9 +22,10 @@ class Pacemaker {
 public:
     Pacemaker(
             const uint32_t& pool_idx,
-            const std::shared_ptr<Crypto>&,
-            const std::shared_ptr<LeaderRotation>&,
-            const std::shared_ptr<ViewDuration>&);
+            const std::shared_ptr<Crypto>& crypto,
+            const std::shared_ptr<LeaderRotation>& leader_rotation,
+            const std::shared_ptr<ViewDuration>& duration,
+            const std::shared_ptr<ViewBlock>& genesis_view_block);
     ~Pacemaker();
 
     Pacemaker(const Pacemaker&) = delete;

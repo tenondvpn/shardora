@@ -77,6 +77,9 @@ bool ViewBlockChain::Has(const HashStr& hash) {
 }
 
 bool ViewBlockChain::Extends(const std::shared_ptr<ViewBlock>& block, const std::shared_ptr<ViewBlock>& target) {
+    if (!target || !block) {
+        return true;
+    }
     auto current = block;
     Status s = Status::kSuccess;
     while (s == Status::kSuccess && current->view > target->view) {
@@ -269,25 +272,6 @@ void ViewBlockChain::Print() const {
 //         }
 //     }
 // }
-
-std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db, uint32_t pool_index) {
-    auto prefix_db = std::make_shared<protos::PrefixDb>(db);
-    uint32_t sharding_id = common::GlobalInfo::Instance()->network_id();
-
-    block::protobuf::Block block;
-    bool r = prefix_db->GetBlockWithHeight(sharding_id, pool_index, 0, &block);
-    if (!r) {
-        ZJC_ERROR("no genesis block found");
-        return nullptr;
-    }
-
-    auto block_ptr = std::make_shared<block::protobuf::Block>(block);
-    return std::make_shared<ViewBlock>("", GetQCWrappedByGenesis(), block_ptr, GenesisView, 0);
-}
-
-std::shared_ptr<QC> GetQCWrappedByGenesis() {
-    return std::make_shared<QC>(nullptr, BeforeGenesisView, "");
-}
 
 }
 }

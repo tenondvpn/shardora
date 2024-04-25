@@ -18,10 +18,16 @@ Pacemaker::Pacemaker(
         const uint32_t& pool_idx,
         const std::shared_ptr<Crypto>& c,
         const std::shared_ptr<LeaderRotation>& lr,
-        const std::shared_ptr<ViewDuration>& d) :
+        const std::shared_ptr<ViewDuration>& d,
+        const std::shared_ptr<ViewBlock>& genesis_view_block) :
     pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d) {
     cur_view_ = BeforeGenesisView;
-    high_qc_ = GetQCWrappedByGenesis();
+    // 如果存在创世块，则high_qc 为创世块qc
+    if (genesis_view_block) {
+        high_qc_ = GetGenesisQC(genesis_view_block->hash);
+    } else {
+        high_qc_ = GetQCWrappedByGenesis();
+    }    
     high_tc_ = std::make_shared<TC>(nullptr, BeforeGenesisView);
 }
 

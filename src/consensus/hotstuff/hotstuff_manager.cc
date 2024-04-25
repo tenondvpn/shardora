@@ -127,7 +127,10 @@ int HotstuffManager::Init(
         hf.view_block_chain = std::make_shared<ViewBlockChain>();
         
         auto leader_rotation = std::make_shared<LeaderRotation>(hf.view_block_chain, elect_info_);
-        auto pace_maker = std::make_shared<Pacemaker>(pool_idx, crypto_, leader_rotation, std::make_shared<ViewDuration>());
+
+        auto genesis_vblock = GetGenesisViewBlock(db_, pool_idx);
+        auto pace_maker = std::make_shared<Pacemaker>(
+                pool_idx, crypto_, leader_rotation, std::make_shared<ViewDuration>(), genesis_vblock);
         
         hf.block_acceptor = std::make_shared<BlockAcceptor>(pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
             contract_mgr, db, gas_prepayment, pool_mgr, block_mgr, tm_block_mgr, new_block_cache_callback);
@@ -295,11 +298,13 @@ Status HotstuffManager::VerifyViewBlock(const std::shared_ptr<ViewBlock>& v_bloc
         ZJC_ERROR("qc view block message is error.");
         return Status::kError;
     }
-    if (!view_block_chain->Extends(v_block, view_block_chain->LatestLockedBlock()) && 
+
+    if (view_block_chain->LatestLockedBlock() &&
+        !view_block_chain->Extends(v_block, view_block_chain->LatestLockedBlock()) && 
         v_block->qc->view <= view_block_chain->LatestLockedBlock()->view) {
         ZJC_ERROR("block view message is error.");
         return Status::kError;
-    }    
+    }   
 
     return ret;
 }
@@ -326,13 +331,15 @@ void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro
     }
     
     if (VerifyViewBlock(v_block, view_block_chain, pro_msg.elect_height()) != Status::kSuccess) {
-        ZJC_ERROR("VerifyViewBlock is error.");
+        ZJC_ERROR("VerifyViewBlock is error. hash: %s",
+            common::Encode::HexEncode(v_block->hash).c_str());
         return;
     }
     
     
     if (view_block_chain->Store(v_block) != Status::kSuccess) {
-        ZJC_ERROR("add view block error.");
+        ZJC_ERROR("add view block error. hash: %s",
+            common::Encode::HexEncode(v_block->hash).c_str());
         return;
     }    
     block::protobuf::Block block;
@@ -347,7 +354,9 @@ void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro
     if (v_block_to_commit) {
         Status s = Commit(v_block_to_commit, pool_index);
         if (s != Status::kSuccess) {
-            ZJC_ERROR("commit view_block failed, view: %lu", v_block_to_commit->view);
+            ZJC_ERROR("commit view_block failed, view: %lu hash: %s",
+                v_block_to_commit->view,
+                common::Encode::HexEncode(v_block_to_commit->hash).c_str());
             return;
         }
     }
