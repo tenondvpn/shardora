@@ -21,8 +21,6 @@ HashStr GetViewHash(const View& view) {
 std::string QC::Serialize() const {
     auto qc_proto = view_block::protobuf::QC();
         
-    std::stringstream ss;
-    
     qc_proto.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->X));
     qc_proto.set_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->Y));
     qc_proto.set_sign_z(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->Z));

@@ -200,6 +200,8 @@ Status HotstuffSyncer::processResponseQcTc(
     highqc->Unserialize(view_block_res.high_qc_str());
     hightc->Unserialize(view_block_res.high_tc_str());
 
+    ZJC_DEBUG("response received qctc pool_idx: %d, tc: %d, qc: %d",
+        pool_idx, hightc->view, highqc->view);
     // TODO 验证 qc 和 tc
 
     auto sync_info = std::make_shared<SyncInfo>();
