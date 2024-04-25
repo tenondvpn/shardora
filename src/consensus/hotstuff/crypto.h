@@ -12,7 +12,7 @@ namespace shardora {
 
 namespace hotstuff {
 
-// Every ViewBlockChain's hotstuff has a Crypto
+// Every pool has a Crypto
 class Crypto {
 public:
     struct BlsCollectionItem {
@@ -46,9 +46,11 @@ public:
         }
     };
     
-    Crypto(const std::shared_ptr<ElectInfo>& elect_info,
-        const std::shared_ptr<bls::IBlsManager>& bls_mgr) :
-        elect_info_(elect_info), bls_mgr_(bls_mgr) {};
+    Crypto(
+            const uint32_t& pool_idx,
+            const std::shared_ptr<ElectInfo>& elect_info,
+            const std::shared_ptr<bls::IBlsManager>& bls_mgr) :
+        pool_idx_(pool_idx), elect_info_(elect_info), bls_mgr_(bls_mgr) {};
     ~Crypto() {};
 
     Crypto(const Crypto&) = delete;
@@ -95,6 +97,7 @@ public:
     
 private:
     // 保留上一次 elect_item，避免 epoch 切换的影响
+    uint32_t pool_idx_;
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     std::shared_ptr<bls::IBlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<BlsCollection> bls_collection_ = nullptr;

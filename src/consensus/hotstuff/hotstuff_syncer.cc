@@ -200,6 +200,8 @@ Status HotstuffSyncer::processResponseQcTc(
     highqc->Unserialize(view_block_res.high_qc_str());
     hightc->Unserialize(view_block_res.high_tc_str());
 
+    ZJC_DEBUG("response received qctc pool_idx: %d, tc: %d, qc: %d",
+        pool_idx, hightc->view, highqc->view);
     // TODO 验证 qc 和 tc
 
     auto sync_info = std::make_shared<SyncInfo>();
@@ -252,7 +254,7 @@ Status HotstuffSyncer::processResponseChain(
             continue;
         }
         auto view_block_qc = qc_it->second;
-        if (crypto()->Verify(
+        if (crypto(pool_idx)->Verify(
                     view_block->ElectHeight(),
                     view_block_qc->msg_hash(),
                     view_block_qc->bls_agg_sign) != Status::kSuccess) {
@@ -346,7 +348,7 @@ Status HotstuffSyncer::onRecViewBlock(
         const std::shared_ptr<ViewBlockChain>& ori_chain,
         const std::shared_ptr<ViewBlock>& view_block) {
     // 1. 验证 view_block
-    Status s = hotstuff_mgr_->VerifyViewBlock(view_block, ori_chain, view_block->ElectHeight());
+    Status s = hotstuff_mgr_->VerifyViewBlock(pool_idx, view_block, ori_chain, view_block->ElectHeight());
     if (s != Status::kSuccess) {
         return s;
     }

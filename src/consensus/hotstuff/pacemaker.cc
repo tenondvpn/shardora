@@ -18,17 +18,12 @@ Pacemaker::Pacemaker(
         const uint32_t& pool_idx,
         const std::shared_ptr<Crypto>& c,
         const std::shared_ptr<LeaderRotation>& lr,
-        const std::shared_ptr<ViewDuration>& d,
-        const std::shared_ptr<ViewBlock>& genesis_view_block) :
+        const std::shared_ptr<ViewDuration>& d) :
     pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d) {
-    cur_view_ = BeforeGenesisView;
-    // 如果存在创世块，则high_qc 为创世块qc
-    if (genesis_view_block) {
-        high_qc_ = GetGenesisQC(genesis_view_block->hash);
-    } else {
-        high_qc_ = GetQCWrappedByGenesis();
-    }    
+    
+    high_qc_ = GetQCWrappedByGenesis();
     high_tc_ = std::make_shared<TC>(nullptr, BeforeGenesisView);
+    cur_view_ = GenesisView;
 }
 
 Pacemaker::~Pacemaker() {}
@@ -42,26 +37,22 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
         return Status::kInvalidArgument;
     }
 
-    View qc_view = 0;
     bool timeout = false;
     if (sync_info->qc) {
         UpdateHighQC(sync_info->qc);
-        if (sync_info->qc->view < cur_view_ && cur_view_ != BeforeGenesisView) {
-            return Status::kSuccess;
-        }
-        qc_view = sync_info->qc->view;
     }
 
-    View tc_view = 0;
     if (sync_info->tc) {
-        timeout = false;
+        timeout = true;
         UpdateHighTC(sync_info->tc);
-        if (sync_info->tc->view < cur_view_ && cur_view_ != BeforeGenesisView) {
-            return Status::kSuccess;
-        }
-        tc_view = sync_info->tc->view;
     }
 
+    auto new_v = std::max(high_qc_->view, high_tc_->view) + 1;
+    if (new_v <= cur_view_) {
+        // 旧的 view
+        return Status::kOldView;
+    }
+    
     StopTimeoutTimer();
     if (timeout) {
         duration_->ViewTimeout();
@@ -70,21 +61,23 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
     }
     
     // TODO 如果交易池为空，则直接 return，不开启新视图
-    cur_view_ = std::max(qc_view, tc_view) + 1;
+    cur_view_ = new_v; 
     
     duration_->ViewStarted();
+    ZJC_DEBUG("new view: %llu", cur_view_);
+    
     StartTimeoutTimer();
     return Status::kSuccess;
 }
 
 void Pacemaker::UpdateHighQC(const std::shared_ptr<QC>& qc) {
-    if (!high_qc_ || high_qc_->view < qc->view || high_qc_->view == BeforeGenesisView) {
+    if (!high_qc_ || high_qc_->view < qc->view) {
         high_qc_ = qc;
     }
 }
 
 void Pacemaker::UpdateHighTC(const std::shared_ptr<TC>& tc) {
-    if (!high_tc_ || high_tc_->view < tc->view || high_tc_->view == BeforeGenesisView) {
+    if (!high_tc_ || high_tc_->view < tc->view) {
         high_tc_ = tc;
     }
 }
@@ -136,8 +129,8 @@ void Pacemaker::OnLocalTimeout() {
     // TODO ecdh encrypt
 
     if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
-        ZJC_DEBUG("Send TimeoutMsg to ip: %s, port: %d",
-            common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port);
+        ZJC_DEBUG("Send TimeoutMsg to ip: %s, port: %d, local_idx: %d",
+            common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port, timeout_msg.member_id());
         transport::TcpTransport::Instance()->Send(common::Uint32ToIp(leader->public_ip), leader->public_port, msg);
     } else {
         OnRemoteTimeout(msg_ptr);
@@ -155,13 +148,12 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     if (!msg.has_hotstuff_timeout_proto()) {
         return;
     }
-
     if (msg.hotstuff_timeout_proto().pool_idx() != pool_idx_) {
         return;
     }
     
     auto timeout_proto = msg.hotstuff_timeout_proto();
-    ZJC_DEBUG("OnRemoteTimeout pool: %d, view: %d, member: %d", pool_idx_, timeout_proto.view(), timeout_proto.member_id());
+    ZJC_DEBUG("====2 pool: %d, view: %d, member: %d", pool_idx_, timeout_proto.view(), timeout_proto.member_id());
     // TODO 统计 bls 签名
     
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
@@ -174,6 +166,13 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
             timeout_proto.sign_y(),
             reconstructed_sign);
     if (s != Status::kSuccess) {
+        ZJC_WARN("====2 pool: %d, bls failed, s: %d, view: %d, view_hash: %s, member_id: %d, elect_height: %lu",
+            timeout_proto.pool_idx(),
+            s,
+            timeout_proto.view(),
+            common::Encode::HexEncode(timeout_proto.view_hash()).c_str(),
+            timeout_proto.member_id(),
+            timeout_proto.elect_height());
         return;
     }
     // TODO 视图切换
@@ -183,7 +182,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     if (s != Status::kSuccess || !tc) {
         return;
     }
-    ZJC_DEBUG("CreateTC pool: %d, view: %d, member: %d, view: %d",
+    ZJC_DEBUG("====2 pool: %d, create tc, view: %d, member: %d, view: %d",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
     
     auto sync_info = std::make_shared<SyncInfo>();

@@ -20,8 +20,8 @@ static const uint64_t ORPHAN_BLOCK_TIMEOUT_US = 10000000lu;
 typedef uint64_t View;
 typedef std::string HashStr;
 
-static const View GenesisView = 0;
-static const View BeforeGenesisView = std::numeric_limits<uint64_t>::max();
+static const View GenesisView = 1;
+static const View BeforeGenesisView = 0;
 
 HashStr GetViewHash(const View& view);
 HashStr GetQCMsgHash(const View &view, const HashStr &view_block_hash);
@@ -136,6 +136,7 @@ enum class Status : int {
   kBlsVerifyFailed = 5,
   kAcceptorTxsEmpty = 6,
   kAcceptorBlockInvalid = 7,
+  kOldView = 8,
 };
 
 enum WaitingBlockType {

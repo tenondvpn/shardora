@@ -263,7 +263,7 @@ int NetworkInit::Init(int argc, char** argv) {
 
 void NetworkInit::AddCmds() {
 #ifdef ENABLE_HOTSTUFF
-    cmd_.AddCommand("ablock", [this](const std::vector<std::string>& args){
+    cmd_.AddCommand("addblock", [this](const std::vector<std::string>& args){
         if (args.size() < 3) {
             return;
         }
@@ -292,14 +292,13 @@ void NetworkInit::AddCmds() {
         auto fake_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
         
         auto qc = std::make_shared<hotstuff::QC>();
-        s = hotstuf_mgr_->crypto()->CreateQC(parent_block, fake_sign, qc);        
+        s = hotstuf_mgr_->crypto(pool_idx)->CreateQC(parent_block, fake_sign, qc);        
         if (s != hotstuff::Status::kSuccess) {
             return;
         }
 
         auto sync_info = std::make_shared<hotstuff::SyncInfo>();
-        sync_info->qc = qc;
-        pacemaker->AdvanceView(sync_info);
+        pacemaker->AdvanceView(sync_info->WithQC(qc));
 
         auto block = std::make_shared<block::protobuf::Block>();
         block->set_electblock_height(1);
@@ -314,7 +313,7 @@ void NetworkInit::AddCmds() {
         chain->Store(view_block);
     });
 
-    cmd_.AddCommand("pchain", [this](const std::vector<std::string>& args){
+    cmd_.AddCommand("printchain", [this](const std::vector<std::string>& args){
         if (args.size() < 1) {
             return;
         }
@@ -324,21 +323,14 @@ void NetworkInit::AddCmds() {
         if (!chain) {
             return;
         }
-        chain->Print();
-    });
-
-    cmd_.AddCommand("phighqc", [this](const std::vector<std::string>& args){
-        if (args.size() < 1) {
-            return;
-        }
-        uint32_t pool_idx = std::stoi(args[0]);
-                        
         auto pacemaker = hotstuf_mgr_->pacemaker(pool_idx);
         if (!pacemaker) {
             return;
         }
-        std::cout << "highQC: " << pacemaker->HighQC()->view << std::endl;
-        std::cout << "highTC: " << pacemaker->HighTC()->view << std::endl;
+        std::cout << "highQC: " << pacemaker->HighQC()->view
+                  << ",highTC: " << pacemaker->HighTC()->view
+                  << ",CurView: " << pacemaker->CurView() << std::endl;
+        chain->Print();
     });    
 #endif    
 }

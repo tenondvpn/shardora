@@ -19,7 +19,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
     auto committedBlock = chain_->LatestCommittedBlock();
     auto qc = committedBlock->qc;
     uint64_t random_hash = common::Hash::Hash64(qc->Serialize() +
-        std::to_string(common::TimeUtils::TimestampSeconds() / 30));
+        std::to_string(common::TimeUtils::TimestampSeconds() / 6000000));
     
     auto leader = (*Members())[random_hash % Members()->size()];
     if (leader->public_ip == 0 || leader->public_port == 0) {
