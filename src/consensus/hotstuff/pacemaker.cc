@@ -41,7 +41,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
     bool timeout = false;
     if (sync_info->qc) {
         UpdateHighQC(sync_info->qc);
-        if (sync_info->qc->view < cur_view_ && cur_view_ != BeforeGenesisView) {
+        if (sync_info->qc->view < cur_view_) {
             return Status::kSuccess;
         }
         qc_view = sync_info->qc->view;
@@ -51,7 +51,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
     if (sync_info->tc) {
         timeout = false;
         UpdateHighTC(sync_info->tc);
-        if (sync_info->tc->view < cur_view_ && cur_view_ != BeforeGenesisView) {
+        if (sync_info->tc->view < cur_view_) {
             return Status::kSuccess;
         }
         tc_view = sync_info->tc->view;
@@ -79,19 +79,13 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
 }
 
 void Pacemaker::UpdateHighQC(const std::shared_ptr<QC>& qc) {
-    if (qc->view == BeforeGenesisView) {
-        return;
-    }
-    if (!high_qc_ || high_qc_->view < qc->view || high_qc_->view == BeforeGenesisView) {
+    if (!high_qc_ || high_qc_->view < qc->view) {
         high_qc_ = qc;
     }
 }
 
 void Pacemaker::UpdateHighTC(const std::shared_ptr<TC>& tc) {
-    if (tc->view == BeforeGenesisView) {
-        return;
-    }
-    if (!high_tc_ || high_tc_->view < tc->view || high_tc_->view == BeforeGenesisView) {
+    if (!high_tc_ || high_tc_->view < tc->view) {
         high_tc_ = tc;
     }
 }
