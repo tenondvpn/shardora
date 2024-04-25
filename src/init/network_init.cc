@@ -298,7 +298,7 @@ void NetworkInit::AddCmds() {
         }
 
         auto sync_info = std::make_shared<hotstuff::SyncInfo>();
-        std::cout << "qc: " << qc->view << std::endl;
+        std::cout << "qc: " << sync_info->WithQC(qc)->qc->view << std::endl;
         pacemaker->AdvanceView(sync_info->WithQC(qc));
 
         auto block = std::make_shared<block::protobuf::Block>();
