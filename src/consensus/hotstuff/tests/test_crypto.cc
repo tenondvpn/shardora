@@ -12,6 +12,7 @@
 #include <network/network_utils.h>
 #include <security/ecdsa/ecdsa.h>
 #include <security/security.h>
+#include <consensus/hotstuff/tests/test_hotstuff.h>
 
 // #define HOTSTUFF_TEST 1
 
@@ -30,30 +31,6 @@ using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
 
-class MockBlsManager : public bls::IBlsManager {
-public:
-    MOCK_METHOD6(Sign, int(
-                uint32_t t,
-                uint32_t n,
-                const libff::alt_bn128_Fr& local_sec_key,
-                const libff::alt_bn128_G1& g1_hash,
-                std::string* sign_x,
-                std::string* sign_y));
-    MOCK_METHOD5(GetVerifyHash, int(
-                uint32_t t,
-                uint32_t n,
-                const libff::alt_bn128_G1& g1_hash,
-                const libff::alt_bn128_G2& pkey,
-                std::string* verify_hash));
-    MOCK_METHOD4(GetVerifyHash, int(
-                uint32_t t,
-                uint32_t n,
-                const libff::alt_bn128_G1& sign,
-                std::string* verify_hash));
-    MOCK_METHOD2(GetLibffHash, int(
-               const std::string& str_hash,
-               libff::alt_bn128_G1* g1_hash));
-};
 
 static std::shared_ptr<security::Security> security_ptr = nullptr;
 static std::shared_ptr<db::Db> db_ptr = nullptr;
