@@ -60,7 +60,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
     auto v = std::max(qc_view, tc_view);
     if (v < cur_view_) {
         // 旧的 view
-        return Status::kSuccess;
+        return Status::kOldView;
     }
     
     StopTimeoutTimer();
