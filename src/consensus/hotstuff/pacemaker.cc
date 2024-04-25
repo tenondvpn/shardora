@@ -64,11 +64,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
     }
     
     // TODO 如果交易池为空，则直接 return，不开启新视图
-    if (cur_view_ == BeforeGenesisView) {
-        cur_view_ = GenesisView;
-    } else {
-        cur_view_ = std::max(qc_view, tc_view) + 1;
-    }
+    cur_view_ = std::max(qc_view, tc_view) + 1;
     
     duration_->ViewStarted();
     StartTimeoutTimer();
