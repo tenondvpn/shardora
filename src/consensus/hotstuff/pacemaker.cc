@@ -57,6 +57,12 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
         tc_view = sync_info->tc->view;
     }
 
+    auto v = std::max(qc_view, tc_view);
+    if (v < cur_view_) {
+        // 旧的 view
+        return Status::kSuccess;
+    }
+    
     StopTimeoutTimer();
     if (timeout) {
         duration_->ViewTimeout();
@@ -65,7 +71,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
     }
     
     // TODO 如果交易池为空，则直接 return，不开启新视图
-    cur_view_ = std::max(qc_view, tc_view) + 1;
+    cur_view_ = v + 1; 
     
     duration_->ViewStarted();
     StartTimeoutTimer();
