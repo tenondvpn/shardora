@@ -1993,15 +1993,6 @@ int BftManager::LeaderPrepare(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     now_msg_[thread_idx] = msg_ptr;
 #else
-    ZJC_DEBUG("this node is leader and start bft: %s,"
-        "pool index: %d, prepare hash: %s, pre hash: %s, "
-        "elect height: %lu, hash64: %lu",
-        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-        bft_ptr->pool_index(),
-        common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-        bft_ptr->prepare_block() == nullptr ? "" : common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
-        elect_item.elect_height,
-        msg_ptr->header.hash64());
     network::Route::Instance()->Send(msg_ptr);
 #endif
 
@@ -2012,6 +2003,21 @@ int BftManager::LeaderPrepare(
         assert(false);
         return kConsensusSuccess;
     }
+
+#ifdef ZJC_UNITTEST
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    now_msg_[thread_idx] = msg_ptr;
+#else
+    ZJC_DEBUG("this node is leader and start bft: %s,"
+        "pool index: %d, prepare hash: %s, pre hash: %s, "
+        "elect height: %lu, hash64: %lu",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+        bft_ptr->pool_index(),
+        common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+        bft_ptr->prepare_block() == nullptr ? "" : common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
+        elect_item.elect_height,
+        msg_ptr->header.hash64());
+#endif
 
     bft_ptr->AfterNetwork();
     pools_prev_bft_timeout_[bft_ptr->pool_index()] = common::TimeUtils::TimestampMs() + 10000lu;
