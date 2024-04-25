@@ -27,6 +27,12 @@ HotstuffSyncer::HotstuffSyncer(
         const std::shared_ptr<consensus::HotstuffManager>& h_mgr) :
     hotstuff_mgr_(h_mgr) {
     // start consumeloop thread
+    SetOnRecvViewBlockFn(
+            std::bind(&HotstuffSyncer::onRecViewBlock,
+                this,
+                std::placeholders::_1,
+                std::placeholders::_2,
+                std::placeholders::_3));
     network::Route::Instance()->RegisterMessage(common::kViewBlockSyncMessage,
         std::bind(&HotstuffSyncer::HandleMessage, this, std::placeholders::_1));
 }
@@ -194,6 +200,8 @@ Status HotstuffSyncer::processResponseQcTc(
     highqc->Unserialize(view_block_res.high_qc_str());
     hightc->Unserialize(view_block_res.high_tc_str());
 
+    // TODO 验证 qc 和 tc
+
     auto sync_info = std::make_shared<SyncInfo>();
     pm->AdvanceView(sync_info->WithQC(highqc)->WithTC(hightc));
     return Status::kSuccess;
@@ -257,23 +265,24 @@ Status HotstuffSyncer::processResponseChain(
     if (min_heap.empty()) {
         return Status::kSuccess;
     }
-    
-    auto sync_chain = std::make_shared<ViewBlockChain>();
+
+    // 构造一条临时链，并入 original chain
+    auto tmp_chain = std::make_shared<ViewBlockChain>();
     while (!min_heap.empty()) {
         auto view_block = min_heap.top();
         min_heap.pop();
 
-        sync_chain->Store(view_block);
+        tmp_chain->Store(view_block);
     }
 
     ZJC_DEBUG("Sync blocks to chain, pool_idx: %d, view_blocks: %d",
         pool_idx, view_block_items.size());
 
-    if (!sync_chain->IsValid()) {
+    if (!tmp_chain->IsValid()) {
         return Status::kSuccess;
     }
 
-    return MergeChain(pool_idx, chain, sync_chain);    
+    return MergeChain(pool_idx, chain, tmp_chain);    
 }
 
 Status HotstuffSyncer::MergeChain(
@@ -296,15 +305,16 @@ Status HotstuffSyncer::MergeChain(
         std::vector<std::shared_ptr<ViewBlock>> sync_all_blocks;
         sync_chain->GetOrderedAll(sync_all_blocks);
 
-        for (auto sync_block : sync_all_blocks) {
+        for (const auto& sync_block : sync_all_blocks) {
             if (sync_block->view < cross_block->view) {
                 continue;
             }
             if (ori_chain->Has(sync_block->hash)) {
                 continue;
             }
-            if (on_recv_vb_fn_ && on_recv_vb_fn_(pool_idx, ori_chain, sync_block) != Status::kSuccess) {
-                break;
+            Status s = on_recv_vb_fn_(pool_idx, ori_chain, sync_block);
+            if (s != Status::kSuccess) {
+                continue;
             }
         }
         
@@ -321,12 +331,32 @@ Status HotstuffSyncer::MergeChain(
     ori_chain->Clear();
     std::vector<std::shared_ptr<ViewBlock>> sync_all_blocks;
     sync_chain->GetOrderedAll(sync_all_blocks);
-    for (auto it = sync_all_blocks.begin(); it != sync_all_blocks.end(); it++) {
-        if (on_recv_vb_fn_ && on_recv_vb_fn_(pool_idx, ori_chain, *it) != Status::kSuccess) {
-            break;
+    for (const auto& sync_block : sync_all_blocks) {
+        // 逐个处理同步来的 view_block
+        Status s = on_recv_vb_fn_(pool_idx, ori_chain, sync_block);
+        if (s != Status::kSuccess) {
+            continue;
         }
     }
     return Status::kSuccess;
+}
+
+Status HotstuffSyncer::onRecViewBlock(
+        const uint32_t& pool_idx,
+        const std::shared_ptr<ViewBlockChain>& ori_chain,
+        const std::shared_ptr<ViewBlock>& view_block) {
+    // 1. 验证 view_block
+    Status s = hotstuff_mgr_->VerifyViewBlock(view_block, ori_chain, view_block->ElectHeight());
+    if (s != Status::kSuccess) {
+        return s;
+    }
+    // 2. 视图切换
+    auto sync_info = std::make_shared<SyncInfo>();
+    hotstuff_mgr_->pacemaker(pool_idx)->AdvanceView(sync_info->WithQC(view_block->qc));
+    // 3. TODO 尝试 commit
+
+    // 4. 保存 view_block
+    return hotstuff_mgr_->chain(pool_idx)->Store(view_block);
 }
 
 } // namespace consensus

@@ -122,8 +122,6 @@ protected:
             const std::shared_ptr<ViewBlock>& view_block) {
         return chain->Store(view_block);
     }
-
-
 };
 
 TEST_F(TestViewBlockChainSyncer, TestMergeChain_HasCross) {

@@ -56,6 +56,7 @@ public:
             std::shared_ptr<ViewBlockChain>& ori_chain,
             const std::shared_ptr<ViewBlockChain>& sync_chain);
 
+    // 修改处理 view_block 的函数
     inline void SetOnRecvViewBlockFn(const OnRecvViewBlockFn& fn) {
         on_recv_vb_fn_ = fn;
     }
@@ -73,7 +74,9 @@ private:
         return hotstuff_mgr_->crypto();
     }
     
-    Status SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg);
+    Status SendRequest(
+            uint32_t network_id,
+            const view_block::protobuf::ViewBlockSyncMessage& view_block_msg);
     void ConsensusTimerMessage();
     void SyncChains();
     
@@ -86,6 +89,11 @@ private:
     Status processResponseChain(
             const uint32_t& pool_idx,
             const view_block::protobuf::ViewBlockSyncResponse& view_block_res);
+
+    Status onRecViewBlock(
+            const uint32_t& pool_idx,
+            const std::shared_ptr<ViewBlockChain>& ori_chain,
+            const std::shared_ptr<ViewBlock>& view_block);
     
     uint64_t timeout_ms_;
     std::queue<std::shared_ptr<ViewBlockItem>> item_queue_;
