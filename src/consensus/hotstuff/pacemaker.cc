@@ -74,6 +74,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
     cur_view_ = v + 1; 
     
     duration_->ViewStarted();
+    ZJC_DEBUG("new view: %llu", cur_view_);
     StartTimeoutTimer();
     return Status::kSuccess;
 }
