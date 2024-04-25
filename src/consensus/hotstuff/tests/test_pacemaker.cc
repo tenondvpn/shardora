@@ -13,7 +13,13 @@ namespace hotstuff {
 namespace test {
 
 static const uint32_t pool = 0;
-extern std::shared_ptr<QC> GenQC(const View &view, const HashStr &view_block_hash);
+extern std::shared_ptr<QC> GenQC(const View &view,
+                                 const HashStr &view_block_hash);
+
+std::shared_ptr<TC> GenTC(const View& view) {
+    auto sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::random_element());
+    return std::make_shared<TC>(sign, view);
+}
 
 class TestPacemaker : public testing::Test {
 protected:
@@ -43,8 +49,24 @@ TEST_F(TestPacemaker, AdvanceView) {
     auto qc1 = GenQC(View(1), "block hash1");
     auto sync_info = std::make_shared<SyncInfo>();
     pacemaker_->AdvanceView(sync_info->WithQC(qc1));
-    EXPECT_EQ(View(2), pacemaker_->CurView());
+    EXPECT_EQ(qc1->view+1, pacemaker_->CurView());
     EXPECT_EQ(qc1, pacemaker_->HighQC());
+
+    auto qc2 = GenQC(View(2), "block hash2");
+    pacemaker_->AdvanceView(sync_info->WithQC(qc2));
+    EXPECT_EQ(qc2->view+1, pacemaker_->CurView());
+    EXPECT_EQ(qc2, pacemaker_->HighQC());
+
+    pacemaker_->AdvanceView(sync_info->WithQC(qc1));
+    EXPECT_EQ(qc2->view+1, pacemaker_->CurView());
+    EXPECT_EQ(qc2, pacemaker_->HighQC());
+
+    auto qc3 = GenQC(View(3), "block hash3");
+    auto tc4 = GenTC(View(4));
+    pacemaker_->AdvanceView(sync_info->WithQC(qc3)->WithTC(tc4));
+    EXPECT_EQ(tc4->view+1, pacemaker_->CurView());
+    EXPECT_EQ(qc3, pacemaker_->HighQC());
+    EXPECT_EQ(tc4, pacemaker_->HighTC());
 }
         
 }
