@@ -30,7 +30,7 @@ protected:
         auto db_ptr = std::make_shared<db::Db>();
         auto bls_manager = std::make_shared<MockBlsManager>();
         auto elect_info = std::make_shared<ElectInfo>(security_ptr, nullptr);
-        auto crypto = std::make_shared<Crypto>(elect_info, bls_manager);
+        auto crypto = std::make_shared<Crypto>(pool, elect_info, bls_manager);
 
 
         auto view_block_chain = std::make_shared<ViewBlockChain>();
