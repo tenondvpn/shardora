@@ -258,6 +258,7 @@ int TcpTransport::Send(
     output_item->port = des_port;
     output_item->hash64 = message.hash64();
     message.SerializeToString(&output_item->msg);
+    assert(output_item->msg.size() < 1000000u);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     output_queues_[thread_idx].push(output_item);
     // ZJC_INFO("get output_queues_ size %d, %d", thread_idx, output_queues_[thread_idx].size());

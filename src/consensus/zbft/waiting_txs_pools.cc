@@ -52,7 +52,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
     }
 
     if (txs_item == nullptr) {
-        txs_item = GetStatisticTx(pool_index, true);
+        txs_item = GetStatisticTx(pool_index, "");
     }
 
     if (txs_item == nullptr) {
@@ -160,7 +160,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetCrossTx(uint32_t pool_index,
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
         uint32_t pool_index, 
-        bool leader) {
+        const std::string& tx_hash) {
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         if (pool_index != common::kRootChainPoolIndex) {
             return nullptr;
@@ -171,7 +171,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
         }
     }
 
-    auto tx_ptr = block_mgr_->GetStatisticTx(pool_index, leader);
+    bool leader = tx_hash.empty();
+    auto tx_ptr = block_mgr_->GetStatisticTx(pool_index, tx_hash);
     if (tx_ptr != nullptr) {
         if (leader) {
             auto now_tm = common::TimeUtils::TimestampUs();

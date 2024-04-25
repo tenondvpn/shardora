@@ -706,7 +706,6 @@ ZbftPtr BftManager::StartBft(
 
     auto& elect_item = *elect_item_ptr;
     bft_ptr->set_elect_item_ptr(elect_item_ptr);
-	
     if (InitZbftPtr(
             elect_item.local_node_member_index,
             elect_item,
@@ -1370,7 +1369,8 @@ ZbftPtr BftManager::CreateBftPtr(
                     bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
             }
         } else if (bft_msg.tx_bft().tx_type() == pools::protobuf::kStatistic) {
-            txs_ptr = txs_pools_->GetStatisticTx(bft_msg.pool_index(),  false);
+            assert(bft_msg.tx_bft().txs(0).key() == protos::kSingleTxHashTag);
+            txs_ptr = txs_pools_->GetStatisticTx(bft_msg.pool_index(), bft_msg.tx_bft().txs(0).value());
             if (txs_ptr == nullptr) {
                 ZJC_ERROR("invalid consensus kStatistic, txs not equal to leader. pool_index: %d, gid: %s",
                     bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
@@ -1960,7 +1960,13 @@ int BftManager::LeaderPrepare(
     auto& kvs = bft_ptr->txs_ptr()->kvs;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto* tx_info = tx_bft.add_txs();
-        *tx_info = iter->second->tx_info;
+        if (iter->second->tx_info.step() == pools::protobuf::kStatistic) {
+            tx_info->set_step(iter->second->tx_info.step());
+            tx_info->set_key(protos::kSingleTxHashTag);
+            tx_info->set_value(iter->second->unique_tx_hash);
+        } else {
+            *tx_info = iter->second->tx_info;
+        }
     }
 
     bft_msg.set_leader_idx(elect_item.local_node_member_index);
