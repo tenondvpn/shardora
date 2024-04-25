@@ -1946,8 +1946,8 @@ int BftManager::LeaderPrepare(
     auto broad_param = header.mutable_broadcast();
     auto& bft_msg = *header.mutable_zbft();
     zbft::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
-    tx_bft.set_height(bft_ptr->prepare_block()->height());
-    tx_bft.set_time_stamp(bft_ptr->prepare_block()->timestamp());
+    tx_bft.set_height(bft_ptr->block_new_height());
+    tx_bft.set_time_stamp(bft_ptr->block_new_timestamp());
     auto& tx_map = bft_ptr->txs_ptr()->txs;
     auto& kvs = bft_ptr->txs_ptr()->kvs;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
@@ -2012,7 +2012,7 @@ int BftManager::LeaderPrepare(
         assert(false);
         return kConsensusSuccess;
     }
-    
+
     bft_ptr->AfterNetwork();
     pools_prev_bft_timeout_[bft_ptr->pool_index()] = common::TimeUtils::TimestampMs() + 10000lu;
     return kConsensusSuccess;

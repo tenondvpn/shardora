@@ -545,6 +545,14 @@ public:
         return now_tm - consensus_prepare_tm_ms_;
     }
 
+    uint64_t block_new_height() const {
+        return block_new_height_;
+    }
+
+    uint64_t block_new_timestamp() const {
+        return block_new_timestamp_;
+    }
+    
     // TODO: for test
     transport::MessagePtr msg_ptr = nullptr;
 
@@ -612,6 +620,8 @@ protected:
     uint8_t invalid_prepare_txs_[kMaxTxCount] = { 0 };
     std::set<uint8_t> invalid_txs_;
     uint64_t consensus_prepare_tm_ms_ = 0;
+    uint64_t block_new_height_ = 0;
+    uint64_t block_new_timestamp_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(Zbft);
 public:

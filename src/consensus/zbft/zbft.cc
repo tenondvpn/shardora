@@ -80,6 +80,23 @@ int Zbft::Init(
 
     db_batch_ = std::make_shared<db::DbWriteBatch>();
     assert(leader_mem_ptr_ != nullptr);
+
+    uint64_t pool_height = pools_mgr_->latest_height(txs_ptr_->pool_index);
+    uint64_t preblock_time = pools_mgr_->latest_timestamp(txs_ptr_->pool_index);
+    if (pool_height == common::kInvalidUint64) {
+        ZJC_DEBUG("pool index not inited: %u", txs_ptr_->pool_index);
+        return kConsensusError;
+    }
+    
+    block_new_height_ = pool_height + 1;
+    if (this_node_is_leader_) {
+        uint64_t cur_time = common::TimeUtils::TimestampMs();
+        if (preblock_time < cur_time) 
+            block_new_timestamp_ = cur_time; 
+        else
+            block_new_timestamp_ = preblock_time;
+    }
+
     return kConsensusSuccess;
 }
 
@@ -748,11 +765,7 @@ int Zbft::DoTransaction(bool leader) {
     assert(zjc_block.height() > 0);
 //     ZJC_DEBUG("add new block: %lu", zjc_block.height());
     if (leader) {
-        uint64_t cur_time = common::TimeUtils::TimestampMs();
-        if (preblock_time < cur_time) 
-            zjc_block.set_timestamp(cur_time); 
-        else
-            zjc_block.set_timestamp(preblock_time); 
+        zjc_block.set_timestamp(this_node_is_leader_); 
     } else {
         // todo backup节点使用leader节点时间
         uint64_t cur_time = common::TimeUtils::TimestampMs();
