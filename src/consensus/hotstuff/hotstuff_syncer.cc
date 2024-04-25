@@ -1,5 +1,4 @@
 #include "consensus/hotstuff/hotstuff_syncer.h"
-#include <__functional/bind.h>
 #include <common/encode.h>
 #include <common/global_info.h>
 #include <common/log.h>
