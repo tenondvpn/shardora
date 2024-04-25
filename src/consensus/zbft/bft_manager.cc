@@ -1930,20 +1930,12 @@ int BftManager::LeaderPrepare(
         ZbftPtr& commited_bft_ptr) {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
-    ZJC_DEBUG("now leader call prepare: %s",
-        common::Encode::HexEncode(bft_ptr->gid()).c_str());
-    int res = bft_ptr->Prepare(true);
-    if (res != kConsensusSuccess) {
-        assert(false);
-        return kConsensusError;
-    }
-
     ZJC_DEBUG("now leader add bft: %s",
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
-    res = AddBft(bft_ptr);
-    if (res != kConsensusSuccess) {
-        ZJC_ERROR("AddBft failed[%u].", res);
-        return res;
+    int add_res = AddBft(bft_ptr);
+    if (add_res != kConsensusSuccess) {
+        ZJC_ERROR("AddBft failed[%u].", add_res);
+        return add_res;
     }
 
     header.set_src_sharding_id(bft_ptr->network_id());
@@ -1992,7 +1984,7 @@ int BftManager::LeaderPrepare(
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
     if (!LeaderSignMessage(msg_ptr)) {
         assert(false);
-        return kConsensusError;
+        return kConsensusSuccess;
     }
 
     ZJC_DEBUG("now leader send prepare: %s",
@@ -2013,6 +2005,14 @@ int BftManager::LeaderPrepare(
     network::Route::Instance()->Send(msg_ptr);
 #endif
 
+    ZJC_DEBUG("now leader call prepare: %s",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str());
+    int prepare_res = bft_ptr->Prepare(true);
+    if (prepare_res != kConsensusSuccess) {
+        assert(false);
+        return kConsensusSuccess;
+    }
+    
     bft_ptr->AfterNetwork();
     pools_prev_bft_timeout_[bft_ptr->pool_index()] = common::TimeUtils::TimestampMs() + 10000lu;
     return kConsensusSuccess;
