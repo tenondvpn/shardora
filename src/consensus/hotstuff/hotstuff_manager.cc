@@ -207,7 +207,7 @@ Status HotstuffManager::CommitInner(
     std::shared_ptr<ViewBlock> parent_block = nullptr;
     Status s = c->Get(v_block->parent_hash, parent_block);
     if (s == Status::kSuccess && parent_block != nullptr) {
-        s = CommitInner(c, parent_block);
+        s = CommitInner(c, accp, parent_block);
         if (s != Status::kSuccess) {
             return s;
         }
