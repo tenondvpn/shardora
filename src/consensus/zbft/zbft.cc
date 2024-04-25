@@ -765,7 +765,7 @@ int Zbft::DoTransaction(bool leader) {
     assert(zjc_block.height() > 0);
 //     ZJC_DEBUG("add new block: %lu", zjc_block.height());
     if (leader) {
-        zjc_block.set_timestamp(this_node_is_leader_); 
+        zjc_block.set_timestamp(block_new_timestamp_); 
     } else {
         // todo backup节点使用leader节点时间
         uint64_t cur_time = common::TimeUtils::TimestampMs();
