@@ -264,14 +264,45 @@ void ViewBlockChain::Print() const {
     }
 }
 
-// void ViewBlockChain::Print() const {
-//     for (const auto& heightAndBlocks : view_blocks_at_height_) {
-//         std::cout << "Height " << heightAndBlocks.first << ":\n";
-//         for (const auto& block : heightAndBlocks.second) {
-//             std::cout << "  Block " << common::Encode::HexEncode(block->hash).c_str() << " (parent: " << common::Encode::HexEncode(block->parent_hash) << ")\n";
-//         }
-//     }
-// }
+std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db, uint32_t pool_index) {
+    auto prefix_db = std::make_shared<protos::PrefixDb>(db);
+    uint32_t sharding_id = common::GlobalInfo::Instance()->network_id();
 
+    block::protobuf::Block block;
+    bool r = prefix_db->GetBlockWithHeight(sharding_id, pool_index, 0, &block);
+    if (!r) {
+        ZJC_ERROR("no genesis block found");
+        return nullptr;
+    }
+
+    auto block_ptr = std::make_shared<block::protobuf::Block>(block);
+    return std::make_shared<ViewBlock>("", GetQCWrappedByGenesis(), block_ptr, GenesisView, 0);
 }
+
+std::shared_ptr<QC> GetQCWrappedByGenesis() {
+    return std::make_shared<QC>(nullptr, BeforeGenesisView, "");
 }
+
+std::shared_ptr<QC> GetGenesisQC(const HashStr& genesis_view_block_hash) {
+    return std::make_shared<QC>(
+            std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero()),
+            GenesisView,
+            genesis_view_block_hash);
+}
+
+// 是否是创世块的 qc
+bool IsGenesisQC(const std::shared_ptr<QC>& qc, const std::shared_ptr<db::Db>& db, uint32_t pool_index) {
+    if (!qc) {
+        return false;
+    }
+    auto genesis = GetGenesisViewBlock(db, pool_index);
+    if (!genesis) {
+        return false;
+    }
+    return qc->view == GenesisView && qc->view_block_hash == genesis->hash;    
+}
+
+} // namespace hotstuff
+
+} // namespace shardora
+
