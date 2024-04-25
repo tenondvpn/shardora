@@ -304,7 +304,7 @@ Status HotstuffManager::VerifyViewBlock(const std::shared_ptr<ViewBlock>& v_bloc
     return ret;
 }
 
-void HotstuffManager::DoVoteMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, const uint32_t& pool_index) {
+void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, const uint32_t& pool_index) {
     view_block::protobuf::ViewBlockItem pb_view_block = pro_msg.view_item();
     uint32_t leader_idx = pb_view_block.leader_idx();
     auto leader_rotation = std::make_shared<LeaderRotation>(pool_hotstuff_[pool_index].view_block_chain, elect_info_);
@@ -419,7 +419,7 @@ Status HotstuffManager::SendTranMsg(hotstuff::protobuf::HotstuffMessage& hotstuf
     return ret;
 }
 
-void HotstuffManager::DoProposeMsg(const hotstuff::protobuf::VoteMsg& vote_msg, const uint32_t& pool_index) {
+void HotstuffManager::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg, const uint32_t& pool_index) {
     std::shared_ptr<ViewBlock> v_block;
     if (VerifyVoteMsg(vote_msg, pool_index, v_block) != Status::kSuccess) {
         ZJC_ERROR("vote message is error.");
@@ -497,10 +497,10 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         switch (hotstuff_msg.type())
         {
         case PROPOSE:
-            DoVoteMsg(hotstuff_msg.pro_msg(), hotstuff_msg.pool_index());
+            HandleProposeMsg(hotstuff_msg.pro_msg(), hotstuff_msg.pool_index());
             break;
         case VOTE:
-            DoProposeMsg(hotstuff_msg.vote_msg(), hotstuff_msg.pool_index());
+            HandleVoteMsg(hotstuff_msg.vote_msg(), hotstuff_msg.pool_index());
             break;
         default:
             ZJC_WARN("consensus message type is error.");
