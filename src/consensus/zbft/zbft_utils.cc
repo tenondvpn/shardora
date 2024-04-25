@@ -106,7 +106,7 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
     }
 
     ZJC_DEBUG("block.prehash(): %s, height: %lu,pool_idx: %u, sharding_id: %u, vss_random: %lu, "
-        "timeblock_height: %lu, elect_height: %lu, leader_idx: %u, get block hash: %s, tmp_hash: %s, msg: %s, "
+        "timeblock_height: %lu, elect_height: %lu, timestamp: %lu, leader_idx: %u, get block hash: %s, tmp_hash: %s, msg: %s, "
         "is_commited_block: %d",
         common::Encode::HexEncode(block.prehash()).c_str(),
         height,
@@ -115,6 +115,7 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
         vss_random,
         timeblock_height,
         elect_height,
+        timestamp,
         leader_idx,
         common::Encode::HexEncode(common::Hash::keccak256(msg)).c_str(),
         common::Encode::HexEncode(tmp_hash).c_str(),
