@@ -125,7 +125,7 @@ int HotstuffManager::Init(
         HotStuff hf;
         hf.pool_idx = pool_idx;
         hf.view_block_chain = std::make_shared<ViewBlockChain>();
-        auto crypto = std::make_shared<Crypto>(elect_info_, bls_mgr);
+        auto crypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
         
         auto leader_rotation = std::make_shared<LeaderRotation>(hf.view_block_chain, elect_info_);
 
