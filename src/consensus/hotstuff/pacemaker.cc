@@ -21,12 +21,14 @@ Pacemaker::Pacemaker(
         const std::shared_ptr<ViewDuration>& d,
         const std::shared_ptr<ViewBlock>& genesis_view_block) :
     pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d) {
-    cur_view_ = BeforeGenesisView;
+    
     // 如果存在创世块，则high_qc 为创世块qc
     if (genesis_view_block) {
         high_qc_ = GetGenesisQC(genesis_view_block->hash);
+        cur_view_ = high_qc_->view + 1;
     } else {
         high_qc_ = GetQCWrappedByGenesis();
+        cur_view_ = GenesisView;
     }    
     high_tc_ = std::make_shared<TC>(nullptr, BeforeGenesisView);
 }
@@ -78,6 +80,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
 }
 
 void Pacemaker::UpdateHighQC(const std::shared_ptr<QC>& qc) {
+    std::cout << "qc: " << qc->view << "highqc: " << high_qc_->view << std::endl;
     if (!high_qc_ || high_qc_->view < qc->view || high_qc_->view == BeforeGenesisView) {
         high_qc_ = qc;
     }
