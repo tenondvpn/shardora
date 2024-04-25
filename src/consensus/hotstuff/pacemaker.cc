@@ -163,7 +163,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     }
     
     auto timeout_proto = msg.hotstuff_timeout_proto();
-    ZJC_DEBUG("OnRemoteTimeout pool: %d, view: %d, member: %d", pool_idx_, timeout_proto.view(), timeout_proto.member_id());
+    ZJC_DEBUG("====2 pool: %d, view: %d, member: %d", pool_idx_, timeout_proto.view(), timeout_proto.member_id());
     // TODO 统计 bls 签名
     
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
@@ -176,7 +176,8 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
             timeout_proto.sign_y(),
             reconstructed_sign);
     if (s != Status::kSuccess) {
-        ZJC_WARN("bls verify failed, s: %d, view: %d, view_hash: %s, member_id: %d, elect_height: %lu",
+        ZJC_WARN("====2 pool: %d, bls failed, s: %d, view: %d, view_hash: %s, member_id: %d, elect_height: %lu",
+            timeout_proto.pool_idx(),
             s,
             timeout_proto.view(),
             common::Encode::HexEncode(timeout_proto.view_hash()).c_str(),
@@ -191,7 +192,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     if (s != Status::kSuccess || !tc) {
         return;
     }
-    ZJC_DEBUG("CreateTC pool: %d, view: %d, member: %d, view: %d",
+    ZJC_DEBUG("====2 pool: %d, create tc, view: %d, member: %d, view: %d",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
     
     auto sync_info = std::make_shared<SyncInfo>();
