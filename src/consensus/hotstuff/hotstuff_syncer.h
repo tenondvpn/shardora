@@ -31,6 +31,11 @@ struct ViewBlockItem {
     ~ViewBlockItem() {};
 };
 
+using OnRecvViewBlockFn = std::function<Status(
+        const uint32_t& pool_idx,
+        const std::shared_ptr<ViewBlockChain>& chain,
+        const std::shared_ptr<ViewBlock>& view_block)>;
+
 class HotstuffSyncer {
 public:
     // TODO 将 ViewBlockChainManager 换成 HotstuffManager
@@ -46,11 +51,15 @@ public:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     void ConsumeMessages();
-    // merge sync_chain into ori_chain
     Status MergeChain(
             const uint32_t& pool_idx,
             std::shared_ptr<ViewBlockChain>& ori_chain,
             const std::shared_ptr<ViewBlockChain>& sync_chain);
+
+    // 修改处理 view_block 的函数
+    inline void SetOnRecvViewBlockFn(const OnRecvViewBlockFn& fn) {
+        on_recv_vb_fn_ = fn;
+    }
     
 private:
     inline std::shared_ptr<ViewBlockChain> view_block_chain(uint32_t pool_idx) const {
@@ -91,6 +100,7 @@ private:
     common::ThreadSafeQueue<transport::MessagePtr> consume_queues_[common::kMaxThreadCount];
     common::Tick tick_;
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
+    OnRecvViewBlockFn on_recv_vb_fn_;
 };
 
 } // namespace consensus

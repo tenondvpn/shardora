@@ -90,6 +90,7 @@ protected:
                 [](std::shared_ptr<block::protobuf::Block>& block, db::DbWriteBatch& db_batch){});
     
         syncer_ = std::make_shared<HotstuffSyncer>(hotstuff_mgr_);
+        syncer_->SetOnRecvViewBlockFn(StoreViewBlock);
     }
 
     static void TearDownTestCase() {
@@ -121,8 +122,6 @@ protected:
             const std::shared_ptr<ViewBlock>& view_block) {
         return chain->Store(view_block);
     }
-
-
 };
 
 TEST_F(TestViewBlockChainSyncer, TestMergeChain_HasCross) {

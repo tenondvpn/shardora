@@ -1,4 +1,5 @@
 #include "consensus/hotstuff/hotstuff_syncer.h"
+#include <__functional/bind.h>
 #include <common/encode.h>
 #include <common/global_info.h>
 #include <common/log.h>
@@ -27,6 +28,12 @@ HotstuffSyncer::HotstuffSyncer(
         const std::shared_ptr<consensus::HotstuffManager>& h_mgr) :
     hotstuff_mgr_(h_mgr) {
     // start consumeloop thread
+    SetOnRecvViewBlockFn(
+            std::bind(&HotstuffSyncer::onRecViewBlock,
+                this,
+                std::placeholders::_1,
+                std::placeholders::_2,
+                std::placeholders::_3));
     network::Route::Instance()->RegisterMessage(common::kViewBlockSyncMessage,
         std::bind(&HotstuffSyncer::HandleMessage, this, std::placeholders::_1));
 }
@@ -306,7 +313,7 @@ Status HotstuffSyncer::MergeChain(
             if (ori_chain->Has(sync_block->hash)) {
                 continue;
             }
-            Status s = onRecViewBlock(pool_idx, ori_chain, sync_block);
+            Status s = on_recv_vb_fn_(pool_idx, ori_chain, sync_block);
             if (s != Status::kSuccess) {
                 continue;
             }
@@ -327,7 +334,7 @@ Status HotstuffSyncer::MergeChain(
     sync_chain->GetOrderedAll(sync_all_blocks);
     for (const auto& sync_block : sync_all_blocks) {
         // 逐个处理同步来的 view_block
-        Status s = onRecViewBlock(pool_idx, ori_chain, sync_block);
+        Status s = on_recv_vb_fn_(pool_idx, ori_chain, sync_block);
         if (s != Status::kSuccess) {
             continue;
         }
