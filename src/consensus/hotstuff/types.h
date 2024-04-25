@@ -1,7 +1,6 @@
 #pragma once
 
 #include <common/time_utils.h>
-#include <consensus/hotstuff/view_block_chain.h>
 #include <sstream>
 #include <common/hash.h>
 #include <consensus/hotstuff/utils.h>
