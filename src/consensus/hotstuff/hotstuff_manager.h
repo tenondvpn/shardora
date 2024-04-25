@@ -126,8 +126,8 @@ private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void RegisterCreateTxCallbacks();
 
-    void DoProposeMsg(const hotstuff::protobuf::VoteMsg& vote_msg, const uint32_t& pool_index);
-    void DoVoteMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, const uint32_t& pool_index);
+    void HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg, const uint32_t& pool_index);
+    void HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, const uint32_t& pool_index);
     Status SendTranMsg(hotstuff::protobuf::HotstuffMessage& hotstuff_msg);
 
     Status VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg, const uint32_t& pool_index, 
