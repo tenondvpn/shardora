@@ -1,3 +1,4 @@
+#include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/utils.h>
 
 namespace shardora {

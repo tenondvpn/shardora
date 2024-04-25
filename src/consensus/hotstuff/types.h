@@ -9,6 +9,7 @@
 #include <protos/view_block.pb.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
 #include <tools/utils.h>
+#include <protos/prefix_db.h>
 
 namespace shardora {
 
@@ -23,11 +24,11 @@ static const View GenesisView = 0;
 static const View BeforeGenesisView = std::numeric_limits<uint64_t>::max();
 
 HashStr GetViewHash(const View& view);
-HashStr GetQCMsgHash(const View& view, const HashStr& view_block_hash);
+HashStr GetQCMsgHash(const View &view, const HashStr &view_block_hash);
 
 struct QC {
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
-    View view; // view_block_hash 对应的 view
+    View view; // view_block_hash 对应的 view，TODO 校验正确性，避免篡改
     HashStr view_block_hash;
 
     QC(const std::shared_ptr<libff::alt_bn128_G1>& sign, const View& v, const HashStr& hash) :
@@ -73,7 +74,12 @@ struct ViewBlock {
 
     uint64_t created_time_us;
 
-    ViewBlock(const HashStr& parent, const std::shared_ptr<QC>& qc, const std::shared_ptr<block::protobuf::Block>& block, const View& view, const uint32_t& leader_idx) :
+    ViewBlock(
+            const HashStr& parent,
+            const std::shared_ptr<QC>& qc,
+            const std::shared_ptr<block::protobuf::Block>& block,
+            const View& view,
+            const uint32_t& leader_idx) :
         parent_hash(parent),
         leader_idx(leader_idx),
         block(block),
@@ -83,7 +89,7 @@ struct ViewBlock {
         hash = DoHash();
     };
 
-    ViewBlock() : qc(nullptr) {};
+    ViewBlock() : qc(nullptr), created_time_us(common::TimeUtils::TimestampUs()) {};
 
     inline bool Valid() {
         return hash != "" && hash == DoHash() && block != nullptr; 
@@ -92,6 +98,9 @@ struct ViewBlock {
     HashStr DoHash() const;
 
     inline uint64_t ElectHeight() const {
+        if (!block) {
+            return 0;
+        } 
         return block->electblock_height();
     }
 
@@ -139,7 +148,8 @@ enum WaitingBlockType {
 
 void ViewBlock2Proto(const std::shared_ptr<ViewBlock> &view_block, view_block::protobuf::ViewBlockItem *view_block_proto);
 Status
-Proto2ViewBlock(const view_block::protobuf::ViewBlockItem &view_block_proto, std::shared_ptr<ViewBlock> &view_block);
+Proto2ViewBlock(const view_block::protobuf::ViewBlockItem &view_block_proto,
+                std::shared_ptr<ViewBlock> &view_block);
 
 } // namespace hotstuff
 

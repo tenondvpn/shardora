@@ -14,17 +14,26 @@ namespace shardora {
 
 namespace hotstuff {
 
+using NewProposalFn = std::function<void(
+        const uint32_t& pool_idx,
+        const std::shared_ptr<SyncInfo>& sync_info)>;
+
 class Pacemaker {
 public:
     Pacemaker(
             const uint32_t& pool_idx,
-            const std::shared_ptr<Crypto>&,
-            const std::shared_ptr<LeaderRotation>&,
-            const std::shared_ptr<ViewDuration>&);
+            const std::shared_ptr<Crypto>& crypto,
+            const std::shared_ptr<LeaderRotation>& leader_rotation,
+            const std::shared_ptr<ViewDuration>& duration,
+            const std::shared_ptr<ViewBlock>& genesis_view_block);
     ~Pacemaker();
 
     Pacemaker(const Pacemaker&) = delete;
     Pacemaker& operator=(const Pacemaker&) = delete;
+
+    void SetNewProposalFn(NewProposalFn fn) {
+        new_proposal_fn_ = fn;
+    }
 
     // 本地超时
     void OnLocalTimeout();
@@ -71,7 +80,7 @@ private:
     std::shared_ptr<LeaderRotation> leader_rotation_ = nullptr;
     std::shared_ptr<common::Tick> one_shot_tick_ = nullptr;
     std::shared_ptr<ViewDuration> duration_;
-    
+    NewProposalFn new_proposal_fn_ = nullptr;
 };
 
 } // namespace consensus

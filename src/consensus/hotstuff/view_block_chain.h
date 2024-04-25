@@ -153,7 +153,9 @@ private:
 
 // from db
 std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db, uint32_t pool_index);
-std::shared_ptr<QC> GetQCWrappedByGenesis();    
+std::shared_ptr<QC> GetQCWrappedByGenesis();
+std::shared_ptr<QC> GetGenesisQC(const HashStr& genesis_view_block_hash);
+bool IsGenesisQC(const std::shared_ptr<QC>& qc, const std::shared_ptr<db::Db>& db, uint32_t pool_index);
         
 } // namespace consensus
     

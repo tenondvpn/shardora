@@ -5,6 +5,7 @@
 #include "pacemaker.h"
 #include "block_acceptor.h"
 
+#include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/zbft/contract_call.h>
 #include <consensus/zbft/contract_create_by_root_from_tx_item.h>
 #include <consensus/zbft/contract_create_by_root_to_tx_item.h>
