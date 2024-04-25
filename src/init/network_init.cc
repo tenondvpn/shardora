@@ -234,18 +234,6 @@ int NetworkInit::Init(int argc, char** argv) {
 #ifdef ENABLE_HOTSTUFF
     // TODO pacemaker
     hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(hotstuf_mgr_);
-    hotstuff_syncer_->SetOnRecvViewBlockFn([this](
-                const uint32_t& pool_idx, 
-                const std::shared_ptr<hotstuff::ViewBlockChain>& chain,
-                const std::shared_ptr<hotstuff::ViewBlock>& block) -> hotstuff::Status {
-        hotstuff::Status s = chain->Store(block);
-        if (s == hotstuff::Status::kSuccess) {
-            auto sync_info = std::make_shared<hotstuff::SyncInfo>();
-            return this->hotstuf_mgr_->pacemaker(pool_idx)->AdvanceView(sync_info->WithQC(block->qc));
-        }
-        return s;
-        // Advanceview
-    });
     hotstuff_syncer_->Start();    
     // 以上应该放入 hotstuff 实例初始化中，并接收创世块
     AddCmds();
