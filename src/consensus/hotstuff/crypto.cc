@@ -1,4 +1,5 @@
 #include <bls/bls_utils.h>
+#include <common/log.h>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/types.h>
 #include <exception>
@@ -106,6 +107,7 @@ Status Crypto::ReconstructAndVerify(
 
     return s;
 } catch (std::exception& e) {
+    ZJC_ERROR("crypto verify exception %s", e.what());
     return Status::kBlsVerifyWaiting;
 };
 

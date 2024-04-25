@@ -8,11 +8,10 @@ namespace shardora {
 namespace hotstuff {
 
 HashStr GetQCMsgHash(const View &view, const HashStr &view_block_hash) {
-    std::string msg;
-    msg.reserve(sizeof(view) + sizeof(view_block_hash));
-    msg.append((char*)&(view), sizeof(view));
-    msg.append((char*)&(view_block_hash), sizeof(view_block_hash));
-    return common::Hash::keccak256(msg);
+    std::stringstream ss;
+    ss << view << view_block_hash;
+    std::string msg = ss.str();
+    return common::Hash::keccak256(msg); 
 }
 
 HashStr GetViewHash(const View& view) {
