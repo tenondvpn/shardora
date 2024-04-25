@@ -19,3 +19,6 @@ src/contract/tests/contracts/*.bin
 .cache
 .vscode
 .idea
+_pycache_
+build
+.python-version

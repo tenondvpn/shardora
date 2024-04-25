@@ -144,6 +144,7 @@ struct StatisticMemberInfoItem {
     uint32_t tx_count;
     uint32_t member_index;
     uint32_t leader_index;
+    uint64_t gas_sum;
 };
 
 struct CrossStatisticItem {

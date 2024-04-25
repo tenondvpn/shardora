@@ -7,15 +7,17 @@ import configparser
 import gen_genesis_script as genesis
 
 
-def gen_new_zjnodes_conf_files(server_conf: dict):
+def gen_new_zjnodes_conf_files(server_conf: dict, join_root_num):
     zjnodes_folder = "./zjnodes"
     bootstrap = get_root_boostrap_strs()
     bootstrap = bootstrap.replace('"', '')
     print(bootstrap)
-
     for node in server_conf['new_nodes']:
         addr = genesis.sk2account(node['prikey'])
         node["addr"] = addr
+ 
+
+
         zjchain_conf = {
             'db': {
                 'path': './db',
@@ -37,7 +39,8 @@ def gen_new_zjnodes_conf_files(server_conf: dict):
                 'prikey': node['prikey'],
                 '_addr': addr,
                 'show_cmd': 0,
-                'for_ck': False
+                'for_ck': False,
+                'join_root': node['join_root'],
             },
             'tx_block': {
                 'network_id': node['net']
@@ -81,14 +84,14 @@ make txcli
     pass
 
 
-def gen_nodes_conf_file(node_num_per_shard, shard_num, servers):
-    content = build_yam_content(node_num_per_shard, servers, shard_num)
+def gen_nodes_conf_file(node_num_per_shard, shard_num, servers, join_root_nums):
+    content = build_yam_content(node_num_per_shard, servers, shard_num, join_root_nums)
 
-    gen_new_zjnodes_conf_files(content)
+    gen_new_zjnodes_conf_files(content, join_root_nums)
     gen_new_node_deploy_sh(content)
     gen_dispatch_coin_sh(content)
 
-    filename = f"new_nodes_conf_n{node_num_per_shard}_s{shard_num}_m{len(servers)}.yml"
+    filename = f"new_nodes_conf.yml"
     with open(filename, "w") as f:
         yaml.dump(content, f)
     return
@@ -109,19 +112,17 @@ ps -ef | grep zjchain | grep new_node | awk -F' ' '{{print $2}}' | xargs kill -9
 {node_list}
 
 rm -rf /root/zjnodes/new*
-
+(python test_accounts.py )&
 for n in  "${{nodes[@]}}"; do
 
-
-    mkdir -p "/root/zjnodes/${{n}}/log"
-    mkdir -p "/root/zjnodes/${{n}}/conf"
-    cp -rf /root/zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/${{n}}/conf/
-    cp -rf /root/zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/${{n}}/conf/
-    cp -rf /root/zjnodes/zjchain/zjchain /root/zjnodes/${{n}}/
-    cp -rf ./zjnodes/${{n}}/conf/zjchain.conf /root/zjnodes/${{n}}/conf/zjchain.conf
-    echo "cp $n"
+        mkdir -p "/root/zjnodes/${{n}}/log"
+        mkdir -p "/root/zjnodes/${{n}}/conf"
+        cp -rf /root/zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/${{n}}/conf/
+        cp -rf /root/zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/${{n}}/conf/
+        cp -rf /root/zjnodes/zjchain/zjchain /root/zjnodes/${{n}}/
+        cp -rf ./zjnodes/${{n}}/conf/zjchain.conf /root/zjnodes/${{n}}/conf/zjchain.conf
+        echo "cp $n"
 done
-
 
 ulimit -c unlimited
 
@@ -132,7 +133,8 @@ for node in "${{nodes[@]}}"; do
 
 done
 
-sh ./dispatch_coin.sh
+
+
 """
     full_path = "new_node_deploy.sh"
     # full_path = os.path.abspath(file_path)
@@ -141,21 +143,36 @@ sh ./dispatch_coin.sh
         f.write(code_str)
 
 
-def build_yam_content(node_num_per_shard, servers, shard_num):
+def build_yam_content(node_num_per_shard, servers, shard_num, join_root_num=0):
+    
+
     shard_start_idx = 3
     shard_end_idx = shard_start_idx + shard_num - 1
     new_nodes = []
     prikeys = gen_prikeys(shard_num * node_num_per_shard)
+    join_root_count = 0
     for shard_idx in range(shard_start_idx, shard_end_idx + 1):
+        
         for node_idx in range(node_num_per_shard):
+            join_root = 0
+            if join_root_count < join_root_num:
+                join_root_count += 1
+                join_root = 1
+            else:
+                join_root = 2
             node_idx += 1
             node_name = f"new_{node_idx}"
+            net_id = shard_idx
+            if join_root == 1:
+                net_id = 2
+                
             new_nodes.append({
                 "name": node_name,
-                "net": shard_idx,
+                "net": net_id,
                 "server": "",
                 "http_port": get_new_http_port(node_idx, shard_idx),
                 "tcp_port": get_new_tcp_port(node_idx, shard_idx),
+                "join_root": join_root,
             })
     for idx, node in enumerate(new_nodes):
         server = servers[idx % len(servers)]
@@ -197,7 +214,7 @@ def get_root_boostrap_strs():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-n', '--node_num_per_shard', help='node_num_per_shard', type=int, default=50)
+    parser.add_argument('-n', '--node_num_per_shard', help='node_num_per_shard', type=int, default=100)
     parser.add_argument('-s', '--shard_num', help='shard_num', default=1, type=int)
     parser.add_argument('-m', '--machines', help='machines', default="127.0.0.1", type=str)
     parser.add_argument('-m0', '--machine0', help='source machine', default='127.0.0.1', type=str)
@@ -207,4 +224,6 @@ if __name__ == "__main__":
     print(f"shard_num $s：{args.shard_num}")
     print(f"node_num_per_shard $n：{args.node_num_per_shard}")
     print(f"servers $m：{servers}")
-    gen_nodes_conf_file(args.node_num_per_shard, args.shard_num, servers)
+
+    join_root_nums = 100
+    gen_nodes_conf_file(args.node_num_per_shard, args.shard_num, servers, join_root_nums)

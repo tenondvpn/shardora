@@ -795,6 +795,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
             ZJC_DEBUG("local member success elect in: %u, %u", 
                 elect_item.local_member->index, elect_item.members->size());
+            ZJC_DEBUG("get leader timeout msg :%s", ProtobufToJson(zbft).c_str());
             HandleLeaderCollectTxs(elect_item, msg_ptr);
             return;
         }

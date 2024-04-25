@@ -57,6 +57,7 @@ private:
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleStatistic(const std::shared_ptr<block::protobuf::Block>& block_ptr);
+    std::string getLeaderIdFromBlock(shardora::block::protobuf::Block &block);
     void HandleCrossShard(
         bool is_root,
         const block::protobuf::Block& block,
