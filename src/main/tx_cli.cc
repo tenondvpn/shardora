@@ -221,7 +221,6 @@ int tx_main(int argc, char** argv) {
         return 1;
     }
 
-    std::string gid = common::Random::RandomString(32);
     std::string prikey = common::Encode::HexDecode("b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708");
     std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
     uint32_t prikey_pos = 0;
@@ -231,6 +230,8 @@ int tx_main(int argc, char** argv) {
     uint32_t count = 0;
     uint32_t step_num = 1000;
     for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
+
+        std::string gid = common::Random::RandomString(32);
         uint64_t* gid_int = (uint64_t*)gid.data();
         gid_int[0] = pos;
         if (g_pri_addrs_map[from_prikey] == to) {
@@ -335,7 +336,6 @@ int one_tx_main(int argc, char** argv) {
         return 1;
     }
 
-    std::string gid = common::Random::RandomString(32);
     std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
     uint32_t prikey_pos = 0;
     auto from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
@@ -347,6 +347,7 @@ int one_tx_main(int argc, char** argv) {
     for (int i = 2; i < argc ; ++i) {
         std::string to = common::Encode::HexDecode(argv[i]);
 
+        std::string gid = common::Random::RandomString(32);
         uint64_t* gid_int = (uint64_t*)gid.data();
         gid_int[0] = pos;
         ++prikey_pos;
@@ -379,13 +380,14 @@ int one_tx_main(int argc, char** argv) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
         }
-        std::cout << "send tx from: " << common::Encode::HexEncode(security->GetAddress() ) << " to addr :" << argv[i] << " count: " << i -1  << ", gas limit: " << tx_msg_ptr->header.tx_proto().gas_limit() << std::endl;
-
-        if(i % 10 == 0) {
-            usleep(5*1000 * 1000);
-        } else {
-            usleep(1*1000);
-        }
+        std::cout << "send tx from: " << common::Encode::HexEncode(security->GetAddress() ) << " to addr :" << argv[i] 
+            << " gid :" << common::Encode::HexEncode(gid)
+            << " count: " << i -1  << ", gas limit: " << tx_msg_ptr->header.tx_proto().gas_limit() << std::endl;
+        // if(i % 10 == 0) {
+        //     usleep(5*1000 * 1000);
+        // } else {
+        //     usleep(1*1000);
+        // }
 
     }
 

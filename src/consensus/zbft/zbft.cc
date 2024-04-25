@@ -832,6 +832,8 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
         }
 
         block_tx.set_status(kConsensusSuccess);
+
+        ZJC_DEBUG("tx_item type: %d ", ProtobufToJson(iter->second->tx_info));
         int do_tx_res = iter->second->HandleTx(
             zjc_block,
             db_batch_,

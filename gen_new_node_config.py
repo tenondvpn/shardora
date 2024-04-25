@@ -214,7 +214,7 @@ def get_root_boostrap_strs():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-n', '--node_num_per_shard', help='node_num_per_shard', type=int, default=50)
+    parser.add_argument('-n', '--node_num_per_shard', help='node_num_per_shard', type=int, default=100)
     parser.add_argument('-s', '--shard_num', help='shard_num', default=1, type=int)
     parser.add_argument('-m', '--machines', help='machines', default="127.0.0.1", type=str)
     parser.add_argument('-m0', '--machine0', help='source machine', default='127.0.0.1', type=str)
@@ -225,5 +225,5 @@ if __name__ == "__main__":
     print(f"node_num_per_shard $n：{args.node_num_per_shard}")
     print(f"servers $m：{servers}")
 
-    join_root_nums = 50
+    join_root_nums = 100
     gen_nodes_conf_file(args.node_num_per_shard, args.shard_num, servers, join_root_nums)
