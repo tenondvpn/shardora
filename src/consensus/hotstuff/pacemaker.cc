@@ -137,8 +137,8 @@ void Pacemaker::OnLocalTimeout() {
     // TODO ecdh encrypt
 
     if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
-        ZJC_DEBUG("Send TimeoutMsg to ip: %s, port: %d",
-            common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port);
+        ZJC_DEBUG("Send TimeoutMsg to ip: %s, port: %d, local_idx: %d",
+            common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port, timeout_msg.member_id());
         transport::TcpTransport::Instance()->Send(common::Uint32ToIp(leader->public_ip), leader->public_port, msg);
     } else {
         OnRemoteTimeout(msg_ptr);
