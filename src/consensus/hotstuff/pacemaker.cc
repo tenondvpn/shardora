@@ -40,17 +40,11 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
     bool timeout = false;
     if (sync_info->qc) {
         UpdateHighQC(sync_info->qc);
-        if (sync_info->qc->view < cur_view_) {
-            return Status::kSuccess;
-        }
     }
 
     if (sync_info->tc) {
         timeout = true;
         UpdateHighTC(sync_info->tc);
-        if (sync_info->tc->view < cur_view_) {
-            return Status::kSuccess;
-        }
     }
 
     auto new_v = std::max(high_qc_->view, high_tc_->view) + 1;
