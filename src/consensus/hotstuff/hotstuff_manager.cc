@@ -5,9 +5,11 @@
 #include <chrono>
 #include <common/log.h>
 #include <common/utils.h>
+#include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <libbls/tools/utils.h>
 #include <protos/pools.pb.h>
+#include <sys/socket.h>
 
 #include "bls/bls_utils.h"
 #include "bls/bls_manager.h"
@@ -156,31 +158,102 @@ void HotstuffManager::OnNewElectBlock(uint64_t block_tm_ms, uint32_t sharding_id
     }
 
 
-void HotstuffManager::DoCommitBlock(const view_block::protobuf::ViewBlockItem& pb_view_block, const uint32_t& pool_index) {
-    std::shared_ptr<ViewBlock> v_block;
-    Proto2ViewBlock(pb_view_block, v_block);
-    auto qc = v_block->qc;
-    std::shared_ptr<ViewBlock> pre_vb;
-    auto view_block_chain = pool_hotstuff_[pool_index].view_block_chain;
-    view_block_chain->Get(pb_view_block.parent_hash(), pre_vb);
-    auto f_view = qc->view;
-    auto s_viwe = pre_vb->qc->view;
-    if (f_view == s_viwe + 1) {
-        auto t_view = s_viwe -1;
-        auto p_pre_hash = pre_vb->parent_hash;
-        std::shared_ptr<ViewBlock> p_pre_vb;
-        if (view_block_chain->Has(p_pre_hash)) {
-            view_block_chain->Get(p_pre_hash, p_pre_vb);
-            if (p_pre_vb->qc->view == t_view) {
-                // todo 执行commit块之间的交易信息
-                std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
-                view_block_chain->PruneTo(p_pre_vb->hash, forked_blockes, true);
-                // todo forked_blockes交易回退
-                view_block_chain->SetLatestCommittedBlock(p_pre_vb);
-                view_block_chain->SetLatestLockedBlock(pre_vb);
-            }
+Status HotstuffManager::Commit(const std::shared_ptr<ViewBlock>& v_block, const uint32_t& pool_index) {
+    auto c = chain(pool_index);
+    auto accp = acceptor(pool_index);
+    if (!c || !accp) {
+        return Status::kError;
+    }
+    // 递归提交
+    Status s = CommitInner(c, accp, v_block);
+    if (s != Status::kSuccess) {
+        return s;
+    }
+    // 剪枝
+    std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
+    s = c->PruneTo(v_block->hash, forked_blockes, true);
+    if (s != Status::kSuccess) {
+        return s;
+    }
+
+    // 归还分支交易
+    for (const auto& forked_block : forked_blockes) {
+        s = accp->Return(forked_block->block);
+        if (s != Status::kSuccess) {
+            return s;
         }
-    } 
+    }
+
+    return Status::kSuccess;
+}
+
+Status HotstuffManager::CommitInner(
+        const std::shared_ptr<ViewBlockChain>& c,
+        const std::shared_ptr<IBlockAcceptor> accp, 
+        const std::shared_ptr<ViewBlock>& v_block) {
+    if (!c) {
+        return Status::kError;
+    }
+
+    auto latest_committed_block = c->LatestCommittedBlock();
+    if (latest_committed_block && latest_committed_block->view >= v_block->view) {
+        return Status::kSuccess;
+    }
+
+    if (!latest_committed_block && v_block->view == GenesisView) {
+        return Status::kSuccess;
+    }
+
+    std::shared_ptr<ViewBlock> parent_block = nullptr;
+    Status s = c->Get(v_block->parent_hash, parent_block);
+    if (s == Status::kSuccess && parent_block != nullptr) {
+        s = CommitInner(c, parent_block);
+        if (s != Status::kSuccess) {
+            return s;
+        }
+    }
+
+    if (!accp) {
+        return Status::kError;
+    }
+
+    s = accp->Commit(v_block->block);
+    if (s != Status::kSuccess) {
+        return s;
+    }
+    
+    c->SetLatestCommittedBlock(v_block);
+    return Status::kSuccess;
+}
+
+std::shared_ptr<ViewBlock> HotstuffManager::CheckCommit(
+        const std::shared_ptr<ViewBlock>& v_block,
+        const uint32_t& pool_index) {
+    auto c = chain(pool_index);
+    if (!c) {
+        return nullptr;
+    }
+    auto v_block2 = c->QCRef(v_block);
+    if (!v_block2) {
+        return nullptr;
+    }
+
+    if (!c->LatestLockedBlock() || v_block2->view > c->LatestLockedBlock()->view) {
+        ZJC_DEBUG("locked block, view: %lu", v_block2->view);
+        c->SetLatestLockedBlock(v_block2);
+    }
+
+    auto v_block3 = c->QCRef(v_block2);
+    if (!v_block3) {
+        return nullptr;
+    }
+
+    if (v_block->parent_hash == v_block2->hash && v_block2->parent_hash == v_block3->hash) {
+        ZJC_DEBUG("decide block, view: %lu", v_block3->view);
+        return v_block3;
+    }
+    
+    return nullptr;
 }
 
 Status HotstuffManager::VerifyViewBlock(const std::shared_ptr<ViewBlock>& v_block, 
@@ -270,7 +343,14 @@ void HotstuffManager::DoVoteMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, c
     // todo ret = block 交易信息验证 + 执行（kv内存）
     // 拆分
     // 1、验证是否存在3个连续qc，设置commit，lock qc状态；2、提交commit块之间的交易信息；3、减枝保留最新commit块，回退分支的交易信息
-    DoCommitBlock(pb_view_block, pool_index);
+    auto v_block_to_commit = CheckCommit(v_block, pool_index);
+    if (v_block_to_commit) {
+        Status s = Commit(v_block_to_commit, pool_index);
+        if (s != Status::kSuccess) {
+            ZJC_ERROR("commit view_block failed, view: %lu", v_block_to_commit->view);
+            return;
+        }
+    }
 
     // 切换视图
     Proto2ViewBlock(pb_view_block, v_block);

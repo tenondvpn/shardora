@@ -84,7 +84,10 @@ public:
             const std::shared_ptr<ViewBlock>& v_block,
             const std::shared_ptr<ViewBlockChain>& view_block_chain,
             const uint32_t& elect_height);
-    void DoCommitBlock(const view_block::protobuf::ViewBlockItem& pb_view_block, const uint32_t& pool_index);
+    Status Commit(const std::shared_ptr<ViewBlock>& v_block, const uint32_t& pool_index);
+    std::shared_ptr<ViewBlock> CheckCommit(
+            const std::shared_ptr<ViewBlock>& v_block,
+            const uint32_t& pool_index);
 
     inline std::shared_ptr<Pacemaker> pacemaker(uint32_t pool_idx) const {
         auto hf = hotstuff(pool_idx);
@@ -129,6 +132,11 @@ private:
 
     Status VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg, const uint32_t& pool_index, 
         std::shared_ptr<ViewBlock>& view_block);
+
+    Status CommitInner(
+            const std::shared_ptr<ViewBlockChain>& c,
+            const std::shared_ptr<IBlockAcceptor> accp,            
+            const std::shared_ptr<ViewBlock>& v_block);
 
     struct HotStuff
     {
