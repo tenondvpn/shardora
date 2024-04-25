@@ -521,6 +521,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (header.has_hotstuff_timeout_proto()) {
         auto pool_idx = header.hotstuff_timeout_proto().pool_idx();
         auto pace = pacemaker(pool_idx);
+        ZJC_DEBUG("====1.1 msg received, pool_idx: %d", pool_idx);
         pace->OnRemoteTimeout(msg_ptr);
     }
 
