@@ -149,13 +149,17 @@ private:
         void Init(std::shared_ptr<db::Db>& db_) {
             auto genesis = GetGenesisViewBlock(db_, pool_idx);
             if (genesis) {
+                // 初始状态，将创世块放入链中
                 view_block_chain->Store(genesis);
                 view_block_chain->SetLatestLockedBlock(genesis);
                 view_block_chain->SetLatestCommittedBlock(genesis);
                 auto sync_info = std::make_shared<SyncInfo>();
-                pace_maker->AdvanceView(sync_info->WithQC(genesis->qc));
+
+                // 使用 genesis qc 进行视图切换
+                auto genesis_qc = GetGenesisQC(genesis->hash);
+                pace_maker->AdvanceView(sync_info->WithQC(genesis_qc));
             } else {
-                ZJC_DEBUG("no genesis, pool_idx: %d", pool_idx);
+                ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx);
             }
         }
     };
