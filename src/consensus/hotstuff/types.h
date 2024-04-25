@@ -29,7 +29,7 @@ HashStr GetQCMsgHash(const View &view, const HashStr &view_block_hash);
 
 struct QC {
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
-    View view; // view_block_hash 对应的 view
+    View view; // view_block_hash 对应的 view，TODO 校验正确性，避免篡改
     HashStr view_block_hash;
 
     QC(const std::shared_ptr<libff::alt_bn128_G1>& sign, const View& v, const HashStr& hash) :
