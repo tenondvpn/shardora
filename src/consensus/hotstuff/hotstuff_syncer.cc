@@ -252,7 +252,7 @@ Status HotstuffSyncer::processResponseChain(
             continue;
         }
         auto view_block_qc = qc_it->second;
-        if (crypto()->Verify(
+        if (crypto(pool_idx)->Verify(
                     view_block->ElectHeight(),
                     view_block_qc->msg_hash(),
                     view_block_qc->bls_agg_sign) != Status::kSuccess) {

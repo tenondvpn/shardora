@@ -70,8 +70,8 @@ private:
         return hotstuff_mgr_->pacemaker(pool_idx);
     }
     
-    inline std::shared_ptr<Crypto> crypto() const {
-        return hotstuff_mgr_->crypto();
+    inline std::shared_ptr<Crypto> crypto(uint32_t pool_idx) const {
+        return hotstuff_mgr_->crypto(pool_idx);
     }
     
     Status SendRequest(
