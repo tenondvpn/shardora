@@ -176,7 +176,8 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
             timeout_proto.sign_y(),
             reconstructed_sign);
     if (s != Status::kSuccess) {
-        ZJC_WARN("bls verify failed, s: %d, view: %d, view_hash: %s, member_id: %s, elect_height: %lu", s,
+        ZJC_WARN("bls verify failed, s: %d, view: %d, view_hash: %s, member_id: %d, elect_height: %lu",
+            s,
             timeout_proto.view(),
             common::Encode::HexEncode(timeout_proto.view_hash()).c_str(),
             timeout_proto.member_id(),
