@@ -177,15 +177,16 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     if (s != Status::kSuccess || !tc) {
         return;
     }
-    auto sync_info = std::make_shared<SyncInfo>();
-    sync_info->tc = tc;
-
     ZJC_DEBUG("CreateTC pool: %d, view: %d, member: %d, view: %d",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
-    AdvanceView(sync_info);
+    
+    auto sync_info = std::make_shared<SyncInfo>();
+    AdvanceView(sync_info->WithTC(tc));
     
     // TODO New Propose
-    // Propose(qc);
+    if (new_proposal_fn_) {
+        new_proposal_fn_(pool_idx_, sync_info->WithQC(HighQC())->WithTC(HighTC()));
+    }
 }
 
 int Pacemaker::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
