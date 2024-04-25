@@ -59,7 +59,6 @@ public:
     }
 
     inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlock>& view_block) {
-        latest_locked_block_ = nullptr;
         latest_committed_block_ = view_block;
     }
 

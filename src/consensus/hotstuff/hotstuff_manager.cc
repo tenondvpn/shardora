@@ -128,9 +128,8 @@ int HotstuffManager::Init(
         
         auto leader_rotation = std::make_shared<LeaderRotation>(hf.view_block_chain, elect_info_);
 
-        auto genesis_vblock = GetGenesisViewBlock(db_, pool_idx);
         auto pace_maker = std::make_shared<Pacemaker>(
-                pool_idx, crypto_, leader_rotation, std::make_shared<ViewDuration>(), genesis_vblock);
+                pool_idx, crypto_, leader_rotation, std::make_shared<ViewDuration>());
         
         hf.block_acceptor = std::make_shared<BlockAcceptor>(pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
             contract_mgr, db, gas_prepayment, pool_mgr, block_mgr, tm_block_mgr, new_block_cache_callback);

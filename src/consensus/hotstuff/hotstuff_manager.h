@@ -150,6 +150,7 @@ private:
             auto genesis = GetGenesisViewBlock(db_, pool_idx);
             if (genesis) {
                 view_block_chain->Store(genesis);
+                view_block_chain->SetLatestLockedBlock(genesis);
                 view_block_chain->SetLatestCommittedBlock(genesis);
                 auto sync_info = std::make_shared<SyncInfo>();
                 pace_maker->AdvanceView(sync_info->WithQC(genesis->qc));
