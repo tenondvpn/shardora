@@ -350,7 +350,7 @@ Status HotstuffSyncer::onRecViewBlock(
     // 3. TODO 尝试 commit
 
     // 4. 保存 view_block
-    hotstuff_mgr_->chain(pool_idx)->Store(view_block);
+    return hotstuff_mgr_->chain(pool_idx)->Store(view_block);
 }
 
 } // namespace consensus
