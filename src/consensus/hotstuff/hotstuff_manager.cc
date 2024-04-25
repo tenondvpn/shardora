@@ -488,7 +488,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     ZJC_DEBUG("====1 msg received, timeout: %d", header.has_hotstuff_timeout_proto());
 
-    if (!header.has_hotstuff() && header.has_hotstuff_timeout_proto()) {
+    if (!header.has_hotstuff() && !header.has_hotstuff_timeout_proto()) {
         ZJC_ERROR("transport message is error.");
         return;
     }
