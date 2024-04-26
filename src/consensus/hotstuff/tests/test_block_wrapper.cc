@@ -73,9 +73,10 @@ TEST_F(TestBlockWrapper, Wrap) {
     block->set_height(prev_height);
     block->set_timestamp(common::TimeUtils::TimestampMs());
 
+    auto sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
     auto prev_view_block = std::make_shared<ViewBlock>(
             "parent_vb_hash",
-            GenQC(prev_height, "parent_vb_hash"),
+            std::make_shared<QC>(sign, prev_height-1, "prev prev hash"),
             block,
             prev_height,
             GenLeaderIdx());
