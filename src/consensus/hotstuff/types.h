@@ -124,8 +124,10 @@ struct SyncInfo : public std::enable_shared_from_this<SyncInfo> {
     std::shared_ptr<SyncInfo> WithTC(const std::shared_ptr<TC>& t) {
         tc = t;
         return shared_from_this();
-    }    
+    }
 };
+
+std::shared_ptr<SyncInfo> new_sync_info();
 
 enum class Status : int {
   kSuccess = 0,
