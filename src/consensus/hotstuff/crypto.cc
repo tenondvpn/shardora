@@ -174,6 +174,7 @@ Status Crypto::EcdsaSignMessage(transport::MessagePtr& msg_ptr) {
     }
     
     msg_ptr->header.set_sign(sign);
+    return Status::kSuccess;
 }
 
 Status Crypto::EcdsaVerifyMessage(const transport::MessagePtr& msg_ptr) {

@@ -14,7 +14,7 @@ BlockWrapper::BlockWrapper(
         const std::shared_ptr<ElectInfo>& elect_info) :
     pool_idx_(pool_idx), pools_mgr_(pools_mgr), tm_block_mgr_(tm_block_mgr),
     block_mgr_(block_mgr), elect_info_(elect_info) {
-    txs_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr_, block_mgr, tm_block_mgr);
+    txs_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr, block_mgr, tm_block_mgr);
 }
 
 BlockWrapper::~BlockWrapper(){};
