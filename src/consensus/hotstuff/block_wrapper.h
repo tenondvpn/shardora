@@ -20,6 +20,7 @@ public:
             const uint32_t& leader_idx,
             std::shared_ptr<block::protobuf::Block>& block,
             std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose) = 0;
+    virtual Status GetTxsIdempotently(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>& txs) = 0;
 };
 
 class BlockWrapper : public IBlockWrapper {
@@ -41,6 +42,9 @@ public:
             std::shared_ptr<block::protobuf::Block>& block,
             std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose) override;
 
+    // 幂等，用于同步 replica 向 leader 同步交易
+    Status GetTxsIdempotently(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>& txs) override;
+
 private:
     uint32_t pool_idx_;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
@@ -49,7 +53,7 @@ private:
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     std::shared_ptr<consensus::WaitingTxsPools> txs_pools_ = nullptr;
 
-    Status GetTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    Status PopTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
         txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx_);
         return txs_ptr != nullptr ? Status::kSuccess : Status::kError;
     }

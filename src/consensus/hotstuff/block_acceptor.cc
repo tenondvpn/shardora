@@ -147,19 +147,7 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
     return Status::kSuccess;
 }
 
-Status BlockAcceptor::FetchTxsFromPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) {
-    // TODO 不应该和 zbft 耦合
-    zbft::protobuf::TxBft txbft;
-    std::map<std::string, pools::TxItemPtr> invalid_txs;
-    pools_mgr_->GetTx(pool_idx(), 1024, invalid_txs, &txbft);
-    
-    for (auto it = txbft.txs().begin(); it != txbft.txs().end(); it++) {
-        txs.push_back(std::make_shared<pools::protobuf::TxMessage>(*it));
-    }
-    return Status::kSuccess;
-}
-
-Status BlockAcceptor::AddTxsToPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) {
+Status BlockAcceptor::AddTxs(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) {
     auto txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
     return addTxsToPool(txs, txs_ptr);
 };
