@@ -155,7 +155,7 @@ private:
             const std::shared_ptr<IBlockAcceptor> accp,            
             const std::shared_ptr<ViewBlock>& v_block);
 
-    void HotstuffManager::ConstructViewBlock(const uint32_t& pool_index, 
+    void ConstructViewBlock(const uint32_t& pool_index, 
         std::shared_ptr<ViewBlock>& view_block,
         std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose);
     void ConstructPropseMsg(const uint32_t& pool_index, const std::shared_ptr<SyncInfo>& sync_info,

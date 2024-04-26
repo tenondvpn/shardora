@@ -479,8 +479,8 @@ Status HotstuffManager::ConstructVoteMsg(std::shared_ptr<hotstuff::protobuf::Vot
     block_wrapper(pool_index)->GetTxsIdempotently(txs);
     for (size_t i = 0; i < txs.size(); i++)
     {
-        auto tx_ptr = vote_msg->add_txs();
-        tx_ptr = txs[i].get();
+        auto& tx_ptr = *(vote_msg->add_txs());
+        tx_ptr = *(txs[i].get());
     }
     return Status::kSuccess;
 }
