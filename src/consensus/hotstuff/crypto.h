@@ -7,6 +7,7 @@
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g2.hpp>
 #include <security/security.h>
 #include <consensus/hotstuff/elect_info.h>
+#include <transport/transport_utils.h>
 
 namespace shardora {
 
@@ -84,7 +85,10 @@ public:
     Status CreateTC(
             const View& view,
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
-            std::shared_ptr<TC>& tc);    
+            std::shared_ptr<TC>& tc);
+
+    Status EcdsaSignMessage(transport::MessagePtr& msg_ptr);
+    Status EcdsaVerifyMessage(const transport::MessagePtr& msg_ptr);
     
     
     inline std::shared_ptr<ElectItem> GetElectItem(const uint64_t& elect_height) {
@@ -151,6 +155,10 @@ private:
         }
 
         return Status::kSuccess;
+    }
+
+    inline std::shared_ptr<security::Security> security() const {
+        return bls_mgr_->security();
     }
 };
 

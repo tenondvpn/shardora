@@ -166,6 +166,45 @@ Status Crypto::CreateTC(
     return Status::kSuccess;    
 }
 
+Status Crypto::EcdsaSignMessage(transport::MessagePtr& msg_ptr) {
+    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
+    std::string sign;
+    if (security() && security()->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
+        return Status::kError;
+    }
+    
+    msg_ptr->header.set_sign(sign);
+}
+
+Status Crypto::EcdsaVerifyMessage(const transport::MessagePtr& msg_ptr) {
+    if (!msg_ptr->header.has_sign()) {
+        return Status::kError;
+    }
+
+    auto elect_item = elect_info_->GetElectItem();
+    if (!elect_item) {
+        return Status::kError;
+    }
+
+    auto mem_ptr = elect_item->GetMemberByIdx(msg_ptr->header.zbft().member_index());
+    if (mem_ptr->bls_publick_key == libff::alt_bn128_G2::zero()) {
+        ZJC_DEBUG("verify sign failed, backup invalid bls pk: %s",
+            common::Encode::HexEncode(mem_ptr->id).c_str());
+        return Status::kError;
+    }
+
+    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
+    if (security() && security()->Verify(
+            msg_hash,
+            mem_ptr->pubkey,
+            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        ZJC_DEBUG("verify leader sign failed: %s", common::Encode::HexEncode(mem_ptr->id).c_str());
+        return Status::kError;
+    }
+
+    return Status::kSuccess;
+}
+
 } // namespace hotstuff
 
 } // namespace shardora
