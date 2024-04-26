@@ -51,7 +51,6 @@ Status BlockWrapper::Wrap(
             return s;
         }
         times_of_no_txs_++;
-        return s;
     }
 
     if (txs_ptr) {
