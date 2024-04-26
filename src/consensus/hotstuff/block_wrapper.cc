@@ -45,6 +45,12 @@ Status BlockWrapper::Wrap(
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
     Status s = PopTxs(txs_ptr);
     if (s != Status::kSuccess) {
+        // 允许 3 个连续的空交易块
+        if (times_of_no_txs_ == NO_TX_ALLOWED_TIMES) {
+            times_of_no_txs_ = 0;
+            return s;
+        }
+        times_of_no_txs_++;
         return s;
     }
     
