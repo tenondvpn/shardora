@@ -51,6 +51,13 @@ protected:
                 POOL, pools_mgr_, tm_block_mgr_, block_mgr_, elect_info_);
 
         account_mgr_->Init(db_, pools_mgr_);
+
+        auto member = std::make_shared<common::BftMember>(1, "1", "pk1", 1, 0);
+        auto members = std::make_shared<common::Members>();
+        members->push_back(member);
+        auto common_pk = libff::alt_bn128_G2::one();
+        auto sk = libff::alt_bn128_Fr::one();
+        elect_info_->OnNewElectBlock(3, 1, members, common_pk, sk);
     }
 
     static void TearDownTestCase() {}
