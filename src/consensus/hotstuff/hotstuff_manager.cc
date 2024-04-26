@@ -475,8 +475,13 @@ Status HotstuffManager::ConstructVoteMsg(std::shared_ptr<hotstuff::protobuf::Vot
     }
     vote_msg->set_sign_x(sign_x);
     vote_msg->set_sign_x(sign_y);
-    // todo 附加交易池的消息
-
+    std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
+    block_wrapper(pool_index)->GetTxsIdempotently(txs);
+    for (size_t i = 0; i < txs.size(); i++)
+    {
+        auto tx_ptr = vote_msg->add_txs();
+        tx_ptr = txs[i].get();
+    }
     return Status::kSuccess;
 }
 
@@ -524,32 +529,38 @@ Status HotstuffManager::SendTranMsg(const uint32_t pool_index, std::shared_ptr<h
     return ret;
 }
 
-void HotstuffManager::ConstructViewBlock(const uint32_t& pool_index, std::shared_ptr<ViewBlock>& view_block) {
+void HotstuffManager::ConstructViewBlock(const uint32_t& pool_index, 
+    std::shared_ptr<ViewBlock>& view_block,
+    std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose) {
     auto high_qc = pool_hotstuff_[pool_index].pace_maker->HighQC();
     view_block->parent_hash = (high_qc->view_block_hash);
+
     auto leader_idx = elect_info_->GetElectItem()->LocalMember()->index;
     view_block->leader_idx = (leader_idx);
+
+    auto pre_v_block = std::make_shared<ViewBlock>();
+    chain(pool_index)->Get(high_qc->view_block_hash, pre_v_block);
+    auto pre_block = pre_v_block->block;
     auto pb_block = std::make_shared<block::protobuf::Block>();
-    // todo construct block 打包交易信息 
-    // ??? pb block 和 TxPropose tx_propos 区别
+    block_wrapper(pool_index)->Wrap(pre_block, leader_idx, pb_block, tx_propose);
     view_block->block = (pb_block);
+
     view_block->qc = high_qc;
-    auto cur_view = pool_hotstuff_[pool_index].pace_maker->CurView();
-    view_block->view = cur_view;
+    view_block->view = pool_hotstuff_[pool_index].pace_maker->CurView();
     view_block->hash = view_block->DoHash();
 }
 void HotstuffManager::ConstructPropseMsg(const uint32_t& pool_index, const std::shared_ptr<SyncInfo>& sync_info,
     std::shared_ptr<hotstuff::protobuf::ProposeMsg>& pro_msg) {
     auto new_view_block = std::make_shared<ViewBlock>();
-    ConstructViewBlock(pool_index, new_view_block);
+    auto tx_propose = std::make_shared<hotstuff::protobuf::TxPropose>();
+    ConstructViewBlock(pool_index, new_view_block, tx_propose);
+
     auto new_pb_view_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
     ViewBlock2Proto(new_view_block, new_pb_view_block.get());
     pro_msg->set_allocated_view_item(new_pb_view_block.get());
     pro_msg->set_elect_height(elect_info_->GetElectItem()->ElectHeight());
     pro_msg->set_tc_str(sync_info->tc->Serialize());
-    auto pb_tx_propose = std::make_shared<hotstuff::protobuf::TxPropose>();
-    // todo construct tx_propos 打包交易信息 
-    pro_msg->set_allocated_tx_propose(pb_tx_propose.get());
+    pro_msg->set_allocated_tx_propose(tx_propose.get());
 }
 
 void HotstuffManager::StartPropose(const uint32_t& pool_index, const std::shared_ptr<SyncInfo>& sync_info) {

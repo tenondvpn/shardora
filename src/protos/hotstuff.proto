@@ -4,8 +4,8 @@ import "protos/pools.proto";
 package shardora.hotstuff.protobuf;
 
 message TxPropose {
-    optional pools.protobuf.StepType tx_type = 1 [default=kNormalFrom];
-    repeated pools.protobuf.TxMessage txs = 2;
+    optional pools.protobuf.StepType tx_type = 1 [default=kNormalFrom]; // 普通交易信息归为一种默认类型
+    repeated pools.protobuf.TxMessage txs = 2; // single 交易类型一致
 }
 
 message HotstuffMessage {
@@ -20,7 +20,7 @@ message ProposeMsg {
     optional uint32 elect_height = 1;
     optional view_block.protobuf.ViewBlockItem  view_item = 2;
     optional bytes tc_str = 3;
-    optional TxPropose tx_propose = 4; // 将消息池信息写入pb格式
+    optional TxPropose tx_propose = 4;
 }
 
 message VoteMsg {
@@ -29,5 +29,5 @@ message VoteMsg {
     optional uint32 elect_height = 3;
     optional bytes sign_x = 4;
     optional bytes sign_y = 5;
-    optional TxPropose tx_propose = 6; //将消息池信息写入pb格式， 去重的逻辑呢？？？
+    repeated pools.protobuf.TxMessage txs = 6; // 仅打包普通交易信息，作为同步
 }

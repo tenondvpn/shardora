@@ -4,6 +4,7 @@
 #include "crypto.h"
 #include "pacemaker.h"
 #include "block_acceptor.h"
+#include "block_wrapper.h"
 
 #include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/zbft/contract_call.h>
@@ -129,6 +130,14 @@ public:
         return elect_info_;
     }
 
+    inline std::shared_ptr<IBlockWrapper> block_wrapper(uint32_t pool_idx) const {
+        auto hf = hotstuff(pool_idx);
+        if (!hf) {
+            return nullptr;
+        }
+        return hf->block_wrapper;   
+    }
+
 private:
 
     void HandleMessage(const transport::MessagePtr& msg_ptr);
@@ -146,7 +155,9 @@ private:
             const std::shared_ptr<IBlockAcceptor> accp,            
             const std::shared_ptr<ViewBlock>& v_block);
 
-    void ConstructViewBlock(const uint32_t& pool_index, std::shared_ptr<ViewBlock>& view_block);
+    void HotstuffManager::ConstructViewBlock(const uint32_t& pool_index, 
+        std::shared_ptr<ViewBlock>& view_block,
+        std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose);
     void ConstructPropseMsg(const uint32_t& pool_index, const std::shared_ptr<SyncInfo>& sync_info,
         std::shared_ptr<hotstuff::protobuf::ProposeMsg>& pro_msg);
     Status ConstructVoteMsg(std::shared_ptr<hotstuff::protobuf::VoteMsg>& vote_msg, const uint32_t& elect_height, 
@@ -156,6 +167,7 @@ private:
         uint32_t pool_idx;
         std::shared_ptr<Pacemaker> pace_maker;
         std::shared_ptr<IBlockAcceptor> block_acceptor;
+        std::shared_ptr<IBlockWrapper> block_wrapper;
         std::shared_ptr<ViewBlockChain> view_block_chain;
         std::shared_ptr<Crypto> crypto;
 

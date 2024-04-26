@@ -117,7 +117,7 @@ static void InitDefaultsVoteMsg() {
 
 ::google::protobuf::internal::SCCInfo<1> scc_info_VoteMsg =
     {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsVoteMsg}, {
-      &protobuf_protos_2fhotstuff_2eproto::scc_info_TxPropose.base,}};
+      &protobuf_protos_2fpools_2eproto::scc_info_TxMessage.base,}};
 
 void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_TxPropose.base);
@@ -176,13 +176,13 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::VoteMsg, elect_height_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::VoteMsg, sign_x_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::VoteMsg, sign_y_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::VoteMsg, tx_propose_),
-  4,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::VoteMsg, txs_),
+  3,
   0,
-  5,
+  4,
   1,
   2,
-  3,
+  ~0u,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 7, sizeof(::shardora::hotstuff::protobuf::TxPropose)},
@@ -233,15 +233,14 @@ void AddDescriptorsImpl() {
       "t_height\030\001 \001(\r\022>\n\tview_item\030\002 \001(\0132+.shar"
       "dora.view_block.protobuf.ViewBlockItem\022\016"
       "\n\006tc_str\030\003 \001(\014\0229\n\ntx_propose\030\004 \001(\0132%.sha"
-      "rdora.hotstuff.protobuf.TxPropose\"\250\001\n\007Vo"
+      "rdora.hotstuff.protobuf.TxPropose\"\236\001\n\007Vo"
       "teMsg\022\023\n\013replica_idx\030\001 \001(\r\022\027\n\017view_block"
       "_hash\030\002 \001(\014\022\024\n\014elect_height\030\003 \001(\r\022\016\n\006sig"
-      "n_x\030\004 \001(\014\022\016\n\006sign_y\030\005 \001(\014\0229\n\ntx_propose\030"
-      "\006 \001(\0132%.shardora.hotstuff.protobuf.TxPro"
-      "pose"
+      "n_x\030\004 \001(\014\022\016\n\006sign_y\030\005 \001(\014\022/\n\003txs\030\006 \003(\0132\""
+      ".shardora.pools.protobuf.TxMessage"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 764);
+      descriptor, 754);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/hotstuff.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fview_5fblock_2eproto::AddDescriptors();
@@ -1355,8 +1354,9 @@ void ProposeMsg::InternalSwap(ProposeMsg* other) {
 // ===================================================================
 
 void VoteMsg::InitAsDefaultInstance() {
-  ::shardora::hotstuff::protobuf::_VoteMsg_default_instance_._instance.get_mutable()->tx_propose_ = const_cast< ::shardora::hotstuff::protobuf::TxPropose*>(
-      ::shardora::hotstuff::protobuf::TxPropose::internal_default_instance());
+}
+void VoteMsg::clear_txs() {
+  txs_.Clear();
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int VoteMsg::kReplicaIdxFieldNumber;
@@ -1364,7 +1364,7 @@ const int VoteMsg::kViewBlockHashFieldNumber;
 const int VoteMsg::kElectHeightFieldNumber;
 const int VoteMsg::kSignXFieldNumber;
 const int VoteMsg::kSignYFieldNumber;
-const int VoteMsg::kTxProposeFieldNumber;
+const int VoteMsg::kTxsFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 VoteMsg::VoteMsg()
@@ -1377,7 +1377,8 @@ VoteMsg::VoteMsg()
 VoteMsg::VoteMsg(const VoteMsg& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL),
-      _has_bits_(from._has_bits_) {
+      _has_bits_(from._has_bits_),
+      txs_(from.txs_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   view_block_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.has_view_block_hash()) {
@@ -1391,11 +1392,6 @@ VoteMsg::VoteMsg(const VoteMsg& from)
   if (from.has_sign_y()) {
     sign_y_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sign_y_);
   }
-  if (from.has_tx_propose()) {
-    tx_propose_ = new ::shardora::hotstuff::protobuf::TxPropose(*from.tx_propose_);
-  } else {
-    tx_propose_ = NULL;
-  }
   ::memcpy(&replica_idx_, &from.replica_idx_,
     static_cast<size_t>(reinterpret_cast<char*>(&elect_height_) -
     reinterpret_cast<char*>(&replica_idx_)) + sizeof(elect_height_));
@@ -1406,9 +1402,9 @@ void VoteMsg::SharedCtor() {
   view_block_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   sign_x_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   sign_y_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  ::memset(&tx_propose_, 0, static_cast<size_t>(
+  ::memset(&replica_idx_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&elect_height_) -
-      reinterpret_cast<char*>(&tx_propose_)) + sizeof(elect_height_));
+      reinterpret_cast<char*>(&replica_idx_)) + sizeof(elect_height_));
 }
 
 VoteMsg::~VoteMsg() {
@@ -1420,7 +1416,6 @@ void VoteMsg::SharedDtor() {
   view_block_hash_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   sign_x_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   sign_y_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (this != internal_default_instance()) delete tx_propose_;
 }
 
 void VoteMsg::SetCachedSize(int size) const {
@@ -1443,8 +1438,9 @@ void VoteMsg::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  txs_.Clear();
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 15u) {
+  if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
       view_block_hash_.ClearNonDefaultToEmptyNoArena();
     }
@@ -1454,12 +1450,8 @@ void VoteMsg::Clear() {
     if (cached_has_bits & 0x00000004u) {
       sign_y_.ClearNonDefaultToEmptyNoArena();
     }
-    if (cached_has_bits & 0x00000008u) {
-      GOOGLE_DCHECK(tx_propose_ != NULL);
-      tx_propose_->Clear();
-    }
   }
-  if (cached_has_bits & 48u) {
+  if (cached_has_bits & 24u) {
     ::memset(&replica_idx_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&elect_height_) -
         reinterpret_cast<char*>(&replica_idx_)) + sizeof(elect_height_));
@@ -1542,12 +1534,12 @@ bool VoteMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .shardora.hotstuff.protobuf.TxPropose tx_propose = 6;
+      // repeated .shardora.pools.protobuf.TxMessage txs = 6;
       case 6: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(50u /* 50 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_tx_propose()));
+                input, add_txs()));
         } else {
           goto handle_unusual;
         }
@@ -1582,7 +1574,7 @@ void VoteMsg::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 replica_idx = 1;
-  if (cached_has_bits & 0x00000010u) {
+  if (cached_has_bits & 0x00000008u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->replica_idx(), output);
   }
 
@@ -1593,7 +1585,7 @@ void VoteMsg::SerializeWithCachedSizes(
   }
 
   // optional uint32 elect_height = 3;
-  if (cached_has_bits & 0x00000020u) {
+  if (cached_has_bits & 0x00000010u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->elect_height(), output);
   }
 
@@ -1609,10 +1601,13 @@ void VoteMsg::SerializeWithCachedSizes(
       5, this->sign_y(), output);
   }
 
-  // optional .shardora.hotstuff.protobuf.TxPropose tx_propose = 6;
-  if (cached_has_bits & 0x00000008u) {
+  // repeated .shardora.pools.protobuf.TxMessage txs = 6;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->txs_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      6, this->_internal_tx_propose(), output);
+      6,
+      this->txs(static_cast<int>(i)),
+      output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1631,7 +1626,7 @@ void VoteMsg::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 replica_idx = 1;
-  if (cached_has_bits & 0x00000010u) {
+  if (cached_has_bits & 0x00000008u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->replica_idx(), target);
   }
 
@@ -1643,7 +1638,7 @@ void VoteMsg::SerializeWithCachedSizes(
   }
 
   // optional uint32 elect_height = 3;
-  if (cached_has_bits & 0x00000020u) {
+  if (cached_has_bits & 0x00000010u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->elect_height(), target);
   }
 
@@ -1661,11 +1656,12 @@ void VoteMsg::SerializeWithCachedSizes(
         5, this->sign_y(), target);
   }
 
-  // optional .shardora.hotstuff.protobuf.TxPropose tx_propose = 6;
-  if (cached_has_bits & 0x00000008u) {
+  // repeated .shardora.pools.protobuf.TxMessage txs = 6;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->txs_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        6, this->_internal_tx_propose(), deterministic, target);
+        6, this->txs(static_cast<int>(i)), deterministic, target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1685,7 +1681,18 @@ size_t VoteMsg::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 63u) {
+  // repeated .shardora.pools.protobuf.TxMessage txs = 6;
+  {
+    unsigned int count = static_cast<unsigned int>(this->txs_size());
+    total_size += 1UL * count;
+    for (unsigned int i = 0; i < count; i++) {
+      total_size +=
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          this->txs(static_cast<int>(i)));
+    }
+  }
+
+  if (_has_bits_[0 / 32] & 31u) {
     // optional bytes view_block_hash = 2;
     if (has_view_block_hash()) {
       total_size += 1 +
@@ -1705,13 +1712,6 @@ size_t VoteMsg::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::BytesSize(
           this->sign_y());
-    }
-
-    // optional .shardora.hotstuff.protobuf.TxPropose tx_propose = 6;
-    if (has_tx_propose()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::MessageSize(
-          *tx_propose_);
     }
 
     // optional uint32 replica_idx = 1;
@@ -1756,8 +1756,9 @@ void VoteMsg::MergeFrom(const VoteMsg& from) {
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
+  txs_.MergeFrom(from.txs_);
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 63u) {
+  if (cached_has_bits & 31u) {
     if (cached_has_bits & 0x00000001u) {
       set_has_view_block_hash();
       view_block_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.view_block_hash_);
@@ -1771,12 +1772,9 @@ void VoteMsg::MergeFrom(const VoteMsg& from) {
       sign_y_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sign_y_);
     }
     if (cached_has_bits & 0x00000008u) {
-      mutable_tx_propose()->::shardora::hotstuff::protobuf::TxPropose::MergeFrom(from.tx_propose());
-    }
-    if (cached_has_bits & 0x00000010u) {
       replica_idx_ = from.replica_idx_;
     }
-    if (cached_has_bits & 0x00000020u) {
+    if (cached_has_bits & 0x00000010u) {
       elect_height_ = from.elect_height_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -1807,13 +1805,13 @@ void VoteMsg::Swap(VoteMsg* other) {
 }
 void VoteMsg::InternalSwap(VoteMsg* other) {
   using std::swap;
+  CastToBase(&txs_)->InternalSwap(CastToBase(&other->txs_));
   view_block_hash_.Swap(&other->view_block_hash_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   sign_x_.Swap(&other->sign_x_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   sign_y_.Swap(&other->sign_y_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
-  swap(tx_propose_, other->tx_propose_);
   swap(replica_idx_, other->replica_idx_);
   swap(elect_height_, other->elect_height_);
   swap(_has_bits_[0], other->_has_bits_[0]);

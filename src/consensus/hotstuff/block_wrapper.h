@@ -40,6 +40,7 @@ public:
     BlockWrapper(const BlockWrapper&) = delete;
     BlockWrapper& operator=(const BlockWrapper&) = delete;
 
+    // 会改变交易的状态，标记已打包
     Status Wrap(
             const std::shared_ptr<block::protobuf::Block>& prev_block,
             const uint32_t& leader_idx,
