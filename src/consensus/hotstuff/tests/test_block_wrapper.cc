@@ -71,7 +71,7 @@ TEST_F(TestBlockWrapper, Wrap) {
             prev_height,
             GenLeaderIdx());
 
-    std::shared_ptr<block::protobuf::Block> new_block = nullptr;
+    auto new_block = std::make_shared<block::protobuf::Block>();
     std::shared_ptr<hotstuff::protobuf::TxPropose> tx_propose = nullptr;
     Status s = block_wrapper_->Wrap(
             prev_view_block->block, GenLeaderIdx(), new_block, tx_propose);
