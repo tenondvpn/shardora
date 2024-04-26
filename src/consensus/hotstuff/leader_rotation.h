@@ -27,7 +27,11 @@ public:
     }
 private:
     inline common::MembersPtr Members() const {
-        return elect_info_->GetElectItem()->Members(); 
+        auto elect_item = elect_info_->GetElectItem();
+        if (!elect_item) {
+            return std::make_shared<common::Members>();
+        }
+        return elect_item->Members(); 
     }
     
     std::shared_ptr<ViewBlockChain> chain_ = nullptr;

@@ -87,8 +87,8 @@ public:
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
             std::shared_ptr<TC>& tc);
 
-    Status EcdsaSignMessage(transport::MessagePtr& msg_ptr);
-    Status EcdsaVerifyMessage(const transport::MessagePtr& msg_ptr);
+    Status SignMessage(transport::MessagePtr& msg_ptr);
+    Status VerifyMessage(const transport::MessagePtr& msg_ptr);
     
     
     inline std::shared_ptr<ElectItem> GetElectItem(const uint64_t& elect_height) {

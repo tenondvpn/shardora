@@ -166,7 +166,7 @@ Status Crypto::CreateTC(
     return Status::kSuccess;    
 }
 
-Status Crypto::EcdsaSignMessage(transport::MessagePtr& msg_ptr) {
+Status Crypto::SignMessage(transport::MessagePtr& msg_ptr) {
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
     std::string sign;
     if (security() && security()->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
@@ -174,9 +174,10 @@ Status Crypto::EcdsaSignMessage(transport::MessagePtr& msg_ptr) {
     }
     
     msg_ptr->header.set_sign(sign);
+    return Status::kSuccess;
 }
 
-Status Crypto::EcdsaVerifyMessage(const transport::MessagePtr& msg_ptr) {
+Status Crypto::VerifyMessage(const transport::MessagePtr& msg_ptr) {
     if (!msg_ptr->header.has_sign()) {
         return Status::kError;
     }

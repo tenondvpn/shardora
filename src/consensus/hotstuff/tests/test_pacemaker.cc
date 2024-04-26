@@ -67,6 +67,12 @@ TEST_F(TestPacemaker, AdvanceView) {
     EXPECT_EQ(tc4->view+1, pacemaker_->CurView());
     EXPECT_EQ(qc3, pacemaker_->HighQC());
     EXPECT_EQ(tc4, pacemaker_->HighTC());
+
+    auto tc5 = GenTC(View(5));
+    pacemaker_->AdvanceView(sync_info->WithQC(qc1)->WithTC(tc5));
+    EXPECT_EQ(tc5->view+1, pacemaker_->CurView());
+    EXPECT_EQ(qc3, pacemaker_->HighQC());
+    EXPECT_EQ(tc5, pacemaker_->HighTC());
 }
         
 }

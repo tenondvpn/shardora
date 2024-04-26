@@ -139,13 +139,14 @@ int HotstuffManager::Init(
         // 初始化
         hf.Init(db_);
         pool_hotstuff_[pool_idx] = hf;
-        auto leader_idx = leader_rotation->GetLeader()->index;
-        if (leader_idx == elect_info_->GetElectItem()->LocalMember()->index) {
-            ZJC_INFO("Genesis ViewBlock start propose");
-            auto genesis_vblock = GetGenesisViewBlock(db_, pool_idx);
-            StartGenesisPropose(pool_idx, genesis_vblock);
+        auto leader = leader_rotation->GetLeader();
+        if (leader) {
+            if (leader->index == elect_info_->GetElectItem()->LocalMember()->index) {
+                ZJC_INFO("Genesis ViewBlock start propose");
+                auto genesis_vblock = GetGenesisViewBlock(db_, pool_idx);
+                StartGenesisPropose(pool_idx, genesis_vblock);
+            }
         }
-
     }
 
     RegisterCreateTxCallbacks();
@@ -323,7 +324,11 @@ Status HotstuffManager::VerifyViewBlock(
 Status HotstuffManager::VeriyfyLeader(const uint32_t& pool_index, const std::shared_ptr<ViewBlock>& view_block) {
     uint32_t leader_idx = view_block->leader_idx;
     auto leader_rotation = std::make_shared<LeaderRotation>(pool_hotstuff_[pool_index].view_block_chain, elect_info_);
-    if (leader_idx != leader_rotation->GetLeader()->index) {
+    auto leader = leader_rotation->GetLeader();
+    if (!leader) {
+        return Status::kError;
+    }
+    if (leader_idx != leader->index) {
         ZJC_ERROR("leader_idx message is error.");
         return Status::kError;
     }

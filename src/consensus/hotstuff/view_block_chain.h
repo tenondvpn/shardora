@@ -23,6 +23,12 @@ using ViewBlockMinHeap =
 
 
 static const int MaxBlockNumForView = 7;
+enum class ViewBlockStatus : int {
+    Unknown = 0,
+    Proposed = 1,
+    Locked = 2,
+    Committed = 3,
+};
 
 // Tree of view blocks, showing the parent-child relationship of view blocks
 // Notice: the status of view block is not memorized here.
@@ -60,11 +66,24 @@ public:
 
     inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlock>& view_block) {
         latest_committed_block_ = view_block;
+        view_blocks_status_[view_block->hash] = ViewBlockStatus::Committed;
     }
 
     inline void SetLatestLockedBlock(const std::shared_ptr<ViewBlock>& view_block) {
-        latest_locked_block_ = view_block;
+        auto view_block_status = GetViewBlockStatus(view_block);
+        if (view_block_status != ViewBlockStatus::Committed) {
+            latest_locked_block_ = view_block;
+            view_blocks_status_[view_block->hash] = ViewBlockStatus::Locked;
+        }
     }
+
+    inline ViewBlockStatus GetViewBlockStatus(const std::shared_ptr<ViewBlock>& view_block) const {
+        auto it = view_blocks_status_.find(view_block->hash);
+        if (it == view_blocks_status_.end()) {
+            return ViewBlockStatus::Unknown;
+        }
+        return it->second;
+    } 
 
     // 获取 view_block 的 QC
     std::shared_ptr<QC> GetQcOf(const std::shared_ptr<ViewBlock>& view_block) const {
@@ -139,6 +158,7 @@ private:
     View prune_height_;
     std::shared_ptr<ViewBlock> start_block_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlock>> view_blocks_;
+    std::unordered_map<HashStr, ViewBlockStatus> view_blocks_status_;
     std::unordered_map<View, std::vector<std::shared_ptr<ViewBlock>>> view_blocks_at_height_;
     std::unordered_map<HashStr, std::vector<std::shared_ptr<ViewBlock>>> view_block_children_;
     std::unordered_map<HashStr, std::shared_ptr<QC>> view_block_qc_map_; // 存放 view_block 及它的 QC

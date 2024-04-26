@@ -4,6 +4,7 @@
 #include <common/log.h>
 #include <common/time_utils.h>
 #include <common/utils.h>
+#include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/hotstuff_manager.h>
 #include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h>
@@ -352,10 +353,28 @@ Status HotstuffSyncer::onRecViewBlock(
     if (s != Status::kSuccess) {
         return s;
     }
+    // 2. 验证交易
+    auto accep = hotstuff_mgr_->acceptor(pool_idx);
+    if (!accep) {
+        return Status::kError;
+    }    
+    s = accep->AcceptSync(view_block->block);
+    if (s != Status::kSuccess) {
+        return s;
+    }
+    
     // 2. 视图切换
     auto sync_info = std::make_shared<SyncInfo>();
     hotstuff_mgr_->pacemaker(pool_idx)->AdvanceView(sync_info->WithQC(view_block->qc));
-    // 3. TODO 尝试 commit
+    
+    // 3. 尝试 commit
+    auto view_block_to_commit = hotstuff_mgr_->CheckCommit(view_block, pool_idx);
+    if (view_block_to_commit) {
+        s = hotstuff_mgr_->Commit(view_block_to_commit, pool_idx);
+        if (s != Status::kSuccess) {
+            return s;
+        }
+    }
 
     // 4. 保存 view_block
     return hotstuff_mgr_->chain(pool_idx)->Store(view_block);
