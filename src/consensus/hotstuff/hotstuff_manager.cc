@@ -41,7 +41,7 @@ namespace {
 typedef  hotstuff::protobuf::ProposeMsg  pb_ProposeMsg;
 typedef  hotstuff::protobuf::HotstuffMessage  pb_HotstuffMessage;
 typedef  hotstuff::protobuf::VoteMsg  pb_VoteMsg;
-std::shared_ptr<pb_HotstuffMessage>& ConstructHotstuffMsg(const MsgType msg_type, 
+std::shared_ptr<pb_HotstuffMessage> ConstructHotstuffMsg(const MsgType msg_type, 
     const std::shared_ptr<pb_ProposeMsg>& pb_pro_msg, 
     const std::shared_ptr<pb_VoteMsg>& pb_vote_msg, 
     const uint32_t pool_index) {
@@ -167,9 +167,7 @@ int HotstuffManager::Init(
         auto leader = leader_rotation->GetLeader(); // 判断是否为空
         if (!leader) {
             ZJC_ERROR("Get Leader is error.");
-            return;
-        }
-        if (leader->index == elect_info_->GetElectItem()->LocalMember()->index) {
+        } else if (leader->index == elect_info_->GetElectItem()->LocalMember()->index) {
             ZJC_INFO("ViewBlock start propose");
             StartPropose(pool_idx);
         }
