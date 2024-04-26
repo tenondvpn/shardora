@@ -61,13 +61,11 @@ public:
     // Accept a block and txs in it from propose msg.
     virtual Status Accept(std::shared_ptr<blockInfo>&) = 0;
     // Accept a block and txs in it from sync msg.
-    virtual Status AcceptSync(const std::shared_ptr<blockInfoSync>&) = 0;
+    virtual Status AcceptSync(const std::shared_ptr<block::protobuf::Block>& block) = 0;
     // Commit a block
     virtual Status Commit(std::shared_ptr<block::protobuf::Block>&) = 0;
-    // Fetch local txs to send
-    virtual Status FetchTxsFromPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>) = 0; // backup打包交易
     // Add txs to local pool
-    virtual Status AddTxsToPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>) = 0; // leader 添加交易
+    virtual Status AddTxs(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>) = 0;
     // Return block txs to pool
     virtual Status Return(const std::shared_ptr<block::protobuf::Block>&) = 0;
 };
@@ -99,13 +97,11 @@ public:
     // Accept a proposed block and exec txs in it.
     Status Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& blockInfo) override;
     // Accept a synced block.
-    Status AcceptSync(const std::shared_ptr<blockInfoSync>& blockInfoSync) override;
+    Status AcceptSync(const std::shared_ptr<block::protobuf::Block>& block) override;
     // Commit a block and execute its txs.
     Status Commit(std::shared_ptr<block::protobuf::Block>& block) override;
-    // Fetch local txs and sync them to leader
-    Status FetchTxsFromPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) override;
     // Add txs from hotstuff msg to local pool
-    Status AddTxsToPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) override;
+    Status AddTxs(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) override;
     // Return expired or invalid block txs to pool
     Status Return(const std::shared_ptr<block::protobuf::Block>& block) override {
         // return txs to the pool

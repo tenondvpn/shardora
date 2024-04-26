@@ -173,7 +173,6 @@ int HotstuffManager::Init(
             ZJC_INFO("ViewBlock start propose");
             StartPropose(pool_idx);
         }
-
     }
 
     RegisterCreateTxCallbacks();
@@ -354,7 +353,7 @@ Status HotstuffManager::VeriyfyLeader(const uint32_t& pool_index, const std::sha
     auto leader = leader_rotation->GetLeader(); // 判断是否为空
     if (!leader) {
         ZJC_ERROR("Get Leader is error.");
-        return;
+        return  Status::kError;
     }
     if (leader_idx != leader->index) {
         ZJC_ERROR("leader_idx message is error.");

@@ -98,13 +98,11 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
 }
 
 // AcceptSync 验证同步来的 block 信息，并更新交易池
-Status BlockAcceptor::AcceptSync(const std::shared_ptr<IBlockAcceptor::blockInfoSync>& block_info) {
-    if (!block_info || !block_info->block) {
+Status BlockAcceptor::AcceptSync(const std::shared_ptr<block::protobuf::Block>& block) {
+    if (!block) {
         return Status::kError;
     }
 
-    auto& block = block_info->block;
-    
     if (block->pool_index() != pool_idx()) {
         return Status::kError;
     }
@@ -149,19 +147,7 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
     return Status::kSuccess;
 }
 
-Status BlockAcceptor::FetchTxsFromPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) {
-    // TODO 不应该和 zbft 耦合
-    zbft::protobuf::TxBft txbft;
-    std::map<std::string, pools::TxItemPtr> invalid_txs;
-    pools_mgr_->GetTx(pool_idx(), 1024, invalid_txs, &txbft);
-    
-    for (auto it = txbft.txs().begin(); it != txbft.txs().end(); it++) {
-        txs.push_back(std::make_shared<pools::protobuf::TxMessage>(*it));
-    }
-    return Status::kSuccess;
-}
-
-Status BlockAcceptor::AddTxsToPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) {
+Status BlockAcceptor::AddTxs(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) {
     auto txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
     return addTxsToPool(txs, txs_ptr);
 };
