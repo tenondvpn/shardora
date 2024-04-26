@@ -61,7 +61,7 @@ public:
     // Accept a block and txs in it from propose msg.
     virtual Status Accept(std::shared_ptr<blockInfo>&) = 0;
     // Accept a block and txs in it from sync msg.
-    virtual Status AcceptSync(const std::shared_ptr<blockInfoSync>&) = 0;
+    virtual Status AcceptSync(const std::shared_ptr<block::protobuf::Block>& block);
     // Commit a block
     virtual Status Commit(std::shared_ptr<block::protobuf::Block>&) = 0;
     // Fetch local txs to send
@@ -99,7 +99,7 @@ public:
     // Accept a proposed block and exec txs in it.
     Status Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& blockInfo) override;
     // Accept a synced block.
-    Status AcceptSync(const std::shared_ptr<blockInfoSync>& blockInfoSync) override;
+    Status AcceptSync(const std::shared_ptr<block::protobuf::Block>& block) override;
     // Commit a block and execute its txs.
     Status Commit(std::shared_ptr<block::protobuf::Block>& block) override;
     // Fetch local txs and sync them to leader

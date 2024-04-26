@@ -98,13 +98,11 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
 }
 
 // AcceptSync 验证同步来的 block 信息，并更新交易池
-Status BlockAcceptor::AcceptSync(const std::shared_ptr<IBlockAcceptor::blockInfoSync>& block_info) {
-    if (!block_info || !block_info->block) {
+Status BlockAcceptor::AcceptSync(const std::shared_ptr<block::protobuf::Block>& block) {
+    if (!block) {
         return Status::kError;
     }
 
-    auto& block = block_info->block;
-    
     if (block->pool_index() != pool_idx()) {
         return Status::kError;
     }
