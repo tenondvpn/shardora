@@ -120,15 +120,15 @@ public:
         if (sharding_id > max_consensus_sharding_id_) {
             max_consensus_sharding_id_ = sharding_id;
         }
-        
+        std::cout << "====1" << std::endl;
         if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
             return;
         }
-
+        std::cout << "====2" << std::endl;
         if (elect_item_ != nullptr && elect_item_->ElectHeight() >= elect_height) {
             return;
         }
-
+        std::cout << "====3" << std::endl;
         auto elect_item = std::make_shared<ElectItem>(security_ptr_,
             sharding_id, elect_height, members, common_pk, sk);
 

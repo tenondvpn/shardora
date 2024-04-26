@@ -67,7 +67,7 @@ Status BlockWrapper::Wrap(
 
     auto elect_item = elect_info_->GetElectItem();
     if (!elect_item) {
-        return Status::kError;
+        return Status::kElectItemNotFound;
     }
     block->set_electblock_height(elect_item->ElectHeight());
     block->set_leader_index(leader_idx);
