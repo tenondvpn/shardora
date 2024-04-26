@@ -92,8 +92,7 @@ public:
     std::shared_ptr<ViewBlock> CheckCommit(
             const std::shared_ptr<ViewBlock>& v_block,
             const uint32_t& pool_index);
-
-    // todo ConstructProposeMsg(syncinfo)
+    void StartPropose(const uint32_t& pool_index, const std::shared_ptr<SyncInfo>& sync_info = std::make_shared<SyncInfo>());
     inline std::shared_ptr<Pacemaker> pacemaker(uint32_t pool_idx) const {
         auto hf = hotstuff(pool_idx);
         if (!hf) {
@@ -137,7 +136,7 @@ private:
 
     void HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg, const uint32_t& pool_index);
     void HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, const uint32_t& pool_index);
-    Status SendTranMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage>& hotstuff_msg);
+    Status SendTranMsg(const uint32_t pool_index, std::shared_ptr<hotstuff::protobuf::HotstuffMessage>& hotstuff_msg);
 
     Status VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg, const uint32_t& pool_index, 
         std::shared_ptr<ViewBlock>& view_block);
@@ -147,11 +146,9 @@ private:
             const std::shared_ptr<IBlockAcceptor> accp,            
             const std::shared_ptr<ViewBlock>& v_block);
 
-    void StartGenesisPropose(const uint32_t& pool_index, const std::shared_ptr<ViewBlock>& genesis_view_block);
-    void ConstructViewBlock(const uint32_t& pool_index, const std::shared_ptr<ViewBlock>& pre_view_block,
-                        std::shared_ptr<ViewBlock>& view_block);
-    void ConstructPropseMsg(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& pb_view_block, 
-        const std::shared_ptr<SyncInfo>& sync_info, std::shared_ptr<hotstuff::protobuf::ProposeMsg>& pro_msg);
+    void ConstructViewBlock(const uint32_t& pool_index, std::shared_ptr<ViewBlock>& view_block);
+    void ConstructPropseMsg(const uint32_t& pool_index, const std::shared_ptr<SyncInfo>& sync_info,
+        std::shared_ptr<hotstuff::protobuf::ProposeMsg>& pro_msg);
     void ConstructVoteMsg(std::shared_ptr<hotstuff::protobuf::VoteMsg>& vote_msg, const uint32_t& elect_height, 
         const std::shared_ptr<ViewBlock>& v_block, const uint32_t& pool_index);
     struct HotStuff

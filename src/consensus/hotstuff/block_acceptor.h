@@ -65,9 +65,9 @@ public:
     // Commit a block
     virtual Status Commit(std::shared_ptr<block::protobuf::Block>&) = 0;
     // Fetch local txs to send
-    virtual Status FetchTxsFromPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>) = 0;
+    virtual Status FetchTxsFromPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>) = 0; // backup打包交易
     // Add txs to local pool
-    virtual Status AddTxsToPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>) = 0;
+    virtual Status AddTxsToPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>) = 0; // leader 添加交易
     // Return block txs to pool
     virtual Status Return(const std::shared_ptr<block::protobuf::Block>&) = 0;
 };

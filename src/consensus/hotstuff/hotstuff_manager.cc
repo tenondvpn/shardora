@@ -38,6 +38,31 @@ namespace {
         PROPOSE,
         VOTE,
     };
+typedef  hotstuff::protobuf::ProposeMsg  pb_ProposeMsg;
+typedef  hotstuff::protobuf::HotstuffMessage  pb_HotstuffMessage;
+typedef  hotstuff::protobuf::VoteMsg  pb_VoteMsg;
+std::shared_ptr<pb_HotstuffMessage>& ConstructHotstuffMsg(const MsgType msg_type, 
+    const std::shared_ptr<pb_ProposeMsg>& pb_pro_msg, 
+    const std::shared_ptr<pb_VoteMsg>& pb_vote_msg, 
+    const uint32_t pool_index) {
+    auto pb_hotstuff_msg = std::make_shared<pb_HotstuffMessage>();
+    pb_hotstuff_msg->set_type(msg_type);
+    switch (msg_type)
+    {
+    case PROPOSE:
+        pb_hotstuff_msg->set_allocated_pro_msg(pb_pro_msg.get());
+        break;
+    case VOTE:
+        pb_hotstuff_msg->set_allocated_vote_msg(pb_vote_msg.get());
+        break;
+    default:
+        ZJC_ERROR("MsgType is error");
+        break;
+    }
+    pb_hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
+    pb_hotstuff_msg->set_pool_index(pool_index);
+    return pb_hotstuff_msg;
+}
 }
 
 HotstuffManager::HotstuffManager() {}
@@ -139,11 +164,14 @@ int HotstuffManager::Init(
         // 初始化
         hf.Init(db_);
         pool_hotstuff_[pool_idx] = hf;
-        auto leader_idx = leader_rotation->GetLeader()->index;
-        if (leader_idx == elect_info_->GetElectItem()->LocalMember()->index) {
-            ZJC_INFO("Genesis ViewBlock start propose");
-            auto genesis_vblock = GetGenesisViewBlock(db_, pool_idx);
-            StartGenesisPropose(pool_idx, genesis_vblock);
+        auto leader = leader_rotation->GetLeader(); // 判断是否为空
+        if (!leader) {
+            ZJC_ERROR("Get Leader is error.");
+            return;
+        }
+        if (leader->index == elect_info_->GetElectItem()->LocalMember()->index) {
+            ZJC_INFO("ViewBlock start propose");
+            StartPropose(pool_idx);
         }
 
     }
@@ -323,7 +351,12 @@ Status HotstuffManager::VerifyViewBlock(
 Status HotstuffManager::VeriyfyLeader(const uint32_t& pool_index, const std::shared_ptr<ViewBlock>& view_block) {
     uint32_t leader_idx = view_block->leader_idx;
     auto leader_rotation = std::make_shared<LeaderRotation>(pool_hotstuff_[pool_index].view_block_chain, elect_info_);
-    if (leader_idx != leader_rotation->GetLeader()->index) {
+    auto leader = leader_rotation->GetLeader(); // 判断是否为空
+    if (!leader) {
+        ZJC_ERROR("Get Leader is error.");
+        return;
+    }
+    if (leader_idx != leader->index) {
         ZJC_ERROR("leader_idx message is error.");
         return Status::kError;
     }
@@ -341,6 +374,7 @@ Status HotstuffManager::VerifyTC(const std::string& tc_str, const uint32_t& elec
     }
     return Status::kSuccess;
 }
+
 void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, const uint32_t& pool_index) {
     // 1 校验pb view block格式
     view_block::protobuf::ViewBlockItem pb_view_block = pro_msg.view_item();
@@ -412,13 +446,9 @@ void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro
     auto vote_msg = std::make_shared<hotstuff::protobuf::VoteMsg>();
     ConstructVoteMsg(vote_msg, pro_msg.elect_height(), v_block, pool_index);
 
-    // Construct HotstuffMessage
-    auto pb_hotstuff_msg = std::make_shared<hotstuff::protobuf::HotstuffMessage>();
-    pb_hotstuff_msg->set_type(VOTE); 
-    pb_hotstuff_msg->set_allocated_vote_msg(vote_msg.get());
-    pb_hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
-    pb_hotstuff_msg->set_pool_index(pool_index);
-    if (SendTranMsg(pb_hotstuff_msg) != Status::kSuccess) {
+    // Construct HotstuffMessage and send
+    auto pb_hotstuff_msg = ConstructHotstuffMsg(VOTE, nullptr, vote_msg, pool_index);
+    if (SendTranMsg(pool_index, pb_hotstuff_msg) != Status::kSuccess) {
         ZJC_ERROR("Send Propose message is error.");
     }
     return;
@@ -460,32 +490,48 @@ Status HotstuffManager::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_ms
     return Status::kSuccess;
 }
 
-Status HotstuffManager::SendTranMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage>& hotstuff_msg) {
-    transport::protobuf::Header header;
-    header.set_allocated_hotstuff(hotstuff_msg.get());
+Status HotstuffManager::SendTranMsg(const uint32_t pool_index, std::shared_ptr<hotstuff::protobuf::HotstuffMessage>& hotstuff_msg) {
     Status ret = Status::kSuccess;
-    // todo ret = send msg 
+    auto trans_msg = std::make_shared<transport::TransportMessage>();
+    auto& header_msg = trans_msg->header;
+    header_msg.set_allocated_hotstuff(hotstuff_msg.get());
+
+    auto leader_rotation = std::make_shared<LeaderRotation>(pool_hotstuff_[pool_index].view_block_chain, elect_info_);
+    auto leader = leader_rotation->GetLeader();
+    if (!leader) {
+        ZJC_ERROR("Get Leader failed.");
+        return Status::kError;
+    }
+    header_msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    dht::DhtKeyManager dht_key(leader->net_id);
+    header_msg.set_des_dht_key(dht_key.StrKey());
+    header_msg.set_type(common::kHotstuffMessage);
+    transport::TcpTransport::Instance()->SetMessageHash(header_msg);
+    transport::TcpTransport::Instance()->Send(common::Uint32ToIp(leader->public_ip), leader->public_port, header_msg);
     return ret;
 }
 
-void HotstuffManager::ConstructViewBlock(const uint32_t& pool_index, const std::shared_ptr<ViewBlock>& pre_view_block,
-    std::shared_ptr<ViewBlock>& view_block) {
-    view_block->parent_hash = (pre_view_block->hash);
+void HotstuffManager::ConstructViewBlock(const uint32_t& pool_index, std::shared_ptr<ViewBlock>& view_block) {
+    auto high_qc = pool_hotstuff_[pool_index].pace_maker->HighQC();
+    view_block->parent_hash = (high_qc->view_block_hash);
     auto leader_idx = elect_info_->GetElectItem()->LocalMember()->index;
     view_block->leader_idx = (leader_idx);
     auto pb_block = std::make_shared<block::protobuf::Block>();
     // todo construct block 打包交易信息 
     // ??? pb block 和 TxPropose tx_propos 区别
     view_block->block = (pb_block);
-    
-    auto qc = pool_hotstuff_[pool_index].pace_maker->HighQC();
-    view_block->qc = qc;
-    view_block->view = (qc->view + 1);
+    view_block->qc = high_qc;
+    auto cur_view = pool_hotstuff_[pool_index].pace_maker->CurView();
+    view_block->view = cur_view;
     view_block->hash = view_block->DoHash();
 }
-void HotstuffManager::ConstructPropseMsg(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& pb_view_block, 
-    const std::shared_ptr<SyncInfo>& sync_info, std::shared_ptr<hotstuff::protobuf::ProposeMsg>& pro_msg) {
-    pro_msg->set_allocated_view_item(pb_view_block.get());
+void HotstuffManager::ConstructPropseMsg(const uint32_t& pool_index, const std::shared_ptr<SyncInfo>& sync_info,
+    std::shared_ptr<hotstuff::protobuf::ProposeMsg>& pro_msg) {
+    auto new_view_block = std::make_shared<ViewBlock>();
+    ConstructViewBlock(pool_index, new_view_block);
+    auto new_pb_view_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
+    ViewBlock2Proto(new_view_block, new_pb_view_block.get());
+    pro_msg->set_allocated_view_item(new_pb_view_block.get());
     pro_msg->set_elect_height(elect_info_->GetElectItem()->ElectHeight());
     pro_msg->set_tc_str(sync_info->tc->Serialize());
     auto pb_tx_propose = std::make_shared<hotstuff::protobuf::TxPropose>();
@@ -493,22 +539,13 @@ void HotstuffManager::ConstructPropseMsg(const std::shared_ptr<view_block::proto
     pro_msg->set_allocated_tx_propose(pb_tx_propose.get());
 }
 
-void HotstuffManager::StartGenesisPropose(const uint32_t& pool_index, const std::shared_ptr<ViewBlock>& genesis_view_block) {
-    auto view_block = std::make_shared<ViewBlock>();
-    ConstructViewBlock(pool_index, genesis_view_block, view_block);
-
-    auto pb_view_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
-    ViewBlock2Proto(view_block, pb_view_block.get());
+void HotstuffManager::StartPropose(const uint32_t& pool_index, const std::shared_ptr<SyncInfo>& sync_info) {
     auto pb_pro_msg = std::make_shared<hotstuff::protobuf::ProposeMsg>();
-    ConstructPropseMsg(pb_view_block, std::make_shared<SyncInfo>(), pb_pro_msg);
+    ConstructPropseMsg(pool_index, sync_info, pb_pro_msg);
 
-    auto pb_hotstuff_msg = std::make_shared<hotstuff::protobuf::HotstuffMessage>();
-    pb_hotstuff_msg->set_type(PROPOSE);
-    pb_hotstuff_msg->set_allocated_pro_msg(pb_pro_msg.get());
-    pb_hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
-    pb_hotstuff_msg->set_pool_index(pool_index);
+    auto pb_hotstuff_msg = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, pool_index);
 
-    if (SendTranMsg(pb_hotstuff_msg) != Status::kSuccess) {
+    if (SendTranMsg(pool_index, pb_hotstuff_msg) != Status::kSuccess) {
         ZJC_ERROR("Send Propose message is error.");
     }
     return;
@@ -543,21 +580,12 @@ void HotstuffManager::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg,
     sync_info->qc = qc;
     pool_hotstuff_[pool_index].pace_maker->AdvanceView(sync_info);
 
-    auto new_view_block = std::make_shared<ViewBlock>();
-    ConstructViewBlock(pool_index, v_block, new_view_block);
-
     auto pb_pro_msg = std::make_shared<hotstuff::protobuf::ProposeMsg>();
-    auto new_pb_view_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
-    ViewBlock2Proto(new_view_block, new_pb_view_block.get());
-    ConstructPropseMsg(new_pb_view_block, std::make_shared<SyncInfo>(), pb_pro_msg);
+    ConstructPropseMsg(pool_index, std::make_shared<SyncInfo>(), pb_pro_msg);
 
-    auto hotstuff_msg = std::make_shared<hotstuff::protobuf::HotstuffMessage>();
-    hotstuff_msg->set_type(PROPOSE); 
-    hotstuff_msg->set_allocated_pro_msg(pb_pro_msg.get());
-    hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
-    hotstuff_msg->set_pool_index(pool_index);
+    auto pb_hotstuff_msg = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, pool_index);
 
-    if (SendTranMsg(hotstuff_msg) != Status::kSuccess) {
+    if (SendTranMsg(pool_index, pb_hotstuff_msg) != Status::kSuccess) {
         ZJC_ERROR("Send Propose message is error.");
     }
     return;
