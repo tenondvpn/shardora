@@ -53,15 +53,16 @@ Status BlockWrapper::Wrap(
         times_of_no_txs_++;
         return s;
     }
-    
-    for (auto it = txs_ptr->txs.begin(); it != txs_ptr->txs.end(); it++) {
-        auto* tx_info = tx_propose->add_txs();
-        *tx_info = it->second->tx_info;
-    }
-    tx_propose->set_tx_type(txs_ptr->tx_type);
-    
-    if (txs_ptr->tx_type != pools::protobuf::kNormalFrom) {
-        block->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
+
+    if (txs_ptr) {
+        for (auto it = txs_ptr->txs.begin(); it != txs_ptr->txs.end(); it++) {
+            auto* tx_info = tx_propose->add_txs();
+            *tx_info = it->second->tx_info;
+        }
+        tx_propose->set_tx_type(txs_ptr->tx_type);
+        if (txs_ptr->tx_type != pools::protobuf::kNormalFrom) {
+            block->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
+        }
     }
 
     auto elect_item = elect_info_->GetElectItem();
