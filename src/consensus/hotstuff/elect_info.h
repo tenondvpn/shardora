@@ -58,6 +58,10 @@ public:
         return local_member_;
     }
 
+    inline common::BftMemberPtr GetMemberByIdx(uint32_t member_idx) const {
+        return (*members_)[member_idx];
+    }
+
     inline uint64_t ElectHeight() const {
         return elect_height_;
     }
@@ -172,7 +176,7 @@ public:
     }
 
     inline std::shared_ptr<ElectItem> GetElectItem() const {
-        return elect_item_;
+        return elect_item_ != nullptr ? elect_item_ : prev_elect_item_;
     }
 
     // 更新 elect_item members 的 addr

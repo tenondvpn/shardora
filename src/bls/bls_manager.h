@@ -39,6 +39,7 @@ public:
             std::string* verify_hash) = 0;
 
     virtual int GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g1_hash) = 0;
+    virtual std::shared_ptr<security::Security> security() = 0;
 };
 
 class BlsManager : public IBlsManager {
@@ -95,6 +96,9 @@ public:
     int AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
+    std::shared_ptr<security::Security> security() {
+        return security_;
+    }
 
 private:
     void HandleFinish(const transport::MessagePtr& msg_ptr);
