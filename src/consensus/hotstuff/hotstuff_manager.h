@@ -81,7 +81,8 @@ public:
     HotstuffManager();
     virtual ~HotstuffManager();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
-    Status VerifyTC(const std::string& tc,  const uint32_t& elect_height, std::shared_ptr<TC>& tc_ptr);
+    Status VerifyTC(const std::string& tc,  const uint32_t& elect_height, std::shared_ptr<TC>& tc_ptr,
+        const uint32_t& pool_index);
     Status VerifyViewBlock(
             const uint32_t& pool_idx,
             const std::shared_ptr<ViewBlock>& v_block,
@@ -152,7 +153,7 @@ private:
     void ConstructPropseMsg(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& pb_view_block, 
         const std::shared_ptr<SyncInfo>& sync_info, std::shared_ptr<hotstuff::protobuf::ProposeMsg>& pro_msg);
     void ConstructVoteMsg(std::shared_ptr<hotstuff::protobuf::VoteMsg>& vote_msg, const uint32_t& elect_height, 
-        const std::shared_ptr<ViewBlock>& v_block);
+        const std::shared_ptr<ViewBlock>& v_block, const uint32_t& pool_index);
     struct HotStuff
     {
         uint32_t pool_idx;

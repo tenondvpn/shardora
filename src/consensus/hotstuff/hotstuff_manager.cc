@@ -142,6 +142,7 @@ int HotstuffManager::Init(
         auto leader_idx = leader_rotation->GetLeader()->index;
         if (leader_idx == elect_info_->GetElectItem()->LocalMember()->index) {
             ZJC_INFO("Genesis ViewBlock start propose");
+            auto genesis_vblock = GetGenesisViewBlock(db_, pool_idx);
             StartGenesisPropose(pool_idx, genesis_vblock);
         }
 
@@ -328,12 +329,13 @@ Status HotstuffManager::VeriyfyLeader(const uint32_t& pool_index, const std::sha
     }
     return Status::kSuccess;
 }
-Status HotstuffManager::VerifyTC(const std::string& tc_str, const uint32_t& elect_height, std::shared_ptr<TC>& tc_ptr) {
+Status HotstuffManager::VerifyTC(const std::string& tc_str, const uint32_t& elect_height, std::shared_ptr<TC>& tc_ptr,
+    const uint32_t& pool_index) {
     if (!tc_ptr->Unserialize(tc_str)) {
         ZJC_ERROR("tc Unserialize is error.");
         return Status::kError;
     }
-    if (crypto_->Verify(elect_height, tc_ptr->msg_hash(), tc_ptr->bls_agg_sign) != Status::kSuccess) {
+    if (crypto(pool_index)->Verify(elect_height, tc_ptr->msg_hash(), tc_ptr->bls_agg_sign) != Status::kSuccess) {
         ZJC_ERROR("Verify tc is error.");
         return Status::kError; 
     }
@@ -355,12 +357,12 @@ void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro
     // 3 Verify TC
     std::shared_ptr<TC> tc;
     if (!pro_msg.tc_str().empty() 
-        && VerifyTC(pro_msg.tc_str(), pro_msg.elect_height(), tc) != Status::kSuccess) {
+        && VerifyTC(pro_msg.tc_str(), pro_msg.elect_height(), tc, pool_index) != Status::kSuccess) {
         return;
     }
     // 4 Verify ViewBlock
     auto view_block_chain = pool_hotstuff_[pool_index].view_block_chain;
-    if (VerifyViewBlock(v_block, view_block_chain, pro_msg.elect_height()) != Status::kSuccess) {
+    if (VerifyViewBlock(pool_index, v_block, view_block_chain, pro_msg.elect_height()) != Status::kSuccess) {
         ZJC_ERROR("Verify ViewBlock is error. hash: %s",
             common::Encode::HexEncode(v_block->hash).c_str());
         return;
@@ -408,7 +410,7 @@ void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro
 
     // Construct VoteMsg
     auto vote_msg = std::make_shared<hotstuff::protobuf::VoteMsg>();
-    ConstructVoteMsg(vote_msg, pro_msg.elect_height(), v_block);
+    ConstructVoteMsg(vote_msg, pro_msg.elect_height(), v_block, pool_index);
 
     // Construct HotstuffMessage
     auto pb_hotstuff_msg = std::make_shared<hotstuff::protobuf::HotstuffMessage>();
@@ -423,13 +425,13 @@ void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro
 }
 
 void HotstuffManager::ConstructVoteMsg(std::shared_ptr<hotstuff::protobuf::VoteMsg>& vote_msg, const uint32_t& elect_height, 
-    const std::shared_ptr<ViewBlock>& v_block) {
+    const std::shared_ptr<ViewBlock>& v_block, const uint32_t& pool_index) {
     uint32_t replica_idx = elect_info_->GetElectItem()->LocalMember()->index;
     vote_msg->set_replica_idx(replica_idx);
     vote_msg->set_view_block_hash(v_block->hash);    
     vote_msg->set_elect_height(elect_height);
     std::string sign_x, sign_y;
-    if (crypto_->Sign(elect_height, GetQCMsgHash(v_block->view, v_block->hash) ,&sign_x, &sign_y) != Status::kSuccess) {
+    if (crypto(pool_index)->Sign(elect_height, GetQCMsgHash(v_block->view, v_block->hash) ,&sign_x, &sign_y) != Status::kSuccess) {
         ZJC_ERROR("Sign message is error.");
         return;
     }
