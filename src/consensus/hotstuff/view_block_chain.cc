@@ -246,7 +246,9 @@ bool ViewBlockChain::IsValid() {
 }
 
 void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent) const {
-    std::cout << indent << block->view << ":" << common::Encode::HexEncode(block->hash).c_str() << "\n";
+    std::cout << indent << block->view << ":"
+              << common::Encode::HexEncode(block->hash).c_str() << "[status]:"
+              << static_cast<int>(GetViewBlockStatus(block)) << "\n";
     auto childrenIt = view_block_children_.find(block->hash);
     if (childrenIt != view_block_children_.end()) {
         std::string childIndent = indent + "  ";
