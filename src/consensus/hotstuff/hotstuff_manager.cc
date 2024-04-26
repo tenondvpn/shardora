@@ -324,7 +324,11 @@ Status HotstuffManager::VerifyViewBlock(
 Status HotstuffManager::VeriyfyLeader(const uint32_t& pool_index, const std::shared_ptr<ViewBlock>& view_block) {
     uint32_t leader_idx = view_block->leader_idx;
     auto leader_rotation = std::make_shared<LeaderRotation>(pool_hotstuff_[pool_index].view_block_chain, elect_info_);
-    if (leader_idx != leader_rotation->GetLeader()->index) {
+    auto leader = leader_rotation->GetLeader();
+    if (!leader) {
+        return Status::kError;
+    }
+    if (leader_idx != leader->index) {
         ZJC_ERROR("leader_idx message is error.");
         return Status::kError;
     }
