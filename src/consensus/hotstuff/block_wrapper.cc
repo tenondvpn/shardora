@@ -8,9 +8,9 @@ namespace hotstuff {
 
 BlockWrapper::BlockWrapper(
         const uint32_t pool_idx,
-        const std::shared_ptr<pools::TxPoolManager>& pools_mgr,
-        const std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
-        const std::shared_ptr<block::BlockManager>& block_mgr,
+        std::shared_ptr<pools::TxPoolManager>& pools_mgr,
+        std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
+        std::shared_ptr<block::BlockManager>& block_mgr,
         const std::shared_ptr<ElectInfo>& elect_info) :
     pool_idx_(pool_idx), pools_mgr_(pools_mgr), tm_block_mgr_(tm_block_mgr),
     block_mgr_(block_mgr), elect_info_(elect_info) {

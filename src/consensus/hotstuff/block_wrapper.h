@@ -26,9 +26,9 @@ class BlockWrapper : public IBlockWrapper {
 public:
     BlockWrapper(
             const uint32_t pool_idx,
-            const std::shared_ptr<pools::TxPoolManager>& pools_mgr,
-            const std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
-            const std::shared_ptr<block::BlockManager>& block_mgr,
+            std::shared_ptr<pools::TxPoolManager>& pools_mgr,
+            std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
+            std::shared_ptr<block::BlockManager>& block_mgr,
             const std::shared_ptr<ElectInfo>& elect_info);
     ~BlockWrapper();
 
