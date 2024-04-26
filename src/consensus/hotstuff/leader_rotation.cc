@@ -20,10 +20,8 @@ LeaderRotation::~LeaderRotation() {}
 common::BftMemberPtr LeaderRotation::GetLeader() {
     auto committedBlock = chain_->LatestCommittedBlock();
     // 对于非种子节点可能启动时没有 committedblock, 需要等同步
-    std::shared_ptr<QC> qc = nullptr;
-    if (!committedBlock) {
-        qc = GetQCWrappedByGenesis();
-    } else {
+    auto qc = GetQCWrappedByGenesis();
+    if (committedBlock) {
         qc = committedBlock->qc;
     }
     
