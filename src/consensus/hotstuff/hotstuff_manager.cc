@@ -169,7 +169,7 @@ int HotstuffManager::Init(
             ZJC_ERROR("Get Leader is error.");
         } else if (leader->index == elect_info_->GetElectItem()->LocalMember()->index) {
             ZJC_INFO("ViewBlock start propose");
-            StartPropose(pool_idx);
+            StartPropose(pool_idx, new_sync_info()->WithQC(pace_maker->HighQC()));
         }
     }
 
@@ -345,7 +345,7 @@ Status HotstuffManager::VerifyViewBlock(
     return ret;
 }
 
-Status HotstuffManager::VeriyfyLeader(const uint32_t& pool_index, const std::shared_ptr<ViewBlock>& view_block) {
+Status HotstuffManager::VerifyLeader(const uint32_t& pool_index, const std::shared_ptr<ViewBlock>& view_block) {
     uint32_t leader_idx = view_block->leader_idx;
     auto leader_rotation = std::make_shared<LeaderRotation>(pool_hotstuff_[pool_index].view_block_chain, elect_info_);
     auto leader = leader_rotation->GetLeader(); // 判断是否为空
@@ -382,22 +382,27 @@ void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro
         return;
     }
     // 2 Veriyfy Leader
-    if (VeriyfyLeader(pool_index, v_block) != Status::kSuccess) {
+    if (VerifyLeader(pool_index, v_block) != Status::kSuccess) {
         return;
     }
+
     // 3 Verify TC
     std::shared_ptr<TC> tc;
     if (!pro_msg.tc_str().empty() 
         && VerifyTC(pro_msg.tc_str(), pro_msg.elect_height(), tc, pool_index) != Status::kSuccess) {
         return;
     }
-    // 4 Verify ViewBlock
-    auto view_block_chain = pool_hotstuff_[pool_index].view_block_chain;
-    if (VerifyViewBlock(pool_index, v_block, view_block_chain, pro_msg.elect_height()) != Status::kSuccess) {
+    
+    // 4 Verify ViewBlock    
+    if (VerifyViewBlock(pool_index, v_block, chain(pool_index), pro_msg.elect_height()) != Status::kSuccess) {
         ZJC_ERROR("Verify ViewBlock is error. hash: %s",
             common::Encode::HexEncode(v_block->hash).c_str());
         return;
     }
+
+    // 切换视图
+    pacemaker(pool_index)->AdvanceView(new_sync_info()->WithTC(tc)->WithQC(v_block->qc));
+    
     // 5 Verify ViewBlock.block and tx_propose, 验证tx_propose，填充Block tx相关字段
     auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
     auto block = v_block->block;
@@ -405,18 +410,24 @@ void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro
     block_info->tx_type = pro_msg.tx_propose().tx_type();
     for (int i = 0; i < pro_msg.tx_propose().txs_size(); i++)
     {
-        auto tx =  std::make_shared<pools::protobuf::TxMessage>(pro_msg.tx_propose().txs(i));
+        auto tx = std::make_shared<pools::protobuf::TxMessage>(pro_msg.tx_propose().txs(i));
         block_info->txs.push_back(tx);
     }
     block_info->view = v_block->view;
-    if (pool_hotstuff_[pool_index].block_acceptor->Accept(block_info) != Status::kSuccess) {
+    
+    if (acceptor(pool_index)->Accept(block_info) != Status::kSuccess) {
+        // 归还交易
+        acceptor(pool_index)->Return(block_info->block);
         ZJC_ERROR("Accept tx is error");
         return;
     }
+    // 更新哈希值
+    v_block->UpdateHash();
+    
     // 6 add view block
-    v_block->hash = v_block->DoHash(); // block发生变化，更新view_block hash
-    if (view_block_chain->Store(v_block) != Status::kSuccess) {
-        ZJC_ERROR("add view block error. hash: %s", common::Encode::HexEncode(v_block->hash).c_str());
+    if (chain(pool_index)->Store(v_block) != Status::kSuccess) {
+        ZJC_ERROR("add view block error. hash: %s",
+            common::Encode::HexEncode(v_block->hash).c_str());
         return;
     }
 
@@ -431,18 +442,13 @@ void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro
             return;
         }
     }
-
-    // 切换视图
-    auto sync_info = std::make_shared<SyncInfo>();
-    auto qc = v_block->qc;
-    sync_info->qc = qc;
-    sync_info->tc = tc;
-    pool_hotstuff_[pool_index].pace_maker->AdvanceView(sync_info);
-
+    
     // Construct VoteMsg
     auto vote_msg = std::make_shared<hotstuff::protobuf::VoteMsg>();
-    ConstructVoteMsg(vote_msg, pro_msg.elect_height(), v_block, pool_index);
-
+    s = ConstructVoteMsg(vote_msg, pro_msg.elect_height(), v_block, pool_index);
+    if (s != Status::kSuccess) {
+        return;
+    }
     // Construct HotstuffMessage and send
     auto pb_hotstuff_msg = ConstructHotstuffMsg(VOTE, nullptr, vote_msg, pool_index);
     if (SendTranMsg(pool_index, pb_hotstuff_msg) != Status::kSuccess) {
@@ -451,20 +457,27 @@ void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro
     return;
 }
 
-void HotstuffManager::ConstructVoteMsg(std::shared_ptr<hotstuff::protobuf::VoteMsg>& vote_msg, const uint32_t& elect_height, 
+Status HotstuffManager::ConstructVoteMsg(std::shared_ptr<hotstuff::protobuf::VoteMsg>& vote_msg, const uint32_t& elect_height, 
     const std::shared_ptr<ViewBlock>& v_block, const uint32_t& pool_index) {
-    uint32_t replica_idx = elect_info_->GetElectItem()->LocalMember()->index;
+    auto elect_item = elect_info_->GetElectItem(elect_height);
+    if (!elect_item) {
+        return Status::kError;
+    }
+    uint32_t replica_idx = elect_item->LocalMember()->index;
     vote_msg->set_replica_idx(replica_idx);
     vote_msg->set_view_block_hash(v_block->hash);    
     vote_msg->set_elect_height(elect_height);
+    
     std::string sign_x, sign_y;
-    if (crypto(pool_index)->Sign(elect_height, GetQCMsgHash(v_block->view, v_block->hash) ,&sign_x, &sign_y) != Status::kSuccess) {
+    if (crypto(pool_index)->Sign(elect_height, GetQCMsgHash(v_block->view, v_block->hash), &sign_x, &sign_y) != Status::kSuccess) {
         ZJC_ERROR("Sign message is error.");
-        return;
+        return Status::kError;
     }
     vote_msg->set_sign_x(sign_x);
     vote_msg->set_sign_x(sign_y);
     // todo 附加交易池的消息
+
+    return Status::kSuccess;
 }
 
 Status HotstuffManager::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg, const uint32_t& pool_index,  
@@ -475,15 +488,18 @@ Status HotstuffManager::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_ms
         return Status::kError;
     }
     // 1、根据hash查找view_block；2、view_block.view <= heighQC.view
-    if (!pool_hotstuff_[pool_index].view_block_chain->Has(vote_msg.view_block_hash())) {
+    if (!chain(pool_index)->Has(vote_msg.view_block_hash())) {
+        // 2. TODO 延迟重试
         ZJC_ERROR("view_block_hash message is not exited.");
         return Status::kError;
     }
-    pool_hotstuff_[pool_index].view_block_chain->Get(vote_msg.view_block_hash(), view_block);
-    if (view_block->view > pool_hotstuff_[pool_index].pace_maker->HighQC()->view) {
+    
+    chain(pool_index)->Get(vote_msg.view_block_hash(), view_block);
+    if (view_block->view <= pacemaker(pool_index)->HighQC()->view) {
         ZJC_ERROR("view message is not exited.");
         return Status::kError;
     }
+    
     return Status::kSuccess;
 }
 
@@ -557,11 +573,12 @@ void HotstuffManager::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg,
     // 生成聚合签名，创建qc
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();
-    auto view_block_hash = vote_msg.view_block_hash();
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
+    
     Status ret = crypto(pool_index)->ReconstructAndVerify(
-            elect_height, v_block->view, view_block_hash, replica_idx, 
+            elect_height, v_block->view, v_block->hash, replica_idx, 
             vote_msg.sign_x(), vote_msg.sign_y(), reconstructed_sign);
+    
     if (ret != Status::kSuccess) {
         if (ret == Status::kBlsVerifyWaiting) {
             ZJC_INFO("kBlsVerifyWaiting");
@@ -570,21 +587,18 @@ void HotstuffManager::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg,
         ZJC_ERROR("ReconstructAndVerify error");
         return;
     }
-    auto high_view = pool_hotstuff_[pool_index].pace_maker->HighQC()->view;
-    auto qc = std::make_shared<QC>(reconstructed_sign, high_view + 1, view_block_hash);
-    // 切换视图
-    auto sync_info = std::make_shared<SyncInfo>();
-    sync_info->qc = qc;
-    pool_hotstuff_[pool_index].pace_maker->AdvanceView(sync_info);
+    
+    auto high_view = pacemaker(pool_index)->HighQC()->view;
 
-    auto pb_pro_msg = std::make_shared<hotstuff::protobuf::ProposeMsg>();
-    ConstructPropseMsg(pool_index, std::make_shared<SyncInfo>(), pb_pro_msg);
-
-    auto pb_hotstuff_msg = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, pool_index);
-
-    if (SendTranMsg(pool_index, pb_hotstuff_msg) != Status::kSuccess) {
-        ZJC_ERROR("Send Propose message is error.");
+    auto qc = std::make_shared<QC>();
+    Status s = crypto(pool_index)->CreateQC(v_block, reconstructed_sign, qc);
+    if (s != Status::kSuccess) {
+        return;
     }
+    // 切换视图
+    pacemaker(pool_index)->AdvanceView(new_sync_info()->WithQC(qc));
+
+    StartPropose(pool_index, new_sync_info()->WithQC(pacemaker(pool_index)->HighQC()));
     return;
 }
 

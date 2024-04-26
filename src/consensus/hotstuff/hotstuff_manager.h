@@ -140,7 +140,7 @@ private:
 
     Status VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg, const uint32_t& pool_index, 
         std::shared_ptr<ViewBlock>& view_block);
-    Status VeriyfyLeader(const uint32_t& pool_index, const std::shared_ptr<ViewBlock>& view_block);
+    Status VerifyLeader(const uint32_t& pool_index, const std::shared_ptr<ViewBlock>& view_block);
     Status CommitInner(
             const std::shared_ptr<ViewBlockChain>& c,
             const std::shared_ptr<IBlockAcceptor> accp,            
@@ -149,7 +149,7 @@ private:
     void ConstructViewBlock(const uint32_t& pool_index, std::shared_ptr<ViewBlock>& view_block);
     void ConstructPropseMsg(const uint32_t& pool_index, const std::shared_ptr<SyncInfo>& sync_info,
         std::shared_ptr<hotstuff::protobuf::ProposeMsg>& pro_msg);
-    void ConstructVoteMsg(std::shared_ptr<hotstuff::protobuf::VoteMsg>& vote_msg, const uint32_t& elect_height, 
+    Status ConstructVoteMsg(std::shared_ptr<hotstuff::protobuf::VoteMsg>& vote_msg, const uint32_t& elect_height, 
         const std::shared_ptr<ViewBlock>& v_block, const uint32_t& pool_index);
     struct HotStuff
     {

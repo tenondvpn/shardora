@@ -45,22 +45,28 @@ Status BlockWrapper::Wrap(
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
     Status s = PopTxs(txs_ptr);
     if (s != Status::kSuccess) {
-        return s;
+        // 允许 3 个连续的空交易块
+        if (times_of_no_txs_ == NO_TX_ALLOWED_TIMES) {
+            times_of_no_txs_ = 0;
+            return s;
+        }
+        times_of_no_txs_++;
     }
-    
-    for (auto it = txs_ptr->txs.begin(); it != txs_ptr->txs.end(); it++) {
-        auto* tx_info = tx_propose->add_txs();
-        *tx_info = it->second->tx_info;
-    }
-    tx_propose->set_tx_type(txs_ptr->tx_type);
-    
-    if (txs_ptr->tx_type != pools::protobuf::kNormalFrom) {
-        block->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
+
+    if (txs_ptr) {
+        for (auto it = txs_ptr->txs.begin(); it != txs_ptr->txs.end(); it++) {
+            auto* tx_info = tx_propose->add_txs();
+            *tx_info = it->second->tx_info;
+        }
+        tx_propose->set_tx_type(txs_ptr->tx_type);
+        if (txs_ptr->tx_type != pools::protobuf::kNormalFrom) {
+            block->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
+        }
     }
 
     auto elect_item = elect_info_->GetElectItem();
     if (!elect_item) {
-        return Status::kError;
+        return Status::kElectItemNotFound;
     }
     block->set_electblock_height(elect_item->ElectHeight());
     block->set_leader_index(leader_idx);

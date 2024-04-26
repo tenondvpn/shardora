@@ -124,8 +124,10 @@ struct SyncInfo : public std::enable_shared_from_this<SyncInfo> {
     std::shared_ptr<SyncInfo> WithTC(const std::shared_ptr<TC>& t) {
         tc = t;
         return shared_from_this();
-    }    
+    }
 };
+
+std::shared_ptr<SyncInfo> new_sync_info();
 
 enum class Status : int {
   kSuccess = 0,
@@ -137,6 +139,8 @@ enum class Status : int {
   kAcceptorTxsEmpty = 6,
   kAcceptorBlockInvalid = 7,
   kOldView = 8,
+  kElectItemNotFound = 9,
+  kWrapperTxsEmpty = 10,
 };
 
 enum WaitingBlockType {

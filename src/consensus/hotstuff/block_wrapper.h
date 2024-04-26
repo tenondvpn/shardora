@@ -25,6 +25,10 @@ public:
 
 class BlockWrapper : public IBlockWrapper {
 public:
+    // 允许没有交易成功打包的次数，需要连续 3 个 QC 才能提交
+    // TODO 如果中间出现超时，则需要不止三个块
+    static const uint8_t NO_TX_ALLOWED_TIMES = 3; 
+    
     BlockWrapper(
             const uint32_t pool_idx,
             std::shared_ptr<pools::TxPoolManager>& pools_mgr,
@@ -52,10 +56,11 @@ private:
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     std::shared_ptr<consensus::WaitingTxsPools> txs_pools_ = nullptr;
+    uint8_t times_of_no_txs_ = 0; // 没有交易的次数
 
     Status PopTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
         txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx_);
-        return txs_ptr != nullptr ? Status::kSuccess : Status::kError;
+        return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;
     }
 };
 

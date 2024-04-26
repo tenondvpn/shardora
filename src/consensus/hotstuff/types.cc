@@ -123,6 +123,10 @@ Status Proto2ViewBlock(const view_block::protobuf::ViewBlockItem& view_block_pro
     return Status::kSuccess;
 }
 
+std::shared_ptr<SyncInfo> new_sync_info() {
+    return std::make_shared<SyncInfo>();
+}
+
 }
 
 } // namespace shardora
