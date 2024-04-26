@@ -6,6 +6,7 @@
 #include "block_acceptor.h"
 #include "block_wrapper.h"
 
+#include <consensus/hotstuff/leader_rotation.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/zbft/contract_call.h>
 #include <consensus/zbft/contract_create_by_root_from_tx_item.h>
@@ -81,6 +82,8 @@ public:
         const libff::alt_bn128_Fr& sec_key);
     HotstuffManager();
     virtual ~HotstuffManager();
+
+    Status Start();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     Status VerifyTC(const std::string& tc,  const uint32_t& elect_height, std::shared_ptr<TC>& tc_ptr,
         const uint32_t& pool_index);
@@ -93,7 +96,7 @@ public:
     std::shared_ptr<ViewBlock> CheckCommit(
             const std::shared_ptr<ViewBlock>& v_block,
             const uint32_t& pool_index);
-    void StartPropose(const uint32_t& pool_index, const std::shared_ptr<SyncInfo>& sync_info = std::make_shared<SyncInfo>());
+    void Propose(const uint32_t& pool_index, const std::shared_ptr<SyncInfo>& sync_info = std::make_shared<SyncInfo>());
     inline std::shared_ptr<Pacemaker> pacemaker(uint32_t pool_idx) const {
         auto hf = hotstuff(pool_idx);
         if (!hf) {
@@ -170,6 +173,7 @@ private:
         std::shared_ptr<IBlockWrapper> block_wrapper;
         std::shared_ptr<ViewBlockChain> view_block_chain;
         std::shared_ptr<Crypto> crypto;
+        std::shared_ptr<LeaderRotation> leader_rotation;
 
         void Init(std::shared_ptr<db::Db>& db_) {
             auto genesis = GetGenesisViewBlock(db_, pool_idx);

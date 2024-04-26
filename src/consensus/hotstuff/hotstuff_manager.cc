@@ -148,15 +148,12 @@ int HotstuffManager::Init(
     
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         HotStuff hf;
-        hf.pool_idx = pool_idx;
-        hf.view_block_chain = std::make_shared<ViewBlockChain>();
         auto crypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
-        
         auto leader_rotation = std::make_shared<LeaderRotation>(hf.view_block_chain, elect_info_);
-
-        auto pace_maker = std::make_shared<Pacemaker>(
-                pool_idx, crypto, leader_rotation, std::make_shared<ViewDuration>());
-        
+        auto pace_maker = std::make_shared<Pacemaker>(pool_idx, crypto, leader_rotation, std::make_shared<ViewDuration>());
+        hf.pool_idx = pool_idx;
+        hf.leader_rotation = leader_rotation;
+        hf.view_block_chain = std::make_shared<ViewBlockChain>();
         hf.block_acceptor = std::make_shared<BlockAcceptor>(pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
             contract_mgr, db, gas_prepayment, pool_mgr, block_mgr, tm_block_mgr, new_block_cache_callback);
         hf.pace_maker = pace_maker;
@@ -164,13 +161,6 @@ int HotstuffManager::Init(
         // 初始化
         hf.Init(db_);
         pool_hotstuff_[pool_idx] = hf;
-        auto leader = leader_rotation->GetLeader(); // 判断是否为空
-        if (!leader) {
-            ZJC_ERROR("Get Leader is error.");
-        } else if (leader->index == elect_info_->GetElectItem()->LocalMember()->index) {
-            ZJC_INFO("ViewBlock start propose");
-            StartPropose(pool_idx, new_sync_info()->WithQC(pace_maker->HighQC()));
-        }
     }
 
     RegisterCreateTxCallbacks();
@@ -181,6 +171,29 @@ int HotstuffManager::Init(
         std::bind(&HotstuffManager::HandleMessage, this, std::placeholders::_1));    
 
     return kConsensusSuccess;
+}
+
+// start chained hotstuff
+Status HotstuffManager::Start() {
+    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
+        auto hf = hotstuff(pool_idx);
+        auto leader = hf->leader_rotation->GetLeader();
+        auto elect_item = elect_info_->GetElectItem();
+        if (!elect_item) {
+            return Status::kElectItemNotFound;
+        }
+        auto local_member = elect_item->LocalMember();
+        if (!local_member) {
+            return Status::kError;
+        }
+        if (!leader) {
+            ZJC_ERROR("Get Leader is error.");
+        } else if (leader->index == local_member->index) {
+            ZJC_INFO("ViewBlock start propose");
+            Propose(pool_idx, new_sync_info()->WithQC(pacemaker(pool_idx)->HighQC()));
+        }   
+    }
+    return Status::kSuccess;
 }
 
 
@@ -347,7 +360,7 @@ Status HotstuffManager::VerifyViewBlock(
 
 Status HotstuffManager::VerifyLeader(const uint32_t& pool_index, const std::shared_ptr<ViewBlock>& view_block) {
     uint32_t leader_idx = view_block->leader_idx;
-    auto leader_rotation = std::make_shared<LeaderRotation>(pool_hotstuff_[pool_index].view_block_chain, elect_info_);
+    auto leader_rotation = std::make_shared<LeaderRotation>(chain(pool_index), elect_info_);
     auto leader = leader_rotation->GetLeader(); // 判断是否为空
     if (!leader) {
         ZJC_ERROR("Get Leader is error.");
@@ -359,6 +372,7 @@ Status HotstuffManager::VerifyLeader(const uint32_t& pool_index, const std::shar
     }
     return Status::kSuccess;
 }
+
 Status HotstuffManager::VerifyTC(const std::string& tc_str, const uint32_t& elect_height, std::shared_ptr<TC>& tc_ptr,
     const uint32_t& pool_index) {
     if (!tc_ptr->Unserialize(tc_str)) {
@@ -475,6 +489,7 @@ Status HotstuffManager::ConstructVoteMsg(std::shared_ptr<hotstuff::protobuf::Vot
     }
     vote_msg->set_sign_x(sign_x);
     vote_msg->set_sign_x(sign_y);
+
     std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
     block_wrapper(pool_index)->GetTxsIdempotently(txs);
     for (size_t i = 0; i < txs.size(); i++)
@@ -482,6 +497,7 @@ Status HotstuffManager::ConstructVoteMsg(std::shared_ptr<hotstuff::protobuf::Vot
         auto& tx_ptr = *(vote_msg->add_txs());
         tx_ptr = *(txs[i].get());
     }
+
     return Status::kSuccess;
 }
 
@@ -514,7 +530,7 @@ Status HotstuffManager::SendTranMsg(const uint32_t pool_index, std::shared_ptr<h
     auto& header_msg = trans_msg->header;
     header_msg.set_allocated_hotstuff(hotstuff_msg.get());
 
-    auto leader_rotation = std::make_shared<LeaderRotation>(pool_hotstuff_[pool_index].view_block_chain, elect_info_);
+    auto leader_rotation = std::make_shared<LeaderRotation>(chain(pool_index), elect_info_);
     auto leader = leader_rotation->GetLeader();
     if (!leader) {
         ZJC_ERROR("Get Leader failed.");
@@ -563,15 +579,29 @@ void HotstuffManager::ConstructPropseMsg(const uint32_t& pool_index, const std::
     pro_msg->set_allocated_tx_propose(tx_propose.get());
 }
 
-void HotstuffManager::StartPropose(const uint32_t& pool_index, const std::shared_ptr<SyncInfo>& sync_info) {
+void HotstuffManager::Propose(const uint32_t& pool_index, const std::shared_ptr<SyncInfo>& sync_info) {
     auto pb_pro_msg = std::make_shared<hotstuff::protobuf::ProposeMsg>();
     ConstructPropseMsg(pool_index, sync_info, pb_pro_msg);
 
-    auto pb_hotstuff_msg = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, pool_index);
 
-    if (SendTranMsg(pool_index, pb_hotstuff_msg) != Status::kSuccess) {
-        ZJC_ERROR("Send Propose message is error.");
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& header = msg_ptr->header;
+    header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    header.set_type(common::kHotstuffMessage);
+    header.set_hop_count(0);
+    auto& hotstuff_msg = *header.mutable_hotstuff();
+    hotstuff_msg = *(ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, pool_index));
+    
+    dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
+    header.set_des_dht_key(dht_key.StrKey());
+    assert(header.has_broadcast());
+    transport::TcpTransport::Instance()->SetMessageHash(header);
+    Status s = crypto(pool_index)->SignMessage(msg_ptr);
+    if (s != Status::kSuccess) {
+        return;
     }
+
+    network::Route::Instance()->Send(msg_ptr);
     return;
 }
 
@@ -608,8 +638,7 @@ void HotstuffManager::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg,
     }
     // 切换视图
     pacemaker(pool_index)->AdvanceView(new_sync_info()->WithQC(qc));
-
-    StartPropose(pool_index, new_sync_info()->WithQC(pacemaker(pool_index)->HighQC()));
+    Propose(pool_index, new_sync_info()->WithQC(pacemaker(pool_index)->HighQC()));
     return;
 }
 
@@ -635,8 +664,14 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         switch (hotstuff_msg.type())
         {
         case PROPOSE:
+        {
+            Status s = crypto(hotstuff_msg.pool_index())->VerifyMessage(msg_ptr);
+            if (s != Status::kSuccess) {
+                return;
+            }
             HandleProposeMsg(hotstuff_msg.pro_msg(), hotstuff_msg.pool_index());
             break;
+        }
         case VOTE:
             HandleVoteMsg(hotstuff_msg.vote_msg(), hotstuff_msg.pool_index());
             break;
