@@ -34,6 +34,10 @@ public:
     MOCK_METHOD2(GetLibffHash, int(
                 const std::string& str_hash,
                 libff::alt_bn128_G1* g1_hash));
+    
+    std::shared_ptr<security::Security> security() {
+        return nullptr;
+    }
 };
 
 } // namespace test
