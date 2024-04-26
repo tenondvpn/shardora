@@ -43,7 +43,7 @@ Status BlockWrapper::Wrap(
 
     // 打包交易
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
-    Status s = GetTxs(txs_ptr);
+    Status s = PopTxs(txs_ptr);
     if (s != Status::kSuccess) {
         return s;
     }
@@ -65,6 +65,17 @@ Status BlockWrapper::Wrap(
     block->set_electblock_height(elect_item->ElectHeight());
     block->set_leader_index(leader_idx);
     
+    return Status::kSuccess;
+}
+
+Status BlockWrapper::GetTxsIdempotently(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>& txs) {
+    zbft::protobuf::TxBft txbft;
+    std::map<std::string, pools::TxItemPtr> invalid_txs;
+    pools_mgr_->GetTx(pool_idx_, 1024, invalid_txs, &txbft);
+    
+    for (auto it = txbft.txs().begin(); it != txbft.txs().end(); it++) {
+        txs.push_back(std::make_shared<pools::protobuf::TxMessage>(*it));
+    }
     return Status::kSuccess;
 }
         

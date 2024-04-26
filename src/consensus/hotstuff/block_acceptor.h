@@ -64,10 +64,8 @@ public:
     virtual Status AcceptSync(const std::shared_ptr<block::protobuf::Block>& block) = 0;
     // Commit a block
     virtual Status Commit(std::shared_ptr<block::protobuf::Block>&) = 0;
-    // Fetch local txs to send
-    virtual Status FetchTxsFromPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>) = 0;
     // Add txs to local pool
-    virtual Status AddTxsToPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>) = 0;
+    virtual Status AddTxs(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>) = 0;
     // Return block txs to pool
     virtual Status Return(const std::shared_ptr<block::protobuf::Block>&) = 0;
 };
@@ -102,10 +100,8 @@ public:
     Status AcceptSync(const std::shared_ptr<block::protobuf::Block>& block) override;
     // Commit a block and execute its txs.
     Status Commit(std::shared_ptr<block::protobuf::Block>& block) override;
-    // Fetch local txs and sync them to leader
-    Status FetchTxsFromPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) override;
     // Add txs from hotstuff msg to local pool
-    Status AddTxsToPool(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) override;
+    Status AddTxs(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) override;
     // Return expired or invalid block txs to pool
     Status Return(const std::shared_ptr<block::protobuf::Block>& block) override {
         // return txs to the pool
