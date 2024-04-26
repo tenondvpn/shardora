@@ -61,7 +61,7 @@ public:
     // Accept a block and txs in it from propose msg.
     virtual Status Accept(std::shared_ptr<blockInfo>&) = 0;
     // Accept a block and txs in it from sync msg.
-    virtual Status AcceptSync(const std::shared_ptr<block::protobuf::Block>& block);
+    virtual Status AcceptSync(const std::shared_ptr<block::protobuf::Block>& block) = 0;
     // Commit a block
     virtual Status Commit(std::shared_ptr<block::protobuf::Block>&) = 0;
     // Fetch local txs to send
