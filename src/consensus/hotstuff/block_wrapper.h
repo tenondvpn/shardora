@@ -60,7 +60,7 @@ private:
 
     Status PopTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
         txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx_);
-        return txs_ptr != nullptr ? Status::kSuccess : Status::kError;
+        return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;
     }
 };
 
