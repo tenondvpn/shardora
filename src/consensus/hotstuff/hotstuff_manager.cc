@@ -139,13 +139,14 @@ int HotstuffManager::Init(
         // 初始化
         hf.Init(db_);
         pool_hotstuff_[pool_idx] = hf;
-        auto leader_idx = leader_rotation->GetLeader()->index;
-        if (leader_idx == elect_info_->GetElectItem()->LocalMember()->index) {
-            ZJC_INFO("Genesis ViewBlock start propose");
-            auto genesis_vblock = GetGenesisViewBlock(db_, pool_idx);
-            StartGenesisPropose(pool_idx, genesis_vblock);
+        auto leader = leader_rotation->GetLeader();
+        if (leader) {
+            if (leader->index == elect_info_->GetElectItem()->LocalMember()->index) {
+                ZJC_INFO("Genesis ViewBlock start propose");
+                auto genesis_vblock = GetGenesisViewBlock(db_, pool_idx);
+                StartGenesisPropose(pool_idx, genesis_vblock);
+            }
         }
-
     }
 
     RegisterCreateTxCallbacks();
