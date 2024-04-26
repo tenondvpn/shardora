@@ -32,7 +32,7 @@ uint32_t GenLeaderIdx() {
 }
 
 std::shared_ptr<QC> GenQC(const View& view, const HashStr& view_block_hash) {
-    auto sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::random_element());
+    auto sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
     return std::make_shared<QC>(sign, view, view_block_hash);
 }
 
