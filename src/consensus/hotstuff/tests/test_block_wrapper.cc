@@ -13,6 +13,7 @@ extern std::shared_ptr<QC> GenQC(const View &view, const HashStr &view_block_has
 extern std::shared_ptr<block::protobuf::Block> GenBlock();
 extern uint32_t GenLeaderIdx();
 
+static const uint32_t NET = 3;
 static const uint32_t POOL = 0;
 static const std::string sk_ =
     "b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708";
@@ -35,6 +36,7 @@ static std::shared_ptr<IBlockWrapper> block_wrapper_ = nullptr;
 class TestBlockWrapper : public testing::Test {
 protected:
     static void SetUpTestCase() {
+        common::GlobalInfo::Instance()->set_network_id(NET);
         security_ = std::make_shared<security::Ecdsa>();
         security_->SetPrivateKey(common::Encode::HexDecode(sk_));        
         system("rm -rf ./core.* ./db_wrapper");
@@ -57,7 +59,7 @@ protected:
         members->push_back(member);
         auto common_pk = libff::alt_bn128_G2::one();
         auto sk = libff::alt_bn128_Fr::one();
-        elect_info_->OnNewElectBlock(3, 1, members, common_pk, sk);
+        elect_info_->OnNewElectBlock(NET, 1, members, common_pk, sk);
     }
 
     static void TearDownTestCase() {}
