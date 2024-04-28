@@ -1363,10 +1363,13 @@ ZbftPtr BftManager::CreateBftPtr(
     if (bft_msg.tx_bft().txs_size() > 0) {
         // get txs direct
         if (bft_msg.tx_bft().tx_type() == pools::protobuf::kNormalTo) {
-            txs_ptr = txs_pools_->GetToTxs(bft_msg.pool_index(), false);
+            txs_ptr = txs_pools_->GetToTxs(bft_msg.pool_index(), bft_msg.tx_bft().txs(0).value());
             if (txs_ptr == nullptr) {
-                ZJC_ERROR("invalid consensus kNormalTo, txs not equal to leader. pool_index: %d, gid: %s",
-                    bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+                ZJC_ERROR("invalid consensus kNormalTo, txs not equal to leader. "
+                    "pool_index: %d, gid: %s, tx hash: %s",
+                    bft_msg.pool_index(), 
+                    common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+                    common::Encode::HexEncode(bft_msg.tx_bft().txs(0).value()).c_str());
             }
         } else if (bft_msg.tx_bft().tx_type() == pools::protobuf::kStatistic) {
             assert(bft_msg.tx_bft().txs(0).key() == protos::kSingleTxHashTag);

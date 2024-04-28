@@ -64,7 +64,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
     }
 
     if (txs_item == nullptr) {
-        txs_item = GetToTxs(pool_index, true);
+        txs_item = GetToTxs(pool_index, "");
     }
 
     return txs_item;
@@ -205,12 +205,15 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
     return nullptr;
 }
 
-std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(uint32_t pool_index, bool leader) {
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(
+        uint32_t pool_index, 
+        const std::string& tx_hash) {
     if (pool_index == common::kRootChainPoolIndex) {
         return nullptr;
     }
 
-    auto tx_ptr = block_mgr_->GetToTx(pool_index, leader);
+    bool leader = tx_hash.empty();
+    auto tx_ptr = block_mgr_->GetToTx(pool_index, tx_hash);
     if (tx_ptr != nullptr) {
         if (leader) {
             auto now_tm = common::TimeUtils::TimestampUs();

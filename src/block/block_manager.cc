@@ -1857,7 +1857,8 @@ bool BlockManager::ShouldStopConsensus() {
     return false;
 }
 
-pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
+pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& tx_hash) {
+    bool leader = tx_hash.empty();
     if (!leader) {
         ZJC_DEBUG("backup get to tx coming!");
     }
@@ -1881,6 +1882,10 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
     auto now_tm = common::TimeUtils::TimestampUs();
     auto latest_to_tx = latest_to_tx_;
     auto tmp_to_txs = latest_to_tx->to_tx;
+    if (!leader && tmp_to_txs->tx_hash != tx_hash) {
+        return nullptr;
+    }
+    
     if (tmp_to_txs != nullptr && !tmp_to_txs->tx_ptr->in_consensus) {
         if (leader && tmp_to_txs->tx_ptr->time_valid > now_tm) {
             return nullptr;
