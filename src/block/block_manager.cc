@@ -1629,6 +1629,9 @@ pools::TxItemPtr BlockManager::GetCrossTx(
     auto iter = statistic_map_ptr->begin();
     if (!tx_hash.empty()) {
         for (; iter != statistic_map_ptr->end(); ++iter) {
+            ZJC_DEBUG("now get cross tx leader tx hash: %s, local tx hash: %s", 
+                common::Encode::HexEncode(tx_hash).c_str(), 
+                common::Encode::HexEncode(iter->second->tx_hash).c_str());
             if (iter->second->tx_hash == tx_hash) {
                 break;
             }
