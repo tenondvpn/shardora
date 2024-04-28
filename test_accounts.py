@@ -15,7 +15,8 @@ def check_addresses(addresses):
     def check_address(address):
         res = address
         try:
-            response = requests.post(f'http://localhost:8301/query_account?address={address}')
+            # response = requests.post(f'http://10.200.48.58:8301/query_account?address={address}')
+            response = requests.post(f'127.0.0.1://10.200.48.58:8301/query_account?address={address}')
             if response.status_code != 200 or response.json() is None:
                 print(f"Failed address: {address} , response:{response}")
                 return address

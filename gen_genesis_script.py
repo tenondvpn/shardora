@@ -323,9 +323,9 @@ sh {build_genesis_path} $target $no_build
 cd {datadir} && sh -x fetch.sh 127.0.0.1 ${{server0}} '{server0_pass}' '{datadir}' {server0_node_names_str};
 
 for n in {server0_node_names_str}; do
-    cp -rf {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/${{n}}/conf
-    cp -rf {datadir}/zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/${{n}}/conf
-    cp -rf {datadir}/zjnodes/zjchain/zjchain {datadir}/zjnodes/${{n}}
+    ln -s {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/${{n}}/conf
+    ln -s {datadir}/zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/${{n}}/conf
+    ln -s {datadir}/zjnodes/zjchain/zjchain {datadir}/zjnodes/${{n}}
 done
 """
     

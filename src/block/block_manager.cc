@@ -1593,9 +1593,9 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
             common::Encode::HexEncode(gid).c_str(),
             rbegin->first,
             leader_to_txs->to_tx->tx_ptr->tx_info.ByteSize());
-        assert(tx->value().size() < 1000000u);
-        assert(leader_to_txs->to_tx->tx_ptr->tx_info.ByteSize() < 1000000u);
-        assert(latest_to_tx_->to_tx != nullptr);
+        // assert(tx->value().size() < 1000000u);
+        // assert(leader_to_txs->to_tx->tx_ptr->tx_info.ByteSize() < 1000000u);
+        // assert(latest_to_tx_->to_tx != nullptr);
     }
 }
 

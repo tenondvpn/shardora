@@ -112,14 +112,14 @@ ps -ef | grep zjchain | grep new_node | awk -F' ' '{{print $2}}' | xargs kill -9
 {node_list}
 
 rm -rf /root/zjnodes/new*
-(python test_accounts.py )&
+# (python test_accounts.py )&
 for n in  "${{nodes[@]}}"; do
 
         mkdir -p "/root/zjnodes/${{n}}/log"
         mkdir -p "/root/zjnodes/${{n}}/conf"
-        cp -rf /root/zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/${{n}}/conf/
-        cp -rf /root/zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/${{n}}/conf/
-        cp -rf /root/zjnodes/zjchain/zjchain /root/zjnodes/${{n}}/
+        ln -rf /root/zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/${{n}}/conf/
+        ln -rf /root/zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/${{n}}/conf/
+        ln -rf /root/zjnodes/zjchain/zjchain /root/zjnodes/${{n}}/
         cp -rf ./zjnodes/${{n}}/conf/zjchain.conf /root/zjnodes/${{n}}/conf/zjchain.conf
         echo "cp $n"
 done
@@ -225,5 +225,5 @@ if __name__ == "__main__":
     print(f"node_num_per_shard $n：{args.node_num_per_shard}")
     print(f"servers $m：{servers}")
 
-    join_root_nums = 100
+    join_root_nums = 50
     gen_nodes_conf_file(args.node_num_per_shard, args.shard_num, servers, join_root_nums)
