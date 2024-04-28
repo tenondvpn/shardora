@@ -22,7 +22,7 @@ void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
         // 使用 genesis qc 进行视图切换
         auto genesis_qc = GetGenesisQC(genesis->hash);
         // 开启第一个视图
-        // pacemaker_->AdvanceView(sync_info->WithQC(genesis_qc));
+        pacemaker_->AdvanceView(sync_info->WithQC(genesis_qc));
     } else {
         ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
     }            
