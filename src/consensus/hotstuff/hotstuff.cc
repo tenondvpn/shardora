@@ -376,7 +376,7 @@ Status Hotstuff::VerifyViewBlock(
 
     // 验证 qc
     if (crypto()->VerifyQC(qc, elect_height) != Status::kSuccess) {
-        ZJC_ERROR("Verify qc is error.");
+        ZJC_ERROR("Verify qc is error. elect_height: %llu, qc: %llu", elect_height, qc->view);
         return Status::kError; 
     }
 

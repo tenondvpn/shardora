@@ -180,7 +180,7 @@ Status Crypto::VerifyQC(
         ZJC_ERROR("Verify qc is error.");
         return Status::kError;
     }
-    return Status::kError;
+    return Status::kSuccess;
 }
 
 Status Crypto::VerifyTC(
