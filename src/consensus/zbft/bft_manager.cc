@@ -1959,7 +1959,9 @@ int BftManager::LeaderPrepare(
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto* tx_info = tx_bft.add_txs();
         if (iter->second->tx_info.step() == pools::protobuf::kStatistic || 
-                iter->second->tx_info.step() == pools::protobuf::kCross) {
+                iter->second->tx_info.step() == pools::protobuf::kCross ||
+                iter->second->tx_info.step() == pools::protobuf::kNormalTo ||
+                iter->second->tx_info.step() == pools::protobuf::kRootCreateAddressCrossSharding) {
             tx_info->set_step(iter->second->tx_info.step());
             tx_info->set_key(protos::kSingleTxHashTag);
             tx_info->set_value(iter->second->unique_tx_hash);
