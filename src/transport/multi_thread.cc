@@ -87,7 +87,7 @@ void ThreadHandler::HandleMessage() {
             }
 //             ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
         }
-
+#ifndef ENABLE_HOTSTUFF
         if (maping_thread_idx != common::GlobalInfo::Instance()->message_handler_thread_count() - 1) {
             auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -109,6 +109,7 @@ void ThreadHandler::HandleMessage() {
             // ZJC_DEBUG("end kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
             //     msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
         }
+#endif
 
         if (count >= kMaxHandleMessageCount) {
             continue;
