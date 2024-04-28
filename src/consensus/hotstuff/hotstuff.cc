@@ -373,10 +373,6 @@ Status Hotstuff::CommitInner(
 Status Hotstuff::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg,  
     std::shared_ptr<ViewBlock>& view_block) {
     uint32_t replica_idx = vote_msg.replica_idx();
-    if (replica_idx > kNodeMax) {
-        ZJC_ERROR("replica_idx message is error.");
-        return Status::kError;
-    }
     // 1、根据hash查找view_block；2、view_block.view <= heighQC.view
     if (!view_block_chain()->Has(vote_msg.view_block_hash())) {
         // 2. TODO 延迟重试

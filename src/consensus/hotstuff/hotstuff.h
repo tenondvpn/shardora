@@ -22,11 +22,11 @@ class ContractManager;
 namespace consensus {
 using namespace shardora::hotstuff;
 
-uint32_t kNodeMax = 1024;
 enum MsgType {
-    PROPOSE,
-    VOTE,
+  PROPOSE,
+  VOTE,
 };
+
 typedef hotstuff::protobuf::ProposeMsg  pb_ProposeMsg;
 typedef hotstuff::protobuf::HotstuffMessage  pb_HotstuffMessage;
 typedef hotstuff::protobuf::VoteMsg pb_VoteMsg;
