@@ -139,14 +139,18 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
         common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
         pacemaker()->HighQC()->view);
     // 3 Verify TC
-    auto tc = std::make_shared<TC>();
-    if (!pro_msg.tc_str().empty() && !tc->Unserialize(pro_msg.tc_str())) {
-        ZJC_ERROR("tc Unserialize is error.");
-        return;
+    if (!pro_msg.tc_str().empty()) {
+        auto tc = std::make_shared<TC>();
+        if (!tc->Unserialize(pro_msg.tc_str())) {
+            ZJC_ERROR("tc Unserialize is error.");
+            return;
+        }
+        if (crypto()->VerifyTC(tc, pro_msg.elect_height()) != Status::kSuccess) {
+            return;
+        }
+        pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));
     }
-    if (crypto()->VerifyTC(tc, pro_msg.elect_height()) != Status::kSuccess) {
-        return;
-    }
+    
     ZJC_DEBUG("====1.4 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu",
         pool_idx_,
         pro_msg.view_item().view(),
@@ -165,7 +169,7 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
         common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
         pacemaker()->HighQC()->view);
     // 切换视图
-    pacemaker()->AdvanceView(new_sync_info()->WithTC(tc)->WithQC(v_block->qc));
+    pacemaker()->AdvanceView(new_sync_info()->WithQC(v_block->qc));
     
     // 5 Verify ViewBlock.block and tx_propose, 验证tx_propose，填充Block tx相关字段
     auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
