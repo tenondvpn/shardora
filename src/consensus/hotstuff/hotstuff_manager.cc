@@ -387,6 +387,12 @@ void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro
         ZJC_ERROR("pb_view_block to ViewBlock is error.");
         return;
     }
+
+    // 已经投过票
+    if (hotstuff(pool_index)->HasVoted(v_block->view)) {
+        return;
+    }
+    
     // 2 Veriyfy Leader
     if (VerifyLeader(pool_index, v_block) != Status::kSuccess) {
         return;
@@ -463,6 +469,7 @@ void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro
     if (SendTranMsg(pool_index, pb_hotstuff_msg) != Status::kSuccess) {
         ZJC_ERROR("Send Propose message is error.");
     }
+    
     return;
 }
 
@@ -586,6 +593,13 @@ void HotstuffManager::Propose(const uint32_t& pool_index, const std::shared_ptr<
     header.set_hop_count(0);
     auto& hotstuff_msg = *header.mutable_hotstuff();
     hotstuff_msg = *(ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, pool_index));
+
+    ZJC_DEBUG("====0.1 pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu",
+        pool_index,
+        hotstuff_msg.pro_msg().tx_propose().txs_size(),
+        hotstuff_msg.pro_msg().view_item().view(),
+        common::Encode::HexEncode(hotstuff_msg.pro_msg().view_item().hash()).c_str(),
+        pacemaker(pool_index)->HighQC()->view);
     
     dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
     header.set_des_dht_key(dht_key.StrKey());
@@ -596,6 +610,13 @@ void HotstuffManager::Propose(const uint32_t& pool_index, const std::shared_ptr<
         return;
     }
 
+    ZJC_DEBUG("====0.2 pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu",
+        pool_index,
+        hotstuff_msg.pro_msg().tx_propose().txs_size(),
+        hotstuff_msg.pro_msg().view_item().view(),
+        common::Encode::HexEncode(hotstuff_msg.pro_msg().view_item().hash()).c_str(),
+        pacemaker(pool_index)->HighQC()->view);
+    
     network::Route::Instance()->Send(msg_ptr);
     return;
 }

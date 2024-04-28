@@ -126,8 +126,13 @@ void Pacemaker::OnLocalTimeout() {
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kHotstuffTimeoutMessage);
     transport::TcpTransport::Instance()->SetMessageHash(msg);
-
+    
     // TODO ecdh encrypt
+
+    // 停止对当前 view 的投票
+    if (stop_voting_fn_) {
+        stop_voting_fn_(CurView());
+    }
 
     if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
         ZJC_DEBUG("Send TimeoutMsg to ip: %s, port: %d, local_idx: %d",

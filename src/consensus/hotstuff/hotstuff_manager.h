@@ -7,6 +7,7 @@
 #include "block_wrapper.h"
 
 #include <consensus/hotstuff/leader_rotation.h>
+#include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/zbft/contract_call.h>
 #include <consensus/zbft/contract_create_by_root_from_tx_item.h>
@@ -95,6 +96,7 @@ public:
             const std::shared_ptr<ViewBlock>& v_block,
             const uint32_t& pool_index);
     void Propose(const uint32_t& pool_index, const std::shared_ptr<SyncInfo>& sync_info = std::make_shared<SyncInfo>());
+    
     inline std::shared_ptr<Pacemaker> pacemaker(uint32_t pool_idx) const {
         auto hf = hotstuff(pool_idx);
         if (!hf) {
@@ -172,6 +174,7 @@ private:
         std::shared_ptr<ViewBlockChain> view_block_chain;
         std::shared_ptr<Crypto> crypto;
         std::shared_ptr<LeaderRotation> leader_rotation;
+        View last_vote_view_;
 
         void Init(std::shared_ptr<db::Db>& db_) {
             auto genesis = GetGenesisViewBlock(db_, pool_idx);
@@ -188,6 +191,20 @@ private:
             } else {
                 ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx);
             }
+
+            last_vote_view_ = GenesisView;
+            pace_maker->SetStopVotingFn(std::bind(&HotStuff::StopVoting, this, std::placeholders::_1));
+        }
+
+        void StopVoting(const View& view) {
+            if (last_vote_view_ < view) {
+                last_vote_view_ = view;
+            }
+        }
+
+        // 已经投票
+        bool HasVoted(const View& view) {
+            return last_vote_view_ >= view;
         }
     };
 
