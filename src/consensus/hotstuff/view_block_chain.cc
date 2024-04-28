@@ -31,6 +31,7 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
         start_block_ = view_block;
         view_blocks_[view_block->hash] = view_block;
         view_blocks_at_height_[view_block->view].push_back(view_block);
+        view_block_qc_map_[view_block->hash] = GetGenesisQC(view_block->hash);
         
         prune_height_ = view_block->view;        
         return Status::kSuccess;
@@ -217,7 +218,8 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
 
         view_blocks_.erase(hash);
         view_block_qc_map_.erase(hash);
-    } catch (...) {
+    } catch (std::exception& e) {
+        ZJC_ERROR("del view block error %s", e.what());
         view_block_children_[view_block->parent_hash] = original_child_blocks;
         view_blocks_at_height_[view_block->view] = original_blocks_at_height;
         throw;
