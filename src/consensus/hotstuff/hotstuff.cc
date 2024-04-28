@@ -427,7 +427,9 @@ Status Hotstuff::ConstructProposeMsg(
     ViewBlock2Proto(new_view_block, new_pb_view_block.get());
     pro_msg->set_allocated_view_item(new_pb_view_block.get());
     pro_msg->set_elect_height(elect_info_->GetElectItem()->ElectHeight());
-    pro_msg->set_tc_str(sync_info->tc->Serialize());
+    if (sync_info->tc) {
+        pro_msg->set_tc_str(sync_info->tc->Serialize());
+    }
     pro_msg->set_allocated_tx_propose(tx_propose.get());
     return Status::kSuccess;
 }
