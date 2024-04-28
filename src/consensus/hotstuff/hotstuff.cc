@@ -259,9 +259,10 @@ void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
         ZJC_ERROR("ReconstructAndVerify error");
         return;
     }
-    ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s",
+    ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d, %d",
         pool_idx_,
-        common::Encode::HexEncode(vote_msg.view_block_hash()).c_str());
+        common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
+        reconstructed_sign == nullptr, v_block == nullptr);
 
     auto qc = std::make_shared<QC>();
     Status s = crypto()->CreateQC(v_block, reconstructed_sign, qc);
