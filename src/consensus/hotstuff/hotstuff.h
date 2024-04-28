@@ -19,8 +19,7 @@ namespace contract {
 class ContractManager;
 };
 
-namespace consensus {
-using namespace shardora::hotstuff;
+namespace hotstuff {
 
 enum MsgType {
   PROPOSE,

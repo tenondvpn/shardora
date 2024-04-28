@@ -3,7 +3,7 @@
 
 namespace shardora {
 
-namespace consensus {
+namespace hotstuff {
 
 void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
     // set pacemaker timeout callback function
