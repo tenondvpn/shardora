@@ -128,10 +128,11 @@ private:
     Status ConstructViewBlock( 
             std::shared_ptr<ViewBlock>& view_block,
             std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose);
-    std::shared_ptr<pb_HotstuffMessage> ConstructHotstuffMsg(
+    Status ConstructHotstuffMsg(
             const MsgType msg_type, 
             const std::shared_ptr<pb_ProposeMsg>& pb_pro_msg, 
-            const std::shared_ptr<pb_VoteMsg>& pb_vote_msg);
+            const std::shared_ptr<pb_VoteMsg>& pb_vote_msg,
+            std::shared_ptr<pb_HotstuffMessage>& pb_hf_msg);
     Status SendVoteMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage>& hotstuff_msg);
 };
 

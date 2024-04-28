@@ -334,7 +334,22 @@ void NetworkInit::AddCmds() {
                   << ",highTC: " << pacemaker->HighTC()->view
                   << ",CurView: " << pacemaker->CurView() << std::endl;
         chain->Print();
-    });    
+    });
+
+
+    cmd_.AddCommand("propose", [this](const std::vector<std::string>& args){
+        if (args.size() < 1) {
+            return;
+        }
+        uint32_t pool_idx = std::stoi(args[0]);
+                        
+        auto hf = hotstuff_mgr_->hotstuff(pool_idx);
+        if (!hf) {
+            return;
+        }
+
+        hf->Propose(hotstuff::new_sync_info()->WithQC(hf->pacemaker()->HighQC()));
+    });        
 #endif    
 }
 

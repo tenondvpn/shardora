@@ -1,3 +1,4 @@
+#include <common/log.h>
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/types.h>
 
@@ -7,7 +8,7 @@ namespace hotstuff {
 
 void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
     // set pacemaker timeout callback function
-    pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1));
+    // pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1));
     pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));
 
     ZJC_DEBUG("====9 pool: %d, pm: %p, init", pool_idx_, pacemaker_.get());
@@ -24,7 +25,7 @@ void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
         // 使用 genesis qc 进行视图切换
         auto genesis_qc = GetGenesisQC(genesis->hash);
         // 开启第一个视图
-        // pacemaker_->AdvanceView(sync_info->WithQC(genesis_qc));
+        pacemaker_->AdvanceView(sync_info->WithQC(genesis_qc));
     } else {
         ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
     }            
@@ -177,7 +178,11 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
         return;
     }
     // Construct HotstuffMessage and send
-    auto pb_hotstuff_msg = ConstructHotstuffMsg(VOTE, nullptr, vote_msg);
+    auto pb_hotstuff_msg = std::make_shared<pb_HotstuffMessage>();
+    s = ConstructHotstuffMsg(VOTE, nullptr, vote_msg, pb_hotstuff_msg);
+    if (s != Status::kSuccess) {
+        return;
+    }
     if (SendVoteMsg(pb_hotstuff_msg) != Status::kSuccess) {
         ZJC_ERROR("Send Propose message is error.");
     }
@@ -469,6 +474,7 @@ Status Hotstuff::ConstructViewBlock(
     auto pb_block = std::make_shared<block::protobuf::Block>();
     Status s = wrapper()->Wrap(pre_block, leader_idx, pb_block, tx_propose);
     if (s != Status::kSuccess) {
+        ZJC_WARN("====0.1 pool: %d wrap failed, %d", pool_idx_, static_cast<int>(s));
         return s;
     }
     view_block->block = (pb_block);
@@ -478,11 +484,11 @@ Status Hotstuff::ConstructViewBlock(
     return Status::kSuccess;
 }
 
-std::shared_ptr<pb_HotstuffMessage> Hotstuff::ConstructHotstuffMsg(
+Status Hotstuff::ConstructHotstuffMsg(
         const MsgType msg_type, 
         const std::shared_ptr<pb_ProposeMsg>& pb_pro_msg, 
-        const std::shared_ptr<pb_VoteMsg>& pb_vote_msg) {
-    auto pb_hotstuff_msg = std::make_shared<pb_HotstuffMessage>();
+        const std::shared_ptr<pb_VoteMsg>& pb_vote_msg,
+        std::shared_ptr<pb_HotstuffMessage>& pb_hotstuff_msg) {
     pb_hotstuff_msg->set_type(msg_type);
     switch (msg_type)
     {
@@ -498,7 +504,7 @@ std::shared_ptr<pb_HotstuffMessage> Hotstuff::ConstructHotstuffMsg(
     }
     pb_hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
     pb_hotstuff_msg->set_pool_index(pool_idx_);
-    return pb_hotstuff_msg;
+    return Status::kSuccess;
 }
 
 Status Hotstuff::SendVoteMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage>& hotstuff_msg) {
