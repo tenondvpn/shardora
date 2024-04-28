@@ -34,7 +34,7 @@
 #include <consensus/hotstuff/hotstuff_syncer.h>
 #include <yaml-cpp/node/node.h>
 
-// #define ENABLE_HOTSTUFF 1
+#define ENABLE_HOTSTUFF 1
 
 namespace shardora {
 
@@ -104,7 +104,7 @@ private:
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
 #ifdef ENABLE_HOTSTUFF
-    std::shared_ptr<consensus::HotstuffManager> hotstuf_mgr_ = nullptr;
+    std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
     std::shared_ptr<hotstuff::HotstuffSyncer> hotstuff_syncer_ = nullptr;
 #endif
     std::shared_ptr<consensus::BftManager> bft_mgr_ = nullptr;
