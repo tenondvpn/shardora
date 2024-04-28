@@ -1296,7 +1296,6 @@ void BlockManager::CreateStatisticTx() {
     {
         ZJC_DEBUG("LLLLLL statistic :%s", ProtobufToJson(elect_statistic).c_str());
     }
-    std::string cross_hash = common::Hash::keccak256(cross_statistic.SerializeAsString());
     if (!statistic_hash.empty()) {
         auto tm_statistic_iter = shard_statistics_map_.find(timeblock_height);
         if (tm_statistic_iter == shard_statistics_map_.end()) {
@@ -1335,7 +1334,8 @@ void BlockManager::CreateStatisticTx() {
         }
     }
 
-    if (!cross_hash.empty()) {
+    if (!cross_statistic.crosses_size() > 0) {
+        std::string cross_hash = common::Hash::keccak256(cross_statistic.SerializeAsString());
         auto tm_statistic_iter = cross_statistics_map_.find(timeblock_height);
         if (tm_statistic_iter == cross_statistics_map_.end()) {
             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
