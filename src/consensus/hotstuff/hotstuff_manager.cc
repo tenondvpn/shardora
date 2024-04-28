@@ -127,13 +127,14 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     if (header.has_hotstuff()) {
         auto& hotstuff_msg = header.hotstuff();
+        ZJC_DEBUG("====1.1 pool: %d, net: %d, has hotstuff", hotstuff_msg.pool_index(), hotstuff_msg.net_id());
         if (hotstuff_msg.net_id() != common::GlobalInfo::Instance()->network_id()) {
             ZJC_ERROR("net_id is error.");
             return;
         }
         if (hotstuff_msg.pool_index() >= common::kInvalidPoolIndex) {
             ZJC_ERROR("pool index invalid[%d]!", hotstuff_msg.pool_index());
-            return ;
+            return;
         }
         switch (hotstuff_msg.type())
         {
@@ -141,6 +142,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         {
             Status s = crypto(hotstuff_msg.pool_index())->VerifyMessage(msg_ptr);
             if (s != Status::kSuccess) {
+                ZJC_ERROR("====1.2 pool: %d, verify message failed, %d", hotstuff_msg.pool_index(), static_cast<int>(s));
                 return;
             }
             hotstuff(hotstuff_msg.pool_index())->HandleProposeMsg(hotstuff_msg.pro_msg());
