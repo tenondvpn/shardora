@@ -257,8 +257,7 @@ void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
     }
     ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s",
         pool_idx_,
-        common::Encode::HexEncode(vote_msg.view_block_hash()).c_str());    
-    auto high_view = pacemaker()->HighQC()->view;
+        common::Encode::HexEncode(vote_msg.view_block_hash()).c_str());
 
     auto qc = std::make_shared<QC>();
     Status s = crypto()->CreateQC(v_block, reconstructed_sign, qc);
@@ -266,14 +265,21 @@ void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
         return;
     }
 
-    ZJC_DEBUG("====2.3 pool: %d, onVote, hash: %s, qc: %lu, %s",
+    ZJC_DEBUG("====2.3 pool: %d, onVote, hash: %s, qc: %lu, %s, cur: %lu",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
         qc->view,
-        common::Encode::HexEncode(qc->view_block_hash).c_str());    
+        common::Encode::HexEncode(qc->view_block_hash).c_str(),
+        pacemaker()->CurView());    
     // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
     Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
+    ZJC_DEBUG("====2.4 pool: %d, onVote, hash: %s, qc: %lu, %s, cur: %lu",
+        pool_idx_,
+        common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
+        qc->view,
+        common::Encode::HexEncode(qc->view_block_hash).c_str(),
+        pacemaker()->CurView());    
     return;
 }
 
