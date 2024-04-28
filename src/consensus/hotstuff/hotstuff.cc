@@ -235,6 +235,9 @@ void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str());    
     std::shared_ptr<ViewBlock> v_block;
+    // TODO 延迟
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    
     if (VerifyVoteMsg(vote_msg, v_block) != Status::kSuccess) {
         ZJC_ERROR("vote message is error.");
         return;
