@@ -295,7 +295,7 @@ void NetworkInit::AddCmds() {
         auto fake_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
         
         auto qc = std::make_shared<hotstuff::QC>();
-        s = hotstuff_mgr_->crypto(pool_idx)->CreateQC(parent_block, fake_sign, qc);        
+        s = hotstuff_mgr_->crypto(pool_idx)->CreateQC(parent_block->hash, parent_block->view, fake_sign, qc);        
         if (s != hotstuff::Status::kSuccess) {
             return;
         }
