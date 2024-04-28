@@ -1,3 +1,4 @@
+#include <common/encode.h>
 #include <common/log.h>
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/types.h>
@@ -226,11 +227,17 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
 }
 
 void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
+    ZJC_DEBUG("====2.0 pool: %d, onVote, hash: %s",
+        pool_idx_,
+        common::Encode::HexEncode(vote_msg.view_block_hash()).c_str());    
     std::shared_ptr<ViewBlock> v_block;
     if (VerifyVoteMsg(vote_msg, v_block) != Status::kSuccess) {
         ZJC_ERROR("vote message is error.");
         return;
     }
+    ZJC_DEBUG("====2.1 pool: %d, onVote, hash: %s",
+        pool_idx_,
+        common::Encode::HexEncode(vote_msg.view_block_hash()).c_str());    
     // 生成聚合签名，创建qc
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();
@@ -248,7 +255,9 @@ void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
         ZJC_ERROR("ReconstructAndVerify error");
         return;
     }
-    
+    ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s",
+        pool_idx_,
+        common::Encode::HexEncode(vote_msg.view_block_hash()).c_str());    
     auto high_view = pacemaker()->HighQC()->view;
 
     auto qc = std::make_shared<QC>();
@@ -256,6 +265,12 @@ void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
     if (s != Status::kSuccess) {
         return;
     }
+
+    ZJC_DEBUG("====2.3 pool: %d, onVote, hash: %s, qc: %lu, %s",
+        pool_idx_,
+        common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
+        qc->view,
+        common::Encode::HexEncode(qc->view_block_hash).c_str());    
     // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
     Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
