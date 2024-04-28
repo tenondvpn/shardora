@@ -172,6 +172,24 @@ int NetworkInit::Init(int argc, char** argv) {
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
 
+
+#ifdef ENABLE_HOTSTUFF
+    hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
+    auto consensus_init_res = hotstuff_mgr_->Init(
+        contract_mgr_,
+        gas_prepayment_,
+        vss_mgr_,
+        account_mgr_,
+        block_mgr_,
+        elect_mgr_,
+        pools_mgr_,
+        security_,
+        tm_block_mgr_,
+        bls_mgr_,
+        db_,
+        std::bind(&NetworkInit::AddBlockItemToCache, this,
+            std::placeholders::_1, std::placeholders::_2));
+#else
     bft_mgr_ = std::make_shared<consensus::BftManager>();
     auto consensus_init_res = bft_mgr_->Init(
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1),
@@ -190,24 +208,7 @@ int NetworkInit::Init(int argc, char** argv) {
         nullptr,
         common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
         std::bind(&NetworkInit::AddBlockItemToCache, this,
-            std::placeholders::_1, std::placeholders::_2));
-
-#ifdef ENABLE_HOTSTUFF
-    hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
-    auto _ = hotstuff_mgr_->Init(
-        contract_mgr_,
-        gas_prepayment_,
-        vss_mgr_,
-        account_mgr_,
-        block_mgr_,
-        elect_mgr_,
-        pools_mgr_,
-        security_,
-        tm_block_mgr_,
-        bls_mgr_,
-        db_,
-        std::bind(&NetworkInit::AddBlockItemToCache, this,
-            std::placeholders::_1, std::placeholders::_2));
+            std::placeholders::_1, std::placeholders::_2));    
 #endif    
 
     if (consensus_init_res != consensus::kConsensusSuccess) {
@@ -351,10 +352,11 @@ void NetworkInit::RegisterFirewallCheck() {
     net_handler_.AddFirewallCheckCallback(
         common::kViewBlockSyncMessage,
         std::bind(&hotstuff::HotstuffSyncer::FirewallCheckMessage, hotstuff_syncer_.get(), std::placeholders::_1));    
-#endif
+#else
     net_handler_.AddFirewallCheckCallback(
         common::kConsensusMessage,
         std::bind(&consensus::BftManager::FirewallCheckMessage, bft_mgr_.get(), std::placeholders::_1));
+#endif
     net_handler_.AddFirewallCheckCallback(
         common::kBlockMessage,
         std::bind(&block::BlockManager::FirewallCheckMessage, block_mgr_.get(), std::placeholders::_1));
@@ -1355,8 +1357,9 @@ void NetworkInit::HandleElectionBlock(
         elect_block);
 #ifdef ENABLE_HOTSTUFF
     hotstuff_mgr_->OnNewElectBlock(block->timestamp(),sharding_id, elect_height, members, common_pk, sec_key);
-#endif    
+#else
     bft_mgr_->OnNewElectBlock(block->timestamp(),sharding_id, elect_height, members, common_pk, sec_key);
+#endif    
 
     block_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
