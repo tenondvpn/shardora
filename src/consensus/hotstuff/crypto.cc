@@ -142,15 +142,16 @@ Status Crypto::VerifyThresSign(const uint64_t &elect_height, const HashStr &msg_
 }
 
 Status Crypto::CreateQC(
-        const std::shared_ptr<ViewBlock>& view_block,
+        const HashStr& view_block_hash,
+        const View& view,
         const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
         std::shared_ptr<QC>& qc) {
-    if (!reconstructed_sign || !view_block) {
+    if (!reconstructed_sign) {
         return Status::kInvalidArgument;
     }
     qc->bls_agg_sign = reconstructed_sign;
-    qc->view = view_block->view;
-    qc->view_block_hash = view_block->hash;
+    qc->view = view;
+    qc->view_block_hash = view_block_hash;
     return Status::kSuccess;
 }
 
@@ -180,7 +181,7 @@ Status Crypto::VerifyQC(
         ZJC_ERROR("Verify qc is error.");
         return Status::kError;
     }
-    return Status::kError;
+    return Status::kSuccess;
 }
 
 Status Crypto::VerifyTC(
@@ -217,7 +218,12 @@ Status Crypto::VerifyMessage(const transport::MessagePtr& msg_ptr) {
         return Status::kError;
     }
 
-    auto mem_ptr = elect_item->GetMemberByIdx(msg_ptr->header.zbft().member_index());
+    if (!msg_ptr->header.has_hotstuff() ||
+        !msg_ptr->header.hotstuff().has_pro_msg() ||
+        !msg_ptr->header.hotstuff().pro_msg().has_view_item()) {
+        return Status::kInvalidArgument;
+    }
+    auto mem_ptr = elect_item->GetMemberByIdx(msg_ptr->header.hotstuff().pro_msg().view_item().leader_idx());
     if (mem_ptr->bls_publick_key == libff::alt_bn128_G2::zero()) {
         ZJC_DEBUG("verify sign failed, backup invalid bls pk: %s",
             common::Encode::HexEncode(mem_ptr->id).c_str());

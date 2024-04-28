@@ -7,6 +7,7 @@
 #include <common/utils.h>
 #include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/block_wrapper.h>
+#include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <libbls/tools/utils.h>
 #include <protos/pools.pb.h>
@@ -78,11 +79,10 @@ int HotstuffManager::Init(
                 tm_block_mgr, new_block_cache_callback);
         auto wrapper = std::make_shared<BlockWrapper>(
                 pool_idx, pool_mgr, tm_block_mgr, block_mgr, elect_info_);
-
-        auto hf = Hotstuff(pool_idx, leader_rotation, chain,
-            acceptor, wrapper, pacemaker, crypto, elect_info_);
-        hf.Init(db_);
-        pool_hotstuff_.emplace(pool_idx, std::move(hf));
+        
+        pool_hotstuff_[pool_idx] = std::make_shared<Hotstuff>(pool_idx, leader_rotation, chain,
+            acceptor, wrapper, pacemaker, crypto, elect_info_);;
+        pool_hotstuff_[pool_idx]->Init(db_);
     }
 
     RegisterCreateTxCallbacks();
@@ -127,13 +127,14 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     if (header.has_hotstuff()) {
         auto& hotstuff_msg = header.hotstuff();
+        ZJC_DEBUG("====1.1 pool: %d, net: %d, has hotstuff", hotstuff_msg.pool_index(), hotstuff_msg.net_id());
         if (hotstuff_msg.net_id() != common::GlobalInfo::Instance()->network_id()) {
             ZJC_ERROR("net_id is error.");
             return;
         }
         if (hotstuff_msg.pool_index() >= common::kInvalidPoolIndex) {
             ZJC_ERROR("pool index invalid[%d]!", hotstuff_msg.pool_index());
-            return ;
+            return;
         }
         switch (hotstuff_msg.type())
         {
@@ -141,6 +142,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         {
             Status s = crypto(hotstuff_msg.pool_index())->VerifyMessage(msg_ptr);
             if (s != Status::kSuccess) {
+                ZJC_ERROR("====1.2 pool: %d, verify message failed, %d", hotstuff_msg.pool_index(), static_cast<int>(s));
                 return;
             }
             hotstuff(hotstuff_msg.pool_index())->HandleProposeMsg(hotstuff_msg.pro_msg());
@@ -159,7 +161,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (header.has_hotstuff_timeout_proto()) {
         auto pool_idx = header.hotstuff_timeout_proto().pool_idx();
         auto pace = pacemaker(pool_idx);
-        ZJC_DEBUG("====1.1 msg received, pool_idx: %d", pool_idx);
+        ZJC_DEBUG("====1.1 pool_idx: %d, msg rec", pool_idx);
         pace->OnRemoteTimeout(msg_ptr);
     }
 }

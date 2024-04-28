@@ -32,6 +32,7 @@ typedef hotstuff::protobuf::VoteMsg pb_VoteMsg;
 
 class Hotstuff {
 public:
+    Hotstuff() = default;
     Hotstuff(
             const uint32_t& pool_idx,
             const std::shared_ptr<LeaderRotation>& lr,
@@ -114,8 +115,7 @@ private:
             const std::shared_ptr<IBlockAcceptor> accp, 
             const std::shared_ptr<ViewBlock>& v_block);
     Status VerifyVoteMsg(
-            const hotstuff::protobuf::VoteMsg& vote_msg,  
-            std::shared_ptr<ViewBlock>& view_block);
+            const hotstuff::protobuf::VoteMsg& vote_msg);
     Status VerifyLeader(const std::shared_ptr<ViewBlock>& view_block);
     Status ConstructProposeMsg(
             const std::shared_ptr<SyncInfo>& sync_info,
@@ -127,10 +127,11 @@ private:
     Status ConstructViewBlock( 
             std::shared_ptr<ViewBlock>& view_block,
             std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose);
-    std::shared_ptr<pb_HotstuffMessage> ConstructHotstuffMsg(
+    Status ConstructHotstuffMsg(
             const MsgType msg_type, 
             const std::shared_ptr<pb_ProposeMsg>& pb_pro_msg, 
-            const std::shared_ptr<pb_VoteMsg>& pb_vote_msg);
+            const std::shared_ptr<pb_VoteMsg>& pb_vote_msg,
+            std::shared_ptr<pb_HotstuffMessage>& pb_hf_msg);
     Status SendVoteMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage>& hotstuff_msg);
 };
 

@@ -94,7 +94,7 @@ public:
         if (it == pool_hotstuff_.end()) {
             return nullptr;
         }
-        return std::make_shared<Hotstuff>(it->second);
+        return it->second;
     }    
     
     inline std::shared_ptr<Pacemaker> pacemaker(uint32_t pool_idx) const {
@@ -272,7 +272,7 @@ private:
                 msg_ptr->address_info);
     }
 
-    std::unordered_map<uint32_t, Hotstuff> pool_hotstuff_;
+    std::unordered_map<uint32_t, std::shared_ptr<Hotstuff>> pool_hotstuff_;
     std::shared_ptr<ElectInfo> elect_info_;
     
 

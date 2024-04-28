@@ -31,6 +31,7 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
         start_block_ = view_block;
         view_blocks_[view_block->hash] = view_block;
         view_blocks_at_height_[view_block->view].push_back(view_block);
+        // view_block_qc_map_[view_block->hash] = GetGenesisQC(view_block->hash);
         
         prune_height_ = view_block->view;        
         return Status::kSuccess;
@@ -146,6 +147,8 @@ Status ViewBlockChain::PruneTo(const HashStr& target_hash, std::vector<std::shar
         PruneHistoryTo(target_block);
     }
 
+    start_block_ = target_block;
+
     return Status::kSuccess;
 }
 
@@ -199,6 +202,7 @@ Status ViewBlockChain::GetChildren(const HashStr& hash, std::vector<std::shared_
 }
 
 Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_block) {
+    ZJC_DEBUG("del view block: %s view: %lu", common::Encode::HexEncode(view_block->hash).c_str(), view_block->view);
     auto original_child_blocks = view_block_children_[view_block->parent_hash];
     auto original_blocks_at_height = view_blocks_at_height_[view_block->view];
     auto hash = view_block->hash;
@@ -217,7 +221,8 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
 
         view_blocks_.erase(hash);
         view_block_qc_map_.erase(hash);
-    } catch (...) {
+    } catch (std::exception& e) {
+        ZJC_ERROR("del view block error %s", e.what());
         view_block_children_[view_block->parent_hash] = original_child_blocks;
         view_blocks_at_height_[view_block->view] = original_blocks_at_height;
         throw;
@@ -261,9 +266,7 @@ void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const s
 }
 
 void ViewBlockChain::Print() const {
-    if (start_block_) {
-        PrintBlock(start_block_);
-    }
+    PrintBlock(start_block_);
 }
 
 std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db, uint32_t pool_index) {

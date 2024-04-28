@@ -295,7 +295,7 @@ void NetworkInit::AddCmds() {
         auto fake_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
         
         auto qc = std::make_shared<hotstuff::QC>();
-        s = hotstuff_mgr_->crypto(pool_idx)->CreateQC(parent_block, fake_sign, qc);        
+        s = hotstuff_mgr_->crypto(pool_idx)->CreateQC(parent_block->hash, parent_block->view, fake_sign, qc);        
         if (s != hotstuff::Status::kSuccess) {
             return;
         }
@@ -332,9 +332,26 @@ void NetworkInit::AddCmds() {
         }
         std::cout << "highQC: " << pacemaker->HighQC()->view
                   << ",highTC: " << pacemaker->HighTC()->view
+                  << ",chainSize: " << chain->Size()
+                  << ",commitView: " << chain->LatestCommittedBlock()->view
                   << ",CurView: " << pacemaker->CurView() << std::endl;
         chain->Print();
-    });    
+    });
+
+
+    cmd_.AddCommand("propose", [this](const std::vector<std::string>& args){
+        if (args.size() < 1) {
+            return;
+        }
+        uint32_t pool_idx = std::stoi(args[0]);
+                        
+        auto hf = hotstuff_mgr_->hotstuff(pool_idx);
+        if (!hf) {
+            return;
+        }
+
+        hf->Propose(hotstuff::new_sync_info()->WithQC(hf->pacemaker()->HighQC()));
+    });        
 #endif    
 }
 
@@ -1125,10 +1142,11 @@ void NetworkInit::AddBlockItemToCache(
     }
 
     const auto& tx_list = block->tx_list();
-    if (tx_list.empty()) {
-        assert(false);
-        return;
-    }
+    // 没有交易也可以提交
+    // if (tx_list.empty()) {
+    //     assert(false);
+    //     return;
+    // }
 
     ZJC_DEBUG("cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
         block->network_id(),

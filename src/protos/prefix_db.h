@@ -335,7 +335,7 @@ public:
             return false;
         }
 
-        assert(block.has_bls_agg_sign_x() && block.has_bls_agg_sign_y());
+        // assert(block.has_bls_agg_sign_x() && block.has_bls_agg_sign_y());
         std::string key;
         key.reserve(48);
         key.append(kBlockPrefix);
@@ -347,7 +347,7 @@ public:
             block.hash(),
             batch);
         batch.Put(key, block.SerializeAsString());
-        if (block.tx_list(0).step() == pools::protobuf::kConsensusRootTimeBlock) {
+        if (!block.tx_list().empty() && block.tx_list(0).step() == pools::protobuf::kConsensusRootTimeBlock) {
             ZJC_DEBUG("ddddddd save tm block: %lu", block.height());
         }
         return true;

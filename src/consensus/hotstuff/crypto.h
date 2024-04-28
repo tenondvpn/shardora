@@ -73,7 +73,8 @@ public:
             std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
     
     Status CreateQC(
-            const std::shared_ptr<ViewBlock>& view_block,
+            const HashStr& view_block_hash,
+            const View& view,
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
             std::shared_ptr<QC>& qc);
 

@@ -72,13 +72,13 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
 }
 
 void Pacemaker::UpdateHighQC(const std::shared_ptr<QC>& qc) {
-    if (!high_qc_ || high_qc_->view < qc->view) {
+    if (high_qc_->view < qc->view) {
         high_qc_ = qc;
     }
 }
 
 void Pacemaker::UpdateHighTC(const std::shared_ptr<TC>& tc) {
-    if (!high_tc_ || high_tc_->view < tc->view) {
+    if (high_tc_->view < tc->view) {
         high_tc_ = tc;
     }
 }
@@ -135,7 +135,8 @@ void Pacemaker::OnLocalTimeout() {
     }
 
     if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
-        ZJC_DEBUG("Send TimeoutMsg to ip: %s, port: %d, local_idx: %d",
+        ZJC_DEBUG("Send TimeoutMsg pool: %d, to ip: %s, port: %d, local_idx: %d",
+            pool_idx_,
             common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port, timeout_msg.member_id());
         transport::TcpTransport::Instance()->Send(common::Uint32ToIp(leader->public_ip), leader->public_port, msg);
     } else {
@@ -195,6 +196,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     AdvanceView(sync_info->WithTC(tc));
     
     // TODO New Propose
+    ZJC_DEBUG("====9 pool: %d, pm: %p, onremote", pool_idx_, this);
     if (new_proposal_fn_) {
         new_proposal_fn_(sync_info->WithQC(HighQC())->WithTC(HighTC()));
     }
