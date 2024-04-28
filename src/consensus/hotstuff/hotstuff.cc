@@ -61,12 +61,13 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     header.set_type(common::kHotstuffMessage);
     header.set_hop_count(0);
-    auto hotstuff_msg = std::make_shared<pb_HotstuffMessage>(header.mutable_hotstuff());
+    auto hotstuff_msg = std::make_shared<pb_HotstuffMessage>();
     Status s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("====0.3 pool: %d construct hotstuff msg failed", pool_idx_);
         return;
     }
+    *header.mutable_hotstuff() = *hotstuff_msg;
 
     ZJC_DEBUG("====0.1 pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu",
         pool_idx_,
