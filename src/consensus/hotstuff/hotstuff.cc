@@ -67,7 +67,7 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
         ZJC_ERROR("====0.3 pool: %d construct hotstuff msg failed", pool_idx_);
         return;
     }
-    *header.mutable_hotstuff() = *hotstuff_msg;
+    header.mutable_hotstuff()->CopyFrom(*hotstuff_msg.get());
 
     ZJC_DEBUG("====0.1 pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu",
         pool_idx_,
