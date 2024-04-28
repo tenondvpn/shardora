@@ -60,6 +60,7 @@ namespace consensus {
 using namespace shardora::hotstuff;
 
 class WaitingTxsPools;
+class Hotstuff;
 class HotstuffManager : public Consensus {
 public:
     int Init(
