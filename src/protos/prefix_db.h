@@ -347,7 +347,7 @@ public:
             block.hash(),
             batch);
         batch.Put(key, block.SerializeAsString());
-        if (block.tx_list(0).step() == pools::protobuf::kConsensusRootTimeBlock) {
+        if (!block.tx_list().empty() && block.tx_list(0).step() == pools::protobuf::kConsensusRootTimeBlock) {
             ZJC_DEBUG("ddddddd save tm block: %lu", block.height());
         }
         return true;
