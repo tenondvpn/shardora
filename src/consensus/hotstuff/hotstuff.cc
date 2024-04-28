@@ -429,6 +429,7 @@ Status Hotstuff::CommitInner(
         return Status::kError;
     }
 
+    v_block->block->set_is_commited_block(true);
     s = accp->Commit(v_block->block);
     if (s != Status::kSuccess) {
         return s;
