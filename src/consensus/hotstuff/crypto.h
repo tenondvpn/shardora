@@ -70,12 +70,7 @@ public:
             const uint32_t& member_idx,
             const std::string& partial_sign_x,
             const std::string& partial_sign_y,
-            std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);    
-    
-    Status VerifyThresSign(
-            const uint64_t& elect_height,
-            const HashStr& msg_hash,
-            const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
+            std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
     
     Status CreateQC(
             const std::shared_ptr<ViewBlock>& view_block,
@@ -113,6 +108,11 @@ private:
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     std::shared_ptr<bls::IBlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
+
+    Status VerifyThresSign(
+            const uint64_t& elect_height,
+            const HashStr& msg_hash,
+            const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
     
     void GetG1Hash(const HashStr& msg_hash, libff::alt_bn128_G1* g1_hash) {
         bls_mgr_->GetLibffHash(msg_hash, g1_hash);
