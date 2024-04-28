@@ -70,25 +70,25 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
 
     ZJC_DEBUG("====0.1 pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu",
         pool_idx_,
-        hotstuff_msg.pro_msg().tx_propose().txs_size(),
-        hotstuff_msg.pro_msg().view_item().view(),
-        common::Encode::HexEncode(hotstuff_msg.pro_msg().view_item().hash()).c_str(),
+        hotstuff_msg->pro_msg().tx_propose().txs_size(),
+        hotstuff_msg->pro_msg().view_item().view(),
+        common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
         pacemaker()->HighQC()->view);
     
     dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
     header.set_des_dht_key(dht_key.StrKey());
     assert(header.has_broadcast());
     transport::TcpTransport::Instance()->SetMessageHash(header);
-    Status s = crypto()->SignMessage(msg_ptr);
+    s = crypto()->SignMessage(msg_ptr);
     if (s != Status::kSuccess) {
         return;
     }
 
     ZJC_DEBUG("====0.2 pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu",
         pool_idx_,
-        hotstuff_msg.pro_msg().tx_propose().txs_size(),
-        hotstuff_msg.pro_msg().view_item().view(),
-        common::Encode::HexEncode(hotstuff_msg.pro_msg().view_item().hash()).c_str(),
+        hotstuff_msg->pro_msg().tx_propose().txs_size(),
+        hotstuff_msg->pro_msg().view_item().view(),
+        common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
         pacemaker()->HighQC()->view);
     
     network::Route::Instance()->Send(msg_ptr);
