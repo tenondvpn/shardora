@@ -67,7 +67,7 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
         ZJC_ERROR("====0.3 pool: %d construct hotstuff msg failed", pool_idx_);
         return;
     }
-    header.mutable_hotstuff()->CopyFrom(*hotstuff_msg.get());
+    header.mutable_hotstuff()->CopyFrom(*hotstuff_msg);
 
     ZJC_DEBUG("====0.1 pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu",
         pool_idx_,
@@ -427,12 +427,12 @@ Status Hotstuff::ConstructProposeMsg(
 
     auto new_pb_view_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
     ViewBlock2Proto(new_view_block, new_pb_view_block.get());
-    pro_msg->set_allocated_view_item(new_pb_view_block.get());
+    pro_msg->mutable_view_item()->CopyFrom(*new_pb_view_block);
     pro_msg->set_elect_height(elect_info_->GetElectItem()->ElectHeight());
     if (sync_info->tc) {
         pro_msg->set_tc_str(sync_info->tc->Serialize());
     }
-    pro_msg->set_allocated_tx_propose(tx_propose.get());
+    pro_msg->mutable_tx_propose()->CopyFrom(*tx_propose);
     return Status::kSuccess;
 }
 
@@ -502,10 +502,10 @@ Status Hotstuff::ConstructHotstuffMsg(
     switch (msg_type)
     {
     case PROPOSE:
-        pb_hotstuff_msg->set_allocated_pro_msg(pb_pro_msg.get());
+        pb_hotstuff_msg->mutable_pro_msg()->CopyFrom(*pb_pro_msg);
         break;
     case VOTE:
-        pb_hotstuff_msg->set_allocated_vote_msg(pb_vote_msg.get());
+        pb_hotstuff_msg->mutable_vote_msg()->CopyFrom(*pb_vote_msg);
         break;
     default:
         ZJC_ERROR("MsgType is error");
@@ -520,7 +520,7 @@ Status Hotstuff::SendVoteMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage
     Status ret = Status::kSuccess;
     auto trans_msg = std::make_shared<transport::TransportMessage>();
     auto& header_msg = trans_msg->header;
-    header_msg.set_allocated_hotstuff(hotstuff_msg.get());
+    header_msg.mutable_hotstuff()->CopyFrom(*hotstuff_msg);
 
     auto leader_rotation = std::make_shared<LeaderRotation>(view_block_chain(), elect_info_);
     auto leader = leader_rotation->GetLeader();
