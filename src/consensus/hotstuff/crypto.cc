@@ -217,7 +217,12 @@ Status Crypto::VerifyMessage(const transport::MessagePtr& msg_ptr) {
         return Status::kError;
     }
 
-    auto mem_ptr = elect_item->GetMemberByIdx(msg_ptr->header.zbft().member_index());
+    if (!msg_ptr->header.has_hotstuff() ||
+        !msg_ptr->header.hotstuff().has_pro_msg() ||
+        !msg_ptr->header.hotstuff().pro_msg().has_view_item()) {
+        return Status::kInvalidArgument;
+    }
+    auto mem_ptr = elect_item->GetMemberByIdx(msg_ptr->header.hotstuff().pro_msg().view_item().leader_idx());
     if (mem_ptr->bls_publick_key == libff::alt_bn128_G2::zero()) {
         ZJC_DEBUG("verify sign failed, backup invalid bls pk: %s",
             common::Encode::HexEncode(mem_ptr->id).c_str());
