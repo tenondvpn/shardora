@@ -261,8 +261,9 @@ void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const s
 }
 
 void ViewBlockChain::Print() const {
-    if (start_block_) {
-        PrintBlock(start_block_);
+    auto it = view_blocks_at_height_.find(GetMinHeight());
+    if (it != view_blocks_at_height_.end()) {
+        PrintBlock(it->second[0]);
     }
 }
 
