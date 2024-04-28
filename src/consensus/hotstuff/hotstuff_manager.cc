@@ -6,6 +6,7 @@
 #include <common/log.h>
 #include <common/utils.h>
 #include <consensus/hotstuff/block_acceptor.h>
+#include <consensus/hotstuff/block_wrapper.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <libbls/tools/utils.h>
 #include <protos/pools.pb.h>
@@ -149,18 +150,25 @@ int HotstuffManager::Init(
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         HotStuff hf;
         auto crypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
-        auto leader_rotation = std::make_shared<LeaderRotation>(hf.view_block_chain, elect_info_);
+        auto chain = std::make_shared<ViewBlockChain>();
+        auto leader_rotation = std::make_shared<LeaderRotation>(chain, elect_info_);
         auto pace_maker = std::make_shared<Pacemaker>(pool_idx, crypto, leader_rotation, std::make_shared<ViewDuration>());
         // set pacemaker timeout callback function
         pace_maker->SetNewProposalFn(std::bind(&HotstuffManager::Propose,
                 this, std::placeholders::_1, std::placeholders::_2));
+        auto acceptor = std::make_shared<BlockAcceptor>(
+                pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
+                contract_mgr, db, gas_prepayment, pool_mgr, block_mgr,
+                tm_block_mgr, new_block_cache_callback);
+        auto wrapper = std::make_shared<BlockWrapper>(
+                pool_idx, pool_mgr, tm_block_mgr, block_mgr, elect_info_);
 
         // create hotstuff for each pool
         hf.pool_idx = pool_idx;
         hf.leader_rotation = leader_rotation;
-        hf.view_block_chain = std::make_shared<ViewBlockChain>();
-        hf.block_acceptor = std::make_shared<BlockAcceptor>(pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
-            contract_mgr, db, gas_prepayment, pool_mgr, block_mgr, tm_block_mgr, new_block_cache_callback);
+        hf.view_block_chain = chain; 
+        hf.block_acceptor = acceptor;
+        hf.block_wrapper = wrapper;
         hf.pace_maker = pace_maker;
         hf.crypto = crypto;
         // 初始化
