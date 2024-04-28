@@ -1,6 +1,7 @@
 #include <common/global_info.h>
 #include <common/log.h>
 #include <common/utils.h>
+#include <consensus/hotstuff/hotstuff_manager.h>
 #include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
@@ -102,7 +103,7 @@ void Pacemaker::OnLocalTimeout() {
     std::string bls_sign_y;
     auto view_hash = GetViewHash(CurView());
     // 使用最新的 elect_height 签名
-    if (crypto_->Sign(
+    if (crypto_->PartialSign(
                 elect_item->ElectHeight(),
                 view_hash,
                 &bls_sign_x,
@@ -157,7 +158,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     // TODO 统计 bls 签名
     
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
-    Status s = crypto_->ReconstructAndVerify(
+    Status s = crypto_->ReconstructAndVerifyThresSign(
             timeout_proto.elect_height(),
             timeout_proto.view(),
             timeout_proto.view_hash(),

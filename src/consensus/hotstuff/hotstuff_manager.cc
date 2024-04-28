@@ -151,6 +151,11 @@ int HotstuffManager::Init(
         auto crypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
         auto leader_rotation = std::make_shared<LeaderRotation>(hf.view_block_chain, elect_info_);
         auto pace_maker = std::make_shared<Pacemaker>(pool_idx, crypto, leader_rotation, std::make_shared<ViewDuration>());
+        // set pacemaker timeout callback function
+        pace_maker->SetNewProposalFn(std::bind(&HotstuffManager::Propose,
+                this, std::placeholders::_1, std::placeholders::_2));
+
+        // create hotstuff for each pool
         hf.pool_idx = pool_idx;
         hf.leader_rotation = leader_rotation;
         hf.view_block_chain = std::make_shared<ViewBlockChain>();
@@ -214,7 +219,7 @@ Status HotstuffManager::Commit(const std::shared_ptr<ViewBlock>& v_block, const 
         return Status::kError;
     }
     // 递归提交
-    Status s = CommitInner(c, accp, v_block);
+    Status s = CommitInner(c, acceptor(pool_index), v_block);
     if (s != Status::kSuccess) {
         return s;
     }
@@ -335,7 +340,7 @@ Status HotstuffManager::VerifyViewBlock(
     }
 
     // 验证 qc
-    if (crypto(pool_idx)->Verify(elect_height, qc->msg_hash(), qc->bls_agg_sign) != Status::kSuccess) {
+    if (crypto(pool_idx)->VerifyQC(qc, elect_height) != Status::kSuccess) {
         ZJC_ERROR("Verify qc is error.");
         return Status::kError; 
     }
@@ -373,19 +378,6 @@ Status HotstuffManager::VerifyLeader(const uint32_t& pool_index, const std::shar
     return Status::kSuccess;
 }
 
-Status HotstuffManager::VerifyTC(const std::string& tc_str, const uint32_t& elect_height, std::shared_ptr<TC>& tc_ptr,
-    const uint32_t& pool_index) {
-    if (!tc_ptr->Unserialize(tc_str)) {
-        ZJC_ERROR("tc Unserialize is error.");
-        return Status::kError;
-    }
-    if (crypto(pool_index)->Verify(elect_height, tc_ptr->msg_hash(), tc_ptr->bls_agg_sign) != Status::kSuccess) {
-        ZJC_ERROR("Verify tc is error.");
-        return Status::kError; 
-    }
-    return Status::kSuccess;
-}
-
 void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, const uint32_t& pool_index) {
     // 1 校验pb view block格式
     view_block::protobuf::ViewBlockItem pb_view_block = pro_msg.view_item();
@@ -401,9 +393,12 @@ void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro
     }
 
     // 3 Verify TC
-    std::shared_ptr<TC> tc;
-    if (!pro_msg.tc_str().empty() 
-        && VerifyTC(pro_msg.tc_str(), pro_msg.elect_height(), tc, pool_index) != Status::kSuccess) {
+    auto tc = std::make_shared<TC>();
+    if (!pro_msg.tc_str().empty() && !tc->Unserialize(pro_msg.tc_str())) {
+        ZJC_ERROR("tc Unserialize is error.");
+        return;
+    }
+    if (crypto(pool_index)->VerifyTC(tc, pro_msg.elect_height()) != Status::kSuccess) {
         return;
     }
     
@@ -483,7 +478,7 @@ Status HotstuffManager::ConstructVoteMsg(std::shared_ptr<hotstuff::protobuf::Vot
     vote_msg->set_elect_height(elect_height);
     
     std::string sign_x, sign_y;
-    if (crypto(pool_index)->Sign(elect_height, GetQCMsgHash(v_block->view, v_block->hash), &sign_x, &sign_y) != Status::kSuccess) {
+    if (crypto(pool_index)->PartialSign(elect_height, GetQCMsgHash(v_block->view, v_block->hash), &sign_x, &sign_y) != Status::kSuccess) {
         ZJC_ERROR("Sign message is error.");
         return Status::kError;
     }
@@ -616,7 +611,7 @@ void HotstuffManager::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg,
     auto replica_idx = vote_msg.replica_idx();
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
     
-    Status ret = crypto(pool_index)->ReconstructAndVerify(
+    Status ret = crypto(pool_index)->ReconstructAndVerifyThresSign(
             elect_height, v_block->view, v_block->hash, replica_idx, 
             vote_msg.sign_x(), vote_msg.sign_y(), reconstructed_sign);
     

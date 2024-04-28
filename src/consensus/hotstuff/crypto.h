@@ -57,25 +57,20 @@ public:
     Crypto(const Crypto&) = delete;
     Crypto& operator=(const Crypto&) = delete;
 
-    Status Sign(
+    Status PartialSign(
             const uint64_t& elect_height,
             const HashStr& msg_hash,
             std::string* sign_x,
             std::string* sign_y);
     
-    Status ReconstructAndVerify(
+    Status ReconstructAndVerifyThresSign(
             const uint64_t& elect_height,
             const View& view,
             const HashStr& msg_hash,
             const uint32_t& member_idx,
             const std::string& partial_sign_x,
             const std::string& partial_sign_y,
-            std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);    
-    
-    Status Verify(
-            const uint64_t& elect_height,
-            const HashStr& msg_hash,
-            const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
+            std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
     
     Status CreateQC(
             const std::shared_ptr<ViewBlock>& view_block,
@@ -86,6 +81,14 @@ public:
             const View& view,
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
             std::shared_ptr<TC>& tc);
+
+    Status VerifyQC(
+            const std::shared_ptr<QC>& qc,
+            const uint64_t& elect_height);
+
+    Status VerifyTC(
+            const std::shared_ptr<TC>& tc,
+            const uint64_t& elect_height);    
 
     Status SignMessage(transport::MessagePtr& msg_ptr);
     Status VerifyMessage(const transport::MessagePtr& msg_ptr);
@@ -105,6 +108,11 @@ private:
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     std::shared_ptr<bls::IBlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
+
+    Status VerifyThresSign(
+            const uint64_t& elect_height,
+            const HashStr& msg_hash,
+            const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
     
     void GetG1Hash(const HashStr& msg_hash, libff::alt_bn128_G1* g1_hash) {
         bls_mgr_->GetLibffHash(msg_hash, g1_hash);

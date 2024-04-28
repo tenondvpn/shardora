@@ -193,8 +193,8 @@ int NetworkInit::Init(int argc, char** argv) {
             std::placeholders::_1, std::placeholders::_2));
 
 #ifdef ENABLE_HOTSTUFF
-    hotstuf_mgr_ = std::make_shared<consensus::HotstuffManager>();
-    auto _ = hotstuf_mgr_->Init(
+    hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
+    auto _ = hotstuff_mgr_->Init(
         contract_mgr_,
         gas_prepayment_,
         vss_mgr_,
@@ -230,18 +230,20 @@ int NetworkInit::Init(int argc, char** argv) {
             return kInitError;
         }
     }
-    
-#ifdef ENABLE_HOTSTUFF
-    // TODO pacemaker
-    hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(hotstuf_mgr_);
-    hotstuff_syncer_->Start();    
-    // 以上应该放入 hotstuff 实例初始化中，并接收创世块
-    AddCmds();
-#endif
 
     block_mgr_->LoadLatestBlocks();
     shard_statistic_->Init();
     RegisterFirewallCheck();
+
+#ifdef ENABLE_HOTSTUFF
+    // 启动共识和同步
+    hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(hotstuff_mgr_);
+    hotstuff_syncer_->Start();    
+    hotstuff_mgr_->Start();
+    // 以上应该放入 hotstuff 实例初始化中，并接收创世块
+    AddCmds();
+#endif
+
     transport::TcpTransport::Instance()->Start(false);
     if (InitHttpServer() != kInitSuccess) {
         INIT_ERROR("InitHttpServer failed!");
@@ -271,11 +273,11 @@ void NetworkInit::AddCmds() {
         auto parent_hash = common::Encode::HexDecode(args[1]);
         auto leader_idx = std::stoi(args[2]);
         
-        auto pacemaker = hotstuf_mgr_->pacemaker(pool_idx);
+        auto pacemaker = hotstuff_mgr_->pacemaker(pool_idx);
         if (!pacemaker) {
             return;
         }
-        auto chain = hotstuf_mgr_->chain(pool_idx);
+        auto chain = hotstuff_mgr_->chain(pool_idx);
         if (!chain) {
             return;
         }
@@ -292,7 +294,7 @@ void NetworkInit::AddCmds() {
         auto fake_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
         
         auto qc = std::make_shared<hotstuff::QC>();
-        s = hotstuf_mgr_->crypto(pool_idx)->CreateQC(parent_block, fake_sign, qc);        
+        s = hotstuff_mgr_->crypto(pool_idx)->CreateQC(parent_block, fake_sign, qc);        
         if (s != hotstuff::Status::kSuccess) {
             return;
         }
@@ -319,11 +321,11 @@ void NetworkInit::AddCmds() {
         }
         uint32_t pool_idx = std::stoi(args[0]);
                         
-        auto chain = hotstuf_mgr_->chain(pool_idx);
+        auto chain = hotstuff_mgr_->chain(pool_idx);
         if (!chain) {
             return;
         }
-        auto pacemaker = hotstuf_mgr_->pacemaker(pool_idx);
+        auto pacemaker = hotstuff_mgr_->pacemaker(pool_idx);
         if (!pacemaker) {
             return;
         }
@@ -345,7 +347,7 @@ void NetworkInit::RegisterFirewallCheck() {
 #ifdef ENABLE_HOTSTUFF
     net_handler_.AddFirewallCheckCallback(
         common::kHotstuffMessage,
-        std::bind(&consensus::HotstuffManager::FirewallCheckMessage, hotstuf_mgr_.get(), std::placeholders::_1));
+        std::bind(&consensus::HotstuffManager::FirewallCheckMessage, hotstuff_mgr_.get(), std::placeholders::_1));
     net_handler_.AddFirewallCheckCallback(
         common::kViewBlockSyncMessage,
         std::bind(&hotstuff::HotstuffSyncer::FirewallCheckMessage, hotstuff_syncer_.get(), std::placeholders::_1));    
@@ -1352,7 +1354,7 @@ void NetworkInit::HandleElectionBlock(
         members,
         elect_block);
 #ifdef ENABLE_HOTSTUFF
-    hotstuf_mgr_->OnNewElectBlock(block->timestamp(),sharding_id, elect_height, members, common_pk, sec_key);
+    hotstuff_mgr_->OnNewElectBlock(block->timestamp(),sharding_id, elect_height, members, common_pk, sec_key);
 #endif    
     bft_mgr_->OnNewElectBlock(block->timestamp(),sharding_id, elect_height, members, common_pk, sec_key);
 

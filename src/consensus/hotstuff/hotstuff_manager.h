@@ -85,8 +85,6 @@ public:
 
     Status Start();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
-    Status VerifyTC(const std::string& tc,  const uint32_t& elect_height, std::shared_ptr<TC>& tc_ptr,
-        const uint32_t& pool_index);
     Status VerifyViewBlock(
             const uint32_t& pool_idx,
             const std::shared_ptr<ViewBlock>& v_block,
