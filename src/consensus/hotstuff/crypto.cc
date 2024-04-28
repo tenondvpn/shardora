@@ -8,7 +8,7 @@ namespace shardora {
 
 namespace hotstuff {
 
-Status Crypto::Sign(const uint64_t& elect_height, const HashStr& msg_hash, std::string* sign_x, std::string* sign_y) {
+Status Crypto::PartialSign(const uint64_t& elect_height, const HashStr& msg_hash, std::string* sign_x, std::string* sign_y) {
     auto elect_item = GetElectItem(elect_height);
     if (!elect_item) {
         return Status::kError;
@@ -29,7 +29,7 @@ Status Crypto::Sign(const uint64_t& elect_height, const HashStr& msg_hash, std::
     return Status::kSuccess;
 }
 
-Status Crypto::ReconstructAndVerify(
+Status Crypto::ReconstructAndVerifyThresSign(
         const uint64_t& elect_height,
         const View& view,
         const HashStr& msg_hash,
@@ -99,7 +99,7 @@ Status Crypto::ReconstructAndVerify(
             bls_instance.SignatureRecover(all_signs, lagrange_coeffs));
     collection_item->reconstructed_sign->to_affine_coordinates();
 #endif
-    Status s = Verify(elect_height, msg_hash, collection_item->reconstructed_sign);
+    Status s = VerifyThresSign(elect_height, msg_hash, collection_item->reconstructed_sign);
     if (s == Status::kSuccess) {
         reconstructed_sign = collection_item->reconstructed_sign;
         bls_collection_->handled = true;
@@ -111,7 +111,7 @@ Status Crypto::ReconstructAndVerify(
     return Status::kBlsVerifyWaiting;
 };
 
-Status Crypto::Verify(const uint64_t &elect_height, const HashStr &msg_hash,
+Status Crypto::VerifyThresSign(const uint64_t &elect_height, const HashStr &msg_hash,
                const std::shared_ptr<libff::alt_bn128_G1> &reconstructed_sign) {
 #ifdef HOTSTUFF_TEST
     return Status::kSuccess;

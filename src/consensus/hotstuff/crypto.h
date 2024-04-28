@@ -57,13 +57,13 @@ public:
     Crypto(const Crypto&) = delete;
     Crypto& operator=(const Crypto&) = delete;
 
-    Status Sign(
+    Status PartialSign(
             const uint64_t& elect_height,
             const HashStr& msg_hash,
             std::string* sign_x,
             std::string* sign_y);
     
-    Status ReconstructAndVerify(
+    Status ReconstructAndVerifyThresSign(
             const uint64_t& elect_height,
             const View& view,
             const HashStr& msg_hash,
@@ -72,7 +72,7 @@ public:
             const std::string& partial_sign_y,
             std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);    
     
-    Status Verify(
+    Status VerifyThresSign(
             const uint64_t& elect_height,
             const HashStr& msg_hash,
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);

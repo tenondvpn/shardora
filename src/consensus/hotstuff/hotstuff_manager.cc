@@ -214,7 +214,7 @@ Status HotstuffManager::Commit(const std::shared_ptr<ViewBlock>& v_block, const 
         return Status::kError;
     }
     // 递归提交
-    Status s = CommitInner(c, accp, v_block);
+    Status s = CommitInner(c, acceptor(pool_index), v_block);
     if (s != Status::kSuccess) {
         return s;
     }
@@ -335,7 +335,7 @@ Status HotstuffManager::VerifyViewBlock(
     }
 
     // 验证 qc
-    if (crypto(pool_idx)->Verify(elect_height, qc->msg_hash(), qc->bls_agg_sign) != Status::kSuccess) {
+    if (crypto(pool_idx)->VerifyThresSign(elect_height, qc->msg_hash(), qc->bls_agg_sign) != Status::kSuccess) {
         ZJC_ERROR("Verify qc is error.");
         return Status::kError; 
     }
@@ -379,7 +379,7 @@ Status HotstuffManager::VerifyTC(const std::string& tc_str, const uint32_t& elec
         ZJC_ERROR("tc Unserialize is error.");
         return Status::kError;
     }
-    if (crypto(pool_index)->Verify(elect_height, tc_ptr->msg_hash(), tc_ptr->bls_agg_sign) != Status::kSuccess) {
+    if (crypto(pool_index)->VerifyThresSign(elect_height, tc_ptr->msg_hash(), tc_ptr->bls_agg_sign) != Status::kSuccess) {
         ZJC_ERROR("Verify tc is error.");
         return Status::kError; 
     }
@@ -483,7 +483,7 @@ Status HotstuffManager::ConstructVoteMsg(std::shared_ptr<hotstuff::protobuf::Vot
     vote_msg->set_elect_height(elect_height);
     
     std::string sign_x, sign_y;
-    if (crypto(pool_index)->Sign(elect_height, GetQCMsgHash(v_block->view, v_block->hash), &sign_x, &sign_y) != Status::kSuccess) {
+    if (crypto(pool_index)->PartialSign(elect_height, GetQCMsgHash(v_block->view, v_block->hash), &sign_x, &sign_y) != Status::kSuccess) {
         ZJC_ERROR("Sign message is error.");
         return Status::kError;
     }
@@ -616,7 +616,7 @@ void HotstuffManager::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg,
     auto replica_idx = vote_msg.replica_idx();
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
     
-    Status ret = crypto(pool_index)->ReconstructAndVerify(
+    Status ret = crypto(pool_index)->ReconstructAndVerifyThresSign(
             elect_height, v_block->view, v_block->hash, replica_idx, 
             vote_msg.sign_x(), vote_msg.sign_y(), reconstructed_sign);
     

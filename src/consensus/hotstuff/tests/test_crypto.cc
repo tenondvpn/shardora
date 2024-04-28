@@ -121,7 +121,7 @@ TEST_F(TestCrypto, Sign_Verify) {
     std::string msg = "msg";
     HashStr msg_hash = common::Hash::keccak256(msg);
      
-    Status s = crypto_->Sign(elect_height, msg_hash, &sign_x, &sign_y);
+    Status s = crypto_->PartialSign(elect_height, msg_hash, &sign_x, &sign_y);
     EXPECT_EQ(Status::kSuccess, s);
     EXPECT_EQ(x, sign_x);
     EXPECT_EQ(y, sign_y);
@@ -132,17 +132,17 @@ TEST_F(TestCrypto, Sign_Verify) {
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
 
     for (uint32_t i = 0; i < t-1; i++) {
-        s = crypto_->ReconstructAndVerify(elect_height, view, msg_hash, i, sign_x, sign_y, reconstructed_sign);
+        s = crypto_->ReconstructAndVerifyThresSign(elect_height, view, msg_hash, i, sign_x, sign_y, reconstructed_sign);
         EXPECT_FALSE(s == Status::kSuccess);
         EXPECT_TRUE(reconstructed_sign == nullptr);
     }
 
-    s = crypto_->ReconstructAndVerify(elect_height, view, msg_hash, t-1, sign_x, sign_y, reconstructed_sign);
+    s = crypto_->ReconstructAndVerifyThresSign(elect_height, view, msg_hash, t-1, sign_x, sign_y, reconstructed_sign);
     EXPECT_TRUE(s == Status::kSuccess);
     EXPECT_TRUE(reconstructed_sign != nullptr);
 
     // old view not valid
-    s = crypto_->ReconstructAndVerify(elect_height, old_view, msg_hash, 0, sign_x, sign_y, reconstructed_sign);
+    s = crypto_->ReconstructAndVerifyThresSign(elect_height, old_view, msg_hash, 0, sign_x, sign_y, reconstructed_sign);
     EXPECT_TRUE(s == Status::kInvalidArgument);
 }
 
@@ -204,7 +204,7 @@ TEST_F(TestCrypto, Sign_Verify_Change_Epoch) {
     std::string msg = "msg";
     HashStr msg_hash = common::Hash::keccak256(msg);
      
-    Status s = crypto_->Sign(elect_height, msg_hash, &sign_x, &sign_y);
+    Status s = crypto_->PartialSign(elect_height, msg_hash, &sign_x, &sign_y);
     EXPECT_EQ(Status::kSuccess, s);
     EXPECT_EQ(x, sign_x);
     EXPECT_EQ(y, sign_y);
@@ -215,7 +215,7 @@ TEST_F(TestCrypto, Sign_Verify_Change_Epoch) {
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
 
     for (uint32_t i = 0; i < t-3; i++) {
-        s = crypto_->ReconstructAndVerify(elect_height, view, msg_hash, i, sign_x, sign_y, reconstructed_sign);
+        s = crypto_->ReconstructAndVerifyThresSign(elect_height, view, msg_hash, i, sign_x, sign_y, reconstructed_sign);
         EXPECT_FALSE(s == Status::kSuccess);
         EXPECT_TRUE(reconstructed_sign == nullptr);
     }
@@ -223,12 +223,12 @@ TEST_F(TestCrypto, Sign_Verify_Change_Epoch) {
     elect_info_->OnNewElectBlock(sharding_id, elect_height+1, members, common_pk, sk);
     
     for (uint32_t i = t-3; i < t-1; i++) {
-        s = crypto_->ReconstructAndVerify(elect_height, view, msg_hash, i, sign_x, sign_y, reconstructed_sign);
+        s = crypto_->ReconstructAndVerifyThresSign(elect_height, view, msg_hash, i, sign_x, sign_y, reconstructed_sign);
         EXPECT_FALSE(s == Status::kSuccess);
         EXPECT_TRUE(reconstructed_sign == nullptr);
     }
     
-    s = crypto_->ReconstructAndVerify(elect_height, view, msg_hash, t-1, sign_x, sign_y, reconstructed_sign);
+    s = crypto_->ReconstructAndVerifyThresSign(elect_height, view, msg_hash, t-1, sign_x, sign_y, reconstructed_sign);
     EXPECT_TRUE(s == Status::kSuccess);
     EXPECT_TRUE(reconstructed_sign != nullptr);
 }
