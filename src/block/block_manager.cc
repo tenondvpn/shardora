@@ -1334,7 +1334,7 @@ void BlockManager::CreateStatisticTx() {
         }
     }
 
-    if (!cross_statistic.crosses_size() > 0) {
+    if (cross_statistic.crosses_size() > 0) {
         std::string cross_hash = common::Hash::keccak256(cross_statistic.SerializeAsString());
         auto tm_statistic_iter = cross_statistics_map_.find(timeblock_height);
         if (tm_statistic_iter == cross_statistics_map_.end()) {
@@ -1358,7 +1358,7 @@ void BlockManager::CreateStatisticTx() {
             tx_ptr->tx_ptr->unique_tx_hash = tx_ptr->tx_hash;
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
             tx_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
-            ZJC_INFO("success add cross tx: %s, gid: %s",
+            ZJC_INFO("success add cross tx: %s, gid: %s, cross size: %u",
                 common::Encode::HexEncode(cross_hash).c_str(),
                 common::Encode::HexEncode(gid).c_str());
             cross_statistics_map_[timeblock_height] = tx_ptr;
