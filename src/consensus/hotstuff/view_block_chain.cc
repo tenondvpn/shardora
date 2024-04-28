@@ -264,10 +264,7 @@ void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const s
 }
 
 void ViewBlockChain::Print() const {
-    auto it = view_blocks_at_height_.find(GetMinHeight());
-    if (it != view_blocks_at_height_.end()) {
-        PrintBlock(it->second[0]);
-    }
+    PrintBlock(start_block_);
 }
 
 std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db, uint32_t pool_index) {

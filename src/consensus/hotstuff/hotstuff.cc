@@ -333,7 +333,7 @@ Status Hotstuff::Commit(const std::shared_ptr<ViewBlock>& v_block) {
     }
     // 剪枝
     std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
-    s = view_block_chain()->PruneTo(v_block->hash, forked_blockes, true);
+    s = view_block_chain()->PruneTo(v_block->hash, forked_blockes, false);
     if (s != Status::kSuccess) {
         return s;
     }
