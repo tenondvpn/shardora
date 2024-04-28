@@ -302,7 +302,11 @@ std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(
     if (!c) {
         return nullptr;
     }
-    auto v_block2 = c->QCRef(v_block);
+    auto v_block1 = c->QCRef(v_block);
+    if (!v_block1) {
+        return nullptr;
+    }    
+    auto v_block2 = c->QCRef(v_block1);
     if (!v_block2) {
         return nullptr;
     }
@@ -317,7 +321,7 @@ std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(
         return nullptr;
     }
 
-    if (v_block->parent_hash == v_block2->hash && v_block2->parent_hash == v_block3->hash) {
+    if (v_block1->parent_hash == v_block2->hash && v_block2->parent_hash == v_block3->hash) {
         ZJC_DEBUG("decide block, view: %lu", v_block3->view);
         return v_block3;
     }
