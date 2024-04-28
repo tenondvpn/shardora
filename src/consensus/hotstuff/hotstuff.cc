@@ -284,7 +284,7 @@ void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
     // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
 
-    std::this_thread::sleep_for(std::chrono::microseconds(1000ull));
+    std::this_thread::sleep_for(std::chrono::microseconds(10000ull));
     
     Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
     ZJC_DEBUG("====2.4 pool: %d, onVote, hash: %s, qc: %lu, %s, cur: %lu",
