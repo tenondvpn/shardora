@@ -9,6 +9,8 @@ void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
     // set pacemaker timeout callback function
     pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1));
     pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));
+
+    ZJC_DEBUG("====9 pool: %d, pm: %p, init", pool_idx_, pacemaker_.get());
     last_vote_view_ = GenesisView;
     
     auto genesis = GetGenesisViewBlock(db_, pool_idx_);
@@ -22,7 +24,7 @@ void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
         // 使用 genesis qc 进行视图切换
         auto genesis_qc = GetGenesisQC(genesis->hash);
         // 开启第一个视图
-        pacemaker_->AdvanceView(sync_info->WithQC(genesis_qc));
+        // pacemaker_->AdvanceView(sync_info->WithQC(genesis_qc));
     } else {
         ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
     }            
@@ -49,6 +51,7 @@ Status Hotstuff::Start() {
 }
 
 void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
+    ZJC_DEBUG("====9 pool: %d, pm: %p, propose", pool_idx_, pacemaker_.get());
     auto pb_pro_msg = std::make_shared<hotstuff::protobuf::ProposeMsg>();
     ConstructProposeMsg(sync_info, pb_pro_msg);
 

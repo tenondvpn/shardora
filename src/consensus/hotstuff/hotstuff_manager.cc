@@ -78,7 +78,7 @@ int HotstuffManager::Init(
                 tm_block_mgr, new_block_cache_callback);
         auto wrapper = std::make_shared<BlockWrapper>(
                 pool_idx, pool_mgr, tm_block_mgr, block_mgr, elect_info_);
-
+        
         auto hf = Hotstuff(pool_idx, leader_rotation, chain,
             acceptor, wrapper, pacemaker, crypto, elect_info_);
         hf.Init(db_);
