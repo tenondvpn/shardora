@@ -7,6 +7,7 @@
 #include <common/utils.h>
 #include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/block_wrapper.h>
+#include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <libbls/tools/utils.h>
 #include <protos/pools.pb.h>
@@ -79,10 +80,9 @@ int HotstuffManager::Init(
         auto wrapper = std::make_shared<BlockWrapper>(
                 pool_idx, pool_mgr, tm_block_mgr, block_mgr, elect_info_);
         
-        auto hf = Hotstuff(pool_idx, leader_rotation, chain,
-            acceptor, wrapper, pacemaker, crypto, elect_info_);
-        hf.Init(db_);
-        pool_hotstuff_.emplace(pool_idx, std::move(hf));
+        pool_hotstuff_[pool_idx] = std::make_shared<Hotstuff>(pool_idx, leader_rotation, chain,
+            acceptor, wrapper, pacemaker, crypto, elect_info_);;
+        pool_hotstuff_[pool_idx]->Init(db_);
     }
 
     RegisterCreateTxCallbacks();

@@ -32,6 +32,7 @@ typedef hotstuff::protobuf::VoteMsg pb_VoteMsg;
 
 class Hotstuff {
 public:
+    Hotstuff() = default;
     Hotstuff(
             const uint32_t& pool_idx,
             const std::shared_ptr<LeaderRotation>& lr,
