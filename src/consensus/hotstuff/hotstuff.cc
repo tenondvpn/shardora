@@ -75,10 +75,12 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
         hotstuff_msg->pro_msg().view_item().view(),
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
         pacemaker()->HighQC()->view);
-    
+
+    if (!header.has_broadcast()) {
+        auto broadcast = header.mutable_broadcast();
+    }    
     dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
     header.set_des_dht_key(dht_key.StrKey());
-    assert(header.has_broadcast());
     transport::TcpTransport::Instance()->SetMessageHash(header);
     s = crypto()->SignMessage(msg_ptr);
     if (s != Status::kSuccess) {
