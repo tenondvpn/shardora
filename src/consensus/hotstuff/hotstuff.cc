@@ -93,9 +93,9 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
         hotstuff_msg->pro_msg().view_item().view(),
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
         pacemaker()->HighQC()->view);
-
-    HandleProposeMsg(hotstuff_msg->pro_msg());
+    
     network::Route::Instance()->Send(msg_ptr);
+    HandleProposeMsg(hotstuff_msg->pro_msg());
     return;
 }
 
@@ -107,7 +107,7 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
         pacemaker()->HighQC()->view);    
     // 1 校验pb view block格式
     view_block::protobuf::ViewBlockItem pb_view_block = pro_msg.view_item();
-    std::shared_ptr<ViewBlock> v_block;
+    auto v_block = std::make_shared<ViewBlock>();
     Status s = Proto2ViewBlock(pb_view_block, v_block);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pb_view_block to ViewBlock is error.");
