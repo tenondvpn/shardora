@@ -1140,10 +1140,11 @@ void NetworkInit::AddBlockItemToCache(
     }
 
     const auto& tx_list = block->tx_list();
-    if (tx_list.empty()) {
-        assert(false);
-        return;
-    }
+    // 没有交易也可以提交
+    // if (tx_list.empty()) {
+    //     assert(false);
+    //     return;
+    // }
 
     ZJC_DEBUG("cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
         block->network_id(),
