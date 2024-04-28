@@ -1584,7 +1584,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     to_txs_ptr->timeout = now_time_ms + kToValidTimeout + kToTimeoutMs;
     to_txs_ptr->stop_consensus_timeout = to_txs_ptr->timeout + kStopConsensusTimeoutMs;
     leader_to_txs->to_tx = to_txs_ptr;
-    to_txs_ptr->tx_ptr->unique_tx_hash = pools::GetTxMessageHash(to_txs_ptr->tx_ptr->tx_info);
+    to_txs_ptr->tx_ptr->unique_tx_hash = to_txs_ptr->tx_hash;
     to_txs_ptr->success = true;
     to_txs_ptr->leader_to_index = shard_to.leader_to_idx();
     ZJC_DEBUG("totx success add txs: %s, leader idx: %u, leader to index: %d, gid: %s",
@@ -1885,7 +1885,7 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& t
     if (!leader && tmp_to_txs->tx_hash != tx_hash) {
         return nullptr;
     }
-    
+
     if (tmp_to_txs != nullptr && !tmp_to_txs->tx_ptr->in_consensus) {
         if (leader && tmp_to_txs->tx_ptr->time_valid > now_tm) {
             return nullptr;
@@ -1893,7 +1893,7 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& t
 
         tmp_to_txs->tx_ptr->in_consensus = true;
         ZJC_DEBUG("success get to tx: %s", 
-            common::Encode::HexEncode(latest_to_tx_->to_tx->tx_hash).c_str());
+            common::Encode::HexEncode(tmp_to_txs->tx_hash).c_str());
         return tmp_to_txs->tx_ptr;
     }
 
