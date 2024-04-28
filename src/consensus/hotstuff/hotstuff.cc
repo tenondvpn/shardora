@@ -326,26 +326,21 @@ std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(
 }
 
 Status Hotstuff::Commit(const std::shared_ptr<ViewBlock>& v_block) {
-    auto c = view_block_chain();
-    auto accp = acceptor();
-    if (!c || !accp) {
-        return Status::kError;
-    }
     // 递归提交
-    Status s = CommitInner(c, acceptor(), v_block);
+    Status s = CommitInner(view_block_chain(), acceptor(), v_block);
     if (s != Status::kSuccess) {
         return s;
     }
     // 剪枝
     std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
-    s = c->PruneTo(v_block->hash, forked_blockes, true);
+    s = view_block_chain()->PruneTo(v_block->hash, forked_blockes, true);
     if (s != Status::kSuccess) {
         return s;
     }
 
     // 归还分支交易
     for (const auto& forked_block : forked_blockes) {
-        s = accp->Return(forked_block->block);
+        s = acceptor()->Return(forked_block->block);
         if (s != Status::kSuccess) {
             return s;
         }

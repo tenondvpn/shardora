@@ -141,6 +141,7 @@ Status ViewBlockChain::PruneTo(const HashStr& target_hash, std::vector<std::shar
 
     PruneFromBlockToTargetHash(start_block, hashes_of_branch, forked_blockes, target_hash);
     prune_height_ = target_height;
+    start_block_ = target_block;
 
     if (include_history) {
         PruneHistoryTo(target_block);
