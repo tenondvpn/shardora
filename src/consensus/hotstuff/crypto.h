@@ -87,6 +87,14 @@ public:
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
             std::shared_ptr<TC>& tc);
 
+    Status VerifyQC(
+            const std::shared_ptr<QC>& qc,
+            const uint64_t& elect_height);
+
+    Status VerifyTC(
+            const std::shared_ptr<TC>& tc,
+            const uint64_t& elect_height);    
+
     Status SignMessage(transport::MessagePtr& msg_ptr);
     Status VerifyMessage(const transport::MessagePtr& msg_ptr);
     

@@ -2,6 +2,7 @@
 #include <common/log.h>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/types.h>
+#include <consensus/hotstuff/view_block_chain.h>
 #include <exception>
 
 namespace shardora {
@@ -163,7 +164,36 @@ Status Crypto::CreateTC(
     }
     tc->bls_agg_sign = reconstructed_sign;
     tc->view = view;
-    return Status::kSuccess;    
+    return Status::kSuccess;
+}
+
+Status Crypto::VerifyQC(
+        const std::shared_ptr<QC>& qc,
+        const uint64_t& elect_height) {
+    if (!qc) {
+        return Status::kError;
+    }
+    if (qc->view == GenesisView) {
+        return Status::kSuccess;
+    }
+    if (VerifyThresSign(elect_height, qc->msg_hash(), qc->bls_agg_sign) != Status::kSuccess) {
+        ZJC_ERROR("Verify qc is error.");
+        return Status::kError;
+    }
+    return Status::kError;
+}
+
+Status Crypto::VerifyTC(
+        const std::shared_ptr<TC>& tc,
+        const uint64_t& elect_height) {
+    if (!tc) {
+        return Status::kError;
+    }
+    if (VerifyThresSign(elect_height, tc->msg_hash(), tc->bls_agg_sign) != Status::kSuccess) {
+        ZJC_ERROR("Verify tc is error.");
+        return Status::kError; 
+    }
+    return Status::kSuccess;
 }
 
 Status Crypto::SignMessage(transport::MessagePtr& msg_ptr) {

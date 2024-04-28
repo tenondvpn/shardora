@@ -292,18 +292,6 @@ std::shared_ptr<QC> GetGenesisQC(const HashStr& genesis_view_block_hash) {
             genesis_view_block_hash);
 }
 
-// 是否是创世块的 qc
-bool IsGenesisQC(const std::shared_ptr<QC>& qc, const std::shared_ptr<db::Db>& db, uint32_t pool_index) {
-    if (!qc) {
-        return false;
-    }
-    auto genesis = GetGenesisViewBlock(db, pool_index);
-    if (!genesis) {
-        return false;
-    }
-    return qc->view == GenesisView && qc->view_block_hash == genesis->hash;    
-}
-
 } // namespace hotstuff
 
 } // namespace shardora

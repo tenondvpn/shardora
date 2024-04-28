@@ -335,7 +335,7 @@ Status HotstuffManager::VerifyViewBlock(
     }
 
     // 验证 qc
-    if (crypto(pool_idx)->VerifyThresSign(elect_height, qc->msg_hash(), qc->bls_agg_sign) != Status::kSuccess) {
+    if (crypto(pool_idx)->VerifyQC(qc, elect_height) != Status::kSuccess) {
         ZJC_ERROR("Verify qc is error.");
         return Status::kError; 
     }
@@ -373,19 +373,6 @@ Status HotstuffManager::VerifyLeader(const uint32_t& pool_index, const std::shar
     return Status::kSuccess;
 }
 
-Status HotstuffManager::VerifyTC(const std::string& tc_str, const uint32_t& elect_height, std::shared_ptr<TC>& tc_ptr,
-    const uint32_t& pool_index) {
-    if (!tc_ptr->Unserialize(tc_str)) {
-        ZJC_ERROR("tc Unserialize is error.");
-        return Status::kError;
-    }
-    if (crypto(pool_index)->VerifyThresSign(elect_height, tc_ptr->msg_hash(), tc_ptr->bls_agg_sign) != Status::kSuccess) {
-        ZJC_ERROR("Verify tc is error.");
-        return Status::kError; 
-    }
-    return Status::kSuccess;
-}
-
 void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, const uint32_t& pool_index) {
     // 1 校验pb view block格式
     view_block::protobuf::ViewBlockItem pb_view_block = pro_msg.view_item();
@@ -401,9 +388,12 @@ void HotstuffManager::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro
     }
 
     // 3 Verify TC
-    std::shared_ptr<TC> tc;
-    if (!pro_msg.tc_str().empty() 
-        && VerifyTC(pro_msg.tc_str(), pro_msg.elect_height(), tc, pool_index) != Status::kSuccess) {
+    auto tc = std::make_shared<TC>();
+    if (!pro_msg.tc_str().empty() && !tc->Unserialize(pro_msg.tc_str())) {
+        ZJC_ERROR("tc Unserialize is error.");
+        return;
+    }
+    if (crypto(pool_index)->VerifyTC(tc, pro_msg.elect_height()) != Status::kSuccess) {
         return;
     }
     
