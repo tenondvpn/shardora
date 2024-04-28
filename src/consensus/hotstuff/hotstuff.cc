@@ -329,8 +329,6 @@ Status Hotstuff::VerifyViewBlock(
 }
 
 
-
-
 Status Hotstuff::CommitInner(
         const std::shared_ptr<ViewBlockChain>& c,
         const std::shared_ptr<IBlockAcceptor> accp, 
