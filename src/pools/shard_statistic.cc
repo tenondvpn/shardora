@@ -74,11 +74,13 @@ void ShardStatistic::OnNewBlock(const block::protobuf::Block& block) {
         }
     }
 
+#ifndef ENABLE_HOTSTUFF
     if (tx_list.empty()) {
         ZJC_DEBUG("tx list empty!");
         assert(false);
         return;
     }
+#endif
 
     HandleStatistic(block);
 }
