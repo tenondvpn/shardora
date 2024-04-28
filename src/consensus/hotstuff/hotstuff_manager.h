@@ -6,6 +6,7 @@
 #include "block_acceptor.h"
 #include "block_wrapper.h"
 
+#include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/leader_rotation.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
@@ -81,28 +82,27 @@ public:
         common::MembersPtr& members,
         const libff::alt_bn128_G2& common_pk,
         const libff::alt_bn128_Fr& sec_key);
+    
     HotstuffManager();
     virtual ~HotstuffManager();
 
     Status Start();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
-    Status VerifyViewBlock(
-            const uint32_t& pool_idx,
-            const std::shared_ptr<ViewBlock>& v_block,
-            const std::shared_ptr<ViewBlockChain>& view_block_chain,
-            const uint32_t& elect_height);
-    Status Commit(const std::shared_ptr<ViewBlock>& v_block, const uint32_t& pool_index);
-    std::shared_ptr<ViewBlock> CheckCommit(
-            const std::shared_ptr<ViewBlock>& v_block,
-            const uint32_t& pool_index);
-    void Propose(const uint32_t& pool_index, const std::shared_ptr<SyncInfo>& sync_info = std::make_shared<SyncInfo>());
+
+    inline std::shared_ptr<Hotstuff> hotstuff(uint32_t pool_idx) const {
+        auto it = pool_hotstuff_.find(pool_idx);
+        if (it == pool_hotstuff_.end()) {
+            return nullptr;
+        }
+        return std::make_shared<Hotstuff>(it->second);
+    }    
     
     inline std::shared_ptr<Pacemaker> pacemaker(uint32_t pool_idx) const {
         auto hf = hotstuff(pool_idx);
         if (!hf) {
             return nullptr;
         }
-        return hf->pace_maker;
+        return hf->pacemaker();
     }
 
     inline std::shared_ptr<ViewBlockChain> chain(uint32_t pool_idx) const {
@@ -110,7 +110,7 @@ public:
         if (!hf) {
             return nullptr;
         }
-        return hf->view_block_chain;
+        return hf->view_block_chain();
     }
 
     inline std::shared_ptr<IBlockAcceptor> acceptor(uint32_t pool_idx) const {
@@ -118,7 +118,7 @@ public:
         if (!hf) {
             return nullptr;
         }
-        return hf->block_acceptor;
+        return hf->acceptor();
     }
 
     inline std::shared_ptr<Crypto> crypto(uint32_t pool_idx) const {
@@ -126,7 +126,7 @@ public:
         if (!hf) {
             return nullptr;
         }
-        return hf->crypto;        
+        return hf->crypto();        
     }
 
     inline std::shared_ptr<ElectInfo> elect_info() const {
@@ -138,83 +138,12 @@ public:
         if (!hf) {
             return nullptr;
         }
-        return hf->block_wrapper;   
+        return hf->wrapper();   
     }
 
 private:
-
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void RegisterCreateTxCallbacks();
-
-    void HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg, const uint32_t& pool_index);
-    void HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg, const uint32_t& pool_index);
-    Status SendTranMsg(const uint32_t pool_index, std::shared_ptr<hotstuff::protobuf::HotstuffMessage>& hotstuff_msg);
-
-    Status VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg, const uint32_t& pool_index, 
-        std::shared_ptr<ViewBlock>& view_block);
-    Status VerifyLeader(const uint32_t& pool_index, const std::shared_ptr<ViewBlock>& view_block);
-    Status CommitInner(
-            const std::shared_ptr<ViewBlockChain>& c,
-            const std::shared_ptr<IBlockAcceptor> accp,            
-            const std::shared_ptr<ViewBlock>& v_block);
-
-    void ConstructViewBlock(const uint32_t& pool_index, 
-        std::shared_ptr<ViewBlock>& view_block,
-        std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose);
-    void ConstructPropseMsg(const uint32_t& pool_index, const std::shared_ptr<SyncInfo>& sync_info,
-        std::shared_ptr<hotstuff::protobuf::ProposeMsg>& pro_msg);
-    Status ConstructVoteMsg(std::shared_ptr<hotstuff::protobuf::VoteMsg>& vote_msg, const uint32_t& elect_height, 
-        const std::shared_ptr<ViewBlock>& v_block, const uint32_t& pool_index);
-    struct HotStuff
-    {
-        uint32_t pool_idx;
-        std::shared_ptr<Pacemaker> pace_maker;
-        std::shared_ptr<IBlockAcceptor> block_acceptor;
-        std::shared_ptr<IBlockWrapper> block_wrapper;
-        std::shared_ptr<ViewBlockChain> view_block_chain;
-        std::shared_ptr<Crypto> crypto;
-        std::shared_ptr<LeaderRotation> leader_rotation;
-        View last_vote_view_;
-
-        void Init(std::shared_ptr<db::Db>& db_) {
-            auto genesis = GetGenesisViewBlock(db_, pool_idx);
-            if (genesis) {
-                // 初始状态，将创世块放入链中
-                view_block_chain->Store(genesis);
-                view_block_chain->SetLatestLockedBlock(genesis);
-                view_block_chain->SetLatestCommittedBlock(genesis);
-                auto sync_info = std::make_shared<SyncInfo>();
-
-                // 使用 genesis qc 进行视图切换
-                auto genesis_qc = GetGenesisQC(genesis->hash);
-                pace_maker->AdvanceView(sync_info->WithQC(genesis_qc));
-            } else {
-                ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx);
-            }
-
-            last_vote_view_ = GenesisView;
-            pace_maker->SetStopVotingFn(std::bind(&HotStuff::StopVoting, this, std::placeholders::_1));
-        }
-
-        void StopVoting(const View& view) {
-            if (last_vote_view_ < view) {
-                last_vote_view_ = view;
-            }
-        }
-
-        // 已经投票
-        bool HasVoted(const View& view) {
-            return last_vote_view_ >= view;
-        }
-    };
-
-    inline std::shared_ptr<HotStuff> hotstuff(uint32_t pool_idx) const {
-        auto it = pool_hotstuff_.find(pool_idx);
-        if (it == pool_hotstuff_.end()) {
-            return nullptr;
-        }
-        return std::make_shared<HotStuff>(it->second);
-    }
     
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(
@@ -343,7 +272,7 @@ private:
                 msg_ptr->address_info);
     }
 
-    std::unordered_map<uint32_t, HotStuff> pool_hotstuff_;
+    std::unordered_map<uint32_t, Hotstuff> pool_hotstuff_;
     std::shared_ptr<ElectInfo> elect_info_;
     
 

@@ -345,13 +345,17 @@ Status HotstuffSyncer::onRecViewBlock(
         const uint32_t& pool_idx,
         const std::shared_ptr<ViewBlockChain>& ori_chain,
         const std::shared_ptr<ViewBlock>& view_block) {
+    auto hotstuff = hotstuff_mgr_->hotstuff(pool_idx);
+    if (!hotstuff) {
+        return Status::kError;
+    }
     // 1. 验证 view_block
-    Status s = hotstuff_mgr_->VerifyViewBlock(pool_idx, view_block, ori_chain, view_block->ElectHeight());
+    Status s = hotstuff->VerifyViewBlock(view_block, ori_chain, view_block->ElectHeight());
     if (s != Status::kSuccess) {
         return s;
     }
     // 2. 验证交易
-    auto accep = hotstuff_mgr_->acceptor(pool_idx);
+    auto accep = hotstuff->acceptor();
     if (!accep) {
         return Status::kError;
     }    
@@ -362,19 +366,19 @@ Status HotstuffSyncer::onRecViewBlock(
     
     // 2. 视图切换
     auto sync_info = std::make_shared<SyncInfo>();
-    hotstuff_mgr_->pacemaker(pool_idx)->AdvanceView(sync_info->WithQC(view_block->qc));
+    hotstuff->pacemaker()->AdvanceView(sync_info->WithQC(view_block->qc));
     
     // 3. 尝试 commit
-    auto view_block_to_commit = hotstuff_mgr_->CheckCommit(view_block, pool_idx);
+    auto view_block_to_commit = hotstuff->CheckCommit(view_block);
     if (view_block_to_commit) {
-        s = hotstuff_mgr_->Commit(view_block_to_commit, pool_idx);
+        s = hotstuff->Commit(view_block_to_commit);
         if (s != Status::kSuccess) {
             return s;
         }
     }
 
     // 4. 保存 view_block
-    return hotstuff_mgr_->chain(pool_idx)->Store(view_block);
+    return hotstuff->view_block_chain()->Store(view_block);
 }
 
 } // namespace consensus
