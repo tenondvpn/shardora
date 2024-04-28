@@ -1,7 +1,6 @@
 #include "hotstuff_manager.h"
 #include "leader_rotation.h"
 
-#include <__functional/bind.h>
 #include <cassert>
 #include <chrono>
 #include <common/log.h>
