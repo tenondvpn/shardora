@@ -1957,6 +1957,9 @@ int BftManager::LeaderPrepare(
             tx_info->set_step(iter->second->tx_info.step());
             tx_info->set_key(protos::kSingleTxHashTag);
             tx_info->set_value(iter->second->unique_tx_hash);
+            ZJC_DEBUG("single tx coming step: %d, hash: %s", 
+                iter->second->tx_info.step(), 
+                common::Encode::HexEncode(iter->second->unique_tx_hash).c_str());
         } else {
             *tx_info = iter->second->tx_info;
         }
