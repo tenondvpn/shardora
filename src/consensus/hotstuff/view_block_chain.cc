@@ -147,6 +147,8 @@ Status ViewBlockChain::PruneTo(const HashStr& target_hash, std::vector<std::shar
         PruneHistoryTo(target_block);
     }
 
+    start_block_ = target_block;
+
     return Status::kSuccess;
 }
 
