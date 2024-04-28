@@ -485,6 +485,7 @@ void BlockManager::HandleCrossTx(
         db::DbWriteBatch& db_batch) {
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         if (block_tx.storages(i).key() == protos::kShardCross) {
+            ZJC_DEBUG("cross tx coming 0");
             const std::string& cross_val = block_tx.storages(i).value();
             pools::protobuf::CrossShardStatistic cross_statistic;
             if (!cross_statistic.ParseFromString(cross_val)) {
@@ -492,6 +493,7 @@ void BlockManager::HandleCrossTx(
                 break;
             }
 
+            ZJC_DEBUG("cross tx coming 1");
             for (auto iter = cross_statistics_map_.begin(); iter != cross_statistics_map_.end(); ++iter) {
                 if (iter->second->tx_hash == cross_statistic.tx_hash()) {
                     cross_statistics_map_.erase(iter);
@@ -501,6 +503,7 @@ void BlockManager::HandleCrossTx(
                 }
             }
 
+            ZJC_DEBUG("cross tx coming 2: %u", cross_statistic.crosses_size());
             for (int32_t i = 0; i < cross_statistic.crosses_size(); ++i) {
                 ZJC_DEBUG("success handle cross tx block net: %u, pool: %u, height: %lu, "
                     "src shard: %u, src pool: %u, height: %lu, des shard: %lu",
