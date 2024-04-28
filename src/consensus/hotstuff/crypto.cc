@@ -142,15 +142,16 @@ Status Crypto::VerifyThresSign(const uint64_t &elect_height, const HashStr &msg_
 }
 
 Status Crypto::CreateQC(
-        const std::shared_ptr<ViewBlock>& view_block,
+        const HashStr& view_block_hash,
+        const View& view,
         const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
         std::shared_ptr<QC>& qc) {
-    if (!reconstructed_sign || !view_block) {
+    if (!reconstructed_sign) {
         return Status::kInvalidArgument;
     }
     qc->bls_agg_sign = reconstructed_sign;
-    qc->view = view_block->view;
-    qc->view_block_hash = view_block->hash;
+    qc->view = view;
+    qc->view_block_hash = view_block_hash;
     return Status::kSuccess;
 }
 

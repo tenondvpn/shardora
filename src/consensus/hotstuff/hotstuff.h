@@ -115,8 +115,7 @@ private:
             const std::shared_ptr<IBlockAcceptor> accp, 
             const std::shared_ptr<ViewBlock>& v_block);
     Status VerifyVoteMsg(
-            const hotstuff::protobuf::VoteMsg& vote_msg,  
-            std::shared_ptr<ViewBlock>& view_block);
+            const hotstuff::protobuf::VoteMsg& vote_msg);
     Status VerifyLeader(const std::shared_ptr<ViewBlock>& view_block);
     Status ConstructProposeMsg(
             const std::shared_ptr<SyncInfo>& sync_info,

@@ -626,10 +626,10 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
 
   // accessors -------------------------------------------------------
 
-  // repeated .shardora.pools.protobuf.TxMessage txs = 6;
+  // repeated .shardora.pools.protobuf.TxMessage txs = 7;
   int txs_size() const;
   void clear_txs();
-  static const int kTxsFieldNumber = 6;
+  static const int kTxsFieldNumber = 7;
   ::shardora::pools::protobuf::TxMessage* mutable_txs(int index);
   ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage >*
       mutable_txs();
@@ -653,10 +653,10 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::std::string* release_view_block_hash();
   void set_allocated_view_block_hash(::std::string* view_block_hash);
 
-  // optional bytes sign_x = 4;
+  // optional bytes sign_x = 5;
   bool has_sign_x() const;
   void clear_sign_x();
-  static const int kSignXFieldNumber = 4;
+  static const int kSignXFieldNumber = 5;
   const ::std::string& sign_x() const;
   void set_sign_x(const ::std::string& value);
   #if LANG_CXX11
@@ -668,10 +668,10 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::std::string* release_sign_x();
   void set_allocated_sign_x(::std::string* sign_x);
 
-  // optional bytes sign_y = 5;
+  // optional bytes sign_y = 6;
   bool has_sign_y() const;
   void clear_sign_y();
-  static const int kSignYFieldNumber = 5;
+  static const int kSignYFieldNumber = 6;
   const ::std::string& sign_y() const;
   void set_sign_y(const ::std::string& value);
   #if LANG_CXX11
@@ -690,12 +690,19 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::uint32 replica_idx() const;
   void set_replica_idx(::google::protobuf::uint32 value);
 
-  // optional uint32 elect_height = 3;
+  // optional uint32 elect_height = 4;
   bool has_elect_height() const;
   void clear_elect_height();
-  static const int kElectHeightFieldNumber = 3;
+  static const int kElectHeightFieldNumber = 4;
   ::google::protobuf::uint32 elect_height() const;
   void set_elect_height(::google::protobuf::uint32 value);
+
+  // optional uint64 view = 3;
+  bool has_view() const;
+  void clear_view();
+  static const int kViewFieldNumber = 3;
+  ::google::protobuf::uint64 view() const;
+  void set_view(::google::protobuf::uint64 value);
 
   // @@protoc_insertion_point(class_scope:shardora.hotstuff.protobuf.VoteMsg)
  private:
@@ -703,6 +710,8 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   void clear_has_replica_idx();
   void set_has_view_block_hash();
   void clear_has_view_block_hash();
+  void set_has_view();
+  void clear_has_view();
   void set_has_elect_height();
   void clear_has_elect_height();
   void set_has_sign_x();
@@ -719,6 +728,7 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::internal::ArenaStringPtr sign_y_;
   ::google::protobuf::uint32 replica_idx_;
   ::google::protobuf::uint32 elect_height_;
+  ::google::protobuf::uint64 view_;
   friend struct ::protobuf_protos_2fhotstuff_2eproto::TableStruct;
 };
 // ===================================================================
@@ -1276,7 +1286,31 @@ inline void VoteMsg::set_allocated_view_block_hash(::std::string* view_block_has
   // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.VoteMsg.view_block_hash)
 }
 
-// optional uint32 elect_height = 3;
+// optional uint64 view = 3;
+inline bool VoteMsg::has_view() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void VoteMsg::set_has_view() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void VoteMsg::clear_has_view() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void VoteMsg::clear_view() {
+  view_ = GOOGLE_ULONGLONG(0);
+  clear_has_view();
+}
+inline ::google::protobuf::uint64 VoteMsg::view() const {
+  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.VoteMsg.view)
+  return view_;
+}
+inline void VoteMsg::set_view(::google::protobuf::uint64 value) {
+  set_has_view();
+  view_ = value;
+  // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.VoteMsg.view)
+}
+
+// optional uint32 elect_height = 4;
 inline bool VoteMsg::has_elect_height() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -1300,7 +1334,7 @@ inline void VoteMsg::set_elect_height(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.VoteMsg.elect_height)
 }
 
-// optional bytes sign_x = 4;
+// optional bytes sign_x = 5;
 inline bool VoteMsg::has_sign_x() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -1366,7 +1400,7 @@ inline void VoteMsg::set_allocated_sign_x(::std::string* sign_x) {
   // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.VoteMsg.sign_x)
 }
 
-// optional bytes sign_y = 5;
+// optional bytes sign_y = 6;
 inline bool VoteMsg::has_sign_y() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -1432,7 +1466,7 @@ inline void VoteMsg::set_allocated_sign_y(::std::string* sign_y) {
   // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.VoteMsg.sign_y)
 }
 
-// repeated .shardora.pools.protobuf.TxMessage txs = 6;
+// repeated .shardora.pools.protobuf.TxMessage txs = 7;
 inline int VoteMsg::txs_size() const {
   return txs_.size();
 }

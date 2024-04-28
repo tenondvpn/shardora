@@ -233,12 +233,9 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
 void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
     ZJC_DEBUG("====2.0 pool: %d, onVote, hash: %s",
         pool_idx_,
-        common::Encode::HexEncode(vote_msg.view_block_hash()).c_str());    
-    std::shared_ptr<ViewBlock> v_block;
-    // TODO 延迟
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        common::Encode::HexEncode(vote_msg.view_block_hash()).c_str());
     
-    if (VerifyVoteMsg(vote_msg, v_block) != Status::kSuccess) {
+    if (VerifyVoteMsg(vote_msg) != Status::kSuccess) {
         ZJC_ERROR("vote message is error.");
         return;
     }
@@ -251,8 +248,13 @@ void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
     
     Status ret = crypto()->ReconstructAndVerifyThresSign(
-            elect_height, v_block->view, v_block->hash, replica_idx, 
-            vote_msg.sign_x(), vote_msg.sign_y(), reconstructed_sign);
+            elect_height,
+            vote_msg.view(),
+            GetQCMsgHash(vote_msg.view(), vote_msg.view_block_hash()),
+            replica_idx, 
+            vote_msg.sign_x(),
+            vote_msg.sign_y(),
+            reconstructed_sign);
     
     if (ret != Status::kSuccess) {
         if (ret == Status::kBlsVerifyWaiting) {
@@ -262,13 +264,13 @@ void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
         ZJC_ERROR("ReconstructAndVerify error");
         return;
     }
-    ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d, %d",
+    ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
-        reconstructed_sign == nullptr, v_block == nullptr);
+        reconstructed_sign == nullptr);
 
     auto qc = std::make_shared<QC>();
-    Status s = crypto()->CreateQC(v_block, reconstructed_sign, qc);
+    Status s = crypto()->CreateQC(vote_msg.view_block_hash(), vote_msg.view(), reconstructed_sign, qc);
     if (s != Status::kSuccess) {
         return;
     }
@@ -442,18 +444,17 @@ Status Hotstuff::CommitInner(
     return Status::kSuccess;
 }
 
-Status Hotstuff::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg,  
-    std::shared_ptr<ViewBlock>& view_block) {
+Status Hotstuff::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
     uint32_t replica_idx = vote_msg.replica_idx();
     // 1、根据hash查找view_block；2、view_block.view <= heighQC.view
-    if (!view_block_chain()->Has(vote_msg.view_block_hash())) {
-        // 2. TODO 延迟重试
-        ZJC_ERROR("view_block_hash message is not exited.");
-        return Status::kError;
-    }
+    // if (!view_block_chain()->Has(vote_msg.view_block_hash())) {
+    //     // 2. TODO 延迟重试
+    //     ZJC_ERROR("view_block_hash message is not exited.");
+    //     return Status::kError;
+    // }
     
-    view_block_chain()->Get(vote_msg.view_block_hash(), view_block);
-    if (view_block->view <= pacemaker()->HighQC()->view) {
+    // view_block_chain()->Get(vote_msg.view_block_hash(), view_block);
+    if (vote_msg.view() <= pacemaker()->HighQC()->view) {
         ZJC_ERROR("view message is not exited.");
         return Status::kError;
     }
@@ -504,7 +505,8 @@ Status Hotstuff::ConstructVoteMsg(
     }
     uint32_t replica_idx = elect_item->LocalMember()->index;
     vote_msg->set_replica_idx(replica_idx);
-    vote_msg->set_view_block_hash(v_block->hash);    
+    vote_msg->set_view_block_hash(v_block->hash);
+    vote_msg->set_view(v_block->view);
     vote_msg->set_elect_height(elect_height);
     
     std::string sign_x, sign_y;
