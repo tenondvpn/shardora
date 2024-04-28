@@ -1,6 +1,7 @@
 #include "hotstuff_manager.h"
 #include "leader_rotation.h"
 
+#include <__functional/bind.h>
 #include <cassert>
 #include <chrono>
 #include <common/log.h>
@@ -151,6 +152,11 @@ int HotstuffManager::Init(
         auto crypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
         auto leader_rotation = std::make_shared<LeaderRotation>(hf.view_block_chain, elect_info_);
         auto pace_maker = std::make_shared<Pacemaker>(pool_idx, crypto, leader_rotation, std::make_shared<ViewDuration>());
+        // set pacemaker timeout callback function
+        pace_maker->SetNewProposalFn(std::bind(&HotstuffManager::Propose,
+                this, std::placeholders::_1, std::placeholders::_2));
+
+        // create hotstuff for each pool
         hf.pool_idx = pool_idx;
         hf.leader_rotation = leader_rotation;
         hf.view_block_chain = std::make_shared<ViewBlockChain>();

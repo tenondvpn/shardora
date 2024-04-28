@@ -1,6 +1,7 @@
 #include <common/global_info.h>
 #include <common/log.h>
 #include <common/utils.h>
+#include <consensus/hotstuff/hotstuff_manager.h>
 #include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
