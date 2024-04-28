@@ -1376,7 +1376,7 @@ ZbftPtr BftManager::CreateBftPtr(
                     bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
             }
         } else if (bft_msg.tx_bft().tx_type() == pools::protobuf::kCross) {
-            txs_ptr = txs_pools_->GetCrossTx(bft_msg.pool_index(), false);
+            txs_ptr = txs_pools_->GetCrossTx(bft_msg.pool_index(), bft_msg.tx_bft().txs(0).value());
             if (txs_ptr == nullptr) {
                 ZJC_ERROR("invalid consensus kCross, txs not equal to leader. pool_index: %d, gid: %s",
                     bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
@@ -1952,7 +1952,8 @@ int BftManager::LeaderPrepare(
     auto& kvs = bft_ptr->txs_ptr()->kvs;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto* tx_info = tx_bft.add_txs();
-        if (iter->second->tx_info.step() == pools::protobuf::kStatistic) {
+        if (iter->second->tx_info.step() == pools::protobuf::kStatistic || 
+                iter->second->tx_info.step() == pools::protobuf::kCross) {
             tx_info->set_step(iter->second->tx_info.step());
             tx_info->set_key(protos::kSingleTxHashTag);
             tx_info->set_value(iter->second->unique_tx_hash);

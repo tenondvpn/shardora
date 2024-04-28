@@ -1308,6 +1308,7 @@ void BlockManager::CreateStatisticTx() {
             tx_ptr->tx_ptr->time_valid += kStatisticValidTimeout;
             tx_ptr->tx_ptr->in_consensus = false;
             tx_ptr->tx_hash = statistic_hash;
+            tx_ptr->tx_ptr->unique_tx_hash = tx_ptr->tx_hash;
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
             tx_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
             ZJC_INFO("success add statistic tx: %s, statistic elect height: %lu, "
@@ -1345,6 +1346,7 @@ void BlockManager::CreateStatisticTx() {
             tx_ptr->tx_ptr->time_valid += kStatisticValidTimeout;
             tx_ptr->tx_ptr->in_consensus = false;
             tx_ptr->tx_hash = cross_hash;
+            tx_ptr->tx_ptr->unique_tx_hash = tx_ptr->tx_hash;
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
             tx_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
             ZJC_INFO("success add cross tx: %s, gid: %s",
@@ -1601,7 +1603,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
 
 pools::TxItemPtr BlockManager::GetCrossTx(
         uint32_t pool_index, 
-        bool leader) {
+        const std::string& tx_hash) {
     std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> tmp_map = nullptr;
     while (cross_statistics_map_ptr_queue_.pop(&tmp_map)) {}
     if (tmp_map != nullptr) {
@@ -1617,7 +1619,20 @@ pools::TxItemPtr BlockManager::GetCrossTx(
         return nullptr;
     }
 
+    bool leader = tx_hash.empty();
     auto iter = statistic_map_ptr->begin();
+    if (!tx_hash.empty()) {
+        for (; iter != statistic_map_ptr->end(); ++iter) {
+            if (iter->second->tx_hash == tx_hash) {
+                break;
+            }
+        }
+    }
+
+    if (iter == statistic_map_ptr->end()) {
+        return nullptr;
+    }
+    
     auto cross_statistic_tx = iter->second;
     if (cross_statistic_tx != nullptr && !cross_statistic_tx->tx_ptr->in_consensus) {
         auto now_tm = common::TimeUtils::TimestampUs();
@@ -1735,7 +1750,6 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         auto& tx = shard_statistic_tx->tx_ptr->tx_info;
         tx.set_to(shard_statistic_tx->tx_ptr->address_info->addr());
         shard_statistic_tx->tx_ptr->in_consensus = true;
-        shard_statistic_tx->tx_ptr->unique_tx_hash = shard_statistic_tx->tx_hash;
         ZJC_DEBUG("success get statistic tx hash: %s, prev_timeblock_tm_sec_: %lu, "
             "height: %lu, latest time block height: %lu",
             common::Encode::HexEncode(shard_statistic_tx->tx_hash).c_str(),
@@ -1890,8 +1904,8 @@ void BlockManager::OnTimeBlock(
     latest_timeblock_height_ = latest_time_block_height;
     prev_timeblock_tm_sec_ = latest_timeblock_tm_sec_;
     latest_timeblock_tm_sec_ = lastest_time_block_tm;
-    ZJC_INFO("success update timeblock height: %lu, %lu, tm: %lu, %lu", 
-        prev_timeblock_height_, latest_timeblock_height_, 
+    ZJC_INFO("success update timeblock height: %lu, %lu, tm: %lu, %lu",
+        prev_timeblock_height_, latest_timeblock_height_,
         prev_timeblock_tm_sec_, latest_timeblock_tm_sec_);
 }
 

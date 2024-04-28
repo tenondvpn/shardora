@@ -127,14 +127,16 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_in
     return nullptr;
 }
 
-std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetCrossTx(uint32_t pool_index, bool leader) {
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetCrossTx(
+        uint32_t pool_index, 
+        const std::string& tx_hash) {
     if (pool_index != common::kRootChainPoolIndex) {
         return nullptr;
     }
 
-    auto tx_ptr = block_mgr_->GetCrossTx(pool_index, leader);
+    auto tx_ptr = block_mgr_->GetCrossTx(pool_index, tx_hash);
     if (tx_ptr != nullptr) {
-        if (leader) {
+        if (tx_hash.empty()) {
             auto now_tm = common::TimeUtils::TimestampUs();
             if (tx_ptr->prev_consensus_tm_us + 300000lu > now_tm) {
                 tx_ptr->in_consensus = false;
@@ -149,7 +151,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetCrossTx(uint32_t pool_index,
         txs_item->txs[tx_ptr->unique_tx_hash] = tx_ptr;
         txs_item->tx_type = pools::protobuf::kCross;
         ZJC_DEBUG("single tx success get cross tx %u, %d, tx hash: %s, gid: %s", 
-            pool_index, leader, 
+            pool_index, tx_hash.empty(), 
             common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
             common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
         return txs_item;
