@@ -94,9 +94,9 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
         hotstuff_msg->pro_msg().view_item().view(),
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
         pacemaker()->HighQC()->view);
-    
-    network::Route::Instance()->Send(msg_ptr);
+
     HandleProposeMsg(hotstuff_msg->pro_msg());
+    network::Route::Instance()->Send(msg_ptr);
     return;
 }
 
