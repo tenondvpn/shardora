@@ -5,6 +5,11 @@ namespace shardora {
 namespace consensus {
 
 void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
+    // set pacemaker timeout callback function
+    pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1));
+    pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));
+    last_vote_view_ = GenesisView;
+    
     auto genesis = GetGenesisViewBlock(db_, pool_idx_);
     if (genesis) {
         // 初始状态，将创世块放入链中
@@ -15,15 +20,11 @@ void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
 
         // 使用 genesis qc 进行视图切换
         auto genesis_qc = GetGenesisQC(genesis->hash);
-        pacemaker_->AdvanceView(sync_info->WithQC(genesis_qc));
+        // 开启第一个视图
+        // pacemaker_->AdvanceView(sync_info->WithQC(genesis_qc));
     } else {
         ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
-    }
-
-    last_vote_view_ = GenesisView;
-    // set pacemaker timeout callback function
-    pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1));
-    pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));        
+    }            
 }
 
 
