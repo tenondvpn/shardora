@@ -1,4 +1,5 @@
 #include <consensus/hotstuff/hotstuff.h>
+#include <consensus/hotstuff/types.h>
 
 namespace shardora {
 
@@ -517,6 +518,8 @@ Status Hotstuff::SendVoteMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage
     transport::TcpTransport::Instance()->Send(common::Uint32ToIp(leader->public_ip), leader->public_port, header_msg);
     return ret;
 }
-        
-}
-}
+
+} // namespace consensus
+
+} // namespace shardora
+

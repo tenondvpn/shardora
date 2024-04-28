@@ -29,6 +29,7 @@
 #include "pools/tx_pool_manager.h"
 #include "transport/processor.h"
 #include "types.h"
+
 namespace shardora {
 
 namespace consensus {
