@@ -240,7 +240,7 @@ int NetworkInit::Init(int argc, char** argv) {
     // 启动共识和同步
     hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(hotstuff_mgr_);
     hotstuff_syncer_->Start();    
-    hotstuff_mgr_->Start();
+    // hotstuff_mgr_->Start();
     // 以上应该放入 hotstuff 实例初始化中，并接收创世块
     AddCmds();
 #endif
