@@ -34,7 +34,7 @@
 #include <consensus/hotstuff/hotstuff_syncer.h>
 #include <yaml-cpp/node/node.h>
 
-#define ENABLE_HOTSTUFF 1
+// #define ENABLE_HOTSTUFF 1
 
 namespace shardora {
 
