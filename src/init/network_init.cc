@@ -339,8 +339,12 @@ void NetworkInit::AddCmds() {
     });
 
 
-    cmd_.AddCommand("propose", [this](const std::vector<std::string>& args){
+    cmd_.AddCommand("start", [this](const std::vector<std::string>& args){
         if (args.size() < 1) {
+            return;
+        }
+        if (args[0] == "all") {
+            hotstuff_mgr_->Start();
             return;
         }
         uint32_t pool_idx = std::stoi(args[0]);
@@ -350,7 +354,8 @@ void NetworkInit::AddCmds() {
             return;
         }
 
-        hf->Propose(hotstuff::new_sync_info()->WithQC(hf->pacemaker()->HighQC()));
+        hf->Start();
+        // hf->Propose(hotstuff::new_sync_info()->WithQC(hf->pacemaker()->HighQC()));
     });        
 #endif    
 }
@@ -1415,6 +1420,9 @@ void NetworkInit::HandleElectionBlock(
 
 bool NetworkInit::BlockBlsAggSignatureValid(
         const block::protobuf::Block& block) try {
+#ifdef ENABLE_HOTSTUFF
+    return true;
+#endif
     if (block.bls_agg_sign_x().empty() || block.bls_agg_sign_y().empty()) {
         assert(false);
         return false;

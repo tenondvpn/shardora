@@ -55,7 +55,11 @@ Status Hotstuff::Start() {
 void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     ZJC_DEBUG("====9 pool: %d, pm: %p, propose", pool_idx_, pacemaker_.get());
     auto pb_pro_msg = std::make_shared<hotstuff::protobuf::ProposeMsg>();
-    ConstructProposeMsg(sync_info, pb_pro_msg);
+    Status s = ConstructProposeMsg(sync_info, pb_pro_msg);
+    if (s != Status::kSuccess) {
+        ZJC_ERROR("====0.3 pool: %d construct propose msg failed, %d", pool_idx_, static_cast<int>(s));
+        return;
+    }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
@@ -63,7 +67,7 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     header.set_type(common::kHotstuffMessage);
     header.set_hop_count(0);
     auto hotstuff_msg = std::make_shared<pb_HotstuffMessage>();
-    Status s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, hotstuff_msg);
+    s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("====0.3 pool: %d construct hotstuff msg failed", pool_idx_);
         return;
@@ -105,7 +109,20 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
         pool_idx_,
         pro_msg.view_item().view(),
         common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
-        pacemaker()->HighQC()->view);    
+        pacemaker()->HighQC()->view);
+    // 3 Verify TC
+    if (!pro_msg.tc_str().empty()) {
+        auto tc = std::make_shared<TC>();
+        if (!tc->Unserialize(pro_msg.tc_str())) {
+            ZJC_ERROR("tc Unserialize is error.");
+            return;
+        }
+        if (crypto()->VerifyTC(tc, pro_msg.elect_height()) != Status::kSuccess) {
+            return;
+        }
+        pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));
+    }
+    
     // 1 校验pb view block格式
     view_block::protobuf::ViewBlockItem pb_view_block = pro_msg.view_item();
     auto v_block = std::make_shared<ViewBlock>();
@@ -118,12 +135,13 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
         pool_idx_,
         pro_msg.view_item().view(),
         common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
-        pacemaker()->HighQC()->view);    
+        pacemaker()->HighQC()->view);
 
     // 已经投过票
     if (HasVoted(v_block->view)) {
         return;
-    }
+    }    
+    
     ZJC_DEBUG("====1.2 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu",
         pool_idx_,
         pro_msg.view_item().view(),
@@ -138,18 +156,7 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
         pro_msg.view_item().view(),
         common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
         pacemaker()->HighQC()->view);
-    // 3 Verify TC
-    if (!pro_msg.tc_str().empty()) {
-        auto tc = std::make_shared<TC>();
-        if (!tc->Unserialize(pro_msg.tc_str())) {
-            ZJC_ERROR("tc Unserialize is error.");
-            return;
-        }
-        if (crypto()->VerifyTC(tc, pro_msg.elect_height()) != Status::kSuccess) {
-            return;
-        }
-        pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));
-    }
+
     
     ZJC_DEBUG("====1.4 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu",
         pool_idx_,
@@ -191,6 +198,11 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
     }
     // 更新哈希值
     v_block->UpdateHash();
+    ZJC_DEBUG("====1.6 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu",
+        pool_idx_,
+        pro_msg.view_item().view(),
+        common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
+        pacemaker()->HighQC()->view);    
     
     // 6 add view block
     if (view_block_chain()->Store(v_block) != Status::kSuccess) {
@@ -198,6 +210,12 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
             common::Encode::HexEncode(v_block->hash).c_str());
         return;
     }
+
+    ZJC_DEBUG("====1.7 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu",
+        pool_idx_,
+        pro_msg.view_item().view(),
+        common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
+        pacemaker()->HighQC()->view);    
 
     // 1、验证是否存在3个连续qc，设置commit，lock qc状态；2、提交commit块之间的交易信息；3、减枝保留最新commit块，回退分支的交易信息
     auto v_block_to_commit = CheckCommit(v_block);
@@ -210,6 +228,12 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
             return;
         }
     }
+
+    ZJC_DEBUG("====1.8 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu",
+        pool_idx_,
+        pro_msg.view_item().view(),
+        common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
+        pacemaker()->HighQC()->view);    
     
     // Construct VoteMsg
     auto vote_msg = std::make_shared<hotstuff::protobuf::VoteMsg>();
@@ -466,7 +490,7 @@ Status Hotstuff::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
 
 Status Hotstuff::VerifyLeader(const std::shared_ptr<ViewBlock>& view_block) {
     uint32_t leader_idx = view_block->leader_idx;
-    auto leader_rotation = std::make_shared<LeaderRotation>(view_block_chain(), elect_info_);
+    auto leader_rotation = std::make_shared<LeaderRotation>(pool_idx_, view_block_chain(), elect_info_);
     auto leader = leader_rotation->GetLeader(); // 判断是否为空
     if (!leader) {
         ZJC_ERROR("Get Leader is error.");
@@ -484,7 +508,10 @@ Status Hotstuff::ConstructProposeMsg(
         std::shared_ptr<hotstuff::protobuf::ProposeMsg>& pro_msg) {
     auto new_view_block = std::make_shared<ViewBlock>();
     auto tx_propose = std::make_shared<hotstuff::protobuf::TxPropose>();
-    ConstructViewBlock(new_view_block, tx_propose);
+    Status s = ConstructViewBlock(new_view_block, tx_propose);
+    if (s != Status::kSuccess) {
+        return s;
+    }
 
     auto new_pb_view_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
     ViewBlock2Proto(new_view_block, new_pb_view_block.get());
@@ -533,23 +560,26 @@ Status Hotstuff::ConstructVoteMsg(
 Status Hotstuff::ConstructViewBlock( 
         std::shared_ptr<ViewBlock>& view_block,
         std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose) {
-    auto high_qc = pacemaker()->HighQC();
-    view_block->parent_hash = (high_qc->view_block_hash);
-
+    view_block->parent_hash = (pacemaker()->HighQC()->view_block_hash);
     auto leader_idx = elect_info_->GetElectItem()->LocalMember()->index;
-    view_block->leader_idx = (leader_idx);
+    view_block->leader_idx = leader_idx;
 
     auto pre_v_block = std::make_shared<ViewBlock>();
-    view_block_chain()->Get(high_qc->view_block_hash, pre_v_block);
+    Status s = view_block_chain()->Get(view_block->parent_hash, pre_v_block);
+    if (s != Status::kSuccess) {
+        ZJC_ERROR("parent view block has not found, pool: %d", pool_idx_);
+        return s;
+    }
+    
     auto pre_block = pre_v_block->block;
     auto pb_block = std::make_shared<block::protobuf::Block>();
-    Status s = wrapper()->Wrap(pre_block, leader_idx, pb_block, tx_propose);
+    s = wrapper()->Wrap(pre_block, leader_idx, pb_block, tx_propose);
     if (s != Status::kSuccess) {
         ZJC_WARN("====0.1 pool: %d wrap failed, %d", pool_idx_, static_cast<int>(s));
         return s;
     }
-    view_block->block = (pb_block);
-    view_block->qc = high_qc;
+    view_block->block = pb_block;
+    view_block->qc = pacemaker()->HighQC();
     view_block->view = pacemaker()->CurView();
     view_block->hash = view_block->DoHash();
     return Status::kSuccess;
@@ -584,7 +614,7 @@ Status Hotstuff::SendVoteMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage
     auto& header_msg = trans_msg->header;
     header_msg.mutable_hotstuff()->CopyFrom(*hotstuff_msg);
 
-    auto leader_rotation = std::make_shared<LeaderRotation>(view_block_chain(), elect_info_);
+    auto leader_rotation = std::make_shared<LeaderRotation>(pool_idx_, view_block_chain(), elect_info_);
     auto leader = leader_rotation->GetLeader();
     if (!leader) {
         ZJC_ERROR("Get Leader failed.");

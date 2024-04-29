@@ -20,7 +20,7 @@ public:
     void ViewTimeout() {};
 
     inline uint64_t Duration() const {
-        return 10000000;
+        return 5000000;
     }
 
 private:

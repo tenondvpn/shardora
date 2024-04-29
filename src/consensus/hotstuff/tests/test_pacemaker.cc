@@ -34,7 +34,7 @@ protected:
 
 
         auto view_block_chain = std::make_shared<ViewBlockChain>();
-        auto leader_rotation = std::make_shared<LeaderRotation>(view_block_chain, elect_info);
+        auto leader_rotation = std::make_shared<LeaderRotation>(pool, view_block_chain, elect_info);
         auto view_duration = std::make_shared<ViewDuration>();
         
         pacemaker_ = std::make_shared<Pacemaker>(pool, crypto, leader_rotation, view_duration);

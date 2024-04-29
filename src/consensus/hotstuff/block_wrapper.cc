@@ -46,7 +46,7 @@ Status BlockWrapper::Wrap(
     Status s = PopTxs(txs_ptr);
     if (s != Status::kSuccess) {
         // 允许 3 个连续的空交易块
-        if (times_of_no_txs_ == NO_TX_ALLOWED_TIMES) {
+        if (times_of_no_txs_ >= NO_TX_ALLOWED_TIMES) {
             times_of_no_txs_ = 0;
             return s;
         }
@@ -54,6 +54,7 @@ Status BlockWrapper::Wrap(
     }
 
     if (txs_ptr) {
+        ZJC_DEBUG("====3 pool: %d pop txs: %lu", pool_idx_, txs_ptr->txs.size());
         for (auto it = txs_ptr->txs.begin(); it != txs_ptr->txs.end(); it++) {
             auto* tx_info = tx_propose->add_txs();
             *tx_info = it->second->tx_info;

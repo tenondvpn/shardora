@@ -12,8 +12,11 @@ namespace shardora {
 
 namespace hotstuff {
 
-LeaderRotation::LeaderRotation(const std::shared_ptr<ViewBlockChain>& chain, const std::shared_ptr<ElectInfo>& elect_info) :
-    chain_(chain), elect_info_(elect_info) {}
+LeaderRotation::LeaderRotation(
+        const uint32_t& pool_idx,
+        const std::shared_ptr<ViewBlockChain>& chain,
+        const std::shared_ptr<ElectInfo>& elect_info) :
+    pool_idx_(pool_idx), chain_(chain), elect_info_(elect_info) {}
 
 LeaderRotation::~LeaderRotation() {}
 
@@ -38,7 +41,8 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         elect_info_->RefreshMemberAddrs();
     }
 
-    ZJC_DEBUG("Leader is %d, ip: %s, port: %d",
+    ZJC_DEBUG("Leader pool: %d, is %d, ip: %s, port: %d",
+        pool_idx_,
         leader->index,
         common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port);
     return leader;

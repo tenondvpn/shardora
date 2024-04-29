@@ -1,5 +1,6 @@
 #pragma once
 
+#include <common/log.h>
 #include <consensus/consensus_utils.h>
 #include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/elect_info.h>
@@ -27,7 +28,7 @@ class BlockWrapper : public IBlockWrapper {
 public:
     // 允许没有交易成功打包的次数，需要连续 3 个 QC 才能提交
     // TODO 如果中间出现超时，则需要不止三个块
-    static const uint32_t NO_TX_ALLOWED_TIMES = 300; 
+    static const uint32_t NO_TX_ALLOWED_TIMES = 0; 
     
     BlockWrapper(
             const uint32_t pool_idx,
@@ -60,6 +61,9 @@ private:
     uint32_t times_of_no_txs_ = 0; // 没有交易的次数
 
     Status PopTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+        pools_mgr_->PopTxs(pool_idx_, false);
+        pools_mgr_->CheckTimeoutTx(pool_idx_);
+        
         txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx_);
         return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;
     }

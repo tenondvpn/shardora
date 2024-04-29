@@ -71,7 +71,7 @@ int HotstuffManager::Init(
 
         auto crypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
         auto chain = std::make_shared<ViewBlockChain>();
-        auto leader_rotation = std::make_shared<LeaderRotation>(chain, elect_info_);
+        auto leader_rotation = std::make_shared<LeaderRotation>(pool_idx, chain, elect_info_);
         auto pacemaker = std::make_shared<Pacemaker>(pool_idx, crypto, leader_rotation, std::make_shared<ViewDuration>());
         auto acceptor = std::make_shared<BlockAcceptor>(
                 pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
@@ -160,9 +160,9 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     if (header.has_hotstuff_timeout_proto()) {
         auto pool_idx = header.hotstuff_timeout_proto().pool_idx();
-        auto pace = pacemaker(pool_idx);
-        ZJC_DEBUG("====1.1 pool_idx: %d, msg rec", pool_idx);
-        pace->OnRemoteTimeout(msg_ptr);
+        ZJC_DEBUG("====1.1 pool_idx: %d, msg rec: member_id: %lu",
+            pool_idx, header.hotstuff_timeout_proto().member_id());
+        pacemaker(pool_idx)->OnRemoteTimeout(msg_ptr);
     }
 }
 
