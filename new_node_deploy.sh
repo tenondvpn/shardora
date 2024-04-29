@@ -7,7 +7,7 @@ nodes=("new_1" "new_2" "new_3" "new_4" "new_5" "new_6" "new_7" "new_8" "new_9" "
 
 
 rm -rf /root/zjnodes/new*
-(python test_accounts.py )&
+#(python test_accounts.py )&
 for n in  "${nodes[@]}"; do
 
         mkdir -p "/root/zjnodes/${n}/log"

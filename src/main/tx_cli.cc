@@ -358,8 +358,11 @@ int one_tx_main(int argc, char** argv) {
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
         }
-
-        if (security->GetAddress() == common::Encode::HexDecode("f1cd7abb586966d500d91329658ec48aa2094702")) {
+        auto invalid_from_accouts = std::make_shared<std::set<std::string>>();
+        invalid_from_accouts->insert(common::Encode::HexDecode("f1cd7abb586966d500d91329658ec48aa2094702"));
+        invalid_from_accouts->insert(common::Encode::HexDecode("5ebeffea73aff876d9706c725ac5dd0978d4ff79"));
+        if (invalid_from_accouts->find(security->GetAddress()) != invalid_from_accouts->end()) {
+      
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);

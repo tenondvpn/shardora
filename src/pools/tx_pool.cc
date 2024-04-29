@@ -674,8 +674,14 @@ void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
     for (uint32_t i = 0; i < txs.size(); ++i) {
         auto iter = gid_map_.find(txs[i]->tx_info.gid());
         if (iter != gid_map_.end()) {
+            ZJC_DEBUG("tx already exist, gid: %s", txs[i]->tx_info.gid().c_str());
             continue;
         }
+
+        if (removed_gid_.DataExists(txs[i]->tx_info.gid())) {
+            ZJC_DEBUG("tx already removed, gid: %s", txs[i]->tx_info.gid().c_str());
+            continue;
+        }   
 
         // bool valid = true;
         // switch (txs[i]->tx_info.step()) {
