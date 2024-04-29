@@ -109,7 +109,20 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
         pool_idx_,
         pro_msg.view_item().view(),
         common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
-        pacemaker()->HighQC()->view);    
+        pacemaker()->HighQC()->view);
+    // 3 Verify TC
+    if (!pro_msg.tc_str().empty()) {
+        auto tc = std::make_shared<TC>();
+        if (!tc->Unserialize(pro_msg.tc_str())) {
+            ZJC_ERROR("tc Unserialize is error.");
+            return;
+        }
+        if (crypto()->VerifyTC(tc, pro_msg.elect_height()) != Status::kSuccess) {
+            return;
+        }
+        pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));
+    }
+    
     // 1 校验pb view block格式
     view_block::protobuf::ViewBlockItem pb_view_block = pro_msg.view_item();
     auto v_block = std::make_shared<ViewBlock>();
@@ -122,12 +135,13 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
         pool_idx_,
         pro_msg.view_item().view(),
         common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
-        pacemaker()->HighQC()->view);    
+        pacemaker()->HighQC()->view);
 
     // 已经投过票
     if (HasVoted(v_block->view)) {
         return;
-    }
+    }    
+    
     ZJC_DEBUG("====1.2 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu",
         pool_idx_,
         pro_msg.view_item().view(),
@@ -142,18 +156,7 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
         pro_msg.view_item().view(),
         common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
         pacemaker()->HighQC()->view);
-    // 3 Verify TC
-    if (!pro_msg.tc_str().empty()) {
-        auto tc = std::make_shared<TC>();
-        if (!tc->Unserialize(pro_msg.tc_str())) {
-            ZJC_ERROR("tc Unserialize is error.");
-            return;
-        }
-        if (crypto()->VerifyTC(tc, pro_msg.elect_height()) != Status::kSuccess) {
-            return;
-        }
-        pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));
-    }
+
     
     ZJC_DEBUG("====1.4 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu",
         pool_idx_,

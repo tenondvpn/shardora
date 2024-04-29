@@ -155,14 +155,14 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     if (!msg.has_hotstuff_timeout_proto()) {
         return;
     }
+    
     if (msg.hotstuff_timeout_proto().pool_idx() != pool_idx_) {
         return;
     }
     
+    // TODO 统计 bls 签名
     auto timeout_proto = msg.hotstuff_timeout_proto();
     ZJC_DEBUG("====2 pool: %d, view: %d, member: %d", pool_idx_, timeout_proto.view(), timeout_proto.member_id());
-    // TODO 统计 bls 签名
-    
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
     Status s = crypto_->ReconstructAndVerifyThresSign(
             timeout_proto.elect_height(),
@@ -191,14 +191,15 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     }
     ZJC_DEBUG("====2 pool: %d, create tc, view: %d, member: %d, view: %d",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
-    
-    auto sync_info = std::make_shared<SyncInfo>();
-    AdvanceView(sync_info->WithTC(tc));
+
+    // 此时进行视图切换会导致只有一个节点拥有最高 CurView，其他节点需要同步才能对下一次超时达成共识
+    // auto sync_info = std::make_shared<SyncInfo>();
+    // AdvanceView(sync_info->WithTC(tc));
     
     // TODO New Propose
     ZJC_DEBUG("====9 pool: %d, pm: %p, onremote", pool_idx_, this);
     if (new_proposal_fn_) {
-        new_proposal_fn_(sync_info->WithQC(HighQC())->WithTC(HighTC()));
+        new_proposal_fn_(new_sync_info()->WithQC(HighQC())->WithTC(HighTC()));
     }
 }
 
