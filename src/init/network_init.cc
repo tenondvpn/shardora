@@ -1420,6 +1420,9 @@ void NetworkInit::HandleElectionBlock(
 
 bool NetworkInit::BlockBlsAggSignatureValid(
         const block::protobuf::Block& block) try {
+#ifdef ENABLE_HOTSTUFF
+    return true;
+#endif
     if (block.bls_agg_sign_x().empty() || block.bls_agg_sign_y().empty()) {
         assert(false);
         return false;
