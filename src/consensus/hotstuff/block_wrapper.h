@@ -65,7 +65,6 @@ private:
         pools_mgr_->CheckTimeoutTx(pool_idx_);
         
         txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx_);
-        ZJC_DEBUG("====3 pool: %d pop txs: %lu", pool_idx_, txs_ptr->txs.size());
         return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;
     }
 };
