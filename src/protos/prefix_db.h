@@ -335,7 +335,9 @@ public:
             return false;
         }
 
-        // assert(block.has_bls_agg_sign_x() && block.has_bls_agg_sign_y());
+#ifndef ENABLE_HOTSTUFF        
+        assert(block.has_bls_agg_sign_x() && block.has_bls_agg_sign_y());
+#endif
         std::string key;
         key.reserve(48);
         key.append(kBlockPrefix);
@@ -367,8 +369,9 @@ public:
         if (!block->ParseFromString(block_str)) {
             return false;
         }
-
+#ifndef ENABLE_HOTSTUFF 
         assert(block->has_bls_agg_sign_x() && block->has_bls_agg_sign_y());
+#endif
         return true;
     }
 

@@ -391,7 +391,9 @@ void MultiThreadHandler::CreateConsensusBlockMessage(
     bft_msg.set_sync_block(true);
     bft_msg.set_member_index(-1);
     bft_msg.set_pool_index(block_item->pool_index());
+#ifndef ENABLE_HOTSTUFF
     assert(block_item->has_bls_agg_sign_y() && block_item->has_bls_agg_sign_x());
+#endif
     *bft_msg.mutable_block() = *block_item;
     auto queue_idx = GetThreadIndex(new_msg_ptr);
     if (queue_idx >= common::kMaxThreadCount) {
