@@ -485,6 +485,7 @@ void BlockManager::HandleCrossTx(
         db::DbWriteBatch& db_batch) {
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         if (block_tx.storages(i).key() == protos::kShardCross) {
+            ZJC_DEBUG("cross tx coming 0");
             const std::string& cross_val = block_tx.storages(i).value();
             pools::protobuf::CrossShardStatistic cross_statistic;
             if (!cross_statistic.ParseFromString(cross_val)) {
@@ -492,6 +493,7 @@ void BlockManager::HandleCrossTx(
                 break;
             }
 
+            ZJC_DEBUG("cross tx coming 1");
             for (auto iter = cross_statistics_map_.begin(); iter != cross_statistics_map_.end(); ++iter) {
                 if (iter->second->tx_hash == cross_statistic.tx_hash()) {
                     cross_statistics_map_.erase(iter);
@@ -501,6 +503,7 @@ void BlockManager::HandleCrossTx(
                 }
             }
 
+            ZJC_DEBUG("cross tx coming 2: %u", cross_statistic.crosses_size());
             for (int32_t i = 0; i < cross_statistic.crosses_size(); ++i) {
                 ZJC_DEBUG("success handle cross tx block net: %u, pool: %u, height: %lu, "
                     "src shard: %u, src pool: %u, height: %lu, des shard: %lu",
@@ -993,6 +996,12 @@ void BlockManager::AddNewBlock(
 
     // 处理交易信息
     for (int32_t i = 0; i < tx_list.size(); ++i) {
+        ZJC_DEBUG("handle tx coming net: %u, pool: %u, height: %lu, status: %d, step: %d", 
+            block_item->network_id(), 
+            block_item->pool_index(), 
+            block_item->height(), 
+            tx_list[i].status(), 
+            tx_list[i].step());
         if (tx_list[i].status() != consensus::kConsensusSuccess) {
             continue;
         }
@@ -1287,7 +1296,6 @@ void BlockManager::CreateStatisticTx() {
     {
         ZJC_DEBUG("LLLLLL statistic :%s", ProtobufToJson(elect_statistic).c_str());
     }
-    std::string cross_hash = common::Hash::keccak256(cross_statistic.SerializeAsString());
     if (!statistic_hash.empty()) {
         auto tm_statistic_iter = shard_statistics_map_.find(timeblock_height);
         if (tm_statistic_iter == shard_statistics_map_.end()) {
@@ -1308,6 +1316,7 @@ void BlockManager::CreateStatisticTx() {
             tx_ptr->tx_ptr->time_valid += kStatisticValidTimeout;
             tx_ptr->tx_ptr->in_consensus = false;
             tx_ptr->tx_hash = statistic_hash;
+            tx_ptr->tx_ptr->unique_tx_hash = tx_ptr->tx_hash;
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
             tx_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
             ZJC_INFO("success add statistic tx: %s, statistic elect height: %lu, "
@@ -1325,7 +1334,8 @@ void BlockManager::CreateStatisticTx() {
         }
     }
 
-    if (!cross_hash.empty()) {
+    if (cross_statistic.crosses_size() > 0) {
+        std::string cross_hash = common::Hash::keccak256(cross_statistic.SerializeAsString());
         auto tm_statistic_iter = cross_statistics_map_.find(timeblock_height);
         if (tm_statistic_iter == cross_statistics_map_.end()) {
             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -1345,9 +1355,10 @@ void BlockManager::CreateStatisticTx() {
             tx_ptr->tx_ptr->time_valid += kStatisticValidTimeout;
             tx_ptr->tx_ptr->in_consensus = false;
             tx_ptr->tx_hash = cross_hash;
+            tx_ptr->tx_ptr->unique_tx_hash = tx_ptr->tx_hash;
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
             tx_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
-            ZJC_INFO("success add cross tx: %s, gid: %s",
+            ZJC_INFO("success add cross tx: %s, gid: %s, cross size: %u",
                 common::Encode::HexEncode(cross_hash).c_str(),
                 common::Encode::HexEncode(gid).c_str());
             cross_statistics_map_[timeblock_height] = tx_ptr;
@@ -1573,7 +1584,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     to_txs_ptr->timeout = now_time_ms + kToValidTimeout + kToTimeoutMs;
     to_txs_ptr->stop_consensus_timeout = to_txs_ptr->timeout + kStopConsensusTimeoutMs;
     leader_to_txs->to_tx = to_txs_ptr;
-    to_txs_ptr->tx_ptr->unique_tx_hash = pools::GetTxMessageHash(to_txs_ptr->tx_ptr->tx_info);
+    to_txs_ptr->tx_ptr->unique_tx_hash = to_txs_ptr->tx_hash;
     to_txs_ptr->success = true;
     to_txs_ptr->leader_to_index = shard_to.leader_to_idx();
     ZJC_DEBUG("totx success add txs: %s, leader idx: %u, leader to index: %d, gid: %s",
@@ -1601,7 +1612,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
 
 pools::TxItemPtr BlockManager::GetCrossTx(
         uint32_t pool_index, 
-        bool leader) {
+        const std::string& tx_hash) {
     std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> tmp_map = nullptr;
     while (cross_statistics_map_ptr_queue_.pop(&tmp_map)) {}
     if (tmp_map != nullptr) {
@@ -1617,7 +1628,23 @@ pools::TxItemPtr BlockManager::GetCrossTx(
         return nullptr;
     }
 
+    bool leader = tx_hash.empty();
     auto iter = statistic_map_ptr->begin();
+    if (!tx_hash.empty()) {
+        for (; iter != statistic_map_ptr->end(); ++iter) {
+            ZJC_DEBUG("now get cross tx leader tx hash: %s, local tx hash: %s", 
+                common::Encode::HexEncode(tx_hash).c_str(), 
+                common::Encode::HexEncode(iter->second->tx_hash).c_str());
+            if (iter->second->tx_hash == tx_hash) {
+                break;
+            }
+        }
+    }
+
+    if (iter == statistic_map_ptr->end()) {
+        return nullptr;
+    }
+    
     auto cross_statistic_tx = iter->second;
     if (cross_statistic_tx != nullptr && !cross_statistic_tx->tx_ptr->in_consensus) {
         auto now_tm = common::TimeUtils::TimestampUs();
@@ -1735,7 +1762,6 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         auto& tx = shard_statistic_tx->tx_ptr->tx_info;
         tx.set_to(shard_statistic_tx->tx_ptr->address_info->addr());
         shard_statistic_tx->tx_ptr->in_consensus = true;
-        shard_statistic_tx->tx_ptr->unique_tx_hash = shard_statistic_tx->tx_hash;
         ZJC_DEBUG("success get statistic tx hash: %s, prev_timeblock_tm_sec_: %lu, "
             "height: %lu, latest time block height: %lu",
             common::Encode::HexEncode(shard_statistic_tx->tx_hash).c_str(),
@@ -1831,7 +1857,8 @@ bool BlockManager::ShouldStopConsensus() {
     return false;
 }
 
-pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
+pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& tx_hash) {
+    bool leader = tx_hash.empty();
     if (!leader) {
         ZJC_DEBUG("backup get to tx coming!");
     }
@@ -1855,6 +1882,10 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
     auto now_tm = common::TimeUtils::TimestampUs();
     auto latest_to_tx = latest_to_tx_;
     auto tmp_to_txs = latest_to_tx->to_tx;
+    if (!leader && tmp_to_txs->tx_hash != tx_hash) {
+        return nullptr;
+    }
+
     if (tmp_to_txs != nullptr && !tmp_to_txs->tx_ptr->in_consensus) {
         if (leader && tmp_to_txs->tx_ptr->time_valid > now_tm) {
             return nullptr;
@@ -1862,7 +1893,7 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
 
         tmp_to_txs->tx_ptr->in_consensus = true;
         ZJC_DEBUG("success get to tx: %s", 
-            common::Encode::HexEncode(latest_to_tx_->to_tx->tx_hash).c_str());
+            common::Encode::HexEncode(tmp_to_txs->tx_hash).c_str());
         return tmp_to_txs->tx_ptr;
     }
 
@@ -1890,8 +1921,8 @@ void BlockManager::OnTimeBlock(
     latest_timeblock_height_ = latest_time_block_height;
     prev_timeblock_tm_sec_ = latest_timeblock_tm_sec_;
     latest_timeblock_tm_sec_ = lastest_time_block_tm;
-    ZJC_INFO("success update timeblock height: %lu, %lu, tm: %lu, %lu", 
-        prev_timeblock_height_, latest_timeblock_height_, 
+    ZJC_INFO("success update timeblock height: %lu, %lu, tm: %lu, %lu",
+        prev_timeblock_height_, latest_timeblock_height_,
         prev_timeblock_tm_sec_, latest_timeblock_tm_sec_);
 }
 

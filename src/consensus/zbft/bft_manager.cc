@@ -1364,10 +1364,13 @@ ZbftPtr BftManager::CreateBftPtr(
     if (bft_msg.tx_bft().txs_size() > 0) {
         // get txs direct
         if (bft_msg.tx_bft().tx_type() == pools::protobuf::kNormalTo) {
-            txs_ptr = txs_pools_->GetToTxs(bft_msg.pool_index(), false);
+            txs_ptr = txs_pools_->GetToTxs(bft_msg.pool_index(), bft_msg.tx_bft().txs(0).value());
             if (txs_ptr == nullptr) {
-                ZJC_ERROR("invalid consensus kNormalTo, txs not equal to leader. pool_index: %d, gid: %s",
-                    bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+                ZJC_ERROR("invalid consensus kNormalTo, txs not equal to leader. "
+                    "pool_index: %d, gid: %s, tx hash: %s",
+                    bft_msg.pool_index(), 
+                    common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+                    common::Encode::HexEncode(bft_msg.tx_bft().txs(0).value()).c_str());
             }
         } else if (bft_msg.tx_bft().tx_type() == pools::protobuf::kStatistic) {
             assert(bft_msg.tx_bft().txs(0).key() == protos::kSingleTxHashTag);
@@ -1377,19 +1380,19 @@ ZbftPtr BftManager::CreateBftPtr(
                     bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
             }
         } else if (bft_msg.tx_bft().tx_type() == pools::protobuf::kCross) {
-            txs_ptr = txs_pools_->GetCrossTx(bft_msg.pool_index(), false);
+            txs_ptr = txs_pools_->GetCrossTx(bft_msg.pool_index(), bft_msg.tx_bft().txs(0).value());
             if (txs_ptr == nullptr) {
-                ZJC_ERROR("invalid consensus kCross, txs not equal to leader. pool_index: %d, gid: %s",
-                    bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+                ZJC_ERROR("invalid consensus kCross, txs not equal to leader. "
+                    "pool_index: %d, gid: %s, tx hash: %s",
+                    bft_msg.pool_index(), 
+                    common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), 
+                    common::Encode::HexEncode(bft_msg.tx_bft().txs(0).value()).c_str());
             }
         } else if (bft_msg.tx_bft().tx_type() == pools::protobuf::kConsensusRootElectShard) {
-            if (bft_msg.tx_bft().txs_size() == 1) {
-                auto txhash = pools::GetTxMessageHash(bft_msg.tx_bft().txs(0));
-                txs_ptr = txs_pools_->GetElectTx(bft_msg.pool_index(), txhash);
-                if (txs_ptr == nullptr) {
-                    ZJC_ERROR("invalid consensus kConsensusRootElectShard, txs not equal to leader. pool_index: %d, gid: %s",
-                        bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-                }
+            txs_ptr = txs_pools_->GetElectTx(bft_msg.pool_index(), bft_msg.tx_bft().txs(0).value());
+            if (txs_ptr == nullptr) {
+                ZJC_ERROR("invalid consensus kConsensusRootElectShard, txs not equal to leader. pool_index: %d, gid: %s",
+                    bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
             }
         } else if (bft_msg.tx_bft().tx_type() == pools::protobuf::kConsensusRootTimeBlock) {
             txs_ptr = txs_pools_->GetTimeblockTx(bft_msg.pool_index(), false);
@@ -1953,10 +1956,17 @@ int BftManager::LeaderPrepare(
     auto& kvs = bft_ptr->txs_ptr()->kvs;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto* tx_info = tx_bft.add_txs();
-        if (iter->second->tx_info.step() == pools::protobuf::kStatistic) {
+        if (iter->second->tx_info.step() == pools::protobuf::kStatistic || 
+                iter->second->tx_info.step() == pools::protobuf::kCross ||
+                iter->second->tx_info.step() == pools::protobuf::kNormalTo ||
+                iter->second->tx_info.step() == pools::protobuf::kRootCreateAddressCrossSharding ||
+                iter->second->tx_info.step() == pools::protobuf::kConsensusRootElectShard) {
             tx_info->set_step(iter->second->tx_info.step());
             tx_info->set_key(protos::kSingleTxHashTag);
             tx_info->set_value(iter->second->unique_tx_hash);
+            ZJC_DEBUG("single tx coming step: %d, hash: %s", 
+                iter->second->tx_info.step(), 
+                common::Encode::HexEncode(iter->second->unique_tx_hash).c_str());
         } else {
             *tx_info = iter->second->tx_info;
         }

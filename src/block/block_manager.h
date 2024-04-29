@@ -87,10 +87,10 @@ public:
 
     void CreateToTx();
     void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members);
-    pools::TxItemPtr GetToTx(uint32_t pool_index, bool leader);
+    pools::TxItemPtr GetToTx(uint32_t pool_index, const std::string& tx_hash);
     pools::TxItemPtr GetStatisticTx(uint32_t pool_index, const std::string& tx_hash);
     pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);
-    pools::TxItemPtr GetCrossTx(uint32_t pool_index, bool leader);
+    pools::TxItemPtr GetCrossTx(uint32_t pool_index, const std::string& tx_hash);
     void LoadLatestBlocks();
     // just genesis call
     void GenesisAddAllAccount(
