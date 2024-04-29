@@ -192,9 +192,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("====2 pool: %d, create tc, view: %d, member: %d, view: %d",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
 
-    // 此时进行视图切换会导致只有一个节点拥有最高 CurView，其他节点需要同步才能对下一次超时达成共识
-    // auto sync_info = std::make_shared<SyncInfo>();
-    // AdvanceView(sync_info->WithTC(tc));
+    AdvanceView(new_sync_info()->WithTC(tc));
     
     // TODO New Propose
     ZJC_DEBUG("====9 pool: %d, pm: %p, onremote", pool_idx_, this);
