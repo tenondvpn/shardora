@@ -1,5 +1,6 @@
 #pragma once
 
+#include <common/log.h>
 #include <consensus/consensus_utils.h>
 #include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/elect_info.h>
@@ -60,7 +61,11 @@ private:
     uint32_t times_of_no_txs_ = 0; // 没有交易的次数
 
     Status PopTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+        pools_mgr_->PopTxs(pool_idx_, false);
+        pools_mgr_->CheckTimeoutTx(pool_idx_);
+        
         txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx_);
+        ZJC_DEBUG("====3 pool: %d pop txs: %lu", pool_idx_, txs_ptr->txs.size());
         return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;
     }
 };

@@ -11,7 +11,10 @@ namespace hotstuff {
 
 class LeaderRotation {
 public:
-    LeaderRotation(const std::shared_ptr<ViewBlockChain>&, const std::shared_ptr<ElectInfo>&);
+    LeaderRotation(
+            const uint32_t& pool_idx,
+            const std::shared_ptr<ViewBlockChain>&,
+            const std::shared_ptr<ElectInfo>&);
     ~LeaderRotation();
 
     LeaderRotation(const LeaderRotation&) = delete;
@@ -33,9 +36,11 @@ private:
         }
         return elect_item->Members(); 
     }
-    
+
+    uint32_t pool_idx_;
     std::shared_ptr<ViewBlockChain> chain_ = nullptr;
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
+    
 };
 
 } // namespace consensus
