@@ -339,8 +339,12 @@ void NetworkInit::AddCmds() {
     });
 
 
-    cmd_.AddCommand("propose", [this](const std::vector<std::string>& args){
+    cmd_.AddCommand("start", [this](const std::vector<std::string>& args){
         if (args.size() < 1) {
+            return;
+        }
+        if (args[0] == "all") {
+            hotstuff_mgr_->Start();
             return;
         }
         uint32_t pool_idx = std::stoi(args[0]);
