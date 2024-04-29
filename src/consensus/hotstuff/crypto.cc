@@ -135,8 +135,7 @@ Status Crypto::VerifyThresSign(const uint64_t &elect_height, const HashStr &msg_
         return s;
     }
 
-    auto collection_item = bls_collection_->GetItem(msg_hash);
-    s = GetVerifyHashB(elect_height, *collection_item->reconstructed_sign, &verify_hash_b);
+    s = GetVerifyHashB(elect_height, *reconstructed_sign, &verify_hash_b);
     if (s != Status::kSuccess) {
         return s;
     }
