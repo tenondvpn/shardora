@@ -543,23 +543,26 @@ Status Hotstuff::ConstructVoteMsg(
 Status Hotstuff::ConstructViewBlock( 
         std::shared_ptr<ViewBlock>& view_block,
         std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose) {
-    auto high_qc = pacemaker()->HighQC();
-    view_block->parent_hash = (high_qc->view_block_hash);
-
+    view_block->parent_hash = (pacemaker()->HighQC()->view_block_hash);
     auto leader_idx = elect_info_->GetElectItem()->LocalMember()->index;
-    view_block->leader_idx = (leader_idx);
+    view_block->leader_idx = leader_idx;
 
     auto pre_v_block = std::make_shared<ViewBlock>();
-    view_block_chain()->Get(high_qc->view_block_hash, pre_v_block);
+    Status s = view_block_chain()->Get(view_block->parent_hash, pre_v_block);
+    if (s != Status::kSuccess) {
+        ZJC_ERROR("parent view block has not found, pool: %d", pool_idx_);
+        return s;
+    }
+    
     auto pre_block = pre_v_block->block;
     auto pb_block = std::make_shared<block::protobuf::Block>();
-    Status s = wrapper()->Wrap(pre_block, leader_idx, pb_block, tx_propose);
+    s = wrapper()->Wrap(pre_block, leader_idx, pb_block, tx_propose);
     if (s != Status::kSuccess) {
         ZJC_WARN("====0.1 pool: %d wrap failed, %d", pool_idx_, static_cast<int>(s));
         return s;
     }
-    view_block->block = (pb_block);
-    view_block->qc = high_qc;
+    view_block->block = pb_block;
+    view_block->qc = pacemaker()->HighQC();
     view_block->view = pacemaker()->CurView();
     view_block->hash = view_block->DoHash();
     return Status::kSuccess;
