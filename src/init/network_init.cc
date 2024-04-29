@@ -350,7 +350,8 @@ void NetworkInit::AddCmds() {
             return;
         }
 
-        hf->Propose(hotstuff::new_sync_info()->WithQC(hf->pacemaker()->HighQC()));
+        hf->Start();
+        // hf->Propose(hotstuff::new_sync_info()->WithQC(hf->pacemaker()->HighQC()));
     });        
 #endif    
 }
