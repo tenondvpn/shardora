@@ -55,7 +55,11 @@ Status Hotstuff::Start() {
 void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     ZJC_DEBUG("====9 pool: %d, pm: %p, propose", pool_idx_, pacemaker_.get());
     auto pb_pro_msg = std::make_shared<hotstuff::protobuf::ProposeMsg>();
-    ConstructProposeMsg(sync_info, pb_pro_msg);
+    Status s = ConstructProposeMsg(sync_info, pb_pro_msg);
+    if (s != Status::kSuccess) {
+        ZJC_ERROR("====0.3 pool: %d construct propose msg failed, %d", pool_idx_, static_cast<int>(s));
+        return;
+    }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
@@ -63,7 +67,7 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     header.set_type(common::kHotstuffMessage);
     header.set_hop_count(0);
     auto hotstuff_msg = std::make_shared<pb_HotstuffMessage>();
-    Status s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, hotstuff_msg);
+    s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("====0.3 pool: %d construct hotstuff msg failed", pool_idx_);
         return;
@@ -484,7 +488,10 @@ Status Hotstuff::ConstructProposeMsg(
         std::shared_ptr<hotstuff::protobuf::ProposeMsg>& pro_msg) {
     auto new_view_block = std::make_shared<ViewBlock>();
     auto tx_propose = std::make_shared<hotstuff::protobuf::TxPropose>();
-    ConstructViewBlock(new_view_block, tx_propose);
+    Status s = ConstructViewBlock(new_view_block, tx_propose);
+    if (s != Status::kSuccess) {
+        return s;
+    }
 
     auto new_pb_view_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
     ViewBlock2Proto(new_view_block, new_pb_view_block.get());
