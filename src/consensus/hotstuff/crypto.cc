@@ -48,8 +48,15 @@ Status Crypto::ReconstructAndVerifyThresSign(
         bls_collection_->view = view; 
     }
 
+    // 已经处理过
     if (bls_collection_->handled) {
-        return Status::kSuccess;
+        auto collect_item = bls_collection_->GetItem(msg_hash);
+        if (collect_item != nullptr && collect_item->reconstructed_sign != nullptr) {
+            reconstructed_sign = collect_item->reconstructed_sign;
+            return Status::kSuccess;
+        }
+        
+        bls_collection_->handled = false;
     }
 
     auto partial_sign = std::make_shared<libff::alt_bn128_G1>();
