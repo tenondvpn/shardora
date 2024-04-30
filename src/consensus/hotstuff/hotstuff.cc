@@ -282,10 +282,9 @@ void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
     
     if (ret != Status::kSuccess) {
         if (ret == Status::kBlsVerifyWaiting) {
-            ZJC_INFO("kBlsVerifyWaiting");
+            ZJC_DEBUG("kBlsWaiting pool: %d, view: %lu", pool_idx_, vote_msg.view());
             return;
         }
-        ZJC_ERROR("ReconstructAndVerify error");
         return;
     }
     ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d",

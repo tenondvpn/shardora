@@ -173,13 +173,15 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
             timeout_proto.sign_y(),
             reconstructed_sign);
     if (s != Status::kSuccess) {
-        ZJC_WARN("====2 pool: %d, bls failed, s: %d, view: %d, view_hash: %s, member_id: %d, elect_height: %lu",
-            timeout_proto.pool_idx(),
-            s,
-            timeout_proto.view(),
-            common::Encode::HexEncode(timeout_proto.view_hash()).c_str(),
-            timeout_proto.member_id(),
-            timeout_proto.elect_height());
+        if (s == Status::kBlsVerifyWaiting) {
+            ZJC_WARN("====2 pool: %d, bls waiting, s: %d, view: %d, view_hash: %s, member_id: %d, elect_height: %lu",
+                timeout_proto.pool_idx(),
+                s,
+                timeout_proto.view(),
+                common::Encode::HexEncode(timeout_proto.view_hash()).c_str(),
+                timeout_proto.member_id(),
+                timeout_proto.elect_height());            
+        }
         return;
     }
     // TODO 视图切换
@@ -195,7 +197,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     AdvanceView(new_sync_info()->WithTC(tc));
     
     // TODO New Propose
-    ZJC_DEBUG("====9 pool: %d, pm: %p, onremote", pool_idx_, this);
+    ZJC_DEBUG("====2 pool: %d, pm: %p, onremote", pool_idx_, this);
     if (new_proposal_fn_) {
         new_proposal_fn_(new_sync_info()->WithQC(HighQC())->WithTC(HighTC()));
     }

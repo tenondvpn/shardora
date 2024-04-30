@@ -53,7 +53,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
         auto collect_item = bls_collection_->GetItem(msg_hash);
         if (collect_item != nullptr && collect_item->reconstructed_sign != nullptr) {
             reconstructed_sign = collect_item->reconstructed_sign;
-            return Status::kSuccess;
+            return Status::kBlsHandled;
         }
         
         bls_collection_->handled = false;
