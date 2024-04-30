@@ -316,7 +316,7 @@ void NetworkInit::AddCmds() {
         chain->Store(view_block);
     });
 
-    cmd_.AddCommand("printchain", [this](const std::vector<std::string>& args){
+    cmd_.AddCommand("pc", [this](const std::vector<std::string>& args){
         if (args.size() < 1) {
             return;
         }
@@ -336,26 +336,6 @@ void NetworkInit::AddCmds() {
                   << ",commitView: " << chain->LatestCommittedBlock()->view
                   << ",CurView: " << pacemaker->CurView() << std::endl;
         chain->Print();
-    });
-
-
-    cmd_.AddCommand("start", [this](const std::vector<std::string>& args){
-        if (args.size() < 1) {
-            return;
-        }
-        if (args[0] == "all") {
-            hotstuff_mgr_->Start();
-            return;
-        }
-        uint32_t pool_idx = std::stoi(args[0]);
-                        
-        auto hf = hotstuff_mgr_->hotstuff(pool_idx);
-        if (!hf) {
-            return;
-        }
-
-        hf->Start();
-        // hf->Propose(hotstuff::new_sync_info()->WithQC(hf->pacemaker()->HighQC()));
     });        
 #endif    
 }
