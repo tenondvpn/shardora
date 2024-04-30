@@ -182,7 +182,8 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
 
     AdvanceView(new_sync_info()->WithTC(tc));
-    
+
+    assert(new_proposal_fn_ != nullptr);
     // New Propose
     if (new_proposal_fn_) {
         new_proposal_fn_(new_sync_info()->WithQC(HighQC())->WithTC(HighTC()));
