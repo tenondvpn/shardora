@@ -80,7 +80,7 @@ public:
         }
 
         ZJC_DEBUG("pool: %d duration is %d ms", pool_idx_, static_cast<uint64_t>(duration));
-        return static_cast<uint64_t>(duration);
+        return static_cast<uint64_t>(duration) * 1000; // to us
     }
 
 private:
