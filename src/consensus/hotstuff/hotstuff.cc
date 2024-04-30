@@ -557,7 +557,7 @@ Status Hotstuff::ConstructVoteMsg(
         common::Encode::HexEncode(GetQCMsgHash(v_block->view, v_block->hash)).c_str(),
         sign_x.c_str(), sign_y.c_str());    
     vote_msg->set_sign_x(sign_x);
-    vote_msg->set_sign_x(sign_y);
+    vote_msg->set_sign_y(sign_y);
 
     std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
     wrapper()->GetTxsIdempotently(txs);
