@@ -79,7 +79,7 @@ public:
             duration = max;
         }
 
-        ZJC_DEBUG("pool: %d duration is %d ms", pool_idx_, static_cast<uint64_t>(duration));
+        ZJC_DEBUG("pool: %d duration is %.2f ms", pool_idx_, duration);
         return static_cast<uint64_t>(duration) * 1000; // to us
     }
 
