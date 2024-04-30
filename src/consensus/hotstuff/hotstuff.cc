@@ -270,13 +270,6 @@ void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
-
-    ZJC_DEBUG("====8.1 pool: %d, onVote, elect_height: %lu, hash: %s x: %s, y: %s",
-        pool_idx_,
-        elect_height,
-        common::Encode::HexEncode(GetQCMsgHash(vote_msg.view(), vote_msg.view_block_hash())).c_str(),
-        vote_msg.sign_x().c_str(),
-        vote_msg.sign_y().c_str());
     
     Status ret = crypto()->ReconstructAndVerifyThresSign(
             elect_height,
@@ -553,9 +546,7 @@ Status Hotstuff::ConstructVoteMsg(
         ZJC_ERROR("Sign message is error.");
         return Status::kError;
     }
-    ZJC_DEBUG("====8.0 pool: %d, elect_height: %lu, hash: %s x: %s, y: %s", pool_idx_, elect_height,
-        common::Encode::HexEncode(GetQCMsgHash(v_block->view, v_block->hash)).c_str(),
-        sign_x.c_str(), sign_y.c_str());    
+    
     vote_msg->set_sign_x(sign_x);
     vote_msg->set_sign_y(sign_y);
 
