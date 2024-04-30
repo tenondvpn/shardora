@@ -128,9 +128,9 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
     }    
     
     // 2 Veriyfy Leader
-    // if (VerifyLeader(v_block) != Status::kSuccess) {
-    //     return;
-    // }
+    if (VerifyLeader(v_block) != Status::kSuccess) {
+        return;
+    }
     
     // 4 Verify ViewBlock    
     if (VerifyViewBlock(v_block, view_block_chain(), pro_msg.elect_height()) != Status::kSuccess) {
@@ -265,27 +265,22 @@ void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
     return;
 }
 
-std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(
-        const std::shared_ptr<ViewBlock>& v_block) {
-    auto c = view_block_chain();
-    if (!c) {
-        return nullptr;
-    }
-    auto v_block1 = c->QCRef(v_block);
+std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(const std::shared_ptr<ViewBlock>& v_block) {
+    auto v_block1 = view_block_chain()->QCRef(v_block);
     if (!v_block1) {
         return nullptr;
     }    
-    auto v_block2 = c->QCRef(v_block1);
+    auto v_block2 = view_block_chain()->QCRef(v_block1);
     if (!v_block2) {
         return nullptr;
     }
 
-    if (!c->LatestLockedBlock() || v_block2->view > c->LatestLockedBlock()->view) {
+    if (!view_block_chain()->LatestLockedBlock() || v_block2->view > view_block_chain()->LatestLockedBlock()->view) {
         ZJC_DEBUG("locked block, view: %lu", v_block2->view);
-        c->SetLatestLockedBlock(v_block2);
+        view_block_chain()->SetLatestLockedBlock(v_block2);
     }
 
-    auto v_block3 = c->QCRef(v_block2);
+    auto v_block3 = view_block_chain()->QCRef(v_block2);
     if (!v_block3) {
         return nullptr;
     }
@@ -300,7 +295,7 @@ std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(
 
 Status Hotstuff::Commit(const std::shared_ptr<ViewBlock>& v_block) {
     // 递归提交
-    Status s = CommitInner(view_block_chain(), acceptor(), v_block);
+    Status s = CommitInner(v_block);
     if (s != Status::kSuccess) {
         return s;
     }
@@ -374,16 +369,8 @@ Status Hotstuff::VerifyViewBlock(
     return ret;
 }
 
-
-Status Hotstuff::CommitInner(
-        const std::shared_ptr<ViewBlockChain>& c,
-        const std::shared_ptr<IBlockAcceptor> accp, 
-        const std::shared_ptr<ViewBlock>& v_block) {
-    if (!c) {
-        return Status::kError;
-    }
-
-    auto latest_committed_block = c->LatestCommittedBlock();
+Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
+    auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
     if (latest_committed_block && latest_committed_block->view >= v_block->view) {
         return Status::kSuccess;
     }
@@ -393,25 +380,21 @@ Status Hotstuff::CommitInner(
     }
 
     std::shared_ptr<ViewBlock> parent_block = nullptr;
-    Status s = c->Get(v_block->parent_hash, parent_block);
+    Status s = view_block_chain()->Get(v_block->parent_hash, parent_block);
     if (s == Status::kSuccess && parent_block != nullptr) {
-        s = CommitInner(c, accp, parent_block);
+        s = CommitInner(parent_block);
         if (s != Status::kSuccess) {
             return s;
         }
     }
 
-    if (!accp) {
-        return Status::kError;
-    }
-
     v_block->block->set_is_commited_block(true);
-    s = accp->Commit(v_block->block);
+    s = acceptor()->Commit(v_block->block);
     if (s != Status::kSuccess) {
         return s;
     }
     
-    c->SetLatestCommittedBlock(v_block);
+    view_block_chain()->SetLatestCommittedBlock(v_block);
     return Status::kSuccess;
 }
 
