@@ -20,12 +20,10 @@ void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
         view_block_chain_->Store(genesis);
         view_block_chain_->SetLatestLockedBlock(genesis);
         view_block_chain_->SetLatestCommittedBlock(genesis);
-        auto sync_info = std::make_shared<SyncInfo>();
-
         // 使用 genesis qc 进行视图切换
         auto genesis_qc = GetGenesisQC(genesis->hash);
         // 开启第一个视图
-        pacemaker_->AdvanceView(sync_info->WithQC(genesis_qc));
+        pacemaker_->AdvanceView(new_sync_info()->WithQC(genesis_qc));
     } else {
         ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
     }            

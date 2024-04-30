@@ -204,9 +204,8 @@ Status HotstuffSyncer::processResponseQcTc(
     ZJC_DEBUG("response received qctc pool_idx: %d, tc: %d, qc: %d",
         pool_idx, hightc->view, highqc->view);
     // TODO 验证 qc 和 tc
-
-    auto sync_info = std::make_shared<SyncInfo>();
-    pm->AdvanceView(sync_info->WithQC(highqc)->WithTC(hightc));
+    
+    pm->AdvanceView(new_sync_info()->WithQC(highqc)->WithTC(hightc));
     return Status::kSuccess;
 }
 
@@ -365,8 +364,7 @@ Status HotstuffSyncer::onRecViewBlock(
     }
     
     // 2. 视图切换
-    auto sync_info = std::make_shared<SyncInfo>();
-    hotstuff->pacemaker()->AdvanceView(sync_info->WithQC(view_block->qc));
+    hotstuff->pacemaker()->AdvanceView(new_sync_info()->WithQC(view_block->qc));
     
     // 3. 尝试 commit
     auto view_block_to_commit = hotstuff->CheckCommit(view_block);
