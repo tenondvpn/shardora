@@ -21,18 +21,18 @@ LeaderRotation::LeaderRotation(
 LeaderRotation::~LeaderRotation() {}
 
 common::BftMemberPtr LeaderRotation::GetLeader() {
-    auto committedBlock = chain_->LatestCommittedBlock();
-    // 对于非种子节点可能启动时没有 committedblock, 需要等同步
-    auto qc = GetQCWrappedByGenesis();
-    if (committedBlock) {
-        qc = committedBlock->qc;
-    }
-
-    // if (!watched_qc_) {
-    //     return nullptr;
+    // auto committedBlock = chain_->LatestCommittedBlock();
+    // // 对于非种子节点可能启动时没有 committedblock, 需要等同步
+    // auto qc = GetQCWrappedByGenesis();
+    // if (committedBlock) {
+    //     qc = committedBlock->qc;
     // }
 
-    // auto qc = watched_qc_;
+    if (!watched_qc_) {
+        return nullptr;
+    }
+
+    auto qc = watched_qc_;
     
     uint64_t random_hash = common::Hash::Hash64(qc->Serialize() +
         std::to_string(common::TimeUtils::TimestampSeconds() / 30000000));
