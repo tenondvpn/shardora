@@ -29,7 +29,7 @@ public:
         return elect_info_->GetElectItem()->LocalMember()->index;
     }
 
-    void WatchQC(const std::shared_ptr<QC>& qc) {
+    void UpdateQC(const std::shared_ptr<QC>& qc) {
         watched_qc_ = qc;
     }
 private:
