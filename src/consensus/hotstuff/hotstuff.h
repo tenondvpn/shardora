@@ -110,10 +110,7 @@ private:
     std::shared_ptr<ElectInfo> elect_info_;
     View last_vote_view_;
 
-    Status CommitInner(
-            const std::shared_ptr<ViewBlockChain>& c,
-            const std::shared_ptr<IBlockAcceptor> accp, 
-            const std::shared_ptr<ViewBlock>& v_block);
+    Status CommitInner(const std::shared_ptr<ViewBlock>& v_block);
     Status VerifyVoteMsg(
             const hotstuff::protobuf::VoteMsg& vote_msg);
     Status VerifyLeader(const std::shared_ptr<ViewBlock>& view_block);
