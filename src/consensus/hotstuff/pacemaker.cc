@@ -18,7 +18,7 @@ namespace hotstuff {
 Pacemaker::Pacemaker(
         const uint32_t& pool_idx,
         const std::shared_ptr<Crypto>& c,
-        const std::shared_ptr<LeaderRotation>& lr,
+        std::shared_ptr<LeaderRotation>& lr,
         const std::shared_ptr<ViewDuration>& d) :
     pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d) {
     
