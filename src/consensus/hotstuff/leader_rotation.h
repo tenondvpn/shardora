@@ -2,6 +2,7 @@
 
 #include <common/node_members.h>
 #include <consensus/hotstuff/elect_info.h>
+#include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
 
@@ -28,6 +29,10 @@ public:
         assert(elect_info_->GetElectItem());
         return elect_info_->GetElectItem()->LocalMember()->index;
     }
+
+    void WatchQC(const std::shared_ptr<QC> qc) {
+        watched_qc_ = qc;
+    }
 private:
     inline common::MembersPtr Members() const {
         auto elect_item = elect_info_->GetElectItem();
@@ -40,7 +45,7 @@ private:
     uint32_t pool_idx_;
     std::shared_ptr<ViewBlockChain> chain_ = nullptr;
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
-    
+    std::shared_ptr<QC> watched_qc_ = nullptr;
 };
 
 } // namespace consensus

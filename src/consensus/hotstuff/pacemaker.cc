@@ -25,6 +25,7 @@ Pacemaker::Pacemaker(
     high_qc_ = GetQCWrappedByGenesis();
     high_tc_ = std::make_shared<TC>(nullptr, BeforeGenesisView);
     cur_view_ = GenesisView;
+    leader_rotation_->WatchQC(high_qc_);
 }
 
 Pacemaker::~Pacemaker() {}
