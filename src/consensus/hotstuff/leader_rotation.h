@@ -2,7 +2,6 @@
 
 #include <common/node_members.h>
 #include <consensus/hotstuff/elect_info.h>
-#include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
 
