@@ -146,7 +146,7 @@ private:
             const std::shared_ptr<consensus::WaitingTxsItem>&,
             std::shared_ptr<block::protobuf::Block>&);
 
-    Status GetTxsFromLocal(
+    Status GetAndAddTxsLocally(
             const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
             std::shared_ptr<consensus::WaitingTxsItem>&);    
 

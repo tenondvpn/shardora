@@ -159,7 +159,7 @@ private:
     std::shared_ptr<ViewBlock> start_block_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlock>> view_blocks_;
     std::unordered_map<HashStr, ViewBlockStatus> view_blocks_status_;
-    std::unordered_map<View, std::vector<std::shared_ptr<ViewBlock>>> view_blocks_at_height_;
+    std::unordered_map<View, std::vector<std::shared_ptr<ViewBlock>>> view_blocks_at_height_; // 一般一个 view 只有一个块
     std::unordered_map<HashStr, std::vector<std::shared_ptr<ViewBlock>>> view_block_children_;
     std::unordered_map<HashStr, std::shared_ptr<QC>> view_block_qc_map_; // 存放 view_block 及它的 QC
 
