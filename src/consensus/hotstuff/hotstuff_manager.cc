@@ -78,7 +78,7 @@ int HotstuffManager::Init(
                 leader_rotation,
                 std::make_shared<ViewDuration>(
                         pool_idx,
-                        10,
+                        100,
                         5000,
                         10000,
                         1.1));
