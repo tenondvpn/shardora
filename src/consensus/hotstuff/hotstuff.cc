@@ -2,6 +2,7 @@
 #include <common/log.h>
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/types.h>
+#include <protos/pools.pb.h>
 
 namespace shardora {
 
@@ -214,7 +215,15 @@ void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
     }
     ZJC_DEBUG("====2.1 pool: %d, onVote, hash: %s",
         pool_idx_,
-        common::Encode::HexEncode(vote_msg.view_block_hash()).c_str());    
+        common::Encode::HexEncode(vote_msg.view_block_hash()).c_str());
+
+    // 同步 replica 的 txs
+    std::vector<std::shared_ptr<pools::protobuf::TxMessage>> tx_msgs;
+    for (const auto& tx : vote_msg.txs()) {
+        tx_msgs.push_back(std::make_shared<pools::protobuf::TxMessage>(tx));
+    }
+    acceptor()->AddTxs(tx_msgs);
+    
     // 生成聚合签名，创建qc
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();

@@ -20,6 +20,7 @@ public:
     void ViewTimeout() {};
 
     inline uint64_t Duration() const {
+        // TODO
         return 5000000;
     }
 
