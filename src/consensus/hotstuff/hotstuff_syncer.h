@@ -21,7 +21,7 @@ namespace hotstuff {
 
 const int kPopCountMax = 128;
 const uint64_t kSyncTimerCycleUs = 100000lu;
-const int kMaxSyncBlockNum = 64;
+const int kMaxSyncBlockNum = 100;
 
 struct ViewBlockItem {
     HashStr hash;
