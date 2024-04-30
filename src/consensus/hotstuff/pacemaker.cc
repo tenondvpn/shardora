@@ -162,7 +162,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     
     // TODO 统计 bls 签名
     auto timeout_proto = msg.hotstuff_timeout_proto();
-    ZJC_DEBUG("====2 pool: %d, view: %d, member: %d", pool_idx_, timeout_proto.view(), timeout_proto.member_id());
+    ZJC_DEBUG("====4 pool: %d, view: %d, member: %d", pool_idx_, timeout_proto.view(), timeout_proto.member_id());
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
     Status s = crypto_->ReconstructAndVerifyThresSign(
             timeout_proto.elect_height(),
@@ -174,7 +174,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
             reconstructed_sign);
     if (s != Status::kSuccess) {
         if (s == Status::kBlsVerifyWaiting) {
-            ZJC_WARN("====2 pool: %d, bls waiting, s: %d, view: %d, view_hash: %s, member_id: %d, elect_height: %lu",
+            ZJC_WARN("====4 pool: %d, bls waiting, s: %d, view: %d, view_hash: %s, member_id: %d, elect_height: %lu",
                 timeout_proto.pool_idx(),
                 s,
                 timeout_proto.view(),
@@ -191,13 +191,13 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     if (s != Status::kSuccess || !tc) {
         return;
     }
-    ZJC_DEBUG("====2 pool: %d, create tc, view: %d, member: %d, view: %d",
+    ZJC_DEBUG("====4 pool: %d, create tc, view: %d, member: %d, view: %d",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
 
     AdvanceView(new_sync_info()->WithTC(tc));
     
     // TODO New Propose
-    ZJC_DEBUG("====2 pool: %d, pm: %p, onremote", pool_idx_, this);
+    ZJC_DEBUG("====4 pool: %d, pm: %p, onremote", pool_idx_, this);
     if (new_proposal_fn_) {
         new_proposal_fn_(new_sync_info()->WithQC(HighQC())->WithTC(HighTC()));
     }
