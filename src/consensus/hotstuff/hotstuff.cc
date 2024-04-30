@@ -427,8 +427,7 @@ Status Hotstuff::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
 
 Status Hotstuff::VerifyLeader(const std::shared_ptr<ViewBlock>& view_block) {
     uint32_t leader_idx = view_block->leader_idx;
-    auto leader_rotation = std::make_shared<LeaderRotation>(pool_idx_, view_block_chain(), elect_info_);
-    auto leader = leader_rotation->GetLeader(); // 判断是否为空
+    auto leader = leader_rotation()->GetLeader(); // 判断是否为空
     if (!leader) {
         ZJC_ERROR("Get Leader is error.");
         return  Status::kError;
