@@ -34,7 +34,7 @@ HotstuffSyncer::HotstuffSyncer(
                 std::placeholders::_1,
                 std::placeholders::_2,
                 std::placeholders::_3));
-    network::Route::Instance()->RegisterMessage(common::kViewBlockSyncMessage,
+    network::Route::Instance()->RegisterMessage(common::kHotstuffSyncMessage,
         std::bind(&HotstuffSyncer::HandleMessage, this, std::placeholders::_1));
 }
 
@@ -52,7 +52,7 @@ int HotstuffSyncer::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 
 void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto header = msg_ptr->header;
-    assert(header.type() == common::kViewBlockSyncMessage);
+    assert(header.type() == common::kHotstuffSyncMessage);
     
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     consume_queues_[thread_idx].push(msg_ptr);
@@ -119,7 +119,7 @@ Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protob
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     dht::DhtKeyManager dht_key(network_id);
     msg.set_des_dht_key(dht_key.StrKey());
-    msg.set_type(common::kViewBlockSyncMessage);
+    msg.set_type(common::kHotstuffSyncMessage);
     *msg.mutable_view_block_proto() = view_block_msg;
     
     transport::TcpTransport::Instance()->SetMessageHash(msg);
@@ -171,7 +171,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
     msg.set_des_dht_key(dht_key.StrKey());
-    msg.set_type(common::kViewBlockSyncMessage);
+    msg.set_type(common::kHotstuffSyncMessage);
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
     
