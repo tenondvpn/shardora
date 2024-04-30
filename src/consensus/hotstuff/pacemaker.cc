@@ -18,7 +18,7 @@ namespace hotstuff {
 Pacemaker::Pacemaker(
         const uint32_t& pool_idx,
         const std::shared_ptr<Crypto>& c,
-        const std::shared_ptr<LeaderRotation>& lr,
+        std::shared_ptr<LeaderRotation>& lr,
         const std::shared_ptr<ViewDuration>& d) :
     pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d) {
     
@@ -61,7 +61,6 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
         duration_->ViewSucceeded();
     }
     
-    // TODO 如果交易池为空，则直接 return，不开启新视图
     cur_view_ = new_v; 
     
     duration_->ViewStarted();
@@ -118,8 +117,6 @@ void Pacemaker::OnLocalTimeout() {
     timeout_msg.set_elect_height(elect_item->ElectHeight());
     timeout_msg.set_pool_idx(pool_idx_); // 用于分配线程
 
-    // TODO Stop Voting
-
     auto leader = leader_rotation_->GetLeader();
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     dht::DhtKeyManager dht_key(leader->net_id);
@@ -160,9 +157,9 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         return;
     }
     
-    // TODO 统计 bls 签名
+    // 统计 bls 签名
     auto timeout_proto = msg.hotstuff_timeout_proto();
-    ZJC_DEBUG("====2 pool: %d, view: %d, member: %d", pool_idx_, timeout_proto.view(), timeout_proto.member_id());
+    ZJC_DEBUG("====4.0 pool: %d, view: %d, member: %d", pool_idx_, timeout_proto.view(), timeout_proto.member_id());
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
     Status s = crypto_->ReconstructAndVerifyThresSign(
             timeout_proto.elect_height(),
@@ -173,29 +170,21 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
             timeout_proto.sign_y(),
             reconstructed_sign);
     if (s != Status::kSuccess) {
-        ZJC_WARN("====2 pool: %d, bls failed, s: %d, view: %d, view_hash: %s, member_id: %d, elect_height: %lu",
-            timeout_proto.pool_idx(),
-            s,
-            timeout_proto.view(),
-            common::Encode::HexEncode(timeout_proto.view_hash()).c_str(),
-            timeout_proto.member_id(),
-            timeout_proto.elect_height());
         return;
     }
-    // TODO 视图切换
-    
+    // 视图切换
     auto tc = std::make_shared<TC>();
     s = crypto_->CreateTC(timeout_proto.view(), reconstructed_sign, tc);
     if (s != Status::kSuccess || !tc) {
         return;
     }
-    ZJC_DEBUG("====2 pool: %d, create tc, view: %d, member: %d, view: %d",
+    ZJC_DEBUG("====4.1 pool: %d, create tc, view: %d, member: %d, view: %d",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
 
     AdvanceView(new_sync_info()->WithTC(tc));
-    
-    // TODO New Propose
-    ZJC_DEBUG("====9 pool: %d, pm: %p, onremote", pool_idx_, this);
+
+    assert(new_proposal_fn_ != nullptr);
+    // New Propose
     if (new_proposal_fn_) {
         new_proposal_fn_(new_sync_info()->WithQC(HighQC())->WithTC(HighTC()));
     }

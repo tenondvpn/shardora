@@ -27,9 +27,15 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
     if (committedBlock) {
         qc = committedBlock->qc;
     }
+
+    // if (!watched_qc_) {
+    //     return nullptr;
+    // }
+
+    // auto qc = watched_qc_;
     
     uint64_t random_hash = common::Hash::Hash64(qc->Serialize() +
-        std::to_string(common::TimeUtils::TimestampSeconds() / 6000000));
+        std::to_string(common::TimeUtils::TimestampSeconds() / 30000000));
 
     if (Members()->empty()) {
         return nullptr;

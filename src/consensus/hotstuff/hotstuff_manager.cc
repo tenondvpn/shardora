@@ -72,7 +72,16 @@ int HotstuffManager::Init(
         auto crypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
         auto chain = std::make_shared<ViewBlockChain>();
         auto leader_rotation = std::make_shared<LeaderRotation>(pool_idx, chain, elect_info_);
-        auto pacemaker = std::make_shared<Pacemaker>(pool_idx, crypto, leader_rotation, std::make_shared<ViewDuration>());
+        auto pacemaker = std::make_shared<Pacemaker>(
+                pool_idx,
+                crypto,
+                leader_rotation,
+                std::make_shared<ViewDuration>(
+                        pool_idx,
+                        100,
+                        5000,
+                        10000,
+                        1.1));
         auto acceptor = std::make_shared<BlockAcceptor>(
                 pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
                 contract_mgr, db, gas_prepayment, pool_mgr, block_mgr,

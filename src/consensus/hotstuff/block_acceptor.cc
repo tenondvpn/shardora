@@ -156,7 +156,10 @@ Status BlockAcceptor::AddTxs(std::vector<std::shared_ptr<pools::protobuf::TxMess
 Status BlockAcceptor::addTxsToPool(
         std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    assert(txs.size() > 0);
+    if (txs.size() == 0) {
+        return Status::kAcceptorTxsEmpty;
+    }
+    
     std::map<std::string, pools::TxItemPtr> txs_map;
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
         auto& tx = txs[i];

@@ -141,6 +141,7 @@ enum class Status : int {
   kOldView = 8,
   kElectItemNotFound = 9,
   kWrapperTxsEmpty = 10,
+  kBlsHandled = 11,
 };
 
 enum WaitingBlockType {
