@@ -554,9 +554,8 @@ Status Hotstuff::SendVoteMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage
     auto trans_msg = std::make_shared<transport::TransportMessage>();
     auto& header_msg = trans_msg->header;
     header_msg.mutable_hotstuff()->CopyFrom(*hotstuff_msg);
-
-    auto leader_rotation = std::make_shared<LeaderRotation>(pool_idx_, view_block_chain(), elect_info_);
-    auto leader = leader_rotation->GetLeader();
+    
+    auto leader = leader_rotation()->GetLeader();
     if (!leader) {
         ZJC_ERROR("Get Leader failed.");
         return Status::kError;
