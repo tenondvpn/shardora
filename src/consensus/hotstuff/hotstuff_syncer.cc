@@ -218,6 +218,7 @@ Status HotstuffSyncer::processResponseChain(
     ZJC_DEBUG("response received pool_idx: %d, view_blocks: %d, qc: %d",
         pool_idx, view_block_items.size(), view_block_qc_strs.size());    
     // 对块数量限制
+    // 当出现这么多块，多半是因为共识卡住，不断产生新的无法共识的块，此时同步这些块过来也没有用，早晚会被剪掉
     if (view_block_items.size() > kMaxSyncBlockNum || view_block_items.size() <= 0) {
         return Status::kError;
     }
