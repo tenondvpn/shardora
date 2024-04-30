@@ -25,7 +25,6 @@ Pacemaker::Pacemaker(
     high_qc_ = GetQCWrappedByGenesis();
     high_tc_ = std::make_shared<TC>(nullptr, BeforeGenesisView);
     cur_view_ = GenesisView;
-    leader_rotation_->UpdateQC(high_qc_);
 }
 
 Pacemaker::~Pacemaker() {}
@@ -74,7 +73,6 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
 void Pacemaker::UpdateHighQC(const std::shared_ptr<QC>& qc) {
     if (high_qc_->view < qc->view) {
         high_qc_ = qc;
-        leader_rotation_->UpdateQC(high_qc_);
     }
 }
 
