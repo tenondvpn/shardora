@@ -205,17 +205,19 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
 }
 
 void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
-    ZJC_DEBUG("====2.0 pool: %d, onVote, hash: %s",
+    ZJC_DEBUG("====2.0 pool: %d, onVote, hash: %s, view: %lu",
         pool_idx_,
-        common::Encode::HexEncode(vote_msg.view_block_hash()).c_str());
+        common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
+        vote_msg.view());
     
     if (VerifyVoteMsg(vote_msg) != Status::kSuccess) {
         ZJC_ERROR("vote message is error.");
         return;
     }
-    ZJC_DEBUG("====2.1 pool: %d, onVote, hash: %s",
+    ZJC_DEBUG("====2.1 pool: %d, onVote, hash: %s, view: %lu",
         pool_idx_,
-        common::Encode::HexEncode(vote_msg.view_block_hash()).c_str());
+        common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
+        vote_msg.view());
 
     // 同步 replica 的 txs
     std::vector<std::shared_ptr<pools::protobuf::TxMessage>> tx_msgs;
@@ -245,10 +247,11 @@ void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
         }
         return;
     }
-    ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d",
+    ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d, view: %lu",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
-        reconstructed_sign == nullptr);
+        reconstructed_sign == nullptr,
+        vote_msg.view());
 
     auto qc = std::make_shared<QC>();
     Status s = crypto()->CreateQC(vote_msg.view_block_hash(), vote_msg.view(), reconstructed_sign, qc);
