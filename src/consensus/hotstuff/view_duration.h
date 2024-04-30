@@ -62,6 +62,7 @@ public:
     }
 
     uint64_t Duration() const {
+        return 5000000;
         double conf = 1.96; // 95% confidence
         double dev = 0.0;
         if (count > 1) {
