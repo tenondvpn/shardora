@@ -128,9 +128,9 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
     }    
     
     // 2 Veriyfy Leader
-    if (VerifyLeader(v_block) != Status::kSuccess) {
-        return;
-    }
+    // if (VerifyLeader(v_block) != Status::kSuccess) {
+    //     return;
+    // }
     
     // 4 Verify ViewBlock    
     if (VerifyViewBlock(v_block, view_block_chain(), pro_msg.elect_height()) != Status::kSuccess) {
