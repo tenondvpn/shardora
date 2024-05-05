@@ -61,7 +61,8 @@ void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
 // 批量异步处理，提高 tps
 void HotstuffSyncer::ConsensusTimerMessage() {
     // TODO 仅共识池节点参与 view_block_chain 的同步
-    SyncChains();
+    // SyncChains();
+    SyncChainsToNeighbors();
     ConsumeMessages();
 
     tick_.CutOff(
@@ -69,15 +70,11 @@ void HotstuffSyncer::ConsensusTimerMessage() {
         std::bind(&HotstuffSyncer::ConsensusTimerMessage, this));    
 }
 
-void HotstuffSyncer::SyncChains() {
+// Gossip chains info to neighbors
+Status HotstuffSyncer::SyncChainsToNeighbors() {
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
-        auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
-        auto req = vb_msg.mutable_view_block_req();
-        req->set_pool_idx(pool_idx);
-        req->set_network_id(common::GlobalInfo::Instance()->network_id());
-        vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
-        SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg);
-    }
+        SyncChainToNeighbor(common::GlobalInfo::Instance()->network_id(), pool_idx);
+    }    
 }
 
 void HotstuffSyncer::ConsumeMessages() {
@@ -90,16 +87,14 @@ void HotstuffSyncer::ConsumeMessages() {
             if (msg_ptr == nullptr) {
                 break;
             }
-            if (msg_ptr->header.view_block_proto().has_view_block_req()) {
-                processRequest(msg_ptr);
-            } else if (msg_ptr->header.view_block_proto().has_view_block_res()) {
+            if (msg_ptr->header.view_block_proto().has_view_block_res()) {
                 processResponse(msg_ptr);
-            }
+            }            
         }   
     }
 }
 
-Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {
+Status HotstuffSyncer::SendMsg(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {
     // 只有共识池节点才能同步 ViewBlock
     if (network_id >= network::kConsensusWaitingShardBeginNetworkId) {
         return Status::kError;
@@ -127,19 +122,16 @@ Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protob
     return Status::kSuccess;
 }
 
-// 处理 request 类型消息
-Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
-    auto& view_block_msg = msg_ptr->header.view_block_proto();
-    assert(view_block_msg.has_view_block_req());
-
+Status HotstuffSyncer::SyncChainToNeighbor(
+        const uint32_t& network_id,
+        const uint32_t& pool_idx) {
     transport::protobuf::Header msg;
     view_block::protobuf::ViewBlockSyncMessage&  res_view_block_msg = *msg.mutable_view_block_proto();
     
     res_view_block_msg.set_create_time_us(common::TimeUtils::TimestampUs());
     auto view_block_res = res_view_block_msg.mutable_view_block_res();
-    uint32_t pool_idx = view_block_msg.view_block_req().pool_idx();
     
-    view_block_res->set_network_id(view_block_msg.view_block_req().network_id());
+    view_block_res->set_network_id(network_id);
     view_block_res->set_pool_idx(pool_idx);
     view_block_res->set_high_qc_str(pacemaker(pool_idx)->HighQC()->Serialize());
     view_block_res->set_high_tc_str(pacemaker(pool_idx)->HighTC()->Serialize());
@@ -168,14 +160,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
         ViewBlock2Proto(view_block, view_block_item);
     }
 
-    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
-    msg.set_des_dht_key(dht_key.StrKey());
-    msg.set_type(common::kHotstuffSyncMessage);
-    transport::TcpTransport::Instance()->SetMessageHash(msg);
-    transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
-    
-    return Status::kSuccess;
+    return SendMsg(network_id, res_view_block_msg);
 }
 
 // 处理 response 类型消息
@@ -203,8 +188,7 @@ Status HotstuffSyncer::processResponseQcTc(
 
     ZJC_DEBUG("response received qctc pool_idx: %d, tc: %d, qc: %d",
         pool_idx, hightc->view, highqc->view);
-    // TODO 验证 qc 和 tc
-    
+    // TODO 验证 qc 和 tc   
     pm->AdvanceView(new_sync_info()->WithQC(highqc)->WithTC(hightc));
     return Status::kSuccess;
 }
@@ -341,6 +325,7 @@ Status HotstuffSyncer::MergeChain(
     return Status::kSuccess;
 }
 
+// 只要 QC 验证成功，无需验证其他，直接接受该 ViewBlock
 Status HotstuffSyncer::onRecViewBlock(
         const uint32_t& pool_idx,
         const std::shared_ptr<ViewBlockChain>& ori_chain,
@@ -349,12 +334,8 @@ Status HotstuffSyncer::onRecViewBlock(
     if (!hotstuff) {
         return Status::kError;
     }
-    // 1. 验证 view_block
-    Status s = hotstuff->VerifyViewBlock(view_block, ori_chain, view_block->ElectHeight());
-    if (s != Status::kSuccess) {
-        return s;
-    }
-    // 2. 验证交易
+    Status s = Status::kSuccess;    
+    // 验证交易
     auto accep = hotstuff->acceptor();
     if (!accep) {
         return Status::kError;

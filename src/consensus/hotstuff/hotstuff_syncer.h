@@ -51,6 +51,7 @@ public:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     void ConsumeMessages();
+    Status SyncChainsToNeighbors();
     Status MergeChain(
             const uint32_t& pool_idx,
             std::shared_ptr<ViewBlockChain>& ori_chain,
@@ -74,13 +75,16 @@ private:
         return hotstuff_mgr_->crypto(pool_idx);
     }
     
-    Status SendRequest(
+    Status SendMsg(
             uint32_t network_id,
             const view_block::protobuf::ViewBlockSyncMessage& view_block_msg);
+    // Sync ViewBlocks, HighQC, HighTC to a neighbor
+    Status SyncChainToNeighbor(
+            const uint32_t& network_id,
+            const uint32_t& pool_idx);
     void ConsensusTimerMessage();
-    void SyncChains();
-    
-    Status processRequest(const transport::MessagePtr&);
+    // void SyncChains();
+    // Status processRequest(const transport::MessagePtr&);
     Status processResponse(const transport::MessagePtr&);
 
     Status processResponseQcTc(
