@@ -94,8 +94,9 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
 
 void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
     // 3 Verify TC
+    std::shared_ptr<TC> tc = nullptr;
     if (!pro_msg.tc_str().empty()) {
-        auto tc = std::make_shared<TC>();
+        tc = std::make_shared<TC>();
         if (!tc->Unserialize(pro_msg.tc_str())) {
             ZJC_ERROR("tc Unserialize is error.");
             return;
@@ -131,7 +132,7 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
     }
     
     // 4 Verify ViewBlock    
-    if (VerifyViewBlock(v_block, view_block_chain(), pro_msg.elect_height()) != Status::kSuccess) {
+    if (VerifyViewBlock(v_block, view_block_chain(), tc, pro_msg.elect_height()) != Status::kSuccess) {
         ZJC_ERROR("Verify ViewBlock is error. hash: %s",
             common::Encode::HexEncode(v_block->hash).c_str());
         return;
@@ -318,6 +319,7 @@ Status Hotstuff::Commit(const std::shared_ptr<ViewBlock>& v_block) {
 Status Hotstuff::VerifyViewBlock(
         const std::shared_ptr<ViewBlock>& v_block, 
         const std::shared_ptr<ViewBlockChain>& view_block_chain,
+        const std::shared_ptr<TC>& tc,
         const uint32_t& elect_height) {
     Status ret = Status::kSuccess;
     auto block_view = v_block->view;
@@ -325,16 +327,28 @@ Status Hotstuff::VerifyViewBlock(
         ZJC_ERROR("view block hash is error.");
         return Status::kError;
     }
-    // view 必须最新
-    if (view_block_chain->GetMaxHeight() >= v_block->view) {
-        ZJC_ERROR("block view is error.");
-        return Status::kError;
-    }
-    
+
     auto qc = v_block->qc;
     if (!qc) {
         ZJC_ERROR("qc 必须存在.");
         return Status::kError;
+    }
+
+    // 验证 view 编号
+    // view 必须最新，或与最新视图号相同（超时情况）
+    if (qc->view + 1 == v_block->view) {
+        if (view_block_chain->GetMaxHeight() >= v_block->view) {
+            ZJC_ERROR("block view is error.");
+            return Status::kError;
+        }
+    } else if (tc && tc->view + 1 == v_block->view) { // view 由 tc 生成
+        if (view_block_chain->GetMaxHeight() > v_block->view) {
+            ZJC_ERROR("block view is error.");
+            return Status::kError;            
+        }
+    } else {
+        ZJC_ERROR("block view is error.");
+        return Status::kError;        
     }
     
     // qc 指针和哈希指针一致
