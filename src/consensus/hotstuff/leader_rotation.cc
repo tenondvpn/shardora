@@ -21,11 +21,11 @@ LeaderRotation::LeaderRotation(
 LeaderRotation::~LeaderRotation() {}
 
 common::BftMemberPtr LeaderRotation::GetLeader() {
-    auto lockedBlock = chain_->LatestLockedBlock();
+    auto committedBlock = chain_->LatestCommittedBlock();
     // 对于非种子节点可能启动时没有 committedblock, 需要等同步
     auto qc = GetQCWrappedByGenesis();
-    if (lockedBlock) {
-        qc = lockedBlock->qc; // Latest CommittQC
+    if (committedBlock) {
+        qc = committedBlock->qc;
     }
     
     uint64_t random_hash = common::Hash::Hash64(qc->Serialize() +
