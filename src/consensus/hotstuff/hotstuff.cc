@@ -348,7 +348,7 @@ Status Hotstuff::VerifyViewBlock(
         }
     } else {
         ZJC_ERROR("block view is error.");
-        return Status::kError;        
+        return Status::kError;
     }
     
     // qc 指针和哈希指针一致
