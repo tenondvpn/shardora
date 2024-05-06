@@ -31,7 +31,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
     }
     
     uint64_t random_hash = common::Hash::Hash64(qc->Serialize() +
-        std::to_string(common::TimeUtils::TimestampSeconds() / 30000000));
+        std::to_string(common::TimeUtils::TimestampSeconds() / 30));
 
     if (Members()->empty()) {
         return nullptr;

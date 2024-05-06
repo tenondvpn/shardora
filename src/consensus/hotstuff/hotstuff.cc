@@ -65,7 +65,8 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     auto hotstuff_msg = std::make_shared<pb_HotstuffMessage>();
     s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d construct hotstuff msg failed", pool_idx_);
+        ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
+            pool_idx_, hotstuff_msg->pro_msg().view_item().view());
         return;
     }
     header.mutable_hotstuff()->CopyFrom(*hotstuff_msg);
@@ -81,7 +82,6 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     }
 
     ZJC_DEBUG("pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu",
-        pool_idx_,
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
         hotstuff_msg->pro_msg().view_item().view(),
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
@@ -172,7 +172,11 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
         ZJC_ERROR("add view block error. hash: %s",
             common::Encode::HexEncode(v_block->hash).c_str());
         return;
-    }    
+    }
+
+    // 打印一下日志
+    ZJC_DEBUG("PrintChain pool: %d,", pool_idx_);
+    view_block_chain()->Print();
 
     // 1、验证是否存在3个连续qc，设置commit，lock qc状态；2、提交commit块之间的交易信息；3、减枝保留最新commit块，回退分支的交易信息
     auto v_block_to_commit = CheckCommit(v_block);
