@@ -207,7 +207,9 @@ Status ViewBlockChain::PruneHistoryTo(const std::shared_ptr<ViewBlock>& target_b
     Status s = Status::kSuccess;
     while (s == Status::kSuccess && current) {
         s = Get(current->parent_hash, current);
-        DeleteViewBlock(current);
+        if (current) {
+            DeleteViewBlock(current);
+        }
     }
 
     return Status::kSuccess;
