@@ -1407,9 +1407,7 @@ int NetworkInit::BlockBlsAggSignatureValid(
     // TODO: fix check genesis block
     if (block.height() == 0) {
         return 0;
-#ifdef ENABLE_HOTSTUFF
-    return true;
-#endif
+    }
 
     if (block.bls_agg_sign_x().empty() || block.bls_agg_sign_y().empty()) {
         assert(false);
