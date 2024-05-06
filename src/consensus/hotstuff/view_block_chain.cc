@@ -260,7 +260,11 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
 
 
     ZJC_DEBUG("del view block: %s view: %lu", common::Encode::HexEncode(view_block->hash).c_str(), view_block->view);
-    auto original_child_blocks = view_blocks_info_[view_block->parent_hash]->children;
+    auto original_child_blocks = std::vector<std::shared_ptr<ViewBlock>>();
+    auto childIt = view_blocks_info_.find(view_block->parent_hash);
+    if (childIt != view_blocks_info_.end()) {
+        original_child_blocks = view_blocks_info_[view_block->parent_hash]->children;
+    }
     auto original_blocks_at_height = view_blocks_at_height_[view_block->view];
     auto hash = view_block->hash;
     auto view = view_block->view;
@@ -279,7 +283,9 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
         view_blocks_info_.erase(hash);
     } catch (std::exception& e) {
         ZJC_ERROR("del view block error %s", e.what());
-        view_blocks_info_[view_block->parent_hash]->children = original_child_blocks;
+        if (!original_child_blocks.empty()) {
+            view_blocks_info_[view_block->parent_hash]->children = original_child_blocks;
+        }
         view_blocks_at_height_[view_block->view] = original_blocks_at_height;
         throw;
     }
