@@ -76,13 +76,14 @@ Status BlockWrapper::Wrap(
 }
 
 Status BlockWrapper::GetTxsIdempotently(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>& txs) {
-    zbft::protobuf::TxBft txbft;
+    transport::protobuf::Header header;
     std::map<std::string, pools::TxItemPtr> invalid_txs;
-    pools_mgr_->GetTx(pool_idx_, 1024, invalid_txs, &txbft);
-    
+    pools_mgr_->GetTx(pool_idx_, 1024, invalid_txs, header);
+    zbft::protobuf::TxBft& txbft = *header.mutable_zbft()->mutable_tx_bft();
     for (auto it = txbft.txs().begin(); it != txbft.txs().end(); it++) {
         txs.push_back(std::make_shared<pools::protobuf::TxMessage>(*it));
     }
+    
     return Status::kSuccess;
 }
         
