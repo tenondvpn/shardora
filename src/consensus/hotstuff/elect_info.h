@@ -183,6 +183,9 @@ public:
             return;
         }
         for (auto& member : *(elect_item_->Members())) {
+            ZJC_DEBUG("get Leader pool %s failed: %d", 
+                common::Encode::HexEncode(member->id).c_str(), 
+                common::GlobalInfo::Instance()->network_id());
             if (member->public_ip == 0 || member->public_port == 0) {
                 auto dht_ptr = network::DhtManager::Instance()->GetDht(common::GlobalInfo::Instance()->network_id());
                 if (dht_ptr != nullptr) {
