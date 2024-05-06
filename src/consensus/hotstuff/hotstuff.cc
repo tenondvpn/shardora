@@ -124,6 +124,7 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
     // view 必须最新
     // TODO 超时情况可能相同，严格限制并不影响共识，但会减少共识参与节点数
     if (HasVoted(v_block->view)) {
+        ZJC_ERROR("pool: %d has voted: %lu", pool_idx_, v_block->view);
         return;
     }    
     
