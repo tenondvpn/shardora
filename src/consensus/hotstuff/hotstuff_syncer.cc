@@ -153,7 +153,12 @@ Status HotstuffSyncer::SyncChainToNeighbor(
         // 仅同步已经有 qc 的 view_block
         auto view_block_qc = chain->GetQcOf(view_block);
         if (!view_block_qc) {
-            continue;
+            if (pacemaker(pool_idx)->HighQC()->view_block_hash == view_block->hash) {
+                chain->SetQcOf(view_block, pacemaker(pool_idx)->HighQC());
+                view_block_qc = pacemaker(pool_idx)->HighQC();
+            } else {
+                continue;
+            }
         }
         auto view_block_qc_str = view_block_res->add_view_block_qc_strs();
         *view_block_qc_str = view_block_qc->Serialize();
