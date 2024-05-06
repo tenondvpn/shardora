@@ -62,7 +62,6 @@ public:
     void CheckTimeoutTx();
     uint32_t SyncMissingBlocks(uint64_t now_tm_ms);
     void RemoveTx(const std::string& gid);
-<<<<<<< HEAD
     void ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs);
     void GetHeightInvalidChangeLeaderHashs(uint64_t height, std::vector<std::string>&hashs);
     void AddChangeLeaderInvalidHash(uint64_t height, const std::string& hash);
@@ -76,9 +75,7 @@ public:
     bool is_next_block_checked(uint64_t height, const std::string& hash);
     void SyncBlock();
     double CheckLeaderValid(bool get_factor, uint32_t* finished_count, uint32_t* tx_count);
-=======
     void RecoverTx(const std::string& gid);
->>>>>>> hotstuff_v2
 
     bool TxExists(const std::string& gid) {
         auto iter = gid_map_.find(gid);
@@ -141,16 +138,12 @@ private:
     void GetTx(
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
-<<<<<<< HEAD
         uint32_t count,
         std::unordered_map<std::string, std::string>& kvs);
-=======
-        uint32_t count);
     void GetTxByHash(
         std::map<std::string, TxItemPtr>& src_prio_map,
         const std::string& hash,
-        pools::TxItemPtr& tx);    
->>>>>>> hotstuff_v2
+        pools::TxItemPtr& tx);
     void InitHeightTree();
     void InitLatestInfo();
     void UpdateSyncedHeight();
