@@ -294,14 +294,25 @@ bool ViewBlockChain::IsValid() {
 
     // 有且只有一个节点不存在父节点
     uint32_t num = 0;
-    for (auto it = view_blocks_.begin(); it != view_blocks_.end(); it++) {
-        auto& vb = it->second;
+    // for (auto it = view_blocks_.begin(); it != view_blocks_.end(); it++) {
+    //     auto& vb = it->second;
+    //     std::shared_ptr<ViewBlock> parent = nullptr;
+    //     Get(vb->parent_hash, parent);
+    //     if (parent == nullptr) {
+    //         num++;
+    //     }
+    // }
+    for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
+        auto& vb = it->second->view_block;
+        if (!vb) {
+            continue;
+        }
         std::shared_ptr<ViewBlock> parent = nullptr;
         Get(vb->parent_hash, parent);
         if (parent == nullptr) {
             num++;
         }
-    }
+    }    
 
     return num == 1;
 }
