@@ -287,11 +287,13 @@ bool BlockAcceptor::IsBlockValid(const std::shared_ptr<block::protobuf::Block>& 
     // 校验 block prehash，latest height 等
     uint64_t pool_height = pools_mgr_->latest_height(pool_idx());
     if (zjc_block->height() <= pool_height || pool_height == common::kInvalidUint64) {
+        ZJC_DEBUG("Accept height error: %lu, %lu", zjc_block->height(), pool_height);
         return false;
     }
     // 新块的时间戳必须大于上一个块的时间戳
     uint64_t preblock_time = pools_mgr_->latest_timestamp(pool_idx());
     if (zjc_block->timestamp() <= preblock_time) {
+        ZJC_DEBUG("Accept timestamp error: %lu, %lu", zjc_block->timestamp(), preblock_time);
         return false;
     }
     
