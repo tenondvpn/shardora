@@ -38,8 +38,13 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
         return Status::kSuccess;
     }
     // 父块必须存在
-    auto it = view_blocks_.find(view_block->parent_hash);
-    if (it == view_blocks_.end()) {
+    // auto it = view_blocks_.find(view_block->parent_hash);
+    // if (it == view_blocks_.end()) {
+    //     return Status::kError;
+    // }
+
+    auto it = view_blocks_info_.find(view_block->parent_hash);
+    if (it == view_blocks_info_.end() || it->second->view_block == nullptr) {
         return Status::kError;
     }
 
