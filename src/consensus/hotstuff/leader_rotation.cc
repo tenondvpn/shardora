@@ -30,8 +30,11 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         qc = committedBlock->qc;
     }
     // TODO 30s 轮换会导致 Leader 不一致而卡住共识
-    uint64_t random_hash = common::Hash::Hash64(qc->Serialize() +
-        std::to_string(common::TimeUtils::TimestampSeconds() / 300000));
+    std::string tc_str = "";
+    if (high_tc_) {
+        tc_str = std::to_string(high_tc_->view / 30); // 连续超时 30 次强制更改 leader
+    }
+    uint64_t random_hash = common::Hash::Hash64(qc->Serialize() + tc_str);
 
     if (Members()->empty()) {
         return nullptr;

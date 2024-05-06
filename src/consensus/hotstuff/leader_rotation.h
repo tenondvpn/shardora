@@ -28,6 +28,10 @@ public:
         assert(elect_info_->GetElectItem());
         return elect_info_->GetElectItem()->LocalMember()->index;
     }
+
+    void OnUpdateHighTC(const std::shared_ptr<TC>& tc) {
+        high_tc_ = tc;
+    }
 private:
     inline common::MembersPtr Members() const {
         auto elect_item = elect_info_->GetElectItem();
@@ -38,6 +42,7 @@ private:
     }
 
     uint32_t pool_idx_;
+    std::shared_ptr<TC> high_tc_;
     std::shared_ptr<ViewBlockChain> chain_ = nullptr;
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
 };
