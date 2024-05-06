@@ -794,6 +794,7 @@ int Zbft::DoTransaction(bool leader) {
     }
 
     zjc_block.set_is_commited_block(false);
+    // 没用 change_leader_invalid_hashs，永远是空
     std::vector<std::string> change_leader_invalid_hashs;
     pools_mgr_->GetHeightInvalidChangeLeaderHashs(
         zjc_block.pool_index(),
@@ -803,6 +804,7 @@ int Zbft::DoTransaction(bool leader) {
         zjc_block.add_change_leader_invalid_hashs(change_leader_invalid_hashs[i]);
     }
 
+    // 重新计算 hash 值
     zjc_block.set_hash(GetBlockHash(zjc_block));
     ZJC_DEBUG("pool index: %d, height: %lu, prehash: %s, hash: %s",
         pool_index(),

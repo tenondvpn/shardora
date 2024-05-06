@@ -1522,7 +1522,7 @@ ZbftPtr BftManager::CreateBftPtr(
     if (txs_ptr == nullptr) {
         return nullptr;
     }
-
+    
     if (txs_ptr->tx_type == pools::protobuf::kNormalFrom) {
         if (block_mgr_->ShouldStopConsensus()) {
             ZJC_DEBUG("should stop consensus.");

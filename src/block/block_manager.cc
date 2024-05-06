@@ -990,9 +990,11 @@ void BlockManager::AddNewBlock(
     }
 
     const auto& tx_list = block_item->tx_list();
+#ifndef ENABLE_HOTSTUFF
     if (tx_list.empty()) {
         return;
     }
+#endif
 
     // 处理交易信息
     for (int32_t i = 0; i < tx_list.size(); ++i) {

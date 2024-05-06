@@ -59,11 +59,13 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
         }
     }
 
+#ifndef ENABLE_HOTSTUFF
     if (tx_list.empty()) {
         ZJC_DEBUG("tx list empty!");
         assert(false);
         return;
     }
+#endif
 
     if (block_ptr->height() != pools_consensus_blocks_[block_ptr->pool_index()]->latest_consensus_height_ + 1) {
         pools_consensus_blocks_[block_ptr->pool_index()]->blocks[block_ptr->height()] = block_ptr;
@@ -338,7 +340,8 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
         elect_static_info_item = std::make_shared<ElectNodeStatisticInfo>();
         tm_statistic_ptr->elect_node_info_map[block_ptr->electblock_height()] = elect_static_info_item;
     }
-    u_int64_t block_gas = 0;
+    
+    uint64_t block_gas = 0;
     auto callback = [&](const block::protobuf::Block& block) {
         for (int32_t i = 0; i < block.tx_list_size(); ++i) {
             if (tm_statistic_ptr->max_height < block.height()) {

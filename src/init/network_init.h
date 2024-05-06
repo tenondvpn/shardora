@@ -7,8 +7,12 @@
 #include "common/config.h"
 #include "common/parse_args.h"
 #include "common/tick.h"
+// #ifdef ENABLE_HOTSTUFF
+#include "consensus/hotstuff/hotstuff_manager.h"
+// #else
 #include "consensus/zbft/bft_manager.h"
 #include "consensus/zbft/contract_gas_prepayment.h"
+// #endif
 #include "contract/contract_manager.h"
 #include "db/db.h"
 #include "elect/elect_manager.h"
@@ -24,7 +28,13 @@
 #include "timeblock/time_block_manager.h"
 #include "transport/multi_thread.h"
 #include "vss/vss_manager.h"
+#include <consensus/hotstuff/crypto.h>
+#include <consensus/hotstuff/elect_info.h>
+#include <consensus/hotstuff/pacemaker.h>
+#include <consensus/hotstuff/hotstuff_syncer.h>
 #include <yaml-cpp/node/node.h>
+
+// #define ENABLE_HOTSTUFF 1
 
 namespace shardora {
 
@@ -47,6 +57,7 @@ private:
     int InitSecurity();
     int CheckJoinWaitingPool();
     int GenesisCmd(common::ParserArgs& parser_arg, std::string& net_name);
+    void AddCmds();
     void GetNetworkNodesFromConf(const YAML::Node&, std::vector<GenisisNodeInfoPtr>&, std::vector<GenisisNodeInfoPtrVector>&);
     void AddBlockItemToCache(
         std::shared_ptr<block::protobuf::Block>& block,
@@ -92,12 +103,17 @@ private:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
+#ifdef ENABLE_HOTSTUFF
+    std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
+    std::shared_ptr<hotstuff::HotstuffSyncer> hotstuff_syncer_ = nullptr;
+#else
     std::shared_ptr<consensus::BftManager> bft_mgr_ = nullptr;
+#endif
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
-    std::shared_ptr<pools::ShardStatistic> shard_statistic_ = nullptr;
+    std::shared_ptr<pools::ShardStatistic> shard_statistic_ = nullptr;    
     http::HttpServer http_server_;
     HttpHandler http_handler_;
     common::Tick init_tick_;

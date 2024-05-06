@@ -93,11 +93,13 @@ bool ToTxsPools::PreStatisticTos(
 
         auto& block = *block_ptr;
         const auto& tx_list = block.tx_list();
+#ifndef ENABLE_HOTSTUFF
         if (tx_list.empty()) {
             assert(false);
             ZJC_DEBUG("tx list empty!");
             return false;
         }
+#endif
 
         // one block must be one consensus pool
         uint32_t consistent_pool_index = common::kInvalidPoolIndex;

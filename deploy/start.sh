@@ -20,3 +20,4 @@ for service in "${services[@]}"; do
 done
 
 sleep 3
+

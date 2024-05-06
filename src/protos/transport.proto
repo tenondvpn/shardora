@@ -12,6 +12,8 @@ import "protos/sync.proto";
 import "protos/vss.proto";
 import "protos/init.proto";
 import "protos/c2c.proto";
+import "protos/view_block.proto";
+import "protos/hotstuff.proto";
 package shardora.transport.protobuf;
 
 message BroadcastParam {
@@ -62,4 +64,7 @@ message Header {
     optional uint32 from_public_port = 29;
     optional c2c.protobuf.C2cMessage c2c = 30;
     optional bytes pubkey = 31;
+    optional view_block.protobuf.ViewBlockSyncMessage view_block_proto = 32;
+    optional view_block.protobuf.TimeoutMessage hotstuff_timeout_proto = 33;
+    optional hotstuff.protobuf.HotstuffMessage hotstuff = 34;
 }

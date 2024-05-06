@@ -1,6 +1,17 @@
 #include "init/network_init.h"
+#include <common/encode.h>
 #include <common/log.h>
+#include <common/utils.h>
+#include <consensus/hotstuff/crypto.h>
+#include <consensus/hotstuff/elect_info.h>
+#include <consensus/hotstuff/leader_rotation.h>
+#include <consensus/hotstuff/pacemaker.h>
+#include <consensus/hotstuff/types.h>
+#include <consensus/hotstuff/view_block_chain.h>
+#include <consensus/hotstuff/hotstuff_syncer.h>
+#include <consensus/consensus_utils.h>
 #include <functional>
+#include <memory>
 #include <protos/pools.pb.h>
 
 #include "block/block_manager.h"
@@ -179,9 +190,27 @@ int NetworkInit::Init(int argc, char** argv) {
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
     ZJC_DEBUG("init 0 14");
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
+
+
+#ifdef ENABLE_HOTSTUFF
+    hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
+    auto consensus_init_res = hotstuff_mgr_->Init(
+        contract_mgr_,
+        gas_prepayment_,
+        vss_mgr_,
+        account_mgr_,
+        block_mgr_,
+        elect_mgr_,
+        pools_mgr_,
+        security_,
+        tm_block_mgr_,
+        bls_mgr_,
+        db_,
+        std::bind(&NetworkInit::AddBlockItemToCache, this,
+            std::placeholders::_1, std::placeholders::_2));
+#else
     bft_mgr_ = std::make_shared<consensus::BftManager>();
-    ZJC_DEBUG("init 0");
-    auto bft_init_res = bft_mgr_->Init(
+    auto consensus_init_res = bft_mgr_->Init(
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1),
         contract_mgr_,
         gas_prepayment_,
@@ -198,8 +227,10 @@ int NetworkInit::Init(int argc, char** argv) {
         nullptr,
         common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
         std::bind(&NetworkInit::AddBlockItemToCache, this,
-            std::placeholders::_1, std::placeholders::_2));
-    if (bft_init_res != consensus::kConsensusSuccess) {
+            std::placeholders::_1, std::placeholders::_2));    
+#endif    
+
+    if (consensus_init_res != consensus::kConsensusSuccess) {
         INIT_ERROR("init bft failed!");
         return kInitError;
     }
@@ -228,6 +259,16 @@ int NetworkInit::Init(int argc, char** argv) {
     block_mgr_->LoadLatestBlocks();
     ZJC_DEBUG("init 5");
     RegisterFirewallCheck();
+
+#ifdef ENABLE_HOTSTUFF
+    // 启动共识和同步
+    hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(hotstuff_mgr_);
+    hotstuff_syncer_->Start();    
+    hotstuff_mgr_->Start();
+    // 以上应该放入 hotstuff 实例初始化中，并接收创世块
+    AddCmds();
+#endif
+
     transport::TcpTransport::Instance()->Start(false);
     ZJC_DEBUG("init 6");
     if (InitHttpServer() != kInitSuccess) {
@@ -243,9 +284,86 @@ int NetworkInit::Init(int argc, char** argv) {
 
     inited_ = true;
     common::GlobalInfo::Instance()->set_main_inited_success();
+    
     cmd_.Run();
     // std::this_thread::sleep_for(std::chrono::seconds(120));
     return kInitSuccess;
+}
+
+void NetworkInit::AddCmds() {
+#ifdef ENABLE_HOTSTUFF
+    cmd_.AddCommand("addblock", [this](const std::vector<std::string>& args){
+        if (args.size() < 3) {
+            return;
+        }
+        uint32_t pool_idx = std::stoi(args[0]);
+        auto parent_hash = common::Encode::HexDecode(args[1]);
+        auto leader_idx = std::stoi(args[2]);
+        
+        auto pacemaker = hotstuff_mgr_->pacemaker(pool_idx);
+        if (!pacemaker) {
+            return;
+        }
+        auto chain = hotstuff_mgr_->chain(pool_idx);
+        if (!chain) {
+            return;
+        }
+
+        auto parent_block = std::make_shared<hotstuff::ViewBlock>();
+        hotstuff::Status s = chain->Get(parent_hash, parent_block);
+        if (s != hotstuff::Status::kSuccess) {
+            return;
+        }
+
+        auto view = parent_block->view;
+        
+        // 打包块
+        auto fake_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
+        
+        auto qc = std::make_shared<hotstuff::QC>();
+        s = hotstuff_mgr_->crypto(pool_idx)->CreateQC(parent_block->hash, parent_block->view, fake_sign, qc);        
+        if (s != hotstuff::Status::kSuccess) {
+            return;
+        }
+
+        auto sync_info = std::make_shared<hotstuff::SyncInfo>();
+        pacemaker->AdvanceView(sync_info->WithQC(qc));
+
+        auto block = std::make_shared<block::protobuf::Block>();
+        block->set_electblock_height(1);
+        
+        auto view_block = std::make_shared<hotstuff::ViewBlock>(
+                parent_hash,
+                pacemaker->HighQC(),
+                block,
+                pacemaker->CurView(), // 此时为 0
+                leader_idx);
+        
+        chain->Store(view_block);
+    });
+
+    cmd_.AddCommand("pc", [this](const std::vector<std::string>& args){
+        if (args.size() < 1) {
+            return;
+        }
+        uint32_t pool_idx = std::stoi(args[0]);
+                        
+        auto chain = hotstuff_mgr_->chain(pool_idx);
+        if (!chain) {
+            return;
+        }
+        auto pacemaker = hotstuff_mgr_->pacemaker(pool_idx);
+        if (!pacemaker) {
+            return;
+        }
+        std::cout << "highQC: " << pacemaker->HighQC()->view
+                  << ",highTC: " << pacemaker->HighTC()->view
+                  << ",chainSize: " << chain->Size()
+                  << ",commitView: " << chain->LatestCommittedBlock()->view
+                  << ",CurView: " << pacemaker->CurView() << std::endl;
+        chain->Print();
+    });        
+#endif    
 }
 
 void NetworkInit::RegisterFirewallCheck() {
@@ -255,9 +373,18 @@ void NetworkInit::RegisterFirewallCheck() {
     net_handler_.AddFirewallCheckCallback(
         common::kBlsMessage,
         std::bind(&bls::BlsManager::FirewallCheckMessage, bls_mgr_.get(), std::placeholders::_1));
+#ifdef ENABLE_HOTSTUFF
+    net_handler_.AddFirewallCheckCallback(
+        common::kHotstuffMessage,
+        std::bind(&consensus::HotstuffManager::FirewallCheckMessage, hotstuff_mgr_.get(), std::placeholders::_1));
+    net_handler_.AddFirewallCheckCallback(
+        common::kHotstuffSyncMessage,
+        std::bind(&hotstuff::HotstuffSyncer::FirewallCheckMessage, hotstuff_syncer_.get(), std::placeholders::_1));    
+#else
     net_handler_.AddFirewallCheckCallback(
         common::kConsensusMessage,
         std::bind(&consensus::BftManager::FirewallCheckMessage, bft_mgr_.get(), std::placeholders::_1));
+#endif
     net_handler_.AddFirewallCheckCallback(
         common::kBlockMessage,
         std::bind(&block::BlockManager::FirewallCheckMessage, block_mgr_.get(), std::placeholders::_1));
@@ -1021,10 +1148,11 @@ void NetworkInit::AddBlockItemToCache(
     }
 
     const auto& tx_list = block->tx_list();
-    if (tx_list.empty()) {
-        assert(false);
-        return;
-    }
+    // 没有交易也可以提交
+    // if (tx_list.empty()) {
+    //     assert(false);
+    //     return;
+    // }
 
     ZJC_DEBUG("cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
         block->network_id(),
@@ -1234,13 +1362,19 @@ void NetworkInit::HandleElectionBlock(
         elect_height,
         members,
         elect_block);
+#ifdef ENABLE_HOTSTUFF
+    hotstuff_mgr_->OnNewElectBlock(block->timestamp(),sharding_id, elect_height, members, common_pk, sec_key);
+#else
     bft_mgr_->OnNewElectBlock(block->timestamp(),sharding_id, elect_height, members, common_pk, sec_key);
+#endif    
+
     block_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     bls_mgr_->OnNewElectBlock(sharding_id, block->height(), elect_block);
     pools_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     shard_statistic_->OnNewElectBlock(sharding_id, block->height(), elect_height);
     kv_sync_->OnNewElectBlock(sharding_id, block->height());
+
     network::UniversalManager::Instance()->OnNewElectBlock(
         sharding_id,
         elect_height,
@@ -1273,7 +1407,9 @@ int NetworkInit::BlockBlsAggSignatureValid(
     // TODO: fix check genesis block
     if (block.height() == 0) {
         return 0;
-    }
+#ifdef ENABLE_HOTSTUFF
+    return true;
+#endif
 
     if (block.bls_agg_sign_x().empty() || block.bls_agg_sign_y().empty()) {
         assert(false);

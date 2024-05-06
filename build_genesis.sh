@@ -45,8 +45,13 @@ then
 	sudo mv -f /tmp/zjchain /root/zjnodes/
 fi
 root=("r1" "r2" "r3")
+<<<<<<< HEAD
 shard3=("s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_6" "s3_7" "s3_8" "s3_9" "s3_10")
 nodes=("r1" "r2" "r3" "s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_6" "s3_7" "s3_8" "s3_9" "s3_10" "node")
+=======
+shard3=("s3_1" "s3_2" "s3_3" "s3_4")
+nodes=("r1" "r2" "r3" "s3_1" "s3_2" "s3_3" "s3_4")
+>>>>>>> hotstuff_v2
 
 for node in "${nodes[@]}"; do
     mkdir -p "/root/zjnodes/${node}/log"
@@ -69,8 +74,13 @@ sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
 
 if test $NO_BUILD = 0
 then
+<<<<<<< HEAD
     cd /root/zjnodes/zjchain && ./zjchain -U
     cd /root/zjnodes/zjchain && ./zjchain -S 3 &
+=======
+    cd /root/xf/zjnodes/zjchain && ./zjchain -U
+    cd /root/xf/zjnodes/zjchain && ./zjchain -S 3 &
+>>>>>>> hotstuff_v2
     wait
 fi
 
@@ -80,7 +90,11 @@ fi
 
 
 #for node in "${shard3[@]}"; do
+<<<<<<< HEAD
 #	cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/${node}/db
+=======
+#	cp -rf /root/xf/zjnodes/zjchain/shard_db_3 /root/xf/zjnodes/${node}/db
+>>>>>>> hotstuff_v2
 #done
 
 

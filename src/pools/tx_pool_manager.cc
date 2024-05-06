@@ -370,37 +370,6 @@ int TxPoolManager::BackupConsensusAddTxs(
             continue;
         }
 
-        // if (security_->Verify(
-        //         tx_ptr->unique_tx_hash,
-        //         tx_ptr->tx_info.pubkey(),
-        //         tx_ptr->tx_info.sign()) != security::kSecuritySuccess) {
-        //     ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
-        //         "prepayment: %lu, default call contract gas: %lu, txid: %s",
-        //         tx_ptr->address_info->balance(),
-        //         tx_ptr->tx_info.amount(),
-        //         tx_ptr->tx_info.contract_prepayment(),
-        //         consensus::kCallContractDefaultUseGas,
-        //         common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
-        //     assert(false);
-        //     res = kPoolsError;
-        //     continue;
-        // }
-
-        // if (prefix_db_->GidExists(tx_ptr->unique_tx_hash)) {
-        //     // avoid save gid different tx
-        //     ZJC_DEBUG("tx msg hash exists: %s failed!",
-        //         common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str());
-        //     res = kPoolsError;
-        //     continue;
-        // }
-
-        // if (prefix_db_->GidExists(tx_ptr->tx_info.gid())) {
-        //     ZJC_DEBUG("tx gid exists: %s failed!", 
-        //         common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
-        //     res = kPoolsError;
-        //     continue;
-        // }
-
         valid_txs.push_back(tx_ptr);
     }
     
@@ -1189,6 +1158,10 @@ void TxPoolManager::GetTx(
 //         tx_pool_[pool_index].oldest_timestamp(), min_valid_timestamp_,
 //         ((int64_t)tx_pool_[pool_index].oldest_timestamp() - (int64_t)min_valid_timestamp_),
 //         tx_pool_[pool_index].tx_size(), min_valid_tx_count_, res_map.size());
+}
+
+void TxPoolManager::GetTxByGids(uint32_t pool_index, std::vector<std::string> gids, std::map<std::string, pools::TxItemPtr>& res_map) {
+    tx_pool_[pool_index].GetTxByIds(gids, res_map);
 }
 
 void TxPoolManager::TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs) {

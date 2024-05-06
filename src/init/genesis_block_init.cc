@@ -17,14 +17,16 @@
 #include "block/block_manager.h"
 #include "bls/bls_sign.h"
 #include "consensus/consensus_utils.h"
+// #ifndef ENABLE_HOTSTUFF
 #include "consensus/zbft/zbft_utils.h"
+#include "protos/zbft.pb.h"
+// #endif
 #include "elect/elect_utils.h"
 #include "network/network_utils.h"
 #include "init/init_utils.h"
 #include "pools/shard_statistic.h"
 #include "pools/tx_pool_manager.h"
 #include "protos/get_proto_hash.h"
-#include "protos/zbft.pb.h"
 #include "security/ecdsa/ecdsa.h"
 #include "security/ecdsa/secp256k1.h"
 #include "timeblock/time_block_utils.h"

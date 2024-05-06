@@ -1,0 +1,34 @@
+syntax = "proto2";
+import "protos/view_block.proto";
+import "protos/pools.proto";
+package shardora.hotstuff.protobuf;
+
+message TxPropose {
+    optional pools.protobuf.StepType tx_type = 1 [default=kNormalFrom]; // 普通交易信息归为一种默认类型
+    repeated pools.protobuf.TxMessage txs = 2; // single 交易类型一致
+}
+
+message HotstuffMessage {
+    optional uint32 type = 1;
+    optional ProposeMsg  pro_msg = 2;
+    optional VoteMsg   vote_msg = 3;
+    optional uint32 net_id = 4;
+    optional uint32 pool_index = 5 [default=4294967295];
+}
+
+message ProposeMsg {
+    optional uint32 elect_height = 1;
+    optional view_block.protobuf.ViewBlockItem  view_item = 2;
+    optional bytes tc_str = 3;
+    optional TxPropose tx_propose = 4;
+}
+
+message VoteMsg {
+    optional uint32 replica_idx = 1;
+    optional bytes view_block_hash = 2;
+    optional uint64 view = 3;
+    optional uint32 elect_height = 4;
+    optional bytes sign_x = 5;
+    optional bytes sign_y = 6;
+    repeated pools.protobuf.TxMessage txs = 7; // 仅打包普通交易信息，作为同步
+}

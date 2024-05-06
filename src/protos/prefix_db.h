@@ -336,7 +336,9 @@ public:
         }
 
         ZJC_DEBUG("success save block to db %u, %u, %lu", block.network_id(), block.pool_index(), block.height());
+#ifndef ENABLE_HOTSTUFF        
         assert(block.has_bls_agg_sign_x() && block.has_bls_agg_sign_y());
+#endif
         std::string key;
         key.reserve(48);
         key.append(kBlockPrefix);
@@ -348,7 +350,7 @@ public:
             block.hash(),
             batch);
         batch.Put(key, block.SerializeAsString());
-        if (block.tx_list(0).step() == pools::protobuf::kConsensusRootTimeBlock) {
+        if (!block.tx_list().empty() && block.tx_list(0).step() == pools::protobuf::kConsensusRootTimeBlock) {
             ZJC_DEBUG("ddddddd save tm block: %lu", block.height());
         }
         return true;
@@ -368,8 +370,9 @@ public:
         if (!block->ParseFromString(block_str)) {
             return false;
         }
-
+#ifndef ENABLE_HOTSTUFF 
         assert(block->has_bls_agg_sign_x() && block->has_bls_agg_sign_y());
+#endif
         return true;
     }
 

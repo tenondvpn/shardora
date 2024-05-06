@@ -87,7 +87,7 @@ void ThreadHandler::HandleMessage() {
             }
             ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
         }
-
+#ifndef ENABLE_HOTSTUFF
         if (maping_thread_idx != common::GlobalInfo::Instance()->message_handler_thread_count() - 1) {
             auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -129,6 +129,7 @@ void ThreadHandler::HandleMessage() {
             // ZJC_DEBUG("end kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
             //     msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
         }
+#endif
 
         if (count >= kMaxHandleMessageCount) {
             continue;
@@ -234,6 +235,7 @@ int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
         }
 
         return kTransportPriorityLow;
+    case common::kHotstuffMessage:
     case common::kPoolsMessage:
         return kTransportPrioritySystem;
     case common::kInitMessage:
@@ -334,11 +336,32 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
 
         ZJC_FATAL("invalid message thread: %d", msg_ptr->header.zbft().pool_index());
         return common::kMaxThreadCount;
+    case common::kHotstuffSyncMessage:
+        if (msg_ptr->header.view_block_proto().has_view_block_req()) {
+            return common::GlobalInfo::Instance()->pools_with_thread()[
+                    msg_ptr->header.view_block_proto().view_block_req().pool_idx()];
+        }
+        if (msg_ptr->header.view_block_proto().has_view_block_res()) {
+            return common::GlobalInfo::Instance()->pools_with_thread()[
+                    msg_ptr->header.view_block_proto().view_block_res().pool_idx()];
+        }
+        return common::kMaxThreadCount;
+    case common::kHotstuffMessage:
+        if (msg_ptr->header.hotstuff().pool_index() < common::kInvalidPoolIndex) {
+            return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.hotstuff().pool_index()];
+        }
+        return common::kMaxThreadCount;
+    case common::kHotstuffTimeoutMessage:
+        if (msg_ptr->header.hotstuff_timeout_proto().pool_idx() < common::kInvalidPoolIndex) {
+            return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.hotstuff_timeout_proto().pool_idx()];
+        }
+        return common::kMaxThreadCount;
     default:
         return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_);
     }
 }
 
+<<<<<<< HEAD
 void MultiThreadHandler::HandleSyncBftTimeout(MessagePtr& msg_ptr) {
     ZJC_DEBUG("success get pool bft timeout hash64: %lu", msg_ptr->header.hash64());
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
@@ -360,13 +383,81 @@ void MultiThreadHandler::HandleSyncBftTimeout(MessagePtr& msg_ptr) {
         if (queue_idx >= common::kMaxThreadCount) {
             assert(false);
             return;
+=======
+void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
+    ZJC_DEBUG("sync response coming.");
+#ifdef ENABLE_HOTSTUFF
+    return;
+#endif
+    if ((uint32_t)msg_ptr->header.src_sharding_id() != common::GlobalInfo::Instance()->network_id() &&
+            (uint32_t)msg_ptr->header.src_sharding_id() + network::kConsensusWaitingShardOffset !=
+            common::GlobalInfo::Instance()->network_id() &&
+            (uint32_t)msg_ptr->header.src_sharding_id() !=
+            common::GlobalInfo::Instance()->network_id() + network::kConsensusWaitingShardOffset) {
+        ZJC_DEBUG("sync response coming net error: %u, %u", msg_ptr->header.src_sharding_id(), common::GlobalInfo::Instance()->network_id());
+        return;
+    }
+
+    auto& sync_msg = msg_ptr->header.sync_proto();
+    if (!sync_msg.has_sync_value_res()) {
+        ZJC_DEBUG("not has sync value res.");
+        return;
+    }
+
+    auto& res_arr = sync_msg.sync_value_res().res();
+    for (auto iter = res_arr.begin(); iter != res_arr.end(); ++iter) {
+        auto block_item = std::make_shared<block::protobuf::Block>();
+        if (block_item->ParseFromString(iter->value()) &&
+                (iter->has_height() || !block_item->hash().empty())) {
+            if (prefix_db_->BlockExists(block_item->hash())) {
+                ZJC_DEBUG("block hash exists not has sync value res: %s",
+                    common::Encode::HexEncode(block_item->hash()).c_str());
+                continue;
+            }
+
+            if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
+                    block_item->network_id() + network::kConsensusWaitingShardOffset !=
+                    common::GlobalInfo::Instance()->network_id()) {
+                ZJC_DEBUG("sync response coming net error:  %u, %u, %u",
+                    block_item->network_id(), msg_ptr->header.src_sharding_id(), common::GlobalInfo::Instance()->network_id());
+                continue;
+            }
+            
+            auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+            CreateConsensusBlockMessage(new_msg_ptr, block_item);
+>>>>>>> hotstuff_v2
         }
 
+<<<<<<< HEAD
         ZJC_DEBUG("success handle pool: %u, bft timeout hash64: %lu", i, msg_ptr->header.hash64());
         transport::TcpTransport::Instance()->SetMessageHash(new_msg_ptr->header);
         uint32_t priority = GetPriority(new_msg_ptr);
         threads_message_queues_[queue_idx][priority].push(new_msg_ptr);
         wait_con_[queue_idx % all_thread_count_].notify_one();
+=======
+void MultiThreadHandler::CreateConsensusBlockMessage(
+        std::shared_ptr<transport::TransportMessage>& new_msg_ptr,
+        std::shared_ptr<block::protobuf::Block>& block_item) {
+    auto& msg = new_msg_ptr->header;
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    common::DhtKey dht_key;
+    dht_key.construct.net_id = common::GlobalInfo::Instance()->network_id();
+    std::string str_key = std::string(dht_key.dht_key, sizeof(dht_key.dht_key));
+    msg.set_des_dht_key(str_key);
+    msg.set_type(common::kConsensusMessage);
+    auto& bft_msg = *msg.mutable_zbft();
+    bft_msg.set_sync_block(true);
+    bft_msg.set_member_index(-1);
+    bft_msg.set_pool_index(block_item->pool_index());
+#ifndef ENABLE_HOTSTUFF
+    assert(block_item->has_bls_agg_sign_y() && block_item->has_bls_agg_sign_x());
+#endif
+    *bft_msg.mutable_block() = *block_item;
+    auto queue_idx = GetThreadIndex(new_msg_ptr);
+    if (queue_idx >= common::kMaxThreadCount) {
+        assert(false);
+        return;
+>>>>>>> hotstuff_v2
     }
 }
 

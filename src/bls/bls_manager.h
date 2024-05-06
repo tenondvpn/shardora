@@ -12,7 +12,37 @@ namespace shardora {
 
 namespace bls {
 
-class BlsManager {
+class IBlsManager {
+public:
+    IBlsManager() {};
+    virtual ~IBlsManager() {};
+
+    virtual int Sign(
+            uint32_t t,
+            uint32_t n,
+            const libff::alt_bn128_Fr& local_sec_key,
+            const libff::alt_bn128_G1& g1_hash,
+            std::string* sign_x,
+            std::string* sign_y) = 0;
+
+    virtual int GetVerifyHash(
+            uint32_t t,
+            uint32_t n,
+            const libff::alt_bn128_G1& g1_hash,
+            const libff::alt_bn128_G2& pkey,
+            std::string* verify_hash) = 0;
+
+    virtual int GetVerifyHash(
+            uint32_t t,
+            uint32_t n,
+            const libff::alt_bn128_G1& sign,
+            std::string* verify_hash) = 0;
+
+    virtual int GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g1_hash) = 0;
+    virtual std::shared_ptr<security::Security> security() = 0;
+};
+
+class BlsManager : public IBlsManager {
 public:
     BlsManager(
         std::shared_ptr<security::Security>& security,
@@ -57,15 +87,18 @@ public:
         const libff::alt_bn128_G1& g1_hash,
         const libff::alt_bn128_G2& pkey,
         std::string* verify_hash);
-    static int GetVerifyHash(
+    int GetVerifyHash(
         uint32_t t,
         uint32_t n,
         const libff::alt_bn128_G1& sign,
         std::string* verify_hash);
-    static int GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g1_hash);
+    int GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g1_hash);
     int AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
+    std::shared_ptr<security::Security> security() {
+        return security_;
+    }
 
 private:
     void HandleFinish(const transport::MessagePtr& msg_ptr);

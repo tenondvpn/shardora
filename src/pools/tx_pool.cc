@@ -227,6 +227,47 @@ void TxPool::GetTx(
     }
 }
 
+void TxPool::GetTxByIds(
+        std::vector<std::string> gids,
+        std::map<std::string, TxItemPtr>& res_map) {
+    for (const auto& gid : gids) {
+        auto it = gid_map_.find(gid);
+        if (it == gid_map_.end()) {
+            continue;
+        }
+        auto hash = it->second->unique_tx_hash;
+        TxItemPtr tx = nullptr;
+        GetTxByHash(universal_prio_map_, hash, tx);
+        if (tx) {
+            res_map[tx->unique_tx_hash] = tx;
+            continue;
+        }
+        GetTxByHash(prio_map_, hash, tx);
+        if (tx) {
+            res_map[tx->unique_tx_hash] = tx;
+            continue;
+        }
+        GetTxByHash(consensus_tx_map_, hash, tx);
+        if (tx) {
+            res_map[tx->unique_tx_hash] = tx;
+            continue;
+        }
+    }
+}
+
+void TxPool::GetTxByHash(
+        std::map<std::string, TxItemPtr>& src_prio_map,
+        const std::string& hash,
+        TxItemPtr& tx) {
+    auto iter = src_prio_map.find(hash);
+    if (iter == src_prio_map.end()) {
+        return;
+    }
+    tx = iter->second;
+    assert(!iter->second->unique_tx_hash.empty());
+    iter = src_prio_map.erase(iter);
+}
+
 void TxPool::CheckTimeoutTx() {
 //     common::AutoSpinLock auto_lock(mutex_);
     auto now_tm = common::TimeUtils::TimestampUs();
@@ -284,6 +325,21 @@ void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
                 prio_map_[miter->second->prio_key] = miter->second;
             }
         }
+    }
+}
+
+void TxPool::RecoverTx(const std::string& gid) {
+    auto miter = gid_map_.find(gid);
+    if (miter != gid_map_.end()) {
+        if (miter->second->is_consensus_add_tx) {
+            consensus_tx_map_[miter->second->unique_tx_hash] = miter->second;
+            return;
+        }
+        if (miter->second->step == pools::protobuf::kCreateLibrary) {
+            universal_prio_map_[miter->second->prio_key] = miter->second;
+        } else {
+            prio_map_[miter->second->prio_key] = miter->second;
+        }        
     }
 }
 

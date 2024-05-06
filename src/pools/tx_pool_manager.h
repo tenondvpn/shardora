@@ -55,7 +55,15 @@ public:
         uint32_t pool_index,
         uint32_t count,
         const std::map<std::string, pools::TxItemPtr>& invalid_txs,
+<<<<<<< HEAD
         transport::protobuf::Header& header);
+=======
+        zbft::protobuf::TxBft* txbft);
+    void GetTxByGids(
+            uint32_t pool_index,
+            std::vector<std::string> gids,
+            std::map<std::string, pools::TxItemPtr>& res_map);
+>>>>>>> hotstuff_v2
     int BackupConsensusAddTxs(uint32_t pool_index, const std::map<std::string, pools::TxItemPtr>& txs);
     void ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& address);
@@ -67,6 +75,10 @@ public:
     void RemoveTx(uint32_t pool_index, const std::string& gid) {
         tx_pool_[pool_index].RemoveTx(gid);
     }
+
+    void RecoverTx(uint32_t pool_index, const std::string& gid) {
+        tx_pool_[pool_index].RecoverTx(gid);
+    }    
 
     void OnNewCrossBlock(
             const std::shared_ptr<block::protobuf::Block>& block_item) {
