@@ -331,21 +331,21 @@ Status BlockAcceptor::GetDefaultTxs(
 Status BlockAcceptor::GetToTxs(
         const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    txs_ptr = tx_pools_->GetToTxs(pool_idx(), false);
+    txs_ptr = tx_pools_->GetToTxs(pool_idx(), "");
     return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
 }
 
 Status BlockAcceptor::GetStatisticTxs(
         const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    txs_ptr = tx_pools_->GetStatisticTx(pool_idx(), false);
+    txs_ptr = tx_pools_->GetStatisticTx(pool_idx(), "");
     return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
 }
 
 Status BlockAcceptor::GetCrossTxs(
         const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    txs_ptr = tx_pools_->GetCrossTx(pool_idx(), false);
+    txs_ptr = tx_pools_->GetCrossTx(pool_idx(), "");
     return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess; 
 }
 
@@ -362,7 +362,7 @@ Status BlockAcceptor::GetElectTxs(
 Status BlockAcceptor::GetTimeBlockTxs(
         const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    txs_ptr = tx_pools_->GetTimeblockTx(pool_idx(), false);
+    txs_ptr = tx_pools_->GetTimeblockTx(pool_idx(), "");
     return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
 }
 
