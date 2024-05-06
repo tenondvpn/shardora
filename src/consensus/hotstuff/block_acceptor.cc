@@ -55,12 +55,14 @@ BlockAcceptor::~BlockAcceptor(){};
 // Accept 验证 Leader 新提案信息，并执行 txs，修改 block
 Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_info) {
     if (!block_info || !block_info->block) {
+        ZJC_DEBUG("block info error!");
         return Status::kError;
     }
 
     auto& block = block_info->block;
     
     if (block->pool_index() != pool_idx()) {
+        ZJC_DEBUG("pool_index error!");
         return Status::kError;
     }
 
@@ -71,6 +73,7 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
     
     // 1. verify block
     if (!IsBlockValid(block)) {
+        ZJC_DEBUG("IsBlockValid error!");
         return Status::kAcceptorBlockInvalid;
     }
 
@@ -88,6 +91,7 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
     // 3. Do txs and create block_tx
     s = DoTransactions(txs_ptr, block);
     if (s != Status::kSuccess) {
+        ZJC_DEBUG("DoTransactions error!");
         return s;
     }
 
