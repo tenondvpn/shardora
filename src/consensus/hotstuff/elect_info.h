@@ -190,6 +190,10 @@ public:
                         if ((*iter)->id == member->id) {
                             member->public_ip = common::IpToUint32((*iter)->public_ip.c_str());
                             member->public_port = (*iter)->public_port;
+                            ZJC_DEBUG("set member %s ip port %s:%d",
+                                common::Encode::HexEncode((*iter)->id), 
+                                (*iter)->public_ip.c_str(), 
+                                (*iter)->public_port);
                         }
                     }
                 }
