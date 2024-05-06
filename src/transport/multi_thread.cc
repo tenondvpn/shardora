@@ -283,15 +283,6 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
         return;
     }
 
-    // all key value must temp kv
-	// 将收到的 sync kv 先持久化
-    db::DbWriteBatch db_batch;
-    SaveKeyValue(msg_ptr->header, db_batch);
-    if (!db_->Put(db_batch).ok()) {
-        ZJC_FATAL("save db failed!");
-        return;
-    }
-
     // if (msg_ptr->header.type() == common::kSyncMessage) {
     //     HandleSyncBlockResponse(msg_ptr);
     // }

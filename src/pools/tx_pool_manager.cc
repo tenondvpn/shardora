@@ -82,6 +82,7 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     auto& tx_msg = header.tx_proto();
     if (msg_ptr->header.has_sync_heights() && !msg_ptr->header.has_tx_proto()) {
         // TODO: check all message with valid signature
+        ZJC_DEBUG("pools message fierwall coming is sync heights.");
         return transport::kFirewallCheckSuccess;
     }
 
