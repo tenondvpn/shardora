@@ -193,6 +193,7 @@ public:
                 if (dht_ptr != nullptr) {
                     auto nodes = dht_ptr->readonly_hash_sort_dht();
                     for (auto iter = nodes->begin(); iter != nodes->end(); ++iter) {
+                        ZJC_DEBUG("Leader pool dht node: %s", common::Encode::HexEncode((*iter)->id).c_str());
                         if ((*iter)->id == member->id) {
                             member->public_ip = common::IpToUint32((*iter)->public_ip.c_str());
                             member->public_port = (*iter)->public_port;
