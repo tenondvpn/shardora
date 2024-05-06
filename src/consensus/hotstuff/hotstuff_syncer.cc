@@ -74,7 +74,8 @@ void HotstuffSyncer::ConsensusTimerMessage() {
 Status HotstuffSyncer::SyncChainsToNeighbors() {
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         SyncChainToNeighbor(common::GlobalInfo::Instance()->network_id(), pool_idx);
-    }    
+    }
+    return Status::kSuccess;
 }
 
 void HotstuffSyncer::ConsumeMessages() {
