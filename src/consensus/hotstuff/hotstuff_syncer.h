@@ -74,6 +74,9 @@ private:
     inline std::shared_ptr<Crypto> crypto(uint32_t pool_idx) const {
         return hotstuff_mgr_->crypto(pool_idx);
     }
+
+    void SyncChains();
+    Status SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg);
     
     Status SendMsg(
             uint32_t network_id,
@@ -84,7 +87,7 @@ private:
             const uint32_t& pool_idx);
     void ConsensusTimerMessage();
     // void SyncChains();
-    // Status processRequest(const transport::MessagePtr&);
+    Status processRequest(const transport::MessagePtr&);
     Status processResponse(const transport::MessagePtr&);
 
     Status processResponseQcTc(

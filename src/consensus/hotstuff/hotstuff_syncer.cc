@@ -61,14 +61,147 @@ void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
 // 批量异步处理，提高 tps
 void HotstuffSyncer::ConsensusTimerMessage() {
     // TODO 仅共识池节点参与 view_block_chain 的同步
-    // SyncChains();
-    SyncChainsToNeighbors();
+    SyncChains();
+    // SyncChainsToNeighbors();
     ConsumeMessages();
 
     tick_.CutOff(
         kSyncTimerCycleUs,
-        std::bind(&HotstuffSyncer::ConsensusTimerMessage, this));    
+        std::bind(&HotstuffSyncer::ConsensusTimerMessage, this));
 }
+
+void HotstuffSyncer::SyncChains() {
+    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
+        auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
+        auto req = vb_msg.mutable_view_block_req();
+        req->set_pool_idx(pool_idx);
+        req->set_network_id(common::GlobalInfo::Instance()->network_id());
+        req->set_high_qc_view(pacemaker(pool_idx)->HighQC()->view);
+        req->set_high_tc_view(pacemaker(pool_idx)->HighTC()->view);
+
+        std::vector<std::shared_ptr<ViewBlock>> view_blocks;
+        view_block_chain(pool_idx)->GetAll(view_blocks);
+        // 发送所有 ViewBlock 的 hash 给目标节点
+        for (const auto& vb : view_blocks) {
+            auto& vb_hash = *(req->add_view_block_hashes());
+            vb_hash = vb->hash;
+        }
+        
+        vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
+        SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg);
+    }
+}
+
+Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {
+    // 只有共识池节点才能同步 ViewBlock
+    if (network_id >= network::kConsensusWaitingShardBeginNetworkId) {
+        return Status::kError;
+    }
+    // 获取邻居节点
+    std::vector<dht::NodePtr> nodes;
+    auto dht_ptr = network::UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
+    auto dht = *dht_ptr->readonly_hash_sort_dht();
+    dht::DhtFunction::GetNetworkNodes(dht, network_id, nodes);
+
+    if (nodes.empty()) {
+        return Status::kError;
+    }
+    dht::NodePtr node = nodes[rand() % nodes.size()];
+
+    transport::protobuf::Header msg;
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    dht::DhtKeyManager dht_key(network_id);
+    msg.set_des_dht_key(dht_key.StrKey());
+    msg.set_type(common::kHotstuffSyncMessage);
+    *msg.mutable_view_block_proto() = view_block_msg;
+    
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
+    transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);    
+    return Status::kSuccess;
+}
+
+// 处理 request 类型消息
+Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
+    auto& view_block_msg = msg_ptr->header.view_block_proto();
+    assert(view_block_msg.has_view_block_req());
+
+    bool shouldResponse = false;
+    
+    transport::protobuf::Header msg;
+    view_block::protobuf::ViewBlockSyncMessage&  res_view_block_msg = *msg.mutable_view_block_proto();
+    
+    res_view_block_msg.set_create_time_us(common::TimeUtils::TimestampUs());
+    auto view_block_res = res_view_block_msg.mutable_view_block_res();
+
+    uint32_t network_id = view_block_msg.view_block_req().network_id();
+    uint32_t pool_idx = view_block_msg.view_block_req().pool_idx();
+    View src_high_qc_view = view_block_msg.view_block_req().high_qc_view();
+    View src_high_tc_view = view_block_msg.view_block_req().high_tc_view();
+    // 将 src 节点的 view_block_hashes 放入一个 set
+    auto& src_view_block_hashes = view_block_msg.view_block_req().view_block_hashes();
+    std::unordered_set<HashStr> src_view_block_hash_set;
+    for (const auto& hash : src_view_block_hashes) {
+        src_view_block_hash_set.insert(hash);
+    }
+    
+    view_block_res->set_network_id(network_id);
+    view_block_res->set_pool_idx(pool_idx);
+
+    // src 节点的 highqc 或 hightc 落后，尝试同步
+    if (pacemaker(pool_idx)->HighQC()->view > src_high_qc_view) {
+        view_block_res->set_high_qc_str(pacemaker(pool_idx)->HighQC()->Serialize());
+        shouldResponse = true;
+    }
+
+    if (pacemaker(pool_idx)->HighTC()->view > src_high_tc_view) {
+        view_block_res->set_high_tc_str(pacemaker(pool_idx)->HighTC()->Serialize());
+        shouldResponse = true;
+    }
+
+    auto chain = view_block_chain(pool_idx);
+    if (!chain) {
+        return Status::kError;
+    }
+
+    std::vector<std::shared_ptr<ViewBlock>> all;
+    // 将所有的块同步过去（即最后一个 committed block 及其后续分支
+    chain->GetAll(all);
+    if (all.size() <= 0 || all.size() > kMaxSyncBlockNum) {
+        return Status::kError;
+    }
+
+    // 检查本地 ViewBlockChain 中是否存在 src 节点没有的 ViewBlock，如果存在则全部同步过去
+    
+    for (auto& view_block : all) {
+        // 仅同步已经有 qc 的 view_block
+        auto view_block_qc = chain->GetQcOf(view_block);
+        if (!view_block_qc) {
+            if (pacemaker(pool_idx)->HighQC()->view_block_hash == view_block->hash) {
+                chain->SetQcOf(view_block->hash, pacemaker(pool_idx)->HighQC());
+                view_block_qc = pacemaker(pool_idx)->HighQC();
+            } else {
+                continue;
+            }
+        }
+
+        // src 节点没有此 view_block
+        auto it = src_view_block_hash_set.find(view_block->hash);
+        if (it == src_view_block_hash_set.end()) {
+            shouldResponse = true;
+        }
+        
+        auto view_block_qc_str = view_block_res->add_view_block_qc_strs();
+        *view_block_qc_str = view_block_qc->Serialize();
+        auto view_block_item = view_block_res->add_view_block_items();
+        ViewBlock2Proto(view_block, view_block_item);
+    }
+
+    if (!shouldResponse) {
+        return Status::kSuccess;
+    }
+    return SendMsg(network_id, res_view_block_msg);
+}
+
 
 // Gossip chains info to neighbors
 Status HotstuffSyncer::SyncChainsToNeighbors() {
@@ -88,7 +221,9 @@ void HotstuffSyncer::ConsumeMessages() {
             if (msg_ptr == nullptr) {
                 break;
             }
-            if (msg_ptr->header.view_block_proto().has_view_block_res()) {
+            if (msg_ptr->header.view_block_proto().has_view_block_req()) {
+                processRequest(msg_ptr);
+            } else if (msg_ptr->header.view_block_proto().has_view_block_res()) {
                 processResponse(msg_ptr);
             }            
         }   

@@ -179,6 +179,28 @@ class ViewBlockSyncRequest : public ::google::protobuf::Message /* @@protoc_inse
 
   // accessors -------------------------------------------------------
 
+  // repeated bytes view_block_hashes = 3;
+  int view_block_hashes_size() const;
+  void clear_view_block_hashes();
+  static const int kViewBlockHashesFieldNumber = 3;
+  const ::std::string& view_block_hashes(int index) const;
+  ::std::string* mutable_view_block_hashes(int index);
+  void set_view_block_hashes(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_view_block_hashes(int index, ::std::string&& value);
+  #endif
+  void set_view_block_hashes(int index, const char* value);
+  void set_view_block_hashes(int index, const void* value, size_t size);
+  ::std::string* add_view_block_hashes();
+  void add_view_block_hashes(const ::std::string& value);
+  #if LANG_CXX11
+  void add_view_block_hashes(::std::string&& value);
+  #endif
+  void add_view_block_hashes(const char* value);
+  void add_view_block_hashes(const void* value, size_t size);
+  const ::google::protobuf::RepeatedPtrField< ::std::string>& view_block_hashes() const;
+  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_view_block_hashes();
+
   // optional uint32 network_id = 1;
   bool has_network_id() const;
   void clear_network_id();
@@ -193,18 +215,39 @@ class ViewBlockSyncRequest : public ::google::protobuf::Message /* @@protoc_inse
   ::google::protobuf::uint32 pool_idx() const;
   void set_pool_idx(::google::protobuf::uint32 value);
 
+  // optional uint64 high_qc_view = 4;
+  bool has_high_qc_view() const;
+  void clear_high_qc_view();
+  static const int kHighQcViewFieldNumber = 4;
+  ::google::protobuf::uint64 high_qc_view() const;
+  void set_high_qc_view(::google::protobuf::uint64 value);
+
+  // optional uint64 high_tc_view = 5;
+  bool has_high_tc_view() const;
+  void clear_high_tc_view();
+  static const int kHighTcViewFieldNumber = 5;
+  ::google::protobuf::uint64 high_tc_view() const;
+  void set_high_tc_view(::google::protobuf::uint64 value);
+
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.ViewBlockSyncRequest)
  private:
   void set_has_network_id();
   void clear_has_network_id();
   void set_has_pool_idx();
   void clear_has_pool_idx();
+  void set_has_high_qc_view();
+  void clear_has_high_qc_view();
+  void set_has_high_tc_view();
+  void clear_has_high_tc_view();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> view_block_hashes_;
   ::google::protobuf::uint32 network_id_;
   ::google::protobuf::uint32 pool_idx_;
+  ::google::protobuf::uint64 high_qc_view_;
+  ::google::protobuf::uint64 high_tc_view_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -1184,6 +1227,123 @@ inline void ViewBlockSyncRequest::set_pool_idx(::google::protobuf::uint32 value)
   set_has_pool_idx();
   pool_idx_ = value;
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncRequest.pool_idx)
+}
+
+// repeated bytes view_block_hashes = 3;
+inline int ViewBlockSyncRequest::view_block_hashes_size() const {
+  return view_block_hashes_.size();
+}
+inline void ViewBlockSyncRequest::clear_view_block_hashes() {
+  view_block_hashes_.Clear();
+}
+inline const ::std::string& ViewBlockSyncRequest::view_block_hashes(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockSyncRequest.view_block_hashes)
+  return view_block_hashes_.Get(index);
+}
+inline ::std::string* ViewBlockSyncRequest::mutable_view_block_hashes(int index) {
+  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.ViewBlockSyncRequest.view_block_hashes)
+  return view_block_hashes_.Mutable(index);
+}
+inline void ViewBlockSyncRequest::set_view_block_hashes(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncRequest.view_block_hashes)
+  view_block_hashes_.Mutable(index)->assign(value);
+}
+#if LANG_CXX11
+inline void ViewBlockSyncRequest::set_view_block_hashes(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncRequest.view_block_hashes)
+  view_block_hashes_.Mutable(index)->assign(std::move(value));
+}
+#endif
+inline void ViewBlockSyncRequest::set_view_block_hashes(int index, const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  view_block_hashes_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:shardora.view_block.protobuf.ViewBlockSyncRequest.view_block_hashes)
+}
+inline void ViewBlockSyncRequest::set_view_block_hashes(int index, const void* value, size_t size) {
+  view_block_hashes_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:shardora.view_block.protobuf.ViewBlockSyncRequest.view_block_hashes)
+}
+inline ::std::string* ViewBlockSyncRequest::add_view_block_hashes() {
+  // @@protoc_insertion_point(field_add_mutable:shardora.view_block.protobuf.ViewBlockSyncRequest.view_block_hashes)
+  return view_block_hashes_.Add();
+}
+inline void ViewBlockSyncRequest::add_view_block_hashes(const ::std::string& value) {
+  view_block_hashes_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:shardora.view_block.protobuf.ViewBlockSyncRequest.view_block_hashes)
+}
+#if LANG_CXX11
+inline void ViewBlockSyncRequest::add_view_block_hashes(::std::string&& value) {
+  view_block_hashes_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:shardora.view_block.protobuf.ViewBlockSyncRequest.view_block_hashes)
+}
+#endif
+inline void ViewBlockSyncRequest::add_view_block_hashes(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  view_block_hashes_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:shardora.view_block.protobuf.ViewBlockSyncRequest.view_block_hashes)
+}
+inline void ViewBlockSyncRequest::add_view_block_hashes(const void* value, size_t size) {
+  view_block_hashes_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:shardora.view_block.protobuf.ViewBlockSyncRequest.view_block_hashes)
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+ViewBlockSyncRequest::view_block_hashes() const {
+  // @@protoc_insertion_point(field_list:shardora.view_block.protobuf.ViewBlockSyncRequest.view_block_hashes)
+  return view_block_hashes_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+ViewBlockSyncRequest::mutable_view_block_hashes() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.view_block.protobuf.ViewBlockSyncRequest.view_block_hashes)
+  return &view_block_hashes_;
+}
+
+// optional uint64 high_qc_view = 4;
+inline bool ViewBlockSyncRequest::has_high_qc_view() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void ViewBlockSyncRequest::set_has_high_qc_view() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void ViewBlockSyncRequest::clear_has_high_qc_view() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void ViewBlockSyncRequest::clear_high_qc_view() {
+  high_qc_view_ = GOOGLE_ULONGLONG(0);
+  clear_has_high_qc_view();
+}
+inline ::google::protobuf::uint64 ViewBlockSyncRequest::high_qc_view() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockSyncRequest.high_qc_view)
+  return high_qc_view_;
+}
+inline void ViewBlockSyncRequest::set_high_qc_view(::google::protobuf::uint64 value) {
+  set_has_high_qc_view();
+  high_qc_view_ = value;
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncRequest.high_qc_view)
+}
+
+// optional uint64 high_tc_view = 5;
+inline bool ViewBlockSyncRequest::has_high_tc_view() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void ViewBlockSyncRequest::set_has_high_tc_view() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void ViewBlockSyncRequest::clear_has_high_tc_view() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void ViewBlockSyncRequest::clear_high_tc_view() {
+  high_tc_view_ = GOOGLE_ULONGLONG(0);
+  clear_has_high_tc_view();
+}
+inline ::google::protobuf::uint64 ViewBlockSyncRequest::high_tc_view() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockSyncRequest.high_tc_view)
+  return high_tc_view_;
+}
+inline void ViewBlockSyncRequest::set_high_tc_view(::google::protobuf::uint64 value) {
+  set_has_high_tc_view();
+  high_tc_view_ = value;
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncRequest.high_tc_view)
 }
 
 // -------------------------------------------------------------------
