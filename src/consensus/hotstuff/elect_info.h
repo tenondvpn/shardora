@@ -179,20 +179,37 @@ public:
     // 更新 elect_item members 的 addr
     void RefreshMemberAddrs() {
         if (!elect_item_) {
+            ZJC_DEBUG("Leader pool elect item null");
             return;
         }
         for (auto& member : *(elect_item_->Members())) {
+            ZJC_DEBUG("get Leader pool %s failed: %d, %u %d", 
+                common::Encode::HexEncode(member->id).c_str(), 
+                common::GlobalInfo::Instance()->network_id(),
+                member->public_ip,
+                member->public_port);
             if (member->public_ip == 0 || member->public_port == 0) {
                 auto dht_ptr = network::DhtManager::Instance()->GetDht(common::GlobalInfo::Instance()->network_id());
                 if (dht_ptr != nullptr) {
                     auto nodes = dht_ptr->readonly_hash_sort_dht();
                     for (auto iter = nodes->begin(); iter != nodes->end(); ++iter) {
+                        ZJC_DEBUG("Leader pool dht node: %s", common::Encode::HexEncode((*iter)->id).c_str());
                         if ((*iter)->id == member->id) {
                             member->public_ip = common::IpToUint32((*iter)->public_ip.c_str());
                             member->public_port = (*iter)->public_port;
+                            ZJC_DEBUG("set member %s ip port %s:%d",
+                                common::Encode::HexEncode((*iter)->id).c_str(), 
+                                (*iter)->public_ip.c_str(), 
+                                (*iter)->public_port);
                         }
                     }
+                } else {
+                    ZJC_DEBUG("Leader pool dht failed: %d", common::GlobalInfo::Instance()->network_id());
                 }
+            } else {
+                ZJC_DEBUG("Leader pool %s failed: %d", 
+                    common::Encode::HexEncode(member->id).c_str(), 
+                    common::GlobalInfo::Instance()->network_id());
             }
         }        
     }

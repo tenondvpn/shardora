@@ -44,11 +44,18 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
     if (leader->public_ip == 0 || leader->public_port == 0) {
         // 刷新 members 的 ip port
         elect_info_->RefreshMemberAddrs();
+        ZJC_DEBUG("refresh Leader pool: %d, is %d, id: %s, ip: %s, port: %d, qc view: %lu",
+            pool_idx_,
+            leader->index,
+            common::Encode::HexEncode(leader->id).c_str(),
+            common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port,
+            qc->view);
     }
 
-    ZJC_DEBUG("Leader pool: %d, is %d, ip: %s, port: %d, qc view: %lu",
+    ZJC_DEBUG("Leader pool: %d, is %d, id: %s, ip: %s, port: %d, qc view: %lu",
         pool_idx_,
         leader->index,
+        common::Encode::HexEncode(leader->id).c_str(),
         common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port,
         qc->view);
     return leader;
