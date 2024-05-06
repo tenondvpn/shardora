@@ -31,7 +31,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
     }
     
     uint64_t random_hash = common::Hash::Hash64(qc->Serialize() +
-        std::to_string(common::TimeUtils::TimestampSeconds() / 30));
+        std::to_string(common::TimeUtils::TimestampSeconds() / 300000));
 
     if (Members()->empty()) {
         return nullptr;
@@ -43,10 +43,11 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         elect_info_->RefreshMemberAddrs();
     }
 
-    ZJC_DEBUG("Leader pool: %d, is %d, ip: %s, port: %d",
+    ZJC_DEBUG("Leader pool: %d, is %d, ip: %s, port: %d, qc view: %lu",
         pool_idx_,
         leader->index,
-        common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port);
+        common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port,
+        qc->view);
     return leader;
 }
 
