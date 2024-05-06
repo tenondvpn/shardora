@@ -74,18 +74,11 @@ public:
     }
 
     inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlock>& view_block) {
-        // latest_committed_block_ = view_block;
-        // view_blocks_status_[view_block->hash] = ViewBlockStatus::Committed;
         latest_committed_block_ = view_block;
         view_blocks_info_[view_block->hash]->status = ViewBlockStatus::Committed;        
     }
 
     inline void SetLatestLockedBlock(const std::shared_ptr<ViewBlock>& view_block) {
-        // auto view_block_status = GetViewBlockStatus(view_block);
-        // if (view_block_status != ViewBlockStatus::Committed) {
-        //     latest_locked_block_ = view_block;
-        //     view_blocks_status_[view_block->hash] = ViewBlockStatus::Locked;
-        // }
         auto view_block_status = GetViewBlockStatus(view_block);
         if (view_block_status != ViewBlockStatus::Committed) {
             latest_locked_block_ = view_block;
@@ -94,11 +87,6 @@ public:
     }
 
     inline ViewBlockStatus GetViewBlockStatus(const std::shared_ptr<ViewBlock>& view_block) const {
-        // auto it = view_blocks_status_.find(view_block->hash);
-        // if (it == view_blocks_status_.end()) {
-        //     return ViewBlockStatus::Unknown;
-        // }
-        // return it->second;
         auto it = view_blocks_info_.find(view_block->hash);
         if (it == view_blocks_info_.end()) {
             return ViewBlockStatus::Unknown;
@@ -108,11 +96,6 @@ public:
 
     // 获取 view_block 的 QC
     std::shared_ptr<QC> GetQcOf(const std::shared_ptr<ViewBlock>& view_block) const {
-        // auto it = view_block_qc_map_.find(view_block->hash);
-        // if (it == view_block_qc_map_.end()) {
-        //     return nullptr;
-        // }
-        // return it->second;
         auto it = view_blocks_info_.find(view_block->hash);
         if (it == view_blocks_info_.end()) {
             return nullptr;
@@ -121,7 +104,6 @@ public:
     }
 
     void SetQcOf(const HashStr& view_block_hash, const std::shared_ptr<QC>& qc) {
-        // view_block_qc_map_[view_block_hash] = qc;
         SetQcToMap(view_block_hash, qc);
     }
     
@@ -149,16 +131,6 @@ public:
     }
 
     inline void Clear() {
-        // view_blocks_.clear();
-        // view_blocks_at_height_.clear();
-        // view_block_children_.clear();
-        // view_block_qc_map_.clear();
-        // prune_height_ = View(1);
-
-        // latest_committed_block_ = nullptr;
-        // latest_locked_block_ = nullptr;
-        // start_block_ = nullptr;
-
         view_blocks_info_.clear();
         view_blocks_at_height_.clear();
         prune_height_ = View(1);
@@ -196,16 +168,8 @@ private:
     
     View prune_height_;
     std::shared_ptr<ViewBlock> start_block_;
-    // std::unordered_map<HashStr, std::shared_ptr<ViewBlock>> view_blocks_;
-    // std::unordered_map<HashStr, ViewBlockStatus> view_blocks_status_;
     std::unordered_map<View, std::vector<std::shared_ptr<ViewBlock>>> view_blocks_at_height_; // 一般一个 view 只有一个块
-    // std::unordered_map<HashStr, std::vector<std::shared_ptr<ViewBlock>>> view_block_children_;
-    // std::unordered_map<HashStr, std::shared_ptr<QC>> view_block_qc_map_; // 存放 view_block 及它的 QC
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> view_blocks_info_;
-
-    // ViewBlockMinHeap orphan_blocks_; // 已经获得但没有父块, 按照 view 排序
-    // std::unordered_map<HashStr, uint64_t> orphan_added_us_;
-
     std::shared_ptr<ViewBlock> latest_committed_block_; // 最新 committed block
     std::shared_ptr<ViewBlock> latest_locked_block_; // locked_block_;
 
