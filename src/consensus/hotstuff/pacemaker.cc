@@ -93,6 +93,12 @@ void Pacemaker::OnLocalTimeout() {
     // start a new timer for the timeout case
     StartTimeoutTimer();
     
+    // 超时后先触发一次同步，主要是尽量同步最新的 HighQC，降低因 HighQC 不一致造成多次超时的概率
+    // 由于 HotstuffSyncer 周期性同步，这里不触发同步影响也不大
+    if (sync_pool_fn_) {
+        sync_pool_fn_(pool_idx_);
+    }    
+    
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
     
@@ -129,8 +135,6 @@ void Pacemaker::OnLocalTimeout() {
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kHotstuffTimeoutMessage);
     transport::TcpTransport::Instance()->SetMessageHash(msg);
-    
-    // TODO ecdh encrypt
 
     // 停止对当前 view 的投票
     if (stop_voting_fn_) {

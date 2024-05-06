@@ -175,8 +175,12 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
         return;
     }
 
-    // 打印一下日志
-    ZJC_DEBUG("PrintChain pool: %d,", pool_idx_);
+    // 打印一下调试日志
+    std::cout << "highQC: " << pacemaker()->HighQC()->view
+              << ",highTC: " << pacemaker()->HighTC()->view
+              << ",chainSize: " << view_block_chain()->Size()
+              << ",commitView: " << view_block_chain()->LatestCommittedBlock()->view
+              << ",CurView: " << pacemaker()->CurView() << std::endl;    
     view_block_chain()->Print();
 
     // 1、验证是否存在3个连续qc，设置commit，lock qc状态；2、提交commit块之间的交易信息；3、减枝保留最新commit块，回退分支的交易信息
