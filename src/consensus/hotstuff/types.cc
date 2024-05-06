@@ -27,6 +27,7 @@ std::string QC::Serialize() const {
     qc_proto.set_view(view);
     qc_proto.set_view_block_hash(view_block_hash);
     
+    // TODO 不同版本 pb 结果不一样
     return qc_proto.SerializeAsString();
 }
 
