@@ -154,7 +154,7 @@ Status HotstuffSyncer::SyncChainToNeighbor(
         auto view_block_qc = chain->GetQcOf(view_block);
         if (!view_block_qc) {
             if (pacemaker(pool_idx)->HighQC()->view_block_hash == view_block->hash) {
-                chain->SetQcOf(view_block, pacemaker(pool_idx)->HighQC());
+                chain->SetQcOf(view_block->hash, pacemaker(pool_idx)->HighQC());
                 view_block_qc = pacemaker(pool_idx)->HighQC();
             } else {
                 continue;
@@ -191,6 +191,8 @@ Status HotstuffSyncer::processResponseQcTc(
     auto hightc = std::make_shared<TC>();
     highqc->Unserialize(view_block_res.high_qc_str());
     hightc->Unserialize(view_block_res.high_tc_str());
+    // 设置 view_block 的 qc
+    view_block_chain(pool_idx)->SetQcOf(highqc->view_block_hash, highqc);
 
     ZJC_DEBUG("response received qctc pool_idx: %d, tc: %d, qc: %d",
         pool_idx, hightc->view, highqc->view);

@@ -94,8 +94,8 @@ public:
         return it->second;
     }
 
-    void SetQcOf(const std::shared_ptr<ViewBlock>& view_block, const std::shared_ptr<QC>& qc) {
-        view_block_qc_map_[view_block->hash] = qc;
+    void SetQcOf(const HashStr& view_block_hash, const std::shared_ptr<QC>& qc) {
+        view_block_qc_map_[view_block_hash] = qc;
     }
     
     // If a chain is valid
