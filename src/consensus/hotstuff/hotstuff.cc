@@ -82,6 +82,7 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     }
 
     ZJC_DEBUG("pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu",
+        pool_idx_,
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
         hotstuff_msg->pro_msg().view_item().view(),
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
