@@ -344,6 +344,7 @@ Status HotstuffSyncer::onRecViewBlock(
     }    
     s = accep->AcceptSync(view_block->block);
     if (s != Status::kSuccess) {
+        ZJC_ERROR("pool: %d sync accept failed", pool_idx);
         return s;
     }
     
@@ -355,6 +356,7 @@ Status HotstuffSyncer::onRecViewBlock(
     if (view_block_to_commit) {
         s = hotstuff->Commit(view_block_to_commit);
         if (s != Status::kSuccess) {
+            ZJC_ERROR("pool: %d sync commit failed", pool_idx);
             return s;
         }
     }
