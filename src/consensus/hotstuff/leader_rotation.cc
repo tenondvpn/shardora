@@ -43,9 +43,10 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         elect_info_->RefreshMemberAddrs();
     }
 
-    ZJC_DEBUG("Leader pool: %d, is %d, ip: %s, port: %d, qc view: %lu",
+    ZJC_DEBUG("Leader pool: %d, is %d, id: %s, ip: %s, port: %d, qc view: %lu",
         pool_idx_,
         leader->index,
+        common::Encode::HexEncode(leader->id).c_str(),
         common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port,
         qc->view);
     return leader;
