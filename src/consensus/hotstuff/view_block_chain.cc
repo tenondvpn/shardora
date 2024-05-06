@@ -29,11 +29,12 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     
     if (!start_block_) {
         start_block_ = view_block;
-        view_blocks_[view_block->hash] = view_block;
-        view_blocks_at_height_[view_block->view].push_back(view_block);
-        // view_block_qc_map_[view_block->hash] = GetGenesisQC(view_block->hash);
+        //view_blocks_[view_block->hash] = view_block;
+        SetViewBlockToMap(view_block->hash, view_block);
         
-        prune_height_ = view_block->view;        
+        view_blocks_at_height_[view_block->view].push_back(view_block);
+        prune_height_ = view_block->view;
+        
         return Status::kSuccess;
     }
     // 父块必须存在
@@ -47,28 +48,42 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
         return Status::kError;
     }
     
-    view_blocks_[view_block->hash] = view_block;
+    //view_blocks_[view_block->hash] = view_block;
+    SetViewBlockToMap(view_block->hash, view_block);
     view_blocks_at_height_[view_block->view].push_back(view_block);
-    view_block_children_[view_block->parent_hash].push_back(view_block);
-    view_block_qc_map_[view_block->qc->view_block_hash] = view_block->qc;
+    //view_block_children_[view_block->parent_hash].push_back(view_block);
+    AddChildrenToMap(view_block->parent_hash, view_block);
+    //view_block_qc_map_[view_block->qc->view_block_hash] = view_block->qc;
+    SetQcToMap(view_block->qc->view_block_hash, view_block->qc);    
 
     return Status::kSuccess;
 }
 
 
 Status ViewBlockChain::Get(const HashStr &hash, std::shared_ptr<ViewBlock> &view_block) {
-    auto it = view_blocks_.find(hash);
-    if (it != view_blocks_.end()) {
-        view_block = it->second;
+    // auto it = view_blocks_.find(hash);
+    // if (it != view_blocks_.end()) {
+    //     view_block = it->second;
+    //     return Status::kSuccess;
+    // }
+
+    // return Status::kNotFound;
+
+   auto it = view_blocks_info_.find(hash);
+    if (it != view_blocks_info_.end()) {
+        view_block = it->second->view_block;
         return Status::kSuccess;
     }
 
-    return Status::kNotFound;
+    return Status::kNotFound;    
 }
 
 bool ViewBlockChain::Has(const HashStr& hash) {
-    auto it = view_blocks_.find(hash);
-    return it != view_blocks_.end();
+    // auto it = view_blocks_.find(hash);
+    // return it != view_blocks_.end();
+
+    auto it = view_blocks_info_.find(hash);
+    return (it != view_blocks_info_.end() && it->second->view_block != nullptr);    
 }
 
 bool ViewBlockChain::Extends(const std::shared_ptr<ViewBlock>& block, const std::shared_ptr<ViewBlock>& target) {
@@ -85,10 +100,17 @@ bool ViewBlockChain::Extends(const std::shared_ptr<ViewBlock>& block, const std:
 }
 
 Status ViewBlockChain::GetAll(std::vector<std::shared_ptr<ViewBlock>>& view_blocks) {
-    for (auto it = view_blocks_.begin(); it != view_blocks_.end(); it++) {
-        view_blocks.push_back(it->second);
+    // for (auto it = view_blocks_.begin(); it != view_blocks_.end(); it++) {
+    //     view_blocks.push_back(it->second);
+    // }
+    // return Status::kSuccess;
+
+    for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
+        if (it->second->view_block) {
+            view_blocks.push_back(it->second->view_block);
+        }
     }
-    return Status::kSuccess;
+    return Status::kSuccess;    
 }
 
 Status ViewBlockChain::GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>& view_blocks) {
@@ -187,23 +209,59 @@ Status ViewBlockChain::PruneHistoryTo(const std::shared_ptr<ViewBlock>& target_b
 }
 
 Status ViewBlockChain::GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children) {
-    auto it = view_block_children_.find(hash);
-    if (it == view_block_children_.end()) {
+    // auto it = view_block_children_.find(hash);
+    // if (it == view_block_children_.end()) {
+    //     return Status::kSuccess;
+    // }
+    // children = it->second;
+    // return Status::kSuccess;
+
+    auto it = view_blocks_info_.find(hash);
+    if (it == view_blocks_info_.end()) {
         return Status::kSuccess;
     }
-    children = it->second;
-    return Status::kSuccess;
+    children = it->second->children;
+    return Status::kSuccess;    
 }
 
 Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_block) {
+    // ZJC_DEBUG("del view block: %s view: %lu", common::Encode::HexEncode(view_block->hash).c_str(), view_block->view);
+    // auto original_child_blocks = view_block_children_[view_block->parent_hash];
+    // auto original_blocks_at_height = view_blocks_at_height_[view_block->view];
+    // auto hash = view_block->hash;
+    // auto view = view_block->view;
+
+    // try {
+    //     auto& child_blocks = view_block_children_[view_block->parent_hash];
+    //     child_blocks.erase(std::remove_if(child_blocks.begin(), child_blocks.end(),
+    //         [&hash](const std::shared_ptr<ViewBlock>& item) { return item->hash == hash; }),
+    //         child_blocks.end());
+
+    //     auto& blocks = view_blocks_at_height_[view];
+    //     blocks.erase(std::remove_if(blocks.begin(), blocks.end(),
+    //         [&hash](const std::shared_ptr<ViewBlock>& item) { return item->hash == hash; }),
+    //         blocks.end());
+
+    //     view_blocks_.erase(hash);
+    //     view_block_qc_map_.erase(hash);
+    // } catch (std::exception& e) {
+    //     ZJC_ERROR("del view block error %s", e.what());
+    //     view_block_children_[view_block->parent_hash] = original_child_blocks;
+    //     view_blocks_at_height_[view_block->view] = original_blocks_at_height;
+    //     throw;
+    // }
+    
+    // return Status::kSuccess;
+
+
     ZJC_DEBUG("del view block: %s view: %lu", common::Encode::HexEncode(view_block->hash).c_str(), view_block->view);
-    auto original_child_blocks = view_block_children_[view_block->parent_hash];
+    auto original_child_blocks = view_blocks_info_[view_block->parent_hash]->children;
     auto original_blocks_at_height = view_blocks_at_height_[view_block->view];
     auto hash = view_block->hash;
     auto view = view_block->view;
 
     try {
-        auto& child_blocks = view_block_children_[view_block->parent_hash];
+        auto& child_blocks = view_blocks_info_[view_block->parent_hash]->children;
         child_blocks.erase(std::remove_if(child_blocks.begin(), child_blocks.end(),
             [&hash](const std::shared_ptr<ViewBlock>& item) { return item->hash == hash; }),
             child_blocks.end());
@@ -213,16 +271,15 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
             [&hash](const std::shared_ptr<ViewBlock>& item) { return item->hash == hash; }),
             blocks.end());
 
-        view_blocks_.erase(hash);
-        view_block_qc_map_.erase(hash);
+        view_blocks_info_.erase(hash);
     } catch (std::exception& e) {
         ZJC_ERROR("del view block error %s", e.what());
-        view_block_children_[view_block->parent_hash] = original_child_blocks;
+        view_blocks_info_[view_block->parent_hash]->children = original_child_blocks;
         view_blocks_at_height_[view_block->view] = original_blocks_at_height;
         throw;
     }
     
-    return Status::kSuccess;
+    return Status::kSuccess;    
 }
 
 bool ViewBlockChain::IsValid() {
@@ -249,10 +306,10 @@ void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const s
               << common::Encode::HexEncode(block->hash).c_str() << "[status]:"
               << static_cast<int>(GetViewBlockStatus(block)) << "[txs]:" 
               << block->block->tx_list_size() << "\n";
-    auto childrenIt = view_block_children_.find(block->hash);
-    if (childrenIt != view_block_children_.end()) {
+    auto childrenIt = view_blocks_info_.find(block->hash);
+    if (childrenIt != view_blocks_info_.end()) {
         std::string childIndent = indent + "  ";
-        for (const auto& child : childrenIt->second) {
+        for (const auto& child : childrenIt->second->children) {
             std::cout << indent << "|\n";
             std::cout << indent << "+--";
             PrintBlock(child, childIndent);
