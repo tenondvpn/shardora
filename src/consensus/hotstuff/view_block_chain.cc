@@ -270,10 +270,13 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
     auto view = view_block->view;
 
     try {
-        auto& child_blocks = view_blocks_info_[view_block->parent_hash]->children;
-        child_blocks.erase(std::remove_if(child_blocks.begin(), child_blocks.end(),
-            [&hash](const std::shared_ptr<ViewBlock>& item) { return item->hash == hash; }),
-            child_blocks.end());
+        auto it = view_blocks_info_.find(view_block->parent_hash);
+        if (it != view_blocks_info_.end() && !it->second->children.empty()) {
+            auto& child_blocks = it->second->children;
+            child_blocks.erase(std::remove_if(child_blocks.begin(), child_blocks.end(),
+                    [&hash](const std::shared_ptr<ViewBlock>& item) { return item->hash == hash; }),
+                child_blocks.end());            
+        }
 
         auto& blocks = view_blocks_at_height_[view];
         blocks.erase(std::remove_if(blocks.begin(), blocks.end(),
