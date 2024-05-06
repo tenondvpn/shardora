@@ -56,6 +56,7 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
         is_commited_block);
     return tmp_hash;
 }
+
 std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
     std::string message;
     message.reserve(tx_info.ByteSizeLong());
@@ -72,11 +73,11 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
     message.append(std::string((char*)&step, sizeof(step)));
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
         message.append(tx_info.storages(i).key());
-        message.append(tx_info.storages(i).val_hash());
+        message.append(tx_info.storages(i).value());
         ZJC_DEBUG("add tx key: %s, %s, value: %s",
             tx_info.storages(i).key().c_str(),
             common::Encode::HexEncode(tx_info.storages(i).key()).c_str(),
-            common::Encode::HexEncode(tx_info.storages(i).val_hash()).c_str());
+            common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
     }
 
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
@@ -84,7 +85,7 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
             amount, gas_limit, gas_price, step,
             common::Encode::HexEncode(tx_info.storages(i).key()).c_str(),
             tx_info.storages(i).key().c_str(),
-            common::Encode::HexEncode(tx_info.storages(i).val_hash()).c_str(),
+            common::Encode::HexEncode(tx_info.storages(i).value()).c_str(),
             common::Encode::HexEncode(common::Hash::keccak256(message)).c_str(),
             common::Encode::HexEncode(message).c_str());
     }
