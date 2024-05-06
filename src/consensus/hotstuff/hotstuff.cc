@@ -481,6 +481,7 @@ Status Hotstuff::ConstructVoteMsg(
 
     std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
     wrapper()->GetTxsIdempotently(txs);
+    ZJC_DEBUG("get tx size: %u", txs.size());
     for (size_t i = 0; i < txs.size(); i++)
     {
         auto& tx_ptr = *(vote_msg->add_txs());
