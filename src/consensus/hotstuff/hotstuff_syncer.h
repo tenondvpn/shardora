@@ -36,6 +36,7 @@ using OnRecvViewBlockFn = std::function<Status(
         const std::shared_ptr<ViewBlockChain>& chain,
         const std::shared_ptr<ViewBlock>& view_block)>;
 
+// Sync ViewBlocks and HighQC and HighTC
 class HotstuffSyncer {
 public:
     // TODO 将 ViewBlockChainManager 换成 HotstuffManager
@@ -47,11 +48,10 @@ public:
 
     void Start();
     void Stop();
-    // Status AsyncFetch(const HashStr& view_block_hash, uint32_t pool_idx);
+    void SyncPool(const uint32_t& pool_idx);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     void ConsumeMessages();
-    Status SyncChainsToNeighbors();
     Status MergeChain(
             const uint32_t& pool_idx,
             std::shared_ptr<ViewBlockChain>& ori_chain,
@@ -75,16 +75,13 @@ private:
         return hotstuff_mgr_->crypto(pool_idx);
     }
 
-    void SyncChains();
+    void SyncAllPools();
     Status SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg);
     
     Status SendMsg(
             uint32_t network_id,
             const view_block::protobuf::ViewBlockSyncMessage& view_block_msg);
-    // Sync ViewBlocks, HighQC, HighTC to a neighbor
-    Status SyncChainToNeighbor(
-            const uint32_t& network_id,
-            const uint32_t& pool_idx);
+
     void ConsensusTimerMessage();
     // void SyncChains();
     Status processRequest(const transport::MessagePtr&);

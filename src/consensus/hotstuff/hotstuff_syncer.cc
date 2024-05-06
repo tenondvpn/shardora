@@ -34,6 +34,12 @@ HotstuffSyncer::HotstuffSyncer(
                 std::placeholders::_1,
                 std::placeholders::_2,
                 std::placeholders::_3));
+
+    // 设置 pacemaker 中的同步函数
+    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
+        pacemaker(pool_idx)->SetSyncPoolFn(std::bind(&HotstuffSyncer::SyncPool, this, std::placeholders::_1));
+    }
+    
     network::Route::Instance()->RegisterMessage(common::kHotstuffSyncMessage,
         std::bind(&HotstuffSyncer::HandleMessage, this, std::placeholders::_1));
 }
@@ -61,8 +67,7 @@ void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
 // 批量异步处理，提高 tps
 void HotstuffSyncer::ConsensusTimerMessage() {
     // TODO 仅共识池节点参与 view_block_chain 的同步
-    SyncChains();
-    // SyncChainsToNeighbors();
+    SyncAllPools();
     ConsumeMessages();
 
     tick_.CutOff(
@@ -70,25 +75,29 @@ void HotstuffSyncer::ConsensusTimerMessage() {
         std::bind(&HotstuffSyncer::ConsensusTimerMessage, this));
 }
 
-void HotstuffSyncer::SyncChains() {
-    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
-        auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
-        auto req = vb_msg.mutable_view_block_req();
-        req->set_pool_idx(pool_idx);
-        req->set_network_id(common::GlobalInfo::Instance()->network_id());
-        req->set_high_qc_view(pacemaker(pool_idx)->HighQC()->view);
-        req->set_high_tc_view(pacemaker(pool_idx)->HighTC()->view);
+void HotstuffSyncer::SyncPool(const uint32_t& pool_idx) {
+    auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
+    auto req = vb_msg.mutable_view_block_req();
+    req->set_pool_idx(pool_idx);
+    req->set_network_id(common::GlobalInfo::Instance()->network_id());
+    req->set_high_qc_view(pacemaker(pool_idx)->HighQC()->view);
+    req->set_high_tc_view(pacemaker(pool_idx)->HighTC()->view);
 
-        std::vector<std::shared_ptr<ViewBlock>> view_blocks;
-        view_block_chain(pool_idx)->GetAll(view_blocks);
-        // 发送所有 ViewBlock 的 hash 给目标节点
-        for (const auto& vb : view_blocks) {
-            auto& vb_hash = *(req->add_view_block_hashes());
-            vb_hash = vb->hash;
-        }
+    std::vector<std::shared_ptr<ViewBlock>> view_blocks;
+    view_block_chain(pool_idx)->GetAll(view_blocks);
+    // 发送所有 ViewBlock 的 hash 给目标节点
+    for (const auto& vb : view_blocks) {
+        auto& vb_hash = *(req->add_view_block_hashes());
+        vb_hash = vb->hash;
+    }
         
-        vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
-        SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg);
+    vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
+    SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg);
+}
+
+void HotstuffSyncer::SyncAllPools() {
+    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
+        SyncPool(pool_idx);
     }
 }
 
@@ -148,13 +157,8 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     view_block_res->set_pool_idx(pool_idx);
 
     // src 节点的 highqc 或 hightc 落后，尝试同步
-    if (pacemaker(pool_idx)->HighQC()->view > src_high_qc_view) {
-        view_block_res->set_high_qc_str(pacemaker(pool_idx)->HighQC()->Serialize());
-        shouldResponse = true;
-    }
-
-    if (pacemaker(pool_idx)->HighTC()->view > src_high_tc_view) {
-        view_block_res->set_high_tc_str(pacemaker(pool_idx)->HighTC()->Serialize());
+    if (pacemaker(pool_idx)->HighQC()->view > src_high_qc_view ||
+        pacemaker(pool_idx)->HighTC()->view > src_high_tc_view) {
         shouldResponse = true;
     }
 
@@ -185,9 +189,11 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
         }
 
         // src 节点没有此 view_block
-        auto it = src_view_block_hash_set.find(view_block->hash);
-        if (it == src_view_block_hash_set.end()) {
-            shouldResponse = true;
+        if (!shouldResponse) {
+            auto it = src_view_block_hash_set.find(view_block->hash);
+            if (it == src_view_block_hash_set.end()) {
+                shouldResponse = true;
+            }            
         }
         
         auto view_block_qc_str = view_block_res->add_view_block_qc_strs();
@@ -196,19 +202,14 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
         ViewBlock2Proto(view_block, view_block_item);
     }
 
+    // 不发送消息
     if (!shouldResponse) {
         return Status::kSuccess;
     }
+
+    view_block_res->set_high_qc_str(pacemaker(pool_idx)->HighQC()->Serialize());
+    view_block_res->set_high_tc_str(pacemaker(pool_idx)->HighTC()->Serialize());
     return SendMsg(network_id, res_view_block_msg);
-}
-
-
-// Gossip chains info to neighbors
-Status HotstuffSyncer::SyncChainsToNeighbors() {
-    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
-        SyncChainToNeighbor(common::GlobalInfo::Instance()->network_id(), pool_idx);
-    }
-    return Status::kSuccess;
 }
 
 void HotstuffSyncer::ConsumeMessages() {
@@ -256,52 +257,6 @@ Status HotstuffSyncer::SendMsg(uint32_t network_id, const view_block::protobuf::
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);    
     return Status::kSuccess;
-}
-
-Status HotstuffSyncer::SyncChainToNeighbor(
-        const uint32_t& network_id,
-        const uint32_t& pool_idx) {
-    transport::protobuf::Header msg;
-    view_block::protobuf::ViewBlockSyncMessage&  res_view_block_msg = *msg.mutable_view_block_proto();
-    
-    res_view_block_msg.set_create_time_us(common::TimeUtils::TimestampUs());
-    auto view_block_res = res_view_block_msg.mutable_view_block_res();
-    
-    view_block_res->set_network_id(network_id);
-    view_block_res->set_pool_idx(pool_idx);
-    view_block_res->set_high_qc_str(pacemaker(pool_idx)->HighQC()->Serialize());
-    view_block_res->set_high_tc_str(pacemaker(pool_idx)->HighTC()->Serialize());
-
-    auto chain = view_block_chain(pool_idx);
-    if (!chain) {
-        return Status::kError;
-    }
-
-    std::vector<std::shared_ptr<ViewBlock>> all;
-    // 将所有的块同步过去（即最后一个 committed block 及其后续分支
-    chain->GetAll(all);
-    if (all.size() <= 0 || all.size() > kMaxSyncBlockNum) {
-        return Status::kError;
-    }
-
-    for (auto& view_block : all) {
-        // 仅同步已经有 qc 的 view_block
-        auto view_block_qc = chain->GetQcOf(view_block);
-        if (!view_block_qc) {
-            if (pacemaker(pool_idx)->HighQC()->view_block_hash == view_block->hash) {
-                chain->SetQcOf(view_block->hash, pacemaker(pool_idx)->HighQC());
-                view_block_qc = pacemaker(pool_idx)->HighQC();
-            } else {
-                continue;
-            }
-        }
-        auto view_block_qc_str = view_block_res->add_view_block_qc_strs();
-        *view_block_qc_str = view_block_qc->Serialize();
-        auto view_block_item = view_block_res->add_view_block_items();
-        ViewBlock2Proto(view_block, view_block_item);
-    }
-
-    return SendMsg(network_id, res_view_block_msg);
 }
 
 // 处理 response 类型消息
