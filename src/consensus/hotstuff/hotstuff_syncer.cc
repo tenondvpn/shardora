@@ -264,6 +264,7 @@ Status HotstuffSyncer::processResponseChain(
         pool_idx, view_block_items.size());
 
     if (!tmp_chain->IsValid()) {
+        ZJC_ERROR("pool: %d, synced chain is invalid", pool_idx);
         return Status::kSuccess;
     }
 
