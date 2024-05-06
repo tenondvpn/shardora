@@ -179,6 +179,7 @@ public:
     // 更新 elect_item members 的 addr
     void RefreshMemberAddrs() {
         if (!elect_item_) {
+            ZJC_DEBUG("Leader pool elect item null");
             return;
         }
         for (auto& member : *(elect_item_->Members())) {
@@ -196,7 +197,13 @@ public:
                                 (*iter)->public_port);
                         }
                     }
+                } else {
+                    ZJC_DEBUG("Leader pool dht failed: %d", common::GlobalInfo::Instance()->network_id());
                 }
+            } else {
+                ZJC_DEBUG("Leader pool %s failed: %d", 
+                    common::Encode::HexEncode(member->id).c_str(), 
+                    common::GlobalInfo::Instance()->network_id());
             }
         }        
     }
