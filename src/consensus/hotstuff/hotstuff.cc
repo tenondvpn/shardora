@@ -120,8 +120,9 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
         pro_msg.view_item().view(),
         common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
         pacemaker()->HighQC()->view);
-
-    // 已经投过票
+    
+    // view 必须最新
+    // TODO 超时情况可能相同，严格限制并不影响共识，但会减少共识参与节点数
     if (HasVoted(v_block->view)) {
         return;
     }    
@@ -335,18 +336,7 @@ Status Hotstuff::VerifyViewBlock(
     }
 
     // 验证 view 编号
-    // view 必须最新，或与最新视图号相同（超时情况）
-    if (qc->view + 1 == v_block->view) {
-        if (view_block_chain->GetMaxHeight() >= v_block->view) {
-            ZJC_ERROR("block view is error.");
-            return Status::kError;
-        }
-    } else if (tc && tc->view + 1 == v_block->view) { // view 由 tc 生成
-        if (view_block_chain->GetMaxHeight() > v_block->view) {
-            ZJC_ERROR("block view is error.");
-            return Status::kError;            
-        }
-    } else {
+    if (qc->view + 1 != v_block->view && tc && tc->view + 1 != v_block->view) {
         ZJC_ERROR("block view is error.");
         return Status::kError;
     }
