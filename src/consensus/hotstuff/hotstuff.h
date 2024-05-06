@@ -62,6 +62,7 @@ public:
     Status VerifyViewBlock(
             const std::shared_ptr<ViewBlock>& v_block, 
             const std::shared_ptr<ViewBlockChain>& view_block_chain,
+            const std::shared_ptr<TC>& tc,
             const uint32_t& elect_height);    
 
     void StopVoting(const View& view) {

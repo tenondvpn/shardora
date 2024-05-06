@@ -20,12 +20,10 @@ void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
         view_block_chain_->Store(genesis);
         view_block_chain_->SetLatestLockedBlock(genesis);
         view_block_chain_->SetLatestCommittedBlock(genesis);
-        auto sync_info = std::make_shared<SyncInfo>();
-
         // 使用 genesis qc 进行视图切换
         auto genesis_qc = GetGenesisQC(genesis->hash);
         // 开启第一个视图
-        pacemaker_->AdvanceView(sync_info->WithQC(genesis_qc));
+        pacemaker_->AdvanceView(new_sync_info()->WithQC(genesis_qc));
     } else {
         ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
     }            
@@ -67,7 +65,8 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     auto hotstuff_msg = std::make_shared<pb_HotstuffMessage>();
     s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d construct hotstuff msg failed", pool_idx_);
+        ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
+            pool_idx_, hotstuff_msg->pro_msg().view_item().view());
         return;
     }
     header.mutable_hotstuff()->CopyFrom(*hotstuff_msg);
@@ -96,8 +95,9 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
 
 void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
     // 3 Verify TC
+    std::shared_ptr<TC> tc = nullptr;
     if (!pro_msg.tc_str().empty()) {
-        auto tc = std::make_shared<TC>();
+        tc = std::make_shared<TC>();
         if (!tc->Unserialize(pro_msg.tc_str())) {
             ZJC_ERROR("tc Unserialize is error.");
             return;
@@ -121,9 +121,11 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
         pro_msg.view_item().view(),
         common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
         pacemaker()->HighQC()->view);
-
-    // 已经投过票
+    
+    // view 必须最新
+    // TODO 超时情况可能相同，严格限制并不影响共识，但会减少共识参与节点数
     if (HasVoted(v_block->view)) {
+        ZJC_ERROR("pool: %d has voted: %lu", pool_idx_, v_block->view);
         return;
     }    
     
@@ -133,7 +135,7 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
     }
     
     // 4 Verify ViewBlock    
-    if (VerifyViewBlock(v_block, view_block_chain(), pro_msg.elect_height()) != Status::kSuccess) {
+    if (VerifyViewBlock(v_block, view_block_chain(), tc, pro_msg.elect_height()) != Status::kSuccess) {
         ZJC_ERROR("Verify ViewBlock is error. hash: %s",
             common::Encode::HexEncode(v_block->hash).c_str());
         return;
@@ -171,7 +173,11 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
         ZJC_ERROR("add view block error. hash: %s",
             common::Encode::HexEncode(v_block->hash).c_str());
         return;
-    }    
+    }
+
+    // 打印一下日志
+    ZJC_DEBUG("PrintChain pool: %d,", pool_idx_);
+    view_block_chain()->Print();
 
     // 1、验证是否存在3个连续qc，设置commit，lock qc状态；2、提交commit块之间的交易信息；3、减枝保留最新commit块，回退分支的交易信息
     auto v_block_to_commit = CheckCommit(v_block);
@@ -320,6 +326,7 @@ Status Hotstuff::Commit(const std::shared_ptr<ViewBlock>& v_block) {
 Status Hotstuff::VerifyViewBlock(
         const std::shared_ptr<ViewBlock>& v_block, 
         const std::shared_ptr<ViewBlockChain>& view_block_chain,
+        const std::shared_ptr<TC>& tc,
         const uint32_t& elect_height) {
     Status ret = Status::kSuccess;
     auto block_view = v_block->view;
@@ -327,15 +334,16 @@ Status Hotstuff::VerifyViewBlock(
         ZJC_ERROR("view block hash is error.");
         return Status::kError;
     }
-    // view 必须最新
-    if (view_block_chain->GetMaxHeight() >= v_block->view) {
-        ZJC_ERROR("block view is error.");
-        return Status::kError;
-    }
-    
+
     auto qc = v_block->qc;
     if (!qc) {
         ZJC_ERROR("qc 必须存在.");
+        return Status::kError;
+    }
+
+    // 验证 view 编号
+    if (qc->view + 1 != v_block->view && tc && tc->view + 1 != v_block->view) {
+        ZJC_ERROR("block view is error.");
         return Status::kError;
     }
     
@@ -492,7 +500,7 @@ Status Hotstuff::ConstructViewBlock(
     auto pre_v_block = std::make_shared<ViewBlock>();
     Status s = view_block_chain()->Get(view_block->parent_hash, pre_v_block);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("parent view block has not found, pool: %d", pool_idx_);
+        ZJC_ERROR("parent view block has not found, pool: %d, view: %lu, parent_view: %lu", pool_idx_, pacemaker()->CurView(), pacemaker()->HighQC()->view);
         return s;
     }
     
@@ -544,12 +552,20 @@ Status Hotstuff::SendVoteMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage
         ZJC_ERROR("Get Leader failed.");
         return Status::kError;
     }
+
     header_msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     dht::DhtKeyManager dht_key(leader->net_id);
     header_msg.set_des_dht_key(dht_key.StrKey());
     header_msg.set_type(common::kHotstuffMessage);
-    transport::TcpTransport::Instance()->SetMessageHash(header_msg);
-    transport::TcpTransport::Instance()->Send(common::Uint32ToIp(leader->public_ip), leader->public_port, header_msg);
+    transport::TcpTransport::Instance()->SetMessageHash(header_msg);    
+
+    if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
+        transport::TcpTransport::Instance()->Send(common::Uint32ToIp(leader->public_ip), leader->public_port, header_msg);
+    } else {
+        HandleVoteMsg(header_msg.hotstuff().vote_msg());
+    }
+ 
+    
     return ret;
 }
 

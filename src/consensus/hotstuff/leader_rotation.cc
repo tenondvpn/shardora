@@ -21,21 +21,17 @@ LeaderRotation::LeaderRotation(
 LeaderRotation::~LeaderRotation() {}
 
 common::BftMemberPtr LeaderRotation::GetLeader() {
+    // 此处选择 CommitBlock 包含的 QC 作为随机种子，也可以选择 CommitQC 或者 LockedQC
+    // 但不能选择 HighQC（由于同步延迟无法保证某时刻 HighQC 大多数节点相同）
     auto committedBlock = chain_->LatestCommittedBlock();
     // 对于非种子节点可能启动时没有 committedblock, 需要等同步
     auto qc = GetQCWrappedByGenesis();
     if (committedBlock) {
         qc = committedBlock->qc;
     }
-
-    // if (!watched_qc_) {
-    //     return nullptr;
-    // }
-
-    // auto qc = watched_qc_;
-    
+    // TODO 30s 轮换会导致 Leader 不一致而卡住共识
     uint64_t random_hash = common::Hash::Hash64(qc->Serialize() +
-        std::to_string(common::TimeUtils::TimestampSeconds() / 30000000));
+        std::to_string(common::TimeUtils::TimestampSeconds() / 300000));
 
     if (Members()->empty()) {
         return nullptr;
@@ -47,10 +43,11 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         elect_info_->RefreshMemberAddrs();
     }
 
-    ZJC_DEBUG("Leader pool: %d, is %d, ip: %s, port: %d",
+    ZJC_DEBUG("Leader pool: %d, is %d, ip: %s, port: %d, qc view: %lu",
         pool_idx_,
         leader->index,
-        common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port);
+        common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port,
+        qc->view);
     return leader;
 }
 

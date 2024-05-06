@@ -46,12 +46,6 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     if (view_block->qc && !view_block->qc->view_block_hash.empty() && !QCRef(view_block)) {
         return Status::kError;
     }
-
-    // 分叉数上限验证，避免恶意的无用分叉消耗内存
-    if (view_blocks_at_height_[view_block->view].size() > MaxBlockNumForView) {
-        return Status::kError;
-    }
-    
     
     view_blocks_[view_block->hash] = view_block;
     view_blocks_at_height_[view_block->view].push_back(view_block);

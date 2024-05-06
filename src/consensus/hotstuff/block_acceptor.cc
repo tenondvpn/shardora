@@ -78,7 +78,7 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
 
     Status s = Status::kSuccess;
-    s = GetTxsFromLocal(block_info, txs_ptr);
+    s = GetAndAddTxsLocally(block_info, txs_ptr);
     if (s != Status::kSuccess) {
         ZJC_ERROR("invalid tx_type: %d, txs empty. pool_index: %d, view: %lu",
             block_info->tx_type, pool_idx(), block_info->view);
@@ -256,7 +256,7 @@ Status BlockAcceptor::addTxsToPool(
     return Status::kSuccess;
 }
 
-Status BlockAcceptor::GetTxsFromLocal(
+Status BlockAcceptor::GetAndAddTxsLocally(
         const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
     auto txs_func = GetTxsFunc(block_info->tx_type);
