@@ -24,6 +24,7 @@ void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
         auto genesis_qc = GetGenesisQC(genesis->hash);
         // 开启第一个视图
         pacemaker_->AdvanceView(new_sync_info()->WithQC(genesis_qc));
+        ZJC_DEBUG("has genesis, pool_idx: %d, genisis block height: %lu", pool_idx_, genesis->block->height());
     } else {
         ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
     }            
@@ -509,6 +510,9 @@ Status Hotstuff::ConstructViewBlock(
         return s;
     }
     
+    ZJC_DEBUG("get prev block hash: %s, height: %lu", 
+        common::Encode::HexEncode(view_block->parent_hash).c_str(), 
+        pre_v_block->block->height());
     auto pre_block = pre_v_block->block;
     auto pb_block = std::make_shared<block::protobuf::Block>();
     s = wrapper()->Wrap(pre_block, leader_idx, pb_block, tx_propose);
