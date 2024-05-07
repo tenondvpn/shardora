@@ -296,11 +296,8 @@ Status GetLatestViewBlockFromDb(
             pool_index,
             &pool_info)) {
         ZJC_DEBUG("failed get genesis block net: %u, pool: %u", sharding_id, pool_index);
-        return nullptr;
+        return Status::kError;
     }
-
-    pools::protobuf::PoolLatestInfo pool_info;
-    prefix_db->GetLatestPoolInfo(sharding_id, pool_index, &pool_info);
 
     block::protobuf::Block block;
     bool r = prefix_db->GetBlockWithHeight(sharding_id, pool_index, pool_info.height(), &block);
