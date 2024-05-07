@@ -119,20 +119,23 @@ public:
 
     Status StoreToDb(const std::shared_ptr<ViewBlock>& v_block, const std::shared_ptr<QC>& qc) {
         // 持久化已经生成 qc 的 ViewBlock
-        if (qc == nullptr) {
-            return Status::kError;
+        if (v_block == nullptr) {
+            return Status::kInvalidArgument;
         }
-        view_block::protobuf::ViewBlockItem pb_v_block;
-        ViewBlock2Proto(v_block, &pb_v_block);
+        if (qc == nullptr) {
+            return Status::kInvalidArgument;
+        }
+        view_block::protobuf::ViewBlockItem* pb_v_block;
+        ViewBlock2Proto(v_block, pb_v_block);
         // 不存储 block 部分，block 已经单独存过了
-        pb_v_block.clear_block_str();
+        pb_v_block->clear_block_str();
         // 保存 v_block 对应的 qc 到 db
-        pb_v_block.set_self_qc_str(qc->Serialize());
+        pb_v_block->set_self_qc_str(qc->Serialize());
         auto db_batch = std::make_shared<db::DbWriteBatch>();
         prefix_db_->SaveViewBlockInfo(v_block->block->network_id(),
             v_block->block->pool_index(),
             v_block->block->height(),
-            pb_v_block,
+            *pb_v_block,
             *db_batch);
         return Status::kSuccess;
     }
