@@ -115,10 +115,10 @@ void Pacemaker::OnLocalTimeout() {
     auto view_hash = GetViewHash(CurView());
     // 使用最新的 elect_height 签名
     if (crypto_->PartialSign(
-                elect_item->ElectHeight(),
-                view_hash,
-                &bls_sign_x,
-                &bls_sign_y) != Status::kSuccess) {
+            elect_item->ElectHeight(),
+            view_hash,
+            &bls_sign_x,
+            &bls_sign_y) != Status::kSuccess) {
         return;
     }
     
@@ -181,7 +181,6 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     
     // 统计 bls 签名
     auto timeout_proto = msg.hotstuff_timeout_proto();
-    ZJC_DEBUG("====4.0 pool: %d, view: %d, member: %d", pool_idx_, timeout_proto.view(), timeout_proto.member_id());
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
     Status s = crypto_->ReconstructAndVerifyThresSign(
             timeout_proto.elect_height(),
@@ -191,6 +190,8 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
             timeout_proto.sign_x(),
             timeout_proto.sign_y(),
             reconstructed_sign);
+    ZJC_DEBUG("====4.0 pool: %d, view: %d, member: %d, status: %d", 
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), s);
     if (s != Status::kSuccess) {
         return;
     }
