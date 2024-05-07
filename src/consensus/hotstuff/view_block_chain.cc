@@ -294,7 +294,7 @@ std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db
     }
 
     block::protobuf::Block block;
-    bool r = prefix_db->GetBlockWithHight(sharding_id, pool_index, pool_info.height(), &block);
+    bool r = prefix_db->GetBlockWithHeight(sharding_id, pool_index, pool_info.height(), &block);
     if (!r) {
         ZJC_ERROR("no genesis block found");
         return nullptr;
