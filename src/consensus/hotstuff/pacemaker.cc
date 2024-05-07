@@ -137,13 +137,15 @@ void Pacemaker::OnLocalTimeout() {
     if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
         dht::DhtKeyManager dht_key(leader->net_id, leader->id);
         msg.set_des_dht_key(dht_key.StrKey());
-        ZJC_DEBUG("Send TimeoutMsg pool: %d, to ip: %s, port: %d, local_idx: %d, id: %s, local id: %s",
+        ZJC_DEBUG("Send TimeoutMsg pool: %d, to ip: %s, port: %d, "
+            "local_idx: %d, id: %s, local id: %s, hash64: %lu",
             pool_idx_,
             common::Uint32ToIp(leader->public_ip).c_str(), 
             leader->public_port, 
             timeout_msg.member_id(),
             common::Encode::HexEncode(leader->id).c_str(),
-            common::Encode::HexEncode(crypto_->security()->GetAddress()).c_str());
+            common::Encode::HexEncode(crypto_->security()->GetAddress()).c_str(),
+            msg.hash64());
         if (leader->public_ip == 0 || leader->public_port == 0) {
             network::Route::Instance()->Send(msg_ptr);
         } else {
@@ -152,11 +154,6 @@ void Pacemaker::OnLocalTimeout() {
                 leader->public_port, 
                 msg);
         }
-
-        ZJC_DEBUG("send to leader timeout message to leader net: %u, %s, hash64: %lu", 
-            leader->net_id, 
-            common::Encode::HexEncode(leader->id).c_str(), 
-            msg.hash64());
     } else {
         OnRemoteTimeout(msg_ptr);
     }    
