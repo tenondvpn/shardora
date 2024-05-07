@@ -137,7 +137,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     if (VerifyLeader(v_block) != Status::kSuccess) {
         ZJC_ERROR("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
             pool_idx_, v_block->view, header.hash64());
-        // assert(false);
+        assert(false);
         return;
     }
     
@@ -216,19 +216,20 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         return;
     }
     if (SendVoteMsg(pb_hotstuff_msg) != Status::kSuccess) {
-        ZJC_ERROR("Send Propose message is error.");
+        ZJC_ERROR("Send vote message is error.");
     }
     
     return;
 }
 
-void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
-    ZJC_DEBUG("====2.0 pool: %d, onVote, hash: %s, view: %lu, replica: %lu",
+void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
+    auto& vote_msg = header.hotstuff().vote_msg();
+    ZJC_DEBUG("====2.0 pool: %d, onVote, hash: %s, view: %lu, replica: %lu, hash64: %lu",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
         vote_msg.view(),
-        vote_msg.replica_idx());
-    
+        vote_msg.replica_idx(),
+        header.hash64());
     if (VerifyVoteMsg(vote_msg) != Status::kSuccess) {
         ZJC_ERROR("vote message is error.");
         return;
@@ -585,10 +586,11 @@ Status Hotstuff::SendVoteMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage
                 header_msg);
         }
     } else {
-        HandleVoteMsg(header_msg.hotstuff().vote_msg());
+        HandleVoteMsg(header_msg);
     }
  
-    
+    ZJC_DEBUG("send vote message to leader: %s, hash64: %lu", 
+        common::Encode::HexEncode(leader->id).c_str(), header_msg.hash64());
     return ret;
 }
 
