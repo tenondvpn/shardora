@@ -130,6 +130,12 @@ void HotstuffManager::OnNewElectBlock(uint64_t block_tm_ms, uint32_t sharding_id
     }
 
 void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    // auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    // msg_queue_[thread_idx].push(msg_ptr);
+    // if (msg_queue_[thread_idx].size() > common::GlobalInfo::Instance()->pools_each_thread_max_messages()) {
+    //     return;
+    // }
+    
     auto& header = msg_ptr->header;
     ZJC_DEBUG("====1 msg received, timeout: %d", header.has_hotstuff_timeout_proto());
 

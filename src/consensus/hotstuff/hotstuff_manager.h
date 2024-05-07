@@ -298,6 +298,7 @@ private:
     BlockCacheCallback new_block_cache_callback_ = nullptr;
 
     uint64_t first_timeblock_timestamp_ = 0;
+    common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> msg_queue_[common::kMaxThreadCount];
 
     DISALLOW_COPY_AND_ASSIGN(HotstuffManager);
 };
