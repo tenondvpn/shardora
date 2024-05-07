@@ -120,6 +120,9 @@ void ThreadHandler::HandleMessage() {
             msg_ptr->header.set_type(common::kPacemakerTimerMessage);
             msg_ptr->times[msg_ptr->times_idx++] = btime;
             Processor::Instance()->HandleMessage(msg_ptr);
+            auto etime = common::TimeUtils::TimestampUs();
+            ZJC_INFO("kPacemakerTimerMessage over handle message: %d, thread: %d use: %lu us", 
+                msg_ptr->header.type(), thread_idx, (etime - btime));            
 #endif            
         } else {
             auto btime = common::TimeUtils::TimestampUs();
