@@ -29,6 +29,10 @@ Pacemaker::Pacemaker(
 
 Pacemaker::~Pacemaker() {}
 
+void Pacemaker::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
+    
+}
+
 Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
     if (!sync_info) {
         return Status::kInvalidArgument;

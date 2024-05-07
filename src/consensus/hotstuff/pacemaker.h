@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/tick.h>
+#include <common/time_utils.h>
 #include <functional>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/leader_rotation.h>
@@ -47,6 +48,7 @@ public:
         sync_pool_fn_ = fn;
     }
 
+    void HandleTimerMessage(const transport::MessagePtr& msg_ptr);
     // 本地超时
     void OnLocalTimeout();
     // 收到超时消息
@@ -75,6 +77,9 @@ private:
     inline void StartTimeoutTimer() {
         one_shot_tick_ = std::make_shared<common::Tick>();
         one_shot_tick_->CutOff(duration_->Duration(), std::bind(&Pacemaker::OnLocalTimeout, this));
+
+        // last_time_us_ = common::TimeUtils::TimestampUs();
+        // duration_us_ = duration_->Duration();
     }
 
     inline void StopTimeoutTimer() {
@@ -96,6 +101,8 @@ private:
     StopVotingFn stop_voting_fn_ = nullptr;
     SyncPoolFn sync_pool_fn_ = nullptr; // 同步 HighQC HighTC
     NewViewFn new_view_fn_ = nullptr;
+    uint64_t last_time_us_ = 0;
+    uint64_t duration_us_ = 0;
 };
 
 } // namespace consensus

@@ -79,7 +79,8 @@ void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr)
     auto now_us = common::TimeUtils::TimestampUs();
     if (now_us - last_timers_us_[thread_index] >= kSyncTimerCycleUs) {
         SyncAllPools();
-        ConsumeMessages();        
+        ConsumeMessages();
+        last_timers_us_[thread_index] = common::TimeUtils::TimestampUs();
     }
 }
 

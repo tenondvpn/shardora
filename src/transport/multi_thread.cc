@@ -114,6 +114,12 @@ void ThreadHandler::HandleMessage() {
             msg_ptr->header.set_type(common::kHotstuffSyncTimerMessage);
             msg_ptr->times[msg_ptr->times_idx++] = btime;
             Processor::Instance()->HandleMessage(msg_ptr);
+            // PacemakerTimerMessage
+            // btime = common::TimeUtils::TimestampUs();
+            // msg_ptr = std::make_shared<transport::TransportMessage>();
+            // msg_ptr->header.set_type(common::kPacemakerTimerMessage);
+            // msg_ptr->times[msg_ptr->times_idx++] = btime;
+            // Processor::Instance()->HandleMessage(msg_ptr);
 #endif            
         } else {
             auto btime = common::TimeUtils::TimestampUs();
