@@ -142,9 +142,15 @@ void Pacemaker::OnLocalTimeout() {
     }
 
     if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
-        ZJC_DEBUG("Send TimeoutMsg pool: %d, to ip: %s, port: %d, local_idx: %d",
+        ZJC_DEBUG("Send TimeoutMsg pool: %d, to ip: %s, port: %d, local_idx: %d, id: %s, local id: %s",
             pool_idx_,
-            common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port, timeout_msg.member_id());
+            common::Uint32ToIp(leader->public_ip).c_str(), 
+            leader->public_port, 
+            timeout_msg.member_id(),
+            common::Encode::HexEncode(leader->id).c_str(),
+            common::Encode::HexEncode(crypto_->security()->GetAddress()).c_str());
+        assert(leader->public_ip != 0);
+        assert(leader->public_port != 0);
         transport::TcpTransport::Instance()->Send(common::Uint32ToIp(leader->public_ip), leader->public_port, msg);
     } else {
         OnRemoteTimeout(msg_ptr);

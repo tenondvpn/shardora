@@ -70,6 +70,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
 
     auto collection_item = bls_collection_->GetItem(msg_hash);
     // Reconstruct sign
+    // TODO(HT): 先判断是否已经处理过的index
     collection_item->ok_bitmap.Set(index);
     collection_item->partial_signs[index] = partial_sign;
     auto elect_item = GetElectItem(elect_height);
