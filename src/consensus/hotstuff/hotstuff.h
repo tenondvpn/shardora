@@ -52,7 +52,9 @@ public:
         leader_rotation_(lr),
         elect_info_(elect_info),
         db_(db) {
-        prefix_db_ = std::make_shared<protos::PrefixDb>(db_);            
+        prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+        pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1));
+        pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));
     }
     ~Hotstuff() {};
 

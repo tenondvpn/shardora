@@ -11,8 +11,6 @@ namespace hotstuff {
 
 void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
     // set pacemaker timeout callback function
-    pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1));
-    pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));
     last_vote_view_ = GenesisView;
     
     auto latest_view_block = std::make_shared<ViewBlock>();
