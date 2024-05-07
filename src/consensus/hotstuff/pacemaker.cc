@@ -149,9 +149,12 @@ void Pacemaker::OnLocalTimeout() {
             timeout_msg.member_id(),
             common::Encode::HexEncode(leader->id).c_str(),
             common::Encode::HexEncode(crypto_->security()->GetAddress()).c_str());
-        assert(leader->public_ip != 0);
-        assert(leader->public_port != 0);
-        transport::TcpTransport::Instance()->Send(common::Uint32ToIp(leader->public_ip), leader->public_port, msg);
+        if (leader->public_ip != 0 && leader->public_port != 0) {
+            transport::TcpTransport::Instance()->Send(
+                common::Uint32ToIp(leader->public_ip), 
+                leader->public_port, 
+                msg);
+        }
     } else {
         OnRemoteTimeout(msg_ptr);
     }    
