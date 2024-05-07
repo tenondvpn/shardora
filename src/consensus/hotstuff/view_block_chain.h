@@ -125,8 +125,8 @@ public:
         if (qc == nullptr) {
             return Status::kInvalidArgument;
         }
-        view_block::protobuf::ViewBlockItem* pb_v_block;
-        ViewBlock2Proto(v_block, pb_v_block);
+        auto pb_v_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
+        ViewBlock2Proto(v_block, pb_v_block.get());
         // 不存储 block 部分，block 已经单独存过了
         pb_v_block->clear_block_str();
         // 保存 v_block 对应的 qc 到 db
