@@ -30,6 +30,7 @@ Pacemaker::Pacemaker(
 Pacemaker::~Pacemaker() {}
 
 void Pacemaker::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
+    ZJC_DEBUG("pool: %d timer", pool_idx_);
     if (IsTimeout()) {
         StopTimeoutTimer();
         OnLocalTimeout();
