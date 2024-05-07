@@ -204,11 +204,11 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
 
     assert(new_proposal_fn_ != nullptr);
     // New Propose
-    if (new_proposal_fn_) {
-        auto status = new_proposal_fn_(new_sync_info()->WithQC(HighQC())->WithTC(HighTC()));
-        if (status == Status::kSuccess) {
-            AdvanceView(new_sync_info()->WithTC(tc));
-        }
+    auto status = new_proposal_fn_(new_sync_info()->WithQC(HighQC())->WithTC(HighTC()));
+    if (status == Status::kSuccess) {
+        AdvanceView(new_sync_info()->WithTC(tc));
+    } else {
+        crypto_->RecoverBlsCollection();
     }
 }
 
