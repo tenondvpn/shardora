@@ -136,7 +136,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     if (VerifyLeader(v_block) != Status::kSuccess) {
         ZJC_ERROR("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
             pool_idx_, v_block->view, header.hash64());
-        // assert(false);
+        assert(false);
         return;
     }
     
@@ -216,7 +216,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         return;
     }
     if (SendVoteMsg(pb_hotstuff_msg) != Status::kSuccess) {
-        ZJC_ERROR("Send Propose message is error.");
+        ZJC_ERROR("Send vote message is error.");
     }
     
     return;
