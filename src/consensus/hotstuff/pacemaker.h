@@ -14,7 +14,7 @@ namespace shardora {
 
 namespace hotstuff {
 
-using NewProposalFn = std::function<void(const std::shared_ptr<SyncInfo> &sync_info)>;
+using NewProposalFn = std::function<Status(const std::shared_ptr<SyncInfo> &sync_info)>;
 using StopVotingFn = std::function<void(const View &view)>;
 using SyncPoolFn = std::function<void(const uint32_t&)>;
 

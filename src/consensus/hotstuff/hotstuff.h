@@ -60,7 +60,7 @@ public:
 
     void Init(std::shared_ptr<db::Db>& db_);
     Status Start();
-    void Propose(const std::shared_ptr<SyncInfo>& sync_info);
+    Status Propose(const std::shared_ptr<SyncInfo>& sync_info);
     void HandleProposeMsg(const transport::protobuf::Header& header);
     void HandleVoteMsg(const transport::protobuf::Header& header);
     Status Commit(const std::shared_ptr<ViewBlock>& v_block);

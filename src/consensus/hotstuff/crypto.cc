@@ -40,12 +40,18 @@ Status Crypto::ReconstructAndVerifyThresSign(
         std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign) try {
     // old vote
     if (bls_collection_ && bls_collection_->view > view) {
+        ZJC_DEBUG("bls_collection_ && bls_collection_->view > view: %lu, %lu, "
+            "index: %u, pool_idx_: %d", 
+            bls_collection_->view, view, index, pool_idx_);
         return Status::kInvalidArgument;
     }
         
     if (!bls_collection_ || bls_collection_->view < view) {
         bls_collection_ = std::make_shared<BlsCollection>();
         bls_collection_->view = view; 
+        ZJC_DEBUG("set bls_collection_ && bls_collection_->view > view: %lu, %lu, "
+            "index: %u, pool_idx_: %d", 
+            bls_collection_->view, view, index, pool_idx_);
     }
 
     // 已经处理过
@@ -65,6 +71,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
         partial_sign->Y = libff::alt_bn128_Fq(partial_sign_y.c_str());
         partial_sign->Z = libff::alt_bn128_Fq::one();        
     } catch (std::exception& e) {
+        assert(false);
         return Status::kError;
     }
 

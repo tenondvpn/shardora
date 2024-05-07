@@ -137,13 +137,15 @@ void Pacemaker::OnLocalTimeout() {
     if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
         dht::DhtKeyManager dht_key(leader->net_id, leader->id);
         msg.set_des_dht_key(dht_key.StrKey());
-        ZJC_DEBUG("Send TimeoutMsg pool: %d, to ip: %s, port: %d, local_idx: %d, id: %s, local id: %s",
+        ZJC_DEBUG("Send TimeoutMsg pool: %d, to ip: %s, port: %d, "
+            "local_idx: %d, id: %s, local id: %s, hash64: %lu",
             pool_idx_,
             common::Uint32ToIp(leader->public_ip).c_str(), 
             leader->public_port, 
             timeout_msg.member_id(),
             common::Encode::HexEncode(leader->id).c_str(),
-            common::Encode::HexEncode(crypto_->security()->GetAddress()).c_str());
+            common::Encode::HexEncode(crypto_->security()->GetAddress()).c_str(),
+            msg.hash64());
         if (leader->public_ip == 0 || leader->public_port == 0) {
             network::Route::Instance()->Send(msg_ptr);
         } else {
@@ -198,12 +200,15 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("====4.1 pool: %d, create tc, view: %d, member: %d, view: %d",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
 
-    AdvanceView(new_sync_info()->WithTC(tc));
+    // AdvanceView(new_sync_info()->WithTC(tc));
 
     assert(new_proposal_fn_ != nullptr);
     // New Propose
-    if (new_proposal_fn_) {
-        new_proposal_fn_(new_sync_info()->WithQC(HighQC())->WithTC(HighTC()));
+    auto status = new_proposal_fn_(new_sync_info()->WithQC(HighQC())->WithTC(HighTC()));
+    if (status == Status::kSuccess) {
+        AdvanceView(new_sync_info()->WithTC(tc));
+    } else {
+        crypto_->RecoverBlsCollection();
     }
 }
 
