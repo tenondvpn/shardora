@@ -11,7 +11,8 @@ namespace shardora {
 
 namespace hotstuff {
 
-ViewBlockChain::ViewBlockChain() {
+ViewBlockChain::ViewBlockChain(std::shared_ptr<db::Db>& db) : db_(db) {
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
 }
 
 ViewBlockChain::~ViewBlockChain(){}
@@ -52,7 +53,7 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     SetViewBlockToMap(view_block->hash, view_block);
     view_blocks_at_height_[view_block->view].push_back(view_block);
     AddChildrenToMap(view_block->parent_hash, view_block);
-    SetQcToMap(view_block->qc->view_block_hash, view_block->qc);    
+    SetQcOf(view_block->qc->view_block_hash, view_block->qc);
 
     return Status::kSuccess;
 }
@@ -281,7 +282,12 @@ void ViewBlockChain::Print() const {
     PrintBlock(start_block_);
 }
 
-std::shared_ptr<ViewBlock> GetLatestCommittedViewBlockFromDb(const std::shared_ptr<db::Db>& db, uint32_t pool_index) {
+// 获取 db 中最新块的信息和它的 QC
+Status GetLatestViewBlockFromDb(
+        const std::shared_ptr<db::Db>& db,
+        const uint32_t& pool_index,
+        std::shared_ptr<ViewBlock>& view_block,
+        std::shared_ptr<QC>& self_qc) {
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
     uint32_t sharding_id = common::GlobalInfo::Instance()->network_id();
 
@@ -292,7 +298,7 @@ std::shared_ptr<ViewBlock> GetLatestCommittedViewBlockFromDb(const std::shared_p
     bool r = prefix_db->GetBlockWithHeight(sharding_id, pool_index, pool_info.height(), &block);
     if (!r) {
         ZJC_ERROR("no genesis block found");
-        return nullptr;
+        return Status::kError;
     }
 
     // 获取 block 对应的 view_block 所打包的 qc 信息，如果没有，说明是创世块
@@ -310,7 +316,13 @@ std::shared_ptr<ViewBlock> GetLatestCommittedViewBlockFromDb(const std::shared_p
     }
 
     auto block_ptr = std::make_shared<block::protobuf::Block>(block);
-    return std::make_shared<ViewBlock>(parent_hash, qc, block_ptr, view, leader_idx);
+    view_block = std::make_shared<ViewBlock>(parent_hash, qc, block_ptr, view, leader_idx);
+    
+    r = self_qc->Unserialize(pb_view_block.self_qc_str());
+    if (!r) {
+        self_qc = GetGenesisQC(view_block->hash);
+    }  
+    return Status::kSuccess;
 }
 
 std::shared_ptr<QC> GetQCWrappedByGenesis() {

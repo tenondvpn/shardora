@@ -25,8 +25,9 @@ namespace shardora {
 namespace hotstuff {
 
 HotstuffSyncer::HotstuffSyncer(
-        const std::shared_ptr<consensus::HotstuffManager>& h_mgr) :
-    hotstuff_mgr_(h_mgr) {
+        const std::shared_ptr<consensus::HotstuffManager>& h_mgr,
+        std::shared_ptr<db::Db>& db) :
+    hotstuff_mgr_(h_mgr), db_(db) {
     // start consumeloop thread
     SetOnRecvViewBlockFn(
             std::bind(&HotstuffSyncer::onRecViewBlock,
@@ -181,7 +182,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
         auto view_block_qc = chain->GetQcOf(view_block);
         if (!view_block_qc) {
             if (pacemaker(pool_idx)->HighQC()->view_block_hash == view_block->hash) {
-                chain->SetQcOf(view_block->hash, pacemaker(pool_idx)->HighQC());
+                chain->SetQcOf(view_block, pacemaker(pool_idx)->HighQC());
                 view_block_qc = pacemaker(pool_idx)->HighQC();
             } else {
                 continue;
@@ -349,7 +350,7 @@ Status HotstuffSyncer::processResponseChain(
     }
 
     // 构造一条临时链，并入 original chain
-    auto tmp_chain = std::make_shared<ViewBlockChain>();
+    auto tmp_chain = std::make_shared<ViewBlockChain>(db_);
     while (!min_heap.empty()) {
         auto view_block = min_heap.top();
         min_heap.pop();

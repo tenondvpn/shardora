@@ -15,19 +15,17 @@ void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
     pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));
     last_vote_view_ = GenesisView;
     
-    auto latest_view_block = GetLatestCommittedViewBlockFromDb(db_, pool_idx_);
-    if (latest_view_block) {
+    auto latest_view_block = std::make_shared<ViewBlock>();
+    auto latest_view_block_self_qc = std::make_shared<QC>();
+    // 从 db 中获取最后一个有 QC 的 ViewBlock
+    Status s = GetLatestViewBlockFromDb(db_, pool_idx_, latest_view_block, latest_view_block_self_qc);
+    if (s == Status::kSuccess) {
         // 初始状态，使用 db 中最后一个 view_block 初始化视图链
         view_block_chain_->Store(latest_view_block);
         view_block_chain_->SetLatestLockedBlock(latest_view_block);
         view_block_chain_->SetLatestCommittedBlock(latest_view_block);
-        // 使用 genesis qc 进行视图切换
-        auto high_qc = GetGenesisQC(latest_view_block->hash);
-        if (latest_view_block->qc->view > high_qc->view) {
-            high_qc = latest_view_block->qc;
-        }
         // 开启第一个视图
-        pacemaker_->AdvanceView(new_sync_info()->WithQC(high_qc));
+        pacemaker_->AdvanceView(new_sync_info()->WithQC(latest_view_block_self_qc));
     } else {
         ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
     }            
@@ -411,18 +409,6 @@ Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
     }
     
     view_block_chain()->SetLatestCommittedBlock(v_block);
-
-    // 持久化 ViewBlock 信息
-    view_block::protobuf::ViewBlockItem pb_v_block;
-    ViewBlock2Proto(v_block, &pb_v_block);
-    // 不存储 block 部分，block 已经单独存过了
-    pb_v_block.clear_block_str();
-    auto db_batch = std::make_shared<db::DbWriteBatch>();
-    prefix_db_->SaveViewBlockInfo(v_block->block->network_id(),
-        pool_idx_,
-        v_block->block->height(),
-        pb_v_block,
-        *db_batch);
     return Status::kSuccess;
 }
 
