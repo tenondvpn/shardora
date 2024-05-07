@@ -40,8 +40,9 @@ Status Crypto::ReconstructAndVerifyThresSign(
         std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign) try {
     // old vote
     if (bls_collection_ && bls_collection_->view > view) {
-        ZJC_DEBUG("bls_collection_ && bls_collection_->view > view: %lu, %lu, index: %u", 
-            bls_collection_->view, view, index);
+        ZJC_DEBUG("bls_collection_ && bls_collection_->view > view: %lu, %lu, "
+            "index: %u, pool_idx_: %d", 
+            bls_collection_->view, view, index, pool_idx_);
         return Status::kInvalidArgument;
     }
         
