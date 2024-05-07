@@ -49,6 +49,9 @@ Status Crypto::ReconstructAndVerifyThresSign(
     if (!bls_collection_ || bls_collection_->view < view) {
         bls_collection_ = std::make_shared<BlsCollection>();
         bls_collection_->view = view; 
+        ZJC_DEBUG("set bls_collection_ && bls_collection_->view > view: %lu, %lu, "
+            "index: %u, pool_idx_: %d", 
+            bls_collection_->view, view, index, pool_idx_);
     }
 
     // 已经处理过

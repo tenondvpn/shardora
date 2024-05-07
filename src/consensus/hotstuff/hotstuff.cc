@@ -51,12 +51,12 @@ Status Hotstuff::Start() {
     return Status::kSuccess;
 }
 
-void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
+Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     auto pb_pro_msg = std::make_shared<hotstuff::protobuf::ProposeMsg>();
     Status s = ConstructProposeMsg(sync_info, pb_pro_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d construct propose msg failed, %d", pool_idx_, static_cast<int>(s));
-        return;
+        return s;
     }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -69,7 +69,7 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
             pool_idx_, hotstuff_msg->pro_msg().view_item().view());
-        return;
+        return s;
     }
     header.mutable_hotstuff()->CopyFrom(*hotstuff_msg);
     if (!header.has_broadcast()) {
@@ -80,7 +80,7 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     transport::TcpTransport::Instance()->SetMessageHash(header);
     s = crypto()->SignMessage(msg_ptr);
     if (s != Status::kSuccess) {
-        return;
+        return s;
     }
 
     network::Route::Instance()->Send(msg_ptr);
@@ -92,7 +92,7 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
         pacemaker()->HighQC()->view,
         header.hash64());
     HandleProposeMsg(header);
-    return;
+    return Status::kSuccess;
 }
 
 void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
