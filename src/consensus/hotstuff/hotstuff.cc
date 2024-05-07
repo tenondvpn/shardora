@@ -354,13 +354,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     }    
     // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
-
-    auto e = common::TimeUtils::TimestampUs();
-    ZJC_DEBUG("pool: %d handle vote 1 dur: %llu us", pool_idx_, e-b);
     Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
-
-    e = common::TimeUtils::TimestampUs();
-    ZJC_DEBUG("pool: %d handle vote 2 dur: %llu us", pool_idx_, e-b);
     return;
 }
 
