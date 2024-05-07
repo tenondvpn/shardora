@@ -179,7 +179,6 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
     std::cout << "highQC: " << pacemaker()->HighQC()->view
               << ",highTC: " << pacemaker()->HighTC()->view
               << ",chainSize: " << view_block_chain()->Size()
-              << ",commitView: " << view_block_chain()->LatestCommittedBlock()->view
               << ",CurView: " << pacemaker()->CurView() << std::endl;    
     view_block_chain()->Print();
 
