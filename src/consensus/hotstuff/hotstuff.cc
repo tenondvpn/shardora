@@ -105,6 +105,7 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
             return;
         }
         if (crypto()->VerifyTC(tc, pro_msg.elect_height()) != Status::kSuccess) {
+            ZJC_ERROR("VerifyTC error.");
             return;
         }
         pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));
@@ -133,6 +134,7 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
     
     // 2 Veriyfy Leader
     if (VerifyLeader(v_block) != Status::kSuccess) {
+        ZJC_ERROR("verify leader failed, pool: %d has voted: %lu", pool_idx_, v_block->view);
         return;
     }
     
@@ -201,12 +203,14 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
     auto vote_msg = std::make_shared<hotstuff::protobuf::VoteMsg>();
     s = ConstructVoteMsg(vote_msg, pro_msg.elect_height(), v_block);
     if (s != Status::kSuccess) {
+        ZJC_ERROR("ConstructVoteMsg error %d", s);
         return;
     }
     // Construct HotstuffMessage and send
     auto pb_hotstuff_msg = std::make_shared<pb_HotstuffMessage>();
     s = ConstructHotstuffMsg(VOTE, nullptr, vote_msg, pb_hotstuff_msg);
     if (s != Status::kSuccess) {
+        ZJC_ERROR("ConstructHotstuffMsg error %d", s);
         return;
     }
     if (SendVoteMsg(pb_hotstuff_msg) != Status::kSuccess) {
