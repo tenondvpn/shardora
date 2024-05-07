@@ -185,7 +185,6 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     if (VerifyLeader(v_block) != Status::kSuccess) {
         ZJC_ERROR("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
             pool_idx_, v_block->view, header.hash64());
-        assert(false);
         return;
     }
     
