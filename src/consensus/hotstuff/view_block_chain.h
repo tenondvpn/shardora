@@ -219,7 +219,7 @@ private:
     void SetStatusToMap(const HashStr& hash, const ViewBlockStatus& status) {
         auto it = view_blocks_info_.find(hash);
         if (it == view_blocks_info_.end()) {
-            view_blocks_info_[hash] = std::make_shared<ViewBlockInfo>();
+            return;
         }
         view_blocks_info_[hash]->status = status;        
     }
@@ -227,7 +227,7 @@ private:
     void AddChildrenToMap(const HashStr& parent_hash, const std::shared_ptr<ViewBlock>& view_block) {
         auto it = view_blocks_info_.find(parent_hash);
         if (it == view_blocks_info_.end()) {
-            view_blocks_info_[parent_hash] = std::make_shared<ViewBlockInfo>();
+            return;
         }
         view_blocks_info_[parent_hash]->children.push_back(view_block);        
     }
@@ -235,7 +235,7 @@ private:
     void SetQcToMap(const HashStr& hash, const std::shared_ptr<QC>& qc) {
         auto it = view_blocks_info_.find(hash);
         if (it == view_blocks_info_.end()) {
-            view_blocks_info_[hash] = std::make_shared<ViewBlockInfo>();
+            return;
         }
         view_blocks_info_[hash]->qc = qc;        
     }
