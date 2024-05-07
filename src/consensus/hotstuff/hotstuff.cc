@@ -434,8 +434,9 @@ Status Hotstuff::VerifyLeader(const std::shared_ptr<ViewBlock>& view_block) {
         ZJC_ERROR("Get Leader is error.");
         return  Status::kError;
     }
+    
     if (leader_idx != leader->index) {
-        ZJC_ERROR("leader_idx message is error.");
+        ZJC_ERROR("leader_idx message is error, %d, %d", leader_idx, leader->index);
         return Status::kError;
     }
     return Status::kSuccess;
