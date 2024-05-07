@@ -82,6 +82,7 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
         return;
     }
 
+    network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
         pool_idx_,
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
@@ -89,9 +90,7 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
         pacemaker()->HighQC()->view,
         header.hash64());
-
     HandleProposeMsg(header);
-    network::Route::Instance()->Send(msg_ptr);
     return;
 }
 
@@ -137,7 +136,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     if (VerifyLeader(v_block) != Status::kSuccess) {
         ZJC_ERROR("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
             pool_idx_, v_block->view, header.hash64());
-        assert(false);
+        // assert(false);
         return;
     }
     
