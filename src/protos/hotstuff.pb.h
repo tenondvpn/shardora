@@ -40,7 +40,7 @@ namespace protobuf_protos_2fhotstuff_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[4];
+  static const ::google::protobuf::internal::ParseTable schema[5];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -53,6 +53,9 @@ namespace protobuf {
 class HotstuffMessage;
 class HotstuffMessageDefaultTypeInternal;
 extern HotstuffMessageDefaultTypeInternal _HotstuffMessage_default_instance_;
+class NewViewMsg;
+class NewViewMsgDefaultTypeInternal;
+extern NewViewMsgDefaultTypeInternal _NewViewMsg_default_instance_;
 class ProposeMsg;
 class ProposeMsgDefaultTypeInternal;
 extern ProposeMsgDefaultTypeInternal _ProposeMsg_default_instance_;
@@ -68,6 +71,7 @@ extern VoteMsgDefaultTypeInternal _VoteMsg_default_instance_;
 namespace google {
 namespace protobuf {
 template<> ::shardora::hotstuff::protobuf::HotstuffMessage* Arena::CreateMaybeMessage<::shardora::hotstuff::protobuf::HotstuffMessage>(Arena*);
+template<> ::shardora::hotstuff::protobuf::NewViewMsg* Arena::CreateMaybeMessage<::shardora::hotstuff::protobuf::NewViewMsg>(Arena*);
 template<> ::shardora::hotstuff::protobuf::ProposeMsg* Arena::CreateMaybeMessage<::shardora::hotstuff::protobuf::ProposeMsg>(Arena*);
 template<> ::shardora::hotstuff::protobuf::TxPropose* Arena::CreateMaybeMessage<::shardora::hotstuff::protobuf::TxPropose>(Arena*);
 template<> ::shardora::hotstuff::protobuf::VoteMsg* Arena::CreateMaybeMessage<::shardora::hotstuff::protobuf::VoteMsg>(Arena*);
@@ -324,6 +328,18 @@ class HotstuffMessage : public ::google::protobuf::Message /* @@protoc_insertion
   ::shardora::hotstuff::protobuf::VoteMsg* mutable_vote_msg();
   void set_allocated_vote_msg(::shardora::hotstuff::protobuf::VoteMsg* vote_msg);
 
+  // optional .shardora.hotstuff.protobuf.NewViewMsg newview_msg = 4;
+  bool has_newview_msg() const;
+  void clear_newview_msg();
+  static const int kNewviewMsgFieldNumber = 4;
+  private:
+  const ::shardora::hotstuff::protobuf::NewViewMsg& _internal_newview_msg() const;
+  public:
+  const ::shardora::hotstuff::protobuf::NewViewMsg& newview_msg() const;
+  ::shardora::hotstuff::protobuf::NewViewMsg* release_newview_msg();
+  ::shardora::hotstuff::protobuf::NewViewMsg* mutable_newview_msg();
+  void set_allocated_newview_msg(::shardora::hotstuff::protobuf::NewViewMsg* newview_msg);
+
   // optional uint32 type = 1;
   bool has_type() const;
   void clear_type();
@@ -331,17 +347,17 @@ class HotstuffMessage : public ::google::protobuf::Message /* @@protoc_insertion
   ::google::protobuf::uint32 type() const;
   void set_type(::google::protobuf::uint32 value);
 
-  // optional uint32 net_id = 4;
+  // optional uint32 net_id = 5;
   bool has_net_id() const;
   void clear_net_id();
-  static const int kNetIdFieldNumber = 4;
+  static const int kNetIdFieldNumber = 5;
   ::google::protobuf::uint32 net_id() const;
   void set_net_id(::google::protobuf::uint32 value);
 
-  // optional uint32 pool_index = 5 [default = 4294967295];
+  // optional uint32 pool_index = 6 [default = 4294967295];
   bool has_pool_index() const;
   void clear_pool_index();
-  static const int kPoolIndexFieldNumber = 5;
+  static const int kPoolIndexFieldNumber = 6;
   ::google::protobuf::uint32 pool_index() const;
   void set_pool_index(::google::protobuf::uint32 value);
 
@@ -353,6 +369,8 @@ class HotstuffMessage : public ::google::protobuf::Message /* @@protoc_insertion
   void clear_has_pro_msg();
   void set_has_vote_msg();
   void clear_has_vote_msg();
+  void set_has_newview_msg();
+  void clear_has_newview_msg();
   void set_has_net_id();
   void clear_has_net_id();
   void set_has_pool_index();
@@ -363,9 +381,142 @@ class HotstuffMessage : public ::google::protobuf::Message /* @@protoc_insertion
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::shardora::hotstuff::protobuf::ProposeMsg* pro_msg_;
   ::shardora::hotstuff::protobuf::VoteMsg* vote_msg_;
+  ::shardora::hotstuff::protobuf::NewViewMsg* newview_msg_;
   ::google::protobuf::uint32 type_;
   ::google::protobuf::uint32 net_id_;
   ::google::protobuf::uint32 pool_index_;
+  friend struct ::protobuf_protos_2fhotstuff_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
+class NewViewMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.hotstuff.protobuf.NewViewMsg) */ {
+ public:
+  NewViewMsg();
+  virtual ~NewViewMsg();
+
+  NewViewMsg(const NewViewMsg& from);
+
+  inline NewViewMsg& operator=(const NewViewMsg& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  NewViewMsg(NewViewMsg&& from) noexcept
+    : NewViewMsg() {
+    *this = ::std::move(from);
+  }
+
+  inline NewViewMsg& operator=(NewViewMsg&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const NewViewMsg& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const NewViewMsg* internal_default_instance() {
+    return reinterpret_cast<const NewViewMsg*>(
+               &_NewViewMsg_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    2;
+
+  void Swap(NewViewMsg* other);
+  friend void swap(NewViewMsg& a, NewViewMsg& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline NewViewMsg* New() const final {
+    return CreateMaybeMessage<NewViewMsg>(NULL);
+  }
+
+  NewViewMsg* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<NewViewMsg>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const NewViewMsg& from);
+  void MergeFrom(const NewViewMsg& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(NewViewMsg* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional bytes tc_str = 1;
+  bool has_tc_str() const;
+  void clear_tc_str();
+  static const int kTcStrFieldNumber = 1;
+  const ::std::string& tc_str() const;
+  void set_tc_str(const ::std::string& value);
+  #if LANG_CXX11
+  void set_tc_str(::std::string&& value);
+  #endif
+  void set_tc_str(const char* value);
+  void set_tc_str(const void* value, size_t size);
+  ::std::string* mutable_tc_str();
+  ::std::string* release_tc_str();
+  void set_allocated_tc_str(::std::string* tc_str);
+
+  // optional uint64 elect_height = 2;
+  bool has_elect_height() const;
+  void clear_elect_height();
+  static const int kElectHeightFieldNumber = 2;
+  ::google::protobuf::uint64 elect_height() const;
+  void set_elect_height(::google::protobuf::uint64 value);
+
+  // @@protoc_insertion_point(class_scope:shardora.hotstuff.protobuf.NewViewMsg)
+ private:
+  void set_has_tc_str();
+  void clear_has_tc_str();
+  void set_has_elect_height();
+  void clear_has_elect_height();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::internal::ArenaStringPtr tc_str_;
+  ::google::protobuf::uint64 elect_height_;
   friend struct ::protobuf_protos_2fhotstuff_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -412,7 +563,7 @@ class ProposeMsg : public ::google::protobuf::Message /* @@protoc_insertion_poin
                &_ProposeMsg_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    2;
+    3;
 
   void Swap(ProposeMsg* other);
   friend void swap(ProposeMsg& a, ProposeMsg& b) {
@@ -503,12 +654,12 @@ class ProposeMsg : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::shardora::hotstuff::protobuf::TxPropose* mutable_tx_propose();
   void set_allocated_tx_propose(::shardora::hotstuff::protobuf::TxPropose* tx_propose);
 
-  // optional uint32 elect_height = 1;
+  // optional uint64 elect_height = 1;
   bool has_elect_height() const;
   void clear_elect_height();
   static const int kElectHeightFieldNumber = 1;
-  ::google::protobuf::uint32 elect_height() const;
-  void set_elect_height(::google::protobuf::uint32 value);
+  ::google::protobuf::uint64 elect_height() const;
+  void set_elect_height(::google::protobuf::uint64 value);
 
   // @@protoc_insertion_point(class_scope:shardora.hotstuff.protobuf.ProposeMsg)
  private:
@@ -527,7 +678,7 @@ class ProposeMsg : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::google::protobuf::internal::ArenaStringPtr tc_str_;
   ::shardora::view_block::protobuf::ViewBlockItem* view_item_;
   ::shardora::hotstuff::protobuf::TxPropose* tx_propose_;
-  ::google::protobuf::uint32 elect_height_;
+  ::google::protobuf::uint64 elect_height_;
   friend struct ::protobuf_protos_2fhotstuff_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -574,7 +725,7 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
                &_VoteMsg_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    3;
+    4;
 
   void Swap(VoteMsg* other);
   friend void swap(VoteMsg& a, VoteMsg& b) {
@@ -683,26 +834,26 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::std::string* release_sign_y();
   void set_allocated_sign_y(::std::string* sign_y);
 
-  // optional uint32 replica_idx = 1;
-  bool has_replica_idx() const;
-  void clear_replica_idx();
-  static const int kReplicaIdxFieldNumber = 1;
-  ::google::protobuf::uint32 replica_idx() const;
-  void set_replica_idx(::google::protobuf::uint32 value);
-
-  // optional uint32 elect_height = 4;
-  bool has_elect_height() const;
-  void clear_elect_height();
-  static const int kElectHeightFieldNumber = 4;
-  ::google::protobuf::uint32 elect_height() const;
-  void set_elect_height(::google::protobuf::uint32 value);
-
   // optional uint64 view = 3;
   bool has_view() const;
   void clear_view();
   static const int kViewFieldNumber = 3;
   ::google::protobuf::uint64 view() const;
   void set_view(::google::protobuf::uint64 value);
+
+  // optional uint64 elect_height = 4;
+  bool has_elect_height() const;
+  void clear_elect_height();
+  static const int kElectHeightFieldNumber = 4;
+  ::google::protobuf::uint64 elect_height() const;
+  void set_elect_height(::google::protobuf::uint64 value);
+
+  // optional uint32 replica_idx = 1;
+  bool has_replica_idx() const;
+  void clear_replica_idx();
+  static const int kReplicaIdxFieldNumber = 1;
+  ::google::protobuf::uint32 replica_idx() const;
+  void set_replica_idx(::google::protobuf::uint32 value);
 
   // @@protoc_insertion_point(class_scope:shardora.hotstuff.protobuf.VoteMsg)
  private:
@@ -726,9 +877,9 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::internal::ArenaStringPtr view_block_hash_;
   ::google::protobuf::internal::ArenaStringPtr sign_x_;
   ::google::protobuf::internal::ArenaStringPtr sign_y_;
-  ::google::protobuf::uint32 replica_idx_;
-  ::google::protobuf::uint32 elect_height_;
   ::google::protobuf::uint64 view_;
+  ::google::protobuf::uint64 elect_height_;
+  ::google::protobuf::uint32 replica_idx_;
   friend struct ::protobuf_protos_2fhotstuff_2eproto::TableStruct;
 };
 // ===================================================================
@@ -800,13 +951,13 @@ TxPropose::txs() const {
 
 // optional uint32 type = 1;
 inline bool HotstuffMessage::has_type() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void HotstuffMessage::set_has_type() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void HotstuffMessage::clear_has_type() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void HotstuffMessage::clear_type() {
   type_ = 0u;
@@ -938,15 +1089,73 @@ inline void HotstuffMessage::set_allocated_vote_msg(::shardora::hotstuff::protob
   // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.HotstuffMessage.vote_msg)
 }
 
-// optional uint32 net_id = 4;
+// optional .shardora.hotstuff.protobuf.NewViewMsg newview_msg = 4;
+inline bool HotstuffMessage::has_newview_msg() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void HotstuffMessage::set_has_newview_msg() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void HotstuffMessage::clear_has_newview_msg() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void HotstuffMessage::clear_newview_msg() {
+  if (newview_msg_ != NULL) newview_msg_->Clear();
+  clear_has_newview_msg();
+}
+inline const ::shardora::hotstuff::protobuf::NewViewMsg& HotstuffMessage::_internal_newview_msg() const {
+  return *newview_msg_;
+}
+inline const ::shardora::hotstuff::protobuf::NewViewMsg& HotstuffMessage::newview_msg() const {
+  const ::shardora::hotstuff::protobuf::NewViewMsg* p = newview_msg_;
+  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.HotstuffMessage.newview_msg)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::hotstuff::protobuf::NewViewMsg*>(
+      &::shardora::hotstuff::protobuf::_NewViewMsg_default_instance_);
+}
+inline ::shardora::hotstuff::protobuf::NewViewMsg* HotstuffMessage::release_newview_msg() {
+  // @@protoc_insertion_point(field_release:shardora.hotstuff.protobuf.HotstuffMessage.newview_msg)
+  clear_has_newview_msg();
+  ::shardora::hotstuff::protobuf::NewViewMsg* temp = newview_msg_;
+  newview_msg_ = NULL;
+  return temp;
+}
+inline ::shardora::hotstuff::protobuf::NewViewMsg* HotstuffMessage::mutable_newview_msg() {
+  set_has_newview_msg();
+  if (newview_msg_ == NULL) {
+    auto* p = CreateMaybeMessage<::shardora::hotstuff::protobuf::NewViewMsg>(GetArenaNoVirtual());
+    newview_msg_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:shardora.hotstuff.protobuf.HotstuffMessage.newview_msg)
+  return newview_msg_;
+}
+inline void HotstuffMessage::set_allocated_newview_msg(::shardora::hotstuff::protobuf::NewViewMsg* newview_msg) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete newview_msg_;
+  }
+  if (newview_msg) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      newview_msg = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, newview_msg, submessage_arena);
+    }
+    set_has_newview_msg();
+  } else {
+    clear_has_newview_msg();
+  }
+  newview_msg_ = newview_msg;
+  // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.HotstuffMessage.newview_msg)
+}
+
+// optional uint32 net_id = 5;
 inline bool HotstuffMessage::has_net_id() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void HotstuffMessage::set_has_net_id() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void HotstuffMessage::clear_has_net_id() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void HotstuffMessage::clear_net_id() {
   net_id_ = 0u;
@@ -962,15 +1171,15 @@ inline void HotstuffMessage::set_net_id(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.HotstuffMessage.net_id)
 }
 
-// optional uint32 pool_index = 5 [default = 4294967295];
+// optional uint32 pool_index = 6 [default = 4294967295];
 inline bool HotstuffMessage::has_pool_index() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void HotstuffMessage::set_has_pool_index() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void HotstuffMessage::clear_has_pool_index() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void HotstuffMessage::clear_pool_index() {
   pool_index_ = 4294967295u;
@@ -988,9 +1197,103 @@ inline void HotstuffMessage::set_pool_index(::google::protobuf::uint32 value) {
 
 // -------------------------------------------------------------------
 
+// NewViewMsg
+
+// optional bytes tc_str = 1;
+inline bool NewViewMsg::has_tc_str() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void NewViewMsg::set_has_tc_str() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void NewViewMsg::clear_has_tc_str() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void NewViewMsg::clear_tc_str() {
+  tc_str_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_tc_str();
+}
+inline const ::std::string& NewViewMsg::tc_str() const {
+  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.NewViewMsg.tc_str)
+  return tc_str_.GetNoArena();
+}
+inline void NewViewMsg::set_tc_str(const ::std::string& value) {
+  set_has_tc_str();
+  tc_str_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.NewViewMsg.tc_str)
+}
+#if LANG_CXX11
+inline void NewViewMsg::set_tc_str(::std::string&& value) {
+  set_has_tc_str();
+  tc_str_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.hotstuff.protobuf.NewViewMsg.tc_str)
+}
+#endif
+inline void NewViewMsg::set_tc_str(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_tc_str();
+  tc_str_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.hotstuff.protobuf.NewViewMsg.tc_str)
+}
+inline void NewViewMsg::set_tc_str(const void* value, size_t size) {
+  set_has_tc_str();
+  tc_str_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.hotstuff.protobuf.NewViewMsg.tc_str)
+}
+inline ::std::string* NewViewMsg::mutable_tc_str() {
+  set_has_tc_str();
+  // @@protoc_insertion_point(field_mutable:shardora.hotstuff.protobuf.NewViewMsg.tc_str)
+  return tc_str_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* NewViewMsg::release_tc_str() {
+  // @@protoc_insertion_point(field_release:shardora.hotstuff.protobuf.NewViewMsg.tc_str)
+  if (!has_tc_str()) {
+    return NULL;
+  }
+  clear_has_tc_str();
+  return tc_str_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void NewViewMsg::set_allocated_tc_str(::std::string* tc_str) {
+  if (tc_str != NULL) {
+    set_has_tc_str();
+  } else {
+    clear_has_tc_str();
+  }
+  tc_str_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), tc_str);
+  // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.NewViewMsg.tc_str)
+}
+
+// optional uint64 elect_height = 2;
+inline bool NewViewMsg::has_elect_height() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void NewViewMsg::set_has_elect_height() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void NewViewMsg::clear_has_elect_height() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void NewViewMsg::clear_elect_height() {
+  elect_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_elect_height();
+}
+inline ::google::protobuf::uint64 NewViewMsg::elect_height() const {
+  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.NewViewMsg.elect_height)
+  return elect_height_;
+}
+inline void NewViewMsg::set_elect_height(::google::protobuf::uint64 value) {
+  set_has_elect_height();
+  elect_height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.NewViewMsg.elect_height)
+}
+
+// -------------------------------------------------------------------
+
 // ProposeMsg
 
-// optional uint32 elect_height = 1;
+// optional uint64 elect_height = 1;
 inline bool ProposeMsg::has_elect_height() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -1001,14 +1304,14 @@ inline void ProposeMsg::clear_has_elect_height() {
   _has_bits_[0] &= ~0x00000008u;
 }
 inline void ProposeMsg::clear_elect_height() {
-  elect_height_ = 0u;
+  elect_height_ = GOOGLE_ULONGLONG(0);
   clear_has_elect_height();
 }
-inline ::google::protobuf::uint32 ProposeMsg::elect_height() const {
+inline ::google::protobuf::uint64 ProposeMsg::elect_height() const {
   // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.ProposeMsg.elect_height)
   return elect_height_;
 }
-inline void ProposeMsg::set_elect_height(::google::protobuf::uint32 value) {
+inline void ProposeMsg::set_elect_height(::google::protobuf::uint64 value) {
   set_has_elect_height();
   elect_height_ = value;
   // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.ProposeMsg.elect_height)
@@ -1198,13 +1501,13 @@ inline void ProposeMsg::set_allocated_tx_propose(::shardora::hotstuff::protobuf:
 
 // optional uint32 replica_idx = 1;
 inline bool VoteMsg::has_replica_idx() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void VoteMsg::set_has_replica_idx() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void VoteMsg::clear_has_replica_idx() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void VoteMsg::clear_replica_idx() {
   replica_idx_ = 0u;
@@ -1288,13 +1591,13 @@ inline void VoteMsg::set_allocated_view_block_hash(::std::string* view_block_has
 
 // optional uint64 view = 3;
 inline bool VoteMsg::has_view() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void VoteMsg::set_has_view() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void VoteMsg::clear_has_view() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void VoteMsg::clear_view() {
   view_ = GOOGLE_ULONGLONG(0);
@@ -1310,7 +1613,7 @@ inline void VoteMsg::set_view(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.VoteMsg.view)
 }
 
-// optional uint32 elect_height = 4;
+// optional uint64 elect_height = 4;
 inline bool VoteMsg::has_elect_height() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -1321,14 +1624,14 @@ inline void VoteMsg::clear_has_elect_height() {
   _has_bits_[0] &= ~0x00000010u;
 }
 inline void VoteMsg::clear_elect_height() {
-  elect_height_ = 0u;
+  elect_height_ = GOOGLE_ULONGLONG(0);
   clear_has_elect_height();
 }
-inline ::google::protobuf::uint32 VoteMsg::elect_height() const {
+inline ::google::protobuf::uint64 VoteMsg::elect_height() const {
   // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.VoteMsg.elect_height)
   return elect_height_;
 }
-inline void VoteMsg::set_elect_height(::google::protobuf::uint32 value) {
+inline void VoteMsg::set_elect_height(::google::protobuf::uint64 value) {
   set_has_elect_height();
   elect_height_ = value;
   // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.VoteMsg.elect_height)
@@ -1496,6 +1799,8 @@ VoteMsg::txs() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

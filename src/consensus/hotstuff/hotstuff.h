@@ -7,6 +7,7 @@
 #include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h> 
 #include <consensus/hotstuff/view_block_chain.h>
+#include <protos/hotstuff.pb.h>
 #include <security/security.h>
 
 namespace shardora {
@@ -24,11 +25,13 @@ namespace hotstuff {
 enum MsgType {
   PROPOSE,
   VOTE,
+  NEWVIEW,
 };
 
 typedef hotstuff::protobuf::ProposeMsg  pb_ProposeMsg;
 typedef hotstuff::protobuf::HotstuffMessage  pb_HotstuffMessage;
 typedef hotstuff::protobuf::VoteMsg pb_VoteMsg;
+typedef hotstuff::protobuf::NewViewMsg  pb_NewViewMsg;
 
 class Hotstuff {
 public:
@@ -54,6 +57,7 @@ public:
         db_(db) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
         pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1));
+        pacemaker_->SetNewViewFn(std::bind(&Hotstuff::NewView, this, std::placeholders::_1));
         pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));
     }
     ~Hotstuff() {};
@@ -61,8 +65,10 @@ public:
     void Init(std::shared_ptr<db::Db>& db_);
     Status Start();
     void Propose(const std::shared_ptr<SyncInfo>& sync_info);
+    void NewView(const std::shared_ptr<SyncInfo>& sync_info);
     void HandleProposeMsg(const transport::protobuf::Header& header);
     void HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg);
+    void HandleNewViewMsg(const transport::protobuf::Header& header);
     Status Commit(const std::shared_ptr<ViewBlock>& v_block);
     std::shared_ptr<ViewBlock> CheckCommit(const std::shared_ptr<ViewBlock>& v_block);
     Status VerifyViewBlock(
@@ -137,6 +143,7 @@ private:
             const MsgType msg_type, 
             const std::shared_ptr<pb_ProposeMsg>& pb_pro_msg, 
             const std::shared_ptr<pb_VoteMsg>& pb_vote_msg,
+            const std::shared_ptr<pb_NewViewMsg>& pb_nv_msg,
             std::shared_ptr<pb_HotstuffMessage>& pb_hf_msg);
     Status SendVoteMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage>& hotstuff_msg);
 };
