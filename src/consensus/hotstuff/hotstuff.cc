@@ -82,6 +82,7 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
         return;
     }
 
+    network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
         pool_idx_,
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
@@ -89,13 +90,12 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
         pacemaker()->HighQC()->view,
         header.hash64());
-
-    HandleProposeMsg(hotstuff_msg->pro_msg());
-    network::Route::Instance()->Send(msg_ptr);
+    HandleProposeMsg(header);
     return;
 }
 
-void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
+void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
+    auto& pro_msg = header.hotstuff().pro_msg();
     // 3 Verify TC
     std::shared_ptr<TC> tc = nullptr;
     if (!pro_msg.tc_str().empty()) {
@@ -134,7 +134,9 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
     
     // 2 Veriyfy Leader
     if (VerifyLeader(v_block) != Status::kSuccess) {
-        ZJC_ERROR("verify leader failed, pool: %d has voted: %lu", pool_idx_, v_block->view);
+        ZJC_ERROR("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
+            pool_idx_, v_block->view, header.hash64());
+        // assert(false);
         return;
     }
     
@@ -434,7 +436,7 @@ Status Hotstuff::VerifyLeader(const std::shared_ptr<ViewBlock>& view_block) {
         ZJC_ERROR("Get Leader is error.");
         return  Status::kError;
     }
-    
+
     if (leader_idx != leader->index) {
         ZJC_ERROR("leader_idx message is error, %d, %d", leader_idx, leader->index);
         return Status::kError;

@@ -154,7 +154,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 ZJC_ERROR("====1.2 pool: %d, verify message failed, %d", hotstuff_msg.pool_index(), static_cast<int>(s));
                 return;
             }
-            hotstuff(hotstuff_msg.pool_index())->HandleProposeMsg(hotstuff_msg.pro_msg());
+            hotstuff(hotstuff_msg.pool_index())->HandleProposeMsg(header);
             break;
         }
         case VOTE:

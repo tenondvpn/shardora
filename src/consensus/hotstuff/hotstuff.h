@@ -55,7 +55,7 @@ public:
     void Init(std::shared_ptr<db::Db>& db_);
     Status Start();
     void Propose(const std::shared_ptr<SyncInfo>& sync_info);
-    void HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg);
+    void HandleProposeMsg(const transport::protobuf::Header& header);
     void HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg);
     Status Commit(const std::shared_ptr<ViewBlock>& v_block);
     std::shared_ptr<ViewBlock> CheckCommit(const std::shared_ptr<ViewBlock>& v_block);
