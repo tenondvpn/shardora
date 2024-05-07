@@ -34,6 +34,7 @@ Status BlockWrapper::Wrap(
     block->set_network_id(common::GlobalInfo::Instance()->network_id());
     block->set_consistency_random(0);
     block->set_height(prev_block->height()+1);
+    ZJC_DEBUG("propose block set height: %lu, pre height: %lu", block->height(), prev_block->height());
     if (block->height() <= 0) {
         return Status::kInvalidArgument;
     }
@@ -83,7 +84,7 @@ Status BlockWrapper::GetTxsIdempotently(std::vector<std::shared_ptr<pools::proto
     for (auto it = txbft.txs().begin(); it != txbft.txs().end(); it++) {
         txs.push_back(std::make_shared<pools::protobuf::TxMessage>(*it));
     }
-    
+
     return Status::kSuccess;
 }
         
