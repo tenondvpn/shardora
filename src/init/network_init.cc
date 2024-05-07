@@ -1404,6 +1404,9 @@ void NetworkInit::HandleElectionBlock(
 
 int NetworkInit::BlockBlsAggSignatureValid(
         const block::protobuf::Block& block) try {
+#ifdef ENABLE_HOTSTUFF
+    return 0;
+#endif
     // TODO: fix check genesis block
     if (block.height() == 0) {
         return 0;
