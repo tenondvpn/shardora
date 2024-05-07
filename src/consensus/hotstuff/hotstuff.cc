@@ -509,6 +509,9 @@ Status Hotstuff::ConstructViewBlock(
         return s;
     }
     
+    ZJC_DEBUG("get prev block hash: %s, height: %lu", 
+        common::Encode::HexEncode(view_block->parent_hash).c_str(), 
+        pre_v_block->block->height());
     auto pre_block = pre_v_block->block;
     auto pb_block = std::make_shared<block::protobuf::Block>();
     s = wrapper()->Wrap(pre_block, leader_idx, pb_block, tx_propose);
