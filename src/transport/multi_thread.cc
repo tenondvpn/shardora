@@ -87,8 +87,9 @@ void ThreadHandler::HandleMessage() {
             }
             ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
         }
-#ifndef ENABLE_HOTSTUFF
+
         if (maping_thread_idx != common::GlobalInfo::Instance()->message_handler_thread_count() - 1) {
+#ifndef ENABLE_HOTSTUFF            
             auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->header.set_type(common::kConsensusTimerMessage);
@@ -106,8 +107,14 @@ void ThreadHandler::HandleMessage() {
                 ZJC_INFO("kConsensusTimerMessage over handle message: %d, thread: %d use: %lu us, all: %s", 
                     msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
             }
-            // ZJC_DEBUG("end kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
-            //     msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
+#else
+            // HotstuffSyncTimerMessage
+            auto btime = common::TimeUtils::TimestampUs();
+            auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            msg_ptr->header.set_type(common::kHotstuffSyncTimerMessage);
+            msg_ptr->times[msg_ptr->times_idx++] = btime;
+            Processor::Instance()->HandleMessage(msg_ptr);
+#endif            
         } else {
             auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -129,7 +136,6 @@ void ThreadHandler::HandleMessage() {
             // ZJC_DEBUG("end kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
             //     msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
         }
-#endif
 
         if (count >= kMaxHandleMessageCount) {
             continue;

@@ -82,7 +82,7 @@ private:
             uint32_t network_id,
             const view_block::protobuf::ViewBlockSyncMessage& view_block_msg);
 
-    void ConsensusTimerMessage();
+    void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
     // void SyncChains();
     Status processRequest(const transport::MessagePtr&);
     Status processResponse(const transport::MessagePtr&);
@@ -106,6 +106,7 @@ private:
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
     OnRecvViewBlockFn on_recv_vb_fn_;
     std::shared_ptr<db::Db> db_ = nullptr;
+    uint64_t last_timers_us_[common::kMaxThreadCount];
 };
 
 } // namespace consensus

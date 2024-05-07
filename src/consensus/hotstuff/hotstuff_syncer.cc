@@ -14,6 +14,7 @@
 #include <memory>
 #include <network/network_utils.h>
 #include <network/universal_manager.h>
+#include <transport/processor.h>
 #include <transport/tcp_transport.h>
 #include <transport/transport_utils.h>
 #include "network/route.h"
@@ -40,15 +41,21 @@ HotstuffSyncer::HotstuffSyncer(
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         pacemaker(pool_idx)->SetSyncPoolFn(std::bind(&HotstuffSyncer::SyncPool, this, std::placeholders::_1));
     }
+
+    for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+        last_timers_us_[i] = common::TimeUtils::TimestampUs();
+    }
     
     network::Route::Instance()->RegisterMessage(common::kHotstuffSyncMessage,
         std::bind(&HotstuffSyncer::HandleMessage, this, std::placeholders::_1));
+    transport::Processor::Instance()->RegisterProcessor(
+        common::kHotstuffSyncTimerMessage,
+        std::bind(&HotstuffSyncer::ConsensusTimerMessage, this, std::placeholders::_1));    
 }
 
 HotstuffSyncer::~HotstuffSyncer() {}
 
 void HotstuffSyncer::Start() {
-    tick_.CutOff(kSyncTimerCycleUs, std::bind(&HotstuffSyncer::ConsensusTimerMessage, this));
 }
 
 void HotstuffSyncer::Stop() { tick_.Destroy(); }
@@ -66,14 +73,14 @@ void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 // 批量异步处理，提高 tps
-void HotstuffSyncer::ConsensusTimerMessage() {
+void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     // TODO 仅共识池节点参与 view_block_chain 的同步
-    SyncAllPools();
-    ConsumeMessages();
-
-    tick_.CutOff(
-        kSyncTimerCycleUs,
-        std::bind(&HotstuffSyncer::ConsensusTimerMessage, this));
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+    auto now_us = common::TimeUtils::TimestampUs();
+    if (now_us - last_timers_us_[thread_index] >= kSyncTimerCycleUs) {
+        SyncAllPools();
+        ConsumeMessages();        
+    }
 }
 
 void HotstuffSyncer::SyncPool(const uint32_t& pool_idx) {
@@ -97,8 +104,12 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx) {
 }
 
 void HotstuffSyncer::SyncAllPools() {
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
-        SyncPool(pool_idx);
+        if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
+            ZJC_DEBUG("pool: %d, sync pool", pool_idx);
+            SyncPool(pool_idx);
+        }
     }
 }
 
@@ -216,19 +227,18 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
 void HotstuffSyncer::ConsumeMessages() {
     // Consume Messages
     uint32_t pop_count = 0;
-    for (uint8_t thread_idx = 0; thread_idx < common::kMaxThreadCount; ++thread_idx) {
-        while (pop_count++ < kPopCountMax) {
-            transport::MessagePtr msg_ptr = nullptr;
-            consume_queues_[thread_idx].pop(&msg_ptr);
-            if (msg_ptr == nullptr) {
-                break;
-            }
-            if (msg_ptr->header.view_block_proto().has_view_block_req()) {
-                processRequest(msg_ptr);
-            } else if (msg_ptr->header.view_block_proto().has_view_block_res()) {
-                processResponse(msg_ptr);
-            }            
-        }   
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    while (pop_count++ < kPopCountMax) {
+        transport::MessagePtr msg_ptr = nullptr;
+        consume_queues_[thread_idx].pop(&msg_ptr);
+        if (msg_ptr == nullptr) {
+            break;
+        }
+        if (msg_ptr->header.view_block_proto().has_view_block_req()) {
+            processRequest(msg_ptr);
+        } else if (msg_ptr->header.view_block_proto().has_view_block_res()) {
+            processResponse(msg_ptr);
+        }            
     }
 }
 

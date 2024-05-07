@@ -332,7 +332,6 @@ void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
 
 void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
     auto& newview_msg = header.hotstuff().newview_msg();
-    // 3 Verify TC
     std::shared_ptr<TC> tc = nullptr;
     if (!newview_msg.tc_str().empty()) {
         tc = std::make_shared<TC>();
