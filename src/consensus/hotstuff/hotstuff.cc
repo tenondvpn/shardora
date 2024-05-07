@@ -53,12 +53,12 @@ Status Hotstuff::Start() {
     return Status::kSuccess;
 }
 
-void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
+Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     auto pb_pro_msg = std::make_shared<hotstuff::protobuf::ProposeMsg>();
     Status s = ConstructProposeMsg(sync_info, pb_pro_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d construct propose msg failed, %d", pool_idx_, static_cast<int>(s));
-        return;
+        return s;
     }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -71,7 +71,7 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
             pool_idx_, hotstuff_msg->pro_msg().view_item().view());
-        return;
+        return s;
     }
     header.mutable_hotstuff()->CopyFrom(*hotstuff_msg);
     if (!header.has_broadcast()) {
@@ -82,7 +82,7 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     transport::TcpTransport::Instance()->SetMessageHash(header);
     s = crypto()->SignMessage(msg_ptr);
     if (s != Status::kSuccess) {
-        return;
+        return s;
     }
 
     network::Route::Instance()->Send(msg_ptr);
@@ -94,7 +94,7 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
         pacemaker()->HighQC()->view,
         header.hash64());
     HandleProposeMsg(header);
-    return;
+    return Status::kSuccess;
 }
 
 void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
@@ -186,7 +186,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     if (VerifyLeader(v_block) != Status::kSuccess) {
         ZJC_ERROR("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
             pool_idx_, v_block->view, header.hash64());
-        // assert(false);
+        assert(false);
         return;
     }
     
@@ -287,7 +287,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     b = common::TimeUtils::TimestampUs();
     
     if (SendVoteMsg(pb_hotstuff_msg) != Status::kSuccess) {
-        ZJC_ERROR("Send Propose message is error.");
+        ZJC_ERROR("Send vote message is error.");
     }
 
     auto e = common::TimeUtils::TimestampUs();
@@ -296,14 +296,14 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     return;
 }
 
-void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
-    auto b = common::TimeUtils::TimestampUs();
-    ZJC_DEBUG("====2.0 pool: %d, onVote, hash: %s, view: %lu, replica: %lu",
+void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
+    auto& vote_msg = header.hotstuff().vote_msg();
+    ZJC_DEBUG("====2.0 pool: %d, onVote, hash: %s, view: %lu, replica: %lu, hash64: %lu",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
         vote_msg.view(),
-        vote_msg.replica_idx());
-    
+        vote_msg.replica_idx(),
+        header.hash64());
     if (VerifyVoteMsg(vote_msg) != Status::kSuccess) {
         ZJC_ERROR("vote message is error.");
         return;
@@ -688,10 +688,13 @@ Status Hotstuff::SendVoteMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage
                 header_msg);
         }
     } else {
-        HandleVoteMsg(header_msg.hotstuff().vote_msg());
+        HandleVoteMsg(header_msg);
     }
  
-    
+    ZJC_DEBUG("send to leader vote message to leader net: %u, %s, hash64: %lu", 
+        leader->net_id, 
+        common::Encode::HexEncode(leader->id).c_str(), 
+        header_msg.hash64());
     return ret;
 }
 

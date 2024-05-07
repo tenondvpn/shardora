@@ -138,6 +138,22 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     
     auto& header = msg_ptr->header;
     ZJC_DEBUG("====1 msg received, timeout: %d", header.has_hotstuff_timeout_proto());
+    if (header.has_hotstuff_timeout_proto() || (header.has_hotstuff() && header.hotstuff().type() == VOTE)) {
+        dht::DhtKeyManager dht_key(
+            msg_ptr->header.src_sharding_id(),
+            security_ptr_->GetAddress());
+        if (msg_ptr->header.des_dht_key() != dht_key.StrKey()) {
+            network::Route::Instance()->Send(msg_ptr);
+            ZJC_DEBUG("hotstuff message resend to leader by latest node net: %u, "
+                "id: %s, des dht: %s, local: %s, hash64: %lu",
+                msg_ptr->header.src_sharding_id(), 
+                common::Encode::HexEncode(security_ptr_->GetAddress()).c_str(),
+                common::Encode::HexEncode(msg_ptr->header.des_dht_key()).c_str(),
+                common::Encode::HexEncode(dht_key.StrKey()).c_str(),
+                header.hash64());
+            return;
+        }
+    }
 
     if (!header.has_hotstuff() && !header.has_hotstuff_timeout_proto()) {
         ZJC_ERROR("transport message is error.");
@@ -167,7 +183,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             break;
         }
         case VOTE:
-            hotstuff(hotstuff_msg.pool_index())->HandleVoteMsg(hotstuff_msg.vote_msg());
+            hotstuff(hotstuff_msg.pool_index())->HandleVoteMsg(header);
             break;
         case NEWVIEW:
         {

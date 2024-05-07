@@ -93,7 +93,9 @@ public:
 
     Status SignMessage(transport::MessagePtr& msg_ptr);
     Status VerifyMessage(const transport::MessagePtr& msg_ptr);
-    
+    void RecoverBlsCollection() {
+        bls_collection_ = nullptr;
+    }
     
     inline std::shared_ptr<ElectItem> GetElectItem(const uint64_t& elect_height) {
         return elect_info_->GetElectItem(elect_height);
