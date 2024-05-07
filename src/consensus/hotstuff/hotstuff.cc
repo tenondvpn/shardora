@@ -589,8 +589,10 @@ Status Hotstuff::SendVoteMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage
         HandleVoteMsg(header_msg);
     }
  
-    ZJC_DEBUG("send vote message to leader: %s, hash64: %lu", 
-        common::Encode::HexEncode(leader->id).c_str(), header_msg.hash64());
+    ZJC_DEBUG("send to leader vote message to leader net: %u, %s, hash64: %lu", 
+        leader->net_id, 
+        common::Encode::HexEncode(leader->id).c_str(), 
+        header_msg.hash64());
     return ret;
 }
 

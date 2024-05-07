@@ -152,6 +152,11 @@ void Pacemaker::OnLocalTimeout() {
                 leader->public_port, 
                 msg);
         }
+
+        ZJC_DEBUG("send to leader timeout message to leader net: %u, %s, hash64: %lu", 
+            leader->net_id, 
+            common::Encode::HexEncode(leader->id).c_str(), 
+            msg.hash64());
     } else {
         OnRemoteTimeout(msg_ptr);
     }    

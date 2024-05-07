@@ -135,10 +135,13 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             security_ptr_->GetAddress());
         if (msg_ptr->header.des_dht_key() != dht_key.StrKey()) {
             network::Route::Instance()->Send(msg_ptr);
-            ZJC_DEBUG("hotstuff message resend to leader by latest node net: %u, id: %s, des dht: %s, local: %s",
-                msg_ptr->header.src_sharding_id(), common::Encode::HexEncode(security_ptr_->GetAddress()).c_str(),
+            ZJC_DEBUG("hotstuff message resend to leader by latest node net: %u, "
+                "id: %s, des dht: %s, local: %s, hash64: %lu",
+                msg_ptr->header.src_sharding_id(), 
+                common::Encode::HexEncode(security_ptr_->GetAddress()).c_str(),
                 common::Encode::HexEncode(msg_ptr->header.des_dht_key()).c_str(),
-                common::Encode::HexEncode(dht_key.StrKey()).c_str());
+                common::Encode::HexEncode(dht_key.StrKey()).c_str(),
+                header.hash64());
             return;
         }
     }
