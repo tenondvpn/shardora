@@ -75,18 +75,24 @@ private:
     void UpdateHighTC(const std::shared_ptr<TC>& tc);
 
     inline void StartTimeoutTimer() {
-        one_shot_tick_ = std::make_shared<common::Tick>();
-        one_shot_tick_->CutOff(duration_->Duration(), std::bind(&Pacemaker::OnLocalTimeout, this));
+        // one_shot_tick_ = std::make_shared<common::Tick>();
+        // one_shot_tick_->CutOff(duration_->Duration(), std::bind(&Pacemaker::OnLocalTimeout, this));
 
-        // last_time_us_ = common::TimeUtils::TimestampUs();
-        // duration_us_ = duration_->Duration();
+        last_time_us_ = common::TimeUtils::TimestampUs();
+        duration_us_ = duration_->Duration();
     }
 
     inline void StopTimeoutTimer() {
-        if (!one_shot_tick_) {
-            return;
-        }
-        one_shot_tick_->Destroy();
+        // if (!one_shot_tick_) {
+        //     return;
+        // }
+        // one_shot_tick_->Destroy();
+        last_time_us_ = 0;
+        duration_us_ = std::numeric_limits<View>::max();
+    }
+
+    inline bool IsTimeout() {
+        return common::TimeUtils::TimestampUs() - last_time_us_ > duration_us_;
     }
 
     uint32_t pool_idx_;

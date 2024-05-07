@@ -143,6 +143,7 @@ public:
 
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
+    void HandleTimerMessage(const transport::MessagePtr& msg_ptr);
     void RegisterCreateTxCallbacks();
     
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {

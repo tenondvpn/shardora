@@ -100,7 +100,10 @@ int HotstuffManager::Init(
     network::Route::Instance()->RegisterMessage(common::kHotstuffMessage,
         std::bind(&HotstuffManager::HandleMessage, this, std::placeholders::_1));
     network::Route::Instance()->RegisterMessage(common::kHotstuffTimeoutMessage,
-        std::bind(&HotstuffManager::HandleMessage, this, std::placeholders::_1));    
+        std::bind(&HotstuffManager::HandleMessage, this, std::placeholders::_1));
+    transport::Processor::Instance()->RegisterProcessor(
+        common::kPacemakerTimerMessage,
+        std::bind(&HotstuffManager::HandleTimerMessage, this, std::placeholders::_1));    
 
     return kConsensusSuccess;
 }
@@ -183,6 +186,16 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             pool_idx, header.hotstuff_timeout_proto().member_id());
         pacemaker(pool_idx)->OnRemoteTimeout(msg_ptr);
     }
+}
+
+void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
+        if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
+            pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
+        }
+    }
+    return;
 }
 
 void HotstuffManager::RegisterCreateTxCallbacks() {

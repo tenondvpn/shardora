@@ -30,7 +30,10 @@ Pacemaker::Pacemaker(
 Pacemaker::~Pacemaker() {}
 
 void Pacemaker::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
-    
+    if (IsTimeout()) {
+        StopTimeoutTimer();
+        OnLocalTimeout();
+    }
 }
 
 Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
