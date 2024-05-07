@@ -74,6 +74,8 @@ enum MessageType {
     kHotstuffSyncMessage = 14,
     kHotstuffTimeoutMessage = 15,
     kHotstuffMessage = 16,
+    kHotstuffSyncTimerMessage = 17,
+    kPacemakerTimerMessage = 18,
     // max (message) type
     kMaxMessageTypeCount,
 };

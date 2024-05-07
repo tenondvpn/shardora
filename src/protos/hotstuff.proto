@@ -12,12 +12,18 @@ message HotstuffMessage {
     optional uint32 type = 1;
     optional ProposeMsg  pro_msg = 2;
     optional VoteMsg   vote_msg = 3;
-    optional uint32 net_id = 4;
-    optional uint32 pool_index = 5 [default=4294967295];
+    optional NewViewMsg newview_msg = 4;
+    optional uint32 net_id = 5;
+    optional uint32 pool_index = 6 [default=4294967295];
+}
+
+message NewViewMsg {
+    optional bytes tc_str = 1;
+    optional uint64 elect_height = 2;
 }
 
 message ProposeMsg {
-    optional uint32 elect_height = 1;
+    optional uint64 elect_height = 1;
     optional view_block.protobuf.ViewBlockItem  view_item = 2;
     optional bytes tc_str = 3;
     optional TxPropose tx_propose = 4;
@@ -27,7 +33,7 @@ message VoteMsg {
     optional uint32 replica_idx = 1;
     optional bytes view_block_hash = 2;
     optional uint64 view = 3;
-    optional uint32 elect_height = 4;
+    optional uint64 elect_height = 4;
     optional bytes sign_x = 5;
     optional bytes sign_y = 6;
     repeated pools.protobuf.TxMessage txs = 7; // 仅打包普通交易信息，作为同步

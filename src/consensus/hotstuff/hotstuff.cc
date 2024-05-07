@@ -1,7 +1,9 @@
 #include <common/encode.h>
 #include <common/log.h>
+#include <common/time_utils.h>
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/types.h>
+#include <protos/hotstuff.pb.h>
 #include <protos/pools.pb.h>
 #include <protos/view_block.pb.h>
 
@@ -65,7 +67,7 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     header.set_type(common::kHotstuffMessage);
     header.set_hop_count(0);
     auto hotstuff_msg = std::make_shared<pb_HotstuffMessage>();
-    s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, hotstuff_msg);
+    s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
             pool_idx_, hotstuff_msg->pro_msg().view_item().view());
@@ -93,6 +95,52 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
         header.hash64());
     HandleProposeMsg(header);
     return Status::kSuccess;
+}
+
+void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
+    auto pb_newview_msg = std::make_shared<hotstuff::protobuf::NewViewMsg>();
+    pb_newview_msg->set_elect_height(elect_info_->GetElectItem()->ElectHeight());
+    if (!sync_info->tc) {
+        return;
+    }
+    pb_newview_msg->set_tc_str(sync_info->tc->Serialize());
+
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& header = msg_ptr->header;
+    header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    header.set_type(common::kHotstuffMessage);
+    header.set_hop_count(0);
+    auto hotstuff_msg = std::make_shared<pb_HotstuffMessage>();
+    Status s = ConstructHotstuffMsg(NEWVIEW, nullptr, nullptr, pb_newview_msg, hotstuff_msg);
+    if (s != Status::kSuccess) {
+        ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
+            pool_idx_, hotstuff_msg->pro_msg().view_item().view());
+        return;
+    }
+    
+    header.mutable_hotstuff()->CopyFrom(*hotstuff_msg);
+    if (!header.has_broadcast()) {
+        auto broadcast = header.mutable_broadcast();
+    }
+    
+    dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
+    header.set_des_dht_key(dht_key.StrKey());
+    transport::TcpTransport::Instance()->SetMessageHash(header);
+    s = crypto()->SignMessage(msg_ptr);
+    if (s != Status::kSuccess) {
+        return;
+    }
+
+    network::Route::Instance()->Send(msg_ptr);
+    ZJC_DEBUG("pool: %d, newview, txs size: %lu, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
+        pool_idx_,
+        hotstuff_msg->pro_msg().tx_propose().txs_size(),
+        hotstuff_msg->pro_msg().view_item().view(),
+        common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
+        pacemaker()->HighQC()->view,
+        header.hash64());
+    HandleNewViewMsg(header);
+    return;    
 }
 
 void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
@@ -147,6 +195,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
             common::Encode::HexEncode(v_block->hash).c_str());
         return;
     }
+    
     ZJC_DEBUG("====1.1 pool: %d, verify view block success, view: %lu, hash: %s, qc_view: %lu",
         pool_idx_,
         pro_msg.view_item().view(),
@@ -173,6 +222,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         ZJC_ERROR("Accept tx is error");
         return;
     }
+    
     // 更新哈希值
     v_block->UpdateHash();
     // 6 add view block
@@ -181,13 +231,13 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
             common::Encode::HexEncode(v_block->hash).c_str());
         return;
     }
-
+    
     // 打印一下调试日志
     std::cout << "highQC: " << pacemaker()->HighQC()->view
               << ",highTC: " << pacemaker()->HighTC()->view
               << ",chainSize: " << view_block_chain()->Size()
               << ",CurView: " << pacemaker()->CurView() << std::endl;    
-    view_block_chain()->Print();
+    view_block_chain()->Print();    
 
     // 1、验证是否存在3个连续qc，设置commit，lock qc状态；2、提交commit块之间的交易信息；3、减枝保留最新commit块，回退分支的交易信息
     auto v_block_to_commit = CheckCommit(v_block);
@@ -199,7 +249,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
                 common::Encode::HexEncode(v_block_to_commit->hash).c_str());
             return;
         }
-    }
+    }    
     
     // Construct VoteMsg
     auto vote_msg = std::make_shared<hotstuff::protobuf::VoteMsg>();
@@ -210,11 +260,12 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     }
     // Construct HotstuffMessage and send
     auto pb_hotstuff_msg = std::make_shared<pb_HotstuffMessage>();
-    s = ConstructHotstuffMsg(VOTE, nullptr, vote_msg, pb_hotstuff_msg);
+    s = ConstructHotstuffMsg(VOTE, nullptr, vote_msg, nullptr, pb_hotstuff_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("ConstructHotstuffMsg error %d", s);
         return;
     }
+    
     if (SendVoteMsg(pb_hotstuff_msg) != Status::kSuccess) {
         ZJC_ERROR("Send vote message is error.");
     }
@@ -280,7 +331,25 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     }    
     // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
-    Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));    
+    Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
+    return;
+}
+
+void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
+    auto& newview_msg = header.hotstuff().newview_msg();
+    std::shared_ptr<TC> tc = nullptr;
+    if (!newview_msg.tc_str().empty()) {
+        tc = std::make_shared<TC>();
+        if (!tc->Unserialize(newview_msg.tc_str())) {
+            ZJC_ERROR("tc Unserialize is error.");
+            return;
+        }
+        if (crypto()->VerifyTC(tc, newview_msg.elect_height()) != Status::kSuccess) {
+            ZJC_ERROR("VerifyTC error.");
+            return;
+        }
+        pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));
+    }
     return;
 }
 
@@ -540,6 +609,7 @@ Status Hotstuff::ConstructHotstuffMsg(
         const MsgType msg_type, 
         const std::shared_ptr<pb_ProposeMsg>& pb_pro_msg, 
         const std::shared_ptr<pb_VoteMsg>& pb_vote_msg,
+        const std::shared_ptr<pb_NewViewMsg>& pb_nv_msg,
         std::shared_ptr<pb_HotstuffMessage>& pb_hotstuff_msg) {
     pb_hotstuff_msg->set_type(msg_type);
     switch (msg_type)
@@ -549,6 +619,9 @@ Status Hotstuff::ConstructHotstuffMsg(
         break;
     case VOTE:
         pb_hotstuff_msg->mutable_vote_msg()->CopyFrom(*pb_vote_msg);
+        break;
+    case NEWVIEW:
+        pb_hotstuff_msg->mutable_newview_msg()->CopyFrom(*pb_nv_msg);
         break;
     default:
         ZJC_ERROR("MsgType is error");

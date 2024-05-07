@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/tick.h>
+#include <common/time_utils.h>
 #include <functional>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/leader_rotation.h>
@@ -16,7 +17,8 @@ namespace hotstuff {
 
 using NewProposalFn = std::function<Status(const std::shared_ptr<SyncInfo> &sync_info)>;
 using StopVotingFn = std::function<void(const View &view)>;
-using SyncPoolFn = std::function<void(const uint32_t&)>;
+using SyncPoolFn = std::function<void(const uint32_t &)>;
+using NewViewFn = std::function<void(const std::shared_ptr<SyncInfo> &sync_info)>;
 
 class Pacemaker {
 public:
@@ -34,6 +36,10 @@ public:
         new_proposal_fn_ = fn;
     }
 
+    void SetNewViewFn(NewViewFn fn) {
+        new_view_fn_ = fn;
+    }    
+
     void SetStopVotingFn(StopVotingFn fn) {
         stop_voting_fn_ = fn;
     }
@@ -42,6 +48,7 @@ public:
         sync_pool_fn_ = fn;
     }
 
+    void HandleTimerMessage(const transport::MessagePtr& msg_ptr);
     // 本地超时
     void OnLocalTimeout();
     // 收到超时消息
@@ -68,15 +75,24 @@ private:
     void UpdateHighTC(const std::shared_ptr<TC>& tc);
 
     inline void StartTimeoutTimer() {
-        one_shot_tick_ = std::make_shared<common::Tick>();
-        one_shot_tick_->CutOff(duration_->Duration(), std::bind(&Pacemaker::OnLocalTimeout, this));
+        // one_shot_tick_ = std::make_shared<common::Tick>();
+        // one_shot_tick_->CutOff(duration_->Duration(), std::bind(&Pacemaker::OnLocalTimeout, this));
+
+        last_time_us_ = common::TimeUtils::TimestampUs();
+        duration_us_ = duration_->Duration();
     }
 
     inline void StopTimeoutTimer() {
-        if (!one_shot_tick_) {
-            return;
-        }
-        one_shot_tick_->Destroy();
+        // if (!one_shot_tick_) {
+        //     return;
+        // }
+        // one_shot_tick_->Destroy();
+        last_time_us_ = 0;
+        duration_us_ = std::numeric_limits<View>::max();
+    }
+
+    inline bool IsTimeout() {
+        return common::TimeUtils::TimestampUs() - last_time_us_ > duration_us_;
     }
 
     uint32_t pool_idx_;
@@ -90,6 +106,9 @@ private:
     NewProposalFn new_proposal_fn_ = nullptr;
     StopVotingFn stop_voting_fn_ = nullptr;
     SyncPoolFn sync_pool_fn_ = nullptr; // 同步 HighQC HighTC
+    NewViewFn new_view_fn_ = nullptr;
+    uint64_t last_time_us_ = 0;
+    uint64_t duration_us_ = 0;
 };
 
 } // namespace consensus

@@ -29,6 +29,14 @@ Pacemaker::Pacemaker(
 
 Pacemaker::~Pacemaker() {}
 
+void Pacemaker::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
+    ZJC_DEBUG("pool: %d timer", pool_idx_);
+    if (IsTimeout()) {
+        StopTimeoutTimer();
+        OnLocalTimeout();
+    }
+}
+
 Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
     if (!sync_info) {
         return Status::kInvalidArgument;
@@ -200,15 +208,18 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("====4.1 pool: %d, create tc, view: %d, member: %d, view: %d",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
 
-    // AdvanceView(new_sync_info()->WithTC(tc));
+    AdvanceView(new_sync_info()->WithTC(tc));
 
     assert(new_proposal_fn_ != nullptr);
+    
+    // NewView msg broadcast
+    if (new_view_fn_) {
+        new_view_fn_(new_sync_info()->WithTC(HighTC()));
+    }
+    
     // New Propose
-    auto status = new_proposal_fn_(new_sync_info()->WithQC(HighQC())->WithTC(HighTC()));
-    if (status == Status::kSuccess) {
-        AdvanceView(new_sync_info()->WithTC(tc));
-    } else {
-        crypto_->RecoverBlsCollection();
+    if (new_proposal_fn_) {
+        new_proposal_fn_(new_sync_info()->WithQC(HighQC())->WithTC(HighTC()));
     }
 }
 

@@ -78,7 +78,7 @@ int HotstuffManager::Init(
                 leader_rotation,
                 std::make_shared<ViewDuration>(
                         pool_idx,
-                        100,
+                        10,
                         1000,
                         10000,
                         1.1));
@@ -100,7 +100,10 @@ int HotstuffManager::Init(
     network::Route::Instance()->RegisterMessage(common::kHotstuffMessage,
         std::bind(&HotstuffManager::HandleMessage, this, std::placeholders::_1));
     network::Route::Instance()->RegisterMessage(common::kHotstuffTimeoutMessage,
-        std::bind(&HotstuffManager::HandleMessage, this, std::placeholders::_1));    
+        std::bind(&HotstuffManager::HandleMessage, this, std::placeholders::_1));
+    transport::Processor::Instance()->RegisterProcessor(
+        common::kPacemakerTimerMessage,
+        std::bind(&HotstuffManager::HandleTimerMessage, this, std::placeholders::_1));    
 
     return kConsensusSuccess;
 }
@@ -127,6 +130,12 @@ void HotstuffManager::OnNewElectBlock(uint64_t block_tm_ms, uint32_t sharding_id
     }
 
 void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    // auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    // msg_queue_[thread_idx].push(msg_ptr);
+    // if (msg_queue_[thread_idx].size() > common::GlobalInfo::Instance()->pools_each_thread_max_messages()) {
+    //     return;
+    // }
+    
     auto& header = msg_ptr->header;
     ZJC_DEBUG("====1 msg received, timeout: %d", header.has_hotstuff_timeout_proto());
     if (header.has_hotstuff_timeout_proto() || (header.has_hotstuff() && header.hotstuff().type() == VOTE)) {
@@ -168,7 +177,6 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         {
             Status s = crypto(hotstuff_msg.pool_index())->VerifyMessage(msg_ptr);
             if (s != Status::kSuccess) {
-                ZJC_ERROR("====1.2 pool: %d, verify message failed, %d", hotstuff_msg.pool_index(), static_cast<int>(s));
                 return;
             }
             hotstuff(hotstuff_msg.pool_index())->HandleProposeMsg(header);
@@ -177,6 +185,16 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         case VOTE:
             hotstuff(hotstuff_msg.pool_index())->HandleVoteMsg(header);
             break;
+        case NEWVIEW:
+        {
+            Status s = crypto(hotstuff_msg.pool_index())->VerifyMessage(msg_ptr);
+            if (s != Status::kSuccess) {
+                ZJC_ERROR("====1.2 pool: %d, verify message failed, %d", hotstuff_msg.pool_index(), static_cast<int>(s));
+                return;
+            }
+            hotstuff(hotstuff_msg.pool_index())->HandleNewViewMsg(header);
+            break;
+        }
         default:
             ZJC_WARN("consensus message type is error.");
             break;
@@ -190,6 +208,16 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             pool_idx, header.hotstuff_timeout_proto().member_id());
         pacemaker(pool_idx)->OnRemoteTimeout(msg_ptr);
     }
+}
+
+void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
+        if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
+            pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
+        }
+    }
+    return;
 }
 
 void HotstuffManager::RegisterCreateTxCallbacks() {
