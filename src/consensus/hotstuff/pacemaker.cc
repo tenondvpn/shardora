@@ -25,9 +25,6 @@ Pacemaker::Pacemaker(
     high_qc_ = GetQCWrappedByGenesis();
     high_tc_ = std::make_shared<TC>(nullptr, BeforeGenesisView);
     cur_view_ = GenesisView;
-
-    // 更新 hightc 时同步leader_rotation， 用于更换 leader
-    SetOnUpdateHighTcFn(std::bind(&LeaderRotation::OnUpdateHighTC, lr, std::placeholders::_1));
 }
 
 Pacemaker::~Pacemaker() {}

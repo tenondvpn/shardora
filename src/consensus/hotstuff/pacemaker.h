@@ -16,7 +16,6 @@ namespace hotstuff {
 
 using NewProposalFn = std::function<void(const std::shared_ptr<SyncInfo> &sync_info)>;
 using StopVotingFn = std::function<void(const View &view)>;
-using OnUpdateHighTC = std::function<void(const std::shared_ptr<TC> &)>;
 using SyncPoolFn = std::function<void(const uint32_t&)>;
 
 class Pacemaker {
@@ -37,10 +36,6 @@ public:
 
     void SetStopVotingFn(StopVotingFn fn) {
         stop_voting_fn_ = fn;
-    }
-
-    void SetOnUpdateHighTcFn(OnUpdateHighTC fn) {
-        on_update_high_tc_fn_ = fn;
     }
 
     void SetSyncPoolFn(SyncPoolFn fn) {
@@ -94,7 +89,6 @@ private:
     std::shared_ptr<ViewDuration> duration_;
     NewProposalFn new_proposal_fn_ = nullptr;
     StopVotingFn stop_voting_fn_ = nullptr;
-    OnUpdateHighTC on_update_high_tc_fn_ = nullptr;
     SyncPoolFn sync_pool_fn_ = nullptr; // 同步 HighQC HighTC
 };
 
