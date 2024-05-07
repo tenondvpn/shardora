@@ -56,7 +56,7 @@ public:
     Status Start();
     void Propose(const std::shared_ptr<SyncInfo>& sync_info);
     void HandleProposeMsg(const transport::protobuf::Header& header);
-    void HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg);
+    void HandleVoteMsg(const transport::protobuf::Header& header);
     Status Commit(const std::shared_ptr<ViewBlock>& v_block);
     std::shared_ptr<ViewBlock> CheckCommit(const std::shared_ptr<ViewBlock>& v_block);
     Status VerifyViewBlock(

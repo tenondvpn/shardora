@@ -158,7 +158,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             break;
         }
         case VOTE:
-            hotstuff(hotstuff_msg.pool_index())->HandleVoteMsg(hotstuff_msg.vote_msg());
+            hotstuff(hotstuff_msg.pool_index())->HandleVoteMsg(header);
             break;
         default:
             ZJC_WARN("consensus message type is error.");
