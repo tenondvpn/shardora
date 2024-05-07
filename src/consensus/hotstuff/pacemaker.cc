@@ -216,7 +216,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     }
     // New Propose
     if (new_proposal_fn_) {
-        new_proposal_fn_(new_sync_info()->WithQC(HighQC())->WithTC(HighTC()));
+        new_proposal_fn_(new_sync_info()->WithQC(HighQC()));
     }
 }
 

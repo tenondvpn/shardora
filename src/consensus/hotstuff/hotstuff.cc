@@ -1,5 +1,6 @@
 #include <common/encode.h>
 #include <common/log.h>
+#include <common/time_utils.h>
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/types.h>
 #include <protos/hotstuff.pb.h>
@@ -143,6 +144,7 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
 }
 
 void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
+    auto b = common::TimeUtils::TimestampUs();
     auto& pro_msg = header.hotstuff().pro_msg();
     // 3 Verify TC
     std::shared_ptr<TC> tc = nullptr;
@@ -265,11 +267,15 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     if (SendVoteMsg(pb_hotstuff_msg) != Status::kSuccess) {
         ZJC_ERROR("Send Propose message is error.");
     }
+
+    auto e = common::TimeUtils::TimestampUs();
+    ZJC_DEBUG("pool: %d handle pro dur: %llu us", pool_idx_, e-b);
     
     return;
 }
 
 void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
+    auto b = common::TimeUtils::TimestampUs();
     ZJC_DEBUG("====2.0 pool: %d, onVote, hash: %s, view: %lu, replica: %lu",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
@@ -326,7 +332,13 @@ void Hotstuff::HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
     }    
     // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
-    Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));    
+
+    auto e = common::TimeUtils::TimestampUs();
+    ZJC_DEBUG("pool: %d handle vote 1 dur: %llu us", pool_idx_, e-b);
+    Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
+
+    e = common::TimeUtils::TimestampUs();
+    ZJC_DEBUG("pool: %d handle vote 2 dur: %llu us", pool_idx_, e-b);
     return;
 }
 
