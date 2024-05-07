@@ -131,8 +131,7 @@ void Pacemaker::OnLocalTimeout() {
 
     auto leader = leader_rotation_->GetLeader();
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    dht::DhtKeyManager dht_key(leader->net_id);
-    msg.set_des_dht_key(dht_key.StrKey());
+    
     msg.set_type(common::kHotstuffTimeoutMessage);
     transport::TcpTransport::Instance()->SetMessageHash(msg);
 
@@ -142,6 +141,8 @@ void Pacemaker::OnLocalTimeout() {
     }
 
     if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
+        dht::DhtKeyManager dht_key(leader->net_id, leader->id);
+        msg.set_des_dht_key(dht_key.StrKey());
         ZJC_DEBUG("Send TimeoutMsg pool: %d, to ip: %s, port: %d, local_idx: %d, id: %s, local id: %s",
             pool_idx_,
             common::Uint32ToIp(leader->public_ip).c_str(), 
@@ -149,7 +150,9 @@ void Pacemaker::OnLocalTimeout() {
             timeout_msg.member_id(),
             common::Encode::HexEncode(leader->id).c_str(),
             common::Encode::HexEncode(crypto_->security()->GetAddress()).c_str());
-        if (leader->public_ip != 0 && leader->public_port != 0) {
+        if (leader->public_ip == 0 || leader->public_port == 0) {
+            network::Route::Instance()->Send(msg_ptr);
+        } else {
             transport::TcpTransport::Instance()->Send(
                 common::Uint32ToIp(leader->public_ip), 
                 leader->public_port, 
