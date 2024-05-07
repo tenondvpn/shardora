@@ -144,7 +144,6 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
 }
 
 void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
-    auto b = common::TimeUtils::TimestampUs();
     auto& pro_msg = header.hotstuff().pro_msg();
     // 3 Verify TC
     std::shared_ptr<TC> tc = nullptr;
@@ -190,16 +189,12 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         return;
     }
     
-    ZJC_DEBUG("pool: %d handle pro 1 dur: %llu us", pool_idx_, common::TimeUtils::TimestampUs()-b);
-    b = common::TimeUtils::TimestampUs();
     // 4 Verify ViewBlock    
     if (VerifyViewBlock(v_block, view_block_chain(), tc, pro_msg.elect_height()) != Status::kSuccess) {
         ZJC_ERROR("Verify ViewBlock is error. hash: %s",
             common::Encode::HexEncode(v_block->hash).c_str());
         return;
     }
-    ZJC_DEBUG("pool: %d handle pro 2 dur: %llu us", pool_idx_, common::TimeUtils::TimestampUs()-b);
-    b = common::TimeUtils::TimestampUs();
     
     ZJC_DEBUG("====1.1 pool: %d, verify view block success, view: %lu, hash: %s, qc_view: %lu",
         pool_idx_,
@@ -220,9 +215,6 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         block_info->txs.push_back(tx);
     }
     block_info->view = v_block->view;
-
-    ZJC_DEBUG("pool: %d handle pro 3 dur: %llu us", pool_idx_, common::TimeUtils::TimestampUs()-b);
-    b = common::TimeUtils::TimestampUs();
     
     if (acceptor()->Accept(block_info) != Status::kSuccess) {
         // 归还交易
@@ -230,8 +222,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         ZJC_ERROR("Accept tx is error");
         return;
     }
-    ZJC_DEBUG("pool: %d handle pro 4 dur: %llu us", pool_idx_, common::TimeUtils::TimestampUs()-b);
-    b = common::TimeUtils::TimestampUs();    
+    
     // 更新哈希值
     v_block->UpdateHash();
     // 6 add view block
@@ -240,18 +231,13 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
             common::Encode::HexEncode(v_block->hash).c_str());
         return;
     }
-
-    ZJC_DEBUG("pool: %d handle pro 5 dur: %llu us", pool_idx_, common::TimeUtils::TimestampUs()-b);
-    b = common::TimeUtils::TimestampUs();    
+    
     // 打印一下调试日志
     std::cout << "highQC: " << pacemaker()->HighQC()->view
               << ",highTC: " << pacemaker()->HighTC()->view
               << ",chainSize: " << view_block_chain()->Size()
               << ",CurView: " << pacemaker()->CurView() << std::endl;    
-    view_block_chain()->Print();
-
-    ZJC_DEBUG("pool: %d handle pro 6 dur: %llu us", pool_idx_, common::TimeUtils::TimestampUs()-b);
-    b = common::TimeUtils::TimestampUs();    
+    view_block_chain()->Print();    
 
     // 1、验证是否存在3个连续qc，设置commit，lock qc状态；2、提交commit块之间的交易信息；3、减枝保留最新commit块，回退分支的交易信息
     auto v_block_to_commit = CheckCommit(v_block);
@@ -263,10 +249,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
                 common::Encode::HexEncode(v_block_to_commit->hash).c_str());
             return;
         }
-    }
-
-    ZJC_DEBUG("pool: %d handle pro 7 dur: %llu us", pool_idx_, common::TimeUtils::TimestampUs()-b);
-    b = common::TimeUtils::TimestampUs();    
+    }    
     
     // Construct VoteMsg
     auto vote_msg = std::make_shared<hotstuff::protobuf::VoteMsg>();
@@ -282,16 +265,10 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         ZJC_ERROR("ConstructHotstuffMsg error %d", s);
         return;
     }
-
-    ZJC_DEBUG("pool: %d handle pro 7 dur: %llu us", pool_idx_, common::TimeUtils::TimestampUs()-b);
-    b = common::TimeUtils::TimestampUs();
     
     if (SendVoteMsg(pb_hotstuff_msg) != Status::kSuccess) {
         ZJC_ERROR("Send vote message is error.");
     }
-
-    auto e = common::TimeUtils::TimestampUs();
-    ZJC_DEBUG("pool: %d handle pro dur: %llu us", pool_idx_, e-b);
     
     return;
 }
