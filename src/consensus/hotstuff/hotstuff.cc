@@ -3,6 +3,7 @@
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/types.h>
 #include <protos/pools.pb.h>
+#include <protos/view_block.pb.h>
 
 namespace shardora {
 
@@ -10,21 +11,21 @@ namespace hotstuff {
 
 void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
     // set pacemaker timeout callback function
-    pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1));
-    pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));
     last_vote_view_ = GenesisView;
     
-    auto genesis = GetGenesisViewBlock(db_, pool_idx_);
-    if (genesis) {
-        // 初始状态，将创世块放入链中
-        view_block_chain_->Store(genesis);
-        view_block_chain_->SetLatestLockedBlock(genesis);
-        view_block_chain_->SetLatestCommittedBlock(genesis);
-        // 使用 genesis qc 进行视图切换
-        auto genesis_qc = GetGenesisQC(genesis->hash);
+    auto latest_view_block = std::make_shared<ViewBlock>();
+    auto latest_view_block_self_qc = std::make_shared<QC>();
+    // 从 db 中获取最后一个有 QC 的 ViewBlock
+    Status s = GetLatestViewBlockFromDb(db_, pool_idx_, latest_view_block, latest_view_block_self_qc);
+    if (s == Status::kSuccess) {
+        // 初始状态，使用 db 中最后一个 view_block 初始化视图链
+        view_block_chain_->Store(latest_view_block);
+        view_block_chain_->SetLatestLockedBlock(latest_view_block);
+        view_block_chain_->SetLatestCommittedBlock(latest_view_block);
         // 开启第一个视图
-        pacemaker_->AdvanceView(new_sync_info()->WithQC(genesis_qc));
-        ZJC_DEBUG("has genesis, pool_idx: %d, genisis block height: %lu", pool_idx_, genesis->block->height());
+
+        pacemaker_->AdvanceView(new_sync_info()->WithQC(latest_view_block_self_qc));
+        ZJC_DEBUG("has latest block, pool_idx: %d, latest block height: %lu", pool_idx_, latest_view_block->block->height());
     } else {
         ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
     }            
@@ -185,7 +186,6 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     std::cout << "highQC: " << pacemaker()->HighQC()->view
               << ",highTC: " << pacemaker()->HighTC()->view
               << ",chainSize: " << view_block_chain()->Size()
-              << ",commitView: " << view_block_chain()->LatestCommittedBlock()->view
               << ",CurView: " << pacemaker()->CurView() << std::endl;    
     view_block_chain()->Print();
 

@@ -11,7 +11,8 @@ namespace shardora {
 
 namespace hotstuff {
 
-ViewBlockChain::ViewBlockChain() {
+ViewBlockChain::ViewBlockChain(std::shared_ptr<db::Db>& db) : db_(db) {
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
 }
 
 ViewBlockChain::~ViewBlockChain(){}
@@ -52,7 +53,7 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     SetViewBlockToMap(view_block->hash, view_block);
     view_blocks_at_height_[view_block->view].push_back(view_block);
     AddChildrenToMap(view_block->parent_hash, view_block);
-    SetQcToMap(view_block->qc->view_block_hash, view_block->qc);    
+    SetQcOf(view_block->qc->view_block_hash, view_block->qc);
 
     return Status::kSuccess;
 }
@@ -281,7 +282,12 @@ void ViewBlockChain::Print() const {
     PrintBlock(start_block_);
 }
 
-std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db, uint32_t pool_index) {
+// 获取 db 中最新块的信息和它的 QC
+Status GetLatestViewBlockFromDb(
+        const std::shared_ptr<db::Db>& db,
+        const uint32_t& pool_index,
+        std::shared_ptr<ViewBlock>& view_block,
+        std::shared_ptr<QC>& self_qc) {
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
     uint32_t sharding_id = common::GlobalInfo::Instance()->network_id();
     pools::protobuf::PoolLatestInfo pool_info;
@@ -293,15 +299,44 @@ std::shared_ptr<ViewBlock> GetGenesisViewBlock(const std::shared_ptr<db::Db>& db
         return nullptr;
     }
 
+    pools::protobuf::PoolLatestInfo pool_info;
+    prefix_db->GetLatestPoolInfo(sharding_id, pool_index, &pool_info);
+
     block::protobuf::Block block;
     bool r = prefix_db->GetBlockWithHeight(sharding_id, pool_index, pool_info.height(), &block);
     if (!r) {
         ZJC_ERROR("no genesis block found");
-        return nullptr;
+        return Status::kError;
+    }
+
+    // 获取 block 对应的 view_block 所打包的 qc 信息，如果没有，说明是创世块
+    auto qc = GetQCWrappedByGenesis();
+    View view = GenesisView;
+    uint32_t leader_idx = 0;
+    HashStr parent_hash = "";
+    view_block::protobuf::ViewBlockItem pb_view_block;
+    r = prefix_db->GetViewBlockInfo(sharding_id, pool_index, pool_info.height(), &pb_view_block);
+    if (r) {
+        bool r2 = qc->Unserialize(pb_view_block.qc_str());
+        if (!r2) {
+            auto qc = GetQCWrappedByGenesis();
+        }
+        view = pb_view_block.view();
+        leader_idx = pb_view_block.leader_idx();
+        parent_hash = pb_view_block.parent_hash();
     }
 
     auto block_ptr = std::make_shared<block::protobuf::Block>(block);
-    return std::make_shared<ViewBlock>("", GetQCWrappedByGenesis(), block_ptr, GenesisView, 0);
+    view_block = std::make_shared<ViewBlock>(parent_hash, qc, block_ptr, view, leader_idx);  
+    
+    r = self_qc->Unserialize(pb_view_block.self_qc_str());
+    if (!r || self_qc->view < GenesisView) {
+        self_qc = GetGenesisQC(view_block->hash);
+    }
+
+    ZJC_DEBUG("pool: %d, latest vb from db, vb view: %lu, self_qc view: %lu",
+        pool_index, view_block->view, self_qc->view);
+    return Status::kSuccess;
 }
 
 std::shared_ptr<QC> GetQCWrappedByGenesis() {

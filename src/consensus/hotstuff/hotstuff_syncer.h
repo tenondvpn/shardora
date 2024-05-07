@@ -40,7 +40,7 @@ using OnRecvViewBlockFn = std::function<Status(
 class HotstuffSyncer {
 public:
     // TODO 将 ViewBlockChainManager 换成 HotstuffManager
-    HotstuffSyncer(const std::shared_ptr<consensus::HotstuffManager>&);
+    HotstuffSyncer(const std::shared_ptr<consensus::HotstuffManager>&, std::shared_ptr<db::Db>& db);
     HotstuffSyncer(const HotstuffSyncer&) = delete;
     HotstuffSyncer& operator=(const HotstuffSyncer&) = delete;
 
@@ -105,6 +105,7 @@ private:
     common::Tick tick_;
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
     OnRecvViewBlockFn on_recv_vb_fn_;
+    std::shared_ptr<db::Db> db_ = nullptr;
 };
 
 } // namespace consensus

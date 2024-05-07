@@ -33,7 +33,7 @@ protected:
         auto crypto = std::make_shared<Crypto>(pool, elect_info, bls_manager);
 
 
-        auto view_block_chain = std::make_shared<ViewBlockChain>();
+        auto view_block_chain = std::make_shared<ViewBlockChain>(db_ptr);
         auto leader_rotation = std::make_shared<LeaderRotation>(pool, view_block_chain, elect_info);
         auto view_duration = std::make_shared<ViewDuration>();
         

@@ -186,11 +186,13 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockItem, block_str_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockItem, qc_str_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockItem, view_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockItem, self_qc_str_),
   0,
   1,
-  5,
+  6,
   2,
   3,
+  5,
   4,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::QC, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::QC, _internal_metadata_),
@@ -257,11 +259,11 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 10, sizeof(::shardora::view_block::protobuf::ViewBlockSyncRequest)},
-  { 15, 26, sizeof(::shardora::view_block::protobuf::ViewBlockItem)},
-  { 32, 42, sizeof(::shardora::view_block::protobuf::QC)},
-  { 47, 58, sizeof(::shardora::view_block::protobuf::ViewBlockSyncResponse)},
-  { 64, 72, sizeof(::shardora::view_block::protobuf::ViewBlockSyncMessage)},
-  { 75, 87, sizeof(::shardora::view_block::protobuf::TimeoutMessage)},
+  { 15, 27, sizeof(::shardora::view_block::protobuf::ViewBlockItem)},
+  { 34, 44, sizeof(::shardora::view_block::protobuf::QC)},
+  { 49, 60, sizeof(::shardora::view_block::protobuf::ViewBlockSyncResponse)},
+  { 66, 74, sizeof(::shardora::view_block::protobuf::ViewBlockSyncMessage)},
+  { 77, 89, sizeof(::shardora::view_block::protobuf::TimeoutMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -298,29 +300,30 @@ void AddDescriptorsImpl() {
       "_block.protobuf\"\203\001\n\024ViewBlockSyncRequest"
       "\022\022\n\nnetwork_id\030\001 \001(\r\022\020\n\010pool_idx\030\002 \001(\r\022\031"
       "\n\021view_block_hashes\030\003 \003(\014\022\024\n\014high_qc_vie"
-      "w\030\004 \001(\004\022\024\n\014high_tc_view\030\005 \001(\004\"w\n\rViewBlo"
-      "ckItem\022\014\n\004hash\030\001 \001(\014\022\023\n\013parent_hash\030\002 \001("
-      "\014\022\022\n\nleader_idx\030\003 \001(\r\022\021\n\tblock_str\030\004 \001(\014"
-      "\022\016\n\006qc_str\030\005 \001(\014\022\014\n\004view\030\006 \001(\004\"[\n\002QC\022\016\n\006"
-      "sign_x\030\001 \001(\014\022\016\n\006sign_y\030\002 \001(\014\022\016\n\006sign_z\030\003"
-      " \001(\014\022\014\n\004view\030\004 \001(\004\022\027\n\017view_block_hash\030\005 "
-      "\001(\014\"\312\001\n\025ViewBlockSyncResponse\022\022\n\nnetwork"
-      "_id\030\001 \001(\r\022\020\n\010pool_idx\030\002 \001(\r\022E\n\020view_bloc"
-      "k_items\030\003 \003(\0132+.shardora.view_block.prot"
-      "obuf.ViewBlockItem\022\032\n\022view_block_qc_strs"
-      "\030\004 \003(\014\022\023\n\013high_qc_str\030\005 \001(\014\022\023\n\013high_tc_s"
-      "tr\030\006 \001(\014\"\307\001\n\024ViewBlockSyncMessage\022J\n\016vie"
-      "w_block_req\030\001 \001(\01322.shardora.view_block."
-      "protobuf.ViewBlockSyncRequest\022K\n\016view_bl"
-      "ock_res\030\002 \001(\01323.shardora.view_block.prot"
-      "obuf.ViewBlockSyncResponse\022\026\n\016create_tim"
-      "e_us\030\003 \001(\r\"\214\001\n\016TimeoutMessage\022\021\n\tmember_"
-      "id\030\001 \001(\r\022\014\n\004view\030\002 \001(\004\022\016\n\006sign_x\030\003 \001(\014\022\016"
-      "\n\006sign_y\030\004 \001(\014\022\021\n\tview_hash\030\005 \001(\014\022\024\n\014ele"
-      "ct_height\030\006 \001(\004\022\020\n\010pool_idx\030\007 \001(\r"
+      "w\030\004 \001(\004\022\024\n\014high_tc_view\030\005 \001(\004\"\214\001\n\rViewBl"
+      "ockItem\022\014\n\004hash\030\001 \001(\014\022\023\n\013parent_hash\030\002 \001"
+      "(\014\022\022\n\nleader_idx\030\003 \001(\r\022\021\n\tblock_str\030\004 \001("
+      "\014\022\016\n\006qc_str\030\005 \001(\014\022\014\n\004view\030\006 \001(\004\022\023\n\013self_"
+      "qc_str\030\007 \001(\014\"[\n\002QC\022\016\n\006sign_x\030\001 \001(\014\022\016\n\006si"
+      "gn_y\030\002 \001(\014\022\016\n\006sign_z\030\003 \001(\014\022\014\n\004view\030\004 \001(\004"
+      "\022\027\n\017view_block_hash\030\005 \001(\014\"\312\001\n\025ViewBlockS"
+      "yncResponse\022\022\n\nnetwork_id\030\001 \001(\r\022\020\n\010pool_"
+      "idx\030\002 \001(\r\022E\n\020view_block_items\030\003 \003(\0132+.sh"
+      "ardora.view_block.protobuf.ViewBlockItem"
+      "\022\032\n\022view_block_qc_strs\030\004 \003(\014\022\023\n\013high_qc_"
+      "str\030\005 \001(\014\022\023\n\013high_tc_str\030\006 \001(\014\"\307\001\n\024ViewB"
+      "lockSyncMessage\022J\n\016view_block_req\030\001 \001(\0132"
+      "2.shardora.view_block.protobuf.ViewBlock"
+      "SyncRequest\022K\n\016view_block_res\030\002 \001(\01323.sh"
+      "ardora.view_block.protobuf.ViewBlockSync"
+      "Response\022\026\n\016create_time_us\030\003 \001(\r\"\214\001\n\016Tim"
+      "eoutMessage\022\021\n\tmember_id\030\001 \001(\r\022\014\n\004view\030\002"
+      " \001(\004\022\016\n\006sign_x\030\003 \001(\014\022\016\n\006sign_y\030\004 \001(\014\022\021\n\t"
+      "view_hash\030\005 \001(\014\022\024\n\014elect_height\030\006 \001(\004\022\020\n"
+      "\010pool_idx\030\007 \001(\r"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 953);
+      descriptor, 975);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/view_block.proto", &protobuf_RegisterTypes);
 }
@@ -739,6 +742,7 @@ const int ViewBlockItem::kLeaderIdxFieldNumber;
 const int ViewBlockItem::kBlockStrFieldNumber;
 const int ViewBlockItem::kQcStrFieldNumber;
 const int ViewBlockItem::kViewFieldNumber;
+const int ViewBlockItem::kSelfQcStrFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ViewBlockItem::ViewBlockItem()
@@ -769,6 +773,10 @@ ViewBlockItem::ViewBlockItem(const ViewBlockItem& from)
   if (from.has_qc_str()) {
     qc_str_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.qc_str_);
   }
+  self_qc_str_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_self_qc_str()) {
+    self_qc_str_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.self_qc_str_);
+  }
   ::memcpy(&view_, &from.view_,
     static_cast<size_t>(reinterpret_cast<char*>(&leader_idx_) -
     reinterpret_cast<char*>(&view_)) + sizeof(leader_idx_));
@@ -780,6 +788,7 @@ void ViewBlockItem::SharedCtor() {
   parent_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   block_str_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   qc_str_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  self_qc_str_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&view_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&leader_idx_) -
       reinterpret_cast<char*>(&view_)) + sizeof(leader_idx_));
@@ -795,6 +804,7 @@ void ViewBlockItem::SharedDtor() {
   parent_hash_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   block_str_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   qc_str_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  self_qc_str_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void ViewBlockItem::SetCachedSize(int size) const {
@@ -818,7 +828,7 @@ void ViewBlockItem::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 15u) {
+  if (cached_has_bits & 31u) {
     if (cached_has_bits & 0x00000001u) {
       hash_.ClearNonDefaultToEmptyNoArena();
     }
@@ -831,8 +841,11 @@ void ViewBlockItem::Clear() {
     if (cached_has_bits & 0x00000008u) {
       qc_str_.ClearNonDefaultToEmptyNoArena();
     }
+    if (cached_has_bits & 0x00000010u) {
+      self_qc_str_.ClearNonDefaultToEmptyNoArena();
+    }
   }
-  if (cached_has_bits & 48u) {
+  if (cached_has_bits & 96u) {
     ::memset(&view_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&leader_idx_) -
         reinterpret_cast<char*>(&view_)) + sizeof(leader_idx_));
@@ -927,6 +940,18 @@ bool ViewBlockItem::MergePartialFromCodedStream(
         break;
       }
 
+      // optional bytes self_qc_str = 7;
+      case 7: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(58u /* 58 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_self_qc_str()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -967,7 +992,7 @@ void ViewBlockItem::SerializeWithCachedSizes(
   }
 
   // optional uint32 leader_idx = 3;
-  if (cached_has_bits & 0x00000020u) {
+  if (cached_has_bits & 0x00000040u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->leader_idx(), output);
   }
 
@@ -984,8 +1009,14 @@ void ViewBlockItem::SerializeWithCachedSizes(
   }
 
   // optional uint64 view = 6;
-  if (cached_has_bits & 0x00000010u) {
+  if (cached_has_bits & 0x00000020u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(6, this->view(), output);
+  }
+
+  // optional bytes self_qc_str = 7;
+  if (cached_has_bits & 0x00000010u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      7, this->self_qc_str(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1018,7 +1049,7 @@ void ViewBlockItem::SerializeWithCachedSizes(
   }
 
   // optional uint32 leader_idx = 3;
-  if (cached_has_bits & 0x00000020u) {
+  if (cached_has_bits & 0x00000040u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->leader_idx(), target);
   }
 
@@ -1037,8 +1068,15 @@ void ViewBlockItem::SerializeWithCachedSizes(
   }
 
   // optional uint64 view = 6;
-  if (cached_has_bits & 0x00000010u) {
+  if (cached_has_bits & 0x00000020u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(6, this->view(), target);
+  }
+
+  // optional bytes self_qc_str = 7;
+  if (cached_has_bits & 0x00000010u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        7, this->self_qc_str(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1058,7 +1096,7 @@ size_t ViewBlockItem::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 63u) {
+  if (_has_bits_[0 / 32] & 127u) {
     // optional bytes hash = 1;
     if (has_hash()) {
       total_size += 1 +
@@ -1085,6 +1123,13 @@ size_t ViewBlockItem::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::BytesSize(
           this->qc_str());
+    }
+
+    // optional bytes self_qc_str = 7;
+    if (has_self_qc_str()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->self_qc_str());
     }
 
     // optional uint64 view = 6;
@@ -1130,7 +1175,7 @@ void ViewBlockItem::MergeFrom(const ViewBlockItem& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 63u) {
+  if (cached_has_bits & 127u) {
     if (cached_has_bits & 0x00000001u) {
       set_has_hash();
       hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.hash_);
@@ -1148,9 +1193,13 @@ void ViewBlockItem::MergeFrom(const ViewBlockItem& from) {
       qc_str_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.qc_str_);
     }
     if (cached_has_bits & 0x00000010u) {
-      view_ = from.view_;
+      set_has_self_qc_str();
+      self_qc_str_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.self_qc_str_);
     }
     if (cached_has_bits & 0x00000020u) {
+      view_ = from.view_;
+    }
+    if (cached_has_bits & 0x00000040u) {
       leader_idx_ = from.leader_idx_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -1188,6 +1237,8 @@ void ViewBlockItem::InternalSwap(ViewBlockItem* other) {
   block_str_.Swap(&other->block_str_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   qc_str_.Swap(&other->qc_str_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  self_qc_str_.Swap(&other->self_qc_str_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(view_, other->view_);
   swap(leader_idx_, other->leader_idx_);

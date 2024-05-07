@@ -70,7 +70,7 @@ int HotstuffManager::Init(
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
 
         auto crypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
-        auto chain = std::make_shared<ViewBlockChain>();
+        auto chain = std::make_shared<ViewBlockChain>(db_);
         auto leader_rotation = std::make_shared<LeaderRotation>(pool_idx, chain, elect_info_);
         auto pacemaker = std::make_shared<Pacemaker>(
                 pool_idx,
@@ -89,8 +89,9 @@ int HotstuffManager::Init(
         auto wrapper = std::make_shared<BlockWrapper>(
                 pool_idx, pool_mgr, tm_block_mgr, block_mgr, elect_info_);
         
-        pool_hotstuff_[pool_idx] = std::make_shared<Hotstuff>(pool_idx, leader_rotation, chain,
-            acceptor, wrapper, pacemaker, crypto, elect_info_);;
+        pool_hotstuff_[pool_idx] = std::make_shared<Hotstuff>(
+                pool_idx, leader_rotation, chain,
+                acceptor, wrapper, pacemaker, crypto, elect_info_, db_);
         pool_hotstuff_[pool_idx]->Init(db_);
     }
 

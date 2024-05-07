@@ -41,7 +41,8 @@ public:
             const std::shared_ptr<IBlockWrapper>& wrapper,
             const std::shared_ptr<Pacemaker>& pm,
             const std::shared_ptr<Crypto>& crypto,
-            const std::shared_ptr<ElectInfo>& elect_info) :
+            const std::shared_ptr<ElectInfo>& elect_info,
+            std::shared_ptr<db::Db>& db) :
         pool_idx_(pool_idx),
         crypto_(crypto),
         pacemaker_(pm),
@@ -49,7 +50,12 @@ public:
         block_wrapper_(wrapper),
         view_block_chain_(chain),
         leader_rotation_(lr),
-        elect_info_(elect_info) {}
+        elect_info_(elect_info),
+        db_(db) {
+        prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+        pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1));
+        pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));
+    }
     ~Hotstuff() {};
 
     void Init(std::shared_ptr<db::Db>& db_);
@@ -109,6 +115,8 @@ private:
     std::shared_ptr<ViewBlockChain> view_block_chain_;
     std::shared_ptr<LeaderRotation> leader_rotation_;
     std::shared_ptr<ElectInfo> elect_info_;
+    std::shared_ptr<db::Db> db_ = nullptr;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     View last_vote_view_;
 
     Status CommitInner(const std::shared_ptr<ViewBlock>& v_block);

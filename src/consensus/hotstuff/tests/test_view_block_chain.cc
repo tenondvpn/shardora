@@ -15,6 +15,7 @@ std::shared_ptr<ViewBlock> GenViewBlock(const HashStr &parent_hash, const View &
 std::shared_ptr<QC> GenQC(const View &view, const HashStr &view_block_hash);
 std::shared_ptr<block::protobuf::Block> GenBlock();
 uint32_t GenLeaderIdx();
+static std::shared_ptr<db::Db> db_ptr = nullptr;
 
 
 std::shared_ptr<ViewBlock> GenViewBlock(const HashStr& parent_hash, const View& view) {
@@ -46,7 +47,8 @@ protected:
     void SetUp() {
         libff::alt_bn128_pp::init_public_params();
         genesis_ = GenViewBlock("", 1);
-        chain_ = std::make_shared<ViewBlockChain>();
+        db_ptr = std::make_shared<db::Db>();
+        chain_ = std::make_shared<ViewBlockChain>(db_ptr);
         chain_->Store(genesis_);
     }
 

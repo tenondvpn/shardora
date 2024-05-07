@@ -406,6 +406,21 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::std::string* release_qc_str();
   void set_allocated_qc_str(::std::string* qc_str);
 
+  // optional bytes self_qc_str = 7;
+  bool has_self_qc_str() const;
+  void clear_self_qc_str();
+  static const int kSelfQcStrFieldNumber = 7;
+  const ::std::string& self_qc_str() const;
+  void set_self_qc_str(const ::std::string& value);
+  #if LANG_CXX11
+  void set_self_qc_str(::std::string&& value);
+  #endif
+  void set_self_qc_str(const char* value);
+  void set_self_qc_str(const void* value, size_t size);
+  ::std::string* mutable_self_qc_str();
+  ::std::string* release_self_qc_str();
+  void set_allocated_self_qc_str(::std::string* self_qc_str);
+
   // optional uint64 view = 6;
   bool has_view() const;
   void clear_view();
@@ -434,6 +449,8 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   void clear_has_qc_str();
   void set_has_view();
   void clear_has_view();
+  void set_has_self_qc_str();
+  void clear_has_self_qc_str();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -442,6 +459,7 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::google::protobuf::internal::ArenaStringPtr parent_hash_;
   ::google::protobuf::internal::ArenaStringPtr block_str_;
   ::google::protobuf::internal::ArenaStringPtr qc_str_;
+  ::google::protobuf::internal::ArenaStringPtr self_qc_str_;
   ::google::protobuf::uint64 view_;
   ::google::protobuf::uint32 leader_idx_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
@@ -1484,13 +1502,13 @@ inline void ViewBlockItem::set_allocated_parent_hash(::std::string* parent_hash)
 
 // optional uint32 leader_idx = 3;
 inline bool ViewBlockItem::has_leader_idx() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void ViewBlockItem::set_has_leader_idx() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void ViewBlockItem::clear_has_leader_idx() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void ViewBlockItem::clear_leader_idx() {
   leader_idx_ = 0u;
@@ -1640,13 +1658,13 @@ inline void ViewBlockItem::set_allocated_qc_str(::std::string* qc_str) {
 
 // optional uint64 view = 6;
 inline bool ViewBlockItem::has_view() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void ViewBlockItem::set_has_view() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void ViewBlockItem::clear_has_view() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void ViewBlockItem::clear_view() {
   view_ = GOOGLE_ULONGLONG(0);
@@ -1660,6 +1678,72 @@ inline void ViewBlockItem::set_view(::google::protobuf::uint64 value) {
   set_has_view();
   view_ = value;
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockItem.view)
+}
+
+// optional bytes self_qc_str = 7;
+inline bool ViewBlockItem::has_self_qc_str() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void ViewBlockItem::set_has_self_qc_str() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void ViewBlockItem::clear_has_self_qc_str() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void ViewBlockItem::clear_self_qc_str() {
+  self_qc_str_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_self_qc_str();
+}
+inline const ::std::string& ViewBlockItem::self_qc_str() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockItem.self_qc_str)
+  return self_qc_str_.GetNoArena();
+}
+inline void ViewBlockItem::set_self_qc_str(const ::std::string& value) {
+  set_has_self_qc_str();
+  self_qc_str_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockItem.self_qc_str)
+}
+#if LANG_CXX11
+inline void ViewBlockItem::set_self_qc_str(::std::string&& value) {
+  set_has_self_qc_str();
+  self_qc_str_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.view_block.protobuf.ViewBlockItem.self_qc_str)
+}
+#endif
+inline void ViewBlockItem::set_self_qc_str(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_self_qc_str();
+  self_qc_str_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.view_block.protobuf.ViewBlockItem.self_qc_str)
+}
+inline void ViewBlockItem::set_self_qc_str(const void* value, size_t size) {
+  set_has_self_qc_str();
+  self_qc_str_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.view_block.protobuf.ViewBlockItem.self_qc_str)
+}
+inline ::std::string* ViewBlockItem::mutable_self_qc_str() {
+  set_has_self_qc_str();
+  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.ViewBlockItem.self_qc_str)
+  return self_qc_str_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ViewBlockItem::release_self_qc_str() {
+  // @@protoc_insertion_point(field_release:shardora.view_block.protobuf.ViewBlockItem.self_qc_str)
+  if (!has_self_qc_str()) {
+    return NULL;
+  }
+  clear_has_self_qc_str();
+  return self_qc_str_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ViewBlockItem::set_allocated_self_qc_str(::std::string* self_qc_str) {
+  if (self_qc_str != NULL) {
+    set_has_self_qc_str();
+  } else {
+    clear_has_self_qc_str();
+  }
+  self_qc_str_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), self_qc_str);
+  // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockItem.self_qc_str)
 }
 
 // -------------------------------------------------------------------

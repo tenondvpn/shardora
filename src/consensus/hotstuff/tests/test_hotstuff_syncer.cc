@@ -89,7 +89,7 @@ protected:
                 db_,
                 [](std::shared_ptr<block::protobuf::Block>& block, db::DbWriteBatch& db_batch){});
     
-        syncer_ = std::make_shared<HotstuffSyncer>(hotstuff_mgr_);
+        syncer_ = std::make_shared<HotstuffSyncer>(hotstuff_mgr_, db_);
         syncer_->SetOnRecvViewBlockFn(StoreViewBlock);
     }
 
@@ -132,12 +132,12 @@ TEST_F(TestViewBlockChainSyncer, TestMergeChain_HasCross) {
     auto b4 = GenViewBlock(b3->hash, b3->view+1);
     auto b5 = GenViewBlock(b4->hash, b4->view+1);
     
-    auto ori_chain = std::make_shared<ViewBlockChain>();
+    auto ori_chain = std::make_shared<ViewBlockChain>(db_);
     ori_chain->Store(b1);
     ori_chain->Store(b2);
     ori_chain->Store(b3);
 
-    auto sync_chain = std::make_shared<ViewBlockChain>();
+    auto sync_chain = std::make_shared<ViewBlockChain>(db_);
     sync_chain->Store(b2);
     sync_chain->Store(b3);
     sync_chain->Store(b4);
@@ -161,12 +161,12 @@ TEST_F(TestViewBlockChainSyncer, TestMergeChain_NoCross) {
     auto b5 = GenViewBlock(b4->hash, b4->view+1);
     auto b6 = GenViewBlock(b5->hash, b5->view+1);
     
-    auto ori_chain = std::make_shared<ViewBlockChain>();
+    auto ori_chain = std::make_shared<ViewBlockChain>(db_);
     ori_chain->Store(b1);
     ori_chain->Store(b2);
     ori_chain->Store(b3);
 
-    auto sync_chain = std::make_shared<ViewBlockChain>();
+    auto sync_chain = std::make_shared<ViewBlockChain>(db_);
     sync_chain->Store(b4);
     sync_chain->Store(b5);
     sync_chain->Store(b6);

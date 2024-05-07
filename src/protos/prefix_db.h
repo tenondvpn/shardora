@@ -3,6 +3,7 @@
 #include <evmc/evmc.hpp>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_init.hpp>
 #include <libbls/tools/utils.h>
+#include <protos/view_block.pb.h>
 
 #include "common/encode.h"
 #include "common/global_info.h"
@@ -21,6 +22,7 @@
 #include "protos/timeblock.pb.h"
 #include "protos/tx_storage_key.h"
 #include "security/security.h"
+#include "consensus/hotstuff/types.h"
 
 namespace shardora {
 
@@ -72,6 +74,7 @@ static const std::string kCrossCheckHeightPrefix = "aj\x01";
 static const std::string kElectHeightWithBlsCommonPkPrefix = "ak\x01";
 static const std::string kBftInvalidHeightHashs = "al\x01";
 static const std::string kTempBftInvalidHeightHashs = "am\x01";
+static const std::string kViewBlockInfoPrefix = "an\x01";
 
 class PrefixDb {
 public:
@@ -335,7 +338,6 @@ public:
             return false;
         }
 
-        ZJC_DEBUG("success save block to db %u, %u, %lu", block.network_id(), block.pool_index(), block.height());
 #ifndef ENABLE_HOTSTUFF        
         assert(block.has_bls_agg_sign_x() && block.has_bls_agg_sign_y());
 #endif
@@ -571,6 +573,45 @@ public:
         return true;
     }
 
+    void SaveViewBlockInfo(
+            uint32_t sharding_id,
+            uint32_t pool_index,
+            uint64_t block_height,
+            const view_block::protobuf::ViewBlockItem& pb_view_block,
+            db::DbWriteBatch& batch) {
+        std::string key;
+        key.reserve(32);
+        key.append(kViewBlockInfoPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        key.append((char*)&pool_index, sizeof(pool_index));
+        key.append((char*)&block_height, sizeof(block_height));
+        batch.Put(key, pb_view_block.SerializeAsString());
+    }
+
+    bool GetViewBlockInfo(
+            uint32_t sharding_id,
+            uint32_t pool_index,
+            uint64_t block_height,
+            view_block::protobuf::ViewBlockItem* pb_view_block) {
+        std::string key;
+        key.reserve(32);
+        key.append(kViewBlockInfoPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        key.append((char*)&pool_index, sizeof(pool_index));
+        key.append((char*)&block_height, sizeof(block_height));
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            return false;
+        }
+
+        if (!pb_view_block->ParseFromString(val)) {
+            return false;
+        }
+
+        return true;        
+    }
+
     void SaveHeightTree(
             uint32_t net_id,
             uint32_t pool_index,
@@ -763,10 +804,6 @@ public:
             return false;
         }
         
-        ZJC_DEBUG("get bls success: %lu, %u, %s",
-            elect_height,
-            sharding_id,
-            common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
         return true;
     }
 
@@ -1082,6 +1119,31 @@ public:
         }
     }
 
+    void SaveAddressPubkey(const std::string& id, const std::string& pubkey) {
+        std::string key;
+        key.reserve(64);
+        key.append(kAddressPubkeyPrefex);
+        key.append(id);
+        auto st = db_->Put(key, pubkey);
+        if (!st.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+    }
+
+    bool GetAddressPubkey(const std::string& id, std::string* pubkey) {
+        std::string key;
+        key.reserve(64);
+        key.append(kAddressPubkeyPrefex);
+        key.append(id);
+        auto st = db_->Get(key, pubkey);
+        if (!st.ok()) {
+            ZJC_ERROR("write db failed!");
+            return false;
+        }
+
+        return true;
+    }
+
     void SaveJoinShard(uint32_t sharding_id, uint32_t des_sharding_id) {
         std::string key;
         key.reserve(64);
@@ -1095,8 +1157,6 @@ public:
         if (!st.ok()) {
             ZJC_FATAL("write db failed!");
         }
-
-        ZJC_DEBUG("success set local network id %u, des %u", sharding_id, des_sharding_id);
     }
 
     bool GetJoinShard(uint32_t* sharding_id, uint32_t* des_sharding_id) {
