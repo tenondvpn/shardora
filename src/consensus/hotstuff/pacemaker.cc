@@ -208,7 +208,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("====4.1 pool: %d, create tc, view: %d, member: %d, view: %d",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
 
-    // AdvanceView(new_sync_info()->WithTC(tc));
+    AdvanceView(new_sync_info()->WithTC(tc));
 
     assert(new_proposal_fn_ != nullptr);
     
