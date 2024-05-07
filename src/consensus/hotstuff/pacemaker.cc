@@ -79,9 +79,6 @@ void Pacemaker::UpdateHighQC(const std::shared_ptr<QC>& qc) {
 void Pacemaker::UpdateHighTC(const std::shared_ptr<TC>& tc) {
     if (high_tc_->view < tc->view) {
         high_tc_ = tc;
-        if (on_update_high_tc_fn_) {
-            on_update_high_tc_fn_(high_tc_);
-        }
     }
 }
 
