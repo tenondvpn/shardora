@@ -103,6 +103,10 @@ public:
         return elect_info_->GetElectItem();
     }
     
+    inline std::shared_ptr<security::Security> security() const {
+        return bls_mgr_->security();
+    }
+    
 private:
     // 保留上一次 elect_item，避免 epoch 切换的影响
     uint32_t pool_idx_;
@@ -166,9 +170,6 @@ private:
         return Status::kSuccess;
     }
 
-    inline std::shared_ptr<security::Security> security() const {
-        return bls_mgr_->security();
-    }
 };
 
 } // namespace consensus

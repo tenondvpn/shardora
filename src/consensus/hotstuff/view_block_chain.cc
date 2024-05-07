@@ -290,6 +290,14 @@ Status GetLatestViewBlockFromDb(
         std::shared_ptr<QC>& self_qc) {
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
     uint32_t sharding_id = common::GlobalInfo::Instance()->network_id();
+    pools::protobuf::PoolLatestInfo pool_info;
+    if (!prefix_db->GetLatestPoolInfo(
+            sharding_id,
+            pool_index,
+            &pool_info)) {
+        ZJC_DEBUG("failed get genesis block net: %u, pool: %u", sharding_id, pool_index);
+        return nullptr;
+    }
 
     pools::protobuf::PoolLatestInfo pool_info;
     prefix_db->GetLatestPoolInfo(sharding_id, pool_index, &pool_info);

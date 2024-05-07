@@ -23,7 +23,9 @@ void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
         view_block_chain_->SetLatestLockedBlock(latest_view_block);
         view_block_chain_->SetLatestCommittedBlock(latest_view_block);
         // 开启第一个视图
+
         pacemaker_->AdvanceView(new_sync_info()->WithQC(latest_view_block_self_qc));
+        ZJC_DEBUG("has latest block, pool_idx: %d, latest block height: %lu", pool_idx_, latest_view_block->block->height());
     } else {
         ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
     }            
@@ -81,19 +83,20 @@ void Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
         return;
     }
 
-    ZJC_DEBUG("pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu",
+    network::Route::Instance()->Send(msg_ptr);
+    ZJC_DEBUG("pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
         pool_idx_,
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
         hotstuff_msg->pro_msg().view_item().view(),
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
-        pacemaker()->HighQC()->view);
-
-    HandleProposeMsg(hotstuff_msg->pro_msg());
-    network::Route::Instance()->Send(msg_ptr);
+        pacemaker()->HighQC()->view,
+        header.hash64());
+    HandleProposeMsg(header);
     return;
 }
 
-void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
+void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
+    auto& pro_msg = header.hotstuff().pro_msg();
     // 3 Verify TC
     std::shared_ptr<TC> tc = nullptr;
     if (!pro_msg.tc_str().empty()) {
@@ -103,6 +106,7 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
             return;
         }
         if (crypto()->VerifyTC(tc, pro_msg.elect_height()) != Status::kSuccess) {
+            ZJC_ERROR("VerifyTC error.");
             return;
         }
         pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));
@@ -131,6 +135,9 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
     
     // 2 Veriyfy Leader
     if (VerifyLeader(v_block) != Status::kSuccess) {
+        ZJC_ERROR("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
+            pool_idx_, v_block->view, header.hash64());
+        // assert(false);
         return;
     }
     
@@ -198,12 +205,14 @@ void Hotstuff::HandleProposeMsg(const hotstuff::protobuf::ProposeMsg& pro_msg) {
     auto vote_msg = std::make_shared<hotstuff::protobuf::VoteMsg>();
     s = ConstructVoteMsg(vote_msg, pro_msg.elect_height(), v_block);
     if (s != Status::kSuccess) {
+        ZJC_ERROR("ConstructVoteMsg error %d", s);
         return;
     }
     // Construct HotstuffMessage and send
     auto pb_hotstuff_msg = std::make_shared<pb_HotstuffMessage>();
     s = ConstructHotstuffMsg(VOTE, nullptr, vote_msg, pb_hotstuff_msg);
     if (s != Status::kSuccess) {
+        ZJC_ERROR("ConstructHotstuffMsg error %d", s);
         return;
     }
     if (SendVoteMsg(pb_hotstuff_msg) != Status::kSuccess) {
@@ -427,8 +436,9 @@ Status Hotstuff::VerifyLeader(const std::shared_ptr<ViewBlock>& view_block) {
         ZJC_ERROR("Get Leader is error.");
         return  Status::kError;
     }
+
     if (leader_idx != leader->index) {
-        ZJC_ERROR("leader_idx message is error.");
+        ZJC_ERROR("leader_idx message is error, %d, %d", leader_idx, leader->index);
         return Status::kError;
     }
     return Status::kSuccess;
@@ -508,6 +518,9 @@ Status Hotstuff::ConstructViewBlock(
         return s;
     }
     
+    ZJC_DEBUG("get prev block hash: %s, height: %lu", 
+        common::Encode::HexEncode(view_block->parent_hash).c_str(), 
+        pre_v_block->block->height());
     auto pre_block = pre_v_block->block;
     auto pb_block = std::make_shared<block::protobuf::Block>();
     s = wrapper()->Wrap(pre_block, leader_idx, pb_block, tx_propose);
@@ -558,13 +571,19 @@ Status Hotstuff::SendVoteMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage
     }
 
     header_msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    dht::DhtKeyManager dht_key(leader->net_id);
+    dht::DhtKeyManager dht_key(leader->net_id, leader->id);
     header_msg.set_des_dht_key(dht_key.StrKey());
     header_msg.set_type(common::kHotstuffMessage);
     transport::TcpTransport::Instance()->SetMessageHash(header_msg);    
-
     if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
-        transport::TcpTransport::Instance()->Send(common::Uint32ToIp(leader->public_ip), leader->public_port, header_msg);
+        if (leader->public_ip == 0 || leader->public_port == 0) {
+            network::Route::Instance()->Send(trans_msg);
+        } else {
+            transport::TcpTransport::Instance()->Send(
+                common::Uint32ToIp(leader->public_ip), 
+                leader->public_port, 
+                header_msg);
+        }
     } else {
         HandleVoteMsg(header_msg.hotstuff().vote_msg());
     }
