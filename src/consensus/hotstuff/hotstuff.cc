@@ -563,13 +563,19 @@ Status Hotstuff::SendVoteMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage
     }
 
     header_msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    dht::DhtKeyManager dht_key(leader->net_id);
+    dht::DhtKeyManager dht_key(leader->net_id, leader->id);
     header_msg.set_des_dht_key(dht_key.StrKey());
     header_msg.set_type(common::kHotstuffMessage);
     transport::TcpTransport::Instance()->SetMessageHash(header_msg);    
-
     if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
-        transport::TcpTransport::Instance()->Send(common::Uint32ToIp(leader->public_ip), leader->public_port, header_msg);
+        if (leader->public_ip == 0 || leader->public_port == 0) {
+            network::Route::Instance()->Send(trans_msg);
+        } else {
+            transport::TcpTransport::Instance()->Send(
+                common::Uint32ToIp(leader->public_ip), 
+                leader->public_port, 
+                header_msg);
+        }
     } else {
         HandleVoteMsg(header_msg.hotstuff().vote_msg());
     }
