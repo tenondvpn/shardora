@@ -30,8 +30,8 @@ Pacemaker::Pacemaker(
 Pacemaker::~Pacemaker() {}
 
 void Pacemaker::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
-    ZJC_DEBUG("pool: %d timer", pool_idx_);
     if (IsTimeout()) {
+        ZJC_DEBUG("pool: %d timeout", pool_idx_);
         StopTimeoutTimer();
         OnLocalTimeout();
     }
@@ -63,9 +63,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
     }
     
     StopTimeoutTimer();
-    if (timeout) {
-        duration_->ViewTimeout();
-    } else {
+    if (!timeout) {
         duration_->ViewSucceeded();
     }
     
@@ -94,6 +92,10 @@ void Pacemaker::OnLocalTimeout() {
     ZJC_DEBUG("OnLocalTimeout pool: %d, view: %d", pool_idx_, CurView());
     // start a new timer for the timeout case
     StartTimeoutTimer();
+
+    // TODO if view is last one, deal directly.
+    
+    duration_->ViewTimeout();
     
     // 超时后先触发一次同步，主要是尽量同步最新的 HighQC，降低因 HighQC 不一致造成多次超时的概率
     // 由于 HotstuffSyncer 周期性同步，这里不触发同步影响也不大
@@ -209,11 +211,11 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
 
     AdvanceView(new_sync_info()->WithTC(tc));
-
-    assert(new_proposal_fn_ != nullptr);
     
     // NewView msg broadcast
     if (new_view_fn_) {
+        ZJC_DEBUG("====4.2 pool: %d, broadcast tc, view: %d, member: %d, view: %d",
+            pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
         new_view_fn_(new_sync_info()->WithTC(HighTC()));
     }
     

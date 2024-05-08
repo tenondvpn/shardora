@@ -79,9 +79,9 @@ int HotstuffManager::Init(
                 std::make_shared<ViewDuration>(
                         pool_idx,
                         10,
-                        1000,
-                        10000,
-                        1.1));
+                        500,
+                        60000,
+                        1.5));
         auto acceptor = std::make_shared<BlockAcceptor>(
                 pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
                 contract_mgr, db, gas_prepayment, pool_mgr, block_mgr,
@@ -185,16 +185,9 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         case VOTE:
             hotstuff(hotstuff_msg.pool_index())->HandleVoteMsg(header);
             break;
-        case NEWVIEW:
-        {
-            Status s = crypto(hotstuff_msg.pool_index())->VerifyMessage(msg_ptr);
-            if (s != Status::kSuccess) {
-                ZJC_ERROR("====1.2 pool: %d, verify message failed, %d", hotstuff_msg.pool_index(), static_cast<int>(s));
-                return;
-            }
+        case NEWVIEW:        
             hotstuff(hotstuff_msg.pool_index())->HandleNewViewMsg(header);
             break;
-        }
         default:
             ZJC_WARN("consensus message type is error.");
             break;
