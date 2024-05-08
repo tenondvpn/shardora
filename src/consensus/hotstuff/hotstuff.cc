@@ -82,6 +82,8 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     transport::TcpTransport::Instance()->SetMessageHash(header);
     s = crypto()->SignMessage(msg_ptr);
     if (s != Status::kSuccess) {
+        ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
+            pool_idx_, hotstuff_msg->pro_msg().view_item().view());
         return s;
     }
 
