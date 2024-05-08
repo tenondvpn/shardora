@@ -100,6 +100,7 @@ void Pacemaker::OnLocalTimeout() {
         last_timeout_->header.hotstuff_timeout_proto().has_sign_x() &&
         last_timeout_->header.hotstuff_timeout_proto().view() >= CurView()) {
         BroadcastTimeout(msg_ptr);
+        return;
     }
     
     duration_->ViewTimeout();
