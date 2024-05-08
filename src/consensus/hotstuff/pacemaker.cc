@@ -97,7 +97,8 @@ void Pacemaker::OnLocalTimeout() {
     auto& msg = msg_ptr->header;
     // if view is last one, deal directly.
     if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
-        last_timeout_->header.hotstuff_timeout_proto().view() == CurView()) {
+        last_timeout_->header.hotstuff_timeout_proto().has_sign_x() &&
+        last_timeout_->header.hotstuff_timeout_proto().view() >= CurView()) {
         BroadcastTimeout(msg_ptr);
     }
     
