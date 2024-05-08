@@ -99,6 +99,7 @@ void Pacemaker::OnLocalTimeout() {
     if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
         last_timeout_->header.hotstuff_timeout_proto().has_sign_x() &&
         last_timeout_->header.hotstuff_timeout_proto().view() >= CurView()) {
+        assert(last_timeout_->header.type() == common::kHotstuffTimeoutMessage);
         BroadcastTimeout(msg_ptr);
         return;
     }
@@ -143,6 +144,7 @@ void Pacemaker::OnLocalTimeout() {
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     
     last_timeout_ = msg_ptr;
+    assert(last_timeout_->header.type() == common::kHotstuffTimeoutMessage);
     
     // 停止对当前 view 的投票
     if (stop_voting_fn_) {
