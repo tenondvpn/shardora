@@ -93,7 +93,14 @@ void Pacemaker::OnLocalTimeout() {
     // start a new timer for the timeout case
     StartTimeoutTimer();
 
-    // TODO if view is last one, deal directly.
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& msg = msg_ptr->header;
+    // if view is last one, deal directly.
+    if (last_timeout_ != nullptr && last_timeout_->view() == CurView()) {
+        view_block::protobuf::TimeoutMessage& timeout_msg = *msg.mutable_hotstuff_timeout_proto();
+        msg.mutable_hotstuff_timeout_proto()->CopyFrom(*last_timeout_);
+        BroadcastTimeout(msg_ptr);
+    }
     
     duration_->ViewTimeout();
     
@@ -101,10 +108,7 @@ void Pacemaker::OnLocalTimeout() {
     // 由于 HotstuffSyncer 周期性同步，这里不触发同步影响也不大
     if (sync_pool_fn_) {
         sync_pool_fn_(pool_idx_);
-    }    
-    
-    auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    auto& msg = msg_ptr->header;
+    }
     
     view_block::protobuf::TimeoutMessage& timeout_msg = *msg.mutable_hotstuff_timeout_proto();
     timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());
@@ -133,17 +137,25 @@ void Pacemaker::OnLocalTimeout() {
     timeout_msg.set_elect_height(elect_item->ElectHeight());
     timeout_msg.set_pool_idx(pool_idx_); // 用于分配线程
 
-    auto leader = leader_rotation_->GetLeader();
+    
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     
     msg.set_type(common::kHotstuffTimeoutMessage);
     transport::TcpTransport::Instance()->SetMessageHash(msg);
-
+    
+    last_timeout_ = &timeout_msg;
+    
     // 停止对当前 view 的投票
     if (stop_voting_fn_) {
         stop_voting_fn_(CurView());
     }
+    BroadcastTimeout(msg_ptr);
+    return;
+}
 
+void Pacemaker::BroadcastTimeout(const std::shared_ptr<transport::TransportMessage>& msg_ptr) {    
+    auto& msg = msg_ptr->header;
+    auto leader = leader_rotation_->GetLeader();
     if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
         dht::DhtKeyManager dht_key(leader->net_id, leader->id);
         msg.set_des_dht_key(dht_key.StrKey());
@@ -152,7 +164,7 @@ void Pacemaker::OnLocalTimeout() {
             pool_idx_,
             common::Uint32ToIp(leader->public_ip).c_str(), 
             leader->public_port, 
-            timeout_msg.member_id(),
+            msg.hotstuff_timeout_proto().member_id(),
             common::Encode::HexEncode(leader->id).c_str(),
             common::Encode::HexEncode(crypto_->security()->GetAddress()).c_str(),
             msg.hash64());
@@ -160,15 +172,13 @@ void Pacemaker::OnLocalTimeout() {
             network::Route::Instance()->Send(msg_ptr);
         } else {
             transport::TcpTransport::Instance()->Send(
-                common::Uint32ToIp(leader->public_ip), 
-                leader->public_port, 
-                msg);
+                    common::Uint32ToIp(leader->public_ip), 
+                    leader->public_port, 
+                    msg);
         }
     } else {
         OnRemoteTimeout(msg_ptr);
-    }    
-    
-    return;
+    }        
 }
 
 // OnRemoteTimeout 由 Consensus 调用
