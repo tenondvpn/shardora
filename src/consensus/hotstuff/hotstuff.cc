@@ -126,11 +126,6 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
     dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
     header.set_des_dht_key(dht_key.StrKey());
     transport::TcpTransport::Instance()->SetMessageHash(header);
-    s = crypto()->SignMessage(msg_ptr);
-    if (s != Status::kSuccess) {
-        return;
-    }
-
     network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("pool: %d, newview, txs size: %lu, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
         pool_idx_,
@@ -153,11 +148,13 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
             ZJC_ERROR("tc Unserialize is error.");
             return;
         }
-        if (crypto()->VerifyTC(tc, pro_msg.elect_height()) != Status::kSuccess) {
-            ZJC_ERROR("VerifyTC error.");
-            return;
+        if (tc->view > pacemaker()->HighTC()->view) {
+            if (crypto()->VerifyTC(tc, pro_msg.elect_height()) != Status::kSuccess) {
+                ZJC_ERROR("VerifyTC error.");
+                return;
+            }
+            pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));            
         }
-        pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));
     }
     
     // 1 校验pb view block格式
@@ -335,6 +332,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
 }
 
 void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
+    ZJC_DEBUG("====3.1 pool: %d, onNewview", pool_idx_);    
     auto& newview_msg = header.hotstuff().newview_msg();
     std::shared_ptr<TC> tc = nullptr;
     if (!newview_msg.tc_str().empty()) {
@@ -343,11 +341,15 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
             ZJC_ERROR("tc Unserialize is error.");
             return;
         }
-        if (crypto()->VerifyTC(tc, newview_msg.elect_height()) != Status::kSuccess) {
-            ZJC_ERROR("VerifyTC error.");
-            return;
+        if (tc->view > pacemaker()->HighTC()->view) {
+            if (crypto()->VerifyTC(tc, newview_msg.elect_height()) != Status::kSuccess) {
+                ZJC_ERROR("VerifyTC error.");
+                return;
+            }
+
+            ZJC_DEBUG("====3.2 pool: %d, tc: %lu, onNewview", pool_idx_, tc->view);
+            pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));
         }
-        pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));
     }
     return;
 }
@@ -435,9 +437,11 @@ Status Hotstuff::VerifyViewBlock(
     }
 
     // 验证 qc
-    if (crypto()->VerifyQC(qc, elect_height) != Status::kSuccess) {
-        ZJC_ERROR("Verify qc is error. elect_height: %llu, qc: %llu", elect_height, qc->view);
-        return Status::kError; 
+    if (qc->view > pacemaker()->HighQC()->view) {
+        if (crypto()->VerifyQC(qc, elect_height) != Status::kSuccess) {
+            ZJC_ERROR("Verify qc is error. elect_height: %llu, qc: %llu", elect_height, qc->view);
+            return Status::kError; 
+        }
     }
 
     // hotstuff condition

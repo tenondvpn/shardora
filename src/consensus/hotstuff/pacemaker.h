@@ -88,11 +88,11 @@ private:
         // }
         // one_shot_tick_->Destroy();
         last_time_us_ = 0;
-        duration_us_ = std::numeric_limits<View>::max();
+        duration_us_ = 0;
     }
 
     inline bool IsTimeout() {
-        return common::TimeUtils::TimestampUs() - last_time_us_ > duration_us_;
+        return (last_time_us_ != 0 && common::TimeUtils::TimestampUs() - last_time_us_ > duration_us_);
     }
 
     uint32_t pool_idx_;

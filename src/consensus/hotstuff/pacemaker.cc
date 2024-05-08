@@ -30,8 +30,8 @@ Pacemaker::Pacemaker(
 Pacemaker::~Pacemaker() {}
 
 void Pacemaker::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
-    ZJC_DEBUG("pool: %d timer", pool_idx_);
     if (IsTimeout()) {
+        ZJC_DEBUG("pool: %d timeout", pool_idx_);
         StopTimeoutTimer();
         OnLocalTimeout();
     }
@@ -209,11 +209,11 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
 
     AdvanceView(new_sync_info()->WithTC(tc));
-
-    assert(new_proposal_fn_ != nullptr);
     
     // NewView msg broadcast
     if (new_view_fn_) {
+        ZJC_DEBUG("====4.2 pool: %d, broadcast tc, view: %d, member: %d, view: %d",
+            pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
         new_view_fn_(new_sync_info()->WithTC(HighTC()));
     }
     
