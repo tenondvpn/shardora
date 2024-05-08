@@ -103,7 +103,7 @@ private:
     NewViewFn new_view_fn_ = nullptr;
     uint64_t last_time_us_ = 0;
     uint64_t duration_us_ = 0;
-    view_block::protobuf::TimeoutMessage* last_timeout_ = nullptr;
+    std::shared_ptr<transport::TransportMessage> last_timeout_ = nullptr;
 };
 
 } // namespace consensus

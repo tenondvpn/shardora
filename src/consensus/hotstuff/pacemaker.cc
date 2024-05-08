@@ -96,9 +96,7 @@ void Pacemaker::OnLocalTimeout() {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
     // if view is last one, deal directly.
-    if (last_timeout_ != nullptr && last_timeout_->view() == CurView()) {
-        view_block::protobuf::TimeoutMessage& timeout_msg = *msg.mutable_hotstuff_timeout_proto();
-        msg.mutable_hotstuff_timeout_proto()->CopyFrom(*last_timeout_);
+    if (last_timeout_ && last_timeout_->header.hotstuff_timeout_proto().view() == CurView()) {
         BroadcastTimeout(msg_ptr);
     }
     
@@ -143,7 +141,7 @@ void Pacemaker::OnLocalTimeout() {
     msg.set_type(common::kHotstuffTimeoutMessage);
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     
-    last_timeout_ = &timeout_msg;
+    last_timeout_ = msg_ptr;
     
     // 停止对当前 view 的投票
     if (stop_voting_fn_) {
