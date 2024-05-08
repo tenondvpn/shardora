@@ -55,7 +55,7 @@ public:
         transport::protobuf::Header& header, 
         uint32_t count);
     void GetTxByIds(
-            std::vector<std::string> gids,
+            const std::vector<std::string>& gids,
             std::map<std::string, TxItemPtr>& res_map);    
     void TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
     void TxRecover(std::map<std::string, TxItemPtr>& txs);

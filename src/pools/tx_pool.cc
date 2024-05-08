@@ -230,7 +230,7 @@ void TxPool::GetTx(
 }
 
 void TxPool::GetTxByIds(
-        std::vector<std::string> gids,
+        const std::vector<std::string>& gids,
         std::map<std::string, TxItemPtr>& res_map) {
     for (const auto& gid : gids) {
         auto it = gid_map_.find(gid);
