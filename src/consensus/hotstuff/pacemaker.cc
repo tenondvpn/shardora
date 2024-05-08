@@ -92,15 +92,11 @@ void Pacemaker::OnLocalTimeout() {
     ZJC_DEBUG("OnLocalTimeout pool: %d, view: %d", pool_idx_, CurView());
     // start a new timer for the timeout case
     StartTimeoutTimer();
-
-    auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    auto& msg = msg_ptr->header;
+    
     // if view is last one, deal directly.
     if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
-        last_timeout_->header.hotstuff_timeout_proto().has_sign_x() &&
         last_timeout_->header.hotstuff_timeout_proto().view() >= CurView()) {
-        assert(last_timeout_->header.type() == common::kHotstuffTimeoutMessage);
-        BroadcastTimeout(msg_ptr);
+        BroadcastTimeout(last_timeout_);
         return;
     }
     
@@ -111,9 +107,10 @@ void Pacemaker::OnLocalTimeout() {
     if (sync_pool_fn_) {
         sync_pool_fn_(pool_idx_);
     }
-    
-    view_block::protobuf::TimeoutMessage& timeout_msg = *msg.mutable_hotstuff_timeout_proto();
-    timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());
+
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& msg = msg_ptr->header;
+
 
     auto elect_item = crypto_->GetLatestElectItem();
     if (!elect_item) {
@@ -131,7 +128,9 @@ void Pacemaker::OnLocalTimeout() {
             &bls_sign_y) != Status::kSuccess) {
         return;
     }
-    
+
+    view_block::protobuf::TimeoutMessage& timeout_msg = *msg.mutable_hotstuff_timeout_proto();
+    timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());    
     timeout_msg.set_sign_x(bls_sign_x);
     timeout_msg.set_sign_y(bls_sign_y);
     timeout_msg.set_view_hash(GetViewHash(CurView()));
@@ -144,7 +143,6 @@ void Pacemaker::OnLocalTimeout() {
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     
     last_timeout_ = msg_ptr;
-    assert(last_timeout_->header.type() == common::kHotstuffTimeoutMessage);
     
     // 停止对当前 view 的投票
     if (stop_voting_fn_) {
