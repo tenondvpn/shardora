@@ -79,9 +79,9 @@ int HotstuffManager::Init(
                 std::make_shared<ViewDuration>(
                         pool_idx,
                         10,
-                        1000,
-                        60000,
-                        2));
+                        500,
+                        30000,
+                        1.5));
         auto acceptor = std::make_shared<BlockAcceptor>(
                 pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
                 contract_mgr, db, gas_prepayment, pool_mgr, block_mgr,
