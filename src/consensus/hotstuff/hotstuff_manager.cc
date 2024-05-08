@@ -217,6 +217,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
             pools_mgr_->PopTxs(pool_idx, false);
             pools_mgr_->CheckTimeoutTx(pool_idx);
+            ZJC_DEBUG("check tx timeout pool: %d", pool_idx);
         }
     }
 
