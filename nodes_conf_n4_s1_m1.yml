@@ -2,37 +2,37 @@ nodes:
 - http_port: 9201
   name: r1
   net: 2
-  server: 10.200.48.58
+  server: 10.101.20.12
   tcp_port: 22001
 - http_port: 9202
   name: r2
   net: 2
-  server: 10.200.48.58
+  server: 10.101.20.12
   tcp_port: 22002
 - http_port: 9203
   name: r3
   net: 2
-  server: 10.200.48.58
+  server: 10.101.20.12
   tcp_port: 22003
 - http_port: 9301
   name: s3_1
   net: 3
-  server: 10.200.48.58
+  server: 10.101.20.12
   tcp_port: 23001
 - http_port: 9302
   name: s3_2
   net: 3
-  server: 10.200.48.58
+  server: 10.101.20.12
   tcp_port: 23002
 - http_port: 9303
   name: s3_3
   net: 3
-  server: 10.200.48.58
+  server: 10.101.20.12
   tcp_port: 23003
 - http_port: 9304
   name: s3_4
   net: 3
-  server: 10.200.48.58
+  server: 10.101.20.12
   tcp_port: 23004
 account_sks:
   3:
@@ -293,4 +293,4 @@ account_sks:
     - 8dd1c4dae73e51bc15fba072348eaa9a4851418891feb7f3da9ad36a27b79e5b
     - b74f21203e15d823e4e7a6e76dcb5e4d1b8d1475136a3058c65d1cc3a04a9a3f
 passwords:
-  10.200.48.58: "Xf4aGbTaf!"
+  10.101.20.12: "!@#$%^"

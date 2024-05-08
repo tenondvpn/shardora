@@ -3,13 +3,13 @@
 # 修改配置文件
 # 确保服务器安装了 sshpass
 echo "==== STEP1: START DEPLOY ===="
-server0=10.200.48.58
+server0=10.101.20.12
 target=$1
 no_build=$2
 
 echo "[$server0]"
 sh ./build_genesis.sh $target $no_build
-cd /root/xf && sh -x fetch.sh 127.0.0.1 ${server0} 'Xf4aGbTaf!' '/root/xf' r1 r2 r3 s3_1 s3_2 s3_3 s3_4;
+cd /root/xf && sh -x fetch.sh 127.0.0.1 ${server0} '!@#$%^' '/root/xf' r1 r2 r3 s3_1 s3_2 s3_3 s3_4;
 
 for n in r1 r2 r3 s3_1 s3_2 s3_3 s3_4; do
     ln -s /root/xf/zjnodes/zjchain/GeoLite2-City.mmdb /root/xf/zjnodes/${n}/conf

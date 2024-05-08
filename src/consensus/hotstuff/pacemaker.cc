@@ -63,9 +63,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
     }
     
     StopTimeoutTimer();
-    if (timeout) {
-        duration_->ViewTimeout();
-    } else {
+    if (!timeout) {
         duration_->ViewSucceeded();
     }
     
@@ -94,6 +92,10 @@ void Pacemaker::OnLocalTimeout() {
     ZJC_DEBUG("OnLocalTimeout pool: %d, view: %d", pool_idx_, CurView());
     // start a new timer for the timeout case
     StartTimeoutTimer();
+
+    // TODO if view is last one, deal directly.
+    
+    duration_->ViewTimeout();
     
     // 超时后先触发一次同步，主要是尽量同步最新的 HighQC，降低因 HighQC 不一致造成多次超时的概率
     // 由于 HotstuffSyncer 周期性同步，这里不触发同步影响也不大
