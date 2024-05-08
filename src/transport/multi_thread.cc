@@ -64,8 +64,8 @@ void ThreadHandler::HandleMessage() {
                 break;
             }
 
-            ZJC_DEBUG("start message handled msg hash: %lu, thread idx: %d",
-                msg_ptr->header.hash64(), thread_idx);
+            // ZJC_DEBUG("start message handled msg hash: %lu, thread idx: %d",
+            //     msg_ptr->header.hash64(), thread_idx);
             msg_ptr->times_idx = 0;
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
             msg_ptr->times[msg_ptr->times_idx++] = btime;
@@ -93,7 +93,7 @@ void ThreadHandler::HandleMessage() {
                     (etime - btime), 
                     t.c_str());                
             }
-            ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
+            // ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
         }
 
         if (maping_thread_idx != common::GlobalInfo::Instance()->message_handler_thread_count() - 1) {
@@ -129,8 +129,8 @@ void ThreadHandler::HandleMessage() {
             msg_ptr->times[msg_ptr->times_idx++] = btime;
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
-            ZJC_INFO("kPacemakerTimerMessage over handle message: %d, thread: %d use: %lu us", 
-                msg_ptr->header.type(), thread_idx, (etime - btime));            
+            // ZJC_INFO("kPacemakerTimerMessage over handle message: %d, thread: %d use: %lu us", 
+            //     msg_ptr->header.type(), thread_idx, (etime - btime));            
 #endif            
         } else {
             auto btime = common::TimeUtils::TimestampUs();
