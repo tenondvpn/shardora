@@ -960,9 +960,9 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
 
 void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
     // TODO(HT): test
-    if (msg_queues_[msg_ptr->address_info->pool_index()].size() >= 1024) {
-        return;
-    }
+    // if (msg_queues_[msg_ptr->address_info->pool_index()].size() >= 1024) {
+    //     return;
+    // }
 
     auto& tx_msg = msg_ptr->header.tx_proto();
     if (!UserTxValid(msg_ptr)) {
@@ -1080,7 +1080,7 @@ void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all) {
         }
 
         DispatchTx(pool_index, msg_ptr);
-        if (!pop_all && ++count >= 256) {
+        if (!pop_all && ++count >= 64) {
             break;
         }
         
