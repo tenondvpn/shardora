@@ -982,7 +982,10 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
 //     ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d",
 //         msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
-    ZJC_DEBUG("success push tx: %s, %lu", common::Encode::HexEncode(tx_msg.gid()).c_str(), msg_ptr->header.hash64());
+    ZJC_DEBUG("success push tx: %s, %lu, pool index: %d", 
+        common::Encode::HexEncode(tx_msg.gid()).c_str(), 
+        msg_ptr->header.hash64(),
+        msg_ptr->address_info->pool_index());
 }
 
 void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr) {
