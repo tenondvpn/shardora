@@ -125,11 +125,13 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
 //     common::AutoSpinLock auto_lock(mutex_);
     if (removed_gid_.DataExists(tx_ptr->tx_info.gid())) {
+        assert(false);
         return kPoolsTxAdded;
     }
 
     if (gid_map_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
         // ZJC_WARN("add failed extend 1024");
+        assert(false);
         return kPoolsError;
     }
 
@@ -141,6 +143,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     assert(tx_ptr != nullptr);
     auto iter = gid_map_.find(tx_ptr->tx_info.gid());
     if (iter != gid_map_.end()) {
+        assert(false);
         return kPoolsTxAdded;
     }
 
