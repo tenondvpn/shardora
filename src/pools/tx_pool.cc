@@ -274,6 +274,7 @@ void TxPool::CheckTimeoutTx() {
 //     common::AutoSpinLock auto_lock(mutex_);
     auto now_tm = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
+    ZJC_DEBUG("check tx timeout size: %u", gid_map_.size());
     while (!timeout_txs_.empty() && count++ < 64) {
         auto& gid = timeout_txs_.front();
         auto iter = gid_map_.find(gid);
@@ -282,6 +283,8 @@ void TxPool::CheckTimeoutTx() {
             continue;
         }
 
+        ZJC_DEBUG("check tx timeout size: %u, iter->second->timeout: %lu now_tm: %lu", 
+            gid_map_.size(), iter->second->timeout, now_tm);
         if (iter->second->timeout > now_tm) {
             break;
         }
