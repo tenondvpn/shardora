@@ -96,7 +96,8 @@ void Pacemaker::OnLocalTimeout() {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
     // if view is last one, deal directly.
-    if (last_timeout_ && last_timeout_->header.hotstuff_timeout_proto().view() == CurView()) {
+    if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
+        last_timeout_->header.hotstuff_timeout_proto().view() == CurView()) {
         BroadcastTimeout(msg_ptr);
     }
     
@@ -134,10 +135,8 @@ void Pacemaker::OnLocalTimeout() {
     timeout_msg.set_view(CurView());
     timeout_msg.set_elect_height(elect_item->ElectHeight());
     timeout_msg.set_pool_idx(pool_idx_); // 用于分配线程
-
     
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    
     msg.set_type(common::kHotstuffTimeoutMessage);
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     
