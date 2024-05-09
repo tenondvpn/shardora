@@ -66,7 +66,7 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     header.set_type(common::kHotstuffMessage);
     header.set_hop_count(0);
-    auto hotstuff_msg = std::make_shared<pb_HotstuffMessage>();
+    auto* hotstuff_msg = header.mutable_hotstuff();
     s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
@@ -112,7 +112,7 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     header.set_type(common::kHotstuffMessage);
     header.set_hop_count(0);
-    auto hotstuff_msg = std::make_shared<pb_HotstuffMessage>();
+    auto* hotstuff_msg = header.mutable_hotstuff();
     Status s = ConstructHotstuffMsg(NEWVIEW, nullptr, nullptr, pb_newview_msg, hotstuff_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
@@ -249,22 +249,24 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         }
     }    
     
+    auto trans_msg = std::make_shared<transport::TransportMessage>();
+    auto& trans_header = trans_msg->header;
+    auto* hotstuff_msg = trans_header.mutable_hotstuff();
+    auto* vote_msg = hotstuff_msg->mutable_vote_msg();
     // Construct VoteMsg
-    auto vote_msg = std::make_shared<hotstuff::protobuf::VoteMsg>();
     s = ConstructVoteMsg(vote_msg, pro_msg.elect_height(), v_block);
     if (s != Status::kSuccess) {
         ZJC_ERROR("ConstructVoteMsg error %d", s);
         return;
     }
     // Construct HotstuffMessage and send
-    auto pb_hotstuff_msg = std::make_shared<pb_HotstuffMessage>();
-    s = ConstructHotstuffMsg(VOTE, nullptr, vote_msg, nullptr, pb_hotstuff_msg);
+    s = ConstructHotstuffMsg(VOTE, nullptr, vote_msg, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("ConstructHotstuffMsg error %d", s);
         return;
     }
     
-    if (SendVoteMsg(pb_hotstuff_msg) != Status::kSuccess) {
+    if (SendVoteMsg(trans_msg) != Status::kSuccess) {
         ZJC_ERROR("Send vote message is error.");
     }
     
@@ -541,7 +543,7 @@ Status Hotstuff::ConstructProposeMsg(
 }
 
 Status Hotstuff::ConstructVoteMsg(
-        std::shared_ptr<hotstuff::protobuf::VoteMsg>& vote_msg,
+        hotstuff::protobuf::VoteMsg* vote_msg,
         const uint32_t& elect_height, 
         const std::shared_ptr<ViewBlock>& v_block) {
     auto elect_item = elect_info_->GetElectItem(elect_height);
@@ -613,17 +615,14 @@ Status Hotstuff::ConstructViewBlock(
 Status Hotstuff::ConstructHotstuffMsg(
         const MsgType msg_type, 
         const std::shared_ptr<pb_ProposeMsg>& pb_pro_msg, 
-        const std::shared_ptr<pb_VoteMsg>& pb_vote_msg,
+        pb_VoteMsg* pb_vote_msg,
         const std::shared_ptr<pb_NewViewMsg>& pb_nv_msg,
-        std::shared_ptr<pb_HotstuffMessage>& pb_hotstuff_msg) {
+        pb_HotstuffMessage* pb_hotstuff_msg) {
     pb_hotstuff_msg->set_type(msg_type);
     switch (msg_type)
     {
     case PROPOSE:
         pb_hotstuff_msg->mutable_pro_msg()->CopyFrom(*pb_pro_msg);
-        break;
-    case VOTE:
-        pb_hotstuff_msg->mutable_vote_msg()->CopyFrom(*pb_vote_msg);
         break;
     case NEWVIEW:
         pb_hotstuff_msg->mutable_newview_msg()->CopyFrom(*pb_nv_msg);
@@ -637,12 +636,9 @@ Status Hotstuff::ConstructHotstuffMsg(
     return Status::kSuccess;
 }
 
-Status Hotstuff::SendVoteMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage>& hotstuff_msg) {
+Status Hotstuff::SendVoteMsg(std::shared_ptr<transport::TransportMessage>& trans_msg) {
     Status ret = Status::kSuccess;
-    auto trans_msg = std::make_shared<transport::TransportMessage>();
     auto& header_msg = trans_msg->header;
-    header_msg.mutable_hotstuff()->CopyFrom(*hotstuff_msg);
-    
     auto leader = leader_rotation()->GetLeader();
     if (!leader) {
         ZJC_ERROR("Get Leader failed.");

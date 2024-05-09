@@ -178,7 +178,6 @@ void TxPool::GetTx(
     std::vector<TxItemPtr> recover_txs;
     zbft::protobuf::TxBft* txbft = header.mutable_zbft()->mutable_tx_bft();
     auto iter = prio_map_.begin();
-    auto* kv_sync = header.mutable_sync();
     while (iter != prio_map_.end() && txbft->txs_size() < count) {
         auto invalid_iter = invalid_txs.find(iter->second->unique_tx_hash);
         if (invalid_iter != invalid_txs.end()) {
