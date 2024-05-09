@@ -165,6 +165,10 @@ Status BlockAcceptor::addTxsToPool(
     std::map<std::string, pools::TxItemPtr> txs_map;
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
         auto& tx = txs[i];
+        if (pools_mgr_->GidValid(pool_idx_, tx->gid())) {
+            continue;
+        }
+        
         ZJC_DEBUG("get tx message step: %d", tx->step());
         protos::AddressInfoPtr address_info = nullptr;
         if (tx->step() == pools::protobuf::kContractExcute) {
@@ -180,7 +184,7 @@ Status BlockAcceptor::addTxsToPool(
         if (!address_info) {
             return Status::kError;
         }
-
+        
         pools::TxItemPtr tx_ptr = nullptr;
         switch (tx->step()) {
         case pools::protobuf::kNormalFrom:

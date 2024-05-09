@@ -51,6 +51,10 @@ public:
     void InitCrossPools();
     void BftCheckInvalidGids(uint32_t pool_index, std::vector<std::shared_ptr<InvalidGidItem>>& items);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
+    bool GidValid(uint32_t pool_index, const std::string& gid) {
+        return tx_pool_[pool_index].GidValid(gid);
+    }
+
     void GetTx(
         uint32_t pool_index,
         uint32_t count,

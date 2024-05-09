@@ -76,6 +76,21 @@ public:
     void SyncBlock();
     double CheckLeaderValid(bool get_factor, uint32_t* finished_count, uint32_t* tx_count);
     void RecoverTx(const std::string& gid);
+    bool GidValid(const std::string& gid) {
+        if (gid_map_.find(gid) != gid_map_.end()) {
+            return false;
+        }
+
+        if (removed_gid_.find(gid) != removed_gid_.end()) {
+            return false;
+        }
+
+         if (prefix_db_->GidExists(tx_ptr->tx_info.gid())) {
+            return false;
+        }
+
+        return true;
+    }
 
     bool TxExists(const std::string& gid) {
         auto iter = gid_map_.find(gid);

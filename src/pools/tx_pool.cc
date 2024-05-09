@@ -282,7 +282,8 @@ void TxPool::CheckTimeoutTx() {
             continue;
         }
 
-        ZJC_DEBUG("check tx timeout size: %u, iter->second->timeout: %lu now_tm: %lu", 
+        ZJC_DEBUG("check tx timeout gid: %s, size: %u, iter->second->timeout: %lu now_tm: %lu", 
+            common::Encode::HexEncode(gid).c_str(),
             gid_map_.size(), iter->second->timeout, now_tm);
         if (iter->second->timeout > now_tm) {
             break;
