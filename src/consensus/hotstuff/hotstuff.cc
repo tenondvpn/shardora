@@ -99,12 +99,6 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
 }
 
 void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
-    pb_newview_msg->set_elect_height(elect_info_->GetElectItem()->ElectHeight());
-    if (!sync_info->tc) {
-        return;
-    }
-    pb_newview_msg->set_tc_str(sync_info->tc->Serialize());
-
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -112,6 +106,12 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
     header.set_hop_count(0);
     auto* hotstuff_msg = header.mutable_hotstuff();
     auto* pb_newview_msg = hotstuff_msg->mutable_newview_msg();
+    pb_newview_msg->set_elect_height(elect_info_->GetElectItem()->ElectHeight());
+    if (!sync_info->tc) {
+        return;
+    }
+
+    pb_newview_msg->set_tc_str(sync_info->tc->Serialize());
     Status s = ConstructHotstuffMsg(NEWVIEW, nullptr, nullptr, pb_newview_msg, hotstuff_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
