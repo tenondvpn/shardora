@@ -418,30 +418,9 @@ Status HotstuffSyncer::MergeChain(
         
         return Status::kSuccess;
     }
-
-    // // 不存在交点，尝试链接
-    // bool connected = false;
+    
     std::vector<std::shared_ptr<ViewBlock>> sync_all_blocks;
     sync_chain->GetOrderedAll(sync_all_blocks);
-
-    // auto& sync_min_block = sync_all_blocks[0];
-    // for (auto it = view_blocks.begin(); it != view_blocks.end(); it++) {
-    //     if ((*it)->hash == sync_min_block->parent_hash) {
-    //         connected = true;
-    //         break;
-    //     }
-    // }
-
-    // if (connected) {
-    //     for (const auto& sync_block : sync_all_blocks) {
-    //         // 逐个处理同步来的 view_block
-    //         Status s = on_recv_vb_fn_(pool_idx, ori_chain, sync_block);
-    //         if (s != Status::kSuccess) {
-    //             continue;
-    //         }
-    //     }
-    //     return Status::kSuccess;
-    // }
 
     // 两条链不存在交点也无法连接，则替换为 max_view 更大的链
     auto ori_max_height = ori_chain->GetMaxHeight();
