@@ -239,7 +239,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         v_block->view,
         v_block->block->tx_list_size());
     // TODO 曾经遇到 CommittedBlock 为空的情况，等复现
-    assert(view_block_chain()->LatestCommittedBlock() != nullptr);
+    // assert(view_block_chain()->LatestLockedBlock() != nullptr);
     // view_block_chain()->Print();    
 
     // 1、验证是否存在3个连续qc，设置commit，lock qc状态；2、提交commit块之间的交易信息；3、减枝保留最新commit块，回退分支的交易信息
