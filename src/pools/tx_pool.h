@@ -93,8 +93,15 @@ public:
     }
 
     bool TxExists(const std::string& gid) {
-        auto iter = gid_map_.find(gid);
-        return iter != gid_map_.end();
+        if (gid_map_.find(gid) != gid_map_.end()) {
+            return true;
+        }
+
+        if (removed_gid_.find(gid) != removed_gid_.end()) {
+            return true;
+        }
+
+        return false;
     }
 
     uint32_t tx_size() const {
