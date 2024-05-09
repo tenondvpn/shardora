@@ -624,9 +624,6 @@ Status Hotstuff::ConstructHotstuffMsg(
     case PROPOSE:
         pb_hotstuff_msg->mutable_pro_msg()->CopyFrom(*pb_pro_msg);
         break;
-    case VOTE:
-        pb_hotstuff_msg->mutable_vote_msg()->CopyFrom(*pb_vote_msg);
-        break;
     case NEWVIEW:
         pb_hotstuff_msg->mutable_newview_msg()->CopyFrom(*pb_nv_msg);
         break;
