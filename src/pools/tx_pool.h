@@ -55,7 +55,7 @@ public:
         transport::protobuf::Header& header, 
         uint32_t count);
     void GetTxByIds(
-            std::vector<std::string> gids,
+            const std::vector<std::string>& gids,
             std::map<std::string, TxItemPtr>& res_map);    
     void TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
     void TxRecover(std::map<std::string, TxItemPtr>& txs);
@@ -155,7 +155,7 @@ private:
     std::vector<uint64_t> latencys_us_;
     std::queue<std::string> timeout_txs_;
     std::queue<std::string> timeout_remove_txs_;
-    common::LimitHashSet<std::string> removed_gid_{ 102400 };
+    std::unordered_set<std::string> removed_gid_;
     std::map<std::string, TxItemPtr> prio_map_;
     std::map<std::string, TxItemPtr> universal_prio_map_;
     uint64_t latest_height_ = common::kInvalidUint64;

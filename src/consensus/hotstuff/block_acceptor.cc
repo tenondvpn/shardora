@@ -129,18 +129,16 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
     block_mgr_->ConsensusAddBlock(queue_item_ptr);
     // TODO if local node is leader, broadcast block
     auto elect_item = elect_info_->GetElectItem(block->electblock_height());
-    if (!elect_item) {
-        return Status::kError;
+    if (elect_item) {
+        if (block->leader_index() == elect_item->LocalMember()->index) {
+            // leader broadcast block to other shards
+            // TODO tx_list 报错了!
+            LeaderBroadcastBlock(block);
+        }
     }
-    if (block->leader_index() == elect_item->LocalMember()->index) {
-        // leader broadcast block to other shards
-        // TODO tx_list 报错了!
-        LeaderBroadcastBlock(block);
-    }
+
     pools_mgr_->TxOver(block->pool_index(), block->tx_list());
-
     // TODO tps measurement
-
     ZJC_DEBUG("[NEW BLOCK] hash: %s, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu",
         common::Encode::HexEncode(block->hash()).c_str(),
         block->network_id(),

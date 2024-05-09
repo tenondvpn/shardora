@@ -124,7 +124,8 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
 //     common::AutoSpinLock auto_lock(mutex_);
-    if (removed_gid_.DataExists(tx_ptr->tx_info.gid())) {
+    if (removed_gid_.find(tx_ptr->tx_info.gid()) != removed_gid_.end()) {
+        assert(false);
         return kPoolsTxAdded;
     }
 
@@ -141,6 +142,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     assert(tx_ptr != nullptr);
     auto iter = gid_map_.find(tx_ptr->tx_info.gid());
     if (iter != gid_map_.end()) {
+        assert(false);
         return kPoolsTxAdded;
     }
 
@@ -228,7 +230,7 @@ void TxPool::GetTx(
 }
 
 void TxPool::GetTxByIds(
-        std::vector<std::string> gids,
+        const std::vector<std::string>& gids,
         std::map<std::string, TxItemPtr>& res_map) {
     for (const auto& gid : gids) {
         auto it = gid_map_.find(gid);
@@ -272,6 +274,7 @@ void TxPool::CheckTimeoutTx() {
 //     common::AutoSpinLock auto_lock(mutex_);
     auto now_tm = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
+    ZJC_DEBUG("check tx timeout size: %u, timeout_txs_ size: %u", gid_map_.size(), timeout_txs_.size());
     while (!timeout_txs_.empty() && count++ < 64) {
         auto& gid = timeout_txs_.front();
         auto iter = gid_map_.find(gid);
@@ -280,6 +283,8 @@ void TxPool::CheckTimeoutTx() {
             continue;
         }
 
+        ZJC_DEBUG("check tx timeout size: %u, iter->second->timeout: %lu now_tm: %lu", 
+            gid_map_.size(), iter->second->timeout, now_tm);
         if (iter->second->timeout > now_tm) {
             break;
         }
@@ -344,7 +349,7 @@ void TxPool::RecoverTx(const std::string& gid) {
 }
 
 void TxPool::RemoveTx(const std::string& gid) {
-    removed_gid_.Push(gid);
+    removed_gid_.insert(gid);
     auto giter = gid_map_.find(gid);
     if (giter == gid_map_.end()) {
         return;
@@ -734,7 +739,7 @@ void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
             continue;
         }
 
-        if (removed_gid_.DataExists(txs[i]->tx_info.gid())) {
+        if (removed_gid_.find(txs[i]->tx_info.gid()) != removed_gid_.end()) {
             ZJC_DEBUG("tx already removed, gid: %s", txs[i]->tx_info.gid().c_str());
             continue;
         }   
