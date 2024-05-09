@@ -73,20 +73,14 @@ public:
 private:
     void UpdateHighQC(const std::shared_ptr<QC>& qc);
     void UpdateHighTC(const std::shared_ptr<TC>& tc);
+    void BroadcastTimeout(const std::shared_ptr<transport::TransportMessage>& msg_ptr);
 
     inline void StartTimeoutTimer() {
-        // one_shot_tick_ = std::make_shared<common::Tick>();
-        // one_shot_tick_->CutOff(duration_->Duration(), std::bind(&Pacemaker::OnLocalTimeout, this));
-
         last_time_us_ = common::TimeUtils::TimestampUs();
         duration_us_ = duration_->Duration();
     }
 
     inline void StopTimeoutTimer() {
-        // if (!one_shot_tick_) {
-        //     return;
-        // }
-        // one_shot_tick_->Destroy();
         last_time_us_ = 0;
         duration_us_ = 0;
     }
@@ -101,7 +95,7 @@ private:
     View cur_view_;
     std::shared_ptr<Crypto> crypto_;
     std::shared_ptr<LeaderRotation> leader_rotation_ = nullptr;
-    std::shared_ptr<common::Tick> one_shot_tick_ = nullptr;
+    // std::shared_ptr<common::Tick> one_shot_tick_ = nullptr;
     std::shared_ptr<ViewDuration> duration_;
     NewProposalFn new_proposal_fn_ = nullptr;
     StopVotingFn stop_voting_fn_ = nullptr;
@@ -109,6 +103,7 @@ private:
     NewViewFn new_view_fn_ = nullptr;
     uint64_t last_time_us_ = 0;
     uint64_t duration_us_ = 0;
+    std::shared_ptr<transport::TransportMessage> last_timeout_ = nullptr;
 };
 
 } // namespace consensus
