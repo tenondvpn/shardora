@@ -135,7 +135,7 @@ private:
             const std::shared_ptr<SyncInfo>& sync_info,
             std::shared_ptr<hotstuff::protobuf::ProposeMsg>& pro_msg);
     Status ConstructVoteMsg(
-            std::shared_ptr<hotstuff::protobuf::VoteMsg>& vote_msg,
+            hotstuff::protobuf::VoteMsg* vote_msg,
             const uint32_t& elect_height, 
             const std::shared_ptr<ViewBlock>& v_block);    
     Status ConstructViewBlock( 
@@ -144,12 +144,12 @@ private:
     Status ConstructHotstuffMsg(
             const MsgType msg_type, 
             const std::shared_ptr<pb_ProposeMsg>& pb_pro_msg, 
-            const std::shared_ptr<pb_VoteMsg>& pb_vote_msg,
+            pb_VoteMsg* pb_vote_msg,
             const std::shared_ptr<pb_NewViewMsg>& pb_nv_msg,
-            std::shared_ptr<pb_HotstuffMessage>& pb_hf_msg);
-    Status SendVoteMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage>& hotstuff_msg);
+            pb_HotstuffMessage* pb_hf_msg);
+    Status SendVoteMsg(std::shared_ptr<transport::TransportMessage>& hotstuff_msg);
     // 是否允许空交易
-    bool IsEmptyBlockAllowed(const std::shared_ptr<ViewBlock>& v_block);
+    bool IsEmptyBlockAllowed(const std::shared_ptr<ViewBlock>& v_block);    
 };
 
 } // namespace consensus

@@ -178,7 +178,6 @@ void TxPool::GetTx(
     std::vector<TxItemPtr> recover_txs;
     zbft::protobuf::TxBft* txbft = header.mutable_zbft()->mutable_tx_bft();
     auto iter = prio_map_.begin();
-    auto* kv_sync = header.mutable_sync();
     while (iter != prio_map_.end() && txbft->txs_size() < count) {
         auto invalid_iter = invalid_txs.find(iter->second->unique_tx_hash);
         if (invalid_iter != invalid_txs.end()) {
@@ -282,7 +281,8 @@ void TxPool::CheckTimeoutTx() {
             continue;
         }
 
-        ZJC_DEBUG("check tx timeout size: %u, iter->second->timeout: %lu now_tm: %lu", 
+        ZJC_DEBUG("check tx timeout gid: %s, size: %u, iter->second->timeout: %lu now_tm: %lu", 
+            common::Encode::HexEncode(gid).c_str(),
             gid_map_.size(), iter->second->timeout, now_tm);
         if (iter->second->timeout > now_tm) {
             break;
@@ -734,33 +734,9 @@ std::shared_ptr<consensus::WaitingTxsItem> TxPool::GetTx(
 
 void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
     for (uint32_t i = 0; i < txs.size(); ++i) {
-        auto iter = gid_map_.find(txs[i]->tx_info.gid());
-        if (iter != gid_map_.end()) {
-            ZJC_DEBUG("tx already exist, gid: %s", txs[i]->tx_info.gid().c_str());
+        if (!GidValid(txs[i]->tx_info.gid())) {
             continue;
         }
-
-        if (removed_gid_.find(txs[i]->tx_info.gid()) != removed_gid_.end()) {
-            ZJC_DEBUG("tx already removed, gid: %s", txs[i]->tx_info.gid().c_str());
-            continue;
-        }   
-
-        // bool valid = true;
-        // switch (txs[i]->tx_info.step()) {
-        //     case pools::protobuf::kJoinElect:
-        //         if (!CheckJoinElectTxInfo(txs[i]->tx_info)) {
-        //             valid = false;
-        //         }
-
-        //         break;
-        //     default:
-        //         break;
-        // }
-
-        // if (!valid) {
-        //     ZJC_FATAL("tx invalid!");
-        //     continue;
-        // }
 
         gid_map_[txs[i]->tx_info.gid()] = txs[i];
         txs[i]->is_consensus_add_tx = true;
