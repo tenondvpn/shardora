@@ -190,7 +190,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     }
 
     // 检查本地 ViewBlockChain 中是否存在 src 节点没有的 ViewBlock，如果存在则全部同步过去
-    
+    // if (!chain->LatestLockedBlock()) {
     for (auto& view_block : all) {
         // 仅同步已经有 qc 的 view_block
         auto view_block_qc = chain->GetQcOf(view_block);
@@ -216,6 +216,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
         auto view_block_item = view_block_res->add_view_block_items();
         ViewBlock2Proto(view_block, view_block_item);
     }
+    // }
 
     // 不发送消息
     if (!shouldResponse) {
@@ -417,8 +418,11 @@ Status HotstuffSyncer::MergeChain(
         
         return Status::kSuccess;
     }
+    
+    std::vector<std::shared_ptr<ViewBlock>> sync_all_blocks;
+    sync_chain->GetOrderedAll(sync_all_blocks);
 
-    // 两条链不存在交点，则替换为 max_view 更大的链
+    // 两条链不存在交点也无法连接，则替换为 max_view 更大的链
     auto ori_max_height = ori_chain->GetMaxHeight();
     auto sync_max_height = sync_chain->GetMaxHeight();
     if (ori_max_height >= sync_max_height) {
@@ -426,8 +430,6 @@ Status HotstuffSyncer::MergeChain(
     }
 
     ori_chain->Clear();
-    std::vector<std::shared_ptr<ViewBlock>> sync_all_blocks;
-    sync_chain->GetOrderedAll(sync_all_blocks);
     for (const auto& sync_block : sync_all_blocks) {
         // 逐个处理同步来的 view_block
         Status s = on_recv_vb_fn_(pool_idx, ori_chain, sync_block);
