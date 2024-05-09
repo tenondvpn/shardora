@@ -190,7 +190,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     }
 
     // 检查本地 ViewBlockChain 中是否存在 src 节点没有的 ViewBlock，如果存在则全部同步过去
-    
+    // if (!chain->LatestLockedBlock()) {
     for (auto& view_block : all) {
         // 仅同步已经有 qc 的 view_block
         auto view_block_qc = chain->GetQcOf(view_block);
@@ -216,6 +216,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
         auto view_block_item = view_block_res->add_view_block_items();
         ViewBlock2Proto(view_block, view_block_item);
     }
+    // }
 
     // 不发送消息
     if (!shouldResponse) {

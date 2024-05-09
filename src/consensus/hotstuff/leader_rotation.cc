@@ -23,13 +23,13 @@ LeaderRotation::~LeaderRotation() {}
 common::BftMemberPtr LeaderRotation::GetLeader() {
     // 此处选择 CommitBlock 包含的 QC 作为随机种子，也可以选择 CommitQC 或者 LockedQC
     // 但不能选择 HighQC（由于同步延迟无法保证某时刻 HighQC 大多数节点相同）
-    auto committedBlock = chain_->LatestCommittedBlock();
+    auto lockedBlock = chain_->LatestLockedBlock();
     
     // 对于非种子节点可能启动时没有 committedblock, 需要等同步
     auto qc = GetQCWrappedByGenesis();
-    if (committedBlock) {
-        ZJC_DEBUG("get leader success get latest commit block height: %lu", committedBlock->block->height());
-        qc = committedBlock->qc;
+    if (lockedBlock) {
+        ZJC_DEBUG("get leader success get latest commit block height: %lu", lockedBlock->block->height());
+        qc = lockedBlock->qc;
     } else {
         ZJC_DEBUG("pool: %d, committed block is empty", pool_idx_);
     }
