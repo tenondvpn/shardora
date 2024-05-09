@@ -229,20 +229,17 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
             common::Encode::HexEncode(v_block->hash).c_str());
         return;
     }
-    
-    // 打印一下调试日志
-    // TODO 曾经遇到 CommittedBlock 为空的情况，等复现
-    assert(view_block_chain()->LatestCommittedBlock() != nullptr);
-    
-    ZJC_DEBUG("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, commitedView: %lu, vblock: %lu, txs: %lu",
+        
+    ZJC_DEBUG("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, vblock: %lu, txs: %lu",
         pool_idx_,
         pacemaker()->HighQC()->view,
         pacemaker()->HighTC()->view,
         view_block_chain()->Size(),
         pacemaker()->CurView(),
-        view_block_chain()->LatestCommittedBlock()->view,
         v_block->view,
         v_block->block->tx_list_size());
+    // TODO 曾经遇到 CommittedBlock 为空的情况，等复现
+    assert(view_block_chain()->LatestCommittedBlock() != nullptr);
     // view_block_chain()->Print();    
 
     // 1、验证是否存在3个连续qc，设置commit，lock qc状态；2、提交commit块之间的交易信息；3、减枝保留最新commit块，回退分支的交易信息
@@ -399,12 +396,14 @@ Status Hotstuff::Commit(const std::shared_ptr<ViewBlock>& v_block) {
     ZJC_DEBUG("pool: %d, commit block view: %lu", pool_idx_, v_block->view);
     Status s = CommitInner(v_block);
     if (s != Status::kSuccess) {
+        ZJC_ERROR("pool: %d, commit inner failed s: %d, vb view: &lu", pool_idx_, s, v_block->view);
         return s;
     }
     // 剪枝
     std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
     s = view_block_chain()->PruneTo(v_block->hash, forked_blockes, true);
     if (s != Status::kSuccess) {
+        ZJC_ERROR("pool: %d, prune failed s: %d, vb view: &lu", pool_idx_, s, v_block->view);
         return s;
     }
 
@@ -497,6 +496,7 @@ Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
     v_block->block->set_is_commited_block(true);
     s = acceptor()->Commit(v_block->block);
     if (s != Status::kSuccess) {
+        ZJC_ERROR("pool: %d, commit failed s: %d, vb view: &lu", pool_idx_, s, v_block->view);
         return s;
     }
     
