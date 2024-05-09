@@ -287,10 +287,12 @@ bool BlockManager::UpdateBlockItemToCache(
     }
 
     const auto& tx_list = block->tx_list();
+#ifndef ENABLE_HOTSTUFF
     if (tx_list.empty()) {
         assert(false);
         return false;
     }
+#endif
 
     ZJC_DEBUG("block manager cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
               block->network_id(),

@@ -213,7 +213,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     }
     block_info->view = v_block->view;
     
-    if (acceptor()->Accept(block_info) != Status::kSuccess) {
+    if (acceptor()->Accept(block_info, true) != Status::kSuccess) {
         // 归还交易
         acceptor()->Return(block_info->block);
         ZJC_ERROR("Accept tx is error");
@@ -230,11 +230,19 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     }
     
     // 打印一下调试日志
-    std::cout << "highQC: " << pacemaker()->HighQC()->view
-              << ",highTC: " << pacemaker()->HighTC()->view
-              << ",chainSize: " << view_block_chain()->Size()
-              << ",CurView: " << pacemaker()->CurView() << std::endl;    
-    view_block_chain()->Print();    
+    // TODO 曾经遇到 CommittedBlock 为空的情况，等复现
+    assert(view_block_chain()->LatestCommittedBlock() != nullptr);
+    
+    ZJC_DEBUG("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, commitedView: %lu, vblock: %lu, txs: %lu",
+        pool_idx_,
+        pacemaker()->HighQC()->view,
+        pacemaker()->HighTC()->view,
+        view_block_chain()->Size(),
+        pacemaker()->CurView(),
+        view_block_chain()->LatestCommittedBlock()->view,
+        v_block->view,
+        v_block->block->tx_list_size());
+    // view_block_chain()->Print();    
 
     // 1、验证是否存在3个连续qc，设置commit，lock qc状态；2、提交commit块之间的交易信息；3、减枝保留最新commit块，回退分支的交易信息
     auto v_block_to_commit = CheckCommit(v_block);
@@ -387,6 +395,7 @@ std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(const std::shared_ptr<ViewBlock
 
 Status Hotstuff::Commit(const std::shared_ptr<ViewBlock>& v_block) {
     // 递归提交
+    ZJC_DEBUG("pool: %d, commit block view: %lu", pool_idx_, v_block->view);
     Status s = CommitInner(v_block);
     if (s != Status::kSuccess) {
         return s;
@@ -599,16 +608,36 @@ Status Hotstuff::ConstructViewBlock(
         pre_v_block->block->height());
     auto pre_block = pre_v_block->block;
     auto pb_block = std::make_shared<block::protobuf::Block>();
-    s = wrapper()->Wrap(pre_block, leader_idx, pb_block, tx_propose);
+
+    // 打包 QC 和 View
+    view_block->qc = pacemaker()->HighQC();
+    view_block->view = pacemaker()->CurView();
+
+    // TODO 如果单分支最多连续打包三个默认交易
+    s = wrapper()->Wrap(pre_block, leader_idx, pb_block, tx_propose, IsEmptyBlockAllowed(view_block));
     if (s != Status::kSuccess) {
         ZJC_WARN("pool: %d wrap failed, %d", pool_idx_, static_cast<int>(s));
         return s;
     }
     view_block->block = pb_block;
-    view_block->qc = pacemaker()->HighQC();
-    view_block->view = pacemaker()->CurView();
     view_block->hash = view_block->DoHash();
     return Status::kSuccess;
+}
+
+bool Hotstuff::IsEmptyBlockAllowed(const std::shared_ptr<ViewBlock>& v_block) {
+    auto v_block1 = view_block_chain()->QCRef(v_block);
+    if (!v_block1 || v_block1->block->tx_list_size() > 0) {
+        return true;
+    }
+    auto v_block2 = view_block_chain()->QCRef(v_block1);
+    if (!v_block2 || v_block2->block->tx_list_size() > 0) {
+        return true;
+    }
+    auto v_block3 = view_block_chain()->QCRef(v_block2);
+    if (!v_block3 || v_block3->block->tx_list_size() > 0) {
+        return true;
+    }
+    return false;
 }
 
 Status Hotstuff::ConstructHotstuffMsg(
