@@ -735,16 +735,20 @@ std::shared_ptr<consensus::WaitingTxsItem> TxPool::GetTx(
 
 void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
     for (uint32_t i = 0; i < txs.size(); ++i) {
-        auto iter = gid_map_.find(txs[i]->tx_info.gid());
-        if (iter != gid_map_.end()) {
-            ZJC_DEBUG("tx already exist, gid: %s", txs[i]->tx_info.gid().c_str());
+        if (!GidValid(txs[i]->tx_info.gid())) {
             continue;
         }
 
-        if (removed_gid_.find(txs[i]->tx_info.gid()) != removed_gid_.end()) {
-            ZJC_DEBUG("tx already removed, gid: %s", txs[i]->tx_info.gid().c_str());
-            continue;
-        }   
+        // auto iter = gid_map_.find(txs[i]->tx_info.gid());
+        // if (iter != gid_map_.end()) {
+        //     ZJC_DEBUG("tx already exist, gid: %s", txs[i]->tx_info.gid().c_str());
+        //     continue;
+        // }
+
+        // if (removed_gid_.find(txs[i]->tx_info.gid()) != removed_gid_.end()) {
+        //     ZJC_DEBUG("tx already removed, gid: %s", txs[i]->tx_info.gid().c_str());
+        //     continue;
+        // }   
 
         // bool valid = true;
         // switch (txs[i]->tx_info.step()) {
