@@ -231,22 +231,16 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     }
     
     // 打印一下调试日志
-    auto b = view_block_chain()->LatestCommittedBlock();
-    auto v = 0;
-    if (b) {
-        v = b->view;
-    }
+    // TODO 曾经遇到 CommittedBlock 为空的情况，等复现
+    assert(view_block_chain()->LatestCommittedBlock() != nullptr);
     
-    ZJC_DEBUG("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, commitedView: %lu",
+    ZJC_DEBUG("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, commitedView: %lu, vblock: %lu, txs: %lu",
         pool_idx_,
         pacemaker()->HighQC()->view,
         pacemaker()->HighTC()->view,
         view_block_chain()->Size(),
         pacemaker()->CurView(),
-        v);
-    assert(b != nullptr);
-    ZJC_DEBUG("pacemaker pool: %d, vblock: %lu, txs: %lu",
-        pool_idx_,
+        view_block_chain()->LatestCommittedBlock()->view,
         v_block->view,
         v_block->block->tx_list_size());
     // view_block_chain()->Print();    
