@@ -85,7 +85,7 @@ public:
             return false;
         }
 
-         if (prefix_db_->GidExists(tx_ptr->tx_info.gid())) {
+         if (prefix_db_->GidExists(gid)) {
             return false;
         }
 
