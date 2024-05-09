@@ -133,7 +133,7 @@ private:
     Status VerifyLeader(const std::shared_ptr<ViewBlock>& view_block);
     Status ConstructProposeMsg(
             const std::shared_ptr<SyncInfo>& sync_info,
-            std::shared_ptr<hotstuff::protobuf::ProposeMsg>& pro_msg);
+            hotstuff::protobuf::ProposeMsg* pro_msg);
     Status ConstructVoteMsg(
             hotstuff::protobuf::VoteMsg* vote_msg,
             const uint32_t& elect_height, 
@@ -143,9 +143,9 @@ private:
             std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose);
     Status ConstructHotstuffMsg(
             const MsgType msg_type, 
-            const std::shared_ptr<pb_ProposeMsg>& pb_pro_msg, 
+            pb_ProposeMsg* pb_pro_msg, 
             pb_VoteMsg* pb_vote_msg,
-            const std::shared_ptr<pb_NewViewMsg>& pb_nv_msg,
+            pb_NewViewMsg* pb_nv_msg,
             pb_HotstuffMessage* pb_hf_msg);
     Status SendVoteMsg(std::shared_ptr<transport::TransportMessage>& hotstuff_msg);
 };

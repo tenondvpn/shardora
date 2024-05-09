@@ -54,19 +54,18 @@ Status Hotstuff::Start() {
 }
 
 Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
-    auto pb_pro_msg = std::make_shared<hotstuff::protobuf::ProposeMsg>();
-    Status s = ConstructProposeMsg(sync_info, pb_pro_msg);
-    if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d construct propose msg failed, %d", pool_idx_, static_cast<int>(s));
-        return s;
-    }
-
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     header.set_type(common::kHotstuffMessage);
     header.set_hop_count(0);
     auto* hotstuff_msg = header.mutable_hotstuff();
+    auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
+    Status s = ConstructProposeMsg(sync_info, pb_pro_msg);
+    if (s != Status::kSuccess) {
+        ZJC_ERROR("pool: %d construct propose msg failed, %d", pool_idx_, static_cast<int>(s));
+        return s;
+    }
     s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
@@ -100,19 +99,19 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
 }
 
 void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
-    auto pb_newview_msg = std::make_shared<hotstuff::protobuf::NewViewMsg>();
-    pb_newview_msg->set_elect_height(elect_info_->GetElectItem()->ElectHeight());
-    if (!sync_info->tc) {
-        return;
-    }
-    pb_newview_msg->set_tc_str(sync_info->tc->Serialize());
-
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     header.set_type(common::kHotstuffMessage);
     header.set_hop_count(0);
     auto* hotstuff_msg = header.mutable_hotstuff();
+    auto* pb_newview_msg = hotstuff_msg->mutable_newview_msg();
+    pb_newview_msg->set_elect_height(elect_info_->GetElectItem()->ElectHeight());
+    if (!sync_info->tc) {
+        return;
+    }
+
+    pb_newview_msg->set_tc_str(sync_info->tc->Serialize());
     Status s = ConstructHotstuffMsg(NEWVIEW, nullptr, nullptr, pb_newview_msg, hotstuff_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
@@ -523,7 +522,7 @@ Status Hotstuff::VerifyLeader(const std::shared_ptr<ViewBlock>& view_block) {
 
 Status Hotstuff::ConstructProposeMsg(
         const std::shared_ptr<SyncInfo>& sync_info,
-        std::shared_ptr<hotstuff::protobuf::ProposeMsg>& pro_msg) {
+        hotstuff::protobuf::ProposeMsg* pro_msg) {
     auto new_view_block = std::make_shared<ViewBlock>();
     auto tx_propose = std::make_shared<hotstuff::protobuf::TxPropose>();
     Status s = ConstructViewBlock(new_view_block, tx_propose);
@@ -614,23 +613,11 @@ Status Hotstuff::ConstructViewBlock(
 
 Status Hotstuff::ConstructHotstuffMsg(
         const MsgType msg_type, 
-        const std::shared_ptr<pb_ProposeMsg>& pb_pro_msg, 
+        pb_ProposeMsg* pb_pro_msg, 
         pb_VoteMsg* pb_vote_msg,
-        const std::shared_ptr<pb_NewViewMsg>& pb_nv_msg,
+        pb_NewViewMsg* pb_nv_msg,
         pb_HotstuffMessage* pb_hotstuff_msg) {
     pb_hotstuff_msg->set_type(msg_type);
-    switch (msg_type)
-    {
-    case PROPOSE:
-        pb_hotstuff_msg->mutable_pro_msg()->CopyFrom(*pb_pro_msg);
-        break;
-    case NEWVIEW:
-        pb_hotstuff_msg->mutable_newview_msg()->CopyFrom(*pb_nv_msg);
-        break;
-    default:
-        ZJC_ERROR("MsgType is error");
-        break;
-    }
     pb_hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
     pb_hotstuff_msg->set_pool_index(pool_idx_);
     return Status::kSuccess;
