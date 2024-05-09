@@ -263,16 +263,21 @@ bool ViewBlockChain::IsValid() {
 }
 
 void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent) const {
-    std::cout << indent << block->view << ":"
-              << common::Encode::HexEncode(block->hash).c_str() << "[status]:"
-              << static_cast<int>(GetViewBlockStatus(block)) << "[txs]:" 
-              << block->block->tx_list_size() << "\n";
+    // std::cout << indent << block->view << ":"
+    //           << common::Encode::HexEncode(block->hash).c_str() << "[status]:"
+    //           << static_cast<int>(GetViewBlockStatus(block)) << "[txs]:" 
+    //           << block->block->tx_list_size() << "\n";
+    ZJC_DEBUG("%s%lu:%s[status]:%d[txs]:%lu\n",
+        indent.c_str(), block->view, common::Encode::HexEncode(block->hash).c_str(),
+        static_cast<int>(GetViewBlockStatus(block)), block->block->tx_list_size());
     auto childrenIt = view_blocks_info_.find(block->hash);
     if (childrenIt != view_blocks_info_.end()) {
         std::string childIndent = indent + "  ";
         for (const auto& child : childrenIt->second->children) {
-            std::cout << indent << "|\n";
-            std::cout << indent << "+--";
+            // std::cout << indent << "|\n";
+            ZJC_DEBUG("%s|\n", indent.c_str());
+            // std::cout << indent << "+--";
+            ZJC_DEBUG("%s+--", indent.c_str());
             PrintBlock(child, childIndent);
         }
     }

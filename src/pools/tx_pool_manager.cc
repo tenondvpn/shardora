@@ -1153,15 +1153,17 @@ void TxPoolManager::GetTx(
     //     return;
     // }
 
+    ZJC_WARN("====7.0 pool: %d, tx_size: %lu, max_tx_count: %lu",
+            pool_index, tx_pool_[pool_index].tx_size(), now_max_tx_count_);
     if (tx_pool_[pool_index].tx_size() < now_max_tx_count_) {
         return;
     }
 
     tx_pool_[pool_index].GetTx(res_map, count, kvs);
-//     ZJC_DEBUG("success get tx tm: %lu, min tm: %lu, dec: %ld, count: %u, min count: %u, count: %u",
-//         tx_pool_[pool_index].oldest_timestamp(), min_valid_timestamp_,
-//         ((int64_t)tx_pool_[pool_index].oldest_timestamp() - (int64_t)min_valid_timestamp_),
-//         tx_pool_[pool_index].tx_size(), min_valid_tx_count_, res_map.size());
+    // ZJC_DEBUG("success get tx tm: %lu, min tm: %lu, dec: %ld, count: %u, min count: %u, count: %u",
+    //     tx_pool_[pool_index].oldest_timestamp(), min_valid_timestamp_,
+    //     ((int64_t)tx_pool_[pool_index].oldest_timestamp() - (int64_t)min_valid_timestamp_),
+    //     tx_pool_[pool_index].tx_size(), min_valid_tx_count_, res_map.size());
 }
 
 void TxPoolManager::GetTxByGids(uint32_t pool_index, std::vector<std::string> gids, std::map<std::string, pools::TxItemPtr>& res_map) {

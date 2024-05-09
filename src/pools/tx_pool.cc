@@ -130,7 +130,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     if (gid_map_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
-        // ZJC_WARN("add failed extend 1024");
+        ZJC_WARN("add failed extend 1024");
         return kPoolsError;
     }
 

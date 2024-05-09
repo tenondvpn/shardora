@@ -231,10 +231,12 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     }
     
     // 打印一下调试日志
-    std::cout << "highQC: " << pacemaker()->HighQC()->view
-              << ",highTC: " << pacemaker()->HighTC()->view
-              << ",chainSize: " << view_block_chain()->Size()
-              << ",CurView: " << pacemaker()->CurView() << std::endl;    
+    ZJC_DEBUG("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu",
+        pool_idx_,
+        pacemaker()->HighQC()->view,
+        pacemaker()->HighTC()->view,
+        view_block_chain()->Size(),
+        pacemaker()->CurView());    
     view_block_chain()->Print();    
 
     // 1、验证是否存在3个连续qc，设置commit，lock qc状态；2、提交commit块之间的交易信息；3、减枝保留最新commit块，回退分支的交易信息
@@ -386,6 +388,7 @@ std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(const std::shared_ptr<ViewBlock
 
 Status Hotstuff::Commit(const std::shared_ptr<ViewBlock>& v_block) {
     // 递归提交
+    ZJC_DEBUG("pool: %d, commit block view: %lu", pool_idx_, v_block->view);
     Status s = CommitInner(v_block);
     if (s != Status::kSuccess) {
         return s;
