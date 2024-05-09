@@ -90,10 +90,7 @@ void Pacemaker::UpdateHighTC(const std::shared_ptr<TC>& tc) {
 
 void Pacemaker::OnLocalTimeout() {
     // TODO(HT): test
-    // if (pool_idx_ != 62) {
-    //     return;
-    // }
-
+    // if (pool_idx_ != 37) { return; }
     ZJC_DEBUG("OnLocalTimeout pool: %d, view: %d", pool_idx_, CurView());
     // start a new timer for the timeout case
     StartTimeoutTimer();
@@ -146,15 +143,13 @@ void Pacemaker::OnLocalTimeout() {
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     msg.set_type(common::kHotstuffTimeoutMessage);
     transport::TcpTransport::Instance()->SetMessageHash(msg);
-    
     last_timeout_ = msg_ptr;
-    
     // 停止对当前 view 的投票
     if (stop_voting_fn_) {
         stop_voting_fn_(CurView());
     }
+
     BroadcastTimeout(msg_ptr);
-    return;
 }
 
 void Pacemaker::BroadcastTimeout(const std::shared_ptr<transport::TransportMessage>& msg_ptr) {    

@@ -212,8 +212,6 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             pools_mgr_->CheckTimeoutTx(pool_idx);
         }
     }
-
-    return;
 }
 
 void HotstuffManager::RegisterCreateTxCallbacks() {

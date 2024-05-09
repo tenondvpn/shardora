@@ -180,7 +180,7 @@ Status BlockAcceptor::addTxsToPool(
         if (!address_info) {
             return Status::kError;
         }
-
+        
         pools::TxItemPtr tx_ptr = nullptr;
         switch (tx->step()) {
         case pools::protobuf::kNormalFrom:
