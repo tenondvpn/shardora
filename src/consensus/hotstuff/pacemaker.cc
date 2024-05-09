@@ -92,10 +92,10 @@ void Pacemaker::UpdateHighTC(const std::shared_ptr<TC>& tc) {
 
 void Pacemaker::OnLocalTimeout() {
     // TODO(HT): test
-    if (pool_idx_ != 62) {
-        return;
-    }
-    
+    // if (pool_idx_ != 62) {
+    //     return;
+    // }
+
     ZJC_DEBUG("OnLocalTimeout pool: %d, view: %d", pool_idx_, CurView());
     // start a new timer for the timeout case
     StartTimeoutTimer();
