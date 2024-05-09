@@ -163,7 +163,7 @@ TEST_F(TestBlockAcceptor, Accept_NotSamePool) {
     block_info->tx_type = pools::protobuf::kNormalFrom;
     block_info->txs.push_back(CreateTxMessage());
 
-    Status s = block_acceptor_->Accept(block_info);
+    Status s = block_acceptor_->Accept(block_info, false);
     EXPECT_TRUE(s == Status::kError);
 }
 
@@ -174,7 +174,7 @@ TEST_F(TestBlockAcceptor, Accept_NoWrappedTxs) {
     block_info->block = CreateBlock(POOL, 10, prev_block_->hash());
     block_info->tx_type = pools::protobuf::kNormalFrom;
 
-    Status s = block_acceptor_->Accept(block_info);
+    Status s = block_acceptor_->Accept(block_info, false);
     EXPECT_TRUE(s == Status::kSuccess);
 }
 
@@ -188,7 +188,7 @@ TEST_F(TestBlockAcceptor, Accept_InvalidBlock_OldHeightBlock) {
     block_info->tx_type = pools::protobuf::kNormalFrom;
     block_info->txs.push_back(CreateTxMessage());
 
-    Status s = block_acceptor_->Accept(block_info);
+    Status s = block_acceptor_->Accept(block_info, false);
     EXPECT_TRUE(s == Status::kAcceptorBlockInvalid);
 }
 
@@ -205,7 +205,7 @@ TEST_F(TestBlockAcceptor, Accept_InvalidTxs_NormalFromTx) {
 
     EXPECT_EQ(0, block_info->block->tx_list_size());
 
-    Status s = block_acceptor_->Accept(block_info);
+    Status s = block_acceptor_->Accept(block_info, false);
 
     
     EXPECT_EQ(s, Status::kSuccess);

@@ -214,7 +214,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     }
     block_info->view = v_block->view;
     
-    if (acceptor()->Accept(block_info) != Status::kSuccess) {
+    if (acceptor()->Accept(block_info, true) != Status::kSuccess) {
         // 归还交易
         acceptor()->Return(block_info->block);
         ZJC_ERROR("Accept tx is error");
@@ -602,16 +602,36 @@ Status Hotstuff::ConstructViewBlock(
         pre_v_block->block->height());
     auto pre_block = pre_v_block->block;
     auto pb_block = std::make_shared<block::protobuf::Block>();
-    s = wrapper()->Wrap(pre_block, leader_idx, pb_block, tx_propose);
+
+    // 打包 QC 和 View
+    view_block->qc = pacemaker()->HighQC();
+    view_block->view = pacemaker()->CurView();
+
+    // TODO 如果单分支最多连续打包三个默认交易
+    s = wrapper()->Wrap(pre_block, leader_idx, pb_block, tx_propose, IsEmptyBlockAllowed(view_block));
     if (s != Status::kSuccess) {
         ZJC_WARN("pool: %d wrap failed, %d", pool_idx_, static_cast<int>(s));
         return s;
     }
     view_block->block = pb_block;
-    view_block->qc = pacemaker()->HighQC();
-    view_block->view = pacemaker()->CurView();
     view_block->hash = view_block->DoHash();
     return Status::kSuccess;
+}
+
+bool Hotstuff::IsEmptyBlockAllowed(const std::shared_ptr<ViewBlock>& v_block) {
+    auto v_block1 = view_block_chain()->QCRef(v_block);
+    if (!v_block1 || v_block1->block->tx_list_size() > 0) {
+        return true;
+    }
+    auto v_block2 = view_block_chain()->QCRef(v_block1);
+    if (!v_block2 || v_block2->block->tx_list_size() > 0) {
+        return true;
+    }
+    auto v_block3 = view_block_chain()->QCRef(v_block2);
+    if (!v_block3 || v_block3->block->tx_list_size() > 0) {
+        return true;
+    }
+    return false;
 }
 
 Status Hotstuff::ConstructHotstuffMsg(

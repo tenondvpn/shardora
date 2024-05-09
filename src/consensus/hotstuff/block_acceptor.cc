@@ -53,7 +53,7 @@ BlockAcceptor::BlockAcceptor(
 BlockAcceptor::~BlockAcceptor(){};
 
 // Accept 验证 Leader 新提案信息，并执行 txs，修改 block
-Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_info) {
+Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_info, const bool& no_tx_allowed) {
     if (!block_info || !block_info->block) {
         ZJC_DEBUG("block info error!");
         return Status::kError;
@@ -68,7 +68,7 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
 
     if (block_info->txs.empty()) {
         // 允许不打包任何交易，但 block 必须存在
-        return Status::kSuccess;
+        return no_tx_allowed ? Status::kSuccess : Status::kAcceptorTxsEmpty;
     }
     
     // 1. verify block

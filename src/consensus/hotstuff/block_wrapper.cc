@@ -24,7 +24,8 @@ Status BlockWrapper::Wrap(
         const std::shared_ptr<block::protobuf::Block>& prev_block,
         const uint32_t& leader_idx,
         std::shared_ptr<block::protobuf::Block>& block,
-        std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose) {
+        std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose,
+        const bool& no_tx_allowed) {
     if (!prev_block) {
         return Status::kInvalidArgument;
     }
@@ -45,13 +46,9 @@ Status BlockWrapper::Wrap(
     // 打包交易
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
     Status s = PopTxs(txs_ptr);
-    if (s != Status::kSuccess) {
+    if (s != Status::kSuccess && !no_tx_allowed) {
         // 允许 3 个连续的空交易块
-        if (times_of_no_txs_ >= NO_TX_ALLOWED_TIMES) {
-            times_of_no_txs_ = 0;
-            return s;
-        }
-        times_of_no_txs_++;
+        return s;
     }
 
     if (txs_ptr) {

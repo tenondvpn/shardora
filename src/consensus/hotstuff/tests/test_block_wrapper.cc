@@ -84,7 +84,7 @@ TEST_F(TestBlockWrapper, Wrap) {
     auto new_block = std::make_shared<block::protobuf::Block>();
     auto tx_propose = std::make_shared<hotstuff::protobuf::TxPropose>();
     Status s = block_wrapper_->Wrap(
-            prev_view_block->block, GenLeaderIdx(), new_block, tx_propose);
+            prev_view_block->block, GenLeaderIdx(), new_block, tx_propose, false);
     
     EXPECT_EQ(Status::kSuccess, s);
     EXPECT_EQ(prev_view_block->block->height()+1, new_block->height());

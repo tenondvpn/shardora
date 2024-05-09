@@ -148,6 +148,8 @@ private:
             const std::shared_ptr<pb_NewViewMsg>& pb_nv_msg,
             std::shared_ptr<pb_HotstuffMessage>& pb_hf_msg);
     Status SendVoteMsg(std::shared_ptr<hotstuff::protobuf::HotstuffMessage>& hotstuff_msg);
+    // 是否允许空交易
+    bool IsEmptyBlockAllowed(const std::shared_ptr<ViewBlock>& v_block);
 };
 
 } // namespace consensus
