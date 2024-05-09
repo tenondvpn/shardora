@@ -239,7 +239,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         pacemaker()->HighTC()->view,
         view_block_chain()->Size(),
         pacemaker()->CurView(),
-        view_block_chain()->LatestCommittedBlock()->view);
+        v);
     ZJC_DEBUG("pacemaker pool: %d, vblock: %lu, txs: %lu",
         pool_idx_,
         v_block->view,
