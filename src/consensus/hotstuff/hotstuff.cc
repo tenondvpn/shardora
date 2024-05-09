@@ -232,7 +232,11 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     
     // 打印一下调试日志
     auto b = view_block_chain()->LatestCommittedBlock();
-    auto v = b->view;
+    auto v = 0;
+    if (b) {
+        v = b->view;
+    }
+    
     ZJC_DEBUG("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, commitedView: %lu",
         pool_idx_,
         pacemaker()->HighQC()->view,
@@ -240,6 +244,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         view_block_chain()->Size(),
         pacemaker()->CurView(),
         v);
+    assert(b != nullptr);
     ZJC_DEBUG("pacemaker pool: %d, vblock: %lu, txs: %lu",
         pool_idx_,
         v_block->view,
