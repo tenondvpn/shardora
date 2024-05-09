@@ -66,22 +66,22 @@ public:
     Status GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>&);
 
     inline std::shared_ptr<ViewBlock> LatestCommittedBlock() const {
-        return latest_committed_block_;
+        return std::make_shared<ViewBlock>(latest_committed_block_);
     }
 
     inline std::shared_ptr<ViewBlock> LatestLockedBlock() const {
-        return latest_locked_block_;
+        return std::make_shared<ViewBlock>(latest_locked_block_);
     }
 
     inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlock>& view_block) {
-        latest_committed_block_ = view_block;
+        latest_committed_block_ = *view_block;
         view_blocks_info_[view_block->hash]->status = ViewBlockStatus::Committed;        
     }
 
     inline void SetLatestLockedBlock(const std::shared_ptr<ViewBlock>& view_block) {
         auto view_block_status = GetViewBlockStatus(view_block);
         if (view_block_status != ViewBlockStatus::Committed) {
-            latest_locked_block_ = view_block;
+            latest_locked_block_ = *view_block;
             view_blocks_info_[view_block->hash]->status = ViewBlockStatus::Locked;
         }        
     }
@@ -168,8 +168,8 @@ public:
         view_blocks_at_height_.clear();
         prune_height_ = View(1);
 
-        latest_committed_block_ = nullptr;
-        latest_locked_block_ = nullptr;
+        // latest_committed_block_ = nullptr;
+        // latest_locked_block_ = nullptr;
         start_block_ = nullptr;        
     }
 
@@ -203,8 +203,8 @@ private:
     std::shared_ptr<ViewBlock> start_block_;
     std::unordered_map<View, std::vector<std::shared_ptr<ViewBlock>>> view_blocks_at_height_; // 一般一个 view 只有一个块
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> view_blocks_info_;
-    std::shared_ptr<ViewBlock> latest_committed_block_; // 最新 committed block
-    std::shared_ptr<ViewBlock> latest_locked_block_; // locked_block_;
+    ViewBlock latest_committed_block_; // 使用指针在同步时会被删掉，导致无法选出 leader，最新 committed block
+    ViewBlock latest_locked_block_; // locked_block_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 
