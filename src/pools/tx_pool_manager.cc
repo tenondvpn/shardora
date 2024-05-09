@@ -367,10 +367,10 @@ int TxPoolManager::BackupConsensusAddTxs(
     std::vector<pools::TxItemPtr> valid_txs;
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
         auto tx_ptr = iter->second;
-        if (tx_pool_[pool_index].TxExists(tx_ptr->tx_info.gid())) {
+        if (!tx_pool_[pool_index]->GidValid(tx_ptr->gid())) {
             continue;
         }
-
+        
         valid_txs.push_back(tx_ptr);
     }
     
