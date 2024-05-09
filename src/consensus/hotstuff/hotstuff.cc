@@ -231,12 +231,13 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     }
     
     // 打印一下调试日志
-    ZJC_DEBUG("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu",
+    ZJC_DEBUG("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, commitedView: %lu",
         pool_idx_,
         pacemaker()->HighQC()->view,
         pacemaker()->HighTC()->view,
         view_block_chain()->Size(),
-        pacemaker()->CurView());    
+        pacemaker()->CurView(),
+        view_block_chain()->LatestCommittedBlock()->view);    
     view_block_chain()->Print();    
 
     // 1、验证是否存在3个连续qc，设置commit，lock qc状态；2、提交commit块之间的交易信息；3、减枝保留最新commit块，回退分支的交易信息
