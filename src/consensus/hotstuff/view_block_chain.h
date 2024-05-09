@@ -168,8 +168,8 @@ public:
         view_blocks_at_height_.clear();
         prune_height_ = View(1);
 
-        latest_committed_block_ = nullptr;
-        latest_locked_block_ = nullptr;
+        // latest_committed_block_ = nullptr;
+        // latest_locked_block_ = nullptr;
         start_block_ = nullptr;        
     }
 
