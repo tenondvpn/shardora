@@ -739,34 +739,6 @@ void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
             continue;
         }
 
-        // auto iter = gid_map_.find(txs[i]->tx_info.gid());
-        // if (iter != gid_map_.end()) {
-        //     ZJC_DEBUG("tx already exist, gid: %s", txs[i]->tx_info.gid().c_str());
-        //     continue;
-        // }
-
-        // if (removed_gid_.find(txs[i]->tx_info.gid()) != removed_gid_.end()) {
-        //     ZJC_DEBUG("tx already removed, gid: %s", txs[i]->tx_info.gid().c_str());
-        //     continue;
-        // }   
-
-        // bool valid = true;
-        // switch (txs[i]->tx_info.step()) {
-        //     case pools::protobuf::kJoinElect:
-        //         if (!CheckJoinElectTxInfo(txs[i]->tx_info)) {
-        //             valid = false;
-        //         }
-
-        //         break;
-        //     default:
-        //         break;
-        // }
-
-        // if (!valid) {
-        //     ZJC_FATAL("tx invalid!");
-        //     continue;
-        // }
-
         gid_map_[txs[i]->tx_info.gid()] = txs[i];
         txs[i]->is_consensus_add_tx = true;
         consensus_tx_map_[txs[i]->unique_tx_hash] = txs[i];
