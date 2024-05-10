@@ -206,14 +206,12 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     auto block = v_block->block;
     block_info->block = block;
     block_info->tx_type = pro_msg.tx_propose().tx_type();
-    for (int i = 0; i < pro_msg.tx_propose().txs_size(); i++)
-    {
-        auto tx = std::make_shared<pools::protobuf::TxMessage>(pro_msg.tx_propose().txs(i));
-        block_info->txs.push_back(tx);
+    for (const auto& tx : pro_msg.tx_propose().txs()) {
+        block_info->txs.push_back(&tx);
     }
     block_info->view = v_block->view;
     
-    if (acceptor()->Accept(block_info, header, true) != Status::kSuccess) {
+    if (acceptor()->Accept(block_info, true) != Status::kSuccess) {
         // 归还交易
         acceptor()->Return(block_info->block);
         ZJC_ERROR("Accept tx is error");
@@ -295,11 +293,11 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         vote_msg.view());
 
     // 同步 replica 的 txs
-    // std::vector<std::shared_ptr<pools::protobuf::TxMessage>> tx_msgs;
-    // for (const auto& tx : vote_msg.txs()) {
-    //     tx_msgs.push_back(std::make_shared<pools::protobuf::TxMessage>(tx));
-    // }
-    acceptor()->AddTxs(header.hotstuff());
+    std::vector<const pools::protobuf::TxMessage*> tx_msgs;
+    for (const auto& tx : vote_msg.txs()) {
+        tx_msgs.push_back(&tx);
+    }
+    acceptor()->AddTxs(tx_msgs);
     // 生成聚合签名，创建qc
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();
@@ -366,9 +364,9 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::protobuf::Header& header)
     if (pre_rst_timer_msg.txs_size() == 0) {
         return;
     }
-    std::vector<std::shared_ptr<pools::protobuf::TxMessage>> tx_msgs;
+    std::vector<const pools::protobuf::TxMessage*> tx_msgs;
     for (const auto& tx : pre_rst_timer_msg.txs()) {
-        tx_msgs.push_back(std::make_shared<pools::protobuf::TxMessage>(tx));
+        tx_msgs.push_back(&tx);
     }
     Status s = acceptor()->AddTxs(tx_msgs);
     if (s != Status::kSuccess) {

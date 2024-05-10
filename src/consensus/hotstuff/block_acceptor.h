@@ -46,7 +46,7 @@ public:
         View view;
         std::shared_ptr<block::protobuf::Block> block;
         pools::protobuf::StepType tx_type;
-        std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
+        std::vector<const pools::protobuf::TxMessage*> txs;
     };
 
     // synced block info
@@ -61,14 +61,13 @@ public:
     // Accept a block and txs in it from propose msg.
     virtual Status Accept(
         std::shared_ptr<blockInfo>&, 
-        const transport::protobuf::Header& header, 
         const bool& no_tx_allowed) = 0;
     // Accept a block and txs in it from sync msg.
     virtual Status AcceptSync(const std::shared_ptr<block::protobuf::Block>& block) = 0;
     // Commit a block
     virtual Status Commit(std::shared_ptr<block::protobuf::Block>&) = 0;
     // Add txs to local pool
-    virtual Status AddTxs(const hotstuff::protobuf::HotstuffMessage& txs) = 0;
+    virtual Status AddTxs(const std::vector<const pools::protobuf::TxMessage*>& txs) = 0;
     // Return block txs to pool
     virtual Status Return(const std::shared_ptr<block::protobuf::Block>&) = 0;
 };
@@ -100,14 +99,13 @@ public:
     // Accept a proposed block and exec txs in it.
     Status Accept(
         std::shared_ptr<IBlockAcceptor::blockInfo>& blockInfo, 
-        const transport::protobuf::Header& header, 
         const bool& no_tx_allowed) override;
     // Accept a synced block.
     Status AcceptSync(const std::shared_ptr<block::protobuf::Block>& block) override;
     // Commit a block and execute its txs.
     Status Commit(std::shared_ptr<block::protobuf::Block>& block) override;
     // Add txs from hotstuff msg to local pool
-    Status AddTxs(const hotstuff::protobuf::HotstuffMessage& txs) override;
+    Status AddTxs(const std::vector<const pools::protobuf::TxMessage*>& txs) override;
     // Return expired or invalid block txs to pool
     Status Return(const std::shared_ptr<block::protobuf::Block>& block) override {
         // return txs to the pool
@@ -144,7 +142,7 @@ private:
     }
 
     Status addTxsToPool(
-        const hotstuff::protobuf::HotstuffMessage& txs,
+        const std::vector<const pools::protobuf::TxMessage*>& txs,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr);
     
     bool IsBlockValid(const std::shared_ptr<block::protobuf::Block>&);
@@ -157,43 +155,7 @@ private:
 
     Status GetAndAddTxsLocally(
             const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
-            const transport::protobuf::Header& header, 
-            std::shared_ptr<consensus::WaitingTxsItem>&);    
-
-    Status GetDefaultTxs(
-            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
             std::shared_ptr<consensus::WaitingTxsItem>&);
-    Status GetToTxs(
-            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
-            std::shared_ptr<consensus::WaitingTxsItem>&);
-    Status GetStatisticTxs(
-            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
-            std::shared_ptr<consensus::WaitingTxsItem>&);
-    Status GetCrossTxs(
-            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
-            std::shared_ptr<consensus::WaitingTxsItem>&);
-    Status GetElectTxs(
-            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
-            std::shared_ptr<consensus::WaitingTxsItem>&);
-    Status GetTimeBlockTxs(
-            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
-            std::shared_ptr<consensus::WaitingTxsItem>&);
-
-    void RegisterTxsFunc(pools::protobuf::StepType tx_type, TxsFunc txs_func) {
-        txs_func_map_[tx_type] = txs_func;
-    }
-
-    TxsFunc GetTxsFunc(pools::protobuf::StepType tx_type) {
-        auto it = txs_func_map_.find(tx_type);
-        if (it != txs_func_map_.end()) {
-            return it->second;
-        }
-        return std::bind(
-                &BlockAcceptor::GetDefaultTxs,
-                this,
-                std::placeholders::_1,
-                std::placeholders::_2);
-    }
 
     void LeaderBroadcastBlock(const std::shared_ptr<block::protobuf::Block>& block);
     void BroadcastBlock(uint32_t des_shard, const std::shared_ptr<block::protobuf::Block>& block_item);

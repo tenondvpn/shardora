@@ -37,17 +37,6 @@ BlockAcceptor::BlockAcceptor(
     
     tx_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr_, block_mgr_, tm_block_mgr_);
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-    
-    RegisterTxsFunc(pools::protobuf::kNormalTo,
-        std::bind(&BlockAcceptor::GetToTxs, this, std::placeholders::_1, std::placeholders::_2));
-    RegisterTxsFunc(pools::protobuf::kStatistic,
-        std::bind(&BlockAcceptor::GetStatisticTxs, this, std::placeholders::_1, std::placeholders::_2));
-    RegisterTxsFunc(pools::protobuf::kCross,
-        std::bind(&BlockAcceptor::GetCrossTxs, this, std::placeholders::_1, std::placeholders::_2));
-    RegisterTxsFunc(pools::protobuf::kConsensusRootElectShard,
-        std::bind(&BlockAcceptor::GetElectTxs, this, std::placeholders::_1, std::placeholders::_2));
-    RegisterTxsFunc(pools::protobuf::kConsensusRootTimeBlock,
-        std::bind(&BlockAcceptor::GetTimeBlockTxs, this, std::placeholders::_1, std::placeholders::_2));
 };
 
 BlockAcceptor::~BlockAcceptor(){};
@@ -55,7 +44,6 @@ BlockAcceptor::~BlockAcceptor(){};
 // Accept 验证 Leader 新提案信息，并执行 txs，修改 block
 Status BlockAcceptor::Accept(
         std::shared_ptr<IBlockAcceptor::blockInfo>& block_info, 
-        const transport::protobuf::Header& header, 
         const bool& no_tx_allowed) {
     if (!block_info || !block_info->block) {
         ZJC_DEBUG("block info error!");
@@ -83,7 +71,7 @@ Status BlockAcceptor::Accept(
     // 2. Get txs from local pool
     auto txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
     Status s = Status::kSuccess;
-    s = GetAndAddTxsLocally(block_info, header, txs_ptr);
+    s = GetAndAddTxsLocally(block_info, txs_ptr);
     if (s != Status::kSuccess) {
         ZJC_ERROR("invalid tx_type: %d, txs empty. pool_index: %d, view: %lu",
             block_info->tx_type, pool_idx(), block_info->view);
@@ -157,27 +145,21 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
     return Status::kSuccess;
 }
 
-Status BlockAcceptor::AddTxs(const hotstuff::protobuf::HotstuffMessage& hotstuff_msg) {
+Status BlockAcceptor::AddTxs(const std::vector<const pools::protobuf::TxMessage*>& txs) {
     auto txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
-    return addTxsToPool(hotstuff_msg, txs_ptr);
+    return addTxsToPool(txs, txs_ptr);
 };
 
 Status BlockAcceptor::addTxsToPool(
-        const hotstuff::protobuf::HotstuffMessage& hotstuff_msg,
+        const std::vector<const pools::protobuf::TxMessage*>& txs,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    auto* tmp_txs = &hotstuff_msg.vote_msg().txs();
-    if (tmp_txs->empty()) {
-        tmp_txs = &hotstuff_msg.pro_msg().tx_propose().txs();
-    }
-
-    auto& txs = *tmp_txs;
     if (txs.size() == 0) {
         return Status::kAcceptorTxsEmpty;
     }
     
     std::map<std::string, pools::TxItemPtr> txs_map;
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
-        auto* tx = &txs[i];
+        auto& tx = txs[i];
         ZJC_DEBUG("get tx message step: %d", tx->step());
         protos::AddressInfoPtr address_info = nullptr;
         if (tx->step() == pools::protobuf::kContractExcute) {
@@ -273,20 +255,8 @@ Status BlockAcceptor::addTxsToPool(
 
 Status BlockAcceptor::GetAndAddTxsLocally(
         const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
-        const transport::protobuf::Header& header, 
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    // auto txs_func = GetTxsFunc(block_info->tx_type);
-    // Status s = txs_func(block_info, txs_ptr);
-    // if (s != Status::kSuccess) {
-    //     return s;
-    // }
-
-    // if (!txs_ptr) {
-    //     ZJC_ERROR("invalid consensus, tx empty.");
-    //     return Status::kAcceptorTxsEmpty;
-    // }
-
-    auto add_txs_status = addTxsToPool(header.hotstuff(), txs_ptr);
+    auto add_txs_status = addTxsToPool(block_info->txs, txs_ptr);
     if (add_txs_status != Status::kSuccess) {
         ZJC_ERROR("invalid consensus, add_txs_status failed: %d.", add_txs_status);
         return add_txs_status;
@@ -343,52 +313,6 @@ Status BlockAcceptor::DoTransactions(
     block->set_is_commited_block(false);
     block->set_hash(GetBlockHash(*block));
     return s;
-}
-
-Status BlockAcceptor::GetDefaultTxs(
-        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
-        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
-    ZJC_FATAL("invalid call!");
-    return Status::kError;
-}
-
-Status BlockAcceptor::GetToTxs(
-        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
-        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    txs_ptr = tx_pools_->GetToTxs(pool_idx(), "");
-    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
-}
-
-Status BlockAcceptor::GetStatisticTxs(
-        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
-        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    txs_ptr = tx_pools_->GetStatisticTx(pool_idx(), "");
-    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
-}
-
-Status BlockAcceptor::GetCrossTxs(
-        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
-        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    txs_ptr = tx_pools_->GetCrossTx(pool_idx(), "");
-    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess; 
-}
-
-Status BlockAcceptor::GetElectTxs(
-        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
-        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    if (block_info->txs.size() == 1) {
-        auto txhash = pools::GetTxMessageHash(*block_info->txs[0]);
-        txs_ptr = tx_pools_->GetElectTx(pool_idx(), txhash);           
-    }
-    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
-}
-
-Status BlockAcceptor::GetTimeBlockTxs(
-        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
-        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    txs_ptr = tx_pools_->GetTimeblockTx(pool_idx(), "");
-    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
 }
 
 void BlockAcceptor::LeaderBroadcastBlock(const std::shared_ptr<block::protobuf::Block>& block) {
