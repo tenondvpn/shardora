@@ -25,7 +25,7 @@ static const View BeforeGenesisView = 0;
 // ViewDuration Init Params
 static const uint64_t ViewDurationSampleSize = 10;
 static const double ViewDurationStartTimeout = 500;
-static const double ViewDurationMaxTimeout = 6000000;
+static const double ViewDurationMaxTimeout = 30000000;
 static const double ViewDurationMultiplier = 1.5;
 
 HashStr GetViewHash(const View& view);
