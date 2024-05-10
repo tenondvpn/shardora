@@ -86,7 +86,7 @@ void ViewBlock2Proto(const std::shared_ptr<ViewBlock>& view_block, view_block::p
     view_block_proto->set_leader_idx(view_block->leader_idx);
     if (view_block->block) {
         auto* block_info = view_block_proto->mutable_block_info();
-        *block_info = view_block->block;
+        *block_info = *view_block->block;
     }
     if (view_block->qc) {
         view_block_proto->set_qc_str(view_block->qc->Serialize());
