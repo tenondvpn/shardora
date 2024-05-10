@@ -53,7 +53,10 @@ BlockAcceptor::BlockAcceptor(
 BlockAcceptor::~BlockAcceptor(){};
 
 // Accept 验证 Leader 新提案信息，并执行 txs，修改 block
-Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_info, const bool& no_tx_allowed) {
+Status BlockAcceptor::Accept(
+        std::shared_ptr<IBlockAcceptor::blockInfo>& block_info, 
+        const transport::protobuf::Header& header, 
+        const bool& no_tx_allowed) {
     if (!block_info || !block_info->block) {
         ZJC_DEBUG("block info error!");
         return Status::kError;
@@ -81,7 +84,7 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
 
     Status s = Status::kSuccess;
-    s = GetAndAddTxsLocally(block_info, txs_ptr);
+    s = GetAndAddTxsLocally(block_info, header, txs_ptr);
     if (s != Status::kSuccess) {
         ZJC_ERROR("invalid tx_type: %d, txs empty. pool_index: %d, view: %lu",
             block_info->tx_type, pool_idx(), block_info->view);
@@ -265,18 +268,24 @@ Status BlockAcceptor::addTxsToPool(
 
 Status BlockAcceptor::GetAndAddTxsLocally(
         const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
+        const transport::protobuf::Header& header, 
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    auto txs_func = GetTxsFunc(block_info->tx_type);
-    Status s = txs_func(block_info, txs_ptr);
-    if (s != Status::kSuccess) {
-        return s;
-    }
+    // auto txs_func = GetTxsFunc(block_info->tx_type);
+    // Status s = txs_func(block_info, txs_ptr);
+    // if (s != Status::kSuccess) {
+    //     return s;
+    // }
 
-    if (!txs_ptr) {
-        ZJC_ERROR("invalid consensus, tx empty.");
-        return Status::kAcceptorTxsEmpty;
-    }
+    // if (!txs_ptr) {
+    //     ZJC_ERROR("invalid consensus, tx empty.");
+    //     return Status::kAcceptorTxsEmpty;
+    // }
 
+    auto add_txs_status = addTxsToPool(header.hotstuff(), txs_ptr);
+    if (add_txs_status != Status::kSuccess) {
+        return add_txs_status;
+    }
+    
     if (txs_ptr->txs.size() != block_info->txs.size()) {
         ZJC_ERROR("invalid consensus, txs not equal to leader.");
         return Status::kAcceptorTxsEmpty;

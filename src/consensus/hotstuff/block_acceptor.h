@@ -59,7 +59,10 @@ public:
     virtual ~IBlockAcceptor() {};
 
     // Accept a block and txs in it from propose msg.
-    virtual Status Accept(std::shared_ptr<blockInfo>&, const bool& no_tx_allowed) = 0;
+    virtual Status Accept(
+        std::shared_ptr<blockInfo>&, 
+        const transport::protobuf::Header& header, 
+        const bool& no_tx_allowed) = 0;
     // Accept a block and txs in it from sync msg.
     virtual Status AcceptSync(const std::shared_ptr<block::protobuf::Block>& block) = 0;
     // Commit a block
@@ -95,7 +98,10 @@ public:
     BlockAcceptor& operator=(const BlockAcceptor&) = delete;
 
     // Accept a proposed block and exec txs in it.
-    Status Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& blockInfo, const bool& no_tx_allowed) override;
+    Status Accept(
+        std::shared_ptr<IBlockAcceptor::blockInfo>& blockInfo, 
+        const transport::protobuf::Header& header, 
+        const bool& no_tx_allowed) override;
     // Accept a synced block.
     Status AcceptSync(const std::shared_ptr<block::protobuf::Block>& block) override;
     // Commit a block and execute its txs.
@@ -148,6 +154,7 @@ private:
 
     Status GetAndAddTxsLocally(
             const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
+            const transport::protobuf::Header& header, 
             std::shared_ptr<consensus::WaitingTxsItem>&);    
 
     Status GetDefaultTxs(

@@ -213,7 +213,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     }
     block_info->view = v_block->view;
     
-    if (acceptor()->Accept(block_info, true) != Status::kSuccess) {
+    if (acceptor()->Accept(block_info, header, true) != Status::kSuccess) {
         // 归还交易
         acceptor()->Return(block_info->block);
         ZJC_ERROR("Accept tx is error");
