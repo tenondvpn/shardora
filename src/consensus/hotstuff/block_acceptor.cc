@@ -290,16 +290,16 @@ Status BlockAcceptor::GetAndAddTxsLocally(
     // if (s != Status::kSuccess) {
     //     return s;
     // }
-
-    // if (!txs_ptr) {
-    //     ZJC_ERROR("invalid consensus, tx empty.");
-    //     return Status::kAcceptorTxsEmpty;
-    // }
     
     auto add_txs_status = addTxsToPool(block_info->txs, txs_ptr);
     if (add_txs_status != Status::kSuccess) {
         ZJC_ERROR("invalid consensus, add_txs_status failed: %d.", add_txs_status);
         return add_txs_status;
+    }
+
+    if (!txs_ptr) {
+        ZJC_ERROR("invalid consensus, tx empty.");
+        return Status::kAcceptorTxsEmpty;
     }
 
     if (txs_ptr->txs.size() != block_info->txs.size()) {
