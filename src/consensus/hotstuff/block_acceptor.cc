@@ -238,6 +238,24 @@ Status BlockAcceptor::addTxsToPool(
                     security_ptr_, 
                     address_info);
             break;
+        case pools::protobuf::kNormalTo:
+            txs_ptr = tx_pools_->GetToTxs(pool_idx(), "");
+            break;
+        case pools::protobuf::kStatistic:
+            txs_ptr = tx_pools_->GetStatisticTx(pool_idx(), "");
+            break;
+        case pools::protobuf::kCross:
+            txs_ptr = tx_pools_->GetCrossTx(pool_idx(), "");
+            break;
+        case pools::protobuf::kConsensusRootElectShard:
+            if (txs.size() == 1) {
+                auto txhash = pools::GetTxMessageHash(*txs[0]);
+                txs_ptr = tx_pools_->GetElectTx(pool_idx(), txhash);           
+            }
+            break;
+        case pools::protobuf::kConsensusRootTimeBlock:
+            txs_ptr = tx_pools_->GetTimeblockTx(pool_idx(), "");
+            break;
         default:
             ZJC_FATAL("invalid tx step: %d", tx->step());
             return Status::kError;
