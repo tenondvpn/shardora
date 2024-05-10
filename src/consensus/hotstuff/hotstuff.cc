@@ -213,7 +213,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     }
     block_info->view = v_block->view;
     
-    if (acceptor()->Accept(block_info, true) != Status::kSuccess) {
+    if (acceptor()->Accept(block_info, header, true) != Status::kSuccess) {
         // 归还交易
         acceptor()->Return(block_info->block);
         ZJC_ERROR("Accept tx is error");
@@ -295,12 +295,11 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         vote_msg.view());
 
     // 同步 replica 的 txs
-    std::vector<std::shared_ptr<pools::protobuf::TxMessage>> tx_msgs;
-    for (const auto& tx : vote_msg.txs()) {
-        tx_msgs.push_back(std::make_shared<pools::protobuf::TxMessage>(tx));
-    }
-    acceptor()->AddTxs(tx_msgs);
-    
+    // std::vector<std::shared_ptr<pools::protobuf::TxMessage>> tx_msgs;
+    // for (const auto& tx : vote_msg.txs()) {
+    //     tx_msgs.push_back(std::make_shared<pools::protobuf::TxMessage>(tx));
+    // }
+    acceptor()->AddTxs(header.hotstuff());
     // 生成聚合签名，创建qc
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();

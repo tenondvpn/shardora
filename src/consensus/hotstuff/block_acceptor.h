@@ -59,13 +59,16 @@ public:
     virtual ~IBlockAcceptor() {};
 
     // Accept a block and txs in it from propose msg.
-    virtual Status Accept(std::shared_ptr<blockInfo>&, const bool& no_tx_allowed) = 0;
+    virtual Status Accept(
+        std::shared_ptr<blockInfo>&, 
+        const transport::protobuf::Header& header, 
+        const bool& no_tx_allowed) = 0;
     // Accept a block and txs in it from sync msg.
     virtual Status AcceptSync(const std::shared_ptr<block::protobuf::Block>& block) = 0;
     // Commit a block
     virtual Status Commit(std::shared_ptr<block::protobuf::Block>&) = 0;
     // Add txs to local pool
-    virtual Status AddTxs(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>) = 0;
+    virtual Status AddTxs(const hotstuff::protobuf::HotstuffMessage& txs) = 0;
     // Return block txs to pool
     virtual Status Return(const std::shared_ptr<block::protobuf::Block>&) = 0;
 };
@@ -95,13 +98,16 @@ public:
     BlockAcceptor& operator=(const BlockAcceptor&) = delete;
 
     // Accept a proposed block and exec txs in it.
-    Status Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& blockInfo, const bool& no_tx_allowed) override;
+    Status Accept(
+        std::shared_ptr<IBlockAcceptor::blockInfo>& blockInfo, 
+        const transport::protobuf::Header& header, 
+        const bool& no_tx_allowed) override;
     // Accept a synced block.
     Status AcceptSync(const std::shared_ptr<block::protobuf::Block>& block) override;
     // Commit a block and execute its txs.
     Status Commit(std::shared_ptr<block::protobuf::Block>& block) override;
     // Add txs from hotstuff msg to local pool
-    Status AddTxs(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) override;
+    Status AddTxs(const hotstuff::protobuf::HotstuffMessage& txs) override;
     // Return expired or invalid block txs to pool
     Status Return(const std::shared_ptr<block::protobuf::Block>& block) override {
         // return txs to the pool
@@ -135,7 +141,7 @@ private:
     }
 
     Status addTxsToPool(
-        std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs,
+        const hotstuff::protobuf::HotstuffMessage& txs,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr);
     
     bool IsBlockValid(const std::shared_ptr<block::protobuf::Block>&);
@@ -148,6 +154,7 @@ private:
 
     Status GetAndAddTxsLocally(
             const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
+            const transport::protobuf::Header& header, 
             std::shared_ptr<consensus::WaitingTxsItem>&);    
 
     Status GetDefaultTxs(
