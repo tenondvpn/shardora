@@ -36,18 +36,7 @@ BlockAcceptor::BlockAcceptor(
     block_mgr_(block_mgr), tm_block_mgr_(tm_block_mgr), new_block_cache_callback_(new_block_cache_callback) {
     
     tx_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr_, block_mgr_, tm_block_mgr_);
-    prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-
-    RegisterTxsFunc(pools::protobuf::kNormalTo,
-        std::bind(&BlockAcceptor::GetToTxs, this, std::placeholders::_1, std::placeholders::_2));
-    RegisterTxsFunc(pools::protobuf::kStatistic,
-        std::bind(&BlockAcceptor::GetStatisticTxs, this, std::placeholders::_1, std::placeholders::_2));
-    RegisterTxsFunc(pools::protobuf::kCross,
-        std::bind(&BlockAcceptor::GetCrossTxs, this, std::placeholders::_1, std::placeholders::_2));
-    RegisterTxsFunc(pools::protobuf::kConsensusRootElectShard,
-        std::bind(&BlockAcceptor::GetElectTxs, this, std::placeholders::_1, std::placeholders::_2));
-    RegisterTxsFunc(pools::protobuf::kConsensusRootTimeBlock,
-        std::bind(&BlockAcceptor::GetTimeBlockTxs, this, std::placeholders::_1, std::placeholders::_2));    
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db_);    
 };
 
 BlockAcceptor::~BlockAcceptor(){};
@@ -258,7 +247,7 @@ Status BlockAcceptor::addTxsToPool(
             txs_ptr = tx_pools_->GetTimeblockTx(pool_idx(), "");
             break;
         default:
-            // TODO 还需要支持其他交易的写入
+            // TODO 没完！还需要支持其他交易的写入
             break;
             // ZJC_FATAL("invalid tx step: %d", tx->step());
             // return Status::kError;
@@ -428,52 +417,6 @@ void BlockAcceptor::BroadcastLocalTosBlock(
             block_item->height(), to_tx.to_heights().sharding_id());
       
     }
-}
-
-Status BlockAcceptor::GetDefaultTxs(
-        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
-        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
-    ZJC_FATAL("invalid call!");
-    return Status::kError;
-}
-
-Status BlockAcceptor::GetToTxs(
-        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
-        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    txs_ptr = tx_pools_->GetToTxs(pool_idx(), "");
-    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
-}
-
-Status BlockAcceptor::GetStatisticTxs(
-        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
-        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    txs_ptr = tx_pools_->GetStatisticTx(pool_idx(), "");
-    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
-}
-
-Status BlockAcceptor::GetCrossTxs(
-        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
-        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    txs_ptr = tx_pools_->GetCrossTx(pool_idx(), "");
-    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess; 
-}
-
-Status BlockAcceptor::GetElectTxs(
-        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
-        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    if (block_info->txs.size() == 1) {
-        auto txhash = pools::GetTxMessageHash(*block_info->txs[0]);
-        txs_ptr = tx_pools_->GetElectTx(pool_idx(), txhash);           
-    }
-    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
-}
-
-Status BlockAcceptor::GetTimeBlockTxs(
-        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
-        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    txs_ptr = tx_pools_->GetTimeblockTx(pool_idx(), "");
-    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
 }
 
 } // namespace hotstuff

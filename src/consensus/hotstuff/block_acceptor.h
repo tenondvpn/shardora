@@ -175,41 +175,6 @@ private:
                 prev_count_ = 0;
             }
         }        
-    }
-
-    Status GetDefaultTxs(
-            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
-            std::shared_ptr<consensus::WaitingTxsItem>&);
-    Status GetToTxs(
-            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
-            std::shared_ptr<consensus::WaitingTxsItem>&);
-    Status GetStatisticTxs(
-            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
-            std::shared_ptr<consensus::WaitingTxsItem>&);
-    Status GetCrossTxs(
-            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
-            std::shared_ptr<consensus::WaitingTxsItem>&);
-    Status GetElectTxs(
-            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
-            std::shared_ptr<consensus::WaitingTxsItem>&);
-    Status GetTimeBlockTxs(
-            const std::shared_ptr<IBlockAcceptor::blockInfo>&,
-            std::shared_ptr<consensus::WaitingTxsItem>&);
-
-    void RegisterTxsFunc(pools::protobuf::StepType tx_type, TxsFunc txs_func) {
-        txs_func_map_[tx_type] = txs_func;
-    }
-
-    TxsFunc GetTxsFunc(pools::protobuf::StepType tx_type) {
-        auto it = txs_func_map_.find(tx_type);
-        if (it != txs_func_map_.end()) {
-            return it->second;
-        }
-        return std::bind(
-                &BlockAcceptor::GetDefaultTxs,
-                this,
-                std::placeholders::_1,
-                std::placeholders::_2);
     }    
 };
 
