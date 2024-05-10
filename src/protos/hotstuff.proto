@@ -13,8 +13,10 @@ message HotstuffMessage {
     optional ProposeMsg  pro_msg = 2;
     optional VoteMsg   vote_msg = 3;
     optional NewViewMsg newview_msg = 4;
-    optional uint32 net_id = 5;
-    optional uint32 pool_index = 6 [default=4294967295];
+    optional PreResetTimerMsg pre_reset_timer_msg = 5;
+    optional ResetTimerMsg reset_timer_msg = 6;
+    optional uint32 net_id = 7;
+    optional uint32 pool_index = 8 [default=4294967295];
 }
 
 message NewViewMsg {
@@ -37,4 +39,13 @@ message VoteMsg {
     optional bytes sign_x = 5;
     optional bytes sign_y = 6;
     repeated pools.protobuf.TxMessage txs = 7; // 仅打包普通交易信息，作为同步
+}
+
+message PreResetTimerMsg {
+    optional uint32 replica_idx = 1;
+    repeated pools.protobuf.TxMessage txs = 7;
+}
+
+message ResetTimerMsg {
+    optional uint32 leader_idx = 1;
 }

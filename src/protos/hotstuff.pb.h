@@ -40,7 +40,7 @@ namespace protobuf_protos_2fhotstuff_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[5];
+  static const ::google::protobuf::internal::ParseTable schema[7];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -56,9 +56,15 @@ extern HotstuffMessageDefaultTypeInternal _HotstuffMessage_default_instance_;
 class NewViewMsg;
 class NewViewMsgDefaultTypeInternal;
 extern NewViewMsgDefaultTypeInternal _NewViewMsg_default_instance_;
+class PreResetTimerMsg;
+class PreResetTimerMsgDefaultTypeInternal;
+extern PreResetTimerMsgDefaultTypeInternal _PreResetTimerMsg_default_instance_;
 class ProposeMsg;
 class ProposeMsgDefaultTypeInternal;
 extern ProposeMsgDefaultTypeInternal _ProposeMsg_default_instance_;
+class ResetTimerMsg;
+class ResetTimerMsgDefaultTypeInternal;
+extern ResetTimerMsgDefaultTypeInternal _ResetTimerMsg_default_instance_;
 class TxPropose;
 class TxProposeDefaultTypeInternal;
 extern TxProposeDefaultTypeInternal _TxPropose_default_instance_;
@@ -72,7 +78,9 @@ namespace google {
 namespace protobuf {
 template<> ::shardora::hotstuff::protobuf::HotstuffMessage* Arena::CreateMaybeMessage<::shardora::hotstuff::protobuf::HotstuffMessage>(Arena*);
 template<> ::shardora::hotstuff::protobuf::NewViewMsg* Arena::CreateMaybeMessage<::shardora::hotstuff::protobuf::NewViewMsg>(Arena*);
+template<> ::shardora::hotstuff::protobuf::PreResetTimerMsg* Arena::CreateMaybeMessage<::shardora::hotstuff::protobuf::PreResetTimerMsg>(Arena*);
 template<> ::shardora::hotstuff::protobuf::ProposeMsg* Arena::CreateMaybeMessage<::shardora::hotstuff::protobuf::ProposeMsg>(Arena*);
+template<> ::shardora::hotstuff::protobuf::ResetTimerMsg* Arena::CreateMaybeMessage<::shardora::hotstuff::protobuf::ResetTimerMsg>(Arena*);
 template<> ::shardora::hotstuff::protobuf::TxPropose* Arena::CreateMaybeMessage<::shardora::hotstuff::protobuf::TxPropose>(Arena*);
 template<> ::shardora::hotstuff::protobuf::VoteMsg* Arena::CreateMaybeMessage<::shardora::hotstuff::protobuf::VoteMsg>(Arena*);
 }  // namespace protobuf
@@ -340,6 +348,30 @@ class HotstuffMessage : public ::google::protobuf::Message /* @@protoc_insertion
   ::shardora::hotstuff::protobuf::NewViewMsg* mutable_newview_msg();
   void set_allocated_newview_msg(::shardora::hotstuff::protobuf::NewViewMsg* newview_msg);
 
+  // optional .shardora.hotstuff.protobuf.PreResetTimerMsg pre_reset_timer_msg = 5;
+  bool has_pre_reset_timer_msg() const;
+  void clear_pre_reset_timer_msg();
+  static const int kPreResetTimerMsgFieldNumber = 5;
+  private:
+  const ::shardora::hotstuff::protobuf::PreResetTimerMsg& _internal_pre_reset_timer_msg() const;
+  public:
+  const ::shardora::hotstuff::protobuf::PreResetTimerMsg& pre_reset_timer_msg() const;
+  ::shardora::hotstuff::protobuf::PreResetTimerMsg* release_pre_reset_timer_msg();
+  ::shardora::hotstuff::protobuf::PreResetTimerMsg* mutable_pre_reset_timer_msg();
+  void set_allocated_pre_reset_timer_msg(::shardora::hotstuff::protobuf::PreResetTimerMsg* pre_reset_timer_msg);
+
+  // optional .shardora.hotstuff.protobuf.ResetTimerMsg reset_timer_msg = 6;
+  bool has_reset_timer_msg() const;
+  void clear_reset_timer_msg();
+  static const int kResetTimerMsgFieldNumber = 6;
+  private:
+  const ::shardora::hotstuff::protobuf::ResetTimerMsg& _internal_reset_timer_msg() const;
+  public:
+  const ::shardora::hotstuff::protobuf::ResetTimerMsg& reset_timer_msg() const;
+  ::shardora::hotstuff::protobuf::ResetTimerMsg* release_reset_timer_msg();
+  ::shardora::hotstuff::protobuf::ResetTimerMsg* mutable_reset_timer_msg();
+  void set_allocated_reset_timer_msg(::shardora::hotstuff::protobuf::ResetTimerMsg* reset_timer_msg);
+
   // optional uint32 type = 1;
   bool has_type() const;
   void clear_type();
@@ -347,17 +379,17 @@ class HotstuffMessage : public ::google::protobuf::Message /* @@protoc_insertion
   ::google::protobuf::uint32 type() const;
   void set_type(::google::protobuf::uint32 value);
 
-  // optional uint32 net_id = 5;
+  // optional uint32 net_id = 7;
   bool has_net_id() const;
   void clear_net_id();
-  static const int kNetIdFieldNumber = 5;
+  static const int kNetIdFieldNumber = 7;
   ::google::protobuf::uint32 net_id() const;
   void set_net_id(::google::protobuf::uint32 value);
 
-  // optional uint32 pool_index = 6 [default = 4294967295];
+  // optional uint32 pool_index = 8 [default = 4294967295];
   bool has_pool_index() const;
   void clear_pool_index();
-  static const int kPoolIndexFieldNumber = 6;
+  static const int kPoolIndexFieldNumber = 8;
   ::google::protobuf::uint32 pool_index() const;
   void set_pool_index(::google::protobuf::uint32 value);
 
@@ -371,6 +403,10 @@ class HotstuffMessage : public ::google::protobuf::Message /* @@protoc_insertion
   void clear_has_vote_msg();
   void set_has_newview_msg();
   void clear_has_newview_msg();
+  void set_has_pre_reset_timer_msg();
+  void clear_has_pre_reset_timer_msg();
+  void set_has_reset_timer_msg();
+  void clear_has_reset_timer_msg();
   void set_has_net_id();
   void clear_has_net_id();
   void set_has_pool_index();
@@ -382,6 +418,8 @@ class HotstuffMessage : public ::google::protobuf::Message /* @@protoc_insertion
   ::shardora::hotstuff::protobuf::ProposeMsg* pro_msg_;
   ::shardora::hotstuff::protobuf::VoteMsg* vote_msg_;
   ::shardora::hotstuff::protobuf::NewViewMsg* newview_msg_;
+  ::shardora::hotstuff::protobuf::PreResetTimerMsg* pre_reset_timer_msg_;
+  ::shardora::hotstuff::protobuf::ResetTimerMsg* reset_timer_msg_;
   ::google::protobuf::uint32 type_;
   ::google::protobuf::uint32 net_id_;
   ::google::protobuf::uint32 pool_index_;
@@ -882,6 +920,247 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::uint32 replica_idx_;
   friend struct ::protobuf_protos_2fhotstuff_2eproto::TableStruct;
 };
+// -------------------------------------------------------------------
+
+class PreResetTimerMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.hotstuff.protobuf.PreResetTimerMsg) */ {
+ public:
+  PreResetTimerMsg();
+  virtual ~PreResetTimerMsg();
+
+  PreResetTimerMsg(const PreResetTimerMsg& from);
+
+  inline PreResetTimerMsg& operator=(const PreResetTimerMsg& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  PreResetTimerMsg(PreResetTimerMsg&& from) noexcept
+    : PreResetTimerMsg() {
+    *this = ::std::move(from);
+  }
+
+  inline PreResetTimerMsg& operator=(PreResetTimerMsg&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const PreResetTimerMsg& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const PreResetTimerMsg* internal_default_instance() {
+    return reinterpret_cast<const PreResetTimerMsg*>(
+               &_PreResetTimerMsg_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    5;
+
+  void Swap(PreResetTimerMsg* other);
+  friend void swap(PreResetTimerMsg& a, PreResetTimerMsg& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline PreResetTimerMsg* New() const final {
+    return CreateMaybeMessage<PreResetTimerMsg>(NULL);
+  }
+
+  PreResetTimerMsg* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<PreResetTimerMsg>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const PreResetTimerMsg& from);
+  void MergeFrom(const PreResetTimerMsg& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(PreResetTimerMsg* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated .shardora.pools.protobuf.TxMessage txs = 7;
+  int txs_size() const;
+  void clear_txs();
+  static const int kTxsFieldNumber = 7;
+  ::shardora::pools::protobuf::TxMessage* mutable_txs(int index);
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage >*
+      mutable_txs();
+  const ::shardora::pools::protobuf::TxMessage& txs(int index) const;
+  ::shardora::pools::protobuf::TxMessage* add_txs();
+  const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage >&
+      txs() const;
+
+  // optional uint32 replica_idx = 1;
+  bool has_replica_idx() const;
+  void clear_replica_idx();
+  static const int kReplicaIdxFieldNumber = 1;
+  ::google::protobuf::uint32 replica_idx() const;
+  void set_replica_idx(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:shardora.hotstuff.protobuf.PreResetTimerMsg)
+ private:
+  void set_has_replica_idx();
+  void clear_has_replica_idx();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage > txs_;
+  ::google::protobuf::uint32 replica_idx_;
+  friend struct ::protobuf_protos_2fhotstuff_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
+class ResetTimerMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.hotstuff.protobuf.ResetTimerMsg) */ {
+ public:
+  ResetTimerMsg();
+  virtual ~ResetTimerMsg();
+
+  ResetTimerMsg(const ResetTimerMsg& from);
+
+  inline ResetTimerMsg& operator=(const ResetTimerMsg& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  ResetTimerMsg(ResetTimerMsg&& from) noexcept
+    : ResetTimerMsg() {
+    *this = ::std::move(from);
+  }
+
+  inline ResetTimerMsg& operator=(ResetTimerMsg&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ResetTimerMsg& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ResetTimerMsg* internal_default_instance() {
+    return reinterpret_cast<const ResetTimerMsg*>(
+               &_ResetTimerMsg_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    6;
+
+  void Swap(ResetTimerMsg* other);
+  friend void swap(ResetTimerMsg& a, ResetTimerMsg& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ResetTimerMsg* New() const final {
+    return CreateMaybeMessage<ResetTimerMsg>(NULL);
+  }
+
+  ResetTimerMsg* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<ResetTimerMsg>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const ResetTimerMsg& from);
+  void MergeFrom(const ResetTimerMsg& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ResetTimerMsg* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional uint32 leader_idx = 1;
+  bool has_leader_idx() const;
+  void clear_leader_idx();
+  static const int kLeaderIdxFieldNumber = 1;
+  ::google::protobuf::uint32 leader_idx() const;
+  void set_leader_idx(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:shardora.hotstuff.protobuf.ResetTimerMsg)
+ private:
+  void set_has_leader_idx();
+  void clear_has_leader_idx();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::uint32 leader_idx_;
+  friend struct ::protobuf_protos_2fhotstuff_2eproto::TableStruct;
+};
 // ===================================================================
 
 
@@ -951,13 +1230,13 @@ TxPropose::txs() const {
 
 // optional uint32 type = 1;
 inline bool HotstuffMessage::has_type() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void HotstuffMessage::set_has_type() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void HotstuffMessage::clear_has_type() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void HotstuffMessage::clear_type() {
   type_ = 0u;
@@ -1147,15 +1426,131 @@ inline void HotstuffMessage::set_allocated_newview_msg(::shardora::hotstuff::pro
   // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.HotstuffMessage.newview_msg)
 }
 
-// optional uint32 net_id = 5;
-inline bool HotstuffMessage::has_net_id() const {
+// optional .shardora.hotstuff.protobuf.PreResetTimerMsg pre_reset_timer_msg = 5;
+inline bool HotstuffMessage::has_pre_reset_timer_msg() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void HotstuffMessage::set_has_pre_reset_timer_msg() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void HotstuffMessage::clear_has_pre_reset_timer_msg() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void HotstuffMessage::clear_pre_reset_timer_msg() {
+  if (pre_reset_timer_msg_ != NULL) pre_reset_timer_msg_->Clear();
+  clear_has_pre_reset_timer_msg();
+}
+inline const ::shardora::hotstuff::protobuf::PreResetTimerMsg& HotstuffMessage::_internal_pre_reset_timer_msg() const {
+  return *pre_reset_timer_msg_;
+}
+inline const ::shardora::hotstuff::protobuf::PreResetTimerMsg& HotstuffMessage::pre_reset_timer_msg() const {
+  const ::shardora::hotstuff::protobuf::PreResetTimerMsg* p = pre_reset_timer_msg_;
+  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.HotstuffMessage.pre_reset_timer_msg)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::hotstuff::protobuf::PreResetTimerMsg*>(
+      &::shardora::hotstuff::protobuf::_PreResetTimerMsg_default_instance_);
+}
+inline ::shardora::hotstuff::protobuf::PreResetTimerMsg* HotstuffMessage::release_pre_reset_timer_msg() {
+  // @@protoc_insertion_point(field_release:shardora.hotstuff.protobuf.HotstuffMessage.pre_reset_timer_msg)
+  clear_has_pre_reset_timer_msg();
+  ::shardora::hotstuff::protobuf::PreResetTimerMsg* temp = pre_reset_timer_msg_;
+  pre_reset_timer_msg_ = NULL;
+  return temp;
+}
+inline ::shardora::hotstuff::protobuf::PreResetTimerMsg* HotstuffMessage::mutable_pre_reset_timer_msg() {
+  set_has_pre_reset_timer_msg();
+  if (pre_reset_timer_msg_ == NULL) {
+    auto* p = CreateMaybeMessage<::shardora::hotstuff::protobuf::PreResetTimerMsg>(GetArenaNoVirtual());
+    pre_reset_timer_msg_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:shardora.hotstuff.protobuf.HotstuffMessage.pre_reset_timer_msg)
+  return pre_reset_timer_msg_;
+}
+inline void HotstuffMessage::set_allocated_pre_reset_timer_msg(::shardora::hotstuff::protobuf::PreResetTimerMsg* pre_reset_timer_msg) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete pre_reset_timer_msg_;
+  }
+  if (pre_reset_timer_msg) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      pre_reset_timer_msg = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, pre_reset_timer_msg, submessage_arena);
+    }
+    set_has_pre_reset_timer_msg();
+  } else {
+    clear_has_pre_reset_timer_msg();
+  }
+  pre_reset_timer_msg_ = pre_reset_timer_msg;
+  // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.HotstuffMessage.pre_reset_timer_msg)
+}
+
+// optional .shardora.hotstuff.protobuf.ResetTimerMsg reset_timer_msg = 6;
+inline bool HotstuffMessage::has_reset_timer_msg() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
-inline void HotstuffMessage::set_has_net_id() {
+inline void HotstuffMessage::set_has_reset_timer_msg() {
   _has_bits_[0] |= 0x00000010u;
 }
-inline void HotstuffMessage::clear_has_net_id() {
+inline void HotstuffMessage::clear_has_reset_timer_msg() {
   _has_bits_[0] &= ~0x00000010u;
+}
+inline void HotstuffMessage::clear_reset_timer_msg() {
+  if (reset_timer_msg_ != NULL) reset_timer_msg_->Clear();
+  clear_has_reset_timer_msg();
+}
+inline const ::shardora::hotstuff::protobuf::ResetTimerMsg& HotstuffMessage::_internal_reset_timer_msg() const {
+  return *reset_timer_msg_;
+}
+inline const ::shardora::hotstuff::protobuf::ResetTimerMsg& HotstuffMessage::reset_timer_msg() const {
+  const ::shardora::hotstuff::protobuf::ResetTimerMsg* p = reset_timer_msg_;
+  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.HotstuffMessage.reset_timer_msg)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::hotstuff::protobuf::ResetTimerMsg*>(
+      &::shardora::hotstuff::protobuf::_ResetTimerMsg_default_instance_);
+}
+inline ::shardora::hotstuff::protobuf::ResetTimerMsg* HotstuffMessage::release_reset_timer_msg() {
+  // @@protoc_insertion_point(field_release:shardora.hotstuff.protobuf.HotstuffMessage.reset_timer_msg)
+  clear_has_reset_timer_msg();
+  ::shardora::hotstuff::protobuf::ResetTimerMsg* temp = reset_timer_msg_;
+  reset_timer_msg_ = NULL;
+  return temp;
+}
+inline ::shardora::hotstuff::protobuf::ResetTimerMsg* HotstuffMessage::mutable_reset_timer_msg() {
+  set_has_reset_timer_msg();
+  if (reset_timer_msg_ == NULL) {
+    auto* p = CreateMaybeMessage<::shardora::hotstuff::protobuf::ResetTimerMsg>(GetArenaNoVirtual());
+    reset_timer_msg_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:shardora.hotstuff.protobuf.HotstuffMessage.reset_timer_msg)
+  return reset_timer_msg_;
+}
+inline void HotstuffMessage::set_allocated_reset_timer_msg(::shardora::hotstuff::protobuf::ResetTimerMsg* reset_timer_msg) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete reset_timer_msg_;
+  }
+  if (reset_timer_msg) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      reset_timer_msg = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, reset_timer_msg, submessage_arena);
+    }
+    set_has_reset_timer_msg();
+  } else {
+    clear_has_reset_timer_msg();
+  }
+  reset_timer_msg_ = reset_timer_msg;
+  // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.HotstuffMessage.reset_timer_msg)
+}
+
+// optional uint32 net_id = 7;
+inline bool HotstuffMessage::has_net_id() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void HotstuffMessage::set_has_net_id() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void HotstuffMessage::clear_has_net_id() {
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void HotstuffMessage::clear_net_id() {
   net_id_ = 0u;
@@ -1171,15 +1566,15 @@ inline void HotstuffMessage::set_net_id(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.HotstuffMessage.net_id)
 }
 
-// optional uint32 pool_index = 6 [default = 4294967295];
+// optional uint32 pool_index = 8 [default = 4294967295];
 inline bool HotstuffMessage::has_pool_index() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void HotstuffMessage::set_has_pool_index() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void HotstuffMessage::clear_has_pool_index() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void HotstuffMessage::clear_pool_index() {
   pool_index_ = 4294967295u;
@@ -1796,9 +2191,96 @@ VoteMsg::txs() const {
   return txs_;
 }
 
+// -------------------------------------------------------------------
+
+// PreResetTimerMsg
+
+// optional uint32 replica_idx = 1;
+inline bool PreResetTimerMsg::has_replica_idx() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void PreResetTimerMsg::set_has_replica_idx() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void PreResetTimerMsg::clear_has_replica_idx() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void PreResetTimerMsg::clear_replica_idx() {
+  replica_idx_ = 0u;
+  clear_has_replica_idx();
+}
+inline ::google::protobuf::uint32 PreResetTimerMsg::replica_idx() const {
+  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.PreResetTimerMsg.replica_idx)
+  return replica_idx_;
+}
+inline void PreResetTimerMsg::set_replica_idx(::google::protobuf::uint32 value) {
+  set_has_replica_idx();
+  replica_idx_ = value;
+  // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.PreResetTimerMsg.replica_idx)
+}
+
+// repeated .shardora.pools.protobuf.TxMessage txs = 7;
+inline int PreResetTimerMsg::txs_size() const {
+  return txs_.size();
+}
+inline ::shardora::pools::protobuf::TxMessage* PreResetTimerMsg::mutable_txs(int index) {
+  // @@protoc_insertion_point(field_mutable:shardora.hotstuff.protobuf.PreResetTimerMsg.txs)
+  return txs_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage >*
+PreResetTimerMsg::mutable_txs() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.hotstuff.protobuf.PreResetTimerMsg.txs)
+  return &txs_;
+}
+inline const ::shardora::pools::protobuf::TxMessage& PreResetTimerMsg::txs(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.PreResetTimerMsg.txs)
+  return txs_.Get(index);
+}
+inline ::shardora::pools::protobuf::TxMessage* PreResetTimerMsg::add_txs() {
+  // @@protoc_insertion_point(field_add:shardora.hotstuff.protobuf.PreResetTimerMsg.txs)
+  return txs_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage >&
+PreResetTimerMsg::txs() const {
+  // @@protoc_insertion_point(field_list:shardora.hotstuff.protobuf.PreResetTimerMsg.txs)
+  return txs_;
+}
+
+// -------------------------------------------------------------------
+
+// ResetTimerMsg
+
+// optional uint32 leader_idx = 1;
+inline bool ResetTimerMsg::has_leader_idx() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ResetTimerMsg::set_has_leader_idx() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ResetTimerMsg::clear_has_leader_idx() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ResetTimerMsg::clear_leader_idx() {
+  leader_idx_ = 0u;
+  clear_has_leader_idx();
+}
+inline ::google::protobuf::uint32 ResetTimerMsg::leader_idx() const {
+  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.ResetTimerMsg.leader_idx)
+  return leader_idx_;
+}
+inline void ResetTimerMsg::set_leader_idx(::google::protobuf::uint32 value) {
+  set_has_leader_idx();
+  leader_idx_ = value;
+  // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.ResetTimerMsg.leader_idx)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

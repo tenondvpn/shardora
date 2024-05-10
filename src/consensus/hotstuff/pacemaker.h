@@ -70,6 +70,15 @@ public:
 
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
+    // 重置超时实例
+    void ResetViewDuration(const std::shared_ptr<ViewDuration>& dur) {
+        duration_ = dur;
+    }
+
+    inline uint64_t DurationUs() const {
+        return duration_->Duration();
+    }
+
 private:
     void UpdateHighQC(const std::shared_ptr<QC>& qc);
     void UpdateHighTC(const std::shared_ptr<TC>& tc);

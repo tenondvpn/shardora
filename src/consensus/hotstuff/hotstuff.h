@@ -1,4 +1,5 @@
 #pragma once
+#include <common/flow_control.h>
 #include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/block_wrapper.h>
 #include <consensus/hotstuff/crypto.h>
@@ -26,12 +27,16 @@ enum MsgType {
   PROPOSE,
   VOTE,
   NEWVIEW,
+  PRE_RESET_TIMER,
+  RESET_TIMER,
 };
 
 typedef hotstuff::protobuf::ProposeMsg  pb_ProposeMsg;
 typedef hotstuff::protobuf::HotstuffMessage  pb_HotstuffMessage;
 typedef hotstuff::protobuf::VoteMsg pb_VoteMsg;
-typedef hotstuff::protobuf::NewViewMsg  pb_NewViewMsg;
+typedef hotstuff::protobuf::NewViewMsg pb_NewViewMsg;
+
+static const uint64_t STUCK_PACEMAKER_DURATION_MIN_US = 2000000lu; // the min duration that hotstuff can be considered stucking
 
 class Hotstuff {
 public:
@@ -65,12 +70,15 @@ public:
     void Init(std::shared_ptr<db::Db>& db_);
     Status Start();
 
-    void NewView(const std::shared_ptr<SyncInfo>& sync_info);
+    
     void HandleProposeMsg(const transport::protobuf::Header& header);
-    void HandleVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg);
     void HandleNewViewMsg(const transport::protobuf::Header& header);
-    Status Propose(const std::shared_ptr<SyncInfo>& sync_info);
+    void HandlePreResetTimerMsg(const transport::protobuf::Header& header);
+    void HandleResetTimerMsg(const transport::protobuf::Header& header);
     void HandleVoteMsg(const transport::protobuf::Header& header);
+    void NewView(const std::shared_ptr<SyncInfo>& sync_info);
+    Status Propose(const std::shared_ptr<SyncInfo>& sync_info);
+    Status ResetReplicaTimers();
     Status Commit(const std::shared_ptr<ViewBlock>& v_block);
     std::shared_ptr<ViewBlock> CheckCommit(const std::shared_ptr<ViewBlock>& v_block);
     Status VerifyViewBlock(
@@ -114,6 +122,30 @@ public:
         return leader_rotation_;
     }
 
+    bool IsStuck() const {
+        // 超时时间必须大于阈值
+        if (pacemaker()->DurationUs() < STUCK_PACEMAKER_DURATION_MIN_US) {
+            return false;
+        }
+        // highqc 之前连续三个块都是空交易，则认为 stuck
+        auto v_block1 = std::make_shared<ViewBlock>();
+        Status s = view_block_chain()->Get(pacemaker()->HighQC()->view_block_hash, v_block1);
+        if (s != Status::kSuccess || v_block1->block->tx_list_size() > 0) {
+            return false;
+        }
+        auto v_block2 = view_block_chain()->QCRef(v_block1);
+        if (!v_block2 || v_block2->block->tx_list_size() > 0) {
+            return false;
+        }
+        auto v_block3 = view_block_chain()->QCRef(v_block2);
+        if (!v_block3 || v_block3->block->tx_list_size() > 0) {
+            return false;
+        }
+        return true;   
+    }
+
+    void TryRecoverFromStuck();
+
 private:
     uint32_t pool_idx_;
     std::shared_ptr<Crypto> crypto_;
@@ -126,6 +158,8 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     View last_vote_view_;
+    common::FlowControl recover_from_struct_fc_{1};
+    common::FlowControl reset_timer_fc_{1};
 
     Status CommitInner(const std::shared_ptr<ViewBlock>& v_block);
     Status VerifyVoteMsg(
@@ -147,9 +181,9 @@ private:
             pb_VoteMsg* pb_vote_msg,
             const std::shared_ptr<pb_NewViewMsg>& pb_nv_msg,
             pb_HotstuffMessage* pb_hf_msg);
-    Status SendVoteMsg(std::shared_ptr<transport::TransportMessage>& hotstuff_msg);
+    Status SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& hotstuff_msg, const MsgType msg_type);
     // 是否允许空交易
-    bool IsEmptyBlockAllowed(const std::shared_ptr<ViewBlock>& v_block);    
+    bool IsEmptyBlockAllowed(const std::shared_ptr<ViewBlock>& v_block);
 };
 
 } // namespace consensus
