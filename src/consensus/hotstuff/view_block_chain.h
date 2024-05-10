@@ -128,7 +128,7 @@ public:
         auto pb_v_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
         ViewBlock2Proto(v_block, pb_v_block.get());
         // 不存储 block 部分，block 已经单独存过了
-        pb_v_block->clear_block_str();
+        pb_v_block->clear_block_info();
         // 保存 v_block 对应的 qc 到 db
         pb_v_block->set_self_qc_str(qc->Serialize());
         auto db_batch = std::make_shared<db::DbWriteBatch>();

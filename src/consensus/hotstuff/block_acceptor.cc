@@ -53,7 +53,10 @@ BlockAcceptor::BlockAcceptor(
 BlockAcceptor::~BlockAcceptor(){};
 
 // Accept 验证 Leader 新提案信息，并执行 txs，修改 block
-Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_info, const bool& no_tx_allowed) {
+Status BlockAcceptor::Accept(
+        std::shared_ptr<IBlockAcceptor::blockInfo>& block_info, 
+        const transport::protobuf::Header& header, 
+        const bool& no_tx_allowed) {
     if (!block_info || !block_info->block) {
         ZJC_DEBUG("block info error!");
         return Status::kError;
@@ -78,10 +81,9 @@ Status BlockAcceptor::Accept(std::shared_ptr<IBlockAcceptor::blockInfo>& block_i
     }
 
     // 2. Get txs from local pool
-    std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
-
+    auto txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
     Status s = Status::kSuccess;
-    s = GetAndAddTxsLocally(block_info, txs_ptr);
+    s = GetAndAddTxsLocally(block_info, header, txs_ptr);
     if (s != Status::kSuccess) {
         ZJC_ERROR("invalid tx_type: %d, txs empty. pool_index: %d, view: %lu",
             block_info->tx_type, pool_idx(), block_info->view);
@@ -154,21 +156,27 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
     return Status::kSuccess;
 }
 
-Status BlockAcceptor::AddTxs(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) {
+Status BlockAcceptor::AddTxs(const hotstuff::protobuf::HotstuffMessage& hotstuff_msg) {
     auto txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
-    return addTxsToPool(txs, txs_ptr);
+    return addTxsToPool(hotstuff_msg, txs_ptr);
 };
 
 Status BlockAcceptor::addTxsToPool(
-        std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs,
+        const hotstuff::protobuf::HotstuffMessage& hotstuff_msg,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    auto* tmp_txs = &hotstuff_msg.vote_msg().txs();
+    if (tmp_txs->empty()) {
+        tmp_txs = &hotstuff_msg.pro_msg().tx_propose().txs();
+    }
+
+    auto& txs = *tmp_txs;
     if (txs.size() == 0) {
         return Status::kAcceptorTxsEmpty;
     }
     
     std::map<std::string, pools::TxItemPtr> txs_map;
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
-        auto& tx = txs[i];
+        auto* tx = &txs[i];
         ZJC_DEBUG("get tx message step: %d", tx->step());
         protos::AddressInfoPtr address_info = nullptr;
         if (tx->step() == pools::protobuf::kContractExcute) {
@@ -264,19 +272,26 @@ Status BlockAcceptor::addTxsToPool(
 
 Status BlockAcceptor::GetAndAddTxsLocally(
         const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
+        const transport::protobuf::Header& header, 
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    auto txs_func = GetTxsFunc(block_info->tx_type);
-    Status s = txs_func(block_info, txs_ptr);
-    if (s != Status::kSuccess) {
-        return s;
+    // auto txs_func = GetTxsFunc(block_info->tx_type);
+    // Status s = txs_func(block_info, txs_ptr);
+    // if (s != Status::kSuccess) {
+    //     return s;
+    // }
+
+    // if (!txs_ptr) {
+    //     ZJC_ERROR("invalid consensus, tx empty.");
+    //     return Status::kAcceptorTxsEmpty;
+    // }
+
+    auto add_txs_status = addTxsToPool(header.hotstuff(), txs_ptr);
+    if (add_txs_status != Status::kSuccess) {
+        ZJC_ERROR("invalid consensus, add_txs_status failed: %d.", add_txs_status);
+        return add_txs_status;
     }
 
-    if (!txs_ptr) {
-        ZJC_ERROR("invalid consensus, tx empty.");
-        return Status::kAcceptorTxsEmpty;
-    }
-
-    if (txs_ptr != nullptr && txs_ptr->txs.size() != block_info->txs.size()) {
+    if (txs_ptr->txs.size() != block_info->txs.size()) {
         ZJC_ERROR("invalid consensus, txs not equal to leader.");
         return Status::kAcceptorTxsEmpty;
     }
@@ -333,7 +348,8 @@ Status BlockAcceptor::GetDefaultTxs(
         const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
     txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
-    return addTxsToPool(block_info->txs, txs_ptr);
+    ZJC_FATAL("invalid call!");
+    return Status::kError;
 }
 
 Status BlockAcceptor::GetToTxs(
