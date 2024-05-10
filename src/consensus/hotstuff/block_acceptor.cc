@@ -37,6 +37,17 @@ BlockAcceptor::BlockAcceptor(
     
     tx_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr_, block_mgr_, tm_block_mgr_);
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+
+    RegisterTxsFunc(pools::protobuf::kNormalTo,
+        std::bind(&BlockAcceptor::GetToTxs, this, std::placeholders::_1, std::placeholders::_2));
+    RegisterTxsFunc(pools::protobuf::kStatistic,
+        std::bind(&BlockAcceptor::GetStatisticTxs, this, std::placeholders::_1, std::placeholders::_2));
+    RegisterTxsFunc(pools::protobuf::kCross,
+        std::bind(&BlockAcceptor::GetCrossTxs, this, std::placeholders::_1, std::placeholders::_2));
+    RegisterTxsFunc(pools::protobuf::kConsensusRootElectShard,
+        std::bind(&BlockAcceptor::GetElectTxs, this, std::placeholders::_1, std::placeholders::_2));
+    RegisterTxsFunc(pools::protobuf::kConsensusRootTimeBlock,
+        std::bind(&BlockAcceptor::GetTimeBlockTxs, this, std::placeholders::_1, std::placeholders::_2));    
 };
 
 BlockAcceptor::~BlockAcceptor(){};
@@ -256,6 +267,17 @@ Status BlockAcceptor::addTxsToPool(
 Status BlockAcceptor::GetAndAddTxsLocally(
         const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    // auto txs_func = GetTxsFunc(block_info->tx_type);
+    // Status s = txs_func(block_info, txs_ptr);
+    // if (s != Status::kSuccess) {
+    //     return s;
+    // }
+
+    // if (!txs_ptr) {
+    //     ZJC_ERROR("invalid consensus, tx empty.");
+    //     return Status::kAcceptorTxsEmpty;
+    // }
+    
     auto add_txs_status = addTxsToPool(block_info->txs, txs_ptr);
     if (add_txs_status != Status::kSuccess) {
         ZJC_ERROR("invalid consensus, add_txs_status failed: %d.", add_txs_status);
@@ -385,6 +407,52 @@ void BlockAcceptor::BroadcastLocalTosBlock(
             block_item->height(), to_tx.to_heights().sharding_id());
       
     }
+}
+
+Status BlockAcceptor::GetDefaultTxs(
+        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
+        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
+    ZJC_FATAL("invalid call!");
+    return Status::kError;
+}
+
+Status BlockAcceptor::GetToTxs(
+        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
+        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    txs_ptr = tx_pools_->GetToTxs(pool_idx(), "");
+    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
+}
+
+Status BlockAcceptor::GetStatisticTxs(
+        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
+        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    txs_ptr = tx_pools_->GetStatisticTx(pool_idx(), "");
+    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
+}
+
+Status BlockAcceptor::GetCrossTxs(
+        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
+        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    txs_ptr = tx_pools_->GetCrossTx(pool_idx(), "");
+    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess; 
+}
+
+Status BlockAcceptor::GetElectTxs(
+        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
+        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    if (block_info->txs.size() == 1) {
+        auto txhash = pools::GetTxMessageHash(*block_info->txs[0]);
+        txs_ptr = tx_pools_->GetElectTx(pool_idx(), txhash);           
+    }
+    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
+}
+
+Status BlockAcceptor::GetTimeBlockTxs(
+        const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
+        std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    txs_ptr = tx_pools_->GetTimeblockTx(pool_idx(), "");
+    return !txs_ptr ? Status::kAcceptorTxsEmpty : Status::kSuccess;
 }
 
 } // namespace hotstuff
