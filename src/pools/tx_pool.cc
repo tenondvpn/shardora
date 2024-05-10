@@ -142,7 +142,9 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     assert(tx_ptr != nullptr);
     auto iter = gid_map_.find(tx_ptr->tx_info.gid());
     if (iter != gid_map_.end()) {
+#ifndef ENABLE_HOTSTUFF
         assert(false);
+#endif
         return kPoolsTxAdded;
     }
 
