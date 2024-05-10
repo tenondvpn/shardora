@@ -18,11 +18,7 @@ third_party/include
 src/contract/tests/contracts/*.bin
 .cache
 .vscode
-<<<<<<< HEAD
 .idea
 _pycache_
 build
 .python-version
-=======
-build
->>>>>>> hotstuff_v2
