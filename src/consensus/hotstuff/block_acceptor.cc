@@ -154,21 +154,22 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
     return Status::kSuccess;
 }
 
-Status BlockAcceptor::AddTxs(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) {
+Status BlockAcceptor::AddTxs(const hotstuff::protobuf::HotstuffMessage& hotstuff_msg) {
     auto txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
-    return addTxsToPool(txs, txs_ptr);
+    return addTxsToPool(hotstuff_msg, txs_ptr);
 };
 
 Status BlockAcceptor::addTxsToPool(
-        std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs,
+        const hotstuff::protobuf::HotstuffMessage& hotstuff_msg,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    auto& txs = hotstuff_msg.vote_msg().txs();
     if (txs.size() == 0) {
         return Status::kAcceptorTxsEmpty;
     }
     
     std::map<std::string, pools::TxItemPtr> txs_map;
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
-        auto& tx = txs[i];
+        auto* tx = &txs[i];
         ZJC_DEBUG("get tx message step: %d", tx->step());
         protos::AddressInfoPtr address_info = nullptr;
         if (tx->step() == pools::protobuf::kContractExcute) {

@@ -65,7 +65,7 @@ public:
     // Commit a block
     virtual Status Commit(std::shared_ptr<block::protobuf::Block>&) = 0;
     // Add txs to local pool
-    virtual Status AddTxs(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>) = 0;
+    virtual Status AddTxs(const hotstuff::protobuf::HotstuffMessage& txs) = 0;
     // Return block txs to pool
     virtual Status Return(const std::shared_ptr<block::protobuf::Block>&) = 0;
 };
@@ -101,7 +101,7 @@ public:
     // Commit a block and execute its txs.
     Status Commit(std::shared_ptr<block::protobuf::Block>& block) override;
     // Add txs from hotstuff msg to local pool
-    Status AddTxs(std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs) override;
+    Status AddTxs(const hotstuff::protobuf::HotstuffMessage& txs) override;
     // Return expired or invalid block txs to pool
     Status Return(const std::shared_ptr<block::protobuf::Block>& block) override {
         // return txs to the pool
@@ -135,7 +135,7 @@ private:
     }
 
     Status addTxsToPool(
-        std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs,
+        const hotstuff::protobuf::HotstuffMessage& txs,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr);
     
     bool IsBlockValid(const std::shared_ptr<block::protobuf::Block>&);

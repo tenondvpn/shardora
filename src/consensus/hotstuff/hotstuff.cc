@@ -300,7 +300,6 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         tx_msgs.push_back(std::make_shared<pools::protobuf::TxMessage>(tx));
     }
     acceptor()->AddTxs(tx_msgs);
-    
     // 生成聚合签名，创建qc
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();
