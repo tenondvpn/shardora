@@ -21,6 +21,8 @@
 
 namespace protobuf_protos_2fhotstuff_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fhotstuff_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_NewViewMsg;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fhotstuff_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_ResetTimerMsg;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fhotstuff_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_PreResetTimerMsg;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fhotstuff_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_TxPropose;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fhotstuff_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_VoteMsg;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fhotstuff_2eproto ::google::protobuf::internal::SCCInfo<2> scc_info_ProposeMsg;
@@ -59,6 +61,16 @@ class VoteMsgDefaultTypeInternal {
   ::google::protobuf::internal::ExplicitlyConstructed<VoteMsg>
       _instance;
 } _VoteMsg_default_instance_;
+class PreResetTimerMsgDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<PreResetTimerMsg>
+      _instance;
+} _PreResetTimerMsg_default_instance_;
+class ResetTimerMsgDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<ResetTimerMsg>
+      _instance;
+} _ResetTimerMsg_default_instance_;
 }  // namespace protobuf
 }  // namespace hotstuff
 }  // namespace shardora
@@ -89,11 +101,13 @@ static void InitDefaultsHotstuffMessage() {
   ::shardora::hotstuff::protobuf::HotstuffMessage::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<3> scc_info_HotstuffMessage =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 3, InitDefaultsHotstuffMessage}, {
+::google::protobuf::internal::SCCInfo<5> scc_info_HotstuffMessage =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 5, InitDefaultsHotstuffMessage}, {
       &protobuf_protos_2fhotstuff_2eproto::scc_info_ProposeMsg.base,
       &protobuf_protos_2fhotstuff_2eproto::scc_info_VoteMsg.base,
-      &protobuf_protos_2fhotstuff_2eproto::scc_info_NewViewMsg.base,}};
+      &protobuf_protos_2fhotstuff_2eproto::scc_info_NewViewMsg.base,
+      &protobuf_protos_2fhotstuff_2eproto::scc_info_PreResetTimerMsg.base,
+      &protobuf_protos_2fhotstuff_2eproto::scc_info_ResetTimerMsg.base,}};
 
 static void InitDefaultsNewViewMsg() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -140,15 +154,46 @@ static void InitDefaultsVoteMsg() {
     {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsVoteMsg}, {
       &protobuf_protos_2fpools_2eproto::scc_info_TxMessage.base,}};
 
+static void InitDefaultsPreResetTimerMsg() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::shardora::hotstuff::protobuf::_PreResetTimerMsg_default_instance_;
+    new (ptr) ::shardora::hotstuff::protobuf::PreResetTimerMsg();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::shardora::hotstuff::protobuf::PreResetTimerMsg::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<1> scc_info_PreResetTimerMsg =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsPreResetTimerMsg}, {
+      &protobuf_protos_2fpools_2eproto::scc_info_TxMessage.base,}};
+
+static void InitDefaultsResetTimerMsg() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::shardora::hotstuff::protobuf::_ResetTimerMsg_default_instance_;
+    new (ptr) ::shardora::hotstuff::protobuf::ResetTimerMsg();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::shardora::hotstuff::protobuf::ResetTimerMsg::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<0> scc_info_ResetTimerMsg =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsResetTimerMsg}, {}};
+
 void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_TxPropose.base);
   ::google::protobuf::internal::InitSCC(&scc_info_HotstuffMessage.base);
   ::google::protobuf::internal::InitSCC(&scc_info_NewViewMsg.base);
   ::google::protobuf::internal::InitSCC(&scc_info_ProposeMsg.base);
   ::google::protobuf::internal::InitSCC(&scc_info_VoteMsg.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_PreResetTimerMsg.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_ResetTimerMsg.base);
 }
 
-::google::protobuf::Metadata file_level_metadata[5];
+::google::protobuf::Metadata file_level_metadata[7];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::TxPropose, _has_bits_),
@@ -169,14 +214,18 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::HotstuffMessage, pro_msg_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::HotstuffMessage, vote_msg_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::HotstuffMessage, newview_msg_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::HotstuffMessage, pre_reset_timer_msg_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::HotstuffMessage, reset_timer_msg_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::HotstuffMessage, net_id_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::HotstuffMessage, pool_index_),
-  3,
+  5,
   0,
   1,
   2,
+  3,
   4,
-  5,
+  6,
+  7,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::NewViewMsg, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::NewViewMsg, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -218,13 +267,31 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   1,
   2,
   ~0u,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::PreResetTimerMsg, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::PreResetTimerMsg, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::PreResetTimerMsg, replica_idx_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::PreResetTimerMsg, txs_),
+  0,
+  ~0u,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::ResetTimerMsg, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::ResetTimerMsg, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::ResetTimerMsg, leader_idx_),
+  0,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 7, sizeof(::shardora::hotstuff::protobuf::TxPropose)},
-  { 9, 20, sizeof(::shardora::hotstuff::protobuf::HotstuffMessage)},
-  { 26, 33, sizeof(::shardora::hotstuff::protobuf::NewViewMsg)},
-  { 35, 44, sizeof(::shardora::hotstuff::protobuf::ProposeMsg)},
-  { 48, 60, sizeof(::shardora::hotstuff::protobuf::VoteMsg)},
+  { 9, 22, sizeof(::shardora::hotstuff::protobuf::HotstuffMessage)},
+  { 30, 37, sizeof(::shardora::hotstuff::protobuf::NewViewMsg)},
+  { 39, 48, sizeof(::shardora::hotstuff::protobuf::ProposeMsg)},
+  { 52, 64, sizeof(::shardora::hotstuff::protobuf::VoteMsg)},
+  { 71, 78, sizeof(::shardora::hotstuff::protobuf::PreResetTimerMsg)},
+  { 80, 86, sizeof(::shardora::hotstuff::protobuf::ResetTimerMsg)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -233,6 +300,8 @@ static ::google::protobuf::Message const * const file_default_instances[] = {
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::hotstuff::protobuf::_NewViewMsg_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::hotstuff::protobuf::_ProposeMsg_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::hotstuff::protobuf::_VoteMsg_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::hotstuff::protobuf::_PreResetTimerMsg_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::hotstuff::protobuf::_ResetTimerMsg_default_instance_),
 };
 
 void protobuf_AssignDescriptors() {
@@ -250,7 +319,7 @@ void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 5);
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 7);
 }
 
 void AddDescriptorsImpl() {
@@ -261,27 +330,33 @@ void AddDescriptorsImpl() {
       "otos/pools.proto\"}\n\tTxPropose\022\?\n\007tx_type"
       "\030\001 \001(\0162!.shardora.pools.protobuf.StepTyp"
       "e:\013kNormalFrom\022/\n\003txs\030\002 \003(\0132\".shardora.p"
-      "ools.protobuf.TxMessage\"\374\001\n\017HotstuffMess"
+      "ools.protobuf.TxMessage\"\213\003\n\017HotstuffMess"
       "age\022\014\n\004type\030\001 \001(\r\0227\n\007pro_msg\030\002 \001(\0132&.sha"
       "rdora.hotstuff.protobuf.ProposeMsg\0225\n\010vo"
       "te_msg\030\003 \001(\0132#.shardora.hotstuff.protobu"
       "f.VoteMsg\022;\n\013newview_msg\030\004 \001(\0132&.shardor"
-      "a.hotstuff.protobuf.NewViewMsg\022\016\n\006net_id"
-      "\030\005 \001(\r\022\036\n\npool_index\030\006 \001(\r:\n4294967295\"2"
-      "\n\nNewViewMsg\022\016\n\006tc_str\030\001 \001(\014\022\024\n\014elect_he"
-      "ight\030\002 \001(\004\"\255\001\n\nProposeMsg\022\024\n\014elect_heigh"
-      "t\030\001 \001(\004\022>\n\tview_item\030\002 \001(\0132+.shardora.vi"
-      "ew_block.protobuf.ViewBlockItem\022\016\n\006tc_st"
-      "r\030\003 \001(\014\0229\n\ntx_propose\030\004 \001(\0132%.shardora.h"
-      "otstuff.protobuf.TxPropose\"\254\001\n\007VoteMsg\022\023"
-      "\n\013replica_idx\030\001 \001(\r\022\027\n\017view_block_hash\030\002"
-      " \001(\014\022\014\n\004view\030\003 \001(\004\022\024\n\014elect_height\030\004 \001(\004"
-      "\022\016\n\006sign_x\030\005 \001(\014\022\016\n\006sign_y\030\006 \001(\014\022/\n\003txs\030"
-      "\007 \003(\0132\".shardora.pools.protobuf.TxMessag"
-      "e"
+      "a.hotstuff.protobuf.NewViewMsg\022I\n\023pre_re"
+      "set_timer_msg\030\005 \001(\0132,.shardora.hotstuff."
+      "protobuf.PreResetTimerMsg\022B\n\017reset_timer"
+      "_msg\030\006 \001(\0132).shardora.hotstuff.protobuf."
+      "ResetTimerMsg\022\016\n\006net_id\030\007 \001(\r\022\036\n\npool_in"
+      "dex\030\010 \001(\r:\n4294967295\"2\n\nNewViewMsg\022\016\n\006t"
+      "c_str\030\001 \001(\014\022\024\n\014elect_height\030\002 \001(\004\"\255\001\n\nPr"
+      "oposeMsg\022\024\n\014elect_height\030\001 \001(\004\022>\n\tview_i"
+      "tem\030\002 \001(\0132+.shardora.view_block.protobuf"
+      ".ViewBlockItem\022\016\n\006tc_str\030\003 \001(\014\0229\n\ntx_pro"
+      "pose\030\004 \001(\0132%.shardora.hotstuff.protobuf."
+      "TxPropose\"\254\001\n\007VoteMsg\022\023\n\013replica_idx\030\001 \001"
+      "(\r\022\027\n\017view_block_hash\030\002 \001(\014\022\014\n\004view\030\003 \001("
+      "\004\022\024\n\014elect_height\030\004 \001(\004\022\016\n\006sign_x\030\005 \001(\014\022"
+      "\016\n\006sign_y\030\006 \001(\014\022/\n\003txs\030\007 \003(\0132\".shardora."
+      "pools.protobuf.TxMessage\"X\n\020PreResetTime"
+      "rMsg\022\023\n\013replica_idx\030\001 \001(\r\022/\n\003txs\030\007 \003(\0132\""
+      ".shardora.pools.protobuf.TxMessage\"#\n\rRe"
+      "setTimerMsg\022\022\n\nleader_idx\030\001 \001(\r"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 881);
+      descriptor, 1151);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/hotstuff.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fview_5fblock_2eproto::AddDescriptors();
@@ -595,12 +670,18 @@ void HotstuffMessage::InitAsDefaultInstance() {
       ::shardora::hotstuff::protobuf::VoteMsg::internal_default_instance());
   ::shardora::hotstuff::protobuf::_HotstuffMessage_default_instance_._instance.get_mutable()->newview_msg_ = const_cast< ::shardora::hotstuff::protobuf::NewViewMsg*>(
       ::shardora::hotstuff::protobuf::NewViewMsg::internal_default_instance());
+  ::shardora::hotstuff::protobuf::_HotstuffMessage_default_instance_._instance.get_mutable()->pre_reset_timer_msg_ = const_cast< ::shardora::hotstuff::protobuf::PreResetTimerMsg*>(
+      ::shardora::hotstuff::protobuf::PreResetTimerMsg::internal_default_instance());
+  ::shardora::hotstuff::protobuf::_HotstuffMessage_default_instance_._instance.get_mutable()->reset_timer_msg_ = const_cast< ::shardora::hotstuff::protobuf::ResetTimerMsg*>(
+      ::shardora::hotstuff::protobuf::ResetTimerMsg::internal_default_instance());
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int HotstuffMessage::kTypeFieldNumber;
 const int HotstuffMessage::kProMsgFieldNumber;
 const int HotstuffMessage::kVoteMsgFieldNumber;
 const int HotstuffMessage::kNewviewMsgFieldNumber;
+const int HotstuffMessage::kPreResetTimerMsgFieldNumber;
+const int HotstuffMessage::kResetTimerMsgFieldNumber;
 const int HotstuffMessage::kNetIdFieldNumber;
 const int HotstuffMessage::kPoolIndexFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
@@ -632,6 +713,16 @@ HotstuffMessage::HotstuffMessage(const HotstuffMessage& from)
   } else {
     newview_msg_ = NULL;
   }
+  if (from.has_pre_reset_timer_msg()) {
+    pre_reset_timer_msg_ = new ::shardora::hotstuff::protobuf::PreResetTimerMsg(*from.pre_reset_timer_msg_);
+  } else {
+    pre_reset_timer_msg_ = NULL;
+  }
+  if (from.has_reset_timer_msg()) {
+    reset_timer_msg_ = new ::shardora::hotstuff::protobuf::ResetTimerMsg(*from.reset_timer_msg_);
+  } else {
+    reset_timer_msg_ = NULL;
+  }
   ::memcpy(&type_, &from.type_,
     static_cast<size_t>(reinterpret_cast<char*>(&pool_index_) -
     reinterpret_cast<char*>(&type_)) + sizeof(pool_index_));
@@ -654,6 +745,8 @@ void HotstuffMessage::SharedDtor() {
   if (this != internal_default_instance()) delete pro_msg_;
   if (this != internal_default_instance()) delete vote_msg_;
   if (this != internal_default_instance()) delete newview_msg_;
+  if (this != internal_default_instance()) delete pre_reset_timer_msg_;
+  if (this != internal_default_instance()) delete reset_timer_msg_;
 }
 
 void HotstuffMessage::SetCachedSize(int size) const {
@@ -677,7 +770,7 @@ void HotstuffMessage::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 7u) {
+  if (cached_has_bits & 31u) {
     if (cached_has_bits & 0x00000001u) {
       GOOGLE_DCHECK(pro_msg_ != NULL);
       pro_msg_->Clear();
@@ -690,8 +783,16 @@ void HotstuffMessage::Clear() {
       GOOGLE_DCHECK(newview_msg_ != NULL);
       newview_msg_->Clear();
     }
+    if (cached_has_bits & 0x00000008u) {
+      GOOGLE_DCHECK(pre_reset_timer_msg_ != NULL);
+      pre_reset_timer_msg_->Clear();
+    }
+    if (cached_has_bits & 0x00000010u) {
+      GOOGLE_DCHECK(reset_timer_msg_ != NULL);
+      reset_timer_msg_->Clear();
+    }
   }
-  if (cached_has_bits & 56u) {
+  if (cached_has_bits & 224u) {
     ::memset(&type_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&net_id_) -
         reinterpret_cast<char*>(&type_)) + sizeof(net_id_));
@@ -761,10 +862,34 @@ bool HotstuffMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint32 net_id = 5;
+      // optional .shardora.hotstuff.protobuf.PreResetTimerMsg pre_reset_timer_msg = 5;
       case 5: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(40u /* 40 & 0xFF */)) {
+            static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_pre_reset_timer_msg()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .shardora.hotstuff.protobuf.ResetTimerMsg reset_timer_msg = 6;
+      case 6: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(50u /* 50 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_reset_timer_msg()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint32 net_id = 7;
+      case 7: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(56u /* 56 & 0xFF */)) {
           set_has_net_id();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
@@ -775,10 +900,10 @@ bool HotstuffMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint32 pool_index = 6 [default = 4294967295];
-      case 6: {
+      // optional uint32 pool_index = 8 [default = 4294967295];
+      case 8: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
+            static_cast< ::google::protobuf::uint8>(64u /* 64 & 0xFF */)) {
           set_has_pool_index();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
@@ -817,7 +942,7 @@ void HotstuffMessage::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 type = 1;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000020u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->type(), output);
   }
 
@@ -839,14 +964,26 @@ void HotstuffMessage::SerializeWithCachedSizes(
       4, this->_internal_newview_msg(), output);
   }
 
-  // optional uint32 net_id = 5;
-  if (cached_has_bits & 0x00000010u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(5, this->net_id(), output);
+  // optional .shardora.hotstuff.protobuf.PreResetTimerMsg pre_reset_timer_msg = 5;
+  if (cached_has_bits & 0x00000008u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      5, this->_internal_pre_reset_timer_msg(), output);
   }
 
-  // optional uint32 pool_index = 6 [default = 4294967295];
-  if (cached_has_bits & 0x00000020u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(6, this->pool_index(), output);
+  // optional .shardora.hotstuff.protobuf.ResetTimerMsg reset_timer_msg = 6;
+  if (cached_has_bits & 0x00000010u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      6, this->_internal_reset_timer_msg(), output);
+  }
+
+  // optional uint32 net_id = 7;
+  if (cached_has_bits & 0x00000040u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(7, this->net_id(), output);
+  }
+
+  // optional uint32 pool_index = 8 [default = 4294967295];
+  if (cached_has_bits & 0x00000080u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(8, this->pool_index(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -865,7 +1002,7 @@ void HotstuffMessage::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 type = 1;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000020u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->type(), target);
   }
 
@@ -890,14 +1027,28 @@ void HotstuffMessage::SerializeWithCachedSizes(
         4, this->_internal_newview_msg(), deterministic, target);
   }
 
-  // optional uint32 net_id = 5;
-  if (cached_has_bits & 0x00000010u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(5, this->net_id(), target);
+  // optional .shardora.hotstuff.protobuf.PreResetTimerMsg pre_reset_timer_msg = 5;
+  if (cached_has_bits & 0x00000008u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        5, this->_internal_pre_reset_timer_msg(), deterministic, target);
   }
 
-  // optional uint32 pool_index = 6 [default = 4294967295];
-  if (cached_has_bits & 0x00000020u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(6, this->pool_index(), target);
+  // optional .shardora.hotstuff.protobuf.ResetTimerMsg reset_timer_msg = 6;
+  if (cached_has_bits & 0x00000010u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        6, this->_internal_reset_timer_msg(), deterministic, target);
+  }
+
+  // optional uint32 net_id = 7;
+  if (cached_has_bits & 0x00000040u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(7, this->net_id(), target);
+  }
+
+  // optional uint32 pool_index = 8 [default = 4294967295];
+  if (cached_has_bits & 0x00000080u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(8, this->pool_index(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -917,7 +1068,7 @@ size_t HotstuffMessage::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 63u) {
+  if (_has_bits_[0 / 32] & 255u) {
     // optional .shardora.hotstuff.protobuf.ProposeMsg pro_msg = 2;
     if (has_pro_msg()) {
       total_size += 1 +
@@ -939,6 +1090,20 @@ size_t HotstuffMessage::ByteSizeLong() const {
           *newview_msg_);
     }
 
+    // optional .shardora.hotstuff.protobuf.PreResetTimerMsg pre_reset_timer_msg = 5;
+    if (has_pre_reset_timer_msg()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *pre_reset_timer_msg_);
+    }
+
+    // optional .shardora.hotstuff.protobuf.ResetTimerMsg reset_timer_msg = 6;
+    if (has_reset_timer_msg()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *reset_timer_msg_);
+    }
+
     // optional uint32 type = 1;
     if (has_type()) {
       total_size += 1 +
@@ -946,14 +1111,14 @@ size_t HotstuffMessage::ByteSizeLong() const {
           this->type());
     }
 
-    // optional uint32 net_id = 5;
+    // optional uint32 net_id = 7;
     if (has_net_id()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
           this->net_id());
     }
 
-    // optional uint32 pool_index = 6 [default = 4294967295];
+    // optional uint32 pool_index = 8 [default = 4294967295];
     if (has_pool_index()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
@@ -989,7 +1154,7 @@ void HotstuffMessage::MergeFrom(const HotstuffMessage& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 63u) {
+  if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
       mutable_pro_msg()->::shardora::hotstuff::protobuf::ProposeMsg::MergeFrom(from.pro_msg());
     }
@@ -1000,12 +1165,18 @@ void HotstuffMessage::MergeFrom(const HotstuffMessage& from) {
       mutable_newview_msg()->::shardora::hotstuff::protobuf::NewViewMsg::MergeFrom(from.newview_msg());
     }
     if (cached_has_bits & 0x00000008u) {
-      type_ = from.type_;
+      mutable_pre_reset_timer_msg()->::shardora::hotstuff::protobuf::PreResetTimerMsg::MergeFrom(from.pre_reset_timer_msg());
     }
     if (cached_has_bits & 0x00000010u) {
-      net_id_ = from.net_id_;
+      mutable_reset_timer_msg()->::shardora::hotstuff::protobuf::ResetTimerMsg::MergeFrom(from.reset_timer_msg());
     }
     if (cached_has_bits & 0x00000020u) {
+      type_ = from.type_;
+    }
+    if (cached_has_bits & 0x00000040u) {
+      net_id_ = from.net_id_;
+    }
+    if (cached_has_bits & 0x00000080u) {
       pool_index_ = from.pool_index_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -1039,6 +1210,8 @@ void HotstuffMessage::InternalSwap(HotstuffMessage* other) {
   swap(pro_msg_, other->pro_msg_);
   swap(vote_msg_, other->vote_msg_);
   swap(newview_msg_, other->newview_msg_);
+  swap(pre_reset_timer_msg_, other->pre_reset_timer_msg_);
+  swap(reset_timer_msg_, other->reset_timer_msg_);
   swap(type_, other->type_);
   swap(net_id_, other->net_id_);
   swap(pool_index_, other->pool_index_);
@@ -2233,6 +2406,510 @@ void VoteMsg::InternalSwap(VoteMsg* other) {
 }
 
 
+// ===================================================================
+
+void PreResetTimerMsg::InitAsDefaultInstance() {
+}
+void PreResetTimerMsg::clear_txs() {
+  txs_.Clear();
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int PreResetTimerMsg::kReplicaIdxFieldNumber;
+const int PreResetTimerMsg::kTxsFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+PreResetTimerMsg::PreResetTimerMsg()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2fhotstuff_2eproto::scc_info_PreResetTimerMsg.base);
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:shardora.hotstuff.protobuf.PreResetTimerMsg)
+}
+PreResetTimerMsg::PreResetTimerMsg(const PreResetTimerMsg& from)
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
+      _has_bits_(from._has_bits_),
+      txs_(from.txs_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  replica_idx_ = from.replica_idx_;
+  // @@protoc_insertion_point(copy_constructor:shardora.hotstuff.protobuf.PreResetTimerMsg)
+}
+
+void PreResetTimerMsg::SharedCtor() {
+  replica_idx_ = 0u;
+}
+
+PreResetTimerMsg::~PreResetTimerMsg() {
+  // @@protoc_insertion_point(destructor:shardora.hotstuff.protobuf.PreResetTimerMsg)
+  SharedDtor();
+}
+
+void PreResetTimerMsg::SharedDtor() {
+}
+
+void PreResetTimerMsg::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ::google::protobuf::Descriptor* PreResetTimerMsg::descriptor() {
+  ::protobuf_protos_2fhotstuff_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fhotstuff_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const PreResetTimerMsg& PreResetTimerMsg::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2fhotstuff_2eproto::scc_info_PreResetTimerMsg.base);
+  return *internal_default_instance();
+}
+
+
+void PreResetTimerMsg::Clear() {
+// @@protoc_insertion_point(message_clear_start:shardora.hotstuff.protobuf.PreResetTimerMsg)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  txs_.Clear();
+  replica_idx_ = 0u;
+  _has_bits_.Clear();
+  _internal_metadata_.Clear();
+}
+
+bool PreResetTimerMsg::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:shardora.hotstuff.protobuf.PreResetTimerMsg)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional uint32 replica_idx = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
+          set_has_replica_idx();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &replica_idx_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // repeated .shardora.pools.protobuf.TxMessage txs = 7;
+      case 7: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(58u /* 58 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+                input, add_txs()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:shardora.hotstuff.protobuf.PreResetTimerMsg)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:shardora.hotstuff.protobuf.PreResetTimerMsg)
+  return false;
+#undef DO_
+}
+
+void PreResetTimerMsg::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:shardora.hotstuff.protobuf.PreResetTimerMsg)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint32 replica_idx = 1;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->replica_idx(), output);
+  }
+
+  // repeated .shardora.pools.protobuf.TxMessage txs = 7;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->txs_size()); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      7,
+      this->txs(static_cast<int>(i)),
+      output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:shardora.hotstuff.protobuf.PreResetTimerMsg)
+}
+
+::google::protobuf::uint8* PreResetTimerMsg::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.hotstuff.protobuf.PreResetTimerMsg)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint32 replica_idx = 1;
+  if (cached_has_bits & 0x00000001u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->replica_idx(), target);
+  }
+
+  // repeated .shardora.pools.protobuf.TxMessage txs = 7;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->txs_size()); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        7, this->txs(static_cast<int>(i)), deterministic, target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.hotstuff.protobuf.PreResetTimerMsg)
+  return target;
+}
+
+size_t PreResetTimerMsg::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:shardora.hotstuff.protobuf.PreResetTimerMsg)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  // repeated .shardora.pools.protobuf.TxMessage txs = 7;
+  {
+    unsigned int count = static_cast<unsigned int>(this->txs_size());
+    total_size += 1UL * count;
+    for (unsigned int i = 0; i < count; i++) {
+      total_size +=
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          this->txs(static_cast<int>(i)));
+    }
+  }
+
+  // optional uint32 replica_idx = 1;
+  if (has_replica_idx()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        this->replica_idx());
+  }
+
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void PreResetTimerMsg::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.hotstuff.protobuf.PreResetTimerMsg)
+  GOOGLE_DCHECK_NE(&from, this);
+  const PreResetTimerMsg* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const PreResetTimerMsg>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.hotstuff.protobuf.PreResetTimerMsg)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.hotstuff.protobuf.PreResetTimerMsg)
+    MergeFrom(*source);
+  }
+}
+
+void PreResetTimerMsg::MergeFrom(const PreResetTimerMsg& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.hotstuff.protobuf.PreResetTimerMsg)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  txs_.MergeFrom(from.txs_);
+  if (from.has_replica_idx()) {
+    set_replica_idx(from.replica_idx());
+  }
+}
+
+void PreResetTimerMsg::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.hotstuff.protobuf.PreResetTimerMsg)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void PreResetTimerMsg::CopyFrom(const PreResetTimerMsg& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.hotstuff.protobuf.PreResetTimerMsg)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool PreResetTimerMsg::IsInitialized() const {
+  return true;
+}
+
+void PreResetTimerMsg::Swap(PreResetTimerMsg* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void PreResetTimerMsg::InternalSwap(PreResetTimerMsg* other) {
+  using std::swap;
+  CastToBase(&txs_)->InternalSwap(CastToBase(&other->txs_));
+  swap(replica_idx_, other->replica_idx_);
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
+::google::protobuf::Metadata PreResetTimerMsg::GetMetadata() const {
+  protobuf_protos_2fhotstuff_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fhotstuff_2eproto::file_level_metadata[kIndexInFileMessages];
+}
+
+
+// ===================================================================
+
+void ResetTimerMsg::InitAsDefaultInstance() {
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int ResetTimerMsg::kLeaderIdxFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+ResetTimerMsg::ResetTimerMsg()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2fhotstuff_2eproto::scc_info_ResetTimerMsg.base);
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:shardora.hotstuff.protobuf.ResetTimerMsg)
+}
+ResetTimerMsg::ResetTimerMsg(const ResetTimerMsg& from)
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
+      _has_bits_(from._has_bits_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  leader_idx_ = from.leader_idx_;
+  // @@protoc_insertion_point(copy_constructor:shardora.hotstuff.protobuf.ResetTimerMsg)
+}
+
+void ResetTimerMsg::SharedCtor() {
+  leader_idx_ = 0u;
+}
+
+ResetTimerMsg::~ResetTimerMsg() {
+  // @@protoc_insertion_point(destructor:shardora.hotstuff.protobuf.ResetTimerMsg)
+  SharedDtor();
+}
+
+void ResetTimerMsg::SharedDtor() {
+}
+
+void ResetTimerMsg::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ::google::protobuf::Descriptor* ResetTimerMsg::descriptor() {
+  ::protobuf_protos_2fhotstuff_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fhotstuff_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const ResetTimerMsg& ResetTimerMsg::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2fhotstuff_2eproto::scc_info_ResetTimerMsg.base);
+  return *internal_default_instance();
+}
+
+
+void ResetTimerMsg::Clear() {
+// @@protoc_insertion_point(message_clear_start:shardora.hotstuff.protobuf.ResetTimerMsg)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  leader_idx_ = 0u;
+  _has_bits_.Clear();
+  _internal_metadata_.Clear();
+}
+
+bool ResetTimerMsg::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:shardora.hotstuff.protobuf.ResetTimerMsg)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional uint32 leader_idx = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
+          set_has_leader_idx();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &leader_idx_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:shardora.hotstuff.protobuf.ResetTimerMsg)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:shardora.hotstuff.protobuf.ResetTimerMsg)
+  return false;
+#undef DO_
+}
+
+void ResetTimerMsg::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:shardora.hotstuff.protobuf.ResetTimerMsg)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint32 leader_idx = 1;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->leader_idx(), output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:shardora.hotstuff.protobuf.ResetTimerMsg)
+}
+
+::google::protobuf::uint8* ResetTimerMsg::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.hotstuff.protobuf.ResetTimerMsg)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint32 leader_idx = 1;
+  if (cached_has_bits & 0x00000001u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->leader_idx(), target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.hotstuff.protobuf.ResetTimerMsg)
+  return target;
+}
+
+size_t ResetTimerMsg::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:shardora.hotstuff.protobuf.ResetTimerMsg)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  // optional uint32 leader_idx = 1;
+  if (has_leader_idx()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        this->leader_idx());
+  }
+
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void ResetTimerMsg::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.hotstuff.protobuf.ResetTimerMsg)
+  GOOGLE_DCHECK_NE(&from, this);
+  const ResetTimerMsg* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const ResetTimerMsg>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.hotstuff.protobuf.ResetTimerMsg)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.hotstuff.protobuf.ResetTimerMsg)
+    MergeFrom(*source);
+  }
+}
+
+void ResetTimerMsg::MergeFrom(const ResetTimerMsg& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.hotstuff.protobuf.ResetTimerMsg)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from.has_leader_idx()) {
+    set_leader_idx(from.leader_idx());
+  }
+}
+
+void ResetTimerMsg::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.hotstuff.protobuf.ResetTimerMsg)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void ResetTimerMsg::CopyFrom(const ResetTimerMsg& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.hotstuff.protobuf.ResetTimerMsg)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ResetTimerMsg::IsInitialized() const {
+  return true;
+}
+
+void ResetTimerMsg::Swap(ResetTimerMsg* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void ResetTimerMsg::InternalSwap(ResetTimerMsg* other) {
+  using std::swap;
+  swap(leader_idx_, other->leader_idx_);
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
+::google::protobuf::Metadata ResetTimerMsg::GetMetadata() const {
+  protobuf_protos_2fhotstuff_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fhotstuff_2eproto::file_level_metadata[kIndexInFileMessages];
+}
+
+
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace hotstuff
@@ -2253,6 +2930,12 @@ template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::hotstuff::protobuf::Pr
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::hotstuff::protobuf::VoteMsg* Arena::CreateMaybeMessage< ::shardora::hotstuff::protobuf::VoteMsg >(Arena* arena) {
   return Arena::CreateInternal< ::shardora::hotstuff::protobuf::VoteMsg >(arena);
+}
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::hotstuff::protobuf::PreResetTimerMsg* Arena::CreateMaybeMessage< ::shardora::hotstuff::protobuf::PreResetTimerMsg >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::hotstuff::protobuf::PreResetTimerMsg >(arena);
+}
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::hotstuff::protobuf::ResetTimerMsg* Arena::CreateMaybeMessage< ::shardora::hotstuff::protobuf::ResetTimerMsg >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::hotstuff::protobuf::ResetTimerMsg >(arena);
 }
 }  // namespace protobuf
 }  // namespace google

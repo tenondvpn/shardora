@@ -78,10 +78,10 @@ int HotstuffManager::Init(
                 leader_rotation,
                 std::make_shared<ViewDuration>(
                         pool_idx,
-                        10,
-                        500,
-                        60000,
-                        1.5));
+                        ViewDurationSampleSize,
+                        ViewDurationStartTimeout,
+                        ViewDurationMaxTimeout,
+                        ViewDurationMultiplier));
         auto acceptor = std::make_shared<BlockAcceptor>(
                 pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
                 contract_mgr, db, gas_prepayment, pool_mgr, block_mgr,
@@ -130,15 +130,10 @@ void HotstuffManager::OnNewElectBlock(uint64_t block_tm_ms, uint32_t sharding_id
     }
 
 void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    // auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    // msg_queue_[thread_idx].push(msg_ptr);
-    // if (msg_queue_[thread_idx].size() > common::GlobalInfo::Instance()->pools_each_thread_max_messages()) {
-    //     return;
-    // }
-    
     auto& header = msg_ptr->header;
-    ZJC_DEBUG("====1 msg received, timeout: %d", header.has_hotstuff_timeout_proto());
-    if (header.has_hotstuff_timeout_proto() || (header.has_hotstuff() && header.hotstuff().type() == VOTE)) {
+    if (header.has_hotstuff_timeout_proto() ||
+        (header.has_hotstuff() && header.hotstuff().type() == VOTE) ||
+        (header.has_hotstuff() && header.hotstuff().type() == PRE_RESET_TIMER)) {
         dht::DhtKeyManager dht_key(
             msg_ptr->header.src_sharding_id(),
             security_ptr_->GetAddress());
@@ -162,7 +157,6 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     if (header.has_hotstuff()) {
         auto& hotstuff_msg = header.hotstuff();
-        ZJC_DEBUG("====1.1 pool: %d, net: %d, has hotstuff", hotstuff_msg.pool_index(), hotstuff_msg.net_id());
         if (hotstuff_msg.net_id() != common::GlobalInfo::Instance()->network_id()) {
             ZJC_ERROR("net_id is error.");
             return;
@@ -185,9 +179,15 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         case VOTE:
             hotstuff(hotstuff_msg.pool_index())->HandleVoteMsg(header);
             break;
-        case NEWVIEW:        
+        case NEWVIEW: // 接收 tc
             hotstuff(hotstuff_msg.pool_index())->HandleNewViewMsg(header);
             break;
+        case PRE_RESET_TIMER:
+            hotstuff(hotstuff_msg.pool_index())->HandlePreResetTimerMsg(header);
+            break;
+        case RESET_TIMER:
+            hotstuff(hotstuff_msg.pool_index())->HandleResetTimerMsg(header);
+            break;            
         default:
             ZJC_WARN("consensus message type is error.");
             break;
@@ -197,8 +197,6 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     if (header.has_hotstuff_timeout_proto()) {
         auto pool_idx = header.hotstuff_timeout_proto().pool_idx();
-        ZJC_DEBUG("====1.1 pool_idx: %d, msg rec: member_id: %lu",
-            pool_idx, header.hotstuff_timeout_proto().member_id());
         pacemaker(pool_idx)->OnRemoteTimeout(msg_ptr);
     }
 }
@@ -210,6 +208,8 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
             pools_mgr_->PopTxs(pool_idx, false);
             pools_mgr_->CheckTimeoutTx(pool_idx);
+            
+            hotstuff(pool_idx)->TryRecoverFromStuck();
         }
     }
 }

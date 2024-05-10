@@ -270,7 +270,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         return;
     }
     
-    if (SendVoteMsg(trans_msg) != Status::kSuccess) {
+    if (SendMsgToLeader(trans_msg, VOTE) != Status::kSuccess) {
         ZJC_ERROR("Send vote message is error.");
     }
     
@@ -358,6 +358,79 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
             pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));
         }
     }
+    return;
+}
+
+void Hotstuff::HandlePreResetTimerMsg(const transport::protobuf::Header& header) {
+    auto& pre_rst_timer_msg = header.hotstuff().pre_reset_timer_msg();
+    if (pre_rst_timer_msg.txs_size() == 0) {
+        return;
+    }
+    std::vector<std::shared_ptr<pools::protobuf::TxMessage>> tx_msgs;
+    for (const auto& tx : pre_rst_timer_msg.txs()) {
+        tx_msgs.push_back(std::make_shared<pools::protobuf::TxMessage>(tx));
+    }
+    Status s = acceptor()->AddTxs(tx_msgs);
+    if (s != Status::kSuccess) {
+        return;
+    }
+    // Flow Control
+    if (!reset_timer_fc_.Permitted()) {
+        return;
+    }
+
+    ResetReplicaTimers();
+    return;
+}
+
+Status Hotstuff::ResetReplicaTimers() {
+    // Reset timer msg broadcast
+    auto rst_timer_msg = std::make_shared<hotstuff::protobuf::ResetTimerMsg>();
+    rst_timer_msg->set_leader_idx(elect_info_->GetElectItem()->LocalMember()->index);
+
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& header = msg_ptr->header;
+    header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    header.set_type(common::kHotstuffMessage);
+    header.set_hop_count(0);
+    
+    auto* hotstuff_msg = header.mutable_hotstuff();
+    hotstuff_msg->set_type(RESET_TIMER);
+    hotstuff_msg->mutable_reset_timer_msg()->CopyFrom(*rst_timer_msg);
+    hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
+    hotstuff_msg->set_pool_index(pool_idx_);
+    if (!header.has_broadcast()) {
+        auto broadcast = header.mutable_broadcast();
+    }
+
+    dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
+    header.set_des_dht_key(dht_key.StrKey());
+    transport::TcpTransport::Instance()->SetMessageHash(header);
+
+    network::Route::Instance()->Send(msg_ptr);
+    HandleResetTimerMsg(header);
+    return Status::kSuccess;
+}
+
+void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
+    ZJC_DEBUG("====5.1 pool: %d, onResetTimer", pool_idx_);
+    auto& rst_timer_msg = header.hotstuff().reset_timer_msg();
+    // leader 必须正确
+    if (leader_rotation()->GetLeader()->index != rst_timer_msg.leader_idx()) {
+        return;
+    }
+    // 必须处于 stuck 状态
+    if (!IsStuck()) {
+        return;
+    }
+    ZJC_DEBUG("====5.2 pool: %d, ResetTimer", pool_idx_);
+    // reset pacemaker view duration
+    pacemaker()->ResetViewDuration(std::make_shared<ViewDuration>(
+                pool_idx_,
+                ViewDurationSampleSize,
+                ViewDurationStartTimeout,
+                ViewDurationMaxTimeout,
+                ViewDurationMultiplier));
     return;
 }
 
@@ -578,7 +651,6 @@ Status Hotstuff::ConstructVoteMsg(
 
     std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
     wrapper()->GetTxsIdempotently(txs);
-    ZJC_DEBUG("get tx size: %u", txs.size());
     for (size_t i = 0; i < txs.size(); i++)
     {
         auto& tx_ptr = *(vote_msg->add_txs());
@@ -651,7 +723,7 @@ Status Hotstuff::ConstructHotstuffMsg(
     return Status::kSuccess;
 }
 
-Status Hotstuff::SendVoteMsg(std::shared_ptr<transport::TransportMessage>& trans_msg) {
+Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& trans_msg, const MsgType msg_type) {
     Status ret = Status::kSuccess;
     auto& header_msg = trans_msg->header;
     auto leader = leader_rotation()->GetLeader();
@@ -675,14 +747,51 @@ Status Hotstuff::SendVoteMsg(std::shared_ptr<transport::TransportMessage>& trans
                 header_msg);
         }
     } else {
-        HandleVoteMsg(header_msg);
+        if (msg_type == VOTE) {
+            HandleVoteMsg(header_msg);
+        } else if (msg_type == PRE_RESET_TIMER) {
+            HandlePreResetTimerMsg(header_msg);
+        }
     }
  
-    ZJC_DEBUG("send to leader vote message to leader net: %u, %s, hash64: %lu", 
+    ZJC_DEBUG("send to leader %d message to leader net: %u, %s, hash64: %lu",
+        msg_type,
         leader->net_id, 
         common::Encode::HexEncode(leader->id).c_str(), 
         header_msg.hash64());
     return ret;
+}
+
+void Hotstuff::TryRecoverFromStuck() {
+    if (IsStuck()) {
+        std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
+        wrapper()->GetTxsIdempotently(txs);
+        if (!txs.empty() && recover_from_struct_fc_.Permitted()) {
+            // TODO 发送 PreResetPacemakerTimerMsg To Leader
+            auto trans_msg = std::make_shared<transport::TransportMessage>();
+            auto& header = trans_msg->header;
+            auto* hotstuff_msg = header.mutable_hotstuff();
+            auto* pre_rst_timer_msg = hotstuff_msg->mutable_pre_reset_timer_msg();
+            auto elect_item = elect_info_->GetElectItem();
+            if (!elect_item) {
+                ZJC_ERROR("pool: %d no elect item found", pool_idx_);
+                return;
+            }            
+            pre_rst_timer_msg->set_replica_idx(elect_item->LocalMember()->index);
+            ZJC_DEBUG("pool: %d, get tx size: %u", pool_idx_, txs.size());
+            for (size_t i = 0; i < txs.size(); i++) {
+                auto& tx_ptr = *(pre_rst_timer_msg->add_txs());
+                tx_ptr = *(txs[i].get());
+            }
+
+            hotstuff_msg->set_type(PRE_RESET_TIMER);
+            hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
+            hotstuff_msg->set_pool_index(pool_idx_);
+
+            SendMsgToLeader(trans_msg, PRE_RESET_TIMER);
+        }
+    }
+    return;
 }
 
 } // namespace consensus
