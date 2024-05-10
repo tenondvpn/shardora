@@ -258,6 +258,7 @@ Status BlockAcceptor::addTxsToPool(
             txs_ptr = tx_pools_->GetTimeblockTx(pool_idx(), "");
             break;
         default:
+            // TODO 还需要支持其他交易的写入
             break;
             // ZJC_FATAL("invalid tx step: %d", tx->step());
             // return Status::kError;
