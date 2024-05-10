@@ -81,8 +81,7 @@ Status BlockAcceptor::Accept(
     }
 
     // 2. Get txs from local pool
-    std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
-
+    auto txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
     Status s = Status::kSuccess;
     s = GetAndAddTxsLocally(block_info, header, txs_ptr);
     if (s != Status::kSuccess) {
