@@ -86,7 +86,7 @@ void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr)
 
 void HotstuffSyncer::SyncPool(const uint32_t& pool_idx) {
     // TODO(HT): test
-    if (pool_idx != 7) { return; }
+    // if (pool_idx != 7) { return; }
     auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
     auto req = vb_msg.mutable_view_block_req();
     req->set_pool_idx(pool_idx);
