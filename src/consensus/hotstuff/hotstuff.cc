@@ -802,7 +802,6 @@ void Hotstuff::TryRecoverFromStuck() {
             hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
             hotstuff_msg->set_pool_index(pool_idx_);
 
-            // 自己是 leader 则不处理
             SendMsgToLeader(trans_msg, PRE_RESET_TIMER);
         }
     }
