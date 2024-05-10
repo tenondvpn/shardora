@@ -295,11 +295,11 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         vote_msg.view());
 
     // 同步 replica 的 txs
-    std::vector<std::shared_ptr<pools::protobuf::TxMessage>> tx_msgs;
-    for (const auto& tx : vote_msg.txs()) {
-        tx_msgs.push_back(std::make_shared<pools::protobuf::TxMessage>(tx));
-    }
-    acceptor()->AddTxs(tx_msgs);
+    // std::vector<std::shared_ptr<pools::protobuf::TxMessage>> tx_msgs;
+    // for (const auto& tx : vote_msg.txs()) {
+    //     tx_msgs.push_back(std::make_shared<pools::protobuf::TxMessage>(tx));
+    // }
+    acceptor()->AddTxs(header.hotstuff());
     // 生成聚合签名，创建qc
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();

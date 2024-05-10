@@ -285,7 +285,7 @@ Status BlockAcceptor::GetAndAddTxsLocally(
     if (add_txs_status != Status::kSuccess) {
         return add_txs_status;
     }
-    
+
     if (txs_ptr->txs.size() != block_info->txs.size()) {
         ZJC_ERROR("invalid consensus, txs not equal to leader.");
         return Status::kAcceptorTxsEmpty;
@@ -343,7 +343,8 @@ Status BlockAcceptor::GetDefaultTxs(
         const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
     txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
-    return addTxsToPool(block_info->txs, txs_ptr);
+    ZJC_FATAL("invalid call!");
+    return Status::kError;
 }
 
 Status BlockAcceptor::GetToTxs(
