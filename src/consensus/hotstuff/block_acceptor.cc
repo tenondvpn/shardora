@@ -165,7 +165,12 @@ Status BlockAcceptor::AddTxs(const hotstuff::protobuf::HotstuffMessage& hotstuff
 Status BlockAcceptor::addTxsToPool(
         const hotstuff::protobuf::HotstuffMessage& hotstuff_msg,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    auto& txs = hotstuff_msg.vote_msg().txs();
+    auto* tmp_txs = &hotstuff_msg.vote_msg().txs();
+    if (tmp_txs->empty()) {
+        tmp_txs = &hotstuff_msg.pro_msg().tx_propose().txs();
+    }
+
+    auto& txs = *tmp_txs;
     if (txs.size() == 0) {
         return Status::kAcceptorTxsEmpty;
     }
