@@ -283,6 +283,7 @@ Status BlockAcceptor::GetAndAddTxsLocally(
 
     auto add_txs_status = addTxsToPool(header.hotstuff(), txs_ptr);
     if (add_txs_status != Status::kSuccess) {
+        ZJC_ERROR("invalid consensus, add_txs_status failed: %d.", add_txs_status);
         return add_txs_status;
     }
 
