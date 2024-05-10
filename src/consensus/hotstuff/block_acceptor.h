@@ -135,6 +135,9 @@ private:
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     consensus::BlockCacheCallback new_block_cache_callback_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    uint64_t prev_tps_tm_us_ = 0;
+    uint32_t prev_count_ = 0;
+    common::SpinMutex prev_count_mutex_;    
 
     inline uint32_t pool_idx() const {
         return pool_idx_;
@@ -194,7 +197,23 @@ private:
 
     void LeaderBroadcastBlock(const std::shared_ptr<block::protobuf::Block>& block);
     void BroadcastBlock(uint32_t des_shard, const std::shared_ptr<block::protobuf::Block>& block_item);
-    void BroadcastLocalTosBlock(const std::shared_ptr<block::protobuf::Block>& block_item);    
+    void BroadcastLocalTosBlock(const std::shared_ptr<block::protobuf::Block>& block_item);
+    void PrintTps(uint64_t tx_list_size) {
+        auto now_tm_us = common::TimeUtils::TimestampUs();
+        if (prev_tps_tm_us_ == 0) {
+            prev_tps_tm_us_ = now_tm_us;
+        }
+
+        {
+            common::AutoSpinLock auto_lock(prev_count_mutex_);
+            prev_count_ += tx_list_size;
+            if (now_tm_us > prev_tps_tm_us_ + 3000000lu) {
+                ZJC_INFO("tps: %.2f", (double(prev_count_) / (double(now_tm_us - prev_tps_tm_us_) / 1000000.0)));
+                prev_tps_tm_us_ = now_tm_us;
+                prev_count_ = 0;
+            }
+        }        
+    }
 };
 
 } // namespace hotstuff
