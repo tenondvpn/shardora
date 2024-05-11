@@ -36,8 +36,8 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         ZJC_DEBUG("pool: %d, committed block is empty", pool_idx_);
     }
 
-    uint32_t now_time_s = common::TimeUtils::TimestampSeconds() / 30;
-    uint64_t random_hash = common::Hash::Hash64(qc->Serialize() + std::to_string(now_time_s));
+    uint32_t now_time_num = common::TimeUtils::TimestampMs() / 30000;
+    uint64_t random_hash = common::Hash::Hash64(qc->Serialize() + std::to_string(now_time_num));
 
     if (Members()->empty()) {
         return nullptr;
@@ -55,14 +55,14 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
             qc->view);
     }
 
-    ZJC_DEBUG("Leader pool: %d, is %d, local: %d, id: %s, ip: %s, port: %d, qc view: %lu, time: %lu",
+    ZJC_DEBUG("Leader pool: %d, is %d, local: %d, id: %s, ip: %s, port: %d, qc view: %lu, time num: %lu",
         pool_idx_,
         leader->index,
         GetLocalMemberIdx(),
         common::Encode::HexEncode(leader->id).c_str(),
         common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port,
         qc->view,
-        now_time_s);
+        now_time_num);
     return leader;
 }
 
