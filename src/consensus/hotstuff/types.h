@@ -26,7 +26,7 @@ static const View BeforeGenesisView = 0;
 static const uint64_t ViewDurationSampleSize = 10;
 static const double ViewDurationStartTimeoutMs = 300;
 static const double ViewDurationMaxTimeoutMs = 60000;
-static const double ViewDurationMultiplier = 2;
+static const double ViewDurationMultiplier = 1.1; // 选过大会造成卡住的成本很高，一旦卡住则恢复时间很长（如 leader 不一致），过小会导致没有交易时 CPU 长时间降不下来
 
 HashStr GetViewHash(const View& view);
 HashStr GetQCMsgHash(const View &view, const HashStr &view_block_hash);
@@ -55,6 +55,7 @@ struct QC {
     }
 };
 
+// TODO TC 中可增加超时的 leader_idx，用于 Leader 选择黑名单
 struct TC : public QC {
     TC(const std::shared_ptr<libff::alt_bn128_G1>& sign, const View& v) :
         QC(sign, v, "") {

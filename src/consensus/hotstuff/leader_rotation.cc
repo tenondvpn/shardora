@@ -16,7 +16,9 @@ LeaderRotation::LeaderRotation(
         const uint32_t& pool_idx,
         const std::shared_ptr<ViewBlockChain>& chain,
         const std::shared_ptr<ElectInfo>& elect_info) :
-    pool_idx_(pool_idx), chain_(chain), elect_info_(elect_info) {}
+    pool_idx_(pool_idx), chain_(chain), elect_info_(elect_info) {
+    SetExpectedLeader(GetLeader());
+}
 
 LeaderRotation::~LeaderRotation() {}
 
@@ -33,7 +35,9 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
     } else {
         ZJC_DEBUG("pool: %d, committed block is empty", pool_idx_);
     }
-    uint64_t random_hash = common::Hash::Hash64(qc->Serialize());
+
+    uint32_t now_time_num = common::TimeUtils::TimestampSeconds() / TIME_EPOCH_TO_CHANGE_LEADER_S;
+    uint64_t random_hash = common::Hash::Hash64(qc->Serialize() + std::to_string(now_time_num));
 
     if (Members()->empty()) {
         return nullptr;
@@ -51,12 +55,14 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
             qc->view);
     }
 
-    ZJC_DEBUG("Leader pool: %d, is %d, id: %s, ip: %s, port: %d, qc view: %lu",
+    ZJC_DEBUG("Leader pool: %d, is %d, local: %d, id: %s, ip: %s, port: %d, qc view: %lu, time num: %lu",
         pool_idx_,
         leader->index,
+        GetLocalMemberIdx(),
         common::Encode::HexEncode(leader->id).c_str(),
         common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port,
-        qc->view);
+        qc->view,
+        now_time_num);
     return leader;
 }
 
