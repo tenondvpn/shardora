@@ -656,12 +656,12 @@ Status Hotstuff::ConstructVoteMsg(
     wrapper()->GetTxsIdempotently(txs);
     for (size_t i = 0; i < txs.size(); i++)
     {
-        auto& tx_ptr = *(vote_msg->add_txs());
-        tx_ptr = *(txs[i].get());
+        auto* tx_ptr = vote_msg->add_txs();
+        *tx_ptr = *(txs[i].get());
         ZJC_DEBUG("vote send tx message type: %d, to: %s, gid: %s", 
-            tx_ptr.step(), 
-            common::Encode::HexEncode(tx_ptr.to()).c_str(), 
-            common::Encode::HexEncode(tx_ptr.gid()).c_str());
+            tx_ptr->step(), 
+            common::Encode::HexEncode(tx_ptr->to()).c_str(), 
+            common::Encode::HexEncode(tx_ptr->gid()).c_str());
     }
 
     return Status::kSuccess;
