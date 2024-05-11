@@ -346,7 +346,7 @@ Status BlockAcceptor::DoTransactions(
 
     // recalculate hash
     block->set_is_commited_block(false);
-    block->set_hash(GetBlockHash(*block));
+    // block->set_hash(GetBlockHash(*block));
     return s;
 }
 
