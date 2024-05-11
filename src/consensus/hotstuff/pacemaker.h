@@ -73,6 +73,9 @@ public:
     // 重置超时实例
     void ResetViewDuration(const std::shared_ptr<ViewDuration>& dur) {
         duration_ = dur;
+        
+        StopTimeoutTimer();
+        StartTimeoutTimer();
     }
 
     inline uint64_t DurationUs() const {
