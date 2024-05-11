@@ -76,6 +76,10 @@ private:
         return hotstuff_mgr_->crypto(pool_idx);
     }
 
+    inline uint64_t SyncTimerCycleUs() const {
+        return kSyncTimerCycleUs;
+    }
+
     void SyncAllPools();
     Status SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg);
     

@@ -77,7 +77,7 @@ void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr)
     // TODO 仅共识池节点参与 view_block_chain 的同步
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     auto now_us = common::TimeUtils::TimestampUs();
-    if (now_us - last_timers_us_[thread_index] >= kSyncTimerCycleUs) {
+    if (now_us - last_timers_us_[thread_index] >= SyncTimerCycleUs()) {
         SyncAllPools();
         ConsumeMessages();
         last_timers_us_[thread_index] = common::TimeUtils::TimestampUs();
