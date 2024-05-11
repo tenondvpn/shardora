@@ -52,6 +52,7 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
 
     SetViewBlockToMap(view_block->hash, view_block);
     view_blocks_at_height_[view_block->view].push_back(view_block);
+
     AddChildrenToMap(view_block->parent_hash, view_block);
     SetQcOf(view_block->qc->view_block_hash, view_block->qc);
 
@@ -226,6 +227,9 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
         blocks.erase(std::remove_if(blocks.begin(), blocks.end(),
             [&hash](const std::shared_ptr<ViewBlock>& item) { return item->hash == hash; }),
             blocks.end());
+        if (blocks.size() == 0) {
+            view_blocks_at_height_.erase(view);
+        }
 
         view_blocks_info_.erase(hash);
     } catch (std::exception& e) {
