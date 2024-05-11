@@ -296,6 +296,10 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     std::vector<const pools::protobuf::TxMessage*> tx_msgs;
     for (const auto& tx : vote_msg.txs()) {
         tx_msgs.push_back(&tx);
+        ZJC_DEBUG("handle backup vote message get tx type: %d, to: %s, gid: %s", 
+            tx.step(), 
+            common::Encode::HexEncode(tx.to()).c_str(), 
+            common::Encode::HexEncode(tx.gid()).c_str());
     }
     acceptor()->AddTxs(tx_msgs);
     // 生成聚合签名，创建qc
@@ -651,8 +655,12 @@ Status Hotstuff::ConstructVoteMsg(
     wrapper()->GetTxsIdempotently(txs);
     for (size_t i = 0; i < txs.size(); i++)
     {
-        auto& tx_ptr = *(vote_msg->add_txs());
-        tx_ptr = *(txs[i].get());
+        auto* tx_ptr = vote_msg->add_txs();
+        *tx_ptr = *(txs[i].get());
+        ZJC_DEBUG("vote send tx message type: %d, to: %s, gid: %s", 
+            tx_ptr->step(), 
+            common::Encode::HexEncode(tx_ptr->to()).c_str(), 
+            common::Encode::HexEncode(tx_ptr->gid()).c_str());
     }
 
     return Status::kSuccess;

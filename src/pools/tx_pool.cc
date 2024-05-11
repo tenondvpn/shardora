@@ -202,6 +202,8 @@ void TxPool::GetTx(
         std::map<std::string, TxItemPtr>& res_map, 
         uint32_t count, 
         std::unordered_map<std::string, std::string>& kvs) {
+    ZJC_DEBUG("leader get tx universal_prio_map_: %u, prio_map_: %u, consensus_tx_map_: %u", 
+        universal_prio_map_.size(), prio_map_.size(), consensus_tx_map_.size());
     GetTx(universal_prio_map_, res_map, count, kvs);
     if (!res_map.empty()) {
         return;
@@ -374,9 +376,9 @@ void TxPool::RemoveTx(const std::string& gid) {
         consensus_tx_map_.erase(cons_iter);
     }
 
-//     ZJC_DEBUG("remove tx success gid: %s, tx hash: %s",
-//         common::Encode::HexEncode(giter->second->gid).c_str(),
-//         common::Encode::HexEncode(giter->second->tx_hash).c_str());
+    ZJC_DEBUG("remove tx success gid: %s, tx hash: %s",
+        common::Encode::HexEncode(giter->second->tx_info.gid()).c_str(),
+        common::Encode::HexEncode(giter->second->unique_tx_hash).c_str());
     gid_map_.erase(giter);
 #ifdef LATENCY    
     if (!prio_map_.empty()) {
@@ -743,6 +745,12 @@ void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
         gid_map_[txs[i]->tx_info.gid()] = txs[i];
         txs[i]->is_consensus_add_tx = true;
         consensus_tx_map_[txs[i]->unique_tx_hash] = txs[i];
+        ZJC_DEBUG("pool: %d, success add tx step: %d, to: %s, gid: %s, txhash: %s", 
+            pool_index_,
+            txs[i]->tx_info.step(), 
+            common::Encode::HexEncode(txs[i]->tx_info.to()).c_str(),
+            common::Encode::HexEncode(txs[i]->tx_info.gid()).c_str(),
+            common::Encode::HexEncode(txs[i]->unique_tx_hash).c_str());
     }
 }
 

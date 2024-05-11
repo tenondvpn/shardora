@@ -69,7 +69,7 @@ Status BlockAcceptor::Accept(
     }
 
     // 2. Get txs from local pool
-    auto txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
+    std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
     Status s = Status::kSuccess;
     s = GetAndAddTxsLocally(block_info, txs_ptr);
     if (s != Status::kSuccess) {
@@ -129,13 +129,21 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
             }
         }
 
-        pools_mgr_->TxOver(block->pool_index(), block->tx_list());        
+        for (uint32_t i = 0; i < block->tx_list_size(); ++i) {
+            ZJC_DEBUG("commit block tx over step: %d, to: %s, gid: %s", 
+                block->tx_list(i).step(),
+                common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
+                common::Encode::HexEncode(block->tx_list(i).gid()).c_str());
+        }
+        
+        pools_mgr_->TxOver(block->pool_index(), block->tx_list());
     }
 
     // TODO tps measurement
     PrintTps(block->tx_list_size());    
-    ZJC_DEBUG("[NEW BLOCK] hash: %s, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu",
+    ZJC_DEBUG("[NEW BLOCK] hash: %s, prehash: %s, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu, pool: %u,",
         common::Encode::HexEncode(block->hash()).c_str(),
+        common::Encode::HexEncode(block->prehash()).c_str(),
         block->network_id(),
         block->pool_index(),
         block->height(),
@@ -227,25 +235,55 @@ Status BlockAcceptor::addTxsToPool(
                     security_ptr_, 
                     address_info);
             break;
-        case pools::protobuf::kNormalTo:
+        case pools::protobuf::kNormalTo: {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
-            txs_ptr = tx_pools_->GetToTxs(pool_idx(), "");
+            auto tx_item = tx_pools_->GetToTxs(pool_idx(), "");
+            if (tx_item != nullptr && !tx_item->txs.empty()) {
+                tx_ptr = tx_item->txs.begin()->second;
+            }
+
             break;
+        }
         case pools::protobuf::kStatistic:
-            txs_ptr = tx_pools_->GetStatisticTx(pool_idx(), "");
+        {
+            // TODO 这些 Single Tx 还是从本地交易池直接拿
+            auto tx_item = tx_pools_->GetStatisticTx(pool_idx(), "");
+            if (tx_item != nullptr && !tx_item->txs.empty()) {
+                tx_ptr = tx_item->txs.begin()->second;
+            }
+            
             break;
+        }
         case pools::protobuf::kCross:
-            txs_ptr = tx_pools_->GetCrossTx(pool_idx(), "");
+        {
+            // TODO 这些 Single Tx 还是从本地交易池直接拿
+            auto tx_item = tx_pools_->GetCrossTx(pool_idx(), "");
+            if (tx_item != nullptr && !tx_item->txs.empty()) {
+                tx_ptr = tx_item->txs.begin()->second;
+            }
+            
             break;
+        }
         case pools::protobuf::kConsensusRootElectShard:
             if (txs.size() == 1) {
                 auto txhash = pools::GetTxMessageHash(*txs[0]);
-                txs_ptr = tx_pools_->GetElectTx(pool_idx(), txhash);           
+                auto tx_item = tx_pools_->GetElectTx(pool_idx(), txhash);           
+                if (tx_item != nullptr && !tx_item->txs.empty()) {
+                    tx_ptr = tx_item->txs.begin()->second;
+                }
+                
+                break;
             }
-            break;
         case pools::protobuf::kConsensusRootTimeBlock:
-            txs_ptr = tx_pools_->GetTimeblockTx(pool_idx(), "");
+        {
+            // TODO 这些 Single Tx 还是从本地交易池直接拿
+            auto tx_item = tx_pools_->GetTimeblockTx(pool_idx(), "");
+            if (tx_item != nullptr && !tx_item->txs.empty()) {
+                tx_ptr = tx_item->txs.begin()->second;
+            }
+            
             break;
+        }
         default:
             // TODO 没完！还需要支持其他交易的写入
             break;
@@ -260,11 +298,13 @@ Status BlockAcceptor::addTxsToPool(
         }
     }
 
-    if (txs_ptr != nullptr) {
-        txs_ptr->txs = txs_map;
+    if (txs_ptr == nullptr) {
+        txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
     }
 
+    txs_ptr->txs = txs_map;
     // 放入交易池并弹出（避免重复打包）
+    ZJC_DEBUG("success add txs size: %u", txs_map.size());
     int res = pools_mgr_->BackupConsensusAddTxs(pool_idx(), txs_map);
     if (res != pools::kPoolsSuccess) {
         ZJC_ERROR("invalid consensus, txs invalid.");

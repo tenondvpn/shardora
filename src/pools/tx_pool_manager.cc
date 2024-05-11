@@ -376,8 +376,13 @@ int TxPoolManager::BackupConsensusAddTxs(
         }
 
         valid_txs.push_back(tx_ptr);
+        ZJC_DEBUG("succcess add tx step: %d, to: %s, gid: %s", 
+            tx_ptr->tx_info.step(), 
+            common::Encode::HexEncode(tx_ptr->tx_info.to()).c_str(), 
+            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
     }
     
+    ZJC_DEBUG("success add consensus tx size: %u", valid_txs.size());
     tx_pool_[pool_index].ConsensusAddTxs(valid_txs);
     return res;
 }
