@@ -20,7 +20,7 @@ namespace shardora {
 namespace hotstuff {
 
 const int kPopCountMax = 128;
-const uint64_t kSyncTimerCycleUs = 300000lu;
+const uint64_t kSyncTimerCycleUs = 500000lu;
 const int kMaxSyncBlockNum = 100;
 
 struct ViewBlockItem {
@@ -48,14 +48,15 @@ public:
 
     void Start();
     void Stop();
-    void SyncPool(const uint32_t& pool_idx);
+    void SyncPool(const uint32_t& pool_idx, const uint32_t& node_num);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     void ConsumeMessages();
     Status MergeChain(
             const uint32_t& pool_idx,
             std::shared_ptr<ViewBlockChain>& ori_chain,
-            const std::shared_ptr<ViewBlockChain>& sync_chain);
+            const std::shared_ptr<ViewBlockChain>& sync_chain,
+            const std::unordered_set<HashStr>& skipped_view_blocks);
 
     // 修改处理 view_block 的函数
     inline void SetOnRecvViewBlockFn(const OnRecvViewBlockFn& fn) {
@@ -75,8 +76,16 @@ private:
         return hotstuff_mgr_->crypto(pool_idx);
     }
 
+    inline uint64_t SyncTimerCycleUs(uint32_t pool_idx) const {
+        // return pacemaker(pool_idx)->DurationUs();
+        return kSyncTimerCycleUs;
+    }
+
     void SyncAllPools();
-    Status SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg);
+    Status SendRequest(
+            uint32_t network_id,
+            const view_block::protobuf::ViewBlockSyncMessage& view_block_msg,
+            uint32_t node_num);
     
     Status SendMsg(
             uint32_t network_id,
@@ -106,7 +115,7 @@ private:
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
     OnRecvViewBlockFn on_recv_vb_fn_;
     std::shared_ptr<db::Db> db_ = nullptr;
-    uint64_t last_timers_us_[common::kMaxThreadCount];
+    uint64_t last_timers_us_[common::kInvalidPoolIndex];
 };
 
 } // namespace consensus

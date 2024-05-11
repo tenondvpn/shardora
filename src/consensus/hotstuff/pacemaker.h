@@ -17,7 +17,7 @@ namespace hotstuff {
 
 using NewProposalFn = std::function<Status(const std::shared_ptr<SyncInfo> &sync_info)>;
 using StopVotingFn = std::function<void(const View &view)>;
-using SyncPoolFn = std::function<void(const uint32_t &)>;
+using SyncPoolFn = std::function<void(const uint32_t &, const uint32_t&)>;
 using NewViewFn = std::function<void(const std::shared_ptr<SyncInfo> &sync_info)>;
 
 class Pacemaker {
@@ -73,6 +73,9 @@ public:
     // 重置超时实例
     void ResetViewDuration(const std::shared_ptr<ViewDuration>& dur) {
         duration_ = dur;
+        
+        StopTimeoutTimer();
+        StartTimeoutTimer();
     }
 
     inline uint64_t DurationUs() const {
@@ -87,6 +90,7 @@ private:
     inline void StartTimeoutTimer() {
         last_time_us_ = common::TimeUtils::TimestampUs();
         duration_us_ = duration_->Duration();
+        ZJC_DEBUG("pool: %d duration is %lu ms", pool_idx_, duration_us_/1000);
     }
 
     inline void StopTimeoutTimer() {
