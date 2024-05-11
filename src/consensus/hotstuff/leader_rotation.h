@@ -9,6 +9,8 @@ namespace shardora {
 
 namespace hotstuff {
 
+static const uint32_t TIME_EPOCH_TO_CHANGE_LEADER_S = 60;
+
 class LeaderRotation {
 public:
     LeaderRotation(
