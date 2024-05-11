@@ -20,7 +20,7 @@ namespace shardora {
 namespace hotstuff {
 
 const int kPopCountMax = 128;
-const uint64_t kSyncTimerCycleUs = 300000lu;
+const uint64_t kSyncTimerCycleUs = 500000lu;
 const int kMaxSyncBlockNum = 100;
 
 struct ViewBlockItem {
@@ -55,7 +55,8 @@ public:
     Status MergeChain(
             const uint32_t& pool_idx,
             std::shared_ptr<ViewBlockChain>& ori_chain,
-            const std::shared_ptr<ViewBlockChain>& sync_chain);
+            const std::shared_ptr<ViewBlockChain>& sync_chain,
+            const std::unordered_set<HashStr>& skipped_view_blocks);
 
     // 修改处理 view_block 的函数
     inline void SetOnRecvViewBlockFn(const OnRecvViewBlockFn& fn) {
@@ -73,6 +74,10 @@ private:
     
     inline std::shared_ptr<Crypto> crypto(uint32_t pool_idx) const {
         return hotstuff_mgr_->crypto(pool_idx);
+    }
+
+    inline uint64_t SyncTimerCycleUs() const {
+        return kSyncTimerCycleUs;
     }
 
     void SyncAllPools();

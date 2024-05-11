@@ -426,8 +426,8 @@ void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
     pacemaker()->ResetViewDuration(std::make_shared<ViewDuration>(
                 pool_idx_,
                 ViewDurationSampleSize,
-                ViewDurationStartTimeout,
-                ViewDurationMaxTimeout,
+                ViewDurationStartTimeoutMs,
+                ViewDurationMaxTimeoutMs,
                 ViewDurationMultiplier));
     return;
 }
