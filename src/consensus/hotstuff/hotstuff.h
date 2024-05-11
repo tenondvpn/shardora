@@ -145,7 +145,6 @@ public:
     }
 
     void TryRecoverFromStuck();
-
 private:
     uint32_t pool_idx_;
     std::shared_ptr<Crypto> crypto_;

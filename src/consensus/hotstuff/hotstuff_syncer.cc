@@ -39,7 +39,9 @@ HotstuffSyncer::HotstuffSyncer(
 
     // 设置 pacemaker 中的同步函数
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
-        pacemaker(pool_idx)->SetSyncPoolFn(std::bind(&HotstuffSyncer::SyncPool, this, std::placeholders::_1));
+        pacemaker(pool_idx)->SetSyncPoolFn(
+                std::bind(&HotstuffSyncer::SyncPool,
+                    this, std::placeholders::_1, std::placeholders::_2));
     }
 
     for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
@@ -76,15 +78,11 @@ void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
 void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     // TODO 仅共识池节点参与 view_block_chain 的同步
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
-    auto now_us = common::TimeUtils::TimestampUs();
-    if (now_us - last_timers_us_[thread_index] >= SyncTimerCycleUs()) {
-        SyncAllPools();
-        ConsumeMessages();
-        last_timers_us_[thread_index] = common::TimeUtils::TimestampUs();
-    }
+    SyncAllPools();
+    ConsumeMessages();
 }
 
-void HotstuffSyncer::SyncPool(const uint32_t& pool_idx) {
+void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const uint32_t& node_num) {
     // TODO(HT): test
     auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
     auto req = vb_msg.mutable_view_block_req();
@@ -102,20 +100,26 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx) {
     }
         
     vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
-    SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg);
+    SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, node_num);
 }
 
 void HotstuffSyncer::SyncAllPools() {
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+    auto now_us = common::TimeUtils::TimestampUs();
+    
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
-        if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
-            ZJC_DEBUG("pool: %d, sync pool", pool_idx);
-            SyncPool(pool_idx);
+        if (now_us - last_timers_us_[pool_idx] >= SyncTimerCycleUs(pool_idx)) {
+            if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
+                // ZJC_DEBUG("pool: %d, sync pool, timeout_duration: %lu ms",
+                //     pool_idx, SyncTimerCycleUs(pool_idx)/1000);
+                SyncPool(pool_idx, 1);
+                last_timers_us_[pool_idx] = common::TimeUtils::TimestampUs();
+            }            
         }
     }
 }
 
-Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {
+Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg, uint32_t node_num) {
     // 只有共识池节点才能同步 ViewBlock
     if (network_id >= network::kConsensusWaitingShardBeginNetworkId) {
         return Status::kError;
@@ -129,7 +133,15 @@ Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protob
     if (nodes.empty()) {
         return Status::kError;
     }
-    dht::NodePtr node = nodes[rand() % nodes.size()];
+    // dht::NodePtr node = nodes[rand() % nodes.size()];
+
+    if (node_num > nodes.size()) {
+        return Status::kError;
+    }
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(nodes.begin(), nodes.end(), g);
+    std::vector<dht::NodePtr> selectedNodes(nodes.begin(), nodes.begin() + node_num);    
 
     transport::protobuf::Header msg;
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -139,7 +151,10 @@ Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protob
     *msg.mutable_view_block_proto() = view_block_msg;
     
     transport::TcpTransport::Instance()->SetMessageHash(msg);
-    transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);    
+
+    for (const auto& node : selectedNodes) {
+        transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);            
+    }
     return Status::kSuccess;
 }
 

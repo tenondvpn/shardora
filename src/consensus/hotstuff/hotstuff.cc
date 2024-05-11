@@ -411,8 +411,9 @@ Status Hotstuff::ResetReplicaTimers() {
 }
 
 void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
-    ZJC_DEBUG("====5.1 pool: %d, onResetTimer", pool_idx_);
     auto& rst_timer_msg = header.hotstuff().reset_timer_msg();
+    ZJC_DEBUG("====5.1 pool: %d, onResetTimer leader_idx: %lu, local_idx: %lu",
+        pool_idx_, rst_timer_msg.leader_idx(), elect_info_->GetElectItem()->LocalMember()->index);
     // leader 必须正确
     if (leader_rotation()->GetLeader()->index != rst_timer_msg.leader_idx()) {
         return;
@@ -787,6 +788,8 @@ void Hotstuff::TryRecoverFromStuck() {
             hotstuff_msg->set_pool_index(pool_idx_);
 
             SendMsgToLeader(trans_msg, PRE_RESET_TIMER);
+            ZJC_DEBUG("pool: %d, send prereset msg from: %lu to: %lu",
+                pool_idx_, pre_rst_timer_msg->replica_idx(), leader_rotation_->GetLeader()->index);
         }
     }
     return;

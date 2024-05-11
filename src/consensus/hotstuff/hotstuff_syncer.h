@@ -48,7 +48,7 @@ public:
 
     void Start();
     void Stop();
-    void SyncPool(const uint32_t& pool_idx);
+    void SyncPool(const uint32_t& pool_idx, const uint32_t& node_num);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     void ConsumeMessages();
@@ -76,12 +76,16 @@ private:
         return hotstuff_mgr_->crypto(pool_idx);
     }
 
-    inline uint64_t SyncTimerCycleUs() const {
+    inline uint64_t SyncTimerCycleUs(uint32_t pool_idx) const {
+        // return pacemaker(pool_idx)->DurationUs();
         return kSyncTimerCycleUs;
     }
 
     void SyncAllPools();
-    Status SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg);
+    Status SendRequest(
+            uint32_t network_id,
+            const view_block::protobuf::ViewBlockSyncMessage& view_block_msg,
+            uint32_t node_num);
     
     Status SendMsg(
             uint32_t network_id,
@@ -111,7 +115,7 @@ private:
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
     OnRecvViewBlockFn on_recv_vb_fn_;
     std::shared_ptr<db::Db> db_ = nullptr;
-    uint64_t last_timers_us_[common::kMaxThreadCount];
+    uint64_t last_timers_us_[common::kInvalidPoolIndex];
 };
 
 } // namespace consensus
