@@ -26,7 +26,7 @@ static const View BeforeGenesisView = 0;
 static const uint64_t ViewDurationSampleSize = 10;
 static const double ViewDurationStartTimeoutMs = 300;
 static const double ViewDurationMaxTimeoutMs = 60000;
-static const double ViewDurationMultiplier = 2;
+static const double ViewDurationMultiplier = 1.2;
 
 HashStr GetViewHash(const View& view);
 HashStr GetQCMsgHash(const View &view, const HashStr &view_block_hash);
