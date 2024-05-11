@@ -53,8 +53,6 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     SetViewBlockToMap(view_block->hash, view_block);
     view_blocks_at_height_[view_block->view].push_back(view_block);
 
-    ZJC_DEBUG("view_block_height_size: %lu", view_blocks_at_height_.size());
-    
     AddChildrenToMap(view_block->parent_hash, view_block);
     SetQcOf(view_block->qc->view_block_hash, view_block->qc);
 
