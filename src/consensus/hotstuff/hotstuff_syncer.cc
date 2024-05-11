@@ -108,8 +108,8 @@ void HotstuffSyncer::SyncAllPools() {
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         if (now_us - last_timers_us_[pool_idx] >= SyncTimerCycleUs(pool_idx)) {
             if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
-                ZJC_DEBUG("pool: %d, sync pool, timeout_duration: %lu",
-                    pool_idx, SyncTimerCycleUs(pool_idx));
+                ZJC_DEBUG("pool: %d, sync pool, timeout_duration: %lu ms",
+                    pool_idx, SyncTimerCycleUs(pool_idx)/1000);
                 SyncPool(pool_idx);
                 last_timers_us_[pool_idx] = common::TimeUtils::TimestampUs();
             }            
