@@ -55,7 +55,8 @@ public:
     Status MergeChain(
             const uint32_t& pool_idx,
             std::shared_ptr<ViewBlockChain>& ori_chain,
-            const std::shared_ptr<ViewBlockChain>& sync_chain);
+            const std::shared_ptr<ViewBlockChain>& sync_chain,
+            const std::unordered_set<HashStr>& skipped_view_blocks);
 
     // 修改处理 view_block 的函数
     inline void SetOnRecvViewBlockFn(const OnRecvViewBlockFn& fn) {

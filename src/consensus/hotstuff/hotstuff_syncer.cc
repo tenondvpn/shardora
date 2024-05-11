@@ -355,6 +355,7 @@ Status HotstuffSyncer::processResponseChain(
 
     // 将 view_block 放入小根堆排序
     ViewBlockMinHeap min_heap;
+    std::unordered_set<HashStr> skipped_view_blocks;
     for (auto it = view_block_items.begin(); it != view_block_items.end(); it++) {
         auto view_block = std::make_shared<ViewBlock>();
         Status s = Proto2ViewBlock(*it, view_block);
@@ -368,9 +369,12 @@ Status HotstuffSyncer::processResponseChain(
             continue;
         }
         auto view_block_qc = qc_it->second;
-        if (crypto(pool_idx)->VerifyQC(view_block_qc, view_block->ElectHeight()) != Status::kSuccess) {
+        // 如果本地有该 view_block_qc 对应的 view_block，则不用验证 qc 了并且跳过该块，节省 CPU
+        if (!chain->Has(view_block_qc->view_block_hash) &&
+            crypto(pool_idx)->VerifyQC(view_block_qc, view_block->ElectHeight()) != Status::kSuccess) {
             continue;
         }
+
 
         min_heap.push(view_block);        
     }
@@ -396,13 +400,14 @@ Status HotstuffSyncer::processResponseChain(
         return Status::kSuccess;
     }
 
-    return MergeChain(pool_idx, chain, tmp_chain);    
+    return MergeChain(pool_idx, chain, tmp_chain, skipped_view_blocks);    
 }
 
 Status HotstuffSyncer::MergeChain(
         const uint32_t& pool_idx,
         std::shared_ptr<ViewBlockChain>& ori_chain,
-        const std::shared_ptr<ViewBlockChain>& sync_chain) {
+        const std::shared_ptr<ViewBlockChain>& sync_chain,
+        const std::unordered_set<HashStr>& skipped_view_blocks) {
     // 寻找交点
     std::vector<std::shared_ptr<ViewBlock>> view_blocks;
     ori_chain->GetAll(view_blocks);
@@ -426,6 +431,7 @@ Status HotstuffSyncer::MergeChain(
             if (ori_chain->Has(sync_block->hash)) {
                 continue;
             }
+
             Status s = on_recv_vb_fn_(pool_idx, ori_chain, sync_block);
             if (s != Status::kSuccess) {
                 continue;
