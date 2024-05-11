@@ -596,8 +596,12 @@ Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
         return  Status::kError;
     }
 
-    if (leader_idx != leader->index && leader_idx != leader_rotation()->GetExpectedLeader()->index) {
-        ZJC_ERROR("leader_idx message is error, %d, %d", leader_idx, leader->index);
+    if (leader_idx != leader->index) {
+        auto eleader = leader_rotation()->GetExpectedLeader();
+        if (!eleader || leader_idx != eleader->index) {
+            ZJC_ERROR("leader_idx message is error, %d, %d", leader_idx, leader->index);
+            return Status::kError;
+        }
         return Status::kError;
     }
     return Status::kSuccess;
