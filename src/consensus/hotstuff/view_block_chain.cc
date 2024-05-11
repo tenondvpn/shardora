@@ -229,6 +229,9 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
         blocks.erase(std::remove_if(blocks.begin(), blocks.end(),
             [&hash](const std::shared_ptr<ViewBlock>& item) { return item->hash == hash; }),
             blocks.end());
+        if (blocks.size() == 0) {
+            view_blocks_at_height_.erase(view);
+        }
 
         view_blocks_info_.erase(hash);
     } catch (std::exception& e) {
