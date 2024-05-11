@@ -109,7 +109,6 @@ private:
             const std::shared_ptr<ViewBlock>& view_block);
     
     uint64_t timeout_ms_;
-    std::queue<std::shared_ptr<ViewBlockItem>> item_queue_;
     common::ThreadSafeQueue<transport::MessagePtr> consume_queues_[common::kMaxThreadCount];
     common::Tick tick_;
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;

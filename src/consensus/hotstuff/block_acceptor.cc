@@ -12,6 +12,7 @@
 #include <protos/pools.pb.h>
 #include <protos/zbft.pb.h>
 #include <zjcvm/zjcvm_utils.h>
+#include <common/defer.h>
 
 namespace shardora {
 
@@ -56,6 +57,8 @@ Status BlockAcceptor::Accept(
         ZJC_DEBUG("pool_index error!");
         return Status::kError;
     }
+    // 退出前计算 hash
+    defer(block->set_hash(GetBlockHash(*block)));
 
     if (block_info->txs.empty()) {
         // 允许不打包任何交易，但 block 必须存在
