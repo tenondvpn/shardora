@@ -147,8 +147,10 @@ Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protob
 Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     auto& view_block_msg = msg_ptr->header.view_block_proto();
     assert(view_block_msg.has_view_block_req());
-
-    bool shouldResponse = false;
+    
+    bool shouldSyncQC = false;
+    bool shouldSyncTC = false;
+    bool shouldSyncChain = false; 
     
     transport::protobuf::Header msg;
     view_block::protobuf::ViewBlockSyncMessage&  res_view_block_msg = *msg.mutable_view_block_proto();
@@ -171,9 +173,12 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     view_block_res->set_pool_idx(pool_idx);
 
     // src 节点的 highqc 或 hightc 落后，尝试同步
-    if (pacemaker(pool_idx)->HighQC()->view > src_high_qc_view ||
-        pacemaker(pool_idx)->HighTC()->view > src_high_tc_view) {
-        shouldResponse = true;
+    if (pacemaker(pool_idx)->HighQC()->view > src_high_qc_view) {
+        shouldSyncQC = true;
+    }
+
+    if (pacemaker(pool_idx)->HighTC()->view > src_high_tc_view) {
+        shouldSyncTC = true;
     }
 
     auto chain = view_block_chain(pool_idx);
@@ -189,7 +194,6 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     }
 
     // 检查本地 ViewBlockChain 中是否存在 src 节点没有的 ViewBlock，如果存在则全部同步过去
-    // if (!chain->LatestLockedBlock()) {
     for (auto& view_block : all) {
         // 仅同步已经有 qc 的 view_block
         auto view_block_qc = chain->GetQcOf(view_block);
@@ -203,10 +207,10 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
         }
 
         // src 节点没有此 view_block
-        if (!shouldResponse) {
+        if (!shouldSyncChain) {
             auto it = src_view_block_hash_set.find(view_block->hash);
             if (it == src_view_block_hash_set.end()) {
-                shouldResponse = true;
+                shouldSyncChain = true;
             }            
         }
         
@@ -215,15 +219,25 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
         auto view_block_item = view_block_res->add_view_block_items();
         ViewBlock2Proto(view_block, view_block_item);
     }
-    // }
 
     // 不发送消息
-    if (!shouldResponse) {
+    if (!shouldSyncChain && !shouldSyncQC && !shouldSyncTC) {
         return Status::kSuccess;
     }
 
-    view_block_res->set_high_qc_str(pacemaker(pool_idx)->HighQC()->Serialize());
-    view_block_res->set_high_tc_str(pacemaker(pool_idx)->HighTC()->Serialize());
+    if (!shouldSyncChain) {
+        view_block_res->clear_view_block_qc_strs();
+        view_block_res->clear_view_block_items();
+    }
+
+    if (shouldSyncTC) {
+        view_block_res->set_high_tc_str(pacemaker(pool_idx)->HighTC()->Serialize());
+    }
+
+    if (shouldSyncQC) {
+        view_block_res->set_high_qc_str(pacemaker(pool_idx)->HighQC()->Serialize());
+    }
+    
     return SendMsg(network_id, res_view_block_msg);
 }
 
@@ -310,17 +324,20 @@ Status HotstuffSyncer::processResponseChain(
         const view_block::protobuf::ViewBlockSyncResponse& view_block_res) {
     auto& view_block_items = view_block_res.view_block_items();
     auto& view_block_qc_strs = view_block_res.view_block_qc_strs();
-
-    ZJC_DEBUG("response received pool_idx: %d, view_blocks: %d, qc: %d",
-        pool_idx, view_block_items.size(), view_block_qc_strs.size());    
+    
     // 对块数量限制
     // 当出现这么多块，多半是因为共识卡住，不断产生新的无法共识的块，此时同步这些块过来也没有用，早晚会被剪掉
     if (view_block_items.size() > kMaxSyncBlockNum || view_block_items.size() <= 0) {
-        return Status::kError;
+        return Status::kSuccess;
     }
+
+    
     if (view_block_items.size() != view_block_qc_strs.size()) {
         return Status::kError;
     }
+
+    ZJC_DEBUG("response received pool_idx: %d, view_blocks: %d, qc: %d",
+        pool_idx, view_block_items.size(), view_block_qc_strs.size());
 
     auto chain = view_block_chain(pool_idx);
     if (!chain) {
