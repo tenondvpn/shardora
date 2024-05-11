@@ -55,6 +55,7 @@ struct QC {
     }
 };
 
+// TODO TC 中可增加超时的 leader_idx，用于 Leader 选择黑名单
 struct TC : public QC {
     TC(const std::shared_ptr<libff::alt_bn128_G1>& sign, const View& v) :
         QC(sign, v, "") {
