@@ -376,9 +376,9 @@ void TxPool::RemoveTx(const std::string& gid) {
         consensus_tx_map_.erase(cons_iter);
     }
 
-//     ZJC_DEBUG("remove tx success gid: %s, tx hash: %s",
-//         common::Encode::HexEncode(giter->second->gid).c_str(),
-//         common::Encode::HexEncode(giter->second->tx_hash).c_str());
+    ZJC_DEBUG("remove tx success gid: %s, tx hash: %s",
+        common::Encode::HexEncode(giter->second->tx_info.gid()).c_str(),
+        common::Encode::HexEncode(giter->second->unique_tx_hash).c_str());
     gid_map_.erase(giter);
 #ifdef LATENCY    
     if (!prio_map_.empty()) {
