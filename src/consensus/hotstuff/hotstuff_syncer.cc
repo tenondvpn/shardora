@@ -76,12 +76,8 @@ void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
 void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     // TODO 仅共识池节点参与 view_block_chain 的同步
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
-    auto now_us = common::TimeUtils::TimestampUs();
-    if (now_us - last_timers_us_[thread_index] >= SyncTimerCycleUs()) {
-        SyncAllPools();
-        ConsumeMessages();
-        last_timers_us_[thread_index] = common::TimeUtils::TimestampUs();
-    }
+    SyncAllPools();
+    ConsumeMessages();
 }
 
 void HotstuffSyncer::SyncPool(const uint32_t& pool_idx) {
@@ -107,10 +103,16 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx) {
 
 void HotstuffSyncer::SyncAllPools() {
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+    auto now_us = common::TimeUtils::TimestampUs();
+    
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
-        if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
-            ZJC_DEBUG("pool: %d, sync pool", pool_idx);
-            SyncPool(pool_idx);
+        if (now_us - last_timers_us_[pool_idx] >= SyncTimerCycleUs(pool_idx)) {
+            if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
+                ZJC_DEBUG("pool: %d, sync pool, timeout_duration: %lu",
+                    pool_idx, SyncTimerCycleUs(pool_idx));
+                SyncPool(pool_idx);
+                last_timers_us_[pool_idx] = common::TimeUtils::TimestampUs();
+            }            
         }
     }
 }
