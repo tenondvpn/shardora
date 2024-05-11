@@ -237,55 +237,50 @@ Status BlockAcceptor::addTxsToPool(
         case pools::protobuf::kNormalTo: {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
             auto tx_item = tx_pools_->GetToTxs(pool_idx(), "");
-            if (tx_item != nullptr) {
-
+            if (tx_item != nullptr && !tx_item->txs.empty()) {
+                tx_ptr = tx_item->txs.begin()->second;
             }
 
-            tx_ptr = tx_item->txs.begin()->second;
             break;
         }
         case pools::protobuf::kStatistic:
         {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
             auto tx_item = tx_pools_->GetStatisticTx(pool_idx(), "");
-            if (tx_item != nullptr) {
-
+            if (tx_item != nullptr && !tx_item->txs.empty()) {
+                tx_ptr = tx_item->txs.begin()->second;
             }
             
-            tx_ptr = tx_item->txs.begin()->second;
             break;
         }
         case pools::protobuf::kCross:
         {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
             auto tx_item = tx_pools_->GetCrossTx(pool_idx(), "");
-            if (tx_item != nullptr) {
-
+            if (tx_item != nullptr && !tx_item->txs.empty()) {
+                tx_ptr = tx_item->txs.begin()->second;
             }
             
-            tx_ptr = tx_item->txs.begin()->second;
             break;
         }
         case pools::protobuf::kConsensusRootElectShard:
             if (txs.size() == 1) {
                 auto txhash = pools::GetTxMessageHash(*txs[0]);
                 auto tx_item = tx_pools_->GetElectTx(pool_idx(), txhash);           
-                if (tx_item != nullptr) {
-
+                if (tx_item != nullptr && !tx_item->txs.empty()) {
+                    tx_ptr = tx_item->txs.begin()->second;
                 }
                 
-                tx_ptr = tx_item->txs.begin()->second;
                 break;
             }
         case pools::protobuf::kConsensusRootTimeBlock:
         {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
             auto tx_item = tx_pools_->GetTimeblockTx(pool_idx(), "");
-            if (tx_item != nullptr) {
-
+            if (tx_item != nullptr && !tx_item->txs.empty()) {
+                tx_ptr = tx_item->txs.begin()->second;
             }
             
-            tx_ptr = tx_item->txs.begin()->second;
             break;
         }
         default:
@@ -303,18 +298,18 @@ Status BlockAcceptor::addTxsToPool(
     }
 
     if (txs_ptr == nullptr) {
-        // 放入交易池并弹出（避免重复打包）
-        ZJC_DEBUG("success add txs size: %u", txs_map.size());
-        int res = pools_mgr_->BackupConsensusAddTxs(pool_idx(), txs_map);
-        if (res != pools::kPoolsSuccess) {
-            ZJC_ERROR("invalid consensus, txs invalid.");
-            return Status::kError;
-        }
-
         txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
     }
 
     txs_ptr->txs = txs_map;
+    // 放入交易池并弹出（避免重复打包）
+    ZJC_DEBUG("success add txs size: %u", txs_map.size());
+    int res = pools_mgr_->BackupConsensusAddTxs(pool_idx(), txs_map);
+    if (res != pools::kPoolsSuccess) {
+        ZJC_ERROR("invalid consensus, txs invalid.");
+        return Status::kError;
+    }
+
     return Status::kSuccess;
 }
 
