@@ -180,7 +180,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     }    
     
     // 2 Veriyfy Leader
-    if (VerifyLeader(v_block) != Status::kSuccess) {
+    if (VerifyLeader(v_block->leader_idx) != Status::kSuccess) {
         ZJC_ERROR("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
             pool_idx_, v_block->view, header.hash64());
         return;
@@ -415,7 +415,7 @@ void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
     ZJC_DEBUG("====5.1 pool: %d, onResetTimer leader_idx: %lu, local_idx: %lu",
         pool_idx_, rst_timer_msg.leader_idx(), elect_info_->GetElectItem()->LocalMember()->index);
     // leader 必须正确
-    if (leader_rotation()->GetLeader()->index != rst_timer_msg.leader_idx()) {
+    if (VerifyLeader(rst_timer_msg.leader_idx()) != Status::kSuccess) {
         return;
     }
     // 必须处于 stuck 状态
@@ -585,15 +585,14 @@ Status Hotstuff::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
     return Status::kSuccess;
 }
 
-Status Hotstuff::VerifyLeader(const std::shared_ptr<ViewBlock>& view_block) {
-    uint32_t leader_idx = view_block->leader_idx;
+Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
     auto leader = leader_rotation()->GetLeader(); // 判断是否为空
     if (!leader) {
         ZJC_ERROR("Get Leader is error.");
         return  Status::kError;
     }
 
-    if (leader_idx != leader->index) {
+    if (leader_idx != leader->index && leader_idx != leader_rotation()->GetExpectedLeader()->index) {
         ZJC_ERROR("leader_idx message is error, %d, %d", leader_idx, leader->index);
         return Status::kError;
     }
@@ -730,6 +729,8 @@ Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& t
         ZJC_ERROR("Get Leader failed.");
         return Status::kError;
     }
+    // 记录收到回执时期望的 leader 用于验证
+    leader_rotation_->SetExpectedLeader(leader);
 
     header_msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     dht::DhtKeyManager dht_key(leader->net_id, leader->id);

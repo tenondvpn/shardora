@@ -16,7 +16,9 @@ LeaderRotation::LeaderRotation(
         const uint32_t& pool_idx,
         const std::shared_ptr<ViewBlockChain>& chain,
         const std::shared_ptr<ElectInfo>& elect_info) :
-    pool_idx_(pool_idx), chain_(chain), elect_info_(elect_info) {}
+    pool_idx_(pool_idx), chain_(chain), elect_info_(elect_info) {
+    SetExpectedLeader(GetLeader());
+}
 
 LeaderRotation::~LeaderRotation() {}
 
@@ -53,9 +55,10 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
             qc->view);
     }
 
-    ZJC_DEBUG("Leader pool: %d, is %d, id: %s, ip: %s, port: %d, qc view: %lu, time: %lu",
+    ZJC_DEBUG("Leader pool: %d, is %d, local: %d, id: %s, ip: %s, port: %d, qc view: %lu, time: %lu",
         pool_idx_,
         leader->index,
+        GetLocalMemberIdx(),
         common::Encode::HexEncode(leader->id).c_str(),
         common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port,
         qc->view,

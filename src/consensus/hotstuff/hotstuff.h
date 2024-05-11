@@ -163,7 +163,7 @@ private:
     Status CommitInner(const std::shared_ptr<ViewBlock>& v_block);
     Status VerifyVoteMsg(
             const hotstuff::protobuf::VoteMsg& vote_msg);
-    Status VerifyLeader(const std::shared_ptr<ViewBlock>& view_block);
+    Status VerifyLeader(const uint32_t& leader_idx);
     Status ConstructProposeMsg(
             const std::shared_ptr<SyncInfo>& sync_info,
             hotstuff::protobuf::ProposeMsg* pro_msg);

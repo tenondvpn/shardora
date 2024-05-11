@@ -22,11 +22,18 @@ public:
 
     // Generally committed_view_block.view is used
     common::BftMemberPtr GetLeader();
+    inline common::BftMemberPtr GetExpectedLeader() const {
+        return expected_leader_;
+    }
     
     inline uint32_t GetLocalMemberIdx() const {
         assert(elect_info_ != nullptr);
         assert(elect_info_->GetElectItem());
         return elect_info_->GetElectItem()->LocalMember()->index;
+    }
+
+    void SetExpectedLeader(const common::BftMemberPtr& leader) {
+        expected_leader_ = leader;
     }
 private:
     inline common::MembersPtr Members() const {
@@ -40,6 +47,8 @@ private:
     uint32_t pool_idx_;
     std::shared_ptr<ViewBlockChain> chain_ = nullptr;
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
+    // 由于 Leader 的选择会受时间戳影响，需要记录一个 expected_leader 解决跨时间戳边界时 leader 不一致的问题
+    common::BftMemberPtr expected_leader_; 
 };
 
 } // namespace consensus
