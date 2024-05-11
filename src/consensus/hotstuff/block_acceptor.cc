@@ -69,7 +69,7 @@ Status BlockAcceptor::Accept(
     }
 
     // 2. Get txs from local pool
-    auto txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
+    std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
     Status s = Status::kSuccess;
     s = GetAndAddTxsLocally(block_info, txs_ptr);
     if (s != Status::kSuccess) {
@@ -234,25 +234,60 @@ Status BlockAcceptor::addTxsToPool(
                     security_ptr_, 
                     address_info);
             break;
-        case pools::protobuf::kNormalTo:
+        case pools::protobuf::kNormalTo: {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
-            txs_ptr = tx_pools_->GetToTxs(pool_idx(), "");
+            auto tx_item = tx_pools_->GetToTxs(pool_idx(), "");
+            if (tx_item != nullptr) {
+
+            }
+
+            tx_ptr = tx_item->txs.begin()->second;
             break;
+        }
         case pools::protobuf::kStatistic:
-            txs_ptr = tx_pools_->GetStatisticTx(pool_idx(), "");
+        {
+            // TODO 这些 Single Tx 还是从本地交易池直接拿
+            auto tx_item = tx_pools_->GetStatisticTx(pool_idx(), "");
+            if (tx_item != nullptr) {
+
+            }
+            
+            tx_ptr = tx_item->txs.begin()->second;
             break;
+        }
         case pools::protobuf::kCross:
-            txs_ptr = tx_pools_->GetCrossTx(pool_idx(), "");
+        {
+            // TODO 这些 Single Tx 还是从本地交易池直接拿
+            auto tx_item = tx_pools_->GetCrossTx(pool_idx(), "");
+            if (tx_item != nullptr) {
+
+            }
+            
+            tx_ptr = tx_item->txs.begin()->second;
             break;
+        }
         case pools::protobuf::kConsensusRootElectShard:
             if (txs.size() == 1) {
                 auto txhash = pools::GetTxMessageHash(*txs[0]);
-                txs_ptr = tx_pools_->GetElectTx(pool_idx(), txhash);           
+                auto tx_item = tx_pools_->GetElectTx(pool_idx(), txhash);           
+                if (tx_item != nullptr) {
+
+                }
+                
+                tx_ptr = tx_item->txs.begin()->second;
+                break;
             }
-            break;
         case pools::protobuf::kConsensusRootTimeBlock:
-            txs_ptr = tx_pools_->GetTimeblockTx(pool_idx(), "");
+        {
+            // TODO 这些 Single Tx 还是从本地交易池直接拿
+            auto tx_item = tx_pools_->GetTimeblockTx(pool_idx(), "");
+            if (tx_item != nullptr) {
+
+            }
+            
+            tx_ptr = tx_item->txs.begin()->second;
             break;
+        }
         default:
             // TODO 没完！还需要支持其他交易的写入
             break;
