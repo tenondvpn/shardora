@@ -202,6 +202,8 @@ void TxPool::GetTx(
         std::map<std::string, TxItemPtr>& res_map, 
         uint32_t count, 
         std::unordered_map<std::string, std::string>& kvs) {
+    ZJC_DEBUG("leader get tx universal_prio_map_: %u, prio_map_: %u, consensus_tx_map_: %u", 
+        universal_prio_map_.size(), prio_map_.size(), consensus_tx_map_.size());
     GetTx(universal_prio_map_, res_map, count, kvs);
     if (!res_map.empty()) {
         return;
