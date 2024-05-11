@@ -77,8 +77,8 @@ private:
     }
 
     inline uint64_t SyncTimerCycleUs(uint32_t pool_idx) const {
-        return pacemaker(pool_idx)->DurationUs();
-        // return kSyncTimerCycleUs;
+        // return pacemaker(pool_idx)->DurationUs();
+        return kSyncTimerCycleUs;
     }
 
     void SyncAllPools();
