@@ -7,8 +7,6 @@
 #include <protos/pools.pb.h>
 #include <protos/view_block.pb.h>
 
-extern "C" void __lsan_do_recoverable_leak_check();
-
 namespace shardora {
 
 namespace hotstuff {
@@ -142,8 +140,6 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
 }
 
 void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
-    __lsan_do_recoverable_leak_check();
-    
     auto& pro_msg = header.hotstuff().pro_msg();
     // 3 Verify TC
     std::shared_ptr<TC> tc = nullptr;
