@@ -745,7 +745,8 @@ void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
         gid_map_[txs[i]->tx_info.gid()] = txs[i];
         txs[i]->is_consensus_add_tx = true;
         consensus_tx_map_[txs[i]->unique_tx_hash] = txs[i];
-        ZJC_DEBUG("success add tx step: %d, to: %s, gid: %s, txhash: %s", 
+        ZJC_DEBUG("pool: %d, success add tx step: %d, to: %s, gid: %s, txhash: %s", 
+            pool_index_,
             txs[i]->tx_info.step(), 
             common::Encode::HexEncode(txs[i]->tx_info.to()).c_str(),
             common::Encode::HexEncode(txs[i]->tx_info.gid()).c_str(),
