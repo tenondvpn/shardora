@@ -36,7 +36,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         ZJC_DEBUG("pool: %d, committed block is empty", pool_idx_);
     }
 
-    uint32_t now_time_num = common::TimeUtils::TimestampMs() / 30000;
+    uint32_t now_time_num = common::TimeUtils::TimestampSeconds() / 30;
     uint64_t random_hash = common::Hash::Hash64(qc->Serialize() + std::to_string(now_time_num));
 
     if (Members()->empty()) {
