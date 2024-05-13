@@ -203,6 +203,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
 void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+    double tps = 0;
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
             pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
@@ -210,7 +211,12 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             pools_mgr_->CheckTimeoutTx(pool_idx);
             
             hotstuff(pool_idx)->TryRecoverFromStuck();
+            tps += hotstuff(pool_idx)->acceptor()->Tps();
         }
+    }
+
+    if (tps_fc_.Permitted()) {
+        ZJC_INFO("tps: %.2f", tps);
     }
 }
 

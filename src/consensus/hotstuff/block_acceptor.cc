@@ -142,8 +142,8 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
         pools_mgr_->TxOver(block->pool_index(), block->tx_list());
     }
 
-    // TODO tps measurement
-    PrintTps(block->tx_list_size());    
+    // tps measurement
+    CalculateTps(block->tx_list_size());    
     ZJC_DEBUG("[NEW BLOCK] hash: %s, prehash: %s, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu, pool: %u,",
         common::Encode::HexEncode(block->hash()).c_str(),
         common::Encode::HexEncode(block->prehash()).c_str(),
