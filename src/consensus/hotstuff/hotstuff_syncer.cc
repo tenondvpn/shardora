@@ -80,11 +80,9 @@ void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
 // 批量异步处理，提高 tps
 void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     // TODO 仅共识池节点参与 view_block_chain 的同步
-    if (running_) {
-        auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
-        SyncAllPools();
-        ConsumeMessages();        
-    }
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+    SyncAllPools();
+    ConsumeMessages();
 }
 
 void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const uint32_t& node_num) {
@@ -109,6 +107,9 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const uint32_t& node_num
 }
 
 void HotstuffSyncer::SyncAllPools() {
+    if (!running_) {
+        return;
+    }
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     auto now_us = common::TimeUtils::TimestampUs();
     
