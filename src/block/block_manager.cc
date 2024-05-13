@@ -1196,7 +1196,7 @@ void BlockManager::AddMiningToken(
         msg_ptr->address_info = account_mgr_->pools_address_info(iter->first);
         auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_key(protos::kLocalNormalTos);
-        tx->set_value(tos_hash);
+        tx->set_value(val);
         tx->set_pubkey("");
         tx->set_to(msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kConsensusLocalTos);
