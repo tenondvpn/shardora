@@ -1020,7 +1020,7 @@ void BlockManager::AddNewBlock(
 
         switch (tx_list[i].step()) {
         case pools::protobuf::kRootCreateAddressCrossSharding:
-            ZJC_DEBUG("success handle root create address tx.");
+            // ZJC_DEBUG("success handle root create address tx.");
         case pools::protobuf::kNormalTo:
             HandleNormalToTx(*block_item, tx_list[i], db_batch);
             break;
