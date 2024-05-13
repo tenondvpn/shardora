@@ -135,7 +135,6 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
                         common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
                         common::Encode::HexEncode(block->tx_list(i).gid()).c_str());
                 }
-
             }
         }
 
