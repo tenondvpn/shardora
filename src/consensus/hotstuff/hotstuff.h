@@ -38,7 +38,7 @@ typedef hotstuff::protobuf::NewViewMsg pb_NewViewMsg;
 
 static const uint64_t STUCK_PACEMAKER_DURATION_MIN_US =
     2000000lu; // the min duration that hotstuff can be considered stucking
-static const bool VOTE_MSG_WITH_VBLOCK = true; // vote msg with vblock to make sure next leader has that block, which is good for tps improvement
+static const bool VOTE_MSG_WITH_VBLOCK = false; // vote msg with vblock to make sure next leader has that block, which is good for tps improvement, TODO没调好，先不要设置成 true
 
 class Hotstuff {
 public:
