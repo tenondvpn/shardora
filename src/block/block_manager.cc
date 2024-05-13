@@ -646,7 +646,8 @@ void BlockManager::RootHandleNormalToTx(
     assert(to_txs.tos_size() > 0);
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         auto tos_item = to_txs.tos(i);
-        ZJC_INFO("to tx new address %s, amount: %lu, prepayment: %lu, gid: %s, contract_from: %s",
+        ZJC_INFO("to tx step: %d, new address %s, amount: %lu, prepayment: %lu, gid: %s, contract_from: %s",
+            tos_item.step(),
             common::Encode::HexEncode(tos_item.des()).c_str(),
             tos_item.amount(),
             tos_item.prepayment(),
