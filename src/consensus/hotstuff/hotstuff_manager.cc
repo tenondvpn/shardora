@@ -214,10 +214,12 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
         }
         tps += hotstuff(pool_idx)->acceptor()->Tps();
     }
-    
-    if (tps_fc_.Permitted()) {
+
+    // 打印总 tps
+    if (tps_fc_.Permitted() && prev_tps_ != tps) {
         ZJC_INFO("tps: %.2f", tps);
     }
+    prev_tps_ = tps;
 }
 
 void HotstuffManager::RegisterCreateTxCallbacks() {
