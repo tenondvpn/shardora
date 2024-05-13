@@ -613,6 +613,9 @@ void BlockManager::HandleNormalToTx(
             }
         }
 
+        ZJC_DEBUG("success handle tox tx heights net: %u, local net: %u", 
+            to_txs.to_heights().sharding_id(), 
+            common::GlobalInfo::Instance()->network_id());
         if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId && 
                 common::GlobalInfo::Instance()->network_id() != 
                 (network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
