@@ -214,7 +214,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             tps += hotstuff(pool_idx)->acceptor()->Tps();
         }
     }
-
+    
     if (tps_fc_.Permitted()) {
         ZJC_INFO("tps: %.2f", tps);
     }
