@@ -345,7 +345,12 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         auto v_block = std::make_shared<ViewBlock>();
         s = Proto2ViewBlock(pb_v_block, v_block);
         if (s == Status::kSuccess) {
-            StoreVerifiedViewBlock(v_block, qc);
+            s = StoreVerifiedViewBlock(v_block, qc);
+            if (s != Status::kSuccess) {
+                ZJC_ERROR("pool: %d store verified view block failed, ret: %d", pool_idx_, s);
+            } else {
+                ZJC_DEBUG("pool: %d store verified view block success, view: %lu", pool_idx_, v_block->view);
+            }
         }        
     }
 
