@@ -211,8 +211,8 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             pools_mgr_->CheckTimeoutTx(pool_idx);
             
             hotstuff(pool_idx)->TryRecoverFromStuck();
-            tps += hotstuff(pool_idx)->acceptor()->Tps();
         }
+        tps += hotstuff(pool_idx)->acceptor()->Tps();
     }
     
     if (tps_fc_.Permitted()) {
