@@ -39,6 +39,7 @@ message VoteMsg {
     optional bytes sign_x = 5;
     optional bytes sign_y = 6;
     repeated pools.protobuf.TxMessage txs = 7; // 仅打包普通交易信息，作为同步
+    optional view_block.protobuf.ViewBlockItem view_block_item = 8; // 用于保证 Leader 收到 ViewBlock
 }
 
 message PreResetTimerMsg {
