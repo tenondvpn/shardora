@@ -58,9 +58,12 @@ HotstuffSyncer::HotstuffSyncer(
 HotstuffSyncer::~HotstuffSyncer() {}
 
 void HotstuffSyncer::Start() {
+    running_ = true;
 }
 
-void HotstuffSyncer::Stop() { tick_.Destroy(); }
+void HotstuffSyncer::Stop() {
+    running_ = false;
+}
 
 int HotstuffSyncer::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     return transport::kFirewallCheckSuccess;
@@ -104,6 +107,9 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const uint32_t& node_num
 }
 
 void HotstuffSyncer::SyncAllPools() {
+    if (!running_) {
+        return;
+    }
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     auto now_us = common::TimeUtils::TimestampUs();
     

@@ -110,11 +110,11 @@ private:
     
     uint64_t timeout_ms_;
     common::ThreadSafeQueue<transport::MessagePtr> consume_queues_[common::kMaxThreadCount];
-    common::Tick tick_;
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
     OnRecvViewBlockFn on_recv_vb_fn_;
     std::shared_ptr<db::Db> db_ = nullptr;
     uint64_t last_timers_us_[common::kInvalidPoolIndex];
+    bool running_ = false;
 };
 
 } // namespace consensus
