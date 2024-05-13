@@ -127,8 +127,8 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
         if (elect_item) {
             if (block->leader_index() == elect_item->LocalMember()->index) {
                 // leader broadcast block to other shards
-                // TODO tx_list 报错了!
-                LeaderBroadcastBlock(block);
+                // TODO to 交易会大量占用 CPU，先屏蔽
+                // LeaderBroadcastBlock(block);
             }
         }
 
