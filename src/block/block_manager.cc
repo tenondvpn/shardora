@@ -645,8 +645,14 @@ void BlockManager::RootHandleNormalToTx(
     // 将 NormalTo 中的多个 tx 拆分成多个 kRootCreateAddress tx
     assert(to_txs.tos_size() > 0);
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
-        ZJC_DEBUG("now handle normal to tx.");
         auto tos_item = to_txs.tos(i);
+        ZJC_INFO("to tx new address %s, amount: %lu, prepayment: %lu, gid: %s, contract_from: %s",
+            common::Encode::HexEncode(tos_item.des()).c_str(),
+            tos_item.amount(),
+            tos_item.prepayment(),
+            common::Encode::HexEncode("gid").c_str(),
+            common::Encode::HexEncode(tos_item.contract_from()).c_str());
+
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_step(pools::protobuf::kRootCreateAddress);
