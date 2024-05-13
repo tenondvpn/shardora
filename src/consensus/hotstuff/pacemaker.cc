@@ -93,6 +93,12 @@ void Pacemaker::OnLocalTimeout() {
     ZJC_DEBUG("OnLocalTimeout pool: %d, view: %d", pool_idx_, CurView());
     // start a new timer for the timeout case
     StartTimeoutTimer();
+
+    // 超时后先触发一次同步，主要是尽量同步最新的 HighQC，降低因 HighQC 不一致造成多次超时的概率
+    // 由于 HotstuffSyncer 周期性同步，这里不触发同步影响也不大
+    if (sync_pool_fn_) {
+        sync_pool_fn_(pool_idx_, 1);
+    }    
     
     // if view is last one, deal directly.
     if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
@@ -102,12 +108,6 @@ void Pacemaker::OnLocalTimeout() {
     }
     
     duration_->ViewTimeout();
-    
-    // 超时后先触发一次同步，主要是尽量同步最新的 HighQC，降低因 HighQC 不一致造成多次超时的概率
-    // 由于 HotstuffSyncer 周期性同步，这里不触发同步影响也不大
-    if (sync_pool_fn_) {
-        sync_pool_fn_(pool_idx_, 1);
-    }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
