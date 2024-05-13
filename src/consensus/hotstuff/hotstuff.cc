@@ -360,6 +360,19 @@ Status Hotstuff::StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_bloc
     if (v_block->hash != qc->view_block_hash || v_block->view != qc->view) {
         return Status::kError;
     }
+
+    Status s = acceptor()->AcceptSync(v_block->block);
+    if (s != Status::kSuccess) {
+        return s;
+    }
+
+    auto view_block_to_commit = CheckCommit(v_block);
+    if (view_block_to_commit) {
+        s = Commit(view_block_to_commit);
+        if (s != Status::kSuccess) {
+            return s;
+        }
+    }    
     return view_block_chain()->Store(v_block);
 }
 
@@ -669,9 +682,12 @@ Status Hotstuff::ConstructVoteMsg(
     // Leader 如果生成了 QC，则一定会保存 vblock，防止发起下一轮提案时没有这个块
     // 这可能会使用一些带宽，但会提高 tps
     // 如果不发并不会影响共识，只是有概率需要额外同步而导致延迟
-    view_block::protobuf::ViewBlockItem pb_view_block;
-    ViewBlock2Proto(v_block, &pb_view_block);
-    vote_msg->mutable_view_block_item()->CopyFrom(pb_view_block);
+    if (VOTE_MSG_WITH_VBLOCK) {
+        view_block::protobuf::ViewBlockItem pb_view_block;
+        ViewBlock2Proto(v_block, &pb_view_block);
+        vote_msg->mutable_view_block_item()->CopyFrom(pb_view_block);
+    }
+
     
     std::string sign_x, sign_y;
     if (crypto()->PartialSign(
