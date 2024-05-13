@@ -58,9 +58,12 @@ HotstuffSyncer::HotstuffSyncer(
 HotstuffSyncer::~HotstuffSyncer() {}
 
 void HotstuffSyncer::Start() {
+    running_ = true;
 }
 
-void HotstuffSyncer::Stop() { tick_.Destroy(); }
+void HotstuffSyncer::Stop() {
+    running_ = false;
+}
 
 int HotstuffSyncer::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     return transport::kFirewallCheckSuccess;
@@ -77,9 +80,11 @@ void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
 // 批量异步处理，提高 tps
 void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     // TODO 仅共识池节点参与 view_block_chain 的同步
-    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
-    SyncAllPools();
-    ConsumeMessages();
+    if (running_) {
+        auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+        SyncAllPools();
+        ConsumeMessages();        
+    }
 }
 
 void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const uint32_t& node_num) {
