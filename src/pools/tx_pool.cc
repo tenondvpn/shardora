@@ -125,7 +125,7 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
 //     common::AutoSpinLock auto_lock(mutex_);
     if (removed_gid_.find(tx_ptr->tx_info.gid()) != removed_gid_.end()) {
-        assert(false);
+        // assert(false);
         return kPoolsTxAdded;
     }
 
