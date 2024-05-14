@@ -353,8 +353,8 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
 
 #ifndef NDEBUG
         std::shared_ptr<ViewBlock> block_info = nullptr;
-        Status s = view_block_chain()->Get(vote_msg.view_block_hash(), block_info);
-        assert (s == Status::kSuccess && block_info != nullptr);
+        Status st = view_block_chain()->Get(vote_msg.view_block_hash(), block_info);
+        assert (st == Status::kSuccess && block_info != nullptr);
 
         for (int32_t i = 0; i < block_info->block->tx_list_size(); ++i) {
         ZJC_DEBUG("block net: %u, pool: %u, height: %lu, prehash: %s, hash: %s, step: %d, "
