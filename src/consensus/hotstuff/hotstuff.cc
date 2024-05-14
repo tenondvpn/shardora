@@ -141,6 +141,13 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
 
 void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     auto& pro_msg = header.hotstuff().pro_msg();
+    ZJC_DEBUG("====1.0 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
+        pool_idx_,
+        pro_msg.view_item().view(),
+        common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
+        pacemaker()->HighQC()->view,
+        header.hash64());
+
     // 3 Verify TC
     std::shared_ptr<TC> tc = nullptr;
     if (!pro_msg.tc_str().empty()) {
@@ -166,12 +173,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         ZJC_ERROR("pb_view_block to ViewBlock is error.");
         return;
     }
-    ZJC_DEBUG("====1.0 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu",
-        pool_idx_,
-        pro_msg.view_item().view(),
-        common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
-        pacemaker()->HighQC()->view);
-    
+
     // view 必须最新
     // TODO 超时情况可能相同，严格限制并不影响共识，但会减少共识参与节点数
     if (HasVoted(v_block->view)) {
