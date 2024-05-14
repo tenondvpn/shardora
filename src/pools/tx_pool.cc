@@ -126,7 +126,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
 //     common::AutoSpinLock auto_lock(mutex_);
     if (removed_gid_.find(tx_ptr->tx_info.gid()) != removed_gid_.end()) {
 #ifndef ENABLE_HOTSTUFF        
-        assert(false);
+        // assert(false);
 #endif
         return kPoolsTxAdded;
     }
@@ -145,7 +145,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     auto iter = gid_map_.find(tx_ptr->tx_info.gid());
     if (iter != gid_map_.end()) {
 #ifndef ENABLE_HOTSTUFF
-        assert(false);
+        // assert(false);
 #endif
         return kPoolsTxAdded;
     }

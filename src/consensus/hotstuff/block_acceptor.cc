@@ -128,7 +128,7 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
             if (block->leader_index() == elect_item->LocalMember()->index) {
                 // leader broadcast block to other shards
                 // TODO to 交易会大量占用 CPU，先屏蔽
-                // LeaderBroadcastBlock(block);
+                LeaderBroadcastBlock(block);
             }
         }
 
@@ -144,7 +144,7 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
 
     // tps measurement
     CalculateTps(block->tx_list_size());    
-    ZJC_DEBUG("[NEW BLOCK] hash: %s, prehash: %s, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu, pool: %u,",
+    ZJC_DEBUG("[NEW BLOCK] hash: %s, prehash: %s, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu",
         common::Encode::HexEncode(block->hash()).c_str(),
         common::Encode::HexEncode(block->prehash()).c_str(),
         block->network_id(),
