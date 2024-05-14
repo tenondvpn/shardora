@@ -32,11 +32,13 @@ public:
         if (tx_info.key().empty() ||
                 tx_info.key() != protos::kNormalTos ||
                 tx_info.value().empty()) {
+            assert(false);
             return consensus::kConsensusError;
         }
 
         pools::protobuf::AllToTxMessage all_to_txs;
         if (!all_to_txs.ParseFromString(tx_info.value())) {
+            assert(false);
             return consensus::kConsensusError;
         }
 
