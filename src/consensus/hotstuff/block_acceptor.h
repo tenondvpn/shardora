@@ -70,6 +70,7 @@ public:
     virtual Status AddTxs(const std::vector<const pools::protobuf::TxMessage*>& txs) = 0;
     // Return block txs to pool
     virtual Status Return(const std::shared_ptr<block::protobuf::Block>&) = 0;
+    virtual double Tps() = 0;
 };
 
 class BlockAcceptor : public IBlockAcceptor {
@@ -114,7 +115,11 @@ public:
             pools_mgr_->RecoverTx(pool_idx_, gid);
         }
         return Status::kSuccess;
-    }    
+    }
+
+    inline double Tps() override {
+        return cur_tps_;
+    }
     
 private:
     uint32_t pool_idx_;
@@ -135,6 +140,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint64_t prev_tps_tm_us_ = 0;
     uint32_t prev_count_ = 0;
+    double cur_tps_ = 0;
     common::SpinMutex prev_count_mutex_;    
 
     inline uint32_t pool_idx() const {
@@ -160,7 +166,8 @@ private:
     void LeaderBroadcastBlock(const std::shared_ptr<block::protobuf::Block>& block);
     void BroadcastBlock(uint32_t des_shard, const std::shared_ptr<block::protobuf::Block>& block_item);
     void BroadcastLocalTosBlock(const std::shared_ptr<block::protobuf::Block>& block_item);
-    void PrintTps(uint64_t tx_list_size) {
+
+    void CalculateTps(uint64_t tx_list_size) {
         auto now_tm_us = common::TimeUtils::TimestampUs();
         if (prev_tps_tm_us_ == 0) {
             prev_tps_tm_us_ = now_tm_us;
@@ -169,10 +176,11 @@ private:
         {
             common::AutoSpinLock auto_lock(prev_count_mutex_);
             prev_count_ += tx_list_size;
-            if (now_tm_us > prev_tps_tm_us_ + 3000000lu) {
-                ZJC_INFO("tps: %.2f", (double(prev_count_) / (double(now_tm_us - prev_tps_tm_us_) / 1000000.0)));
+            if (now_tm_us > prev_tps_tm_us_ + 2000000lu) {
+                cur_tps_ = (double(prev_count_) / (double(now_tm_us - prev_tps_tm_us_) / 1000000.0)); 
                 prev_tps_tm_us_ = now_tm_us;
                 prev_count_ = 0;
+                ZJC_INFO("pool: %d, tps: %.2f", pool_idx_, cur_tps_);
             }
         }        
     }    

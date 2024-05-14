@@ -282,8 +282,27 @@ void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const s
     }
 }
 
-void ViewBlockChain::Print() const {
-    PrintBlock(start_block_);
+void ViewBlockChain::Print() const { PrintBlock(start_block_); }
+
+std::string ViewBlockChain::String() const {
+    std::vector<std::shared_ptr<ViewBlock>> view_blocks;
+
+    for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
+        if (it->second->view_block) {
+            view_blocks.push_back(it->second->view_block);
+        }
+    }
+
+    std::sort(view_blocks.begin(), view_blocks.end(), [](const std::shared_ptr<ViewBlock>& a, const std::shared_ptr<ViewBlock>& b) {
+        return a->view < b->view;
+    });
+
+    std::string ret;
+    for (const auto& vb : view_blocks) {
+        ret += "," + std::to_string(vb->view);
+    }
+
+    return ret;
 }
 
 // 获取 db 中最新块的信息和它的 QC

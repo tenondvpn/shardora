@@ -127,8 +127,8 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
         if (elect_item) {
             if (block->leader_index() == elect_item->LocalMember()->index) {
                 // leader broadcast block to other shards
-                // TODO tx_list 报错了!
-                LeaderBroadcastBlock(block);
+                // TODO to 交易会大量占用 CPU，先屏蔽
+                // LeaderBroadcastBlock(block);
             }
         }
 
@@ -142,8 +142,8 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
         pools_mgr_->TxOver(block->pool_index(), block->tx_list());
     }
 
-    // TODO tps measurement
-    PrintTps(block->tx_list_size());    
+    // tps measurement
+    CalculateTps(block->tx_list_size());    
     ZJC_DEBUG("[NEW BLOCK] hash: %s, prehash: %s, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu, pool: %u,",
         common::Encode::HexEncode(block->hash()).c_str(),
         common::Encode::HexEncode(block->prehash()).c_str(),
