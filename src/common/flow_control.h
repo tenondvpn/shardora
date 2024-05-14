@@ -30,6 +30,6 @@ private:
     std::chrono::steady_clock::time_point lastRequest;
 };
 
-}
+} // namespace common
 
 } // namespace shardora

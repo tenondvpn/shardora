@@ -218,13 +218,12 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
     double tps = 0;
     if (tps_fc_.Permitted()) {
         for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
-            auto pool_tps = hotstuff(pool_idx)->acceptor()->Tps();    
+            auto pool_tps = hotstuff(pool_idx)->acceptor()->Tps();
+            if (prev_tps_[pool_idx] != pool_tps) {
+                tps += pool_tps;
+                prev_tps_[pool_idx] = pool_tps;
+            }
         }
-
-        if (prev_tps_[pool_idx] != pool_tps) {
-            tps += pool_tps;
-            prev_tps_[pool_idx] = pool_tps;
-        }        
         ZJC_INFO("tps: %.2f", tps);
     }
 }
