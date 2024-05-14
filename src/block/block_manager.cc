@@ -1912,7 +1912,7 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& t
     }
 
     if (tmp_to_txs != nullptr) {
-        ZJC_DEBUG("get to tx failed in_consensus: %d", tmp_to_txs->tx_ptr->in_consensus);
+        ZJC_DEBUG("get to tx success in_consensus: %d", tmp_to_txs->tx_ptr->in_consensus);
     }
 
     if (!leader) {

@@ -56,6 +56,11 @@ Status BlockWrapper::Wrap(
         for (auto it = txs_ptr->txs.begin(); it != txs_ptr->txs.end(); it++) {
             auto* tx_info = tx_propose->add_txs();
             *tx_info = it->second->tx_info;
+            ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, step: %d", 
+                block->pool_index(), 
+                common::Encode::HexEncode(block->prehash()).c_str(),
+                block->height(),
+                tx_info->step());
         }
         tx_propose->set_tx_type(txs_ptr->tx_type);
         if (txs_ptr->tx_type != pools::protobuf::kNormalFrom) {
