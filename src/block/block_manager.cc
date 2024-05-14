@@ -633,7 +633,7 @@ void BlockManager::HandleNormalToTx(
                 common::Encode::HexEncode(tx.storages(i).value()).c_str());
             HandleLocalNormalToTx(to_txs, tx.step(), tx.storages(0).value());
         } else {
-            ZJC_DEBUG("root handle normal to tx.");
+            ZJC_DEBUG("root handle normal to tx to_txs size: %u", to_txs.tos_size());
             RootHandleNormalToTx(block, to_txs, db_batch);
         }
     }
