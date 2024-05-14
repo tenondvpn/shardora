@@ -581,8 +581,9 @@ bool ToTxsPools::StatisticTos(
     for (uint32_t pool_idx = 0; pool_idx < common::kImmutablePoolSize; ++pool_idx) {
         uint64_t min_height = has_statistic_height_[pool_idx] + 1;
         uint64_t max_height = leader_to_heights.heights(pool_idx);
-        ZJC_DEBUG("now statistic to tx pool: %u, min: %lu, max: %lu",
-            pool_idx, min_height, max_height);
+        if (max_height >= min_height)
+            ZJC_DEBUG("now statistic to tx pool: %u, min: %lu, max: %lu",
+                pool_idx, min_height, max_height);
         if (!PreStatisticTos(pool_idx, min_height, max_height)) {
             return false;
         }
