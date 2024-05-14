@@ -1203,6 +1203,7 @@ bool NetworkInit::DbNewBlockCallback(
         const std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
     for (int32_t i = 0; i < block->tx_list_size(); ++i) {
+        ZJC_DEBUG("new db add block callback step: %d", block->tx_list(i).step());
         switch (block->tx_list(i).step()) {
         case pools::protobuf::kConsensusRootTimeBlock:
             HandleTimeBlock(block, block->tx_list(i), db_batch);

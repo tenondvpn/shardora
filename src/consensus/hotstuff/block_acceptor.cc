@@ -7,8 +7,9 @@
 #include <consensus/zbft/contract_user_call.h>
 #include <consensus/zbft/contract_user_create_call.h>
 #include <consensus/zbft/from_tx_item.h>
-#include <consensus/zbft/root_to_tx_item.h>
 #include <consensus/zbft/to_tx_local_item.h>
+#include <consensus/zbft/root_to_tx_item.h>
+#include <consensus/zbft/root_cross_tx_item.h>
 #include <protos/pools.pb.h>
 #include <protos/zbft.pb.h>
 #include <zjcvm/zjcvm_utils.h>
@@ -294,6 +295,15 @@ Status BlockAcceptor::addTxsToPool(
                 tx_ptr = tx_item->txs.begin()->second;
             }
             
+            break;
+        }
+        case pools::protobuf::kRootCross:
+        {
+            tx_ptr = std::make_shared<consensus::RootCrossTxItem>(
+                *tx, 
+                account_mgr_, 
+                security_ptr_, 
+                address_info);
             break;
         }
         default:
