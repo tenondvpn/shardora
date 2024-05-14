@@ -354,26 +354,25 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
 #ifndef NDEBUG
         std::shared_ptr<ViewBlock> block_info = nullptr;
         Status st = view_block_chain()->Get(vote_msg.view_block_hash(), block_info);
-        assert (st == Status::kSuccess && block_info != nullptr);
-
-        for (int32_t i = 0; i < block_info->block->tx_list_size(); ++i) {
-        ZJC_DEBUG("block net: %u, pool: %u, height: %lu, prehash: %s, hash: %s, step: %d, "
-            "pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, vblock: %lu, txs: %lu",
-            block_info->block->network_id(),
-            block_info->block->pool_index(),
-            block_info->block->height(),
-            common::Encode::HexEncode(block_info->block->prehash()).c_str(),
-            common::Encode::HexEncode(block_info->block->hash()).c_str(),
-            block_info->block->tx_list(i).step(),
-            pool_idx_,
-            pacemaker()->HighQC()->view,
-            pacemaker()->HighTC()->view,
-            view_block_chain()->Size(),
-            pacemaker()->CurView(),
-            block_info->view,
-            block_info->block->tx_list_size());
-
-    }
+        if (st == Status::kSuccess && block_info != nullptr) {
+            for (int32_t i = 0; i < block_info->block->tx_list_size(); ++i) {
+                ZJC_DEBUG("block net: %u, pool: %u, height: %lu, prehash: %s, hash: %s, step: %d, "
+                    "pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, vblock: %lu, txs: %lu",
+                    block_info->block->network_id(),
+                    block_info->block->pool_index(),
+                    block_info->block->height(),
+                    common::Encode::HexEncode(block_info->block->prehash()).c_str(),
+                    common::Encode::HexEncode(block_info->block->hash()).c_str(),
+                    block_info->block->tx_list(i).step(),
+                    pool_idx_,
+                    pacemaker()->HighQC()->view,
+                    pacemaker()->HighTC()->view,
+                    view_block_chain()->Size(),
+                    pacemaker()->CurView(),
+                    block_info->view,
+                    block_info->block->tx_list_size());
+            }
+        }
 #endif
 
     auto qc = std::make_shared<QC>();
