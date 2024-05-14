@@ -420,6 +420,7 @@ void BlockAcceptor::LeaderBroadcastBlock(const std::shared_ptr<block::protobuf::
             block->tx_list(0).step(), block->height());
         BroadcastLocalTosBlock(block);
         break;
+    case pools::protobuf::kRootCreateAddress:
     case pools::protobuf::kConsensusRootElectShard:
         BroadcastBlock(network::kNodeNetworkId, block);
         break;
