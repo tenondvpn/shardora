@@ -680,7 +680,8 @@ Status Hotstuff::ConstructViewBlock(
     auto pre_v_block = std::make_shared<ViewBlock>();
     Status s = view_block_chain()->Get(view_block->parent_hash, pre_v_block);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("parent view block has not found, pool: %d, view: %lu, parent_view: %lu", pool_idx_, pacemaker()->CurView(), pacemaker()->HighQC()->view);
+        ZJC_ERROR("parent view block has not found, pool: %d, view: %lu, parent_view: %lu", 
+            pool_idx_, pacemaker()->CurView(), pacemaker()->HighQC()->view);
         return s;
     }
     
