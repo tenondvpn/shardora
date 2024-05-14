@@ -246,6 +246,7 @@ Status BlockAcceptor::addTxsToPool(
                     security_ptr_, 
                     address_info);
             break;
+        case pools::protobuf::kRootCreateAddressCrossSharding:
         case pools::protobuf::kNormalTo: {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
             auto tx_item = tx_pools_->GetToTxs(pool_idx(), "");
@@ -297,9 +298,9 @@ Status BlockAcceptor::addTxsToPool(
         }
         default:
             // TODO 没完！还需要支持其他交易的写入
-            break;
-            // ZJC_FATAL("invalid tx step: %d", tx->step());
-            // return Status::kError;
+            // break;
+            ZJC_FATAL("invalid tx step: %d", tx->step());
+            return Status::kError;
         }
 
         if (tx_ptr != nullptr) {
@@ -346,7 +347,8 @@ Status BlockAcceptor::GetAndAddTxsLocally(
     }
 
     if (txs_ptr->txs.size() != block_info->txs.size()) {
-        ZJC_ERROR("invalid consensus, txs not equal to leader.");
+        ZJC_ERROR("invalid consensus, txs not equal to leader %u, %u",
+            txs_ptr->txs.size(), block_info->txs.size());
         return Status::kAcceptorTxsEmpty;
     }
     
