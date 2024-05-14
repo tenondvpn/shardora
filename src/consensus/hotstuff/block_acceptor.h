@@ -176,7 +176,7 @@ private:
         {
             common::AutoSpinLock auto_lock(prev_count_mutex_);
             prev_count_ += tx_list_size;
-            if (now_tm_us > prev_tps_tm_us_ + 3000000lu) {
+            if (now_tm_us > prev_tps_tm_us_ + 2000000lu) {
                 cur_tps_ = (double(prev_count_) / (double(now_tm_us - prev_tps_tm_us_) / 1000000.0)); 
                 prev_tps_tm_us_ = now_tm_us;
                 prev_count_ = 0;

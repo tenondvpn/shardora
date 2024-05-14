@@ -8,8 +8,10 @@ namespace common {
 
 class FlowControl {
 public:
-    FlowControl(int maxRequestsPerSecond)
-        : interval(std::chrono::seconds(1) / maxRequestsPerSecond),
+    // 构造函数接受间隔秒数，而不是每秒请求数
+    FlowControl(double intervalInSeconds)
+        : interval(std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+            std::chrono::duration<double>(intervalInSeconds))),
           lastRequest(std::chrono::steady_clock::now() - interval) {
     }
 

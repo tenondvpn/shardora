@@ -288,7 +288,7 @@ private:
     std::atomic<uint32_t> tps_{ 0 };
     std::atomic<uint32_t> pre_tps_{ 0 };
     uint64_t tps_btime_{ 0 };
-    common::FlowControl tps_fc_{1};
+    common::FlowControl tps_fc_{3};
     double prev_tps_[common::kInvalidPoolIndex];
     
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
