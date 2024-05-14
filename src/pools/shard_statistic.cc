@@ -194,8 +194,7 @@ void ShardStatistic::HandleCrossShard(
     case pools::protobuf::kNormalTo: {
         if (!is_root) {
             for (int32_t i = 0; i < tx.storages_size(); ++i) {
-                if (tx.storages(i).key() == protos::kNormalTos) {
-                    assert(false);
+                if (tx.storages(i).key() == protos::kNormalToShards) {
                     pools::protobuf::ToTxMessage to_tx;
                     if (!to_tx.ParseFromString(tx.storages(i).value())) {
                         return;
