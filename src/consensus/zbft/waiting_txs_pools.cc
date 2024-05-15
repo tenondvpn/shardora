@@ -64,7 +64,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
     }
 
     if (txs_item == nullptr) {
-        txs_item = GetToTxs(pool_index, "");
+        txs_item = GetToTxs(pool_index, "1");
     }
 
     return txs_item;
@@ -212,8 +212,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(
         return nullptr;
     }
 
-    bool leader = tx_hash.empty();
-    auto tx_ptr = block_mgr_->GetToTx(pool_index, tx_hash);
+    bool leader = !tx_hash.empty();
+    auto tx_ptr = block_mgr_->GetToTx(pool_index, "");
     if (tx_ptr != nullptr) {
         if (leader) {
             auto now_tm = common::TimeUtils::TimestampUs();
@@ -229,7 +229,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(
         txs_item->pool_index = pool_index;
         txs_item->txs[tx_ptr->unique_tx_hash] = tx_ptr;
         txs_item->tx_type = pools::protobuf::kNormalTo;
-        ZJC_DEBUG("single tx success get to tx %u, %d, txhash: %s, gid: %s", 
+        ZJC_DEBUG("single tx success get to tx %u, is leader: %d, txhash: %s, gid: %s", 
             pool_index, leader, 
             common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
             common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
