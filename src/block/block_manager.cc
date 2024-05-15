@@ -1509,6 +1509,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     ZJC_DEBUG("to tx message coming: %lu, elect height: %lu, heights: %s",
         msg_ptr->header.hash64(), shard_to.elect_height(), str_heights.c_str());
     if (create_to_tx_cb_ == nullptr || msg_ptr == nullptr) {
+        assert(false);
         return;
     }
 
