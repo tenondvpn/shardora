@@ -601,38 +601,47 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
 
 #else
             auto pb_vblock = std::make_shared<view_block::protobuf::ViewBlockItem>();
-            if (pb_vblock->ParseFromString(iter->value())) {
-                if (!pb_vblock->has_self_qc_str()) {
-                    continue;
-                }
+            if (!pb_vblock->ParseFromString(iter->value())) {
+                ZJC_ERROR("pb vblock parse failed");
+                continue;
+            }
+            if (!pb_vblock->has_self_qc_str()) {
+                ZJC_ERROR("pb vblock has no qc");
+                continue;
+            }
 
-                if (!view_block_synced_callback_) {
-                    continue;
-                }
-                int res = view_block_synced_callback_(pb_vblock.get());
-                if (res == -1) {
-                    continue;
-                }
+            if (!view_block_synced_callback_) {
+                ZJC_ERROR("no view block synced callback inited");
+                continue;
+            }
+            int res = view_block_synced_callback_(pb_vblock.get());
+            if (res == -1) {
+                ZJC_ERROR("synced callback failed");
+                continue;
+            }
 
-                if (res == 1) {
-                    AddSyncElectBlock(
-                            network::kRootCongressNetworkId,
-                            pb_vblock->block_info().network_id(),
-                            pb_vblock->block_info().electblock_height(),
-                            sync::kSyncHigh);
-                    continue;
-                }
-                
-                if (res == 0) {
-                    ZJC_DEBUG("0 success handle network new view block: %u, %u, %lu", 
+            if (res == 1) {
+                AddSyncElectBlock(
+                        network::kRootCongressNetworkId,
                         pb_vblock->block_info().network_id(),
-                        pb_vblock->block_info().pool_index(),
-                        pb_vblock->block_info().height());
-                    auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pb_vblock->block_info().pool_index()];
-                    bft_block_queues_[thread_idx].push(
-                            std::make_shared<block::protobuf::Block>(pb_vblock->block_info()));
-                }            
-            }        
+                        pb_vblock->block_info().electblock_height(),
+                        sync::kSyncHigh);
+                ZJC_ERROR("no elect item, %lu_%lu",
+                    pb_vblock->block_info().network_id(),
+                    pb_vblock->block_info().electblock_height());
+                continue;
+            }
+                
+            if (res == 0) {
+                ZJC_DEBUG("0 success handle network new view block: %u, %u, %lu", 
+                    pb_vblock->block_info().network_id(),
+                    pb_vblock->block_info().pool_index(),
+                    pb_vblock->block_info().height());
+                auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pb_vblock->block_info().pool_index()];
+                bft_block_queues_[thread_idx].push(
+                        std::make_shared<block::protobuf::Block>(pb_vblock->block_info()));
+            }            
+
 #endif
         }
         auto tmp_iter = synced_map_.find(key);
