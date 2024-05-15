@@ -1873,12 +1873,12 @@ bool BlockManager::ShouldStopConsensus() {
 
 pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& tx_hash) {
     bool leader = tx_hash.empty();
-    if (!leader) {
+    if (leader) {
         ZJC_DEBUG("backup get to tx coming!");
     }
 
     if (latest_to_tx_ == nullptr) {
-        if (!leader) {
+        if (leader) {
             ZJC_DEBUG("backup get to tx failed, latest_to_tx_ == nullptr!");
         }
 
@@ -1886,7 +1886,7 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& t
     }
 
     if (pool_index != 0) {
-        if (!leader) {
+        if (leader) {
             ZJC_DEBUG("backup get to tx failed, pool_index != 0!");
         }
 
@@ -1915,7 +1915,7 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& t
         ZJC_DEBUG("get to tx success in_consensus: %d", tmp_to_txs->tx_ptr->in_consensus);
     }
 
-    if (!leader) {
+    if (leader) {
         ZJC_DEBUG("backup get to tx failed elect height: %lu", latest_to_tx_->elect_height);
     }
     return nullptr;
