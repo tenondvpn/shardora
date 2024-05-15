@@ -129,18 +129,30 @@ int HotstuffManager::VerifySyncedViewBlock(view_block::protobuf::ViewBlockItem* 
         return -1;
     }
     auto vblock = std::make_shared<hotstuff::ViewBlock>();
-    Status s = hotstuff::Proto2ViewBlock(*pb_vblock, vblock);
-    if (s != hotstuff::Status::kSuccess) {
+    Status s = Proto2ViewBlock(*pb_vblock, vblock);
+    if (s != Status::kSuccess) {
         ZJC_DEBUG("view block parsed failed: %lu", 
             pb_vblock->view());                
         return -1;
     }
-    auto qc = std::make_shared<hotstuff::QC>();
+    auto qc = std::make_shared<QC>();
     if (!qc->Unserialize(pb_vblock->self_qc_str())) {
         ZJC_ERROR("qc unserialize failed");
         return -1;
     }
 
+    // 由于验签很占资源，再检查一下数据库，避免重复同步
+    if (prefix_db_->HasViewBlockInfo(
+                vblock->block->network_id(),
+                vblock->block->pool_index(),
+                vblock->block->height())) {
+        ZJC_ERROR("already stored, %lu_%lu_%lu",
+                vblock->block->network_id(),
+                vblock->block->pool_index(),
+                vblock->block->height());
+        return -1;
+    }
+    
     s = VerifyViewBlockWithQC(vblock, qc);
     if (s != Status::kSuccess) {
         return s == Status::kElectItemNotFound ? 1 : -1;

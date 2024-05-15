@@ -638,8 +638,10 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                     pb_vblock->block_info().pool_index(),
                     pb_vblock->block_info().height());
                 auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pb_vblock->block_info().pool_index()];
-                bft_block_queues_[thread_idx].push(
-                        std::make_shared<block::protobuf::Block>(pb_vblock->block_info()));
+                // bft_block_queues_[thread_idx].push(
+                //         std::make_shared<block::protobuf::Block>(pb_vblock->block_info()));
+                vblock_queues_[thread_idx].push(pb_vblock);
+                // Store pb_vblock to db
             }            
 
 #endif

@@ -612,6 +612,25 @@ public:
         return true;        
     }
 
+    bool HasViewBlockInfo(
+            uint32_t sharding_id,
+            uint32_t pool_index,
+            uint64_t block_height) {
+        std::string key;
+        key.reserve(32);
+        key.append(kViewBlockInfoPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        key.append((char*)&pool_index, sizeof(pool_index));
+        key.append((char*)&block_height, sizeof(block_height));
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            return false;
+        }
+
+        return true;        
+    }    
+
     void SaveHeightTree(
             uint32_t net_id,
             uint32_t pool_index,
