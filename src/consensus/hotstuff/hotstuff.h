@@ -36,6 +36,8 @@ typedef hotstuff::protobuf::HotstuffMessage  pb_HotstuffMessage;
 typedef hotstuff::protobuf::VoteMsg pb_VoteMsg;
 typedef hotstuff::protobuf::NewViewMsg pb_NewViewMsg;
 
+
+
 static const uint64_t STUCK_PACEMAKER_DURATION_MIN_US =
     2000000lu; // the min duration that hotstuff can be considered stucking
 static const bool VOTE_MSG_WITH_VBLOCK = false; // vote msg with vblock to make sure next leader has that block, which is good for tps improvement, TODO 没有必要，其实影响不大，还占用带宽，不知道节点多了之后有没有帮助，先留着代码
@@ -122,6 +124,10 @@ public:
 
     inline std::shared_ptr<LeaderRotation> leader_rotation() const {
         return leader_rotation_;
+    }
+
+    inline std::shared_ptr<ElectInfo> elect_info() const {
+        return elect_info_;
     }
 
     bool IsStuck() const {

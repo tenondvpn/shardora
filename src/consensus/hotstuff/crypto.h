@@ -127,9 +127,9 @@ private:
 
     Status GetVerifyHashA(const uint64_t& elect_height, const HashStr& msg_hash, std::string* verify_hash) {
         auto elect_item = GetElectItem(elect_height);
-        if (!elect_item) {
+        if (!elect_item || elect_item->common_pk() == libff::alt_bn128_G2::zero()) {
             ZJC_ERROR("elect_item not found, elect_height: %lu", elect_height);
-            return Status::kError;
+            return Status::kElectItemNotFound;
         }        
         libff::alt_bn128_G1 g1_hash;
         GetG1Hash(msg_hash, &g1_hash);

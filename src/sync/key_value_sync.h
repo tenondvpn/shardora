@@ -31,6 +31,8 @@ namespace block {
 
 namespace sync {
 
+using ViewBlockSyncedCallback = std::function<int(view_block::protobuf::ViewBlockItem* pb_vblock)>;
+
 enum SyncItemTag : uint32_t {
     kKeyValue = 0,
     kBlockHeight = 1,
@@ -84,10 +86,17 @@ public:
         uint32_t pool_idx,
         uint64_t height,
         uint32_t priority);
+#ifdef ENABLE_HOTSTUFF
     void Init(
-        const std::shared_ptr<block::BlockManager>& block_mgr,
-        const std::shared_ptr<db::Db>& db,
-        block::BlockAggValidCallback block_agg_valid_func);
+            const std::shared_ptr<block::BlockManager>& block_mgr,
+            const std::shared_ptr<db::Db>& db,
+            ViewBlockSyncedCallback view_block_synced_callback);
+#else
+    void Init(
+            const std::shared_ptr<block::BlockManager>& block_mgr,
+            const std::shared_ptr<db::Db>& db,    
+            block::BlockAggValidCallback block_agg_valid_func);
+#endif
     void HandleMessage(const transport::MessagePtr& msg);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
@@ -129,7 +138,9 @@ private:
         transport::protobuf::Header& msg,
         sync::protobuf::SyncValueResponse* res,
         uint32_t& add_size);
+#ifndef ENABLE_HOTSTUFF
     void CheckNotCheckedBlocks();
+#endif
 
     static const uint64_t kSyncPeriodUs = 300000lu;
     static const uint64_t kSyncTimeoutPeriodUs = 300000lu;
@@ -151,7 +162,11 @@ private:
     std::deque<std::string> timeout_queue_;
     uint32_t max_sharding_id_ = network::kConsensusShardBeginNetworkId;
     PoolWithBlocks net_with_pool_blocks_[network::kConsensusShardEndNetworkId];
+#ifdef ENABLE_HOTSTUFF
+    ViewBlockSyncedCallback view_block_synced_callback_ = nullptr;
+#else
     block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
+#endif
     common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> bft_block_queues_[common::kMaxThreadCount];
 
     DISALLOW_COPY_AND_ASSIGN(KeyValueSync);

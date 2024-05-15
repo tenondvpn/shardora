@@ -73,11 +73,12 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
 
     auto tmp_hash = common::Hash::keccak256(msg);
     bool is_commited_block = block.is_commited_block();
+#ifndef ENABLE_HOTSTUFF
     if (is_commited_block) {
         tmp_hash.append((char*)&is_commited_block, sizeof(is_commited_block));
         tmp_hash = common::Hash::keccak256(tmp_hash);
     }
-
+#endif
     ZJC_DEBUG("block.prehash(): %s, height: %lu,pool_idx: %u, sharding_id: %u, vss_random: %lu, "
         "timeblock_height: %lu, elect_height: %lu, leader_idx: %u, get block hash: %s, tmp_hash: %s, msg: %s, "
         "is_commited_block: %d",

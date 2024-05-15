@@ -4,6 +4,7 @@
 #include <common/utils.h>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/elect_info.h>
+#include <consensus/hotstuff/hotstuff_manager.h>
 #include <consensus/hotstuff/leader_rotation.h>
 #include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h>
@@ -158,10 +159,12 @@ int NetworkInit::Init(int argc, char** argv) {
         vss_mgr_, account_mgr_, block_mgr_, security_, bls_mgr_, db_,
         nullptr);
     ZJC_DEBUG("init 0 11");
+#ifndef ENABLE_HOTSTUFF
     kv_sync_->Init(
         block_mgr_,
         db_,
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
+#endif
     ZJC_DEBUG("init 0 12");
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(
         security_, db_, kv_sync_, account_mgr_);
@@ -194,6 +197,11 @@ int NetworkInit::Init(int argc, char** argv) {
 
 #ifdef ENABLE_HOTSTUFF
     hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
+    kv_sync_->Init(
+        block_mgr_,
+        db_,
+        std::bind(&consensus::HotstuffManager::VerifySyncedViewBlock,
+            hotstuff_mgr_, std::placeholders::_1));    
     auto consensus_init_res = hotstuff_mgr_->Init(
         contract_mgr_,
         gas_prepayment_,
@@ -262,7 +270,7 @@ int NetworkInit::Init(int argc, char** argv) {
 
 #ifdef ENABLE_HOTSTUFF
     // 启动共识和同步
-    hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(hotstuff_mgr_, db_);
+    hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(hotstuff_mgr_, db_, kv_sync_);
     hotstuff_syncer_->Start();    
     hotstuff_mgr_->Start();
     // 以上应该放入 hotstuff 实例初始化中，并接收创世块

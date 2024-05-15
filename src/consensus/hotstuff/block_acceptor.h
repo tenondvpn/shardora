@@ -70,6 +70,8 @@ public:
     virtual Status AddTxs(const std::vector<const pools::protobuf::TxMessage*>& txs) = 0;
     // Return block txs to pool
     virtual Status Return(const std::shared_ptr<block::protobuf::Block>&) = 0;
+    // Handle Synced Block From KeyValueSyncer
+    virtual void CommitSynced(std::shared_ptr<block::protobuf::Block>& block_ptr) = 0;
     virtual double Tps() = 0;
 };
 
@@ -117,6 +119,8 @@ public:
         return Status::kSuccess;
     }
 
+    void CommitSynced(std::shared_ptr<block::protobuf::Block>& block_ptr) override;
+
     inline double Tps() override {
         return cur_tps_;
     }
@@ -141,7 +145,9 @@ private:
     uint64_t prev_tps_tm_us_ = 0;
     uint32_t prev_count_ = 0;
     double cur_tps_ = 0;
-    common::SpinMutex prev_count_mutex_;    
+    common::SpinMutex prev_count_mutex_;
+
+    std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_blocks_[common::kInvalidPoolIndex];
 
     inline uint32_t pool_idx() const {
         return pool_idx_;
@@ -183,7 +189,11 @@ private:
                 ZJC_INFO("pool: %d, tps: %.2f", pool_idx_, cur_tps_);
             }
         }        
-    }    
+    }
+
+    // void AddWaitingBlock(std::shared_ptr<block::protobuf::Block>& block_ptr);
+    // void CommitWaitingBlock(uint32_t pool_index, uint64_t height);
+    
 };
 
 } // namespace hotstuff
