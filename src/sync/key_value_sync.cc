@@ -600,7 +600,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             }
 
 #else
-            view_block::protobuf::ViewBlockItem* pb_vblock;
+            auto pb_vblock = std::make_shared<view_block::protobuf::ViewBlockItem>();
             if (pb_vblock->ParseFromString(iter->value())) {
                 if (!pb_vblock->has_self_qc_str()) {
                     continue;
@@ -609,7 +609,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 if (!view_block_synced_callback_) {
                     continue;
                 }
-                int res = view_block_synced_callback_(pb_vblock);
+                int res = view_block_synced_callback_(pb_vblock.get());
                 if (res == -1) {
                     continue;
                 }
