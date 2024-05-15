@@ -379,7 +379,8 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     Status s = crypto()->CreateQC(vote_msg.view_block_hash(), vote_msg.view(), reconstructed_sign, qc);
     if (s != Status::kSuccess) {
         return;
-    }    
+    }
+    
     // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
     Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));

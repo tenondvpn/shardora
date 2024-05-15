@@ -65,6 +65,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
 
     if (txs_item == nullptr) {
         txs_item = GetToTxs(pool_index, "1");
+        ZJC_DEBUG("leader get to tx coming: %d", (txs_item != nullptr));
     }
 
     return txs_item;
