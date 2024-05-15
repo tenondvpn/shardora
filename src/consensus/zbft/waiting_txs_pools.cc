@@ -220,6 +220,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(
             auto now_tm = common::TimeUtils::TimestampUs();
             if (tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm) {
                 tx_ptr->in_consensus = false;
+                ZJC_DEBUG("leader get to tx coming failed 1");
                 return nullptr;
             }
 
@@ -235,6 +236,10 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(
             common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
             common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
         return txs_item;
+    } else {
+        if (leader) {
+            ZJC_DEBUG("leader get to tx coming failed 0");
+        }
     }
 
     return nullptr;
