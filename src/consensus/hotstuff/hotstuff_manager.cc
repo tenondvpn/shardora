@@ -146,7 +146,7 @@ int HotstuffManager::VerifySyncedViewBlock(view_block::protobuf::ViewBlockItem* 
                 vblock->block->network_id(),
                 vblock->block->pool_index(),
                 vblock->block->height())) {
-        ZJC_ERROR("already stored, %lu_%lu_%lu",
+        ZJC_DEBUG("already stored, %lu_%lu_%lu",
                 vblock->block->network_id(),
                 vblock->block->pool_index(),
                 vblock->block->height());
