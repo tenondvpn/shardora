@@ -89,6 +89,10 @@ public:
     Status Start();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
+    int VerifyViewBlockWithQC(
+            const std::shared_ptr<ViewBlock>& vblock,
+            const std::shared_ptr<QC>& qc);
+
     inline std::shared_ptr<Hotstuff> hotstuff(uint32_t pool_idx) const {
         auto it = pool_hotstuff_.find(pool_idx);
         if (it == pool_hotstuff_.end()) {

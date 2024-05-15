@@ -124,6 +124,29 @@ int HotstuffManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     return transport::kFirewallCheckSuccess;
 }
 
+// 验证有 qc 的 view block
+int HotstuffManager::VerifyViewBlockWithQC(
+        const std::shared_ptr<ViewBlock>& vblock,
+        const std::shared_ptr<QC>& qc) {
+    if (!vblock->Valid() || !qc || !vblock->block) {
+        return -1;
+    }
+    if (vblock->block->height() == 0) {
+        return 0;
+    }
+
+    if (vblock->hash != qc->view_block_hash || vblock->view != qc->view) {
+        return -1;
+    }
+
+    auto hf = hotstuff(vblock->block->pool_index());
+    Status s = hf->crypto()->VerifyQC(qc, vblock->block->electblock_height());
+    if (s != Status::kSuccess) {
+        return s == Status::kElectItemNotFound ? 1 : -1;
+    }
+    return 0;
+}
+
 void HotstuffManager::OnNewElectBlock(uint64_t block_tm_ms, uint32_t sharding_id, uint64_t elect_height,
     common::MembersPtr& members, const libff::alt_bn128_G2& common_pk, const libff::alt_bn128_Fr& sec_key) {        
         elect_info_->OnNewElectBlock(sharding_id, elect_height, members, common_pk, sec_key);

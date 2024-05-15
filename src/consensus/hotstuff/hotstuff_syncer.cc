@@ -27,8 +27,9 @@ namespace hotstuff {
 
 HotstuffSyncer::HotstuffSyncer(
         const std::shared_ptr<consensus::HotstuffManager>& h_mgr,
-        std::shared_ptr<db::Db>& db) :
-    hotstuff_mgr_(h_mgr), db_(db) {
+        std::shared_ptr<db::Db>& db,
+        std::shared_ptr<sync::KeyValueSync>& kv_sync) :
+    hotstuff_mgr_(h_mgr), db_(db), kv_sync_(kv_sync) {
     // start consumeloop thread
     SetOnRecvViewBlockFn(
             std::bind(&HotstuffSyncer::onRecViewBlock,
@@ -80,9 +81,9 @@ void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
 // 批量异步处理，提高 tps
 void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     // TODO 仅共识池节点参与 view_block_chain 的同步
-    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     SyncAllPools();
     ConsumeMessages();
+    HandleSyncedBlocks();
 }
 
 void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const uint32_t& node_num) {
@@ -123,6 +124,15 @@ void HotstuffSyncer::SyncAllPools() {
             }            
         }
     }
+}
+
+void HotstuffSyncer::HandleSyncedBlocks() {
+    auto& block_queue = kv_sync_->bft_block_queue();
+    std::shared_ptr<block::protobuf::Block> block_ptr = nullptr;
+    while (block_queue.pop(&block_ptr)) {
+        hotstuff_mgr_->hotstuff(block_ptr->pool_index())->acceptor()->CommitSynced(block_ptr);
+    }    
+    return;
 }
 
 Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg, uint32_t node_num) {

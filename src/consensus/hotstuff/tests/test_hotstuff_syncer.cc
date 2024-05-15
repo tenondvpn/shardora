@@ -70,7 +70,7 @@ protected:
                 nullptr);
         elect_info_ = std::make_shared<ElectInfo>(security_, nullptr);
         
-        kv_sync_->Init(block_mgr_, db_);
+        kv_sync_->Init(block_mgr_, db_, nullptr);
         contract_mgr_->Init(security_);
         tm_block_mgr_->Init(vss_mgr_,account_mgr_);
 
@@ -89,7 +89,7 @@ protected:
                 db_,
                 [](std::shared_ptr<block::protobuf::Block>& block, db::DbWriteBatch& db_batch){});
     
-        syncer_ = std::make_shared<HotstuffSyncer>(hotstuff_mgr_, db_);
+        syncer_ = std::make_shared<HotstuffSyncer>(hotstuff_mgr_, db_, kv_sync_);
         syncer_->SetOnRecvViewBlockFn(StoreViewBlock);
     }
 

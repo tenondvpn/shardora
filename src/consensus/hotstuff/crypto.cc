@@ -191,9 +191,10 @@ Status Crypto::VerifyQC(
     if (qc->view == GenesisView) {
         return Status::kSuccess;
     }
-    if (VerifyThresSign(elect_height, qc->msg_hash(), qc->bls_agg_sign) != Status::kSuccess) {
+    Status s = VerifyThresSign(elect_height, qc->msg_hash(), qc->bls_agg_sign);
+    if (s != Status::kSuccess) {
         ZJC_ERROR("Verify qc is error.");
-        return Status::kError;
+        return s;
     }
     return Status::kSuccess;
 }
