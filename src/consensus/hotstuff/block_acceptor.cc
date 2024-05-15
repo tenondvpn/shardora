@@ -483,6 +483,84 @@ void BlockAcceptor::BroadcastLocalTosBlock(
     }
 }
 
+void BlockAcceptor::CommitSynced(std::shared_ptr<block::protobuf::Block>& block_ptr) {
+    // if (!block_ptr->is_commited_block() &&
+    //         (block_ptr->height() > pools_mgr_->latest_height(block_ptr->pool_index()) ||
+    //         pools_mgr_->latest_height(block_ptr->pool_index()) == common::kInvalidUint64)) {
+    //     AddWaitingBlock(block_ptr);
+    //     CommitWaitingBlock(block_ptr->pool_index(), block_ptr->height() - 1);
+    //     ZJC_DEBUG("success add waiting block");
+    //     return;
+    // }
+
+    auto db_batch = std::make_shared<db::DbWriteBatch>();
+    auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block_ptr, db_batch);
+    new_block_cache_callback_(
+        queue_item_ptr->block_ptr,
+        *queue_item_ptr->db_batch);
+    block_mgr_->ConsensusAddBlock(queue_item_ptr);
+    
+    if (block_ptr->tx_list_size() > 0) {
+        pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
+    }
+    
+    ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+        block_ptr->network_id(),
+        block_ptr->pool_index(),
+        block_ptr->height(),
+        common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str());
+}
+
+// void BlockAcceptor::AddWaitingBlock(std::shared_ptr<block::protobuf::Block>& block_ptr) {
+//     auto& block_map = waiting_blocks_[block_ptr->pool_index()];
+//     auto iter = block_map.find(block_ptr->height());
+//     if (iter != block_map.end()) {
+//         return;
+//     }
+
+//     if (prefix_db_->BlockExists(block_ptr->hash())) {
+//         return;
+//     }
+
+//     block_map[block_ptr->height()] = block_ptr;
+//     ZJC_DEBUG("add new block pool: %u, height: %lu, hash: %s, size: %u",
+//         block_ptr->pool_index(),
+//         block_ptr->height(),
+//         common::Encode::HexEncode(block_ptr->hash()).c_str(),
+//         block_map.size());
+// }
+
+// void BlockAcceptor::CommitWaitingBlock(uint32_t pool_index, uint64_t height) {
+//     auto& block_map = waiting_blocks_[pool_index];
+//     auto iter = block_map.begin();
+//     while (iter != block_map.end()) {
+//         if (iter->first > height) {
+//             break;
+//         }
+
+//         auto block_ptr = iter->second;
+//         ZJC_DEBUG("remove new block pool: %u, height: %lu, hash: %s",
+//             block_ptr->pool_index(),
+//             block_ptr->height(),
+//             common::Encode::HexEncode(block_ptr->hash()).c_str());
+//         iter = block_map.erase(iter);
+
+            
+//         auto db_batch = std::make_shared<db::DbWriteBatch>();
+//         auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block_ptr, db_batch);
+//         new_block_cache_callback_(
+//                 queue_item_ptr->block_ptr,
+//                 *queue_item_ptr->db_batch);
+//         block_mgr_->ConsensusAddBlock(queue_item_ptr);
+//         pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
+//         ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+//             block_ptr->network_id(),
+//             block_ptr->pool_index(),
+//             block_ptr->height(),
+//             common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str());
+//     }
+// }
+
 } // namespace hotstuff
 
 } // namespace shardora

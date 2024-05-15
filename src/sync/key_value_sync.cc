@@ -14,6 +14,7 @@
 #include "sync/sync_utils.h"
 #include "transport/processor.h"
 #include <common/log.h>
+#include <protos/view_block.pb.h>
 
 namespace shardora {
 
@@ -23,6 +24,7 @@ KeyValueSync::KeyValueSync() {}
 
 KeyValueSync::~KeyValueSync() {}
 
+#ifndef ENABLE_HOTSTUFF
 void KeyValueSync::Init(
         const std::shared_ptr<block::BlockManager>& block_mgr,
         const std::shared_ptr<db::Db>& db,
@@ -30,6 +32,7 @@ void KeyValueSync::Init(
     block_mgr_ = block_mgr;
     db_ = db;
     block_agg_valid_func_ = block_agg_valid_func;
+
     prefix_db_ = std::make_shared<protos::PrefixDb>(db);
     network::Route::Instance()->RegisterMessage(
         common::kSyncMessage,
@@ -38,7 +41,24 @@ void KeyValueSync::Init(
         100000lu,
         std::bind(&KeyValueSync::ConsensusTimerMessage, this));
 }
+#else
+void KeyValueSync::Init(
+        const std::shared_ptr<block::BlockManager>& block_mgr,
+        const std::shared_ptr<db::Db>& db,
+        ViewBlockSyncedCallback view_block_synced_callback) {
+    block_mgr_ = block_mgr;
+    db_ = db;
+    view_block_synced_callback_ = view_block_synced_callback;
 
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db);
+    network::Route::Instance()->RegisterMessage(
+        common::kSyncMessage,
+        std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
+    tick_.CutOff(
+        100000lu,
+        std::bind(&KeyValueSync::ConsensusTimerMessage, this));
+}
+#endif
 int KeyValueSync::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     return transport::kFirewallCheckSuccess;
 }
@@ -85,7 +105,9 @@ void KeyValueSync::ConsensusTimerMessage() {
         ZJC_DEBUG("KeyValueSync handle message use time: %lu", (etime - now_tm_ms));
     }
 
+#ifndef ENABLE_HOTSTUFF
     CheckNotCheckedBlocks();
+#endif
     tick_.CutOff(
         100000lu,
         std::bind(&KeyValueSync::ConsensusTimerMessage, this));
@@ -358,12 +380,35 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                     msg_ptr->header.hash64());
                 continue;
             }
+            
+#ifdef ENABLE_HOTSTUFF
+            view_block::protobuf::ViewBlockItem pb_view_block;
+            if (!prefix_db_->GetViewBlockInfo(
+                        network_id,
+                        sync_msg.sync_value_req().heights(i).pool_idx(),
+                        sync_msg.sync_value_req().heights(i).height(),
+                        &pb_view_block)) {
+                ZJC_DEBUG("handle sync value failed, view block info not found, request hash: %lu, "
+                    "net: %u, pool: %u, height: %lu",
+                    msg_ptr->header.hash64(),
+                    network_id, 
+                    sync_msg.sync_value_req().heights(i).pool_idx(),
+                    sync_msg.sync_value_req().heights(i).height());
+                continue;
+            }
+
+            pb_view_block.mutable_block_info()->CopyFrom(block);
+#endif
 
             auto res = sync_res->add_res();
             res->set_network_id(network_id);
             res->set_pool_idx(sync_msg.sync_value_req().heights(i).pool_idx());
             res->set_height(sync_msg.sync_value_req().heights(i).height());
+#ifdef ENABLE_HOTSTUFF
+            res->set_value(pb_view_block.SerializeAsString());
+#else
             res->set_value(block.SerializeAsString());
+#endif
             add_size += 16 + res->value().size();
             if (add_size >= kSyncPacketMaxSize) {
                 ZJC_DEBUG("handle sync value add_size failed request hash: %lu, "
@@ -429,7 +474,7 @@ void KeyValueSync::ResponseElectBlock(
             ZJC_DEBUG("block invalid network: %u, pool: %lu, height: %lu",
                 network::kRootCongressNetworkId, elect_network_id % common::kImmutablePoolSize, elect_height);
             return;
-        }
+        }        
 
         elect::protobuf::ElectBlock prev_elect_block;
         bool ec_block_loaded = false;
@@ -488,11 +533,30 @@ void KeyValueSync::ResponseElectBlock(
             return;
         }
 
+#ifdef ENABLE_HOTSTUFF
+        view_block::protobuf::ViewBlockItem pb_view_block;
+        if (!prefix_db_->GetViewBlockInfo(
+                    network::kRootCongressNetworkId,
+                    elect_network_id % common::kImmutablePoolSize,
+                    *fiter,
+                    &pb_view_block)) {
+            ZJC_DEBUG("view block invalid network: %u, pool: %lu, height: %lu",
+                network::kRootCongressNetworkId, elect_network_id % common::kImmutablePoolSize, *fiter);
+            return;
+        }
+
+        pb_view_block.mutable_block_info()->CopyFrom(block);
+#endif        
+
         auto res = sync_res->add_res();
         res->set_network_id(block.network_id());
         res->set_pool_idx(block.pool_index());
         res->set_height(block.height());
+#ifdef ENABLE_HOTSTUFF
+        res->set_value(pb_view_block.SerializeAsString());
+#else
         res->set_value(block.SerializeAsString());
+#endif
         res->set_tag(kElectBlock); // no use
         add_size += 16 + res->value().size();
         ZJC_DEBUG("block success network: %u, pool: %lu, height: %lu, add_size: %u, kSyncPacketMaxSize: %u",
@@ -513,6 +577,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             key = std::to_string(iter->network_id()) + "_" +
                 std::to_string(iter->pool_idx()) + "_" +
                 std::to_string(iter->height());
+#ifndef ENABLE_HOTSTUFF
             auto block_item = std::make_shared<block::protobuf::Block>();
             if (block_item->ParseFromString(iter->value())) {
                 if (block_agg_valid_func_ != nullptr) {
@@ -533,8 +598,52 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                     }
                 }
             }
-        }
 
+#else
+            auto pb_vblock = std::make_shared<view_block::protobuf::ViewBlockItem>();
+            if (!pb_vblock->ParseFromString(iter->value())) {
+                ZJC_ERROR("pb vblock parse failed");
+                continue;
+            }
+            if (!pb_vblock->has_self_qc_str()) {
+                ZJC_ERROR("pb vblock has no qc");
+                continue;
+            }
+
+            if (!view_block_synced_callback_) {
+                ZJC_ERROR("no view block synced callback inited");
+                continue;
+            }
+            int res = view_block_synced_callback_(pb_vblock.get());
+            if (res == -1) {
+                ZJC_ERROR("synced callback failed");
+                continue;
+            }
+
+            if (res == 1) {
+                AddSyncElectBlock(
+                        network::kRootCongressNetworkId,
+                        pb_vblock->block_info().network_id(),
+                        pb_vblock->block_info().electblock_height(),
+                        sync::kSyncHigh);
+                ZJC_ERROR("no elect item, %lu_%lu",
+                    pb_vblock->block_info().network_id(),
+                    pb_vblock->block_info().electblock_height());
+                continue;
+            }
+                
+            if (res == 0) {
+                ZJC_DEBUG("0 success handle network new view block: %u, %u, %lu", 
+                    pb_vblock->block_info().network_id(),
+                    pb_vblock->block_info().pool_index(),
+                    pb_vblock->block_info().height());
+                auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pb_vblock->block_info().pool_index()];
+                bft_block_queues_[thread_idx].push(
+                        std::make_shared<block::protobuf::Block>(pb_vblock->block_info()));
+            }            
+
+#endif
+        }
         auto tmp_iter = synced_map_.find(key);
         if (tmp_iter != synced_map_.end()) {
             added_key_set_.erase(tmp_iter->second->key);
@@ -555,6 +664,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
     }
 }
 
+#ifndef ENABLE_HOTSTUFF
 void KeyValueSync::CheckNotCheckedBlocks() {
     if (block_agg_valid_func_ == nullptr) {
         return;
@@ -592,6 +702,7 @@ void KeyValueSync::CheckNotCheckedBlocks() {
         }
     }
 }
+#endif
 
 void KeyValueSync::CheckSyncTimeout() {
     auto now_tm = common::TimeUtils::TimestampUs();

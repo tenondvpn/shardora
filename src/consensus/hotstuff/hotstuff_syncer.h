@@ -40,7 +40,10 @@ using OnRecvViewBlockFn = std::function<Status(
 class HotstuffSyncer {
 public:
     // TODO 将 ViewBlockChainManager 换成 HotstuffManager
-    HotstuffSyncer(const std::shared_ptr<consensus::HotstuffManager>&, std::shared_ptr<db::Db>& db);
+    HotstuffSyncer(
+            const std::shared_ptr<consensus::HotstuffManager>&,
+            std::shared_ptr<db::Db>& db,
+            std::shared_ptr<sync::KeyValueSync>& kv_sync);
     HotstuffSyncer(const HotstuffSyncer&) = delete;
     HotstuffSyncer& operator=(const HotstuffSyncer&) = delete;
 
@@ -81,6 +84,7 @@ private:
         return kSyncTimerCycleUs;
     }
 
+    void HandleSyncedBlocks();
     void SyncAllPools();
     Status SendRequest(
             uint32_t network_id,
@@ -114,6 +118,7 @@ private:
     OnRecvViewBlockFn on_recv_vb_fn_;
     std::shared_ptr<db::Db> db_ = nullptr;
     uint64_t last_timers_us_[common::kInvalidPoolIndex];
+    std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     bool running_ = false;
 };
 
