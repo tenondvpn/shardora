@@ -26,6 +26,7 @@
 #include <consensus/zbft/time_block_tx.h>
 #include <consensus/zbft/to_tx_item.h>
 #include <consensus/zbft/to_tx_local_item.h>
+#include <protos/view_block.pb.h>
 #include <unordered_map>
 #include "block/account_manager.h"
 #include "block/block_manager.h"
@@ -89,9 +90,7 @@ public:
     Status Start();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
-    int VerifyViewBlockWithQC(
-            const std::shared_ptr<ViewBlock>& vblock,
-            const std::shared_ptr<QC>& qc);
+    int VerifySyncedViewBlock(view_block::protobuf::ViewBlockItem* pb_vblock);    
 
     inline std::shared_ptr<Hotstuff> hotstuff(uint32_t pool_idx) const {
         auto it = pool_hotstuff_.find(pool_idx);
@@ -149,6 +148,9 @@ private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void HandleTimerMessage(const transport::MessagePtr& msg_ptr);
     void RegisterCreateTxCallbacks();
+    Status VerifyViewBlockWithQC(
+            const std::shared_ptr<ViewBlock>& vblock,
+            const std::shared_ptr<QC>& qc);
     
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(

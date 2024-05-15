@@ -169,8 +169,8 @@ int NetworkInit::Init(int argc, char** argv) {
     kv_sync_->Init(
         block_mgr_,
         db_,
-        std::bind(&consensus::HotstuffManager::VerifyViewBlockWithQC, hotstuff_mgr_,
-            std::placeholders::_1, std::placeholders::_2));    
+        std::bind(&consensus::HotstuffManager::VerifySyncedViewBlock,
+            hotstuff_mgr_, std::placeholders::_1));    
 #endif
     ZJC_DEBUG("init 0 12");
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(

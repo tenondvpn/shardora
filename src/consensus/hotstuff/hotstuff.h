@@ -36,9 +36,7 @@ typedef hotstuff::protobuf::HotstuffMessage  pb_HotstuffMessage;
 typedef hotstuff::protobuf::VoteMsg pb_VoteMsg;
 typedef hotstuff::protobuf::NewViewMsg pb_NewViewMsg;
 
-using ViewBlockAggValidCallback = std::function<int(
-        const std::shared_ptr<ViewBlock>& vblock,
-        const std::shared_ptr<QC>& qc)>;
+
 
 static const uint64_t STUCK_PACEMAKER_DURATION_MIN_US =
     2000000lu; // the min duration that hotstuff can be considered stucking

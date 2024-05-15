@@ -1,8 +1,6 @@
 #pragma once
 
 #include <chrono>
-#include <consensus/hotstuff/hotstuff.h>
-#include <consensus/hotstuff/utils.h>
 #include <mutex>
 #include <memory>
 #include <queue>
@@ -32,6 +30,8 @@ namespace block {
 }
 
 namespace sync {
+
+using ViewBlockSyncedCallback = std::function<int(view_block::protobuf::ViewBlockItem* pb_vblock)>;
 
 enum SyncItemTag : uint32_t {
     kKeyValue = 0,
@@ -90,7 +90,7 @@ public:
     void Init(
             const std::shared_ptr<block::BlockManager>& block_mgr,
             const std::shared_ptr<db::Db>& db,
-            hotstuff::ViewBlockAggValidCallback view_block_agg_valid_func);
+            ViewBlockSyncedCallback view_block_synced_callback);
 #else
     void Init(
             const std::shared_ptr<block::BlockManager>& block_mgr,
@@ -163,7 +163,7 @@ private:
     uint32_t max_sharding_id_ = network::kConsensusShardBeginNetworkId;
     PoolWithBlocks net_with_pool_blocks_[network::kConsensusShardEndNetworkId];
 #ifdef ENABLE_HOTSTUFF
-    hotstuff::ViewBlockAggValidCallback view_block_agg_valid_func_ = nullptr;
+    ViewBlockSyncedCallback view_block_synced_callback_ = nullptr;
 #else
     block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
 #endif

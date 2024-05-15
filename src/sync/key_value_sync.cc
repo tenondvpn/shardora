@@ -14,8 +14,6 @@
 #include "sync/sync_utils.h"
 #include "transport/processor.h"
 #include <common/log.h>
-#include <consensus/hotstuff/types.h>
-#include <consensus/hotstuff/utils.h>
 #include <protos/view_block.pb.h>
 
 namespace shardora {
@@ -47,10 +45,10 @@ void KeyValueSync::Init(
 void KeyValueSync::Init(
         const std::shared_ptr<block::BlockManager>& block_mgr,
         const std::shared_ptr<db::Db>& db,
-        hotstuff::ViewBlockAggValidCallback view_block_agg_valid_func) {
+        ViewBlockSyncedCallback view_block_synced_callback) {
     block_mgr_ = block_mgr;
     db_ = db;
-    view_block_agg_valid_func_ = view_block_agg_valid_func;
+    view_block_synced_callback_ = view_block_synced_callback;
 
     prefix_db_ = std::make_shared<protos::PrefixDb>(db);
     network::Route::Instance()->RegisterMessage(
@@ -601,28 +599,17 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 }
             }
 
-#else        
+#else
             view_block::protobuf::ViewBlockItem* pb_vblock;
             if (pb_vblock->ParseFromString(iter->value())) {
                 if (!pb_vblock->has_self_qc_str()) {
                     continue;
                 }
-                auto vblock = std::make_shared<hotstuff::ViewBlock>();
-                hotstuff::Status s = hotstuff::Proto2ViewBlock(*pb_vblock, vblock);
-                if (s != hotstuff::Status::kSuccess) {
-                    ZJC_DEBUG("view block parsed failed: %lu", 
-                        pb_vblock->view());                
-                    continue;
-                }
-                auto qc = std::make_shared<hotstuff::QC>();
-                if (!qc->Unserialize(pb_vblock->self_qc_str())) {
-                    continue;
-                }
-                if (!view_block_agg_valid_func_) {
-                    continue;
-                }
 
-                int res = view_block_agg_valid_func_(vblock, qc);
+                if (!view_block_synced_callback_) {
+                    continue;
+                }
+                int res = view_block_synced_callback_(pb_vblock);
                 if (res == -1) {
                     continue;
                 }
@@ -630,17 +617,20 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 if (res == 1) {
                     AddSyncElectBlock(
                             network::kRootCongressNetworkId,
-                            vblock->block->network_id(),
-                            vblock->block->electblock_height(),
+                            pb_vblock->block_info().network_id(),
+                            pb_vblock->block_info().electblock_height(),
                             sync::kSyncHigh);
                     continue;
                 }
                 
                 if (res == 0) {
                     ZJC_DEBUG("0 success handle network new view block: %u, %u, %lu", 
-                        vblock->block->network_id(), vblock->block->pool_index(), vblock->block->height());
-                    auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[vblock->block->pool_index()];
-                    bft_block_queues_[thread_idx].push(vblock->block);
+                        pb_vblock->block_info().network_id(),
+                        pb_vblock->block_info().pool_index(),
+                        pb_vblock->block_info().height());
+                    auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pb_vblock->block_info().pool_index()];
+                    bft_block_queues_[thread_idx].push(
+                            std::make_shared<block::protobuf::Block>(pb_vblock->block_info()));
                 }            
             }        
 #endif
