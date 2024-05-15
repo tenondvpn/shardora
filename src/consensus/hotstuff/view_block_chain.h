@@ -137,6 +137,8 @@ public:
             v_block->block->height(),
             *pb_v_block,
             *db_batch);
+        auto st = db_->Put(*db_batch);
+        assert(st.ok());
         return Status::kSuccess;
     }
     
