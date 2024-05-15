@@ -142,10 +142,14 @@ int HotstuffManager::VerifySyncedViewBlock(view_block::protobuf::ViewBlockItem* 
     }
 
     // 由于验签很占资源，再检查一下数据库，避免重复同步
-    if (prefix_db_->HasViewBlockInfo(vblock->block->network_id(),
-            vblock->block->pool_index(),
-            vblock->block->height())) {
-        ZJC_ERROR("already stored");
+    if (prefix_db_->HasViewBlockInfo(
+                vblock->block->network_id(),
+                vblock->block->pool_index(),
+                vblock->block->height())) {
+        ZJC_ERROR("already stored, %lu_%lu_%lu",
+                vblock->block->network_id(),
+                vblock->block->pool_index(),
+                vblock->block->height());
         return -1;
     }
     
