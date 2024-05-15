@@ -179,6 +179,7 @@ public:
 
     void Print() const;
     void PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent = "") const;
+    std::string String() const;
 
     std::shared_ptr<ViewBlock> QCRef(const std::shared_ptr<ViewBlock>& view_block) {
         if (view_block->qc) {

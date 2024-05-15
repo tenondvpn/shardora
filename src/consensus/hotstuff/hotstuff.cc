@@ -380,11 +380,50 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     if (s != Status::kSuccess) {
         return;
     }
-    
     // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
+    
+    // 一旦生成新 QC，且本地还没有该 view_block，就直接从 VoteMsg 中获取并添加
+    // 没有这个逻辑也不影响共识，只是需要同步而导致 tps 降低
+    if (vote_msg.has_view_block_item()) {
+        auto pb_v_block = vote_msg.view_block_item();
+        auto v_block = std::make_shared<ViewBlock>();
+        s = Proto2ViewBlock(pb_v_block, v_block);
+        if (s == Status::kSuccess) {
+            s = StoreVerifiedViewBlock(v_block, qc);
+            if (s != Status::kSuccess) {
+                ZJC_ERROR("pool: %d store verified view block failed, ret: %d", pool_idx_, s);
+            } else {
+                ZJC_DEBUG("pool: %d store verified view block success, view: %lu", pool_idx_, v_block->view);
+            }
+        }        
+    }
+
     Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
     return;
+}
+
+Status Hotstuff::StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_block, const std::shared_ptr<QC>& qc) {
+    if (view_block_chain()->Has(qc->view_block_hash)) {
+        return Status::kSuccess;    
+    }
+    if (v_block->hash != qc->view_block_hash || v_block->view != qc->view) {
+        return Status::kError;
+    }
+
+    Status s = acceptor()->AcceptSync(v_block->block);
+    if (s != Status::kSuccess) {
+        return s;
+    }
+
+    auto view_block_to_commit = CheckCommit(v_block);
+    if (view_block_to_commit) {
+        s = Commit(view_block_to_commit);
+        if (s != Status::kSuccess) {
+            return s;
+        }
+    }    
+    return view_block_chain()->Store(v_block);
 }
 
 void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
@@ -688,6 +727,17 @@ Status Hotstuff::ConstructVoteMsg(
     vote_msg->set_view_block_hash(v_block->hash);
     vote_msg->set_view(v_block->view);
     vote_msg->set_elect_height(elect_height);
+
+    // 将 vblock 发送给新 leader，防止新 leader 还没有收到提案造成延迟
+    // Leader 如果生成了 QC，则一定会保存 vblock，防止发起下一轮提案时没有这个块
+    // 这可能会使用一些带宽，但会提高 tps
+    // 如果不发并不会影响共识，只是有概率需要额外同步而导致延迟
+    if (VOTE_MSG_WITH_VBLOCK) {
+        view_block::protobuf::ViewBlockItem pb_view_block;
+        ViewBlock2Proto(v_block, &pb_view_block);
+        vote_msg->mutable_view_block_item()->CopyFrom(pb_view_block);
+    }
+
     
     std::string sign_x, sign_y;
     if (crypto()->PartialSign(
@@ -727,8 +777,7 @@ Status Hotstuff::ConstructViewBlock(
     auto pre_v_block = std::make_shared<ViewBlock>();
     Status s = view_block_chain()->Get(view_block->parent_hash, pre_v_block);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("parent view block has not found, pool: %d, view: %lu, parent_view: %lu", 
-            pool_idx_, pacemaker()->CurView(), pacemaker()->HighQC()->view);
+        ZJC_ERROR("parent view block has not found, pool: %d, view: %lu, parent_view: %lu, leader: %lu", pool_idx_, pacemaker()->CurView(), pacemaker()->HighQC()->view, leader_idx);
         return s;
     }
     
