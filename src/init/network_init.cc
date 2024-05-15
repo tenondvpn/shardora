@@ -163,7 +163,14 @@ int NetworkInit::Init(int argc, char** argv) {
     kv_sync_->Init(
         block_mgr_,
         db_,
-        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));    
+        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
+#else
+    hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
+    kv_sync_->Init(
+        block_mgr_,
+        db_,
+        std::bind(&consensus::HotstuffManager::VerifyViewBlockWithQC, hotstuff_mgr_,
+            std::placeholders::_1, std::placeholders::_2));    
 #endif
     ZJC_DEBUG("init 0 12");
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(
@@ -195,13 +202,7 @@ int NetworkInit::Init(int argc, char** argv) {
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
 
 
-#ifdef ENABLE_HOTSTUFF
-    hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
-    kv_sync_->Init(
-        block_mgr_,
-        db_,
-        std::bind(&consensus::HotstuffManager::VerifyViewBlockWithQC, hotstuff_mgr_,
-            std::placeholders::_1, std::placeholders::_2));    
+#ifdef ENABLE_HOTSTUFF    
     auto consensus_init_res = hotstuff_mgr_->Init(
         contract_mgr_,
         gas_prepayment_,
