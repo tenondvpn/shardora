@@ -29,15 +29,16 @@ static const double ViewDurationMaxTimeoutMs = 60000;
 static const double ViewDurationMultiplier = 1.2; // 选过大会造成卡住的成本很高，一旦卡住则恢复时间很长（如 leader 不一致），过小会导致没有交易时 CPU 长时间降不下来
 
 HashStr GetViewHash(const View& view);
-HashStr GetQCMsgHash(const View &view, const HashStr &view_block_hash);
+HashStr GetQCMsgHash(const View &view, const HashStr &view_block_hash, const HashStr& commit_view_block_hash);
 
 struct QC {
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
     View view; // view_block_hash 对应的 view，TODO 校验正确性，避免篡改
-    HashStr view_block_hash;
+    HashStr view_block_hash; // 是 view_block_hash 的 prepareQC
+    HashStr commit_view_block_hash; // 是 commit_view_block_hash 的 commitQC
 
-    QC(const std::shared_ptr<libff::alt_bn128_G1>& sign, const View& v, const HashStr& hash) :
-        bls_agg_sign(sign), view(v), view_block_hash(hash) {
+    QC(const std::shared_ptr<libff::alt_bn128_G1>& sign, const View& v, const HashStr& hash, const HashStr& commit_hash) :
+        bls_agg_sign(sign), view(v), view_block_hash(hash), commit_view_block_hash(commit_hash) {
         if (sign == nullptr) {
             bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
         }
@@ -51,14 +52,14 @@ struct QC {
     bool Unserialize(const std::string& str);
 
     inline HashStr msg_hash() const {
-        return GetQCMsgHash(view, view_block_hash);
+        return GetQCMsgHash(view, view_block_hash, commit_view_block_hash);
     }
 };
 
 // TODO TC 中可增加超时的 leader_idx，用于 Leader 选择黑名单
 struct TC : public QC {
     TC(const std::shared_ptr<libff::alt_bn128_G1>& sign, const View& v) :
-        QC(sign, v, "") {
+        QC(sign, v, "", "") {
     }
 
     TC() : QC() {}

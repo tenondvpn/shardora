@@ -138,11 +138,12 @@ void HotstuffSyncer::HandleSyncedBlocks() {
             if (s != Status::kSuccess) {
                 continue;
             }
-            auto self_qc = std::make_shared<QC>();
-            if (!self_qc->Unserialize(pb_vblock->self_qc_str())) {
+            auto self_commit_qc = std::make_shared<QC>();
+            if (!self_commit_qc->Unserialize(pb_vblock->self_commit_qc_str())) {
                 continue;
             }
-            hotstuff_mgr_->hotstuff(pb_vblock->block_info().pool_index())->HandleSyncedViewBlock(vblock, self_qc);
+            hotstuff_mgr_->hotstuff(pb_vblock->block_info().pool_index())->HandleSyncedViewBlock(
+                    vblock, self_commit_qc);
         }
         
     }    

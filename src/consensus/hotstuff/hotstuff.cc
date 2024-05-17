@@ -249,11 +249,8 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
                 common::Encode::HexEncode(v_block_to_commit->hash).c_str());
             return;
         }
-        // 保存 commit vblock 及其 PrepareQC 用于 kv 同步
-        // TODO 这里应该保存整个 commit proof
-        view_block_chain()->StoreToDb(
-                v_block_to_commit,
-                view_block_chain()->GetQcOf(v_block_to_commit));
+        // 保存 commit vblock 及其 commitQC 用于 kv 同步
+        view_block_chain()->StoreToDb(v_block_to_commit, v_block->qc);
     }    
     
     auto trans_msg = std::make_shared<transport::TransportMessage>();
@@ -315,7 +312,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     Status ret = crypto()->ReconstructAndVerifyThresSign(
             elect_height,
             vote_msg.view(),
-            GetQCMsgHash(vote_msg.view(), vote_msg.view_block_hash()),
+            GetQCMsgHash(vote_msg.view(), vote_msg.view_block_hash(), vote_msg.commit_view_block_hash()),
             replica_idx, 
             vote_msg.sign_x(),
             vote_msg.sign_y(),
@@ -685,6 +682,13 @@ Status Hotstuff::ConstructVoteMsg(
     uint32_t replica_idx = elect_item->LocalMember()->index;
     vote_msg->set_replica_idx(replica_idx);
     vote_msg->set_view_block_hash(v_block->hash);
+    HashStr commit_view_block_hash = "";
+    if (view_block_chain()->LatestLockedBlock()) {
+        commit_view_block_hash = view_block_chain()->LatestLockedBlock()->hash;
+        // 设置下一个 QC 的 commit_view_block_hash
+        vote_msg->set_commit_view_block_hash(commit_view_block_hash); 
+    }
+
     vote_msg->set_view(v_block->view);
     vote_msg->set_elect_height(elect_height);
 
@@ -702,7 +706,7 @@ Status Hotstuff::ConstructVoteMsg(
     std::string sign_x, sign_y;
     if (crypto()->PartialSign(
                 elect_height,
-                GetQCMsgHash(v_block->view, v_block->hash),
+                GetQCMsgHash(v_block->view, v_block->hash, commit_view_block_hash),
                 &sign_x,
                 &sign_y) != Status::kSuccess) {
         ZJC_ERROR("Sign message is error.");

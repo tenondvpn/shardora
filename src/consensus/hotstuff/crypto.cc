@@ -157,6 +157,7 @@ Status Crypto::VerifyThresSign(const uint64_t &elect_height, const HashStr &msg_
 
 Status Crypto::CreateQC(
         const HashStr& view_block_hash,
+        const HashStr& commit_view_block_hash,
         const View& view,
         const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
         std::shared_ptr<QC>& qc) {

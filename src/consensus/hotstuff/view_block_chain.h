@@ -111,12 +111,14 @@ public:
         SetQcToMap(view_block->hash, qc);
     }
 
-    Status StoreToDb(const std::shared_ptr<ViewBlock>& v_block, const std::shared_ptr<QC>& qc) {
+    Status StoreToDb(
+            const std::shared_ptr<ViewBlock>& v_block,
+            const std::shared_ptr<QC>& commit_qc) {
         // 持久化已经生成 qc 的 ViewBlock
         if (v_block == nullptr) {
             return Status::kInvalidArgument;
         }
-        if (qc == nullptr) {
+        if (commit_qc == nullptr) {
             return Status::kInvalidArgument;
         }
         auto pb_v_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
@@ -124,7 +126,8 @@ public:
         // 不存储 block 部分，block 已经单独存过了
         pb_v_block->clear_block_info();
         // 保存 v_block 对应的 qc 到 db
-        pb_v_block->set_self_qc_str(qc->Serialize());
+        pb_v_block->set_self_commit_qc_str(commit_qc->Serialize());
+
         auto db_batch = std::make_shared<db::DbWriteBatch>();
         prefix_db_->SaveViewBlockInfo(v_block->block->network_id(),
             v_block->block->pool_index(),

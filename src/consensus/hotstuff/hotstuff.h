@@ -100,9 +100,9 @@ public:
 
     void HandleSyncedViewBlock(
             const std::shared_ptr<ViewBlock>& vblock,
-            const std::shared_ptr<QC>& self_qc) {
+            const std::shared_ptr<QC>& self_commit_qc) {
         acceptor()->CommitSynced(vblock->block);
-        view_block_chain()->StoreToDb(vblock, self_qc);
+        view_block_chain()->StoreToDb(vblock, self_commit_qc);
     }
 
     // 已经投票

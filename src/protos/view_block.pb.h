@@ -407,6 +407,21 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::std::string* release_self_qc_str();
   void set_allocated_self_qc_str(::std::string* self_qc_str);
 
+  // optional bytes self_commit_qc_str = 8;
+  bool has_self_commit_qc_str() const;
+  void clear_self_commit_qc_str();
+  static const int kSelfCommitQcStrFieldNumber = 8;
+  const ::std::string& self_commit_qc_str() const;
+  void set_self_commit_qc_str(const ::std::string& value);
+  #if LANG_CXX11
+  void set_self_commit_qc_str(::std::string&& value);
+  #endif
+  void set_self_commit_qc_str(const char* value);
+  void set_self_commit_qc_str(const void* value, size_t size);
+  ::std::string* mutable_self_commit_qc_str();
+  ::std::string* release_self_commit_qc_str();
+  void set_allocated_self_commit_qc_str(::std::string* self_commit_qc_str);
+
   // optional .shardora.block.protobuf.Block block_info = 4;
   bool has_block_info() const;
   void clear_block_info();
@@ -449,6 +464,8 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   void clear_has_view();
   void set_has_self_qc_str();
   void clear_has_self_qc_str();
+  void set_has_self_commit_qc_str();
+  void clear_has_self_commit_qc_str();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -457,6 +474,7 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::google::protobuf::internal::ArenaStringPtr parent_hash_;
   ::google::protobuf::internal::ArenaStringPtr qc_str_;
   ::google::protobuf::internal::ArenaStringPtr self_qc_str_;
+  ::google::protobuf::internal::ArenaStringPtr self_commit_qc_str_;
   ::shardora::block::protobuf::Block* block_info_;
   ::google::protobuf::uint64 view_;
   ::google::protobuf::uint32 leader_idx_;
@@ -618,6 +636,21 @@ class QC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
   ::std::string* release_view_block_hash();
   void set_allocated_view_block_hash(::std::string* view_block_hash);
 
+  // optional bytes commit_view_block_hash = 6;
+  bool has_commit_view_block_hash() const;
+  void clear_commit_view_block_hash();
+  static const int kCommitViewBlockHashFieldNumber = 6;
+  const ::std::string& commit_view_block_hash() const;
+  void set_commit_view_block_hash(const ::std::string& value);
+  #if LANG_CXX11
+  void set_commit_view_block_hash(::std::string&& value);
+  #endif
+  void set_commit_view_block_hash(const char* value);
+  void set_commit_view_block_hash(const void* value, size_t size);
+  ::std::string* mutable_commit_view_block_hash();
+  ::std::string* release_commit_view_block_hash();
+  void set_allocated_commit_view_block_hash(::std::string* commit_view_block_hash);
+
   // optional uint64 view = 4;
   bool has_view() const;
   void clear_view();
@@ -637,6 +670,8 @@ class QC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
   void clear_has_view();
   void set_has_view_block_hash();
   void clear_has_view_block_hash();
+  void set_has_commit_view_block_hash();
+  void clear_has_commit_view_block_hash();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -645,6 +680,7 @@ class QC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
   ::google::protobuf::internal::ArenaStringPtr sign_y_;
   ::google::protobuf::internal::ArenaStringPtr sign_z_;
   ::google::protobuf::internal::ArenaStringPtr view_block_hash_;
+  ::google::protobuf::internal::ArenaStringPtr commit_view_block_hash_;
   ::google::protobuf::uint64 view_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
@@ -1500,13 +1536,13 @@ inline void ViewBlockItem::set_allocated_parent_hash(::std::string* parent_hash)
 
 // optional uint32 leader_idx = 3;
 inline bool ViewBlockItem::has_leader_idx() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void ViewBlockItem::set_has_leader_idx() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void ViewBlockItem::clear_has_leader_idx() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void ViewBlockItem::clear_leader_idx() {
   leader_idx_ = 0u;
@@ -1524,13 +1560,13 @@ inline void ViewBlockItem::set_leader_idx(::google::protobuf::uint32 value) {
 
 // optional .shardora.block.protobuf.Block block_info = 4;
 inline bool ViewBlockItem::has_block_info() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void ViewBlockItem::set_has_block_info() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void ViewBlockItem::clear_has_block_info() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline const ::shardora::block::protobuf::Block& ViewBlockItem::_internal_block_info() const {
   return *block_info_;
@@ -1644,13 +1680,13 @@ inline void ViewBlockItem::set_allocated_qc_str(::std::string* qc_str) {
 
 // optional uint64 view = 6;
 inline bool ViewBlockItem::has_view() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void ViewBlockItem::set_has_view() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void ViewBlockItem::clear_has_view() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void ViewBlockItem::clear_view() {
   view_ = GOOGLE_ULONGLONG(0);
@@ -1730,6 +1766,72 @@ inline void ViewBlockItem::set_allocated_self_qc_str(::std::string* self_qc_str)
   }
   self_qc_str_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), self_qc_str);
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockItem.self_qc_str)
+}
+
+// optional bytes self_commit_qc_str = 8;
+inline bool ViewBlockItem::has_self_commit_qc_str() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void ViewBlockItem::set_has_self_commit_qc_str() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void ViewBlockItem::clear_has_self_commit_qc_str() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void ViewBlockItem::clear_self_commit_qc_str() {
+  self_commit_qc_str_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_self_commit_qc_str();
+}
+inline const ::std::string& ViewBlockItem::self_commit_qc_str() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockItem.self_commit_qc_str)
+  return self_commit_qc_str_.GetNoArena();
+}
+inline void ViewBlockItem::set_self_commit_qc_str(const ::std::string& value) {
+  set_has_self_commit_qc_str();
+  self_commit_qc_str_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockItem.self_commit_qc_str)
+}
+#if LANG_CXX11
+inline void ViewBlockItem::set_self_commit_qc_str(::std::string&& value) {
+  set_has_self_commit_qc_str();
+  self_commit_qc_str_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.view_block.protobuf.ViewBlockItem.self_commit_qc_str)
+}
+#endif
+inline void ViewBlockItem::set_self_commit_qc_str(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_self_commit_qc_str();
+  self_commit_qc_str_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.view_block.protobuf.ViewBlockItem.self_commit_qc_str)
+}
+inline void ViewBlockItem::set_self_commit_qc_str(const void* value, size_t size) {
+  set_has_self_commit_qc_str();
+  self_commit_qc_str_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.view_block.protobuf.ViewBlockItem.self_commit_qc_str)
+}
+inline ::std::string* ViewBlockItem::mutable_self_commit_qc_str() {
+  set_has_self_commit_qc_str();
+  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.ViewBlockItem.self_commit_qc_str)
+  return self_commit_qc_str_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ViewBlockItem::release_self_commit_qc_str() {
+  // @@protoc_insertion_point(field_release:shardora.view_block.protobuf.ViewBlockItem.self_commit_qc_str)
+  if (!has_self_commit_qc_str()) {
+    return NULL;
+  }
+  clear_has_self_commit_qc_str();
+  return self_commit_qc_str_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ViewBlockItem::set_allocated_self_commit_qc_str(::std::string* self_commit_qc_str) {
+  if (self_commit_qc_str != NULL) {
+    set_has_self_commit_qc_str();
+  } else {
+    clear_has_self_commit_qc_str();
+  }
+  self_commit_qc_str_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), self_commit_qc_str);
+  // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockItem.self_commit_qc_str)
 }
 
 // -------------------------------------------------------------------
@@ -1936,13 +2038,13 @@ inline void QC::set_allocated_sign_z(::std::string* sign_z) {
 
 // optional uint64 view = 4;
 inline bool QC::has_view() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void QC::set_has_view() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void QC::clear_has_view() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void QC::clear_view() {
   view_ = GOOGLE_ULONGLONG(0);
@@ -2022,6 +2124,72 @@ inline void QC::set_allocated_view_block_hash(::std::string* view_block_hash) {
   }
   view_block_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), view_block_hash);
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.QC.view_block_hash)
+}
+
+// optional bytes commit_view_block_hash = 6;
+inline bool QC::has_commit_view_block_hash() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void QC::set_has_commit_view_block_hash() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void QC::clear_has_commit_view_block_hash() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void QC::clear_commit_view_block_hash() {
+  commit_view_block_hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_commit_view_block_hash();
+}
+inline const ::std::string& QC::commit_view_block_hash() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.QC.commit_view_block_hash)
+  return commit_view_block_hash_.GetNoArena();
+}
+inline void QC::set_commit_view_block_hash(const ::std::string& value) {
+  set_has_commit_view_block_hash();
+  commit_view_block_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.QC.commit_view_block_hash)
+}
+#if LANG_CXX11
+inline void QC::set_commit_view_block_hash(::std::string&& value) {
+  set_has_commit_view_block_hash();
+  commit_view_block_hash_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.view_block.protobuf.QC.commit_view_block_hash)
+}
+#endif
+inline void QC::set_commit_view_block_hash(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_commit_view_block_hash();
+  commit_view_block_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.view_block.protobuf.QC.commit_view_block_hash)
+}
+inline void QC::set_commit_view_block_hash(const void* value, size_t size) {
+  set_has_commit_view_block_hash();
+  commit_view_block_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.view_block.protobuf.QC.commit_view_block_hash)
+}
+inline ::std::string* QC::mutable_commit_view_block_hash() {
+  set_has_commit_view_block_hash();
+  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.QC.commit_view_block_hash)
+  return commit_view_block_hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* QC::release_commit_view_block_hash() {
+  // @@protoc_insertion_point(field_release:shardora.view_block.protobuf.QC.commit_view_block_hash)
+  if (!has_commit_view_block_hash()) {
+    return NULL;
+  }
+  clear_has_commit_view_block_hash();
+  return commit_view_block_hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void QC::set_allocated_commit_view_block_hash(::std::string* commit_view_block_hash) {
+  if (commit_view_block_hash != NULL) {
+    set_has_commit_view_block_hash();
+  } else {
+    clear_has_commit_view_block_hash();
+  }
+  commit_view_block_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), commit_view_block_hash);
+  // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.QC.commit_view_block_hash)
 }
 
 // -------------------------------------------------------------------
