@@ -62,7 +62,10 @@ public:
         common_pk_ = common_pk;
         local_sk_ = sk;
 
-        SetMemberCount(members->size());        
+        SetMemberCount(members->size());
+        for (const auto& member : *members) {
+            node_statistic_map_[member->index] = std::make_shared<NodeConsensusStatistic>();
+        }
     }
     ~ElectItem() {};
 
