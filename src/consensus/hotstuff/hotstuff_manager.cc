@@ -125,7 +125,7 @@ int HotstuffManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 }
 
 int HotstuffManager::VerifySyncedViewBlock(view_block::protobuf::ViewBlockItem* pb_vblock) {
-    if (!pb_vblock->has_self_qc_str()) {
+    if (!pb_vblock->has_self_commit_qc_str()) {
         return -1;
     }
     auto vblock = std::make_shared<hotstuff::ViewBlock>();

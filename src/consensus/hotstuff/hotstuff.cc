@@ -16,9 +16,9 @@ void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
     last_vote_view_ = GenesisView;
     
     auto latest_view_block = std::make_shared<ViewBlock>();
-    auto latest_view_block_self_qc = std::make_shared<QC>();
+    auto latest_view_block_commit_qc = std::make_shared<QC>();
     // 从 db 中获取最后一个有 QC 的 ViewBlock
-    Status s = GetLatestViewBlockFromDb(db_, pool_idx_, latest_view_block, latest_view_block_self_qc);
+    Status s = GetLatestViewBlockFromDb(db_, pool_idx_, latest_view_block, latest_view_block_commit_qc);
     if (s == Status::kSuccess) {
         // 初始状态，使用 db 中最后一个 view_block 初始化视图链
         view_block_chain_->Store(latest_view_block);
@@ -26,7 +26,7 @@ void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
         view_block_chain_->SetLatestCommittedBlock(latest_view_block);
         // 开启第一个视图
 
-        pacemaker_->AdvanceView(new_sync_info()->WithQC(latest_view_block_self_qc));
+        pacemaker_->AdvanceView(new_sync_info()->WithQC(latest_view_block_commit_qc));
         ZJC_DEBUG("has latest block, pool_idx: %d, latest block height: %lu", pool_idx_, latest_view_block->block->height());
     } else {
         ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);

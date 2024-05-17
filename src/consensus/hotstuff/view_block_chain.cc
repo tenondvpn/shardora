@@ -310,7 +310,7 @@ Status GetLatestViewBlockFromDb(
         const std::shared_ptr<db::Db>& db,
         const uint32_t& pool_index,
         std::shared_ptr<ViewBlock>& view_block,
-        std::shared_ptr<QC>& self_qc) {
+        std::shared_ptr<QC>& self_commit_qc) {
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
     uint32_t sharding_id = common::GlobalInfo::Instance()->network_id();
     pools::protobuf::PoolLatestInfo pool_info;
@@ -349,13 +349,13 @@ Status GetLatestViewBlockFromDb(
     auto block_ptr = std::make_shared<block::protobuf::Block>(block);
     view_block = std::make_shared<ViewBlock>(parent_hash, qc, block_ptr, view, leader_idx);  
     
-    r = self_qc->Unserialize(pb_view_block.self_qc_str());
-    if (!r || self_qc->view < GenesisView) {
-        self_qc = GetGenesisQC(view_block->hash);
+    r = self_commit_qc->Unserialize(pb_view_block.self_commit_qc_str());
+    if (!r || self_commit_qc->view < GenesisView) {
+        self_commit_qc = GetGenesisQC(view_block->hash);
     }
 
-    ZJC_DEBUG("pool: %d, latest vb from db, vb view: %lu, self_qc view: %lu",
-        pool_index, view_block->view, self_qc->view);
+    ZJC_DEBUG("pool: %d, latest vb from db, vb view: %lu, self_commit_qc view: %lu",
+        pool_index, view_block->view, self_commit_qc->view);
     return Status::kSuccess;
 }
 
