@@ -120,7 +120,7 @@ void Pacemaker::OnLocalTimeout() {
     
     std::string bls_sign_x;
     std::string bls_sign_y;
-    auto view_hash = GetViewHash(CurView());
+    auto view_hash = GetViewHash(CurView(), elect_item->ElectHeight());
     // 使用最新的 elect_height 签名
     if (crypto_->PartialSign(
             elect_item->ElectHeight(),
@@ -134,7 +134,7 @@ void Pacemaker::OnLocalTimeout() {
     timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());    
     timeout_msg.set_sign_x(bls_sign_x);
     timeout_msg.set_sign_y(bls_sign_y);
-    timeout_msg.set_view_hash(GetViewHash(CurView()));
+    timeout_msg.set_view_hash(GetViewHash(CurView(), elect_item->ElectHeight()));
     timeout_msg.set_view(CurView());
     timeout_msg.set_elect_height(elect_item->ElectHeight());
     timeout_msg.set_pool_idx(pool_idx_); // 用于分配线程
@@ -211,7 +211,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     }
     // 视图切换
     auto tc = std::make_shared<TC>();
-    s = crypto_->CreateTC(timeout_proto.view(), reconstructed_sign, tc);
+    s = crypto_->CreateTC(timeout_proto.view(), timeout_proto.elect_height(), reconstructed_sign, tc);
     if (s != Status::kSuccess || !tc) {
         return;
     }

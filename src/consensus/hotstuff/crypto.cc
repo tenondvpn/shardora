@@ -159,6 +159,7 @@ Status Crypto::CreateQC(
         const HashStr& view_block_hash,
         const HashStr& commit_view_block_hash,
         const View& view,
+        const uint64_t& elect_height,
         const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
         std::shared_ptr<QC>& qc) {
     if (!reconstructed_sign) {
@@ -166,6 +167,7 @@ Status Crypto::CreateQC(
     }
     qc->bls_agg_sign = reconstructed_sign;
     qc->view = view;
+    qc->elect_height = elect_height;
     qc->view_block_hash = view_block_hash;
     qc->commit_view_block_hash = commit_view_block_hash;
     return Status::kSuccess;
@@ -173,6 +175,7 @@ Status Crypto::CreateQC(
 
 Status Crypto::CreateTC(
         const View& view,
+        const uint64_t& elect_height,
         const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
         std::shared_ptr<TC>& tc) {
     if (!reconstructed_sign) {
@@ -181,19 +184,19 @@ Status Crypto::CreateTC(
     }
     tc->bls_agg_sign = reconstructed_sign;
     tc->view = view;
+    tc->elect_height = elect_height;
     return Status::kSuccess;
 }
 
 Status Crypto::VerifyQC(
-        const std::shared_ptr<QC>& qc,
-        const uint64_t& elect_height) {
+        const std::shared_ptr<QC>& qc) {
     if (!qc) {
         return Status::kError;
     }
     if (qc->view == GenesisView) {
         return Status::kSuccess;
     }
-    Status s = VerifyThresSign(elect_height, qc->msg_hash(), qc->bls_agg_sign);
+    Status s = VerifyThresSign(qc->elect_height, qc->msg_hash(), qc->bls_agg_sign);
     if (s != Status::kSuccess) {
         ZJC_ERROR("Verify qc is error.");
         return s;
@@ -202,12 +205,11 @@ Status Crypto::VerifyQC(
 }
 
 Status Crypto::VerifyTC(
-        const std::shared_ptr<TC>& tc,
-        const uint64_t& elect_height) {
+        const std::shared_ptr<TC>& tc) {
     if (!tc) {
         return Status::kError;
     }
-    if (VerifyThresSign(elect_height, tc->msg_hash(), tc->bls_agg_sign) != Status::kSuccess) {
+    if (VerifyThresSign(tc->elect_height, tc->msg_hash(), tc->bls_agg_sign) != Status::kSuccess) {
         ZJC_ERROR("Verify tc is error.");
         return Status::kError; 
     }

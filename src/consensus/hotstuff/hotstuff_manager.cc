@@ -180,8 +180,7 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(
     }
 
     auto hf = hotstuff(vblock->block->pool_index());
-    // TODO 这里不应该传 vblock 的 elect height，应该是 commit_qc->view_block_hash 的 elect_height
-    Status s = hf->crypto()->VerifyQC(commit_qc, vblock->block->electblock_height());
+    Status s = hf->crypto()->VerifyQC(commit_qc);
     if (s != Status::kSuccess) {
         ZJC_ERROR("qc verify failed, s: %d, blockview: %lu, qcview: %lu", s, vblock->view, commit_qc->view);
         return s;

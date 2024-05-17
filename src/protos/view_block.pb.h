@@ -640,6 +640,13 @@ class QC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
   ::google::protobuf::uint64 view() const;
   void set_view(::google::protobuf::uint64 value);
 
+  // optional uint64 elect_height = 7;
+  bool has_elect_height() const;
+  void clear_elect_height();
+  static const int kElectHeightFieldNumber = 7;
+  ::google::protobuf::uint64 elect_height() const;
+  void set_elect_height(::google::protobuf::uint64 value);
+
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.QC)
  private:
   void set_has_sign_x();
@@ -654,6 +661,8 @@ class QC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
   void clear_has_view_block_hash();
   void set_has_commit_view_block_hash();
   void clear_has_commit_view_block_hash();
+  void set_has_elect_height();
+  void clear_has_elect_height();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -664,6 +673,7 @@ class QC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
   ::google::protobuf::internal::ArenaStringPtr view_block_hash_;
   ::google::protobuf::internal::ArenaStringPtr commit_view_block_hash_;
   ::google::protobuf::uint64 view_;
+  ::google::protobuf::uint64 elect_height_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -2106,6 +2116,30 @@ inline void QC::set_allocated_commit_view_block_hash(::std::string* commit_view_
   }
   commit_view_block_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), commit_view_block_hash);
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.QC.commit_view_block_hash)
+}
+
+// optional uint64 elect_height = 7;
+inline bool QC::has_elect_height() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void QC::set_has_elect_height() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void QC::clear_has_elect_height() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void QC::clear_elect_height() {
+  elect_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_elect_height();
+}
+inline ::google::protobuf::uint64 QC::elect_height() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.QC.elect_height)
+  return elect_height_;
+}
+inline void QC::set_elect_height(::google::protobuf::uint64 value) {
+  set_has_elect_height();
+  elect_height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.QC.elect_height)
 }
 
 // -------------------------------------------------------------------

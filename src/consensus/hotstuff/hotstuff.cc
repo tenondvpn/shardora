@@ -150,7 +150,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
             return;
         }
         if (tc->view > pacemaker()->HighTC()->view) {
-            if (crypto()->VerifyTC(tc, pro_msg.elect_height()) != Status::kSuccess) {
+            if (crypto()->VerifyTC(tc) != Status::kSuccess) {
                 ZJC_ERROR("VerifyTC error.");
                 return;
             }
@@ -312,7 +312,10 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     Status ret = crypto()->ReconstructAndVerifyThresSign(
             elect_height,
             vote_msg.view(),
-            GetQCMsgHash(vote_msg.view(), vote_msg.view_block_hash(), vote_msg.commit_view_block_hash()),
+            GetQCMsgHash(vote_msg.view(),
+                vote_msg.view_block_hash(),
+                vote_msg.commit_view_block_hash(),
+                elect_height),
             replica_idx, 
             vote_msg.sign_x(),
             vote_msg.sign_y(),
@@ -336,6 +339,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
             vote_msg.view_block_hash(),
             vote_msg.commit_view_block_hash(),
             vote_msg.view(),
+            elect_height,
             reconstructed_sign,
             qc);
     if (s != Status::kSuccess) {
@@ -399,7 +403,7 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
             return;
         }
         if (tc->view > pacemaker()->HighTC()->view) {
-            if (crypto()->VerifyTC(tc, newview_msg.elect_height()) != Status::kSuccess) {
+            if (crypto()->VerifyTC(tc) != Status::kSuccess) {
                 ZJC_ERROR("VerifyTC error.");
                 return;
             }
@@ -572,7 +576,7 @@ Status Hotstuff::VerifyViewBlock(
 
     // 验证 qc
     if (qc->view > pacemaker()->HighQC()->view) {
-        if (crypto()->VerifyQC(qc, elect_height) != Status::kSuccess) {
+        if (crypto()->VerifyQC(qc) != Status::kSuccess) {
             ZJC_ERROR("Verify qc is error. elect_height: %llu, qc: %llu", elect_height, qc->view);
             return Status::kError; 
         }

@@ -360,14 +360,16 @@ Status GetLatestViewBlockFromDb(
 }
 
 std::shared_ptr<QC> GetQCWrappedByGenesis() {
-    return std::make_shared<QC>(nullptr, BeforeGenesisView, "");
+    return std::make_shared<QC>(nullptr, BeforeGenesisView, "", "", 1);
 }
 
 std::shared_ptr<QC> GetGenesisQC(const HashStr& genesis_view_block_hash) {
     return std::make_shared<QC>(
             std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero()),
             GenesisView,
-            genesis_view_block_hash);
+            genesis_view_block_hash,
+            genesis_view_block_hash,
+            1);
 }
 
 } // namespace hotstuff
