@@ -18,7 +18,7 @@ message ViewBlockItem {
     optional block.protobuf.Block block_info = 4;
     optional bytes qc_str = 5;
     optional uint64 view = 6;
-    optional bytes self_qc_str = 7;
+    optional bytes self_commit_qc_str = 7;
 }
 
 message QC {
@@ -27,6 +27,8 @@ message QC {
     optional bytes sign_z = 3;
     optional uint64 view = 4;
     optional bytes view_block_hash = 5;
+    optional bytes commit_view_block_hash = 6;
+    optional uint64 elect_height = 7;
 }
 
 message ViewBlockSyncResponse {

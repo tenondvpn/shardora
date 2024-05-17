@@ -605,7 +605,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 ZJC_ERROR("pb vblock parse failed");
                 continue;
             }
-            if (!pb_vblock->has_self_qc_str()) {
+            if (!pb_vblock->has_self_commit_qc_str()) {
                 ZJC_ERROR("pb vblock has no qc");
                 continue;
             }

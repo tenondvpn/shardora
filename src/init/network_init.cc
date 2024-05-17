@@ -300,56 +300,6 @@ int NetworkInit::Init(int argc, char** argv) {
 
 void NetworkInit::AddCmds() {
 #ifdef ENABLE_HOTSTUFF
-    cmd_.AddCommand("addblock", [this](const std::vector<std::string>& args){
-        if (args.size() < 3) {
-            return;
-        }
-        uint32_t pool_idx = std::stoi(args[0]);
-        auto parent_hash = common::Encode::HexDecode(args[1]);
-        auto leader_idx = std::stoi(args[2]);
-        
-        auto pacemaker = hotstuff_mgr_->pacemaker(pool_idx);
-        if (!pacemaker) {
-            return;
-        }
-        auto chain = hotstuff_mgr_->chain(pool_idx);
-        if (!chain) {
-            return;
-        }
-
-        auto parent_block = std::make_shared<hotstuff::ViewBlock>();
-        hotstuff::Status s = chain->Get(parent_hash, parent_block);
-        if (s != hotstuff::Status::kSuccess) {
-            return;
-        }
-
-        auto view = parent_block->view;
-        
-        // 打包块
-        auto fake_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
-        
-        auto qc = std::make_shared<hotstuff::QC>();
-        s = hotstuff_mgr_->crypto(pool_idx)->CreateQC(parent_block->hash, parent_block->view, fake_sign, qc);        
-        if (s != hotstuff::Status::kSuccess) {
-            return;
-        }
-
-        auto sync_info = std::make_shared<hotstuff::SyncInfo>();
-        pacemaker->AdvanceView(sync_info->WithQC(qc));
-
-        auto block = std::make_shared<block::protobuf::Block>();
-        block->set_electblock_height(1);
-        
-        auto view_block = std::make_shared<hotstuff::ViewBlock>(
-                parent_hash,
-                pacemaker->HighQC(),
-                block,
-                pacemaker->CurView(), // 此时为 0
-                leader_idx);
-        
-        chain->Store(view_block);
-    });
-
     cmd_.AddCommand("pc", [this](const std::vector<std::string>& args){
         if (args.size() < 1) {
             return;

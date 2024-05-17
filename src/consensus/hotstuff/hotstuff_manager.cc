@@ -125,7 +125,7 @@ int HotstuffManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 }
 
 int HotstuffManager::VerifySyncedViewBlock(view_block::protobuf::ViewBlockItem* pb_vblock) {
-    if (!pb_vblock->has_self_qc_str()) {
+    if (!pb_vblock->has_self_commit_qc_str()) {
         return -1;
     }
     auto vblock = std::make_shared<hotstuff::ViewBlock>();
@@ -135,9 +135,9 @@ int HotstuffManager::VerifySyncedViewBlock(view_block::protobuf::ViewBlockItem* 
             pb_vblock->view());                
         return -1;
     }
-    auto qc = std::make_shared<QC>();
-    if (!qc->Unserialize(pb_vblock->self_qc_str())) {
-        ZJC_ERROR("qc unserialize failed");
+    auto commit_qc = std::make_shared<QC>();
+    if (!commit_qc->Unserialize(pb_vblock->self_commit_qc_str())) {
+        ZJC_ERROR("commit qc unserialize failed");
         return -1;
     }
 
@@ -153,7 +153,7 @@ int HotstuffManager::VerifySyncedViewBlock(view_block::protobuf::ViewBlockItem* 
         return -1;
     }
     
-    s = VerifyViewBlockWithQC(vblock, qc);
+    s = VerifyViewBlockWithCommitQC(vblock, commit_qc);
     if (s != Status::kSuccess) {
         return s == Status::kElectItemNotFound ? 1 : -1;
     }
@@ -161,10 +161,10 @@ int HotstuffManager::VerifySyncedViewBlock(view_block::protobuf::ViewBlockItem* 
 }
 
 // 验证有 qc 的 view block
-Status HotstuffManager::VerifyViewBlockWithQC(
+Status HotstuffManager::VerifyViewBlockWithCommitQC(
         const std::shared_ptr<ViewBlock>& vblock,
-        const std::shared_ptr<QC>& qc) {
-    if (!vblock->Valid() || !qc || !vblock->block) {
+        const std::shared_ptr<QC>& commit_qc) {
+    if (!vblock->Valid() || !commit_qc || !vblock->block) {
         ZJC_ERROR("vblock is not valid, blockview: %lu, qcview: %lu");
         return Status::kInvalidArgument;
     }
@@ -172,15 +172,17 @@ Status HotstuffManager::VerifyViewBlockWithQC(
         return Status::kSuccess;
     }
 
-    if (vblock->hash != qc->view_block_hash || vblock->view != qc->view) {
-        ZJC_ERROR("hash is not same with qc, blockview: %lu, qcview: %lu", vblock->view, qc->view);
+    if (vblock->hash != commit_qc->commit_view_block_hash) {
+        ZJC_ERROR("hash is not same with qc, block: %s, commit_hash: %s",
+            common::Encode::HexEncode(vblock->hash).c_str(),
+            common::Encode::HexEncode(commit_qc->commit_view_block_hash).c_str());
         return Status::kInvalidArgument;
     }
 
     auto hf = hotstuff(vblock->block->pool_index());
-    Status s = hf->crypto()->VerifyQC(qc, vblock->block->electblock_height());
+    Status s = hf->crypto()->VerifyQC(commit_qc);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("qc verify failed, s: %d, blockview: %lu, qcview: %lu", s, vblock->view, qc->view);
+        ZJC_ERROR("qc verify failed, s: %d, blockview: %lu, qcview: %lu", s, vblock->view, commit_qc->view);
         return s;
     }
     return Status::kSuccess;

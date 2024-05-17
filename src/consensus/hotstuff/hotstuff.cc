@@ -16,9 +16,9 @@ void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
     last_vote_view_ = GenesisView;
     
     auto latest_view_block = std::make_shared<ViewBlock>();
-    auto latest_view_block_self_qc = std::make_shared<QC>();
+    auto latest_view_block_commit_qc = std::make_shared<QC>();
     // 从 db 中获取最后一个有 QC 的 ViewBlock
-    Status s = GetLatestViewBlockFromDb(db_, pool_idx_, latest_view_block, latest_view_block_self_qc);
+    Status s = GetLatestViewBlockFromDb(db_, pool_idx_, latest_view_block, latest_view_block_commit_qc);
     if (s == Status::kSuccess) {
         // 初始状态，使用 db 中最后一个 view_block 初始化视图链
         view_block_chain_->Store(latest_view_block);
@@ -26,8 +26,12 @@ void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
         view_block_chain_->SetLatestCommittedBlock(latest_view_block);
         // 开启第一个视图
 
-        pacemaker_->AdvanceView(new_sync_info()->WithQC(latest_view_block_self_qc));
-        ZJC_DEBUG("has latest block, pool_idx: %d, latest block height: %lu", pool_idx_, latest_view_block->block->height());
+        pacemaker_->AdvanceView(new_sync_info()->WithQC(latest_view_block_commit_qc));
+        ZJC_DEBUG("has latest block, pool_idx: %d, latest block height: %lu, commit_qc_hash: %s, latest_view_block: %s, high_qc_hash: %s",
+            pool_idx_, latest_view_block->block->height(),
+            common::Encode::HexEncode(latest_view_block_commit_qc->view_block_hash).c_str(),
+            common::Encode::HexEncode(view_block_chain_->LatestLockedBlock()->hash).c_str(),
+            common::Encode::HexEncode(pacemaker_->HighQC()->view_block_hash).c_str());
     } else {
         ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
     }            
@@ -150,7 +154,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
             return;
         }
         if (tc->view > pacemaker()->HighTC()->view) {
-            if (crypto()->VerifyTC(tc, pro_msg.elect_height()) != Status::kSuccess) {
+            if (crypto()->VerifyTC(tc) != Status::kSuccess) {
                 ZJC_ERROR("VerifyTC error.");
                 return;
             }
@@ -188,7 +192,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     
     // 4 Verify ViewBlock    
     if (VerifyViewBlock(v_block, view_block_chain(), tc, pro_msg.elect_height()) != Status::kSuccess) {
-        ZJC_ERROR("Verify ViewBlock is error. hash: %s",
+        ZJC_ERROR("pool: %d, Verify ViewBlock is error. hash: %s", pool_idx_,
             common::Encode::HexEncode(v_block->hash).c_str());
         return;
     }
@@ -249,11 +253,8 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
                 common::Encode::HexEncode(v_block_to_commit->hash).c_str());
             return;
         }
-        // 保存 commit vblock 及其 PrepareQC 用于 kv 同步
-        // TODO 这里应该保存整个 commit proof
-        view_block_chain()->StoreToDb(
-                v_block_to_commit,
-                view_block_chain()->GetQcOf(v_block_to_commit));
+        // 保存 commit vblock 及其 commitQC 用于 kv 同步
+        view_block_chain()->StoreToDb(v_block_to_commit, v_block->qc);
     }    
     
     auto trans_msg = std::make_shared<transport::TransportMessage>();
@@ -315,7 +316,10 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     Status ret = crypto()->ReconstructAndVerifyThresSign(
             elect_height,
             vote_msg.view(),
-            GetQCMsgHash(vote_msg.view(), vote_msg.view_block_hash()),
+            GetQCMsgHash(vote_msg.view(),
+                vote_msg.view_block_hash(),
+                vote_msg.commit_view_block_hash(),
+                elect_height),
             replica_idx, 
             vote_msg.sign_x(),
             vote_msg.sign_y(),
@@ -335,7 +339,13 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         vote_msg.view());
 
     auto qc = std::make_shared<QC>();
-    Status s = crypto()->CreateQC(vote_msg.view_block_hash(), vote_msg.view(), reconstructed_sign, qc);
+    Status s = crypto()->CreateQC(
+            vote_msg.view_block_hash(),
+            vote_msg.commit_view_block_hash(),
+            vote_msg.view(),
+            elect_height,
+            reconstructed_sign,
+            qc);
     if (s != Status::kSuccess) {
         return;
     }
@@ -397,7 +407,7 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
             return;
         }
         if (tc->view > pacemaker()->HighTC()->view) {
-            if (crypto()->VerifyTC(tc, newview_msg.elect_height()) != Status::kSuccess) {
+            if (crypto()->VerifyTC(tc) != Status::kSuccess) {
                 ZJC_ERROR("VerifyTC error.");
                 return;
             }
@@ -570,7 +580,7 @@ Status Hotstuff::VerifyViewBlock(
 
     // 验证 qc
     if (qc->view > pacemaker()->HighQC()->view) {
-        if (crypto()->VerifyQC(qc, elect_height) != Status::kSuccess) {
+        if (crypto()->VerifyQC(qc) != Status::kSuccess) {
             ZJC_ERROR("Verify qc is error. elect_height: %llu, qc: %llu", elect_height, qc->view);
             return Status::kError; 
         }
@@ -587,7 +597,10 @@ Status Hotstuff::VerifyViewBlock(
     if (view_block_chain->LatestLockedBlock() &&
         !view_block_chain->Extends(v_block, view_block_chain->LatestLockedBlock()) && 
         v_block->qc->view <= view_block_chain->LatestLockedBlock()->view) {
-        ZJC_ERROR("block view message is error.");
+        ZJC_ERROR("pool: %d, block view message is error. %lu, %lu, %s, %s",
+            pool_idx_, v_block->qc->view, view_block_chain->LatestLockedBlock()->view,
+            common::Encode::HexEncode(view_block_chain->LatestLockedBlock()->hash).c_str(),
+            common::Encode::HexEncode(v_block->parent_hash).c_str());
         return Status::kError;
     }   
 
@@ -685,6 +698,13 @@ Status Hotstuff::ConstructVoteMsg(
     uint32_t replica_idx = elect_item->LocalMember()->index;
     vote_msg->set_replica_idx(replica_idx);
     vote_msg->set_view_block_hash(v_block->hash);
+    HashStr commit_view_block_hash = "";
+    if (view_block_chain()->LatestLockedBlock()) {
+        commit_view_block_hash = view_block_chain()->LatestLockedBlock()->hash;
+        // 设置下一个 QC 的 commit_view_block_hash
+        vote_msg->set_commit_view_block_hash(commit_view_block_hash); 
+    }
+
     vote_msg->set_view(v_block->view);
     vote_msg->set_elect_height(elect_height);
 
@@ -702,7 +722,7 @@ Status Hotstuff::ConstructVoteMsg(
     std::string sign_x, sign_y;
     if (crypto()->PartialSign(
                 elect_height,
-                GetQCMsgHash(v_block->view, v_block->hash),
+                GetQCMsgHash(v_block->view, v_block->hash, commit_view_block_hash, elect_height),
                 &sign_x,
                 &sign_y) != Status::kSuccess) {
         ZJC_ERROR("Sign message is error.");

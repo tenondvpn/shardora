@@ -74,22 +74,23 @@ public:
     
     Status CreateQC(
             const HashStr& view_block_hash,
+            const HashStr& commit_view_block_hash,
             const View& view,
+            const uint64_t& elect_height,
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
             std::shared_ptr<QC>& qc);
 
     Status CreateTC(
             const View& view,
+            const uint64_t& elect_height,
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
             std::shared_ptr<TC>& tc);
 
     Status VerifyQC(
-            const std::shared_ptr<QC>& qc,
-            const uint64_t& elect_height);
+            const std::shared_ptr<QC>& qc);
 
     Status VerifyTC(
-            const std::shared_ptr<TC>& tc,
-            const uint64_t& elect_height);    
+            const std::shared_ptr<TC>& tc);    
 
     Status SignMessage(transport::MessagePtr& msg_ptr);
     Status VerifyMessage(const transport::MessagePtr& msg_ptr);
