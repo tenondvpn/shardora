@@ -332,7 +332,12 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         vote_msg.view());
 
     auto qc = std::make_shared<QC>();
-    Status s = crypto()->CreateQC(vote_msg.view_block_hash(), vote_msg.view(), reconstructed_sign, qc);
+    Status s = crypto()->CreateQC(
+            vote_msg.view_block_hash(),
+            vote_msg.commit_view_block_hash(),
+            vote_msg.view(),
+            reconstructed_sign,
+            qc);
     if (s != Status::kSuccess) {
         return;
     }

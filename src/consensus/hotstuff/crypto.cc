@@ -167,6 +167,7 @@ Status Crypto::CreateQC(
     qc->bls_agg_sign = reconstructed_sign;
     qc->view = view;
     qc->view_block_hash = view_block_hash;
+    qc->commit_view_block_hash = commit_view_block_hash;
     return Status::kSuccess;
 }
 
