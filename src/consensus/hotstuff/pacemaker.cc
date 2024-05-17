@@ -23,7 +23,7 @@ Pacemaker::Pacemaker(
     pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d) {
     
     high_qc_ = GetQCWrappedByGenesis();
-    high_tc_ = std::make_shared<TC>(nullptr, BeforeGenesisView);
+    high_tc_ = std::make_shared<TC>(nullptr, BeforeGenesisView, 1);
     cur_view_ = GenesisView;
 }
 
