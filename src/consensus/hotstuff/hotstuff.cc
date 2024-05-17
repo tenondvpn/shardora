@@ -260,8 +260,16 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
                 common::Encode::HexEncode(v_block_to_commit->hash).c_str());
             return;
         }
-        // 保存 commit vblock 及其 commitQC 用于 kv 同步
-        view_block_chain()->StoreToDb(v_block_to_commit, v_block->qc);
+        
+        if (!view_block_chain()->HasInDb(
+                    v_block_to_commit->block->network_id(),
+                    v_block_to_commit->block->pool_index(),
+                    v_block_to_commit->block->height())) {
+            // TODO 更新 Leader Score by commitQC
+            // 保存 commit vblock 及其 commitQC 用于 kv 同步
+            elect_info()->MarkSuccess(v_block_to_commit->ElectHeight(), v_block_to_commit->leader_idx);
+            view_block_chain()->StoreToDb(v_block_to_commit, v_block->qc);            
+        }
     }    
     
     auto trans_msg = std::make_shared<transport::TransportMessage>();
@@ -326,7 +334,8 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
             GetQCMsgHash(vote_msg.view(),
                 vote_msg.view_block_hash(),
                 vote_msg.commit_view_block_hash(),
-                elect_height),
+                elect_height,
+                vote_msg.leader_idx()),
             replica_idx, 
             vote_msg.sign_x(),
             vote_msg.sign_y(),
@@ -351,6 +360,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
             vote_msg.commit_view_block_hash(),
             vote_msg.view(),
             elect_height,
+            vote_msg.leader_idx(),
             reconstructed_sign,
             qc);
     if (s != Status::kSuccess) {
@@ -734,6 +744,7 @@ Status Hotstuff::ConstructVoteMsg(
 
     vote_msg->set_view(v_block->view);
     vote_msg->set_elect_height(elect_height);
+    vote_msg->set_leader_idx(v_block->leader_idx);
 
     // 将 vblock 发送给新 leader，防止新 leader 还没有收到提案造成延迟
     // Leader 如果生成了 QC，则一定会保存 vblock，防止发起下一轮提案时没有这个块
@@ -749,7 +760,11 @@ Status Hotstuff::ConstructVoteMsg(
     std::string sign_x, sign_y;
     if (crypto()->PartialSign(
                 elect_height,
-                GetQCMsgHash(v_block->view, v_block->hash, commit_view_block_hash, elect_height),
+                GetQCMsgHash(v_block->view,
+                    v_block->hash,
+                    commit_view_block_hash,
+                    elect_height,
+                    v_block->leader_idx),
                 &sign_x,
                 &sign_y) != Status::kSuccess) {
         ZJC_ERROR("Sign message is error.");

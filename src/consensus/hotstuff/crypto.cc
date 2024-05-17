@@ -160,6 +160,7 @@ Status Crypto::CreateQC(
         const HashStr& commit_view_block_hash,
         const View& view,
         const uint64_t& elect_height,
+        const uint32_t& leader_idx,
         const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
         std::shared_ptr<QC>& qc) {
     if (!reconstructed_sign) {
@@ -170,12 +171,14 @@ Status Crypto::CreateQC(
     qc->elect_height = elect_height;
     qc->view_block_hash = view_block_hash;
     qc->commit_view_block_hash = commit_view_block_hash;
+    qc->leader_idx = leader_idx;
     return Status::kSuccess;
 }
 
 Status Crypto::CreateTC(
         const View& view,
         const uint64_t& elect_height,
+        const uint32_t& leader_idx,
         const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
         std::shared_ptr<TC>& tc) {
     if (!reconstructed_sign) {
@@ -185,6 +188,7 @@ Status Crypto::CreateTC(
     tc->bls_agg_sign = reconstructed_sign;
     tc->view = view;
     tc->elect_height = elect_height;
+    tc->leader_idx = leader_idx;
     return Status::kSuccess;
 }
 

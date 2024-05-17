@@ -23,7 +23,7 @@ Pacemaker::Pacemaker(
     pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d) {
     
     high_qc_ = GetQCWrappedByGenesis();
-    high_tc_ = std::make_shared<TC>(nullptr, BeforeGenesisView, 1);
+    high_tc_ = std::make_shared<TC>(nullptr, BeforeGenesisView, 1, 0);
     cur_view_ = GenesisView;
 }
 
@@ -120,7 +120,8 @@ void Pacemaker::OnLocalTimeout() {
     
     std::string bls_sign_x;
     std::string bls_sign_y;
-    auto view_hash = GetViewHash(CurView(), elect_item->ElectHeight());
+    // TODO Leader Idx
+    auto view_hash = GetViewHash(CurView(), elect_item->ElectHeight(), 0);
     // 使用最新的 elect_height 签名
     if (crypto_->PartialSign(
             elect_item->ElectHeight(),
@@ -134,10 +135,11 @@ void Pacemaker::OnLocalTimeout() {
     timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());    
     timeout_msg.set_sign_x(bls_sign_x);
     timeout_msg.set_sign_y(bls_sign_y);
-    timeout_msg.set_view_hash(GetViewHash(CurView(), elect_item->ElectHeight()));
+    timeout_msg.set_view_hash(GetViewHash(CurView(), elect_item->ElectHeight(), 0));
     timeout_msg.set_view(CurView());
     timeout_msg.set_elect_height(elect_item->ElectHeight());
     timeout_msg.set_pool_idx(pool_idx_); // 用于分配线程
+    timeout_msg.set_leader_idx(0);
     
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     msg.set_type(common::kHotstuffTimeoutMessage);
@@ -212,7 +214,12 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     }
     // 视图切换
     auto tc = std::make_shared<TC>();
-    s = crypto_->CreateTC(timeout_proto.view(), timeout_proto.elect_height(), reconstructed_sign, tc);
+    s = crypto_->CreateTC(
+            timeout_proto.view(),
+            timeout_proto.elect_height(),
+            timeout_proto.leader_idx(),
+            reconstructed_sign,
+            tc);
     if (s != Status::kSuccess || !tc) {
         return;
     }

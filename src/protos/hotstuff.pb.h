@@ -938,6 +938,13 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::uint32 replica_idx() const;
   void set_replica_idx(::google::protobuf::uint32 value);
 
+  // optional uint32 leader_idx = 10;
+  bool has_leader_idx() const;
+  void clear_leader_idx();
+  static const int kLeaderIdxFieldNumber = 10;
+  ::google::protobuf::uint32 leader_idx() const;
+  void set_leader_idx(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:shardora.hotstuff.protobuf.VoteMsg)
  private:
   void set_has_replica_idx();
@@ -956,6 +963,8 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   void clear_has_view_block_item();
   void set_has_commit_view_block_hash();
   void clear_has_commit_view_block_hash();
+  void set_has_leader_idx();
+  void clear_has_leader_idx();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -969,6 +978,7 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::uint64 view_;
   ::google::protobuf::uint64 elect_height_;
   ::google::protobuf::uint32 replica_idx_;
+  ::google::protobuf::uint32 leader_idx_;
   friend struct ::protobuf_protos_2fhotstuff_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -2426,6 +2436,30 @@ inline void VoteMsg::set_allocated_commit_view_block_hash(::std::string* commit_
   }
   commit_view_block_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), commit_view_block_hash);
   // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.VoteMsg.commit_view_block_hash)
+}
+
+// optional uint32 leader_idx = 10;
+inline bool VoteMsg::has_leader_idx() const {
+  return (_has_bits_[0] & 0x00000100u) != 0;
+}
+inline void VoteMsg::set_has_leader_idx() {
+  _has_bits_[0] |= 0x00000100u;
+}
+inline void VoteMsg::clear_has_leader_idx() {
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline void VoteMsg::clear_leader_idx() {
+  leader_idx_ = 0u;
+  clear_has_leader_idx();
+}
+inline ::google::protobuf::uint32 VoteMsg::leader_idx() const {
+  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.VoteMsg.leader_idx)
+  return leader_idx_;
+}
+inline void VoteMsg::set_leader_idx(::google::protobuf::uint32 value) {
+  set_has_leader_idx();
+  leader_idx_ = value;
+  // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.VoteMsg.leader_idx)
 }
 
 // -------------------------------------------------------------------

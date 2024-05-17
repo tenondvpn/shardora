@@ -28,12 +28,13 @@ static const double ViewDurationStartTimeoutMs = 300;
 static const double ViewDurationMaxTimeoutMs = 60000;
 static const double ViewDurationMultiplier = 1.2; // 选过大会造成卡住的成本很高，一旦卡住则恢复时间很长（如 leader 不一致），过小会导致没有交易时 CPU 长时间降不下来
 
-HashStr GetViewHash(const View& view, const uint64_t& elect_height);
+HashStr GetViewHash(const View& view, const uint64_t& elect_height, const uint32_t& leader_idx);
 HashStr GetQCMsgHash(
         const View &view,
         const HashStr &view_block_hash,
         const HashStr& commit_view_block_hash,
-        const uint64_t& elect_height);
+        const uint64_t& elect_height,
+        const uint32_t& leader_idx);
 
 struct QC {
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
@@ -41,14 +42,16 @@ struct QC {
     HashStr view_block_hash; // 是 view_block_hash 的 prepareQC
     HashStr commit_view_block_hash; // 是 commit_view_block_hash 的 commitQC
     uint64_t elect_height; // 确定 epoch，用于验证 QC，理论上与 view_block_hash elect_height 相同，但对于同步场景，作为 commit_qc 时有时候 view_block 无法获取，故将 elect_height 放入 QC 中
+    uint32_t leader_idx;
 
     QC(
             const std::shared_ptr<libff::alt_bn128_G1>& sign,
             const View& v,
             const HashStr& hash,
             const HashStr& commit_hash,
-            const uint64_t& elect_height) :
-        bls_agg_sign(sign), view(v), view_block_hash(hash), commit_view_block_hash(commit_hash), elect_height(elect_height) {
+            const uint64_t& elect_height,
+            const uint32_t& leader_idx) :
+        bls_agg_sign(sign), view(v), view_block_hash(hash), commit_view_block_hash(commit_hash), elect_height(elect_height), leader_idx(leader_idx) {
         if (sign == nullptr) {
             bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
         }
@@ -62,20 +65,24 @@ struct QC {
     bool Unserialize(const std::string& str);
 
     inline HashStr msg_hash() const {
-        return GetQCMsgHash(view, view_block_hash, commit_view_block_hash, elect_height);
+        return GetQCMsgHash(view, view_block_hash, commit_view_block_hash, elect_height, leader_idx);
     }
 };
 
 // TODO TC 中可增加超时的 leader_idx，用于 Leader 选择黑名单
 struct TC : public QC {
-    TC(const std::shared_ptr<libff::alt_bn128_G1>& sign, const View& v, const uint64_t& elect_height) :
-        QC(sign, v, "", "", elect_height) {
+    TC(
+            const std::shared_ptr<libff::alt_bn128_G1>& sign,
+            const View& v,
+            const uint64_t& elect_height,
+            const uint32_t& leader_idx) :
+        QC(sign, v, "", "", elect_height, leader_idx) {
     }
 
     TC() : QC() {}
 
     inline HashStr msg_hash() const {
-        return GetViewHash(view, elect_height);
+        return GetViewHash(view, elect_height, leader_idx);
     }
 };
 

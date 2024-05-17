@@ -29,6 +29,7 @@ message QC {
     optional bytes view_block_hash = 5;
     optional bytes commit_view_block_hash = 6;
     optional uint64 elect_height = 7;
+    optional uint32 leader_idx = 8;
 }
 
 message ViewBlockSyncResponse {
@@ -54,4 +55,5 @@ message TimeoutMessage {
     optional bytes view_hash = 5;
     optional uint64 elect_height = 6;
     optional uint32 pool_idx = 7;
+    optional uint32 leader_idx = 8;
 }

@@ -11,15 +11,16 @@ HashStr GetQCMsgHash(
         const View &view,
         const HashStr &view_block_hash,
         const HashStr& commit_view_block_hash,
-        const uint64_t& elect_height) {
+        const uint64_t& elect_height,
+        const uint32_t& leader_idx) {
     std::stringstream ss;
-    ss << view << view_block_hash << commit_view_block_hash << elect_height;
+    ss << view << view_block_hash << commit_view_block_hash << elect_height << leader_idx;
     std::string msg = ss.str();
     return common::Hash::keccak256(msg); 
 }
 
-HashStr GetViewHash(const View& view, const uint64_t& elect_height) {
-    return GetQCMsgHash(view, "", "", elect_height);
+HashStr GetViewHash(const View& view, const uint64_t& elect_height, const uint32_t& leader_idx) {
+    return GetQCMsgHash(view, "", "", elect_height, leader_idx);
 }
 
 std::string QC::Serialize() const {
@@ -32,7 +33,7 @@ std::string QC::Serialize() const {
     qc_proto.set_view_block_hash(view_block_hash);
     qc_proto.set_commit_view_block_hash(commit_view_block_hash);
     qc_proto.set_elect_height(elect_height);
-    
+    qc_proto.set_leader_idx(leader_idx);
     // TODO 不同版本 pb 结果不一样
     return qc_proto.SerializeAsString();
 }
@@ -63,6 +64,7 @@ bool QC::Unserialize(const std::string& str) {
     view_block_hash = qc_proto.view_block_hash();
     commit_view_block_hash = qc_proto.commit_view_block_hash();
     elect_height = qc_proto.elect_height();
+    leader_idx = qc_proto.leader_idx();
     
     return true;
 }
