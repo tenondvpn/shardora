@@ -536,10 +536,25 @@ class NewViewMsg : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::std::string* release_tc_str();
   void set_allocated_tc_str(::std::string* tc_str);
 
-  // optional uint64 elect_height = 2;
+  // optional bytes qc_str = 2;
+  bool has_qc_str() const;
+  void clear_qc_str();
+  static const int kQcStrFieldNumber = 2;
+  const ::std::string& qc_str() const;
+  void set_qc_str(const ::std::string& value);
+  #if LANG_CXX11
+  void set_qc_str(::std::string&& value);
+  #endif
+  void set_qc_str(const char* value);
+  void set_qc_str(const void* value, size_t size);
+  ::std::string* mutable_qc_str();
+  ::std::string* release_qc_str();
+  void set_allocated_qc_str(::std::string* qc_str);
+
+  // optional uint64 elect_height = 3;
   bool has_elect_height() const;
   void clear_elect_height();
-  static const int kElectHeightFieldNumber = 2;
+  static const int kElectHeightFieldNumber = 3;
   ::google::protobuf::uint64 elect_height() const;
   void set_elect_height(::google::protobuf::uint64 value);
 
@@ -547,6 +562,8 @@ class NewViewMsg : public ::google::protobuf::Message /* @@protoc_insertion_poin
  private:
   void set_has_tc_str();
   void clear_has_tc_str();
+  void set_has_qc_str();
+  void clear_has_qc_str();
   void set_has_elect_height();
   void clear_has_elect_height();
 
@@ -554,6 +571,7 @@ class NewViewMsg : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr tc_str_;
+  ::google::protobuf::internal::ArenaStringPtr qc_str_;
   ::google::protobuf::uint64 elect_height_;
   friend struct ::protobuf_protos_2fhotstuff_2eproto::TableStruct;
 };
@@ -1693,15 +1711,81 @@ inline void NewViewMsg::set_allocated_tc_str(::std::string* tc_str) {
   // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.NewViewMsg.tc_str)
 }
 
-// optional uint64 elect_height = 2;
-inline bool NewViewMsg::has_elect_height() const {
+// optional bytes qc_str = 2;
+inline bool NewViewMsg::has_qc_str() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void NewViewMsg::set_has_elect_height() {
+inline void NewViewMsg::set_has_qc_str() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void NewViewMsg::clear_has_elect_height() {
+inline void NewViewMsg::clear_has_qc_str() {
   _has_bits_[0] &= ~0x00000002u;
+}
+inline void NewViewMsg::clear_qc_str() {
+  qc_str_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_qc_str();
+}
+inline const ::std::string& NewViewMsg::qc_str() const {
+  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.NewViewMsg.qc_str)
+  return qc_str_.GetNoArena();
+}
+inline void NewViewMsg::set_qc_str(const ::std::string& value) {
+  set_has_qc_str();
+  qc_str_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.NewViewMsg.qc_str)
+}
+#if LANG_CXX11
+inline void NewViewMsg::set_qc_str(::std::string&& value) {
+  set_has_qc_str();
+  qc_str_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.hotstuff.protobuf.NewViewMsg.qc_str)
+}
+#endif
+inline void NewViewMsg::set_qc_str(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_qc_str();
+  qc_str_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.hotstuff.protobuf.NewViewMsg.qc_str)
+}
+inline void NewViewMsg::set_qc_str(const void* value, size_t size) {
+  set_has_qc_str();
+  qc_str_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.hotstuff.protobuf.NewViewMsg.qc_str)
+}
+inline ::std::string* NewViewMsg::mutable_qc_str() {
+  set_has_qc_str();
+  // @@protoc_insertion_point(field_mutable:shardora.hotstuff.protobuf.NewViewMsg.qc_str)
+  return qc_str_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* NewViewMsg::release_qc_str() {
+  // @@protoc_insertion_point(field_release:shardora.hotstuff.protobuf.NewViewMsg.qc_str)
+  if (!has_qc_str()) {
+    return NULL;
+  }
+  clear_has_qc_str();
+  return qc_str_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void NewViewMsg::set_allocated_qc_str(::std::string* qc_str) {
+  if (qc_str != NULL) {
+    set_has_qc_str();
+  } else {
+    clear_has_qc_str();
+  }
+  qc_str_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), qc_str);
+  // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.NewViewMsg.qc_str)
+}
+
+// optional uint64 elect_height = 3;
+inline bool NewViewMsg::has_elect_height() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void NewViewMsg::set_has_elect_height() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void NewViewMsg::clear_has_elect_height() {
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void NewViewMsg::clear_elect_height() {
   elect_height_ = GOOGLE_ULONGLONG(0);
