@@ -715,7 +715,7 @@ Status Hotstuff::ConstructVoteMsg(
     std::string sign_x, sign_y;
     if (crypto()->PartialSign(
                 elect_height,
-                GetQCMsgHash(v_block->view, v_block->hash, commit_view_block_hash),
+                GetQCMsgHash(v_block->view, v_block->hash, commit_view_block_hash, elect_height),
                 &sign_x,
                 &sign_y) != Status::kSuccess) {
         ZJC_ERROR("Sign message is error.");
