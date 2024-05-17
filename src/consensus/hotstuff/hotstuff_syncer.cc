@@ -540,6 +540,18 @@ Status HotstuffSyncer::onRecViewBlock(
             ZJC_ERROR("pool: %d sync commit failed", pool_idx);
             return s;
         }
+
+        if (!hotstuff->view_block_chain()->HasInDb(
+                    view_block_to_commit->block->network_id(),
+                    view_block_to_commit->block->pool_index(),
+                    view_block_to_commit->block->height())) {
+            // TODO 更新 Leader Score by commitQC
+            hotstuff->elect_info()->MarkSuccess(
+                    view_block_to_commit->ElectHeight(),
+                    view_block_to_commit->leader_idx);
+            // 保存 commit vblock 及其 commitQC 用于 kv 同步
+            hotstuff->view_block_chain()->StoreToDb(view_block_to_commit, view_block->qc);            
+        }        
     }
 
     // 4. 保存 view_block

@@ -138,6 +138,10 @@ public:
         assert(st.ok());
         return Status::kSuccess;
     }
+
+    bool HasInDb(const uint32_t& network_id, const uint32_t& pool_idx, const uint64_t& block_height) {
+        return prefix_db_->HasViewBlockInfo(network_id, pool_idx, block_height);
+    }
     
     // If a chain is valid
     bool IsValid();

@@ -365,7 +365,7 @@ Status GetLatestViewBlockFromDb(
 }
 
 std::shared_ptr<QC> GetQCWrappedByGenesis() {
-    return std::make_shared<QC>(nullptr, BeforeGenesisView, "", "", 1);
+    return std::make_shared<QC>(nullptr, BeforeGenesisView, "", "", 1, 0);
 }
 
 std::shared_ptr<QC> GetGenesisQC(const HashStr& genesis_view_block_hash) {
@@ -374,7 +374,8 @@ std::shared_ptr<QC> GetGenesisQC(const HashStr& genesis_view_block_hash) {
             GenesisView,
             genesis_view_block_hash,
             genesis_view_block_hash,
-            1);
+            1,
+            0);
 }
 
 } // namespace hotstuff

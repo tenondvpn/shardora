@@ -647,6 +647,13 @@ class QC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
   ::google::protobuf::uint64 elect_height() const;
   void set_elect_height(::google::protobuf::uint64 value);
 
+  // optional uint32 leader_idx = 8;
+  bool has_leader_idx() const;
+  void clear_leader_idx();
+  static const int kLeaderIdxFieldNumber = 8;
+  ::google::protobuf::uint32 leader_idx() const;
+  void set_leader_idx(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.QC)
  private:
   void set_has_sign_x();
@@ -663,6 +670,8 @@ class QC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
   void clear_has_commit_view_block_hash();
   void set_has_elect_height();
   void clear_has_elect_height();
+  void set_has_leader_idx();
+  void clear_has_leader_idx();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -674,6 +683,7 @@ class QC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
   ::google::protobuf::internal::ArenaStringPtr commit_view_block_hash_;
   ::google::protobuf::uint64 view_;
   ::google::protobuf::uint64 elect_height_;
+  ::google::protobuf::uint32 leader_idx_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -1185,6 +1195,13 @@ class TimeoutMessage : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::uint64 elect_height() const;
   void set_elect_height(::google::protobuf::uint64 value);
 
+  // optional uint32 leader_idx = 8;
+  bool has_leader_idx() const;
+  void clear_leader_idx();
+  static const int kLeaderIdxFieldNumber = 8;
+  ::google::protobuf::uint32 leader_idx() const;
+  void set_leader_idx(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.TimeoutMessage)
  private:
   void set_has_member_id();
@@ -1201,6 +1218,8 @@ class TimeoutMessage : public ::google::protobuf::Message /* @@protoc_insertion_
   void clear_has_elect_height();
   void set_has_pool_idx();
   void clear_has_pool_idx();
+  void set_has_leader_idx();
+  void clear_has_leader_idx();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -1212,6 +1231,7 @@ class TimeoutMessage : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::uint32 member_id_;
   ::google::protobuf::uint32 pool_idx_;
   ::google::protobuf::uint64 elect_height_;
+  ::google::protobuf::uint32 leader_idx_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // ===================================================================
@@ -2142,6 +2162,30 @@ inline void QC::set_elect_height(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.QC.elect_height)
 }
 
+// optional uint32 leader_idx = 8;
+inline bool QC::has_leader_idx() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void QC::set_has_leader_idx() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void QC::clear_has_leader_idx() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void QC::clear_leader_idx() {
+  leader_idx_ = 0u;
+  clear_has_leader_idx();
+}
+inline ::google::protobuf::uint32 QC::leader_idx() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.QC.leader_idx)
+  return leader_idx_;
+}
+inline void QC::set_leader_idx(::google::protobuf::uint32 value) {
+  set_has_leader_idx();
+  leader_idx_ = value;
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.QC.leader_idx)
+}
+
 // -------------------------------------------------------------------
 
 // ViewBlockSyncResponse
@@ -2865,6 +2909,30 @@ inline void TimeoutMessage::set_pool_idx(::google::protobuf::uint32 value) {
   set_has_pool_idx();
   pool_idx_ = value;
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.TimeoutMessage.pool_idx)
+}
+
+// optional uint32 leader_idx = 8;
+inline bool TimeoutMessage::has_leader_idx() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void TimeoutMessage::set_has_leader_idx() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void TimeoutMessage::clear_has_leader_idx() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void TimeoutMessage::clear_leader_idx() {
+  leader_idx_ = 0u;
+  clear_has_leader_idx();
+}
+inline ::google::protobuf::uint32 TimeoutMessage::leader_idx() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.TimeoutMessage.leader_idx)
+  return leader_idx_;
+}
+inline void TimeoutMessage::set_leader_idx(::google::protobuf::uint32 value) {
+  set_has_leader_idx();
+  leader_idx_ = value;
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.TimeoutMessage.leader_idx)
 }
 
 #ifdef __GNUC__

@@ -77,12 +77,14 @@ public:
             const HashStr& commit_view_block_hash,
             const View& view,
             const uint64_t& elect_height,
+            const uint32_t& leader_idx,
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
             std::shared_ptr<QC>& qc);
 
     Status CreateTC(
             const View& view,
             const uint64_t& elect_height,
+            const uint32_t& leader_idx,
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
             std::shared_ptr<TC>& tc);
 
