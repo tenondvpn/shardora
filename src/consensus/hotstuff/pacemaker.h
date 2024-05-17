@@ -85,7 +85,7 @@ public:
 private:
     void UpdateHighQC(const std::shared_ptr<QC>& qc);
     void UpdateHighTC(const std::shared_ptr<TC>& tc);
-    void BroadcastTimeout(const std::shared_ptr<transport::TransportMessage>& msg_ptr);
+    void SendTimeout(const std::shared_ptr<transport::TransportMessage>& msg_ptr);
 
     inline void StartTimeoutTimer() {
         last_time_us_ = common::TimeUtils::TimestampUs();
@@ -101,6 +101,7 @@ private:
     inline bool IsTimeout() {
         return (last_time_us_ != 0 && common::TimeUtils::TimestampUs() - last_time_us_ > duration_us_);
     }
+    
 
     uint32_t pool_idx_;
     std::shared_ptr<QC> high_qc_ = nullptr;

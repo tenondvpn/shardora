@@ -347,7 +347,12 @@ Status GetLatestViewBlockFromDb(
     }
 
     auto block_ptr = std::make_shared<block::protobuf::Block>(block);
-    view_block = std::make_shared<ViewBlock>(parent_hash, qc, block_ptr, view, leader_idx);  
+    view_block = std::make_shared<ViewBlock>(parent_hash, qc, block_ptr, view, leader_idx);
+    ZJC_DEBUG("pool: %d, latest vb from db2, hash: %s, view: %lu, leader: %d, parent_hash: %s",
+        pool_index,
+        common::Encode::HexEncode(view_block->hash).c_str(),
+        view, leader_idx,
+        common::Encode::HexEncode(parent_hash).c_str());    
     
     r = self_commit_qc->Unserialize(pb_view_block.self_commit_qc_str());
     if (!r || self_commit_qc->view < GenesisView) {

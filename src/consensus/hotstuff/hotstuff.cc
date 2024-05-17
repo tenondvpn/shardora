@@ -27,7 +27,11 @@ void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
         // 开启第一个视图
 
         pacemaker_->AdvanceView(new_sync_info()->WithQC(latest_view_block_commit_qc));
-        ZJC_DEBUG("has latest block, pool_idx: %d, latest block height: %lu", pool_idx_, latest_view_block->block->height());
+        ZJC_DEBUG("has latest block, pool_idx: %d, latest block height: %lu, commit_qc_hash: %s, latest_view_block: %s, high_qc_hash: %s",
+            pool_idx_, latest_view_block->block->height(),
+            common::Encode::HexEncode(latest_view_block_commit_qc->view_block_hash).c_str(),
+            common::Encode::HexEncode(view_block_chain_->LatestLockedBlock()->hash).c_str(),
+            common::Encode::HexEncode(pacemaker_->HighQC()->view_block_hash).c_str());
     } else {
         ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
     }            
@@ -188,7 +192,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     
     // 4 Verify ViewBlock    
     if (VerifyViewBlock(v_block, view_block_chain(), tc, pro_msg.elect_height()) != Status::kSuccess) {
-        ZJC_ERROR("Verify ViewBlock is error. hash: %s",
+        ZJC_ERROR("pool: %d, Verify ViewBlock is error. hash: %s", pool_idx_,
             common::Encode::HexEncode(v_block->hash).c_str());
         return;
     }
@@ -593,7 +597,10 @@ Status Hotstuff::VerifyViewBlock(
     if (view_block_chain->LatestLockedBlock() &&
         !view_block_chain->Extends(v_block, view_block_chain->LatestLockedBlock()) && 
         v_block->qc->view <= view_block_chain->LatestLockedBlock()->view) {
-        ZJC_ERROR("block view message is error.");
+        ZJC_ERROR("pool: %d, block view message is error. %lu, %lu, %s, %s",
+            pool_idx_, v_block->qc->view, view_block_chain->LatestLockedBlock()->view,
+            common::Encode::HexEncode(view_block_chain->LatestLockedBlock()->hash).c_str(),
+            common::Encode::HexEncode(v_block->parent_hash).c_str());
         return Status::kError;
     }   
 

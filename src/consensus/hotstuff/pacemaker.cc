@@ -103,7 +103,7 @@ void Pacemaker::OnLocalTimeout() {
     // if view is last one, deal directly.
     if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
         last_timeout_->header.hotstuff_timeout_proto().view() >= CurView()) {
-        BroadcastTimeout(last_timeout_);
+        SendTimeout(last_timeout_);
         return;
     }
     
@@ -148,24 +148,25 @@ void Pacemaker::OnLocalTimeout() {
         stop_voting_fn_(CurView());
     }
 
-    BroadcastTimeout(msg_ptr);
+    SendTimeout(msg_ptr);
 }
 
-void Pacemaker::BroadcastTimeout(const std::shared_ptr<transport::TransportMessage>& msg_ptr) {    
+void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& msg_ptr) {    
     auto& msg = msg_ptr->header;
     auto leader = leader_rotation_->GetLeader();
     if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
         dht::DhtKeyManager dht_key(leader->net_id, leader->id);
         msg.set_des_dht_key(dht_key.StrKey());
         ZJC_DEBUG("Send TimeoutMsg pool: %d, to ip: %s, port: %d, "
-            "local_idx: %d, id: %s, local id: %s, hash64: %lu",
+            "local_idx: %d, id: %s, local id: %s, hash64: %lu, view: %lu",
             pool_idx_,
             common::Uint32ToIp(leader->public_ip).c_str(), 
             leader->public_port, 
             msg.hotstuff_timeout_proto().member_id(),
             common::Encode::HexEncode(leader->id).c_str(),
             common::Encode::HexEncode(crypto_->security()->GetAddress()).c_str(),
-            msg.hash64());
+            msg.hash64(),
+            msg.hotstuff_timeout_proto().view());
         if (leader->public_ip == 0 || leader->public_port == 0) {
             network::Route::Instance()->Send(msg_ptr);
         } else {

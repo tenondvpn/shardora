@@ -48,7 +48,7 @@ struct QC {
             const HashStr& hash,
             const HashStr& commit_hash,
             const uint64_t& elect_height) :
-        bls_agg_sign(sign), view(v), view_block_hash(hash), commit_view_block_hash(commit_hash) {
+        bls_agg_sign(sign), view(v), view_block_hash(hash), commit_view_block_hash(commit_hash), elect_height(elect_height) {
         if (sign == nullptr) {
             bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
         }
