@@ -243,7 +243,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         case VOTE:
             hotstuff(hotstuff_msg.pool_index())->HandleVoteMsg(header);
             break;
-        case NEWVIEW: // 接收 tc
+        case NEWVIEW: // 接收 tc 和 qc
             hotstuff(hotstuff_msg.pool_index())->HandleNewViewMsg(header);
             break;
         case PRE_RESET_TIMER:

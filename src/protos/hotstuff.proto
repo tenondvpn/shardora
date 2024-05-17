@@ -21,7 +21,8 @@ message HotstuffMessage {
 
 message NewViewMsg {
     optional bytes tc_str = 1;
-    optional uint64 elect_height = 2;
+    optional bytes qc_str = 2;
+    optional uint64 elect_height = 3;
 }
 
 message ProposeMsg {

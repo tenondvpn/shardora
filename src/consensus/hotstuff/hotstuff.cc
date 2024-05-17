@@ -111,11 +111,18 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
     auto* hotstuff_msg = header.mutable_hotstuff();
     auto* pb_newview_msg = hotstuff_msg->mutable_newview_msg();
     pb_newview_msg->set_elect_height(elect_info_->GetElectItem()->ElectHeight());
-    if (!sync_info->tc) {
+    if (!sync_info->tc && !sync_info->qc) {
         return;
     }
 
-    pb_newview_msg->set_tc_str(sync_info->tc->Serialize());
+    if (sync_info->tc) {
+        pb_newview_msg->set_tc_str(sync_info->tc->Serialize());
+    }
+
+    if (sync_info->qc) {
+        pb_newview_msg->set_qc_str(sync_info->qc->Serialize());
+    }
+    
     Status s = ConstructHotstuffMsg(NEWVIEW, nullptr, nullptr, pb_newview_msg, hotstuff_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
@@ -352,6 +359,8 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
 
     // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
+    // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率高很多
+    NewView(new_sync_info()->WithQC(qc));
     
     // 一旦生成新 QC，且本地还没有该 view_block，就直接从 VoteMsg 中获取并添加
     // 没有这个逻辑也不影响共识，只是需要同步而导致 tps 降低
@@ -416,6 +425,24 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
             pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));
         }
     }
+
+    std::shared_ptr<QC> qc = nullptr;
+    if (!newview_msg.qc_str().empty()) {
+        qc = std::make_shared<QC>();
+        if (!qc->Unserialize(newview_msg.qc_str())) {
+            ZJC_ERROR("qc Unserialize is error.");
+            return;
+        }
+        if (qc->view > pacemaker()->HighQC()->view) {
+            if (crypto()->VerifyQC(qc) != Status::kSuccess) {
+                ZJC_ERROR("VerifyQC error.");
+                return;
+            }
+
+            ZJC_DEBUG("====3.3 pool: %d, qc: %lu, onNewview", pool_idx_, qc->view);
+            pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
+        }
+    }    
     return;
 }
 
