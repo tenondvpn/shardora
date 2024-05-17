@@ -270,6 +270,10 @@ public:
         if (elect_item) {
             elect_item->MarkSuccess(member_idx);
         }
+        auto stat = NodeStatistic(elect_height, member_idx);
+        if (stat) {
+            ZJC_DEBUG("member stat, %d, success: %lu, fail: %lu", member_idx, stat->success, stat->fail);
+        }       
     }
     void MarkFail(uint64_t elect_height, uint32_t member_idx) {
         auto elect_item = GetElectItem(elect_height);
