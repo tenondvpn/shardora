@@ -105,16 +105,10 @@ public:
 
     void SetQcOf(const HashStr& view_block_hash, const std::shared_ptr<QC>& qc) {
         SetQcToMap(view_block_hash, qc);
-        auto view_block = std::make_shared<ViewBlock>();
-        Status s = Get(view_block_hash, view_block);
-        if (s == Status::kSuccess) {
-            StoreToDb(view_block, qc);
-        }
     }
 
     void SetQcOf(const std::shared_ptr<ViewBlock>& view_block, const std::shared_ptr<QC>& qc) {
         SetQcToMap(view_block->hash, qc);
-        StoreToDb(view_block, qc);
     }
 
     Status StoreToDb(const std::shared_ptr<ViewBlock>& v_block, const std::shared_ptr<QC>& qc) {

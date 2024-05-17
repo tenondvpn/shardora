@@ -249,6 +249,11 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
                 common::Encode::HexEncode(v_block_to_commit->hash).c_str());
             return;
         }
+        // 保存 commit vblock 及其 PrepareQC 用于 kv 同步
+        // TODO 这里应该保存整个 commit proof
+        view_block_chain()->StoreToDb(
+                v_block_to_commit,
+                view_block_chain()->GetQcOf(v_block_to_commit));
     }    
     
     auto trans_msg = std::make_shared<transport::TransportMessage>();
