@@ -432,6 +432,14 @@ int MultiThreadHandler::CheckMessageValid(MessagePtr& msg_ptr) {
     //     return kFirewallCheckError;
     // }
 
+    if (!IsMessageUnique(msg_ptr->header.hash64())) {
+        // invalid msg id
+        ZJC_DEBUG("check message id failed %d, %lu, from: %s:%d",
+            msg_ptr->header.type(), msg_ptr->header.hash64(),
+            msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort());
+        return kFirewallCheckError;
+    }
+
     if (msg_ptr->header.type() >= common::kMaxMessageTypeCount) {
         ZJC_DEBUG("invalid message type: %d", msg_ptr->header.type());
         return kFirewallCheckError;
@@ -448,14 +456,6 @@ int MultiThreadHandler::CheckMessageValid(MessagePtr& msg_ptr) {
         return kFirewallCheckError;
     }
 
-    if (!IsMessageUnique(msg_ptr->header.hash64())) {
-        // invalid msg id
-        ZJC_DEBUG("check message id failed %d, %lu, from: %s:%d",
-            msg_ptr->header.type(), msg_ptr->header.hash64(),
-            msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort());
-        return kFirewallCheckError;
-    }
-    
     return kFirewallCheckSuccess;
 }
 
