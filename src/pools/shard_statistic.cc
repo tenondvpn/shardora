@@ -347,6 +347,7 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
         for (int32_t i = 0; i < block.tx_list_size(); ++i) {
             if (tm_statistic_ptr->max_height < block.height()) {
                 tm_statistic_ptr->max_height = block.height();
+                ZJC_DEBUG("pool index: %d, set max height: %lu", block.pool_index(), block.height());
             }
 
             HandleCrossShard(is_root, block, block.tx_list(i), tm_statistic_ptr->cross_statistic);
