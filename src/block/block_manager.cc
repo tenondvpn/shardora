@@ -1683,7 +1683,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         uint32_t pool_index, 
         const std::string& tx_hash) {
     bool leader = tx_hash.empty();
-    if (!leader) {
+    if (leader) {
         ZJC_DEBUG("backup get statistic tx coming.");
     }
 
@@ -1695,7 +1695,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
 
     auto statistic_map_ptr = got_latest_statistic_map_ptr_;
     if (statistic_map_ptr == nullptr) {
-        if (!leader) {
+        if (leader) {
             ZJC_DEBUG("statistic_map_ptr == nullptr");
         }
 
@@ -1703,7 +1703,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
     }
 
     if (statistic_map_ptr->empty()) {
-        if (!leader) {
+        if (leader) {
             ZJC_DEBUG("statistic_map_ptr->empty()");
         }
 
@@ -1747,7 +1747,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         
         auto now_tm = common::TimeUtils::TimestampUs();
         if (iter->first >= latest_timeblock_height_) {
-            if (!leader) {
+            if (leader) {
                 ZJC_DEBUG("iter->first >= latest_timeblock_height_: %lu, %lu",
                     iter->first, latest_timeblock_height_);
             }
@@ -1785,7 +1785,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         return shard_statistic_tx->tx_ptr;
     }
 
-    if (!leader) {
+    if (leader) {
         ZJC_DEBUG("failed get statistic tx");
     }
     return nullptr;
