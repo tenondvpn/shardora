@@ -912,8 +912,9 @@ Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& t
     dht::DhtKeyManager dht_key(leader->net_id, leader->id);
     header_msg.set_des_dht_key(dht_key.StrKey());
     header_msg.set_type(common::kHotstuffMessage);
-    transport::TcpTransport::Instance()->SetMessageHash(header_msg);    
-    if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
+    transport::TcpTransport::Instance()->SetMessageHash(header_msg);
+    auto leader_idx = leader_rotation_->GetLocalMemberIdx();
+    if (leader->index != leader_idx) {
         if (leader->public_ip == 0 || leader->public_port == 0) {
             network::Route::Instance()->Send(trans_msg);
         } else {
@@ -930,13 +931,16 @@ Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& t
         }
     }
  
-    ZJC_DEBUG("send to leader %d message to leader net: %u, %s, hash64: %lu, %s:%d",
+    ZJC_DEBUG("send to leader %d message to leader net: %u, %s, "
+        "hash64: %lu, %s:%d, leader->index: %d, leader_idx: %d",
         msg_type,
         leader->net_id, 
         common::Encode::HexEncode(leader->id).c_str(), 
         header_msg.hash64(),
         common::Uint32ToIp(leader->public_ip).c_str(),
-        leader->public_port);
+        leader->public_port,
+        leader->index,
+        leader_idx);
     return ret;
 }
 
