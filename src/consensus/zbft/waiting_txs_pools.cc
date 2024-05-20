@@ -117,6 +117,10 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_in
     if (tx_ptr != nullptr) {
         auto txs_item = std::make_shared<WaitingTxsItem>();
         txs_item->pool_index = pool_index;
+        if (tx_ptr->unique_tx_hash.empty()) {
+            tx_ptr->unique_tx_hash = pools::GetTxMessageHash(tx_ptr->tx_info);
+        }
+        
         txs_item->txs[tx_ptr->unique_tx_hash] = tx_ptr;
         txs_item->tx_type = pools::protobuf::kConsensusRootTimeBlock;
         ZJC_DEBUG("single tx success to get timeblock tx: tx hash: %s, gid: %s",
@@ -145,6 +149,10 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetCrossTx(
             }
 
             tx_ptr->prev_consensus_tm_us = now_tm;
+        }
+
+        if (tx_ptr->unique_tx_hash.empty()) {
+            tx_ptr->unique_tx_hash = pools::GetTxMessageHash(tx_ptr->tx_info);
         }
 
         auto txs_item = std::make_shared<WaitingTxsItem>();

@@ -930,11 +930,13 @@ Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& t
         }
     }
  
-    ZJC_DEBUG("send to leader %d message to leader net: %u, %s, hash64: %lu",
+    ZJC_DEBUG("send to leader %d message to leader net: %u, %s, hash64: %lu, %s:%d",
         msg_type,
         leader->net_id, 
         common::Encode::HexEncode(leader->id).c_str(), 
-        header_msg.hash64());
+        header_msg.hash64(),
+        leader->public_ip,
+        leader->public_port);
     return ret;
 }
 
