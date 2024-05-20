@@ -52,6 +52,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
     }
 
     if (txs_item == nullptr) {
+        ZJC_DEBUG("leader now GetStatisticTx pool_index: %d", pool_index);
         txs_item = GetStatisticTx(pool_index, "");
     }
 
