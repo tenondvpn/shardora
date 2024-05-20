@@ -421,10 +421,6 @@ Status HotstuffSyncer::processResponseChain(
             continue;
         }
 
-        if (crypto(pool_idx)->VerifyQC(view_block_qc, view_block->ElectHeight()) != Status::kSuccess) {
-            continue;
-        }
-
         min_heap.push(view_block);        
     }
 
