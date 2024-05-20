@@ -935,7 +935,7 @@ Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& t
         leader->net_id, 
         common::Encode::HexEncode(leader->id).c_str(), 
         header_msg.hash64(),
-        leader->public_ip,
+        common::Uint32ToIp(leader->public_ip).c_str(),
         leader->public_port);
     return ret;
 }
