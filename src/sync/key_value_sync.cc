@@ -605,7 +605,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 ZJC_ERROR("pb vblock parse failed");
                 continue;
             }
-            if (!pb_vblock->has_self_qc_str()) {
+            if (!pb_vblock->has_self_commit_qc_str()) {
                 ZJC_ERROR("pb vblock has no qc");
                 continue;
             }
@@ -616,7 +616,6 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             }
             int res = view_block_synced_callback_(pb_vblock.get());
             if (res == -1) {
-                ZJC_ERROR("synced callback failed");
                 continue;
             }
 
@@ -638,8 +637,8 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                     pb_vblock->block_info().pool_index(),
                     pb_vblock->block_info().height());
                 auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pb_vblock->block_info().pool_index()];
-                bft_block_queues_[thread_idx].push(
-                        std::make_shared<block::protobuf::Block>(pb_vblock->block_info()));
+
+                vblock_queues_[thread_idx].push(pb_vblock);
             }            
 
 #endif

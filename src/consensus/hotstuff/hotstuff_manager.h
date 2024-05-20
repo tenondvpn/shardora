@@ -148,9 +148,9 @@ private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void HandleTimerMessage(const transport::MessagePtr& msg_ptr);
     void RegisterCreateTxCallbacks();
-    Status VerifyViewBlockWithQC(
+    Status VerifyViewBlockWithCommitQC(
             const std::shared_ptr<ViewBlock>& vblock,
-            const std::shared_ptr<QC>& qc);
+            const std::shared_ptr<QC>& commit_qc);
     
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(

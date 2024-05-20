@@ -14,6 +14,7 @@
 #include <memory>
 #include <network/network_utils.h>
 #include <network/universal_manager.h>
+#include <protos/block.pb.h>
 #include <transport/processor.h>
 #include <transport/tcp_transport.h>
 #include <transport/transport_utils.h>
@@ -127,10 +128,24 @@ void HotstuffSyncer::SyncAllPools() {
 }
 
 void HotstuffSyncer::HandleSyncedBlocks() {
-    auto& block_queue = kv_sync_->bft_block_queue();
-    std::shared_ptr<block::protobuf::Block> block_ptr = nullptr;
-    while (block_queue.pop(&block_ptr)) {
-        hotstuff_mgr_->hotstuff(block_ptr->pool_index())->acceptor()->CommitSynced(block_ptr);
+    auto& block_queue = kv_sync_->vblock_queue();
+    std::shared_ptr<view_block::protobuf::ViewBlockItem> pb_vblock = nullptr;
+    while (block_queue.pop(&pb_vblock)) {
+        if (pb_vblock) {
+            auto block = std::make_shared<block::protobuf::Block>(pb_vblock->block_info());
+            auto vblock = std::make_shared<ViewBlock>();
+            Status s = Proto2ViewBlock(*pb_vblock.get(), vblock);
+            if (s != Status::kSuccess) {
+                continue;
+            }
+            auto self_commit_qc = std::make_shared<QC>();
+            if (!self_commit_qc->Unserialize(pb_vblock->self_commit_qc_str())) {
+                continue;
+            }
+            hotstuff_mgr_->hotstuff(pb_vblock->block_info().pool_index())->HandleSyncedViewBlock(
+                    vblock, self_commit_qc);
+        }
+        
     }    
     return;
 }
@@ -401,7 +416,8 @@ Status HotstuffSyncer::processResponseChain(
         }
         auto view_block_qc = qc_it->second;
         // 如果本地有该 view_block_qc 对应的 view_block，则不用验证 qc 了并且跳过该块，节省 CPU
-        if (chain->Has(view_block_qc->view_block_hash)) {
+        if (!chain->Has(view_block_qc->view_block_hash) &&
+            crypto(pool_idx)->VerifyQC(view_block_qc) != Status::kSuccess) {
             continue;
         }
 
@@ -527,6 +543,18 @@ Status HotstuffSyncer::onRecViewBlock(
             ZJC_ERROR("pool: %d sync commit failed", pool_idx);
             return s;
         }
+
+        if (!hotstuff->view_block_chain()->HasInDb(
+                    view_block_to_commit->block->network_id(),
+                    view_block_to_commit->block->pool_index(),
+                    view_block_to_commit->block->height())) {
+            // TODO 更新 Leader Score by commitQC
+            hotstuff->elect_info()->MarkSuccess(
+                    view_block_to_commit->ElectHeight(),
+                    view_block_to_commit->leader_idx);
+            // 保存 commit vblock 及其 commitQC 用于 kv 同步
+            hotstuff->view_block_chain()->StoreToDb(view_block_to_commit, view_block->qc);            
+        }        
     }
 
     // 4. 保存 view_block

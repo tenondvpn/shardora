@@ -119,6 +119,11 @@ public:
         return bft_block_queues_[thread_idx];
     }
 
+    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>& vblock_queue() {
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        return vblock_queues_[thread_idx];
+    }    
+
 private:
     void CheckSyncItem();
     void CheckSyncTimeout();
@@ -164,10 +169,11 @@ private:
     PoolWithBlocks net_with_pool_blocks_[network::kConsensusShardEndNetworkId];
 #ifdef ENABLE_HOTSTUFF
     ViewBlockSyncedCallback view_block_synced_callback_ = nullptr;
+    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> vblock_queues_[common::kMaxThreadCount];
 #else
     block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
 #endif
-    common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> bft_block_queues_[common::kMaxThreadCount];
+    common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> bft_block_queues_[common::kMaxThreadCount];  
 
     DISALLOW_COPY_AND_ASSIGN(KeyValueSync);
 };

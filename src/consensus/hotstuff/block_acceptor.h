@@ -190,10 +190,6 @@ private:
             }
         }        
     }
-
-    // void AddWaitingBlock(std::shared_ptr<block::protobuf::Block>& block_ptr);
-    // void CommitWaitingBlock(uint32_t pool_index, uint64_t height);
-    
 };
 
 } // namespace hotstuff

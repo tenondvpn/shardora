@@ -9,6 +9,7 @@
 #include <consensus/hotstuff/types.h> 
 #include <consensus/hotstuff/view_block_chain.h>
 #include <protos/hotstuff.pb.h>
+#include <protos/view_block.pb.h>
 #include <security/security.h>
 
 namespace shardora {
@@ -95,6 +96,16 @@ public:
         if (last_vote_view_ < view) {
             last_vote_view_ = view;
         }
+    }
+
+    void HandleSyncedViewBlock(
+            const std::shared_ptr<ViewBlock>& vblock,
+            const std::shared_ptr<QC>& self_commit_qc) {
+        acceptor()->CommitSynced(vblock->block);
+        // 根据 commit_qc 更新 leader score
+        elect_info()->MarkSuccess(vblock->ElectHeight(), vblock->leader_idx);
+
+        view_block_chain()->StoreToDb(vblock, self_commit_qc);
     }
 
     // 已经投票
