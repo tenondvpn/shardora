@@ -66,14 +66,17 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader, uint32_t pool_ind
     if (tmblock_tx_ptr_ != nullptr) {
         auto now_tm_us = common::TimeUtils::TimestampUs();
         if (tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us) {
+            ZJC_DEBUG("tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us");
             return nullptr;
         }
 
         if (!CanCallTimeBlockTx()) {
+            ZJC_DEBUG("CanCallTimeBlockTx");
             return nullptr;
         }
 
         if (tmblock_tx_ptr_->in_consensus) {
+            ZJC_DEBUG("tmblock_tx_ptr_->in_consensus");
             return nullptr;
         }
 
