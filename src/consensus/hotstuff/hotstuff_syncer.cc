@@ -362,14 +362,6 @@ Status HotstuffSyncer::processResponseQcTc(
         pool_idx, hightc->view, highqc->view);
 
     // TODO 验证 qc 和 tc
-    
-    // 使用 highqc 尝试 commit block
-    auto hf = hotstuff_mgr_->hotstuff(pool_idx);
-    auto view_block_to_commit = hf->CheckCommit(highqc);
-    if (view_block_to_commit) {
-        hf->Commit(view_block_to_commit, highqc);
-    }
-    
     pm->AdvanceView(new_sync_info()->WithQC(highqc)->WithTC(hightc));
     return Status::kSuccess;
 }
