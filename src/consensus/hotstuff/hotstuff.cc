@@ -213,8 +213,28 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         pacemaker()->HighQC()->view);
     // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(v_block->qc));
+
+    // Commit 一定要在 Txs Accept 之前，因为一旦 v_block->qc 合法就已经可以 Commit 了，不需要 Txs 合法
+    auto v_block_to_commit = CheckCommit(v_block);
+    if (v_block_to_commit) {
+        Status s = Commit(v_block_to_commit);
+        if (s != Status::kSuccess) {
+            ZJC_ERROR("commit view_block failed, view: %lu hash: %s",
+                v_block_to_commit->view,
+                common::Encode::HexEncode(v_block_to_commit->hash).c_str());
+            return;
+        }
+        
+        if (!view_block_chain()->HasInDb(
+                    v_block_to_commit->block->network_id(),
+                    v_block_to_commit->block->pool_index(),
+                    v_block_to_commit->block->height())) {
+            // 保存 commit vblock 及其 commitQC 用于 kv 同步
+            view_block_chain()->StoreToDb(v_block_to_commit, v_block->qc);            
+        }
+    }    
     
-    // 5 Verify ViewBlock.block and tx_propose, 验证tx_propose，填充Block tx相关字段
+    // Verify ViewBlock.block and tx_propose, 验证tx_propose，填充Block tx相关字段
     auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
     auto block = v_block->block;
     block_info->block = block;
@@ -272,25 +292,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     assert(view_block_chain()->LatestCommittedBlock() != nullptr);
     // view_block_chain()->Print();    
 
-    // 1、验证是否存在3个连续qc，设置commit，lock qc状态；2、提交commit块之间的交易信息；3、减枝保留最新commit块，回退分支的交易信息
-    auto v_block_to_commit = CheckCommit(v_block);
-    if (v_block_to_commit) {
-        Status s = Commit(v_block_to_commit);
-        if (s != Status::kSuccess) {
-            ZJC_ERROR("commit view_block failed, view: %lu hash: %s",
-                v_block_to_commit->view,
-                common::Encode::HexEncode(v_block_to_commit->hash).c_str());
-            return;
-        }
-        
-        if (!view_block_chain()->HasInDb(
-                    v_block_to_commit->block->network_id(),
-                    v_block_to_commit->block->pool_index(),
-                    v_block_to_commit->block->height())) {
-            // 保存 commit vblock 及其 commitQC 用于 kv 同步
-            view_block_chain()->StoreToDb(v_block_to_commit, v_block->qc);            
-        }
-    }    
+    
     
     auto trans_msg = std::make_shared<transport::TransportMessage>();
     auto& trans_header = trans_msg->header;

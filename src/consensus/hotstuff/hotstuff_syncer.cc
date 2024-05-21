@@ -436,13 +436,9 @@ Status HotstuffSyncer::processResponseChain(
 
         tmp_chain->Store(view_block);
     }
-
-    std::string l = "";
-    for (const auto& item : view_block_items) {
-        l += "," + std::to_string(item.view());
-    }
-    ZJC_DEBUG("Sync blocks to chain, pool_idx: %d, view_blocks: %d, views: %s",
-        pool_idx, view_block_items.size(), l.c_str());
+    
+    ZJC_DEBUG("Sync blocks to chain, pool_idx: %d, view_blocks: %d",
+        pool_idx, view_block_items.size());
 
     if (!tmp_chain->IsValid()) {
         ZJC_ERROR("pool: %d, synced chain is invalid", pool_idx);
@@ -520,17 +516,7 @@ Status HotstuffSyncer::onRecViewBlock(
     if (!hotstuff) {
         return Status::kError;
     }
-    Status s = Status::kSuccess;    
-    // 验证交易
-    auto accep = hotstuff->acceptor();
-    if (!accep) {
-        return Status::kError;
-    }    
-    s = accep->AcceptSync(view_block->block);
-    if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d sync accept failed", pool_idx);
-        return s;
-    }
+    Status s = Status::kSuccess;
     
     // 2. 视图切换
     hotstuff->pacemaker()->AdvanceView(new_sync_info()->WithQC(view_block->qc));
@@ -552,6 +538,17 @@ Status HotstuffSyncer::onRecViewBlock(
             hotstuff->view_block_chain()->StoreToDb(view_block_to_commit, view_block->qc);            
         }        
     }
+
+    // 验证交易
+    auto accep = hotstuff->acceptor();
+    if (!accep) {
+        return Status::kError;
+    }    
+    s = accep->AcceptSync(view_block->block);
+    if (s != Status::kSuccess) {
+        ZJC_ERROR("pool: %d sync accept failed", pool_idx);
+        return s;
+    }    
 
     // 4. 保存 view_block
     return hotstuff->view_block_chain()->Store(view_block);
