@@ -49,6 +49,7 @@ public:
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
         std::vector<uint8_t>* invalid_txs);
+    bool HasSingleTx(uint32_t pool_index);
 
 private:
     std::shared_ptr<WaitingTxsItem> GetSingleTx(uint32_t pool_index);

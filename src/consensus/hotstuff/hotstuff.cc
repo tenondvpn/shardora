@@ -456,17 +456,21 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
 
 void Hotstuff::HandlePreResetTimerMsg(const transport::protobuf::Header& header) {
     auto& pre_rst_timer_msg = header.hotstuff().pre_reset_timer_msg();
-    if (pre_rst_timer_msg.txs_size() == 0) {
+    if (pre_rst_timer_msg.txs_size() == 0 && !pre_rst_timer_msg.has_single_tx()) {
         return;
     }
-    std::vector<const pools::protobuf::TxMessage*> tx_msgs;
-    for (const auto& tx : pre_rst_timer_msg.txs()) {
-        tx_msgs.push_back(&tx);
+
+    if (pre_rst_timer_msg.txs_size() > 0) {
+        std::vector<const pools::protobuf::TxMessage*> tx_msgs;
+        for (const auto& tx : pre_rst_timer_msg.txs()) {
+            tx_msgs.push_back(&tx);
+        }
+        Status s = acceptor()->AddTxs(tx_msgs);
+        if (s != Status::kSuccess) {
+            return;
+        }        
     }
-    Status s = acceptor()->AddTxs(tx_msgs);
-    if (s != Status::kSuccess) {
-        return;
-    }
+
     // Flow Control
     if (!reset_timer_fc_.Permitted()) {
         return;
@@ -892,34 +896,42 @@ Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& t
 }
 
 void Hotstuff::TryRecoverFromStuck() {
-    if (IsStuck()) {
+    if (IsStuck() && recover_from_struct_fc_.Permitted()) {
+        bool has_single_tx = wrapper()->HasSingleTx();
         std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
-        wrapper()->GetTxsIdempotently(txs);
-        if (!txs.empty() && recover_from_struct_fc_.Permitted()) {
+        if (!has_single_tx) {
+            wrapper()->GetTxsIdempotently(txs);
+        }
+
+        // 存在内置交易或普通交易时尝试 reset timer
+        if (has_single_tx || !txs.empty()) {
             // TODO 发送 PreResetPacemakerTimerMsg To Leader
             auto trans_msg = std::make_shared<transport::TransportMessage>();
             auto& header = trans_msg->header;
             auto* hotstuff_msg = header.mutable_hotstuff();
             auto* pre_rst_timer_msg = hotstuff_msg->mutable_pre_reset_timer_msg();
+            
             auto elect_item = elect_info_->GetElectItem();
             if (!elect_item) {
                 ZJC_ERROR("pool: %d no elect item found", pool_idx_);
                 return;
-            }            
+            }
+            
             pre_rst_timer_msg->set_replica_idx(elect_item->LocalMember()->index);
-            ZJC_DEBUG("pool: %d, get tx size: %u", pool_idx_, txs.size());
+            ZJC_DEBUG("pool: %d, get tx size: %u", pool_idx_, txs.size());            
             for (size_t i = 0; i < txs.size(); i++) {
                 auto& tx_ptr = *(pre_rst_timer_msg->add_txs());
                 tx_ptr = *(txs[i].get());
             }
+            pre_rst_timer_msg->set_has_single_tx(has_single_tx);
 
             hotstuff_msg->set_type(PRE_RESET_TIMER);
             hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
             hotstuff_msg->set_pool_index(pool_idx_);
 
             SendMsgToLeader(trans_msg, PRE_RESET_TIMER);
-            ZJC_DEBUG("pool: %d, send prereset msg from: %lu to: %lu",
-                pool_idx_, pre_rst_timer_msg->replica_idx(), leader_rotation_->GetLeader()->index);
+            ZJC_DEBUG("pool: %d, send prereset msg from: %lu to: %lu, has_single_tx: %d",
+                pool_idx_, pre_rst_timer_msg->replica_idx(), leader_rotation_->GetLeader()->index, has_single_tx);
         }
     }
     return;
