@@ -119,10 +119,12 @@ public:
         return bft_block_queues_[thread_idx];
     }
 
+#ifdef ENABLE_HOTSTUFF    
     common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>& vblock_queue() {
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         return vblock_queues_[thread_idx];
-    }    
+    }
+#endif
 
 private:
     void CheckSyncItem();

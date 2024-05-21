@@ -23,6 +23,7 @@ public:
             std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose,
             const bool& no_tx_allowed) = 0;
     virtual Status GetTxsIdempotently(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>& txs) = 0;
+    virtual bool HasSingleTx() = 0;
 };
 
 class BlockWrapper : public IBlockWrapper {
@@ -48,6 +49,8 @@ public:
 
     // 幂等，用于同步 replica 向 leader 同步交易
     Status GetTxsIdempotently(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>& txs) override;
+    // 是否存在内置交易
+    bool HasSingleTx() override;
 
 private:
     uint32_t pool_idx_;

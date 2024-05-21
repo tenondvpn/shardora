@@ -438,8 +438,12 @@ Status HotstuffSyncer::processResponseChain(
         tmp_chain->Store(view_block);
     }
 
-    ZJC_DEBUG("Sync blocks to chain, pool_idx: %d, view_blocks: %d",
-        pool_idx, view_block_items.size());
+    std::string l = "";
+    for (const auto& item : view_block_items) {
+        l += "," + std::to_string(item.view());
+    }
+    ZJC_DEBUG("Sync blocks to chain, pool_idx: %d, view_blocks: %d, views: %s",
+        pool_idx, view_block_items.size(), l.c_str());
 
     if (!tmp_chain->IsValid()) {
         ZJC_ERROR("pool: %d, synced chain is invalid", pool_idx);
@@ -545,10 +549,6 @@ Status HotstuffSyncer::onRecViewBlock(
                     view_block_to_commit->block->network_id(),
                     view_block_to_commit->block->pool_index(),
                     view_block_to_commit->block->height())) {
-            // TODO 更新 Leader Score by commitQC
-            hotstuff->elect_info()->MarkSuccess(
-                    view_block_to_commit->ElectHeight(),
-                    view_block_to_commit->leader_idx);
             // 保存 commit vblock 及其 commitQC 用于 kv 同步
             hotstuff->view_block_chain()->StoreToDb(view_block_to_commit, view_block->qc);            
         }        

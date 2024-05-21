@@ -1077,10 +1077,10 @@ class PreResetTimerMsg : public ::google::protobuf::Message /* @@protoc_insertio
 
   // accessors -------------------------------------------------------
 
-  // repeated .shardora.pools.protobuf.TxMessage txs = 7;
+  // repeated .shardora.pools.protobuf.TxMessage txs = 2;
   int txs_size() const;
   void clear_txs();
-  static const int kTxsFieldNumber = 7;
+  static const int kTxsFieldNumber = 2;
   ::shardora::pools::protobuf::TxMessage* mutable_txs(int index);
   ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage >*
       mutable_txs();
@@ -1096,16 +1096,26 @@ class PreResetTimerMsg : public ::google::protobuf::Message /* @@protoc_insertio
   ::google::protobuf::uint32 replica_idx() const;
   void set_replica_idx(::google::protobuf::uint32 value);
 
+  // optional bool has_single_tx = 3;
+  bool has_has_single_tx() const;
+  void clear_has_single_tx();
+  static const int kHasSingleTxFieldNumber = 3;
+  bool has_single_tx() const;
+  void set_has_single_tx(bool value);
+
   // @@protoc_insertion_point(class_scope:shardora.hotstuff.protobuf.PreResetTimerMsg)
  private:
   void set_has_replica_idx();
   void clear_has_replica_idx();
+  void set_has_has_single_tx();
+  void clear_has_has_single_tx();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage > txs_;
   ::google::protobuf::uint32 replica_idx_;
+  bool has_single_tx_;
   friend struct ::protobuf_protos_2fhotstuff_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -2490,7 +2500,7 @@ inline void PreResetTimerMsg::set_replica_idx(::google::protobuf::uint32 value) 
   // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.PreResetTimerMsg.replica_idx)
 }
 
-// repeated .shardora.pools.protobuf.TxMessage txs = 7;
+// repeated .shardora.pools.protobuf.TxMessage txs = 2;
 inline int PreResetTimerMsg::txs_size() const {
   return txs_.size();
 }
@@ -2515,6 +2525,30 @@ inline const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::
 PreResetTimerMsg::txs() const {
   // @@protoc_insertion_point(field_list:shardora.hotstuff.protobuf.PreResetTimerMsg.txs)
   return txs_;
+}
+
+// optional bool has_single_tx = 3;
+inline bool PreResetTimerMsg::has_has_single_tx() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void PreResetTimerMsg::set_has_has_single_tx() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void PreResetTimerMsg::clear_has_has_single_tx() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void PreResetTimerMsg::clear_has_single_tx() {
+  has_single_tx_ = false;
+  clear_has_has_single_tx();
+}
+inline bool PreResetTimerMsg::has_single_tx() const {
+  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.PreResetTimerMsg.has_single_tx)
+  return has_single_tx_;
+}
+inline void PreResetTimerMsg::set_has_single_tx(bool value) {
+  set_has_has_single_tx();
+  has_single_tx_ = value;
+  // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.PreResetTimerMsg.has_single_tx)
 }
 
 // -------------------------------------------------------------------

@@ -283,8 +283,10 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::PreResetTimerMsg, replica_idx_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::PreResetTimerMsg, txs_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::PreResetTimerMsg, has_single_tx_),
   0,
   ~0u,
+  1,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::ResetTimerMsg, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::ResetTimerMsg, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -299,8 +301,8 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 30, 38, sizeof(::shardora::hotstuff::protobuf::NewViewMsg)},
   { 41, 50, sizeof(::shardora::hotstuff::protobuf::ProposeMsg)},
   { 54, 69, sizeof(::shardora::hotstuff::protobuf::VoteMsg)},
-  { 79, 86, sizeof(::shardora::hotstuff::protobuf::PreResetTimerMsg)},
-  { 88, 94, sizeof(::shardora::hotstuff::protobuf::ResetTimerMsg)},
+  { 79, 87, sizeof(::shardora::hotstuff::protobuf::PreResetTimerMsg)},
+  { 90, 96, sizeof(::shardora::hotstuff::protobuf::ResetTimerMsg)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -363,13 +365,13 @@ void AddDescriptorsImpl() {
       "\022D\n\017view_block_item\030\010 \001(\0132+.shardora.vie"
       "w_block.protobuf.ViewBlockItem\022\036\n\026commit"
       "_view_block_hash\030\t \001(\014\022\022\n\nleader_idx\030\n \001"
-      "(\r\"X\n\020PreResetTimerMsg\022\023\n\013replica_idx\030\001 "
-      "\001(\r\022/\n\003txs\030\007 \003(\0132\".shardora.pools.protob"
-      "uf.TxMessage\"#\n\rResetTimerMsg\022\022\n\nleader_"
-      "idx\030\001 \001(\r"
+      "(\r\"o\n\020PreResetTimerMsg\022\023\n\013replica_idx\030\001 "
+      "\001(\r\022/\n\003txs\030\002 \003(\0132\".shardora.pools.protob"
+      "uf.TxMessage\022\025\n\rhas_single_tx\030\003 \001(\010\"#\n\rR"
+      "esetTimerMsg\022\022\n\nleader_idx\030\001 \001(\r"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1289);
+      descriptor, 1312);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/hotstuff.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fview_5fblock_2eproto::AddDescriptors();
@@ -2617,6 +2619,7 @@ void PreResetTimerMsg::clear_txs() {
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int PreResetTimerMsg::kReplicaIdxFieldNumber;
 const int PreResetTimerMsg::kTxsFieldNumber;
+const int PreResetTimerMsg::kHasSingleTxFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 PreResetTimerMsg::PreResetTimerMsg()
@@ -2632,12 +2635,16 @@ PreResetTimerMsg::PreResetTimerMsg(const PreResetTimerMsg& from)
       _has_bits_(from._has_bits_),
       txs_(from.txs_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  replica_idx_ = from.replica_idx_;
+  ::memcpy(&replica_idx_, &from.replica_idx_,
+    static_cast<size_t>(reinterpret_cast<char*>(&has_single_tx_) -
+    reinterpret_cast<char*>(&replica_idx_)) + sizeof(has_single_tx_));
   // @@protoc_insertion_point(copy_constructor:shardora.hotstuff.protobuf.PreResetTimerMsg)
 }
 
 void PreResetTimerMsg::SharedCtor() {
-  replica_idx_ = 0u;
+  ::memset(&replica_idx_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&has_single_tx_) -
+      reinterpret_cast<char*>(&replica_idx_)) + sizeof(has_single_tx_));
 }
 
 PreResetTimerMsg::~PreResetTimerMsg() {
@@ -2669,7 +2676,12 @@ void PreResetTimerMsg::Clear() {
   (void) cached_has_bits;
 
   txs_.Clear();
-  replica_idx_ = 0u;
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 3u) {
+    ::memset(&replica_idx_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&has_single_tx_) -
+        reinterpret_cast<char*>(&replica_idx_)) + sizeof(has_single_tx_));
+  }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
 }
@@ -2698,12 +2710,26 @@ bool PreResetTimerMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated .shardora.pools.protobuf.TxMessage txs = 7;
-      case 7: {
+      // repeated .shardora.pools.protobuf.TxMessage txs = 2;
+      case 2: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(58u /* 58 & 0xFF */)) {
+            static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
                 input, add_txs()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bool has_single_tx = 3;
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u /* 24 & 0xFF */)) {
+          set_has_has_single_tx();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &has_single_tx_)));
         } else {
           goto handle_unusual;
         }
@@ -2742,13 +2768,18 @@ void PreResetTimerMsg::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->replica_idx(), output);
   }
 
-  // repeated .shardora.pools.protobuf.TxMessage txs = 7;
+  // repeated .shardora.pools.protobuf.TxMessage txs = 2;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->txs_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      7,
+      2,
       this->txs(static_cast<int>(i)),
       output);
+  }
+
+  // optional bool has_single_tx = 3;
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(3, this->has_single_tx(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2771,12 +2802,17 @@ void PreResetTimerMsg::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->replica_idx(), target);
   }
 
-  // repeated .shardora.pools.protobuf.TxMessage txs = 7;
+  // repeated .shardora.pools.protobuf.TxMessage txs = 2;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->txs_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        7, this->txs(static_cast<int>(i)), deterministic, target);
+        2, this->txs(static_cast<int>(i)), deterministic, target);
+  }
+
+  // optional bool has_single_tx = 3;
+  if (cached_has_bits & 0x00000002u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(3, this->has_single_tx(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2796,7 +2832,7 @@ size_t PreResetTimerMsg::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  // repeated .shardora.pools.protobuf.TxMessage txs = 7;
+  // repeated .shardora.pools.protobuf.TxMessage txs = 2;
   {
     unsigned int count = static_cast<unsigned int>(this->txs_size());
     total_size += 1UL * count;
@@ -2807,13 +2843,20 @@ size_t PreResetTimerMsg::ByteSizeLong() const {
     }
   }
 
-  // optional uint32 replica_idx = 1;
-  if (has_replica_idx()) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::UInt32Size(
-        this->replica_idx());
-  }
+  if (_has_bits_[0 / 32] & 3u) {
+    // optional uint32 replica_idx = 1;
+    if (has_replica_idx()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->replica_idx());
+    }
 
+    // optional bool has_single_tx = 3;
+    if (has_has_single_tx()) {
+      total_size += 1 + 1;
+    }
+
+  }
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
@@ -2842,8 +2885,15 @@ void PreResetTimerMsg::MergeFrom(const PreResetTimerMsg& from) {
   (void) cached_has_bits;
 
   txs_.MergeFrom(from.txs_);
-  if (from.has_replica_idx()) {
-    set_replica_idx(from.replica_idx());
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
+      replica_idx_ = from.replica_idx_;
+    }
+    if (cached_has_bits & 0x00000002u) {
+      has_single_tx_ = from.has_single_tx_;
+    }
+    _has_bits_[0] |= cached_has_bits;
   }
 }
 
@@ -2873,6 +2923,7 @@ void PreResetTimerMsg::InternalSwap(PreResetTimerMsg* other) {
   using std::swap;
   CastToBase(&txs_)->InternalSwap(CastToBase(&other->txs_));
   swap(replica_idx_, other->replica_idx_);
+  swap(has_single_tx_, other->has_single_tx_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
