@@ -290,7 +290,7 @@ Status BlockAcceptor::addTxsToPool(
         case pools::protobuf::kConsensusRootTimeBlock:
         {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
-            auto tx_item = tx_pools_->GetTimeblockTx(pool_idx(), "");
+            auto tx_item = tx_pools_->GetTimeblockTx(pool_idx(), false);
             if (tx_item != nullptr && !tx_item->txs.empty()) {
                 tx_ptr = tx_item->txs.begin()->second;
             }
