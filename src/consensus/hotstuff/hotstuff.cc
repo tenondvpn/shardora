@@ -265,9 +265,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
                     v_block_to_commit->block->network_id(),
                     v_block_to_commit->block->pool_index(),
                     v_block_to_commit->block->height())) {
-            // TODO 更新 Leader Score by commitQC
             // 保存 commit vblock 及其 commitQC 用于 kv 同步
-            elect_info()->MarkSuccess(v_block_to_commit->ElectHeight(), v_block_to_commit->leader_idx);
             view_block_chain()->StoreToDb(v_block_to_commit, v_block->qc);            
         }
     }    
