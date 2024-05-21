@@ -84,8 +84,10 @@ public:
     void NewView(const std::shared_ptr<SyncInfo>& sync_info);
     Status Propose(const std::shared_ptr<SyncInfo>& sync_info);
     Status ResetReplicaTimers();
-    Status Commit(const std::shared_ptr<ViewBlock>& v_block);
-    std::shared_ptr<ViewBlock> CheckCommit(const std::shared_ptr<ViewBlock>& v_block);
+    Status Commit(
+            const std::shared_ptr<ViewBlock>& v_block,
+            const std::shared_ptr<QC> commit_qc);
+    std::shared_ptr<ViewBlock> CheckCommit(const std::shared_ptr<QC>& qc);
     Status VerifyViewBlock(
             const std::shared_ptr<ViewBlock>& v_block, 
             const std::shared_ptr<ViewBlockChain>& view_block_chain,

@@ -360,7 +360,16 @@ Status HotstuffSyncer::processResponseQcTc(
 
     ZJC_DEBUG("response received qctc pool_idx: %d, tc: %d, qc: %d",
         pool_idx, hightc->view, highqc->view);
-    // TODO 验证 qc 和 tc   
+
+    // TODO 验证 qc 和 tc
+    
+    // 使用 highqc 尝试 commit block
+    auto hf = hotstuff_mgr_->hotstuff(pool_idx);
+    auto view_block_to_commit = hf->CheckCommit(highqc);
+    if (view_block_to_commit) {
+        hf->Commit(view_block_to_commit, highqc);
+    }
+    
     pm->AdvanceView(new_sync_info()->WithQC(highqc)->WithTC(hightc));
     return Status::kSuccess;
 }
@@ -523,21 +532,13 @@ Status HotstuffSyncer::onRecViewBlock(
     hotstuff->pacemaker()->AdvanceView(new_sync_info()->WithQC(view_block->qc));
     
     // 3. 尝试 commit
-    auto view_block_to_commit = hotstuff->CheckCommit(view_block);
+    auto view_block_to_commit = hotstuff->CheckCommit(view_block->qc);
     if (view_block_to_commit) {
-        s = hotstuff->Commit(view_block_to_commit);
+        s = hotstuff->Commit(view_block_to_commit, view_block->qc);
         if (s != Status::kSuccess) {
             ZJC_ERROR("pool: %d sync commit failed", pool_idx);
             return s;
         }
-
-        if (!hotstuff->view_block_chain()->HasInDb(
-                    view_block_to_commit->block->network_id(),
-                    view_block_to_commit->block->pool_index(),
-                    view_block_to_commit->block->height())) {
-            // 保存 commit vblock 及其 commitQC 用于 kv 同步
-            hotstuff->view_block_chain()->StoreToDb(view_block_to_commit, view_block->qc);            
-        }        
     }
 
     // 验证交易
