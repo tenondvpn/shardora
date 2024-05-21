@@ -1187,7 +1187,7 @@ void NetworkInit::HandleTimeBlock(
             }
 
             uint64_t* data_arr = (uint64_t*)tx.storages(i).value().c_str();
-            vss_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
+            vss_mgr_->OnTimeBlock(block);
             tm_block_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             bls_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             shard_statistic_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
@@ -1325,7 +1325,6 @@ void NetworkInit::HandleElectionBlock(
 #endif    
 
     block_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
-    vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     bls_mgr_->OnNewElectBlock(sharding_id, block->height(), elect_block);
     pools_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     shard_statistic_->OnNewElectBlock(sharding_id, block->height(), elect_height);
