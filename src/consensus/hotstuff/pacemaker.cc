@@ -1,6 +1,7 @@
 #include <common/global_info.h>
 #include <common/log.h>
 #include <common/utils.h>
+#include <common/defer.h>
 #include <consensus/hotstuff/hotstuff_manager.h>
 #include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h>
@@ -32,7 +33,6 @@ Pacemaker::~Pacemaker() {}
 void Pacemaker::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
     if (IsTimeout()) {
         ZJC_DEBUG("pool: %d timeout", pool_idx_);
-        StopTimeoutTimer();
         OnLocalTimeout();
     }
 }
@@ -92,7 +92,10 @@ void Pacemaker::OnLocalTimeout() {
     // TODO(HT): test
     ZJC_DEBUG("OnLocalTimeout pool: %d, view: %d", pool_idx_, CurView());
     // start a new timer for the timeout case
-    StartTimeoutTimer();
+    StopTimeoutTimer();
+    duration_->ViewTimeout();
+    
+    defer(StartTimeoutTimer());
 
     // 超时后先触发一次同步，主要是尽量同步最新的 HighQC，降低因 HighQC 不一致造成多次超时的概率
     // 由于 HotstuffSyncer 周期性同步，这里不触发同步影响也不大
@@ -104,11 +107,10 @@ void Pacemaker::OnLocalTimeout() {
     if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
         last_timeout_->header.hotstuff_timeout_proto().view() >= CurView()) {
         SendTimeout(last_timeout_);
-        // duration_->ViewTimeout();
         return;
     }
     
-    duration_->ViewTimeout();
+
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
