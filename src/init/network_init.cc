@@ -111,7 +111,7 @@ int NetworkInit::Init(int argc, char** argv) {
     common::Ip::Instance();
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     // 随机数
-    vss_mgr_ = std::make_shared<vss::VssManager>(security_);
+    vss_mgr_ = std::make_shared<vss::VssManager>();
     kv_sync_ = std::make_shared<sync::KeyValueSync>();
     gas_prepayment_ = std::make_shared<consensus::ContractGasPrepayment>(db_);
     ZJC_DEBUG("init 0 4");
@@ -325,9 +325,6 @@ void NetworkInit::AddCmds() {
 }
 
 void NetworkInit::RegisterFirewallCheck() {
-    net_handler_.AddFirewallCheckCallback(
-        common::kVssMessage,
-        std::bind(&vss::VssManager::FirewallCheckMessage, vss_mgr_.get(), std::placeholders::_1));
     net_handler_.AddFirewallCheckCallback(
         common::kBlsMessage,
         std::bind(&bls::BlsManager::FirewallCheckMessage, bls_mgr_.get(), std::placeholders::_1));
