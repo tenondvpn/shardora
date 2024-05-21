@@ -438,8 +438,12 @@ Status HotstuffSyncer::processResponseChain(
         tmp_chain->Store(view_block);
     }
 
-    ZJC_DEBUG("Sync blocks to chain, pool_idx: %d, view_blocks: %d",
-        pool_idx, view_block_items.size());
+    std::string l = "";
+    for (const auto& item : view_block_items) {
+        l += "," + std::to_string(item.view());
+    }
+    ZJC_DEBUG("Sync blocks to chain, pool_idx: %d, view_blocks: %d, views: %s",
+        pool_idx, view_block_items.size(), l.c_str());
 
     if (!tmp_chain->IsValid()) {
         ZJC_ERROR("pool: %d, synced chain is invalid", pool_idx);
