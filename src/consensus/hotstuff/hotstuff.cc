@@ -444,12 +444,7 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
 
             ZJC_DEBUG("====3.3 pool: %d, qc: %lu, onNewview", pool_idx_, qc->view);
             pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
-
-            // 尝试使用新 qc commit block
-            auto view_block_to_commit = CheckCommit(qc);
-            if (view_block_to_commit) {
-                Commit(view_block_to_commit, qc);
-            }            
+            // 在这里不能 Commit，否则 Leader 会变，导致无法验证 Proposal
         }
     }    
     return;
