@@ -521,17 +521,7 @@ Status HotstuffSyncer::onRecViewBlock(
     if (!hotstuff) {
         return Status::kError;
     }
-    Status s = Status::kSuccess;    
-    // 验证交易
-    auto accep = hotstuff->acceptor();
-    if (!accep) {
-        return Status::kError;
-    }    
-    s = accep->AcceptSync(view_block->block);
-    if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d sync accept failed", pool_idx);
-        return s;
-    }
+    Status s = Status::kSuccess;
     
     // 2. 视图切换
     hotstuff->pacemaker()->AdvanceView(new_sync_info()->WithQC(view_block->qc));
@@ -553,6 +543,17 @@ Status HotstuffSyncer::onRecViewBlock(
             hotstuff->view_block_chain()->StoreToDb(view_block_to_commit, view_block->qc);            
         }        
     }
+
+    // 验证交易
+    auto accep = hotstuff->acceptor();
+    if (!accep) {
+        return Status::kError;
+    }    
+    s = accep->AcceptSync(view_block->block);
+    if (s != Status::kSuccess) {
+        ZJC_ERROR("pool: %d sync accept failed", pool_idx);
+        return s;
+    }    
 
     // 4. 保存 view_block
     return hotstuff->view_block_chain()->Store(view_block);
