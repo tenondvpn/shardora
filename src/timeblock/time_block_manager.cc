@@ -66,17 +66,17 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader, uint32_t pool_ind
     if (tmblock_tx_ptr_ != nullptr) {
         auto now_tm_us = common::TimeUtils::TimestampUs();
         if (tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us) {
-            ZJC_DEBUG("tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us");
+            ZJC_DEBUG("tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us, is leader: %d", leader);
             return nullptr;
         }
 
         if (!CanCallTimeBlockTx()) {
-            ZJC_DEBUG("CanCallTimeBlockTx");
+            ZJC_DEBUG("CanCallTimeBlockTx leader: %d", leader);
             return nullptr;
         }
 
         if (tmblock_tx_ptr_->in_consensus) {
-            ZJC_DEBUG("tmblock_tx_ptr_->in_consensus");
+            ZJC_DEBUG("tmblock_tx_ptr_->in_consensus: %d", leader);
             return nullptr;
         }
 
@@ -96,7 +96,8 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader, uint32_t pool_ind
         auto account_info = account_mgr_->pools_address_info(pool_index);
         tx_info.set_to(account_info->addr());
         tmblock_tx_ptr_->prev_consensus_tm_us = now_tm_us;
-        ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu", u64_data[0], u64_data[1]);
+        ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu, leader: %d",
+            u64_data[0], u64_data[1], leader);
     }
 
     return tmblock_tx_ptr_;
