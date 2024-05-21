@@ -560,7 +560,11 @@ std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(const std::shared_ptr<QC>& qc) 
 Status Hotstuff::Commit(
         const std::shared_ptr<ViewBlock>& v_block,
         const std::shared_ptr<QC> commit_qc) {
-    // 递归提交
+    auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
+    if (latest_committed_block && latest_committed_block->view >= v_block->view) {
+        return Status::kSuccess;
+    }
+    
     ZJC_DEBUG("pool: %d, commit block view: %lu", pool_idx_, v_block->view);
     Status s = CommitInner(v_block);
     if (s != Status::kSuccess) {

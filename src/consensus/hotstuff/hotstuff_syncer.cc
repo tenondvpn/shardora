@@ -127,6 +127,10 @@ void HotstuffSyncer::SyncAllPools() {
     }
 }
 
+void HotstuffSyncer::SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash) {
+    return;
+}
+
 void HotstuffSyncer::HandleSyncedBlocks() {
     auto& block_queue = kv_sync_->vblock_queue();
     std::shared_ptr<view_block::protobuf::ViewBlockItem> pb_vblock = nullptr;
@@ -402,7 +406,7 @@ Status HotstuffSyncer::processResponseChain(
 
     // 将 view_block 放入小根堆排序
     ViewBlockMinHeap min_heap;
-    std::unordered_set<HashStr> skipped_view_blocks;
+    std::shared_ptr<QC> high_commit_qc = nullptr;
     for (auto it = view_block_items.begin(); it != view_block_items.end(); it++) {
         auto view_block = std::make_shared<ViewBlock>();
         Status s = Proto2ViewBlock(*it, view_block);
@@ -422,7 +426,13 @@ Status HotstuffSyncer::processResponseChain(
             continue;
         }
 
-
+        // 记录同步链中最高的 Qc，用于 commit
+        if (!high_commit_qc) {
+            high_commit_qc = view_block_qc;
+        } else if (high_commit_qc->view < view_block_qc->view) {
+            high_commit_qc = view_block_qc;
+        }
+        
         min_heap.push(view_block);        
     }
 
@@ -447,14 +457,14 @@ Status HotstuffSyncer::processResponseChain(
         return Status::kSuccess;
     }
 
-    return MergeChain(pool_idx, chain, tmp_chain, skipped_view_blocks);    
+    return MergeChain(pool_idx, chain, tmp_chain, high_commit_qc);    
 }
 
 Status HotstuffSyncer::MergeChain(
         const uint32_t& pool_idx,
         std::shared_ptr<ViewBlockChain>& ori_chain,
         const std::shared_ptr<ViewBlockChain>& sync_chain,
-        const std::unordered_set<HashStr>& skipped_view_blocks) {
+        const std::shared_ptr<QC>& high_commit_qc) {
     // 寻找交点
     std::vector<std::shared_ptr<ViewBlock>> view_blocks;
     ori_chain->GetAll(view_blocks);
@@ -471,6 +481,7 @@ Status HotstuffSyncer::MergeChain(
         std::vector<std::shared_ptr<ViewBlock>> sync_all_blocks;
         sync_chain->GetOrderedAll(sync_all_blocks);
 
+        bool should_commit = false;
         for (const auto& sync_block : sync_all_blocks) {
             if (sync_block->view < cross_block->view) {
                 continue;
@@ -479,12 +490,20 @@ Status HotstuffSyncer::MergeChain(
                 continue;
             }
 
+            if (high_commit_qc->view_block_hash == sync_block->hash) {
+                should_commit = true;
+            }
+            
             Status s = on_recv_vb_fn_(pool_idx, ori_chain, sync_block);
             if (s != Status::kSuccess) {
                 continue;
             }
         }
-        
+        // 单独对 high_commit_qc 提交
+        // 保证落后节点虽然没有最新的提案，但是有最新的 qc，并且 leader 一致
+        if (should_commit) {
+            onRecvCommitQC(pool_idx, high_commit_qc);
+        }
         return Status::kSuccess;
     }
     
@@ -499,13 +518,22 @@ Status HotstuffSyncer::MergeChain(
     }
 
     ori_chain->Clear();
+    bool should_commit = false;
     for (const auto& sync_block : sync_all_blocks) {
         // 逐个处理同步来的 view_block
+        if (high_commit_qc->view_block_hash == sync_block->hash) {
+            should_commit = true;
+        }
         Status s = on_recv_vb_fn_(pool_idx, ori_chain, sync_block);
         if (s != Status::kSuccess) {
             continue;
         }
     }
+
+    if (should_commit) {
+        onRecvCommitQC(pool_idx, high_commit_qc);
+    }
+    
     return Status::kSuccess;
 }
 
@@ -524,6 +552,7 @@ Status HotstuffSyncer::onRecViewBlock(
     hotstuff->pacemaker()->AdvanceView(new_sync_info()->WithQC(view_block->qc));
     
     // 3. 尝试 commit
+    // TODO 有更新的 qc
     auto view_block_to_commit = hotstuff->CheckCommit(view_block->qc);
     if (view_block_to_commit) {
         s = hotstuff->Commit(view_block_to_commit, view_block->qc);
@@ -546,6 +575,19 @@ Status HotstuffSyncer::onRecViewBlock(
 
     // 4. 保存 view_block
     return hotstuff->view_block_chain()->Store(view_block);
+}
+
+void HotstuffSyncer::onRecvCommitQC(
+        const uint32_t& pool_idx,
+        const std::shared_ptr<QC> commit_qc) {
+    if (commit_qc) {
+        auto hf = hotstuff_mgr_->hotstuff(pool_idx);
+        auto vblock_commit = hf->CheckCommit(commit_qc);
+        if (vblock_commit) {
+            hf->Commit(vblock_commit, commit_qc);
+        }
+        hf->pacemaker()->AdvanceView(new_sync_info()->WithQC(commit_qc));
+    }    
 }
 
 } // namespace consensus
