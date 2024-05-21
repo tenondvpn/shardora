@@ -111,7 +111,7 @@ int NetworkInit::Init(int argc, char** argv) {
     common::Ip::Instance();
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     // 随机数
-    vss_mgr_ = std::make_shared<vss::VssManager>(security_);
+    vss_mgr_ = std::make_shared<vss::VssManager>();
     kv_sync_ = std::make_shared<sync::KeyValueSync>();
     gas_prepayment_ = std::make_shared<consensus::ContractGasPrepayment>(db_);
     ZJC_DEBUG("init 0 4");
@@ -325,9 +325,6 @@ void NetworkInit::AddCmds() {
 }
 
 void NetworkInit::RegisterFirewallCheck() {
-    net_handler_.AddFirewallCheckCallback(
-        common::kVssMessage,
-        std::bind(&vss::VssManager::FirewallCheckMessage, vss_mgr_.get(), std::placeholders::_1));
     net_handler_.AddFirewallCheckCallback(
         common::kBlsMessage,
         std::bind(&bls::BlsManager::FirewallCheckMessage, bls_mgr_.get(), std::placeholders::_1));
@@ -1161,6 +1158,7 @@ bool NetworkInit::DbNewBlockCallback(
         const std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
     for (int32_t i = 0; i < block->tx_list_size(); ++i) {
+        ZJC_DEBUG("new db add block callback step: %d", block->tx_list(i).step());
         switch (block->tx_list(i).step()) {
         case pools::protobuf::kConsensusRootTimeBlock:
             HandleTimeBlock(block, block->tx_list(i), db_batch);
@@ -1189,7 +1187,7 @@ void NetworkInit::HandleTimeBlock(
             }
 
             uint64_t* data_arr = (uint64_t*)tx.storages(i).value().c_str();
-            vss_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
+            vss_mgr_->OnTimeBlock(block);
             tm_block_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             bls_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             shard_statistic_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
@@ -1327,7 +1325,6 @@ void NetworkInit::HandleElectionBlock(
 #endif    
 
     block_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
-    vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     bls_mgr_->OnNewElectBlock(sharding_id, block->height(), elect_block);
     pools_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     shard_statistic_->OnNewElectBlock(sharding_id, block->height(), elect_height);

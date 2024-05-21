@@ -181,9 +181,11 @@ void ShardStatistic::HandleCrossShard(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         pools::protobuf::CrossShardStatistic& cross_statistic) {
+    ZJC_DEBUG("now handle cross shard net: %u, pool: %u, height: %lu, step: %d",
+        block.network_id(), block.pool_index(), block.height(), tx.step());
     if (tx.status() != consensus::kConsensusSuccess) {
-        ZJC_DEBUG("success handle block pool: %u, height: %lu, tm height: %lu, status: %d", 
-            block.pool_index(), block.height(), block.timeblock_height(), tx.status());
+        ZJC_DEBUG("success handle block pool: %u, height: %lu, tm height: %lu, status: %d, step: %d", 
+            block.pool_index(), block.height(), block.timeblock_height(), tx.status(), tx.step());
         return;
     }
 
@@ -192,8 +194,7 @@ void ShardStatistic::HandleCrossShard(
     case pools::protobuf::kNormalTo: {
         if (!is_root) {
             for (int32_t i = 0; i < tx.storages_size(); ++i) {
-                if (tx.storages(i).key() == protos::kNormalTos) {
-                    assert(false);
+                if (tx.storages(i).key() == protos::kNormalToShards) {
                     pools::protobuf::ToTxMessage to_tx;
                     if (!to_tx.ParseFromString(tx.storages(i).value())) {
                         return;
@@ -346,6 +347,7 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
         for (int32_t i = 0; i < block.tx_list_size(); ++i) {
             if (tm_statistic_ptr->max_height < block.height()) {
                 tm_statistic_ptr->max_height = block.height();
+                ZJC_DEBUG("pool index: %d, set max height: %lu", block.pool_index(), block.height());
             }
 
             HandleCrossShard(is_root, block, block.tx_list(i), tm_statistic_ptr->cross_statistic);

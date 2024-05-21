@@ -125,7 +125,7 @@ enum StepType {
   kNormalFrom = 0,
   kNormalTo = 1,
   kConsensusRootElectShard = 2,
-  kConsensusRootTimeBlock = 3,
+  kConsensusRootTimeBlock = 3,                                                                                                                                                                                                                                              
   kConsensusCreateGenesisAcount = 4,
   kConsensusLocalTos = 5,
   kContractCreate = 6,

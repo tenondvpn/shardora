@@ -425,7 +425,7 @@ Status HotstuffSyncer::processResponseChain(
             crypto(pool_idx)->VerifyQC(view_block_qc) != Status::kSuccess) {
             continue;
         }
-
+        
         // 记录同步链中最高的 Qc，用于 commit
         if (!high_commit_qc) {
             high_commit_qc = view_block_qc;

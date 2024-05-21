@@ -7,8 +7,9 @@
 #include <consensus/zbft/contract_user_call.h>
 #include <consensus/zbft/contract_user_create_call.h>
 #include <consensus/zbft/from_tx_item.h>
-#include <consensus/zbft/root_to_tx_item.h>
 #include <consensus/zbft/to_tx_local_item.h>
+#include <consensus/zbft/root_to_tx_item.h>
+#include <consensus/zbft/root_cross_tx_item.h>
 #include <protos/pools.pb.h>
 #include <protos/zbft.pb.h>
 #include <zjcvm/zjcvm_utils.h>
@@ -129,6 +130,14 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
                 // leader broadcast block to other shards
                 // TODO to 交易会大量占用 CPU，先屏蔽
                 LeaderBroadcastBlock(block);
+                for (uint32_t i = 0; i < block->tx_list_size(); ++i) {
+                    ZJC_DEBUG("leader broadcast commit block tx over step: %d, to: %s, gid: %s, pool: %d, net: %d", 
+                        block->tx_list(i).step(),
+                        common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
+                        common::Encode::HexEncode(block->tx_list(i).gid()).c_str(),
+                        block->pool_index(),
+                        common::GlobalInfo::Instance()->network_id());
+                }
             }
         }
 
@@ -238,6 +247,7 @@ Status BlockAcceptor::addTxsToPool(
                     security_ptr_, 
                     address_info);
             break;
+        case pools::protobuf::kRootCreateAddressCrossSharding:
         case pools::protobuf::kNormalTo: {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
             auto tx_item = tx_pools_->GetToTxs(pool_idx(), "");
@@ -280,18 +290,27 @@ Status BlockAcceptor::addTxsToPool(
         case pools::protobuf::kConsensusRootTimeBlock:
         {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
-            auto tx_item = tx_pools_->GetTimeblockTx(pool_idx(), "");
+            auto tx_item = tx_pools_->GetTimeblockTx(pool_idx(), false);
             if (tx_item != nullptr && !tx_item->txs.empty()) {
                 tx_ptr = tx_item->txs.begin()->second;
             }
             
             break;
         }
+        case pools::protobuf::kRootCross:
+        {
+            tx_ptr = std::make_shared<consensus::RootCrossTxItem>(
+                *tx, 
+                account_mgr_, 
+                security_ptr_, 
+                address_info);
+            break;
+        }
         default:
             // TODO 没完！还需要支持其他交易的写入
-            break;
-            // ZJC_FATAL("invalid tx step: %d", tx->step());
-            // return Status::kError;
+            // break;
+            ZJC_FATAL("invalid tx step: %d", tx->step());
+            return Status::kError;
         }
 
         if (tx_ptr != nullptr) {
@@ -338,8 +357,8 @@ Status BlockAcceptor::GetAndAddTxsLocally(
     }
 
     if (txs_ptr->txs.size() != block_info->txs.size()) {
-        ZJC_ERROR("pool: %d, invalid consensus, txs not equal to leader. a_size: %lu, b_size: %lu",
-            pool_idx_, txs_ptr->txs.size(), block_info->txs.size());
+        ZJC_ERROR("invalid consensus, txs not equal to leader %u, %u",
+            txs_ptr->txs.size(), block_info->txs.size());
         return Status::kAcceptorTxsEmpty;
     }
     
@@ -413,6 +432,7 @@ void BlockAcceptor::LeaderBroadcastBlock(const std::shared_ptr<block::protobuf::
             block->tx_list(0).step(), block->height());
         BroadcastLocalTosBlock(block);
         break;
+    case pools::protobuf::kRootCreateAddress:
     case pools::protobuf::kConsensusRootElectShard:
         BroadcastBlock(network::kNodeNetworkId, block);
         break;
