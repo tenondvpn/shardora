@@ -48,6 +48,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index) {
     std::shared_ptr<WaitingTxsItem> txs_item = nullptr;
     if (pool_index == common::kRootChainPoolIndex) {
+        ZJC_DEBUG("leader get time tx tmblock_tx_ptr: %u", pool_index);
         txs_item = GetTimeblockTx(pool_index, true);
     }
 
