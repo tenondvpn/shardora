@@ -31,7 +31,9 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
     // 对于非种子节点可能启动时没有 committedblock, 需要等同步
     auto qc = GetQCWrappedByGenesis();
     if (committedBlock) {
-        ZJC_DEBUG("pool: %d, get leader success get latest commit block height: %lu, %s", pool_idx_, committedBlock->block->height(), common::Encode::HexEncode(committedBlock->hash).c_str());
+        ZJC_DEBUG("pool: %d, get leader success get latest commit block view: %lu, %s",
+            pool_idx_, committedBlock->view,
+            common::Encode::HexEncode(committedBlock->hash).c_str());
         qc = committedBlock->qc;
     } else {
         ZJC_DEBUG("pool: %d, committed block is empty", pool_idx_);
