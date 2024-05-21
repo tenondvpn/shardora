@@ -152,6 +152,13 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
 
 void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     auto& pro_msg = header.hotstuff().pro_msg();
+    ZJC_DEBUG("====1.0 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
+        pool_idx_,
+        pro_msg.view_item().view(),
+        common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
+        pacemaker()->HighQC()->view,
+        header.hash64());
+
     // 3 Verify TC
     std::shared_ptr<TC> tc = nullptr;
     if (!pro_msg.tc_str().empty()) {
@@ -177,12 +184,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         ZJC_ERROR("pb_view_block to ViewBlock is error.");
         return;
     }
-    ZJC_DEBUG("====1.0 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu",
-        pool_idx_,
-        pro_msg.view_item().view(),
-        common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
-        pacemaker()->HighQC()->view);
-    
+
     // view 必须最新
     // TODO 超时情况可能相同，严格限制并不影响共识，但会减少共识参与节点数
     if (HasVoted(v_block->view)) {
@@ -251,6 +253,26 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     
     // 更新哈希值
     v_block->UpdateHash();
+#ifndef NDEBUG
+    for (int32_t i = 0; i < v_block->block->tx_list_size(); ++i) {
+        ZJC_DEBUG("block net: %u, pool: %u, height: %lu, prehash: %s, hash: %s, step: %d, "
+            "pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, vblock: %lu, txs: %lu",
+            block_info->block->network_id(),
+            block_info->block->pool_index(),
+            block_info->block->height(),
+            common::Encode::HexEncode(block_info->block->prehash()).c_str(),
+            common::Encode::HexEncode(block_info->block->hash()).c_str(),
+            block_info->block->tx_list(i).step(),
+            pool_idx_,
+            pacemaker()->HighQC()->view,
+            pacemaker()->HighTC()->view,
+            view_block_chain()->Size(),
+            pacemaker()->CurView(),
+            v_block->view,
+            v_block->block->tx_list_size());
+
+    }
+#endif
     // 6 add view block
     if (view_block_chain()->Store(v_block) != Status::kSuccess) {
         ZJC_ERROR("add view block error. hash: %s",
@@ -354,6 +376,30 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         reconstructed_sign == nullptr,
         vote_msg.view());
 
+#ifndef NDEBUG
+        std::shared_ptr<ViewBlock> block_info = nullptr;
+        Status st = view_block_chain()->Get(vote_msg.view_block_hash(), block_info);
+        if (st == Status::kSuccess && block_info != nullptr) {
+            for (int32_t i = 0; i < block_info->block->tx_list_size(); ++i) {
+                ZJC_DEBUG("block net: %u, pool: %u, height: %lu, prehash: %s, hash: %s, step: %d, "
+                    "pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, vblock: %lu, txs: %lu",
+                    block_info->block->network_id(),
+                    block_info->block->pool_index(),
+                    block_info->block->height(),
+                    common::Encode::HexEncode(block_info->block->prehash()).c_str(),
+                    common::Encode::HexEncode(block_info->block->hash()).c_str(),
+                    block_info->block->tx_list(i).step(),
+                    pool_idx_,
+                    pacemaker()->HighQC()->view,
+                    pacemaker()->HighTC()->view,
+                    view_block_chain()->Size(),
+                    pacemaker()->CurView(),
+                    block_info->view,
+                    block_info->block->tx_list_size());
+            }
+        }
+#endif
+
     auto qc = std::make_shared<QC>();
     Status s = crypto()->CreateQC(
             vote_msg.view_block_hash(),
@@ -366,7 +412,6 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     if (s != Status::kSuccess) {
         return;
     }
-
     // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率高很多
@@ -871,8 +916,9 @@ Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& t
     dht::DhtKeyManager dht_key(leader->net_id, leader->id);
     header_msg.set_des_dht_key(dht_key.StrKey());
     header_msg.set_type(common::kHotstuffMessage);
-    transport::TcpTransport::Instance()->SetMessageHash(header_msg);    
-    if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
+    transport::TcpTransport::Instance()->SetMessageHash(header_msg);
+    auto leader_idx = leader_rotation_->GetLocalMemberIdx();
+    if (leader->index != leader_idx) {
         if (leader->public_ip == 0 || leader->public_port == 0) {
             network::Route::Instance()->Send(trans_msg);
         } else {
@@ -889,11 +935,16 @@ Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& t
         }
     }
  
-    ZJC_DEBUG("send to leader %d message to leader net: %u, %s, hash64: %lu",
+    ZJC_DEBUG("send to leader %d message to leader net: %u, %s, "
+        "hash64: %lu, %s:%d, leader->index: %d, leader_idx: %d",
         msg_type,
         leader->net_id, 
         common::Encode::HexEncode(leader->id).c_str(), 
-        header_msg.hash64());
+        header_msg.hash64(),
+        common::Uint32ToIp(leader->public_ip).c_str(),
+        leader->public_port,
+        leader->index,
+        leader_idx);
     return ret;
 }
 

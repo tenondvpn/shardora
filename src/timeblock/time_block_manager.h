@@ -54,6 +54,14 @@ private:
 
     bool CanCallTimeBlockTx() const {
         uint64_t now_sec = common::TimeUtils::TimestampSeconds();
+        ZJC_DEBUG("tmblock_tx_ptr CanCallTimeBlockTx now_sec: %lu "
+            "latest_time_block_tm_: %lu, latest_tm_block_local_sec_: %lu, %lu, valid0: %d, valid1: %d",
+            now_sec, 
+            latest_time_block_tm_, 
+            latest_tm_block_local_sec_, 
+            common::kTimeBlockCreatePeriodSeconds,
+            (now_sec >= latest_time_block_tm_ + common::kTimeBlockCreatePeriodSeconds),
+            (now_sec >= latest_tm_block_local_sec_ + common::kTimeBlockCreatePeriodSeconds));
         if (now_sec >= latest_time_block_tm_ + common::kTimeBlockCreatePeriodSeconds) {
             return true;
         }

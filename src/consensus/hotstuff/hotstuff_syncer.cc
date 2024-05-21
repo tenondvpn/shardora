@@ -421,7 +421,6 @@ Status HotstuffSyncer::processResponseChain(
             continue;
         }
 
-
         min_heap.push(view_block);        
     }
 

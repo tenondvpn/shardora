@@ -573,9 +573,7 @@ void BlockManager::HandleNormalToTx(
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        // ZJC_DEBUG("get normal to tx key: %s, val: %s",
-        //     tx.storages(i).key().c_str(),
-        //     common::Encode::HexEncode(tx.storages(i).value()).c_str());
+        ZJC_DEBUG("get normal to tx key: %s", tx.storages(i).key().c_str());
         if (tx.storages(i).key() != protos::kNormalToShards) {
             continue;
         }
@@ -615,6 +613,10 @@ void BlockManager::HandleNormalToTx(
             }
         }
 
+        ZJC_DEBUG("success handle tox tx heights net: %u, local net: %u, step: %d", 
+            to_txs.to_heights().sharding_id(), 
+            common::GlobalInfo::Instance()->network_id(),
+            tx.step());
         if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId && 
                 common::GlobalInfo::Instance()->network_id() != 
                 (network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
@@ -631,7 +633,7 @@ void BlockManager::HandleNormalToTx(
                 common::Encode::HexEncode(tx.storages(i).value()).c_str());
             HandleLocalNormalToTx(to_txs, tx.step(), tx.storages(0).value());
         } else {
-            ZJC_DEBUG("root handle normal to tx.");
+            ZJC_DEBUG("root handle normal to tx to_txs size: %u", to_txs.tos_size());
             RootHandleNormalToTx(block, to_txs, db_batch);
         }
     }
@@ -644,8 +646,15 @@ void BlockManager::RootHandleNormalToTx(
     // 将 NormalTo 中的多个 tx 拆分成多个 kRootCreateAddress tx
     assert(to_txs.tos_size() > 0);
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
-        ZJC_DEBUG("now handle normal to tx.");
         auto tos_item = to_txs.tos(i);
+        ZJC_INFO("to tx step: %d, new address %s, amount: %lu, prepayment: %lu, gid: %s, contract_from: %s",
+            tos_item.step(),
+            common::Encode::HexEncode(tos_item.des()).c_str(),
+            tos_item.amount(),
+            tos_item.prepayment(),
+            common::Encode::HexEncode("gid").c_str(),
+            common::Encode::HexEncode(tos_item.contract_from()).c_str());
+
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_step(pools::protobuf::kRootCreateAddress);
@@ -1012,6 +1021,7 @@ void BlockManager::AddNewBlock(
 
         switch (tx_list[i].step()) {
         case pools::protobuf::kRootCreateAddressCrossSharding:
+            // ZJC_DEBUG("success handle root create address tx.");
         case pools::protobuf::kNormalTo:
             HandleNormalToTx(*block_item, tx_list[i], db_batch);
             break;
@@ -1188,7 +1198,7 @@ void BlockManager::AddMiningToken(
         msg_ptr->address_info = account_mgr_->pools_address_info(iter->first);
         auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_key(protos::kLocalNormalTos);
-        tx->set_value(tos_hash);
+        tx->set_value(val);
         tx->set_pubkey("");
         tx->set_to(msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kConsensusLocalTos);
@@ -1602,12 +1612,14 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     auto rbegin = leader_to_txs_.begin();
     if (rbegin != leader_to_txs_.end()) {
         latest_to_tx_ = rbegin->second;
-        ZJC_DEBUG("set success add txs: %s, leader idx: %u, leader to index: %d, gid: %s, elect height: %lu, ByteSize: %u",
+        ZJC_DEBUG("set success add txs: %s, leader idx: %u, "
+            "leader to index: %d, gid: %s, elect height: %lu, ByteSize: %u, value: %s",
             common::Encode::HexEncode(tos_hashs).c_str(),
             shard_to.leader_idx(), shard_to.leader_to_idx(),
             common::Encode::HexEncode(gid).c_str(),
             rbegin->first,
-            leader_to_txs->to_tx->tx_ptr->tx_info.ByteSize());
+            leader_to_txs->to_tx->tx_ptr->tx_info.ByteSize(),
+            common::Encode::HexEncode(tx->value()).c_str());
         // assert(tx->value().size() < 1000000u);
         // assert(leader_to_txs->to_tx->tx_ptr->tx_info.ByteSize() < 1000000u);
         // assert(latest_to_tx_->to_tx != nullptr);
@@ -1671,7 +1683,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         uint32_t pool_index, 
         const std::string& tx_hash) {
     bool leader = tx_hash.empty();
-    if (!leader) {
+    if (leader) {
         ZJC_DEBUG("backup get statistic tx coming.");
     }
 
@@ -1683,7 +1695,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
 
     auto statistic_map_ptr = got_latest_statistic_map_ptr_;
     if (statistic_map_ptr == nullptr) {
-        if (!leader) {
+        if (leader) {
             ZJC_DEBUG("statistic_map_ptr == nullptr");
         }
 
@@ -1691,7 +1703,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
     }
 
     if (statistic_map_ptr->empty()) {
-        if (!leader) {
+        if (leader) {
             ZJC_DEBUG("statistic_map_ptr->empty()");
         }
 
@@ -1735,7 +1747,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         
         auto now_tm = common::TimeUtils::TimestampUs();
         if (iter->first >= latest_timeblock_height_) {
-            if (!leader) {
+            if (leader) {
                 ZJC_DEBUG("iter->first >= latest_timeblock_height_: %lu, %lu",
                     iter->first, latest_timeblock_height_);
             }
@@ -1773,7 +1785,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         return shard_statistic_tx->tx_ptr;
     }
 
-    if (!leader) {
+    if (leader) {
         ZJC_DEBUG("failed get statistic tx");
     }
     return nullptr;
@@ -1863,12 +1875,12 @@ bool BlockManager::ShouldStopConsensus() {
 
 pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& tx_hash) {
     bool leader = tx_hash.empty();
-    if (!leader) {
+    if (leader) {
         ZJC_DEBUG("backup get to tx coming!");
     }
 
     if (latest_to_tx_ == nullptr) {
-        if (!leader) {
+        if (leader) {
             ZJC_DEBUG("backup get to tx failed, latest_to_tx_ == nullptr!");
         }
 
@@ -1876,7 +1888,7 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& t
     }
 
     if (pool_index != 0) {
-        if (!leader) {
+        if (leader) {
             ZJC_DEBUG("backup get to tx failed, pool_index != 0!");
         }
 
@@ -1902,10 +1914,10 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& t
     }
 
     if (tmp_to_txs != nullptr) {
-        ZJC_DEBUG("get to tx failed in_consensus: %d", tmp_to_txs->tx_ptr->in_consensus);
+        ZJC_DEBUG("get to tx success in_consensus: %d", tmp_to_txs->tx_ptr->in_consensus);
     }
 
-    if (!leader) {
+    if (leader) {
         ZJC_DEBUG("backup get to tx failed elect height: %lu", latest_to_tx_->elect_height);
     }
     return nullptr;
