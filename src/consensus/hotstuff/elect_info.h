@@ -21,25 +21,6 @@ namespace hotstuff {
 // ElectItem 
 class ElectItem {
 public:
-    struct NodeConsensusStatistic { // 节点共识统计
-        uint32_t success;
-        uint32_t fail;
-        uint32_t score;
-
-        NodeConsensusStatistic() {
-            success = 0;
-            fail = 0;
-            score = 100;
-        }
-
-        void IncrSucc() { success++; }
-        void IncrFail() { fail++; }
-        
-        uint32_t Score() {
-            return 0;
-        }
-    };
-    
     ElectItem(
             const std::shared_ptr<security::Security>& security,
             uint32_t sharding_id,
@@ -63,9 +44,6 @@ public:
         local_sk_ = sk;
 
         SetMemberCount(members->size());
-        for (const auto& member : *members) {
-            node_statistic_map_[member->index] = std::make_shared<NodeConsensusStatistic>();
-        }
     }
     ~ElectItem() {};
 
@@ -104,33 +82,6 @@ public:
         return common_pk_;
     }
 
-    // 统计 leader 的共识情况，更新分值
-    std::shared_ptr<NodeConsensusStatistic> NodeStatistic(uint32_t member_idx) {
-        auto it = node_statistic_map_.find(member_idx);
-        if (it == node_statistic_map_.end()) {
-            return nullptr;
-        }
-        return it->second;
-    }
-    
-    void MarkSuccess(uint32_t member_idx) {
-        auto stat = NodeStatistic(member_idx);
-        if (stat) {
-            stat->IncrSucc();
-        }
-    }
-    void MarkFail(uint32_t member_idx) {
-        auto stat = NodeStatistic(member_idx);
-        if (stat) {
-            stat->IncrFail();
-        }
-    }
-    
-    uint32_t NodeScore(uint32_t member_idx) {
-        auto stat = NodeStatistic(member_idx);
-        return stat == nullptr ? 0 : stat->Score();
-    }
-
 private:
     void SetMemberCount(uint32_t mem_cnt) {
         bls_n_ = mem_cnt;
@@ -146,7 +97,6 @@ private:
     bool bls_valid_{false};
     uint32_t bls_t_{0};
     uint32_t bls_n_{0};
-    std::unordered_map<uint32_t, std::shared_ptr<NodeConsensusStatistic>> node_statistic_map_; // 用于保存该 elect_item 中每个节点的共识情况
 };
 
 
@@ -266,33 +216,6 @@ public:
 
     inline uint32_t max_consensus_sharding_id() const {
         return max_consensus_sharding_id_;
-    }
-
-    void MarkSuccess(uint64_t elect_height, uint32_t member_idx) {
-        auto elect_item = GetElectItem(elect_height);
-        if (elect_item) {
-            elect_item->MarkSuccess(member_idx);
-        }
-        auto stat = NodeStatistic(elect_height, member_idx);
-        if (stat) {
-            ZJC_DEBUG("member stat, %d, success: %lu, fail: %lu", member_idx, stat->success, stat->fail);
-        }       
-    }
-    void MarkFail(uint64_t elect_height, uint32_t member_idx) {
-        auto elect_item = GetElectItem(elect_height);
-        if (elect_item) {
-            elect_item->MarkFail(member_idx);
-        }
-    }
-    
-    uint32_t NodeScore(uint64_t elect_height, uint32_t member_idx) {
-        auto elect_item = GetElectItem(elect_height);
-        return elect_item != nullptr ? elect_item->NodeScore(member_idx) : 0;
-    }
-
-    std::shared_ptr<ElectItem::NodeConsensusStatistic> NodeStatistic(uint64_t elect_height, uint32_t member_idx) {
-        auto elect_item = GetElectItem(elect_height);
-        return elect_item != nullptr ? elect_item->NodeStatistic(member_idx) : 0;
     }
     
 private:

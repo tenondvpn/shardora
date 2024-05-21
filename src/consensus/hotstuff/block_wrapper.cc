@@ -89,6 +89,10 @@ Status BlockWrapper::GetTxsIdempotently(std::vector<std::shared_ptr<pools::proto
 
     return Status::kSuccess;
 }
+
+bool BlockWrapper::HasSingleTx() {
+    return txs_pools_->HasSingleTx(pool_idx_);
+}
         
 }
 }

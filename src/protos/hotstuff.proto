@@ -47,7 +47,8 @@ message VoteMsg {
 
 message PreResetTimerMsg {
     optional uint32 replica_idx = 1;
-    repeated pools.protobuf.TxMessage txs = 7;
+    repeated pools.protobuf.TxMessage txs = 2;
+    optional bool has_single_tx = 3;
 }
 
 message ResetTimerMsg {

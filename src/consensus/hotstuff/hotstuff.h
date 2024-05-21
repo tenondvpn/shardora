@@ -102,9 +102,6 @@ public:
             const std::shared_ptr<ViewBlock>& vblock,
             const std::shared_ptr<QC>& self_commit_qc) {
         acceptor()->CommitSynced(vblock->block);
-        // 根据 commit_qc 更新 leader score
-        elect_info()->MarkSuccess(vblock->ElectHeight(), vblock->leader_idx);
-
         view_block_chain()->StoreToDb(vblock, self_commit_qc);
     }
 

@@ -77,6 +77,10 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
     return txs_item;
 }
 
+bool WaitingTxsPools::HasSingleTx(uint32_t pool_index) {
+    return GetSingleTx(pool_index) != nullptr;
+}
+
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetElectTx(
         uint32_t pool_index,
         const std::string& tx_hash) {
