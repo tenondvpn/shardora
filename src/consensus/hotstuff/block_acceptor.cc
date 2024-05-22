@@ -278,6 +278,7 @@ Status BlockAcceptor::addTxsToPool(
             break;
         }
         case pools::protobuf::kConsensusRootElectShard:
+            ZJC_DEBUG("now root elect shard coming: tx size: %u", txs.size());
             if (txs.size() == 1) {
                 auto txhash = pools::GetTxMessageHash(*txs[0]);
                 auto tx_item = tx_pools_->GetElectTx(pool_idx(), txhash);           
