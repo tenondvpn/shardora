@@ -47,6 +47,12 @@ BlockAcceptor::~BlockAcceptor(){};
 Status BlockAcceptor::Accept(
         std::shared_ptr<IBlockAcceptor::blockInfo>& block_info, 
         const bool& no_tx_allowed) {
+    auto b = common::TimeUtils::TimestampMs();
+    defer({
+            auto e = common::TimeUtils::TimestampMs();
+            ZJC_DEBUG("pool: %d Accept duration: %lu ms", pool_idx_, e-b);
+        });
+    
     if (!block_info || !block_info->block) {
         ZJC_DEBUG("block info error!");
         return Status::kError;
