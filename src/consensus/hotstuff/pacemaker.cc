@@ -1,6 +1,7 @@
 #include <common/global_info.h>
 #include <common/log.h>
 #include <common/utils.h>
+#include <common/defer.h>
 #include <consensus/hotstuff/hotstuff_manager.h>
 #include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h>
@@ -32,7 +33,6 @@ Pacemaker::~Pacemaker() {}
 void Pacemaker::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
     if (IsTimeout()) {
         ZJC_DEBUG("pool: %d timeout", pool_idx_);
-        StopTimeoutTimer();
         OnLocalTimeout();
     }
 }
@@ -92,7 +92,10 @@ void Pacemaker::OnLocalTimeout() {
     // TODO(HT): test
     ZJC_DEBUG("OnLocalTimeout pool: %d, view: %d", pool_idx_, CurView());
     // start a new timer for the timeout case
-    StartTimeoutTimer();
+    StopTimeoutTimer();
+    duration_->ViewTimeout();
+    
+    defer(StartTimeoutTimer());
 
     // 超时后先触发一次同步，主要是尽量同步最新的 HighQC，降低因 HighQC 不一致造成多次超时的概率
     // 由于 HotstuffSyncer 周期性同步，这里不触发同步影响也不大
@@ -107,7 +110,7 @@ void Pacemaker::OnLocalTimeout() {
         return;
     }
     
-    duration_->ViewTimeout();
+
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
@@ -160,7 +163,7 @@ void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& 
         dht::DhtKeyManager dht_key(leader->net_id, leader->id);
         msg.set_des_dht_key(dht_key.StrKey());
         ZJC_DEBUG("Send TimeoutMsg pool: %d, to ip: %s, port: %d, "
-            "local_idx: %d, id: %s, local id: %s, hash64: %lu, view: %lu",
+            "local_idx: %d, id: %s, local id: %s, hash64: %lu, view: %lu, highqc: %lu",
             pool_idx_,
             common::Uint32ToIp(leader->public_ip).c_str(), 
             leader->public_port, 
@@ -168,7 +171,8 @@ void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& 
             common::Encode::HexEncode(leader->id).c_str(),
             common::Encode::HexEncode(crypto_->security()->GetAddress()).c_str(),
             msg.hash64(),
-            msg.hotstuff_timeout_proto().view());
+            msg.hotstuff_timeout_proto().view(),
+            HighQC()->view);
         if (leader->public_ip == 0 || leader->public_port == 0) {
             network::Route::Instance()->Send(msg_ptr);
         } else {

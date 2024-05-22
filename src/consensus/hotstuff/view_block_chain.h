@@ -113,7 +113,7 @@ public:
 
     Status StoreToDb(
             const std::shared_ptr<ViewBlock>& v_block,
-            const std::shared_ptr<QC>& commit_qc) {
+            const std::shared_ptr<QC>& commit_qc) {        
         // 持久化已经生成 qc 的 ViewBlock
         if (v_block == nullptr) {
             return Status::kInvalidArgument;
@@ -121,6 +121,13 @@ public:
         if (commit_qc == nullptr) {
             return Status::kInvalidArgument;
         }
+
+        if (HasInDb(v_block->block->network_id(),
+                v_block->block->pool_index(),
+                v_block->block->height())) {
+            return Status::kSuccess;
+        }        
+        
         auto pb_v_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
         ViewBlock2Proto(v_block, pb_v_block.get());
         // 不存储 block 部分，block 已经单独存过了

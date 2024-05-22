@@ -3,14 +3,6 @@ syntax = "proto2";
 import "protos/block.proto";
 package shardora.view_block.protobuf;
 
-message ViewBlockSyncRequest {
-    optional uint32 network_id = 1;
-    optional uint32 pool_idx = 2;
-    repeated bytes view_block_hashes = 3;
-    optional uint64 high_qc_view = 4;
-    optional uint64 high_tc_view = 5;
-}
-
 message ViewBlockItem {
     optional bytes hash = 1;
     optional bytes parent_hash = 2;
@@ -32,6 +24,14 @@ message QC {
     optional uint32 leader_idx = 8;
 }
 
+message ViewBlockSyncRequest {
+    optional uint32 network_id = 1;
+    optional uint32 pool_idx = 2;
+    repeated bytes view_block_hashes = 3;
+    optional uint64 high_qc_view = 4;
+    optional uint64 high_tc_view = 5;
+}
+
 message ViewBlockSyncResponse {
     optional uint32 network_id = 1;
     optional uint32 pool_idx = 2;
@@ -39,12 +39,20 @@ message ViewBlockSyncResponse {
     repeated bytes view_block_qc_strs = 4;
     optional bytes high_qc_str = 5;
     optional bytes high_tc_str = 6;
+    optional bytes query_hash = 7; // single request 中的 query hash
+}
+
+message SingleViewBlockSyncRequest {
+    optional uint32 network_id = 1;
+    optional uint32 pool_idx = 2;
+    optional bytes query_hash = 3;
 }
 
 message ViewBlockSyncMessage {
     optional ViewBlockSyncRequest view_block_req = 1;
     optional ViewBlockSyncResponse view_block_res = 2;
-    optional uint32 create_time_us = 3;
+    optional SingleViewBlockSyncRequest single_req = 3;
+    optional uint32 create_time_us = 4;
 }
 
 message TimeoutMessage {

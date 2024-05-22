@@ -40,11 +40,12 @@ HotstuffSyncer::HotstuffSyncer(
                 std::placeholders::_3));
 
     // 设置 pacemaker 中的同步函数
-    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
-        pacemaker(pool_idx)->SetSyncPoolFn(
-                std::bind(&HotstuffSyncer::SyncPool,
+    hotstuff_mgr_->SetSyncPoolFn(
+            std::bind(&HotstuffSyncer::SyncPool,
                     this, std::placeholders::_1, std::placeholders::_2));
-    }
+    hotstuff_mgr_->SetSyncViewBlockFn(
+            std::bind(&HotstuffSyncer::SyncViewBlock,
+                this, std::placeholders::_1, std::placeholders::_2));    
 
     for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
         last_timers_us_[i] = common::TimeUtils::TimestampUs();
@@ -87,7 +88,7 @@ void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr)
     HandleSyncedBlocks();
 }
 
-void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const uint32_t& node_num) {
+void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const int32_t& node_num) {
     // TODO(HT): test
     auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
     auto req = vb_msg.mutable_view_block_req();
@@ -127,6 +128,19 @@ void HotstuffSyncer::SyncAllPools() {
     }
 }
 
+void HotstuffSyncer::SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash) {
+    auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
+    auto req = vb_msg.mutable_single_req();
+    req->set_pool_idx(pool_idx);
+    req->set_network_id(common::GlobalInfo::Instance()->network_id());
+    req->set_query_hash(hash);
+        
+    vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
+    // 询问所有邻居节点
+    SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, 1);
+    return;
+}
+
 void HotstuffSyncer::HandleSyncedBlocks() {
     auto& block_queue = kv_sync_->vblock_queue();
     std::shared_ptr<view_block::protobuf::ViewBlockItem> pb_vblock = nullptr;
@@ -150,7 +164,7 @@ void HotstuffSyncer::HandleSyncedBlocks() {
     return;
 }
 
-Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg, uint32_t node_num) {
+Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg, int32_t node_num) {
     // 只有共识池节点才能同步 ViewBlock
     if (network_id >= network::kConsensusWaitingShardBeginNetworkId) {
         return Status::kError;
@@ -165,7 +179,10 @@ Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protob
         return Status::kError;
     }
     // dht::NodePtr node = nodes[rand() % nodes.size()];
-
+    if (node_num == -1) {
+        node_num = nodes.size();
+    }
+    
     if (node_num > nodes.size()) {
         return Status::kError;
     }
@@ -239,7 +256,10 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
         return Status::kError;
     }
 
-    // 检查本地 ViewBlockChain 中是否存在 src 节点没有的 ViewBlock，如果存在则全部同步过去
+    // 检查本地 ViewBlockChain 中是否存在 src 节点没有的 ViewBlock(需要有 qc)，如果存在则全部同步过去
+    // 由于仅检查有 qc 的 view block，因此最新的 view_block 并不会同步（本该如此），但其中的 qc 也不会随着 chain 同步
+    // 导致超时 leader 不一致（因为 leader 是跟随 qc 迭代的）
+    // 好在这个 qc 会通过 highqc 同步过去，因此接受 highqc 时需要执行 commit 操作，保证 leader 一致    
     for (auto& view_block : all) {
         // 仅同步已经有 qc 的 view_block
         auto view_block_qc = chain->GetQcOf(view_block);
@@ -287,6 +307,63 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     return SendMsg(network_id, res_view_block_msg);
 }
 
+Status HotstuffSyncer::processRequestSingle(const transport::MessagePtr& msg_ptr) {
+    auto& view_block_msg = msg_ptr->header.view_block_proto();
+    assert(view_block_msg.has_single_req());
+
+    uint32_t network_id = view_block_msg.single_req().network_id();
+    uint32_t pool_idx = view_block_msg.single_req().pool_idx();
+
+    auto chain = view_block_chain(pool_idx);
+    if (!chain) {
+        return Status::kError;
+    }
+
+    auto query_hash = view_block_msg.single_req().query_hash();
+
+    // 不存在 query_hash 则不同步
+    std::shared_ptr<ViewBlock> view_block = nullptr;
+    chain->Get(query_hash, view_block);
+    if (!view_block || chain->GetQcOf(view_block)) {
+        return Status::kNotFound;
+    }
+
+    std::vector<std::shared_ptr<ViewBlock>> all;
+    chain->GetAll(all);
+    if (all.size() <= 0 || all.size() > kMaxSyncBlockNum) {
+        return Status::kError;
+    }
+
+    // 检查本地 ViewBlockChain 中是否存在 src 节点没有的 ViewBlock，如果存在则全部同步过去
+    transport::protobuf::Header msg;
+    view_block::protobuf::ViewBlockSyncMessage&  res_view_block_msg = *msg.mutable_view_block_proto();
+    auto view_block_res = res_view_block_msg.mutable_view_block_res();
+    for (auto& view_block : all) {
+        // 仅同步已经有 qc 的 view_block
+        auto view_block_qc = chain->GetQcOf(view_block);
+        if (!view_block_qc) {
+            if (pacemaker(pool_idx)->HighQC()->view_block_hash == view_block->hash) {
+                chain->SetQcOf(view_block, pacemaker(pool_idx)->HighQC());
+                view_block_qc = pacemaker(pool_idx)->HighQC();
+            } else {
+                continue;
+            }
+        }
+        
+        auto view_block_qc_str = view_block_res->add_view_block_qc_strs();
+        *view_block_qc_str = view_block_qc->Serialize();
+        auto view_block_item = view_block_res->add_view_block_items();
+        ViewBlock2Proto(view_block, view_block_item);
+    }
+
+    view_block_res->set_network_id(network_id);
+    view_block_res->set_pool_idx(pool_idx);
+    view_block_res->set_query_hash(query_hash); // 用于帮助 src 节点过滤冗余
+    res_view_block_msg.set_create_time_us(common::TimeUtils::TimestampUs());
+
+    return SendMsg(network_id, res_view_block_msg);
+}
+
 void HotstuffSyncer::ConsumeMessages() {
     // Consume Messages
     uint32_t pop_count = 0;
@@ -301,7 +378,9 @@ void HotstuffSyncer::ConsumeMessages() {
             processRequest(msg_ptr);
         } else if (msg_ptr->header.view_block_proto().has_view_block_res()) {
             processResponse(msg_ptr);
-        }            
+        } else if (msg_ptr->header.view_block_proto().has_single_req()) {
+            processRequestSingle(msg_ptr);
+        }
     }
 }
 
@@ -338,6 +417,16 @@ Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
     auto& view_block_msg = msg_ptr->header.view_block_proto();
     assert(view_block_msg.has_view_block_res());
     uint32_t pool_idx = view_block_msg.view_block_res().pool_idx();
+
+    
+    if (view_block_msg.view_block_res().has_query_hash()) {
+        // 处理 single query
+        // 已经有该 view block 了，直接返回
+        if (view_block_chain(pool_idx)->Has(view_block_msg.view_block_res().query_hash())) {
+            ZJC_DEBUG("pool: %d, has query hash", pool_idx);
+            return Status::kSuccess;
+        }
+    }
     
     processResponseQcTc(pool_idx, view_block_msg.view_block_res());
     return processResponseChain(pool_idx, view_block_msg.view_block_res());
@@ -347,6 +436,9 @@ Status HotstuffSyncer::processResponseQcTc(
         const uint32_t& pool_idx,
         const view_block::protobuf::ViewBlockSyncResponse& view_block_res) {
     // 更新 highqc 和 hightc
+    if (!view_block_res.has_high_qc_str() && !view_block_res.has_high_tc_str()) {
+        return Status::kSuccess;
+    }
     auto pm = pacemaker(pool_idx);
     if (!pm) {
         return Status::kError;
@@ -360,8 +452,12 @@ Status HotstuffSyncer::processResponseQcTc(
 
     ZJC_DEBUG("response received qctc pool_idx: %d, tc: %d, qc: %d",
         pool_idx, hightc->view, highqc->view);
-    // TODO 验证 qc 和 tc   
+
+    // TODO 验证 qc 和 tc
     pm->AdvanceView(new_sync_info()->WithQC(highqc)->WithTC(hightc));
+    // 尝试做 commit
+    hotstuff_mgr_->hotstuff(pool_idx)->TryCommit(highqc);
+    
     return Status::kSuccess;
 }
 
@@ -370,11 +466,15 @@ Status HotstuffSyncer::processResponseChain(
         const view_block::protobuf::ViewBlockSyncResponse& view_block_res) {
     auto& view_block_items = view_block_res.view_block_items();
     auto& view_block_qc_strs = view_block_res.view_block_qc_strs();
-    
+
+    if (view_block_items.size() <= 0) {
+        return Status::kSuccess;
+    }
     // 对块数量限制
     // 当出现这么多块，多半是因为共识卡住，不断产生新的无法共识的块，此时同步这些块过来也没有用，早晚会被剪掉
-    if (view_block_items.size() > kMaxSyncBlockNum || view_block_items.size() <= 0) {
-        return Status::kSuccess;
+    if (view_block_items.size() > kMaxSyncBlockNum) {
+        ZJC_ERROR("pool: %d, view block: %lu exceeds max limit", pool_idx, view_block_items.size());
+        return Status::kError;
     }
 
     
@@ -401,7 +501,7 @@ Status HotstuffSyncer::processResponseChain(
 
     // 将 view_block 放入小根堆排序
     ViewBlockMinHeap min_heap;
-    std::unordered_set<HashStr> skipped_view_blocks;
+    std::shared_ptr<QC> high_commit_qc = nullptr;
     for (auto it = view_block_items.begin(); it != view_block_items.end(); it++) {
         auto view_block = std::make_shared<ViewBlock>();
         Status s = Proto2ViewBlock(*it, view_block);
@@ -420,7 +520,14 @@ Status HotstuffSyncer::processResponseChain(
             crypto(pool_idx)->VerifyQC(view_block_qc) != Status::kSuccess) {
             continue;
         }
-
+        
+        // 记录同步链中最高的 Qc，用于 commit
+        if (!high_commit_qc) {
+            high_commit_qc = view_block_qc;
+        } else if (high_commit_qc->view < view_block_qc->view) {
+            high_commit_qc = view_block_qc;
+        }
+        
         min_heap.push(view_block);        
     }
 
@@ -437,22 +544,22 @@ Status HotstuffSyncer::processResponseChain(
         tmp_chain->Store(view_block);
     }
     
-    ZJC_DEBUG("Sync blocks to chain, pool_idx: %d, view_blocks: %d",
-        pool_idx, view_block_items.size());
+    ZJC_DEBUG("Sync blocks to chain, pool_idx: %d, view_blocks: %d, syncchain: %s, orichain: %s",
+        pool_idx, view_block_items.size(), tmp_chain->String().c_str(), chain->String().c_str());
 
     if (!tmp_chain->IsValid()) {
         ZJC_ERROR("pool: %d, synced chain is invalid", pool_idx);
         return Status::kSuccess;
     }
 
-    return MergeChain(pool_idx, chain, tmp_chain, skipped_view_blocks);    
+    return MergeChain(pool_idx, chain, tmp_chain, high_commit_qc);    
 }
 
 Status HotstuffSyncer::MergeChain(
         const uint32_t& pool_idx,
         std::shared_ptr<ViewBlockChain>& ori_chain,
         const std::shared_ptr<ViewBlockChain>& sync_chain,
-        const std::unordered_set<HashStr>& skipped_view_blocks) {
+        const std::shared_ptr<QC>& high_commit_qc) {
     // 寻找交点
     std::vector<std::shared_ptr<ViewBlock>> view_blocks;
     ori_chain->GetAll(view_blocks);
@@ -468,7 +575,7 @@ Status HotstuffSyncer::MergeChain(
     if (cross_block) {
         std::vector<std::shared_ptr<ViewBlock>> sync_all_blocks;
         sync_chain->GetOrderedAll(sync_all_blocks);
-
+        
         for (const auto& sync_block : sync_all_blocks) {
             if (sync_block->view < cross_block->view) {
                 continue;
@@ -476,12 +583,16 @@ Status HotstuffSyncer::MergeChain(
             if (ori_chain->Has(sync_block->hash)) {
                 continue;
             }
-
+            
             Status s = on_recv_vb_fn_(pool_idx, ori_chain, sync_block);
             if (s != Status::kSuccess) {
                 continue;
             }
         }
+        // 单独对 high_commit_qc 提交
+        // 保证落后节点虽然没有最新的提案，但是有最新的 qc，并且 leader 一致
+        hotstuff_mgr_->hotstuff(pool_idx)->TryCommit(high_commit_qc);
+        pacemaker(pool_idx)->AdvanceView(new_sync_info()->WithQC(high_commit_qc));
         
         return Status::kSuccess;
     }
@@ -504,6 +615,10 @@ Status HotstuffSyncer::MergeChain(
             continue;
         }
     }
+
+    hotstuff_mgr_->hotstuff(pool_idx)->TryCommit(high_commit_qc);
+    pacemaker(pool_idx)->AdvanceView(new_sync_info()->WithQC(high_commit_qc));
+    
     return Status::kSuccess;
 }
 
@@ -522,22 +637,8 @@ Status HotstuffSyncer::onRecViewBlock(
     hotstuff->pacemaker()->AdvanceView(new_sync_info()->WithQC(view_block->qc));
     
     // 3. 尝试 commit
-    auto view_block_to_commit = hotstuff->CheckCommit(view_block);
-    if (view_block_to_commit) {
-        s = hotstuff->Commit(view_block_to_commit);
-        if (s != Status::kSuccess) {
-            ZJC_ERROR("pool: %d sync commit failed", pool_idx);
-            return s;
-        }
-
-        if (!hotstuff->view_block_chain()->HasInDb(
-                    view_block_to_commit->block->network_id(),
-                    view_block_to_commit->block->pool_index(),
-                    view_block_to_commit->block->height())) {
-            // 保存 commit vblock 及其 commitQC 用于 kv 同步
-            hotstuff->view_block_chain()->StoreToDb(view_block_to_commit, view_block->qc);            
-        }        
-    }
+    // TODO 有更新的 qc
+    hotstuff->TryCommit(view_block->qc);
 
     // 验证交易
     auto accep = hotstuff->acceptor();
