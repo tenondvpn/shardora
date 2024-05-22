@@ -89,6 +89,18 @@ public:
 
     Status Start();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
+    
+    void SetSyncViewBlockFn(SyncViewBlockFn sync_fn) {
+        for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
+            hotstuff(pool_idx)->SetSyncViewBlockFn(sync_fn);
+        }
+    }
+
+    void SetSyncPoolFn(SyncPoolFn sync_fn) {
+        for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
+            pacemaker(pool_idx)->SetSyncPoolFn(sync_fn);
+        }        
+    }
 
     int VerifySyncedViewBlock(view_block::protobuf::ViewBlockItem* pb_vblock);    
 

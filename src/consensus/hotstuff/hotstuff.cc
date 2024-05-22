@@ -11,7 +11,7 @@ namespace shardora {
 
 namespace hotstuff {
 
-void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
+void Hotstuff::Init() {
     // set pacemaker timeout callback function
     last_vote_view_ = GenesisView;
     
@@ -852,7 +852,16 @@ Status Hotstuff::ConstructViewBlock(
     auto pre_v_block = std::make_shared<ViewBlock>();
     Status s = view_block_chain()->Get(view_block->parent_hash, pre_v_block);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("parent view block has not found, pool: %d, view: %lu, parent_view: %lu, leader: %lu", pool_idx_, pacemaker()->CurView(), pacemaker()->HighQC()->view, leader_idx);
+        ZJC_ERROR("parent view block has not found, pool: %d, view: %lu, parent_view: %lu, leader: %lu, chain: %s",
+            pool_idx_,
+            pacemaker()->CurView(),
+            pacemaker()->HighQC()->view,
+            leader_idx,
+            view_block_chain()->String().c_str());
+        // 从邻居节点同步 parent block
+        if (sync_view_block_fn_) {
+            sync_view_block_fn_(pool_idx_, view_block->parent_hash);
+        }
         return s;
     }
     
