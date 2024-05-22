@@ -279,11 +279,8 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         pacemaker()->CurView(),
         v_block->view,
         v_block->block->tx_list_size());
-    // TODO 曾经遇到 CommittedBlock 为空的情况，等复现
-    assert(view_block_chain()->LatestCommittedBlock() != nullptr);
-    // view_block_chain()->Print();    
 
-    
+    // view_block_chain()->Print();
     
     auto trans_msg = std::make_shared<transport::TransportMessage>();
     auto& trans_header = trans_msg->header;
