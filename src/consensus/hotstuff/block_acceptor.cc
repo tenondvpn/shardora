@@ -47,6 +47,12 @@ BlockAcceptor::~BlockAcceptor(){};
 Status BlockAcceptor::Accept(
         std::shared_ptr<IBlockAcceptor::blockInfo>& block_info, 
         const bool& no_tx_allowed) {
+    auto b = common::TimeUtils::TimestampMs();
+    defer({
+            auto e = common::TimeUtils::TimestampMs();
+            ZJC_DEBUG("pool: %d Accept duration: %lu ms", pool_idx_, e-b);
+        });
+    
     if (!block_info || !block_info->block) {
         ZJC_DEBUG("block info error!");
         return Status::kError;
@@ -130,6 +136,7 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
                 // leader broadcast block to other shards
                 // TODO to 交易会大量占用 CPU，先屏蔽
                 LeaderBroadcastBlock(block);
+#ifndef NDEBUG                
                 for (uint32_t i = 0; i < block->tx_list_size(); ++i) {
                     ZJC_DEBUG("leader broadcast commit block tx over step: %d, to: %s, gid: %s, pool: %d, net: %d", 
                         block->tx_list(i).step(),
@@ -138,16 +145,17 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
                         block->pool_index(),
                         common::GlobalInfo::Instance()->network_id());
                 }
+#endif
             }
         }
-
+#ifndef NDEBUG
         for (uint32_t i = 0; i < block->tx_list_size(); ++i) {
             ZJC_DEBUG("commit block tx over step: %d, to: %s, gid: %s", 
                 block->tx_list(i).step(),
                 common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
                 common::Encode::HexEncode(block->tx_list(i).gid()).c_str());
         }
-        
+#endif        
         pools_mgr_->TxOver(block->pool_index(), block->tx_list());
     }
 

@@ -183,7 +183,7 @@ Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protob
         node_num = nodes.size();
     }
     
-    if (node_num > nodes.size()) {
+    if (node_num > int32_t(nodes.size())) {
         return Status::kError;
     }
     std::random_device rd;
@@ -562,9 +562,9 @@ Status HotstuffSyncer::MergeChain(
         const std::shared_ptr<QC>& high_commit_qc) {
     // 寻找交点
     std::vector<std::shared_ptr<ViewBlock>> view_blocks;
-    ori_chain->GetAll(view_blocks);
+    ori_chain->GetOrderedAll(view_blocks);
     std::shared_ptr<ViewBlock> cross_block = nullptr;
-    for (auto it = view_blocks.begin(); it != view_blocks.end(); it++) {
+    for (auto it = view_blocks.rbegin(); it != view_blocks.rend(); it++) {
         sync_chain->Get((*it)->hash, cross_block);
         if (cross_block) {
             break;

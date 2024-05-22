@@ -1,5 +1,6 @@
 #include <common/encode.h>
 #include <common/log.h>
+#include <common/defer.h>
 #include <common/time_utils.h>
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/types.h>
@@ -152,6 +153,12 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
 }
 
 void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
+    auto b = common::TimeUtils::TimestampMs();
+    defer({
+            auto e = common::TimeUtils::TimestampMs();
+            ZJC_DEBUG("pool: %d handle propose duration: %lu ms", pool_idx_, e-b);
+        });
+    
     auto& pro_msg = header.hotstuff().pro_msg();
     ZJC_DEBUG("====1.0 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
         pool_idx_,
@@ -272,11 +279,8 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         pacemaker()->CurView(),
         v_block->view,
         v_block->block->tx_list_size());
-    // TODO 曾经遇到 CommittedBlock 为空的情况，等复现
-    assert(view_block_chain()->LatestCommittedBlock() != nullptr);
-    // view_block_chain()->Print();    
 
-    
+    // view_block_chain()->Print();
     
     auto trans_msg = std::make_shared<transport::TransportMessage>();
     auto& trans_header = trans_msg->header;
@@ -303,6 +307,12 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
 }
 
 void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
+    auto b = common::TimeUtils::TimestampMs();
+    defer({
+            auto e = common::TimeUtils::TimestampMs();
+            ZJC_DEBUG("pool: %d handle vote duration: %lu ms", pool_idx_, e-b);
+        });
+    
     auto& vote_msg = header.hotstuff().vote_msg();
     ZJC_DEBUG("====2.0 pool: %d, onVote, hash: %s, view: %lu, replica: %lu, hash64: %lu",
         pool_idx_,
@@ -560,6 +570,12 @@ void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
 }
 
 Status Hotstuff::TryCommit(const std::shared_ptr<QC> commit_qc) {
+    auto b = common::TimeUtils::TimestampMs();
+    defer({
+            auto e = common::TimeUtils::TimestampMs();
+            ZJC_DEBUG("pool: %d TryCommit duration: %lu ms", pool_idx_, e-b);
+        });
+    
     if (!commit_qc) {
         return Status::kInvalidArgument;
     }
