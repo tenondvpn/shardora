@@ -256,7 +256,10 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
         return Status::kError;
     }
 
-    // 检查本地 ViewBlockChain 中是否存在 src 节点没有的 ViewBlock，如果存在则全部同步过去
+    // 检查本地 ViewBlockChain 中是否存在 src 节点没有的 ViewBlock(需要有 qc)，如果存在则全部同步过去
+    // 由于仅检查有 qc 的 view block，因此最新的 view_block 并不会同步（本该如此），但其中的 qc 也不会随着 chain 同步
+    // 导致超时 leader 不一致（因为 leader 是跟随 qc 迭代的）
+    // 好在这个 qc 会通过 highqc 同步过去，因此接受 highqc 时需要执行 commit 操作，保证 leader 一致    
     for (auto& view_block : all) {
         // 仅同步已经有 qc 的 view_block
         auto view_block_qc = chain->GetQcOf(view_block);
@@ -452,6 +455,9 @@ Status HotstuffSyncer::processResponseQcTc(
 
     // TODO 验证 qc 和 tc
     pm->AdvanceView(new_sync_info()->WithQC(highqc)->WithTC(hightc));
+    // 尝试做 commit
+    onRecvCommitQC(pool_idx, highqc);
+    
     return Status::kSuccess;
 }
 
@@ -460,11 +466,15 @@ Status HotstuffSyncer::processResponseChain(
         const view_block::protobuf::ViewBlockSyncResponse& view_block_res) {
     auto& view_block_items = view_block_res.view_block_items();
     auto& view_block_qc_strs = view_block_res.view_block_qc_strs();
-    
+
+    if (view_block_items.size() <= 0) {
+        return Status::kSuccess;
+    }
     // 对块数量限制
     // 当出现这么多块，多半是因为共识卡住，不断产生新的无法共识的块，此时同步这些块过来也没有用，早晚会被剪掉
-    if (view_block_items.size() > kMaxSyncBlockNum || view_block_items.size() <= 0) {
-        return Status::kSuccess;
+    if (view_block_items.size() > kMaxSyncBlockNum) {
+        ZJC_ERROR("pool: %d, view block: %lu exceeds max limit", pool_idx, view_block_items.size());
+        return Status::kError;
     }
 
     
@@ -534,8 +544,8 @@ Status HotstuffSyncer::processResponseChain(
         tmp_chain->Store(view_block);
     }
     
-    ZJC_DEBUG("Sync blocks to chain, pool_idx: %d, view_blocks: %d",
-        pool_idx, view_block_items.size());
+    ZJC_DEBUG("Sync blocks to chain, pool_idx: %d, view_blocks: %d, syncchain: %s, orichain: %s",
+        pool_idx, view_block_items.size(), tmp_chain->String().c_str(), chain->String().c_str());
 
     if (!tmp_chain->IsValid()) {
         ZJC_ERROR("pool: %d, synced chain is invalid", pool_idx);
@@ -565,18 +575,13 @@ Status HotstuffSyncer::MergeChain(
     if (cross_block) {
         std::vector<std::shared_ptr<ViewBlock>> sync_all_blocks;
         sync_chain->GetOrderedAll(sync_all_blocks);
-
-        bool should_commit = false;
+        
         for (const auto& sync_block : sync_all_blocks) {
             if (sync_block->view < cross_block->view) {
                 continue;
             }
             if (ori_chain->Has(sync_block->hash)) {
                 continue;
-            }
-
-            if (high_commit_qc->view_block_hash == sync_block->hash) {
-                should_commit = true;
             }
             
             Status s = on_recv_vb_fn_(pool_idx, ori_chain, sync_block);
@@ -586,9 +591,9 @@ Status HotstuffSyncer::MergeChain(
         }
         // 单独对 high_commit_qc 提交
         // 保证落后节点虽然没有最新的提案，但是有最新的 qc，并且 leader 一致
-        if (should_commit) {
-            onRecvCommitQC(pool_idx, high_commit_qc);
-        }
+        onRecvCommitQC(pool_idx, high_commit_qc);
+        pacemaker(pool_idx)->AdvanceView(new_sync_info()->WithQC(high_commit_qc));
+        
         return Status::kSuccess;
     }
     
@@ -603,21 +608,16 @@ Status HotstuffSyncer::MergeChain(
     }
 
     ori_chain->Clear();
-    bool should_commit = false;
     for (const auto& sync_block : sync_all_blocks) {
         // 逐个处理同步来的 view_block
-        if (high_commit_qc->view_block_hash == sync_block->hash) {
-            should_commit = true;
-        }
         Status s = on_recv_vb_fn_(pool_idx, ori_chain, sync_block);
         if (s != Status::kSuccess) {
             continue;
         }
     }
 
-    if (should_commit) {
-        onRecvCommitQC(pool_idx, high_commit_qc);
-    }
+    onRecvCommitQC(pool_idx, high_commit_qc);
+    pacemaker(pool_idx)->AdvanceView(new_sync_info()->WithQC(high_commit_qc));
     
     return Status::kSuccess;
 }
@@ -671,7 +671,6 @@ void HotstuffSyncer::onRecvCommitQC(
         if (vblock_commit) {
             hf->Commit(vblock_commit, commit_qc);
         }
-        hf->pacemaker()->AdvanceView(new_sync_info()->WithQC(commit_qc));
     }    
 }
 
