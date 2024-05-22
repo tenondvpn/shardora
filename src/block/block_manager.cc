@@ -1695,18 +1695,12 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
 
     auto statistic_map_ptr = got_latest_statistic_map_ptr_;
     if (statistic_map_ptr == nullptr) {
-        if (leader) {
-            ZJC_DEBUG("statistic_map_ptr == nullptr");
-        }
-
+        ZJC_DEBUG("statistic_map_ptr == nullptr");
         return nullptr;
     }
 
     if (statistic_map_ptr->empty()) {
-        if (leader) {
-            ZJC_DEBUG("statistic_map_ptr->empty()");
-        }
-
+        ZJC_DEBUG("statistic_map_ptr->empty()");
         return nullptr;
     }
 
@@ -1725,6 +1719,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
     }
 
     if (shard_statistic_tx == nullptr) {
+        ZJC_DEBUG("shard_statistic_tx == nullptr");
         return nullptr;
     }
 
