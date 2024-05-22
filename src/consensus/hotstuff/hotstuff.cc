@@ -215,11 +215,8 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     pacemaker()->AdvanceView(new_sync_info()->WithQC(v_block->qc));
 
     // Commit 一定要在 Txs Accept 之前，因为一旦 v_block->qc 合法就已经可以 Commit 了，不需要 Txs 合法
-    s = TryCommit(v_block->qc);
-    if (s != Status::kSuccess) {
-        return;
-    }    
-    
+    TryCommit(v_block->qc);
+        
     // Verify ViewBlock.block and tx_propose, 验证tx_propose，填充Block tx相关字段
     auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
     auto block = v_block->block;
@@ -436,10 +433,7 @@ Status Hotstuff::StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_bloc
         return s;
     }
 
-    s = TryCommit(v_block->qc);
-    if (s != Status::kSuccess) {
-        return s;
-    }
+    TryCommit(v_block->qc);
     
     return view_block_chain()->Store(v_block);
 }

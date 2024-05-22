@@ -638,10 +638,7 @@ Status HotstuffSyncer::onRecViewBlock(
     
     // 3. 尝试 commit
     // TODO 有更新的 qc
-    s = hotstuff->TryCommit(view_block->qc);
-    if (s != Status::kSuccess) {
-        return s;
-    }
+    hotstuff->TryCommit(view_block->qc);
 
     // 验证交易
     auto accep = hotstuff->acceptor();
