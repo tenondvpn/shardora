@@ -40,11 +40,12 @@ HotstuffSyncer::HotstuffSyncer(
                 std::placeholders::_3));
 
     // 设置 pacemaker 中的同步函数
-    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
-        pacemaker(pool_idx)->SetSyncPoolFn(
-                std::bind(&HotstuffSyncer::SyncPool,
+    hotstuff_mgr_->SetSyncPoolFn(
+            std::bind(&HotstuffSyncer::SyncPool,
                     this, std::placeholders::_1, std::placeholders::_2));
-    }
+    hotstuff_mgr_->SetSyncViewBlockFn(
+            std::bind(&HotstuffSyncer::SyncViewBlock,
+                this, std::placeholders::_1, std::placeholders::_2));    
 
     for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
         last_timers_us_[i] = common::TimeUtils::TimestampUs();
@@ -87,7 +88,7 @@ void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr)
     HandleSyncedBlocks();
 }
 
-void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const uint32_t& node_num) {
+void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const int32_t& node_num) {
     // TODO(HT): test
     auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
     auto req = vb_msg.mutable_view_block_req();
@@ -136,7 +137,7 @@ void HotstuffSyncer::SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash
         
     vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
     // 询问所有邻居节点
-    SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, -1);
+    SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, 1);
     return;
 }
 
@@ -163,7 +164,7 @@ void HotstuffSyncer::HandleSyncedBlocks() {
     return;
 }
 
-Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg, uint32_t node_num) {
+Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg, int32_t node_num) {
     // 只有共识池节点才能同步 ViewBlock
     if (network_id >= network::kConsensusWaitingShardBeginNetworkId) {
         return Status::kError;
@@ -417,6 +418,7 @@ Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
         // 处理 single query
         // 已经有该 view block 了，直接返回
         if (view_block_chain(pool_idx)->Has(view_block_msg.view_block_res().query_hash())) {
+            ZJC_DEBUG("pool: %d, has query hash", pool_idx);
             return Status::kSuccess;
         }
     }

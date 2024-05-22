@@ -11,7 +11,7 @@ namespace shardora {
 
 namespace hotstuff {
 
-void Hotstuff::Init(std::shared_ptr<db::Db>& db_) {
+void Hotstuff::Init() {
     // set pacemaker timeout callback function
     last_vote_view_ = GenesisView;
     
@@ -858,6 +858,10 @@ Status Hotstuff::ConstructViewBlock(
             pacemaker()->HighQC()->view,
             leader_idx,
             view_block_chain()->String().c_str());
+        // 从邻居节点同步 parent block
+        if (sync_view_block_fn_) {
+            sync_view_block_fn_(pool_idx_, view_block->parent_hash);
+        }
         return s;
     }
     

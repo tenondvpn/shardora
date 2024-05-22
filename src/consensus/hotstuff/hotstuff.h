@@ -37,7 +37,7 @@ typedef hotstuff::protobuf::HotstuffMessage  pb_HotstuffMessage;
 typedef hotstuff::protobuf::VoteMsg pb_VoteMsg;
 typedef hotstuff::protobuf::NewViewMsg pb_NewViewMsg;
 
-
+using SyncViewBlockFn = std::function<void(const uint32_t&, const HashStr&)>;
 
 static const uint64_t STUCK_PACEMAKER_DURATION_MIN_US =
     2000000lu; // the min duration that hotstuff can be considered stucking
@@ -72,9 +72,13 @@ public:
     }
     ~Hotstuff() {};
 
-    void Init(std::shared_ptr<db::Db>& db_);
+    void Init();
+    
+    void SetSyncViewBlockFn(SyncViewBlockFn sync_fn) {
+        sync_view_block_fn_ = sync_fn;
+    }
+    
     Status Start();
-
     
     void HandleProposeMsg(const transport::protobuf::Header& header);
     void HandleNewViewMsg(const transport::protobuf::Header& header);
@@ -177,6 +181,7 @@ private:
     View last_vote_view_;
     common::FlowControl recover_from_struct_fc_{1};
     common::FlowControl reset_timer_fc_{1};
+    SyncViewBlockFn sync_view_block_fn_ = nullptr;
 
     Status CommitInner(const std::shared_ptr<ViewBlock>& v_block);
     Status VerifyVoteMsg(

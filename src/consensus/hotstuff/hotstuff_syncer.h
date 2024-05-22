@@ -51,7 +51,7 @@ public:
 
     void Start();
     void Stop();
-    void SyncPool(const uint32_t& pool_idx, const uint32_t& node_num);
+    void SyncPool(const uint32_t& pool_idx, const int32_t& node_num);
     void SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
@@ -90,7 +90,7 @@ private:
     Status SendRequest(
             uint32_t network_id,
             const view_block::protobuf::ViewBlockSyncMessage& view_block_msg,
-            uint32_t node_num);
+            int32_t node_num);
     
     Status SendMsg(
             uint32_t network_id,

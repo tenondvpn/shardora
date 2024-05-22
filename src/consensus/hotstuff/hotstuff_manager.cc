@@ -92,7 +92,7 @@ int HotstuffManager::Init(
         pool_hotstuff_[pool_idx] = std::make_shared<Hotstuff>(
                 pool_idx, leader_rotation, chain,
                 acceptor, wrapper, pacemaker, crypto, elect_info_, db_);
-        pool_hotstuff_[pool_idx]->Init(db_);
+        pool_hotstuff_[pool_idx]->Init();
     }
 
     RegisterCreateTxCallbacks();
