@@ -456,7 +456,7 @@ Status HotstuffSyncer::processResponseQcTc(
     // TODO 验证 qc 和 tc
     pm->AdvanceView(new_sync_info()->WithQC(highqc)->WithTC(hightc));
     // 尝试做 commit
-    onRecvCommitQC(pool_idx, highqc);
+    hotstuff_mgr_->hotstuff(pool_idx)->TryCommit(highqc);
     
     return Status::kSuccess;
 }
