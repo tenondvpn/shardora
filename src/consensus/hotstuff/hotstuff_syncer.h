@@ -113,9 +113,6 @@ private:
             const uint32_t& pool_idx,
             const std::shared_ptr<ViewBlockChain>& ori_chain,
             const std::shared_ptr<ViewBlock>& view_block);
-    void onRecvCommitQC(
-            const uint32_t& pool_idx,
-            const std::shared_ptr<QC> commit_qc);
     
     uint64_t timeout_ms_;
     common::ThreadSafeQueue<transport::MessagePtr> consume_queues_[common::kMaxThreadCount];

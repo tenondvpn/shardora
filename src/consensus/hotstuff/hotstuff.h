@@ -88,10 +88,7 @@ public:
     void NewView(const std::shared_ptr<SyncInfo>& sync_info);
     Status Propose(const std::shared_ptr<SyncInfo>& sync_info);
     Status ResetReplicaTimers();
-    Status Commit(
-            const std::shared_ptr<ViewBlock>& v_block,
-            const std::shared_ptr<QC> commit_qc);
-    std::shared_ptr<ViewBlock> CheckCommit(const std::shared_ptr<QC>& qc);
+    Status TryCommit(const std::shared_ptr<QC> commit_qc);
     Status VerifyViewBlock(
             const std::shared_ptr<ViewBlock>& v_block, 
             const std::shared_ptr<ViewBlockChain>& view_block_chain,
@@ -183,6 +180,10 @@ private:
     common::FlowControl reset_timer_fc_{1};
     SyncViewBlockFn sync_view_block_fn_ = nullptr;
 
+    Status Commit(
+            const std::shared_ptr<ViewBlock>& v_block,
+            const std::shared_ptr<QC> commit_qc);
+    std::shared_ptr<ViewBlock> CheckCommit(const std::shared_ptr<QC>& qc);    
     Status CommitInner(const std::shared_ptr<ViewBlock>& v_block);
     Status VerifyVoteMsg(
             const hotstuff::protobuf::VoteMsg& vote_msg);

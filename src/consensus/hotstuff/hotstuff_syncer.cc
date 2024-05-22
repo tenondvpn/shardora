@@ -591,7 +591,7 @@ Status HotstuffSyncer::MergeChain(
         }
         // 单独对 high_commit_qc 提交
         // 保证落后节点虽然没有最新的提案，但是有最新的 qc，并且 leader 一致
-        onRecvCommitQC(pool_idx, high_commit_qc);
+        hotstuff_mgr_->hotstuff(pool_idx)->TryCommit(high_commit_qc);
         pacemaker(pool_idx)->AdvanceView(new_sync_info()->WithQC(high_commit_qc));
         
         return Status::kSuccess;
@@ -616,7 +616,7 @@ Status HotstuffSyncer::MergeChain(
         }
     }
 
-    onRecvCommitQC(pool_idx, high_commit_qc);
+    hotstuff_mgr_->hotstuff(pool_idx)->TryCommit(high_commit_qc);
     pacemaker(pool_idx)->AdvanceView(new_sync_info()->WithQC(high_commit_qc));
     
     return Status::kSuccess;
@@ -638,13 +638,9 @@ Status HotstuffSyncer::onRecViewBlock(
     
     // 3. 尝试 commit
     // TODO 有更新的 qc
-    auto view_block_to_commit = hotstuff->CheckCommit(view_block->qc);
-    if (view_block_to_commit) {
-        s = hotstuff->Commit(view_block_to_commit, view_block->qc);
-        if (s != Status::kSuccess) {
-            ZJC_ERROR("pool: %d sync commit failed", pool_idx);
-            return s;
-        }
+    s = hotstuff->TryCommit(view_block->qc);
+    if (s != Status::kSuccess) {
+        return s;
     }
 
     // 验证交易
@@ -660,18 +656,6 @@ Status HotstuffSyncer::onRecViewBlock(
 
     // 4. 保存 view_block
     return hotstuff->view_block_chain()->Store(view_block);
-}
-
-void HotstuffSyncer::onRecvCommitQC(
-        const uint32_t& pool_idx,
-        const std::shared_ptr<QC> commit_qc) {
-    if (commit_qc) {
-        auto hf = hotstuff_mgr_->hotstuff(pool_idx);
-        auto vblock_commit = hf->CheckCommit(commit_qc);
-        if (vblock_commit) {
-            hf->Commit(vblock_commit, commit_qc);
-        }
-    }    
 }
 
 } // namespace consensus

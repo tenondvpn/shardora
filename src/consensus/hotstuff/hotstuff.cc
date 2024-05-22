@@ -215,15 +215,9 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     pacemaker()->AdvanceView(new_sync_info()->WithQC(v_block->qc));
 
     // Commit 一定要在 Txs Accept 之前，因为一旦 v_block->qc 合法就已经可以 Commit 了，不需要 Txs 合法
-    auto v_block_to_commit = CheckCommit(v_block->qc);
-    if (v_block_to_commit) {
-        Status s = Commit(v_block_to_commit, v_block->qc);
-        if (s != Status::kSuccess) {
-            ZJC_ERROR("commit view_block failed, view: %lu hash: %s",
-                v_block_to_commit->view,
-                common::Encode::HexEncode(v_block_to_commit->hash).c_str());
-            return;
-        }
+    s = TryCommit(v_block->qc);
+    if (s != Status::kSuccess) {
+        return;
     }    
     
     // Verify ViewBlock.block and tx_propose, 验证tx_propose，填充Block tx相关字段
@@ -442,12 +436,9 @@ Status Hotstuff::StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_bloc
         return s;
     }
 
-    auto view_block_to_commit = CheckCommit(v_block->qc);
-    if (view_block_to_commit) {
-        s = Commit(view_block_to_commit, v_block->qc);
-        if (s != Status::kSuccess) {
-            return s;
-        }
+    s = TryCommit(v_block->qc);
+    if (s != Status::kSuccess) {
+        return s;
     }
     
     return view_block_chain()->Store(v_block);
@@ -571,6 +562,23 @@ void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
                 ViewDurationMaxTimeoutMs,
                 ViewDurationMultiplier));
     return;
+}
+
+Status Hotstuff::TryCommit(const std::shared_ptr<QC> commit_qc) {
+    if (!commit_qc) {
+        return Status::kInvalidArgument;
+    }
+    auto v_block_to_commit = CheckCommit(commit_qc);
+    if (v_block_to_commit) {
+        Status s = Commit(v_block_to_commit, commit_qc);
+        if (s != Status::kSuccess) {
+            ZJC_ERROR("commit view_block failed, view: %lu hash: %s",
+                v_block_to_commit->view,
+                common::Encode::HexEncode(v_block_to_commit->hash).c_str());
+            return s;
+        }
+    }    
+    return Status::kSuccess;
 }
 
 std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(const std::shared_ptr<QC>& qc) {
