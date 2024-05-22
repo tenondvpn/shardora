@@ -537,8 +537,8 @@ Status Hotstuff::ResetReplicaTimers() {
 
 void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
     auto& rst_timer_msg = header.hotstuff().reset_timer_msg();
-    ZJC_DEBUG("====5.1 pool: %d, onResetTimer leader_idx: %lu, local_idx: %lu",
-        pool_idx_, rst_timer_msg.leader_idx(), elect_info_->GetElectItem()->LocalMember()->index);
+    // ZJC_DEBUG("====5.1 pool: %d, onResetTimer leader_idx: %lu, local_idx: %lu",
+    //     pool_idx_, rst_timer_msg.leader_idx(), elect_info_->GetElectItem()->LocalMember()->index);
     // leader 必须正确
     if (VerifyLeader(rst_timer_msg.leader_idx()) != Status::kSuccess) {
         return;
@@ -547,7 +547,7 @@ void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
     if (!IsStuck()) {
         return;
     }
-    ZJC_DEBUG("====5.2 pool: %d, ResetTimer", pool_idx_);
+    // ZJC_DEBUG("====5.2 pool: %d, ResetTimer", pool_idx_);
     // reset pacemaker view duration
     pacemaker()->ResetViewDuration(std::make_shared<ViewDuration>(
                 pool_idx_,
@@ -587,7 +587,6 @@ std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(const std::shared_ptr<QC>& qc) 
     }
 
     if (!view_block_chain()->LatestLockedBlock() || v_block2->view > view_block_chain()->LatestLockedBlock()->view) {
-        ZJC_DEBUG("locked block, view: %lu", v_block2->view);
         view_block_chain()->SetLatestLockedBlock(v_block2);
     }
 
@@ -597,7 +596,6 @@ std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(const std::shared_ptr<QC>& qc) 
     }
 
     if (v_block1->parent_hash == v_block2->hash && v_block2->parent_hash == v_block3->hash) {
-        ZJC_DEBUG("decide block, view: %lu", v_block3->view);
         return v_block3;
     }
     
@@ -612,7 +610,6 @@ Status Hotstuff::Commit(
         return Status::kSuccess;
     }
     
-    ZJC_DEBUG("pool: %d, commit block view: %lu", pool_idx_, v_block->view);
     Status s = CommitInner(v_block);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, commit inner failed s: %d, vb view: &lu", pool_idx_, s, v_block->view);
