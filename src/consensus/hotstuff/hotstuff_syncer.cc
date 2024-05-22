@@ -128,6 +128,15 @@ void HotstuffSyncer::SyncAllPools() {
 }
 
 void HotstuffSyncer::SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash) {
+    auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
+    auto req = vb_msg.mutable_single_req();
+    req->set_pool_idx(pool_idx);
+    req->set_network_id(common::GlobalInfo::Instance()->network_id());
+    req->set_query_hash(hash);
+        
+    vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
+    // 询问所有邻居节点
+    SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, -1);
     return;
 }
 
@@ -169,7 +178,10 @@ Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protob
         return Status::kError;
     }
     // dht::NodePtr node = nodes[rand() % nodes.size()];
-
+    if (node_num == -1) {
+        node_num = nodes.size();
+    }
+    
     if (node_num > nodes.size()) {
         return Status::kError;
     }
@@ -291,6 +303,61 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     return SendMsg(network_id, res_view_block_msg);
 }
 
+Status HotstuffSyncer::processRequestSingle(const transport::MessagePtr& msg_ptr) {
+    auto& view_block_msg = msg_ptr->header.view_block_proto();
+    assert(view_block_msg.has_single_req());
+
+    uint32_t network_id = view_block_msg.single_req().network_id();
+    uint32_t pool_idx = view_block_msg.single_req().pool_idx();
+
+    auto chain = view_block_chain(pool_idx);
+    if (!chain) {
+        return Status::kError;
+    }
+
+    auto query_hash = view_block_msg.single_req().query_hash();
+
+    // 不存在 query_hash 则不同步
+    if (!chain->Has(query_hash)) {
+        return Status::kNotFound;
+    }
+
+    std::vector<std::shared_ptr<ViewBlock>> all;
+    chain->GetAll(all);
+    if (all.size() <= 0 || all.size() > kMaxSyncBlockNum) {
+        return Status::kError;
+    }
+
+    // 检查本地 ViewBlockChain 中是否存在 src 节点没有的 ViewBlock，如果存在则全部同步过去
+    transport::protobuf::Header msg;
+    view_block::protobuf::ViewBlockSyncMessage&  res_view_block_msg = *msg.mutable_view_block_proto();
+    auto view_block_res = res_view_block_msg.mutable_view_block_res();
+    for (auto& view_block : all) {
+        // 仅同步已经有 qc 的 view_block
+        auto view_block_qc = chain->GetQcOf(view_block);
+        if (!view_block_qc) {
+            if (pacemaker(pool_idx)->HighQC()->view_block_hash == view_block->hash) {
+                chain->SetQcOf(view_block, pacemaker(pool_idx)->HighQC());
+                view_block_qc = pacemaker(pool_idx)->HighQC();
+            } else {
+                continue;
+            }
+        }
+        
+        auto view_block_qc_str = view_block_res->add_view_block_qc_strs();
+        *view_block_qc_str = view_block_qc->Serialize();
+        auto view_block_item = view_block_res->add_view_block_items();
+        ViewBlock2Proto(view_block, view_block_item);
+    }
+
+    view_block_res->set_network_id(network_id);
+    view_block_res->set_pool_idx(pool_idx);
+    view_block_res->set_query_hash(query_hash); // 用于帮助 src 节点过滤冗余
+    res_view_block_msg.set_create_time_us(common::TimeUtils::TimestampUs());
+
+    return SendMsg(network_id, res_view_block_msg);
+}
+
 void HotstuffSyncer::ConsumeMessages() {
     // Consume Messages
     uint32_t pop_count = 0;
@@ -305,7 +372,9 @@ void HotstuffSyncer::ConsumeMessages() {
             processRequest(msg_ptr);
         } else if (msg_ptr->header.view_block_proto().has_view_block_res()) {
             processResponse(msg_ptr);
-        }            
+        } else if (msg_ptr->header.view_block_proto().has_single_req()) {
+            processRequestSingle(msg_ptr);
+        }
     }
 }
 
@@ -342,6 +411,15 @@ Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
     auto& view_block_msg = msg_ptr->header.view_block_proto();
     assert(view_block_msg.has_view_block_res());
     uint32_t pool_idx = view_block_msg.view_block_res().pool_idx();
+
+    
+    if (view_block_msg.view_block_res().has_query_hash()) {
+        // 处理 single query
+        // 已经有该 view block 了，直接返回
+        if (view_block_chain(pool_idx)->Has(view_block_msg.view_block_res().query_hash())) {
+            return Status::kSuccess;
+        }
+    }
     
     processResponseQcTc(pool_idx, view_block_msg.view_block_res());
     return processResponseChain(pool_idx, view_block_msg.view_block_res());
@@ -351,6 +429,9 @@ Status HotstuffSyncer::processResponseQcTc(
         const uint32_t& pool_idx,
         const view_block::protobuf::ViewBlockSyncResponse& view_block_res) {
     // 更新 highqc 和 hightc
+    if (!view_block_res.has_high_qc_str() && !view_block_res.has_high_tc_str()) {
+        return Status::kSuccess;
+    }
     auto pm = pacemaker(pool_idx);
     if (!pm) {
         return Status::kError;
