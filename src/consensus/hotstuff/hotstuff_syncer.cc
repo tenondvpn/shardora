@@ -319,7 +319,9 @@ Status HotstuffSyncer::processRequestSingle(const transport::MessagePtr& msg_ptr
     auto query_hash = view_block_msg.single_req().query_hash();
 
     // 不存在 query_hash 则不同步
-    if (!chain->Has(query_hash)) {
+    std::shared_ptr<ViewBlock> view_block = nullptr;
+    chain->Get(query_hash, view_block);
+    if (!view_block || chain->GetQcOf(view_block)) {
         return Status::kNotFound;
     }
 
