@@ -67,7 +67,8 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
     Status s = ConstructProposeMsg(sync_info, pb_pro_msg);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d construct propose msg failed, %d", pool_idx_, static_cast<int>(s));
+        ZJC_ERROR("pool: %d construct propose msg failed, %d, member_index: %d",
+            pool_idx_, s, elect_info_->GetElectItem()->LocalMember()->index);
         return s;
     }
     s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
