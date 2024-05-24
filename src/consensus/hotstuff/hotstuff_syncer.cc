@@ -107,9 +107,13 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const int32_t& node_num)
         max_view = vb->view > max_view ? vb->view : max_view;
     }
     req->set_max_view(max_view);
+    auto latest_committed_block = view_block_chain(pool_idx)->LatestCommittedBlock();
+    if (latest_committed_block) {
+        req->set_latest_committed_block_hash(latest_committed_block->hash);
+    }
         
     vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
-    ZJC_DEBUG("pool: %d view blocks size: %lu", pool_idx, view_blocks.size());
+    // ZJC_DEBUG("pool: %d view blocks size: %lu", pool_idx, view_blocks.size());
     SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, node_num);
 }
 
@@ -217,7 +221,9 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     
     bool shouldSyncQC = false;
     bool shouldSyncTC = false;
-    bool shouldSyncChain = false; 
+    bool shouldSyncChain = false;
+    bool shouldSyncLatestCommittedBlock = false;
+    HashStr src_latest_committed_block_hash = "";
     
     transport::protobuf::Header msg;
     view_block::protobuf::ViewBlockSyncMessage&  res_view_block_msg = *msg.mutable_view_block_proto();
@@ -230,6 +236,10 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     View src_high_qc_view = view_block_msg.view_block_req().high_qc_view();
     View src_high_tc_view = view_block_msg.view_block_req().high_tc_view();
     View src_max_view = view_block_msg.view_block_req().max_view();
+    if (view_block_msg.view_block_req().has_latest_committed_block_hash()) {
+        src_latest_committed_block_hash = view_block_msg.view_block_req().latest_committed_block_hash();
+    }
+    
     // 将 src 节点的 view_block_hashes 放入一个 set
     auto& src_view_block_hashes = view_block_msg.view_block_req().view_block_hashes();
     std::unordered_set<HashStr> src_view_block_hash_set;
@@ -247,6 +257,11 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
 
     if (pacemaker(pool_idx)->HighTC()->view > src_high_tc_view) {
         shouldSyncTC = true;
+    }
+
+    auto latest_committed_block = view_block_chain(pool_idx)->LatestCommittedBlock();
+    if (latest_committed_block->hash != src_latest_committed_block_hash) {
+        shouldSyncLatestCommittedBlock = true;
     }
 
     auto chain = view_block_chain(pool_idx);
@@ -314,6 +329,16 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
 
     if (shouldSyncQC) {
         view_block_res->set_high_qc_str(pacemaker(pool_idx)->HighQC()->Serialize());
+    }
+
+    if (shouldSyncLatestCommittedBlock) {
+        auto latest_committed_qc = view_block_chain(pool_idx)->GetCommitQcFromDb(latest_committed_block);
+        if (latest_committed_qc) {
+            view_block::protobuf::ViewBlockItem pb_latest_committed_block;
+            ViewBlock2Proto(latest_committed_block, &pb_latest_committed_block);
+            pb_latest_committed_block.set_self_commit_qc_str(latest_committed_qc->Serialize());
+            view_block_res->mutable_latest_committed_block()->CopyFrom(pb_latest_committed_block);
+        }
     }
     
     return SendMsg(network_id, res_view_block_msg);
@@ -441,6 +466,7 @@ Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
     }
     
     processResponseQcTc(pool_idx, view_block_msg.view_block_res());
+    processResponseLatestCommittedBlock(pool_idx, view_block_msg.view_block_res());
     return processResponseChain(pool_idx, view_block_msg.view_block_res());
 }
 
@@ -472,6 +498,42 @@ Status HotstuffSyncer::processResponseQcTc(
     
     return Status::kSuccess;
 }
+
+Status HotstuffSyncer::processResponseLatestCommittedBlock(
+        const uint32_t& pool_idx,
+        const view_block::protobuf::ViewBlockSyncResponse& view_block_res) {
+    if (!view_block_res.has_latest_committed_block()) {
+        return Status::kError;
+    }
+    
+    auto& pb_latest_committed_block = view_block_res.latest_committed_block();
+
+    // 可能已经更新，无需同步
+    auto cur_latest_committed_block = view_block_chain(pool_idx)->LatestCommittedBlock();
+    if (cur_latest_committed_block && cur_latest_committed_block->view >= pb_latest_committed_block.view()) {
+        return Status::kSuccess;
+    }
+
+    auto latest_vblock = std::make_shared<ViewBlock>();
+    Status s = Proto2ViewBlock(pb_latest_committed_block, latest_vblock);
+    if (s != Status::kSuccess) {
+        return s;
+    }
+    
+    auto latest_commit_qc = std::make_shared<QC>();
+    if (!pb_latest_committed_block.has_self_commit_qc_str()) {
+        return Status::kError;
+    }
+    latest_commit_qc->Unserialize(pb_latest_committed_block.self_commit_qc_str());
+
+    ZJC_DEBUG("pool: %d sync latest committed block: %lu", pool_idx, latest_vblock->view);
+    // 执行 latest committed block
+    auto hf = hotstuff_mgr_->hotstuff(pb_latest_committed_block.block_info().pool_index());
+    hf->HandleSyncedViewBlock(latest_vblock, latest_commit_qc);
+    
+    return Status::kSuccess;
+}
+
 
 Status HotstuffSyncer::processResponseChain(
         const uint32_t& pool_idx,

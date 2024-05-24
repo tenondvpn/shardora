@@ -158,6 +158,9 @@ public:
     bool HasInDb(const uint32_t& network_id, const uint32_t& pool_idx, const uint64_t& block_height) {
         return prefix_db_->HasViewBlockInfo(network_id, pool_idx, block_height);
     }
+
+    // 获取某 vblock 的 commit qc
+    std::shared_ptr<QC> GetCommitQcFromDb(const std::shared_ptr<ViewBlock>& vblock) const;
     
     // If a chain is valid
     bool IsValid();

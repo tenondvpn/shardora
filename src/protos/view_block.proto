@@ -31,6 +31,7 @@ message ViewBlockSyncRequest {
     optional uint64 high_qc_view = 4;
     optional uint64 high_tc_view = 5;
     optional uint64 max_view = 6;
+    optional bytes latest_committed_block_hash = 7;
 }
 
 message ViewBlockSyncResponse {
@@ -41,6 +42,7 @@ message ViewBlockSyncResponse {
     optional bytes high_qc_str = 5;
     optional bytes high_tc_str = 6;
     optional bytes query_hash = 7; // single request 中的 query hash
+    optional ViewBlockItem latest_committed_block = 8; // 保证 leader 一致性
 }
 
 message SingleViewBlockSyncRequest {
