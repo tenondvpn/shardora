@@ -38,6 +38,18 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
         
         return Status::kSuccess;
     }
+
+    // 当 view_block 是 start_block_ 的父块，允许添加
+    if (start_block_->parent_hash == view_block->hash) {
+        SetViewBlockToMap(view_block->hash, view_block);
+        view_blocks_at_height_[view_block->view].push_back(view_block);
+        AddChildrenToMap(view_block->hash, start_block_);
+        SetQcOf(start_block_->qc->view_block_hash, start_block_->qc);
+        // 更新 start_block_
+        start_block_ = view_block;
+        return Status::kSuccess;
+    }
+    
     // 父块必须存在
     auto it = view_blocks_info_.find(view_block->parent_hash);
     if (it == view_blocks_info_.end() || it->second->view_block == nullptr) {
@@ -91,6 +103,15 @@ bool ViewBlockChain::Extends(const std::shared_ptr<ViewBlock>& block, const std:
 Status ViewBlockChain::GetAll(std::vector<std::shared_ptr<ViewBlock>>& view_blocks) {
     for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
         if (it->second->view_block) {
+            view_blocks.push_back(it->second->view_block);
+        }
+    }
+    return Status::kSuccess;
+}
+
+Status ViewBlockChain::GetAllVerified(std::vector<std::shared_ptr<ViewBlock>>& view_blocks) {
+    for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
+        if (it->second->view_block && GetQcOf(it->second->view_block)) {
             view_blocks.push_back(it->second->view_block);
         }
     }
@@ -264,6 +285,26 @@ bool ViewBlockChain::IsValid() {
     }    
 
     return num == 1;
+}
+
+// 获取某 vblock 的 commit qc
+std::shared_ptr<QC> ViewBlockChain::GetCommitQcFromDb(const std::shared_ptr<ViewBlock>& vblock) const {
+    if (!vblock || !vblock->block) {
+        return nullptr;
+    }
+    view_block::protobuf::ViewBlockItem pb_vblock;
+    bool ok = prefix_db_->GetViewBlockInfo(vblock->block->network_id(),
+        vblock->block->pool_index(),
+        vblock->block->height(),
+        &pb_vblock);
+    if (!ok) {
+        return nullptr;
+    }
+    auto commit_qc = std::make_shared<QC>();
+    if (commit_qc->Unserialize(pb_vblock.self_commit_qc_str())) {
+        return commit_qc;
+    }
+    return nullptr;
 }
 
 void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent) const {

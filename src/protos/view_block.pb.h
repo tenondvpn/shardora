@@ -641,6 +641,21 @@ class ViewBlockSyncRequest : public ::google::protobuf::Message /* @@protoc_inse
   const ::google::protobuf::RepeatedPtrField< ::std::string>& view_block_hashes() const;
   ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_view_block_hashes();
 
+  // optional bytes latest_committed_block_hash = 7;
+  bool has_latest_committed_block_hash() const;
+  void clear_latest_committed_block_hash();
+  static const int kLatestCommittedBlockHashFieldNumber = 7;
+  const ::std::string& latest_committed_block_hash() const;
+  void set_latest_committed_block_hash(const ::std::string& value);
+  #if LANG_CXX11
+  void set_latest_committed_block_hash(::std::string&& value);
+  #endif
+  void set_latest_committed_block_hash(const char* value);
+  void set_latest_committed_block_hash(const void* value, size_t size);
+  ::std::string* mutable_latest_committed_block_hash();
+  ::std::string* release_latest_committed_block_hash();
+  void set_allocated_latest_committed_block_hash(::std::string* latest_committed_block_hash);
+
   // optional uint32 network_id = 1;
   bool has_network_id() const;
   void clear_network_id();
@@ -669,6 +684,13 @@ class ViewBlockSyncRequest : public ::google::protobuf::Message /* @@protoc_inse
   ::google::protobuf::uint64 high_tc_view() const;
   void set_high_tc_view(::google::protobuf::uint64 value);
 
+  // optional uint64 max_view = 6;
+  bool has_max_view() const;
+  void clear_max_view();
+  static const int kMaxViewFieldNumber = 6;
+  ::google::protobuf::uint64 max_view() const;
+  void set_max_view(::google::protobuf::uint64 value);
+
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.ViewBlockSyncRequest)
  private:
   void set_has_network_id();
@@ -679,15 +701,21 @@ class ViewBlockSyncRequest : public ::google::protobuf::Message /* @@protoc_inse
   void clear_has_high_qc_view();
   void set_has_high_tc_view();
   void clear_has_high_tc_view();
+  void set_has_max_view();
+  void clear_has_max_view();
+  void set_has_latest_committed_block_hash();
+  void clear_has_latest_committed_block_hash();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::std::string> view_block_hashes_;
+  ::google::protobuf::internal::ArenaStringPtr latest_committed_block_hash_;
   ::google::protobuf::uint32 network_id_;
   ::google::protobuf::uint32 pool_idx_;
   ::google::protobuf::uint64 high_qc_view_;
   ::google::protobuf::uint64 high_tc_view_;
+  ::google::protobuf::uint64 max_view_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -865,6 +893,18 @@ class ViewBlockSyncResponse : public ::google::protobuf::Message /* @@protoc_ins
   ::std::string* release_query_hash();
   void set_allocated_query_hash(::std::string* query_hash);
 
+  // optional .shardora.view_block.protobuf.ViewBlockItem latest_committed_block = 8;
+  bool has_latest_committed_block() const;
+  void clear_latest_committed_block();
+  static const int kLatestCommittedBlockFieldNumber = 8;
+  private:
+  const ::shardora::view_block::protobuf::ViewBlockItem& _internal_latest_committed_block() const;
+  public:
+  const ::shardora::view_block::protobuf::ViewBlockItem& latest_committed_block() const;
+  ::shardora::view_block::protobuf::ViewBlockItem* release_latest_committed_block();
+  ::shardora::view_block::protobuf::ViewBlockItem* mutable_latest_committed_block();
+  void set_allocated_latest_committed_block(::shardora::view_block::protobuf::ViewBlockItem* latest_committed_block);
+
   // optional uint32 network_id = 1;
   bool has_network_id() const;
   void clear_network_id();
@@ -891,6 +931,8 @@ class ViewBlockSyncResponse : public ::google::protobuf::Message /* @@protoc_ins
   void clear_has_high_tc_str();
   void set_has_query_hash();
   void clear_has_query_hash();
+  void set_has_latest_committed_block();
+  void clear_has_latest_committed_block();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -900,6 +942,7 @@ class ViewBlockSyncResponse : public ::google::protobuf::Message /* @@protoc_ins
   ::google::protobuf::internal::ArenaStringPtr high_qc_str_;
   ::google::protobuf::internal::ArenaStringPtr high_tc_str_;
   ::google::protobuf::internal::ArenaStringPtr query_hash_;
+  ::shardora::view_block::protobuf::ViewBlockItem* latest_committed_block_;
   ::google::protobuf::uint32 network_id_;
   ::google::protobuf::uint32 pool_idx_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
@@ -2202,13 +2245,13 @@ inline void QC::set_leader_idx(::google::protobuf::uint32 value) {
 
 // optional uint32 network_id = 1;
 inline bool ViewBlockSyncRequest::has_network_id() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void ViewBlockSyncRequest::set_has_network_id() {
-  _has_bits_[0] |= 0x00000001u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void ViewBlockSyncRequest::clear_has_network_id() {
-  _has_bits_[0] &= ~0x00000001u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void ViewBlockSyncRequest::clear_network_id() {
   network_id_ = 0u;
@@ -2226,13 +2269,13 @@ inline void ViewBlockSyncRequest::set_network_id(::google::protobuf::uint32 valu
 
 // optional uint32 pool_idx = 2;
 inline bool ViewBlockSyncRequest::has_pool_idx() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void ViewBlockSyncRequest::set_has_pool_idx() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void ViewBlockSyncRequest::clear_has_pool_idx() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void ViewBlockSyncRequest::clear_pool_idx() {
   pool_idx_ = 0u;
@@ -2319,13 +2362,13 @@ ViewBlockSyncRequest::mutable_view_block_hashes() {
 
 // optional uint64 high_qc_view = 4;
 inline bool ViewBlockSyncRequest::has_high_qc_view() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void ViewBlockSyncRequest::set_has_high_qc_view() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void ViewBlockSyncRequest::clear_has_high_qc_view() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void ViewBlockSyncRequest::clear_high_qc_view() {
   high_qc_view_ = GOOGLE_ULONGLONG(0);
@@ -2343,13 +2386,13 @@ inline void ViewBlockSyncRequest::set_high_qc_view(::google::protobuf::uint64 va
 
 // optional uint64 high_tc_view = 5;
 inline bool ViewBlockSyncRequest::has_high_tc_view() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void ViewBlockSyncRequest::set_has_high_tc_view() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void ViewBlockSyncRequest::clear_has_high_tc_view() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void ViewBlockSyncRequest::clear_high_tc_view() {
   high_tc_view_ = GOOGLE_ULONGLONG(0);
@@ -2365,19 +2408,109 @@ inline void ViewBlockSyncRequest::set_high_tc_view(::google::protobuf::uint64 va
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncRequest.high_tc_view)
 }
 
+// optional uint64 max_view = 6;
+inline bool ViewBlockSyncRequest::has_max_view() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void ViewBlockSyncRequest::set_has_max_view() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void ViewBlockSyncRequest::clear_has_max_view() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void ViewBlockSyncRequest::clear_max_view() {
+  max_view_ = GOOGLE_ULONGLONG(0);
+  clear_has_max_view();
+}
+inline ::google::protobuf::uint64 ViewBlockSyncRequest::max_view() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockSyncRequest.max_view)
+  return max_view_;
+}
+inline void ViewBlockSyncRequest::set_max_view(::google::protobuf::uint64 value) {
+  set_has_max_view();
+  max_view_ = value;
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncRequest.max_view)
+}
+
+// optional bytes latest_committed_block_hash = 7;
+inline bool ViewBlockSyncRequest::has_latest_committed_block_hash() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ViewBlockSyncRequest::set_has_latest_committed_block_hash() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ViewBlockSyncRequest::clear_has_latest_committed_block_hash() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ViewBlockSyncRequest::clear_latest_committed_block_hash() {
+  latest_committed_block_hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_latest_committed_block_hash();
+}
+inline const ::std::string& ViewBlockSyncRequest::latest_committed_block_hash() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockSyncRequest.latest_committed_block_hash)
+  return latest_committed_block_hash_.GetNoArena();
+}
+inline void ViewBlockSyncRequest::set_latest_committed_block_hash(const ::std::string& value) {
+  set_has_latest_committed_block_hash();
+  latest_committed_block_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncRequest.latest_committed_block_hash)
+}
+#if LANG_CXX11
+inline void ViewBlockSyncRequest::set_latest_committed_block_hash(::std::string&& value) {
+  set_has_latest_committed_block_hash();
+  latest_committed_block_hash_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.view_block.protobuf.ViewBlockSyncRequest.latest_committed_block_hash)
+}
+#endif
+inline void ViewBlockSyncRequest::set_latest_committed_block_hash(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_latest_committed_block_hash();
+  latest_committed_block_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.view_block.protobuf.ViewBlockSyncRequest.latest_committed_block_hash)
+}
+inline void ViewBlockSyncRequest::set_latest_committed_block_hash(const void* value, size_t size) {
+  set_has_latest_committed_block_hash();
+  latest_committed_block_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.view_block.protobuf.ViewBlockSyncRequest.latest_committed_block_hash)
+}
+inline ::std::string* ViewBlockSyncRequest::mutable_latest_committed_block_hash() {
+  set_has_latest_committed_block_hash();
+  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.ViewBlockSyncRequest.latest_committed_block_hash)
+  return latest_committed_block_hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ViewBlockSyncRequest::release_latest_committed_block_hash() {
+  // @@protoc_insertion_point(field_release:shardora.view_block.protobuf.ViewBlockSyncRequest.latest_committed_block_hash)
+  if (!has_latest_committed_block_hash()) {
+    return NULL;
+  }
+  clear_has_latest_committed_block_hash();
+  return latest_committed_block_hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ViewBlockSyncRequest::set_allocated_latest_committed_block_hash(::std::string* latest_committed_block_hash) {
+  if (latest_committed_block_hash != NULL) {
+    set_has_latest_committed_block_hash();
+  } else {
+    clear_has_latest_committed_block_hash();
+  }
+  latest_committed_block_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), latest_committed_block_hash);
+  // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockSyncRequest.latest_committed_block_hash)
+}
+
 // -------------------------------------------------------------------
 
 // ViewBlockSyncResponse
 
 // optional uint32 network_id = 1;
 inline bool ViewBlockSyncResponse::has_network_id() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void ViewBlockSyncResponse::set_has_network_id() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void ViewBlockSyncResponse::clear_has_network_id() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void ViewBlockSyncResponse::clear_network_id() {
   network_id_ = 0u;
@@ -2395,13 +2528,13 @@ inline void ViewBlockSyncResponse::set_network_id(::google::protobuf::uint32 val
 
 // optional uint32 pool_idx = 2;
 inline bool ViewBlockSyncResponse::has_pool_idx() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void ViewBlockSyncResponse::set_has_pool_idx() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void ViewBlockSyncResponse::clear_has_pool_idx() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void ViewBlockSyncResponse::clear_pool_idx() {
   pool_idx_ = 0u;
@@ -2712,6 +2845,64 @@ inline void ViewBlockSyncResponse::set_allocated_query_hash(::std::string* query
   }
   query_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), query_hash);
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockSyncResponse.query_hash)
+}
+
+// optional .shardora.view_block.protobuf.ViewBlockItem latest_committed_block = 8;
+inline bool ViewBlockSyncResponse::has_latest_committed_block() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void ViewBlockSyncResponse::set_has_latest_committed_block() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void ViewBlockSyncResponse::clear_has_latest_committed_block() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void ViewBlockSyncResponse::clear_latest_committed_block() {
+  if (latest_committed_block_ != NULL) latest_committed_block_->Clear();
+  clear_has_latest_committed_block();
+}
+inline const ::shardora::view_block::protobuf::ViewBlockItem& ViewBlockSyncResponse::_internal_latest_committed_block() const {
+  return *latest_committed_block_;
+}
+inline const ::shardora::view_block::protobuf::ViewBlockItem& ViewBlockSyncResponse::latest_committed_block() const {
+  const ::shardora::view_block::protobuf::ViewBlockItem* p = latest_committed_block_;
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockSyncResponse.latest_committed_block)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::view_block::protobuf::ViewBlockItem*>(
+      &::shardora::view_block::protobuf::_ViewBlockItem_default_instance_);
+}
+inline ::shardora::view_block::protobuf::ViewBlockItem* ViewBlockSyncResponse::release_latest_committed_block() {
+  // @@protoc_insertion_point(field_release:shardora.view_block.protobuf.ViewBlockSyncResponse.latest_committed_block)
+  clear_has_latest_committed_block();
+  ::shardora::view_block::protobuf::ViewBlockItem* temp = latest_committed_block_;
+  latest_committed_block_ = NULL;
+  return temp;
+}
+inline ::shardora::view_block::protobuf::ViewBlockItem* ViewBlockSyncResponse::mutable_latest_committed_block() {
+  set_has_latest_committed_block();
+  if (latest_committed_block_ == NULL) {
+    auto* p = CreateMaybeMessage<::shardora::view_block::protobuf::ViewBlockItem>(GetArenaNoVirtual());
+    latest_committed_block_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.ViewBlockSyncResponse.latest_committed_block)
+  return latest_committed_block_;
+}
+inline void ViewBlockSyncResponse::set_allocated_latest_committed_block(::shardora::view_block::protobuf::ViewBlockItem* latest_committed_block) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete latest_committed_block_;
+  }
+  if (latest_committed_block) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      latest_committed_block = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, latest_committed_block, submessage_arena);
+    }
+    set_has_latest_committed_block();
+  } else {
+    clear_has_latest_committed_block();
+  }
+  latest_committed_block_ = latest_committed_block;
+  // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockSyncResponse.latest_committed_block)
 }
 
 // -------------------------------------------------------------------
