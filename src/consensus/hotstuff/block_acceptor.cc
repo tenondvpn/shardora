@@ -111,10 +111,6 @@ Status BlockAcceptor::AcceptSync(const std::shared_ptr<block::protobuf::Block>& 
         return Status::kError;
     }
 
-    if (!IsBlockValid(block)) {
-        return Status::kAcceptorBlockInvalid;
-    }
-
     MarkBlockTxsAsUsed(block);
     return Status::kSuccess;
 }

@@ -591,6 +591,7 @@ Status HotstuffSyncer::MergeChain(
     for (const auto& sync_block : sync_all_blocks) {
         Status s = on_recv_vb_fn_(pool_idx, ori_chain, sync_block);
         if (s != Status::kSuccess) {
+            ZJC_ERROR("pool: %d, merge chain block: %lu failed, s: %d", pool_idx, sync_block->view, s);
             continue;
         }
     }
