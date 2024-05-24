@@ -287,6 +287,26 @@ bool ViewBlockChain::IsValid() {
     return num == 1;
 }
 
+// 获取某 vblock 的 commit qc
+std::shared_ptr<QC> ViewBlockChain::GetCommitQcFromDb(const std::shared_ptr<ViewBlock>& vblock) const {
+    if (!vblock || !vblock->block) {
+        return nullptr;
+    }
+    view_block::protobuf::ViewBlockItem pb_vblock;
+    bool ok = prefix_db_->GetViewBlockInfo(vblock->block->network_id(),
+        vblock->block->pool_index(),
+        vblock->block->height(),
+        &pb_vblock);
+    if (!ok) {
+        return nullptr;
+    }
+    auto commit_qc = std::make_shared<QC>();
+    if (commit_qc->Unserialize(pb_vblock.self_commit_qc_str())) {
+        return commit_qc;
+    }
+    return nullptr;
+}
+
 void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent) const {
     std::cout << indent << block->view << ":"
               << common::Encode::HexEncode(block->hash).c_str() << "[status]:"

@@ -105,6 +105,9 @@ private:
     Status processResponseQcTc(
             const uint32_t& pool_idx,
             const view_block::protobuf::ViewBlockSyncResponse& view_block_res);
+    Status processResponseLatestCommittedBlock(
+            const uint32_t& pool_idx,
+            const view_block::protobuf::ViewBlockSyncResponse& view_block_res);    
     Status processResponseChain(
             const uint32_t& pool_idx,
             const view_block::protobuf::ViewBlockSyncResponse& view_block_res);
