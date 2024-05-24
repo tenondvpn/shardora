@@ -79,7 +79,16 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
 }
 
 bool WaitingTxsPools::HasSingleTx(uint32_t pool_index) {
-    return GetSingleTx(pool_index) != nullptr;
+    auto tx_ptr = GetSingleTx(pool_index);
+    if (tx_ptr != nullptr) {
+        for (auto iter = tx_ptr->txs.begin(); iter != tx_ptr->txs.end(); ++iter) {
+            iter->second->in_consensus = false;
+        }
+
+        return true;
+    }
+
+    return false;
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetElectTx(
