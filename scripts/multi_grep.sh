@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# 同时查看多个日志文件中满足 grep 的最后一行日志
+# 比如
+# sh multi_grep.sh "Leader pool: 63" "/root/zjnodes/s3_*/log/zjchain.log"
+# 可查看多个节点的 pool: 63 交易池的 Leader 是否一致 
+
 # 检查参数数量
 if [ "$#" -ne 2 ]; then
     echo "Usage: \$0 <pattern> <log_files>"
