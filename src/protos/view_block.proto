@@ -30,6 +30,7 @@ message ViewBlockSyncRequest {
     repeated bytes view_block_hashes = 3;
     optional uint64 high_qc_view = 4;
     optional uint64 high_tc_view = 5;
+    optional uint64 max_view = 6;
 }
 
 message ViewBlockSyncResponse {

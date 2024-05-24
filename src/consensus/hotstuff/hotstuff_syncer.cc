@@ -97,15 +97,19 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const int32_t& node_num)
     req->set_high_qc_view(pacemaker(pool_idx)->HighQC()->view);
     req->set_high_tc_view(pacemaker(pool_idx)->HighTC()->view);
 
+    View max_view = 0;
     std::vector<std::shared_ptr<ViewBlock>> view_blocks;
-    view_block_chain(pool_idx)->GetAll(view_blocks);
-    // 发送所有 ViewBlock 的 hash 给目标节点
+    view_block_chain(pool_idx)->GetAllVerified(view_blocks);
+    // 发送所有有 qc 的 ViewBlock 的 hash 给目标节点
     for (const auto& vb : view_blocks) {
         auto& vb_hash = *(req->add_view_block_hashes());
         vb_hash = vb->hash;
+        max_view = vb->view > max_view ? vb->view : max_view;
     }
+    req->set_max_view(max_view);
         
     vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
+    ZJC_DEBUG("pool: %d view blocks size: %lu", pool_idx, view_blocks.size());
     SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, node_num);
 }
 
@@ -225,6 +229,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     uint32_t pool_idx = view_block_msg.view_block_req().pool_idx();
     View src_high_qc_view = view_block_msg.view_block_req().high_qc_view();
     View src_high_tc_view = view_block_msg.view_block_req().high_tc_view();
+    View src_max_view = view_block_msg.view_block_req().max_view();
     // 将 src 节点的 view_block_hashes 放入一个 set
     auto& src_view_block_hashes = view_block_msg.view_block_req().view_block_hashes();
     std::unordered_set<HashStr> src_view_block_hash_set;
@@ -259,7 +264,8 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     // 检查本地 ViewBlockChain 中是否存在 src 节点没有的 ViewBlock(需要有 qc)，如果存在则全部同步过去
     // 由于仅检查有 qc 的 view block，因此最新的 view_block 并不会同步（本该如此），但其中的 qc 也不会随着 chain 同步
     // 导致超时 leader 不一致（因为 leader 是跟随 qc 迭代的）
-    // 好在这个 qc 会通过 highqc 同步过去，因此接受 highqc 时需要执行 commit 操作，保证 leader 一致    
+    // 好在这个 qc 会通过 highqc 同步过去，因此接受 highqc 时需要执行 commit 操作，保证 leader 一致
+    View max_view = 0;
     for (auto& view_block : all) {
         // 仅同步已经有 qc 的 view_block
         auto view_block_qc = chain->GetQcOf(view_block);
@@ -284,6 +290,12 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
         *view_block_qc_str = view_block_qc->Serialize();
         auto view_block_item = view_block_res->add_view_block_items();
         ViewBlock2Proto(view_block, view_block_item);
+        max_view = view_block->view > max_view ? view_block->view : max_view;
+    }
+
+    // 若本地 view_block_chain 的最大 view < src 节点，则不同步
+    if (max_view < src_max_view) {
+        shouldSyncChain = false;
     }
 
     // 不发送消息

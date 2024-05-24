@@ -106,6 +106,15 @@ Status ViewBlockChain::GetAll(std::vector<std::shared_ptr<ViewBlock>>& view_bloc
             view_blocks.push_back(it->second->view_block);
         }
     }
+    return Status::kSuccess;
+}
+
+Status ViewBlockChain::GetAllVerified(std::vector<std::shared_ptr<ViewBlock>>& view_blocks) {
+    for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
+        if (it->second->view_block && GetQcOf(it->second->view_block)) {
+            view_blocks.push_back(it->second->view_block);
+        }
+    }
     return Status::kSuccess;    
 }
 

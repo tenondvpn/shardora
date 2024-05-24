@@ -62,6 +62,8 @@ public:
     Status PruneTo(const HashStr& target_hash, std::vector<std::shared_ptr<ViewBlock>>& forked_blockes, bool include_history);
 
     Status GetAll(std::vector<std::shared_ptr<ViewBlock>>&);
+    
+    Status GetAllVerified(std::vector<std::shared_ptr<ViewBlock>>&);
 
     Status GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>&);
 
