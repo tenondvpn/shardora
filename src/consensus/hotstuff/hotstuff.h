@@ -105,6 +105,12 @@ public:
             const std::shared_ptr<ViewBlock>& vblock,
             const std::shared_ptr<QC>& self_commit_qc) {
         acceptor()->CommitSynced(vblock->block);
+
+        auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
+        if (!latest_committed_block || latest_committed_block->view < vblock->view) {
+            view_block_chain()->SetLatestCommittedBlock(vblock);        
+        }
+        
         view_block_chain()->StoreToDb(vblock, self_commit_qc);
     }
 
