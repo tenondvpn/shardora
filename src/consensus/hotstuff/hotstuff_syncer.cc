@@ -97,15 +97,19 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const int32_t& node_num)
     req->set_high_qc_view(pacemaker(pool_idx)->HighQC()->view);
     req->set_high_tc_view(pacemaker(pool_idx)->HighTC()->view);
 
+    View max_view = 0;
     std::vector<std::shared_ptr<ViewBlock>> view_blocks;
-    view_block_chain(pool_idx)->GetAll(view_blocks);
-    // 发送所有 ViewBlock 的 hash 给目标节点
+    view_block_chain(pool_idx)->GetAllVerified(view_blocks);
+    // 发送所有有 qc 的 ViewBlock 的 hash 给目标节点
     for (const auto& vb : view_blocks) {
         auto& vb_hash = *(req->add_view_block_hashes());
         vb_hash = vb->hash;
+        max_view = vb->view > max_view ? vb->view : max_view;
     }
+    req->set_max_view(max_view);
         
     vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
+    ZJC_DEBUG("pool: %d view blocks size: %lu", pool_idx, view_blocks.size());
     SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, node_num);
 }
 
@@ -225,6 +229,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     uint32_t pool_idx = view_block_msg.view_block_req().pool_idx();
     View src_high_qc_view = view_block_msg.view_block_req().high_qc_view();
     View src_high_tc_view = view_block_msg.view_block_req().high_tc_view();
+    View src_max_view = view_block_msg.view_block_req().max_view();
     // 将 src 节点的 view_block_hashes 放入一个 set
     auto& src_view_block_hashes = view_block_msg.view_block_req().view_block_hashes();
     std::unordered_set<HashStr> src_view_block_hash_set;
@@ -259,7 +264,8 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     // 检查本地 ViewBlockChain 中是否存在 src 节点没有的 ViewBlock(需要有 qc)，如果存在则全部同步过去
     // 由于仅检查有 qc 的 view block，因此最新的 view_block 并不会同步（本该如此），但其中的 qc 也不会随着 chain 同步
     // 导致超时 leader 不一致（因为 leader 是跟随 qc 迭代的）
-    // 好在这个 qc 会通过 highqc 同步过去，因此接受 highqc 时需要执行 commit 操作，保证 leader 一致    
+    // 好在这个 qc 会通过 highqc 同步过去，因此接受 highqc 时需要执行 commit 操作，保证 leader 一致
+    View max_view = 0;
     for (auto& view_block : all) {
         // 仅同步已经有 qc 的 view_block
         auto view_block_qc = chain->GetQcOf(view_block);
@@ -284,6 +290,12 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
         *view_block_qc_str = view_block_qc->Serialize();
         auto view_block_item = view_block_res->add_view_block_items();
         ViewBlock2Proto(view_block, view_block_item);
+        max_view = view_block->view > max_view ? view_block->view : max_view;
+    }
+
+    // 若本地 view_block_chain 的最大 view < src 节点，则不同步
+    if (max_view < src_max_view) {
+        shouldSyncChain = false;
     }
 
     // 不发送消息
@@ -571,54 +583,35 @@ Status HotstuffSyncer::MergeChain(
         }
     }
 
-    // 两条链存在交点，则从交点之后开始 merge 
-    if (cross_block) {
-        std::vector<std::shared_ptr<ViewBlock>> sync_all_blocks;
-        sync_chain->GetOrderedAll(sync_all_blocks);
-        
-        for (const auto& sync_block : sync_all_blocks) {
-            if (sync_block->view < cross_block->view) {
-                continue;
-            }
-            if (ori_chain->Has(sync_block->hash)) {
-                continue;
-            }
-            
-            Status s = on_recv_vb_fn_(pool_idx, ori_chain, sync_block);
-            if (s != Status::kSuccess) {
-                continue;
-            }
+    // 存在交点，则可以将 sync_chain 依次全部加入 ori_chain
+    // 重复的块不需要重复添加，但有可能携带 commit qc，要尝试 TryCommit
+    // 两条链不存在交点也无法连接，则替换为 max_view 更大的链
+    if (!cross_block) {
+        // 两条链不存在交点也无法连接，则替换为 max_view 更大的链
+        auto ori_max_height = ori_chain->GetMaxHeight();
+        auto sync_max_height = sync_chain->GetMaxHeight();
+        if (ori_max_height >= sync_max_height) {
+            return Status::kSuccess;
         }
-        // 单独对 high_commit_qc 提交
-        // 保证落后节点虽然没有最新的提案，但是有最新的 qc，并且 leader 一致
-        hotstuff_mgr_->hotstuff(pool_idx)->TryCommit(high_commit_qc);
-        pacemaker(pool_idx)->AdvanceView(new_sync_info()->WithQC(high_commit_qc));
-        
-        return Status::kSuccess;
-    }
-    
+
+        ori_chain->Clear();        
+    } 
+
     std::vector<std::shared_ptr<ViewBlock>> sync_all_blocks;
     sync_chain->GetOrderedAll(sync_all_blocks);
-
-    // 两条链不存在交点也无法连接，则替换为 max_view 更大的链
-    auto ori_max_height = ori_chain->GetMaxHeight();
-    auto sync_max_height = sync_chain->GetMaxHeight();
-    if (ori_max_height >= sync_max_height) {
-        return Status::kSuccess;
-    }
-
-    ori_chain->Clear();
+        
     for (const auto& sync_block : sync_all_blocks) {
-        // 逐个处理同步来的 view_block
         Status s = on_recv_vb_fn_(pool_idx, ori_chain, sync_block);
         if (s != Status::kSuccess) {
+            ZJC_ERROR("pool: %d, merge chain block: %lu failed, s: %d", pool_idx, sync_block->view, s);
             continue;
         }
     }
-
+    // 单独对 high_commit_qc 提交
+    // 保证落后节点虽然没有最新的提案，但是有最新的 qc，并且 leader 一致
     hotstuff_mgr_->hotstuff(pool_idx)->TryCommit(high_commit_qc);
     pacemaker(pool_idx)->AdvanceView(new_sync_info()->WithQC(high_commit_qc));
-    
+        
     return Status::kSuccess;
 }
 
@@ -631,14 +624,15 @@ Status HotstuffSyncer::onRecViewBlock(
     if (!hotstuff) {
         return Status::kError;
     }
-    Status s = Status::kSuccess;
-    
-    // 2. 视图切换
+    Status s = Status::kSuccess;    
+
     hotstuff->pacemaker()->AdvanceView(new_sync_info()->WithQC(view_block->qc));
-    
-    // 3. 尝试 commit
-    // TODO 有更新的 qc
     hotstuff->TryCommit(view_block->qc);
+    
+    // 如果已经有此块，则直接返回
+    if (view_block_chain(pool_idx)->Has(view_block->hash)) {
+        return Status::kSuccess;
+    }
 
     // 验证交易
     auto accep = hotstuff->acceptor();

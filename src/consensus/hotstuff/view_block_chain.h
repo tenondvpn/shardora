@@ -62,6 +62,8 @@ public:
     Status PruneTo(const HashStr& target_hash, std::vector<std::shared_ptr<ViewBlock>>& forked_blockes, bool include_history);
 
     Status GetAll(std::vector<std::shared_ptr<ViewBlock>>&);
+    
+    Status GetAllVerified(std::vector<std::shared_ptr<ViewBlock>>&);
 
     Status GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>&);
 
@@ -74,15 +76,22 @@ public:
     }
 
     inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlock>& view_block) {
+        // 允许设置旧的 view block
         latest_committed_block_ = view_block;
-        view_blocks_info_[view_block->hash]->status = ViewBlockStatus::Committed;        
+        auto it = view_blocks_info_.find(view_block->hash);
+        if (it != view_blocks_info_.end()) {
+            it->second->status = ViewBlockStatus::Committed;
+        }
     }
 
     inline void SetLatestLockedBlock(const std::shared_ptr<ViewBlock>& view_block) {
         auto view_block_status = GetViewBlockStatus(view_block);
         if (view_block_status != ViewBlockStatus::Committed) {
             latest_locked_block_ = view_block;
-            view_blocks_info_[view_block->hash]->status = ViewBlockStatus::Locked;
+            auto it = view_blocks_info_.find(view_block->hash);
+            if (it != view_blocks_info_.end()) {
+                view_blocks_info_[view_block->hash]->status = ViewBlockStatus::Locked;
+            }
         }        
     }
 

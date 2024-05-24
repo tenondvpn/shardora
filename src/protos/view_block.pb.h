@@ -669,6 +669,13 @@ class ViewBlockSyncRequest : public ::google::protobuf::Message /* @@protoc_inse
   ::google::protobuf::uint64 high_tc_view() const;
   void set_high_tc_view(::google::protobuf::uint64 value);
 
+  // optional uint64 max_view = 6;
+  bool has_max_view() const;
+  void clear_max_view();
+  static const int kMaxViewFieldNumber = 6;
+  ::google::protobuf::uint64 max_view() const;
+  void set_max_view(::google::protobuf::uint64 value);
+
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.ViewBlockSyncRequest)
  private:
   void set_has_network_id();
@@ -679,6 +686,8 @@ class ViewBlockSyncRequest : public ::google::protobuf::Message /* @@protoc_inse
   void clear_has_high_qc_view();
   void set_has_high_tc_view();
   void clear_has_high_tc_view();
+  void set_has_max_view();
+  void clear_has_max_view();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -688,6 +697,7 @@ class ViewBlockSyncRequest : public ::google::protobuf::Message /* @@protoc_inse
   ::google::protobuf::uint32 pool_idx_;
   ::google::protobuf::uint64 high_qc_view_;
   ::google::protobuf::uint64 high_tc_view_;
+  ::google::protobuf::uint64 max_view_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -2363,6 +2373,30 @@ inline void ViewBlockSyncRequest::set_high_tc_view(::google::protobuf::uint64 va
   set_has_high_tc_view();
   high_tc_view_ = value;
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncRequest.high_tc_view)
+}
+
+// optional uint64 max_view = 6;
+inline bool ViewBlockSyncRequest::has_max_view() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void ViewBlockSyncRequest::set_has_max_view() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void ViewBlockSyncRequest::clear_has_max_view() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void ViewBlockSyncRequest::clear_max_view() {
+  max_view_ = GOOGLE_ULONGLONG(0);
+  clear_has_max_view();
+}
+inline ::google::protobuf::uint64 ViewBlockSyncRequest::max_view() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockSyncRequest.max_view)
+  return max_view_;
+}
+inline void ViewBlockSyncRequest::set_max_view(::google::protobuf::uint64 value) {
+  set_has_max_view();
+  max_view_ = value;
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncRequest.max_view)
 }
 
 // -------------------------------------------------------------------
