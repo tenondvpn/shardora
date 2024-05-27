@@ -1626,6 +1626,133 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     }
 }
 
+bool BlockManager::HasSingleTx(uint32_t pool_index) {
+    if (HasCrossTx(pool_index)) {
+        return true;
+    }
+
+    if (HasToTx(pool_index)) {
+        return true;
+    }
+
+    return false;
+}
+
+bool BlockManager::HasToTx(uint32_t pool_index) {
+    if (latest_to_tx_ == nullptr) {
+        return false;
+    }
+
+    if (pool_index != 0) {
+        return false;
+    }
+
+    auto now_tm = common::TimeUtils::TimestampUs();
+    auto latest_to_tx = latest_to_tx_;
+    auto tmp_to_txs = latest_to_tx->to_tx;
+   
+    if (tmp_to_txs != nullptr && !tmp_to_txs->tx_ptr->in_consensus) {
+        return true;
+    }
+
+    return false;
+}
+
+bool BlockManager::HasStatisticTx(uint32_t pool_index) {
+    std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> tmp_map = nullptr;
+    while (shard_statistics_map_ptr_queue_.pop(&tmp_map)) {}
+    if (tmp_map != nullptr) {
+        got_latest_statistic_map_ptr_ = tmp_map;
+    }
+
+    auto statistic_map_ptr = got_latest_statistic_map_ptr_;
+    if (statistic_map_ptr == nullptr) {
+        return false;
+    }
+
+    if (statistic_map_ptr->empty()) {
+        return false;
+    }
+
+    auto iter = statistic_map_ptr->rbegin();
+    auto shard_statistic_tx = iter->second;
+    if (shard_statistic_tx == nullptr) {
+        ZJC_DEBUG("shard_statistic_tx == nullptr");
+        return false;
+    }
+
+    if (shard_statistic_tx != nullptr) {
+        if (shard_statistic_tx->tx_ptr->in_consensus) {
+            return false;
+        }
+        
+        auto now_tm = common::TimeUtils::TimestampUs();
+        if (iter->first >= latest_timeblock_height_) {
+            return false;
+        }
+
+        if (prev_timeblock_tm_sec_ + (common::kRotationPeriod / (1000lu * 1000lu)) > (now_tm / 1000000lu)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+bool BlockManager::HasElectTx(uint32_t pool_index) {
+    for (uint32_t i = network::kRootCongressNetworkId; i <= max_consensus_sharding_id_; ++i) {
+        if (i % common::kImmutablePoolSize != pool_index) {
+            continue;
+        }
+
+        if (shard_elect_tx_[i] == nullptr) {
+            continue;
+        }
+
+        auto shard_elect_tx = shard_elect_tx_[i];
+        if (!shard_elect_tx->tx_ptr->in_consensus) {
+            auto now_tm = common::TimeUtils::TimestampUs();
+            if (shard_elect_tx->tx_ptr->time_valid > now_tm) {
+                continue;
+            }
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool BlockManager::HasCrossTx(uint32_t pool_index) {
+    std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> tmp_map = nullptr;
+    while (cross_statistics_map_ptr_queue_.pop(&tmp_map)) {}
+    if (tmp_map != nullptr) {
+        got_latest_cross_map_ptr_ = tmp_map;
+    }
+
+    auto statistic_map_ptr = got_latest_cross_map_ptr_;
+    if (statistic_map_ptr == nullptr) {
+        return false;
+    }
+
+    if (statistic_map_ptr->empty()) {
+        return false;
+    }
+
+    auto iter = statistic_map_ptr->begin();
+    if (iter == statistic_map_ptr->end()) {
+        return false;
+    }
+    
+    auto cross_statistic_tx = iter->second;
+    if (cross_statistic_tx != nullptr && !cross_statistic_tx->tx_ptr->in_consensus) {
+        return true;
+    }
+
+    return false;
+}
 pools::TxItemPtr BlockManager::GetCrossTx(
         uint32_t pool_index, 
         const std::string& tx_hash) {
