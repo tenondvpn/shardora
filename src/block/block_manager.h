@@ -110,7 +110,7 @@ private:
     bool HasToTx(uint32_t pool_index);
     bool HasStatisticTx(uint32_t pool_index);
     bool HasElectTx(uint32_t pool_index);
-    bool BlockManager::HasCrossTx(uint32_t pool_index);
+    bool HasCrossTx(uint32_t pool_index);
     void HandleAllNewBlock();
     bool UpdateBlockItemToCache(
         std::shared_ptr<block::protobuf::Block>& block,
