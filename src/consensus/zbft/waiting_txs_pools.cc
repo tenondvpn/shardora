@@ -55,7 +55,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
     if (txs_item == nullptr) {
         if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
             if (pool_index == common::kRootChainPoolIndex) {
-                ZJC_DEBUG("leader now GetStatisticTx pool_index: %d", pool_index);
+                ZJC_DEBUG("now get statistic tx leader now GetStatisticTx pool_index: %d", pool_index);
             }
         }
         
