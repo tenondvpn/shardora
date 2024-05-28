@@ -1862,7 +1862,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
                 (shard_statistic_tx != nullptr), 
                 (shard_statistic_tx == nullptr ? 99 : shard_statistic_tx->tx_ptr->in_consensus));
         }
-            
+        
         prev_get_tx_tm = now_tx_tm;
     }
 
@@ -1872,8 +1872,13 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
                 common::Encode::HexEncode(shard_statistic_tx->tx_ptr->tx_info.gid()).c_str());
             return nullptr;
         }
-        
+
         auto now_tm = common::TimeUtils::TimestampUs();
+        if (leader && shard_statistic_tx->tx_ptr->time_valid > now_tm) {
+            ZJC_DEBUG("leader get tx failed: %lu, %lu", shard_statistic_tx->tx_ptr->time_valid > now_tm);
+            return nullptr;
+        }
+        
         if (iter->first >= latest_timeblock_height_) {
             if (leader) {
                 ZJC_DEBUG("iter->first >= latest_timeblock_height_: %lu, %lu",
