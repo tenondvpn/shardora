@@ -1648,18 +1648,23 @@ bool BlockManager::HasSingleTx(uint32_t pool_index) {
 }
 
 void BlockManager::PopTxTicker() {
-    std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> tmp_map = nullptr;
-    while (shard_statistics_map_ptr_queue_.pop(&tmp_map)) {}
-    if (tmp_map != nullptr) {
-        got_latest_statistic_map_ptr_ = tmp_map;
+    std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> static_tmp_map = nullptr;
+    while (shard_statistics_map_ptr_queue_.pop(&static_tmp_map)) {}
+    if (static_tmp_map != nullptr) {
+        for (auto iter = static_tmp_map->begin(); iter != static_tmp_map->end(); ++iter) {
+            ZJC_DEBUG("now pop statistic tx tx hash: %s",
+                common::Encode::HexEncode(iter->second->tx_ptr->tx_info.gid()).c_str());
+        }
+        
+        got_latest_statistic_map_ptr_ = static_tmp_map;
     }
 
-    std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> tmp_map = nullptr;
-    while (cross_statistics_map_ptr_queue_.pop(&tmp_map)) {}
-    if (tmp_map != nullptr) {
-        got_latest_cross_map_ptr_ = tmp_map;
+    std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> cross_tmp_map = nullptr;
+    while (cross_statistics_map_ptr_queue_.pop(&cross_tmp_map)) {}
+    if (cross_tmp_map != nullptr) {
+        got_latest_cross_map_ptr_ = cross_tmp_map;
     }
-    
+
     pop_tx_tick_.CutOff(200000lu, std::bind(&BlockManager::PopTxTicker, this));
 }
 
