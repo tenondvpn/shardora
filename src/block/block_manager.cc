@@ -1667,6 +1667,10 @@ bool BlockManager::HasToTx(uint32_t pool_index) {
 }
 
 bool BlockManager::HasStatisticTx(uint32_t pool_index) {
+    if (pool_index != common::kRootChainPoolIndex) {
+        return false;
+    }
+
     std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> tmp_map = nullptr;
     while (shard_statistics_map_ptr_queue_.pop(&tmp_map)) {}
     if (tmp_map != nullptr) {
@@ -1734,6 +1738,10 @@ bool BlockManager::HasElectTx(uint32_t pool_index) {
 }
 
 bool BlockManager::HasCrossTx(uint32_t pool_index) {
+    if (pool_index != common::kRootChainPoolIndex) {
+        return false;
+    }
+
     std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> tmp_map = nullptr;
     while (cross_statistics_map_ptr_queue_.pop(&tmp_map)) {}
     if (tmp_map != nullptr) {
