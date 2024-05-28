@@ -184,7 +184,9 @@ Status BlockAcceptor::addTxsToPool(
     std::map<std::string, pools::TxItemPtr> txs_map;
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
         auto& tx = txs[i];
-        ZJC_DEBUG("get tx message step: %d", tx->step());
+        ZJC_DEBUG("get tx message step: %d, gid: %s", 
+            tx->step(), 
+            common::Encode::HexEncode(tx->gid()).c_str());
         protos::AddressInfoPtr address_info = nullptr;
         if (tx->step() == pools::protobuf::kContractExcute) {
             address_info = account_mgr_->GetAccountInfo(tx->to());
