@@ -1867,7 +1867,9 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
     }
 
     if (shard_statistic_tx != nullptr) {
-        if (leader && shard_statistic_tx->tx_ptr->in_consensus) {
+        if (shard_statistic_tx->tx_ptr->in_consensus) {
+            ZJC_DEBUG("shard statistic in consensus: %s",
+                common::Encode::HexEncode(shard_statistic_tx->tx_ptr->tx_info.gid()).c_str());
             return nullptr;
         }
         
