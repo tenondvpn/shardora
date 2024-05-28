@@ -134,25 +134,34 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
                 LeaderBroadcastBlock(block);
 #ifndef NDEBUG                
                 for (uint32_t i = 0; i < block->tx_list_size(); ++i) {
-                    ZJC_DEBUG("leader broadcast commit block tx over step: %d, to: %s, gid: %s, pool: %d, net: %d", 
+                    ZJC_DEBUG("leader broadcast commit block tx over step: %d, to: %s, gid: %s, net: %d, pool: %d, height: %lu", 
                         block->tx_list(i).step(),
                         common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
                         common::Encode::HexEncode(block->tx_list(i).gid()).c_str(),
+                        block->network_id(),
                         block->pool_index(),
-                        common::GlobalInfo::Instance()->network_id());
+                        block->height());
                 }
 #endif
             }
         }
 #ifndef NDEBUG
         for (uint32_t i = 0; i < block->tx_list_size(); ++i) {
-            ZJC_DEBUG("commit block tx over step: %d, to: %s, gid: %s", 
+            ZJC_DEBUG("commit block tx over step: %d, to: %s, gid: %s, net: %d, pool: %d, height: %lu", 
                 block->tx_list(i).step(),
                 common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
-                common::Encode::HexEncode(block->tx_list(i).gid()).c_str());
+                common::Encode::HexEncode(block->tx_list(i).gid()).c_str(),
+                block->network_id(),
+                block->pool_index(),
+                block->height());
         }
 #endif        
         pools_mgr_->TxOver(block->pool_index(), block->tx_list());
+    } else {
+        ZJC_DEBUG("commit block tx over no tx, net: %d, pool: %d, height: %lu", 
+            block->network_id(),
+            block->pool_index(),
+            block->height());
     }
 
     // tps measurement
