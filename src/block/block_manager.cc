@@ -1666,7 +1666,7 @@ void BlockManager::PopTxTicker() {
         got_latest_cross_map_ptr_ = cross_tmp_map;
     }
 
-    pop_tx_tick_.CutOff(200000lu, std::bind(&BlockManager::PopTxTicker, this));
+    pop_tx_tick_.CutOff(50000lu, std::bind(&BlockManager::PopTxTicker, this));
 }
 
 bool BlockManager::HasToTx(uint32_t pool_index) {
@@ -1833,6 +1833,10 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
     bool leader = tx_gid.empty();
     if (leader) {
         ZJC_DEBUG("backup get statistic tx coming.");
+    }
+
+    while (shard_statistics_map_ptr_queue_.size() > 0) {
+        std::this_thread::sleep_for(std::chrono::microseconds(50000ull));
     }
 
     auto statistic_map_ptr = got_latest_statistic_map_ptr_;
