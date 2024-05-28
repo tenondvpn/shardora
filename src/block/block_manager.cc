@@ -1655,7 +1655,7 @@ void BlockManager::PopTxTicker() {
             ZJC_DEBUG("now pop statistic tx tx hash: %s",
                 common::Encode::HexEncode(iter->second->tx_ptr->tx_info.gid()).c_str());
         }
-        
+
         got_latest_statistic_map_ptr_ = static_tmp_map;
     }
 
@@ -1828,8 +1828,8 @@ pools::TxItemPtr BlockManager::GetCrossTx(
 
 pools::TxItemPtr BlockManager::GetStatisticTx(
         uint32_t pool_index, 
-        const std::string& tx_hash) {
-    bool leader = tx_hash.empty();
+        const std::string& tx_gid) {
+    bool leader = tx_gid.empty();
     if (leader) {
         ZJC_DEBUG("backup get statistic tx coming.");
     }
@@ -1853,7 +1853,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
             break;
         }
 
-        if (iter->second->tx_hash == tx_hash) {
+        if (iter->second->tx_ptr->tx_info.gid() == tx_gid) {
             shard_statistic_tx = iter->second;
             break;
         }

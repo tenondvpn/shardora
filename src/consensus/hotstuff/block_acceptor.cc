@@ -267,7 +267,7 @@ Status BlockAcceptor::addTxsToPool(
         {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
             ZJC_DEBUG("add tx now get statistic tx: %u", pool_idx());
-            auto tx_item = tx_pools_->GetStatisticTx(pool_idx(), "");
+            auto tx_item = tx_pools_->GetStatisticTx(pool_idx(), tx->gid());
             if (tx_item != nullptr && !tx_item->txs.empty()) {
                 tx_ptr = tx_item->txs.begin()->second;
             }

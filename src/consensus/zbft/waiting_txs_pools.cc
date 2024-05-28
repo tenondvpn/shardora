@@ -190,7 +190,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetCrossTx(
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
         uint32_t pool_index, 
-        const std::string& tx_hash) {
+        const std::string& tx_gid) {
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         if (pool_index != common::kRootChainPoolIndex) {
             return nullptr;
@@ -201,8 +201,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
         }
     }
 
-    bool leader = tx_hash.empty();
-    auto tx_ptr = block_mgr_->GetStatisticTx(pool_index, tx_hash);
+    bool leader = tx_gid.empty();
+    auto tx_ptr = block_mgr_->GetStatisticTx(pool_index, tx_gid);
     if (tx_ptr != nullptr) {
         if (leader) {
             auto now_tm = common::TimeUtils::TimestampUs();
