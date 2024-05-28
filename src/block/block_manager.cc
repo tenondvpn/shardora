@@ -72,6 +72,7 @@ int BlockManager::Init(
         common::kPoolTimerMessage,
         std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
     bool genesis = false;
+    pop_tx_tick_.CutOff(200000lu, std::bind(&BlockManager::PopTxTicker, this));
     return kBlockSuccess;
 }
 
@@ -1646,6 +1647,22 @@ bool BlockManager::HasSingleTx(uint32_t pool_index) {
     return false;
 }
 
+void BlockManager::PopTxTicker() {
+    std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> tmp_map = nullptr;
+    while (shard_statistics_map_ptr_queue_.pop(&tmp_map)) {}
+    if (tmp_map != nullptr) {
+        got_latest_statistic_map_ptr_ = tmp_map;
+    }
+
+    std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> tmp_map = nullptr;
+    while (cross_statistics_map_ptr_queue_.pop(&tmp_map)) {}
+    if (tmp_map != nullptr) {
+        got_latest_cross_map_ptr_ = tmp_map;
+    }
+    
+    pop_tx_tick_.CutOff(200000lu, std::bind(&BlockManager::PopTxTicker, this));
+}
+
 bool BlockManager::HasToTx(uint32_t pool_index) {
     if (latest_to_tx_ == nullptr) {
         return false;
@@ -1669,12 +1686,6 @@ bool BlockManager::HasToTx(uint32_t pool_index) {
 bool BlockManager::HasStatisticTx(uint32_t pool_index) {
     if (pool_index != common::kRootChainPoolIndex) {
         return false;
-    }
-
-    std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> tmp_map = nullptr;
-    while (shard_statistics_map_ptr_queue_.pop(&tmp_map)) {}
-    if (tmp_map != nullptr) {
-        got_latest_statistic_map_ptr_ = tmp_map;
     }
 
     auto statistic_map_ptr = got_latest_statistic_map_ptr_;
@@ -1740,12 +1751,6 @@ bool BlockManager::HasElectTx(uint32_t pool_index) {
 bool BlockManager::HasCrossTx(uint32_t pool_index) {
     if (pool_index != common::kRootChainPoolIndex) {
         return false;
-    }
-
-    std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> tmp_map = nullptr;
-    while (cross_statistics_map_ptr_queue_.pop(&tmp_map)) {}
-    if (tmp_map != nullptr) {
-        got_latest_cross_map_ptr_ = tmp_map;
     }
 
     auto statistic_map_ptr = got_latest_cross_map_ptr_;

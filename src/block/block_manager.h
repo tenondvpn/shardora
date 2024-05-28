@@ -8,6 +8,7 @@
 #include "common/limit_hash_map.h"
 #include "common/node_members.h"
 #include "common/thread_safe_queue.h"
+#include "common/tick.h"
 #include "contract/contract_manager.h"
 #include "db/db.h"
 #include "network/network_utils.h"
@@ -173,6 +174,7 @@ private:
     void HandleToTxMessage();
     void AddWaitingCheckSignBlock(const std::shared_ptr<block::protobuf::Block>& block_ptr);
     void CheckWaitingBlocks(uint32_t shard, uint64_t elect_height);
+    void PopTxTicker();
 
     static const uint64_t kCreateToTxPeriodMs = 10000lu;
     static const uint64_t kRetryStatisticPeriod = 3000lu;
@@ -236,6 +238,7 @@ private:
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     uint64_t prev_create_statistic_tx_tm_us_ = 0;
     uint64_t prev_timer_ms_ = 0;
+    common::Tick pop_tx_tick_;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };
