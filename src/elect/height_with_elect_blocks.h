@@ -255,6 +255,7 @@ private:
         }
 
         bool eb_valid = false;
+        assert(lock.tx_list_size() > 0);
         elect::protobuf::ElectBlock elect_block;
         for (int32_t tx_idx = 0; tx_idx < block.tx_list_size(); ++tx_idx) {
             ZJC_DEBUG("get tx step %d, %d, network_id: %u",
