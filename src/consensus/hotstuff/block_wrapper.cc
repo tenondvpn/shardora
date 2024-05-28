@@ -63,9 +63,7 @@ Status BlockWrapper::Wrap(
                 tx_info->step());
         }
         tx_propose->set_tx_type(txs_ptr->tx_type);
-        if (txs_ptr->tx_type != pools::protobuf::kNormalFrom) {
-            block->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
-        }
+        block->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
     }
 
     auto elect_item = elect_info_->GetElectItem();
