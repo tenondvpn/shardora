@@ -59,6 +59,7 @@ Status Hotstuff::Start() {
 }
 
 Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
+    // TODO(HT): 打包的交易，超时后如何释放？
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
