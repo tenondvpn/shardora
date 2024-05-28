@@ -87,6 +87,7 @@ bool WaitingTxsPools::HasSingleTx(uint32_t pool_index) {
         return true;
     }
 
+    ZJC_DEBUG("not has single tx.");
     return false;
 }
 
