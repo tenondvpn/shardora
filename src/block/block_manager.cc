@@ -1635,6 +1635,14 @@ bool BlockManager::HasSingleTx(uint32_t pool_index) {
         return true;
     }
 
+    if (HasStatisticTx(pool_index)) {
+        return true;
+    }
+
+    if (HasElectTx(pool_index)) {
+        return true;
+    }
+    
     return false;
 }
 
