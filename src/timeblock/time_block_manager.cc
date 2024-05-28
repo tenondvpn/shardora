@@ -118,6 +118,7 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader, uint32_t pool_ind
         auto account_info = account_mgr_->pools_address_info(pool_index);
         tx_info.set_to(account_info->addr());
         tmblock_tx_ptr_->prev_consensus_tm_us = now_tm_us;
+        tmblock_tx_ptr_->in_consensus = true;
         ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu, leader: %d",
             u64_data[0], u64_data[1], leader);
     }
