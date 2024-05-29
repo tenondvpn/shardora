@@ -394,6 +394,8 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
                     block_info->view,
                     block_info->block->tx_list_size());
             }
+        } else {
+            assert(false);
         }
 #endif
 
