@@ -421,6 +421,8 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             }
 
             assert(test_block.tx_list_size() > 0);
+            ZJC_INFO("sync success get block with height net: %u, pool: %u, height: %lu",
+                network::kRootCongressNetworkId, network_id, proto_qc.elect_height());
 #endif
 #else
             res->set_value(block.SerializeAsString());
