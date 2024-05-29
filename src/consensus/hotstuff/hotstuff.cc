@@ -378,7 +378,8 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         if (st == Status::kSuccess && block_info != nullptr) {
             for (int32_t i = 0; i < block_info->block->tx_list_size(); ++i) {
                 ZJC_DEBUG("block net: %u, pool: %u, height: %lu, prehash: %s, hash: %s, step: %d, "
-                    "pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, vblock: %lu, txs: %lu",
+                    "pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, "
+                    "curView: %lu, vblock: %lu, txs: %lu",
                     block_info->block->network_id(),
                     block_info->block->pool_index(),
                     block_info->block->height(),
@@ -398,16 +399,32 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
 
     auto qc = std::make_shared<QC>();
     Status s = crypto()->CreateQC(
-            vote_msg.view_block_hash(),
-            vote_msg.commit_view_block_hash(),
-            vote_msg.view(),
-            elect_height,
-            vote_msg.leader_idx(),
-            reconstructed_sign,
-            qc);
+        vote_msg.view_block_hash(),
+        vote_msg.commit_view_block_hash(),
+        vote_msg.view(),
+        elect_height,
+        vote_msg.leader_idx(),
+        reconstructed_sign,
+        qc);
     if (s != Status::kSuccess) {
         return;
     }
+
+#ifndef NDEBUG
+    block::protobuf::Block block;
+    if (!prefix_db_->GetBlockWithHeight(
+            network::kRootCongressNetworkId,
+            common::GlobalInfo::Instance()->network_id() % common::kImmutablePoolSize,
+            elect_height,
+            &block)) {
+        ZJC_INFO("failed get block with height net: %u, pool: %u, height: %lu",
+            network::kRootCongressNetworkId, common::GlobalInfo::Instance()->network_id(), elect_height);
+        assert(false);
+    }
+
+    assert(block.tx_list_size() > 0);
+#endif
+
     // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率高很多
