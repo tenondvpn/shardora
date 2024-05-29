@@ -230,8 +230,8 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             // just one thread
             auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
             block_from_network_queue_[thread_idx].push(block_ptr);
-            ZJC_DEBUG("queue size add new block message hash: %lu, block_from_network_queue_ size: %d", 
-                msg_ptr->header.hash64(), block_from_network_queue_[thread_idx].size());
+            ZJC_DEBUG("success add new network block 2 net: %u, pool: %u, height: %lu",
+                block_ptr->network_id(), block_ptr->pool_index(), block_ptr->height());
         }
     }
 }
@@ -384,6 +384,8 @@ void BlockManager::CheckWaitingBlocks(uint32_t shard, uint64_t elect_height) {
             continue;
         }
 
+        ZJC_DEBUG("success add new network block 0 net: %u, pool: %u, height: %lu",
+            block_item->network_id(), block_item->pool_index(), block_item->height());
         block_from_network_queue_[thread_idx].push(block_item);
     }
 }
@@ -391,7 +393,7 @@ void BlockManager::CheckWaitingBlocks(uint32_t shard, uint64_t elect_height) {
 int BlockManager::NetworkNewBlock(
         const std::shared_ptr<block::protobuf::Block>& block_item,
         const bool need_valid) {
-    ZJC_DEBUG("success add new network block net: %u, pool: %u, height: %lu",
+    ZJC_DEBUG("success add new network block 1 net: %u, pool: %u, height: %lu",
         block_item->network_id(), block_item->pool_index(), block_item->height());
     if (block_item != nullptr) {
         if (!block_item->is_commited_block()) {
