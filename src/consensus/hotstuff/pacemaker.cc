@@ -193,15 +193,17 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     assert(msg.type() == common::kHotstuffTimeoutMessage);
     
     if (!msg.has_hotstuff_timeout_proto()) {
+        assert(false);
         return;
     }
     
     if (msg.hotstuff_timeout_proto().pool_idx() != pool_idx_) {
+        assert(false);
         return;
     }
     
     // 统计 bls 签名
-    auto timeout_proto = msg.hotstuff_timeout_proto();
+    auto& timeout_proto = msg.hotstuff_timeout_proto();
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
     Status s = crypto_->ReconstructAndVerifyThresSign(
             timeout_proto.elect_height(),
