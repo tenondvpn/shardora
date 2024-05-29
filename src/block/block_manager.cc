@@ -250,6 +250,15 @@ void BlockManager::HandleAllNewBlock() {
             // TODO 更新 pool info，每次 AddNewBlock 之前需要更新 pool latest info
             // ZJC_DEBUG("LLLLLL handle new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u", block_ptr->network_id(), block_ptr.pool_index(), block_ptr->height(), block_ptr->tx_list_size());
             if (UpdateBlockItemToCache(block_ptr, db_batch)) {
+                ZJC_DEBUG("from network new block coming sharding id: %u, pool: %d, height: %lu, "
+                    "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
+                    block_ptr->network_id(),
+                    block_ptr->pool_index(),
+                    block_ptr->height(),
+                    block_ptr->tx_list_size(),
+                    common::Encode::HexEncode(block_ptr->hash()).c_str(),
+                    block_ptr->electblock_height(),
+                    block_ptr->timeblock_height());
                 AddNewBlock(block_ptr, db_batch);
             }   
         }
@@ -440,6 +449,15 @@ void BlockManager::HandleAllConsensusBlocks() {
                 break;
             }
             
+            ZJC_DEBUG("from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
+                    "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
+                    db_item_ptr->block_ptr->network_id(),
+                    db_item_ptr->block_ptr->pool_index(),
+                    db_item_ptr->block_ptr->height(),
+                    db_item_ptr->block_ptr->tx_list_size(),
+                    common::Encode::HexEncode(db_item_ptr->block_ptr->hash()).c_str(),
+                    db_item_ptr->block_ptr->electblock_height(),
+                    db_item_ptr->block_ptr->timeblock_height());
             AddNewBlock(db_item_ptr->block_ptr, *db_item_ptr->db_batch);
         }
     }
