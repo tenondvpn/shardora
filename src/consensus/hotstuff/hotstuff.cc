@@ -536,6 +536,7 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::protobuf::Header& header)
     }
 
     ResetReplicaTimers();
+    ZJC_DEBUG("reset timer success!");
     return;
 }
 
