@@ -28,15 +28,15 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
             common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
     }
 
-    for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
-        ZJC_DEBUG("amount: %lu, gas_limit: %lu, gas_price: %lu, step: %u, key: %s, %s, val: %s, block tx hash: %s, message: %s",
-            amount, gas_limit, gas_price, step,
-            common::Encode::HexEncode(tx_info.storages(i).key()).c_str(),
-            tx_info.storages(i).key().c_str(),
-            common::Encode::HexEncode(tx_info.storages(i).value()).c_str(),
-            common::Encode::HexEncode(common::Hash::keccak256(message)).c_str(),
-            common::Encode::HexEncode(message).c_str());
-    }
+    // for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
+    //     ZJC_DEBUG("amount: %lu, gas_limit: %lu, gas_price: %lu, step: %u, key: %s, %s, val: %s, block tx hash: %s, message: %s",
+    //         amount, gas_limit, gas_price, step,
+    //         common::Encode::HexEncode(tx_info.storages(i).key()).c_str(),
+    //         tx_info.storages(i).key().c_str(),
+    //         common::Encode::HexEncode(tx_info.storages(i).value()).c_str(),
+    //         common::Encode::HexEncode(common::Hash::keccak256(message)).c_str(),
+    //         common::Encode::HexEncode(message).c_str());
+    // }
 
     return common::Hash::keccak256(message);
 }
