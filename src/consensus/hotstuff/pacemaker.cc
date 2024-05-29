@@ -178,9 +178,9 @@ void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& 
             network::Route::Instance()->Send(msg_ptr);
         } else {
             transport::TcpTransport::Instance()->Send(
-                    common::Uint32ToIp(leader->public_ip), 
-                    leader->public_port, 
-                    msg);
+                common::Uint32ToIp(leader->public_ip), 
+                leader->public_port, 
+                msg);
         }
     } else {
         OnRemoteTimeout(msg_ptr);

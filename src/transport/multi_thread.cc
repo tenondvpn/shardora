@@ -169,9 +169,10 @@ MultiThreadHandler::~MultiThreadHandler() {
     Destroy();
 }
 
-int MultiThreadHandler::Init(std::shared_ptr<db::Db>& db) {
+int MultiThreadHandler::Init(std::shared_ptr<db::Db>& db, std::shared_ptr<security::Security>& security) {
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+    security_ = security;
     all_thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count();
     consensus_thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
     TRANSPORT_INFO("MultiThreadHandler::Init() ...");

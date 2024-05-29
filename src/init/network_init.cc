@@ -120,7 +120,7 @@ int NetworkInit::Init(int argc, char** argv) {
         common::Encode::HexEncode(security_->GetAddress()).c_str(),
         common::GlobalInfo::Instance()->network_id());
     ZJC_DEBUG("init 0 5");
-    if (net_handler_.Init(db_) != transport::kTransportSuccess) {
+    if (net_handler_.Init(db_, security_) != transport::kTransportSuccess) {
         return kInitError;
     }
 

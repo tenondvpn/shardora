@@ -60,7 +60,7 @@ class MultiThreadHandler {
 public:
     MultiThreadHandler();
     ~MultiThreadHandler();
-    int Init(std::shared_ptr<db::Db>& db);
+    int Init(std::shared_ptr<db::Db>& db, std::shared_ptr<security::Security>& security);
     void Start();
     void HandleMessage(MessagePtr& msg_ptr);
     MessagePtr GetMessageFromQueue(uint32_t thread_idx, bool);
