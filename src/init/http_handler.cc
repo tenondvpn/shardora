@@ -290,7 +290,8 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     std::string res = std::string("ok");
     evbuffer_add(req->buffer_out, res.c_str(), res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
-    ZJC_INFO("http transaction success %s, %s", frompk, to);
+    ZJC_DEBUG("http transaction success %s, %s", common::Encode::HexEncode(
+            http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk))).c_str(), to);
 }
 
 static void QueryContract(evhtp_request_t* req, void* data) {
