@@ -173,6 +173,7 @@ void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& 
             msg.hash64(),
             msg.hotstuff_timeout_proto().view(),
             HighQC()->view);
+        transport::TcpTransport::Instance()->SetMessageHash(msg);
         if (leader->public_ip == 0 || leader->public_port == 0) {
             network::Route::Instance()->Send(msg_ptr);
         } else {
