@@ -589,6 +589,7 @@ void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
                 ViewDurationStartTimeoutMs,
                 ViewDurationMaxTimeoutMs,
                 ViewDurationMultiplier));
+    ZJC_DEBUG("reset timer success: %u", pool_idx_);
     return;
 }
 
