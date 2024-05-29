@@ -406,6 +406,20 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             res->set_height(sync_msg.sync_value_req().heights(i).height());
 #ifdef ENABLE_HOTSTUFF
             res->set_value(pb_view_block.SerializeAsString());
+#ifndef NDEBUG
+            block::protobuf::Block block;
+            if (!prefix_db_->GetBlockWithHeight(
+                    network::kRootCongressNetworkId,
+                    network_id % common::kImmutablePoolSize,
+                    pb_view_block.elect_height(),
+                    &block)) {
+                ZJC_INFO("failed get block with height net: %u, pool: %u, height: %lu",
+                    network::kRootCongressNetworkId, common::GlobalInfo::Instance()->network_id(), elect_height);
+                assert(false);
+            }
+
+            assert(block.tx_list_size() > 0);
+#endif
 #else
             res->set_value(block.SerializeAsString());
 #endif
