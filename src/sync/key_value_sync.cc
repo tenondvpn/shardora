@@ -408,7 +408,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             res->set_value(pb_view_block.SerializeAsString());
 #ifndef NDEBUG
             view_block::protobuf::QC proto_qc;
-            assert(proto_qc.ParseFromString(pb_view_block.qc_str));
+            assert(proto_qc.ParseFromString(pb_view_block.qc_str()));
             block::protobuf::Block test_block;
             if (!prefix_db_->GetBlockWithHeight(
                     network::kRootCongressNetworkId,
@@ -416,7 +416,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                     proto_qc.elect_height(),
                     &test_block)) {
                 ZJC_INFO("failed get block with height net: %u, pool: %u, height: %lu",
-                    network::kRootCongressNetworkId, network_id, elect_height);
+                    network::kRootCongressNetworkId, network_id, proto_qc.elect_height());
                 assert(false);
             }
 
