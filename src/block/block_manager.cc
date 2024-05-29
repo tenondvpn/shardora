@@ -1630,18 +1630,22 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
 
 bool BlockManager::HasSingleTx(uint32_t pool_index) {
     if (HasCrossTx(pool_index)) {
+        ZJC_DEBUG("success check has cross tx.");
         return true;
     }
 
     if (HasToTx(pool_index)) {
+        ZJC_DEBUG("success check has to tx.");
         return true;
     }
 
     if (HasStatisticTx(pool_index)) {
+        ZJC_DEBUG("success check has statistic tx.");
         return true;
     }
 
     if (HasElectTx(pool_index)) {
+        ZJC_DEBUG("success check has elect tx.");
         return true;
     }
 
