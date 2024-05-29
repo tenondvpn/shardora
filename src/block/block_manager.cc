@@ -1832,7 +1832,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         const std::string& tx_gid) {
     bool leader = tx_gid.empty();
     if (leader) {
-        ZJC_DEBUG("backup get statistic tx coming.");
+        ZJC_DEBUG("leader get statistic tx coming.");
     }
 
     while (shard_statistics_map_ptr_queue_.size() > 0) {
@@ -1890,7 +1890,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
 
         auto now_tm = common::TimeUtils::TimestampUs();
         if (leader && shard_statistic_tx->tx_ptr->time_valid > now_tm) {
-            ZJC_DEBUG("leader get tx failed: %lu, %lu", shard_statistic_tx->tx_ptr->time_valid > now_tm);
+            ZJC_DEBUG("leader get tx failed: %lu, %lu", shard_statistic_tx->tx_ptr->time_valid, now_tm);
             return nullptr;
         }
         
