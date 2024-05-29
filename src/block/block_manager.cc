@@ -966,20 +966,6 @@ void BlockManager::createContractCreateByRootToTxs(
 void BlockManager::AddNewBlock(
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBatch& db_batch) {
-    if (!block_item->is_commited_block()) {
-        assert(false);
-        return;
-    }
-
-    ZJC_DEBUG("new block coming sharding id: %u, pool: %d, height: %lu, "
-        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
-        block_item->network_id(),
-        block_item->pool_index(),
-        block_item->height(),
-        block_item->tx_list_size(),
-        common::Encode::HexEncode(block_item->hash()).c_str(),
-        block_item->electblock_height(),
-        block_item->timeblock_height());
     // TODO: check all block saved success
     assert(block_item->electblock_height() >= 1);
     // block 两条信息持久化
@@ -1003,12 +989,6 @@ void BlockManager::AddNewBlock(
     }
 
     const auto& tx_list = block_item->tx_list();
-#ifndef ENABLE_HOTSTUFF
-    if (tx_list.empty()) {
-        return;
-    }
-#endif
-
     // 处理交易信息
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         ZJC_DEBUG("handle tx coming net: %u, pool: %u, height: %lu, status: %d, step: %d", 
@@ -1050,6 +1030,7 @@ void BlockManager::AddNewBlock(
     if (new_block_callback_ != nullptr) {
         if (!new_block_callback_(block_item, db_batch)) {
             ZJC_DEBUG("block call back failed!");
+            assert(false);
             return;
         }
     }
@@ -1059,6 +1040,15 @@ void BlockManager::AddNewBlock(
         ZJC_FATAL("write block to db failed!");
     }
 
+    ZJC_DEBUG("new block coming sharding id: %u, pool: %d, height: %lu, "
+        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
+        block_item->network_id(),
+        block_item->pool_index(),
+        block_item->height(),
+        block_item->tx_list_size(),
+        common::Encode::HexEncode(block_item->hash()).c_str(),
+        block_item->electblock_height(),
+        block_item->timeblock_height());
     if (ck_client_ != nullptr) {
         ck_client_->AddNewBlock(block_item);
         ZJC_DEBUG("add to ck.");
