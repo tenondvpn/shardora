@@ -395,6 +395,8 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
                     block_info->block->tx_list_size());
             }
         } else {
+            ZJC_DEBUG("failed get view block hash: %s",
+                common::Encode::HexEncode(vote_msg.view_block_hash()).c_str());
             assert(false);
         }
 #endif
