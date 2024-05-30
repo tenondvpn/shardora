@@ -76,9 +76,9 @@ public:
     }
 
     void HandleUserCreate(
-        const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch) {
+            const block::protobuf::Block& block,
+            const block::protobuf::BlockTx& tx,
+            db::DbWriteBatch& db_batch) {
         if (tx.contract_prepayment() <= 0) {
             return;
         }
