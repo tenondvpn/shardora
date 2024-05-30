@@ -414,7 +414,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                     network::kRootCongressNetworkId,
                     network_id % common::kImmutablePoolSize,
                     proto_qc.elect_height(),
-                    &test_block)) {
+                    &test_block.electblock_height())) {
                 ZJC_INFO("failed get block with height net: %u, pool: %u, height: %lu",
                     network::kRootCongressNetworkId, network_id, proto_qc.elect_height());
                 assert(false);
@@ -422,13 +422,12 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
 
             assert(test_block.tx_list_size() > 0);
             ZJC_INFO("sync success get block with height net: %u, pool: %u, "
-                "qc height: %lu, qc net: %u, net: %u, block elect height: %lu",
+                "qc height: %lu, net: %u, block elect height: %lu",
                 network::kRootCongressNetworkId,
                 network_id,
                 proto_qc.elect_height(),
-                proto_qc.net_id(),
                 test_block.network_id(),
-                test_block.elect_height());
+                test_block.electblock_height());
 
             auto test_commit_qc = std::make_shared<QC>();
             if (!test_commit_qc->Unserialize(pb_view_block.self_commit_qc_str())) {
