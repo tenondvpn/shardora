@@ -63,6 +63,11 @@ void TimeBlockManager::CreateTimeBlockTx() {
 }
 
 bool TimeBlockManager::HasTimeblockTx(uint32_t pool_index) {
+    if (pool_index != common::kRootChainPoolIndex ||
+            common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
+        return false;
+    }
+    
     if (tmblock_tx_ptr_ != nullptr) {
         auto now_tm_us = common::TimeUtils::TimestampUs();
         // if (tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us) {
