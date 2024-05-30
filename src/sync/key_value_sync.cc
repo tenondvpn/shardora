@@ -414,7 +414,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                     network::kRootCongressNetworkId,
                     network_id % common::kImmutablePoolSize,
                     proto_qc.elect_height(),
-                    &test_block.electblock_height())) {
+                    &test_block)) {
                 ZJC_INFO("failed get block with height net: %u, pool: %u, height: %lu",
                     network::kRootCongressNetworkId, network_id, proto_qc.elect_height());
                 assert(false);
