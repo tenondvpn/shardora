@@ -420,7 +420,7 @@ void AccountManager::HandleCreateContract(
     if (tx.status() == consensus::kConsensusSuccess) {
         auto account_info = GetAccountInfo(tx.to());
         if (account_info != nullptr) {
-            assert(false);
+            // assert(false);
             return;
         }
 

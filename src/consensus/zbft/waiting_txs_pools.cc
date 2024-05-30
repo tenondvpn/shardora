@@ -76,7 +76,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
     if (txs_item == nullptr) {
         if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
             if (pool_index == common::kRootChainPoolIndex) {
-                ZJC_DEBUG("leader now GetStatisticTx pool_index: %d", pool_index);
+                ZJC_DEBUG("now get statistic tx leader now GetStatisticTx pool_index: %d", pool_index);
             }
         }
         
@@ -100,7 +100,15 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
 }
 
 bool WaitingTxsPools::HasSingleTx(uint32_t pool_index) {
-    return GetSingleTx(pool_index) != nullptr;
+    if (timeblock_mgr_->HasTimeblockTx(pool_index)) {
+        return true;
+    }
+
+    if (block_mgr_->HasSingleTx(pool_index)) {
+        return true;
+    }
+
+    return false;
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetElectTx(
@@ -203,7 +211,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetCrossTx(
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
         uint32_t pool_index, 
-        const std::string& tx_hash) {
+        const std::string& tx_gid) {
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         if (pool_index != common::kRootChainPoolIndex) {
             return nullptr;
@@ -214,8 +222,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
         }
     }
 
-    bool leader = tx_hash.empty();
-    auto tx_ptr = block_mgr_->GetStatisticTx(pool_index, tx_hash);
+    bool leader = tx_gid.empty();
+    auto tx_ptr = block_mgr_->GetStatisticTx(pool_index, tx_gid);
     if (tx_ptr != nullptr) {
         if (leader) {
             auto now_tm = common::TimeUtils::TimestampUs();

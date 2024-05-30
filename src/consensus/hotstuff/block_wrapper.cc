@@ -63,17 +63,16 @@ Status BlockWrapper::Wrap(
                 tx_info->step());
         }
         tx_propose->set_tx_type(txs_ptr->tx_type);
-        if (txs_ptr->tx_type != pools::protobuf::kNormalFrom) {
-            block->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
-        }
     }
 
     auto elect_item = elect_info_->GetElectItem();
     if (!elect_item) {
         return Status::kElectItemNotFound;
     }
+    
     block->set_electblock_height(elect_item->ElectHeight());
     block->set_leader_index(leader_idx);
+    block->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
     
     return Status::kSuccess;
 }
