@@ -113,7 +113,7 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const int32_t& node_num)
     }
         
     vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
-    // ZJC_DEBUG("pool: %d view blocks size: %lu", pool_idx, view_blocks.size());
+    //ZJC_DEBUG("pool: %d view blocks size: %lu", pool_idx, view_blocks.size());
     SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, node_num);
 }
 
@@ -708,7 +708,14 @@ Status HotstuffSyncer::onRecViewBlock(
     }    
 
     // 4. 保存 view_block
-    return hotstuff->view_block_chain()->Store(view_block);
+    s = hotstuff->view_block_chain()->Store(view_block);
+    if (s != Status::kSuccess) {
+        return s;
+    }
+
+    // 标记交易占用
+    hotstuff->acceptor()->MarkBlockTxsAsUsed(view_block->block);
+    return Status::kSuccess;
 }
 
 } // namespace consensus

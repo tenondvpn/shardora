@@ -50,6 +50,10 @@ public:
         std::map<std::string, TxItemPtr>& res_map, 
         uint32_t count, 
         std::unordered_map<std::string, std::string>& kvs);
+    void GetTxIdempotently(
+        std::map<std::string, TxItemPtr>& res_map, 
+        uint32_t count, 
+        std::unordered_map<std::string, std::string>& kvs);    
     void GetTx(
         const std::map<std::string, pools::TxItemPtr>& invalid_txs, 
         transport::protobuf::Header& header, 
@@ -164,6 +168,11 @@ private:
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count,
         std::unordered_map<std::string, std::string>& kvs);
+    void GetTxIdempotently(
+        std::map<std::string, TxItemPtr>& src_prio_map,
+        std::map<std::string, TxItemPtr>& res_map,
+        uint32_t count,
+        std::unordered_map<std::string, std::string>& kvs);    
     void GetTxByHash(
         std::map<std::string, TxItemPtr>& src_prio_map,
         const std::string& hash,

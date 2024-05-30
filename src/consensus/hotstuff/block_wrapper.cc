@@ -45,7 +45,7 @@ Status BlockWrapper::Wrap(
 
     // 打包交易
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
-    Status s = PopTxs(txs_ptr);
+    Status s = GetValidTxsIdempotently(txs_ptr);
     if (s != Status::kSuccess && !no_tx_allowed) {
         // 允许 3 个连续的空交易块
         return s;
@@ -79,11 +79,13 @@ Status BlockWrapper::Wrap(
 }
 
 Status BlockWrapper::GetTxsIdempotently(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>& txs) {
-    transport::protobuf::Header header;
     std::map<std::string, pools::TxItemPtr> invalid_txs;
-    pools_mgr_->GetTx(pool_idx_, 1024, invalid_txs, header);
-    zbft::protobuf::TxBft& txbft = *header.mutable_zbft()->mutable_tx_bft();
-    for (auto it = txbft.txs().begin(); it != txbft.txs().end(); it++) {
+
+    auto txs_items = std::make_shared<consensus::WaitingTxsItem>();
+    auto& tx_vec = txs_items->txs;
+    auto& kvs = txs_items->kvs;
+    pools_mgr_->GetTxIdempotently(pool_idx_, 1024, tx_vec, kvs);
+    for (auto it = txs_items->txs.begin(); it != txs_items->txs.end(); it++) {
         txs.push_back(std::make_shared<pools::protobuf::TxMessage>(*it));
     }
 
