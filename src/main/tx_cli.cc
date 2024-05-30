@@ -16,7 +16,7 @@ static bool global_stop = false;
 static const std::string kBroadcastIp = "127.0.0.1";
 static const uint16_t kBroadcastPort = 13004;
 static const int shardnum = 3;
-static const int delayus = 0;
+static const int delayus = 2000;
 static const bool multi_pool = false;
 
 static void SignalCallback(int sig_int) { global_stop = true; }
@@ -202,7 +202,7 @@ int tx_main(int argc, char** argv) {
         }
     }
 
-    if (net_handler.Init(db_ptr) != 0) {
+    if (net_handler.Init(db_ptr, security) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
     }
@@ -317,7 +317,7 @@ int one_tx_main(int argc, char** argv) {
         }
     }
 
-    if (net_handler.Init(db_ptr) != 0) {
+    if (net_handler.Init(db_ptr, security) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
     }
@@ -424,7 +424,7 @@ int create_library(int argc, char** argv) {
         }
     }
 
-    if (net_handler.Init(db_ptr) != 0) {
+    if (net_handler.Init(db_ptr, security) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
     }
@@ -501,7 +501,7 @@ int contract_main(int argc, char** argv) {
         }
     }
 
-    if (net_handler.Init(db_ptr) != 0) {
+    if (net_handler.Init(db_ptr, security) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
     }
@@ -586,7 +586,7 @@ int contract_set_prepayment(int argc, char** argv) {
         }
     }
 
-    if (net_handler.Init(db_ptr) != 0) {
+    if (net_handler.Init(db_ptr, security) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
     }
@@ -662,7 +662,7 @@ int contract_call(int argc, char** argv, bool more=false) {
         }
     }
 
-    if (net_handler.Init(db_ptr) != 0) {
+    if (net_handler.Init(db_ptr, security) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
     }

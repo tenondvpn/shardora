@@ -215,13 +215,24 @@ void TxPool::GetTx(
     GetTx(consensus_tx_map_, res_map, count, kvs);
 }
 
+void TxPool::GetTxIdempotently(
+        std::map<std::string, TxItemPtr>& res_map, 
+        uint32_t count, 
+        std::unordered_map<std::string, std::string>& kvs) {
+    GetTxIdempotently(universal_prio_map_, res_map, count, kvs);
+    if (!res_map.empty()) {
+        return;
+    }
+
+    GetTxIdempotently(prio_map_, res_map, count, kvs);
+    GetTxIdempotently(consensus_tx_map_, res_map, count, kvs);    
+}
+
 void TxPool::GetTx(
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count,
         std::unordered_map<std::string, std::string>& kvs) {
-    auto timestamp_now = common::TimeUtils::TimestampUs();
-    std::vector<TxItemPtr> recover_txs;
     auto iter = src_prio_map.begin();
     while (iter != src_prio_map.end() && res_map.size() < count) {
         res_map[iter->second->unique_tx_hash] = iter->second;
@@ -232,6 +243,19 @@ void TxPool::GetTx(
         assert(!iter->second->unique_tx_hash.empty());
         iter = src_prio_map.erase(iter);
     }
+}
+
+void TxPool::GetTxIdempotently(
+        std::map<std::string, TxItemPtr>& src_prio_map,
+        std::map<std::string, TxItemPtr>& res_map,
+        uint32_t count,
+        std::unordered_map<std::string, std::string>& kvs) {
+    auto iter = src_prio_map.begin();
+    while (iter != src_prio_map.end() && res_map.size() < count) {
+        res_map[iter->second->unique_tx_hash] = iter->second;
+        assert(!iter->second->unique_tx_hash.empty());
+        iter++;
+    }    
 }
 
 void TxPool::GetTxByIds(

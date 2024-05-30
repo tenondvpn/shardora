@@ -43,6 +43,11 @@ public:
         uint32_t count,
         std::map<std::string, TxItemPtr>& res_map,
         std::unordered_map<std::string, std::string>& kvs);
+    void GetTxIdempotently(
+        uint32_t pool_index,
+        uint32_t count,
+        std::map<std::string, TxItemPtr>& res_map,
+        std::unordered_map<std::string, std::string>& kvs);    
     void TxOver(
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);

@@ -60,12 +60,12 @@ private:
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     std::shared_ptr<consensus::WaitingTxsPools> txs_pools_ = nullptr;
 
-    Status PopTxs(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    Status LeaderGetTxsIdempotently(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
         pools_mgr_->PopTxs(pool_idx_, false);
         pools_mgr_->CheckTimeoutTx(pool_idx_);
         
         ZJC_DEBUG("pool: %u leader get tx now", pool_idx_);
-        txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx_);
+        txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(pool_idx_);
         return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;
     }
 };

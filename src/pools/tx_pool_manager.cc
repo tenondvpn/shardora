@@ -1162,8 +1162,6 @@ void TxPoolManager::GetTx(
     //     return;
     // }
 
-    ZJC_WARN("====7.0 pool: %d, tx_size: %lu, max_tx_count: %lu",
-            pool_index, tx_pool_[pool_index].tx_size(), now_max_tx_count_);
     if (tx_pool_[pool_index].tx_size() < now_max_tx_count_) {
         return;
     }
@@ -1173,6 +1171,22 @@ void TxPoolManager::GetTx(
     //     tx_pool_[pool_index].oldest_timestamp(), min_valid_timestamp_,
     //     ((int64_t)tx_pool_[pool_index].oldest_timestamp() - (int64_t)min_valid_timestamp_),
     //     tx_pool_[pool_index].tx_size(), min_valid_tx_count_, res_map.size());
+}
+
+void TxPoolManager::GetTxIdempotently(
+        uint32_t pool_index,
+        uint32_t count,
+        std::map<std::string, TxItemPtr>& res_map,
+        std::unordered_map<std::string, std::string>& kvs) {
+    if (count > common::kSingleBlockMaxTransactions) {
+        count = common::kSingleBlockMaxTransactions;
+    }
+
+    if (tx_pool_[pool_index].tx_size() < now_max_tx_count_) {
+        return;
+    }
+
+    tx_pool_[pool_index].GetTxIdempotently(res_map, count, kvs);    
 }
 
 void TxPoolManager::GetTxByGids(uint32_t pool_index, std::vector<std::string> gids, std::map<std::string, pools::TxItemPtr>& res_map) {
