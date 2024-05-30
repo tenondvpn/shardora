@@ -45,7 +45,7 @@ Status BlockWrapper::Wrap(
 
     // 打包交易
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
-    Status s = PopTxs(txs_ptr);
+    Status s = LeaderGetTxsIdempotently(txs_ptr);
     if (s != Status::kSuccess && !no_tx_allowed) {
         // 允许 3 个连续的空交易块
         return s;
@@ -86,7 +86,7 @@ Status BlockWrapper::GetTxsIdempotently(std::vector<std::shared_ptr<pools::proto
         txs.push_back(std::make_shared<pools::protobuf::TxMessage>(*it));
     }
 
-    return Status::kSuccess;
+    return Status::kSuccess;    
 }
 
 bool BlockWrapper::HasSingleTx() {

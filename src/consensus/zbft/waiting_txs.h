@@ -24,6 +24,10 @@ public:
         return LeaderGetTxs();
     }
 
+    std::shared_ptr<WaitingTxsItem> LeaderGetValidTxsIdempotently() {
+        return LeaderGetTxsIdempotently();
+    }
+
     std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
             const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
             std::vector<uint8_t>* invalid_txs) {
@@ -52,6 +56,25 @@ private:
 
         return txs_items;
     }
+
+    std::shared_ptr<WaitingTxsItem> LeaderGetTxsIdempotently() {
+        transport::protobuf::Header header;
+        auto txs_items = std::make_shared<WaitingTxsItem>();
+        auto& tx_vec = txs_items->txs;
+        auto& kvs = txs_items->kvs;
+        std::map<std::string, pools::TxItemPtr> invalid_txs;
+        if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+            pools_mgr_->GetTxIdempotently(pool_index_, 1, tx_vec, kvs);
+        } else {
+            pools_mgr_->GetTxIdempotently(pool_index_, kMaxTxCount, tx_vec, kvs);
+        }
+
+        if (txs_items->txs.empty()) {
+            txs_items = nullptr;
+        }
+
+        return txs_items;
+    }    
 
     uint32_t pool_index_ = 0;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;

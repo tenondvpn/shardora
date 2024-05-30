@@ -45,6 +45,27 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool
     return txs_item;
 }
 
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(uint32_t pool_index) {
+    auto thread_id = common::GlobalInfo::Instance()->get_thread_index();
+    // ZJC_DEBUG("leader get txs coming thread: %d, pool index: %d", thread_id, pool_index);
+    #ifdef TEST_NO_CROSS
+    std::shared_ptr<WaitingTxsItem> txs_item = nullptr;
+    #else
+    std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(pool_index);
+    #endif
+    if (txs_item == nullptr) {
+        txs_item = wtxs[pool_index].LeaderGetValidTxsIdempotently();
+    }
+
+    if (txs_item != nullptr) {
+        txs_item->pool_index = pool_index;
+        ZJC_DEBUG("success leader get txs coming thread: %d, pool index: %d, tx count: %d", 
+            thread_id, pool_index, txs_item->txs.size());
+    }
+
+    return txs_item;
+}
+
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index) {
     std::shared_ptr<WaitingTxsItem> txs_item = nullptr;
     if (pool_index == common::kRootChainPoolIndex) {

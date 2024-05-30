@@ -96,7 +96,6 @@ Status BlockAcceptor::Accept(
     }
 
     // mark txs as used
-    MarkBlockTxsAsUsed(block);
     
     return Status::kSuccess;
 }
@@ -110,8 +109,7 @@ Status BlockAcceptor::AcceptSync(const std::shared_ptr<block::protobuf::Block>& 
     if (block->pool_index() != pool_idx()) {
         return Status::kError;
     }
-
-    MarkBlockTxsAsUsed(block);
+    
     return Status::kSuccess;
 }
 
