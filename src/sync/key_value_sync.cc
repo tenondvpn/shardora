@@ -428,12 +428,6 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                 proto_qc.elect_height(),
                 test_block.network_id(),
                 test_block.electblock_height());
-
-            auto test_commit_qc = std::make_shared<QC>();
-            if (!test_commit_qc->Unserialize(pb_view_block.self_commit_qc_str())) {
-                ZJC_ERROR("commit qc unserialize failed");
-                assert(false);
-            }
 #endif
 #else
             res->set_value(block.SerializeAsString());
