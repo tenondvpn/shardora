@@ -60,7 +60,7 @@ private:
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     std::shared_ptr<consensus::WaitingTxsPools> txs_pools_ = nullptr;
 
-    Status GetValidTxsIdempotently(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    Status LeaderGetTxsIdempotently(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
         pools_mgr_->PopTxs(pool_idx_, false);
         pools_mgr_->CheckTimeoutTx(pool_idx_);
         
