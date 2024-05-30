@@ -59,6 +59,8 @@ Status Hotstuff::Start() {
 }
 
 Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
+    // TODO(HT): 打包的交易，超时后如何释放？
+    // 打包参与共识中的交易，如何保证幂等
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -369,43 +371,34 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
         reconstructed_sign == nullptr,
         vote_msg.view());
-
-#ifndef NDEBUG
-        std::shared_ptr<ViewBlock> block_info = nullptr;
-        Status st = view_block_chain()->Get(vote_msg.view_block_hash(), block_info);
-        if (st == Status::kSuccess && block_info != nullptr) {
-            for (int32_t i = 0; i < block_info->block->tx_list_size(); ++i) {
-                ZJC_DEBUG("block net: %u, pool: %u, height: %lu, prehash: %s, hash: %s, step: %d, "
-                    "pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, vblock: %lu, txs: %lu",
-                    block_info->block->network_id(),
-                    block_info->block->pool_index(),
-                    block_info->block->height(),
-                    common::Encode::HexEncode(block_info->block->prehash()).c_str(),
-                    common::Encode::HexEncode(block_info->block->hash()).c_str(),
-                    block_info->block->tx_list(i).step(),
-                    pool_idx_,
-                    pacemaker()->HighQC()->view,
-                    pacemaker()->HighTC()->view,
-                    view_block_chain()->Size(),
-                    pacemaker()->CurView(),
-                    block_info->view,
-                    block_info->block->tx_list_size());
-            }
-        }
-#endif
-
     auto qc = std::make_shared<QC>();
     Status s = crypto()->CreateQC(
-            vote_msg.view_block_hash(),
-            vote_msg.commit_view_block_hash(),
-            vote_msg.view(),
-            elect_height,
-            vote_msg.leader_idx(),
-            reconstructed_sign,
-            qc);
+        vote_msg.view_block_hash(),
+        vote_msg.commit_view_block_hash(),
+        vote_msg.view(),
+        elect_height,
+        vote_msg.leader_idx(),
+        reconstructed_sign,
+        qc);
     if (s != Status::kSuccess) {
         return;
     }
+
+#ifndef NDEBUG
+    block::protobuf::Block block;
+    if (!prefix_db_->GetBlockWithHeight(
+            network::kRootCongressNetworkId,
+            common::GlobalInfo::Instance()->network_id() % common::kImmutablePoolSize,
+            elect_height,
+            &block)) {
+        ZJC_INFO("failed get block with height net: %u, pool: %u, height: %lu",
+            network::kRootCongressNetworkId, common::GlobalInfo::Instance()->network_id(), elect_height);
+        assert(false);
+    }
+
+    assert(block.tx_list_size() > 0);
+#endif
+
     // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率高很多
@@ -424,6 +417,35 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
             } else {
                 ZJC_DEBUG("pool: %d store verified view block success, view: %lu", pool_idx_, v_block->view);
             }
+
+#ifndef NDEBUG
+            std::shared_ptr<ViewBlock> block_info = nullptr;
+            Status st = view_block_chain()->Get(vote_msg.view_block_hash(), block_info);
+            if (st == Status::kSuccess && block_info != nullptr) {
+                for (int32_t i = 0; i < block_info->block->tx_list_size(); ++i) {
+                    ZJC_DEBUG("block net: %u, pool: %u, height: %lu, prehash: %s, hash: %s, step: %d, "
+                        "pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, "
+                        "curView: %lu, vblock: %lu, txs: %lu",
+                        block_info->block->network_id(),
+                        block_info->block->pool_index(),
+                        block_info->block->height(),
+                        common::Encode::HexEncode(block_info->block->prehash()).c_str(),
+                        common::Encode::HexEncode(block_info->block->hash()).c_str(),
+                        block_info->block->tx_list(i).step(),
+                        pool_idx_,
+                        pacemaker()->HighQC()->view,
+                        pacemaker()->HighTC()->view,
+                        view_block_chain()->Size(),
+                        pacemaker()->CurView(),
+                        block_info->view,
+                        block_info->block->tx_list_size());
+                }
+            } else {
+                ZJC_DEBUG("failed get view block hash: %s",
+                    common::Encode::HexEncode(vote_msg.view_block_hash()).c_str());
+                assert(false);
+            }
+#endif
         }        
     }
 
@@ -514,6 +536,7 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::protobuf::Header& header)
     }
 
     ResetReplicaTimers();
+    ZJC_DEBUG("reset timer success!");
     return;
 }
 
@@ -566,6 +589,7 @@ void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
                 ViewDurationStartTimeoutMs,
                 ViewDurationMaxTimeoutMs,
                 ViewDurationMultiplier));
+    ZJC_DEBUG("reset timer success: %u", pool_idx_);
     return;
 }
 

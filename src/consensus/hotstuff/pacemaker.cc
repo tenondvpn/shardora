@@ -173,13 +173,14 @@ void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& 
             msg.hash64(),
             msg.hotstuff_timeout_proto().view(),
             HighQC()->view);
+        transport::TcpTransport::Instance()->SetMessageHash(msg);
         if (leader->public_ip == 0 || leader->public_port == 0) {
             network::Route::Instance()->Send(msg_ptr);
         } else {
             transport::TcpTransport::Instance()->Send(
-                    common::Uint32ToIp(leader->public_ip), 
-                    leader->public_port, 
-                    msg);
+                common::Uint32ToIp(leader->public_ip), 
+                leader->public_port, 
+                msg);
         }
     } else {
         OnRemoteTimeout(msg_ptr);
@@ -193,15 +194,17 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     assert(msg.type() == common::kHotstuffTimeoutMessage);
     
     if (!msg.has_hotstuff_timeout_proto()) {
+        assert(false);
         return;
     }
     
     if (msg.hotstuff_timeout_proto().pool_idx() != pool_idx_) {
+        assert(false);
         return;
     }
     
     // 统计 bls 签名
-    auto timeout_proto = msg.hotstuff_timeout_proto();
+    auto& timeout_proto = msg.hotstuff_timeout_proto();
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
     Status s = crypto_->ReconstructAndVerifyThresSign(
             timeout_proto.elect_height(),

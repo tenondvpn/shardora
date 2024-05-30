@@ -44,6 +44,7 @@ public:
         uint64_t latest_time_block_height,
         uint64_t vss_random);
     pools::TxItemPtr tmblock_tx_ptr(bool leader, uint32_t pool_index);
+    bool HasTimeblockTx(uint32_t pool_index);
 
     void SetCreateTmTxFunction(pools::CreateConsensusItemFunction func) {
         create_tm_tx_cb_ = func;

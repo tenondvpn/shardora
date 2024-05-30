@@ -169,9 +169,10 @@ MultiThreadHandler::~MultiThreadHandler() {
     Destroy();
 }
 
-int MultiThreadHandler::Init(std::shared_ptr<db::Db>& db) {
+int MultiThreadHandler::Init(std::shared_ptr<db::Db>& db, std::shared_ptr<security::Security>& security) {
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+    security_ = security;
     all_thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count();
     consensus_thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
     TRANSPORT_INFO("MultiThreadHandler::Init() ...");
@@ -515,6 +516,12 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool htt
     if (http_svr_thread) {
         MessagePtr msg_obj;
         http_server_message_queue_.pop(&msg_obj);
+        if (msg_obj != nullptr) {
+            ZJC_DEBUG("get msg http transaction success %s, %s", 
+                common::Encode::HexEncode(
+                security_->GetAddress(msg_obj->header.tx_proto().pubkey())).c_str(),
+                common::Encode::HexEncode(msg_obj->header.tx_proto().to()).c_str());
+        }
         return msg_obj;
     }
     
