@@ -409,6 +409,8 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
 #ifndef NDEBUG
             view_block::protobuf::QC proto_qc;
             assert(proto_qc.ParseFromString(pb_view_block.qc_str()));
+            view_block::protobuf::QC proto_commit_qc;
+            assert(proto_commit_qc.ParseFromString(pb_view_block.self_commit_qc_str()));
             block::protobuf::Block test_block;
             if (!prefix_db_->GetBlockWithHeight(
                     network::kRootCongressNetworkId,
@@ -422,10 +424,11 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
 
             assert(test_block.tx_list_size() > 0);
             ZJC_INFO("sync success get block with height net: %u, pool: %u, "
-                "qc height: %lu, net: %u, block elect height: %lu",
+                "qc height: %lu, commit elect height: %lu, net: %u, block elect height: %lu",
                 network::kRootCongressNetworkId,
                 network_id,
                 proto_qc.elect_height(),
+                proto_commit_qc.elect_height(),
                 test_block.network_id(),
                 test_block.electblock_height());
 #endif
@@ -448,7 +451,6 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             assert(false);
             continue;
         }
-        
     }
 
     if (add_size == 0) {
