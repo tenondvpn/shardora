@@ -59,14 +59,6 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
         }
     }
 
-#ifndef ENABLE_HOTSTUFF
-    if (tx_list.empty()) {
-        ZJC_DEBUG("tx list empty!");
-        assert(false);
-        return;
-    }
-#endif
-
     if (block_ptr->height() != pools_consensus_blocks_[block_ptr->pool_index()]->latest_consensus_height_ + 1) {
         pools_consensus_blocks_[block_ptr->pool_index()]->blocks[block_ptr->height()] = block_ptr;
     } else {
