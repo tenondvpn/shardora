@@ -180,7 +180,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
             return;
         }
         if (tc->view > pacemaker()->HighTC()->view) {
-            if (crypto()->VerifyTC(tc) != Status::kSuccess) {
+            if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
                 ZJC_ERROR("VerifyTC error.");
                 return;
             }
@@ -485,7 +485,7 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
             return;
         }
         if (tc->view > pacemaker()->HighTC()->view) {
-            if (crypto()->VerifyTC(tc) != Status::kSuccess) {
+            if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
                 ZJC_ERROR("VerifyTC error.");
                 return;
             }
@@ -503,7 +503,7 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
             return;
         }
         if (qc->view > pacemaker()->HighQC()->view) {
-            if (crypto()->VerifyQC(qc) != Status::kSuccess) {
+            if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
                 ZJC_ERROR("VerifyQC error.");
                 return;
             }
@@ -714,7 +714,7 @@ Status Hotstuff::VerifyViewBlock(
 
     // 验证 qc
     if (qc->view > pacemaker()->HighQC()->view) {
-        if (crypto()->VerifyQC(qc) != Status::kSuccess) {
+        if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
             ZJC_ERROR("Verify qc is error. elect_height: %llu, qc: %llu", elect_height, qc->view);
             return Status::kError; 
         }
