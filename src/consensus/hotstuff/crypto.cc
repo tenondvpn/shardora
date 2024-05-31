@@ -134,6 +134,7 @@ Status Crypto::VerifyThresSign(const uint64_t &elect_height, const HashStr &msg_
 #endif
     if (reconstructed_sign == nullptr) {
         ZJC_DEBUG("reconstructed_sign == nullptr");
+        assert(false);
         return Status::kBlsVerifyFailed;
     }
     
@@ -142,17 +143,20 @@ Status Crypto::VerifyThresSign(const uint64_t &elect_height, const HashStr &msg_
     Status s = GetVerifyHashA(elect_height, msg_hash, &verify_hash_a);
     if (s != Status::kSuccess) {
         ZJC_DEBUG("GetVerifyHashA failed!");
+        assert(false);
         return s;
     }
 
     s = GetVerifyHashB(elect_height, *reconstructed_sign, &verify_hash_b);
     if (s != Status::kSuccess) {
         ZJC_DEBUG("GetVerifyHashB failed!");
+        assert(false);
         return s;
     }
 
     if (verify_hash_a != verify_hash_b) {
         ZJC_DEBUG("verify_hash_a != verify_hash_b");
+        assert(false);
         return Status::kBlsVerifyFailed;
     }
 
