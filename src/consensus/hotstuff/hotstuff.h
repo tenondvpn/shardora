@@ -199,7 +199,7 @@ private:
             hotstuff::protobuf::ProposeMsg* pro_msg);
     Status ConstructVoteMsg(
             hotstuff::protobuf::VoteMsg* vote_msg,
-            const uint32_t& elect_height, 
+            uint64_t elect_height, 
             const std::shared_ptr<ViewBlock>& v_block);    
     Status ConstructViewBlock( 
             std::shared_ptr<ViewBlock>& view_block,

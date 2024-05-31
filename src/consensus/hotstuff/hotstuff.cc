@@ -824,9 +824,11 @@ Status Hotstuff::ConstructProposeMsg(
 
 Status Hotstuff::ConstructVoteMsg(
         hotstuff::protobuf::VoteMsg* vote_msg,
-        const uint32_t& elect_height, 
+        uint64_t elect_height, 
         const std::shared_ptr<ViewBlock>& v_block) {
-    auto elect_item = elect_info_->GetElectItem(elect_height);
+    auto elect_item = elect_info_->GetElectItem(
+        common::GlobalInfo::Instance()->network_id(), 
+        elect_height);
     if (!elect_item) {
         return Status::kError;
     }
