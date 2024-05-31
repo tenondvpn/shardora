@@ -100,12 +100,12 @@ public:
         bls_collection_ = nullptr;
     }
     
-    inline std::shared_ptr<ElectItem> GetElectItem(const uint64_t& elect_height) {
-        return elect_info_->GetElectItem(elect_height);
+    inline std::shared_ptr<ElectItem> GetElectItem(uint32_t sharding_id, const uint64_t& elect_height) {
+        return elect_info_->GetElectItem(sharding_id, elect_height);
     }
 
-    inline std::shared_ptr<ElectItem> GetLatestElectItem() {
-        return elect_info_->GetElectItem();
+    inline std::shared_ptr<ElectItem> GetLatestElectItem(uint32_t sharding_id) {
+        return elect_info_->GetElectItem(sharding_id);
     }
     
     inline std::shared_ptr<security::Security> security() const {
