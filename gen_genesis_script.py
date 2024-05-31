@@ -19,7 +19,10 @@ def input2sk(input: str) -> str:
         node_sk_map[input] = sk_str
     return sk_str
 
-def gen_node_sk(node_name: str) -> str:
+def gen_node_sk(node_name: str, server_conf: dict) -> str:
+    sk = server_conf.get('node_sks', {}).get(node_name, '')
+    if sk != '':
+        return sk
     return input2sk(node_name)
 
 def gen_account_sks(net_id: int, num: int) -> list[str]:
@@ -69,7 +72,7 @@ def parse_server_yml_file(file_path: str):
 
 def _get_node_sks_from_server_conf(server_conf, net_id):
     node_names = [n['name'] for n in server_conf['nodes'] if n['net'] == net_id]
-    return [gen_node_sk(n) for n in node_names]
+    return [gen_node_sk(n, server_conf) for n in node_names]
 
 def _gen_accounts_with_server_conf(server_conf, net_id):
     account_sks = server_conf.get('account_sks', {})
@@ -105,7 +108,7 @@ def gen_genesis_yaml_file(server_conf: dict, file_path: str):
 def _get_bootstrap_str(node_name, server_conf: dict) -> str:
     for node in server_conf['nodes']:
         if node['name'] == node_name:
-            comp_pk_str = get_compressed_pk_str(gen_node_sk(node_name))
+            comp_pk_str = get_compressed_pk_str(gen_node_sk(node_name, server_conf))
             return f'{comp_pk_str}:{node["server"]}:{node["tcp_port"]}'
 
 def gen_zjnodes(server_conf: dict, zjnodes_folder):
@@ -116,7 +119,7 @@ def gen_zjnodes(server_conf: dict, zjnodes_folder):
     root_boostrap_str = ','.join(root_boostrap_strs)
 
     for node in server_conf['nodes']:
-        sk = gen_node_sk(node['name'])
+        sk = gen_node_sk(node['name'], server_conf)
         zjchain_conf = {
             'db': {
                 'path': './db',
