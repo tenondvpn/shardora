@@ -440,7 +440,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                 proto_qc.elect_height(),
                 proto_commit_qc.elect_height(),
                 test_block.network_id(),
-                test_block.electblock_height()，
+                test_block.electblock_height(),
                 proto_commit_qc.view(),
                 common::Encode::HexEncode(proto_commit_qc.view_block_hash()).c_str(),
                 common::Encode::HexEncode(proto_commit_qc.commit_view_block_hash()).c_str(),
