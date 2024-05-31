@@ -1283,12 +1283,15 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
 bool GenesisBlockInit::BlsAggSignBlock(
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
         std::shared_ptr<block::protobuf::Block>& block) try {
+
     std::vector<libff::alt_bn128_G1> all_signs;
     uint32_t n = genesis_nodes.size();
     uint32_t t = common::GetSignerCount(n);
     std::vector<size_t> idx_vec;
     auto g1_hash = libBLS::Bls::Hashing(block->hash());
-    for (uint32_t i = 0; i < t; ++i) {
+    std::mutex mutex;
+
+    auto sign_task = [&](uint32_t i) {
         libff::alt_bn128_G1 sign;
         bls::BlsSign::Sign(
             t,
@@ -1296,9 +1299,23 @@ bool GenesisBlockInit::BlsAggSignBlock(
             genesis_nodes[i]->bls_prikey,
             g1_hash,
             &sign);
+
+        std::lock_guard<std::mutex> lock(mutex);
         all_signs.push_back(sign);
         idx_vec.push_back(i + 1);
+    };
+
+    std::vector<std::thread> threads;
+    for (uint32_t i = 0; i < t; ++i) {
+        threads.emplace_back(sign_task, i);
     }
+
+    for (auto& th : threads) {
+        if (th.joinable()) {
+            th.join();
+        }
+    }
+
 #if MOCK_SIGN
     auto agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::random_element());
 #else
@@ -1330,6 +1347,57 @@ bool GenesisBlockInit::BlsAggSignBlock(
     ZJC_ERROR("catch bls exception: %s", e.what());
     return false;
 }
+
+// bool GenesisBlockInit::BlsAggSignBlock(
+//         const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
+//         std::shared_ptr<block::protobuf::Block>& block) try {
+//     std::vector<libff::alt_bn128_G1> all_signs;
+//     uint32_t n = genesis_nodes.size();
+//     uint32_t t = common::GetSignerCount(n);
+//     std::vector<size_t> idx_vec;
+//     auto g1_hash = libBLS::Bls::Hashing(block->hash());
+//     for (uint32_t i = 0; i < t; ++i) {
+//         libff::alt_bn128_G1 sign;
+//         bls::BlsSign::Sign(
+//             t,
+//             n,
+//             genesis_nodes[i]->bls_prikey,
+//             g1_hash,
+//             &sign);
+//         all_signs.push_back(sign);
+//         idx_vec.push_back(i + 1);
+//     }
+// #if MOCK_SIGN
+//     auto agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::random_element());
+// #else
+//     libBLS::Bls bls_instance = libBLS::Bls(t, n);
+//     std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
+//     libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
+//     auto agg_sign = std::make_shared<libff::alt_bn128_G1>(
+//         bls_instance.SignatureRecover(
+//             all_signs,
+//             lagrange_coeffs));
+//     if (!libBLS::Bls::Verification(g1_hash, *agg_sign, common_pk_[block->network_id()])) {
+//         ZJC_FATAL("agg sign failed shard: %u", block->network_id());
+//         return false;
+//     }
+// #endif
+//     agg_sign->to_affine_coordinates();
+//     block->set_bls_agg_sign_x(
+//         common::Encode::HexDecode(
+//             libBLS::ThresholdUtils::fieldElementToString(agg_sign->X)));
+//     block->set_bls_agg_sign_y(
+//         common::Encode::HexDecode(
+//             libBLS::ThresholdUtils::fieldElementToString(agg_sign->Y)));
+//     ZJC_DEBUG("verification agg sign success hash: %s, signx: %s, common pk x: %s",
+//         common::Encode::HexEncode(block->hash()).c_str(),
+//         common::Encode::HexEncode(block->bls_agg_sign_x()).c_str(),
+//         libBLS::ThresholdUtils::fieldElementToString(common_pk_[block->network_id()].X.c0).c_str());
+//     return true;
+// } catch (std::exception& e) {
+//     ZJC_ERROR("catch bls exception: %s", e.what());
+//     return false;
+// }
 
 void GenesisBlockInit::AddBlockItemToCache(
         std::shared_ptr<block::protobuf::Block>& block,
