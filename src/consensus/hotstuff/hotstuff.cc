@@ -41,7 +41,7 @@ void Hotstuff::Init() {
 
 Status Hotstuff::Start() {
     auto leader = leader_rotation()->GetLeader();
-    auto elect_item = elect_info_->GetElectItem();
+    auto elect_item = elect_info_->GetElectItem(common::GlobalInfo::Instance()->network_id());
     if (!elect_item) {
         return Status::kElectItemNotFound;
     }
@@ -71,7 +71,8 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     Status s = ConstructProposeMsg(sync_info, pb_pro_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d construct propose msg failed, %d, member_index: %d",
-            pool_idx_, s, elect_info_->GetElectItem()->LocalMember()->index);
+            pool_idx_, s, 
+            elect_info_->GetElectItem(common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
         return s;
     }
     s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
@@ -114,7 +115,8 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
     header.set_hop_count(0);
     auto* hotstuff_msg = header.mutable_hotstuff();
     auto* pb_newview_msg = hotstuff_msg->mutable_newview_msg();
-    pb_newview_msg->set_elect_height(elect_info_->GetElectItem()->ElectHeight());
+    pb_newview_msg->set_elect_height(
+        elect_info_->GetElectItem(common::GlobalInfo::Instance()->network_id())->ElectHeight());
     if (!sync_info->tc && !sync_info->qc) {
         return;
     }
@@ -544,7 +546,8 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::protobuf::Header& header)
 Status Hotstuff::ResetReplicaTimers() {
     // Reset timer msg broadcast
     auto rst_timer_msg = std::make_shared<hotstuff::protobuf::ResetTimerMsg>();
-    rst_timer_msg->set_leader_idx(elect_info_->GetElectItem()->LocalMember()->index);
+    rst_timer_msg->set_leader_idx(
+        elect_info_->GetElectItem(common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
@@ -810,7 +813,8 @@ Status Hotstuff::ConstructProposeMsg(
     auto new_pb_view_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
     ViewBlock2Proto(new_view_block, new_pb_view_block.get());
     pro_msg->mutable_view_item()->CopyFrom(*new_pb_view_block);
-    pro_msg->set_elect_height(elect_info_->GetElectItem()->ElectHeight());
+    pro_msg->set_elect_height(
+        elect_info_->GetElectItem(common::GlobalInfo::Instance()->network_id())->ElectHeight());
     if (sync_info->tc) {
         pro_msg->set_tc_str(sync_info->tc->Serialize());
     }
@@ -853,8 +857,10 @@ Status Hotstuff::ConstructVoteMsg(
     
     std::string sign_x, sign_y;
     if (crypto()->PartialSign(
+                common::GlobalInfo::Instance()->network_id(),
                 elect_height,
-                GetQCMsgHash(v_block->view,
+                GetQCMsgHash(
+                    v_block->view,
                     v_block->hash,
                     commit_view_block_hash,
                     elect_height,
@@ -887,7 +893,7 @@ Status Hotstuff::ConstructViewBlock(
         std::shared_ptr<ViewBlock>& view_block,
         std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose) {
     view_block->parent_hash = (pacemaker()->HighQC()->view_block_hash);
-    auto leader_idx = elect_info_->GetElectItem()->LocalMember()->index;
+    auto leader_idx = elect_info_->GetElectItem(common::GlobalInfo::Instance()->network_id())->LocalMember()->index;
     view_block->leader_idx = leader_idx;
 
     auto pre_v_block = std::make_shared<ViewBlock>();
@@ -1018,7 +1024,7 @@ void Hotstuff::TryRecoverFromStuck() {
             auto* hotstuff_msg = header.mutable_hotstuff();
             auto* pre_rst_timer_msg = hotstuff_msg->mutable_pre_reset_timer_msg();
             
-            auto elect_item = elect_info_->GetElectItem();
+            auto elect_item = elect_info_->GetElectItem(common::GlobalInfo::Instance()->network_id());
             if (!elect_item) {
                 ZJC_ERROR("pool: %d no elect item found", pool_idx_);
                 return;
