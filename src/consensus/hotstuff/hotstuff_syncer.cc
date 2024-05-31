@@ -591,7 +591,9 @@ Status HotstuffSyncer::processResponseChain(
         auto view_block_qc = qc_it->second;
         // 如果本地有该 view_block_qc 对应的 view_block，则不用验证 qc 了并且跳过该块，节省 CPU
         if (!chain->Has(view_block_qc->view_block_hash) &&
-            crypto(pool_idx)->VerifyQC(view_block_qc) != Status::kSuccess) {
+            crypto(pool_idx)->VerifyQC(
+                common::GlobalInfo::Instance()->network_id(), 
+                view_block_qc) != Status::kSuccess) {
             continue;
         }
         
