@@ -31,8 +31,8 @@ public:
     inline uint32_t GetLocalMemberIdx() const {
         auto sharding_id = common::GlobalInfo::Instance()->network_id();
         assert(elect_info_ != nullptr);
-        assert(elect_info_->GetElectItem(sharding_id));
-        return elect_info_->GetElectItem(sharding_id)->LocalMember()->index;
+        assert(elect_info_->GetElectItemWithShardingId(sharding_id));
+        return elect_info_->GetElectItemWithShardingId(sharding_id)->LocalMember()->index;
     }
 
     void SetExpectedLeader(const common::BftMemberPtr& leader) {
@@ -40,7 +40,7 @@ public:
     }
 private:
     inline common::MembersPtr Members(uint32_t sharding_id) const {
-        auto elect_item = elect_info_->GetElectItem(sharding_id);
+        auto elect_item = elect_info_->GetElectItemWithShardingId(sharding_id);
         if (!elect_item) {
             return std::make_shared<common::Members>();
         }

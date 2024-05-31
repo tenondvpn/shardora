@@ -108,7 +108,7 @@ public:
     }
 
     inline std::shared_ptr<ElectItem> GetLatestElectItem(uint32_t sharding_id) {
-        return elect_info_->GetElectItem(sharding_id);
+        return elect_info_->GetElectItemWithShardingId(sharding_id);
     }
     
     inline std::shared_ptr<security::Security> security() const {

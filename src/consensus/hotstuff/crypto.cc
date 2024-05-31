@@ -260,7 +260,7 @@ Status Crypto::VerifyMessage(const transport::MessagePtr& msg_ptr) {
         return Status::kError;
     }
 
-    auto elect_item = elect_info_->GetElectItem(common::GlobalInfo::Instance()->network_id());
+    auto elect_item = elect_info_->GetElectItemWithShardingId(common::GlobalInfo::Instance()->network_id());
     if (!elect_item) {
         return Status::kError;
     }
