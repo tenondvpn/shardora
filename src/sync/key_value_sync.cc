@@ -432,8 +432,8 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             std::string msg = ss.str();
             auto msg_hash = common::Hash::keccak256(msg); 
             ZJC_INFO("sync success get block with height net: %u, pool: %u, "
-                "qc height: %lu, commit elect height: %lu, net: %u, “
-                ”block elect height: %lu, view: %lu, view_block_hash: %s, "
+                "qc height: %lu, commit elect height: %lu, net: %u, "
+                "block elect height: %lu, view: %lu, view_block_hash: %s, "
                 "commit_view_block_hash: %s, elect_height: %lu, leader_idx: %u, msg_hash: %s",
                 network::kRootCongressNetworkId,
                 network_id,
