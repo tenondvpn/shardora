@@ -65,7 +65,7 @@ Status BlockWrapper::Wrap(
         tx_propose->set_tx_type(txs_ptr->tx_type);
     }
 
-    auto elect_item = elect_info_->GetElectItem();
+    auto elect_item = elect_info_->GetElectItem(common::GlobalInfo::Instance()->network_id());
     if (!elect_item) {
         return Status::kElectItemNotFound;
     }
