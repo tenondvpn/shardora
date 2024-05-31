@@ -155,7 +155,9 @@ Status Crypto::VerifyThresSign(const uint64_t &elect_height, const HashStr &msg_
     }
 
     if (verify_hash_a != verify_hash_b) {
-        ZJC_DEBUG("verify_hash_a != verify_hash_b");
+        ZJC_DEBUG("verify_hash_a != verify_hash_b %s, %s", 
+            common::Encode::HexEncode(verify_hash_a).c_str(),
+            common::Encode::HexEncode(verify_hash_b).c_str());
         assert(false);
         return Status::kBlsVerifyFailed;
     }
