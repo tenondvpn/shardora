@@ -74,13 +74,13 @@ public:
             std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
     
     Status CreateQC(
-            const HashStr& view_block_hash,
-            const HashStr& commit_view_block_hash,
-            View view,
-            uint64_t elect_height,
-            uint32_t leader_idx,
-            const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
-            std::shared_ptr<QC>& qc);
+        const HashStr& view_block_hash,
+        const HashStr& commit_view_block_hash,
+        View view,
+        uint64_t elect_height,
+        uint32_t leader_idx,
+        const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
+        std::shared_ptr<QC>& qc);
 
     Status CreateTC(
             View view,
@@ -90,9 +90,11 @@ public:
             std::shared_ptr<TC>& tc);
 
     Status VerifyQC(
+            uint32_t sharding_id,
             const std::shared_ptr<QC>& qc);
 
     Status VerifyTC(
+            uint32_t sharding_id,
             const std::shared_ptr<TC>& tc);    
 
     Status SignMessage(transport::MessagePtr& msg_ptr);
@@ -121,9 +123,10 @@ private:
     std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
 
     Status VerifyThresSign(
-            uint64_t elect_height,
-            const HashStr& msg_hash,
-            const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
+        uint32_t sharding_id,
+        uint64_t elect_height,
+        const HashStr& msg_hash,
+        const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
     
     void GetG1Hash(const HashStr& msg_hash, libff::alt_bn128_G1* g1_hash) {
         bls_mgr_->GetLibffHash(msg_hash, g1_hash);
