@@ -101,7 +101,7 @@ public:
         bls_collection_ = nullptr;
     }
     
-    inline std::shared_ptr<ElectItem> GetElectItem(uint32_t sharding_id, const uint64_t& elect_height) {
+    inline std::shared_ptr<ElectItem> GetElectItem(uint32_t sharding_id, uint64_t elect_height) {
         return elect_info_->GetElectItem(sharding_id, elect_height);
     }
 
@@ -121,7 +121,7 @@ private:
     std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
 
     Status VerifyThresSign(
-            const uint64_t& elect_height,
+            uint64_t elect_height,
             const HashStr& msg_hash,
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
     
@@ -131,7 +131,7 @@ private:
 
     Status GetVerifyHashA(
             uint32_t sharding_id, 
-            const uint64_t& elect_height, 
+            uint64_t elect_height, 
             const HashStr& msg_hash, 
             std::string* verify_hash) {
         auto elect_item = GetElectItem(sharding_id, elect_height);
@@ -155,8 +155,12 @@ private:
         return Status::kSuccess;
     }
 
-    Status GetVerifyHashB(const uint64_t& elect_height, const libff::alt_bn128_G1& reconstructed_sign, std::string* verify_hash) {
-        auto elect_item = GetElectItem(elect_height);
+    Status GetVerifyHashB(
+            uint32_t sharding_id,
+            uint64_t elect_height, 
+            const libff::alt_bn128_G1& reconstructed_sign, 
+            std::string* verify_hash) {
+        auto elect_item = GetElectItem(sharding_id, elect_height);
         if (!elect_item) {
             return Status::kError;
         }
