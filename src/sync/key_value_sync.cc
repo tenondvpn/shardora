@@ -426,8 +426,8 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
 
             assert(test_block.tx_list_size() > 0);
             std::stringstream ss;
-            ss << proto_commit_qc.view() << proto_commit_qc.view_block_hash() 
-                << proto_commit_qc.commit_view_block_hash() 
+            ss << proto_commit_qc.view() << proto_commit_qc.view_block_hash()
+                << proto_commit_qc.commit_view_block_hash()
                 << proto_commit_qc.elect_height() << proto_commit_qc.leader_idx();
             std::string msg = ss.str();
             auto msg_hash = common::Hash::keccak256(msg); 
