@@ -360,6 +360,8 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             if (add_size >= kSyncPacketMaxSize) {
                 break;
             }
+
+            assert(false);
         }
     }
 
