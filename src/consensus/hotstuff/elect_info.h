@@ -121,7 +121,7 @@ public:
             max_consensus_sharding_id_ = sharding_id;
         }
 
-        if (sharding_id > netwrok::kConsensusShardEndNetworkId) {
+        if (sharding_id > network::kConsensusShardEndNetworkId) {
             assert(false);
             return;
         }
@@ -224,8 +224,8 @@ public:
     }
     
 private:
-    std::shared_ptr<ElectItem> prev_elect_items_[netwrok::kConsensusShardEndNetworkId + 1] = { nullptr };
-    std::shared_ptr<ElectItem> elect_items_[netwrok::kConsensusShardEndNetworkId + 1] = { nullptr };
+    std::shared_ptr<ElectItem> prev_elect_items_[network::kConsensusShardEndNetworkId + 1] = { nullptr };
+    std::shared_ptr<ElectItem> elect_items_[network::kConsensusShardEndNetworkId + 1] = { nullptr };
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
     uint32_t max_consensus_sharding_id_ = 3;
