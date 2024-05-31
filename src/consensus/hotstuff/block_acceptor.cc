@@ -124,7 +124,9 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
     // TODO if local node is leader, broadcast block
 
     if (block->tx_list_size() > 0) {
-        auto elect_item = elect_info_->GetElectItem(block->electblock_height());
+        auto elect_item = elect_info_->GetElectItem(
+            common::GlobalInfo::Instance()->network_id(), 
+            block->electblock_height());
         if (elect_item) {
             if (block->leader_index() == elect_item->LocalMember()->index) {
                 // leader broadcast block to other shards

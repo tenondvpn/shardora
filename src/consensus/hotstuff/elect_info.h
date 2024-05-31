@@ -177,11 +177,11 @@ public:
             sec_key);
     }
 
-    inline std::shared_ptr<ElectItem> GetElectItem(uint32_t sharding_id) const {
+    inline std::shared_ptr<ElectItem> GetElectItemWithShardingId(uint32_t sharding_id) const {
         if (sharding_id > network::kConsensusShardEndNetworkId) {
             return nullptr;
         }
-        
+
         return elect_items_[sharding_id] != nullptr ? elect_items_[sharding_id] : prev_elect_items_[sharding_id];
     }
 
