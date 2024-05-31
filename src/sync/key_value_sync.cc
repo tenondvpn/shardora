@@ -425,14 +425,28 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             }
 
             assert(test_block.tx_list_size() > 0);
+            std::stringstream ss;
+            ss << proto_commit_qc.view() << proto_commit_qc.view_block_hash() 
+                << proto_commit_qc.commit_view_block_hash() 
+                << proto_commit_qc.elect_height() << proto_commit_qc.leader_idx();
+            std::string msg = ss.str();
+            auto msg_hash = common::Hash::keccak256(msg); 
             ZJC_INFO("sync success get block with height net: %u, pool: %u, "
-                "qc height: %lu, commit elect height: %lu, net: %u, block elect height: %lu",
+                "qc height: %lu, commit elect height: %lu, net: %u, “
+                ”block elect height: %lu, view: %lu, view_block_hash: %s, "
+                "commit_view_block_hash: %s, elect_height: %lu, leader_idx: %u, msg_hash: %s",
                 network::kRootCongressNetworkId,
                 network_id,
                 proto_qc.elect_height(),
                 proto_commit_qc.elect_height(),
                 test_block.network_id(),
-                test_block.electblock_height());
+                test_block.electblock_height()，
+                proto_commit_qc.view(),
+                common::Encode::HexEncode(proto_commit_qc.view_block_hash()).c_str(),
+                common::Encode::HexEncode(proto_commit_qc.commit_view_block_hash()).c_str(),
+                proto_commit_qc.elect_height(),
+                proto_commit_qc.leader_idx(),
+                common::Encode::HexEncode(msg_hash).c_str());
 #endif
 #else
             res->set_value(block.SerializeAsString());
