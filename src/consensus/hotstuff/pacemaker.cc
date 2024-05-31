@@ -116,7 +116,7 @@ void Pacemaker::OnLocalTimeout() {
     auto& msg = msg_ptr->header;
 
 
-    auto elect_item = crypto_->GetLatestElectItem();
+    auto elect_item = crypto_->GetLatestElectItem(common::GlobalInfo::Instance()->network_id());
     if (!elect_item) {
         return;
     }
@@ -127,6 +127,7 @@ void Pacemaker::OnLocalTimeout() {
     auto view_hash = GetViewHash(CurView(), elect_item->ElectHeight(), 0);
     // 使用最新的 elect_height 签名
     if (crypto_->PartialSign(
+            common::GlobalInfo::Instance()->network_id(),
             elect_item->ElectHeight(),
             view_hash,
             &bls_sign_x,
