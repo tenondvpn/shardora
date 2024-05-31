@@ -58,16 +58,17 @@ public:
     Crypto& operator=(const Crypto&) = delete;
 
     Status PartialSign(
-            const uint64_t& elect_height,
+            uint32_t sharding_id,
+            uint64_t elect_height,
             const HashStr& msg_hash,
             std::string* sign_x,
             std::string* sign_y);
     
     Status ReconstructAndVerifyThresSign(
-            const uint64_t& elect_height,
-            const View& view,
+            uint64_t elect_height,
+            View view,
             const HashStr& msg_hash,
-            const uint32_t& member_idx,
+            uint32_t member_idx,
             const std::string& partial_sign_x,
             const std::string& partial_sign_y,
             std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
@@ -75,16 +76,16 @@ public:
     Status CreateQC(
             const HashStr& view_block_hash,
             const HashStr& commit_view_block_hash,
-            const View& view,
-            const uint64_t& elect_height,
-            const uint32_t& leader_idx,
+            View view,
+            uint64_t elect_height,
+            uint32_t leader_idx,
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
             std::shared_ptr<QC>& qc);
 
     Status CreateTC(
-            const View& view,
-            const uint64_t& elect_height,
-            const uint32_t& leader_idx,
+            View view,
+            uint64_t elect_height,
+            uint32_t leader_idx,
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
             std::shared_ptr<TC>& tc);
 
@@ -128,8 +129,12 @@ private:
         bls_mgr_->GetLibffHash(msg_hash, g1_hash);
     }
 
-    Status GetVerifyHashA(const uint64_t& elect_height, const HashStr& msg_hash, std::string* verify_hash) {
-        auto elect_item = GetElectItem(elect_height);
+    Status GetVerifyHashA(
+            uint32_t sharding_id, 
+            const uint64_t& elect_height, 
+            const HashStr& msg_hash, 
+            std::string* verify_hash) {
+        auto elect_item = GetElectItem(sharding_id, elect_height);
         if (!elect_item || elect_item->common_pk() == libff::alt_bn128_G2::zero()) {
             ZJC_ERROR("elect_item not found, elect_height: %lu", elect_height);
             return Status::kElectItemNotFound;

@@ -9,8 +9,13 @@ namespace shardora {
 
 namespace hotstuff {
 
-Status Crypto::PartialSign(const uint64_t& elect_height, const HashStr& msg_hash, std::string* sign_x, std::string* sign_y) {
-    auto elect_item = GetElectItem(elect_height);
+Status Crypto::PartialSign(
+        uint32_t sharding_id, 
+        uint64_t elect_height, 
+        const HashStr& msg_hash, 
+        std::string* sign_x, 
+        std::string* sign_y) {
+    auto elect_item = GetElectItem(sharding_id, elect_height);
     if (!elect_item) {
         return Status::kError;
     }
@@ -31,10 +36,10 @@ Status Crypto::PartialSign(const uint64_t& elect_height, const HashStr& msg_hash
 }
 
 Status Crypto::ReconstructAndVerifyThresSign(
-        const uint64_t& elect_height,
-        const View& view,
+        uint64_t elect_height,
+        View view,
         const HashStr& msg_hash,
-        const uint32_t& index,
+        uint32_t index,
         const std::string& partial_sign_x,
         const std::string& partial_sign_y,
         std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign) try {
@@ -168,9 +173,9 @@ Status Crypto::VerifyThresSign(const uint64_t &elect_height, const HashStr &msg_
 Status Crypto::CreateQC(
         const HashStr& view_block_hash,
         const HashStr& commit_view_block_hash,
-        const View& view,
-        const uint64_t& elect_height,
-        const uint32_t& leader_idx,
+        View view,
+        uint64_t elect_height,
+        uint32_t leader_idx,
         const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
         std::shared_ptr<QC>& qc) {
     if (!reconstructed_sign) {
@@ -186,9 +191,9 @@ Status Crypto::CreateQC(
 }
 
 Status Crypto::CreateTC(
-        const View& view,
-        const uint64_t& elect_height,
-        const uint32_t& leader_idx,
+        View view,
+        uint64_t elect_height,
+        uint32_t leader_idx,
         const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
         std::shared_ptr<TC>& tc) {
     if (!reconstructed_sign) {
