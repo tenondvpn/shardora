@@ -49,8 +49,8 @@ private:
     void ThreadProc(EventLoop* event_loop);
 
     bool acceptor_isolate_thread_{ true };
-    uint32_t recv_buff_size_{ 10 * 1024 * 1024 };
-    uint32_t send_buff_size_{ 10 * 1024 * 1024 };
+    uint32_t recv_buff_size_{ 100 * 1024 * 1024 };
+    uint32_t send_buff_size_{ 100 * 1024 * 1024 };
     uint32_t thread_count_{ 4 };
     std::vector<EventLoop*> event_loop_vec_;
     std::vector<std::thread*> thread_vec_;
