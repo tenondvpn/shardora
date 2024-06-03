@@ -334,23 +334,6 @@ done
     
     shard_nodes_map0 = {}
     
-    for nodename in server_node_map[server0]:
-        s = get_shard_by_nodename(nodename)
-        if not shard_nodes_map0.get(s):
-            shard_nodes_map0[s] = [nodename]
-        else:
-            shard_nodes_map0[s].append(nodename)
-
-    for s, nodes in shard_nodes_map0.items():
-        nodes_name_str = ' '.join(nodes)
-        dbname = get_dbname_by_shard(s)
-        code_str += f"""
-for n in {nodes_name_str}; do
-    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/${{n}}/db
-done
-"""
-
-    
     for server_name, server_ip in server_name_map.items():
         if server_name == 'server0':
             continue
@@ -397,6 +380,22 @@ EOF
 """
         
     code_str += "wait\n"
+
+    for nodename in server_node_map[server0]:
+        s = get_shard_by_nodename(nodename)
+        if not shard_nodes_map0.get(s):
+            shard_nodes_map0[s] = [nodename]
+        else:
+            shard_nodes_map0[s].append(nodename)
+
+    for s, nodes in shard_nodes_map0.items():
+        nodes_name_str = ' '.join(nodes)
+        dbname = get_dbname_by_shard(s)
+        code_str += f"""
+for n in {nodes_name_str}; do
+    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/${{n}}/db
+done
+"""    
         
     code_str += f"""
 echo "==== STEP1: DONE ===="
