@@ -285,7 +285,7 @@ clickhouse-client -q "drop table zjc_ck_transaction_table"
         f.write(code_str)
 
 
-def gen_run_nodes_sh_file(server_conf: dict, file_path, build_genesis_path, tag, datadir='/root'):
+def gen_run_nodes_sh_file(server_conf: dict, file_path, build_genesis_path, tag, datadir='/root', medium_server_num=-1):
     code_str = """
 #!/bin/bash
 # 修改配置文件
@@ -332,8 +332,73 @@ for n in {server0_node_names_str}; do
 done
 """
     
+
+    code_str += f"""echo "==== 同步中继服务器 ====" \n"""
+
     shard_nodes_map0 = {}
+
+    medium_server_names = [] # 中继服务器
     
+    # 第一层，先从 server0 同步到中继服务器
+    for server_name, server_ip in server_name_map.items():
+        if server_name == 'server0':
+            continue
+        server_node_names_str = ' '.join(server_node_map[server_ip])
+        server_pass = server_conf['passwords'].get(server_ip, '')
+
+        code_str += f"""
+(
+echo "[${server_name}]"
+sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<EOF
+mkdir -p {datadir};
+rm -rf {datadir}/zjnodes;
+sshpass -p '{server0_pass}' scp -o StrictHostKeyChecking=no root@"${{server0}}":{datadir}/fetch.sh {datadir}/
+cd {datadir} && sh -x fetch.sh ${{server0}} ${{{server_name}}} '{server0_pass}' '{datadir}' {server_node_names_str};
+
+EOF
+) &
+
+"""
+        # 如果达到中继服务器数量，则停止
+        if medium_server_num != -1:
+            medium_server_names.append(server_name)
+            if len(medium_server_names) >= medium_server_num:
+                break
+        
+    code_str += "wait\n"
+
+    # 第二层，从中继服务器同步到其他服务器
+    if len(medium_server_names) > 0:
+        code_str += f"""echo "==== 同步其他服务器 ====" \n"""
+        for idx, (server_name, server_ip) in enumerate(server_name_map.items()):
+            if server_name == 'server0':
+                continue
+            if server_name in medium_server_names:
+                continue
+            server_node_names_str = ' '.join(server_node_map[server_ip])
+            server_pass = server_conf['passwords'].get(server_ip, '')
+
+            medium_server = medium_server_names[idx % len(medium_server_names)]
+            medium_server_ip = server_name_map[medium_server]
+            medium_server_pass = server_conf['passwords'].get(medium_server_ip, '')
+
+            code_str += f"""
+(
+echo "[${server_name}]"
+sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<EOF
+mkdir -p {datadir};
+rm -rf {datadir}/zjnodes;
+sshpass -p '{server0_pass}' scp -o StrictHostKeyChecking=no root@"${{server0}}":{datadir}/fetch.sh {datadir}/
+cd {datadir} && sh -x fetch.sh ${{{medium_server}}} ${{{server_name}}} '{medium_server_pass}' '{datadir}' {server_node_names_str};
+
+EOF
+) &
+
+"""
+            
+        code_str += "wait\n"    
+
+
     for server_name, server_ip in server_name_map.items():
         if server_name == 'server0':
             continue
@@ -352,11 +417,6 @@ done
 (
 echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<EOF
-mkdir -p {datadir};
-rm -rf {datadir}/zjnodes;
-sshpass -p '{server0_pass}' scp -o StrictHostKeyChecking=no root@"${{server0}}":{datadir}/fetch.sh {datadir}/
-cd {datadir} && sh -x fetch.sh ${{server0}} ${{{server_name}}} '{server0_pass}' '{datadir}' {server_node_names_str};
-
 for n in {server_node_names_str}; do
     cp -rf {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/\${{n}}/conf
     cp -rf {datadir}/zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/\${{n}}/conf
@@ -377,10 +437,9 @@ done
 EOF
 ) &
 
-"""
-        
-    code_str += "wait\n"
-
+"""    
+             
+    code_str += """(\n"""
     for nodename in server_node_map[server0]:
         s = get_shard_by_nodename(nodename)
         if not shard_nodes_map0.get(s):
@@ -396,6 +455,10 @@ for n in {nodes_name_str}; do
     cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/${{n}}/db
 done
 """    
+        
+    code_str += """) &\n"""
+
+    code_str += "wait\n"
         
     code_str += f"""
 echo "==== STEP1: DONE ===="
@@ -503,6 +566,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', help='nodes_conf.yml 文件位置', default='')
     parser.add_argument('--datadir', help='datadir', default='/root')
+    parser.add_argument('--medium_num', help='中继服务器数量', default='-1', type=int)
     args = parser.parse_args()
     if args.config == '':
         args.config = './nodes_conf.yml'
@@ -518,7 +582,7 @@ def main():
     gen_zjnodes(server_conf, "./zjnodes")
     gen_genesis_yaml_file(server_conf, "./conf/genesis.yml")
     gen_genesis_sh_file(server_conf, build_genesis_path, datadir=args.datadir)
-    gen_run_nodes_sh_file(server_conf, "./deploy_genesis.sh", build_genesis_path, tag=tag, datadir=args.datadir)
+    gen_run_nodes_sh_file(server_conf, "./deploy_genesis.sh", build_genesis_path, tag=tag, datadir=args.datadir, medium_server_num=args.medium_num)
     modify_shard_num_in_src_code(server_conf)
 
 if __name__ == '__main__':
