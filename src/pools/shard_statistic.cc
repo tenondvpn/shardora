@@ -30,9 +30,9 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
     return;
 #endif
 
-    ZJC_DEBUG("new block coming timeblock height: %lu, pool: %u, height: %lu",
-        block_ptr->timeblock_height(),
-        block_ptr->pool_index(), block_ptr->height());
+    ZJC_DEBUG("new block coming net: %u, pool: %u, height: %lu, timeblock height: %lu",
+        block_ptr->network_id(),
+        block_ptr->pool_index(), block_ptr->height(), block_ptr->timeblock_height());
     block::protobuf::Block& block = *block_ptr;
     if (block.network_id() != common::GlobalInfo::Instance()->network_id() &&
             block.network_id() + network::kConsensusWaitingShardOffset != 
@@ -442,6 +442,7 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
     elect_static_info_item->all_gas_amount += block_gas;
     std::string leader_id = getLeaderIdFromBlock(block);
     if (leader_id.empty()) {
+        assert(false);
         return;
     }
 
