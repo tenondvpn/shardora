@@ -35,7 +35,8 @@ Status BlockWrapper::Wrap(
     block->set_network_id(common::GlobalInfo::Instance()->network_id());
     block->set_consistency_random(0);
     block->set_height(prev_block->height()+1);
-    ZJC_DEBUG("propose block set height: %lu, pre height: %lu", block->height(), prev_block->height());
+    ZJC_DEBUG("propose block net: %u, pool: %u, set height: %lu, pre height: %lu",
+        block->network_id(), block->pool_index(), block->height(), prev_block->height());
     if (block->height() <= 0) {
         return Status::kInvalidArgument;
     }
@@ -73,7 +74,8 @@ Status BlockWrapper::Wrap(
     block->set_electblock_height(elect_item->ElectHeight());
     block->set_leader_index(leader_idx);
     block->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
-    
+    ZJC_DEBUG("success propose block net: %u, pool: %u, set height: %lu, pre height: %lu",
+        block->network_id(), block->pool_index(), block->height(), prev_block->height());
     return Status::kSuccess;
 }
 
