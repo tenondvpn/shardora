@@ -74,7 +74,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
     try {
         partial_sign->X = libff::alt_bn128_Fq(partial_sign_x.c_str());
         partial_sign->Y = libff::alt_bn128_Fq(partial_sign_y.c_str());
-        partial_sign->Z = libff::alt_bn128_Fq::one();        
+        partial_sign->Z = libff::alt_bn128_Fq::one();
     } catch (std::exception& e) {
         assert(false);
         return Status::kError;
@@ -90,6 +90,10 @@ Status Crypto::ReconstructAndVerifyThresSign(
         return Status::kError;
     }
 
+    ZJC_DEBUG("msg hash: %s, ok count: %u, t: %u",
+        common::Encode::HexEncode(msg_hash).c_str(), 
+        collection_item->OkCount(), 
+        elect_item->t());
     if (collection_item->OkCount() < elect_item->t()) {
         return Status::kBlsVerifyWaiting;
     }
