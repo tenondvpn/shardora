@@ -398,7 +398,7 @@ Status GetLatestViewBlockFromDb(
     
     r = self_commit_qc->Unserialize(pb_view_block.self_commit_qc_str());
     if (!r || self_commit_qc->view < GenesisView) {
-        self_commit_qc = GetGenesisQC(view_block->hash);
+        self_commit_qc = GetGenesisQCpool_index, view_block->hash);
     }
 
     ZJC_DEBUG("pool: %d, latest vb from db, vb view: %lu, self_commit_qc view: %lu",
@@ -413,14 +413,16 @@ std::shared_ptr<QC> GetQCWrappedByGenesis(uint32_t pool_index) {
         nullptr, BeforeGenesisView, "", "", 1, 0);
 }
 
-std::shared_ptr<QC> GetGenesisQC(const HashStr& genesis_view_block_hash) {
+std::shared_ptr<QC> GetGenesisQC(uint32_t pool_index, const HashStr& genesis_view_block_hash) {
     return std::make_shared<QC>(
-            std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero()),
-            GenesisView,
-            genesis_view_block_hash,
-            genesis_view_block_hash,
-            1,
-            0);
+        common::GlobalInfo::Instance()->network_id(),
+        pool_index,
+        std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero()),
+        GenesisView,
+        genesis_view_block_hash,
+        genesis_view_block_hash,
+        1,
+        0);
 }
 
 } // namespace hotstuff

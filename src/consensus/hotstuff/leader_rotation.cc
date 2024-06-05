@@ -29,7 +29,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
     auto committedBlock = chain_->LatestCommittedBlock();
     
     // 对于非种子节点可能启动时没有 committedblock, 需要等同步
-    auto qc = GetQCWrappedByGenesis();
+    auto qc = GetQCWrappedByGenesis(pool_idx_);
     if (committedBlock) {
         ZJC_DEBUG("pool: %d, get leader success get latest commit block view: %lu, %s",
             pool_idx_, committedBlock->view,
