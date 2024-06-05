@@ -2,6 +2,7 @@
 #include <consensus/hotstuff/types.h>
 #include <protos/block.pb.h>
 #include <protos/view_block.pb.h>
+#include "network/network_utils.h"
 
 namespace shardora {
 
@@ -16,6 +17,8 @@ HashStr GetQCMsgHash(
         uint64_t elect_height,
         uint32_t leader_idx) {
     std::stringstream ss;
+    assert(net_id <= network::kConsensusShardEndNetworkId);
+    assert(pool_index < common::kInvalidPoolIndex);
     ss << net_id << pool_index << view << view_block_hash << commit_view_block_hash << elect_height << leader_idx;
     std::string msg = ss.str();
     auto msg_hash = common::Hash::keccak256(msg); 
