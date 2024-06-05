@@ -147,6 +147,8 @@ void Pacemaker::OnLocalTimeout() {
         stop_voting_fn_(CurView());
     }
 
+    ZJC_DEBUG("now send local timeout msg hash: %s, view: %u, pool: %u",
+        common::Encode::HexEncode(view_hash).c_str(), CurView(), pool_idx_);
     SendTimeout(msg_ptr);
 }
 
