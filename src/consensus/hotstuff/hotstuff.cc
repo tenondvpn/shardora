@@ -745,9 +745,11 @@ Status Hotstuff::VerifyViewBlock(
 }
 
 Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
-    ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit coming s: %d, vb view: %lu, %u_%u_%lu",
+    ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit coming s: %d, "
+        "vb view: %lu, %u_%u_%lu, cur chain: %s",
         pool_idx_, 0, v_block->view,
-        v_block->block->network_id(), v_block->block->pool_index(), v_block->block->height());
+        v_block->block->network_id(), v_block->block->pool_index(), v_block->block->height(),
+        view_block_chain()->String().c_str());
     auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
     if (latest_committed_block && latest_committed_block->view >= v_block->view) {
         ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, "
