@@ -8,13 +8,15 @@ namespace shardora {
 namespace hotstuff {
 
 HashStr GetQCMsgHash(
+        uint32_t net_id,
+        uint32_t pool_index,
         const View &view,
         const HashStr &view_block_hash,
         const HashStr& commit_view_block_hash,
-        const uint64_t& elect_height,
-        const uint32_t& leader_idx) {
+        uint64_t elect_height,
+        uint32_t leader_idx) {
     std::stringstream ss;
-    ss << view << view_block_hash << commit_view_block_hash << elect_height << leader_idx;
+    ss << pool_index << view << view_block_hash << commit_view_block_hash << elect_height << leader_idx;
     std::string msg = ss.str();
     auto msg_hash = common::Hash::keccak256(msg); 
     ZJC_DEBUG("success get qc msg hash view: %lu, view_block_hash: %s, "
@@ -28,8 +30,13 @@ HashStr GetQCMsgHash(
     return msg_hash; 
 }
 
-HashStr GetViewHash(const View& view, const uint64_t& elect_height, const uint32_t& leader_idx) {
-    return GetQCMsgHash(view, "", "", elect_height, leader_idx);
+HashStr GetViewHash(
+        uint32_t net_id,
+        uint32_t pool_index, 
+        const View& view, 
+        uint64_t elect_height, 
+        uint32_t leader_idx) {
+    return GetQCMsgHash(net_id, pool_index, view, "", "", elect_height, leader_idx);
 }
 
 std::string QC::Serialize() const {

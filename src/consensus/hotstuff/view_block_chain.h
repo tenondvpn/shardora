@@ -77,7 +77,8 @@ public:
 
     inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlock>& view_block) {
         if (latest_committed_block_ &&
-                view_block->block->network_id() != latest_committed_block_->block->network_id()) {
+                (view_block->block->network_id() != latest_committed_block_->block->network_id() ||
+                latest_committed_block_->view >= view_block->view)) {
             return;
         }
 
