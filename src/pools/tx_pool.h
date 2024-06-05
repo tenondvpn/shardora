@@ -108,9 +108,11 @@ public:
         return false;
     }
 
-    uint32_t tx_size() const {
-        // ZJC_WARN("====7.1 pool: %d, prio_map: %lu, consensus_tx_map: %lu, universal: %lu",
-        //     pool_index_, prio_map_.size(), consensus_tx_map_.size(), universal_prio_map_.size());        
+    uint32_t all_tx_size() const {
+        return gid_map_.size();
+    }
+
+    uint32_t tx_size() const {        
         return prio_map_.size() + consensus_tx_map_.size() + universal_prio_map_.size();
     }
 

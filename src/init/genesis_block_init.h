@@ -92,11 +92,6 @@ private:
     void AddBlockItemToCache(
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);
-    bool CheckRecomputeG2s(
-        uint32_t local_member_index,
-        uint32_t member_count,
-        const std::string& id,
-        bls::protobuf::JoinElectBlsInfo& verfy_final_vals);
     bool CreateNodePrivateInfo(
         uint32_t shard_id,
         uint64_t elect_height,
@@ -122,6 +117,14 @@ private:
     
     DISALLOW_COPY_AND_ASSIGN(GenesisBlockInit);
 };
+
+bool CheckRecomputeG2s(uint32_t local_member_index, uint32_t valid_t,
+                       const std::string &id,
+                       const std::shared_ptr<protos::PrefixDb> &prefix_db,
+                       bls::protobuf::JoinElectBlsInfo &verfy_final_vals);
+void ComputeG2ForNode(const std::string &prikey, uint32_t k,
+                      const std::shared_ptr<protos::PrefixDb> &prefix_db,
+                      const std::vector<std::string> &prikeys);
 
 };  // namespace init
 

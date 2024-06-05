@@ -64,7 +64,6 @@ private:
         pools_mgr_->PopTxs(pool_idx_, false);
         pools_mgr_->CheckTimeoutTx(pool_idx_);
         
-        ZJC_DEBUG("pool: %u leader get tx now", pool_idx_);
         txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(pool_idx_);
         return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;
     }

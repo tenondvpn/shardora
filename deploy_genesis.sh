@@ -11,11 +11,16 @@ echo "[$server0]"
 sh ./build_genesis.sh $target $no_build
 cd /root && sh -x fetch.sh 127.0.0.1 ${server0} '' '/root' r1 r2 r3 s3_1 s3_2 s3_3 s3_4 s3_5 s3_6 s3_7 s3_8 s3_9 s3_10;
 
+cd /root/zjnodes && tar -xvzf zjchain.tar.gz
+rm -rf zjchain.tar.gz
 for n in r1 r2 r3 s3_1 s3_2 s3_3 s3_4 s3_5 s3_6 s3_7 s3_8 s3_9 s3_10; do
     ln -s /root/zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/${n}/conf
     ln -s /root/zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/${n}/conf
     ln -s /root/zjnodes/zjchain/zjchain /root/zjnodes/${n}
 done
+echo "==== 同步中继服务器 ====" 
+wait
+(
 
 for n in r1 r2 r3; do
     cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/${n}/db
@@ -24,6 +29,7 @@ done
 for n in s3_1 s3_2 s3_3 s3_4 s3_5 s3_6 s3_7 s3_8 s3_9 s3_10; do
     cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/${n}/db
 done
+) &
 wait
 
 echo "==== STEP1: DONE ===="

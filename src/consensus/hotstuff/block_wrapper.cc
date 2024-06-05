@@ -46,6 +46,10 @@ Status BlockWrapper::Wrap(
 
     // 打包交易
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
+    
+    ZJC_DEBUG("pool: %d, txs count, all: %lu, valid: %lu, leader: %lu",
+        pool_idx_, pools_mgr_->all_tx_size(pool_idx_), pools_mgr_->tx_size(pool_idx_), leader_idx);
+    
     Status s = LeaderGetTxsIdempotently(txs_ptr);
     if (s != Status::kSuccess && !no_tx_allowed) {
         // 允许 3 个连续的空交易块

@@ -115,13 +115,10 @@ Status BlockAcceptor::AcceptSync(const std::shared_ptr<block::protobuf::Block>& 
 
 Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
     // commit block
-    auto db_batch = std::make_shared<db::DbWriteBatch>();
-    auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block, db_batch);
-    new_block_cache_callback_(
-            queue_item_ptr->block_ptr,
-            *queue_item_ptr->db_batch);
-    block_mgr_->ConsensusAddBlock(queue_item_ptr);
-    // TODO if local node is leader, broadcast block
+    Status s = commit(block);
+    if (s != Status::kSuccess) {
+        return s;
+    }
 
     if (block->tx_list_size() > 0) {
         auto elect_item = elect_info_->GetElectItem(
@@ -133,49 +130,32 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
                 // TODO to 交易会大量占用 CPU，先屏蔽
                 LeaderBroadcastBlock(block);
 #ifndef NDEBUG                
-                for (uint32_t i = 0; i < block->tx_list_size(); ++i) {
-                    ZJC_DEBUG("leader broadcast commit block tx over step: %d, to: %s, gid: %s, net: %d, pool: %d, height: %lu", 
-                        block->tx_list(i).step(),
-                        common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
-                        common::Encode::HexEncode(block->tx_list(i).gid()).c_str(),
-                        block->network_id(),
-                        block->pool_index(),
-                        block->height());
-                }
-#endif
+            for (uint32_t i = 0; i < block->tx_list_size(); ++i) {
+                ZJC_DEBUG("leader broadcast commit block tx over step: %d, to: %s, gid: %s, net: %d, pool: %d, height: %lu", 
+                    block->tx_list(i).step(),
+                    common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
+                    common::Encode::HexEncode(block->tx_list(i).gid()).c_str(),
+                    block->network_id(),
+                    block->pool_index(),
+                    block->height());
             }
+#endif
         }
-#ifndef NDEBUG
-        for (uint32_t i = 0; i < block->tx_list_size(); ++i) {
-            ZJC_DEBUG("commit block tx over step: %d, to: %s, gid: %s, net: %d, pool: %d, height: %lu", 
-                block->tx_list(i).step(),
-                common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
-                common::Encode::HexEncode(block->tx_list(i).gid()).c_str(),
-                block->network_id(),
-                block->pool_index(),
-                block->height());
-        }
-#endif        
-        pools_mgr_->TxOver(block->pool_index(), block->tx_list());
-    } else {
-        ZJC_DEBUG("commit block tx over no tx, net: %d, pool: %d, height: %lu", 
-            block->network_id(),
-            block->pool_index(),
-            block->height());
     }
-
-    // tps measurement
-    CalculateTps(block->tx_list_size());    
-    ZJC_DEBUG("[NEW BLOCK] hash: %s, prehash: %s, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu",
-        common::Encode::HexEncode(block->hash()).c_str(),
-        common::Encode::HexEncode(block->prehash()).c_str(),
-        block->network_id(),
-        block->pool_index(),
-        block->height(),
-        block->electblock_height(),
-        block->timestamp(),
-        block->tx_list_size());
     return Status::kSuccess;
+}
+
+void BlockAcceptor::CommitSynced(std::shared_ptr<block::protobuf::Block>& block_ptr) {
+    Status s = commit(block_ptr);
+    if (s != Status::kSuccess) {
+        return;
+    }
+    
+    ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+        block_ptr->network_id(),
+        block_ptr->pool_index(),
+        block_ptr->height(),
+        common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str());
 }
 
 Status BlockAcceptor::AddTxs(const std::vector<const pools::protobuf::TxMessage*>& txs) {
@@ -500,23 +480,47 @@ void BlockAcceptor::BroadcastLocalTosBlock(
     }
 }
 
-void BlockAcceptor::CommitSynced(std::shared_ptr<block::protobuf::Block>& block_ptr) {
+Status BlockAcceptor::commit(std::shared_ptr<block::protobuf::Block>& block) {
+    // commit block
     auto db_batch = std::make_shared<db::DbWriteBatch>();
-    auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block_ptr, db_batch);
+    auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block, db_batch);
     new_block_cache_callback_(
-        queue_item_ptr->block_ptr,
-        *queue_item_ptr->db_batch);
+            queue_item_ptr->block_ptr,
+            *queue_item_ptr->db_batch);
     block_mgr_->ConsensusAddBlock(queue_item_ptr);
-    
-    if (block_ptr->tx_list_size() > 0) {
-        pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
+
+    if (block->tx_list_size() > 0) {
+        pools_mgr_->TxOver(block->pool_index(), block->tx_list());
+#ifndef NDEBUG
+        for (uint32_t i = 0; i < block->tx_list_size(); ++i) {
+            ZJC_DEBUG("commit block tx over step: %d, to: %s, gid: %s, net: %d, pool: %d, height: %lu", 
+                block->tx_list(i).step(),
+                common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
+                common::Encode::HexEncode(block->tx_list(i).gid()).c_str(),
+                block->network_id(),
+                block->pool_index(),
+                block->height());
+        }
+#endif        
+    } else {
+        ZJC_DEBUG("commit block tx over no tx, net: %d, pool: %d, height: %lu", 
+            block->network_id(),
+            block->pool_index(),
+            block->height());        
     }
-    
-    ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s",
-        block_ptr->network_id(),
-        block_ptr->pool_index(),
-        block_ptr->height(),
-        common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str());
+
+    // tps measurement
+    CalculateTps(block->tx_list_size());    
+    ZJC_DEBUG("[NEW BLOCK] hash: %s, prehash: %s, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu",
+        common::Encode::HexEncode(block->hash()).c_str(),
+        common::Encode::HexEncode(block->prehash()).c_str(),
+        block->network_id(),
+        block->pool_index(),
+        block->height(),
+        block->electblock_height(),
+        block->timestamp(),
+        block->tx_list_size());
+    return Status::kSuccess;
 }
 
 } // namespace hotstuff
