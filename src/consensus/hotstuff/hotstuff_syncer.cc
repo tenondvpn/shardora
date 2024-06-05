@@ -77,9 +77,6 @@ void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
     assert(header.type() == common::kHotstuffSyncMessage);
     
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    if (msg_ptr->header.view_block_proto().has_view_block_res()) {
-        ZJC_INFO("HotstuffSyncer HandleMessage");
-    }
     consume_queues_[thread_idx].push(msg_ptr);
 }
 
