@@ -66,6 +66,7 @@ Status Hotstuff::Start() {
 Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     // TODO(HT): 打包的交易，超时后如何释放？
     // 打包参与共识中的交易，如何保证幂等
+    ZJC_DEBUG("1 now ontime called propose: %d", pool_idx_);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -102,8 +103,9 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     }
 
     network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
+    ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
         pool_idx_,
+        header.hotstuff().pool_index(),
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
         hotstuff_msg->pro_msg().view_item().view(),
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
