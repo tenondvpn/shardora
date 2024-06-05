@@ -489,7 +489,8 @@ Status Hotstuff::StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_bloc
 }
 
 void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
-    ZJC_DEBUG("====3.1 pool: %d, onNewview", pool_idx_);
+    ZJC_DEBUG("====3.1 pool: %d, onNewview, message pool: %d, hash64: %lu",
+        pool_idx_, header.hotstuff().pool_index(), header.hash64());
     assert(header.hotstuff().pool_index() == pool_idx_);
     auto& newview_msg = header.hotstuff().newview_msg();
     std::shared_ptr<TC> tc = nullptr;
