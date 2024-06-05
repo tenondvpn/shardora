@@ -43,7 +43,7 @@ public:
         ViewBlockInfo() : view_block(nullptr), status(ViewBlockStatus::Unknown), qc(nullptr) {}
     };
     
-    ViewBlockChain(std::shared_ptr<db::Db>& db);
+    ViewBlockChain(uint32_t pool_index, std::shared_ptr<db::Db>& db);
     ~ViewBlockChain();
     
     ViewBlockChain(const ViewBlockChain&) = delete;
@@ -241,6 +241,7 @@ private:
     std::shared_ptr<ViewBlock> latest_locked_block_; // locked_block_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    uint32_t pool_index_ = common::kInvalidPoolIndex;
 
     void SetViewBlockToMap(const HashStr& hash, const std::shared_ptr<ViewBlock>& view_block) {
         auto it = view_blocks_info_.find(hash);
@@ -282,7 +283,7 @@ Status GetLatestViewBlockFromDb(
         const uint32_t& pool_index,
         std::shared_ptr<ViewBlock>& view_block,
         std::shared_ptr<QC>& self_qc);
-std::shared_ptr<QC> GetQCWrappedByGenesis();
+std::shared_ptr<QC> GetQCWrappedByGenesis(uint32_t pool_index);
 std::shared_ptr<QC> GetGenesisQC(const HashStr& genesis_view_block_hash);
         
 } // namespace consensus

@@ -11,7 +11,8 @@ namespace shardora {
 
 namespace hotstuff {
 
-ViewBlockChain::ViewBlockChain(std::shared_ptr<db::Db>& db) : db_(db) {
+ViewBlockChain::ViewBlockChain(
+        uint32_t pool_idx, std::shared_ptr<db::Db>& db) : pool_index_(pool_idx), db_(db) {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
 }
 
@@ -371,7 +372,7 @@ Status GetLatestViewBlockFromDb(
     }
 
     // 获取 block 对应的 view_block 所打包的 qc 信息，如果没有，说明是创世块
-    auto qc = GetQCWrappedByGenesis();
+    auto qc = GetQCWrappedByGenesis(pool_index);
     View view = GenesisView;
     uint32_t leader_idx = 0;
     HashStr parent_hash = "";
@@ -380,7 +381,7 @@ Status GetLatestViewBlockFromDb(
     if (r) {
         bool r2 = qc->Unserialize(pb_view_block.qc_str());
         if (!r2) {
-            auto qc = GetQCWrappedByGenesis();
+            auto qc = GetQCWrappedByGenesis(pool_index);
         }
         view = pb_view_block.view();
         leader_idx = pb_view_block.leader_idx();
@@ -405,8 +406,11 @@ Status GetLatestViewBlockFromDb(
     return Status::kSuccess;
 }
 
-std::shared_ptr<QC> GetQCWrappedByGenesis() {
-    return std::make_shared<QC>(nullptr, BeforeGenesisView, "", "", 1, 0);
+std::shared_ptr<QC> GetQCWrappedByGenesis(uint32_t pool_index) {
+    return std::make_shared<QC>(
+        common::GlobalInfo::Instance()->network_id(),
+        pool_index,
+        nullptr, BeforeGenesisView, "", "", 1, 0);
 }
 
 std::shared_ptr<QC> GetGenesisQC(const HashStr& genesis_view_block_hash) {
