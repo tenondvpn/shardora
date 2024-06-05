@@ -275,7 +275,7 @@ then
         
     code_str += f"""
 # 压缩 zjnodes/zjchain，便于网络传输
-cd {datadir}/zjnodes && tar -cvzf zjchain.tar.gz zjchain
+cd {datadir}/zjnodes && tar -czf zjchain.tar.gz zjchain
 rm -rf {datadir}/zjnodes/zjchain
 """
 
@@ -331,7 +331,7 @@ echo "[$server0]"
 sh {build_genesis_path} $target $no_build
 cd {datadir} && sh -x fetch.sh 127.0.0.1 ${{server0}} '{server0_pass}' '{datadir}' {server0_node_names_str};
 
-cd {datadir}/zjnodes && tar -xvzf zjchain.tar.gz
+cd {datadir}/zjnodes && tar -xzf zjchain.tar.gz
 rm -rf zjchain.tar.gz
 for n in {server0_node_names_str}; do
     ln -s {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/${{n}}/conf
@@ -426,7 +426,7 @@ EOF
 echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<EOF
 # 解压 zjnodes/zjchain
-cd {datadir}/zjnodes && tar -xvzf zjchain.tar.gz
+cd {datadir}/zjnodes && tar -xzf zjchain.tar.gz
 rm -rf zjchain.tar.gz
 for n in {server_node_names_str}; do
     ln -s {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/\${{n}}/conf
