@@ -377,6 +377,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
             ZJC_DEBUG("kBlsWaiting pool: %d, view: %lu", pool_idx_, vote_msg.view());
             return;
         }
+
         return;
     }
     ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d, view: %lu",

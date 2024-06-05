@@ -133,6 +133,8 @@ Status Crypto::ReconstructAndVerifyThresSign(
     if (s == Status::kSuccess) {
         reconstructed_sign = collection_item->reconstructed_sign;
         bls_collection_->handled = true;
+    } else {
+        assert(false);
     }
 
     return s;
