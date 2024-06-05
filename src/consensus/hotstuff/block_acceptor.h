@@ -173,6 +173,7 @@ private:
     void LeaderBroadcastBlock(const std::shared_ptr<block::protobuf::Block>& block);
     void BroadcastBlock(uint32_t des_shard, const std::shared_ptr<block::protobuf::Block>& block_item);
     void BroadcastLocalTosBlock(const std::shared_ptr<block::protobuf::Block>& block_item);
+    Status commit(std::shared_ptr<block::protobuf::Block>& block);
 
     void CalculateTps(uint64_t tx_list_size) {
         auto now_tm_us = common::TimeUtils::TimestampUs();
