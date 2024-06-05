@@ -177,7 +177,7 @@ Status Crypto::VerifyThresSign(
         auto val = libBLS::ThresholdUtils::fieldElementToString(
             elect_item->common_pk().X.c0);
         auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(
-            reconstructed_sign);
+            reconstructed_sign->X);
         ZJC_DEBUG("verify_hash_a != verify_hash_b %s, %s, msg_hash: %s, "
             "net: %u, elect height: %lu, common PK: %s, agg sign: %s", 
             common::Encode::HexEncode(verify_hash_a).c_str(),
@@ -196,7 +196,7 @@ Status Crypto::VerifyThresSign(
     auto val = libBLS::ThresholdUtils::fieldElementToString(
         elect_item->common_pk().X.c0);
     auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(
-            reconstructed_sign);
+        reconstructed_sign->X);
     ZJC_DEBUG("success verify agg sign %s, %s, msg_hash: %s, net: %u, "
             "elect height: %lu, common PK: %s, agg sign: %s", 
             common::Encode::HexEncode(verify_hash_a).c_str(),
