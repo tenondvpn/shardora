@@ -84,6 +84,10 @@ fi
 #done
 
 
+# 压缩 zjnodes/zjchain，便于网络传输
+cd /root/zjnodes && tar -cvzf zjchain.tar.gz zjchain
+rm -rf /root/zjnodes/zjchain
+
 clickhouse-client -q "drop table zjc_ck_account_key_value_table"
 clickhouse-client -q "drop table zjc_ck_account_table"
 clickhouse-client -q "drop table zjc_ck_block_table"
