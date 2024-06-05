@@ -302,8 +302,10 @@ uint64_t KeyValueSync::SendSyncRequest(
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kSyncMessage);
     *msg.mutable_sync_proto() = sync_msg;
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
     transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);
-    ZJC_DEBUG("sync new from %s:%d", node->public_ip.c_str(), node->public_port);
+    ZJC_DEBUG("sync new from %s:%d, hash64: %lu",
+        node->public_ip.c_str(), node->public_port, msg.hash64());
     return node->id_hash;
 }
 
