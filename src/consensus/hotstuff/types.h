@@ -113,7 +113,7 @@ struct ViewBlock {
         hash = DoHash();
     };
 
-    ViewBlock() : qc(nullptr), created_time_us(common::TimeUtils::TimestampUs()) {};
+    ViewBlock() : qc(nullptr), view(0), created_time_us(common::TimeUtils::TimestampUs()) {};
 
     inline bool Valid() {
         return hash != "" && hash == DoHash() && block != nullptr; 

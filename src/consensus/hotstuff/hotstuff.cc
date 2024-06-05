@@ -27,6 +27,11 @@ void Hotstuff::Init() {
         view_block_chain_->SetLatestCommittedBlock(latest_view_block);
         // 开启第一个视图
 
+        ZJC_DEBUG("init changed latest commited block %u_%u_%lu, new view: %lu",
+            view_block_chain_->LatestCommittedBlock()->block->network_id(), 
+            view_block_chain_->LatestCommittedBlock()->block->pool_index(), 
+            view_block_chain_->LatestCommittedBlock()->block->height(),
+            view_block_chain_->LatestCommittedBlock()->view);
         pacemaker_->AdvanceView(new_sync_info()->WithQC(latest_view_block_commit_qc));
         ZJC_DEBUG("has latest block, pool_idx: %d, latest block height: %lu, commit_qc_hash: %s, latest_view_block: %s, high_qc_hash: %s",
             pool_idx_, latest_view_block->block->height(),
