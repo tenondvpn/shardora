@@ -445,24 +445,40 @@ Status HotstuffSyncer::ReplyMsg(
         uint32_t network_id,
         const view_block::protobuf::ViewBlockSyncMessage& view_block_msg,
         const transport::MessagePtr& msg_ptr) {
-    // 只有共识池节点才能同步 ViewBlock
-    if (network_id >= network::kConsensusWaitingShardBeginNetworkId) {
-        return Status::kError;
-    }
-    // 获取邻居节点
-
     transport::protobuf::Header msg;
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     dht::DhtKeyManager dht_key(network_id);
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kHotstuffSyncMessage);
     msg.mutable_view_block_proto()->CopyFrom(view_block_msg);
-    msg.set_hop_count(0);
     
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     ZJC_INFO("pool: %d, network: %lu, ip: %s, port: %d", view_block_msg.view_block_res().pool_idx(), network_id, msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort());
     transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
     return Status::kSuccess;
+    
+    // // 获取邻居节点
+    // std::vector<dht::NodePtr> nodes;
+    // auto dht_ptr = network::UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
+    // auto dht = *dht_ptr->readonly_hash_sort_dht();
+    // dht::DhtFunction::GetNetworkNodes(dht, network_id, nodes);
+
+    // if (nodes.empty()) {
+    //     return Status::kError;
+    // }
+    // dht::NodePtr node = nodes[rand() % nodes.size()];
+
+    // transport::protobuf::Header msg;
+    // msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    // dht::DhtKeyManager dht_key(network_id);
+    // msg.set_des_dht_key(dht_key.StrKey());
+    // msg.set_type(common::kHotstuffSyncMessage);
+    // *msg.mutable_view_block_proto() = view_block_msg;
+    
+    // transport::TcpTransport::Instance()->SetMessageHash(msg);
+    // transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);    
+    // return Status::kSuccess;
+    
 }
 
 // 处理 response 类型消息
