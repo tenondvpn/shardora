@@ -90,10 +90,11 @@ Status Crypto::ReconstructAndVerifyThresSign(
         return Status::kError;
     }
 
-    ZJC_DEBUG("msg hash: %s, ok count: %u, t: %u",
+    ZJC_DEBUG("msg hash: %s, ok count: %u, t: %u, index: %u",
         common::Encode::HexEncode(msg_hash).c_str(), 
         collection_item->OkCount(), 
-        elect_item->t());
+        elect_item->t(),
+        index);
     if (collection_item->OkCount() < elect_item->t()) {
         return Status::kBlsVerifyWaiting;
     }
