@@ -745,7 +745,7 @@ Status Hotstuff::VerifyViewBlock(
 }
 
 Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
-    ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit coming s: %d, vb view: &lu, %u_%u_%lu",
+    ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit coming s: %d, vb view: %lu, %u_%u_%lu",
         pool_idx_, 0, v_block->view,
         v_block->block->network_id(), v_block->block->pool_index(), v_block->block->height());
     auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
@@ -761,7 +761,7 @@ Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
     }
 
     if (!latest_committed_block && v_block->view == GenesisView) {
-        ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, vb view: &lu, %u_%u_%lu",
+        ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, vb view: %lu, %u_%u_%lu",
             pool_idx_, 0, v_block->view,
             v_block->block->network_id(), v_block->block->pool_index(), v_block->block->height());
         return Status::kSuccess;
@@ -772,7 +772,7 @@ Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
     if (s == Status::kSuccess && parent_block != nullptr) {
         s = CommitInner(parent_block);
         if (s != Status::kSuccess) {
-            ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, vb view: &lu, %u_%u_%lu",
+            ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, vb view: %lu, %u_%u_%lu",
                 pool_idx_, 0, v_block->view,
                 v_block->block->network_id(), v_block->block->pool_index(), v_block->block->height());
             return s;
@@ -782,7 +782,7 @@ Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
     v_block->block->set_is_commited_block(true);
     s = acceptor()->Commit(v_block->block);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d, commit failed s: %d, vb view: &lu", pool_idx_, s, v_block->view);
+        ZJC_ERROR("pool: %d, commit failed s: %d, vb view: %lu", pool_idx_, s, v_block->view);
         return s;
     }
     
