@@ -129,6 +129,8 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
                 // leader broadcast block to other shards
                 // TODO to 交易会大量占用 CPU，先屏蔽
                 LeaderBroadcastBlock(block);
+            }
+            
 #ifndef NDEBUG                
             for (uint32_t i = 0; i < block->tx_list_size(); ++i) {
                 ZJC_DEBUG("leader broadcast commit block tx over step: %d, to: %s, gid: %s, net: %d, pool: %d, height: %lu", 
