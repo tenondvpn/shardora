@@ -77,6 +77,9 @@ void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
     assert(header.type() == common::kHotstuffSyncMessage);
     
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    if (msg_ptr->header.view_block_proto().has_view_block_res()) {
+        ZJC_INFO("HotstuffSyncer HandleMessage");
+    }
     consume_queues_[thread_idx].push(msg_ptr);
 }
 
@@ -129,6 +132,7 @@ void HotstuffSyncer::SyncAllPools() {
             if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
                 // ZJC_DEBUG("pool: %d, sync pool, timeout_duration: %lu ms",
                 //     pool_idx, SyncTimerCycleUs(pool_idx)/1000);
+                ZJC_INFO("pool: %d, cur chain: %s, local: %d", pool_idx, view_block_chain(pool_idx)->String().c_str(), crypto(pool_idx)->GetLatestElectItem()->LocalMember()->index);
                 SyncPool(pool_idx, 1);
                 last_timers_us_[pool_idx] = common::TimeUtils::TimestampUs();
             }            
@@ -145,6 +149,7 @@ void HotstuffSyncer::SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash
         
     vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
     // 询问所有邻居节点
+    ZJC_INFO("pool: %d, sync view block", pool_idx);
     SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, 1);
     return;
 }
@@ -194,6 +199,8 @@ Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protob
     if (node_num > int32_t(nodes.size())) {
         return Status::kError;
     }
+
+    
     std::random_device rd;
     std::mt19937 g(rd());
     std::shuffle(nodes.begin(), nodes.end(), g);
@@ -209,6 +216,7 @@ Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protob
     transport::TcpTransport::Instance()->SetMessageHash(msg);
 
     for (const auto& node : selectedNodes) {
+        ZJC_INFO("sync view block from ip: %s, port: %d", node->public_ip.c_str(), node->public_port);
         transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);            
     }
     return Status::kSuccess;
@@ -340,8 +348,9 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
             view_block_res->mutable_latest_committed_block()->CopyFrom(pb_latest_committed_block);
         }
     }
-    
-    return SendMsg(network_id, res_view_block_msg);
+
+    ZJC_INFO("pool: %d Send response, shouldSyncChain: %d", pool_idx, shouldSyncChain);
+    return ReplyMsg(network_id, res_view_block_msg, msg_ptr);
 }
 
 Status HotstuffSyncer::processRequestSingle(const transport::MessagePtr& msg_ptr) {
@@ -398,7 +407,7 @@ Status HotstuffSyncer::processRequestSingle(const transport::MessagePtr& msg_ptr
     view_block_res->set_query_hash(query_hash); // 用于帮助 src 节点过滤冗余
     res_view_block_msg.set_create_time_us(common::TimeUtils::TimestampUs());
 
-    return SendMsg(network_id, res_view_block_msg);
+    return ReplyMsg(network_id, res_view_block_msg, msg_ptr);
 }
 
 void HotstuffSyncer::ConsumeMessages() {
@@ -408,12 +417,14 @@ void HotstuffSyncer::ConsumeMessages() {
     while (pop_count++ < kPopCountMax) {
         transport::MessagePtr msg_ptr = nullptr;
         consume_queues_[thread_idx].pop(&msg_ptr);
+        ZJC_INFO("thread_idx: %lu, consume_queue size: %llu", thread_idx, consume_queues_[thread_idx].size());
         if (msg_ptr == nullptr) {
             break;
         }
         if (msg_ptr->header.view_block_proto().has_view_block_req()) {
             processRequest(msg_ptr);
         } else if (msg_ptr->header.view_block_proto().has_view_block_res()) {
+            ZJC_INFO("ConsumeMessages processResponse");
             processResponse(msg_ptr);
         } else if (msg_ptr->header.view_block_proto().has_single_req()) {
             processRequestSingle(msg_ptr);
@@ -421,21 +432,15 @@ void HotstuffSyncer::ConsumeMessages() {
     }
 }
 
-Status HotstuffSyncer::SendMsg(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {
+Status HotstuffSyncer::ReplyMsg(
+        uint32_t network_id,
+        const view_block::protobuf::ViewBlockSyncMessage& view_block_msg,
+        const transport::MessagePtr& msg_ptr) {
     // 只有共识池节点才能同步 ViewBlock
     if (network_id >= network::kConsensusWaitingShardBeginNetworkId) {
         return Status::kError;
     }
     // 获取邻居节点
-    std::vector<dht::NodePtr> nodes;
-    auto dht_ptr = network::UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
-    auto dht = *dht_ptr->readonly_hash_sort_dht();
-    dht::DhtFunction::GetNetworkNodes(dht, network_id, nodes);
-
-    if (nodes.empty()) {
-        return Status::kError;
-    }
-    dht::NodePtr node = nodes[rand() % nodes.size()];
 
     transport::protobuf::Header msg;
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -445,7 +450,7 @@ Status HotstuffSyncer::SendMsg(uint32_t network_id, const view_block::protobuf::
     *msg.mutable_view_block_proto() = view_block_msg;
     
     transport::TcpTransport::Instance()->SetMessageHash(msg);
-    transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);    
+    transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
     return Status::kSuccess;
 }
 
@@ -454,7 +459,7 @@ Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
     auto& view_block_msg = msg_ptr->header.view_block_proto();
     assert(view_block_msg.has_view_block_res());
     uint32_t pool_idx = view_block_msg.view_block_res().pool_idx();
-
+    ZJC_INFO("pool: %d processResponse", pool_idx);
     
     if (view_block_msg.view_block_res().has_query_hash()) {
         // 处理 single query
@@ -466,7 +471,7 @@ Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
     }
     
     processResponseQcTc(pool_idx, view_block_msg.view_block_res());
-    processResponseLatestCommittedBlock(pool_idx, view_block_msg.view_block_res());
+    processResponseLatestCommittedBlock(pool_idx, view_block_msg.view_block_res());   
     return processResponseChain(pool_idx, view_block_msg.view_block_res());
 }
 
@@ -551,13 +556,12 @@ Status HotstuffSyncer::processResponseChain(
         return Status::kError;
     }
 
+    ZJC_INFO("response received pool_idx: %d, view_blocks: %d, qc: %d",
+        pool_idx, view_block_items.size(), view_block_qc_strs.size());    
     
     if (view_block_items.size() != view_block_qc_strs.size()) {
         return Status::kError;
     }
-
-    ZJC_DEBUG("response received pool_idx: %d, view_blocks: %d, qc: %d",
-        pool_idx, view_block_items.size(), view_block_qc_strs.size());
 
     auto chain = view_block_chain(pool_idx);
     if (!chain) {
@@ -606,6 +610,8 @@ Status HotstuffSyncer::processResponseChain(
     }
 
     if (min_heap.empty()) {
+        ZJC_ERROR("min_heap empty, response received pool_idx: %d, view_blocks: %d, qc: %d",
+            pool_idx, view_block_items.size(), view_block_qc_strs.size());
         return Status::kSuccess;
     }
 

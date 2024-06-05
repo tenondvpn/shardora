@@ -92,9 +92,10 @@ private:
             const view_block::protobuf::ViewBlockSyncMessage& view_block_msg,
             int32_t node_num);
     
-    Status SendMsg(
+    Status ReplyMsg(
             uint32_t network_id,
-            const view_block::protobuf::ViewBlockSyncMessage& view_block_msg);
+            const view_block::protobuf::ViewBlockSyncMessage& view_block_msg,
+            const transport::MessagePtr& msg_ptr);
 
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
     // void SyncChains();
