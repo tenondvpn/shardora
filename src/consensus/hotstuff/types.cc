@@ -19,8 +19,10 @@ HashStr GetQCMsgHash(
     ss << net_id << pool_index << view << view_block_hash << commit_view_block_hash << elect_height << leader_idx;
     std::string msg = ss.str();
     auto msg_hash = common::Hash::keccak256(msg); 
-    ZJC_DEBUG("success get qc msg hash view: %lu, view_block_hash: %s, "
-        "commit_view_block_hash: %s, elect_height: %lu, leader_idx: %u, msg_hash: %s", 
+    ZJC_DEBUG("success get qc msg hash net: %u, pool: %u, view: %lu, view_block_hash: %s, "
+        "commit_view_block_hash: %s, elect_height: %lu, leader_idx: %u, msg_hash: %s",
+        net_id,
+        pool_index,
         view, 
         common::Encode::HexEncode(view_block_hash).c_str(),
         common::Encode::HexEncode(commit_view_block_hash).c_str(),
