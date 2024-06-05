@@ -612,7 +612,7 @@ Status HotstuffSyncer::processResponseChain(
     }
 
     // 构造一条临时链，并入 original chain
-    auto tmp_chain = std::make_shared<ViewBlockChain>(db_);
+    auto tmp_chain = std::make_shared<ViewBlockChain>(pool_idx, db_);
     while (!min_heap.empty()) {
         auto view_block = min_heap.top();
         min_heap.pop();
