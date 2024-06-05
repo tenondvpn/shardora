@@ -374,8 +374,11 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                     sync_msg.sync_value_req().heights(i).pool_idx(),
                     sync_msg.sync_value_req().heights(i).height(),
                     &block)) {
-                ZJC_DEBUG("handle sync value failed request hash: %lu, "
+                ZJC_DEBUG("sync key value %u_%u_%lu, handle sync value failed request hash: %lu, "
                     "net: %u, pool: %u, height: %lu",
+                    network_id, 
+                    sync_msg.sync_value_req().heights(i).pool_idx(),
+                    sync_msg.sync_value_req().heights(i).height(),
                     network_id, 
                     sync_msg.sync_value_req().heights(i).pool_idx(),
                     sync_msg.sync_value_req().heights(i).height(),
@@ -390,8 +393,11 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                         sync_msg.sync_value_req().heights(i).pool_idx(),
                         sync_msg.sync_value_req().heights(i).height(),
                         &pb_view_block)) {
-                ZJC_DEBUG("handle sync value failed, view block info not found, request hash: %lu, "
+                ZJC_DEBUG("sync key value %u_%u_%lu, handle sync value failed, view block info not found, request hash: %lu, "
                     "net: %u, pool: %u, height: %lu",
+                    network_id, 
+                    sync_msg.sync_value_req().heights(i).pool_idx(),
+                    sync_msg.sync_value_req().heights(i).height(),
                     msg_ptr->header.hash64(),
                     network_id, 
                     sync_msg.sync_value_req().heights(i).pool_idx(),
@@ -419,7 +425,10 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                     network_id % common::kImmutablePoolSize,
                     proto_qc.elect_height(),
                     &test_block)) {
-                ZJC_INFO("failed get block with height net: %u, pool: %u, height: %lu",
+                ZJC_INFO("sync key value %u_%u_%lu, failed get block with height net: %u, pool: %u, height: %lu",
+                    network_id, 
+                    sync_msg.sync_value_req().heights(i).pool_idx(),
+                    sync_msg.sync_value_req().heights(i).height(),
                     network::kRootCongressNetworkId, network_id, proto_qc.elect_height());
                 assert(false);
             }
@@ -431,7 +440,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                 << proto_commit_qc.elect_height() << proto_commit_qc.leader_idx();
             std::string msg = ss.str();
             auto msg_hash = common::Hash::keccak256(msg); 
-            ZJC_INFO("key: %u_%u_%lu, sync success get block with height net: %u, pool: %u, "
+            ZJC_INFO("sync key value %u_%u_%lu, sync success get block with height net: %u, pool: %u, "
                 "qc height: %lu, commit elect height: %lu, net: %u, "
                 "block elect height: %lu, view: %lu, view_block_hash: %s, "
                 "commit_view_block_hash: %s, elect_height: %lu, leader_idx: %u, msg_hash: %s",
