@@ -77,6 +77,9 @@ void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
     assert(header.type() == common::kHotstuffSyncMessage);
     
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    if (msg_ptr->header.view_block_proto().has_view_block_res()) {
+        ZJC_INFO("pool: %d handle response msg", msg_ptr->header.view_block_proto().view_block_res().pool_idx());
+    }
     consume_queues_[thread_idx].push(msg_ptr);
 }
 
@@ -237,6 +240,10 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     auto view_block_res = res_view_block_msg.mutable_view_block_res();
 
     uint32_t network_id = view_block_msg.view_block_req().network_id();
+    if (common::GlobalInfo::Instance()->network_id() != network_id) {
+        return Status::kError;
+    }
+    
     uint32_t pool_idx = view_block_msg.view_block_req().pool_idx();
     View src_high_qc_view = view_block_msg.view_block_req().high_qc_view();
     View src_high_tc_view = view_block_msg.view_block_req().high_tc_view();
@@ -346,7 +353,8 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
         }
     }
 
-    ZJC_INFO("pool: %d Send response, shouldSyncChain: %d", pool_idx, shouldSyncChain);
+    ZJC_INFO("pool: %d Send response, shouldSyncChain: %d, block_size: %lu, network: %lu",
+        pool_idx, shouldSyncChain, view_block_res->view_block_items().size(), network_id);
     return ReplyMsg(network_id, res_view_block_msg, msg_ptr);
 }
 
@@ -356,6 +364,10 @@ Status HotstuffSyncer::processRequestSingle(const transport::MessagePtr& msg_ptr
 
     uint32_t network_id = view_block_msg.single_req().network_id();
     uint32_t pool_idx = view_block_msg.single_req().pool_idx();
+
+    if (common::GlobalInfo::Instance()->network_id() != network_id) {
+        return Status::kError;
+    }    
 
     auto chain = view_block_chain(pool_idx);
     if (!chain) {
@@ -444,9 +456,11 @@ Status HotstuffSyncer::ReplyMsg(
     dht::DhtKeyManager dht_key(network_id);
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kHotstuffSyncMessage);
-    *msg.mutable_view_block_proto() = view_block_msg;
+    msg.mutable_view_block_proto()->CopyFrom(view_block_msg);
+    msg.set_hop_count(0);
     
     transport::TcpTransport::Instance()->SetMessageHash(msg);
+    ZJC_INFO("pool: %d, network: %lu, ip: %s, port: %d", view_block_msg.view_block_res().pool_idx(), network_id, msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort());
     transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
     return Status::kSuccess;
 }
@@ -455,7 +469,13 @@ Status HotstuffSyncer::ReplyMsg(
 Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
     auto& view_block_msg = msg_ptr->header.view_block_proto();
     assert(view_block_msg.has_view_block_res());
+    uint32_t network_id = view_block_msg.view_block_res().network_id();
     uint32_t pool_idx = view_block_msg.view_block_res().pool_idx();
+    
+    if (common::GlobalInfo::Instance()->network_id() != network_id) {
+        return Status::kError;
+    }
+
     ZJC_INFO("pool: %d processResponse", pool_idx);
     
     if (view_block_msg.view_block_res().has_query_hash()) {
@@ -621,7 +641,7 @@ Status HotstuffSyncer::processResponseChain(
         tmp_chain->Store(view_block);
     }
     
-    ZJC_DEBUG("Sync blocks to chain, pool_idx: %d, view_blocks: %d, syncchain: %s, orichain: %s",
+    ZJC_INFO("Sync blocks to chain, pool_idx: %d, view_blocks: %d, syncchain: %s, orichain: %s",
         pool_idx, view_block_items.size(), tmp_chain->String().c_str(), chain->String().c_str());
 
     if (!tmp_chain->IsValid()) {

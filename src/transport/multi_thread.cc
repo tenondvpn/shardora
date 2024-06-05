@@ -289,6 +289,10 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
         }
     }
 
+    if (msg_ptr->header.type() == common::kHotstuffSyncMessage && msg_ptr->header.view_block_proto().has_view_block_res()) {
+        ZJC_INFO("pool: %d, recved", msg_ptr->header.view_block_proto().view_block_res().pool_idx());
+    }    
+
     uint32_t priority = GetPriority(msg_ptr);
     if (thread_vec_.empty()) {
         return;
@@ -326,7 +330,7 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
 
     threads_message_queues_[thread_index][priority].push(msg_ptr);
     wait_con_[thread_index % all_thread_count_].notify_one();
-    ZJC_DEBUG("queue size message push success: %lu, queue_idx: %d, priority: %d, thread queue size: %u, net: %u, type: %d",
+    ZJC_INFO("queue size message push success: %lu, queue_idx: %d, priority: %d, thread queue size: %u, net: %u, type: %d",
         msg_ptr->header.hash64(), thread_index, priority,
         threads_message_queues_[thread_index][priority].size(),
         common::GlobalInfo::Instance()->network_id(),
@@ -361,6 +365,7 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
                     msg_ptr->header.view_block_proto().single_req().pool_idx()];
         }        
         if (msg_ptr->header.view_block_proto().has_view_block_res()) {
+            ZJC_INFO("pool: %d, get thread: %d", msg_ptr->header.view_block_proto().view_block_res().pool_idx(), common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.view_block_proto().view_block_res().pool_idx()]);
             return common::GlobalInfo::Instance()->pools_with_thread()[
                     msg_ptr->header.view_block_proto().view_block_res().pool_idx()];
         }
