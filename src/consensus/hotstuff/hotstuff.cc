@@ -154,8 +154,9 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
     header.set_des_dht_key(dht_key.StrKey());
     transport::TcpTransport::Instance()->SetMessageHash(header);
     network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("pool: %d, newview, txs size: %lu, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
+    ZJC_DEBUG("pool: %d, msg pool: %d, newview, txs size: %lu, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
         pool_idx_,
+        hotstuff_msg->pool_index(),
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
         hotstuff_msg->pro_msg().view_item().view(),
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
@@ -488,7 +489,8 @@ Status Hotstuff::StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_bloc
 }
 
 void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
-    ZJC_DEBUG("====3.1 pool: %d, onNewview", pool_idx_);    
+    ZJC_DEBUG("====3.1 pool: %d, onNewview", pool_idx_);
+    assert(header.hotstuff().pool_index() == pool_idx_);
     auto& newview_msg = header.hotstuff().newview_msg();
     std::shared_ptr<TC> tc = nullptr;
     if (!newview_msg.tc_str().empty()) {
