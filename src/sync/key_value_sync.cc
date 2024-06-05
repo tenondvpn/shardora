@@ -673,10 +673,11 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             }
                 
             if (res == 0) {
-                ZJC_DEBUG("0 success handle network new view block: %u, %u, %lu", 
+                ZJC_DEBUG("0 success handle network new view block: %u, %u, %lu, key: %s", 
                     pb_vblock->block_info().network_id(),
                     pb_vblock->block_info().pool_index(),
-                    pb_vblock->block_info().height());
+                    pb_vblock->block_info().height(),
+                    key.c_str());
                 auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pb_vblock->block_info().pool_index()];
 
                 vblock_queues_[thread_idx].push(pb_vblock);
