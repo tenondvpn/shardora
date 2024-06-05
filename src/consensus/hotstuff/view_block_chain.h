@@ -77,6 +77,11 @@ public:
 
     inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlock>& view_block) {
         // 允许设置旧的 view block
+        ZJC_DEBUG("changed latest commited block %u_%u_%lu, new view: %lu",
+            view_block->block->network_id(), 
+            view_block->block->pool_index(), 
+            view_block->block->height(),
+            view_block->view());
         latest_committed_block_ = view_block;
         auto it = view_blocks_info_.find(view_block->hash);
         if (it != view_blocks_info_.end()) {
