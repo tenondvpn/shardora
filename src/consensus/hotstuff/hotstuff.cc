@@ -359,7 +359,10 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     Status ret = crypto()->ReconstructAndVerifyThresSign(
             elect_height,
             vote_msg.view(),
-            GetQCMsgHash(vote_msg.view(),
+            GetQCMsgHash(
+                common::GlobalInfo::Instance()->network_id(),
+                pool_idx_,
+                vote_msg.view(),
                 vote_msg.view_block_hash(),
                 vote_msg.commit_view_block_hash(),
                 elect_height,
@@ -890,6 +893,8 @@ Status Hotstuff::ConstructVoteMsg(
                 common::GlobalInfo::Instance()->network_id(),
                 elect_height,
                 GetQCMsgHash(
+                    common::GlobalInfo::Instance()->network_id(),
+                    pool_idx_,
                     v_block->view,
                     v_block->hash,
                     commit_view_block_hash,
