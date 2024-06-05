@@ -398,7 +398,7 @@ Status GetLatestViewBlockFromDb(
     
     r = self_commit_qc->Unserialize(pb_view_block.self_commit_qc_str());
     if (!r || self_commit_qc->view < GenesisView) {
-        self_commit_qc = GetGenesisQCpool_index, view_block->hash);
+        self_commit_qc = GetGenesisQC(pool_index, view_block->hash);
     }
 
     ZJC_DEBUG("pool: %d, latest vb from db, vb view: %lu, self_commit_qc view: %lu",
