@@ -173,10 +173,16 @@ Status Crypto::VerifyThresSign(
     }
 
     if (verify_hash_a != verify_hash_b) {
-        ZJC_DEBUG("verify_hash_a != verify_hash_b %s, %s, msg_hash: %s", 
+        auto elect_item = GetElectItem(sharding_id, elect_height);
+        auto val = libBLS::ThresholdUtils::fieldElementToString(
+            elect_item->common_pk().X.c0);
+        ZJC_DEBUG("verify_hash_a != verify_hash_b %s, %s, msg_hash: %s, net: %u, elect height: %lu, common PK: %s", 
             common::Encode::HexEncode(verify_hash_a).c_str(),
             common::Encode::HexEncode(verify_hash_b).c_str(),
-            common::Encode::HexEncode(msg_hash).c_str());
+            common::Encode::HexEncode(msg_hash).c_str(),
+            sharding_id, 
+            elect_height,
+            val.c_str());
         assert(false);
         return Status::kBlsVerifyFailed;
     }
