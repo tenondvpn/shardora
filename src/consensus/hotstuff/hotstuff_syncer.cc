@@ -78,7 +78,9 @@ void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
     
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     if (msg_ptr->header.view_block_proto().has_view_block_res()) {
-        ZJC_INFO("pool: %d handle response msg", msg_ptr->header.view_block_proto().view_block_res().pool_idx());
+        ZJC_INFO("pool: %d handle response msg, has_query_hash: %d",
+            msg_ptr->header.view_block_proto().view_block_res().pool_idx(),
+            msg_ptr->header.view_block_proto().view_block_res().has_query_hash());
     }
     consume_queues_[thread_idx].push(msg_ptr);
 }
@@ -416,6 +418,9 @@ Status HotstuffSyncer::processRequestSingle(const transport::MessagePtr& msg_ptr
     view_block_res->set_query_hash(query_hash); // 用于帮助 src 节点过滤冗余
     res_view_block_msg.set_create_time_us(common::TimeUtils::TimestampUs());
 
+    ZJC_INFO("pool: %d Send response single, block_size: %lu, network: %lu",
+        pool_idx, view_block_res->view_block_items().size(), network_id);    
+
     return ReplyMsg(network_id, res_view_block_msg, msg_ptr);
 }
 
@@ -453,7 +458,11 @@ Status HotstuffSyncer::ReplyMsg(
     msg.mutable_view_block_proto()->CopyFrom(view_block_msg);
     
     transport::TcpTransport::Instance()->SetMessageHash(msg);
-    ZJC_INFO("pool: %d, network: %lu, ip: %s, port: %d", view_block_msg.view_block_res().pool_idx(), network_id, msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort());
+    ZJC_INFO("pool: %d, network: %lu, ip: %s, port: %d, with_query_hash: %d",
+        view_block_msg.view_block_res().pool_idx(), network_id,
+        msg_ptr->conn->PeerIp().c_str(),
+        msg_ptr->conn->PeerPort(),
+        msg_ptr->header.view_block_proto().view_block_res().has_query_hash());
     transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
     return Status::kSuccess;
     
@@ -504,7 +513,7 @@ Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
     }
     
     processResponseQcTc(pool_idx, view_block_msg.view_block_res());
-    processResponseLatestCommittedBlock(pool_idx, view_block_msg.view_block_res());   
+    processResponseLatestCommittedBlock(pool_idx, view_block_msg.view_block_res());
     return processResponseChain(pool_idx, view_block_msg.view_block_res());
 }
 

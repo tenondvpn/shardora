@@ -246,10 +246,10 @@ int tx_main(int argc, char** argv) {
             security->SetPrivateKey(from_prikey);
         }
 
-        uint32_t* tmp_data = (uint32_t*)to.c_str();
-        if (common::Random::RandomInt32() % 10 < 3) {
-            tmp_data[0] = common::Random::RandomInt16();
-        }
+        // uint32_t* tmp_data = (uint32_t*)to.c_str();
+        // if (common::Random::RandomInt32() % 10 < 3) {
+        //     tmp_data[0] = common::Random::RandomInt16();
+        // }
 
         auto tx_msg_ptr = CreateTransactionWithAttr(
             security,
