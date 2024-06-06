@@ -152,7 +152,8 @@ void HotstuffSyncer::SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash
     vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
     // 询问所有邻居节点
     ZJC_INFO("pool: %d, sync view block", pool_idx);
-    SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, 1);
+    BroadcastRequest(vb_msg);
+    // SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, 1);
     return;
 }
 
@@ -177,6 +178,23 @@ void HotstuffSyncer::HandleSyncedBlocks() {
         
     }    
     return;
+}
+
+Status HotstuffSyncer::BroadcastRequest(const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& header = msg_ptr->header;
+    header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    header.set_type(common::kHotstuffSyncMessage);
+    header.set_hop_count(0);
+    header.mutable_view_block_proto()->CopyFrom(view_block_msg);
+    if (!header.has_broadcast()) {
+        auto broadcast = header.mutable_broadcast();
+    }
+    dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
+    header.set_des_dht_key(dht_key.StrKey());
+    transport::TcpTransport::Instance()->SetMessageHash(header);
+    network::Route::Instance()->Send(msg_ptr);
+    return Status::kSuccess;
 }
 
 Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg, int32_t node_num) {
@@ -501,16 +519,18 @@ Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
         return Status::kError;
     }
 
-    ZJC_INFO("pool: %d processResponse", pool_idx);
+    ZJC_INFO("pool: %d processResponse, with_query_hash: %d",
+        pool_idx, view_block_msg.view_block_res().has_query_hash());
     
     if (view_block_msg.view_block_res().has_query_hash()) {
         // 处理 single query
         // 已经有该 view block 了，直接返回
+        ZJC_INFO("pool: %d processResponse, with_query_hash", pool_idx);
         if (view_block_chain(pool_idx)->Has(view_block_msg.view_block_res().query_hash())) {
-            ZJC_DEBUG("pool: %d, has query hash", pool_idx);
             return Status::kSuccess;
         }
     }
+    
     
     processResponseQcTc(pool_idx, view_block_msg.view_block_res());
     processResponseLatestCommittedBlock(pool_idx, view_block_msg.view_block_res());
