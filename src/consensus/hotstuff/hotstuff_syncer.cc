@@ -152,7 +152,7 @@ void HotstuffSyncer::SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash
     vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
     // 询问所有邻居节点
     ZJC_INFO("pool: %d, sync view block", pool_idx);
-    // BroadcastRequest(vb_msg);
+    // Broadcast(vb_msg);
     SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, 1);
     return;
 }
@@ -437,9 +437,8 @@ Status HotstuffSyncer::processRequestSingle(const transport::MessagePtr& msg_ptr
     res_view_block_msg.set_create_time_us(common::TimeUtils::TimestampUs());
 
     ZJC_INFO("pool: %d Send response single, block_size: %lu, network: %lu",
-        pool_idx, view_block_res->view_block_items().size(), network_id);    
+        pool_idx, view_block_res->view_block_items().size(), network_id);
 
-    // return Broadcast(res_view_block_msg);
     return ReplyMsg(network_id, res_view_block_msg, msg_ptr);
 }
 
@@ -469,6 +468,7 @@ Status HotstuffSyncer::ReplyMsg(
         uint32_t network_id,
         const view_block::protobuf::ViewBlockSyncMessage& view_block_msg,
         const transport::MessagePtr& msg_ptr) {
+    
     transport::protobuf::Header msg;
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     dht::DhtKeyManager dht_key(network_id);
@@ -505,8 +505,7 @@ Status HotstuffSyncer::ReplyMsg(
     
     // transport::TcpTransport::Instance()->SetMessageHash(msg);
     // transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);    
-    // return Status::kSuccess;
-    
+    // return Status::kSuccess;    
 }
 
 // 处理 response 类型消息
