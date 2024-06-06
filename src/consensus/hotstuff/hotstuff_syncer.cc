@@ -462,7 +462,7 @@ Status HotstuffSyncer::ReplyMsg(
         view_block_msg.view_block_res().pool_idx(), network_id,
         msg_ptr->conn->PeerIp().c_str(),
         msg_ptr->conn->PeerPort(),
-        msg_ptr->header.view_block_proto().view_block_res().has_query_hash());
+        msg.view_block_proto().view_block_res().has_query_hash());
     transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
     return Status::kSuccess;
     
