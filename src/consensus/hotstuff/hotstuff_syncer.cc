@@ -82,6 +82,10 @@ void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
             msg_ptr->header.view_block_proto().view_block_res().pool_idx(),
             msg_ptr->header.view_block_proto().view_block_res().has_query_hash());
     }
+    if (msg_ptr->header.view_block_proto().has_single_req()) {
+        ZJC_INFO("pool: %d handle single request msg",
+            msg_ptr->header.view_block_proto().single_req().pool_idx());        
+    }
     consume_queues_[thread_idx].push(msg_ptr);
 }
 
@@ -385,27 +389,33 @@ Status HotstuffSyncer::processRequestSingle(const transport::MessagePtr& msg_ptr
     uint32_t network_id = view_block_msg.single_req().network_id();
     uint32_t pool_idx = view_block_msg.single_req().pool_idx();
 
+    ZJC_INFO("pool: %d ====1.0", pool_idx);
     if (common::GlobalInfo::Instance()->network_id() != network_id) {
+        ZJC_INFO("pool: %d ====2.0 net: %d, self: %d", pool_idx, network_id, common::GlobalInfo::Instance()->network_id());
         return Status::kError;
     }    
 
     auto chain = view_block_chain(pool_idx);
     if (!chain) {
+        ZJC_INFO("pool: %d no chain====2.1", pool_idx);
         return Status::kError;
     }
 
     auto query_hash = view_block_msg.single_req().query_hash();
-
+    ZJC_INFO("pool: %d processRequestSingle ====1.1, query_hash: %s", pool_idx,
+        common::Encode::HexEncode(query_hash).c_str());
     // 不存在 query_hash 则不同步
     std::shared_ptr<ViewBlock> view_block = nullptr;
     chain->Get(query_hash, view_block);
     if (!view_block || chain->GetQcOf(view_block)) {
+        ZJC_INFO("pool: %d ====2.2, has vb: %d", pool_idx, view_block != nullptr);
         return Status::kNotFound;
     }
 
     std::vector<std::shared_ptr<ViewBlock>> all;
     chain->GetAll(all);
     if (all.size() <= 0 || all.size() > kMaxSyncBlockNum) {
+        ZJC_INFO("pool: %d ====2.3, all: %s", pool_idx, all.size());
         return Status::kError;
     }
 
