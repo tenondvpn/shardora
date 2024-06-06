@@ -170,6 +170,17 @@ public:
     }
 
     void TryRecoverFromStuck();
+
+    std::shared_ptr<QC> GetQcOf(const std::shared_ptr<ViewBlock>& v_block) {
+        auto qc = view_block_chain()->GetQcOf(v_block);
+        if (!qc) {
+            if (pacemaker()->HighQC()->view_block_hash == v_block->hash) {
+                view_block_chain()->SetQcOf(v_block, pacemaker()->HighQC());
+                return pacemaker()->HighQC();
+            }
+        }
+        return qc;
+    }
 private:
     uint32_t pool_idx_;
     std::shared_ptr<Crypto> crypto_;

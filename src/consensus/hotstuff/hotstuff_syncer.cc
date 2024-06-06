@@ -319,14 +319,9 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     View max_view = 0;
     for (auto& view_block : all) {
         // 仅同步已经有 qc 的 view_block
-        auto view_block_qc = chain->GetQcOf(view_block);
+        auto view_block_qc = hotstuff_mgr_->hotstuff(pool_idx)->GetQcOf(view_block);
         if (!view_block_qc) {
-            if (pacemaker(pool_idx)->HighQC()->view_block_hash == view_block->hash) {
-                chain->SetQcOf(view_block, pacemaker(pool_idx)->HighQC());
-                view_block_qc = pacemaker(pool_idx)->HighQC();
-            } else {
-                continue;
-            }
+            continue;
         }
 
         // src 节点没有此 view_block
@@ -407,8 +402,17 @@ Status HotstuffSyncer::processRequestSingle(const transport::MessagePtr& msg_ptr
     // 不存在 query_hash 则不同步
     std::shared_ptr<ViewBlock> view_block = nullptr;
     chain->Get(query_hash, view_block);
-    if (!view_block || chain->GetQcOf(view_block)) {
-        ZJC_INFO("pool: %d ====2.2, has vb: %d", pool_idx, view_block != nullptr);
+    if (!view_block || !hotstuff_mgr_->hotstuff(pool_idx)->GetQcOf(view_block)) {
+        View v = 0;
+        HashStr vbhash = "";
+        if (view_block) {
+            v = view_block->view;
+            vbhash = common::Encode::HexEncode(view_block->hash);
+        }
+        
+        ZJC_INFO("pool: %d ====2.2, has vb: %d, view: %lu, highqc_view: %lu, vbhash: %s, highqc_hash: %s",
+            pool_idx, view_block != nullptr, v, pacemaker(pool_idx)->HighQC()->view,
+            vbhash.c_str(), common::Encode::HexEncode(pacemaker(pool_idx)->HighQC()->view_block_hash).c_str());
         return Status::kNotFound;
     }
 
