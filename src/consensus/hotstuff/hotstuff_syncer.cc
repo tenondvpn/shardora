@@ -236,7 +236,7 @@ Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protob
     transport::TcpTransport::Instance()->SetMessageHash(msg);
 
     for (const auto& node : selectedNodes) {
-        ZJC_INFO("sync view block from ip: %s, port: %d", node->public_ip.c_str(), node->public_port);
+        ZJC_INFO("sync view block from ip: %s, port: %d, has query hash: %d", node->public_ip.c_str(), node->public_port, view_block_msg.has_single_req());
         transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);            
     }
     return Status::kSuccess;
