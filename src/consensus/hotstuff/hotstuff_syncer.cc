@@ -152,8 +152,8 @@ void HotstuffSyncer::SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash
     vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
     // 询问所有邻居节点
     ZJC_INFO("pool: %d, sync view block", pool_idx);
-    BroadcastRequest(vb_msg);
-    // SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, 1);
+    // BroadcastRequest(vb_msg);
+    SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, 1);
     return;
 }
 
