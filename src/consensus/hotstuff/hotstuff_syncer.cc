@@ -439,8 +439,8 @@ Status HotstuffSyncer::processRequestSingle(const transport::MessagePtr& msg_ptr
     ZJC_INFO("pool: %d Send response single, block_size: %lu, network: %lu",
         pool_idx, view_block_res->view_block_items().size(), network_id);    
 
-    return Broadcast(res_view_block_msg);
-    // return ReplyMsg(network_id, res_view_block_msg, msg_ptr);
+    // return Broadcast(res_view_block_msg);
+    return ReplyMsg(network_id, res_view_block_msg, msg_ptr);
 }
 
 void HotstuffSyncer::ConsumeMessages() {
