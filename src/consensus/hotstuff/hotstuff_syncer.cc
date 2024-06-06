@@ -180,7 +180,7 @@ void HotstuffSyncer::HandleSyncedBlocks() {
     return;
 }
 
-Status HotstuffSyncer::BroadcastRequest(const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {
+Status HotstuffSyncer::Broadcast(const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -439,7 +439,8 @@ Status HotstuffSyncer::processRequestSingle(const transport::MessagePtr& msg_ptr
     ZJC_INFO("pool: %d Send response single, block_size: %lu, network: %lu",
         pool_idx, view_block_res->view_block_items().size(), network_id);    
 
-    return ReplyMsg(network_id, res_view_block_msg, msg_ptr);
+    return Broadcast(res_view_block_msg);
+    // return ReplyMsg(network_id, res_view_block_msg, msg_ptr);
 }
 
 void HotstuffSyncer::ConsumeMessages() {

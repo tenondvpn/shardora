@@ -87,7 +87,7 @@ private:
 
     void HandleSyncedBlocks();
     void SyncAllPools();
-    Status BroadcastRequest(const view_block::protobuf::ViewBlockSyncMessage& view_block_msg);
+    Status Broadcast(const view_block::protobuf::ViewBlockSyncMessage& view_block_msg);
     Status SendRequest(
             uint32_t network_id,
             const view_block::protobuf::ViewBlockSyncMessage& view_block_msg,

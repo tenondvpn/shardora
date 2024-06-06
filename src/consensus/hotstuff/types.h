@@ -26,7 +26,7 @@ static const View BeforeGenesisView = 0;
 static const uint64_t ViewDurationSampleSize = 10;
 static const double ViewDurationStartTimeoutMs = 300;
 static const double ViewDurationMaxTimeoutMs = 60000;
-static const double ViewDurationMultiplier = 1.2; // 选过大会造成卡住的成本很高，一旦卡住则恢复时间很长（如 leader 不一致），过小会导致没有交易时 CPU 长时间降不下来
+static const double ViewDurationMultiplier = 1.3; // 选过大会造成卡住的成本很高，一旦卡住则恢复时间很长（如 leader 不一致），过小会导致没有交易时 CPU 长时间降不下来
 
 HashStr GetViewHash(const View& view, const uint64_t& elect_height, const uint32_t& leader_idx);
 HashStr GetQCMsgHash(
