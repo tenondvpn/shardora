@@ -109,6 +109,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
         all_signs.push_back(*collection_item->partial_signs[i]);
         idx_vec.push_back(i+1);
 
+        ZJC_DEBUG("hash: %s, valid index: %d", common::Encode::HexEncode(msg_hash).c_str(), i);
         if (idx_vec.size() >= elect_item->t()) {
             break;
         }

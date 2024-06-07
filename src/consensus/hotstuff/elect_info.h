@@ -136,6 +136,8 @@ public:
         prev_elect_items_[sharding_id] = elect_items_[sharding_id];
         elect_items_[sharding_id] = elect_item;
         RefreshMemberAddrs(sharding_id);
+        ZJC_DEBUG("new elect coming sharding: %u, elect height: %lu",
+            sharding_id, elect_item->ElectHeight());
     }
 
     std::shared_ptr<ElectItem> GetElectItem(uint32_t sharding_id, const uint64_t elect_height) const {

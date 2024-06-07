@@ -112,6 +112,12 @@ HashStr ViewBlock::DoHash() const {
     msg.append((char*)&(leader_idx), sizeof(leader_idx));
     msg.append((char*)&(view), sizeof(view));
 
+    ZJC_DEBUG("do hash qc_hash: %s, block hash: %s, parent_hash: %s, leader_idx: %u, view: %lu", 
+        common::Encode::HexEncode(qc_hash).c_str(), 
+        common::Encode::HexEncode(block_hash).c_str(),
+        common::Encode::HexEncode(parent_hash).c_str(),
+        leader_idx,
+        view);
     return common::Hash::keccak256(msg);
 }
 

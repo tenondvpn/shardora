@@ -108,11 +108,11 @@ void Pacemaker::OnLocalTimeout() {
     }    
     
     // if view is last one, deal directly.
-    if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
-        last_timeout_->header.hotstuff_timeout_proto().view() >= CurView()) {
-        SendTimeout(last_timeout_);
-        return;
-    }
+    // if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
+    //     last_timeout_->header.hotstuff_timeout_proto().view() >= CurView()) {
+    //     SendTimeout(last_timeout_);
+    //     return;
+    // }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
@@ -156,8 +156,8 @@ void Pacemaker::OnLocalTimeout() {
         stop_voting_fn_(CurView());
     }
 
-    ZJC_DEBUG("now send local timeout msg hash: %s, view: %u, pool: %u",
-        common::Encode::HexEncode(view_hash).c_str(), CurView(), pool_idx_);
+    ZJC_DEBUG("now send local timeout msg hash: %s, view: %u, pool: %u, elect height: %lu",
+        common::Encode::HexEncode(view_hash).c_str(), CurView(), pool_idx_, elect_item->ElectHeight());
     SendTimeout(msg_ptr);
 }
 
@@ -219,8 +219,9 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
             timeout_proto.sign_x(),
             timeout_proto.sign_y(),
             reconstructed_sign);
-    ZJC_DEBUG("====4.0 pool: %d, view: %d, member: %d, status: %d", 
-        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), s);
+    ZJC_DEBUG("====4.0 pool: %d, view: %d, member: %d, status: %d, hash64: %lu", 
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), s,
+        msg_ptr->header.hash64());
     if (s != Status::kSuccess) {
         return;
     }
