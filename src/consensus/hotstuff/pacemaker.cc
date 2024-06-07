@@ -105,29 +105,33 @@ void Pacemaker::OnLocalTimeout() {
     // 由于 HotstuffSyncer 周期性同步，这里不触发同步影响也不大
     if (sync_pool_fn_) {
         sync_pool_fn_(pool_idx_, 1);
-    }    
-    
-    // if view is last one, deal directly.
-    // if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
-    //     last_timeout_->header.hotstuff_timeout_proto().view() >= CurView()) {
-    //     SendTimeout(last_timeout_);
-    //     return;
-    // }
+    }
 
-    auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    auto& msg = msg_ptr->header;
     auto elect_item = crypto_->GetLatestElectItem(common::GlobalInfo::Instance()->network_id());
     if (!elect_item) {
         return;
     }
-    
-    std::string bls_sign_x;
-    std::string bls_sign_y;
-    // TODO Leader Idx
+
     auto view_hash = GetViewHash(
         common::GlobalInfo::Instance()->network_id(),
         pool_idx_,
-        CurView(), elect_item->ElectHeight(), 0);
+        CurView(), elect_item->ElectHeight(), 0);    
+    
+    // if view is last one, deal directly.
+    // 更换 epoch 后重新打包
+    if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
+        last_timeout_->header.hotstuff_timeout_proto().view() >= CurView() &&
+        last_timeout_->header.hotstuff_timeout_proto().view_hash() == view_hash) {
+        SendTimeout(last_timeout_);
+        return;
+    }
+
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& msg = msg_ptr->header;
+    
+    std::string bls_sign_x;
+    std::string bls_sign_y;
+
     // 使用最新的 elect_height 签名
     if (crypto_->PartialSign(
             common::GlobalInfo::Instance()->network_id(),
