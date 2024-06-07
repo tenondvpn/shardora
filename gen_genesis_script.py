@@ -275,8 +275,6 @@ then
         
     code_str += f"""
 # 压缩 zjnodes/zjchain，便于网络传输
-cd {datadir}/zjnodes && tar -czf zjchain.tar.gz zjchain
-rm -rf {datadir}/zjnodes/zjchain
 """
 
     code_str += """
@@ -402,8 +400,6 @@ EOF
     code_str += f"""
 (
 echo "[$server0]"
-cd {datadir}/zjnodes && tar -xzf zjchain.tar.gz
-rm -rf zjchain.tar.gz
 for n in {server0_node_names_str}; do
     ln -s {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/${{n}}/conf
     ln -s {datadir}/zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/${{n}}/conf
@@ -432,9 +428,6 @@ done
 (
 echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<EOF
-# 解压 zjnodes/zjchain
-cd {datadir}/zjnodes && tar -xzf zjchain.tar.gz
-rm -rf zjchain.tar.gz
 for n in {server_node_names_str}; do
     ln -s {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/\${{n}}/conf
     ln -s {datadir}/zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/\${{n}}/conf
