@@ -766,6 +766,7 @@ void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
     for (uint32_t i = 0; i < txs.size(); ++i) {
         if (txs[i]->tx_info.step() != pools::protobuf::kNormalFrom && 
                 txs[i]->tx_info.step() != pools::protobuf::kContractCreate && 
+                txs[i]->tx_info.step() != pools::protobuf::kContractExcute && 
                 txs[i]->tx_info.step() != pools::protobuf::kContractGasPrepayment && 
                 txs[i]->tx_info.step() != pools::protobuf::kJoinElect && 
                 txs[i]->tx_info.step() != pools::protobuf::kCreateLibrary) {
