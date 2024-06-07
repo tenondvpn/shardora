@@ -489,7 +489,7 @@ Status Hotstuff::StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_bloc
 }
 
 void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
-    ZJC_DEBUG("====3.1 pool: %d, onNewview, message pool: %d, hash64: %lu",
+    ZJC_DEBUG("====3.1 pool: %d, newview, message pool: %d, hash64: %lu",
         pool_idx_, header.hotstuff().pool_index(), header.hash64());
     assert(header.hotstuff().pool_index() == pool_idx_);
     auto& newview_msg = header.hotstuff().newview_msg();
@@ -500,7 +500,10 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
             ZJC_ERROR("tc Unserialize is error.");
             return;
         }
+
         if (tc->view > pacemaker()->HighTC()->view) {
+            ZJC_DEBUG("newview now verify tc hash: %s, pool index: %u", 
+                comon::Encode::HexEncode(tc->msg_hash()).c_str(), pool_idx_);
             if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
                 ZJC_ERROR("VerifyTC error.");
                 return;
