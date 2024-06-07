@@ -205,7 +205,7 @@ Status HotstuffSyncer::Broadcast(const view_block::protobuf::ViewBlockSyncMessag
     return Status::kSuccess;
 }
 
-Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protobuf::ViewBlockSyncMessage& view_block_msg, int32_t node_num) {
+Status HotstuffSyncer::SendRequest(uint32_t network_id, view_block::protobuf::ViewBlockSyncMessage& view_block_msg, int32_t node_num) {
     // 只有共识池节点才能同步 ViewBlock
     if (network_id >= network::kConsensusWaitingShardBeginNetworkId) {
         return Status::kError;
@@ -239,6 +239,9 @@ Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protob
     dht::DhtKeyManager dht_key(network_id);
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kHotstuffSyncMessage);
+    view_block_msg.set_src_ip(common::GlobalInfo::Instance()->config_local_ip());
+    view_block_msg.set_src_port(common::GlobalInfo::Instance()->config_local_port());
+    
     *msg.mutable_view_block_proto() = view_block_msg;
     
     transport::TcpTransport::Instance()->SetMessageHash(msg);
@@ -495,12 +498,17 @@ Status HotstuffSyncer::ReplyMsg(
     msg.mutable_view_block_proto()->CopyFrom(view_block_msg);
     
     transport::TcpTransport::Instance()->SetMessageHash(msg);
+
+    auto ip = msg_ptr->header.view_block_proto().src_ip();
+    auto port = msg_ptr->header.view_block_proto().src_port();
     ZJC_INFO("pool: %d, network: %lu, ip: %s, port: %d, with_query_hash: %d, hash64: %lu",
         view_block_msg.view_block_res().pool_idx(), network_id,
-        msg_ptr->conn->PeerIp().c_str(),
-        msg_ptr->conn->PeerPort(),
+        ip.c_str(),
+        port,
         msg.view_block_proto().view_block_res().has_query_hash(),
         msg.hash64());
+
+    
     transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
     return Status::kSuccess; 
 }

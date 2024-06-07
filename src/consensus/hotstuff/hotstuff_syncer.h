@@ -90,7 +90,7 @@ private:
     Status Broadcast(const view_block::protobuf::ViewBlockSyncMessage& view_block_msg);
     Status SendRequest(
             uint32_t network_id,
-            const view_block::protobuf::ViewBlockSyncMessage& view_block_msg,
+            view_block::protobuf::ViewBlockSyncMessage& view_block_msg,
             int32_t node_num);
     
     Status ReplyMsg(
