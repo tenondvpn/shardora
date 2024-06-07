@@ -329,15 +329,7 @@ echo "==== STEP1: START DEPLOY ===="
     code_str += f"""
 echo "[$server0]"
 sh {build_genesis_path} $target $no_build
-cd {datadir} && sh -x fetch.sh 127.0.0.1 ${{server0}} '{server0_pass}' '{datadir}' {server0_node_names_str};
-
-cd {datadir}/zjnodes && tar -xzf zjchain.tar.gz
-rm -rf zjchain.tar.gz
-for n in {server0_node_names_str}; do
-    ln -s {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/${{n}}/conf
-    ln -s {datadir}/zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/${{n}}/conf
-    ln -s {datadir}/zjnodes/zjchain/zjchain {datadir}/zjnodes/${{n}}
-done
+cd {datadir} && sh -x fetch.sh 127.0.0.1 ${{server0}} '{server0_pass}' '{datadir}' {server0_node_names_str}
 """
     
 
@@ -404,7 +396,22 @@ EOF
 
 """
             
-        code_str += "wait\n"    
+        code_str += "wait\n"   
+
+
+    code_str += f"""
+(
+echo "[$server0]"
+cd {datadir}/zjnodes && tar -xzf zjchain.tar.gz
+rm -rf zjchain.tar.gz
+for n in {server0_node_names_str}; do
+    ln -s {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/${{n}}/conf
+    ln -s {datadir}/zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/${{n}}/conf
+    ln -s {datadir}/zjnodes/zjchain/zjchain {datadir}/zjnodes/${{n}}
+done
+) &
+
+""" 
 
 
     for server_name, server_ip in server_name_map.items():
