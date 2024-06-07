@@ -219,8 +219,9 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
             timeout_proto.sign_x(),
             timeout_proto.sign_y(),
             reconstructed_sign);
-    ZJC_DEBUG("====4.0 pool: %d, view: %d, member: %d, status: %d", 
-        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), s);
+    ZJC_DEBUG("====4.0 pool: %d, view: %d, member: %d, status: %d, hash64: %lu", 
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), s,
+        msg_ptr->header.hash64());
     if (s != Status::kSuccess) {
         return;
     }
