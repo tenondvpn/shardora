@@ -503,7 +503,7 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
 
         if (tc->view > pacemaker()->HighTC()->view) {
             ZJC_DEBUG("newview now verify tc hash: %s, pool index: %u", 
-                comon::Encode::HexEncode(tc->msg_hash()).c_str(), pool_idx_);
+                common::Encode::HexEncode(tc->msg_hash()).c_str(), pool_idx_);
             if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
                 ZJC_ERROR("VerifyTC error.");
                 return;
