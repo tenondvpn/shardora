@@ -302,8 +302,10 @@ uint64_t KeyValueSync::SendSyncRequest(
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kSyncMessage);
     *msg.mutable_sync_proto() = sync_msg;
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
     transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);
-    ZJC_DEBUG("sync new from %s:%d", node->public_ip.c_str(), node->public_port);
+    ZJC_DEBUG("sync new from %s:%d, hash64: %lu",
+        node->public_ip.c_str(), node->public_port, msg.hash64());
     return node->id_hash;
 }
 
@@ -360,6 +362,8 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             if (add_size >= kSyncPacketMaxSize) {
                 break;
             }
+
+            assert(false);
         }
     }
 
@@ -372,8 +376,11 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                     sync_msg.sync_value_req().heights(i).pool_idx(),
                     sync_msg.sync_value_req().heights(i).height(),
                     &block)) {
-                ZJC_DEBUG("handle sync value failed request hash: %lu, "
+                ZJC_DEBUG("sync key value %u_%u_%lu, handle sync value failed request hash: %lu, "
                     "net: %u, pool: %u, height: %lu",
+                    network_id, 
+                    sync_msg.sync_value_req().heights(i).pool_idx(),
+                    sync_msg.sync_value_req().heights(i).height(),
                     network_id, 
                     sync_msg.sync_value_req().heights(i).pool_idx(),
                     sync_msg.sync_value_req().heights(i).height(),
@@ -388,8 +395,11 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                         sync_msg.sync_value_req().heights(i).pool_idx(),
                         sync_msg.sync_value_req().heights(i).height(),
                         &pb_view_block)) {
-                ZJC_DEBUG("handle sync value failed, view block info not found, request hash: %lu, "
+                ZJC_DEBUG("sync key value %u_%u_%lu, handle sync value failed, view block info not found, request hash: %lu, "
                     "net: %u, pool: %u, height: %lu",
+                    network_id, 
+                    sync_msg.sync_value_req().heights(i).pool_idx(),
+                    sync_msg.sync_value_req().heights(i).height(),
                     msg_ptr->header.hash64(),
                     network_id, 
                     sync_msg.sync_value_req().heights(i).pool_idx(),
@@ -409,20 +419,48 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
 #ifndef NDEBUG
             view_block::protobuf::QC proto_qc;
             assert(proto_qc.ParseFromString(pb_view_block.qc_str()));
+            view_block::protobuf::QC proto_commit_qc;
+            assert(proto_commit_qc.ParseFromString(pb_view_block.self_commit_qc_str()));
             block::protobuf::Block test_block;
             if (!prefix_db_->GetBlockWithHeight(
                     network::kRootCongressNetworkId,
                     network_id % common::kImmutablePoolSize,
                     proto_qc.elect_height(),
                     &test_block)) {
-                ZJC_INFO("failed get block with height net: %u, pool: %u, height: %lu",
+                ZJC_INFO("sync key value %u_%u_%lu, failed get block with height net: %u, pool: %u, height: %lu",
+                    network_id, 
+                    sync_msg.sync_value_req().heights(i).pool_idx(),
+                    sync_msg.sync_value_req().heights(i).height(),
                     network::kRootCongressNetworkId, network_id, proto_qc.elect_height());
                 assert(false);
             }
 
             assert(test_block.tx_list_size() > 0);
-            ZJC_INFO("sync success get block with height net: %u, pool: %u, height: %lu",
-                network::kRootCongressNetworkId, network_id, proto_qc.elect_height());
+            std::stringstream ss;
+            ss << proto_commit_qc.view() << proto_commit_qc.view_block_hash()
+                << proto_commit_qc.commit_view_block_hash()
+                << proto_commit_qc.elect_height() << proto_commit_qc.leader_idx();
+            std::string msg = ss.str();
+            auto msg_hash = common::Hash::keccak256(msg); 
+            ZJC_INFO("sync key value %u_%u_%lu, sync success get block with height net: %u, pool: %u, "
+                "qc height: %lu, commit elect height: %lu, net: %u, "
+                "block elect height: %lu, view: %lu, view_block_hash: %s, "
+                "commit_view_block_hash: %s, elect_height: %lu, leader_idx: %u, msg_hash: %s",
+                network_id,
+                sync_msg.sync_value_req().heights(i).pool_idx(),
+                sync_msg.sync_value_req().heights(i).height(),
+                network::kRootCongressNetworkId,
+                network_id,
+                proto_qc.elect_height(),
+                proto_commit_qc.elect_height(),
+                test_block.network_id(),
+                test_block.electblock_height(),
+                proto_commit_qc.view(),
+                common::Encode::HexEncode(proto_commit_qc.view_block_hash()).c_str(),
+                common::Encode::HexEncode(proto_commit_qc.commit_view_block_hash()).c_str(),
+                proto_commit_qc.elect_height(),
+                proto_commit_qc.leader_idx(),
+                common::Encode::HexEncode(msg_hash).c_str());
 #endif
 #else
             res->set_value(block.SerializeAsString());
@@ -443,7 +481,6 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             assert(false);
             continue;
         }
-        
     }
 
     if (add_size == 0) {
@@ -650,10 +687,11 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             }
                 
             if (res == 0) {
-                ZJC_DEBUG("0 success handle network new view block: %u, %u, %lu", 
+                ZJC_DEBUG("0 success handle network new view block: %u, %u, %lu, key: %s", 
                     pb_vblock->block_info().network_id(),
                     pb_vblock->block_info().pool_index(),
-                    pb_vblock->block_info().height());
+                    pb_vblock->block_info().height(),
+                    key.c_str());
                 auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pb_vblock->block_info().pool_index()];
 
                 vblock_queues_[thread_idx].push(pb_vblock);

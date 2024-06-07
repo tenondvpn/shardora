@@ -43,7 +43,7 @@ public:
         ViewBlockInfo() : view_block(nullptr), status(ViewBlockStatus::Unknown), qc(nullptr) {}
     };
     
-    ViewBlockChain(std::shared_ptr<db::Db>& db);
+    ViewBlockChain(uint32_t pool_index, std::shared_ptr<db::Db>& db);
     ~ViewBlockChain();
     
     ViewBlockChain(const ViewBlockChain&) = delete;
@@ -76,7 +76,18 @@ public:
     }
 
     inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlock>& view_block) {
+        if (latest_committed_block_ &&
+                (view_block->block->network_id() != latest_committed_block_->block->network_id() ||
+                latest_committed_block_->view >= view_block->view)) {
+            return;
+        }
+
         // 允许设置旧的 view block
+        ZJC_DEBUG("changed latest commited block %u_%u_%lu, new view: %lu",
+            view_block->block->network_id(), 
+            view_block->block->pool_index(), 
+            view_block->block->height(),
+            view_block->view);
         latest_committed_block_ = view_block;
         auto it = view_blocks_info_.find(view_block->hash);
         if (it != view_blocks_info_.end()) {
@@ -230,6 +241,7 @@ private:
     std::shared_ptr<ViewBlock> latest_locked_block_; // locked_block_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    uint32_t pool_index_ = common::kInvalidPoolIndex;
 
     void SetViewBlockToMap(const HashStr& hash, const std::shared_ptr<ViewBlock>& view_block) {
         auto it = view_blocks_info_.find(hash);
@@ -271,8 +283,8 @@ Status GetLatestViewBlockFromDb(
         const uint32_t& pool_index,
         std::shared_ptr<ViewBlock>& view_block,
         std::shared_ptr<QC>& self_qc);
-std::shared_ptr<QC> GetQCWrappedByGenesis();
-std::shared_ptr<QC> GetGenesisQC(const HashStr& genesis_view_block_hash);
+std::shared_ptr<QC> GetQCWrappedByGenesis(uint32_t pool_index);
+std::shared_ptr<QC> GetGenesisQC(uint32_t pool_index, const HashStr& genesis_view_block_hash);
         
 } // namespace consensus
     

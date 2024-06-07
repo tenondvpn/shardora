@@ -27,6 +27,11 @@ void Hotstuff::Init() {
         view_block_chain_->SetLatestCommittedBlock(latest_view_block);
         // 开启第一个视图
 
+        ZJC_DEBUG("init changed latest commited block %u_%u_%lu, new view: %lu",
+            view_block_chain_->LatestCommittedBlock()->block->network_id(), 
+            view_block_chain_->LatestCommittedBlock()->block->pool_index(), 
+            view_block_chain_->LatestCommittedBlock()->block->height(),
+            view_block_chain_->LatestCommittedBlock()->view);
         pacemaker_->AdvanceView(new_sync_info()->WithQC(latest_view_block_commit_qc));
         ZJC_DEBUG("has latest block, pool_idx: %d, latest block height: %lu, commit_qc_hash: %s, latest_view_block: %s, high_qc_hash: %s",
             pool_idx_, latest_view_block->block->height(),
@@ -41,7 +46,7 @@ void Hotstuff::Init() {
 
 Status Hotstuff::Start() {
     auto leader = leader_rotation()->GetLeader();
-    auto elect_item = elect_info_->GetElectItem();
+    auto elect_item = elect_info_->GetElectItemWithShardingId(common::GlobalInfo::Instance()->network_id());
     if (!elect_item) {
         return Status::kElectItemNotFound;
     }
@@ -61,6 +66,7 @@ Status Hotstuff::Start() {
 Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     // TODO(HT): 打包的交易，超时后如何释放？
     // 打包参与共识中的交易，如何保证幂等
+    ZJC_DEBUG("1 now ontime called propose: %d", pool_idx_);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -71,7 +77,9 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     Status s = ConstructProposeMsg(sync_info, pb_pro_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d construct propose msg failed, %d, member_index: %d",
-            pool_idx_, s, elect_info_->GetElectItem()->LocalMember()->index);
+            pool_idx_, s, 
+            elect_info_->GetElectItemWithShardingId(
+                common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
         return s;
     }
     s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
@@ -95,8 +103,9 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     }
 
     network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
+    ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
         pool_idx_,
+        header.hotstuff().pool_index(),
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
         hotstuff_msg->pro_msg().view_item().view(),
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
@@ -114,7 +123,9 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
     header.set_hop_count(0);
     auto* hotstuff_msg = header.mutable_hotstuff();
     auto* pb_newview_msg = hotstuff_msg->mutable_newview_msg();
-    pb_newview_msg->set_elect_height(elect_info_->GetElectItem()->ElectHeight());
+    pb_newview_msg->set_elect_height(
+        elect_info_->GetElectItemWithShardingId(
+            common::GlobalInfo::Instance()->network_id())->ElectHeight());
     if (!sync_info->tc && !sync_info->qc) {
         return;
     }
@@ -143,8 +154,9 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
     header.set_des_dht_key(dht_key.StrKey());
     transport::TcpTransport::Instance()->SetMessageHash(header);
     network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("pool: %d, newview, txs size: %lu, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
+    ZJC_DEBUG("pool: %d, msg pool: %d, newview, txs size: %lu, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
         pool_idx_,
+        hotstuff_msg->pool_index(),
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
         hotstuff_msg->pro_msg().view_item().view(),
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
@@ -178,7 +190,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
             return;
         }
         if (tc->view > pacemaker()->HighTC()->view) {
-            if (crypto()->VerifyTC(tc) != Status::kSuccess) {
+            if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
                 ZJC_ERROR("VerifyTC error.");
                 return;
             }
@@ -350,7 +362,10 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     Status ret = crypto()->ReconstructAndVerifyThresSign(
             elect_height,
             vote_msg.view(),
-            GetQCMsgHash(vote_msg.view(),
+            GetQCMsgHash(
+                common::GlobalInfo::Instance()->network_id(),
+                pool_idx_,
+                vote_msg.view(),
                 vote_msg.view_block_hash(),
                 vote_msg.commit_view_block_hash(),
                 elect_height,
@@ -365,6 +380,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
             ZJC_DEBUG("kBlsWaiting pool: %d, view: %lu", pool_idx_, vote_msg.view());
             return;
         }
+
         return;
     }
     ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d, view: %lu",
@@ -473,7 +489,9 @@ Status Hotstuff::StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_bloc
 }
 
 void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
-    ZJC_DEBUG("====3.1 pool: %d, onNewview", pool_idx_);    
+    ZJC_DEBUG("====3.1 pool: %d, newview, message pool: %d, hash64: %lu",
+        pool_idx_, header.hotstuff().pool_index(), header.hash64());
+    assert(header.hotstuff().pool_index() == pool_idx_);
     auto& newview_msg = header.hotstuff().newview_msg();
     std::shared_ptr<TC> tc = nullptr;
     if (!newview_msg.tc_str().empty()) {
@@ -482,8 +500,11 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
             ZJC_ERROR("tc Unserialize is error.");
             return;
         }
+
         if (tc->view > pacemaker()->HighTC()->view) {
-            if (crypto()->VerifyTC(tc) != Status::kSuccess) {
+            ZJC_DEBUG("newview now verify tc hash: %s, pool index: %u", 
+                common::Encode::HexEncode(tc->msg_hash()).c_str(), pool_idx_);
+            if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
                 ZJC_ERROR("VerifyTC error.");
                 return;
             }
@@ -501,7 +522,7 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
             return;
         }
         if (qc->view > pacemaker()->HighQC()->view) {
-            if (crypto()->VerifyQC(qc) != Status::kSuccess) {
+            if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
                 ZJC_ERROR("VerifyQC error.");
                 return;
             }
@@ -544,7 +565,9 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::protobuf::Header& header)
 Status Hotstuff::ResetReplicaTimers() {
     // Reset timer msg broadcast
     auto rst_timer_msg = std::make_shared<hotstuff::protobuf::ResetTimerMsg>();
-    rst_timer_msg->set_leader_idx(elect_info_->GetElectItem()->LocalMember()->index);
+    rst_timer_msg->set_leader_idx(
+        elect_info_->GetElectItemWithShardingId(
+            common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
@@ -711,7 +734,7 @@ Status Hotstuff::VerifyViewBlock(
 
     // 验证 qc
     if (qc->view > pacemaker()->HighQC()->view) {
-        if (crypto()->VerifyQC(qc) != Status::kSuccess) {
+        if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
             ZJC_ERROR("Verify qc is error. elect_height: %llu, qc: %llu", elect_height, qc->view);
             return Status::kError; 
         }
@@ -739,12 +762,28 @@ Status Hotstuff::VerifyViewBlock(
 }
 
 Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
+    ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit coming s: %d, "
+        "vb view: %lu, %u_%u_%lu, cur chain: %s",
+        pool_idx_, 0, v_block->view,
+        v_block->block->network_id(), v_block->block->pool_index(), v_block->block->height(),
+        view_block_chain()->String().c_str());
     auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
     if (latest_committed_block && latest_committed_block->view >= v_block->view) {
+        ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, "
+            "vb view: %lu, %u_%u_%lu, latest_committed_block: %d, "
+            "latest_committed_block->view: %lu, v_block->view: %lu",
+            pool_idx_, 0, v_block->view,
+            v_block->block->network_id(), v_block->block->pool_index(), v_block->block->height(),
+            (latest_committed_block != nullptr),
+            latest_committed_block->view,
+            v_block->view);
         return Status::kSuccess;
     }
 
     if (!latest_committed_block && v_block->view == GenesisView) {
+        ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, vb view: %lu, %u_%u_%lu",
+            pool_idx_, 0, v_block->view,
+            v_block->block->network_id(), v_block->block->pool_index(), v_block->block->height());
         return Status::kSuccess;
     }
 
@@ -753,6 +792,9 @@ Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
     if (s == Status::kSuccess && parent_block != nullptr) {
         s = CommitInner(parent_block);
         if (s != Status::kSuccess) {
+            ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, vb view: %lu, %u_%u_%lu",
+                pool_idx_, 0, v_block->view,
+                v_block->block->network_id(), v_block->block->pool_index(), v_block->block->height());
             return s;
         }
     }
@@ -760,7 +802,7 @@ Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
     v_block->block->set_is_commited_block(true);
     s = acceptor()->Commit(v_block->block);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d, commit failed s: %d, vb view: &lu", pool_idx_, s, v_block->view);
+        ZJC_ERROR("pool: %d, commit failed s: %d, vb view: %lu", pool_idx_, s, v_block->view);
         return s;
     }
     
@@ -810,7 +852,9 @@ Status Hotstuff::ConstructProposeMsg(
     auto new_pb_view_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
     ViewBlock2Proto(new_view_block, new_pb_view_block.get());
     pro_msg->mutable_view_item()->CopyFrom(*new_pb_view_block);
-    pro_msg->set_elect_height(elect_info_->GetElectItem()->ElectHeight());
+    pro_msg->set_elect_height(
+        elect_info_->GetElectItemWithShardingId(
+            common::GlobalInfo::Instance()->network_id())->ElectHeight());
     if (sync_info->tc) {
         pro_msg->set_tc_str(sync_info->tc->Serialize());
     }
@@ -820,9 +864,11 @@ Status Hotstuff::ConstructProposeMsg(
 
 Status Hotstuff::ConstructVoteMsg(
         hotstuff::protobuf::VoteMsg* vote_msg,
-        const uint32_t& elect_height, 
+        uint64_t elect_height, 
         const std::shared_ptr<ViewBlock>& v_block) {
-    auto elect_item = elect_info_->GetElectItem(elect_height);
+    auto elect_item = elect_info_->GetElectItem(
+        common::GlobalInfo::Instance()->network_id(), 
+        elect_height);
     if (!elect_item) {
         return Status::kError;
     }
@@ -853,8 +899,12 @@ Status Hotstuff::ConstructVoteMsg(
     
     std::string sign_x, sign_y;
     if (crypto()->PartialSign(
+                common::GlobalInfo::Instance()->network_id(),
                 elect_height,
-                GetQCMsgHash(v_block->view,
+                GetQCMsgHash(
+                    common::GlobalInfo::Instance()->network_id(),
+                    pool_idx_,
+                    v_block->view,
                     v_block->hash,
                     commit_view_block_hash,
                     elect_height,
@@ -887,7 +937,8 @@ Status Hotstuff::ConstructViewBlock(
         std::shared_ptr<ViewBlock>& view_block,
         std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose) {
     view_block->parent_hash = (pacemaker()->HighQC()->view_block_hash);
-    auto leader_idx = elect_info_->GetElectItem()->LocalMember()->index;
+    auto leader_idx = elect_info_->GetElectItemWithShardingId(
+        common::GlobalInfo::Instance()->network_id())->LocalMember()->index;
     view_block->leader_idx = leader_idx;
 
     auto pre_v_block = std::make_shared<ViewBlock>();
@@ -1019,7 +1070,8 @@ void Hotstuff::TryRecoverFromStuck() {
             auto* hotstuff_msg = header.mutable_hotstuff();
             auto* pre_rst_timer_msg = hotstuff_msg->mutable_pre_reset_timer_msg();
             
-            auto elect_item = elect_info_->GetElectItem();
+            auto elect_item = elect_info_->GetElectItemWithShardingId(
+                common::GlobalInfo::Instance()->network_id());
             if (!elect_item) {
                 ZJC_ERROR("pool: %d no elect item found", pool_idx_);
                 return;

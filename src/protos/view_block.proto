@@ -22,6 +22,8 @@ message QC {
     optional bytes commit_view_block_hash = 6;
     optional uint64 elect_height = 7;
     optional uint32 leader_idx = 8;
+    optional uint32 network_id = 9;
+    optional uint32 pool_index = 10;
 }
 
 message ViewBlockSyncRequest {

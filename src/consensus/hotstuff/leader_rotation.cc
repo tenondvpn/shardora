@@ -29,7 +29,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
     auto committedBlock = chain_->LatestCommittedBlock();
     
     // 对于非种子节点可能启动时没有 committedblock, 需要等同步
-    auto qc = GetQCWrappedByGenesis();
+    auto qc = GetQCWrappedByGenesis(pool_idx_);
     if (committedBlock) {
         ZJC_DEBUG("pool: %d, get leader success get latest commit block view: %lu, %s",
             pool_idx_, committedBlock->view,
@@ -42,17 +42,17 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
     uint32_t now_time_num = common::TimeUtils::TimestampSeconds() / TIME_EPOCH_TO_CHANGE_LEADER_S;
     uint64_t random_hash = common::Hash::Hash64(qc->Serialize() + std::to_string(now_time_num));
 
-    if (Members()->empty()) {
+    if (Members(common::GlobalInfo::Instance()->network_id())->empty()) {
         return nullptr;
     }
     
-    auto leader_idx = random_hash % Members()->size();
+    auto leader_idx = random_hash % Members(common::GlobalInfo::Instance()->network_id())->size();
     // TODO(test)
-    // leader_idx = 0;
-    auto leader = (*Members())[leader_idx];
+    leader_idx = 0;
+    auto leader = (*Members(common::GlobalInfo::Instance()->network_id()))[leader_idx];
     if (leader->public_ip == 0 || leader->public_port == 0) {
         // 刷新 members 的 ip port
-        elect_info_->RefreshMemberAddrs();
+        elect_info_->RefreshMemberAddrs(common::GlobalInfo::Instance()->network_id());
         ZJC_DEBUG("refresh Leader pool: %d, is %d, id: %s, ip: %s, port: %d, qc view: %lu",
             pool_idx_,
             leader->index,

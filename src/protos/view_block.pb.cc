@@ -218,6 +218,8 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::QC, commit_view_block_hash_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::QC, elect_height_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::QC, leader_idx_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::QC, network_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::QC, pool_index_),
   0,
   1,
   2,
@@ -226,6 +228,8 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   4,
   6,
   7,
+  8,
+  9,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockSyncRequest, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockSyncRequest, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -318,12 +322,12 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 12, sizeof(::shardora::view_block::protobuf::ViewBlockItem)},
-  { 19, 32, sizeof(::shardora::view_block::protobuf::QC)},
-  { 40, 52, sizeof(::shardora::view_block::protobuf::ViewBlockSyncRequest)},
-  { 59, 72, sizeof(::shardora::view_block::protobuf::ViewBlockSyncResponse)},
-  { 80, 88, sizeof(::shardora::view_block::protobuf::SingleViewBlockSyncRequest)},
-  { 91, 102, sizeof(::shardora::view_block::protobuf::ViewBlockSyncMessage)},
-  { 108, 121, sizeof(::shardora::view_block::protobuf::TimeoutMessage)},
+  { 19, 34, sizeof(::shardora::view_block::protobuf::QC)},
+  { 44, 56, sizeof(::shardora::view_block::protobuf::ViewBlockSyncRequest)},
+  { 63, 76, sizeof(::shardora::view_block::protobuf::ViewBlockSyncResponse)},
+  { 84, 92, sizeof(::shardora::view_block::protobuf::SingleViewBlockSyncRequest)},
+  { 95, 106, sizeof(::shardora::view_block::protobuf::ViewBlockSyncMessage)},
+  { 112, 125, sizeof(::shardora::view_block::protobuf::TimeoutMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -363,11 +367,12 @@ void AddDescriptorsImpl() {
       "sh\030\002 \001(\014\022\022\n\nleader_idx\030\003 \001(\r\0222\n\nblock_in"
       "fo\030\004 \001(\0132\036.shardora.block.protobuf.Block"
       "\022\016\n\006qc_str\030\005 \001(\014\022\014\n\004view\030\006 \001(\004\022\032\n\022self_c"
-      "ommit_qc_str\030\007 \001(\014\"\245\001\n\002QC\022\016\n\006sign_x\030\001 \001("
+      "ommit_qc_str\030\007 \001(\014\"\315\001\n\002QC\022\016\n\006sign_x\030\001 \001("
       "\014\022\016\n\006sign_y\030\002 \001(\014\022\016\n\006sign_z\030\003 \001(\014\022\014\n\004vie"
       "w\030\004 \001(\004\022\027\n\017view_block_hash\030\005 \001(\014\022\036\n\026comm"
       "it_view_block_hash\030\006 \001(\014\022\024\n\014elect_height"
-      "\030\007 \001(\004\022\022\n\nleader_idx\030\010 \001(\r\"\272\001\n\024ViewBlock"
+      "\030\007 \001(\004\022\022\n\nleader_idx\030\010 \001(\r\022\022\n\nnetwork_id"
+      "\030\t \001(\r\022\022\n\npool_index\030\n \001(\r\"\272\001\n\024ViewBlock"
       "SyncRequest\022\022\n\nnetwork_id\030\001 \001(\r\022\020\n\010pool_"
       "idx\030\002 \001(\r\022\031\n\021view_block_hashes\030\003 \003(\014\022\024\n\014"
       "high_qc_view\030\004 \001(\004\022\024\n\014high_tc_view\030\005 \001(\004"
@@ -397,7 +402,7 @@ void AddDescriptorsImpl() {
       "(\r"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1482);
+      descriptor, 1522);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/view_block.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fblock_2eproto::AddDescriptors();
@@ -957,6 +962,8 @@ const int QC::kViewBlockHashFieldNumber;
 const int QC::kCommitViewBlockHashFieldNumber;
 const int QC::kElectHeightFieldNumber;
 const int QC::kLeaderIdxFieldNumber;
+const int QC::kNetworkIdFieldNumber;
+const int QC::kPoolIndexFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 QC::QC()
@@ -992,8 +999,8 @@ QC::QC(const QC& from)
     commit_view_block_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.commit_view_block_hash_);
   }
   ::memcpy(&view_, &from.view_,
-    static_cast<size_t>(reinterpret_cast<char*>(&leader_idx_) -
-    reinterpret_cast<char*>(&view_)) + sizeof(leader_idx_));
+    static_cast<size_t>(reinterpret_cast<char*>(&pool_index_) -
+    reinterpret_cast<char*>(&view_)) + sizeof(pool_index_));
   // @@protoc_insertion_point(copy_constructor:shardora.view_block.protobuf.QC)
 }
 
@@ -1004,8 +1011,8 @@ void QC::SharedCtor() {
   view_block_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   commit_view_block_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&view_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&leader_idx_) -
-      reinterpret_cast<char*>(&view_)) + sizeof(leader_idx_));
+      reinterpret_cast<char*>(&pool_index_) -
+      reinterpret_cast<char*>(&view_)) + sizeof(pool_index_));
 }
 
 QC::~QC() {
@@ -1063,6 +1070,11 @@ void QC::Clear() {
     ::memset(&view_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&leader_idx_) -
         reinterpret_cast<char*>(&view_)) + sizeof(leader_idx_));
+  }
+  if (cached_has_bits & 768u) {
+    ::memset(&network_id_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&pool_index_) -
+        reinterpret_cast<char*>(&network_id_)) + sizeof(pool_index_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -1180,6 +1192,34 @@ bool QC::MergePartialFromCodedStream(
         break;
       }
 
+      // optional uint32 network_id = 9;
+      case 9: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(72u /* 72 & 0xFF */)) {
+          set_has_network_id();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &network_id_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint32 pool_index = 10;
+      case 10: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(80u /* 80 & 0xFF */)) {
+          set_has_pool_index();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &pool_index_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -1252,6 +1292,16 @@ void QC::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(8, this->leader_idx(), output);
   }
 
+  // optional uint32 network_id = 9;
+  if (cached_has_bits & 0x00000100u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(9, this->network_id(), output);
+  }
+
+  // optional uint32 pool_index = 10;
+  if (cached_has_bits & 0x00000200u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(10, this->pool_index(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -1315,6 +1365,16 @@ void QC::SerializeWithCachedSizes(
   // optional uint32 leader_idx = 8;
   if (cached_has_bits & 0x00000080u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(8, this->leader_idx(), target);
+  }
+
+  // optional uint32 network_id = 9;
+  if (cached_has_bits & 0x00000100u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(9, this->network_id(), target);
+  }
+
+  // optional uint32 pool_index = 10;
+  if (cached_has_bits & 0x00000200u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(10, this->pool_index(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1392,6 +1452,22 @@ size_t QC::ByteSizeLong() const {
     }
 
   }
+  if (_has_bits_[8 / 32] & 768u) {
+    // optional uint32 network_id = 9;
+    if (has_network_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->network_id());
+    }
+
+    // optional uint32 pool_index = 10;
+    if (has_pool_index()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->pool_index());
+    }
+
+  }
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
@@ -1452,6 +1528,15 @@ void QC::MergeFrom(const QC& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
+  if (cached_has_bits & 768u) {
+    if (cached_has_bits & 0x00000100u) {
+      network_id_ = from.network_id_;
+    }
+    if (cached_has_bits & 0x00000200u) {
+      pool_index_ = from.pool_index_;
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
 }
 
 void QC::CopyFrom(const ::google::protobuf::Message& from) {
@@ -1491,6 +1576,8 @@ void QC::InternalSwap(QC* other) {
   swap(view_, other->view_);
   swap(elect_height_, other->elect_height_);
   swap(leader_idx_, other->leader_idx_);
+  swap(network_id_, other->network_id_);
+  swap(pool_index_, other->pool_index_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }

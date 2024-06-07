@@ -58,40 +58,43 @@ public:
     Crypto& operator=(const Crypto&) = delete;
 
     Status PartialSign(
-            const uint64_t& elect_height,
+            uint32_t sharding_id,
+            uint64_t elect_height,
             const HashStr& msg_hash,
             std::string* sign_x,
             std::string* sign_y);
     
     Status ReconstructAndVerifyThresSign(
-            const uint64_t& elect_height,
-            const View& view,
+            uint64_t elect_height,
+            View view,
             const HashStr& msg_hash,
-            const uint32_t& member_idx,
+            uint32_t member_idx,
             const std::string& partial_sign_x,
             const std::string& partial_sign_y,
             std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
     
     Status CreateQC(
-            const HashStr& view_block_hash,
-            const HashStr& commit_view_block_hash,
-            const View& view,
-            const uint64_t& elect_height,
-            const uint32_t& leader_idx,
-            const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
-            std::shared_ptr<QC>& qc);
+        const HashStr& view_block_hash,
+        const HashStr& commit_view_block_hash,
+        View view,
+        uint64_t elect_height,
+        uint32_t leader_idx,
+        const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
+        std::shared_ptr<QC>& qc);
 
     Status CreateTC(
-            const View& view,
-            const uint64_t& elect_height,
-            const uint32_t& leader_idx,
+            View view,
+            uint64_t elect_height,
+            uint32_t leader_idx,
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
             std::shared_ptr<TC>& tc);
 
     Status VerifyQC(
+            uint32_t sharding_id,
             const std::shared_ptr<QC>& qc);
 
     Status VerifyTC(
+            uint32_t sharding_id,
             const std::shared_ptr<TC>& tc);    
 
     Status SignMessage(transport::MessagePtr& msg_ptr);
@@ -100,12 +103,12 @@ public:
         bls_collection_ = nullptr;
     }
     
-    inline std::shared_ptr<ElectItem> GetElectItem(const uint64_t& elect_height) {
-        return elect_info_->GetElectItem(elect_height);
+    inline std::shared_ptr<ElectItem> GetElectItem(uint32_t sharding_id, uint64_t elect_height) {
+        return elect_info_->GetElectItem(sharding_id, elect_height);
     }
 
-    inline std::shared_ptr<ElectItem> GetLatestElectItem() {
-        return elect_info_->GetElectItem();
+    inline std::shared_ptr<ElectItem> GetLatestElectItem(uint32_t sharding_id) {
+        return elect_info_->GetElectItemWithShardingId(sharding_id);
     }
     
     inline std::shared_ptr<security::Security> security() const {
@@ -120,16 +123,21 @@ private:
     std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
 
     Status VerifyThresSign(
-            const uint64_t& elect_height,
-            const HashStr& msg_hash,
-            const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
+        uint32_t sharding_id,
+        uint64_t elect_height,
+        const HashStr& msg_hash,
+        const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
     
     void GetG1Hash(const HashStr& msg_hash, libff::alt_bn128_G1* g1_hash) {
         bls_mgr_->GetLibffHash(msg_hash, g1_hash);
     }
 
-    Status GetVerifyHashA(const uint64_t& elect_height, const HashStr& msg_hash, std::string* verify_hash) {
-        auto elect_item = GetElectItem(elect_height);
+    Status GetVerifyHashA(
+            uint32_t sharding_id, 
+            uint64_t elect_height, 
+            const HashStr& msg_hash, 
+            std::string* verify_hash) {
+        auto elect_item = GetElectItem(sharding_id, elect_height);
         if (!elect_item || elect_item->common_pk() == libff::alt_bn128_G2::zero()) {
             ZJC_ERROR("elect_item not found, elect_height: %lu", elect_height);
             return Status::kElectItemNotFound;
@@ -150,8 +158,12 @@ private:
         return Status::kSuccess;
     }
 
-    Status GetVerifyHashB(const uint64_t& elect_height, const libff::alt_bn128_G1& reconstructed_sign, std::string* verify_hash) {
-        auto elect_item = GetElectItem(elect_height);
+    Status GetVerifyHashB(
+            uint32_t sharding_id,
+            uint64_t elect_height, 
+            const libff::alt_bn128_G1& reconstructed_sign, 
+            std::string* verify_hash) {
+        auto elect_item = GetElectItem(sharding_id, elect_height);
         if (!elect_item) {
             return Status::kError;
         }

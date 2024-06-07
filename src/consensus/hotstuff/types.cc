@@ -2,25 +2,46 @@
 #include <consensus/hotstuff/types.h>
 #include <protos/block.pb.h>
 #include <protos/view_block.pb.h>
+#include "network/network_utils.h"
 
 namespace shardora {
 
 namespace hotstuff {
 
 HashStr GetQCMsgHash(
+        uint32_t net_id,
+        uint32_t pool_index,
         const View &view,
         const HashStr &view_block_hash,
         const HashStr& commit_view_block_hash,
-        const uint64_t& elect_height,
-        const uint32_t& leader_idx) {
+        uint64_t elect_height,
+        uint32_t leader_idx) {
     std::stringstream ss;
-    ss << view << view_block_hash << commit_view_block_hash << elect_height << leader_idx;
+    assert(net_id <= network::kConsensusShardEndNetworkId);
+    assert(pool_index < common::kInvalidPoolIndex);
+    ss << net_id << pool_index << view << view_block_hash << commit_view_block_hash << elect_height << leader_idx;
     std::string msg = ss.str();
-    return common::Hash::keccak256(msg); 
+    auto msg_hash = common::Hash::keccak256(msg); 
+    ZJC_DEBUG("success get qc msg hash net: %u, pool: %u, view: %lu, view_block_hash: %s, "
+        "commit_view_block_hash: %s, elect_height: %lu, leader_idx: %u, msg_hash: %s",
+        net_id,
+        pool_index,
+        view, 
+        common::Encode::HexEncode(view_block_hash).c_str(),
+        common::Encode::HexEncode(commit_view_block_hash).c_str(),
+        elect_height,
+        leader_idx,
+        common::Encode::HexEncode(msg_hash).c_str());
+    return msg_hash; 
 }
 
-HashStr GetViewHash(const View& view, const uint64_t& elect_height, const uint32_t& leader_idx) {
-    return GetQCMsgHash(view, "", "", elect_height, leader_idx);
+HashStr GetViewHash(
+        uint32_t net_id,
+        uint32_t pool_index, 
+        const View& view, 
+        uint64_t elect_height, 
+        uint32_t leader_idx) {
+    return GetQCMsgHash(net_id, pool_index, view, "", "", elect_height, leader_idx);
 }
 
 std::string QC::Serialize() const {
@@ -34,6 +55,8 @@ std::string QC::Serialize() const {
     qc_proto.set_commit_view_block_hash(commit_view_block_hash);
     qc_proto.set_elect_height(elect_height);
     qc_proto.set_leader_idx(leader_idx);
+    qc_proto.set_network_id(network_id);
+    qc_proto.set_pool_index(pool_index);
     // TODO 不同版本 pb 结果不一样
     return qc_proto.SerializeAsString();
 }
@@ -65,6 +88,8 @@ bool QC::Unserialize(const std::string& str) {
     commit_view_block_hash = qc_proto.commit_view_block_hash();
     elect_height = qc_proto.elect_height();
     leader_idx = qc_proto.leader_idx();
+    network_id = qc_proto.network_id();
+    pool_index = qc_proto.pool_index();
     
     return true;
 }

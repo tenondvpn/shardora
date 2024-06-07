@@ -28,13 +28,20 @@ static const double ViewDurationStartTimeoutMs = 300;
 static const double ViewDurationMaxTimeoutMs = 60000;
 static const double ViewDurationMultiplier = 1.3; // 选过大会造成卡住的成本很高，一旦卡住则恢复时间很长（如 leader 不一致），过小会导致没有交易时 CPU 长时间降不下来
 
-HashStr GetViewHash(const View& view, const uint64_t& elect_height, const uint32_t& leader_idx);
+HashStr GetViewHash(
+    uint32_t net_id,
+    uint32_t pool_idx,
+    const View& view, 
+    uint64_t elect_height, 
+    uint32_t leader_idx);
 HashStr GetQCMsgHash(
-        const View &view,
-        const HashStr &view_block_hash,
-        const HashStr& commit_view_block_hash,
-        const uint64_t& elect_height,
-        const uint32_t& leader_idx);
+    uint32_t net_id,
+    uint32_t pool_idx,
+    const View &view,
+    const HashStr &view_block_hash,
+    const HashStr& commit_view_block_hash,
+    uint64_t elect_height,
+    uint32_t leader_idx);
 
 struct QC {
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
@@ -43,15 +50,21 @@ struct QC {
     HashStr commit_view_block_hash; // 是 commit_view_block_hash 的 commitQC
     uint64_t elect_height; // 确定 epoch，用于验证 QC，理论上与 view_block_hash elect_height 相同，但对于同步场景，作为 commit_qc 时有时候 view_block 无法获取，故将 elect_height 放入 QC 中
     uint32_t leader_idx;
-
+    uint32_t network_id;
+    uint32_t pool_index;
     QC(
+            uint32_t net_id,
+            uint32_t pool_idx,
             const std::shared_ptr<libff::alt_bn128_G1>& sign,
             const View& v,
             const HashStr& hash,
             const HashStr& commit_hash,
-            const uint64_t& elect_height,
-            const uint32_t& leader_idx) :
-        bls_agg_sign(sign), view(v), view_block_hash(hash), commit_view_block_hash(commit_hash), elect_height(elect_height), leader_idx(leader_idx) {
+            uint64_t elect_height,
+            uint32_t leader_idx) :
+            network_id(net_id), pool_index(pool_idx),
+            bls_agg_sign(sign), view(v), view_block_hash(hash),
+            commit_view_block_hash(commit_hash), elect_height(elect_height),
+            leader_idx(leader_idx) {
         if (sign == nullptr) {
             bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
         }
@@ -65,24 +78,33 @@ struct QC {
     bool Unserialize(const std::string& str);
 
     inline HashStr msg_hash() const {
-        return GetQCMsgHash(view, view_block_hash, commit_view_block_hash, elect_height, leader_idx);
+        return GetQCMsgHash(
+            network_id, 
+            pool_index, 
+            view, 
+            view_block_hash, 
+            commit_view_block_hash, 
+            elect_height, 
+            leader_idx);
     }
 };
 
 // TODO TC 中可增加超时的 leader_idx，用于 Leader 选择黑名单
 struct TC : public QC {
     TC(
+            uint32_t net_id,
+            uint32_t pool_idx,
             const std::shared_ptr<libff::alt_bn128_G1>& sign,
             const View& v,
-            const uint64_t& elect_height,
-            const uint32_t& leader_idx) :
-        QC(sign, v, "", "", elect_height, leader_idx) {
+            uint64_t elect_height,
+            uint32_t leader_idx) :
+        QC(net_id, pool_idx, sign, v, "", "", elect_height, leader_idx) {
     }
 
-    TC() : QC() {}
+    TC() {}
 
     inline HashStr msg_hash() const {
-        return GetViewHash(view, elect_height, leader_idx);
+        return GetViewHash(network_id, pool_index, view, elect_height, leader_idx);
     }
 };
 
@@ -103,7 +125,7 @@ struct ViewBlock {
             const std::shared_ptr<QC>& qc,
             const std::shared_ptr<block::protobuf::Block>& block,
             const View& view,
-            const uint32_t& leader_idx) :
+            uint32_t leader_idx) :
         parent_hash(parent),
         leader_idx(leader_idx),
         block(block),
@@ -113,7 +135,7 @@ struct ViewBlock {
         hash = DoHash();
     };
 
-    ViewBlock() : qc(nullptr), created_time_us(common::TimeUtils::TimestampUs()) {};
+    ViewBlock() : qc(nullptr), view(0), created_time_us(common::TimeUtils::TimestampUs()) {};
 
     inline bool Valid() {
         return hash != "" && hash == DoHash() && block != nullptr; 

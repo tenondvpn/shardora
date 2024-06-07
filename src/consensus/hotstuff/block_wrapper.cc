@@ -35,7 +35,8 @@ Status BlockWrapper::Wrap(
     block->set_network_id(common::GlobalInfo::Instance()->network_id());
     block->set_consistency_random(0);
     block->set_height(prev_block->height()+1);
-    ZJC_DEBUG("propose block set height: %lu, pre height: %lu", block->height(), prev_block->height());
+    ZJC_DEBUG("propose block net: %u, pool: %u, set height: %lu, pre height: %lu",
+        block->network_id(), block->pool_index(), block->height(), prev_block->height());
     if (block->height() <= 0) {
         return Status::kInvalidArgument;
     }
@@ -60,8 +61,8 @@ Status BlockWrapper::Wrap(
         for (auto it = txs_ptr->txs.begin(); it != txs_ptr->txs.end(); it++) {
             auto* tx_info = tx_propose->add_txs();
             *tx_info = it->second->tx_info;
-            ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, step: %d", 
-                block->pool_index(), 
+            ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, step: %d",
+                block->pool_index(),
                 common::Encode::HexEncode(block->prehash()).c_str(),
                 block->height(),
                 tx_info->step());
@@ -69,7 +70,7 @@ Status BlockWrapper::Wrap(
         tx_propose->set_tx_type(txs_ptr->tx_type);
     }
 
-    auto elect_item = elect_info_->GetElectItem();
+    auto elect_item = elect_info_->GetElectItemWithShardingId(common::GlobalInfo::Instance()->network_id());
     if (!elect_item) {
         return Status::kElectItemNotFound;
     }
@@ -77,7 +78,8 @@ Status BlockWrapper::Wrap(
     block->set_electblock_height(elect_item->ElectHeight());
     block->set_leader_index(leader_idx);
     block->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
-    
+    ZJC_DEBUG("success propose block net: %u, pool: %u, set height: %lu, pre height: %lu",
+        block->network_id(), block->pool_index(), block->height(), prev_block->height());
     return Status::kSuccess;
 }
 
