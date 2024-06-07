@@ -119,12 +119,13 @@ void Pacemaker::OnLocalTimeout() {
     
     // if view is last one, deal directly.
     // 更换 epoch 后重新打包
-    if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
-            last_timeout_->header.hotstuff_timeout_proto().view() >= CurView() &&
-            last_timeout_->header.hotstuff_timeout_proto().view_hash() == view_hash) {
-        SendTimeout(last_timeout_);
-        return;
-    }
+    // TODO(test)
+    // if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
+    //         last_timeout_->header.hotstuff_timeout_proto().view() >= CurView() &&
+    //         last_timeout_->header.hotstuff_timeout_proto().view_hash() == view_hash) {
+    //     SendTimeout(last_timeout_);
+    //     return;
+    // }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
