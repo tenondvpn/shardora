@@ -112,11 +112,11 @@ void Pacemaker::OnLocalTimeout() {
         return;
     }
 
-    auto leader_idx = leader_rotation_->GetLeader()->index;
+    // auto leader_idx = leader_rotation_->GetLeader()->index;
     auto view_hash = GetViewHash(
         common::GlobalInfo::Instance()->network_id(),
         pool_idx_,
-        CurView(), elect_item->ElectHeight(), leader_idx);    
+        CurView(), elect_item->ElectHeight(), 0);    
     
     // if view is last one, deal directly.
     // 更换 epoch 后重新打包
