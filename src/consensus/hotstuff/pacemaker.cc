@@ -112,20 +112,20 @@ void Pacemaker::OnLocalTimeout() {
         return;
     }
 
+    auto leader_idx = leader_rotation_->GetLeader()->index;
     auto view_hash = GetViewHash(
         common::GlobalInfo::Instance()->network_id(),
         pool_idx_,
-        CurView(), elect_item->ElectHeight(), 0);    
+        CurView(), elect_item->ElectHeight(), leader_idx);    
     
     // if view is last one, deal directly.
     // 更换 epoch 后重新打包
-    // TODO(test)
-    // if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
-    //         last_timeout_->header.hotstuff_timeout_proto().view() >= CurView() &&
-    //         last_timeout_->header.hotstuff_timeout_proto().view_hash() == view_hash) {
-    //     SendTimeout(last_timeout_);
-    //     return;
-    // }
+    if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
+            last_timeout_->header.hotstuff_timeout_proto().view() >= CurView() &&
+            last_timeout_->header.hotstuff_timeout_proto().view_hash() == view_hash) {
+        SendTimeout(last_timeout_);
+        return;
+    }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
