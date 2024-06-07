@@ -110,13 +110,18 @@ void Pacemaker::OnLocalTimeout() {
     auto elect_item = crypto_->GetLatestElectItem(common::GlobalInfo::Instance()->network_id());
     if (!elect_item) {
         return;
-    }    
+    }
+
+    auto view_hash = GetViewHash(
+        common::GlobalInfo::Instance()->network_id(),
+        pool_idx_,
+        CurView(), elect_item->ElectHeight(), 0);    
     
     // if view is last one, deal directly.
     // 更换 epoch 后重新打包
     if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
         last_timeout_->header.hotstuff_timeout_proto().view() >= CurView() &&
-        last_timeout_->header.hotstuff_timeout_proto().elect_height() == elect_item->ElectHeight()) {
+        last_timeout_->header.hotstuff_timeout_proto().view_hash() == view_hash) {
         SendTimeout(last_timeout_);
         return;
     }
@@ -126,11 +131,7 @@ void Pacemaker::OnLocalTimeout() {
     
     std::string bls_sign_x;
     std::string bls_sign_y;
-    // TODO Leader Idx
-    auto view_hash = GetViewHash(
-        common::GlobalInfo::Instance()->network_id(),
-        pool_idx_,
-        CurView(), elect_item->ElectHeight(), 0);
+
     // 使用最新的 elect_height 签名
     if (crypto_->PartialSign(
             common::GlobalInfo::Instance()->network_id(),
