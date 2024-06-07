@@ -133,6 +133,7 @@ void ComputeG2ForNode(
         uint32_t k,
         const std::shared_ptr<protos::PrefixDb>& prefix_db,
         const std::vector<std::string>& prikeys) {
+    std::cout << "Start ComputeG2ForNode k: " << k << " n: " << prikeys.size() << std::endl;
     std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
     secptr->SetPrivateKey(prikey);
     bls::protobuf::LocalPolynomial local_poly;
@@ -216,18 +217,20 @@ void ComputeG2ForNode(
             assert(all_verified_val == contribution[mem_idx] * libff::alt_bn128_G2::one());
         }
     }
+    std::cout << "End ComputeG2ForNode k: " << k << " n: " << prikeys.size() << std::endl;
 }
 
 void GenesisBlockInit::ComputeG2sForNodes(const std::vector<std::string>& prikeys) {
     std::vector<std::thread> threads;
     for (uint32_t k = 0; k < prikeys.size(); ++k) {
         threads.emplace_back(ComputeG2ForNode, prikeys[k], k, prefix_db_, prikeys);
-    }
+        if (threads.size() >= 8 || k == prikeys.size() - 1) {
+            for (uint32_t i = 0; i < threads.size(); ++i) {
+                threads[k].join();
+            }
 
-    for (auto& th : threads) {
-        if (th.joinable()) {
-            th.join();
-        }
+            threads.clear();
+        }        
     }
 
     db_->ClearPrefix("db_for_gid_");    
@@ -429,8 +432,14 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
         bls::protobuf::LocalPolynomial local_poly;
         FILE* fd = fopen(file.c_str(), "r");
         if (fd != nullptr) {
-            char* data = new char[1024 * 1024 * 10];
-            if (fgets(data, 1024 * 1024 * 10, fd) == nullptr) {
+            fseek(fd, 0, SEEK_END);
+            long file_size = ftell(fd);
+            fseek(fd, 0, SEEK_SET);
+
+            std::cout << "node file " << idx << " size: " << file_size << std::endl;
+            
+            char* data = new char[file_size+1];
+            if (fgets(data, file_size+1, fd) == nullptr) {
                 ZJC_FATAL("load bls init info failed: %s", file.c_str());
                 return;
             }
@@ -494,12 +503,12 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
         prefix_db_->AddBlsVerifyG2(secptr->GetAddress(), *req);
     };
 
-    std::vector<std::shared_ptr<std::thread>> thread_vec;
+    std::vector<std::thread> thread_vec;
     for (uint32_t idx = 0; idx < genesis_nodes.size(); ++idx) {
-        thread_vec.push_back(std::make_shared<std::thread>(callback, idx));
+        thread_vec.emplace_back(callback, idx);
         if (thread_vec.size() >= 8 || idx == genesis_nodes.size() - 1) {
             for (uint32_t i = 0; i < thread_vec.size(); ++i) {
-                thread_vec[i]->join();
+                thread_vec[i].join();
             }
 
             thread_vec.clear();
@@ -887,6 +896,8 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
     fseek(root_gens_init_block_file, 0, SEEK_END);
     long file_size = ftell(root_gens_init_block_file);
     fseek(root_gens_init_block_file, 0, SEEK_SET);
+
+    std::cout << "root_blocks size: " << file_size << std::endl;
 
     char data[file_size + 1];
     uint32_t block_count = 0;
@@ -1303,12 +1314,13 @@ bool GenesisBlockInit::BlsAggSignBlock(
     std::vector<std::thread> threads;
     for (uint32_t i = 0; i < t; ++i) {
         threads.emplace_back(sign_task, i);
-    }
+        if (threads.size() >= 8 || i == t - 1) {
+            for (uint32_t i = 0; i < threads.size(); ++i) {
+                threads[i].join();
+            }
 
-    for (auto& th : threads) {
-        if (th.joinable()) {
-            th.join();
-        }
+            threads.clear();
+        }        
     }
 
 #if MOCK_SIGN
