@@ -286,7 +286,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     // 成功接入链中，标记交易占用
     acceptor()->MarkBlockTxsAsUsed(v_block->block);
         
-    ZJC_INFO("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, vblock: %lu, txs: %lu",
+    ZJC_DEBUG("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, vblock: %lu, txs: %lu",
         pool_idx_,
         pacemaker()->HighQC()->view,
         pacemaker()->HighTC()->view,
