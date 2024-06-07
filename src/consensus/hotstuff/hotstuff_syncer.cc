@@ -150,7 +150,7 @@ void HotstuffSyncer::SyncAllPools() {
             if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
                 // ZJC_DEBUG("pool: %d, sync pool, timeout_duration: %lu ms",
                 //     pool_idx, SyncTimerCycleUs(pool_idx)/1000);
-                ZJC_INFO("pool: %d, cur chain: %s, local: %d", pool_idx, view_block_chain(pool_idx)->String().c_str(), crypto(pool_idx)->GetLatestElectItem()->LocalMember()->index);
+                ZJC_INFO("pool: %d, cur chain: %s, local: %d", pool_idx, view_block_chain(pool_idx)->String().c_str(), crypto(pool_idx)->GetLatestElectItem(common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
                 SyncPool(pool_idx, 1);
                 last_timers_us_[pool_idx] = common::TimeUtils::TimestampUs();
             }            
