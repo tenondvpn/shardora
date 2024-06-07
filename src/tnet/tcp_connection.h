@@ -75,7 +75,7 @@ public:
         MsgPacket* reply_packet = new MsgPacket(0, tnet::kEncodeWithHeader, false, 0);
         // local message is thread safe and don't free memory
         reply_packet->SetMessage((char*)data, len);
-         int res = SendPacket(*reply_packet);
+        int res = SendPacket(*reply_packet);
         if (res != 0) {
             reply_packet->Free();
         }

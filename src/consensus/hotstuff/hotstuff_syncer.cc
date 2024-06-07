@@ -86,6 +86,10 @@ void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
         ZJC_INFO("pool: %d handle single request msg",
             msg_ptr->header.view_block_proto().single_req().pool_idx());        
     }
+    if (msg_ptr->header.view_block_proto().has_view_block_req()) {
+        ZJC_INFO("pool: %d handle request msg",
+            msg_ptr->header.view_block_proto().view_block_req().pool_idx());        
+    }    
     consume_queues_[thread_idx].push(msg_ptr);
 }
 
@@ -240,7 +244,13 @@ Status HotstuffSyncer::SendRequest(uint32_t network_id, const view_block::protob
     transport::TcpTransport::Instance()->SetMessageHash(msg);
 
     for (const auto& node : selectedNodes) {
-        ZJC_INFO("sync view block from ip: %s, port: %d, has query hash: %d", node->public_ip.c_str(), node->public_port, view_block_msg.has_single_req());
+        uint32_t pool = 0;
+        if (view_block_msg.has_view_block_req()) {
+            pool = view_block_msg.view_block_req().pool_idx();
+        } else {
+            pool = view_block_msg.single_req().pool_idx();
+        } 
+        ZJC_INFO("pool: %d, sync view block from ip: %s, port: %d, has query hash: %d", pool, node->public_ip.c_str(), node->public_port, view_block_msg.has_single_req());
         transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);            
     }
     return Status::kSuccess;
@@ -477,20 +487,20 @@ Status HotstuffSyncer::ReplyMsg(
         uint32_t network_id,
         const view_block::protobuf::ViewBlockSyncMessage& view_block_msg,
         const transport::MessagePtr& msg_ptr) {
-    
     transport::protobuf::Header msg;
-    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    msg.set_src_sharding_id(network_id);
     dht::DhtKeyManager dht_key(network_id);
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kHotstuffSyncMessage);
     msg.mutable_view_block_proto()->CopyFrom(view_block_msg);
     
     transport::TcpTransport::Instance()->SetMessageHash(msg);
-    ZJC_INFO("pool: %d, network: %lu, ip: %s, port: %d, with_query_hash: %d",
+    ZJC_INFO("pool: %d, network: %lu, ip: %s, port: %d, with_query_hash: %d, hash64: %lu",
         view_block_msg.view_block_res().pool_idx(), network_id,
         msg_ptr->conn->PeerIp().c_str(),
         msg_ptr->conn->PeerPort(),
-        msg.view_block_proto().view_block_res().has_query_hash());
+        msg.view_block_proto().view_block_res().has_query_hash(),
+        msg.hash64());
     transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
     return Status::kSuccess; 
 }
@@ -517,7 +527,6 @@ Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
             return Status::kSuccess;
         }
     }
-    
     
     processResponseQcTc(pool_idx, view_block_msg.view_block_res());
     processResponseLatestCommittedBlock(pool_idx, view_block_msg.view_block_res());

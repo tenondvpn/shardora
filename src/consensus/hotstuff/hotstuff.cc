@@ -900,9 +900,10 @@ Status Hotstuff::ConstructViewBlock(
             leader_idx,
             view_block_chain()->String().c_str());
         // 从邻居节点同步 parent block
-        if (sync_view_block_fn_) {
-            sync_view_block_fn_(pool_idx_, view_block->parent_hash);
-        }
+        // 建议去掉，只使用 sync_pool_fn_ 同步，消息越多由于线程占用会导致超时时越卡顿
+        // if (sync_view_block_fn_) {
+        //     sync_view_block_fn_(pool_idx_, view_block->parent_hash);
+        // }
         return s;
     }
     
