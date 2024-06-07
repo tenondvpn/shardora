@@ -108,11 +108,11 @@ void Pacemaker::OnLocalTimeout() {
     }    
     
     // if view is last one, deal directly.
-    if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
-        last_timeout_->header.hotstuff_timeout_proto().view() >= CurView()) {
-        SendTimeout(last_timeout_);
-        return;
-    }
+    // if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
+    //     last_timeout_->header.hotstuff_timeout_proto().view() >= CurView()) {
+    //     SendTimeout(last_timeout_);
+    //     return;
+    // }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
