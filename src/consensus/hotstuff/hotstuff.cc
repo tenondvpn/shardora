@@ -259,7 +259,8 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
 #ifndef NDEBUG
     for (int32_t i = 0; i < v_block->block->tx_list_size(); ++i) {
         ZJC_DEBUG("block net: %u, pool: %u, height: %lu, prehash: %s, hash: %s, step: %d, "
-            "pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, vblock: %lu, txs: %lu",
+            "pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, "
+            "vblock: %lu, txs: %lu, vote block hash: %s",
             block_info->block->network_id(),
             block_info->block->pool_index(),
             block_info->block->height(),
@@ -272,7 +273,8 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
             view_block_chain()->Size(),
             pacemaker()->CurView(),
             v_block->view,
-            v_block->block->tx_list_size());
+            v_block->block->tx_list_size(),
+            common::Encode::HexEncode(v_block->hash).c_str());
 
     }
 #endif
