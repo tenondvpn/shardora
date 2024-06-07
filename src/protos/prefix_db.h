@@ -310,7 +310,8 @@ public:
         key.append((char*)&pool_index, sizeof(pool_index));
         key.append((char*)&height, sizeof(height));
         batch.Put(key, block_hash);
-        ZJC_DEBUG("success save block with height: %u, %u, %lu", sharding_id, pool_index, height);
+        ZJC_DEBUG("save sync key value %u_%u_%lu, success save block with height: %u, %u, %lu",
+            sharding_id, pool_index, height, sharding_id, pool_index, height);
     }
 
     bool GetBlockHashWithBlockHeight(
@@ -329,7 +330,8 @@ public:
             return false;
         }
 
-        ZJC_DEBUG("success get block with height: %u, %u, %lu", sharding_id, pool_index, height);
+        ZJC_DEBUG("get sync key value %u_%u_%lu, success get block with height: %u, %u, %lu",
+            sharding_id, pool_index, height, sharding_id, pool_index, height);
         return true;
     }
 

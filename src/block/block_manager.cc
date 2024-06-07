@@ -986,6 +986,15 @@ void BlockManager::AddNewBlock(
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBatch& db_batch) {
     // TODO: check all block saved success
+    ZJC_DEBUG("new block coming sharding id: %u, pool: %d, height: %lu, "
+        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
+        block_item->network_id(),
+        block_item->pool_index(),
+        block_item->height(),
+        block_item->tx_list_size(),
+        common::Encode::HexEncode(block_item->hash()).c_str(),
+        block_item->electblock_height(),
+        block_item->timeblock_height());
     assert(block_item->electblock_height() >= 1);
     // block 两条信息持久化
     if (!prefix_db_->SaveBlock(*block_item, db_batch)) {
@@ -1059,7 +1068,7 @@ void BlockManager::AddNewBlock(
         ZJC_FATAL("write block to db failed!");
     }
 
-    ZJC_DEBUG("new block coming sharding id: %u, pool: %d, height: %lu, "
+    ZJC_DEBUG("success new block coming sharding id: %u, pool: %d, height: %lu, "
         "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
         block_item->network_id(),
         block_item->pool_index(),

@@ -23,8 +23,14 @@ Pacemaker::Pacemaker(
         const std::shared_ptr<ViewDuration>& d) :
     pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d) {
     
-    high_qc_ = GetQCWrappedByGenesis();
-    high_tc_ = std::make_shared<TC>(nullptr, BeforeGenesisView, 1, 0);
+    high_qc_ = GetQCWrappedByGenesis(pool_idx_);
+    high_tc_ = std::make_shared<TC>(
+        common::GlobalInfo::Instance()->network_id(), 
+        pool_idx_, 
+        nullptr, 
+        BeforeGenesisView, 
+        1, 
+        0);
     cur_view_ = GenesisView;
 }
 
@@ -94,9 +100,7 @@ void Pacemaker::OnLocalTimeout() {
     // start a new timer for the timeout case
     StopTimeoutTimer();
     duration_->ViewTimeout();
-    
     defer(StartTimeoutTimer());
-
     // 超时后先触发一次同步，主要是尽量同步最新的 HighQC，降低因 HighQC 不一致造成多次超时的概率
     // 由于 HotstuffSyncer 周期性同步，这里不触发同步影响也不大
     if (sync_pool_fn_) {
@@ -109,14 +113,10 @@ void Pacemaker::OnLocalTimeout() {
         SendTimeout(last_timeout_);
         return;
     }
-    
-
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
-
-
-    auto elect_item = crypto_->GetLatestElectItem();
+    auto elect_item = crypto_->GetLatestElectItem(common::GlobalInfo::Instance()->network_id());
     if (!elect_item) {
         return;
     }
@@ -124,9 +124,13 @@ void Pacemaker::OnLocalTimeout() {
     std::string bls_sign_x;
     std::string bls_sign_y;
     // TODO Leader Idx
-    auto view_hash = GetViewHash(CurView(), elect_item->ElectHeight(), 0);
+    auto view_hash = GetViewHash(
+        common::GlobalInfo::Instance()->network_id(),
+        pool_idx_,
+        CurView(), elect_item->ElectHeight(), 0);
     // 使用最新的 elect_height 签名
     if (crypto_->PartialSign(
+            common::GlobalInfo::Instance()->network_id(),
             elect_item->ElectHeight(),
             view_hash,
             &bls_sign_x,
@@ -138,7 +142,7 @@ void Pacemaker::OnLocalTimeout() {
     timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());    
     timeout_msg.set_sign_x(bls_sign_x);
     timeout_msg.set_sign_y(bls_sign_y);
-    timeout_msg.set_view_hash(GetViewHash(CurView(), elect_item->ElectHeight(), 0));
+    timeout_msg.set_view_hash(view_hash);
     timeout_msg.set_view(CurView());
     timeout_msg.set_elect_height(elect_item->ElectHeight());
     timeout_msg.set_pool_idx(pool_idx_); // 用于分配线程
@@ -146,34 +150,35 @@ void Pacemaker::OnLocalTimeout() {
     
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     msg.set_type(common::kHotstuffTimeoutMessage);
-    transport::TcpTransport::Instance()->SetMessageHash(msg);
     last_timeout_ = msg_ptr;
     // 停止对当前 view 的投票
     if (stop_voting_fn_) {
         stop_voting_fn_(CurView());
     }
 
+    ZJC_DEBUG("now send local timeout msg hash: %s, view: %u, pool: %u",
+        common::Encode::HexEncode(view_hash).c_str(), CurView(), pool_idx_);
     SendTimeout(msg_ptr);
 }
 
-void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& msg_ptr) {    
+void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& msg_ptr) {
     auto& msg = msg_ptr->header;
     auto leader = leader_rotation_->GetLeader();
     if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
         dht::DhtKeyManager dht_key(leader->net_id, leader->id);
         msg.set_des_dht_key(dht_key.StrKey());
+        transport::TcpTransport::Instance()->SetMessageHash(msg);
         ZJC_DEBUG("Send TimeoutMsg pool: %d, to ip: %s, port: %d, "
             "local_idx: %d, id: %s, local id: %s, hash64: %lu, view: %lu, highqc: %lu",
             pool_idx_,
-            common::Uint32ToIp(leader->public_ip).c_str(), 
-            leader->public_port, 
+            common::Uint32ToIp(leader->public_ip).c_str(),
+            leader->public_port,
             msg.hotstuff_timeout_proto().member_id(),
             common::Encode::HexEncode(leader->id).c_str(),
             common::Encode::HexEncode(crypto_->security()->GetAddress()).c_str(),
             msg.hash64(),
             msg.hotstuff_timeout_proto().view(),
             HighQC()->view);
-        transport::TcpTransport::Instance()->SetMessageHash(msg);
         if (leader->public_ip == 0 || leader->public_port == 0) {
             network::Route::Instance()->Send(msg_ptr);
         } else {
@@ -184,7 +189,7 @@ void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& 
         }
     } else {
         OnRemoteTimeout(msg_ptr);
-    }        
+    }
 }
 
 // OnRemoteTimeout 由 Consensus 调用
@@ -222,11 +227,11 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     // 视图切换
     auto tc = std::make_shared<TC>();
     s = crypto_->CreateTC(
-            timeout_proto.view(),
-            timeout_proto.elect_height(),
-            timeout_proto.leader_idx(),
-            reconstructed_sign,
-            tc);
+        timeout_proto.view(),
+        timeout_proto.elect_height(),
+        timeout_proto.leader_idx(),
+        reconstructed_sign,
+        tc);
     if (s != Status::kSuccess || !tc) {
         return;
     }
@@ -244,6 +249,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     
     // New Propose
     if (new_proposal_fn_) {
+        ZJC_DEBUG("now ontime called propose: %d", pool_idx_);
         new_proposal_fn_(new_sync_info()->WithQC(HighQC())->WithTC(HighTC()));
     }
 }

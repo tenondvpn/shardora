@@ -120,26 +120,31 @@ public:
         if (sharding_id > max_consensus_sharding_id_) {
             max_consensus_sharding_id_ = sharding_id;
         }
-        if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
+
+        if (sharding_id > network::kConsensusShardEndNetworkId) {
+            assert(false);
             return;
         }
-        if (elect_item_ != nullptr && elect_item_->ElectHeight() >= elect_height) {
+
+        if (elect_items_[sharding_id] != nullptr &&
+                elect_items_[sharding_id]->ElectHeight() >= elect_height) {
             return;
         }
+
         auto elect_item = std::make_shared<ElectItem>(security_ptr_,
             sharding_id, elect_height, members, common_pk, sk);
-
-        prev_elect_item_ = elect_item_;
-        elect_item_ = elect_item;
-
-        RefreshMemberAddrs();
+        prev_elect_items_[sharding_id] = elect_items_[sharding_id];
+        elect_items_[sharding_id] = elect_item;
+        RefreshMemberAddrs(sharding_id);
     }
 
-    std::shared_ptr<ElectItem> GetElectItem(const uint64_t elect_height) const {
-        if (elect_item_ && elect_height == elect_item_->ElectHeight()) {
-            return elect_item_;
-        } else if (prev_elect_item_ && elect_height == prev_elect_item_->ElectHeight()) {
-            return prev_elect_item_;
+    std::shared_ptr<ElectItem> GetElectItem(uint32_t sharding_id, const uint64_t elect_height) const {
+        if (elect_items_[sharding_id] &&
+                elect_height == elect_items_[sharding_id]->ElectHeight()) {
+            return elect_items_[sharding_id];
+        } else if (prev_elect_items_[sharding_id] &&
+                elect_height == prev_elect_items_[sharding_id]->ElectHeight()) {
+            return prev_elect_items_[sharding_id];
         }
         // 内存中没有从 ElectManager 获取
         auto net_id = common::GlobalInfo::Instance()->network_id(); 
@@ -151,10 +156,10 @@ public:
         }
         
         auto members = elect_mgr_->GetNetworkMembersWithHeight(
-                elect_height,
-                net_id,
-                &common_pk,
-                &sec_key);
+            elect_height,
+            net_id,
+            &common_pk,
+            &sec_key);
         if (members == nullptr || common_pk == libff::alt_bn128_G2::zero()) {
             ZJC_ERROR("failed get elect members or common pk: %u, %lu, %d",
                 net_id,
@@ -164,25 +169,29 @@ public:
         }
         
         return std::make_shared<ElectItem>(
-                security_ptr_,
-                net_id,
-                elect_height,
-                members,
-                common_pk,
-                sec_key);
+            security_ptr_,
+            net_id,
+            elect_height,
+            members,
+            common_pk,
+            sec_key);
     }
 
-    inline std::shared_ptr<ElectItem> GetElectItem() const {
-        return elect_item_ != nullptr ? elect_item_ : prev_elect_item_;
+    inline std::shared_ptr<ElectItem> GetElectItemWithShardingId(uint32_t sharding_id) const {
+        if (sharding_id > network::kConsensusShardEndNetworkId) {
+            return nullptr;
+        }
+
+        return elect_items_[sharding_id] != nullptr ? elect_items_[sharding_id] : prev_elect_items_[sharding_id];
     }
 
     // 更新 elect_item members 的 addr
-    void RefreshMemberAddrs() {
-        if (!elect_item_) {
+    void RefreshMemberAddrs(uint32_t sharding_id) {
+        if (!elect_items_[sharding_id]) {
             ZJC_DEBUG("Leader pool elect item null");
             return;
         }
-        for (auto& member : *(elect_item_->Members())) {
+        for (auto& member : *(elect_items_[sharding_id]->Members())) {
             ZJC_DEBUG("get Leader pool %s failed: %d, %u %d", 
                 common::Encode::HexEncode(member->id).c_str(), 
                 common::GlobalInfo::Instance()->network_id(),
@@ -219,8 +228,8 @@ public:
     }
     
 private:
-    std::shared_ptr<ElectItem> prev_elect_item_ = nullptr; 
-    std::shared_ptr<ElectItem> elect_item_ = nullptr;
+    std::shared_ptr<ElectItem> prev_elect_items_[network::kConsensusShardEndNetworkId + 1] = { nullptr };
+    std::shared_ptr<ElectItem> elect_items_[network::kConsensusShardEndNetworkId + 1] = { nullptr };
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
     uint32_t max_consensus_sharding_id_ = 3;
