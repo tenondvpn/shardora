@@ -84,20 +84,7 @@ void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto header = msg_ptr->header;
     assert(header.type() == common::kHotstuffSyncMessage);
     
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    if (msg_ptr->header.view_block_proto().has_view_block_res()) {
-        ZJC_INFO("pool: %d handle response msg, has_query_hash: %d",
-            msg_ptr->header.view_block_proto().view_block_res().pool_idx(),
-            msg_ptr->header.view_block_proto().view_block_res().has_query_hash());
-    }
-    if (msg_ptr->header.view_block_proto().has_single_req()) {
-        ZJC_INFO("pool: %d handle single request msg",
-            msg_ptr->header.view_block_proto().single_req().pool_idx());        
-    }
-    if (msg_ptr->header.view_block_proto().has_view_block_req()) {
-        ZJC_INFO("pool: %d handle request msg",
-            msg_ptr->header.view_block_proto().view_block_req().pool_idx());        
-    }    
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();    
     consume_queues_[thread_idx].push(msg_ptr);
 }
 
@@ -134,7 +121,6 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const int32_t& node_num)
     }
         
     vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
-    //ZJC_DEBUG("pool: %d view blocks size: %lu", pool_idx, view_blocks.size());
     SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, node_num);
 }
 
@@ -148,9 +134,9 @@ void HotstuffSyncer::SyncAllPools() {
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         if (now_us - last_timers_us_[pool_idx] >= SyncTimerCycleUs(pool_idx)) {
             if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
-                // ZJC_DEBUG("pool: %d, sync pool, timeout_duration: %lu ms",
-                //     pool_idx, SyncTimerCycleUs(pool_idx)/1000);
-                ZJC_INFO("pool: %d, cur chain: %s, local: %d", pool_idx, view_block_chain(pool_idx)->String().c_str(), crypto(pool_idx)->GetLatestElectItem(common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
+                ZJC_DEBUG("pool: %d, cur chain: %s, local: %d",
+                    pool_idx, view_block_chain(pool_idx)->String().c_str(),
+                    crypto(pool_idx)->GetLatestElectItem(common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
                 SyncPool(pool_idx, 1);
                 last_timers_us_[pool_idx] = common::TimeUtils::TimestampUs();
             }            
@@ -168,8 +154,6 @@ void HotstuffSyncer::SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash
         
     vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
     // 询问所有邻居节点
-    ZJC_INFO("pool: %d, sync view block", pool_idx);
-    // Broadcast(vb_msg);
     SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, 1);
     return;
 }
@@ -256,13 +240,6 @@ Status HotstuffSyncer::SendRequest(uint32_t network_id, view_block::protobuf::Vi
     transport::TcpTransport::Instance()->SetMessageHash(msg);
 
     for (const auto& node : selectedNodes) {
-        uint32_t pool = 0;
-        if (view_block_msg.has_view_block_req()) {
-            pool = view_block_msg.view_block_req().pool_idx();
-        } else {
-            pool = view_block_msg.single_req().pool_idx();
-        } 
-        ZJC_INFO("pool: %d, sync view block from ip: %s, port: %d, has query hash: %d", pool, node->public_ip.c_str(), node->public_port, view_block_msg.has_single_req());
         transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);            
     }
     return Status::kSuccess;
@@ -393,9 +370,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
             view_block_res->mutable_latest_committed_block()->CopyFrom(pb_latest_committed_block);
         }
     }
-
-    ZJC_INFO("pool: %d Send response, shouldSyncChain: %d, block_size: %lu, network: %lu",
-        pool_idx, shouldSyncChain, view_block_res->view_block_items().size(), network_id);
+    
     return ReplyMsg(network_id, res_view_block_msg, msg_ptr);
 }
 
@@ -406,42 +381,26 @@ Status HotstuffSyncer::processRequestSingle(const transport::MessagePtr& msg_ptr
     uint32_t network_id = view_block_msg.single_req().network_id();
     uint32_t pool_idx = view_block_msg.single_req().pool_idx();
 
-    ZJC_INFO("pool: %d ====1.0", pool_idx);
     if (common::GlobalInfo::Instance()->network_id() != network_id) {
-        ZJC_INFO("pool: %d ====2.0 net: %d, self: %d", pool_idx, network_id, common::GlobalInfo::Instance()->network_id());
         return Status::kError;
     }    
 
     auto chain = view_block_chain(pool_idx);
     if (!chain) {
-        ZJC_INFO("pool: %d no chain====2.1", pool_idx);
         return Status::kError;
     }
 
     auto query_hash = view_block_msg.single_req().query_hash();
-    ZJC_INFO("pool: %d processRequestSingle ====1.1, query_hash: %s", pool_idx,
-        common::Encode::HexEncode(query_hash).c_str());
     // 不存在 query_hash 则不同步
     std::shared_ptr<ViewBlock> view_block = nullptr;
     chain->Get(query_hash, view_block);
     if (!view_block || !hotstuff_mgr_->hotstuff(pool_idx)->GetQcOf(view_block)) {
-        View v = 0;
-        HashStr vbhash = "";
-        if (view_block) {
-            v = view_block->view;
-            vbhash = common::Encode::HexEncode(view_block->hash);
-        }
-        
-        ZJC_INFO("pool: %d ====2.2, has vb: %d, view: %lu, highqc_view: %lu, vbhash: %s, highqc_hash: %s",
-            pool_idx, view_block != nullptr, v, pacemaker(pool_idx)->HighQC()->view,
-            vbhash.c_str(), common::Encode::HexEncode(pacemaker(pool_idx)->HighQC()->view_block_hash).c_str());
         return Status::kNotFound;
     }
 
     std::vector<std::shared_ptr<ViewBlock>> all;
     chain->GetAll(all);
     if (all.size() <= 0 || all.size() > kMaxSyncBlockNum) {
-        ZJC_INFO("pool: %d ====2.3, all: %s", pool_idx, all.size());
         return Status::kError;
     }
 
@@ -467,7 +426,7 @@ Status HotstuffSyncer::processRequestSingle(const transport::MessagePtr& msg_ptr
     view_block_res.set_query_hash(query_hash); // 用于帮助 src 节点过滤冗余
     res_view_block_msg.set_create_time_us(common::TimeUtils::TimestampUs());
 
-    ZJC_INFO("pool: %d Send response single, block_size: %lu, network: %lu",
+    ZJC_DEBUG("pool: %d Send response single, block_size: %lu, network: %lu",
         pool_idx, view_block_res.view_block_items().size(), network_id);
 
     return ReplyMsg(network_id, res_view_block_msg, msg_ptr);
@@ -480,14 +439,12 @@ void HotstuffSyncer::ConsumeMessages() {
     while (pop_count++ < kPopCountMax) {
         transport::MessagePtr msg_ptr = nullptr;
         consume_queues_[thread_idx].pop(&msg_ptr);
-        ZJC_INFO("thread_idx: %lu, consume_queue size: %llu", thread_idx, consume_queues_[thread_idx].size());
         if (msg_ptr == nullptr) {
             break;
         }
         if (msg_ptr->header.view_block_proto().has_view_block_req()) {
             processRequest(msg_ptr);
         } else if (msg_ptr->header.view_block_proto().has_view_block_res()) {
-            ZJC_INFO("ConsumeMessages processResponse");
             processResponse(msg_ptr);
         } else if (msg_ptr->header.view_block_proto().has_single_req()) {
             processRequestSingle(msg_ptr);
@@ -510,7 +467,7 @@ Status HotstuffSyncer::ReplyMsg(
 
     auto ip = msg_ptr->header.view_block_proto().src_ip();
     auto port = msg_ptr->header.view_block_proto().src_port();
-    ZJC_INFO("pool: %d, network: %lu, ip: %s, port: %d, with_query_hash: %d, hash64: %lu",
+    ZJC_DEBUG("pool: %d, network: %lu, ip: %s, port: %d, with_query_hash: %d, hash64: %lu",
         view_block_msg.view_block_res().pool_idx(), network_id,
         ip.c_str(),
         port,
@@ -533,13 +490,9 @@ Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
         return Status::kError;
     }
 
-    ZJC_INFO("pool: %d processResponse, with_query_hash: %d",
-        pool_idx, view_block_msg.view_block_res().has_query_hash());
-    
     if (view_block_msg.view_block_res().has_query_hash()) {
         // 处理 single query
         // 已经有该 view block 了，直接返回
-        ZJC_INFO("pool: %d processResponse, with_query_hash", pool_idx);
         if (view_block_chain(pool_idx)->Has(view_block_msg.view_block_res().query_hash())) {
             return Status::kSuccess;
         }
@@ -631,7 +584,7 @@ Status HotstuffSyncer::processResponseChain(
         return Status::kError;
     }
 
-    ZJC_INFO("response received pool_idx: %d, view_blocks: %d, qc: %d",
+    ZJC_DEBUG("response received pool_idx: %d, view_blocks: %d, qc: %d",
         pool_idx, view_block_items.size(), view_block_qc_strs.size());    
     
     if (view_block_items.size() != view_block_qc_strs.size()) {
@@ -701,7 +654,7 @@ Status HotstuffSyncer::processResponseChain(
         tmp_chain->Store(view_block);
     }
     
-    ZJC_INFO("Sync blocks to chain, pool_idx: %d, view_blocks: %d, syncchain: %s, orichain: %s",
+    ZJC_DEBUG("Sync blocks to chain, pool_idx: %d, view_blocks: %d, syncchain: %s, orichain: %s",
         pool_idx, view_block_items.size(), tmp_chain->String().c_str(), chain->String().c_str());
 
     if (!tmp_chain->IsValid()) {
