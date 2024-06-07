@@ -120,8 +120,8 @@ void Pacemaker::OnLocalTimeout() {
     // if view is last one, deal directly.
     // 更换 epoch 后重新打包
     if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
-        last_timeout_->header.hotstuff_timeout_proto().view() >= CurView() &&
-        last_timeout_->header.hotstuff_timeout_proto().view_hash() == view_hash) {
+            last_timeout_->header.hotstuff_timeout_proto().view() >= CurView() &&
+            last_timeout_->header.hotstuff_timeout_proto().view_hash() == view_hash) {
         SendTimeout(last_timeout_);
         return;
     }
@@ -160,8 +160,12 @@ void Pacemaker::OnLocalTimeout() {
         stop_voting_fn_(CurView());
     }
 
-    ZJC_DEBUG("now send local timeout msg hash: %s, view: %u, pool: %u, elect height: %lu",
-        common::Encode::HexEncode(view_hash).c_str(), CurView(), pool_idx_, elect_item->ElectHeight());
+    ZJC_DEBUG("now send local timeout msg hash: %s, view: %u, pool: %u, "
+        "elect height: %lu, bls_sign_x: %s, bls_sign_y: %s",
+        common::Encode::HexEncode(view_hash).c_str(), 
+        CurView(), pool_idx_, elect_item->ElectHeight(),
+        common::Encode::HexEncode(bls_sign_x).c_str(),
+        common::Encode::HexEncode(bls_sign_y).c_str());
     SendTimeout(msg_ptr);
 }
 
