@@ -491,6 +491,20 @@ class QC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
   ::google::protobuf::uint32 leader_idx() const;
   void set_leader_idx(::google::protobuf::uint32 value);
 
+  // optional uint32 network_id = 9;
+  bool has_network_id() const;
+  void clear_network_id();
+  static const int kNetworkIdFieldNumber = 9;
+  ::google::protobuf::uint32 network_id() const;
+  void set_network_id(::google::protobuf::uint32 value);
+
+  // optional uint32 pool_index = 10;
+  bool has_pool_index() const;
+  void clear_pool_index();
+  static const int kPoolIndexFieldNumber = 10;
+  ::google::protobuf::uint32 pool_index() const;
+  void set_pool_index(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.QC)
  private:
   void set_has_sign_x();
@@ -509,6 +523,10 @@ class QC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
   void clear_has_elect_height();
   void set_has_leader_idx();
   void clear_has_leader_idx();
+  void set_has_network_id();
+  void clear_has_network_id();
+  void set_has_pool_index();
+  void clear_has_pool_index();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -521,6 +539,8 @@ class QC : public ::google::protobuf::Message /* @@protoc_insertion_point(class_
   ::google::protobuf::uint64 view_;
   ::google::protobuf::uint64 elect_height_;
   ::google::protobuf::uint32 leader_idx_;
+  ::google::protobuf::uint32 network_id_;
+  ::google::protobuf::uint32 pool_index_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -2237,6 +2257,54 @@ inline void QC::set_leader_idx(::google::protobuf::uint32 value) {
   set_has_leader_idx();
   leader_idx_ = value;
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.QC.leader_idx)
+}
+
+// optional uint32 network_id = 9;
+inline bool QC::has_network_id() const {
+  return (_has_bits_[0] & 0x00000100u) != 0;
+}
+inline void QC::set_has_network_id() {
+  _has_bits_[0] |= 0x00000100u;
+}
+inline void QC::clear_has_network_id() {
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline void QC::clear_network_id() {
+  network_id_ = 0u;
+  clear_has_network_id();
+}
+inline ::google::protobuf::uint32 QC::network_id() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.QC.network_id)
+  return network_id_;
+}
+inline void QC::set_network_id(::google::protobuf::uint32 value) {
+  set_has_network_id();
+  network_id_ = value;
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.QC.network_id)
+}
+
+// optional uint32 pool_index = 10;
+inline bool QC::has_pool_index() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void QC::set_has_pool_index() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void QC::clear_has_pool_index() {
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline void QC::clear_pool_index() {
+  pool_index_ = 0u;
+  clear_has_pool_index();
+}
+inline ::google::protobuf::uint32 QC::pool_index() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.QC.pool_index)
+  return pool_index_;
+}
+inline void QC::set_pool_index(::google::protobuf::uint32 value) {
+  set_has_pool_index();
+  pool_index_ = value;
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.QC.pool_index)
 }
 
 // -------------------------------------------------------------------
