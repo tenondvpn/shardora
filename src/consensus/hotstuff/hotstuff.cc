@@ -350,7 +350,8 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     std::vector<const pools::protobuf::TxMessage*> tx_msgs;
     for (const auto& tx : vote_msg.txs()) {
         tx_msgs.push_back(&tx);
-        ZJC_DEBUG("handle backup vote message get tx type: %d, to: %s, gid: %s", 
+        ZJC_DEBUG("pool : %u, handle backup vote message get tx type: %d, to: %s, gid: %s", 
+            pool_idx_,
             tx.step(), 
             common::Encode::HexEncode(tx.to()).c_str(), 
             common::Encode::HexEncode(tx.gid()).c_str());

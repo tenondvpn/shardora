@@ -90,11 +90,12 @@ Status Crypto::ReconstructAndVerifyThresSign(
         return Status::kError;
     }
 
-    ZJC_DEBUG("msg hash: %s, ok count: %u, t: %u, index: %u",
+    ZJC_DEBUG("msg hash: %s, ok count: %u, t: %u, index: %u, elect_height: %lu",
         common::Encode::HexEncode(msg_hash).c_str(), 
         collection_item->OkCount(), 
         elect_item->t(),
-        index);
+        index,
+        elect_height);
     if (collection_item->OkCount() < elect_item->t()) {
         return Status::kBlsVerifyWaiting;
     }
@@ -109,7 +110,12 @@ Status Crypto::ReconstructAndVerifyThresSign(
         all_signs.push_back(*collection_item->partial_signs[i]);
         idx_vec.push_back(i+1);
 
-        ZJC_DEBUG("hash: %s, valid index: %d", common::Encode::HexEncode(msg_hash).c_str(), i);
+        auto part_sign_x = libBLS::ThresholdUtils::fieldElementToString(
+            collection_item->partial_signs[i]->X);
+        auto part_sign_y = libBLS::ThresholdUtils::fieldElementToString(
+            collection_item->partial_signs[i]->Y);
+        ZJC_DEBUG("hash: %s, valid index: %d, x: %s, y: %s", 
+            common::Encode::HexEncode(msg_hash).c_str(), i, part_sign_x.c_str(), part_sign_y.c_str());
         if (idx_vec.size() >= elect_item->t()) {
             break;
         }
