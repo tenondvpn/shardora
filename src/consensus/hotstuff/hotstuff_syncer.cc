@@ -158,6 +158,7 @@ void HotstuffSyncer::SyncAllPools() {
     }
 }
 
+// No use, about to deprecate
 void HotstuffSyncer::SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash) {
     auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
     auto req = vb_msg.mutable_single_req();
