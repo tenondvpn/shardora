@@ -275,10 +275,6 @@ int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
 }
 
 void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
-    if (msg_ptr->header.type() == common::kHotstuffSyncMessage && msg_ptr->header.view_block_proto().has_view_block_res()) {
-        ZJC_INFO("pool: %d, recved, has_query_hash: %d", msg_ptr->header.view_block_proto().view_block_res().pool_idx(), msg_ptr->header.view_block_proto().view_block_res().has_query_hash());
-    }
-    
     if (common::kConsensusMessage == msg_ptr->header.type()) {
         if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
             return;
