@@ -46,7 +46,7 @@ def gen_nodes_conf_file(node_num_per_shard, shard_num, servers, root_node_num, s
     return
 
 def get_http_port(node_idx, net_id):
-    return 8000 + net_id * 100 + node_idx
+    return 20000 + net_id * 1000 + node_idx
 
 
 def get_tcp_port(node_idx, net_id):

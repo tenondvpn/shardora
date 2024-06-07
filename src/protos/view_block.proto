@@ -58,6 +58,8 @@ message ViewBlockSyncMessage {
     optional ViewBlockSyncResponse view_block_res = 2;
     optional SingleViewBlockSyncRequest single_req = 3;
     optional uint32 create_time_us = 4;
+    optional bytes src_ip = 5;
+    optional uint32 src_port = 6;
 }
 
 message TimeoutMessage {

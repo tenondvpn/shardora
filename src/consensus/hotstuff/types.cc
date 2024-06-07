@@ -95,18 +95,18 @@ bool QC::Unserialize(const std::string& str) {
 }
 
 HashStr ViewBlock::DoHash() const {
-    std::string qc_str;
+    std::string qc_hash;
     std::string block_hash;
     if (qc) {
-        qc_str = qc->Serialize();
+        qc_hash = qc->msg_hash();
     }
     if (block) {
         block_hash = GetBlockHash(*block);
     }
 
     std::string msg;
-    msg.reserve(qc_str.size() + block_hash.size() + parent_hash.size() + sizeof(leader_idx) + sizeof(view));
-    msg.append(qc_str);
+    msg.reserve(qc_hash.size() + block_hash.size() + parent_hash.size() + sizeof(leader_idx) + sizeof(view));
+    msg.append(qc_hash);
     msg.append(block_hash);
     msg.append(parent_hash);
     msg.append((char*)&(leader_idx), sizeof(leader_idx));

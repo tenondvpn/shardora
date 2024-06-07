@@ -1205,6 +1205,21 @@ class ViewBlockSyncMessage : public ::google::protobuf::Message /* @@protoc_inse
 
   // accessors -------------------------------------------------------
 
+  // optional bytes src_ip = 5;
+  bool has_src_ip() const;
+  void clear_src_ip();
+  static const int kSrcIpFieldNumber = 5;
+  const ::std::string& src_ip() const;
+  void set_src_ip(const ::std::string& value);
+  #if LANG_CXX11
+  void set_src_ip(::std::string&& value);
+  #endif
+  void set_src_ip(const char* value);
+  void set_src_ip(const void* value, size_t size);
+  ::std::string* mutable_src_ip();
+  ::std::string* release_src_ip();
+  void set_allocated_src_ip(::std::string* src_ip);
+
   // optional .shardora.view_block.protobuf.ViewBlockSyncRequest view_block_req = 1;
   bool has_view_block_req() const;
   void clear_view_block_req();
@@ -1248,6 +1263,13 @@ class ViewBlockSyncMessage : public ::google::protobuf::Message /* @@protoc_inse
   ::google::protobuf::uint32 create_time_us() const;
   void set_create_time_us(::google::protobuf::uint32 value);
 
+  // optional uint32 src_port = 6;
+  bool has_src_port() const;
+  void clear_src_port();
+  static const int kSrcPortFieldNumber = 6;
+  ::google::protobuf::uint32 src_port() const;
+  void set_src_port(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.ViewBlockSyncMessage)
  private:
   void set_has_view_block_req();
@@ -1258,14 +1280,20 @@ class ViewBlockSyncMessage : public ::google::protobuf::Message /* @@protoc_inse
   void clear_has_single_req();
   void set_has_create_time_us();
   void clear_has_create_time_us();
+  void set_has_src_ip();
+  void clear_has_src_ip();
+  void set_has_src_port();
+  void clear_has_src_port();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::internal::ArenaStringPtr src_ip_;
   ::shardora::view_block::protobuf::ViewBlockSyncRequest* view_block_req_;
   ::shardora::view_block::protobuf::ViewBlockSyncResponse* view_block_res_;
   ::shardora::view_block::protobuf::SingleViewBlockSyncRequest* single_req_;
   ::google::protobuf::uint32 create_time_us_;
+  ::google::protobuf::uint32 src_port_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -3097,13 +3125,13 @@ inline void SingleViewBlockSyncRequest::set_allocated_query_hash(::std::string* 
 
 // optional .shardora.view_block.protobuf.ViewBlockSyncRequest view_block_req = 1;
 inline bool ViewBlockSyncMessage::has_view_block_req() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void ViewBlockSyncMessage::set_has_view_block_req() {
-  _has_bits_[0] |= 0x00000001u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void ViewBlockSyncMessage::clear_has_view_block_req() {
-  _has_bits_[0] &= ~0x00000001u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void ViewBlockSyncMessage::clear_view_block_req() {
   if (view_block_req_ != NULL) view_block_req_->Clear();
@@ -3155,13 +3183,13 @@ inline void ViewBlockSyncMessage::set_allocated_view_block_req(::shardora::view_
 
 // optional .shardora.view_block.protobuf.ViewBlockSyncResponse view_block_res = 2;
 inline bool ViewBlockSyncMessage::has_view_block_res() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void ViewBlockSyncMessage::set_has_view_block_res() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void ViewBlockSyncMessage::clear_has_view_block_res() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void ViewBlockSyncMessage::clear_view_block_res() {
   if (view_block_res_ != NULL) view_block_res_->Clear();
@@ -3213,13 +3241,13 @@ inline void ViewBlockSyncMessage::set_allocated_view_block_res(::shardora::view_
 
 // optional .shardora.view_block.protobuf.SingleViewBlockSyncRequest single_req = 3;
 inline bool ViewBlockSyncMessage::has_single_req() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void ViewBlockSyncMessage::set_has_single_req() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void ViewBlockSyncMessage::clear_has_single_req() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void ViewBlockSyncMessage::clear_single_req() {
   if (single_req_ != NULL) single_req_->Clear();
@@ -3271,13 +3299,13 @@ inline void ViewBlockSyncMessage::set_allocated_single_req(::shardora::view_bloc
 
 // optional uint32 create_time_us = 4;
 inline bool ViewBlockSyncMessage::has_create_time_us() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void ViewBlockSyncMessage::set_has_create_time_us() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void ViewBlockSyncMessage::clear_has_create_time_us() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void ViewBlockSyncMessage::clear_create_time_us() {
   create_time_us_ = 0u;
@@ -3291,6 +3319,96 @@ inline void ViewBlockSyncMessage::set_create_time_us(::google::protobuf::uint32 
   set_has_create_time_us();
   create_time_us_ = value;
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncMessage.create_time_us)
+}
+
+// optional bytes src_ip = 5;
+inline bool ViewBlockSyncMessage::has_src_ip() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ViewBlockSyncMessage::set_has_src_ip() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ViewBlockSyncMessage::clear_has_src_ip() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ViewBlockSyncMessage::clear_src_ip() {
+  src_ip_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_src_ip();
+}
+inline const ::std::string& ViewBlockSyncMessage::src_ip() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockSyncMessage.src_ip)
+  return src_ip_.GetNoArena();
+}
+inline void ViewBlockSyncMessage::set_src_ip(const ::std::string& value) {
+  set_has_src_ip();
+  src_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncMessage.src_ip)
+}
+#if LANG_CXX11
+inline void ViewBlockSyncMessage::set_src_ip(::std::string&& value) {
+  set_has_src_ip();
+  src_ip_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.view_block.protobuf.ViewBlockSyncMessage.src_ip)
+}
+#endif
+inline void ViewBlockSyncMessage::set_src_ip(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_src_ip();
+  src_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.view_block.protobuf.ViewBlockSyncMessage.src_ip)
+}
+inline void ViewBlockSyncMessage::set_src_ip(const void* value, size_t size) {
+  set_has_src_ip();
+  src_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.view_block.protobuf.ViewBlockSyncMessage.src_ip)
+}
+inline ::std::string* ViewBlockSyncMessage::mutable_src_ip() {
+  set_has_src_ip();
+  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.ViewBlockSyncMessage.src_ip)
+  return src_ip_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ViewBlockSyncMessage::release_src_ip() {
+  // @@protoc_insertion_point(field_release:shardora.view_block.protobuf.ViewBlockSyncMessage.src_ip)
+  if (!has_src_ip()) {
+    return NULL;
+  }
+  clear_has_src_ip();
+  return src_ip_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ViewBlockSyncMessage::set_allocated_src_ip(::std::string* src_ip) {
+  if (src_ip != NULL) {
+    set_has_src_ip();
+  } else {
+    clear_has_src_ip();
+  }
+  src_ip_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), src_ip);
+  // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockSyncMessage.src_ip)
+}
+
+// optional uint32 src_port = 6;
+inline bool ViewBlockSyncMessage::has_src_port() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void ViewBlockSyncMessage::set_has_src_port() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void ViewBlockSyncMessage::clear_has_src_port() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void ViewBlockSyncMessage::clear_src_port() {
+  src_port_ = 0u;
+  clear_has_src_port();
+}
+inline ::google::protobuf::uint32 ViewBlockSyncMessage::src_port() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockSyncMessage.src_port)
+  return src_port_;
+}
+inline void ViewBlockSyncMessage::set_src_port(::google::protobuf::uint32 value) {
+  set_has_src_port();
+  src_port_ = value;
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncMessage.src_port)
 }
 
 // -------------------------------------------------------------------
