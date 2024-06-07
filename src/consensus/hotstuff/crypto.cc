@@ -229,6 +229,8 @@ Status Crypto::CreateQC(
     qc->view_block_hash = view_block_hash;
     qc->commit_view_block_hash = commit_view_block_hash;
     qc->leader_idx = leader_idx;
+    qc->network_id = common::GlobalInfo::Instance()->network_id();
+    qc->pool_index = pool_idx_;
     return Status::kSuccess;
 }
 
@@ -246,6 +248,8 @@ Status Crypto::CreateTC(
     tc->view = view;
     tc->elect_height = elect_height;
     tc->leader_idx = leader_idx;
+    tc->network_id = common::GlobalInfo::Instance()->network_id();
+    tc->pool_index = pool_idx_;
     return Status::kSuccess;
 }
 
