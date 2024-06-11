@@ -226,7 +226,7 @@ void GenesisBlockInit::ComputeG2sForNodes(const std::vector<std::string>& prikey
         threads.push_back(std::thread(ComputeG2ForNode, prikeys[k], k, prefix_db_, prikeys));
         if (threads.size() >= 8 || k == prikeys.size() - 1) {
             for (uint32_t i = 0; i < threads.size(); ++i) {
-                threads[k].join();
+                threads[i].join();
             }
 
             threads.clear();
