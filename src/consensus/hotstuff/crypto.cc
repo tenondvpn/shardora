@@ -168,7 +168,9 @@ Status Crypto::VerifyThresSign(
     std::string verify_hash_b;
     Status s = GetVerifyHashA(sharding_id, elect_height, msg_hash, &verify_hash_a);
     if (s != Status::kSuccess) {
-        ZJC_DEBUG("GetVerifyHashA faile net: %u, pool: %u, height: %lu, hash: %s", );
+        ZJC_DEBUG("GetVerifyHashA faile net: %u, pool: %u, height: %lu, hash: %s",
+            sharding_id, sharding_id, elect_height,
+            common::Encode::HexEncode(msg_hash).c_str());
         // assert(false);
         return s;
     }
