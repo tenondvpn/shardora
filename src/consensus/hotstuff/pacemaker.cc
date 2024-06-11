@@ -165,8 +165,8 @@ void Pacemaker::OnLocalTimeout() {
         "elect height: %lu, bls_sign_x: %s, bls_sign_y: %s",
         common::Encode::HexEncode(view_hash).c_str(), 
         CurView(), pool_idx_, elect_item->ElectHeight(),
-        common::Encode::HexEncode(bls_sign_x).c_str(),
-        common::Encode::HexEncode(bls_sign_y).c_str());
+        bls_sign_x.c_str(),
+        bls_sign_y.c_str());
     SendTimeout(msg_ptr);
 }
 
