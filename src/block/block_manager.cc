@@ -1126,23 +1126,25 @@ void BlockManager::HandleElectTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
+    ZJC_DEBUG("handle elect tx storage size: %u", tx.storages_size());
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        ZJC_DEBUG("handle elect tx storage index: %u, key: %s, protos::kElectNodeAttrElectBlock: %s",
+            i, tx.storages(i).key().c_str(), protos::kElectNodeAttrElectBlock.c_str());
         if (tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
             elect::protobuf::ElectBlock elect_block;
             if (!elect_block.ParseFromString(tx.storages(i).value())) {
+                assert(false);
                 return;
             }
 
             AddMiningToken(block.hash(), elect_block);
-            if (shard_elect_tx_[elect_block.shard_network_id()] == nullptr) {
-                return;
+            if (shard_elect_tx_[elect_block.shard_network_id()] != nullptr) {
+                if (shard_elect_tx_[elect_block.shard_network_id()]->tx_ptr->tx_info.gid() == tx.gid()) {
+                    shard_elect_tx_[elect_block.shard_network_id()] = nullptr;
+                    ZJC_DEBUG("success erase elect tx: %u", elect_block.shard_network_id());
+                }
             }
-
-            if (shard_elect_tx_[elect_block.shard_network_id()]->tx_ptr->tx_info.gid() == tx.gid()) {
-                shard_elect_tx_[elect_block.shard_network_id()] = nullptr;
-                ZJC_DEBUG("success erase elect tx: %u", elect_block.shard_network_id());
-            }
-
+            
             // 将 elect block 中的 common_pk 持久化
             if (elect_block.prev_members().prev_elect_height() > 0) {
                 prefix_db_->SaveElectHeightCommonPk(

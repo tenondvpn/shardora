@@ -115,7 +115,8 @@ Status Crypto::ReconstructAndVerifyThresSign(
         auto part_sign_y = libBLS::ThresholdUtils::fieldElementToString(
             collection_item->partial_signs[i]->Y);
         ZJC_DEBUG("hash: %s, valid index: %d, x: %s, y: %s", 
-            common::Encode::HexEncode(msg_hash).c_str(), i, part_sign_x.c_str(), part_sign_y.c_str());
+            common::Encode::HexEncode(msg_hash).c_str(),
+            i, part_sign_x.c_str(), part_sign_y.c_str());
         if (idx_vec.size() >= elect_item->t()) {
             break;
         }
