@@ -1138,16 +1138,13 @@ void BlockManager::HandleElectTx(
             }
 
             AddMiningToken(block.hash(), elect_block);
-            if (shard_elect_tx_[elect_block.shard_network_id()] == nullptr) {
-                assert(false);
-                return;
+            if (shard_elect_tx_[elect_block.shard_network_id()] != nullptr) {
+                if (shard_elect_tx_[elect_block.shard_network_id()]->tx_ptr->tx_info.gid() == tx.gid()) {
+                    shard_elect_tx_[elect_block.shard_network_id()] = nullptr;
+                    ZJC_DEBUG("success erase elect tx: %u", elect_block.shard_network_id());
+                }
             }
-
-            if (shard_elect_tx_[elect_block.shard_network_id()]->tx_ptr->tx_info.gid() == tx.gid()) {
-                shard_elect_tx_[elect_block.shard_network_id()] = nullptr;
-                ZJC_DEBUG("success erase elect tx: %u", elect_block.shard_network_id());
-            }
-
+            
             // 将 elect block 中的 common_pk 持久化
             if (elect_block.prev_members().prev_elect_height() > 0) {
                 prefix_db_->SaveElectHeightCommonPk(
