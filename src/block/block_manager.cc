@@ -207,6 +207,11 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     if (msg_ptr->header.has_block()) {
+        ZJC_DEBUG("block message coming net: %u, pool: %u, height: %lu, hash64: %lu",
+            msg_ptr->header.block().network_id(),
+            msg_ptr->header.block().pool_index(),
+            msg_ptr->header.block().height(),
+            msg_ptr->header.hash64());
         auto& header = msg_ptr->header;
         auto local_net = common::GlobalInfo::Instance()->network_id();
         if (local_net >= network::kConsensusShardEndNetworkId) {
