@@ -1133,11 +1133,13 @@ void BlockManager::HandleElectTx(
         if (tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
             elect::protobuf::ElectBlock elect_block;
             if (!elect_block.ParseFromString(tx.storages(i).value())) {
+                assert(false);
                 return;
             }
 
             AddMiningToken(block.hash(), elect_block);
             if (shard_elect_tx_[elect_block.shard_network_id()] == nullptr) {
+                assert(false);
                 return;
             }
 
