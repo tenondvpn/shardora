@@ -87,7 +87,9 @@ public:
             phash = it->second->view_block->parent_hash;
         }
 
-        ZJC_DEBUG("success check tx gid: %s", common::Encode::HexEncode(gid).c_str());
+        ZJC_DEBUG("success check tx gid: %s, phash: %s", 
+            common::Encode::HexEncode(gid).c_str(), 
+            common::Encode::HexEncode(phash).c_str());
         return true;
     }
 
