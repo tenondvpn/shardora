@@ -67,6 +67,8 @@ public:
 
     Status GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>&);
 
+    Status GetRecursiveChildren(HashStr, std::vector<std::shared_ptr<ViewBlock>>&);
+
     inline std::shared_ptr<ViewBlock> LatestCommittedBlock() const {
         return latest_committed_block_;
     }

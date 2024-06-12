@@ -133,6 +133,27 @@ Status ViewBlockChain::GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>& vi
     return Status::kSuccess;
 }
 
+// 获取某个 hash 所有的子块（不同 level）
+Status ViewBlockChain::GetRecursiveChildren(HashStr hash, std::vector<std::shared_ptr<ViewBlock>>& view_blocks) {
+    std::vector<std::shared_ptr<ViewBlock>> level_children;
+    Status s = GetChildren(hash, level_children);
+    if (s != Status::kSuccess) {
+        return s;
+    }
+
+    if (level_children.empty()) {
+        return Status::kSuccess;
+    }
+    
+    for (const auto& vb : level_children) {
+        view_blocks.push_back(vb);
+        Status s = GetRecursiveChildren(vb->hash, view_blocks);
+        if (s != Status::kSuccess) {
+            return s;
+        }
+    }
+}
+
 // 剪掉从上次 prune_height 到 height 之间，latest_committed 之前的所有分叉，并返回这些分叉上的 blocks
 Status ViewBlockChain::PruneTo(const HashStr& target_hash, std::vector<std::shared_ptr<ViewBlock>>& forked_blockes, bool include_history) {
     std::shared_ptr<ViewBlock> current = nullptr;
