@@ -216,7 +216,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     
     // 2 Veriyfy Leader
     if (VerifyLeader(v_block->leader_idx) != Status::kSuccess) {
-        ZJC_ERROR("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
+        ZJC_WARN("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
             pool_idx_, v_block->view, header.hash64());
         return;
     }
@@ -804,7 +804,7 @@ Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
     if (leader_idx != leader->index) {
         auto eleader = leader_rotation()->GetExpectedLeader();
         if (!eleader || leader_idx != eleader->index) {
-            ZJC_ERROR("pool: %d, leader_idx message is error, %d, %d", pool_idx_, leader_idx, leader->index);
+            ZJC_WARN("pool: %d, leader_idx message is error, %d, %d", pool_idx_, leader_idx, leader->index);
             return Status::kError;
         }
         return Status::kError;
