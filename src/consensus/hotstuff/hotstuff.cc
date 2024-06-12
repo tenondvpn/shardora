@@ -426,7 +426,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     
     // 一旦生成新 QC，且本地还没有该 view_block，就直接从 VoteMsg 中获取并添加
     // 没有这个逻辑也不影响共识，只是需要同步而导致 tps 降低
-    if (vote_msg.has_view_block_item()) {
+    if (vote_msg.has_view_block_item() && !view_block_chain()->Has(qc->view_block_hash)) {
         auto pb_v_block = vote_msg.view_block_item();
         auto v_block = std::make_shared<ViewBlock>();
         s = Proto2ViewBlock(pb_v_block, v_block);
