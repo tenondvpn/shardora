@@ -699,6 +699,10 @@ Status HotstuffSyncer::MergeChain(
     sync_chain->GetOrderedAll(sync_all_blocks);
         
     for (const auto& sync_block : sync_all_blocks) {
+        // 如果存在交点，则交点之前的块不考虑
+        if (cross_block && sync_block->view < cross_block->view) {
+            continue;
+        }
         Status s = on_recv_vb_fn_(pool_idx, ori_chain, sync_block);
         if (s != Status::kSuccess) {
             ZJC_ERROR("pool: %d, merge chain block: %lu failed, s: %d", pool_idx, sync_block->view, s);
