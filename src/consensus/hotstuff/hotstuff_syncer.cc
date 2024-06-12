@@ -96,31 +96,6 @@ void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr)
     HandleSyncedBlocks();
 }
 
-void HotstuffSyncer::BroadcastPacemakerInfo(uint32_t pool_idx) {
-    transport::protobuf::Header msg;
-    view_block::protobuf::ViewBlockSyncMessage&  res_view_block_msg = *msg.mutable_view_block_proto();
-    
-    res_view_block_msg.set_create_time_us(common::TimeUtils::TimestampUs());
-    auto view_block_res = res_view_block_msg.mutable_view_block_res();
-    view_block_res->set_network_id(common::GlobalInfo::Instance()->network_id());
-    view_block_res->set_pool_idx(pool_idx);
-    
-    view_block_res->set_high_tc_str(pacemaker(pool_idx)->HighTC()->Serialize());
-    view_block_res->set_high_qc_str(pacemaker(pool_idx)->HighQC()->Serialize());
-    
-
-    auto latest_committed_block = view_block_chain(pool_idx)->LatestCommittedBlock();
-    auto latest_committed_qc = view_block_chain(pool_idx)->GetCommitQcFromDb(latest_committed_block);
-    if (latest_committed_qc) {
-        view_block::protobuf::ViewBlockItem pb_latest_committed_block;
-        ViewBlock2Proto(latest_committed_block, &pb_latest_committed_block);
-        pb_latest_committed_block.set_self_commit_qc_str(latest_committed_qc->Serialize());
-        view_block_res->mutable_latest_committed_block()->CopyFrom(pb_latest_committed_block);
-    }
-
-    Broadcast(res_view_block_msg);   
-}
-
 void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, bool broadcast) {
     // TODO(HT): test
     auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
@@ -165,7 +140,6 @@ void HotstuffSyncer::SyncAllPools() {
                 ZJC_DEBUG("pool: %d, cur chain: %s, local: %d",
                     pool_idx, view_block_chain(pool_idx)->String().c_str(),
                     crypto(pool_idx)->GetLatestElectItem(common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
-                BroadcastPacemakerInfo(pool_idx);
                 SyncPool(pool_idx, false);
                 last_timers_us_[pool_idx] = common::TimeUtils::TimestampUs();
             }            
