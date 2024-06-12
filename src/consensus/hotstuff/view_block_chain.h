@@ -71,8 +71,10 @@ public:
     Status GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>&);
 
     bool CheckTxListValid(const std::shared_ptr<ViewBlock>& view_block) {
+        ZJC_DEBUG("check tx valid tx size: %u",  view_block->block->tx_list_size());
         if (view_block->added_txs != nullptr) {
             assert(false);
+            ZJC_DEBUG("check tx valid success 0");
             return true;
         }
 
@@ -88,6 +90,7 @@ public:
                 auto iter = it->second->view_block->added_txs->find(view_block->block->tx_list(i).gid());
                 if (iter != it->second->view_block->added_txs->end()) {
                     view_block->added_txs = nullptr;
+                    ZJC_DEBUG("check tx valid failed 0");
                     return false;
                 }
 
@@ -103,6 +106,7 @@ public:
                 common::Encode::HexEncode(view_block->block->tx_list(i).gid()).c_str());
         }
 
+        ZJC_DEBUG("check tx valid success 1");
         return true;
     }
 
