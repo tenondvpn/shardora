@@ -119,13 +119,12 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, bool broadcast) {
     if (latest_committed_block) {
         req->set_latest_committed_block_hash(latest_committed_block->hash);
     }
+    req->set_broadcast(broadcast);
         
     vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
-    if (!broadcast) {
-        SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, 1);
-        return;
-    }
-    Broadcast(vb_msg);
+
+    SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, 1);
+    return;
 }
 
 void HotstuffSyncer::SyncAllPools() {
@@ -275,6 +274,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     View src_high_qc_view = view_block_msg.view_block_req().high_qc_view();
     View src_high_tc_view = view_block_msg.view_block_req().high_tc_view();
     View src_max_view = view_block_msg.view_block_req().max_view();
+    bool src_broadcast = view_block_msg.view_block_req().broadcast();
     if (view_block_msg.view_block_req().has_latest_committed_block_hash()) {
         src_latest_committed_block_hash = view_block_msg.view_block_req().latest_committed_block_hash();
     }
@@ -375,8 +375,11 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
             view_block_res->mutable_latest_committed_block()->CopyFrom(pb_latest_committed_block);
         }
     }
-    
-    return ReplyMsg(network_id, res_view_block_msg, msg_ptr);
+
+    if (!src_broadcast) {
+        return ReplyMsg(network_id, res_view_block_msg, msg_ptr);
+    }
+    return Broadcast(res_view_block_msg);
 }
 
 Status HotstuffSyncer::processRequestSingle(const transport::MessagePtr& msg_ptr) {
