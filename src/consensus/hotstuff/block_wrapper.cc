@@ -54,7 +54,7 @@ Status BlockWrapper::Wrap(
         pool_idx_, pools_mgr_->all_tx_size(pool_idx_), pools_mgr_->tx_size(pool_idx_), leader_idx);
     
     auto gid_valid_func = [&](const std::string& gid) -> bool {
-        return view_block_chain->CheckTxGidValid(gid, prev_view_block->parent_hash);
+        return view_block_chain->CheckTxGidValid(gid, prev_view_block->hash);
     };
 
     Status s = LeaderGetTxsIdempotently(txs_ptr, gid_valid_func);
