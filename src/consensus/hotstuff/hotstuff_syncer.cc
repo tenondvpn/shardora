@@ -96,7 +96,7 @@ void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr)
     HandleSyncedBlocks();
 }
 
-void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, bool broadcast) {
+void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const int32_t& node_num) {
     // TODO(HT): test
     auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
     auto req = vb_msg.mutable_view_block_req();
@@ -121,11 +121,7 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, bool broadcast) {
     }
         
     vb_msg.set_create_time_us(common::TimeUtils::TimestampUs());
-    if (!broadcast) {
-        SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, 1);
-        return;
-    }
-    Broadcast(vb_msg);
+    SendRequest(common::GlobalInfo::Instance()->network_id(), vb_msg, node_num);
 }
 
 void HotstuffSyncer::SyncAllPools() {
@@ -141,7 +137,7 @@ void HotstuffSyncer::SyncAllPools() {
                 ZJC_DEBUG("pool: %d, cur chain: %s, local: %d",
                     pool_idx, view_block_chain(pool_idx)->String().c_str(),
                     crypto(pool_idx)->GetLatestElectItem(common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
-                SyncPool(pool_idx, false);
+                SyncPool(pool_idx, 1);
                 last_timers_us_[pool_idx] = common::TimeUtils::TimestampUs();
             }            
         }
@@ -328,13 +324,11 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
             continue;
         }
 
-        // src 节点没有此 view_block
-        if (!shouldSyncChain) {
-            auto it = src_view_block_hash_set.find(view_block->hash);
-            if (it == src_view_block_hash_set.end()) {
-                shouldSyncChain = true;
-            }            
-        }
+        // 仅同步交点之后的块
+        auto it = src_view_block_hash_set.find(view_block->hash);
+        if (it != src_view_block_hash_set.end()) {
+            break;
+        }       
         
         auto view_block_qc_str = view_block_res->add_view_block_qc_strs();
         *view_block_qc_str = view_block_qc->Serialize();
@@ -344,7 +338,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     }
 
     // 若本地 view_block_chain 的最大 view < src 节点，则不同步
-    if (max_view < src_max_view) {
+    if (max_view < src_max_view || view_block_res->view_block_items_size() == 0) {
         shouldSyncChain = false;
     }
 

@@ -51,7 +51,7 @@ public:
 
     void Start();
     void Stop();
-    void SyncPool(const uint32_t& pool_idx, bool broadcast);
+    void SyncPool(const uint32_t& pool_idx, const int32_t& node_num);
     void SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
