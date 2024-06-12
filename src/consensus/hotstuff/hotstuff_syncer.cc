@@ -306,7 +306,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
 
     std::vector<std::shared_ptr<ViewBlock>> all;
     // 将所有的块同步过去（即最后一个 committed block 及其后续分支
-    chain->GetAll(all);
+    chain->GetOrderedAll(all);
     if (all.size() <= 0 || all.size() > kMaxSyncBlockNum) {
         return Status::kError;
     }
@@ -316,20 +316,19 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     // 导致超时 leader 不一致（因为 leader 是跟随 qc 迭代的）
     // 好在这个 qc 会通过 highqc 同步过去，因此接受 highqc 时需要执行 commit 操作，保证 leader 一致
     View max_view = 0;
-    for (auto& view_block : all) {
+    for (auto rit = all.rbegin(); rit != all.rend(); rit++) {
+        auto& view_block = *rit;
         // 仅同步已经有 qc 的 view_block
         auto view_block_qc = hotstuff_mgr_->hotstuff(pool_idx)->GetQcOf(view_block);
         if (!view_block_qc) {
             continue;
         }
 
-        // src 节点没有此 view_block
-        if (!shouldSyncChain) {
-            auto it = src_view_block_hash_set.find(view_block->hash);
-            if (it == src_view_block_hash_set.end()) {
-                shouldSyncChain = true;
-            }            
-        }
+        // 仅同步交点之后的块
+        auto it = src_view_block_hash_set.find(view_block->hash);
+        if (it != src_view_block_hash_set.end()) {
+            break;
+        }       
         
         auto view_block_qc_str = view_block_res->add_view_block_qc_strs();
         *view_block_qc_str = view_block_qc->Serialize();
@@ -339,7 +338,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     }
 
     // 若本地 view_block_chain 的最大 view < src 节点，则不同步
-    if (max_view < src_max_view) {
+    if (max_view < src_max_view || view_block_res->view_block_items_size() == 0) {
         shouldSyncChain = false;
     }
 
