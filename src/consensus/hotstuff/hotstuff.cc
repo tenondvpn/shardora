@@ -254,7 +254,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         }
 
         block_info->txs.push_back(&tx);
-        v_block->added_txs->insert(tx.gid());
+        v_block->added_txs.insert(tx.gid());
     }
 
     block_info->view = v_block->view;

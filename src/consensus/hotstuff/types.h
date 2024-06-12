@@ -116,7 +116,7 @@ struct ViewBlock {
 
     uint32_t leader_idx;
     std::shared_ptr<block::protobuf::Block> block;
-    std::shared_ptr<std::unordered_set<std::string>> added_txs;
+    std::unordered_set<std::string> added_txs;
     std::shared_ptr<QC> qc;
     View view;
 
@@ -133,12 +133,11 @@ struct ViewBlock {
         block(block),
         qc(qc),
         view(view),
-        created_time_us(common::TimeUtils::TimestampUs()),
-        added_txs(nullptr) {
+        created_time_us(common::TimeUtils::TimestampUs()) {
         hash = DoHash();
     };
 
-    ViewBlock() : qc(nullptr), view(0), created_time_us(common::TimeUtils::TimestampUs()), added_txs(nullptr) {};
+    ViewBlock() : qc(nullptr), view(0), created_time_us(common::TimeUtils::TimestampUs()) {};
 
     inline bool Valid() {
         return hash != "" && hash == DoHash() && block != nullptr; 

@@ -78,8 +78,8 @@ public:
                 break;
             }
 
-            auto iter = it->second->view_block->added_txs->find(gid);
-            if (iter != it->second->view_block->added_txs->end()) {
+            auto iter = it->second->view_block->added_txs.find(gid);
+            if (iter != it->second->view_block->added_txs.end()) {
                 return false;
             }
 
