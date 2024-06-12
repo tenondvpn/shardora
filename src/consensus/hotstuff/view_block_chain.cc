@@ -29,10 +29,9 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
         return Status::kError;
     }
 
-    if (view_block->added_txs == nullptr) {
-        view_block->added_txs = std::make_shared<std::unordered_set<std::string>>();
+    if (view_block->added_txs.empty()) {
         for (uint32_t i = 0; i < view_block->block->tx_list_size(); ++i) {
-            view_block->added_txs->insert(view_block->block->tx_list(i).gid());
+            view_block->added_txs.insert(view_block->block->tx_list(i).gid());
         }
     }
     
