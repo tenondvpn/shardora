@@ -711,13 +711,6 @@ class ViewBlockSyncRequest : public ::google::protobuf::Message /* @@protoc_inse
   ::google::protobuf::uint64 max_view() const;
   void set_max_view(::google::protobuf::uint64 value);
 
-  // optional bool broadcast = 8;
-  bool has_broadcast() const;
-  void clear_broadcast();
-  static const int kBroadcastFieldNumber = 8;
-  bool broadcast() const;
-  void set_broadcast(bool value);
-
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.ViewBlockSyncRequest)
  private:
   void set_has_network_id();
@@ -732,8 +725,6 @@ class ViewBlockSyncRequest : public ::google::protobuf::Message /* @@protoc_inse
   void clear_has_max_view();
   void set_has_latest_committed_block_hash();
   void clear_has_latest_committed_block_hash();
-  void set_has_broadcast();
-  void clear_has_broadcast();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -745,7 +736,6 @@ class ViewBlockSyncRequest : public ::google::protobuf::Message /* @@protoc_inse
   ::google::protobuf::uint64 high_qc_view_;
   ::google::protobuf::uint64 high_tc_view_;
   ::google::protobuf::uint64 max_view_;
-  bool broadcast_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -2602,30 +2592,6 @@ inline void ViewBlockSyncRequest::set_allocated_latest_committed_block_hash(::st
   }
   latest_committed_block_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), latest_committed_block_hash);
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockSyncRequest.latest_committed_block_hash)
-}
-
-// optional bool broadcast = 8;
-inline bool ViewBlockSyncRequest::has_broadcast() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
-}
-inline void ViewBlockSyncRequest::set_has_broadcast() {
-  _has_bits_[0] |= 0x00000040u;
-}
-inline void ViewBlockSyncRequest::clear_has_broadcast() {
-  _has_bits_[0] &= ~0x00000040u;
-}
-inline void ViewBlockSyncRequest::clear_broadcast() {
-  broadcast_ = false;
-  clear_has_broadcast();
-}
-inline bool ViewBlockSyncRequest::broadcast() const {
-  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockSyncRequest.broadcast)
-  return broadcast_;
-}
-inline void ViewBlockSyncRequest::set_broadcast(bool value) {
-  set_has_broadcast();
-  broadcast_ = value;
-  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockSyncRequest.broadcast)
 }
 
 // -------------------------------------------------------------------

@@ -242,7 +242,6 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockSyncRequest, high_tc_view_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockSyncRequest, max_view_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockSyncRequest, latest_committed_block_hash_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockSyncRequest, broadcast_),
   1,
   2,
   ~0u,
@@ -250,7 +249,6 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   4,
   5,
   0,
-  6,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockSyncResponse, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockSyncResponse, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -325,11 +323,11 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 12, sizeof(::shardora::view_block::protobuf::ViewBlockItem)},
   { 19, 34, sizeof(::shardora::view_block::protobuf::QC)},
-  { 44, 57, sizeof(::shardora::view_block::protobuf::ViewBlockSyncRequest)},
-  { 65, 78, sizeof(::shardora::view_block::protobuf::ViewBlockSyncResponse)},
-  { 86, 94, sizeof(::shardora::view_block::protobuf::SingleViewBlockSyncRequest)},
-  { 97, 108, sizeof(::shardora::view_block::protobuf::ViewBlockSyncMessage)},
-  { 114, 127, sizeof(::shardora::view_block::protobuf::TimeoutMessage)},
+  { 44, 56, sizeof(::shardora::view_block::protobuf::ViewBlockSyncRequest)},
+  { 63, 76, sizeof(::shardora::view_block::protobuf::ViewBlockSyncResponse)},
+  { 84, 92, sizeof(::shardora::view_block::protobuf::SingleViewBlockSyncRequest)},
+  { 95, 106, sizeof(::shardora::view_block::protobuf::ViewBlockSyncMessage)},
+  { 112, 125, sizeof(::shardora::view_block::protobuf::TimeoutMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -374,37 +372,37 @@ void AddDescriptorsImpl() {
       "w\030\004 \001(\004\022\027\n\017view_block_hash\030\005 \001(\014\022\036\n\026comm"
       "it_view_block_hash\030\006 \001(\014\022\024\n\014elect_height"
       "\030\007 \001(\004\022\022\n\nleader_idx\030\010 \001(\r\022\022\n\nnetwork_id"
-      "\030\t \001(\r\022\022\n\npool_index\030\n \001(\r\"\315\001\n\024ViewBlock"
+      "\030\t \001(\r\022\022\n\npool_index\030\n \001(\r\"\272\001\n\024ViewBlock"
       "SyncRequest\022\022\n\nnetwork_id\030\001 \001(\r\022\020\n\010pool_"
       "idx\030\002 \001(\r\022\031\n\021view_block_hashes\030\003 \003(\014\022\024\n\014"
       "high_qc_view\030\004 \001(\004\022\024\n\014high_tc_view\030\005 \001(\004"
       "\022\020\n\010max_view\030\006 \001(\004\022#\n\033latest_committed_b"
-      "lock_hash\030\007 \001(\014\022\021\n\tbroadcast\030\010 \001(\010\"\253\002\n\025V"
-      "iewBlockSyncResponse\022\022\n\nnetwork_id\030\001 \001(\r"
-      "\022\020\n\010pool_idx\030\002 \001(\r\022E\n\020view_block_items\030\003"
-      " \003(\0132+.shardora.view_block.protobuf.View"
-      "BlockItem\022\032\n\022view_block_qc_strs\030\004 \003(\014\022\023\n"
-      "\013high_qc_str\030\005 \001(\014\022\023\n\013high_tc_str\030\006 \001(\014\022"
-      "\022\n\nquery_hash\030\007 \001(\014\022K\n\026latest_committed_"
-      "block\030\010 \001(\0132+.shardora.view_block.protob"
-      "uf.ViewBlockItem\"V\n\032SingleViewBlockSyncR"
-      "equest\022\022\n\nnetwork_id\030\001 \001(\r\022\020\n\010pool_idx\030\002"
-      " \001(\r\022\022\n\nquery_hash\030\003 \001(\014\"\267\002\n\024ViewBlockSy"
-      "ncMessage\022J\n\016view_block_req\030\001 \001(\01322.shar"
-      "dora.view_block.protobuf.ViewBlockSyncRe"
-      "quest\022K\n\016view_block_res\030\002 \001(\01323.shardora"
-      ".view_block.protobuf.ViewBlockSyncRespon"
-      "se\022L\n\nsingle_req\030\003 \001(\01328.shardora.view_b"
-      "lock.protobuf.SingleViewBlockSyncRequest"
-      "\022\026\n\016create_time_us\030\004 \001(\r\022\016\n\006src_ip\030\005 \001(\014"
-      "\022\020\n\010src_port\030\006 \001(\r\"\240\001\n\016TimeoutMessage\022\021\n"
-      "\tmember_id\030\001 \001(\r\022\014\n\004view\030\002 \001(\004\022\016\n\006sign_x"
-      "\030\003 \001(\014\022\016\n\006sign_y\030\004 \001(\014\022\021\n\tview_hash\030\005 \001("
-      "\014\022\024\n\014elect_height\030\006 \001(\004\022\020\n\010pool_idx\030\007 \001("
-      "\r\022\022\n\nleader_idx\030\010 \001(\r"
+      "lock_hash\030\007 \001(\014\"\253\002\n\025ViewBlockSyncRespons"
+      "e\022\022\n\nnetwork_id\030\001 \001(\r\022\020\n\010pool_idx\030\002 \001(\r\022"
+      "E\n\020view_block_items\030\003 \003(\0132+.shardora.vie"
+      "w_block.protobuf.ViewBlockItem\022\032\n\022view_b"
+      "lock_qc_strs\030\004 \003(\014\022\023\n\013high_qc_str\030\005 \001(\014\022"
+      "\023\n\013high_tc_str\030\006 \001(\014\022\022\n\nquery_hash\030\007 \001(\014"
+      "\022K\n\026latest_committed_block\030\010 \001(\0132+.shard"
+      "ora.view_block.protobuf.ViewBlockItem\"V\n"
+      "\032SingleViewBlockSyncRequest\022\022\n\nnetwork_i"
+      "d\030\001 \001(\r\022\020\n\010pool_idx\030\002 \001(\r\022\022\n\nquery_hash\030"
+      "\003 \001(\014\"\267\002\n\024ViewBlockSyncMessage\022J\n\016view_b"
+      "lock_req\030\001 \001(\01322.shardora.view_block.pro"
+      "tobuf.ViewBlockSyncRequest\022K\n\016view_block"
+      "_res\030\002 \001(\01323.shardora.view_block.protobu"
+      "f.ViewBlockSyncResponse\022L\n\nsingle_req\030\003 "
+      "\001(\01328.shardora.view_block.protobuf.Singl"
+      "eViewBlockSyncRequest\022\026\n\016create_time_us\030"
+      "\004 \001(\r\022\016\n\006src_ip\030\005 \001(\014\022\020\n\010src_port\030\006 \001(\r\""
+      "\240\001\n\016TimeoutMessage\022\021\n\tmember_id\030\001 \001(\r\022\014\n"
+      "\004view\030\002 \001(\004\022\016\n\006sign_x\030\003 \001(\014\022\016\n\006sign_y\030\004 "
+      "\001(\014\022\021\n\tview_hash\030\005 \001(\014\022\024\n\014elect_height\030\006"
+      " \001(\004\022\020\n\010pool_idx\030\007 \001(\r\022\022\n\nleader_idx\030\010 \001"
+      "(\r"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1541);
+      descriptor, 1522);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/view_block.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fblock_2eproto::AddDescriptors();
@@ -1602,7 +1600,6 @@ const int ViewBlockSyncRequest::kHighQcViewFieldNumber;
 const int ViewBlockSyncRequest::kHighTcViewFieldNumber;
 const int ViewBlockSyncRequest::kMaxViewFieldNumber;
 const int ViewBlockSyncRequest::kLatestCommittedBlockHashFieldNumber;
-const int ViewBlockSyncRequest::kBroadcastFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ViewBlockSyncRequest::ViewBlockSyncRequest()
@@ -1623,16 +1620,16 @@ ViewBlockSyncRequest::ViewBlockSyncRequest(const ViewBlockSyncRequest& from)
     latest_committed_block_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.latest_committed_block_hash_);
   }
   ::memcpy(&network_id_, &from.network_id_,
-    static_cast<size_t>(reinterpret_cast<char*>(&broadcast_) -
-    reinterpret_cast<char*>(&network_id_)) + sizeof(broadcast_));
+    static_cast<size_t>(reinterpret_cast<char*>(&max_view_) -
+    reinterpret_cast<char*>(&network_id_)) + sizeof(max_view_));
   // @@protoc_insertion_point(copy_constructor:shardora.view_block.protobuf.ViewBlockSyncRequest)
 }
 
 void ViewBlockSyncRequest::SharedCtor() {
   latest_committed_block_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&network_id_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&broadcast_) -
-      reinterpret_cast<char*>(&network_id_)) + sizeof(broadcast_));
+      reinterpret_cast<char*>(&max_view_) -
+      reinterpret_cast<char*>(&network_id_)) + sizeof(max_view_));
 }
 
 ViewBlockSyncRequest::~ViewBlockSyncRequest() {
@@ -1669,10 +1666,10 @@ void ViewBlockSyncRequest::Clear() {
   if (cached_has_bits & 0x00000001u) {
     latest_committed_block_hash_.ClearNonDefaultToEmptyNoArena();
   }
-  if (cached_has_bits & 126u) {
+  if (cached_has_bits & 62u) {
     ::memset(&network_id_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&broadcast_) -
-        reinterpret_cast<char*>(&network_id_)) + sizeof(broadcast_));
+        reinterpret_cast<char*>(&max_view_) -
+        reinterpret_cast<char*>(&network_id_)) + sizeof(max_view_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -1782,20 +1779,6 @@ bool ViewBlockSyncRequest::MergePartialFromCodedStream(
         break;
       }
 
-      // optional bool broadcast = 8;
-      case 8: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(64u /* 64 & 0xFF */)) {
-          set_has_broadcast();
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
-                 input, &broadcast_)));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -1860,11 +1843,6 @@ void ViewBlockSyncRequest::SerializeWithCachedSizes(
       7, this->latest_committed_block_hash(), output);
   }
 
-  // optional bool broadcast = 8;
-  if (cached_has_bits & 0x00000040u) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(8, this->broadcast(), output);
-  }
-
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -1918,11 +1896,6 @@ void ViewBlockSyncRequest::SerializeWithCachedSizes(
         7, this->latest_committed_block_hash(), target);
   }
 
-  // optional bool broadcast = 8;
-  if (cached_has_bits & 0x00000040u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(8, this->broadcast(), target);
-  }
-
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -1948,7 +1921,7 @@ size_t ViewBlockSyncRequest::ByteSizeLong() const {
       this->view_block_hashes(i));
   }
 
-  if (_has_bits_[0 / 32] & 127u) {
+  if (_has_bits_[0 / 32] & 63u) {
     // optional bytes latest_committed_block_hash = 7;
     if (has_latest_committed_block_hash()) {
       total_size += 1 +
@@ -1991,11 +1964,6 @@ size_t ViewBlockSyncRequest::ByteSizeLong() const {
           this->max_view());
     }
 
-    // optional bool broadcast = 8;
-    if (has_broadcast()) {
-      total_size += 1 + 1;
-    }
-
   }
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
@@ -2026,7 +1994,7 @@ void ViewBlockSyncRequest::MergeFrom(const ViewBlockSyncRequest& from) {
 
   view_block_hashes_.MergeFrom(from.view_block_hashes_);
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 127u) {
+  if (cached_has_bits & 63u) {
     if (cached_has_bits & 0x00000001u) {
       set_has_latest_committed_block_hash();
       latest_committed_block_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.latest_committed_block_hash_);
@@ -2045,9 +2013,6 @@ void ViewBlockSyncRequest::MergeFrom(const ViewBlockSyncRequest& from) {
     }
     if (cached_has_bits & 0x00000020u) {
       max_view_ = from.max_view_;
-    }
-    if (cached_has_bits & 0x00000040u) {
-      broadcast_ = from.broadcast_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -2085,7 +2050,6 @@ void ViewBlockSyncRequest::InternalSwap(ViewBlockSyncRequest* other) {
   swap(high_qc_view_, other->high_qc_view_);
   swap(high_tc_view_, other->high_tc_view_);
   swap(max_view_, other->max_view_);
-  swap(broadcast_, other->broadcast_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
