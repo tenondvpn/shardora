@@ -324,10 +324,11 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
             continue;
         }
 
-        // 仅同步交点之后的块
-        auto it = src_view_block_hash_set.find(view_block->hash);
-        if (it != src_view_block_hash_set.end()) {
-            break;
+        if (!shouldSyncChain) {
+            auto it = src_view_block_hash_set.find(view_block->hash);
+            if (it == src_view_block_hash_set.end()) {
+                shouldSyncChain = true;
+            }
         }       
         
         auto view_block_qc_str = view_block_res->add_view_block_qc_strs();
