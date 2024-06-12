@@ -184,7 +184,7 @@ static const uint8_t kMaxThreadCount = 16;
 
 #ifdef ENABLE_HOTSTUFF
 // TODO Chained HotStuff 由于要同步 4-5 个块，块中的交易目前不能过大，实测 8192 会造成同步失败，在同步逻辑优化完成前不要修改
-static const uint32_t kSingleBlockMaxTransactions = 4096u; // 1M 大约 4000+ 交易
+static const uint32_t kSingleBlockMaxTransactions = 8192u; // 1M 大约 4000+ 交易
 #else
 static const uint32_t kSingleBlockMaxTransactions = 8192u; // 1M 大约 4000+ 交易
 #endif
