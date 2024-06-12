@@ -337,6 +337,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     if (cross_vb) {
         vb_to_sync.clear();
         chain->GetRecursiveChildren(cross_vb->hash, vb_to_sync);
+        // cross_vb 也同步回去，保证是一条合法的链
         vb_to_sync.push_back(cross_vb);
     } else {
         vb_to_sync = all;
@@ -357,6 +358,13 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
 
     if (view_block_res->view_block_items_size() > 0) {
         shouldSyncChain = true;
+    }
+
+    // 若只有 cross_vb 一个块，则不同步（因为 cross_vb 已经有了）
+    if (view_block_res->view_block_items_size() == 1 &&
+        cross_vb &&
+        view_block_res->view_block_items(0).hash() == cross_vb->hash) {
+        shouldSyncChain = false;
     }
 
     // 若本地 view_block_chain 的最大 view < src 节点，则不同步

@@ -152,6 +152,7 @@ Status ViewBlockChain::GetRecursiveChildren(HashStr hash, std::vector<std::share
             return s;
         }
     }
+    return Status::kSuccess;
 }
 
 // 剪掉从上次 prune_height 到 height 之间，latest_committed 之前的所有分叉，并返回这些分叉上的 blocks
