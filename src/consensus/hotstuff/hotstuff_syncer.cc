@@ -342,19 +342,25 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
         vb_to_sync = all;
     }
 
-    // 过滤没有 qc 的块
-    vb_to_sync.erase(std::remove_if(vb_to_sync.begin(), vb_to_sync.end(),
-            [&](const std::shared_ptr<ViewBlock> vb) {
-                return hotstuff_mgr_->hotstuff(pool_idx)->GetQcOf(vb) == nullptr;
-            }), vb_to_sync.end());
+    for (const auto& view_block : vb_to_sync) {
+        auto view_block_qc = hotstuff_mgr_->hotstuff(pool_idx)->GetQcOf(view_block);
+        if (!view_block_qc) {
+            continue;
+        }
 
+        auto view_block_qc_str = view_block_res->add_view_block_qc_strs();
+        *view_block_qc_str = view_block_qc->Serialize();
+        auto view_block_item = view_block_res->add_view_block_items();
+        ViewBlock2Proto(view_block, view_block_item);
+        max_view = view_block->view > max_view ? view_block->view : max_view;
+    }
 
-    for (const auto& vb : vb_to_sync) {
-        
+    if (view_block_res->view_block_items_size() > 0) {
+        shouldSyncChain = true;
     }
 
     // 若本地 view_block_chain 的最大 view < src 节点，则不同步
-    if (max_view < src_max_view || view_block_res->view_block_items_size() == 0) {
+    if (max_view < src_max_view) {
         shouldSyncChain = false;
     }
 
