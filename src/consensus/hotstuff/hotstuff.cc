@@ -280,8 +280,8 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
 #endif
     // 6 add view block
     if (view_block_chain()->Store(v_block) != Status::kSuccess) {
-        ZJC_ERROR("add view block error. hash: %s",
-            common::Encode::HexEncode(v_block->hash).c_str());
+        ZJC_ERROR("pool: %d, add view block error. hash: %s",
+            pool_idx_, common::Encode::HexEncode(v_block->hash).c_str());
         return;
     }
     
