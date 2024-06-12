@@ -80,12 +80,14 @@ public:
 
             auto iter = it->second->view_block->added_txs.find(gid);
             if (iter != it->second->view_block->added_txs.end()) {
+                ZJC_DEBUG("failed check tx gid: %s", common::Encode::HexEncode(gid).c_str());
                 return false;
             }
 
             phash = it->second->view_block->parent_hash;
         }
 
+        ZJC_DEBUG("success check tx gid: %s", common::Encode::HexEncode(gid).c_str());
         return true;
     }
 
