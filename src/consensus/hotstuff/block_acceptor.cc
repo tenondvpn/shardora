@@ -512,7 +512,7 @@ Status BlockAcceptor::commit(std::shared_ptr<block::protobuf::Block>& block) {
 
     // tps measurement
     CalculateTps(block->tx_list_size());    
-    ZJC_INFO("[NEW BLOCK] hash: %s, prehash: %s, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu",
+    ZJC_DEBUG("[NEW BLOCK] hash: %s, prehash: %s, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu",
         common::Encode::HexEncode(block->hash()).c_str(),
         common::Encode::HexEncode(block->prehash()).c_str(),
         block->network_id(),
