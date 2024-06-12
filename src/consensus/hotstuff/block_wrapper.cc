@@ -22,6 +22,7 @@ BlockWrapper::~BlockWrapper(){};
 
 // 打包一个新的 block 和 txs
 Status BlockWrapper::Wrap(
+        const std::shared_ptr<ViewBlock>& view_block,
         const std::shared_ptr<ViewBlock>& prev_view_block,
         const uint32_t& leader_idx,
         std::shared_ptr<block::protobuf::Block>& block,
@@ -54,7 +55,12 @@ Status BlockWrapper::Wrap(
         pool_idx_, pools_mgr_->all_tx_size(pool_idx_), pools_mgr_->tx_size(pool_idx_), leader_idx);
     
     auto gid_valid_func = [&](const std::string& gid) -> bool {
-        return view_block_chain->CheckTxGidValid(gid, prev_view_block->parent_hash);
+        auto res = view_block_chain->CheckTxGidValid(gid, prev_view_block->parent_hash);
+        if (res) {
+            view_block->added_txs->insert(gid);
+        }
+        
+        return res;
     };
 
     Status s = LeaderGetTxsIdempotently(txs_ptr, gid_valid_func);

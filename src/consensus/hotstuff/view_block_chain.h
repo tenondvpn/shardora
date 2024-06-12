@@ -72,7 +72,7 @@ public:
 
     bool CheckTxListValid(const std::shared_ptr<ViewBlock>& view_block) {
         if (view_block->added_txs != nullptr) {
-            return  true;
+            return true;
         }
 
         view_block->added_txs = std::make_shared<std::unordered_set<std::string>>();

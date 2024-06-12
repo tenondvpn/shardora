@@ -974,9 +974,11 @@ Status Hotstuff::ConstructViewBlock(
     // 打包 QC 和 View
     view_block->qc = pacemaker()->HighQC();
     view_block->view = pacemaker()->CurView();
+    view_block->added_txs = std::make_shared<std::unordered_set<std::string>>();
 
     // TODO 如果单分支最多连续打包三个默认交易
     s = wrapper()->Wrap(
+        view_block,
         pre_v_block, 
         leader_idx, 
         pb_block, 
@@ -987,6 +989,7 @@ Status Hotstuff::ConstructViewBlock(
         ZJC_WARN("pool: %d wrap failed, %d", pool_idx_, static_cast<int>(s));
         return s;
     }
+
     view_block->block = pb_block;
     view_block->hash = view_block->DoHash();
     return Status::kSuccess;
