@@ -53,6 +53,7 @@ public:
     void Stop();
     void SyncPool(const uint32_t& pool_idx, bool broadcast);
     void SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash);
+    void BroadcastPacemakerInfo(uint32_t pool_idx); // 广播 pacemaker 信息
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     void ConsumeMessages();
