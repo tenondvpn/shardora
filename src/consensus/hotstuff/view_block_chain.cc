@@ -28,6 +28,13 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     if (Has(view_block->hash)) {
         return Status::kError;
     }
+
+    if (view_block->added_txs == nullptr) {
+        view_block->added_txs = std::make_shared<std::unordered_set<std::string>>();
+        for (uint32_t i = 0; i < view_block->block->tx_list_size(); ++i) {
+            view_block->added_txs->insert(view_block->block->tx_list(i).gid());
+        }
+    }
     
     if (!start_block_) {
         start_block_ = view_block;
