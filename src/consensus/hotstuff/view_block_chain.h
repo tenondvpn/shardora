@@ -73,6 +73,10 @@ public:
     bool CheckTxGidValid(const std::string& gid, const std::string& parent_hash) {
         auto phash = parent_hash;
         while (true) {
+            if (phash.empty()) {
+                break;
+            }
+
             auto it = view_blocks_info_.find(phash);
             if (it == view_blocks_info_.end()) {
                 break;
@@ -89,7 +93,7 @@ public:
 
         ZJC_DEBUG("success check tx gid: %s, phash: %s", 
             common::Encode::HexEncode(gid).c_str(), 
-            common::Encode::HexEncode(phash).c_str());
+            common::Encode::HexEncode(parent_hash).c_str());
         return true;
     }
 
@@ -274,6 +278,7 @@ private:
     uint32_t pool_index_ = common::kInvalidPoolIndex;
 
     void SetViewBlockToMap(const HashStr& hash, const std::shared_ptr<ViewBlock>& view_block) {
+        assert(!hash.empty());
         auto it = view_blocks_info_.find(hash);
         if (it == view_blocks_info_.end()) {
             view_blocks_info_[hash] = std::make_shared<ViewBlockInfo>();
