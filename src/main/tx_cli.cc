@@ -13,10 +13,10 @@
 
 using namespace shardora;
 static bool global_stop = false;
-static const std::string kBroadcastIp = "127.0.0.1";
-static const uint16_t kBroadcastPort = 13004;
+static const std::string kBroadcastIp = "10.0.0.201";
+static const uint16_t kBroadcastPort = 13008;
 static const int shardnum = 3;
-static const int delayus = 2000;
+static const int delayus = 400;
 static const bool multi_pool = false;
 
 static void SignalCallback(int sig_int) { global_stop = true; }

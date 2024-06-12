@@ -34,6 +34,7 @@ message ViewBlockSyncRequest {
     optional uint64 high_tc_view = 5;
     optional uint64 max_view = 6;
     optional bytes latest_committed_block_hash = 7;
+    repeated ViewBlockItem view_blocks = 8;
 }
 
 message ViewBlockSyncResponse {

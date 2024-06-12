@@ -26,6 +26,8 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     }
 
     if (Has(view_block->hash)) {
+        ZJC_ERROR("view block already stored, hash: %s, view: %lu",
+            common::Encode::HexEncode(view_block->hash).c_str(), view_block->view);        
         return Status::kError;
     }
     
@@ -54,11 +56,15 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     // 父块必须存在
     auto it = view_blocks_info_.find(view_block->parent_hash);
     if (it == view_blocks_info_.end() || it->second->view_block == nullptr) {
+        ZJC_ERROR("lack of parent view block, hash: %s, cur view: %lu",
+            common::Encode::HexEncode(view_block->hash).c_str(), view_block->view);        
         return Status::kError;
     }
 
     // 如果有 qc，则 qc 指向的块必须存在
     if (view_block->qc && !view_block->qc->view_block_hash.empty() && !QCRef(view_block)) {
+        ZJC_ERROR("view block qc error, hash: %s, view: %lu",
+            common::Encode::HexEncode(view_block->hash).c_str(), view_block->view);        
         return Status::kError;
     }
     
@@ -124,6 +130,28 @@ Status ViewBlockChain::GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>& vi
     std::sort(view_blocks.begin(), view_blocks.end(), [](const std::shared_ptr<ViewBlock>& a, const std::shared_ptr<ViewBlock>& b) {
         return a->view < b->view;
     });
+    return Status::kSuccess;
+}
+
+// 获取某个 hash 所有的子块（不同 level）
+Status ViewBlockChain::GetRecursiveChildren(HashStr hash, std::vector<std::shared_ptr<ViewBlock>>& view_blocks) {
+    std::vector<std::shared_ptr<ViewBlock>> level_children;
+    Status s = GetChildren(hash, level_children);
+    if (s != Status::kSuccess) {
+        return s;
+    }
+
+    if (level_children.empty()) {
+        return Status::kSuccess;
+    }
+    
+    for (const auto& vb : level_children) {
+        view_blocks.push_back(vb);
+        Status s = GetRecursiveChildren(vb->hash, view_blocks);
+        if (s != Status::kSuccess) {
+            return s;
+        }
+    }
     return Status::kSuccess;
 }
 

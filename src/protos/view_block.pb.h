@@ -661,6 +661,18 @@ class ViewBlockSyncRequest : public ::google::protobuf::Message /* @@protoc_inse
   const ::google::protobuf::RepeatedPtrField< ::std::string>& view_block_hashes() const;
   ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_view_block_hashes();
 
+  // repeated .shardora.view_block.protobuf.ViewBlockItem view_blocks = 8;
+  int view_blocks_size() const;
+  void clear_view_blocks();
+  static const int kViewBlocksFieldNumber = 8;
+  ::shardora::view_block::protobuf::ViewBlockItem* mutable_view_blocks(int index);
+  ::google::protobuf::RepeatedPtrField< ::shardora::view_block::protobuf::ViewBlockItem >*
+      mutable_view_blocks();
+  const ::shardora::view_block::protobuf::ViewBlockItem& view_blocks(int index) const;
+  ::shardora::view_block::protobuf::ViewBlockItem* add_view_blocks();
+  const ::google::protobuf::RepeatedPtrField< ::shardora::view_block::protobuf::ViewBlockItem >&
+      view_blocks() const;
+
   // optional bytes latest_committed_block_hash = 7;
   bool has_latest_committed_block_hash() const;
   void clear_latest_committed_block_hash();
@@ -730,6 +742,7 @@ class ViewBlockSyncRequest : public ::google::protobuf::Message /* @@protoc_inse
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::std::string> view_block_hashes_;
+  ::google::protobuf::RepeatedPtrField< ::shardora::view_block::protobuf::ViewBlockItem > view_blocks_;
   ::google::protobuf::internal::ArenaStringPtr latest_committed_block_hash_;
   ::google::protobuf::uint32 network_id_;
   ::google::protobuf::uint32 pool_idx_;
@@ -2592,6 +2605,36 @@ inline void ViewBlockSyncRequest::set_allocated_latest_committed_block_hash(::st
   }
   latest_committed_block_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), latest_committed_block_hash);
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockSyncRequest.latest_committed_block_hash)
+}
+
+// repeated .shardora.view_block.protobuf.ViewBlockItem view_blocks = 8;
+inline int ViewBlockSyncRequest::view_blocks_size() const {
+  return view_blocks_.size();
+}
+inline void ViewBlockSyncRequest::clear_view_blocks() {
+  view_blocks_.Clear();
+}
+inline ::shardora::view_block::protobuf::ViewBlockItem* ViewBlockSyncRequest::mutable_view_blocks(int index) {
+  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.ViewBlockSyncRequest.view_blocks)
+  return view_blocks_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::shardora::view_block::protobuf::ViewBlockItem >*
+ViewBlockSyncRequest::mutable_view_blocks() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.view_block.protobuf.ViewBlockSyncRequest.view_blocks)
+  return &view_blocks_;
+}
+inline const ::shardora::view_block::protobuf::ViewBlockItem& ViewBlockSyncRequest::view_blocks(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockSyncRequest.view_blocks)
+  return view_blocks_.Get(index);
+}
+inline ::shardora::view_block::protobuf::ViewBlockItem* ViewBlockSyncRequest::add_view_blocks() {
+  // @@protoc_insertion_point(field_add:shardora.view_block.protobuf.ViewBlockSyncRequest.view_blocks)
+  return view_blocks_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::shardora::view_block::protobuf::ViewBlockItem >&
+ViewBlockSyncRequest::view_blocks() const {
+  // @@protoc_insertion_point(field_list:shardora.view_block.protobuf.ViewBlockSyncRequest.view_blocks)
+  return view_blocks_;
 }
 
 // -------------------------------------------------------------------
