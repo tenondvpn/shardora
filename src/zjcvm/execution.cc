@@ -122,12 +122,15 @@ evmc::bytes32 Execution::GetStorage(
     if (thread_idx >= thread_count) {
         prefix_db_->GetTemporaryKv(str_key, &val);
     } else {
-        if (!storage_map_[thread_idx].Get(str_key, &val)) {
-            // get from db and add to memory cache
-            if (prefix_db_->GetTemporaryKv(str_key, &val)) {
+       if (prefix_db_->GetTemporaryKv(str_key, &val)) {
                 storage_map_[thread_idx].Insert(str_key, val);
-            }
-        }
+       } 
+        // if (!storage_map_[thread_idx].Get(str_key, &val)) {
+        //     // get from db and add to memory cache
+        //     if (prefix_db_->GetTemporaryKv(str_key, &val)) {
+        //         storage_map_[thread_idx].Insert(str_key, val);
+        //     }
+        // }
     }
 
     ZJC_DEBUG("get storage: %s, %s", common::Encode::HexEncode(str_key).c_str(), common::Encode::HexEncode(val).c_str());
@@ -213,13 +216,13 @@ int Execution::execute(
         sizeof(msg.recipient.bytes));
     const uint8_t* exec_code_data = nullptr;
     size_t exec_code_size = 0;
-    ZJC_DEBUG("now call contract, msg sender: %s, mode: %d, from: %s, to: %s, value: %lu, bytes_code: %s, input: %s",
+    ZJC_DEBUG("now call contract, msg sender: %s, mode: %d, from: %s, to: %s, value: %lu, bytes_code.size: %ld, input: %s",
         common::Encode::HexEncode(std::string((char*)msg.sender.bytes, 20)).c_str(),
         call_mode,
         common::Encode::HexEncode(from_address).c_str(),
         common::Encode::HexEncode(to_address).c_str(),
         value,
-        common::Encode::HexEncode(bytes_code).c_str(),
+        bytes_code.size(),
         common::Encode::HexEncode(str_input).c_str());
     if (call_mode == kJustCreate || call_mode == kCreateAndCall) {
         msg.kind = EVMC_CREATE;

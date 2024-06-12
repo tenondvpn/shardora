@@ -211,7 +211,7 @@ static const uint64_t kBuildinTransactionGasPrice = 999999999lu;
 static const std::string kRootPoolsAddress = common::Encode::HexDecode(
     "0000000000000000000000000000000000000000");
 
-#pragma pack(push) 
+#pragma pack(push)
 #pragma pack(1)
 union DhtKey {
     DhtKey() {

@@ -141,10 +141,10 @@ struct ElectItem {
 };
 
 struct StatisticMemberInfoItem {
-    uint32_t tx_count;
-    uint32_t member_index;
-    uint32_t leader_index;
-    uint64_t gas_sum;
+    uint32_t tx_count = 0;
+    uint32_t member_index = 0;
+    uint32_t leader_index = 0;
+    uint64_t gas_sum = 0;
 };
 
 struct CrossStatisticItem {

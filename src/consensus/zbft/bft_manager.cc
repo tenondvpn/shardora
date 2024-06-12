@@ -21,6 +21,7 @@
 #include "common/time_utils.h"
 #include "common/encode.h"
 #include "db/db.h"
+#include "db/db_utils.h"
 #include "dht/base_dht.h"
 #include "elect/elect_manager.h"
 #include "network/dht_manager.h"

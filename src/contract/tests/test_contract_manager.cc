@@ -23,7 +23,7 @@ namespace test {
 
 static std::shared_ptr<security::Security> security = nullptr;
 static std::shared_ptr<db::Db> db_ptr = nullptr;
-
+static contract::ContractManager contract_manager = contract::ContractManager();
 class TestContractManager : public testing::Test {
 public:
     static void WriteDefaultLogConf(
@@ -61,7 +61,8 @@ public:
         WriteDefaultLogConf(log_conf_path, log_path);
         log4cpp::PropertyConfigurator::configure(log_conf_path);
         security = std::make_shared<security::Ecdsa>();
-        contract::ContractManager::Instance()->Init(security);
+      
+        contract_manager.Init(security);
     }
 
     static void TearDownTestCase() {
@@ -94,7 +95,7 @@ TEST_F(TestContractManager, modexpFermatTheorem) {
     evmc::Result evmc_res{ call_result };
     evmc_result* raw_result = (evmc_result*)&evmc_res;
     raw_result->gas_left = params.gas;
-    ASSERT_EQ(contract::ContractManager::Instance()->call(
+    ASSERT_EQ(contract_manager.call(
         params,
         10000000,
         "",
@@ -123,7 +124,7 @@ TEST_F(TestContractManager, modexpZeroBase) {
     evmc::Result evmc_res{ call_result };
     evmc_result* raw_result = (evmc_result*)&evmc_res;
     raw_result->gas_left = params.gas;
-    ASSERT_EQ(contract::ContractManager::Instance()->call(
+    ASSERT_EQ(contract_manager.call(
         params,
         10000000,
         "",
@@ -154,7 +155,7 @@ TEST_F(TestContractManager, modexpExtraByteIgnored) {
     evmc::Result evmc_res{ call_result };
     evmc_result* raw_result = (evmc_result*)&evmc_res;
     raw_result->gas_left = params.gas;
-    ASSERT_EQ(contract::ContractManager::Instance()->call(
+    ASSERT_EQ(contract_manager.call(
         params,
         10000000,
         "",
@@ -185,7 +186,7 @@ TEST_F(TestContractManager, modexpRightPadding) {
     evmc::Result evmc_res{ call_result };
     evmc_result* raw_result = (evmc_result*)&evmc_res;
     raw_result->gas_left = params.gas;
-    ASSERT_EQ(contract::ContractManager::Instance()->call(
+    ASSERT_EQ(contract_manager.call(
         params,
         10000000,
         "",
@@ -213,7 +214,7 @@ TEST_F(TestContractManager, modexpMissingValues) {
     evmc::Result evmc_res{ call_result };
     evmc_result* raw_result = (evmc_result*)&evmc_res;
     raw_result->gas_left = params.gas;
-    ASSERT_EQ(contract::ContractManager::Instance()->call(
+    ASSERT_EQ(contract_manager.call(
         params,
         10000000,
         "",
@@ -242,7 +243,7 @@ TEST_F(TestContractManager, modexpEmptyValue) {
     evmc::Result evmc_res{ call_result };
     evmc_result* raw_result = (evmc_result*)&evmc_res;
     raw_result->gas_left = params.gas;
-    ASSERT_EQ(contract::ContractManager::Instance()->call(
+    ASSERT_EQ(contract_manager.call(
         params,
         10000000,
         "",
@@ -272,7 +273,7 @@ TEST_F(TestContractManager, modexpZeroPowerZero) {
     evmc::Result evmc_res{ call_result };
     evmc_result* raw_result = (evmc_result*)&evmc_res;
     raw_result->gas_left = params.gas;
-    ASSERT_EQ(contract::ContractManager::Instance()->call(
+    ASSERT_EQ(contract_manager.call(
         params,
         10000000,
         "",
@@ -302,7 +303,7 @@ TEST_F(TestContractManager, modexpZeroPowerZeroModZero) {
     evmc::Result evmc_res{ call_result };
     evmc_result* raw_result = (evmc_result*)&evmc_res;
     raw_result->gas_left = params.gas;
-    ASSERT_EQ(contract::ContractManager::Instance()->call(
+    ASSERT_EQ(contract_manager.call(
         params,
         10000000,
         "",
@@ -331,7 +332,7 @@ TEST_F(TestContractManager, modexpModLengthZero) {
     evmc::Result evmc_res{ call_result };
     evmc_result* raw_result = (evmc_result*)&evmc_res;
     raw_result->gas_left = params.gas;
-    ASSERT_EQ(contract::ContractManager::Instance()->call(
+    ASSERT_EQ(contract_manager.call(
         params,
         10000000,
         "",
@@ -537,7 +538,7 @@ TEST_F(TestContractManager, ecrecover) {
     evmc::Result evmc_res{ call_result };
     evmc_result* raw_result = (evmc_result*)&evmc_res;
     raw_result->gas_left = params.gas;
-    ASSERT_EQ(contract::ContractManager::Instance()->call(
+    ASSERT_EQ(contract_manager.call(
         params,
         10000000,
         "",
@@ -568,7 +569,7 @@ TEST_F(TestContractManager, modexp) {
     evmc::Result evmc_res{ call_result };
     evmc_result* raw_result = (evmc_result*)&evmc_res;
     raw_result->gas_left = params.gas;
-    ASSERT_EQ(contract::ContractManager::Instance()->call(
+    ASSERT_EQ(contract_manager.call(
         params,
         10000000,
         "",
@@ -593,7 +594,7 @@ TEST_F(TestContractManager, bn256Add) {
     evmc::Result evmc_res{ call_result };
     evmc_result* raw_result = (evmc_result*)&evmc_res;
     raw_result->gas_left = params.gas;
-    ASSERT_EQ(contract::ContractManager::Instance()->call(
+    ASSERT_EQ(contract_manager.call(
         params,
         10000000,
         "",
@@ -618,7 +619,7 @@ TEST_F(TestContractManager, bn256ScalarMul) {
     evmc::Result evmc_res{ call_result };
     evmc_result* raw_result = (evmc_result*)&evmc_res;
     raw_result->gas_left = params.gas;
-    ASSERT_EQ(contract::ContractManager::Instance()->call(
+    ASSERT_EQ(contract_manager.call(
         params,
         10000000,
         "",
@@ -643,7 +644,7 @@ TEST_F(TestContractManager, bn256Pairing) {
     evmc::Result evmc_res{ call_result };
     evmc_result* raw_result = (evmc_result*)&evmc_res;
     raw_result->gas_left = params.gas;
-    ASSERT_EQ(contract::ContractManager::Instance()->call(
+    ASSERT_EQ(contract_manager.call(
         params,
         10000000,
         "",
@@ -672,7 +673,7 @@ TEST_F(TestContractManager, blake2compression) {
     evmc::Result evmc_res{ call_result };
     evmc_result* raw_result = (evmc_result*)&evmc_res;
     raw_result->gas_left = params.gas;
-    ASSERT_EQ(contract::ContractManager::Instance()->call(
+    ASSERT_EQ(contract_manager.call(
         params,
         10000000,
         "",
@@ -703,7 +704,7 @@ TEST_F(TestContractManager, blake2compressionFail) {
     evmc::Result evmc_res{ call_result };
     evmc_result* raw_result = (evmc_result*)&evmc_res;
     raw_result->gas_left = params.gas;
-    ASSERT_EQ(contract::ContractManager::Instance()->call(
+    ASSERT_EQ(contract_manager.call(
         params,
         10000000,
         "",

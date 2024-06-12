@@ -36,7 +36,7 @@ private:
     };
 
     void ProcessCommand(const std::string& cmdline);
-    
+
     void AddBaseCommands();
     void PrintDht(uint32_t network_id);
 
