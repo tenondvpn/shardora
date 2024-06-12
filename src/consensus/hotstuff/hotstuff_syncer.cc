@@ -746,6 +746,8 @@ Status HotstuffSyncer::onRecViewBlock(
     // 4. 保存 view_block
     s = hotstuff->view_block_chain()->Store(view_block);
     if (s != Status::kSuccess) {
+        ZJC_ERROR("pool: %d store view block failed, hash: %s, view: %lu, cur chain: %s", pool_idx,
+            common::Encode::HexEncode(view_block->hash).c_str(), view_block->view, view_block_chain(pool_idx)->String().c_str());
         return s;
     }
 
