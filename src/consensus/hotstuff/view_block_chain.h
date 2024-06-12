@@ -40,7 +40,10 @@ public:
         std::vector<std::shared_ptr<ViewBlock>> children;
         std::shared_ptr<QC> qc;
 
-        ViewBlockInfo() : view_block(nullptr), status(ViewBlockStatus::Unknown), qc(nullptr) {}
+        ViewBlockInfo() : 
+            view_block(nullptr), 
+            status(ViewBlockStatus::Unknown), 
+            qc(nullptr) {}
     };
     
     ViewBlockChain(uint32_t pool_index, std::shared_ptr<db::Db>& db);
@@ -66,6 +69,54 @@ public:
     Status GetAllVerified(std::vector<std::shared_ptr<ViewBlock>>&);
 
     Status GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>&);
+
+    bool CheckTxListValid(const std::shared_ptr<ViewBlock>& view_block) {
+        if (view_block->added_txs != nullptr) {
+            return  true;
+        }
+
+        view_block->added_txs = std::make_shared<std::unordered_set<std::string>>();
+        for (uint32_t i = 0; i < view_block->block->tx_list_size(); ++i) {
+            auto phash = view_block->parent_hash;
+            while (true) {
+                auto it = view_blocks_info_.find(phash);
+                if (it == view_blocks_info_.end()) {
+                    break;
+                }
+
+                auto iter = it->second->view_block->added_txs->find(view_block->block->tx_list(i).gid());
+                if (iter != it->second->view_block->added_txs->end()) {
+                    view_block->added_txs = nullptr;
+                    return false;
+                }
+
+                phash = it->second->view_block->parent_hash;
+            }
+            
+            view_block->added_txs->insert(view_block->block->tx_list(i).gid());
+        }
+
+        return true;
+    }
+
+    bool CheckTxGidValid(const std::string& gid, const std::string& parent_hash) {
+        auto phash = parent_hash;
+        while (true) {
+            auto it = view_blocks_info_.find(phash);
+            if (it == view_blocks_info_.end()) {
+                break;
+            }
+
+            auto iter = it->second->view_block->added_txs->find(gid);
+            if (iter != it->second->view_block->added_txs->end()) {
+                return false;
+            }
+
+            phash = it->second->view_block->parent_hash;
+        }
+
+        return true;
+    }
 
     inline std::shared_ptr<ViewBlock> LatestCommittedBlock() const {
         return latest_committed_block_;
@@ -227,7 +278,11 @@ public:
     
 private:
     // prune the branch starting from view_block
-    Status PruneFromBlockToTargetHash(const std::shared_ptr<ViewBlock>& view_block, const std::unordered_set<HashStr>& hashes_of_branch, std::vector<std::shared_ptr<ViewBlock>>& forked_blocks, const HashStr& target_hash);
+    Status PruneFromBlockToTargetHash(
+        const std::shared_ptr<ViewBlock>& view_block, 
+        const std::unordered_set<HashStr>& hashes_of_branch, 
+        std::vector<std::shared_ptr<ViewBlock>>& forked_blocks, 
+        const HashStr& target_hash);
     Status PruneHistoryTo(const std::shared_ptr<ViewBlock>&);
     Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
     Status DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_block);
@@ -265,6 +320,7 @@ private:
         if (it == view_blocks_info_.end()) {
             return;
         }
+
         view_blocks_info_[parent_hash]->children.push_back(view_block);        
     }
 

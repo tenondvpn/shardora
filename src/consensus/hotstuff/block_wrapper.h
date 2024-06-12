@@ -11,17 +11,19 @@ namespace shardora {
 
 namespace hotstuff {
 
+class ViewBlockChain;
 class IBlockWrapper {
 public:
     IBlockWrapper() = default;
     virtual ~IBlockWrapper() {};
 
     virtual Status Wrap(
-            const std::shared_ptr<block::protobuf::Block>& prev_block,
+            const std::shared_ptr<ViewBlock>& prev_block,
             const uint32_t& leader_idx,
             std::shared_ptr<block::protobuf::Block>& block,
             std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose,
-            const bool& no_tx_allowed) = 0;
+            const bool& no_tx_allowed,
+            std::shared_ptr<ViewBlockChain>& view_block_chain) = 0;
     virtual Status GetTxsIdempotently(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>& txs) = 0;
     virtual bool HasSingleTx() = 0;
 };
@@ -41,11 +43,12 @@ public:
 
     // 会改变交易的状态，标记已打包
     Status Wrap(
-            const std::shared_ptr<block::protobuf::Block>& prev_block,
+            const std::shared_ptr<ViewBlock>& prev_block,
             const uint32_t& leader_idx,
             std::shared_ptr<block::protobuf::Block>& block,
             std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose,
-            const bool& no_tx_allowed) override;
+            const bool& no_tx_allowed,
+            std::shared_ptr<ViewBlockChain>& view_block_chain) override;
 
     // 幂等，用于同步 replica 向 leader 同步交易
     Status GetTxsIdempotently(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>& txs) override;
@@ -60,11 +63,13 @@ private:
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     std::shared_ptr<consensus::WaitingTxsPools> txs_pools_ = nullptr;
 
-    Status LeaderGetTxsIdempotently(std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
+    Status LeaderGetTxsIdempotently(
+            std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
+            pools::CheckGidValidFunction gid_vlid_func) {
         pools_mgr_->PopTxs(pool_idx_, false);
         pools_mgr_->CheckTimeoutTx(pool_idx_);
         
-        txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(pool_idx_);
+        txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(pool_idx_, gid_vlid_func);
         return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;
     }
 };

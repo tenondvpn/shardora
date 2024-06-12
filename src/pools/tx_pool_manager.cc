@@ -1177,7 +1177,8 @@ void TxPoolManager::GetTxIdempotently(
         uint32_t pool_index,
         uint32_t count,
         std::map<std::string, TxItemPtr>& res_map,
-        std::unordered_map<std::string, std::string>& kvs) {
+        std::unordered_map<std::string, std::string>& kvs,
+        pools::CheckGidValidFunction gid_vlid_func) {
     if (count > common::kSingleBlockMaxTransactions) {
         count = common::kSingleBlockMaxTransactions;
     }
@@ -1186,7 +1187,7 @@ void TxPoolManager::GetTxIdempotently(
         return;
     }
 
-    tx_pool_[pool_index].GetTxIdempotently(res_map, count, kvs);    
+    tx_pool_[pool_index].GetTxIdempotently(res_map, count, kvs, gid_vlid_func);    
 }
 
 void TxPoolManager::GetTxByGids(uint32_t pool_index, std::vector<std::string> gids, std::map<std::string, pools::TxItemPtr>& res_map) {

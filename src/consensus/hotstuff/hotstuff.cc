@@ -710,6 +710,10 @@ Status Hotstuff::VerifyViewBlock(
         const std::shared_ptr<ViewBlockChain>& view_block_chain,
         const std::shared_ptr<TC>& tc,
         const uint32_t& elect_height) {
+    if (!view_block_chain->CheckTxListValid(v_block)) {
+        return Status::kTxRepeated;
+    }
+
     Status ret = Status::kSuccess;
     auto block_view = v_block->view;
     if (!v_block->Valid()) {
@@ -972,7 +976,7 @@ Status Hotstuff::ConstructViewBlock(
     view_block->view = pacemaker()->CurView();
 
     // TODO 如果单分支最多连续打包三个默认交易
-    s = wrapper()->Wrap(pre_block, leader_idx, pb_block, tx_propose, IsEmptyBlockAllowed(view_block));
+    s = wrapper()->Wrap(pre_v_block, leader_idx, pb_block, tx_propose, IsEmptyBlockAllowed(view_block), view_block_chain());
     if (s != Status::kSuccess) {
         ZJC_WARN("pool: %d wrap failed, %d", pool_idx_, static_cast<int>(s));
         return s;

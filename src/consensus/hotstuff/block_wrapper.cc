@@ -2,6 +2,7 @@
 #include <common/time_utils.h>
 #include <common/utils.h>
 #include <consensus/hotstuff/block_wrapper.h>
+#include <consensus/hotstuff/view_block_chain.h>
 
 namespace shardora {
 namespace hotstuff {
@@ -21,11 +22,13 @@ BlockWrapper::~BlockWrapper(){};
 
 // 打包一个新的 block 和 txs
 Status BlockWrapper::Wrap(
-        const std::shared_ptr<block::protobuf::Block>& prev_block,
+        const std::shared_ptr<ViewBlock>& prev_view_block,
         const uint32_t& leader_idx,
         std::shared_ptr<block::protobuf::Block>& block,
         std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose,
-        const bool& no_tx_allowed) {
+        const bool& no_tx_allowed,
+        std::shared_ptr<ViewBlockChain>& view_block_chain) {
+    auto& prev_block = prev_view_block->block;
     if (!prev_block) {
         return Status::kInvalidArgument;
     }
@@ -50,7 +53,11 @@ Status BlockWrapper::Wrap(
     ZJC_DEBUG("pool: %d, txs count, all: %lu, valid: %lu, leader: %lu",
         pool_idx_, pools_mgr_->all_tx_size(pool_idx_), pools_mgr_->tx_size(pool_idx_), leader_idx);
     
-    Status s = LeaderGetTxsIdempotently(txs_ptr);
+    auto gid_valid_func = [&](const std::string& gid) -> bool {
+        return view_block_chain->CheckTxGidValid(gid, prev_view_block->parent_hash);
+    };
+
+    Status s = LeaderGetTxsIdempotently(txs_ptr, gid_valid_func);
     if (s != Status::kSuccess && !no_tx_allowed) {
         // 允许 3 个连续的空交易块
         return s;

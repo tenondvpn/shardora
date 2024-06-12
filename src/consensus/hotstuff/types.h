@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_set>
+
 #include <common/time_utils.h>
 #include <sstream>
 #include <common/hash.h>
@@ -114,7 +116,7 @@ struct ViewBlock {
 
     uint32_t leader_idx;
     std::shared_ptr<block::protobuf::Block> block;
-
+    std::shared_ptr<std::unordered_set<std::string>> added_txs;
     std::shared_ptr<QC> qc;
     View view;
 
@@ -131,11 +133,12 @@ struct ViewBlock {
         block(block),
         qc(qc),
         view(view),
-        created_time_us(common::TimeUtils::TimestampUs()) {
+        created_time_us(common::TimeUtils::TimestampUs()),
+        added_txs(nullptr) {
         hash = DoHash();
     };
 
-    ViewBlock() : qc(nullptr), view(0), created_time_us(common::TimeUtils::TimestampUs()) {};
+    ViewBlock() : qc(nullptr), view(0), created_time_us(common::TimeUtils::TimestampUs()), added_txs(nullptr) {};
 
     inline bool Valid() {
         return hash != "" && hash == DoHash() && block != nullptr; 
@@ -188,6 +191,7 @@ enum class Status : int {
   kElectItemNotFound = 9,
   kWrapperTxsEmpty = 10,
   kBlsHandled = 11,
+  kTxRepeated = 12,
 };
 
 enum WaitingBlockType {
