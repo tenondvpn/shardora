@@ -29,10 +29,6 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
         return Status::kError;
     }
     
-    if (!CheckTxListValid(view_block)) {
-        return Status::kError;
-    }
-
     if (!start_block_) {
         start_block_ = view_block;
         //view_blocks_[view_block->hash] = view_block;
