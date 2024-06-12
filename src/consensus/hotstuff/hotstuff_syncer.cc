@@ -683,7 +683,7 @@ Status HotstuffSyncer::processResponseChain(
         tmp_chain->Store(view_block);
     }
     
-    ZJC_DEBUG("Sync blocks to chain, pool_idx: %d, view_blocks: %d, syncchain: %s, orichain: %s",
+    ZJC_INFO("Sync blocks to chain, pool_idx: %d, view_blocks: %d, syncchain: %s, orichain: %s",
         pool_idx, view_block_items.size(), tmp_chain->String().c_str(), chain->String().c_str());
 
     if (!tmp_chain->IsValid()) {
