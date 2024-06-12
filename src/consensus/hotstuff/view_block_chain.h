@@ -72,6 +72,7 @@ public:
 
     bool CheckTxListValid(const std::shared_ptr<ViewBlock>& view_block) {
         if (view_block->added_txs != nullptr) {
+            assert(false);
             return true;
         }
 
@@ -94,6 +95,12 @@ public:
             }
             
             view_block->added_txs->insert(view_block->block->tx_list(i).gid());
+            ZJC_DEBUG("view %lu, %u_%u_%lu add gid: %s",
+                view_block->view, 
+                view_block->block->network_id(), 
+                view_block->block->pool_index(),
+                view_block->block->height(), 
+                common::Encode::HexEncode(view_block->block->tx_list(i).gid()).c_str());
         }
 
         return true;

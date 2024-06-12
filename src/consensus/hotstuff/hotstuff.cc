@@ -978,7 +978,6 @@ Status Hotstuff::ConstructViewBlock(
 
     // TODO 如果单分支最多连续打包三个默认交易
     s = wrapper()->Wrap(
-        view_block,
         pre_v_block, 
         leader_idx, 
         pb_block, 
