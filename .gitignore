@@ -22,3 +22,8 @@ src/contract/tests/contracts/*.bin
 _pycache_
 build
 .python-version
+GPATH
+GRTAGS
+GTAGS
+/.ccls-cache/
+/__pycache__/

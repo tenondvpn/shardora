@@ -169,6 +169,7 @@ const std::string& AccountManager::GetTxValidAddress(const block::protobuf::Bloc
     case pools::protobuf::kConsensusCreateGenesisAcount:
     case pools::protobuf::kContractExcute:
     case pools::protobuf::kStatistic:
+    case pools::protobuf::kContractCreate:
         return tx_info.to();
     case pools::protobuf::kJoinElect:
     case pools::protobuf::kNormalFrom:
