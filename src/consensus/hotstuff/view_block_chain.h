@@ -70,52 +70,6 @@ public:
 
     Status GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>&);
 
-    bool CheckTxListValid(const std::shared_ptr<ViewBlock>& view_block) {
-        if (view_block->block->tx_list_size() > 0) {
-            ZJC_DEBUG("check tx valid tx size: %u",  view_block->block->tx_list_size());
-        }
-
-        if (view_block->added_txs != nullptr) {
-            assert(false);
-            ZJC_DEBUG("check tx valid success 0");
-            return true;
-        }
-
-        view_block->added_txs = std::make_shared<std::unordered_set<std::string>>();
-        for (uint32_t i = 0; i < view_block->block->tx_list_size(); ++i) {
-            auto phash = view_block->parent_hash;
-            while (true) {
-                auto it = view_blocks_info_.find(phash);
-                if (it == view_blocks_info_.end()) {
-                    break;
-                }
-
-                auto iter = it->second->view_block->added_txs->find(view_block->block->tx_list(i).gid());
-                if (iter != it->second->view_block->added_txs->end()) {
-                    view_block->added_txs = nullptr;
-                    ZJC_DEBUG("check tx valid failed 0");
-                    return false;
-                }
-
-                phash = it->second->view_block->parent_hash;
-            }
-            
-            view_block->added_txs->insert(view_block->block->tx_list(i).gid());
-            ZJC_DEBUG("view %lu, %u_%u_%lu add gid: %s",
-                view_block->view, 
-                view_block->block->network_id(), 
-                view_block->block->pool_index(),
-                view_block->block->height(), 
-                common::Encode::HexEncode(view_block->block->tx_list(i).gid()).c_str());
-        }
-
-        if (view_block->block->tx_list_size() > 0) {
-            ZJC_DEBUG("check tx valid success 1");
-        }
-        
-        return true;
-    }
-
     bool CheckTxGidValid(const std::string& gid, const std::string& parent_hash) {
         auto phash = parent_hash;
         while (true) {

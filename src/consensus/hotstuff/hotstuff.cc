@@ -169,9 +169,9 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
 void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     auto b = common::TimeUtils::TimestampMs();
     defer({
-            auto e = common::TimeUtils::TimestampMs();
-            ZJC_DEBUG("pool: %d handle propose duration: %lu ms", pool_idx_, e-b);
-        });
+        auto e = common::TimeUtils::TimestampMs();
+        ZJC_DEBUG("pool: %d handle propose duration: %lu ms", pool_idx_, e-b);
+    });
     
     auto& pro_msg = header.hotstuff().pro_msg();
     ZJC_DEBUG("====1.0 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
@@ -222,7 +222,11 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     }
     
     // 4 Verify ViewBlock    
-    if (VerifyViewBlock(v_block, view_block_chain(), tc, pro_msg.elect_height()) != Status::kSuccess) {
+    if (VerifyViewBlock(
+            v_block,
+            view_block_chain(),
+            tc,
+            pro_msg.elect_height()) != Status::kSuccess) {
         ZJC_ERROR("pool: %d, Verify ViewBlock is error. hash: %s", pool_idx_,
             common::Encode::HexEncode(v_block->hash).c_str());
         return;
@@ -245,10 +249,15 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     block_info->block = block;
     block_info->tx_type = pro_msg.tx_propose().tx_type();
     for (const auto& tx : pro_msg.tx_propose().txs()) {
+        if (!view_block_chain_->CheckTxGidValid(tx.gid(), v_block->parent_hash)) {
+            return;
+        }
+
         block_info->txs.push_back(&tx);
+        v_block->added_txs->insert(tx.gid());
     }
+
     block_info->view = v_block->view;
-    
     if (acceptor()->Accept(block_info, true) != Status::kSuccess) {
         ZJC_ERROR("Accept tx is error");
         return;
@@ -710,10 +719,6 @@ Status Hotstuff::VerifyViewBlock(
         const std::shared_ptr<ViewBlockChain>& view_block_chain,
         const std::shared_ptr<TC>& tc,
         const uint32_t& elect_height) {
-    if (!view_block_chain->CheckTxListValid(v_block)) {
-        return Status::kTxRepeated;
-    }
-
     Status ret = Status::kSuccess;
     auto block_view = v_block->view;
     if (!v_block->Valid()) {
