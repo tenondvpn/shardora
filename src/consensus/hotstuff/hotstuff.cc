@@ -974,8 +974,6 @@ Status Hotstuff::ConstructViewBlock(
     // 打包 QC 和 View
     view_block->qc = pacemaker()->HighQC();
     view_block->view = pacemaker()->CurView();
-    view_block->added_txs = std::make_shared<std::unordered_set<std::string>>();
-
     // TODO 如果单分支最多连续打包三个默认交易
     s = wrapper()->Wrap(
         pre_v_block, 
