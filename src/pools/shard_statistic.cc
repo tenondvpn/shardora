@@ -591,10 +591,7 @@ uint64_t ShardStatistic::getStoke(uint32_t shard_id, std::string contractId, std
     std::string stoke_hex(qdata.c_str() + 64, len);
     std::string stoke_dec = common::Encode::HexDecode(stoke_hex);
     memcpy(stoke_bytes.bytes, stoke_dec.c_str(), stoke_dec.size());
-
     uint64_t stoke = zjcvm::EvmcBytes32ToUint64(stoke_bytes);
-
-
     return stoke;
 }
 

@@ -132,13 +132,16 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
             }
 #ifndef NDEBUG                
             for (uint32_t i = 0; i < block->tx_list_size(); ++i) {
-                ZJC_DEBUG("leader broadcast commit block tx over step: %d, to: %s, gid: %s, net: %d, pool: %d, height: %lu", 
+                ZJC_DEBUG("leader broadcast commit block tx over step: %d, "
+                    "to: %s, gid: %s, net: %d, pool: %d, height: %lu, leader index: %u, local index: %u", 
                     block->tx_list(i).step(),
                     common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
                     common::Encode::HexEncode(block->tx_list(i).gid()).c_str(),
                     block->network_id(),
                     block->pool_index(),
-                    block->height());
+                    block->height(),
+                    block->leader_index(),
+                    elect_item->LocalMember()->index);
             }
 #endif
         }
