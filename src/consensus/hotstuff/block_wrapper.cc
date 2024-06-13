@@ -50,7 +50,7 @@ Status BlockWrapper::Wrap(
     // 打包交易
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
     
-    ZJC_DEBUG("pool: %d, txs count, all: %lu, valid: %lu, leader: %lu",
+    ZJC_INFO("pool: %d, txs count, all: %lu, valid: %lu, leader: %lu",
         pool_idx_, pools_mgr_->all_tx_size(pool_idx_), pools_mgr_->tx_size(pool_idx_), leader_idx);
     
     auto gid_valid_func = [&](const std::string& gid) -> bool {

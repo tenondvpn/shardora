@@ -16,6 +16,7 @@
 #include <common/log.h>
 #include <protos/pools.pb.h>
 #include <protos/tx_storage_key.h>
+#include "db/db_utils.h"
 
 namespace shardora {
 
@@ -454,7 +455,7 @@ void BlockManager::HandleAllConsensusBlocks() {
             if (db_item_ptr == nullptr) {
                 break;
             }
-            
+
             ZJC_DEBUG("from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
                     "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
                     db_item_ptr->block_ptr->network_id(),
@@ -498,6 +499,15 @@ void BlockManager::GenesisAddOneAccount(uint32_t des_sharding_id,
     account_info->set_sharding_id(des_sharding_id);
     account_info->set_latest_height(latest_height);
     account_info->set_balance(tx.balance());
+
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        if (tx.step() ==  pools::protobuf::kContractCreate && tx.storages(i).key() == protos::kCreateContractBytesCode) {
+            auto& bytes_code = tx.storages(i).value();
+            account_info->set_type(address::protobuf::kContract);
+            account_info->set_bytes_code(bytes_code);
+            break;
+        }
+    }
     ZJC_DEBUG("genesis add new account %s : %lu, shard: %u",
               common::Encode::HexEncode(account_info->addr()).c_str(),
               account_info->balance(),
@@ -638,11 +648,11 @@ void BlockManager::HandleNormalToTx(
             }
         }
 
-        ZJC_DEBUG("success handle tox tx heights net: %u, local net: %u, step: %d", 
-            to_txs.to_heights().sharding_id(), 
+        ZJC_DEBUG("success handle tox tx heights net: %u, local net: %u, step: %d",
+            to_txs.to_heights().sharding_id(),
             common::GlobalInfo::Instance()->network_id(),
             tx.step());
-        if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId && 
+        if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
                 common::GlobalInfo::Instance()->network_id() != 
                 (network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
             if (to_txs.to_heights().sharding_id() != common::GlobalInfo::Instance()->network_id()) {
@@ -1149,7 +1159,7 @@ void BlockManager::HandleElectTx(
                     ZJC_DEBUG("success erase elect tx: %u", elect_block.shard_network_id());
                 }
             }
-            
+
             // 将 elect block 中的 common_pk 持久化
             if (elect_block.prev_members().prev_elect_height() > 0) {
                 prefix_db_->SaveElectHeightCommonPk(
@@ -1710,7 +1720,7 @@ bool BlockManager::HasToTx(uint32_t pool_index) {
     auto now_tm = common::TimeUtils::TimestampUs();
     auto latest_to_tx = latest_to_tx_;
     auto tmp_to_txs = latest_to_tx->to_tx;
-   
+
     if (tmp_to_txs != nullptr && !tmp_to_txs->tx_ptr->in_consensus) {
         return true;
     }
@@ -1743,7 +1753,7 @@ bool BlockManager::HasStatisticTx(uint32_t pool_index) {
         if (shard_statistic_tx->tx_ptr->in_consensus) {
             return false;
         }
-        
+
         auto now_tm = common::TimeUtils::TimestampUs();
         if (iter->first >= latest_timeblock_height_) {
             return false;
@@ -1801,7 +1811,7 @@ bool BlockManager::HasCrossTx(uint32_t pool_index) {
     if (iter == statistic_map_ptr->end()) {
         return false;
     }
-    
+
     auto cross_statistic_tx = iter->second;
     if (cross_statistic_tx != nullptr && !cross_statistic_tx->tx_ptr->in_consensus) {
         return true;
@@ -1906,7 +1916,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
                 (shard_statistic_tx != nullptr), 
                 (shard_statistic_tx == nullptr ? 99 : shard_statistic_tx->tx_ptr->in_consensus));
         }
-        
+
         prev_get_tx_tm = now_tx_tm;
     }
 
@@ -1922,7 +1932,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
             ZJC_DEBUG("leader get tx failed: %lu, %lu", shard_statistic_tx->tx_ptr->time_valid, now_tm);
             return nullptr;
         }
-        
+
         if (iter->first >= latest_timeblock_height_) {
             if (leader) {
                 ZJC_DEBUG("iter->first >= latest_timeblock_height_: %lu, %lu",

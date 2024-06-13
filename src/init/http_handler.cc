@@ -385,6 +385,13 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     }
 	
     std::string qdata((char*)result.output_data, result.output_size);
+    ZJC_DEBUG("LLLLLhttp: %s, size %d ", common::Encode::HexEncode(qdata).c_str(), result.output_size);
+    if (result.output_size < 64) {
+        auto res = common::Encode::HexEncode(qdata); 
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_OK);
+        return;
+    }
     evmc_bytes32 len_bytes;
     memcpy(len_bytes.bytes, qdata.c_str() + 32, 32);
     uint64_t len = zjcvm::EvmcBytes32ToUint64(len_bytes);

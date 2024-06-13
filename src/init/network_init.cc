@@ -24,7 +24,9 @@
 #include "common/random.h"
 #include "common/time_utils.h"
 #include "db/db.h"
+#include "db/db_utils.h"
 #include "elect/elect_manager.h"
+#include "elect/elect_pledge.h"
 #include "http/http_server.h"
 #include "http/http_client.h"
 #include "init/genesis_block_init.h"
@@ -179,8 +181,7 @@ int NetworkInit::Init(int argc, char** argv) {
         std::placeholders::_1,
         std::placeholders::_2);
     shard_statistic_ = std::make_shared<pools::ShardStatistic>(
-        elect_mgr_, db_, security_, pools_mgr_);
-    ZJC_DEBUG("init 0 16");
+        elect_mgr_, db_, security_, pools_mgr_, contract_mgr_);
     block_mgr_->Init(
         account_mgr_,
         db_,
@@ -201,7 +202,7 @@ int NetworkInit::Init(int argc, char** argv) {
         block_mgr_,
         db_,
         std::bind(&consensus::HotstuffManager::VerifySyncedViewBlock,
-            hotstuff_mgr_, std::placeholders::_1));    
+            hotstuff_mgr_, std::placeholders::_1));
     auto consensus_init_res = hotstuff_mgr_->Init(
         contract_mgr_,
         gas_prepayment_,
@@ -235,8 +236,8 @@ int NetworkInit::Init(int argc, char** argv) {
         nullptr,
         common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
         std::bind(&NetworkInit::AddBlockItemToCache, this,
-            std::placeholders::_1, std::placeholders::_2));    
-#endif    
+            std::placeholders::_1, std::placeholders::_2));
+#endif
 
     if (consensus_init_res != consensus::kConsensusSuccess) {
         INIT_ERROR("init bft failed!");
@@ -271,7 +272,7 @@ int NetworkInit::Init(int argc, char** argv) {
 #ifdef ENABLE_HOTSTUFF
     // 启动共识和同步
     hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(hotstuff_mgr_, db_, kv_sync_);
-    hotstuff_syncer_->Start();    
+    hotstuff_syncer_->Start();
     hotstuff_mgr_->Start();
     // 以上应该放入 hotstuff 实例初始化中，并接收创世块
     AddCmds();
@@ -292,7 +293,40 @@ int NetworkInit::Init(int argc, char** argv) {
 
     inited_ = true;
     common::GlobalInfo::Instance()->set_main_inited_success();
-    
+    cmd_.AddCommand("gs", [this](const std::vector<std::string>& args) {
+        if (args.size() < 3) {
+            return;
+        }
+        uint32_t shard_id = std::stoi(args[0]);
+        std::string addr = args[1];
+        uint64_t elect_height = std::stoull(args[2]);
+        std::string con_addr = "";
+        if (shard_id < 1){
+           con_addr = args[3];
+        }
+        std::cout << "shard_id: " << shard_id << std::endl;
+        std::cout << "addr: " << addr << std::endl;
+        std::cout << "elect_height: " << elect_height << std::endl;
+        std::cout << "con_addr: " << con_addr << std::endl;
+        auto stoke = shard_statistic_->getStoke(shard_id,  con_addr, addr,  elect_height);
+        std::cout << "stoke: " << stoke << std::endl;
+
+    });
+
+    cmd_.AddCommand("sph", [this](const std::vector<std::string>& args) {
+        if (args.size() < 2) {
+            return;
+        }
+        uint32_t shard_id = std::stoi(args[0]);
+        uint64_t elect_height = std::stoull(args[1]);
+        std::string con_addr = "";
+        auto plege_addr = elect::ElectPlege::gen_elect_plege_contract_addr(shard_id);
+        db::DbWriteBatch db_batch;
+        prefix_db_->AddNowElectHeight2Plege(plege_addr, elect_height, db_batch);
+        db_->Put(db_batch);
+
+    });
+
     cmd_.Run();
     // std::this_thread::sleep_for(std::chrono::seconds(120));
     return kInitSuccess;
@@ -305,7 +339,7 @@ void NetworkInit::AddCmds() {
             return;
         }
         uint32_t pool_idx = std::stoi(args[0]);
-                        
+
         auto chain = hotstuff_mgr_->chain(pool_idx);
         if (!chain) {
             return;
@@ -320,8 +354,8 @@ void NetworkInit::AddCmds() {
                   << ",commitView: " << chain->LatestCommittedBlock()->view
                   << ",CurView: " << pacemaker->CurView() << std::endl;
         chain->Print();
-    });        
-#endif    
+    });
+#endif
 }
 
 void NetworkInit::RegisterFirewallCheck() {
@@ -334,7 +368,7 @@ void NetworkInit::RegisterFirewallCheck() {
         std::bind(&consensus::HotstuffManager::FirewallCheckMessage, hotstuff_mgr_.get(), std::placeholders::_1));
     net_handler_.AddFirewallCheckCallback(
         common::kHotstuffSyncMessage,
-        std::bind(&hotstuff::HotstuffSyncer::FirewallCheckMessage, hotstuff_syncer_.get(), std::placeholders::_1));    
+        std::bind(&hotstuff::HotstuffSyncer::FirewallCheckMessage, hotstuff_syncer_.get(), std::placeholders::_1));
 #else
     net_handler_.AddFirewallCheckCallback(
         common::kConsensusMessage,
@@ -1122,7 +1156,7 @@ void NetworkInit::AddBlockItemToCache(
     } else {
         pools_mgr_->UpdateCrossLatestInfo(block, db_batch);
     }
-    
+
     // one block must be one consensus pool
     for (int32_t i = 0; i < tx_list.size(); ++i) {
 //         if (tx_list[i].status() != consensus::kConsensusSuccess) {
@@ -1144,6 +1178,9 @@ void NetworkInit::AddBlockItemToCache(
         case pools::protobuf::kContractExcute:
             account_mgr_->NewBlockWithTx(block, tx_list[i], db_batch);
             gas_prepayment_->NewBlockWithTx(block, tx_list[i], db_batch);
+            ZJC_DEBUG("DDD txInfo: %s", ProtobufToJson(tx_list[i], true).c_str());
+            // ZJC_DEBUG("ddd 00");
+            // db::print_write_batch(db_batch);
             zjcvm::Execution::Instance()->NewBlockWithTx(block, tx_list[i], db_batch);
             break;
         default:
@@ -1321,7 +1358,7 @@ void NetworkInit::HandleElectionBlock(
     hotstuff_mgr_->OnNewElectBlock(block->timestamp(),sharding_id, elect_height, members, common_pk, sec_key);
 #else
     bft_mgr_->OnNewElectBlock(block->timestamp(),sharding_id, elect_height, members, common_pk, sec_key);
-#endif    
+#endif
 
     block_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     bls_mgr_->OnNewElectBlock(sharding_id, block->height(), elect_block);

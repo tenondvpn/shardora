@@ -110,9 +110,13 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const int32_t& node_num)
     view_block_chain(pool_idx)->GetAllVerified(view_blocks);
     // 发送所有有 qc 的 ViewBlock 的 hash 给目标节点
     for (const auto& vb : view_blocks) {
-        auto& vb_hash = *(req->add_view_block_hashes());
-        vb_hash = vb->hash;
+        // auto& vb_hash = *(req->add_view_block_hashes());
+        // vb_hash = vb->hash;
         max_view = vb->view > max_view ? vb->view : max_view;
+        // 发送本地区块链，只发送 hash 和 parent_hash
+        auto vb_item = req->add_view_blocks();
+        vb_item->set_hash(vb->hash);
+        vb_item->set_parent_hash(vb->parent_hash);
     }
     req->set_max_view(max_view);
     auto latest_committed_block = view_block_chain(pool_idx)->LatestCommittedBlock();
@@ -276,10 +280,10 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     }
     
     // 将 src 节点的 view_block_hashes 放入一个 set
-    auto& src_view_block_hashes = view_block_msg.view_block_req().view_block_hashes();
+    auto& src_view_block_items = view_block_msg.view_block_req().view_blocks();
     std::unordered_set<HashStr> src_view_block_hash_set;
-    for (const auto& hash : src_view_block_hashes) {
-        src_view_block_hash_set.insert(hash);
+    for (const auto& src_vb_item : src_view_block_items) {
+        src_view_block_hash_set.insert(src_vb_item.hash());
     }
     
     view_block_res->set_network_id(network_id);
@@ -315,27 +319,52 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     // 由于仅检查有 qc 的 view block，因此最新的 view_block 并不会同步（本该如此），但其中的 qc 也不会随着 chain 同步
     // 导致超时 leader 不一致（因为 leader 是跟随 qc 迭代的）
     // 好在这个 qc 会通过 highqc 同步过去，因此接受 highqc 时需要执行 commit 操作，保证 leader 一致
+
+    // 找到相交的最后一个 view_block
     View max_view = 0;
-    for (auto& view_block : all) {
-        // 仅同步已经有 qc 的 view_block
+    std::shared_ptr<ViewBlock> cross_vb = nullptr;
+    for (const auto& view_block: all) {
+        auto cross_it = src_view_block_hash_set.find(view_block->hash);
+        if (cross_it != src_view_block_hash_set.end()) {
+            if (!cross_vb || cross_vb->view < view_block->view) {
+                cross_vb = view_block;
+            }            
+        }
+    }
+
+    std::vector<std::shared_ptr<ViewBlock>> vb_to_sync; // 要同步的块
+    // 存在交点时，仅同步交点之后的
+    if (cross_vb) {
+        vb_to_sync.clear();
+        chain->GetRecursiveChildren(cross_vb->hash, vb_to_sync);
+        // cross_vb 也同步回去，保证是一条合法的链
+        vb_to_sync.push_back(cross_vb);
+    } else {
+        vb_to_sync = all;
+    }
+
+    for (const auto& view_block : vb_to_sync) {
         auto view_block_qc = hotstuff_mgr_->hotstuff(pool_idx)->GetQcOf(view_block);
         if (!view_block_qc) {
             continue;
         }
 
-        // src 节点没有此 view_block
-        if (!shouldSyncChain) {
-            auto it = src_view_block_hash_set.find(view_block->hash);
-            if (it == src_view_block_hash_set.end()) {
-                shouldSyncChain = true;
-            }            
-        }
-        
         auto view_block_qc_str = view_block_res->add_view_block_qc_strs();
         *view_block_qc_str = view_block_qc->Serialize();
         auto view_block_item = view_block_res->add_view_block_items();
         ViewBlock2Proto(view_block, view_block_item);
         max_view = view_block->view > max_view ? view_block->view : max_view;
+    }
+
+    if (view_block_res->view_block_items_size() > 0) {
+        shouldSyncChain = true;
+    }
+
+    // 若只有 cross_vb 一个块，则不同步（因为 cross_vb 已经有了）
+    if (view_block_res->view_block_items_size() == 1 &&
+        cross_vb &&
+        view_block_res->view_block_items(0).hash() == cross_vb->hash) {
+        shouldSyncChain = false;
     }
 
     // 若本地 view_block_chain 的最大 view < src 节点，则不同步
@@ -654,7 +683,7 @@ Status HotstuffSyncer::processResponseChain(
         tmp_chain->Store(view_block);
     }
     
-    ZJC_DEBUG("Sync blocks to chain, pool_idx: %d, view_blocks: %d, syncchain: %s, orichain: %s",
+    ZJC_INFO("Sync blocks to chain, pool_idx: %d, view_blocks: %d, syncchain: %s, orichain: %s",
         pool_idx, view_block_items.size(), tmp_chain->String().c_str(), chain->String().c_str());
 
     if (!tmp_chain->IsValid()) {
@@ -699,6 +728,10 @@ Status HotstuffSyncer::MergeChain(
     sync_chain->GetOrderedAll(sync_all_blocks);
         
     for (const auto& sync_block : sync_all_blocks) {
+        // 如果存在交点，则交点之前的块不考虑
+        if (cross_block && sync_block->view < cross_block->view) {
+            continue;
+        }
         Status s = on_recv_vb_fn_(pool_idx, ori_chain, sync_block);
         if (s != Status::kSuccess) {
             ZJC_ERROR("pool: %d, merge chain block: %lu failed, s: %d", pool_idx, sync_block->view, s);
@@ -746,6 +779,8 @@ Status HotstuffSyncer::onRecViewBlock(
     // 4. 保存 view_block
     s = hotstuff->view_block_chain()->Store(view_block);
     if (s != Status::kSuccess) {
+        ZJC_ERROR("pool: %d store view block failed, hash: %s, view: %lu, cur chain: %s", pool_idx,
+            common::Encode::HexEncode(view_block->hash).c_str(), view_block->view, view_block_chain(pool_idx)->String().c_str());
         return s;
     }
 

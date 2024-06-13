@@ -22,6 +22,7 @@
 #include "protos/timeblock.pb.h"
 #include "protos/tx_storage_key.h"
 #include "security/security.h"
+#include <zjcvm/zjcvm_utils.h>
 #include "consensus/hotstuff/types.h"
 
 namespace shardora {
@@ -122,6 +123,15 @@ public:
             const std::string& val,
             db::DbWriteBatch& write_batch) {
         write_batch.Put(kAddressPrefix + addr, val);
+    }
+
+    void AddNowElectHeight2Plege(const std::string& addr , const uint64_t height , db::DbWriteBatch& db_batch) {
+        auto key = common::Encode::HexDecode(addr) + common::Encode::HexDecode("0000000000000000000000000000000000000000000000000000000000000000");
+        evmc::bytes32 tmp_val{};
+        zjcvm::Uint64ToEvmcBytes32(tmp_val, height);
+
+        auto value =  std::string((char*)tmp_val.bytes, sizeof(tmp_val.bytes));
+        SaveTemporaryKv(key, value, db_batch);
     }
 
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& addr) {
@@ -340,7 +350,7 @@ public:
             return false;
         }
 
-#ifndef ENABLE_HOTSTUFF        
+#ifndef ENABLE_HOTSTUFF
         assert(block.has_bls_agg_sign_x() && block.has_bls_agg_sign_y());
 #endif
         std::string key;
@@ -374,7 +384,7 @@ public:
         if (!block->ParseFromString(block_str)) {
             return false;
         }
-#ifndef ENABLE_HOTSTUFF 
+#ifndef ENABLE_HOTSTUFF
         assert(block->has_bls_agg_sign_x() && block->has_bls_agg_sign_y());
 #endif
         return true;
@@ -611,7 +621,7 @@ public:
             return false;
         }
 
-        return true;        
+        return true;
     }
 
     bool HasViewBlockInfo(
@@ -630,8 +640,8 @@ public:
             return false;
         }
 
-        return true;        
-    }    
+        return true;
+    }
 
     void SaveHeightTree(
             uint32_t net_id,
@@ -824,7 +834,7 @@ public:
                 bls_prikey) != security::kSecuritySuccess) {
             return false;
         }
-        
+
         return true;
     }
 

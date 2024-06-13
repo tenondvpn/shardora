@@ -29,7 +29,7 @@ function hexToBytes(hex) {
 }
 
 function init_private_key() {
-    const privateKeyBuf = Secp256k1.uint256("fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971", 16)
+    const privateKeyBuf = Secp256k1.uint256("1ddc8edbfecc5d396381049bc8c9ade82104dd0119cae80f42214d2667e25f50", 16)
     self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
     self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
     var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
@@ -44,8 +44,8 @@ function init_private_key() {
 function PostCode(data) {
     var post_data = querystring.stringify(data);
     var post_options = {
-        host: '10.101.20.11',
-        port: '8781',
+        host: '127.0.0.1',
+        port: '8301',
         path: '/transaction',
         method: 'POST',
         headers: {
