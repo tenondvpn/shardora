@@ -72,6 +72,7 @@ public:
 
     bool CheckTxGidValid(const std::string& gid, const std::string& parent_hash) {
         auto phash = parent_hash;
+        uint32_t count = 0;
         while (true) {
             if (phash.empty()) {
                 break;
@@ -90,6 +91,11 @@ public:
                 return false;
             }
 
+            ++count;
+            ZJC_DEBUG("check gid valid called hash: %s, parent hash: %s, count: %u",
+                common::Encode::HexEncode(phash).c_str(),
+                common::Encode::HexEncode(it->second->view_block->parent_hash).c_str(),
+                count);
             phash = it->second->view_block->parent_hash;
         }
 
