@@ -60,33 +60,33 @@ int ElectTxItem::HandleTx(
     return kConsensusError;
 }
 
-int ElectTxItem::processElect(shardora::pools::protobuf::ElectStatistic &elect_statistic,
-                              const shardora::block::protobuf::Block &block,
-                              std::shared_ptr<shardora::db::DbWriteBatch> &db_batch,
-                              shardora::block::protobuf::BlockTx &block_tx) {
+int ElectTxItem::processElect(
+        shardora::pools::protobuf::ElectStatistic &elect_statistic,
+        const shardora::block::protobuf::Block &block,
+        std::shared_ptr<shardora::db::DbWriteBatch> &db_batch,
+        shardora::block::protobuf::BlockTx &block_tx) {
     const pools::protobuf::PoolStatisticItem *statistic = nullptr;
     shardora::common::MembersPtr members = nullptr;
     int retVal = getMaxElectHeightInfo(elect_statistic, statistic, members);
-    if ( retVal != kConsensusSuccess)
+    if ( retVal != kConsensusSuccess) {
+        ZJC_DEBUG("getMaxElectHeightInfo failed ret val: %d", retVal);
+        assert(false);
         return retVal;
+    }
 
     elect_members_ = members;
     for (auto iter = members->begin(); iter != members->end(); ++iter) {
         added_nodes_.insert((*iter)->pubkey);
         ZJC_DEBUG("success add now elect member: %s, %s",
-                  common::Encode::HexEncode(sec_ptr_->GetAddress((*iter)->pubkey)).c_str(),
-                  common::Encode::HexEncode((*iter)->pubkey).c_str());
+            common::Encode::HexEncode(sec_ptr_->GetAddress((*iter)->pubkey)).c_str(),
+            common::Encode::HexEncode((*iter)->pubkey).c_str());
     }
-
-
 
     uint32_t min_area_weight = common::kInvalidUint32;
     uint32_t min_tx_count = common::kInvalidUint32;
     std::vector<NodeDetailPtr> elect_nodes(members->size(), nullptr);
-    
     // TODO: add weedout
     int res = CheckWeedout(members, *statistic, &min_area_weight, &min_tx_count, elect_nodes);
-
     if (res != kConsensusSuccess) {
         assert(false);
         return res;
@@ -100,13 +100,12 @@ int ElectTxItem::processElect(shardora::pools::protobuf::ElectStatistic &elect_s
         &gas_for_root);
     min_area_weight += 1;
     min_tx_count += 1;
-
-            std::vector<NodeDetailPtr> src_elect_nodes_to_choose;
-            for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
-                if (elect_nodes[i] != nullptr) {
-                    src_elect_nodes_to_choose.push_back(elect_nodes[i]);
-                }
-            }
+    std::vector<NodeDetailPtr> src_elect_nodes_to_choose;
+    for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+        if (elect_nodes[i] != nullptr) {
+            src_elect_nodes_to_choose.push_back(elect_nodes[i]);
+        }
+    }
 
     JoinNewNodes2ElectNodes(members, elect_nodes, min_area_weight, min_tx_count, elect_statistic);
     std::string random_str;
@@ -157,13 +156,13 @@ int ElectTxItem::processElect(shardora::pools::protobuf::ElectStatistic &elect_s
         ZJC_DEBUG("LLLLLL before CreateNewElect: count %d, %s", count, ids.c_str());
     }
 
-            CreateNewElect(
-                block,
-                elect_nodes,
-                elect_statistic,
-                gas_for_root,
-                db_batch,
-                block_tx);
+    CreateNewElect(
+        block,
+        elect_nodes,
+        elect_statistic,
+        gas_for_root,
+        db_batch,
+        block_tx);
 
     {
         std::string ids;
