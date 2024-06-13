@@ -71,7 +71,9 @@ public:
     Status GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>&);
 
     bool CheckTxGidValid(const std::string& gid, const std::string& parent_hash) {
-        auto phash = parent_hash;
+        std::string phash = parent_hash;
+        ZJC_DEBUG("check gid valid called hash beign: %s",
+            common::Encode::HexEncode(phash).c_str());
         uint32_t count = 0;
         while (true) {
             if (phash.empty()) {
