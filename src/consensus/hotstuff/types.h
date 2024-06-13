@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_set>
+
 #include <common/time_utils.h>
 #include <sstream>
 #include <common/hash.h>
@@ -114,7 +116,7 @@ struct ViewBlock {
 
     uint32_t leader_idx;
     std::shared_ptr<block::protobuf::Block> block;
-
+    std::unordered_set<std::string> added_txs;
     std::shared_ptr<QC> qc;
     View view;
 
@@ -188,6 +190,7 @@ enum class Status : int {
   kElectItemNotFound = 9,
   kWrapperTxsEmpty = 10,
   kBlsHandled = 11,
+  kTxRepeated = 12,
 };
 
 enum WaitingBlockType {

@@ -24,8 +24,8 @@ public:
         return LeaderGetTxs();
     }
 
-    std::shared_ptr<WaitingTxsItem> LeaderGetValidTxsIdempotently() {
-        return LeaderGetTxsIdempotently();
+    std::shared_ptr<WaitingTxsItem> LeaderGetValidTxsIdempotently(pools::CheckGidValidFunction gid_vlid_func) {
+        return LeaderGetTxsIdempotently(gid_vlid_func);
     }
 
     std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
@@ -57,16 +57,16 @@ private:
         return txs_items;
     }
 
-    std::shared_ptr<WaitingTxsItem> LeaderGetTxsIdempotently() {
+    std::shared_ptr<WaitingTxsItem> LeaderGetTxsIdempotently(pools::CheckGidValidFunction gid_vlid_func) {
         transport::protobuf::Header header;
         auto txs_items = std::make_shared<WaitingTxsItem>();
         auto& tx_vec = txs_items->txs;
         auto& kvs = txs_items->kvs;
         std::map<std::string, pools::TxItemPtr> invalid_txs;
         if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-            pools_mgr_->GetTxIdempotently(pool_index_, 1, tx_vec, kvs);
+            pools_mgr_->GetTxIdempotently(pool_index_, 1, tx_vec, kvs, gid_vlid_func);
         } else {
-            pools_mgr_->GetTxIdempotently(pool_index_, kMaxTxCount, tx_vec, kvs);
+            pools_mgr_->GetTxIdempotently(pool_index_, kMaxTxCount, tx_vec, kvs, gid_vlid_func);
         }
 
         if (txs_items->txs.empty()) {

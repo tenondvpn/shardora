@@ -169,9 +169,9 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
 void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     auto b = common::TimeUtils::TimestampMs();
     defer({
-            auto e = common::TimeUtils::TimestampMs();
-            ZJC_DEBUG("pool: %d handle propose duration: %lu ms", pool_idx_, e-b);
-        });
+        auto e = common::TimeUtils::TimestampMs();
+        ZJC_DEBUG("pool: %d handle propose duration: %lu ms", pool_idx_, e-b);
+    });
     
     auto& pro_msg = header.hotstuff().pro_msg();
     ZJC_DEBUG("====1.0 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
@@ -222,7 +222,11 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     }
     
     // 4 Verify ViewBlock    
-    if (VerifyViewBlock(v_block, view_block_chain(), tc, pro_msg.elect_height()) != Status::kSuccess) {
+    if (VerifyViewBlock(
+            v_block,
+            view_block_chain(),
+            tc,
+            pro_msg.elect_height()) != Status::kSuccess) {
         ZJC_ERROR("pool: %d, Verify ViewBlock is error. hash: %s", pool_idx_,
             common::Encode::HexEncode(v_block->hash).c_str());
         return;
@@ -245,10 +249,16 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     block_info->block = block;
     block_info->tx_type = pro_msg.tx_propose().tx_type();
     for (const auto& tx : pro_msg.tx_propose().txs()) {
+        if (!view_block_chain_->CheckTxGidValid(tx.gid(), v_block->parent_hash)) {
+            assert(false);
+            return;
+        }
+
         block_info->txs.push_back(&tx);
+        v_block->added_txs.insert(tx.gid());
     }
+
     block_info->view = v_block->view;
-    
     if (acceptor()->Accept(block_info, true) != Status::kSuccess) {
         ZJC_ERROR("Accept tx is error");
         return;
@@ -940,13 +950,19 @@ Status Hotstuff::ConstructViewBlock(
     // 打包 QC 和 View
     view_block->qc = pacemaker()->HighQC();
     view_block->view = pacemaker()->CurView();
-
     // TODO 如果单分支最多连续打包三个默认交易
-    s = wrapper()->Wrap(pre_block, leader_idx, pb_block, tx_propose, IsEmptyBlockAllowed(view_block));
+    s = wrapper()->Wrap(
+        pre_v_block, 
+        leader_idx, 
+        pb_block, 
+        tx_propose, 
+        IsEmptyBlockAllowed(view_block), 
+        view_block_chain_);
     if (s != Status::kSuccess) {
         ZJC_WARN("pool: %d wrap failed, %d", pool_idx_, static_cast<int>(s));
         return s;
     }
+
     view_block->block = pb_block;
     view_block->hash = view_block->DoHash();
     return Status::kSuccess;

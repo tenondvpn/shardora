@@ -30,7 +30,22 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
             common::Encode::HexEncode(view_block->hash).c_str(), view_block->view);        
         return Status::kError;
     }
+
+    if (view_block->added_txs.empty()) {
+        for (uint32_t i = 0; i < view_block->block->tx_list_size(); ++i) {
+            view_block->added_txs.insert(view_block->block->tx_list(i).gid());
+        }
+    }
     
+#ifndef NDEBUG
+    for (uint32_t i = 0; i < view_block->block->tx_list_size(); ++i) {
+        ZJC_DEBUG("new view block store hash: %s, phash: %s, gid: %s", 
+            common::Encode::HexEncode(view_block->hash).c_str(),
+            common::Encode::HexEncode(view_block->parent_hash).c_str(),
+            common::Encode::HexEncode(view_block->block->tx_list(i).gid()).c_str());
+    }
+#endif
+
     if (!start_block_) {
         start_block_ = view_block;
         //view_blocks_[view_block->hash] = view_block;
@@ -67,14 +82,11 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
             common::Encode::HexEncode(view_block->hash).c_str(), view_block->view);        
         return Status::kError;
     }
-    
 
     SetViewBlockToMap(view_block->hash, view_block);
     view_blocks_at_height_[view_block->view].push_back(view_block);
-
     AddChildrenToMap(view_block->parent_hash, view_block);
     SetQcOf(view_block->qc->view_block_hash, view_block->qc);
-
     return Status::kSuccess;
 }
 
@@ -127,7 +139,9 @@ Status ViewBlockChain::GetAllVerified(std::vector<std::shared_ptr<ViewBlock>>& v
 
 Status ViewBlockChain::GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>& view_blocks) {
     GetAll(view_blocks);
-    std::sort(view_blocks.begin(), view_blocks.end(), [](const std::shared_ptr<ViewBlock>& a, const std::shared_ptr<ViewBlock>& b) {
+    std::sort(view_blocks.begin(), view_blocks.end(), [](
+            const std::shared_ptr<ViewBlock>& a, 
+            const std::shared_ptr<ViewBlock>& b) {
         return a->view < b->view;
     });
     return Status::kSuccess;
@@ -156,7 +170,10 @@ Status ViewBlockChain::GetRecursiveChildren(HashStr hash, std::vector<std::share
 }
 
 // 剪掉从上次 prune_height 到 height 之间，latest_committed 之前的所有分叉，并返回这些分叉上的 blocks
-Status ViewBlockChain::PruneTo(const HashStr& target_hash, std::vector<std::shared_ptr<ViewBlock>>& forked_blockes, bool include_history) {
+Status ViewBlockChain::PruneTo(
+        const HashStr& target_hash, 
+        std::vector<std::shared_ptr<ViewBlock>>& forked_blockes, 
+        bool include_history) {
     std::shared_ptr<ViewBlock> current = nullptr;
     Get(target_hash, current);
     if (!current) {
@@ -202,7 +219,11 @@ Status ViewBlockChain::PruneTo(const HashStr& target_hash, std::vector<std::shar
     return Status::kSuccess;
 }
 
-Status ViewBlockChain::PruneFromBlockToTargetHash(const std::shared_ptr<ViewBlock>& view_block, const std::unordered_set<HashStr>& hashes_of_branch, std::vector<std::shared_ptr<ViewBlock>>& forked_blocks, const HashStr& target_hash) {
+Status ViewBlockChain::PruneFromBlockToTargetHash(
+        const std::shared_ptr<ViewBlock>& view_block, 
+        const std::unordered_set<HashStr>& hashes_of_branch, 
+        std::vector<std::shared_ptr<ViewBlock>>& forked_blocks, 
+        const HashStr& target_hash) {
     if (view_block->hash == target_hash) {
         return Status::kSuccess;
     }

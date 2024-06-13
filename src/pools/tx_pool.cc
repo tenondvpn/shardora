@@ -218,14 +218,15 @@ void TxPool::GetTx(
 void TxPool::GetTxIdempotently(
         std::map<std::string, TxItemPtr>& res_map, 
         uint32_t count, 
-        std::unordered_map<std::string, std::string>& kvs) {
-    GetTxIdempotently(universal_prio_map_, res_map, count, kvs);
+        std::unordered_map<std::string, std::string>& kvs,
+        pools::CheckGidValidFunction gid_vlid_func) {
+    GetTxIdempotently(universal_prio_map_, res_map, count, kvs, gid_vlid_func);
     if (!res_map.empty()) {
         return;
     }
 
-    GetTxIdempotently(prio_map_, res_map, count, kvs);
-    GetTxIdempotently(consensus_tx_map_, res_map, count, kvs);    
+    GetTxIdempotently(prio_map_, res_map, count, kvs, gid_vlid_func);
+    GetTxIdempotently(consensus_tx_map_, res_map, count, kvs, gid_vlid_func);    
 }
 
 void TxPool::GetTx(
@@ -249,12 +250,18 @@ void TxPool::GetTxIdempotently(
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count,
-        std::unordered_map<std::string, std::string>& kvs) {
+        std::unordered_map<std::string, std::string>& kvs,
+        pools::CheckGidValidFunction gid_vlid_func) {
     auto iter = src_prio_map.begin();
     while (iter != src_prio_map.end() && res_map.size() < count) {
+        if (gid_vlid_func != nullptr && !gid_vlid_func(iter->second->tx_info.gid())) {
+            ++iter;
+            continue;
+        }
+
         res_map[iter->second->unique_tx_hash] = iter->second;
         assert(!iter->second->unique_tx_hash.empty());
-        iter++;
+        ++iter;
     }    
 }
 
@@ -302,6 +309,11 @@ void TxPool::GetTxByHash(
 void TxPool::CheckTimeoutTx() {
 //     common::AutoSpinLock auto_lock(mutex_);
     auto now_tm = common::TimeUtils::TimestampUs();
+    if (prev_check_tx_timeout_tm_ > now_tm) {
+        return;
+    }
+
+    prev_check_tx_timeout_tm_ = now_tm + 10000000lu;
     uint32_t count = 0;
     while (!timeout_txs_.empty() && count++ < 64) {
         auto& gid = timeout_txs_.front();
@@ -311,9 +323,9 @@ void TxPool::CheckTimeoutTx() {
             continue;
         }
 
-        ZJC_DEBUG("check tx timeout gid: %s, size: %u, iter->second->timeout: %lu now_tm: %lu", 
-            common::Encode::HexEncode(gid).c_str(),
-            gid_map_.size(), iter->second->timeout, now_tm);
+        // ZJC_DEBUG("check tx timeout gid: %s, size: %u, iter->second->timeout: %lu now_tm: %lu", 
+        //     common::Encode::HexEncode(gid).c_str(),
+        //     gid_map_.size(), iter->second->timeout, now_tm);
         if (iter->second->timeout > now_tm) {
             break;
         }

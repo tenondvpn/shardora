@@ -47,7 +47,8 @@ public:
         uint32_t pool_index,
         uint32_t count,
         std::map<std::string, TxItemPtr>& res_map,
-        std::unordered_map<std::string, std::string>& kvs);    
+        std::unordered_map<std::string, std::string>& kvs,
+        pools::CheckGidValidFunction gid_vlid_func);    
     void TxOver(
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
