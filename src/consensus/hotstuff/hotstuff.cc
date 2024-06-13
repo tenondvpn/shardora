@@ -250,7 +250,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     block_info->tx_type = pro_msg.tx_propose().tx_type();
     for (const auto& tx : pro_msg.tx_propose().txs()) {
         if (!view_block_chain_->CheckTxGidValid(tx.gid(), v_block->parent_hash)) {
-            assert(false);
+            // assert(false);
             return;
         }
 
