@@ -84,9 +84,9 @@ public:
 
             auto iter = it->second->view_block->added_txs.find(gid);
             if (iter != it->second->view_block->added_txs.end()) {
-                ZJC_DEBUG("failed check tx gid: %s, phash: %s",
-                    common::Encode::HexEncode(gid).c_str(),
-                    common::Encode::HexEncode(phash).c_str());
+                // ZJC_DEBUG("failed check tx gid: %s, phash: %s",
+                //     common::Encode::HexEncode(gid).c_str(),
+                //     common::Encode::HexEncode(phash).c_str());
                 return false;
             }
 
