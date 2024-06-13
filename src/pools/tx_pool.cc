@@ -308,6 +308,11 @@ void TxPool::GetTxByHash(
 void TxPool::CheckTimeoutTx() {
 //     common::AutoSpinLock auto_lock(mutex_);
     auto now_tm = common::TimeUtils::TimestampUs();
+    if (prev_check_tx_timeout_tm_ > now_tm) {
+        return;
+    }
+
+    prev_check_tx_timeout_tm_ = now_tm + 10000000lu;
     uint32_t count = 0;
     while (!timeout_txs_.empty() && count++ < 64) {
         auto& gid = timeout_txs_.front();
@@ -317,9 +322,9 @@ void TxPool::CheckTimeoutTx() {
             continue;
         }
 
-        ZJC_DEBUG("check tx timeout gid: %s, size: %u, iter->second->timeout: %lu now_tm: %lu", 
-            common::Encode::HexEncode(gid).c_str(),
-            gid_map_.size(), iter->second->timeout, now_tm);
+        // ZJC_DEBUG("check tx timeout gid: %s, size: %u, iter->second->timeout: %lu now_tm: %lu", 
+        //     common::Encode::HexEncode(gid).c_str(),
+        //     gid_map_.size(), iter->second->timeout, now_tm);
         if (iter->second->timeout > now_tm) {
             break;
         }

@@ -218,6 +218,7 @@ private:
     std::map<std::string, TxItemPtr> consensus_tx_map_;
     TxPoolManager* pools_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ = nullptr;
+    uint64_t prev_check_tx_timeout_tm_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };
