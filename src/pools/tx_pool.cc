@@ -255,12 +255,13 @@ void TxPool::GetTxIdempotently(
     auto iter = src_prio_map.begin();
     while (iter != src_prio_map.end() && res_map.size() < count) {
         if (gid_vlid_func != nullptr && !gid_vlid_func(iter->second->tx_info.gid())) {
+            ++iter;
             continue;
         }
 
         res_map[iter->second->unique_tx_hash] = iter->second;
         assert(!iter->second->unique_tx_hash.empty());
-        iter++;
+        ++iter;
     }    
 }
 
