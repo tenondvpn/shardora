@@ -1,6 +1,5 @@
 #pragma once
 
-#include <consensus/hotstuff/elect_info.h>
 #include <unordered_set>
 
 #include <common/time_utils.h>
@@ -31,6 +30,19 @@ static const double ViewDurationStartTimeoutMs = 300;
 static const double ViewDurationMaxTimeoutMs = 60000;
 static const double ViewDurationMultiplier = 1.3; // 选过大会造成卡住的成本很高，一旦卡住则恢复时间很长（如 leader 不一致），过小会导致没有交易时 CPU 长时间降不下来
 
+// 本 elect height 中共识情况统计
+struct MemberConsensusStat {
+    uint16_t succ_num; // 共识成功的次数
+    uint16_t fail_num; // 共识失败的次数
+
+    MemberConsensusStat() {
+        succ_num = 0;
+        fail_num = 0;
+    }
+
+    MemberConsensusStat(uint16_t succ_num, uint16_t fail_num) : succ_num(succ_num), fail_num(fail_num) {}
+};
+
 HashStr GetViewHash(
     uint32_t net_id,
     uint32_t pool_idx,
@@ -47,19 +59,6 @@ HashStr GetQCMsgHash(
     uint64_t elect_height,
     uint32_t leader_idx,
     const std::shared_ptr<MemberConsensusStat>& consen_stat);
-
-// 本 elect height 中共识情况统计
-struct MemberConsensusStat {
-    uint16_t succ_num; // 共识成功的次数
-    uint16_t fail_num; // 共识失败的次数
-
-    MemberConsensusStat() {
-        succ_num = 0;
-        fail_num = 0;
-    }
-
-    MemberConsensusStat(uint16_t succ_num, uint16_t fail_num) : succ_num(succ_num), fail_num(fail_num) {}
-};
 
 struct QC {
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
