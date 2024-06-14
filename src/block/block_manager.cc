@@ -1411,7 +1411,8 @@ void BlockManager::CreateStatisticTx() {
             tx_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
             ZJC_INFO("success add cross tx: %s, gid: %s, cross size: %u",
                 common::Encode::HexEncode(cross_hash).c_str(),
-                common::Encode::HexEncode(gid).c_str());
+                common::Encode::HexEncode(gid).c_str(),
+                tx_ptr->tx_ptr->tx_info.ByteSize());
             cross_statistics_map_[timeblock_height] = tx_ptr;
             auto tmp_ptr = std::make_shared<StatisticMap>(cross_statistics_map_);
             cross_statistics_map_ptr_queue_.push(tmp_ptr);
