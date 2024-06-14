@@ -535,13 +535,13 @@ void TxPoolManager::SyncPoolsMaxHeight() {
     for (uint32_t i = network::kRootCongressNetworkId; i <= now_max_sharding_id_; ++i) {
         dht::DhtKeyManager dht_key(i);
         msg_ptr->header.set_des_dht_key(dht_key.StrKey());
+        msg_ptr->header.set_type(common::kPoolsMessage);
+        auto* sync_heights = msg_ptr->header.mutable_sync_heights();
+        sync_heights->set_req(true);
+        transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header);
+        ZJC_DEBUG("sync net data from network: %u, hash64: %lu", i, msg_ptr->header.hash64());
+        network::Route::Instance()->Send(msg_ptr);
     }
-
-    msg_ptr->header.set_type(common::kPoolsMessage);
-    auto* sync_heights = msg_ptr->header.mutable_sync_heights();
-    sync_heights->set_req(true);
-    transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header);
-    network::Route::Instance()->Send(msg_ptr);
 }
 
 void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_ptr) {
@@ -583,7 +583,8 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             sync_debug.c_str(), cross_debug.c_str(), now_max_sharding_id_);
     } else {
         if (msg_ptr->header.src_sharding_id() != common::GlobalInfo::Instance()->network_id() &&
-                msg_ptr->header.src_sharding_id() + network::kConsensusWaitingShardOffset != common::GlobalInfo::Instance()->network_id()) {
+                msg_ptr->header.src_sharding_id() +
+                network::kConsensusWaitingShardOffset != common::GlobalInfo::Instance()->network_id()) {
             auto sharding_id = msg_ptr->header.src_sharding_id();
             auto& cross_heights = msg_ptr->header.sync_heights().cross_heights();
             uint64_t update_height = cross_pools_[sharding_id].latest_height();
@@ -591,7 +592,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                 if (cross_heights.empty()) {
                     break;
                 }
-                
+
                 if (cross_pools_[sharding_id].latest_height() == common::kInvalidUint64 &&
                         cross_synced_max_heights_[sharding_id] < cross_heights[0]) {
                     update_height = cross_heights[0];
