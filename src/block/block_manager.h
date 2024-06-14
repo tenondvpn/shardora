@@ -226,8 +226,8 @@ private:
     uint64_t latest_elect_height_ = 0;
     int32_t leader_create_to_heights_index_ = 0;
     int32_t leader_create_statistic_heights_index_ = 0;
-    std::map<uint64_t, std::shared_ptr<BlockTxsItem>> shard_statistics_map_;
-    std::map<uint64_t, std::shared_ptr<BlockTxsItem>> cross_statistics_map_;
+    StatisticMap shard_statistics_map_;
+    StatisticMap cross_statistics_map_;
     common::ThreadSafeQueue<std::shared_ptr<StatisticMap>> shard_statistics_map_ptr_queue_;
     std::shared_ptr<StatisticMap> got_latest_statistic_map_ptr_ = nullptr;
     common::ThreadSafeQueue<std::shared_ptr<StatisticMap>> cross_statistics_map_ptr_queue_;

@@ -534,7 +534,7 @@ void BlockManager::HandleCrossTx(
             for (auto iter = cross_statistics_map_.begin(); iter != cross_statistics_map_.end(); ++iter) {
                 if (iter->second->tx_hash == cross_statistic.tx_hash()) {
                     cross_statistics_map_.erase(iter);
-                    auto tmp_ptr = std::make_shared<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>>(cross_statistics_map_);
+                    auto tmp_ptr = std::make_shared<StatisticMap>(cross_statistics_map_);
                     cross_statistics_map_ptr_queue_.push(tmp_ptr);
                     break;
                 }
@@ -588,7 +588,7 @@ void BlockManager::HandleStatisticTx(
 
             auto iter = shard_statistics_map_.find(elect_statistic.height_info().tm_height());
             if (iter != shard_statistics_map_.end()) {
-                auto tmp_ptr = std::make_shared<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>>(shard_statistics_map_);
+                auto tmp_ptr = std::make_shared<StatisticMap>(shard_statistics_map_);
                 shard_statistics_map_ptr_queue_.push(tmp_ptr);
                 ZJC_DEBUG("success remove shard statistic block tm height: %lu", iter->first);
                 shard_statistics_map_.erase(iter);
@@ -1413,7 +1413,7 @@ void BlockManager::CreateStatisticTx() {
                 common::Encode::HexEncode(cross_hash).c_str(),
                 common::Encode::HexEncode(gid).c_str());
             cross_statistics_map_[timeblock_height] = tx_ptr;
-            auto tmp_ptr = std::make_shared<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>>(cross_statistics_map_);
+            auto tmp_ptr = std::make_shared<StatisticMap>(cross_statistics_map_);
             cross_statistics_map_ptr_queue_.push(tmp_ptr);
         }
     }
