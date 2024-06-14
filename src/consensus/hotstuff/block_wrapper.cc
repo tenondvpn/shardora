@@ -87,8 +87,9 @@ Status BlockWrapper::Wrap(
     block->set_electblock_height(elect_item->ElectHeight());
     block->set_leader_index(leader_idx);
     block->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
-    ZJC_DEBUG("success propose block net: %u, pool: %u, set height: %lu, pre height: %lu",
-        block->network_id(), block->pool_index(), block->height(), prev_block->height());
+    ZJC_DEBUG("success propose block net: %u, pool: %u, set height: %lu, pre height: %lu, elect height: %lu",
+        block->network_id(), block->pool_index(),
+        block->height(), prev_block->height(), elect_item->ElectHeight());
     return Status::kSuccess;
 }
 
