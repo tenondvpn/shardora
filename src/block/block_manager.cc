@@ -1688,7 +1688,7 @@ bool BlockManager::HasSingleTx(uint32_t pool_index) {
 }
 
 void BlockManager::PopTxTicker() {
-    std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> static_tmp_map = nullptr;
+    std::shared_ptr<StatisticMap> static_tmp_map = nullptr;
     while (shard_statistics_map_ptr_queue_.pop(&static_tmp_map)) {}
     if (static_tmp_map != nullptr) {
         for (auto iter = static_tmp_map->begin(); iter != static_tmp_map->end(); ++iter) {
@@ -1699,7 +1699,7 @@ void BlockManager::PopTxTicker() {
         got_latest_statistic_map_ptr_ = static_tmp_map;
     }
 
-    std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> cross_tmp_map = nullptr;
+    std::shared_ptr<StatisticMap> cross_tmp_map = nullptr;
     while (cross_statistics_map_ptr_queue_.pop(&cross_tmp_map)) {}
     if (cross_tmp_map != nullptr) {
         got_latest_cross_map_ptr_ = cross_tmp_map;
