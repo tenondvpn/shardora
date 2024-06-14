@@ -149,7 +149,6 @@ public:
             return prev_elect_items_[sharding_id];
         }
         // 内存中没有从 ElectManager 获取
-        auto net_id = common::GlobalInfo::Instance()->network_id(); 
         libff::alt_bn128_G2 common_pk = libff::alt_bn128_G2::zero();
         libff::alt_bn128_Fr sec_key;
 
@@ -159,12 +158,12 @@ public:
         
         auto members = elect_mgr_->GetNetworkMembersWithHeight(
             elect_height,
-            net_id,
+            sharding_id,
             &common_pk,
             &sec_key);
         if (members == nullptr || common_pk == libff::alt_bn128_G2::zero()) {
             ZJC_ERROR("failed get elect members or common pk: %u, %lu, %d",
-                net_id,
+                sharding_id,
                 elect_height,
                 (common_pk == libff::alt_bn128_G2::zero()));            
             return nullptr;
@@ -172,7 +171,7 @@ public:
         
         return std::make_shared<ElectItem>(
             security_ptr_,
-            net_id,
+            sharding_id,
             elect_height,
             members,
             common_pk,
