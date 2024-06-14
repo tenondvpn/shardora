@@ -61,6 +61,8 @@ std::string QC::Serialize() const {
     qc_proto.set_leader_idx(leader_idx);
     qc_proto.set_network_id(network_id);
     qc_proto.set_pool_index(pool_index);
+    qc_proto.set_succ_num(consensus_stat->succ_num);
+    qc_proto.set_fail_num(consensus_stat->fail_num);
     // TODO 不同版本 pb 结果不一样
     return qc_proto.SerializeAsString();
 }
@@ -94,6 +96,7 @@ bool QC::Unserialize(const std::string& str) {
     leader_idx = qc_proto.leader_idx();
     network_id = qc_proto.network_id();
     pool_index = qc_proto.pool_index();
+    consensus_stat = std::make_shared<MemberConsensusStat>(qc_proto.succ_num(), qc_proto.fail_num());
     
     return true;
 }

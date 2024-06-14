@@ -24,6 +24,8 @@ message QC {
     optional uint32 leader_idx = 8;
     optional uint32 network_id = 9;
     optional uint32 pool_index = 10;
+    optional uint32 succ_num = 11;
+    optional uint32 fail_num = 12;
 }
 
 message ViewBlockSyncRequest {
