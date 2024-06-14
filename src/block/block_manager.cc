@@ -1380,7 +1380,7 @@ void BlockManager::CreateStatisticTx() {
                 common::Encode::HexEncode(gid).c_str(),
                 timeblock_height);
             shard_statistics_map_[timeblock_height] = tx_ptr;
-            auto tmp_ptr = std::make_shared<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>>(shard_statistics_map_);
+            auto tmp_ptr = std::make_shared<StatisticMap>(shard_statistics_map_);
             shard_statistics_map_ptr_queue_.push(tmp_ptr);
         }
     }
