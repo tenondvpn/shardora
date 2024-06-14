@@ -1703,6 +1703,7 @@ void BlockManager::PopTxTicker() {
     while (cross_statistics_map_ptr_queue_.pop(&cross_tmp_map)) {}
     if (cross_tmp_map != nullptr) {
         got_latest_cross_map_ptr_ = cross_tmp_map;
+        ZJC_DEBUG("success add cross tx to change map: %d", got_latest_cross_map_ptr_->begin()->second->tx_ptr->in_consensus);
     }
 
     pop_tx_tick_.CutOff(50000lu, std::bind(&BlockManager::PopTxTicker, this));
@@ -1822,21 +1823,25 @@ bool BlockManager::HasCrossTx(uint32_t pool_index) {
 pools::TxItemPtr BlockManager::GetCrossTx(
         uint32_t pool_index, 
         const std::string& tx_hash) {
-    auto statistic_map_ptr = got_latest_cross_map_ptr_;
-    if (statistic_map_ptr == nullptr) {
-        ZJC_DEBUG("statistic_map_ptr == nullptr");
+    while (cross_statistics_map_ptr_queue_.size() > 0) {
+        std::this_thread::sleep_for(std::chrono::microseconds(50000ull));
+    }
+
+    auto cross_map_ptr = got_latest_cross_map_ptr_;
+    if (cross_map_ptr == nullptr) {
+        ZJC_DEBUG("cross_map_ptr == nullptr");
         return nullptr;
     }
 
-    if (statistic_map_ptr->empty()) {
-        ZJC_DEBUG("statistic_map_ptr->empty()");
+    if (cross_map_ptr->empty()) {
+        ZJC_DEBUG("cross_map_ptr->empty()");
         return nullptr;
     }
 
     bool leader = tx_hash.empty();
-    auto iter = statistic_map_ptr->begin();
+    auto iter = cross_map_ptr->begin();
     if (!tx_hash.empty()) {
-        for (; iter != statistic_map_ptr->end(); ++iter) {
+        for (; iter != cross_map_ptr->end(); ++iter) {
             ZJC_DEBUG("now get cross tx leader tx hash: %s, local tx hash: %s", 
                 common::Encode::HexEncode(tx_hash).c_str(), 
                 common::Encode::HexEncode(iter->second->tx_ptr->tx_info.gid()).c_str());
@@ -1846,7 +1851,7 @@ pools::TxItemPtr BlockManager::GetCrossTx(
         }
     }
 
-    if (iter == statistic_map_ptr->end()) {
+    if (iter == cross_map_ptr->end()) {
         ZJC_DEBUG("iter == statistic_map_ptr->end()");
         return nullptr;
     }
@@ -1865,11 +1870,15 @@ pools::TxItemPtr BlockManager::GetCrossTx(
         auto& tx = cross_statistic_tx->tx_ptr->tx_info;
         tx.set_to(cross_statistic_tx->tx_ptr->address_info->addr());
         cross_statistic_tx->tx_ptr->in_consensus = true;
-        ZJC_DEBUG("success get cross tx: %s", common::Encode::HexEncode(tx.gid()).c_str());
+        ZJC_DEBUG("success get cross tx: %s, height: %lu",
+            common::Encode::HexEncode(tx.gid()).c_str(), iter->first);
         return cross_statistic_tx->tx_ptr;
     }
 
-    ZJC_DEBUG("failed get cross tx.");
+    ZJC_DEBUG("failed get cross tx gid: %s, in_consensus: %d, height: %lu",
+        common::Encode::HexEncode(cross_statistic_tx->tx_ptr->tx_info.gid()).c_str(),
+        cross_statistic_tx->tx_ptr->in_consensus,
+        iter->first);
     return nullptr;
 }
 
