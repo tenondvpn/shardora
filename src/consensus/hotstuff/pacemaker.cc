@@ -31,7 +31,7 @@ Pacemaker::Pacemaker(
         BeforeGenesisView, 
         1, 
         0,
-        std::make_shared<TC>(0, 0));
+        std::make_shared<MemberConsensusStat>(0, 0));
     cur_view_ = GenesisView;
 }
 
