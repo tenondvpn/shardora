@@ -15,14 +15,13 @@ HashStr GetQCMsgHash(
         const HashStr &view_block_hash,
         const HashStr& commit_view_block_hash,
         uint64_t elect_height,
-        uint32_t leader_idx,
-        const std::shared_ptr<MemberConsensusStat>& consen_stat) {
+        uint32_t leader_idx) {
     std::stringstream ss;
     assert(net_id <= network::kConsensusShardEndNetworkId);
     assert(pool_index < common::kInvalidPoolIndex);
     ss << net_id << pool_index << view <<
         view_block_hash << commit_view_block_hash <<
-        elect_height << leader_idx << consen_stat->succ_num << consen_stat->fail_num;
+        elect_height << leader_idx;
     std::string msg = ss.str();
     auto msg_hash = common::Hash::keccak256(msg); 
     ZJC_DEBUG("success get qc msg hash net: %u, pool: %u, view: %lu, view_block_hash: %s, "
@@ -43,9 +42,8 @@ HashStr GetViewHash(
         uint32_t pool_index, 
         const View& view, 
         uint64_t elect_height, 
-        uint32_t leader_idx,
-        const std::shared_ptr<MemberConsensusStat>& consen_stat) {
-    return GetQCMsgHash(net_id, pool_index, view, "", "", elect_height, leader_idx, consen_stat);
+        uint32_t leader_idx) {
+    return GetQCMsgHash(net_id, pool_index, view, "", "", elect_height, leader_idx);
 }
 
 std::string QC::Serialize() const {
@@ -61,8 +59,6 @@ std::string QC::Serialize() const {
     qc_proto.set_leader_idx(leader_idx);
     qc_proto.set_network_id(network_id);
     qc_proto.set_pool_index(pool_index);
-    qc_proto.set_succ_num(consensus_stat->succ_num);
-    qc_proto.set_fail_num(consensus_stat->fail_num);
     // TODO 不同版本 pb 结果不一样
     return qc_proto.SerializeAsString();
 }
@@ -96,7 +92,6 @@ bool QC::Unserialize(const std::string& str) {
     leader_idx = qc_proto.leader_idx();
     network_id = qc_proto.network_id();
     pool_index = qc_proto.pool_index();
-    consensus_stat = std::make_shared<MemberConsensusStat>(qc_proto.succ_num(), qc_proto.fail_num());
     
     return true;
 }

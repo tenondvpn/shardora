@@ -30,8 +30,7 @@ Pacemaker::Pacemaker(
         nullptr, 
         BeforeGenesisView, 
         1, 
-        0,
-        std::make_shared<MemberConsensusStat>(0, 0));
+        0);
     cur_view_ = GenesisView;
 }
 
@@ -74,7 +73,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
         duration_->ViewSucceeded();
     }
     
-    cur_view_ = new_v; 
+    cur_view_ = new_v;
     
     duration_->ViewStarted();
     ZJC_DEBUG("to new view. pool: %lu, view: %llu", pool_idx_, cur_view_);
@@ -86,22 +85,13 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
 void Pacemaker::UpdateHighQC(const std::shared_ptr<QC>& qc) {
     if (high_qc_->view < qc->view) {
         high_qc_ = qc;
-        // 更新共识分数
-        auto new_consen_stat = std::make_shared<MemberConsensusStat>(
-                qc->consensus_stat->succ_num+1,
-                qc->consensus_stat->fail_num); 
-        elect_item(qc->network_id, qc->elect_height)->SetMemberConsensusStat(qc->leader_idx, new_consen_stat);
+
     }
 }
 
 void Pacemaker::UpdateHighTC(const std::shared_ptr<TC>& tc) {
     if (high_tc_->view < tc->view) {
         high_tc_ = tc;
-        // 更新共识分数
-        auto new_consen_stat = std::make_shared<MemberConsensusStat>(
-                tc->consensus_stat->succ_num,
-                tc->consensus_stat->fail_num+1); 
-        elect_item(tc->network_id, tc->elect_height)->SetMemberConsensusStat(tc->leader_idx, new_consen_stat);
     }
 }
 
@@ -123,14 +113,11 @@ void Pacemaker::OnLocalTimeout() {
         return;
     }
 
-    auto leader_idx = leader_rotation_->GetLeader()->index;
-    auto member_consen_stat = elect_item->GetMemberConsensusStat(leader_idx);
-    assert(member_consen_stat != nullptr);
-    
+    // auto leader_idx = leader_rotation_->GetLeader()->index;    
     auto view_hash = GetViewHash(
         common::GlobalInfo::Instance()->network_id(),
         pool_idx_,
-        CurView(), elect_item->ElectHeight(), 0, member_consen_stat);    
+        CurView(), elect_item->ElectHeight(), 0);    
     
     // if view is last one, deal directly.
     // 更换 epoch 后重新打包
@@ -167,8 +154,6 @@ void Pacemaker::OnLocalTimeout() {
     timeout_msg.set_elect_height(elect_item->ElectHeight());
     timeout_msg.set_pool_idx(pool_idx_); // 用于分配线程
     timeout_msg.set_leader_idx(0);
-    timeout_msg.set_succ_num(member_consen_stat->succ_num);
-    timeout_msg.set_fail_num(member_consen_stat->fail_num);
     
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     msg.set_type(common::kHotstuffTimeoutMessage);
@@ -252,13 +237,11 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         return;
     }
     // 视图切换
-    auto mem_consen_stat = std::make_shared<MemberConsensusStat>(timeout_proto.succ_num(), timeout_proto.fail_num());
     auto tc = std::make_shared<TC>();
     s = crypto_->CreateTC(
         timeout_proto.view(),
         timeout_proto.elect_height(),
         timeout_proto.leader_idx(),
-        mem_consen_stat,
         reconstructed_sign,
         tc);
     if (s != Status::kSuccess || !tc) {

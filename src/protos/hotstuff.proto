@@ -43,8 +43,6 @@ message VoteMsg {
     optional view_block.protobuf.ViewBlockItem view_block_item = 8; // 用于保证 Leader 收到 ViewBlock
     optional bytes commit_view_block_hash = 9;
     optional uint32 leader_idx = 10;
-    optional uint32 succ_num = 11;
-    optional uint32 fail_num = 12;
 }
 
 message PreResetTimerMsg {

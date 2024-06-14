@@ -371,7 +371,6 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
-    auto mem_consen_stat = std::make_shared<MemberConsensusStat>(vote_msg.succ_num(), vote_msg.fail_num());
     
     Status ret = crypto()->ReconstructAndVerifyThresSign(
             elect_height,
@@ -383,8 +382,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
                 vote_msg.view_block_hash(),
                 vote_msg.commit_view_block_hash(),
                 elect_height,
-                vote_msg.leader_idx(),
-                mem_consen_stat),
+                vote_msg.leader_idx()),
             replica_idx, 
             vote_msg.sign_x(),
             vote_msg.sign_y(),
@@ -410,7 +408,6 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         vote_msg.view(),
         elect_height,
         vote_msg.leader_idx(),
-        mem_consen_stat,
         reconstructed_sign,
         qc);
     if (s != Status::kSuccess) {
@@ -871,11 +868,6 @@ Status Hotstuff::ConstructVoteMsg(
     vote_msg->set_view(v_block->view);
     vote_msg->set_elect_height(elect_height);
     vote_msg->set_leader_idx(v_block->leader_idx);
-    auto member_consen_stat = elect_item->GetMemberConsensusStat(v_block->leader_idx);
-    assert(member_consen_stat != nullptr);
-
-    vote_msg->set_succ_num(member_consen_stat->succ_num);
-    vote_msg->set_fail_num(member_consen_stat->fail_num);
 
     // 将 vblock 发送给新 leader，防止新 leader 还没有收到提案造成延迟
     // Leader 如果生成了 QC，则一定会保存 vblock，防止发起下一轮提案时没有这个块
@@ -899,8 +891,7 @@ Status Hotstuff::ConstructVoteMsg(
                     v_block->hash,
                     commit_view_block_hash,
                     elect_height,
-                    v_block->leader_idx,
-                    member_consen_stat),
+                    v_block->leader_idx),
                 &sign_x,
                 &sign_y) != Status::kSuccess) {
         ZJC_ERROR("Sign message is error.");

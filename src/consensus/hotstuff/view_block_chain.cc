@@ -459,7 +459,7 @@ std::shared_ptr<QC> GetQCWrappedByGenesis(uint32_t pool_index) {
     return std::make_shared<QC>(
         common::GlobalInfo::Instance()->network_id(),
         pool_index,
-        nullptr, BeforeGenesisView, "", "", 1, 0, std::make_shared<MemberConsensusStat>(0, 0));
+        nullptr, BeforeGenesisView, "", "", 1, 0);
 }
 
 std::shared_ptr<QC> GetGenesisQC(uint32_t pool_index, const HashStr& genesis_view_block_hash) {
@@ -471,8 +471,7 @@ std::shared_ptr<QC> GetGenesisQC(uint32_t pool_index, const HashStr& genesis_vie
         genesis_view_block_hash,
         genesis_view_block_hash,
         1,
-        0,
-        std::make_shared<MemberConsensusStat>(0, 0));
+        0);
 }
 
 } // namespace hotstuff

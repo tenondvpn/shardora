@@ -24,8 +24,6 @@ message QC {
     optional uint32 leader_idx = 8;
     optional uint32 network_id = 9;
     optional uint32 pool_index = 10;
-    optional uint32 succ_num = 11;
-    optional uint32 fail_num = 12;
 }
 
 message ViewBlockSyncRequest {
@@ -74,6 +72,4 @@ message TimeoutMessage {
     optional uint64 elect_height = 6;
     optional uint32 pool_idx = 7;
     optional uint32 leader_idx = 8;
-    optional uint32 succ_num = 9;
-    optional uint32 fail_num = 10;
 }
