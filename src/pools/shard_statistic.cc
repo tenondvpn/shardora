@@ -56,10 +56,7 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
         }
     }
 
-
-
     auto& pool_blocks_info = pools_consensus_blocks_[block.pool_index()];
-
     if (block_ptr->height() != pool_blocks_info->latest_consensus_height_ + 1) {
         pool_blocks_info->blocks[block_ptr->height()] = block_ptr;
     } else {
@@ -70,17 +67,29 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
 
     {
         uint64_t first_block_tm_height = common::kInvalidUint64;
+        uint64_t first_block_elect_height = common::kInvalidUint64;
         auto& block_map = pool_blocks_info->blocks;
         if (!block_map.empty()) {
             first_block_tm_height = block_map.begin()->second->timeblock_height();
+            first_block_elect_height = block_map.begin()->second->electblock_height();
         }
 
-        ZJC_DEBUG("block coming pool: %u, height: %lu, latest height: %lu, "
-                  "block map size: %u, first_block_tm_height: %lu",
-                  block_ptr->pool_index(), block_ptr->height(),
-                  pool_blocks_info->latest_consensus_height_,
-                  block_map.size(), first_block_tm_height);
-
+        auto latest_elect_item = elect_mgr_->GetLatestElectBlock(common::GlobalInfo::Instance()->network_id());
+        ZJC_DEBUG(
+            "block coming pool: %u, height: %lu, latest height: %lu, "
+            "block map size: %u, first_block_tm_height: %lu, "
+            "first_block_elect_height: %lu, now elect height: %lu, "
+            "block_map.empty(): %d, block tm height: %lu, block elect height: %lu",
+            block_ptr->pool_index(),
+            block_ptr->height(),
+            pool_blocks_info->latest_consensus_height_,
+            block_map.size(),
+            first_block_tm_height,
+            first_block_elect_height,
+            latest_elect_item->elect_height(),
+            block_map.empty(),
+            block_ptr->timeblock_height(),
+            block_ptr->electblock_height());
     }
 }
 
@@ -759,16 +768,12 @@ int ShardStatistic::StatisticWithHeights(
                 auto elect_height = elect_iter->first;
                 ZJC_DEBUG("1 pool: %u, elect height: %lu, tm height: %lu, latest tm height: %lu", 
                     pool_idx, elect_height, tm_iter->first, latest_timeblock_height_);
-
                 auto& node_info_map = height_node_collect_info_map
                                         .try_emplace(elect_height, std::unordered_map<std::string, StatisticMemberInfoItem>())
                                         .first->second;
-
-
                 // 聚合每个选举高度，每个节点在各个pool 中完成交易的gas总和
                 for (auto node_count_iter = elect_iter->second->node_tx_count_map.begin();
                     node_count_iter != elect_iter->second->node_tx_count_map.end(); ++node_count_iter) {
-
                     auto& node_info = node_info_map.try_emplace(node_count_iter->first, StatisticMemberInfoItem())
                                         .first->second;
                     node_info.gas_sum += node_count_iter->second.gas_sum;
@@ -779,8 +784,6 @@ int ShardStatistic::StatisticWithHeights(
                     elect_height, 
                     elect_iter->second->node_stoke_map.size(), 
                     elect_iter->second->node_shard_map.size());
-
-
                 if (!elect_iter->second->node_stoke_map.empty() && !elect_iter->second->node_shard_map.empty()) {
                     auto eiter = join_elect_stoke_map.find(elect_height);
                     if (eiter == join_elect_stoke_map.end()) {
@@ -830,28 +833,20 @@ int ShardStatistic::StatisticWithHeights(
         }
     }
 
-
-
     std::string debug_for_str;
     // 为当前委员会的节点填充共识工作的奖励信息
     setElectStatistics(height_node_collect_info_map, now_elect_members, elect_statistic, is_root);
-
-
     addNewNode2JoinStatics(join_elect_stoke_map,
                           join_elect_shard_map,
                           added_id_set,
                           debug_for_str,
                           id_pk_map,
                           elect_statistic);
-
     addPrepareMembers2JoinStastics(prepare_members,
                                   added_id_set,
                                   elect_statistic,
                                   debug_for_str,
                                   now_elect_members);
-
-
-
     if (is_root) {
         elect_statistic.set_gas_amount(root_all_gas_amount);
     } else {
@@ -876,7 +871,6 @@ int ShardStatistic::StatisticWithHeights(
 
     new_block_changed_ = false;
     *statisticed_timeblock_height = prev_timeblock_height_;
-
     return kPoolsSuccess;
 }
 
@@ -1044,10 +1038,11 @@ void ShardStatistic::addNewNode2JoinStatics(std::map<uint64_t, std::unordered_ma
 //     return 1;
 // }
 
-void ShardStatistic::setElectStatistics(std::map<uint64_t, std::unordered_map<std::__cxx11::string, shardora::pools::StatisticMemberInfoItem>> &height_node_collect_info_map,
-                                        shardora::common::MembersPtr &now_elect_members,
-                                        shardora::pools::protobuf::ElectStatistic &elect_statistic,
-                                        bool is_root) {
+void ShardStatistic::setElectStatistics(
+        std::map<uint64_t, std::unordered_map<std::string, shardora::pools::StatisticMemberInfoItem>> &height_node_collect_info_map,
+        shardora::common::MembersPtr &now_elect_members,
+        shardora::pools::protobuf::ElectStatistic &elect_statistic,
+        bool is_root) {
     if (height_node_collect_info_map.empty() || height_node_collect_info_map.rbegin()->first < now_elect_height_) {
         height_node_collect_info_map[now_elect_height_] = std::unordered_map<std::string, StatisticMemberInfoItem>();
         auto &node_info_map = height_node_collect_info_map[now_elect_height_];

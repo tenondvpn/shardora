@@ -200,7 +200,7 @@ int ElectTxItem::getMaxElectHeightInfo(shardora::pools::protobuf::ElectStatistic
     if (members == nullptr) {
         ZJC_WARN("get members failed, elect height: %lu, net: %u",
             now_elect_height, elect_statistic.sharding_id());
-        assert(false);
+        // assert(false);
         return kConsensusError;
     }
 
@@ -218,13 +218,14 @@ int ElectTxItem::getMaxElectHeightInfo(shardora::pools::protobuf::ElectStatistic
             member_count != statistic->stokes_size() ||
             member_count != statistic->area_point_size()) {
         ZJC_DEBUG("now_elect_height: %lu, member size error: %u, %u, %u, %u",
-                  now_elect_height, members->size(), statistic->tx_count_size(),
-                  statistic->stokes_size(), statistic->area_point_size());
+            now_elect_height, members->size(), statistic->tx_count_size(),
+            statistic->stokes_size(), statistic->area_point_size());
         assert(false);
         return kConsensusError;
     }
     return kConsensusSuccess;
 }
+
 void ElectTxItem::JoinNewNodes2ElectNodes(shardora::common::MembersPtr &members,
                                           std::vector<shardora::consensus::NodeDetailPtr> &elect_nodes,
                                           uint32_t min_area_weight,

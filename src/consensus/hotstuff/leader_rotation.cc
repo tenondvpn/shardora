@@ -41,7 +41,6 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
 
     uint32_t now_time_num = common::TimeUtils::TimestampSeconds() / TIME_EPOCH_TO_CHANGE_LEADER_S;
     uint64_t random_hash = common::Hash::Hash64(qc->Serialize() + std::to_string(now_time_num));
-
     if (Members(common::GlobalInfo::Instance()->network_id())->empty()) {
         return nullptr;
     }
