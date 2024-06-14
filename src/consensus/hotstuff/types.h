@@ -48,6 +48,19 @@ HashStr GetQCMsgHash(
     uint32_t leader_idx,
     const std::shared_ptr<MemberConsensusStat>& consen_stat);
 
+// 本 elect height 中共识情况统计
+struct MemberConsensusStat {
+    uint16_t succ_num; // 共识成功的次数
+    uint16_t fail_num; // 共识失败的次数
+
+    MemberConsensusStat() {
+        succ_num = 0;
+        fail_num = 0;
+    }
+
+    MemberConsensusStat(uint16_t succ_num, uint16_t fail_num) : succ_num(succ_num), fail_num(fail_num) {}
+};
+
 struct QC {
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
     View view; // view_block_hash 对应的 view，TODO 校验正确性，避免篡改

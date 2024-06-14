@@ -18,19 +18,6 @@ namespace shardora {
 
 namespace hotstuff {
 
-// 本 elect height 中共识情况统计
-struct MemberConsensusStat {
-    uint16_t succ_num; // 共识成功的次数
-    uint16_t fail_num; // 共识失败的次数
-
-    MemberConsensusStat() {
-        succ_num = 0;
-        fail_num = 0;
-    }
-
-    MemberConsensusStat(uint16_t succ_num, uint16_t fail_num) : succ_num(succ_num), fail_num(fail_num) {}
-};
-
 // ElectItem 
 class ElectItem {
 public:

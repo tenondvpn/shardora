@@ -2,7 +2,6 @@
 #include <common/log.h>
 #include <common/utils.h>
 #include <common/defer.h>
-#include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/hotstuff_manager.h>
 #include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h>

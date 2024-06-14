@@ -2,7 +2,6 @@
 
 #include <common/tick.h>
 #include <common/time_utils.h>
-#include <consensus/hotstuff/elect_info.h>
 #include <functional>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/leader_rotation.h>

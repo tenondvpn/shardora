@@ -1,7 +1,6 @@
 #include <bls/bls_utils.h>
 #include <common/log.h>
 #include <consensus/hotstuff/crypto.h>
-#include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <exception>
