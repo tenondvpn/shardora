@@ -2,7 +2,6 @@
 #include <common/log.h>
 #include <common/defer.h>
 #include <common/time_utils.h>
-#include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/types.h>
 #include <protos/hotstuff.pb.h>
