@@ -93,6 +93,7 @@ struct QC {
 
     QC() {
         bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
+        consensus_stat = std::make_shared<MemberConsensusStat>();
     };
     
     std::string Serialize() const;
