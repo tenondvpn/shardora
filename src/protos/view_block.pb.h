@@ -1485,6 +1485,20 @@ class TimeoutMessage : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::uint32 leader_idx() const;
   void set_leader_idx(::google::protobuf::uint32 value);
 
+  // optional uint32 succ_num = 9;
+  bool has_succ_num() const;
+  void clear_succ_num();
+  static const int kSuccNumFieldNumber = 9;
+  ::google::protobuf::uint32 succ_num() const;
+  void set_succ_num(::google::protobuf::uint32 value);
+
+  // optional uint32 fail_num = 10;
+  bool has_fail_num() const;
+  void clear_fail_num();
+  static const int kFailNumFieldNumber = 10;
+  ::google::protobuf::uint32 fail_num() const;
+  void set_fail_num(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.TimeoutMessage)
  private:
   void set_has_member_id();
@@ -1503,6 +1517,10 @@ class TimeoutMessage : public ::google::protobuf::Message /* @@protoc_insertion_
   void clear_has_pool_idx();
   void set_has_leader_idx();
   void clear_has_leader_idx();
+  void set_has_succ_num();
+  void clear_has_succ_num();
+  void set_has_fail_num();
+  void clear_has_fail_num();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -1515,6 +1533,8 @@ class TimeoutMessage : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::uint32 pool_idx_;
   ::google::protobuf::uint64 elect_height_;
   ::google::protobuf::uint32 leader_idx_;
+  ::google::protobuf::uint32 succ_num_;
+  ::google::protobuf::uint32 fail_num_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // ===================================================================
@@ -3774,6 +3794,54 @@ inline void TimeoutMessage::set_leader_idx(::google::protobuf::uint32 value) {
   set_has_leader_idx();
   leader_idx_ = value;
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.TimeoutMessage.leader_idx)
+}
+
+// optional uint32 succ_num = 9;
+inline bool TimeoutMessage::has_succ_num() const {
+  return (_has_bits_[0] & 0x00000100u) != 0;
+}
+inline void TimeoutMessage::set_has_succ_num() {
+  _has_bits_[0] |= 0x00000100u;
+}
+inline void TimeoutMessage::clear_has_succ_num() {
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline void TimeoutMessage::clear_succ_num() {
+  succ_num_ = 0u;
+  clear_has_succ_num();
+}
+inline ::google::protobuf::uint32 TimeoutMessage::succ_num() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.TimeoutMessage.succ_num)
+  return succ_num_;
+}
+inline void TimeoutMessage::set_succ_num(::google::protobuf::uint32 value) {
+  set_has_succ_num();
+  succ_num_ = value;
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.TimeoutMessage.succ_num)
+}
+
+// optional uint32 fail_num = 10;
+inline bool TimeoutMessage::has_fail_num() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void TimeoutMessage::set_has_fail_num() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void TimeoutMessage::clear_has_fail_num() {
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline void TimeoutMessage::clear_fail_num() {
+  fail_num_ = 0u;
+  clear_has_fail_num();
+}
+inline ::google::protobuf::uint32 TimeoutMessage::fail_num() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.TimeoutMessage.fail_num)
+  return fail_num_;
+}
+inline void TimeoutMessage::set_fail_num(::google::protobuf::uint32 value) {
+  set_has_fail_num();
+  fail_num_ = value;
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.TimeoutMessage.fail_num)
 }
 
 #ifdef __GNUC__

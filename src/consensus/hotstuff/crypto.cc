@@ -1,6 +1,7 @@
 #include <bls/bls_utils.h>
 #include <common/log.h>
 #include <consensus/hotstuff/crypto.h>
+#include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <exception>
@@ -228,6 +229,7 @@ Status Crypto::CreateQC(
         View view,
         uint64_t elect_height,
         uint32_t leader_idx,
+        const std::shared_ptr<MemberConsensusStat>& mem_consen_stat,
         const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
         std::shared_ptr<QC>& qc) {
     if (!reconstructed_sign) {
@@ -239,6 +241,7 @@ Status Crypto::CreateQC(
     qc->view_block_hash = view_block_hash;
     qc->commit_view_block_hash = commit_view_block_hash;
     qc->leader_idx = leader_idx;
+    qc->consensus_stat = mem_consen_stat;
     qc->network_id = common::GlobalInfo::Instance()->network_id();
     qc->pool_index = pool_idx_;
     return Status::kSuccess;
@@ -248,6 +251,7 @@ Status Crypto::CreateTC(
         View view,
         uint64_t elect_height,
         uint32_t leader_idx,
+        const std::shared_ptr<MemberConsensusStat>& mem_consen_stat,
         const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
         std::shared_ptr<TC>& tc) {
     if (!reconstructed_sign) {
@@ -258,6 +262,7 @@ Status Crypto::CreateTC(
     tc->view = view;
     tc->elect_height = elect_height;
     tc->leader_idx = leader_idx;
+    tc->consensus_stat = mem_consen_stat;
     tc->network_id = common::GlobalInfo::Instance()->network_id();
     tc->pool_index = pool_idx_;
     return Status::kSuccess;

@@ -18,6 +18,19 @@ namespace shardora {
 
 namespace hotstuff {
 
+// 本 elect height 中共识情况统计
+struct MemberConsensusStat {
+    uint16_t succ_num; // 共识成功的次数
+    uint16_t fail_num; // 共识失败的次数
+
+    MemberConsensusStat() {
+        succ_num = 0;
+        fail_num = 0;
+    }
+
+    MemberConsensusStat(uint16_t succ_num, uint16_t fail_num) : succ_num(succ_num), fail_num(fail_num) {}
+};
+
 // ElectItem 
 class ElectItem {
 public:
@@ -44,6 +57,12 @@ public:
         local_sk_ = sk;
 
         SetMemberCount(members->size());
+        
+        // 初始化共识统计
+        member_consen_stats_.resize(members->size());
+        for (uint32_t i = 0; i < members->size(); i++) {
+            member_consen_stats_[(*members)[i]->index] = std::make_shared<MemberConsensusStat>();
+        }
     }
     ~ElectItem() {};
 
@@ -82,6 +101,21 @@ public:
         return common_pk_;
     }
 
+    void SetMemberConsensusStat(uint32_t member_idx, const std::shared_ptr<MemberConsensusStat>& member_consen_stat) {
+        member_consen_stats_[member_idx] = member_consen_stat;
+    }
+
+    inline std::vector<std::shared_ptr<MemberConsensusStat>> GetAllConsensusStats() {
+        return member_consen_stats_;
+    }
+
+    inline std::shared_ptr<MemberConsensusStat> GetMemberConsensusStat(uint32_t member_idx) {
+        if (member_consen_stats_.size() <= member_idx) {
+            return nullptr;
+        }
+        return member_consen_stats_[member_idx];
+    }
+    
 private:
     void SetMemberCount(uint32_t mem_cnt) {
         bls_n_ = mem_cnt;
@@ -97,6 +131,8 @@ private:
     bool bls_valid_{false};
     uint32_t bls_t_{0};
     uint32_t bls_n_{0};
+
+    std::vector<std::shared_ptr<MemberConsensusStat>> member_consen_stats_; // 所有节点共识情况统计
 };
 
 

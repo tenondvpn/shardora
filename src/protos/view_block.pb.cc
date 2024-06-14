@@ -314,6 +314,8 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, elect_height_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, pool_idx_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, leader_idx_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, succ_num_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, fail_num_),
   4,
   3,
   0,
@@ -322,6 +324,8 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   6,
   5,
   7,
+  8,
+  9,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 12, sizeof(::shardora::view_block::protobuf::ViewBlockItem)},
@@ -330,7 +334,7 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 65, 78, sizeof(::shardora::view_block::protobuf::ViewBlockSyncResponse)},
   { 86, 94, sizeof(::shardora::view_block::protobuf::SingleViewBlockSyncRequest)},
   { 97, 108, sizeof(::shardora::view_block::protobuf::ViewBlockSyncMessage)},
-  { 114, 127, sizeof(::shardora::view_block::protobuf::TimeoutMessage)},
+  { 114, 129, sizeof(::shardora::view_block::protobuf::TimeoutMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -399,14 +403,15 @@ void AddDescriptorsImpl() {
       "cResponse\022L\n\nsingle_req\030\003 \001(\01328.shardora"
       ".view_block.protobuf.SingleViewBlockSync"
       "Request\022\026\n\016create_time_us\030\004 \001(\r\022\016\n\006src_i"
-      "p\030\005 \001(\014\022\020\n\010src_port\030\006 \001(\r\"\240\001\n\016TimeoutMes"
+      "p\030\005 \001(\014\022\020\n\010src_port\030\006 \001(\r\"\304\001\n\016TimeoutMes"
       "sage\022\021\n\tmember_id\030\001 \001(\r\022\014\n\004view\030\002 \001(\004\022\016\n"
       "\006sign_x\030\003 \001(\014\022\016\n\006sign_y\030\004 \001(\014\022\021\n\tview_ha"
       "sh\030\005 \001(\014\022\024\n\014elect_height\030\006 \001(\004\022\020\n\010pool_i"
-      "dx\030\007 \001(\r\022\022\n\nleader_idx\030\010 \001(\r"
+      "dx\030\007 \001(\r\022\022\n\nleader_idx\030\010 \001(\r\022\020\n\010succ_num"
+      "\030\t \001(\r\022\020\n\010fail_num\030\n \001(\r"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1588);
+      descriptor, 1624);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/view_block.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fblock_2eproto::AddDescriptors();
@@ -3481,6 +3486,8 @@ const int TimeoutMessage::kViewHashFieldNumber;
 const int TimeoutMessage::kElectHeightFieldNumber;
 const int TimeoutMessage::kPoolIdxFieldNumber;
 const int TimeoutMessage::kLeaderIdxFieldNumber;
+const int TimeoutMessage::kSuccNumFieldNumber;
+const int TimeoutMessage::kFailNumFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 TimeoutMessage::TimeoutMessage()
@@ -3508,8 +3515,8 @@ TimeoutMessage::TimeoutMessage(const TimeoutMessage& from)
     view_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.view_hash_);
   }
   ::memcpy(&view_, &from.view_,
-    static_cast<size_t>(reinterpret_cast<char*>(&leader_idx_) -
-    reinterpret_cast<char*>(&view_)) + sizeof(leader_idx_));
+    static_cast<size_t>(reinterpret_cast<char*>(&fail_num_) -
+    reinterpret_cast<char*>(&view_)) + sizeof(fail_num_));
   // @@protoc_insertion_point(copy_constructor:shardora.view_block.protobuf.TimeoutMessage)
 }
 
@@ -3518,8 +3525,8 @@ void TimeoutMessage::SharedCtor() {
   sign_y_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   view_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&view_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&leader_idx_) -
-      reinterpret_cast<char*>(&view_)) + sizeof(leader_idx_));
+      reinterpret_cast<char*>(&fail_num_) -
+      reinterpret_cast<char*>(&view_)) + sizeof(fail_num_));
 }
 
 TimeoutMessage::~TimeoutMessage() {
@@ -3569,6 +3576,11 @@ void TimeoutMessage::Clear() {
     ::memset(&view_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&leader_idx_) -
         reinterpret_cast<char*>(&view_)) + sizeof(leader_idx_));
+  }
+  if (cached_has_bits & 768u) {
+    ::memset(&succ_num_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&fail_num_) -
+        reinterpret_cast<char*>(&succ_num_)) + sizeof(fail_num_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -3690,6 +3702,34 @@ bool TimeoutMessage::MergePartialFromCodedStream(
         break;
       }
 
+      // optional uint32 succ_num = 9;
+      case 9: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(72u /* 72 & 0xFF */)) {
+          set_has_succ_num();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &succ_num_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint32 fail_num = 10;
+      case 10: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(80u /* 80 & 0xFF */)) {
+          set_has_fail_num();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &fail_num_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -3760,6 +3800,16 @@ void TimeoutMessage::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(8, this->leader_idx(), output);
   }
 
+  // optional uint32 succ_num = 9;
+  if (cached_has_bits & 0x00000100u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(9, this->succ_num(), output);
+  }
+
+  // optional uint32 fail_num = 10;
+  if (cached_has_bits & 0x00000200u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(10, this->fail_num(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -3819,6 +3869,16 @@ void TimeoutMessage::SerializeWithCachedSizes(
   // optional uint32 leader_idx = 8;
   if (cached_has_bits & 0x00000080u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(8, this->leader_idx(), target);
+  }
+
+  // optional uint32 succ_num = 9;
+  if (cached_has_bits & 0x00000100u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(9, this->succ_num(), target);
+  }
+
+  // optional uint32 fail_num = 10;
+  if (cached_has_bits & 0x00000200u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(10, this->fail_num(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3896,6 +3956,22 @@ size_t TimeoutMessage::ByteSizeLong() const {
     }
 
   }
+  if (_has_bits_[8 / 32] & 768u) {
+    // optional uint32 succ_num = 9;
+    if (has_succ_num()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->succ_num());
+    }
+
+    // optional uint32 fail_num = 10;
+    if (has_fail_num()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->fail_num());
+    }
+
+  }
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
@@ -3954,6 +4030,15 @@ void TimeoutMessage::MergeFrom(const TimeoutMessage& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
+  if (cached_has_bits & 768u) {
+    if (cached_has_bits & 0x00000100u) {
+      succ_num_ = from.succ_num_;
+    }
+    if (cached_has_bits & 0x00000200u) {
+      fail_num_ = from.fail_num_;
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
 }
 
 void TimeoutMessage::CopyFrom(const ::google::protobuf::Message& from) {
@@ -3991,6 +4076,8 @@ void TimeoutMessage::InternalSwap(TimeoutMessage* other) {
   swap(pool_idx_, other->pool_idx_);
   swap(elect_height_, other->elect_height_);
   swap(leader_idx_, other->leader_idx_);
+  swap(succ_num_, other->succ_num_);
+  swap(fail_num_, other->fail_num_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <consensus/hotstuff/elect_info.h>
 #include <unordered_set>
 
 #include <common/time_utils.h>
@@ -35,7 +36,8 @@ HashStr GetViewHash(
     uint32_t pool_idx,
     const View& view, 
     uint64_t elect_height, 
-    uint32_t leader_idx);
+    uint32_t leader_idx,
+    const std::shared_ptr<MemberConsensusStat>& consen_stat);
 HashStr GetQCMsgHash(
     uint32_t net_id,
     uint32_t pool_idx,
@@ -43,7 +45,8 @@ HashStr GetQCMsgHash(
     const HashStr &view_block_hash,
     const HashStr& commit_view_block_hash,
     uint64_t elect_height,
-    uint32_t leader_idx);
+    uint32_t leader_idx,
+    const std::shared_ptr<MemberConsensusStat>& consen_stat);
 
 struct QC {
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
@@ -54,6 +57,9 @@ struct QC {
     uint32_t leader_idx;
     uint32_t network_id;
     uint32_t pool_index;
+
+    std::shared_ptr<MemberConsensusStat> consensus_stat; // leader_idx 本 elect_height 中共识统计
+    
     QC(
             uint32_t net_id,
             uint32_t pool_idx,
@@ -62,11 +68,12 @@ struct QC {
             const HashStr& hash,
             const HashStr& commit_hash,
             uint64_t elect_height,
-            uint32_t leader_idx) :
+            uint32_t leader_idx,
+            const std::shared_ptr<MemberConsensusStat>& consen_stat) :
             network_id(net_id), pool_index(pool_idx),
             bls_agg_sign(sign), view(v), view_block_hash(hash),
             commit_view_block_hash(commit_hash), elect_height(elect_height),
-            leader_idx(leader_idx) {
+            leader_idx(leader_idx), consensus_stat(consen_stat) {
         if (sign == nullptr) {
             bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
         }
@@ -87,7 +94,8 @@ struct QC {
             view_block_hash, 
             commit_view_block_hash, 
             elect_height, 
-            leader_idx);
+            leader_idx,
+            consensus_stat);
     }
 };
 
@@ -99,14 +107,15 @@ struct TC : public QC {
             const std::shared_ptr<libff::alt_bn128_G1>& sign,
             const View& v,
             uint64_t elect_height,
-            uint32_t leader_idx) :
-        QC(net_id, pool_idx, sign, v, "", "", elect_height, leader_idx) {
+            uint32_t leader_idx,
+            const std::shared_ptr<MemberConsensusStat>& consen_stat) :
+        QC(net_id, pool_idx, sign, v, "", "", elect_height, leader_idx, consen_stat) {
     }
 
     TC() {}
 
     inline HashStr msg_hash() const {
-        return GetViewHash(network_id, pool_index, view, elect_height, leader_idx);
+        return GetViewHash(network_id, pool_index, view, elect_height, leader_idx, consensus_stat);
     }
 };
 

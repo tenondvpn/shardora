@@ -945,6 +945,20 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::uint32 leader_idx() const;
   void set_leader_idx(::google::protobuf::uint32 value);
 
+  // optional uint32 succ_num = 11;
+  bool has_succ_num() const;
+  void clear_succ_num();
+  static const int kSuccNumFieldNumber = 11;
+  ::google::protobuf::uint32 succ_num() const;
+  void set_succ_num(::google::protobuf::uint32 value);
+
+  // optional uint32 fail_num = 12;
+  bool has_fail_num() const;
+  void clear_fail_num();
+  static const int kFailNumFieldNumber = 12;
+  ::google::protobuf::uint32 fail_num() const;
+  void set_fail_num(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:shardora.hotstuff.protobuf.VoteMsg)
  private:
   void set_has_replica_idx();
@@ -965,6 +979,10 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   void clear_has_commit_view_block_hash();
   void set_has_leader_idx();
   void clear_has_leader_idx();
+  void set_has_succ_num();
+  void clear_has_succ_num();
+  void set_has_fail_num();
+  void clear_has_fail_num();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -979,6 +997,8 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::uint64 elect_height_;
   ::google::protobuf::uint32 replica_idx_;
   ::google::protobuf::uint32 leader_idx_;
+  ::google::protobuf::uint32 succ_num_;
+  ::google::protobuf::uint32 fail_num_;
   friend struct ::protobuf_protos_2fhotstuff_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -2470,6 +2490,54 @@ inline void VoteMsg::set_leader_idx(::google::protobuf::uint32 value) {
   set_has_leader_idx();
   leader_idx_ = value;
   // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.VoteMsg.leader_idx)
+}
+
+// optional uint32 succ_num = 11;
+inline bool VoteMsg::has_succ_num() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void VoteMsg::set_has_succ_num() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void VoteMsg::clear_has_succ_num() {
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline void VoteMsg::clear_succ_num() {
+  succ_num_ = 0u;
+  clear_has_succ_num();
+}
+inline ::google::protobuf::uint32 VoteMsg::succ_num() const {
+  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.VoteMsg.succ_num)
+  return succ_num_;
+}
+inline void VoteMsg::set_succ_num(::google::protobuf::uint32 value) {
+  set_has_succ_num();
+  succ_num_ = value;
+  // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.VoteMsg.succ_num)
+}
+
+// optional uint32 fail_num = 12;
+inline bool VoteMsg::has_fail_num() const {
+  return (_has_bits_[0] & 0x00000400u) != 0;
+}
+inline void VoteMsg::set_has_fail_num() {
+  _has_bits_[0] |= 0x00000400u;
+}
+inline void VoteMsg::clear_has_fail_num() {
+  _has_bits_[0] &= ~0x00000400u;
+}
+inline void VoteMsg::clear_fail_num() {
+  fail_num_ = 0u;
+  clear_has_fail_num();
+}
+inline ::google::protobuf::uint32 VoteMsg::fail_num() const {
+  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.VoteMsg.fail_num)
+  return fail_num_;
+}
+inline void VoteMsg::set_fail_num(::google::protobuf::uint32 value) {
+  set_has_fail_num();
+  fail_num_ = value;
+  // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.VoteMsg.fail_num)
 }
 
 // -------------------------------------------------------------------

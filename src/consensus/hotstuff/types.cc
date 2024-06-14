@@ -15,11 +15,14 @@ HashStr GetQCMsgHash(
         const HashStr &view_block_hash,
         const HashStr& commit_view_block_hash,
         uint64_t elect_height,
-        uint32_t leader_idx) {
+        uint32_t leader_idx,
+        const std::shared_ptr<MemberConsensusStat>& consen_stat) {
     std::stringstream ss;
     assert(net_id <= network::kConsensusShardEndNetworkId);
     assert(pool_index < common::kInvalidPoolIndex);
-    ss << net_id << pool_index << view << view_block_hash << commit_view_block_hash << elect_height << leader_idx;
+    ss << net_id << pool_index << view <<
+        view_block_hash << commit_view_block_hash <<
+        elect_height << leader_idx << consen_stat->succ_num << consen_stat->fail_num;
     std::string msg = ss.str();
     auto msg_hash = common::Hash::keccak256(msg); 
     ZJC_DEBUG("success get qc msg hash net: %u, pool: %u, view: %lu, view_block_hash: %s, "
@@ -40,8 +43,9 @@ HashStr GetViewHash(
         uint32_t pool_index, 
         const View& view, 
         uint64_t elect_height, 
-        uint32_t leader_idx) {
-    return GetQCMsgHash(net_id, pool_index, view, "", "", elect_height, leader_idx);
+        uint32_t leader_idx,
+        const std::shared_ptr<MemberConsensusStat>& consen_stat) {
+    return GetQCMsgHash(net_id, pool_index, view, "", "", elect_height, leader_idx, consen_stat);
 }
 
 std::string QC::Serialize() const {

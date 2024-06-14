@@ -72,4 +72,6 @@ message TimeoutMessage {
     optional uint64 elect_height = 6;
     optional uint32 pool_idx = 7;
     optional uint32 leader_idx = 8;
+    optional uint32 succ_num = 9;
+    optional uint32 fail_num = 10;
 }

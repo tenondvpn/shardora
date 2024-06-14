@@ -79,6 +79,7 @@ public:
         View view,
         uint64_t elect_height,
         uint32_t leader_idx,
+        const std::shared_ptr<MemberConsensusStat>& mem_consen_stat,
         const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
         std::shared_ptr<QC>& qc);
 
@@ -86,6 +87,7 @@ public:
             View view,
             uint64_t elect_height,
             uint32_t leader_idx,
+            const std::shared_ptr<MemberConsensusStat>& mem_consen_stat,
             const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
             std::shared_ptr<TC>& tc);
 

@@ -2,6 +2,7 @@
 
 #include <common/tick.h>
 #include <common/time_utils.h>
+#include <consensus/hotstuff/elect_info.h>
 #include <functional>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/leader_rotation.h>
@@ -100,6 +101,10 @@ private:
 
     inline bool IsTimeout() {
         return (last_time_us_ != 0 && common::TimeUtils::TimestampUs() - last_time_us_ > duration_us_);
+    }
+
+    inline std::shared_ptr<ElectItem> elect_item(uint32_t sharding_id, uint64_t elect_height) {
+        return crypto_->GetElectItem(sharding_id, elect_height);
     }
     
 
