@@ -759,12 +759,9 @@ int ShardStatistic::StatisticWithHeights(
                 auto elect_height = elect_iter->first;
                 ZJC_DEBUG("1 pool: %u, elect height: %lu, tm height: %lu, latest tm height: %lu", 
                     pool_idx, elect_height, tm_iter->first, latest_timeblock_height_);
-
                 auto& node_info_map = height_node_collect_info_map
                                         .try_emplace(elect_height, std::unordered_map<std::string, StatisticMemberInfoItem>())
                                         .first->second;
-
-
                 // 聚合每个选举高度，每个节点在各个pool 中完成交易的gas总和
                 for (auto node_count_iter = elect_iter->second->node_tx_count_map.begin();
                     node_count_iter != elect_iter->second->node_tx_count_map.end(); ++node_count_iter) {
@@ -830,28 +827,20 @@ int ShardStatistic::StatisticWithHeights(
         }
     }
 
-
-
     std::string debug_for_str;
     // 为当前委员会的节点填充共识工作的奖励信息
     setElectStatistics(height_node_collect_info_map, now_elect_members, elect_statistic, is_root);
-
-
     addNewNode2JoinStatics(join_elect_stoke_map,
                           join_elect_shard_map,
                           added_id_set,
                           debug_for_str,
                           id_pk_map,
                           elect_statistic);
-
     addPrepareMembers2JoinStastics(prepare_members,
                                   added_id_set,
                                   elect_statistic,
                                   debug_for_str,
                                   now_elect_members);
-
-
-
     if (is_root) {
         elect_statistic.set_gas_amount(root_all_gas_amount);
     } else {
@@ -1044,10 +1033,11 @@ void ShardStatistic::addNewNode2JoinStatics(std::map<uint64_t, std::unordered_ma
 //     return 1;
 // }
 
-void ShardStatistic::setElectStatistics(std::map<uint64_t, std::unordered_map<std::__cxx11::string, shardora::pools::StatisticMemberInfoItem>> &height_node_collect_info_map,
-                                        shardora::common::MembersPtr &now_elect_members,
-                                        shardora::pools::protobuf::ElectStatistic &elect_statistic,
-                                        bool is_root) {
+void ShardStatistic::setElectStatistics(
+        std::map<uint64_t, std::unordered_map<std::string, shardora::pools::StatisticMemberInfoItem>> &height_node_collect_info_map,
+        shardora::common::MembersPtr &now_elect_members,
+        shardora::pools::protobuf::ElectStatistic &elect_statistic,
+        bool is_root) {
     if (height_node_collect_info_map.empty() || height_node_collect_info_map.rbegin()->first < now_elect_height_) {
         height_node_collect_info_map[now_elect_height_] = std::unordered_map<std::string, StatisticMemberInfoItem>();
         auto &node_info_map = height_node_collect_info_map[now_elect_height_];

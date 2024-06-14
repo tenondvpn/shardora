@@ -183,13 +183,13 @@ int ElectTxItem::processElect(
 int ElectTxItem::getMaxElectHeightInfo(shardora::pools::protobuf::ElectStatistic &elect_statistic,
                                          const shardora::pools::protobuf::PoolStatisticItem *&statistic, 
                                          shardora::common::MembersPtr &members) {
-    uint64_t max_elect_height = 0;
-    auto &max_stat = *std::max_element(
-        elect_statistic.statistics().begin(), 
-        elect_statistic.statistics().end(),
-        [](const auto &a, const auto &b) { return a.elect_height() < b.elect_height(); });
-    statistic = &max_stat;
-    max_elect_height = max_stat.elect_height();
+    // uint64_t max_elect_height = 0;
+    // auto &max_stat = *std::max_element(
+    //     elect_statistic.statistics().begin(), 
+    //     elect_statistic.statistics().end(),
+    //     [](const auto &a, const auto &b) { return a.elect_height() < b.elect_height(); });
+    // statistic = &max_stat;
+    // max_elect_height = max_stat.elect_height();
     uint64_t now_elect_height = elect_mgr_->latest_height(elect_statistic.sharding_id());
     // 根据最新的选举块高度获取相关的 members
     members = elect_mgr_->GetNetworkMembersWithHeight(
@@ -205,24 +205,25 @@ int ElectTxItem::getMaxElectHeightInfo(shardora::pools::protobuf::ElectStatistic
     }
 
     // TODO: check if elect height valid
-    if (max_elect_height != now_elect_height) {
-        ZJC_DEBUG("old elect coming max_elect_height: %lu, now_elect_height: %lu",
-            max_elect_height, now_elect_height);
-        return kConsensusError;
-    }
+    // if (max_elect_height != now_elect_height) {
+    //     ZJC_DEBUG("old elect coming max_elect_height: %lu, now_elect_height: %lu",
+    //         max_elect_height, now_elect_height);
+    //     return kConsensusError;
+    // }
 
-    ZJC_DEBUG("success check old elect coming max_elect_height: %lu, now_elect_height: %lu",
-        max_elect_height, now_elect_height);
+    // ZJC_DEBUG("success check old elect coming max_elect_height: %lu, now_elect_height: %lu",
+    //     max_elect_height, now_elect_height);
     int32_t member_count = members->size();
     if (member_count != statistic->tx_count_size() ||
             member_count != statistic->stokes_size() ||
             member_count != statistic->area_point_size()) {
         ZJC_DEBUG("now_elect_height: %lu, member size error: %u, %u, %u, %u",
-                  now_elect_height, members->size(), statistic->tx_count_size(),
-                  statistic->stokes_size(), statistic->area_point_size());
+            now_elect_height, members->size(), statistic->tx_count_size(),
+            statistic->stokes_size(), statistic->area_point_size());
         assert(false);
         return kConsensusError;
     }
+    
     return kConsensusSuccess;
 }
 void ElectTxItem::JoinNewNodes2ElectNodes(shardora::common::MembersPtr &members,
