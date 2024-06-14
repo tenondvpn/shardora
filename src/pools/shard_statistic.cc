@@ -13,7 +13,7 @@
 #include "zjcvm/zjcvm_utils.h"
 #include <elect/elect_pledge.h>
 // #include <iostream>
-#include "shard_statistic.h"
+// #include "shard_statistic.h"
 
 
 namespace shardora {
@@ -39,6 +39,7 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
     ZJC_DEBUG("new block coming net: %u, pool: %u, height: %lu, timeblock height: %lu",
         block_ptr->network_id(),
         block_ptr->pool_index(), block_ptr->height(), block_ptr->timeblock_height());
+    HandleElectStatistic(block_ptr);
     block::protobuf::Block& block = *block_ptr;
     if (!checkBlockValid(block)) return;
 
@@ -310,6 +311,50 @@ void ShardStatistic::HandleCrossShard(
                 cross_item.cross_ptr->crosses(i).des_shard());
         }
     }
+}
+
+
+void ShardStatistic::HandleElectStatistic(const std::shared_ptr<block::protobuf::Block>& block_ptr) {
+    auto& block = *block_ptr;
+    elect::protobuf::ElectBlock elect_block;
+    bool isElectBlock = false;
+    for (int32_t i = 0; i < block.tx_list_size(); ++i) {
+        if (block.tx_list(i).step() == pools::protobuf::kConsensusRootElectShard) { 
+           auto block_tx = block.tx_list(i);
+           for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
+                if (block_tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
+                   
+                    if (!elect_block.ParseFromString(block_tx.storages(i).value())) {
+                        assert(false);
+                        return;
+                    }
+                    isElectBlock = true;
+                    break;                   
+                } 
+            }
+        } 
+    }
+    if (!isElectBlock) {
+       return;
+    }
+
+    if(!elect_block.has_elect_height() || elect_block.elect_height() <= least_elect_height_for_statistic_ ) {
+        ZJC_DEBUG("HandleElectStatistic have processed elect height: %lu, least_elect_height_: %lu", 
+            elect_block.elect_height(), least_elect_height_for_statistic_);
+       return;
+    }
+    least_elect_height_for_statistic_ = elect_block.elect_height();
+
+    for(auto node : elect_block.in()) {
+        auto addr = secptr_->GetAddress(node.pubkey());
+        auto& accoutPoceInfoIterm = accout_poce_info_map_.try_emplace(addr, std::make_shared<AccoutPoceInfoItem>())
+                                    .first->second;
+        accoutPoceInfoIterm->consensus_gap +=1;
+        accoutPoceInfoIterm->credit += node.fts_value();;
+        ZJC_DEBUG("HandleElectStatistic addr: %s, consensus_gap: %lu, credit: %lu", common::Encode::HexEncode(addr).c_str(), 
+            accoutPoceInfoIterm->consensus_gap, accoutPoceInfoIterm->credit);
+    }
+
 }
 
 void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Block>& block_ptr) {
@@ -937,6 +982,8 @@ void ShardStatistic::addPrepareMembers2JoinStastics(shardora::common::MembersPtr
             uint64_t stoke = getStoke(shard, "", addr_info->addr(), now_elect_height_);
 
             auto join_elect_node = elect_statistic.add_join_elect_nodes();
+            join_elect_node->set_consensus_gap(1998);
+            join_elect_node->set_credit(1999);
             join_elect_node->set_pubkey((*prepare_members)[i]->pubkey);
             join_elect_node->set_elect_pos(addr_info->elect_pos());
             join_elect_node->set_stoke(stoke);
@@ -1029,7 +1076,8 @@ void ShardStatistic::addNewNode2JoinStatics(std::map<uint64_t, std::unordered_ma
 
         auto join_elect_node = elect_statistic.add_join_elect_nodes();
         auto iter = r_eiter->second.find(elect_nodes[i]);
-
+        join_elect_node->set_consensus_gap(1998);
+        join_elect_node->set_credit(1999);
         join_elect_node->set_pubkey(pubkey);
         join_elect_node->set_stoke(stoke);
         join_elect_node->set_shard(shard_id);
@@ -1075,7 +1123,9 @@ void ShardStatistic::setElectStatistics(std::map<uint64_t, std::unordered_map<st
         for (uint32_t midx = 0; midx < members->size(); ++midx) {
             auto &id = (*members)[midx]->id;
             auto node_info = node_info_map.emplace(id, StatisticMemberInfoItem()).first->second;
-
+            auto node_poce_info = accout_poce_info_map_.try_emplace(id, std::make_shared<AccoutPoceInfoItem>()).first->second;
+            statistic_item.add_credit(node_poce_info->credit);
+            statistic_item.add_consensus_gap(node_poce_info->consensus_gap);
             statistic_item.add_tx_count(node_info.tx_count);
             statistic_item.add_gas_sum(node_info.gas_sum);
             uint64_t stoke = 0;

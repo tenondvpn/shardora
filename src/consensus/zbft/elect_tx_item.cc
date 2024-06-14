@@ -544,6 +544,7 @@ int ElectTxItem::CreateNewElect(
             in->set_pubkey(elect_nodes[i]->pubkey);
             in->set_pool_idx_mod_num(elect_nodes[i]->leader_mod_index);
             in->set_mining_amount(elect_nodes[i]->mining_token);
+            in->set_fts_value(elect_nodes[i]->fts_value);
         }
     }
 

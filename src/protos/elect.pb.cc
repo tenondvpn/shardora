@@ -404,9 +404,13 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::elect::protobuf::member, pubkey_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::elect::protobuf::member, pool_idx_mod_num_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::elect::protobuf::member, mining_amount_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::elect::protobuf::member, fts_value_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::elect::protobuf::member, consensus_gap_),
   0,
-  2,
+  4,
   1,
+  2,
+  3,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::elect::protobuf::ElectBlock, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::elect::protobuf::ElectBlock, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -524,16 +528,16 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 19, 28, sizeof(::shardora::elect::protobuf::BlsPublicKey)},
   { 32, 42, sizeof(::shardora::elect::protobuf::PrevMemberInfo)},
   { 47, 55, sizeof(::shardora::elect::protobuf::PrevMembers)},
-  { 58, 66, sizeof(::shardora::elect::protobuf::member)},
-  { 69, 80, sizeof(::shardora::elect::protobuf::ElectBlock)},
-  { 86, 94, sizeof(::shardora::elect::protobuf::WaitingNodesMessage)},
-  { 97, 106, sizeof(::shardora::elect::protobuf::WaitingNodeHeartbeat)},
-  { 110, 117, sizeof(::shardora::elect::protobuf::LeaderRotationMessage)},
-  { 119, 126, sizeof(::shardora::elect::protobuf::SyncNodeStokeItem)},
-  { 128, 135, sizeof(::shardora::elect::protobuf::SyncNodeStokeRequest)},
-  { 137, 144, sizeof(::shardora::elect::protobuf::SyncNodeStokeResItem)},
-  { 146, 153, sizeof(::shardora::elect::protobuf::SyncNodeStokeResponse)},
-  { 155, 170, sizeof(::shardora::elect::protobuf::ElectMessage)},
+  { 58, 68, sizeof(::shardora::elect::protobuf::member)},
+  { 73, 84, sizeof(::shardora::elect::protobuf::ElectBlock)},
+  { 90, 98, sizeof(::shardora::elect::protobuf::WaitingNodesMessage)},
+  { 101, 110, sizeof(::shardora::elect::protobuf::WaitingNodeHeartbeat)},
+  { 114, 121, sizeof(::shardora::elect::protobuf::LeaderRotationMessage)},
+  { 123, 130, sizeof(::shardora::elect::protobuf::SyncNodeStokeItem)},
+  { 132, 139, sizeof(::shardora::elect::protobuf::SyncNodeStokeRequest)},
+  { 141, 148, sizeof(::shardora::elect::protobuf::SyncNodeStokeResItem)},
+  { 150, 157, sizeof(::shardora::elect::protobuf::SyncNodeStokeResponse)},
+  { 159, 174, sizeof(::shardora::elect::protobuf::ElectMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -586,46 +590,47 @@ void AddDescriptorsImpl() {
       "bls_pubkey\030\001 \003(\0132\'.shardora.elect.protob"
       "uf.PrevMemberInfo\022\031\n\021prev_elect_height\030\002"
       " \001(\004\022<\n\rcommon_pubkey\030\003 \001(\0132%.shardora.e"
-      "lect.protobuf.BlsPublicKey\"I\n\006member\022\016\n\006"
+      "lect.protobuf.BlsPublicKey\"s\n\006member\022\016\n\006"
       "pubkey\030\001 \001(\014\022\030\n\020pool_idx_mod_num\030\002 \001(\005\022\025"
-      "\n\rmining_amount\030\003 \001(\004\"\323\001\n\nElectBlock\022+\n\002"
-      "in\030\001 \003(\0132\037.shardora.elect.protobuf.membe"
-      "r\022:\n\014prev_members\030\002 \001(\0132$.shardora.elect"
-      ".protobuf.PrevMembers\022\030\n\020shard_network_i"
-      "d\030\003 \001(\r\022\024\n\014elect_height\030\004 \001(\004\022\026\n\016all_gas"
-      "_amount\030\005 \001(\004\022\024\n\014gas_for_root\030\006 \001(\004\"Y\n\023W"
-      "aitingNodesMessage\022\024\n\014nodes_filter\030\001 \003(\004"
-      "\022\030\n\020waiting_shard_id\030\002 \001(\r\022\022\n\nstoke_hash"
-      "\030\003 \001(\014\"i\n\024WaitingNodeHeartbeat\022\021\n\tpublic"
-      "_ip\030\001 \001(\014\022\023\n\013public_port\030\002 \001(\r\022\022\n\nnetwor"
-      "k_id\030\003 \001(\r\022\025\n\rtimestamp_sec\030\004 \001(\004\"@\n\025Lea"
-      "derRotationMessage\022\021\n\tleader_id\030\001 \001(\014\022\024\n"
-      "\014pool_mod_num\030\002 \001(\r\"9\n\021SyncNodeStokeItem"
-      "\022\n\n\002id\030\001 \001(\014\022\030\n\020synced_tm_height\030\002 \001(\004\"l"
-      "\n\024SyncNodeStokeRequest\022=\n\tsync_item\030\001 \003("
-      "\0132*.shardora.elect.protobuf.SyncNodeStok"
-      "eItem\022\025\n\rnow_tm_height\030\002 \001(\004\"3\n\024SyncNode"
-      "StokeResItem\022\n\n\002id\030\001 \001(\014\022\017\n\007balance\030\002 \001("
-      "\004\"l\n\025SyncNodeStokeResponse\022<\n\005items\030\001 \003("
-      "\0132-.shardora.elect.protobuf.SyncNodeStok"
-      "eResItem\022\025\n\rnow_tm_height\030\002 \001(\004\"\247\004\n\014Elec"
-      "tMessage\0228\n\013elect_block\030\001 \001(\0132#.shardora"
-      ".elect.protobuf.ElectBlock\022=\n\020prev_elect"
-      "_block\030\002 \001(\0132#.shardora.elect.protobuf.E"
-      "lectBlock\022C\n\rwaiting_nodes\030\003 \001(\0132,.shard"
-      "ora.elect.protobuf.WaitingNodesMessage\022\024"
-      "\n\014member_index\030\004 \001(\005\022\017\n\007sign_ch\030\005 \001(\014\022\020\n"
-      "\010sign_res\030\006 \001(\014\022H\n\021waiting_heartbeat\030\007 \001"
-      "(\0132-.shardora.elect.protobuf.WaitingNode"
-      "Heartbeat\022G\n\017leader_rotation\030\010 \001(\0132..sha"
-      "rdora.elect.protobuf.LeaderRotationMessa"
-      "ge\022E\n\016sync_stoke_req\030\t \001(\0132-.shardora.el"
-      "ect.protobuf.SyncNodeStokeRequest\022F\n\016syn"
-      "c_stoke_res\030\n \001(\0132..shardora.elect.proto"
-      "buf.SyncNodeStokeResponse"
+      "\n\rmining_amount\030\003 \001(\004\022\021\n\tfts_value\030\004 \001(\004"
+      "\022\025\n\rconsensus_gap\030\005 \001(\004\"\323\001\n\nElectBlock\022+"
+      "\n\002in\030\001 \003(\0132\037.shardora.elect.protobuf.mem"
+      "ber\022:\n\014prev_members\030\002 \001(\0132$.shardora.ele"
+      "ct.protobuf.PrevMembers\022\030\n\020shard_network"
+      "_id\030\003 \001(\r\022\024\n\014elect_height\030\004 \001(\004\022\026\n\016all_g"
+      "as_amount\030\005 \001(\004\022\024\n\014gas_for_root\030\006 \001(\004\"Y\n"
+      "\023WaitingNodesMessage\022\024\n\014nodes_filter\030\001 \003"
+      "(\004\022\030\n\020waiting_shard_id\030\002 \001(\r\022\022\n\nstoke_ha"
+      "sh\030\003 \001(\014\"i\n\024WaitingNodeHeartbeat\022\021\n\tpubl"
+      "ic_ip\030\001 \001(\014\022\023\n\013public_port\030\002 \001(\r\022\022\n\nnetw"
+      "ork_id\030\003 \001(\r\022\025\n\rtimestamp_sec\030\004 \001(\004\"@\n\025L"
+      "eaderRotationMessage\022\021\n\tleader_id\030\001 \001(\014\022"
+      "\024\n\014pool_mod_num\030\002 \001(\r\"9\n\021SyncNodeStokeIt"
+      "em\022\n\n\002id\030\001 \001(\014\022\030\n\020synced_tm_height\030\002 \001(\004"
+      "\"l\n\024SyncNodeStokeRequest\022=\n\tsync_item\030\001 "
+      "\003(\0132*.shardora.elect.protobuf.SyncNodeSt"
+      "okeItem\022\025\n\rnow_tm_height\030\002 \001(\004\"3\n\024SyncNo"
+      "deStokeResItem\022\n\n\002id\030\001 \001(\014\022\017\n\007balance\030\002 "
+      "\001(\004\"l\n\025SyncNodeStokeResponse\022<\n\005items\030\001 "
+      "\003(\0132-.shardora.elect.protobuf.SyncNodeSt"
+      "okeResItem\022\025\n\rnow_tm_height\030\002 \001(\004\"\247\004\n\014El"
+      "ectMessage\0228\n\013elect_block\030\001 \001(\0132#.shardo"
+      "ra.elect.protobuf.ElectBlock\022=\n\020prev_ele"
+      "ct_block\030\002 \001(\0132#.shardora.elect.protobuf"
+      ".ElectBlock\022C\n\rwaiting_nodes\030\003 \001(\0132,.sha"
+      "rdora.elect.protobuf.WaitingNodesMessage"
+      "\022\024\n\014member_index\030\004 \001(\005\022\017\n\007sign_ch\030\005 \001(\014\022"
+      "\020\n\010sign_res\030\006 \001(\014\022H\n\021waiting_heartbeat\030\007"
+      " \001(\0132-.shardora.elect.protobuf.WaitingNo"
+      "deHeartbeat\022G\n\017leader_rotation\030\010 \001(\0132..s"
+      "hardora.elect.protobuf.LeaderRotationMes"
+      "sage\022E\n\016sync_stoke_req\030\t \001(\0132-.shardora."
+      "elect.protobuf.SyncNodeStokeRequest\022F\n\016s"
+      "ync_stoke_res\030\n \001(\0132..shardora.elect.pro"
+      "tobuf.SyncNodeStokeResponse"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1945);
+      descriptor, 1987);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/elect.proto", &protobuf_RegisterTypes);
 }
@@ -2327,6 +2332,8 @@ void member::InitAsDefaultInstance() {
 const int member::kPubkeyFieldNumber;
 const int member::kPoolIdxModNumFieldNumber;
 const int member::kMiningAmountFieldNumber;
+const int member::kFtsValueFieldNumber;
+const int member::kConsensusGapFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 member::member()
@@ -2391,7 +2398,7 @@ void member::Clear() {
   if (cached_has_bits & 0x00000001u) {
     pubkey_.ClearNonDefaultToEmptyNoArena();
   }
-  if (cached_has_bits & 6u) {
+  if (cached_has_bits & 30u) {
     ::memset(&mining_amount_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&pool_idx_mod_num_) -
         reinterpret_cast<char*>(&mining_amount_)) + sizeof(pool_idx_mod_num_));
@@ -2450,6 +2457,34 @@ bool member::MergePartialFromCodedStream(
         break;
       }
 
+      // optional uint64 fts_value = 4;
+      case 4: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(32u /* 32 & 0xFF */)) {
+          set_has_fts_value();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &fts_value_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint64 consensus_gap = 5;
+      case 5: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(40u /* 40 & 0xFF */)) {
+          set_has_consensus_gap();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &consensus_gap_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -2484,13 +2519,23 @@ void member::SerializeWithCachedSizes(
   }
 
   // optional int32 pool_idx_mod_num = 2;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000010u) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->pool_idx_mod_num(), output);
   }
 
   // optional uint64 mining_amount = 3;
   if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(3, this->mining_amount(), output);
+  }
+
+  // optional uint64 fts_value = 4;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(4, this->fts_value(), output);
+  }
+
+  // optional uint64 consensus_gap = 5;
+  if (cached_has_bits & 0x00000008u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(5, this->consensus_gap(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2516,13 +2561,23 @@ void member::SerializeWithCachedSizes(
   }
 
   // optional int32 pool_idx_mod_num = 2;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000010u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->pool_idx_mod_num(), target);
   }
 
   // optional uint64 mining_amount = 3;
   if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(3, this->mining_amount(), target);
+  }
+
+  // optional uint64 fts_value = 4;
+  if (cached_has_bits & 0x00000004u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(4, this->fts_value(), target);
+  }
+
+  // optional uint64 consensus_gap = 5;
+  if (cached_has_bits & 0x00000008u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(5, this->consensus_gap(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2542,7 +2597,7 @@ size_t member::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 7u) {
+  if (_has_bits_[0 / 32] & 31u) {
     // optional bytes pubkey = 1;
     if (has_pubkey()) {
       total_size += 1 +
@@ -2555,6 +2610,20 @@ size_t member::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt64Size(
           this->mining_amount());
+    }
+
+    // optional uint64 fts_value = 4;
+    if (has_fts_value()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->fts_value());
+    }
+
+    // optional uint64 consensus_gap = 5;
+    if (has_consensus_gap()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->consensus_gap());
     }
 
     // optional int32 pool_idx_mod_num = 2;
@@ -2593,7 +2662,7 @@ void member::MergeFrom(const member& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 7u) {
+  if (cached_has_bits & 31u) {
     if (cached_has_bits & 0x00000001u) {
       set_has_pubkey();
       pubkey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.pubkey_);
@@ -2602,6 +2671,12 @@ void member::MergeFrom(const member& from) {
       mining_amount_ = from.mining_amount_;
     }
     if (cached_has_bits & 0x00000004u) {
+      fts_value_ = from.fts_value_;
+    }
+    if (cached_has_bits & 0x00000008u) {
+      consensus_gap_ = from.consensus_gap_;
+    }
+    if (cached_has_bits & 0x00000010u) {
       pool_idx_mod_num_ = from.pool_idx_mod_num_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -2635,6 +2710,8 @@ void member::InternalSwap(member* other) {
   pubkey_.Swap(&other->pubkey_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(mining_amount_, other->mining_amount_);
+  swap(fts_value_, other->fts_value_);
+  swap(consensus_gap_, other->consensus_gap_);
   swap(pool_idx_mod_num_, other->pool_idx_mod_num_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
