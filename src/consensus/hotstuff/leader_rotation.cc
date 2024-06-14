@@ -41,14 +41,13 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
 
     uint32_t now_time_num = common::TimeUtils::TimestampSeconds() / TIME_EPOCH_TO_CHANGE_LEADER_S;
     uint64_t random_hash = common::Hash::Hash64(qc->Serialize() + std::to_string(now_time_num));
-
     if (Members(common::GlobalInfo::Instance()->network_id())->empty()) {
         return nullptr;
     }
     
     auto leader_idx = random_hash % Members(common::GlobalInfo::Instance()->network_id())->size();
     // TODO(test)
-    // leader_idx = 0;
+    leader_idx = 0;
     auto leader = (*Members(common::GlobalInfo::Instance()->network_id()))[leader_idx];
     if (leader->public_ip == 0 || leader->public_port == 0) {
         // 刷新 members 的 ip port
