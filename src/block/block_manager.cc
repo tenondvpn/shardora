@@ -1869,6 +1869,7 @@ pools::TxItemPtr BlockManager::GetCrossTx(
         return cross_statistic_tx->tx_ptr;
     }
 
+    ZJC_DEBUG("failed get cross tx.");
     return nullptr;
 }
 
