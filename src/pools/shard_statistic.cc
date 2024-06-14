@@ -77,12 +77,13 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
         auto latest_elect_item = elect_mgr_->GetLatestElectBlock(common::GlobalInfo::Instance()->network_id());
         ZJC_DEBUG("block coming pool: %u, height: %lu, latest height: %lu, "
                   "block map size: %u, first_block_tm_height: %lu, "
-                  "first_block_elect_height: %lu, now elect height: %lu",
+                  "first_block_elect_height: %lu, now elect height: %lu, block_map.empty(): %d",
                   block_ptr->pool_index(), block_ptr->height(),
                   pool_blocks_info->latest_consensus_height_,
                   block_map.size(), first_block_tm_height,
                   first_block_elect_height,
-                  latest_elect_item->elect_height());
+                  latest_elect_item->elect_height(),
+                  block_map.empty());
 
     }
 }
