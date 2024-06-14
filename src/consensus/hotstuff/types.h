@@ -41,6 +41,12 @@ struct MemberConsensusStat {
     }
 
     MemberConsensusStat(uint16_t succ_num, uint16_t fail_num) : succ_num(succ_num), fail_num(fail_num) {}
+
+    inline HashStr GetHash() {
+        std::stringstream ss;
+        ss << succ_num << fail_num;
+        return common::Hash::keccak256(ss.str());
+    }
 };
 
 HashStr GetViewHash(
@@ -134,6 +140,7 @@ struct ViewBlock {
     std::unordered_set<std::string> added_txs;
     std::shared_ptr<QC> qc;
     View view;
+    std::shared_ptr<MemberConsensusStat> leader_consen_stat; // 计算后的共识统计，在 replica 接收块后，计算出 leader 应该的分数，写入次字段，类似交易执行
 
     uint64_t created_time_us;
 
