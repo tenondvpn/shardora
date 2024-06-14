@@ -121,7 +121,7 @@ public:
             max_consensus_sharding_id_ = sharding_id;
         }
 
-        if (sharding_id > network::kConsensusShardEndNetworkId) {
+        if (sharding_id >= network::kConsensusShardEndNetworkId) {
             assert(false);
             return;
         }

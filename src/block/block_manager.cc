@@ -1824,10 +1824,12 @@ pools::TxItemPtr BlockManager::GetCrossTx(
         const std::string& tx_hash) {
     auto statistic_map_ptr = got_latest_cross_map_ptr_;
     if (statistic_map_ptr == nullptr) {
+        ZJC_DEBUG("statistic_map_ptr == nullptr");
         return nullptr;
     }
 
     if (statistic_map_ptr->empty()) {
+        ZJC_DEBUG("statistic_map_ptr->empty()");
         return nullptr;
     }
 
@@ -1845,6 +1847,7 @@ pools::TxItemPtr BlockManager::GetCrossTx(
     }
 
     if (iter == statistic_map_ptr->end()) {
+        ZJC_DEBUG("iter == statistic_map_ptr->end()");
         return nullptr;
     }
     
@@ -1852,6 +1855,8 @@ pools::TxItemPtr BlockManager::GetCrossTx(
     if (cross_statistic_tx != nullptr && !cross_statistic_tx->tx_ptr->in_consensus) {
         auto now_tm = common::TimeUtils::TimestampUs();
         if (leader && cross_statistic_tx->tx_ptr->time_valid > now_tm) {
+            ZJC_DEBUG("leader && cross_statistic_tx->tx_ptr->time_valid > now_tm: %lu, %lu",
+                cross_statistic_tx->tx_ptr->time_valid, now_tm);
             return nullptr;
         }
 
@@ -1860,6 +1865,7 @@ pools::TxItemPtr BlockManager::GetCrossTx(
         auto& tx = cross_statistic_tx->tx_ptr->tx_info;
         tx.set_to(cross_statistic_tx->tx_ptr->address_info->addr());
         cross_statistic_tx->tx_ptr->in_consensus = true;
+        ZJC_DEBUG("success get cross tx: %s", common::Encode::HexEncode(tx.gid()).c_str());
         return cross_statistic_tx->tx_ptr;
     }
 

@@ -187,7 +187,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_in
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetCrossTx(
         uint32_t pool_index, 
         const std::string& tx_hash) {
-    if (pool_index != common::kRootChainPoolIndex) {
+    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId ||
+            pool_index != common::kRootChainPoolIndex) {
         return nullptr;
     }
 
