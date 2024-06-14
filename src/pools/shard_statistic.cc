@@ -56,10 +56,7 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
         }
     }
 
-
-
     auto& pool_blocks_info = pools_consensus_blocks_[block.pool_index()];
-
     if (block_ptr->height() != pool_blocks_info->latest_consensus_height_ + 1) {
         pool_blocks_info->blocks[block_ptr->height()] = block_ptr;
     } else {
@@ -70,16 +67,22 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
 
     {
         uint64_t first_block_tm_height = common::kInvalidUint64;
+        uint64_t first_block_elect_height = common::kInvalidUint64;
         auto& block_map = pool_blocks_info->blocks;
         if (!block_map.empty()) {
             first_block_tm_height = block_map.begin()->second->timeblock_height();
+            first_block_elect_height = block_map.begin()->second->electblock_height();
         }
 
+        auto latest_elect_item = elect_mgr_->GetLatestElectBlock(common::GlobalInfo::Instance()->network_id());
         ZJC_DEBUG("block coming pool: %u, height: %lu, latest height: %lu, "
-                  "block map size: %u, first_block_tm_height: %lu",
+                  "block map size: %u, first_block_tm_height: %lu, "
+                  "first_block_elect_height: %lu, now elect height: %lu",
                   block_ptr->pool_index(), block_ptr->height(),
                   pool_blocks_info->latest_consensus_height_,
-                  block_map.size(), first_block_tm_height);
+                  block_map.size(), first_block_tm_height,
+                  first_block_elect_height,
+                  latest_elect_item->elect_height());
 
     }
 }
@@ -765,7 +768,6 @@ int ShardStatistic::StatisticWithHeights(
                 // 聚合每个选举高度，每个节点在各个pool 中完成交易的gas总和
                 for (auto node_count_iter = elect_iter->second->node_tx_count_map.begin();
                     node_count_iter != elect_iter->second->node_tx_count_map.end(); ++node_count_iter) {
-
                     auto& node_info = node_info_map.try_emplace(node_count_iter->first, StatisticMemberInfoItem())
                                         .first->second;
                     node_info.gas_sum += node_count_iter->second.gas_sum;
@@ -776,8 +778,6 @@ int ShardStatistic::StatisticWithHeights(
                     elect_height, 
                     elect_iter->second->node_stoke_map.size(), 
                     elect_iter->second->node_shard_map.size());
-
-
                 if (!elect_iter->second->node_stoke_map.empty() && !elect_iter->second->node_shard_map.empty()) {
                     auto eiter = join_elect_stoke_map.find(elect_height);
                     if (eiter == join_elect_stoke_map.end()) {
@@ -865,7 +865,6 @@ int ShardStatistic::StatisticWithHeights(
 
     new_block_changed_ = false;
     *statisticed_timeblock_height = prev_timeblock_height_;
-
     return kPoolsSuccess;
 }
 
