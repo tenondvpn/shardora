@@ -26,7 +26,7 @@ Status ConsensusStatAcceptor::Accept(std::shared_ptr<ViewBlock> &v_block) {
     //     return Status::kError;
     // }
     
-    v_block->leader_consen_stat->succ_num++;
+    // v_block->leader_consen_stat->succ_num++;
     
     // auto current = v_block;
     // uint32_t n = 0;
@@ -60,7 +60,8 @@ Status ConsensusStatAcceptor::Commit(const std::shared_ptr<ViewBlock> &v_block) 
         if (it->second >= v_block->view) {
             return Status::kSuccess;
         }
-    } 
+    }
+    leader_last_commit_view_map_[v_block->leader_idx] = v_block->view;
 
     auto elect_item = elect_info_->GetElectItem(
             common::GlobalInfo::Instance()->network_id(), v_block->ElectHeight());
@@ -68,7 +69,6 @@ Status ConsensusStatAcceptor::Commit(const std::shared_ptr<ViewBlock> &v_block) 
         return Status::kError;
     }
     elect_item->SetMemberConsensusStat(v_block->leader_idx, v_block->leader_consen_stat);
-    leader_last_commit_view_map_[v_block->leader_idx] = v_block->view;
     
     return Status::kSuccess;
 }
