@@ -148,10 +148,10 @@ public:
                 elect_height == prev_elect_items_[sharding_id]->ElectHeight()) {
             return prev_elect_items_[sharding_id];
         }
+        
         // 内存中没有从 ElectManager 获取
         libff::alt_bn128_G2 common_pk = libff::alt_bn128_G2::zero();
         libff::alt_bn128_Fr sec_key;
-
         if (!elect_mgr_) {
             return nullptr;
         }

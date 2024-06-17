@@ -64,14 +64,25 @@ TxPoolManager::~TxPoolManager() {
         delete[] cross_pools_;
     }
 
+    if (root_cross_pools_ ) {
+        delete[] root_cross_pools_;
+    }
+
     prefix_db_->Destroy();
 }
 
 void TxPoolManager::InitCrossPools() {
     cross_pools_ = new CrossPool[network::kConsensusShardEndNetworkId]; // shard 分片的个数
-    for (uint32_t i = network::kRootCongressNetworkId;
+    for (uint32_t i = network::kConsensusShardBeginNetworkId;
             i < network::kConsensusShardEndNetworkId; ++i) {
         cross_pools_[i].Init(i, db_, kv_sync_);
+    }
+
+    if (!IsRootNode()) {
+        root_cross_pools_ = new RootCrossPool[common::kInvalidPoolIndex];
+        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+            root_cross_pools_[i].Init(i, db_, kv_sync_);
+        }
     }
 }
 
@@ -116,7 +127,8 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 
 void TxPoolManager::SyncCrossPool() {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    for (uint32_t i = network::kRootCongressNetworkId; i < network::kConsensusShardEndNetworkId; ++i) {
+    for (uint32_t i = network::kConsensusShardBeginNetworkId;
+            i < network::kConsensusShardEndNetworkId; ++i) {
         auto sync_count = cross_pools_[i].SyncMissingBlocks(now_tm_ms);
         uint64_t ex_height = common::kInvalidUint64;
         if (cross_pools_[i].latest_height() == common::kInvalidUint64) {
@@ -187,6 +199,7 @@ void TxPoolManager::ConsensusTimerMessage() {
     now_max_tx_count_ = tx_count_queue.top();
     if (prev_sync_check_ms_ < now_tm_ms) {
         SyncMinssingHeights(now_tm_ms);
+        SyncMinssingRootHeights(now_tm_ms);
         prev_sync_check_ms_ = now_tm_ms + kSyncMissingBlockPeriod;
     }
 
@@ -244,6 +257,48 @@ void TxPoolManager::CheckLeaderValid(
     }
 }
 
+void TxPoolManager::SyncMinssingRootHeights(uint64_t now_tm_ms) {
+    if (root_cross_pools_ == nullptr) {
+        return;
+    }
+    
+    if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
+        return;
+    }
+
+    root_prev_synced_pool_index_ %= common::kInvalidPoolIndex;
+    auto begin_pool = root_prev_synced_pool_index_;
+    for (; root_prev_synced_pool_index_ < common::kInvalidPoolIndex; ++root_prev_synced_pool_index_) {
+        auto res = root_cross_pools_[root_prev_synced_pool_index_].SyncMissingBlocks(now_tm_ms);
+        if (root_cross_pools_[root_prev_synced_pool_index_].latest_height() == common::kInvalidUint64 ||
+                root_cross_pools_[root_prev_synced_pool_index_].latest_height() <
+                root_synced_max_heights_[root_prev_synced_pool_index_]) {
+            SyncRootBlockWithMaxHeights(
+                root_prev_synced_pool_index_, root_synced_max_heights_[root_prev_synced_pool_index_]);
+            ZJC_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+                root_prev_synced_pool_index_,
+                res, 
+                root_cross_pools_[root_prev_synced_pool_index_].latest_height(),
+                root_synced_max_heights_[root_prev_synced_pool_index_]);
+        }
+    }
+
+    for (root_prev_synced_pool_index_ = 0;
+            root_prev_synced_pool_index_ < begin_pool; ++root_prev_synced_pool_index_) {
+        auto res = root_cross_pools_[root_prev_synced_pool_index_].SyncMissingBlocks(now_tm_ms);
+        if (root_cross_pools_[root_prev_synced_pool_index_].latest_height() == common::kInvalidUint64 || 
+                root_cross_pools_[root_prev_synced_pool_index_].latest_height() <
+                root_synced_max_heights_[root_prev_synced_pool_index_]) {
+            SyncRootBlockWithMaxHeights(
+                root_prev_synced_pool_index_, root_synced_max_heights_[root_prev_synced_pool_index_]);
+            ZJC_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+                root_prev_synced_pool_index_,
+                res, root_cross_pools_[root_prev_synced_pool_index_].latest_height(),
+                root_synced_max_heights_[root_prev_synced_pool_index_]);
+        }
+    }
+}
+
 void TxPoolManager::SyncMinssingHeights(uint64_t now_tm_ms) {
     if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
         return;
@@ -264,13 +319,6 @@ void TxPoolManager::SyncMinssingHeights(uint64_t now_tm_ms) {
                 tx_pool_[prev_synced_pool_index_].latest_height(),
                 synced_max_heights_[prev_synced_pool_index_]);
         }
-
-//         if (res > 0) {
-//             ZJC_DEBUG("success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
-//                 prev_synced_pool_index_,
-//                 res, tx_pool_[prev_synced_pool_index_].latest_height(),
-//                 synced_max_heights_[prev_synced_pool_index_]);
-//         }
     }
 
     for (prev_synced_pool_index_ = 0;
@@ -286,14 +334,23 @@ void TxPoolManager::SyncMinssingHeights(uint64_t now_tm_ms) {
                 res, tx_pool_[prev_synced_pool_index_].latest_height(),
                 synced_max_heights_[prev_synced_pool_index_]);
         }
-
-//         if (res > 0) {
-//             ZJC_DEBUG("success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
-//                 prev_synced_pool_index_,
-//                 res, tx_pool_[prev_synced_pool_index_].latest_height(),
-//                 synced_max_heights_[prev_synced_pool_index_]);
-//         }
     }
+}
+
+void TxPoolManager::SyncRootBlockWithMaxHeights(uint32_t pool_idx, uint64_t height) {
+    if (kv_sync_ == nullptr) {
+        return;
+    }
+
+    ZJC_DEBUG("add sync block height net: %u, pool: %u, height: %lu",
+        network::kRootCongressNetworkId,
+        pool_idx,
+        height);
+    kv_sync_->AddSyncHeight(
+        network::kRootCongressNetworkId,
+        pool_idx,
+        height,
+        sync::kSyncHigh);
 }
 
 void TxPoolManager::SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height) {
@@ -568,13 +625,14 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                 sync_heights->add_heights(tx_pool_[i].latest_height());
                 sync_debug += std::to_string(tx_pool_[i].latest_height()) + " ";
             }
-
-            for (uint32_t i = network::kRootCongressNetworkId; i <= now_max_sharding_id_; ++i) {
-                sync_heights->add_cross_heights(cross_pools_[i].latest_height());
-                cross_debug += std::to_string(cross_pools_[i].latest_height()) + " ";
-            }
         } else {
-            sync_heights->add_cross_heights(tx_pool_[common::kInvalidPoolIndex - 1].latest_height());
+            if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+                for (uint32_t i = 0; i < pool_idx; ++i) {
+                    sync_heights->add_heights(tx_pool_[i].latest_height());
+                }
+            } else {
+                sync_heights->add_cross_heights(tx_pool_[common::kInvalidPoolIndex - 1].latest_height());
+            }
         }
 
         transport::TcpTransport::Instance()->SetMessageHash(msg);
@@ -582,43 +640,72 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
         ZJC_DEBUG("response pool heights: %s, cross pool heights: %s, now_max_sharding_id_: %u",
             sync_debug.c_str(), cross_debug.c_str(), now_max_sharding_id_);
     } else {
-        if (msg_ptr->header.src_sharding_id() != common::GlobalInfo::Instance()->network_id() &&
-                msg_ptr->header.src_sharding_id() +
-                network::kConsensusWaitingShardOffset != common::GlobalInfo::Instance()->network_id()) {
-            auto sharding_id = msg_ptr->header.src_sharding_id();
-            auto& cross_heights = msg_ptr->header.sync_heights().cross_heights();
-            uint64_t update_height = cross_pools_[sharding_id].latest_height();
-            do {
-                if (cross_heights.empty()) {
-                    break;
+        if (msg_ptr->header.src_sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+            if (msg_ptr->header.src_sharding_id() != network::kRootCongressNetworkId) {
+                auto sharding_id = msg_ptr->header.src_sharding_id();
+                auto& cross_heights = msg_ptr->header.sync_heights().cross_heights();
+                uint64_t update_height = cross_pools_[sharding_id].latest_height();
+                do {
+                    if (cross_heights.empty()) {
+                        break;
+                    }
+
+                    if (cross_pools_[sharding_id].latest_height() == common::kInvalidUint64 &&
+                            cross_synced_max_heights_[sharding_id] < cross_heights[0]) {
+                        update_height = cross_heights[0];
+                        break;
+                    }
+
+                    if (cross_heights[0] > cross_pools_[sharding_id].latest_height() + 64) {
+                        update_height = cross_pools_[sharding_id].latest_height() + 64;
+                        break;
+                    }
+
+                    if (cross_heights[0] > cross_pools_[sharding_id].latest_height()) {
+                        update_height = cross_heights[0];
+                        break;
+                    }
+                } while (0);
+                
+                ZJC_DEBUG("net: %u, get response pool heights, cross pool heights: %lu, update_height: %lu, "
+                    "cross_synced_max_heights_[i]: %lu, cross_pools_[i].latest_height(): %lu, cross_heights[i]: %lu",
+                    sharding_id, update_height, update_height,
+                    cross_synced_max_heights_[sharding_id], cross_pools_[sharding_id].latest_height(),
+                    cross_heights[0]);
+                cross_synced_max_heights_[sharding_id] = cross_heights[0];
+                cross_block_mgr_->UpdateMaxHeight(sharding_id, update_height);
+            } else {
+                auto& heights = msg_ptr->header.sync_heights().heights();
+                if (heights.size() != common::kInvalidPoolIndex) {
+                    return;
                 }
 
-                if (cross_pools_[sharding_id].latest_height() == common::kInvalidUint64 &&
-                        cross_synced_max_heights_[sharding_id] < cross_heights[0]) {
-                    update_height = cross_heights[0];
-                    break;
+                std::string sync_debug;
+                for (int32_t i = 0; i < heights.size(); ++i) {
+                    sync_debug += std::to_string(i) + "_" + std::to_string(heights[i]) + " ";
+                    if (heights[i] != common::kInvalidUint64) {
+                        if (root_cross_pools_[i].latest_height() == common::kInvalidUint64 &&
+                                root_synced_max_heights_[i] < heights[i]) {
+                            root_synced_max_heights_[i] = heights[i];
+                            continue;
+                        }
+
+                        if (heights[i] > root_cross_pools_[i].latest_height() + 64) {
+                            root_synced_max_heights_[i] = root_cross_pools_[i].latest_height() + 64;
+                            continue;
+                        }
+
+                        if (heights[i] > root_cross_pools_[i].latest_height()) {
+                            root_synced_max_heights_[i] = heights[i];
+                        }
+                    }
                 }
 
-                if (cross_heights[0] > cross_pools_[sharding_id].latest_height() + 64) {
-                    update_height = cross_pools_[sharding_id].latest_height() + 64;
-                    break;
-                }
-
-                if (cross_heights[0] > cross_pools_[sharding_id].latest_height()) {
-                    update_height = cross_heights[0];
-                    break;
-                }
-            } while (0);
-            
-            ZJC_DEBUG("net: %u, get response pool heights, cross pool heights: %lu, update_height: %lu, "
-                "cross_synced_max_heights_[i]: %lu, cross_pools_[i].latest_height(): %lu, cross_heights[i]: %lu",
-                sharding_id, update_height, update_height,
-                cross_synced_max_heights_[sharding_id], cross_pools_[sharding_id].latest_height(),
-                cross_heights[0]);
-            cross_synced_max_heights_[sharding_id] = cross_heights[0];
-            cross_block_mgr_->UpdateMaxHeight(sharding_id, update_height);
+                ZJC_DEBUG("get root response pool heights: %s", sync_debug.c_str());
+            }
             return;
         }
+
         auto& heights = msg_ptr->header.sync_heights().heights();
         if (heights.size() != common::kInvalidPoolIndex) {
             return;
@@ -643,40 +730,6 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                 if (heights[i] > tx_pool_[i].latest_height()) {
                     synced_max_heights_[i] = heights[i];
                 }
-            }
-        }
-
-        auto& cross_heights = msg_ptr->header.sync_heights().cross_heights();
-        for (int32_t i = 0; i < cross_heights.size(); ++i) {
-            auto sharding_id = i + network::kRootCongressNetworkId;
-            cross_debug += std::to_string(cross_heights[i]) + " ";
-            if (cross_heights[i] != common::kInvalidUint64) {
-                uint64_t update_height = cross_pools_[sharding_id].latest_height();
-                do {
-                    if (cross_pools_[sharding_id].latest_height() == common::kInvalidUint64 &&
-                            cross_synced_max_heights_[sharding_id] < cross_heights[i]) {
-                        update_height = cross_heights[i];
-                        break;
-                    }
-
-                    if (cross_heights[i] > cross_pools_[sharding_id].latest_height() + 64) {
-                        update_height = cross_pools_[sharding_id].latest_height() + 64;
-                        break;
-                    }
-
-                    if (cross_heights[i] > cross_pools_[sharding_id].latest_height()) {
-                        update_height = cross_heights[i];
-                        break;
-                    }
-                } while (0);
-                
-                ZJC_DEBUG("net: %u, get response pool heights, cross pool heights: %s, update_height: %lu, "
-                    "cross_synced_max_heights_[i]: %lu, cross_pools_[i].latest_height(): %lu, cross_heights[i]: %lu",
-                    (i + network::kRootCongressNetworkId), cross_debug.c_str(), update_height,
-                    cross_synced_max_heights_[sharding_id], cross_pools_[sharding_id].latest_height(),
-                    cross_heights[i]);
-                cross_synced_max_heights_[sharding_id] = cross_heights[i];
-                cross_block_mgr_->UpdateMaxHeight(sharding_id, update_height);
             }
         }
 

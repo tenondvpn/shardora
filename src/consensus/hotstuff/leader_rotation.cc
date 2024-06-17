@@ -47,7 +47,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
     
     auto leader_idx = random_hash % Members(common::GlobalInfo::Instance()->network_id())->size();
     // TODO(test)
-    // leader_idx = 0;
+    leader_idx = 0;
     auto leader = (*Members(common::GlobalInfo::Instance()->network_id()))[leader_idx];
     if (leader->public_ip == 0 || leader->public_port == 0) {
         // 刷新 members 的 ip port
