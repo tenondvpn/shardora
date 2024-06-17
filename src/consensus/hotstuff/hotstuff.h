@@ -65,7 +65,6 @@ public:
         view_block_chain_(chain),
         leader_rotation_(lr),
         elect_info_(elect_info),
-        consen_stat_acceptor_(consen_stat_acceptor),
         db_(db) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
         pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1));
