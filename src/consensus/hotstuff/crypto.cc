@@ -136,7 +136,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
             *collection_item->partial_signs[i], 
             g1_hash, 
             &verify_hash);
-        assert(v_res);
+        assert(v_res == 0);
 #endif
     }
 
