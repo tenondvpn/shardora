@@ -24,7 +24,7 @@ Status Crypto::PartialSign(
         assert(false);
         return Status::kError;
     }
-    
+
     libff::alt_bn128_G1 g1_hash;
     GetG1Hash(msg_hash, &g1_hash);
     auto ret = bls_mgr_->Sign(
@@ -114,7 +114,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
 
         all_signs.push_back(*collection_item->partial_signs[i]);
         idx_vec.push_back(i+1);
-
+#ifndef NDEBUG
         auto part_sign_x = libBLS::ThresholdUtils::fieldElementToString(
             collection_item->partial_signs[i]->X);
         auto part_sign_y = libBLS::ThresholdUtils::fieldElementToString(
@@ -125,6 +125,19 @@ Status Crypto::ReconstructAndVerifyThresSign(
         if (idx_vec.size() >= elect_item->t()) {
             break;
         }
+
+        libff::alt_bn128_G1 g1_hash;
+        GetG1Hash(msg_hash, &g1_hash);
+        std::string verify_hash;
+        auto v_res = bls_mgr_->Verify(
+            elect_item->t(),
+            elect_item->n(), 
+            (*elect_item->Members())[i]->bls_publick_key, 
+            *collection_item->partial_signs[i], 
+            g1_hash, 
+            &verify_hash);
+        assert(v_res);
+#endif
     }
 
     std::vector<libff::alt_bn128_Fr> lagrange_coeffs(elect_item->t());
