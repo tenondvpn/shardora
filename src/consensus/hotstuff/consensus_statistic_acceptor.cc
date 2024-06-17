@@ -55,13 +55,13 @@ Status ConsensusStatAcceptor::Commit(const std::shared_ptr<ViewBlock> &v_block) 
     }
 
     // 旧的 Commit 过滤掉
-    auto it = leader_last_commit_view_map_.find(v_block->leader_idx);
-    if (it != leader_last_commit_view_map_.end()) {
-        if (it->second >= v_block->view) {
+    auto it = leader_last_commit_height_map_.find(v_block->leader_idx);
+    if (it != leader_last_commit_height_map_.end()) {
+        if (it->second >= v_block->block->height()) {
             return Status::kSuccess;
         }
     }
-    leader_last_commit_view_map_[v_block->leader_idx] = v_block->view;
+    leader_last_commit_height_map_[v_block->leader_idx] = v_block->block->height();
 
     auto elect_item = elect_info_->GetElectItem(
             common::GlobalInfo::Instance()->network_id(), v_block->ElectHeight());

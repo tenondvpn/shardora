@@ -27,7 +27,7 @@ public:
 
 private:
     uint32_t pool_idx_;
-    std::unordered_map<uint32_t, View> leader_last_commit_view_map_; // member_index => View, 记录所有 leader 最后一次提交的 View
+    std::unordered_map<uint32_t, uint64_t> leader_last_commit_height_map_; // member_index => View, 记录所有 leader 最后一次提交的 View
     std::shared_ptr<ElectInfo> elect_info_;
     std::shared_ptr<ViewBlockChain> view_block_chain_;
 };
