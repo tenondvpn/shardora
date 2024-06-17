@@ -11,7 +11,7 @@ ConsensusStat::ConsensusStat(
         uint32_t pool_idx,
         const common::MembersPtr& members) : pool_idx_(pool_idx) {
     for (uint32_t i = 0; i < members->size(); i++) {
-        member_consen_stats_[(*members)[i]->index] = std::make_shared<MemberConsensusStat>(0, 0);
+        member_consen_stats_[(*members)[i]->index] = std::make_shared<MemberConsensusStat>();
     }
 }
 
