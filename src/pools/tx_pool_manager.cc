@@ -74,8 +74,10 @@ void TxPoolManager::InitCrossPools() {
         cross_pools_[i].Init(i, db_, kv_sync_);
     }
 
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        root_cross_pools_[i].Init(i, db_, kv_sync_);
+    if (!IsRootNode()) {
+        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+            root_cross_pools_[i].Init(i, db_, kv_sync_);
+        }
     }
 }
 
@@ -120,9 +122,11 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 
 void TxPoolManager::SyncCrossPool() {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        auto sync_count = root_cross_pools_[i].SyncMissingBlocks(now_tm_ms);
-        ZJC_DEBUG("success sync root corss pool: %u count %u", i, sync_count);
+    if (!IsRootNode()) {
+        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+            auto sync_count = root_cross_pools_[i].SyncMissingBlocks(now_tm_ms);
+            ZJC_DEBUG("success sync root corss pool: %u count %u", i, sync_count);
+        }
     }
 
     for (uint32_t i = network::kConsensusShardBeginNetworkId;
@@ -166,6 +170,12 @@ void TxPoolManager::FlushHeightTree() {
         }
     }
 
+    if (!IsRootNode()) {
+        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+            root_cross_pools_[i].FlushHeightTree(db_batch);
+        }
+    }
+    
 //     ZJC_DEBUG("success call FlushHeightTree");
     if (!db_->Put(db_batch).ok()) {
         ZJC_FATAL("write db failed!");

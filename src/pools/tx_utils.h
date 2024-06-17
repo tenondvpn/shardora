@@ -307,6 +307,16 @@ static std::string GetTxMessageHashByJoin(const pools::protobuf::TxMessage& tx_i
     return common::Hash::keccak256(message);
 }
 
+bool IsRootNode() {
+    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId || 
+            common::GlobalInfo::Instance()->network_id() == 
+            network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset) {
+        return true;
+    }
+
+    return false;
+}
+
 };  // namespace pools
 
 };  // namespace shardora
