@@ -971,6 +971,13 @@ Status Hotstuff::ConstructViewBlock(
     }
 
     view_block->block = pb_block;
+    auto elect_item = elect_info_->GetElectItem(
+            common::GlobalInfo::Instance()->network_id(), view_block->ElectHeight());
+    if (!elect_item || !elect_item->IsValid()) {
+        return Status::kError;
+    }
+    
+    view_block->leader_consen_stat = elect_item->GetMemberConsensusStat(leader_idx);
     view_block->hash = view_block->DoHash();
     return Status::kSuccess;
 }
