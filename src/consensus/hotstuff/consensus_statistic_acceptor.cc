@@ -16,21 +16,16 @@ ConsensusStatAcceptor::~ConsensusStatAcceptor() {}
 
 Status ConsensusStatAcceptor::Accept(std::shared_ptr<ViewBlock> &v_block) {
     // 具体当前分支上未提交的 leader 的分数，计算出 v_block 中 leader 的分数    
-    if (!v_block || !view_block_chain_->LatestCommittedBlock()) {
+    if (!v_block) {
         return Status::kError;
     }
 
-    auto elect_item = elect_info_->GetElectItem(
-            common::GlobalInfo::Instance()->network_id(), v_block->ElectHeight());
-    if (!elect_item || !elect_item->IsValid()) {
-        return Status::kError;
-    }
+    // auto elect_item = elect_info_->GetElectItem(
+    //         common::GlobalInfo::Instance()->network_id(), v_block->ElectHeight());
+    // if (!elect_item || !elect_item->IsValid()) {
+    //     return Status::kError;
+    // }
     
-    auto leader_consen_stat = elect_item->GetMemberConsensusStat(v_block->leader_idx);
-    if (leader_consen_stat->succ_num != v_block->leader_consen_stat->succ_num ||
-        leader_consen_stat->fail_num != v_block->leader_consen_stat->fail_num) {
-        return Status::kError;
-    }
     v_block->leader_consen_stat->succ_num++;
     
     // auto current = v_block;
