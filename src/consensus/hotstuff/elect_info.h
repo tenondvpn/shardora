@@ -64,6 +64,11 @@ public:
         return local_member_;
     }
 
+    // 本节点是否在该 epoch 的共识池中
+    inline bool IsValid() const {
+        return local_member_ != nullptr;
+    }
+
     inline common::BftMemberPtr GetMemberByIdx(uint32_t member_idx) const {
         return (*members_)[member_idx];
     }

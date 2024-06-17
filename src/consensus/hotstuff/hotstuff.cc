@@ -47,7 +47,7 @@ void Hotstuff::Init() {
 Status Hotstuff::Start() {
     auto leader = leader_rotation()->GetLeader();
     auto elect_item = elect_info_->GetElectItemWithShardingId(common::GlobalInfo::Instance()->network_id());
-    if (!elect_item) {
+    if (!elect_item || !elect_item->IsValid()) {
         return Status::kElectItemNotFound;
     }
     auto local_member = elect_item->LocalMember();
@@ -859,7 +859,7 @@ Status Hotstuff::ConstructVoteMsg(
     auto elect_item = elect_info_->GetElectItem(
         common::GlobalInfo::Instance()->network_id(), 
         elect_height);
-    if (!elect_item) {
+    if (!elect_item || !elect_item->IsValid()) {
         return Status::kError;
     }
     uint32_t replica_idx = elect_item->LocalMember()->index;
@@ -1068,7 +1068,7 @@ void Hotstuff::TryRecoverFromStuck() {
             
             auto elect_item = elect_info_->GetElectItemWithShardingId(
                 common::GlobalInfo::Instance()->network_id());
-            if (!elect_item) {
+            if (!elect_item || !elect_item->IsValid()) {
                 ZJC_ERROR("pool: %d no elect item found", pool_idx_);
                 return;
             }

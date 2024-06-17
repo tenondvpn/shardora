@@ -138,9 +138,9 @@ void HotstuffSyncer::SyncAllPools() {
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         if (now_us - last_timers_us_[pool_idx] >= SyncTimerCycleUs(pool_idx)) {
             if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
-                ZJC_DEBUG("pool: %d, cur chain: %s, local: %d",
-                    pool_idx, view_block_chain(pool_idx)->String().c_str(),
-                    crypto(pool_idx)->GetLatestElectItem(common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
+                // ZJC_DEBUG("pool: %d, cur chain: %s, local: %d",
+                //     pool_idx, view_block_chain(pool_idx)->String().c_str(),
+                //     crypto(pool_idx)->GetLatestElectItem(common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
                 SyncPool(pool_idx, 1);
                 last_timers_us_[pool_idx] = common::TimeUtils::TimestampUs();
             }            
