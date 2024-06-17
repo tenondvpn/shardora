@@ -12,7 +12,9 @@ namespace shardora {
 
 namespace pools {
     
-RootCrossPool::RootCrossPool() : des_sharding_id_(network::kRootCongressNetworkId) {}
+RootCrossPool::RootCrossPool() {
+    des_sharding_id_ = network::kRootCongressNetworkId;
+}
 
 RootCrossPool::~RootCrossPool() {}
 
