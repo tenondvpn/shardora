@@ -1,35 +1,23 @@
 #include <common/global_info.h>
-#include <consensus/hotstuff/consensus_statistic_acceptor.h>
+#include <common/utils.h>
+#include <consensus/hotstuff/consensus_statistic.h>
 #include <consensus/hotstuff/types.h>
 
 namespace shardora {
 
 namespace hotstuff {
 
-ConsensusStatAcceptor::ConsensusStatAcceptor(
+ConsensusStat::ConsensusStat(
         uint32_t pool_idx,
-        std::shared_ptr<ElectInfo>& elect_info,
-        std::shared_ptr<ViewBlockChain>& view_block_chain) :
-    pool_idx_(pool_idx), elect_info_(elect_info), view_block_chain_(view_block_chain) {}
-
-ConsensusStatAcceptor::~ConsensusStatAcceptor() {}
-
-void ConsensusStatAcceptor::OnNewElectBlock(
-        uint32_t sharding_id,
-        uint64_t elect_height,
-        const common::MembersPtr& members) {
+        const common::MembersPtr& members) : pool_idx_(pool_idx) {
     for (uint32_t i = 0; i < members->size(); i++) {
-        auto& mem = (*members)[i];
-        member_consen_stats_[mem->index] = std::make_shared<MemberConsensusStat>();
-    }    
+        member_consen_stats_[(*members)[i]->index] = std::make_shared<MemberConsensusStat>(0, 0);
+    }
 }
 
-Status ConsensusStatAcceptor::Accept(std::shared_ptr<ViewBlock> &v_block) {
-    // 具体当前分支上未提交的 leader 的分数，计算出 v_block 中 leader 的分数
-    return Status::kSuccess;
-}
+ConsensusStat::~ConsensusStat() {}
 
-Status ConsensusStatAcceptor::Commit(const std::shared_ptr<ViewBlock> &v_block) {
+Status ConsensusStat::Commit(const std::shared_ptr<ViewBlock> &v_block) {
     if (!v_block || !v_block->leader_consen_stat) {
         return Status::kError;
     }

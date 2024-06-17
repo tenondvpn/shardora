@@ -5,6 +5,7 @@
 #include <common/log.h>
 #include <common/node_members.h>
 #include <common/utils.h>
+#include <consensus/hotstuff/consensus_statistic.h>
 #include <consensus/hotstuff/types.h>
 #include <elect/elect_manager.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g2.hpp>
@@ -44,6 +45,10 @@ public:
         local_sk_ = sk;
 
         SetMemberCount(members->size());
+
+        for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
+            pool_consen_stat_map_[pool_idx] = std::make_shared<ConsensusStat>(pool_idx, members);
+        }
     }
     ~ElectItem() {};
 
@@ -86,6 +91,10 @@ public:
     inline libff::alt_bn128_G2 common_pk() const {
         return common_pk_;
     }
+
+    inline std::shared_ptr<ConsensusStat> consensus_stat(uint32_t pool_idx) {
+        return pool_consen_stat_map_[pool_idx];
+    }
     
 private:
     void SetMemberCount(uint32_t mem_cnt) {
@@ -102,6 +111,8 @@ private:
     bool bls_valid_{false};
     uint32_t bls_t_{0};
     uint32_t bls_n_{0};
+    
+    std::unordered_map<uint32_t, std::shared_ptr<ConsensusStat>> pool_consen_stat_map_; 
 };
 
 

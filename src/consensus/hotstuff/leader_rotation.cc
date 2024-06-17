@@ -16,9 +16,8 @@ namespace hotstuff {
 LeaderRotation::LeaderRotation(
         const uint32_t& pool_idx,
         const std::shared_ptr<ViewBlockChain>& chain,
-        const std::shared_ptr<ElectInfo>& elect_info,
-        const std::shared_ptr<ConsensusStatAcceptor>& consen_stat_acceptor) :
-    pool_idx_(pool_idx), chain_(chain), elect_info_(elect_info), consen_stat_acceptor_(consen_stat_acceptor) {
+        const std::shared_ptr<ElectInfo>& elect_info) :
+    pool_idx_(pool_idx), chain_(chain), elect_info_(elect_info) {
     SetExpectedLeader(GetLeader());
 }
 
@@ -62,7 +61,6 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
             qc->view);
     }
     
-    auto consen_stat = consen_stat_acceptor_->GetMemberConsensusStat(leader->index);
     ZJC_DEBUG("pool: %d Leader is %d, local: %d, id: %s, ip: %s, port: %d, qc view: %lu, time num: %lu, succ: %lu, fail: %lu",
         pool_idx_,
         leader->index,

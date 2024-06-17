@@ -263,11 +263,6 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         ZJC_ERROR("Accept tx is error");
         return;
     }
-    // 计算 leader 的贡献值
-    if (consen_stat_acceptor()->Accept(v_block) != Status::kSuccess) {
-        ZJC_ERROR("pool: %d, Consensus accept tx is error", pool_idx_);
-        return;
-    }
     
     // 更新哈希值
     v_block->UpdateHash();
@@ -795,7 +790,12 @@ Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
         return s;
     }
     // 提交 v_block->consensus_stat 共识数据
-    consen_stat_acceptor()->Commit(v_block);
+    auto elect_item = elect_info()->GetElectItem(
+            v_block->block->network_id(),
+            v_block->ElectHeight());
+    if (elect_item && elect_item->IsValid()) {
+        elect_item->consensus_stat(pool_idx_)->Commit(v_block);
+    }    
     
     view_block_chain()->SetLatestCommittedBlock(v_block);    
     return Status::kSuccess;
@@ -976,8 +976,7 @@ Status Hotstuff::ConstructViewBlock(
     if (!elect_item || !elect_item->IsValid()) {
         return Status::kError;
     }
-    
-    view_block->leader_consen_stat = consen_stat_acceptor()->GetMemberConsensusStat(leader_idx);
+    view_block->leader_consen_stat = elect_item->consensus_stat(pool_idx_)->GetMemberConsensusStat(leader_idx);
     view_block->leader_consen_stat->succ_num++;
     view_block->hash = view_block->DoHash();
     return Status::kSuccess;

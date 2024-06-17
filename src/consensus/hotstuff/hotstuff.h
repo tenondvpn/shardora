@@ -56,7 +56,6 @@ public:
             const std::shared_ptr<Pacemaker>& pm,
             const std::shared_ptr<Crypto>& crypto,
             const std::shared_ptr<ElectInfo>& elect_info,
-            const std::shared_ptr<ConsensusStatAcceptor>& consen_stat_acceptor,
             std::shared_ptr<db::Db>& db) :
         pool_idx_(pool_idx),
         crypto_(crypto),
@@ -151,10 +150,6 @@ public:
 
     inline std::shared_ptr<ElectInfo> elect_info() const {
         return elect_info_;
-    }
-
-    inline std::shared_ptr<ConsensusStatAcceptor> consen_stat_acceptor() const {
-        return consen_stat_acceptor_;
     }
 
     bool IsStuck() const {
