@@ -2,7 +2,6 @@
 #include <common/flow_control.h>
 #include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/block_wrapper.h>
-#include <consensus/hotstuff/consensus_statistic_acceptor.h>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/leader_rotation.h>
@@ -202,7 +201,6 @@ private:
     std::shared_ptr<ViewBlockChain> view_block_chain_;
     std::shared_ptr<LeaderRotation> leader_rotation_;
     std::shared_ptr<ElectInfo> elect_info_;
-    std::shared_ptr<ConsensusStatAcceptor> consen_stat_acceptor_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     View last_vote_view_;

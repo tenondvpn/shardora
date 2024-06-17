@@ -7,7 +7,6 @@
 #include <common/utils.h>
 #include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/block_wrapper.h>
-#include <consensus/hotstuff/consensus_statistic_acceptor.h>
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <libbls/tools/utils.h>
