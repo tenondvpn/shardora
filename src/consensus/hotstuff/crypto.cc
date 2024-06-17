@@ -25,6 +25,10 @@ Status Crypto::PartialSign(
         return Status::kError;
     }
 
+    if (elect_item->LocalMember()->bls_publick_key == libff::alt_bn128_G2::zero()) {
+        return Status::kError;
+    }
+    
     libff::alt_bn128_G1 g1_hash;
     GetG1Hash(msg_hash, &g1_hash);
     auto ret = bls_mgr_->Sign(
@@ -61,6 +65,15 @@ Status Crypto::ReconstructAndVerifyThresSign(
         const std::string& partial_sign_x,
         const std::string& partial_sign_y,
         std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign) try {
+    auto elect_item = GetElectItem(common::GlobalInfo::Instance()->network_id(), elect_height);
+    if (!elect_item) {
+        return Status::kError;
+    }
+
+    if ((*elect_item->Members())[index]->bls_publick_key == libff::alt_bn128_G2::zero()) {
+        return Status::kError;
+    }
+
     // old vote
     if (bls_collection_ && bls_collection_->view > view) {
         ZJC_DEBUG("bls_collection_ && bls_collection_->view > view: %lu, %lu, "
@@ -103,11 +116,6 @@ Status Crypto::ReconstructAndVerifyThresSign(
     // TODO(HT): 先判断是否已经处理过的index
     collection_item->ok_bitmap.Set(index);
     collection_item->partial_signs[index] = partial_sign;
-    auto elect_item = GetElectItem(common::GlobalInfo::Instance()->network_id(), elect_height);
-    if (!elect_item) {
-        return Status::kError;
-    }
-
     ZJC_DEBUG("msg hash: %s, ok count: %u, t: %u, index: %u, elect_height: %lu",
         common::Encode::HexEncode(msg_hash).c_str(), 
         collection_item->OkCount(), 
