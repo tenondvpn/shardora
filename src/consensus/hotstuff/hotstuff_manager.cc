@@ -7,6 +7,7 @@
 #include <common/utils.h>
 #include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/block_wrapper.h>
+#include <consensus/hotstuff/consensus_statistic_acceptor.h>
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <libbls/tools/utils.h>
@@ -88,10 +89,11 @@ int HotstuffManager::Init(
                 tm_block_mgr, new_block_cache_callback);
         auto wrapper = std::make_shared<BlockWrapper>(
                 pool_idx, pool_mgr, tm_block_mgr, block_mgr, elect_info_);
+        auto consen_stat_acceptor = std::make_shared<ConsensusStatAcceptor>(pool_idx, elect_info_);
         
         pool_hotstuff_[pool_idx] = std::make_shared<Hotstuff>(
                 pool_idx, leader_rotation, chain,
-                acceptor, wrapper, pacemaker, crypto, elect_info_, db_);
+                acceptor, wrapper, pacemaker, crypto, elect_info_, consen_stat_acceptor, db_);
         pool_hotstuff_[pool_idx]->Init();
     }
 

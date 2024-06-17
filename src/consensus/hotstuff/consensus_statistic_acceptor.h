@@ -2,6 +2,7 @@
 
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/types.h>
+#include <consensus/hotstuff/view_block_chain.h>
 
 namespace shardora {
 
@@ -12,7 +13,8 @@ class ConsensusStatAcceptor {
 public:
     ConsensusStatAcceptor(
             uint32_t pool_idx,
-            std::shared_ptr<ElectInfo> elect_info);
+            std::shared_ptr<ElectInfo>& elect_info,
+            std::shared_ptr<ViewBlockChain>& view_block_chain);
     ~ConsensusStatAcceptor();
 
     ConsensusStatAcceptor(const ConsensusStatAcceptor&) = delete;
@@ -27,6 +29,7 @@ private:
     uint32_t pool_idx_;
     std::unordered_map<uint32_t, View> leader_last_commit_view_map_; // member_index => View, 记录所有 leader 最后一次提交的 View
     std::shared_ptr<ElectInfo> elect_info_;
+    std::shared_ptr<ViewBlockChain> view_block_chain_;
 };
 
 } // namespace hotstuff

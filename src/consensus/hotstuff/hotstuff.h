@@ -2,6 +2,7 @@
 #include <common/flow_control.h>
 #include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/block_wrapper.h>
+#include <consensus/hotstuff/consensus_statistic_acceptor.h>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/leader_rotation.h>
@@ -55,6 +56,7 @@ public:
             const std::shared_ptr<Pacemaker>& pm,
             const std::shared_ptr<Crypto>& crypto,
             const std::shared_ptr<ElectInfo>& elect_info,
+            const std::shared_ptr<ConsensusStatAcceptor>& consen_stat_acceptor,
             std::shared_ptr<db::Db>& db) :
         pool_idx_(pool_idx),
         crypto_(crypto),
@@ -64,6 +66,7 @@ public:
         view_block_chain_(chain),
         leader_rotation_(lr),
         elect_info_(elect_info),
+        consen_stat_acceptor_(consen_stat_acceptor),
         db_(db) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
         pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1));
@@ -150,6 +153,10 @@ public:
         return elect_info_;
     }
 
+    inline std::shared_ptr<ConsensusStatAcceptor> consen_stat_acceptor() const {
+        return consen_stat_acceptor_;
+    }
+
     bool IsStuck() const {
         // 超时时间必须大于阈值
         if (pacemaker()->DurationUs() < STUCK_PACEMAKER_DURATION_MIN_US) {
@@ -193,6 +200,7 @@ private:
     std::shared_ptr<ViewBlockChain> view_block_chain_;
     std::shared_ptr<LeaderRotation> leader_rotation_;
     std::shared_ptr<ElectInfo> elect_info_;
+    std::shared_ptr<ConsensusStatAcceptor> consen_stat_acceptor_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     View last_vote_view_;
