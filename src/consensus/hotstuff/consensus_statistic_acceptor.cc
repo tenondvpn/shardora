@@ -11,42 +11,27 @@ ConsensusStatAcceptor::ConsensusStatAcceptor(
         std::shared_ptr<ElectInfo>& elect_info,
         std::shared_ptr<ViewBlockChain>& view_block_chain) :
     pool_idx_(pool_idx), elect_info_(elect_info), view_block_chain_(view_block_chain) {
+    auto elect_item = elect_info_->GetElectItemWithShardingId(common::GlobalInfo::Instance()->network_id());
+    for (uint32_t i = 0; i < elect_item->Members()->size(); i++) {
+        auto& mem = (*elect_item->Members())[i];
+        member_consen_stats_[mem->index] = std::make_shared<MemberConsensusStat>();
+    }
 }
 
 ConsensusStatAcceptor::~ConsensusStatAcceptor() {}
 
-Status ConsensusStatAcceptor::Accept(std::shared_ptr<ViewBlock> &v_block) {
-    // 具体当前分支上未提交的 leader 的分数，计算出 v_block 中 leader 的分数    
-    if (!v_block) {
-        return Status::kError;
-    }
+void ConsensusStatAcceptor::OnNewElectBlock(
+        uint32_t sharding_id,
+        uint64_t elect_height,
+        const common::MembersPtr& members) {
+    for (uint32_t i = 0; i < members->size(); i++) {
+        auto& mem = (*members)[i];
+        member_consen_stats_[mem->index] = std::make_shared<MemberConsensusStat>();
+    }    
+}
 
-    // auto elect_item = elect_info_->GetElectItem(
-    //         common::GlobalInfo::Instance()->network_id(), v_block->ElectHeight());
-    // if (!elect_item || !elect_item->IsValid()) {
-    //     return Status::kError;
-    // }
-    
-    // v_block->leader_consen_stat->succ_num++;
-    
-    // auto current = v_block;
-    // uint32_t n = 0;
-    // 理论上 3 个之前的块就是 LatestCommittedBlock，除非还没有同步过来
-    // 为了防止过多循环，限制循环次数不超过 3 次
-    // while (current->view > view_block_chain_->LatestCommittedBlock()->view && n < 3) {
-    //     current = view_block_chain_->QCRef(current);
-    //     if (!current) {
-    //         return Status::kError;
-    //     }
-    //     if (current->leader_idx == v_block->leader_idx) {
-    //         v_block->leader_consen_stat = std::make_shared<MemberConsensusStat>(
-    //                 current->leader_consen_stat->succ_num+1,
-    //                 current->leader_consen_stat->fail_num);
-    //         break;
-    //     }
-    //     ++n;
-    // }
-    
+Status ConsensusStatAcceptor::Accept(std::shared_ptr<ViewBlock> &v_block) {
+    // 具体当前分支上未提交的 leader 的分数，计算出 v_block 中 leader 的分数
     return Status::kSuccess;
 }
 

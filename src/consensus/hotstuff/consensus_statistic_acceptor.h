@@ -20,6 +20,10 @@ public:
     ConsensusStatAcceptor(const ConsensusStatAcceptor&) = delete;
     ConsensusStatAcceptor& operator=(const ConsensusStatAcceptor&) = delete;
 
+    void OnNewElectBlock(
+        uint32_t sharding_id,
+        uint64_t elect_height,
+        const common::MembersPtr& members);
     // 接收并计算 leader 的共识统计数据
     Status Accept(std::shared_ptr<ViewBlock>& v_block);
     // 提交并生效共识统计数据
