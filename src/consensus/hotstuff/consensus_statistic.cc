@@ -10,6 +10,7 @@ namespace hotstuff {
 ConsensusStat::ConsensusStat(
         uint32_t pool_idx,
         const common::MembersPtr& members) : pool_idx_(pool_idx) {
+    member_consen_stats_.resize(members->size());
     for (uint32_t i = 0; i < members->size(); i++) {
         member_consen_stats_[(*members)[i]->index] = std::make_shared<MemberConsensusStat>();
     }
