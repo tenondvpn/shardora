@@ -69,9 +69,13 @@ TxPoolManager::~TxPoolManager() {
 
 void TxPoolManager::InitCrossPools() {
     cross_pools_ = new CrossPool[network::kConsensusShardEndNetworkId]; // shard 分片的个数
-    for (uint32_t i = network::kRootCongressNetworkId;
+    for (uint32_t i = network::kConsensusShardBeginNetworkId;
             i < network::kConsensusShardEndNetworkId; ++i) {
         cross_pools_[i].Init(i, db_, kv_sync_);
+    }
+
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        root_cross_pools_[i].Init(i, db_, kv_sync_);
     }
 }
 

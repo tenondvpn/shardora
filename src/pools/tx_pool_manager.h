@@ -12,6 +12,7 @@
 #include "network/network_utils.h"
 #include "pools/cross_block_manager.h"
 #include "pools/cross_pool.h"
+#include "pools/root_cross_pool.h"
 #include "pools/tx_pool.h"
 #include "protos/address.pb.h"
 #include "protos/pools.pb.h"
@@ -290,6 +291,7 @@ private:
     uint32_t latest_leader_count_ = 0;
     uint32_t member_index_ = common::kInvalidUint32;
     CrossPool* cross_pools_ = nullptr;
+    RootCrossPool root_cross_pools_[common::kInvalidPoolIndex];
     uint32_t now_max_sharding_id_ = network::kConsensusShardBeginNetworkId;
     uint32_t prev_cross_sync_index_ = 0;
     std::shared_ptr<CrossBlockManager> cross_block_mgr_ = nullptr;
