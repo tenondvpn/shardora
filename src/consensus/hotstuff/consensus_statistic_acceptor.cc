@@ -28,7 +28,8 @@ Status ConsensusStatAcceptor::Accept(std::shared_ptr<ViewBlock> &v_block) {
     v_block->leader_consen_stat = elect_item->GetMemberConsensusStat(v_block->leader_idx);
     
     auto current = v_block;
-    while (current->view > view_block_chain_->LatestCommittedBlock()->view) {
+    uint32_t n = 0;
+    while (current->view > view_block_chain_->LatestCommittedBlock()->view && n < 3) {
         current = view_block_chain_->QCRef(current);
         if (!current) {
             return Status::kError;
@@ -39,6 +40,7 @@ Status ConsensusStatAcceptor::Accept(std::shared_ptr<ViewBlock> &v_block) {
                     current->leader_consen_stat->fail_num);
             break;
         }
+        ++n;
     }
     
     return Status::kSuccess;
