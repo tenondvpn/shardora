@@ -44,16 +44,6 @@ public:
         local_sk_ = sk;
 
         SetMemberCount(members->size());
-        
-        // 初始化共识统计
-        for (uint32_t pool_idx; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
-            std::vector<std::shared_ptr<MemberConsensusStat>> member_consen_stats(members->size());
-            for (uint32_t i = 0; i < members->size(); i++) {
-                member_consen_stats[(*members)[i]->index] = std::make_shared<MemberConsensusStat>();
-            }
-            pool_member_consen_stats_[pool_idx] = member_consen_stats;
-        }
-        
     }
     ~ElectItem() {};
 
