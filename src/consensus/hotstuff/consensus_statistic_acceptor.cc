@@ -26,22 +26,25 @@ Status ConsensusStatAcceptor::Accept(std::shared_ptr<ViewBlock> &v_block) {
         return Status::kError;
     }
     v_block->leader_consen_stat = elect_item->GetMemberConsensusStat(v_block->leader_idx);
+    v_block->leader_consen_stat->succ_num++;
     
-    auto current = v_block;
-    uint32_t n = 0;
-    while (current->view > view_block_chain_->LatestCommittedBlock()->view && n < 3) {
-        current = view_block_chain_->QCRef(current);
-        if (!current) {
-            return Status::kError;
-        }
-        if (current->leader_idx == v_block->leader_idx) {
-            v_block->leader_consen_stat = std::make_shared<MemberConsensusStat>(
-                    current->leader_consen_stat->succ_num+1,
-                    current->leader_consen_stat->fail_num);
-            break;
-        }
-        ++n;
-    }
+    // auto current = v_block;
+    // uint32_t n = 0;
+    // 理论上 3 个之前的块就是 LatestCommittedBlock，除非还没有同步过来
+    // 为了防止过多循环，限制循环次数不超过 3 次
+    // while (current->view > view_block_chain_->LatestCommittedBlock()->view && n < 3) {
+    //     current = view_block_chain_->QCRef(current);
+    //     if (!current) {
+    //         return Status::kError;
+    //     }
+    //     if (current->leader_idx == v_block->leader_idx) {
+    //         v_block->leader_consen_stat = std::make_shared<MemberConsensusStat>(
+    //                 current->leader_consen_stat->succ_num+1,
+    //                 current->leader_consen_stat->fail_num);
+    //         break;
+    //     }
+    //     ++n;
+    // }
     
     return Status::kSuccess;
 }
