@@ -835,6 +835,9 @@ public:
             return false;
         }
 
+        ZJC_DEBUG("save bls success: %lu, %u, %s", elect_height,
+            sharding_id,
+            common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
         return true;
     }
 
