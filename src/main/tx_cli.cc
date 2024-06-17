@@ -323,7 +323,7 @@ int one_tx_main(int argc, char** argv) {
     }
 
     if (transport::TcpTransport::Instance()->Init(
-            "127.0.0.1:13791",
+            "127.0.0.1:8301",
             128,
             false,
             &net_handler) != 0) {

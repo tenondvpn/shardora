@@ -10,6 +10,7 @@
 #include <consensus/zbft/to_tx_local_item.h>
 #include <consensus/zbft/root_to_tx_item.h>
 #include <consensus/zbft/root_cross_tx_item.h>
+#include <consensus/zbft/join_elect_tx_item.h>
 #include <protos/pools.pb.h>
 #include <protos/zbft.pb.h>
 #include <zjcvm/zjcvm_utils.h>
@@ -31,11 +32,12 @@ BlockAcceptor::BlockAcceptor(
         std::shared_ptr<pools::TxPoolManager> &pools_mgr,
         std::shared_ptr<block::BlockManager> &block_mgr,
         std::shared_ptr<timeblock::TimeBlockManager> &tm_block_mgr,
+        std::shared_ptr<elect::ElectManager> elect_mgr,
         consensus::BlockCacheCallback new_block_cache_callback):
     pool_idx_(pool_idx), security_ptr_(security), account_mgr_(account_mgr),
     elect_info_(elect_info), vss_mgr_(vss_mgr), contract_mgr_(contract_mgr),
     db_(db), gas_prepayment_(gas_prepayment), pools_mgr_(pools_mgr),
-    block_mgr_(block_mgr), tm_block_mgr_(tm_block_mgr), new_block_cache_callback_(new_block_cache_callback) {
+    block_mgr_(block_mgr), tm_block_mgr_(tm_block_mgr), elect_mgr_(elect_mgr), new_block_cache_callback_(new_block_cache_callback) {
     
     tx_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr_, block_mgr_, tm_block_mgr_);
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);    
@@ -302,6 +304,19 @@ Status BlockAcceptor::addTxsToPool(
                 account_mgr_, 
                 security_ptr_, 
                 address_info);
+            break;
+        }
+        case pools::protobuf::kJoinElect:
+        {
+            tx_ptr = std::make_shared<consensus::JoinElectTxItem>(
+            *tx, 
+            account_mgr_, 
+            security_ptr_, 
+            prefix_db_, 
+            elect_mgr_, 
+            address_info,
+            (*tx).pubkey());
+            ZJC_DEBUG("add tx now get join elect tx: %u", pool_idx());
             break;
         }
         default:
