@@ -143,7 +143,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
         GetG1Hash(msg_hash, &g1_hash);
         std::string verify_hash;
         auto member_bls_pk = libBLS::ThresholdUtils::fieldElementToString(
-            (*elect_item->Members())[i]->bls_publick_key.X);
+            (*elect_item->Members())[i]->bls_publick_key.X.c0);
         auto v_res = bls_mgr_->Verify(
             elect_item->t(),
             elect_item->n(), 
