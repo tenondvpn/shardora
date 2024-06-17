@@ -37,6 +37,19 @@ Status Crypto::PartialSign(
     if (ret != bls::kBlsSuccess) {
         return Status::kError;
     }
+
+    auto member_bls_pk = libBLS::ThresholdUtils::fieldElementToString(
+            elect_item->LocalMember()->bls_publick_key);
+    ZJC_DEBUG("bls parial sign t: %u, n: %u, member index: %d"
+        "bls pk: %s, sign x: %s, y: %s, hash: %s, elect height: %lu",
+        elect_item->t(),
+        elect_item->n(),
+        elect_item->LocalMember()->index(),
+        member_bls_pk.c_str(),
+        sign_x->c_str(),
+        sign_y->c_str(),
+        common::Encode::HexEncode(msg_hash).c_str(),
+        elect_height);
     return Status::kSuccess;
 }
 
@@ -129,6 +142,8 @@ Status Crypto::ReconstructAndVerifyThresSign(
         libff::alt_bn128_G1 g1_hash;
         GetG1Hash(msg_hash, &g1_hash);
         std::string verify_hash;
+        auto member_bls_pk = libBLS::ThresholdUtils::fieldElementToString(
+            (*elect_item->Members())[i]->bls_publick_key);
         auto v_res = bls_mgr_->Verify(
             elect_item->t(),
             elect_item->n(), 
@@ -136,7 +151,19 @@ Status Crypto::ReconstructAndVerifyThresSign(
             *collection_item->partial_signs[i], 
             g1_hash, 
             &verify_hash);
-        assert(v_res == 0);
+        if (v_res != 0) {
+            ZJC_DEBUG("invalid bls parial sign t: %u, n: %u, index: %u, "
+                "bls pk: %s, sign x: %s, y: %s, hash: %s, elect height: %lu",
+                elect_item->t(),
+                elect_item->n(),
+                i,
+                member_bls_pk.c_str(),
+                part_sign_x.c_str(),
+                part_sign_y.c_str(),
+                common::Encode::HexEncode(msg_hash).c_str(),
+                elect_height);
+            assert(false);
+        }
 #endif
     }
 
