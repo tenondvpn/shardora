@@ -155,10 +155,13 @@ struct ViewBlock {
         qc(qc),
         view(view),
         created_time_us(common::TimeUtils::TimestampUs()) {
+        leader_consen_stat = std::make_shared<MemberConsensusStat>();
         hash = DoHash();
     };
 
-    ViewBlock() : qc(nullptr), view(0), created_time_us(common::TimeUtils::TimestampUs()) {};
+    ViewBlock() : qc(nullptr), view(0), created_time_us(common::TimeUtils::TimestampUs()) {
+        leader_consen_stat = std::make_shared<MemberConsensusStat>();
+    };
 
     inline bool Valid() {
         return hash != "" && hash == DoHash() && block != nullptr; 
