@@ -26,7 +26,7 @@ Status ConsensusStatAcceptor::Accept(std::shared_ptr<ViewBlock> &v_block) {
         return Status::kError;
     }
     v_block->leader_consen_stat = elect_item->GetMemberConsensusStat(v_block->leader_idx);
-    v_block->leader_consen_stat->succ_num++;
+    // v_block->leader_consen_stat->succ_num++;
     
     // auto current = v_block;
     // uint32_t n = 0;
