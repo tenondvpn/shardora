@@ -878,7 +878,6 @@ Status Hotstuff::ConstructVoteMsg(
         ViewBlock2Proto(v_block, &pb_view_block);
         vote_msg->mutable_view_block_item()->CopyFrom(pb_view_block);
     }
-
     
     std::string sign_x, sign_y;
     if (crypto()->PartialSign(
