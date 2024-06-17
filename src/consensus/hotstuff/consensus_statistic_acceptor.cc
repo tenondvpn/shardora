@@ -25,10 +25,10 @@ Status ConsensusStatAcceptor::Accept(std::shared_ptr<ViewBlock> &v_block) {
     if (!elect_item || !elect_item->IsValid()) {
         return Status::kError;
     }
-
-    auto leader_consen_stat = elect_item->GetMemberConsensusStat(v_block->leader_idx);    
+    v_block->leader_consen_stat = elect_item->GetMemberConsensusStat(v_block->leader_idx);
+    
     auto current = v_block;
-    while (current && current->view > view_block_chain_->LatestCommittedBlock()->view) {
+    while (current->view > view_block_chain_->LatestCommittedBlock()->view) {
         current = view_block_chain_->QCRef(current);
         if (!current) {
             return Status::kError;
