@@ -82,8 +82,7 @@ struct QC {
             const HashStr& hash,
             const HashStr& commit_hash,
             uint64_t elect_height,
-            uint32_t leader_idx,
-            const std::shared_ptr<MemberConsensusStat>& consen_stat) :
+            uint32_t leader_idx) :
             network_id(net_id), pool_index(pool_idx),
             bls_agg_sign(sign), view(v), view_block_hash(hash),
             commit_view_block_hash(commit_hash), elect_height(elect_height),
