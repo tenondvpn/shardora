@@ -2,7 +2,6 @@
 #include <common/flow_control.h>
 #include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/block_wrapper.h>
-#include <consensus/hotstuff/consensus_statistic_acceptor.h>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/leader_rotation.h>
