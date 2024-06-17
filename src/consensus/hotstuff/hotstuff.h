@@ -43,6 +43,7 @@ using SyncViewBlockFn = std::function<void(const uint32_t&, const HashStr&)>;
 static const uint64_t STUCK_PACEMAKER_DURATION_MIN_US =
     2000000lu; // the min duration that hotstuff can be considered stucking
 static const bool VOTE_MSG_WITH_VBLOCK = false; // vote msg with vblock to make sure next leader has that block, which is good for tps improvement, TODO 没有必要，其实影响不大，还占用带宽，不知道节点多了之后有没有帮助，先留着代码
+static const bool WITH_CONSENSUS_STATISTIC = true; // 是否开启 leader 的共识数据统计
 
 class Hotstuff {
 public:
@@ -110,6 +111,13 @@ public:
             vblock->block->pool_index(),
             vblock->block->height());
         acceptor()->CommitSynced(vblock->block);
+        auto elect_item = elect_info()->GetElectItem(
+                vblock->block->network_id(),
+                vblock->ElectHeight());
+        if (elect_item && elect_item->IsValid()) {
+            elect_item->consensus_stat(pool_idx_)->Commit(vblock);
+        }
+        
         auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
         if (!latest_committed_block || latest_committed_block->view < vblock->view) {
             view_block_chain()->SetLatestCommittedBlock(vblock);        

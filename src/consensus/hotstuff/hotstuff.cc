@@ -977,7 +977,10 @@ Status Hotstuff::ConstructViewBlock(
         return Status::kError;
     }
     view_block->leader_consen_stat = elect_item->consensus_stat(pool_idx_)->GetMemberConsensusStat(leader_idx);
-    view_block->leader_consen_stat->succ_num++;
+    if (WITH_CONSENSUS_STATISTIC) { // 开启统计
+        view_block->leader_consen_stat->succ_num++;
+    }
+    
     view_block->hash = view_block->DoHash();
     return Status::kSuccess;
 }
