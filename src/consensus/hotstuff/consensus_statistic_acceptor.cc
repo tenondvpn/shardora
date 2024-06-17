@@ -10,7 +10,8 @@ ConsensusStatAcceptor::ConsensusStatAcceptor(
         uint32_t pool_idx,
         std::shared_ptr<ElectInfo>& elect_info,
         std::shared_ptr<ViewBlockChain>& view_block_chain) :
-    pool_idx_(pool_idx), elect_info_(elect_info), view_block_chain_(view_block_chain) {}
+    pool_idx_(pool_idx), elect_info_(elect_info), view_block_chain_(view_block_chain) {
+}
 
 ConsensusStatAcceptor::~ConsensusStatAcceptor() {}
 
@@ -55,19 +56,20 @@ Status ConsensusStatAcceptor::Commit(const std::shared_ptr<ViewBlock> &v_block) 
     }
 
     // 旧的 Commit 过滤掉
-    auto it = leader_last_commit_height_map_.find(v_block->leader_idx);
-    if (it != leader_last_commit_height_map_.end()) {
-        if (it->second >= v_block->block->height()) {
+    auto it = leader_last_commit_view_map_.find(v_block->leader_idx);
+    if (it != leader_last_commit_view_map_.end()) {
+        if (it->second >= v_block->view) {
             return Status::kSuccess;
         }
     }
-    leader_last_commit_height_map_[v_block->leader_idx] = v_block->block->height();
+    leader_last_commit_view_map_[v_block->leader_idx] = v_block->view;
 
     auto elect_item = elect_info_->GetElectItem(
             common::GlobalInfo::Instance()->network_id(), v_block->ElectHeight());
     if (!elect_item) {
         return Status::kError;
     }
+    ZJC_DEBUG("pool: %d set consen stat, view: %lu, leader: %d, succ: %lu", pool_idx_, v_block->view, v_block->leader_idx, v_block->leader_consen_stat->succ_num);
     elect_item->SetMemberConsensusStat(v_block->leader_idx, v_block->leader_consen_stat);
     
     return Status::kSuccess;
