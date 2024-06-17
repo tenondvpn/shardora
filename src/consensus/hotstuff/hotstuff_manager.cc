@@ -72,7 +72,8 @@ int HotstuffManager::Init(
 
         auto crypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
         auto chain = std::make_shared<ViewBlockChain>(pool_idx, db_);
-        auto leader_rotation = std::make_shared<LeaderRotation>(pool_idx, chain, elect_info_);
+        auto consen_stat_acceptor = std::make_shared<ConsensusStatAcceptor>(pool_idx, elect_info_, chain);
+        auto leader_rotation = std::make_shared<LeaderRotation>(pool_idx, chain, elect_info_, consen_stat_acceptor);
         auto pacemaker = std::make_shared<Pacemaker>(
                 pool_idx,
                 crypto,
@@ -89,7 +90,6 @@ int HotstuffManager::Init(
                 tm_block_mgr, new_block_cache_callback);
         auto wrapper = std::make_shared<BlockWrapper>(
                 pool_idx, pool_mgr, tm_block_mgr, block_mgr, elect_info_);
-        auto consen_stat_acceptor = std::make_shared<ConsensusStatAcceptor>(pool_idx, elect_info_, chain);
         
         pool_hotstuff_[pool_idx] = std::make_shared<Hotstuff>(
                 pool_idx, leader_rotation, chain,
