@@ -299,7 +299,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     }
 
     auto latest_committed_block = view_block_chain(pool_idx)->LatestCommittedBlock();
-    if (latest_committed_block->hash != src_latest_committed_block_hash) {
+    if (latest_committed_block && latest_committed_block->hash != src_latest_committed_block_hash) {
         shouldSyncLatestCommittedBlock = true;
     }
 
