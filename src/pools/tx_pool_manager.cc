@@ -120,7 +120,13 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 
 void TxPoolManager::SyncCrossPool() {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    for (uint32_t i = network::kRootCongressNetworkId; i < network::kConsensusShardEndNetworkId; ++i) {
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        auto sync_count = root_cross_pools_[i].SyncMissingBlocks(now_tm_ms);
+        ZJC_DEBUG("success sync root corss pool: %u count %u", i, sync_count);
+    }
+
+    for (uint32_t i = network::kConsensusShardBeginNetworkId;
+            i < network::kConsensusShardEndNetworkId; ++i) {
         auto sync_count = cross_pools_[i].SyncMissingBlocks(now_tm_ms);
         uint64_t ex_height = common::kInvalidUint64;
         if (cross_pools_[i].latest_height() == common::kInvalidUint64) {
