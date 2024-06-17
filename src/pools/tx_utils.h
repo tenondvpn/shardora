@@ -11,6 +11,7 @@
 #include "db/db.h"
 #include "protos/pools.pb.h"
 #include "protos/prefix_db.h"
+#include "network/network_utils.h"
 #include "security/security.h"
 #include "transport/transport_utils.h"
 #include "zjcvm/zjc_host.h"
