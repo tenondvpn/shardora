@@ -99,12 +99,7 @@ public:
             return;
         }
 
-        if (block_item->network_id() == network::kRootCongressNetworkId) {
-            root_cross_pools_[block_item->pool_index()].UpdateLatestInfo(block_item->height());
-        } else {
-            cross_pools_[block_item->network_id()].UpdateLatestInfo(block_item->height());
-        }
-
+        cross_pools_[block_item->network_id()].UpdateLatestInfo(block_item->height());
         ZJC_DEBUG("succcess update cross block latest info net: %u, pool: %u, height: %lu",
             block_item->network_id(), block_item->pool_index(), block_item->height());
     }
@@ -251,7 +246,9 @@ private:
     void SyncPoolsMaxHeight();
     void HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_ptr);
     void SyncMinssingHeights(uint64_t now_tm_ms);
+    void SyncMinssingRootHeights(uint64_t now_tm_ms);
     void SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height);
+    void SyncRootBlockWithMaxHeights(uint32_t pool_idx, uint64_t height);
     void CheckLeaderValid(const std::vector<double>& factors, std::vector<int32_t>* invalid_pools);
     bool SaveNodeVerfiyVec(
         const std::string& id,
@@ -288,15 +285,17 @@ private:
     uint64_t prev_cacultate_leader_valid_ms_ = 0;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     uint64_t prev_synced_pool_index_ = 0;
+    uint64_t root_prev_synced_pool_index_ = 0;
     uint64_t prev_sync_height_tree_tm_ms_ = 0;
     volatile uint64_t synced_max_heights_[common::kInvalidPoolIndex] = { 0 };
+    volatile uint64_t root_synced_max_heights_[common::kInvalidPoolIndex] = { 0 };
     volatile uint64_t cross_synced_max_heights_[network::kConsensusShardEndNetworkId] = { 0 };
     common::MembersPtr latest_members_;
     uint64_t latest_elect_height_ = 0;
     uint32_t latest_leader_count_ = 0;
     uint32_t member_index_ = common::kInvalidUint32;
     CrossPool* cross_pools_ = nullptr;
-    RootCrossPool root_cross_pools_[common::kInvalidPoolIndex];
+    RootCrossPool* root_cross_pools_ = nullptr;
     uint32_t now_max_sharding_id_ = network::kConsensusShardBeginNetworkId;
     uint32_t prev_cross_sync_index_ = 0;
     std::shared_ptr<CrossBlockManager> cross_block_mgr_ = nullptr;
