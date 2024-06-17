@@ -65,7 +65,7 @@ Status ConsensusStatAcceptor::Commit(const std::shared_ptr<ViewBlock> &v_block) 
     leader_last_commit_view_map_[v_block->leader_idx] = v_block->view;
 
 
-    ZJC_DEBUG("pool: %d set consen stat, view: %lu, leader: %d, succ: %lu", pool_idx_, v_block->view, v_block->leader_idx, v_block->leader_consen_stat->succ_num);
+    ZJC_DEBUG("pool: %d set consen stat leader: %d, view: %lu, succ: %lu", pool_idx_, v_block->view, v_block->leader_idx, v_block->leader_consen_stat->succ_num);
     SetMemberConsensusStat(v_block->leader_idx, v_block->leader_consen_stat);
 
     std::string ret;
