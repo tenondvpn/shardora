@@ -30,6 +30,25 @@ static const double ViewDurationStartTimeoutMs = 300;
 static const double ViewDurationMaxTimeoutMs = 60000;
 static const double ViewDurationMultiplier = 1.3; // 选过大会造成卡住的成本很高，一旦卡住则恢复时间很长（如 leader 不一致），过小会导致没有交易时 CPU 长时间降不下来
 
+// 本 elect height 中共识情况统计
+struct MemberConsensusStat {
+    uint16_t succ_num; // 共识成功的次数
+    uint16_t fail_num; // 共识失败的次数
+
+    MemberConsensusStat() {
+        succ_num = 0;
+        fail_num = 0;
+    }
+
+    MemberConsensusStat(uint16_t succ_num, uint16_t fail_num) : succ_num(succ_num), fail_num(fail_num) {}
+
+    inline HashStr GetHash() {
+        std::stringstream ss;
+        ss << succ_num << fail_num;
+        return common::Hash::keccak256(ss.str());
+    }
+};
+
 HashStr GetViewHash(
     uint32_t net_id,
     uint32_t pool_idx,
@@ -54,6 +73,7 @@ struct QC {
     uint32_t leader_idx;
     uint32_t network_id;
     uint32_t pool_index;
+    
     QC(
             uint32_t net_id,
             uint32_t pool_idx,
@@ -66,7 +86,7 @@ struct QC {
             network_id(net_id), pool_index(pool_idx),
             bls_agg_sign(sign), view(v), view_block_hash(hash),
             commit_view_block_hash(commit_hash), elect_height(elect_height),
-            leader_idx(leader_idx) {
+            leader_idx(leader_idx){
         if (sign == nullptr) {
             bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
         }
@@ -119,6 +139,7 @@ struct ViewBlock {
     std::unordered_set<std::string> added_txs;
     std::shared_ptr<QC> qc;
     View view;
+    std::shared_ptr<MemberConsensusStat> leader_consen_stat; // 计算后的共识统计，在 replica 接收块后，计算出 leader 应该的分数，写入次字段，类似交易执行
 
     uint64_t created_time_us;
 
@@ -134,10 +155,13 @@ struct ViewBlock {
         qc(qc),
         view(view),
         created_time_us(common::TimeUtils::TimestampUs()) {
+        leader_consen_stat = std::make_shared<MemberConsensusStat>();
         hash = DoHash();
     };
 
-    ViewBlock() : qc(nullptr), view(0), created_time_us(common::TimeUtils::TimestampUs()) {};
+    ViewBlock() : qc(nullptr), view(0), created_time_us(common::TimeUtils::TimestampUs()) {
+        leader_consen_stat = std::make_shared<MemberConsensusStat>();
+    };
 
     inline bool Valid() {
         return hash != "" && hash == DoHash() && block != nullptr; 

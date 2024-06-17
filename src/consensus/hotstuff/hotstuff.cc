@@ -47,7 +47,7 @@ void Hotstuff::Init() {
 Status Hotstuff::Start() {
     auto leader = leader_rotation()->GetLeader();
     auto elect_item = elect_info_->GetElectItemWithShardingId(common::GlobalInfo::Instance()->network_id());
-    if (!elect_item) {
+    if (!elect_item || !elect_item->IsValid()) {
         return Status::kElectItemNotFound;
     }
     auto local_member = elect_item->LocalMember();
@@ -789,6 +789,13 @@ Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
         ZJC_ERROR("pool: %d, commit failed s: %d, vb view: %lu", pool_idx_, s, v_block->view);
         return s;
     }
+    // 提交 v_block->consensus_stat 共识数据
+    auto elect_item = elect_info()->GetElectItem(
+            v_block->block->network_id(),
+            v_block->ElectHeight());
+    if (elect_item && elect_item->IsValid()) {
+        elect_item->consensus_stat(pool_idx_)->Commit(v_block);
+    }    
     
     view_block_chain()->SetLatestCommittedBlock(v_block);    
     return Status::kSuccess;
@@ -852,7 +859,7 @@ Status Hotstuff::ConstructVoteMsg(
     auto elect_item = elect_info_->GetElectItem(
         common::GlobalInfo::Instance()->network_id(), 
         elect_height);
-    if (!elect_item) {
+    if (!elect_item || !elect_item->IsValid()) {
         return Status::kError;
     }
     uint32_t replica_idx = elect_item->LocalMember()->index;
@@ -963,6 +970,16 @@ Status Hotstuff::ConstructViewBlock(
     }
 
     view_block->block = pb_block;
+    auto elect_item = elect_info_->GetElectItem(
+            common::GlobalInfo::Instance()->network_id(), view_block->ElectHeight());
+    if (!elect_item || !elect_item->IsValid()) {
+        return Status::kError;
+    }
+    view_block->leader_consen_stat = elect_item->consensus_stat(pool_idx_)->GetMemberConsensusStat(leader_idx);
+    if (WITH_CONSENSUS_STATISTIC) { // 开启统计
+        view_block->leader_consen_stat->succ_num++;
+    }
+    
     view_block->hash = view_block->DoHash();
     return Status::kSuccess;
 }
@@ -1060,7 +1077,7 @@ void Hotstuff::TryRecoverFromStuck() {
             
             auto elect_item = elect_info_->GetElectItemWithShardingId(
                 common::GlobalInfo::Instance()->network_id());
-            if (!elect_item) {
+            if (!elect_item || !elect_item->IsValid()) {
                 ZJC_ERROR("pool: %d no elect item found", pool_idx_);
                 return;
             }

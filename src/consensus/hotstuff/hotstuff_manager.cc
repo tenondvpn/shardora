@@ -7,6 +7,7 @@
 #include <common/utils.h>
 #include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/block_wrapper.h>
+#include <consensus/hotstuff/consensus_statistic_acceptor.h>
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <libbls/tools/utils.h>
@@ -190,8 +191,8 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(
 
 void HotstuffManager::OnNewElectBlock(uint64_t block_tm_ms, uint32_t sharding_id, uint64_t elect_height,
     common::MembersPtr& members, const libff::alt_bn128_G2& common_pk, const libff::alt_bn128_Fr& sec_key) {        
-        elect_info_->OnNewElectBlock(sharding_id, elect_height, members, common_pk, sec_key);
-    }
+    elect_info_->OnNewElectBlock(sharding_id, elect_height, members, common_pk, sec_key);
+}
 
 void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;

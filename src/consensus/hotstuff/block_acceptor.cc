@@ -124,7 +124,7 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
         auto elect_item = elect_info_->GetElectItem(
             common::GlobalInfo::Instance()->network_id(), 
             block->electblock_height());
-        if (elect_item) {
+        if (elect_item && elect_item->IsValid()) {
             if (block->leader_index() == elect_item->LocalMember()->index) {
                 // leader broadcast block to other shards
                 // TODO to 交易会大量占用 CPU，先屏蔽

@@ -73,7 +73,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
         duration_->ViewSucceeded();
     }
     
-    cur_view_ = new_v; 
+    cur_view_ = new_v;
     
     duration_->ViewStarted();
     ZJC_DEBUG("to new view. pool: %lu, view: %llu", pool_idx_, cur_view_);
@@ -85,6 +85,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
 void Pacemaker::UpdateHighQC(const std::shared_ptr<QC>& qc) {
     if (high_qc_->view < qc->view) {
         high_qc_ = qc;
+
     }
 }
 
@@ -112,7 +113,7 @@ void Pacemaker::OnLocalTimeout() {
         return;
     }
 
-    // auto leader_idx = leader_rotation_->GetLeader()->index;
+    // auto leader_idx = leader_rotation_->GetLeader()->index;    
     auto view_hash = GetViewHash(
         common::GlobalInfo::Instance()->network_id(),
         pool_idx_,
@@ -143,6 +144,7 @@ void Pacemaker::OnLocalTimeout() {
         return;
     }
 
+    
     view_block::protobuf::TimeoutMessage& timeout_msg = *msg.mutable_hotstuff_timeout_proto();
     timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());    
     timeout_msg.set_sign_x(bls_sign_x);
