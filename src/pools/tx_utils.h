@@ -308,7 +308,7 @@ static std::string GetTxMessageHashByJoin(const pools::protobuf::TxMessage& tx_i
     return common::Hash::keccak256(message);
 }
 
-bool IsRootNode() {
+static inline bool IsRootNode() {
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId || 
             common::GlobalInfo::Instance()->network_id() == 
             network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset) {
