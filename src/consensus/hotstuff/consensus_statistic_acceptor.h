@@ -32,7 +32,9 @@ public:
     void SetMemberConsensusStat(
             uint32_t member_idx,
             const std::shared_ptr<MemberConsensusStat>& member_consen_stat) {
-        member_consen_stats_[member_idx] = member_consen_stat;
+        if (member_consen_stats_.size() > member_idx) {
+            member_consen_stats_[member_idx] = member_consen_stat;
+        }
     }
 
     inline std::vector<std::shared_ptr<MemberConsensusStat>> GetAllConsensusStats() {

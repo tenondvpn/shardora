@@ -10,13 +10,7 @@ ConsensusStatAcceptor::ConsensusStatAcceptor(
         uint32_t pool_idx,
         std::shared_ptr<ElectInfo>& elect_info,
         std::shared_ptr<ViewBlockChain>& view_block_chain) :
-    pool_idx_(pool_idx), elect_info_(elect_info), view_block_chain_(view_block_chain) {
-    auto elect_item = elect_info_->GetElectItemWithShardingId(common::GlobalInfo::Instance()->network_id());
-    for (uint32_t i = 0; i < elect_item->Members()->size(); i++) {
-        auto& mem = (*elect_item->Members())[i];
-        member_consen_stats_[mem->index] = std::make_shared<MemberConsensusStat>();
-    }
-}
+    pool_idx_(pool_idx), elect_info_(elect_info), view_block_chain_(view_block_chain) {}
 
 ConsensusStatAcceptor::~ConsensusStatAcceptor() {}
 
