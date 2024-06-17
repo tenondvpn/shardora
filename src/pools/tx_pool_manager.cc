@@ -258,6 +258,10 @@ void TxPoolManager::CheckLeaderValid(
 }
 
 void TxPoolManager::SyncMinssingRootHeights(uint64_t now_tm_ms) {
+    if (root_cross_pools_ == nullptr) {
+        return;
+    }
+    
     if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
         return;
     }
