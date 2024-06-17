@@ -34,7 +34,11 @@ Status ConsensusStatAcceptor::Accept(std::shared_ptr<ViewBlock> &v_block) {
             return Status::kError;
         }
         if (current->leader_idx == v_block->leader_idx) {
-            leader_consen_stat = current->leader_consen_stat;
+            leader_consen_stat = std::make_shared<MemberConsensusStat>(
+                    current->leader_consen_stat->succ_num+1,
+                    current->leader_consen_stat->fail_num);
+            
+            break;
         }
     }
     
