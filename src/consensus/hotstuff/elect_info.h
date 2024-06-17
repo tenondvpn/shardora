@@ -46,10 +46,14 @@ public:
         SetMemberCount(members->size());
         
         // 初始化共识统计
-        member_consen_stats_.resize(members->size());
-        for (uint32_t i = 0; i < members->size(); i++) {
-            member_consen_stats_[(*members)[i]->index] = std::make_shared<MemberConsensusStat>();
+        for (uint32_t pool_idx; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
+            std::vector<std::shared_ptr<MemberConsensusStat>> member_consen_stats(members->size());
+            for (uint32_t i = 0; i < members->size(); i++) {
+                member_consen_stats[(*members)[i]->index] = std::make_shared<MemberConsensusStat>();
+            }
+            pool_member_consen_stats_[pool_idx] = member_consen_stats;
         }
+        
     }
     ~ElectItem() {};
 
@@ -93,19 +97,23 @@ public:
         return common_pk_;
     }
 
-    void SetMemberConsensusStat(uint32_t member_idx, const std::shared_ptr<MemberConsensusStat>& member_consen_stat) {
-        member_consen_stats_[member_idx] = member_consen_stat;
+    void SetMemberConsensusStat(
+            uint32_t member_idx,
+            uint32_t pool_idx,
+            const std::shared_ptr<MemberConsensusStat>& member_consen_stat) {
+        pool_member_consen_stats_[pool_idx][member_idx] = member_consen_stat;
     }
 
-    inline std::vector<std::shared_ptr<MemberConsensusStat>> GetAllConsensusStats() {
-        return member_consen_stats_;
+    inline std::vector<std::shared_ptr<MemberConsensusStat>> GetAllConsensusStats(uint32_t pool_idx) {
+        return pool_member_consen_stats_[pool_idx];
     }
 
-    inline std::shared_ptr<MemberConsensusStat> GetMemberConsensusStat(uint32_t member_idx) {
-        if (member_consen_stats_.size() <= member_idx) {
+    inline std::shared_ptr<MemberConsensusStat> GetMemberConsensusStat(uint32_t member_idx, uint32_t pool_idx) {
+        auto member_consen_stat = pool_member_consen_stats_[pool_idx];
+        if (member_consen_stat.size() <= member_idx) {
             return nullptr;
         }
-        return member_consen_stats_[member_idx];
+        return member_consen_stat[member_idx];
     }
     
 private:
@@ -124,7 +132,7 @@ private:
     uint32_t bls_t_{0};
     uint32_t bls_n_{0};
 
-    std::vector<std::shared_ptr<MemberConsensusStat>> member_consen_stats_; // 所有节点共识情况统计
+    std::unordered_map<uint32_t, std::vector<std::shared_ptr<MemberConsensusStat>>> pool_member_consen_stats_; // 所有节点共识情况统计
 };
 
 

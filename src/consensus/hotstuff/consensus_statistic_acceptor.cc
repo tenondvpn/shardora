@@ -70,7 +70,15 @@ Status ConsensusStatAcceptor::Commit(const std::shared_ptr<ViewBlock> &v_block) 
         return Status::kError;
     }
     ZJC_DEBUG("pool: %d set consen stat, view: %lu, leader: %d, succ: %lu", pool_idx_, v_block->view, v_block->leader_idx, v_block->leader_consen_stat->succ_num);
-    elect_item->SetMemberConsensusStat(v_block->leader_idx, v_block->leader_consen_stat);
+    elect_item->SetMemberConsensusStat(v_block->leader_idx, pool_idx_, v_block->leader_consen_stat);
+
+    std::string ret;
+    auto all_consen_stats = elect_item->GetAllConsensusStats(pool_idx_);
+    for (uint32_t idx = 0; idx < all_consen_stats.size(); idx++) {
+        ret += std::to_string(idx) + ": " + std::to_string(all_consen_stats[idx]->succ_num) + ", ";
+    }
+    ZJC_DEBUG("pool: %d get all stat: %s", ret.c_str());
+    
     
     return Status::kSuccess;
 }
