@@ -201,7 +201,6 @@ private:
     std::shared_ptr<ViewBlockChain> view_block_chain_;
     std::shared_ptr<LeaderRotation> leader_rotation_;
     std::shared_ptr<ElectInfo> elect_info_;
-    std::shared_ptr<ConsensusStatAcceptor> consen_stat_acceptor_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     View last_vote_view_;
