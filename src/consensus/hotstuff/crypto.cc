@@ -39,12 +39,12 @@ Status Crypto::PartialSign(
     }
 
     auto member_bls_pk = libBLS::ThresholdUtils::fieldElementToString(
-            elect_item->LocalMember()->bls_publick_key);
-    ZJC_DEBUG("bls parial sign t: %u, n: %u, member index: %d"
+            elect_item->LocalMember()->bls_publick_key.X);
+    ZJC_DEBUG("bls parial sign t: %u, n: %u, member index: %u"
         "bls pk: %s, sign x: %s, y: %s, hash: %s, elect height: %lu",
         elect_item->t(),
         elect_item->n(),
-        elect_item->LocalMember()->index(),
+        elect_item->LocalMember()->index,
         member_bls_pk.c_str(),
         sign_x->c_str(),
         sign_y->c_str(),
@@ -143,7 +143,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
         GetG1Hash(msg_hash, &g1_hash);
         std::string verify_hash;
         auto member_bls_pk = libBLS::ThresholdUtils::fieldElementToString(
-            (*elect_item->Members())[i]->bls_publick_key);
+            (*elect_item->Members())[i]->bls_publick_key.X);
         auto v_res = bls_mgr_->Verify(
             elect_item->t(),
             elect_item->n(), 
