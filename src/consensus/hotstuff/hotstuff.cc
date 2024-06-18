@@ -2,6 +2,7 @@
 #include <common/log.h>
 #include <common/defer.h>
 #include <common/time_utils.h>
+#include <common/utils.h>
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/types.h>
 #include <protos/hotstuff.pb.h>
@@ -801,21 +802,28 @@ Status Hotstuff::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
 }
 
 Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
-    auto leader = leader_rotation()->GetLeader(); // 判断是否为空
-    if (!leader) {
-        ZJC_ERROR("Get Leader is error.");
-        return  Status::kError;
-    }
-
-    if (leader_idx != leader->index) {
-        auto eleader = leader_rotation()->GetExpectedLeader();
-        if (!eleader || leader_idx != eleader->index) {
-            ZJC_WARN("pool: %d, leader_idx message is error, %d, %d", pool_idx_, leader_idx, leader->index);
-            return Status::kError;
+    auto verify_leader_func = [&](uint32_t leader_idx) -> bool {
+        auto leader = leader_rotation()->GetLeader(); // 判断是否为空
+        if (!leader) {
+            ZJC_ERROR("Get Leader is error.");
+            return false;
         }
-        return Status::kError;
+
+        if (leader_idx != leader->index) {
+            auto eleader = leader_rotation()->GetExpectedLeader();
+            if (!eleader || leader_idx != eleader->index) {
+                ZJC_WARN("pool: %d, leader_idx message is error, %d, %d", pool_idx_, leader_idx, leader->index);
+                return false;
+            }
+            return false;
+        }
+        return true;        
+    };
+
+    if (common::Retry(verify_leader_func, 2, std::chrono::milliseconds(100), leader_idx)) {
+        return Status::kSuccess;
     }
-    return Status::kSuccess;
+    return Status::kError;
 }
 
 Status Hotstuff::ConstructProposeMsg(
