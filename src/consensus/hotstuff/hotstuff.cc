@@ -391,7 +391,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
         reconstructed_sign == nullptr,
         vote_msg.view());
-    auto qc = std::make_shared<QC>();
+    auto new_qc = std::make_shared<QC>();
     Status s = crypto()->CreateQC(
         vote_msg.view_block_hash(),
         vote_msg.commit_view_block_hash(),
@@ -399,7 +399,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         elect_height,
         vote_msg.leader_idx(),
         reconstructed_sign,
-        qc);
+        new_qc);
     if (s != Status::kSuccess) {
         return;
     }
@@ -420,18 +420,16 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
 #endif
 
     // 切换视图
-    pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
-    // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率高很多
-    // NewView(new_sync_info()->WithQC(qc));
+    // pacemaker()->AdvanceView(new_sync_info()->WithQC(new_qc));
     
     // 一旦生成新 QC，且本地还没有该 view_block，就直接从 VoteMsg 中获取并添加
     // 没有这个逻辑也不影响共识，只是需要同步而导致 tps 降低
-    if (vote_msg.has_view_block_item() && !view_block_chain()->Has(qc->view_block_hash)) {
+    if (vote_msg.has_view_block_item() && !view_block_chain()->Has(new_qc->view_block_hash)) {
         auto pb_v_block = vote_msg.view_block_item();
         auto v_block = std::make_shared<ViewBlock>();
         s = Proto2ViewBlock(pb_v_block, v_block);
         if (s == Status::kSuccess) {
-            s = StoreVerifiedViewBlock(v_block, qc);
+            s = StoreVerifiedViewBlock(v_block, new_qc);
             if (s != Status::kSuccess) {
                 ZJC_ERROR("pool: %d store verified view block failed, ret: %d", pool_idx_, s);
             } else {
@@ -440,9 +438,9 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         }        
     }
 
-    s = Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
+    s = Propose(new_sync_info()->WithQC(new_qc));
     if (s != Status::kSuccess) {
-        NewView(new_sync_info()->WithQC(pacemaker()->HighQC())->WithTC(pacemaker()->HighTC()));
+        NewView(new_sync_info()->WithQC(new_qc)->WithTC(pacemaker()->HighTC()));
     }
     return;
 }
