@@ -11,6 +11,12 @@ message ViewBlockItem {
     optional bytes qc_str = 5;
     optional uint64 view = 6;
     optional bytes self_commit_qc_str = 7;
+    optional MemberConsensusStat leader_consen_stat = 8;
+}
+
+message MemberConsensusStat {
+    optional uint32 succ_num = 1;
+    optional uint32 fail_num = 2;
 }
 
 message QC {
@@ -34,6 +40,7 @@ message ViewBlockSyncRequest {
     optional uint64 high_tc_view = 5;
     optional uint64 max_view = 6;
     optional bytes latest_committed_block_hash = 7;
+    repeated ViewBlockItem view_blocks = 8;
 }
 
 message ViewBlockSyncResponse {

@@ -74,7 +74,7 @@ public:
                                 std::unordered_map<std::string, std::string> &id_pk_map, 
                                 shardora::pools::protobuf::ElectStatistic &elect_statistic);
 
-    void setElectStatistics(std::map<uint64_t, std::unordered_map<std::__cxx11::string, shardora::pools::StatisticMemberInfoItem>> &height_node_collect_info_map, 
+    void setElectStatistics(std::map<uint64_t, std::unordered_map<std::string, shardora::pools::StatisticMemberInfoItem>> &height_node_collect_info_map, 
         shardora::common::MembersPtr &now_elect_members, 
         shardora::pools::protobuf::ElectStatistic &elect_statistic,
         bool is_root);

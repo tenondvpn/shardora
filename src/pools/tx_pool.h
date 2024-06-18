@@ -53,7 +53,8 @@ public:
     void GetTxIdempotently(
         std::map<std::string, TxItemPtr>& res_map, 
         uint32_t count, 
-        std::unordered_map<std::string, std::string>& kvs);    
+        std::unordered_map<std::string, std::string>& kvs,
+        pools::CheckGidValidFunction gid_vlid_func);    
     void GetTx(
         const std::map<std::string, pools::TxItemPtr>& invalid_txs, 
         transport::protobuf::Header& header, 
@@ -174,7 +175,8 @@ private:
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count,
-        std::unordered_map<std::string, std::string>& kvs);    
+        std::unordered_map<std::string, std::string>& kvs,
+        pools::CheckGidValidFunction gid_vlid_func);    
     void GetTxByHash(
         std::map<std::string, TxItemPtr>& src_prio_map,
         const std::string& hash,
@@ -216,6 +218,7 @@ private:
     std::map<std::string, TxItemPtr> consensus_tx_map_;
     TxPoolManager* pools_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ = nullptr;
+    uint64_t prev_check_tx_timeout_tm_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };

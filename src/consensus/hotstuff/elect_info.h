@@ -5,6 +5,7 @@
 #include <common/log.h>
 #include <common/node_members.h>
 #include <common/utils.h>
+#include <consensus/hotstuff/consensus_statistic.h>
 #include <consensus/hotstuff/types.h>
 #include <elect/elect_manager.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g2.hpp>
@@ -44,6 +45,10 @@ public:
         local_sk_ = sk;
 
         SetMemberCount(members->size());
+
+        for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
+            pool_consen_stat_map_[pool_idx] = std::make_shared<ConsensusStat>(pool_idx, members);
+        }
     }
     ~ElectItem() {};
 
@@ -56,6 +61,11 @@ public:
 
     inline common::BftMemberPtr LocalMember() const {
         return local_member_;
+    }
+
+    // 本节点是否在该 epoch 的共识池中
+    inline bool IsValid() const {
+        return local_member_ != nullptr;
     }
 
     inline common::BftMemberPtr GetMemberByIdx(uint32_t member_idx) const {
@@ -82,6 +92,10 @@ public:
         return common_pk_;
     }
 
+    inline std::shared_ptr<ConsensusStat> consensus_stat(uint32_t pool_idx) {
+        return pool_consen_stat_map_[pool_idx];
+    }
+    
 private:
     void SetMemberCount(uint32_t mem_cnt) {
         bls_n_ = mem_cnt;
@@ -97,6 +111,8 @@ private:
     bool bls_valid_{false};
     uint32_t bls_t_{0};
     uint32_t bls_n_{0};
+    
+    std::unordered_map<uint32_t, std::shared_ptr<ConsensusStat>> pool_consen_stat_map_; 
 };
 
 
@@ -121,7 +137,7 @@ public:
             max_consensus_sharding_id_ = sharding_id;
         }
 
-        if (sharding_id > network::kConsensusShardEndNetworkId) {
+        if (sharding_id >= network::kConsensusShardEndNetworkId) {
             assert(false);
             return;
         }
@@ -148,23 +164,22 @@ public:
                 elect_height == prev_elect_items_[sharding_id]->ElectHeight()) {
             return prev_elect_items_[sharding_id];
         }
+        
         // 内存中没有从 ElectManager 获取
-        auto net_id = common::GlobalInfo::Instance()->network_id(); 
         libff::alt_bn128_G2 common_pk = libff::alt_bn128_G2::zero();
         libff::alt_bn128_Fr sec_key;
-
         if (!elect_mgr_) {
             return nullptr;
         }
         
         auto members = elect_mgr_->GetNetworkMembersWithHeight(
             elect_height,
-            net_id,
+            sharding_id,
             &common_pk,
             &sec_key);
         if (members == nullptr || common_pk == libff::alt_bn128_G2::zero()) {
             ZJC_ERROR("failed get elect members or common pk: %u, %lu, %d",
-                net_id,
+                sharding_id,
                 elect_height,
                 (common_pk == libff::alt_bn128_G2::zero()));            
             return nullptr;
@@ -172,7 +187,7 @@ public:
         
         return std::make_shared<ElectItem>(
             security_ptr_,
-            net_id,
+            sharding_id,
             elect_height,
             members,
             common_pk,

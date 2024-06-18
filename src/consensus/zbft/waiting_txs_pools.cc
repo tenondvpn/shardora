@@ -45,7 +45,9 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool
     return txs_item;
 }
 
-std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(uint32_t pool_index) {
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
+        uint32_t pool_index,
+        pools::CheckGidValidFunction gid_vlid_func) {
     auto thread_id = common::GlobalInfo::Instance()->get_thread_index();
     // ZJC_DEBUG("leader get txs coming thread: %d, pool index: %d", thread_id, pool_index);
     #ifdef TEST_NO_CROSS
@@ -53,8 +55,18 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(u
     #else
     std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(pool_index);
     #endif
+
+    if (txs_item != nullptr) {
+        for (auto iter = txs_item->txs.begin(); iter != txs_item->txs.end(); ++iter) {
+            if (!gid_vlid_func(iter->second->tx_info.gid())) {
+                txs_item = nullptr;
+                break;
+            }
+        }
+    }
+
     if (txs_item == nullptr) {
-        txs_item = wtxs[pool_index].LeaderGetValidTxsIdempotently();
+        txs_item = wtxs[pool_index].LeaderGetValidTxsIdempotently(gid_vlid_func);
     }
 
     if (txs_item != nullptr) {
@@ -175,7 +187,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_in
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetCrossTx(
         uint32_t pool_index, 
         const std::string& tx_hash) {
-    if (pool_index != common::kRootChainPoolIndex) {
+    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId ||
+            pool_index != common::kRootChainPoolIndex) {
         return nullptr;
     }
 

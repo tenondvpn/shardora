@@ -196,7 +196,8 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
         return;
     }
 
-    ZJC_DEBUG("gid: %s, frompk: %s, to: %s, amount: %s, gas_limit: %s, gas_price: %s, sign_r: %s, sign_s: %s, sign_v: %s, shard_id: %s",
+    ZJC_DEBUG("gid: %s, frompk: %s, to: %s, amount: %s, gas_limit: %s, "
+        "gas_price: %s, sign_r: %s, sign_s: %s, sign_v: %s, shard_id: %s",
         gid, frompk, to, amount, gas_limit, gas_price, sign_r, sign_s, sign_v, shard_id);
     uint64_t amount_val = 0;
     if (!common::StringUtil::ToUint64(std::string(amount), &amount_val)) {
@@ -290,8 +291,8 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     std::string res = std::string("ok");
     evbuffer_add(req->buffer_out, res.c_str(), res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
-    ZJC_DEBUG("http transaction success %s, %s", common::Encode::HexEncode(
-            http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk))).c_str(), to);
+    ZJC_DEBUG("http transaction success %s, %s, gid: %s", common::Encode::HexEncode(
+            http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk))).c_str(), to, gid);
 }
 
 static void QueryContract(evhtp_request_t* req, void* data) {

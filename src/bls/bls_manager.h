@@ -24,7 +24,13 @@ public:
             const libff::alt_bn128_G1& g1_hash,
             std::string* sign_x,
             std::string* sign_y) = 0;
-
+    virtual int Verify(
+        uint32_t t,
+        uint32_t n,
+        const libff::alt_bn128_G2& pubkey,
+        const libff::alt_bn128_G1& sign,
+        const libff::alt_bn128_G1& g1_hash,
+        std::string* verify_hash) = 0;
     virtual int GetVerifyHash(
             uint32_t t,
             uint32_t n,

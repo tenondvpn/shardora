@@ -11,6 +11,7 @@
 #include "db/db.h"
 #include "protos/pools.pb.h"
 #include "protos/prefix_db.h"
+#include "network/network_utils.h"
 #include "security/security.h"
 #include "transport/transport_utils.h"
 #include "zjcvm/zjc_host.h"
@@ -92,6 +93,7 @@ public:
 
 typedef std::shared_ptr<TxItem> TxItemPtr;
 typedef std::function<TxItemPtr(const transport::MessagePtr& msg_ptr)> CreateConsensusItemFunction;
+typedef std::function<bool(const std::string& gid)> CheckGidValidFunction;
 
 struct StatisticElectItem {
     StatisticElectItem() : elect_height(0) {
@@ -309,6 +311,16 @@ static std::string GetTxMessageHashByJoin(const pools::protobuf::TxMessage& tx_i
     message.append(std::to_string(tx_info.gas_price()));
     ZJC_DEBUG("src message: %s", message.c_str());
     return common::Hash::keccak256(message);
+}
+
+static inline bool IsRootNode() {
+    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId || 
+            common::GlobalInfo::Instance()->network_id() == 
+            network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset) {
+        return true;
+    }
+
+    return false;
 }
 
 };  // namespace pools

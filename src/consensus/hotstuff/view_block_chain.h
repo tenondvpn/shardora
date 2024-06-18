@@ -40,7 +40,10 @@ public:
         std::vector<std::shared_ptr<ViewBlock>> children;
         std::shared_ptr<QC> qc;
 
-        ViewBlockInfo() : view_block(nullptr), status(ViewBlockStatus::Unknown), qc(nullptr) {}
+        ViewBlockInfo() : 
+            view_block(nullptr), 
+            status(ViewBlockStatus::Unknown), 
+            qc(nullptr) {}
     };
     
     ViewBlockChain(uint32_t pool_index, std::shared_ptr<db::Db>& db);
@@ -66,6 +69,44 @@ public:
     Status GetAllVerified(std::vector<std::shared_ptr<ViewBlock>>&);
 
     Status GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>&);
+
+    bool CheckTxGidValid(const std::string& gid, const std::string& parent_hash) {
+        std::string phash = parent_hash;
+        ZJC_DEBUG("check gid valid called hash beign: %s",
+            common::Encode::HexEncode(phash).c_str());
+        uint32_t count = 0;
+        while (true) {
+            if (phash.empty()) {
+                break;
+            }
+
+            auto it = view_blocks_info_.find(phash);
+            if (it == view_blocks_info_.end()) {
+                break;
+            }
+
+            auto iter = it->second->view_block->added_txs.find(gid);
+            if (iter != it->second->view_block->added_txs.end()) {
+                ZJC_DEBUG("failed check tx gid: %s, phash: %s",
+                    common::Encode::HexEncode(gid).c_str(),
+                    common::Encode::HexEncode(phash).c_str());
+                return false;
+            }
+
+            ++count;
+            ZJC_DEBUG("check gid valid called hash: %s, parent hash: %s, count: %u",
+                common::Encode::HexEncode(phash).c_str(),
+                common::Encode::HexEncode(it->second->view_block->parent_hash).c_str(),
+                count);
+            phash = it->second->view_block->parent_hash;
+        }
+
+        ZJC_DEBUG("success check tx gid: %s, phash: %s", 
+            common::Encode::HexEncode(gid).c_str(), 
+            common::Encode::HexEncode(parent_hash).c_str());
+        return true;
+    }
+    Status GetRecursiveChildren(HashStr, std::vector<std::shared_ptr<ViewBlock>>&);
 
     inline std::shared_ptr<ViewBlock> LatestCommittedBlock() const {
         return latest_committed_block_;
@@ -227,7 +268,11 @@ public:
     
 private:
     // prune the branch starting from view_block
-    Status PruneFromBlockToTargetHash(const std::shared_ptr<ViewBlock>& view_block, const std::unordered_set<HashStr>& hashes_of_branch, std::vector<std::shared_ptr<ViewBlock>>& forked_blocks, const HashStr& target_hash);
+    Status PruneFromBlockToTargetHash(
+        const std::shared_ptr<ViewBlock>& view_block, 
+        const std::unordered_set<HashStr>& hashes_of_branch, 
+        std::vector<std::shared_ptr<ViewBlock>>& forked_blocks, 
+        const HashStr& target_hash);
     Status PruneHistoryTo(const std::shared_ptr<ViewBlock>&);
     Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
     Status DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_block);
@@ -244,6 +289,7 @@ private:
     uint32_t pool_index_ = common::kInvalidPoolIndex;
 
     void SetViewBlockToMap(const HashStr& hash, const std::shared_ptr<ViewBlock>& view_block) {
+        assert(!hash.empty());
         auto it = view_blocks_info_.find(hash);
         if (it == view_blocks_info_.end()) {
             view_blocks_info_[hash] = std::make_shared<ViewBlockInfo>();
@@ -265,6 +311,7 @@ private:
         if (it == view_blocks_info_.end()) {
             return;
         }
+
         view_blocks_info_[parent_hash]->children.push_back(view_block);        
     }
 

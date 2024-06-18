@@ -432,7 +432,8 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                     sync_msg.sync_value_req().heights(i).pool_idx(),
                     sync_msg.sync_value_req().heights(i).height(),
                     network::kRootCongressNetworkId, network_id, proto_qc.elect_height());
-                assert(false);
+                // assert(false);
+                return;
             }
 
             assert(test_block.tx_list_size() > 0);

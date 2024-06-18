@@ -12,6 +12,7 @@
 #include "network/network_utils.h"
 #include "pools/cross_block_manager.h"
 #include "pools/cross_pool.h"
+#include "pools/root_cross_pool.h"
 #include "pools/tx_pool.h"
 #include "protos/address.pb.h"
 #include "protos/pools.pb.h"
@@ -47,7 +48,8 @@ public:
         uint32_t pool_index,
         uint32_t count,
         std::map<std::string, TxItemPtr>& res_map,
-        std::unordered_map<std::string, std::string>& kvs);    
+        std::unordered_map<std::string, std::string>& kvs,
+        pools::CheckGidValidFunction gid_vlid_func);    
     void TxOver(
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
@@ -94,6 +96,10 @@ public:
         ZJC_DEBUG("new cross block coming net: %u, pool: %u, height: %lu",
             block_item->network_id(), block_item->pool_index(), block_item->height());
         if (block_item->pool_index() != common::kRootChainPoolIndex) {
+            return;
+        }
+
+        if (block_item->network_id() == network::kRootCongressNetworkId) {
             return;
         }
 
@@ -244,7 +250,9 @@ private:
     void SyncPoolsMaxHeight();
     void HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_ptr);
     void SyncMinssingHeights(uint64_t now_tm_ms);
+    void SyncMinssingRootHeights(uint64_t now_tm_ms);
     void SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height);
+    void SyncRootBlockWithMaxHeights(uint32_t pool_idx, uint64_t height);
     void CheckLeaderValid(const std::vector<double>& factors, std::vector<int32_t>* invalid_pools);
     bool SaveNodeVerfiyVec(
         const std::string& id,
@@ -281,14 +289,17 @@ private:
     uint64_t prev_cacultate_leader_valid_ms_ = 0;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     uint64_t prev_synced_pool_index_ = 0;
+    uint64_t root_prev_synced_pool_index_ = 0;
     uint64_t prev_sync_height_tree_tm_ms_ = 0;
     volatile uint64_t synced_max_heights_[common::kInvalidPoolIndex] = { 0 };
+    volatile uint64_t root_synced_max_heights_[common::kInvalidPoolIndex] = { 0 };
     volatile uint64_t cross_synced_max_heights_[network::kConsensusShardEndNetworkId] = { 0 };
     common::MembersPtr latest_members_;
     uint64_t latest_elect_height_ = 0;
     uint32_t latest_leader_count_ = 0;
     uint32_t member_index_ = common::kInvalidUint32;
     CrossPool* cross_pools_ = nullptr;
+    RootCrossPool* root_cross_pools_ = nullptr;
     uint32_t now_max_sharding_id_ = network::kConsensusShardBeginNetworkId;
     uint32_t prev_cross_sync_index_ = 0;
     std::shared_ptr<CrossBlockManager> cross_block_mgr_ = nullptr;

@@ -108,6 +108,7 @@ public:
     bool HasSingleTx(uint32_t pool_index);
 
 private:
+    typedef std::map<uint64_t, std::shared_ptr<BlockTxsItem>, std::greater<uint64_t>> StatisticMap;
     bool HasToTx(uint32_t pool_index);
     bool HasStatisticTx(uint32_t pool_index);
     bool HasElectTx(uint32_t pool_index);
@@ -225,12 +226,12 @@ private:
     uint64_t latest_elect_height_ = 0;
     int32_t leader_create_to_heights_index_ = 0;
     int32_t leader_create_statistic_heights_index_ = 0;
-    std::map<uint64_t, std::shared_ptr<BlockTxsItem>> shard_statistics_map_;
-    std::map<uint64_t, std::shared_ptr<BlockTxsItem>> cross_statistics_map_;
-    common::ThreadSafeQueue<std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>>> shard_statistics_map_ptr_queue_;
-    std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> got_latest_statistic_map_ptr_ = nullptr;
-    common::ThreadSafeQueue<std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>>> cross_statistics_map_ptr_queue_;
-    std::shared_ptr<std::map<uint64_t, std::shared_ptr<BlockTxsItem>>> got_latest_cross_map_ptr_ = nullptr;
+    StatisticMap shard_statistics_map_;
+    StatisticMap cross_statistics_map_;
+    common::ThreadSafeQueue<std::shared_ptr<StatisticMap>> shard_statistics_map_ptr_queue_;
+    std::shared_ptr<StatisticMap> got_latest_statistic_map_ptr_ = nullptr;
+    common::ThreadSafeQueue<std::shared_ptr<StatisticMap>> cross_statistics_map_ptr_queue_;
+    std::shared_ptr<StatisticMap> got_latest_cross_map_ptr_ = nullptr;
     common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> block_from_network_queue_[common::kMaxThreadCount];
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> to_tx_msg_queue_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> statistic_tx_msg_queue_;

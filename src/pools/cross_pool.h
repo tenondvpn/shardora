@@ -117,7 +117,7 @@ public:
         }
     }
 
-private:
+protected:
     void InitHeightTree();
     void InitLatestInfo() {
         pools::protobuf::PoolLatestInfo pool_info;
