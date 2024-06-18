@@ -76,6 +76,7 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
     Status s = ConstructProposeMsg(sync_info, pb_pro_msg);
     if (s != Status::kSuccess) {
+        NewView(new_sync_info()->WithQC(pacemaker()->HighQC()));
         ZJC_ERROR("pool: %d construct propose msg failed, %d, member_index: %d",
             pool_idx_, s, 
             elect_info_->GetElectItemWithShardingId(
@@ -84,6 +85,7 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     }
     s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
+        NewView(new_sync_info()->WithQC(pacemaker()->HighQC()));
         ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
             pool_idx_, hotstuff_msg->pro_msg().view_item().view());
         return s;
@@ -97,6 +99,7 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     transport::TcpTransport::Instance()->SetMessageHash(header);
     s = crypto()->SignMessage(msg_ptr);
     if (s != Status::kSuccess) {
+        NewView(new_sync_info()->WithQC(pacemaker()->HighQC()));
         ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
             pool_idx_, hotstuff_msg->pro_msg().view_item().view());
         return s;
@@ -421,7 +424,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率高很多
-    NewView(new_sync_info()->WithQC(qc));
+    // NewView(new_sync_info()->WithQC(qc));
     
     // 一旦生成新 QC，且本地还没有该 view_block，就直接从 VoteMsg 中获取并添加
     // 没有这个逻辑也不影响共识，只是需要同步而导致 tps 降低
