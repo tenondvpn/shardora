@@ -477,7 +477,6 @@ Status Hotstuff::StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_bloc
     }
 
     TryCommit(v_block->qc);
-    
     return view_block_chain()->Store(v_block);
 }
 
@@ -525,7 +524,6 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
             // 在这里不能 Commit，否则 Leader 会变，导致无法验证 Proposal
         }
     }    
-    return;
 }
 
 void Hotstuff::HandlePreResetTimerMsg(const transport::protobuf::Header& header) {
@@ -552,7 +550,6 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::protobuf::Header& header)
 
     ResetReplicaTimers();
     ZJC_DEBUG("reset timer success!");
-    return;
 }
 
 Status Hotstuff::ResetReplicaTimers() {
@@ -828,7 +825,7 @@ Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
         }
 
         ZJC_DEBUG("failed verify leader index: %u, %u", leader_idx, leader->index);
-        assert(false);
+        // assert(false);
         return Status::kError;
     }
     return Status::kSuccess;
