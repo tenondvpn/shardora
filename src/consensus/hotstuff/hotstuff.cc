@@ -440,7 +440,6 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率:q高很多
     ZJC_DEBUG("NewView propose newview called pool: %u, qc_view: %lu, tc_view: %lu",
         pool_idx_, pacemaker()->HighQC()->view, pacemaker()->HighTC()->view);
-    NewView(new_sync_info()->WithQC(qc));
     
     // 一旦生成新 QC，且本地还没有该 view_block，就直接从 VoteMsg 中获取并添加
     // 没有这个逻辑也不影响共识，只是需要同步而导致 tps 降低
@@ -458,8 +457,10 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         }        
     }
 
-    Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
-    return;
+    auto propose_st = Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
+    if (propose_st != Status::kSuccess) {
+        NewView(new_sync_info()->WithQC(qc));
+    }
 }
 
 Status Hotstuff::StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_block, const std::shared_ptr<QC>& qc) {
