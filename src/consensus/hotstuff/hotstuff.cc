@@ -230,7 +230,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(v_block->qc));
     // Commit 一定要在 Txs Accept 之前，因为一旦 v_block->qc 合法就已经可以 Commit 了，不需要 Txs 合法
-    TryCommit(pacemaker()->HighQC());    
+    TryCommit(v_block->qc);    
     
     // 4 Verify ViewBlock    
     if (VerifyViewBlock(
