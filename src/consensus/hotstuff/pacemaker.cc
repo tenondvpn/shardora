@@ -219,6 +219,10 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     
     // 统计 bls 签名
     auto& timeout_proto = msg.hotstuff_timeout_proto();
+    if (timeout_proto.view() <= CurView()) {
+        return;
+    }
+    
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
     Status s = crypto_->ReconstructAndVerifyThresSign(
             timeout_proto.elect_height(),
