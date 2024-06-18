@@ -212,6 +212,14 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     if (HasVoted(v_block->view)) {
         ZJC_ERROR("pool: %d has voted: %lu", pool_idx_, v_block->view);
         return;
+    }    
+    
+    // 2 Veriyfy Leader
+    // NewView 和 HighQC 的同步时不能尝试 Commit，否则会影响 leader 验证
+    if (VerifyLeader(v_block->leader_idx) != Status::kSuccess) {
+        ZJC_WARN("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
+            pool_idx_, v_block->view, header.hash64());
+        return;
     }
 
     if (VerifyQC(v_block->qc) != Status::kSuccess) {
@@ -223,14 +231,6 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     pacemaker()->AdvanceView(new_sync_info()->WithQC(v_block->qc));
     // Commit 一定要在 Txs Accept 之前，因为一旦 v_block->qc 合法就已经可以 Commit 了，不需要 Txs 合法
     TryCommit(v_block->qc);    
-    
-    // 2 Veriyfy Leader
-    // NewView 和 HighQC 的同步时不能尝试 Commit，否则会影响 leader 验证
-    if (VerifyLeader(v_block->leader_idx) != Status::kSuccess) {
-        ZJC_WARN("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
-            pool_idx_, v_block->view, header.hash64());
-        return;
-    }
     
     // 4 Verify ViewBlock    
     if (VerifyViewBlock(
