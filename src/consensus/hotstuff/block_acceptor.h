@@ -187,8 +187,10 @@ private:
             if (now_tm_us > prev_tps_tm_us_ + 2000000lu) {
                 cur_tps_ = (double(prev_count_) / (double(now_tm_us - prev_tps_tm_us_) / 1000000.0)); 
                 prev_tps_tm_us_ = now_tm_us;
+                if (prev_count_ > 0) {
+                    ZJC_INFO("pool: %d, tps: %.2f", pool_idx_, cur_tps_);
+                }
                 prev_count_ = 0;
-                ZJC_INFO("pool: %d, tps: %.2f", pool_idx_, cur_tps_);
             }
         }        
     }
