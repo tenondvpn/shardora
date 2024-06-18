@@ -559,8 +559,7 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
 
             ZJC_DEBUG("====3.3 pool: %d, qc: %lu, onNewview", pool_idx_, qc->view);
             pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
-            // NewView 不能触发 Commit，因为 NewView 一般是 Propose 失败后触发，
-            // 此时 replicas 同时触发超时逻辑，Commit 造成的 Leader 更换会导致无法成功触发超时
+            
             TryCommit(qc);
         }
     }    

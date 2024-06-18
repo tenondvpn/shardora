@@ -42,7 +42,7 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
 
 std::string GetBlockHash(const block::protobuf::Block& block) {
     std::string msg;
-    msg.reserve(block.tx_list_size() * 32 + 256);
+    msg.reserve(block.tx_list_size() * 36 + 256);
     for (int32_t i = 0; i < block.tx_list_size(); i++) {
         msg.append(GetTxMessageHash(block.tx_list(i)));
     }
@@ -64,7 +64,7 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
     msg.append((char*)&timestamp, sizeof(timestamp));  
     uint32_t leader_idx = block.leader_index();
     msg.append((char*)&leader_idx, sizeof(leader_idx));
-    msg.append(block.leader_ip());
+    // msg.append(block.leader_ip());
     uint32_t leader_port = block.leader_port();
     msg.append((char*)&leader_port, sizeof(leader_port));
     if (block.change_leader_invalid_hashs_size() > 0) {
