@@ -225,6 +225,17 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
             pool_idx_, v_block->view, header.hash64());
         return;
     }
+
+    if (VerifyQC(v_block->qc) != Status::kSuccess) {
+        ZJC_ERROR("pool: %d verify qc failed: %lu", pool_idx_, v_block->view);
+        return;
+    }
+
+    // 切换视图
+    pacemaker()->AdvanceView(new_sync_info()->WithQC(v_block->qc));
+    // Commit 一定要在 Txs Accept 之前，因为一旦 v_block->qc 合法就已经可以 Commit 了，不需要 Txs 合法
+    // Commit 会导致 Leader 更换，且由于 HandleProposeMsg 只接受合法 Leader 的消息，因此在 VerifyLeader 之后
+    TryCommit(v_block->qc);    
     
     // 4 Verify ViewBlock    
     if (VerifyViewBlock(
@@ -236,7 +247,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
             common::Encode::HexEncode(v_block->hash).c_str(),
             header.hash64());
         return;
-    }
+    }    
     
     ZJC_DEBUG("====1.1 pool: %d, verify view block success, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
         pool_idx_,
@@ -548,7 +559,8 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
 
             ZJC_DEBUG("====3.3 pool: %d, qc: %lu, onNewview", pool_idx_, qc->view);
             pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
-            // Commit
+            // NewView 不能触发 Commit，因为 NewView 一般是 Propose 失败后触发，
+            // 此时 replicas 同时触发超时逻辑，Commit 造成的 Leader 更换会导致无法成功触发超时
             TryCommit(qc);
         }
     }    
@@ -723,6 +735,19 @@ Status Hotstuff::Commit(
     return Status::kSuccess;
 }
 
+Status Hotstuff::VerifyQC(const std::shared_ptr<QC>& qc) {
+    // 验证 qc
+    if (!qc) {
+        return Status::kError;
+    }
+    if (qc->view > pacemaker()->HighQC()->view) {
+        if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
+            return Status::kError; 
+        }
+    }    
+    return Status::kSuccess;
+}
+
 Status Hotstuff::VerifyViewBlock(
         const std::shared_ptr<ViewBlock>& v_block, 
         const std::shared_ptr<ViewBlockChain>& view_block_chain,
@@ -751,14 +776,6 @@ Status Hotstuff::VerifyViewBlock(
     if (qc->view_block_hash != v_block->parent_hash) {
         ZJC_ERROR("qc ref is different from hash ref");
         return Status::kError;        
-    }
-
-    // 验证 qc
-    if (qc->view > pacemaker()->HighQC()->view) {
-        if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
-            ZJC_ERROR("Verify qc is error. elect_height: %llu, qc: %llu", elect_height, qc->view);
-            return Status::kError; 
-        }
     }
 
     // hotstuff condition

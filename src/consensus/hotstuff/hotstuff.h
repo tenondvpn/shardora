@@ -215,7 +215,8 @@ private:
     Status CommitInner(const std::shared_ptr<ViewBlock>& v_block);
     Status VerifyVoteMsg(
             const hotstuff::protobuf::VoteMsg& vote_msg);
-    Status VerifyLeader(const uint32_t& leader_idx);    
+    Status VerifyLeader(const uint32_t& leader_idx);
+    Status VerifyQC(const std::shared_ptr<QC>& qc);
     Status VerifyViewBlock(
             const std::shared_ptr<ViewBlock>& v_block, 
             const std::shared_ptr<ViewBlockChain>& view_block_chain,
