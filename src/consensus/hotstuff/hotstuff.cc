@@ -230,6 +230,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(v_block->qc));
     // Commit 一定要在 Txs Accept 之前，因为一旦 v_block->qc 合法就已经可以 Commit 了，不需要 Txs 合法
+    // Commit 会导致 Leader 更换，且由于 HandleProposeMsg 只接受合法 Leader 的消息，因此在 VerifyLeader 之后
     TryCommit(v_block->qc);    
     
     // 4 Verify ViewBlock    
