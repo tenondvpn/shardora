@@ -263,6 +263,16 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         ZJC_ERROR("Accept tx is error");
         return;
     }
+
+    // 更新 leader 共识分数
+    if (WITH_CONSENSUS_STATISTIC) {
+        auto elect_item = elect_info()->GetElectItem(
+                v_block->block->network_id(),
+                v_block->ElectHeight());
+        if (elect_item && elect_item->IsValid()) {
+            elect_item->consensus_stat(pool_idx_)->Accept(v_block);
+        }        
+    }
     
     // 更新哈希值
     v_block->UpdateHash();
@@ -974,10 +984,6 @@ Status Hotstuff::ConstructViewBlock(
             common::GlobalInfo::Instance()->network_id(), view_block->ElectHeight());
     if (!elect_item || !elect_item->IsValid()) {
         return Status::kError;
-    }
-    view_block->leader_consen_stat = elect_item->consensus_stat(pool_idx_)->GetMemberConsensusStat(leader_idx);
-    if (WITH_CONSENSUS_STATISTIC) { // 开启统计
-        view_block->leader_consen_stat->succ_num++;
     }
     
     view_block->hash = view_block->DoHash();

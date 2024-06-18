@@ -18,6 +18,13 @@ ConsensusStat::ConsensusStat(
 
 ConsensusStat::~ConsensusStat() {}
 
+Status ConsensusStat::Accept(std::shared_ptr<ViewBlock>& v_block) {
+    v_block->leader_consen_stat = GetMemberConsensusStat(v_block->leader_idx);
+    v_block->leader_consen_stat->succ_num++;
+    
+    return Status::kSuccess;
+}
+
 Status ConsensusStat::Commit(const std::shared_ptr<ViewBlock> &v_block) {
     if (!v_block || !v_block->leader_consen_stat) {
         return Status::kError;

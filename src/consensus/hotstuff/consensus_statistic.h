@@ -17,6 +17,7 @@ public:
     ConsensusStat& operator=(const ConsensusStat&) = delete;
     
     // 提交并生效共识统计数据
+    Status Accept(std::shared_ptr<ViewBlock>& v_block);
     Status Commit(const std::shared_ptr<ViewBlock>& v_block);
 
     void SetMemberConsensusStat(
