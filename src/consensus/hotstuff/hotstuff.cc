@@ -534,6 +534,7 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
             ZJC_DEBUG("====3.3 pool: %d, qc: %lu, onNewview", pool_idx_, qc->view);
             pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
             // 在这里不能 Commit，否则 Leader 会变，导致无法验证 Proposal
+            TryCommit(qc);
         }
     }    
 }
@@ -1050,8 +1051,9 @@ Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& t
         }
     }
  
-    ZJC_DEBUG("send to leader %d message to leader net: %u, %s, "
+    ZJC_DEBUG("pool index: %u, send to leader %d message to leader net: %u, %s, "
         "hash64: %lu, %s:%d, leader->index: %d, leader_idx: %d",
+        pool_idx_,
         msg_type,
         leader->net_id, 
         common::Encode::HexEncode(leader->id).c_str(), 
