@@ -215,6 +215,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     }    
     
     // 2 Veriyfy Leader
+    // NewView 和 HighQC 的同步时不能尝试 Commit，否则会影响 leader 验证
     if (VerifyLeader(v_block->leader_idx) != Status::kSuccess) {
         ZJC_WARN("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
             pool_idx_, v_block->view, header.hash64());
@@ -263,31 +264,20 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         ZJC_ERROR("Accept tx is error");
         return;
     }
+
+    // 更新 leader 共识分数
+    if (WITH_CONSENSUS_STATISTIC) {
+        auto elect_item = elect_info()->GetElectItem(
+                v_block->block->network_id(),
+                v_block->ElectHeight());
+        if (elect_item && elect_item->IsValid()) {
+            elect_item->consensus_stat(pool_idx_)->Accept(v_block);
+        }        
+    }
     
     // 更新哈希值
     v_block->UpdateHash();
-#ifndef NDEBUG
-    for (int32_t i = 0; i < v_block->block->tx_list_size(); ++i) {
-        ZJC_DEBUG("block net: %u, pool: %u, height: %lu, prehash: %s, hash: %s, step: %d, "
-            "pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, "
-            "vblock: %lu, txs: %lu, vote block hash: %s",
-            block_info->block->network_id(),
-            block_info->block->pool_index(),
-            block_info->block->height(),
-            common::Encode::HexEncode(block_info->block->prehash()).c_str(),
-            common::Encode::HexEncode(block_info->block->hash()).c_str(),
-            block_info->block->tx_list(i).step(),
-            pool_idx_,
-            pacemaker()->HighQC()->view,
-            pacemaker()->HighTC()->view,
-            view_block_chain()->Size(),
-            pacemaker()->CurView(),
-            v_block->view,
-            v_block->block->tx_list_size(),
-            common::Encode::HexEncode(v_block->hash).c_str());
 
-    }
-#endif
     // 6 add view block
     if (view_block_chain()->Store(v_block) != Status::kSuccess) {
         ZJC_ERROR("pool: %d, add view block error. hash: %s",
@@ -401,7 +391,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
         reconstructed_sign == nullptr,
         vote_msg.view());
-    auto qc = std::make_shared<QC>();
+    auto new_qc = std::make_shared<QC>();
     Status s = crypto()->CreateQC(
         vote_msg.view_block_hash(),
         vote_msg.commit_view_block_hash(),
@@ -409,7 +399,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         elect_height,
         vote_msg.leader_idx(),
         reconstructed_sign,
-        qc);
+        new_qc);
     if (s != Status::kSuccess) {
         return;
     }
@@ -428,20 +418,17 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
 
     assert(block.tx_list_size() > 0);
 #endif
-
-    // 切换视图
-    pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
-    // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率高很多
-    NewView(new_sync_info()->WithQC(qc));
+    
+    pacemaker()->AdvanceView(new_sync_info()->WithQC(new_qc));
     
     // 一旦生成新 QC，且本地还没有该 view_block，就直接从 VoteMsg 中获取并添加
     // 没有这个逻辑也不影响共识，只是需要同步而导致 tps 降低
-    if (vote_msg.has_view_block_item() && !view_block_chain()->Has(qc->view_block_hash)) {
+    if (vote_msg.has_view_block_item() && !view_block_chain()->Has(new_qc->view_block_hash)) {
         auto pb_v_block = vote_msg.view_block_item();
         auto v_block = std::make_shared<ViewBlock>();
         s = Proto2ViewBlock(pb_v_block, v_block);
         if (s == Status::kSuccess) {
-            s = StoreVerifiedViewBlock(v_block, qc);
+            s = StoreVerifiedViewBlock(v_block, new_qc);
             if (s != Status::kSuccess) {
                 ZJC_ERROR("pool: %d store verified view block failed, ret: %d", pool_idx_, s);
             } else {
@@ -450,7 +437,10 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         }        
     }
 
-    Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
+    s = Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
+    if (s != Status::kSuccess) {
+        NewView(new_sync_info()->WithQC(pacemaker()->HighQC())->WithTC(pacemaker()->HighTC()));
+    }
     return;
 }
 
@@ -513,7 +503,8 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
 
             ZJC_DEBUG("====3.3 pool: %d, qc: %lu, onNewview", pool_idx_, qc->view);
             pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
-            // 在这里不能 Commit，否则 Leader 会变，导致无法验证 Proposal
+            // Commit
+            TryCommit(qc);
         }
     }    
     return;
@@ -583,6 +574,9 @@ void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
     //     pool_idx_, rst_timer_msg.leader_idx(), elect_info_->GetElectItem()->LocalMember()->index);
     // leader 必须正确
     if (VerifyLeader(rst_timer_msg.leader_idx()) != Status::kSuccess) {
+        if (sync_pool_fn_) { // leader 不一致触发同步
+            sync_pool_fn_(pool_idx_, 1);
+        }
         return;
     }
     // 必须处于 stuck 状态
@@ -836,6 +830,10 @@ Status Hotstuff::ConstructProposeMsg(
     auto tx_propose = std::make_shared<hotstuff::protobuf::TxPropose>();
     Status s = ConstructViewBlock(new_view_block, tx_propose);
     if (s != Status::kSuccess) {
+        ZJC_ERROR("pool: %d construct view block failed, view: %lu, %d, member_index: %d",
+            pool_idx_, pacemaker()->HighQC()->view, s, 
+            elect_info_->GetElectItemWithShardingId(
+                common::GlobalInfo::Instance()->network_id())->LocalMember()->index);        
         return s;
     }
 
@@ -974,10 +972,6 @@ Status Hotstuff::ConstructViewBlock(
             common::GlobalInfo::Instance()->network_id(), view_block->ElectHeight());
     if (!elect_item || !elect_item->IsValid()) {
         return Status::kError;
-    }
-    view_block->leader_consen_stat = elect_item->consensus_stat(pool_idx_)->GetMemberConsensusStat(leader_idx);
-    if (WITH_CONSENSUS_STATISTIC) { // 开启统计
-        view_block->leader_consen_stat->succ_num++;
     }
     
     view_block->hash = view_block->DoHash();

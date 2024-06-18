@@ -78,6 +78,10 @@ public:
     void SetSyncViewBlockFn(SyncViewBlockFn sync_fn) {
         sync_view_block_fn_ = sync_fn;
     }
+
+    void SetSyncPoolFn(SyncPoolFn sync_fn) {
+        sync_pool_fn_ = sync_fn;
+    }    
     
     Status Start();
     
@@ -89,12 +93,7 @@ public:
     void NewView(const std::shared_ptr<SyncInfo>& sync_info);
     Status Propose(const std::shared_ptr<SyncInfo>& sync_info);
     Status ResetReplicaTimers();
-    Status TryCommit(const std::shared_ptr<QC> commit_qc);
-    Status VerifyViewBlock(
-            const std::shared_ptr<ViewBlock>& v_block, 
-            const std::shared_ptr<ViewBlockChain>& view_block_chain,
-            const std::shared_ptr<TC>& tc,
-            const uint32_t& elect_height);    
+    Status TryCommit(const std::shared_ptr<QC> commit_qc);    
 
     void StopVoting(const View& view) {
         if (last_vote_view_ < view) {
@@ -207,6 +206,7 @@ private:
     common::FlowControl recover_from_struct_fc_{1};
     common::FlowControl reset_timer_fc_{1};
     SyncViewBlockFn sync_view_block_fn_ = nullptr;
+    SyncPoolFn sync_pool_fn_ = nullptr;
 
     Status Commit(
             const std::shared_ptr<ViewBlock>& v_block,
@@ -215,7 +215,12 @@ private:
     Status CommitInner(const std::shared_ptr<ViewBlock>& v_block);
     Status VerifyVoteMsg(
             const hotstuff::protobuf::VoteMsg& vote_msg);
-    Status VerifyLeader(const uint32_t& leader_idx);
+    Status VerifyLeader(const uint32_t& leader_idx);    
+    Status VerifyViewBlock(
+            const std::shared_ptr<ViewBlock>& v_block, 
+            const std::shared_ptr<ViewBlockChain>& view_block_chain,
+            const std::shared_ptr<TC>& tc,
+            const uint32_t& elect_height);    
     Status ConstructProposeMsg(
             const std::shared_ptr<SyncInfo>& sync_info,
             hotstuff::protobuf::ProposeMsg* pro_msg);
