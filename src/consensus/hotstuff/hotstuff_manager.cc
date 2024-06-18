@@ -219,6 +219,9 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    ZJC_DEBUG("hotstuff message coming from: %u:%d, hash64: %lu, type: %d", 
+        msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort(), 
+        header.hash64(), header.hotstuff().type());
     if (header.has_hotstuff()) {
         auto& hotstuff_msg = header.hotstuff();
         if (hotstuff_msg.net_id() != common::GlobalInfo::Instance()->network_id()) {
