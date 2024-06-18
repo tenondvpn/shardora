@@ -47,7 +47,7 @@ void Hotstuff::Init() {
 Status Hotstuff::Start() {
     auto leader = leader_rotation()->GetLeader();
     auto elect_item = elect_info_->GetElectItemWithShardingId(common::GlobalInfo::Instance()->network_id());
-    if (!elect_item) {
+    if (!elect_item || !elect_item->IsValid()) {
         return Status::kElectItemNotFound;
     }
     auto local_member = elect_item->LocalMember();
@@ -219,6 +219,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     }    
     
     // 2 Veriyfy Leader
+    // NewView 和 HighQC 的同步时不能尝试 Commit，否则会影响 leader 验证
     if (VerifyLeader(v_block->leader_idx) != Status::kSuccess) {
         ZJC_WARN("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
             pool_idx_, v_block->view, header.hash64());
@@ -282,6 +283,16 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
             pacemaker()->HighQC()->view,
             header.hash64());
         return;
+    }
+
+    // 更新 leader 共识分数
+    if (WITH_CONSENSUS_STATISTIC) {
+        auto elect_item = elect_info()->GetElectItem(
+                v_block->block->network_id(),
+                v_block->ElectHeight());
+        if (elect_item && elect_item->IsValid()) {
+            elect_item->consensus_stat(pool_idx_)->Accept(v_block);
+        }        
     }
     
     // 更新哈希值
@@ -419,7 +430,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
         reconstructed_sign == nullptr,
         vote_msg.view());
-    auto qc = std::make_shared<QC>();
+    auto new_qc = std::make_shared<QC>();
     Status s = crypto()->CreateQC(
         vote_msg.view_block_hash(),
         vote_msg.commit_view_block_hash(),
@@ -427,7 +438,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         elect_height,
         vote_msg.leader_idx(),
         reconstructed_sign,
-        qc);
+        new_qc);
     if (s != Status::kSuccess) {
         return;
     }
@@ -448,19 +459,19 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
 #endif
 
     // 切换视图
-    pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
+    pacemaker()->AdvanceView(new_sync_info()->WithQC(new_qc));
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率:q高很多
     ZJC_DEBUG("NewView propose newview called pool: %u, qc_view: %lu, tc_view: %lu",
         pool_idx_, pacemaker()->HighQC()->view, pacemaker()->HighTC()->view);
     
     // 一旦生成新 QC，且本地还没有该 view_block，就直接从 VoteMsg 中获取并添加
     // 没有这个逻辑也不影响共识，只是需要同步而导致 tps 降低
-    if (vote_msg.has_view_block_item() && !view_block_chain()->Has(qc->view_block_hash)) {
+    if (vote_msg.has_view_block_item() && !view_block_chain()->Has(new_qc->view_block_hash)) {
         auto pb_v_block = vote_msg.view_block_item();
         auto v_block = std::make_shared<ViewBlock>();
         s = Proto2ViewBlock(pb_v_block, v_block);
         if (s == Status::kSuccess) {
-            s = StoreVerifiedViewBlock(v_block, qc);
+            s = StoreVerifiedViewBlock(v_block, new_qc);
             if (s != Status::kSuccess) {
                 ZJC_ERROR("pool: %d store verified view block failed, ret: %d", pool_idx_, s);
             } else {
@@ -469,10 +480,11 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         }        
     }
 
-    auto propose_st = Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
-    if (propose_st != Status::kSuccess) {
-        NewView(new_sync_info()->WithQC(qc));
+    s = Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
+    if (s != Status::kSuccess) {
+        NewView(new_sync_info()->WithQC(pacemaker()->HighQC())->WithTC(pacemaker()->HighTC()));
     }
+    return;
 }
 
 Status Hotstuff::StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_block, const std::shared_ptr<QC>& qc) {
@@ -533,7 +545,7 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
 
             ZJC_DEBUG("====3.3 pool: %d, qc: %lu, onNewview", pool_idx_, qc->view);
             pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
-            // 在这里不能 Commit，否则 Leader 会变，导致无法验证 Proposal
+            // Commit
             TryCommit(qc);
         }
     }    
@@ -602,6 +614,9 @@ void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
     //     pool_idx_, rst_timer_msg.leader_idx(), elect_info_->GetElectItem()->LocalMember()->index);
     // leader 必须正确
     if (VerifyLeader(rst_timer_msg.leader_idx()) != Status::kSuccess) {
+        if (sync_pool_fn_) { // leader 不一致触发同步
+            sync_pool_fn_(pool_idx_, 1);
+        }
         return;
     }
     // 必须处于 stuck 状态
@@ -808,6 +823,13 @@ Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
         ZJC_ERROR("pool: %d, commit failed s: %d, vb view: %lu", pool_idx_, s, v_block->view);
         return s;
     }
+    // 提交 v_block->consensus_stat 共识数据
+    auto elect_item = elect_info()->GetElectItem(
+            v_block->block->network_id(),
+            v_block->ElectHeight());
+    if (elect_item && elect_item->IsValid()) {
+        elect_item->consensus_stat(pool_idx_)->Commit(v_block);
+    }    
     
     view_block_chain()->SetLatestCommittedBlock(v_block);    
     return Status::kSuccess;
@@ -851,6 +873,10 @@ Status Hotstuff::ConstructProposeMsg(
     auto tx_propose = std::make_shared<hotstuff::protobuf::TxPropose>();
     Status s = ConstructViewBlock(new_view_block, tx_propose);
     if (s != Status::kSuccess) {
+        ZJC_ERROR("pool: %d construct view block failed, view: %lu, %d, member_index: %d",
+            pool_idx_, pacemaker()->HighQC()->view, s, 
+            elect_info_->GetElectItemWithShardingId(
+                common::GlobalInfo::Instance()->network_id())->LocalMember()->index);        
         return s;
     }
 
@@ -874,7 +900,7 @@ Status Hotstuff::ConstructVoteMsg(
     auto elect_item = elect_info_->GetElectItem(
         common::GlobalInfo::Instance()->network_id(), 
         elect_height);
-    if (!elect_item) {
+    if (!elect_item || !elect_item->IsValid()) {
         return Status::kError;
     }
     uint32_t replica_idx = elect_item->LocalMember()->index;
@@ -985,6 +1011,12 @@ Status Hotstuff::ConstructViewBlock(
     }
 
     view_block->block = pb_block;
+    auto elect_item = elect_info_->GetElectItem(
+            common::GlobalInfo::Instance()->network_id(), view_block->ElectHeight());
+    if (!elect_item || !elect_item->IsValid()) {
+        return Status::kError;
+    }
+    
     view_block->hash = view_block->DoHash();
     return Status::kSuccess;
 }
@@ -1083,7 +1115,7 @@ void Hotstuff::TryRecoverFromStuck() {
             
             auto elect_item = elect_info_->GetElectItemWithShardingId(
                 common::GlobalInfo::Instance()->network_id());
-            if (!elect_item) {
+            if (!elect_item || !elect_item->IsValid()) {
                 ZJC_ERROR("pool: %d no elect item found", pool_idx_);
                 return;
             }

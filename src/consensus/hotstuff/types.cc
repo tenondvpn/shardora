@@ -19,7 +19,9 @@ HashStr GetQCMsgHash(
     std::stringstream ss;
     assert(net_id <= network::kConsensusShardEndNetworkId);
     assert(pool_index < common::kInvalidPoolIndex);
-    ss << net_id << pool_index << view << view_block_hash << commit_view_block_hash << elect_height << leader_idx;
+    ss << net_id << pool_index << view <<
+        view_block_hash << commit_view_block_hash <<
+        elect_height << leader_idx;
     std::string msg = ss.str();
     auto msg_hash = common::Hash::keccak256(msg); 
     ZJC_DEBUG("success get qc msg hash net: %u, pool: %u, view: %lu, view_block_hash: %s, "
@@ -97,20 +99,25 @@ bool QC::Unserialize(const std::string& str) {
 HashStr ViewBlock::DoHash() const {
     std::string qc_hash;
     std::string block_hash;
+    std::string leader_consen_stat_hash;
     if (qc) {
         qc_hash = qc->msg_hash();
     }
     if (block) {
         block_hash = GetBlockHash(*block);
     }
+    if (leader_consen_stat) {
+        leader_consen_stat_hash = leader_consen_stat->GetHash();
+    }
 
     std::string msg;
-    msg.reserve(qc_hash.size() + block_hash.size() + parent_hash.size() + sizeof(leader_idx) + sizeof(view));
+    msg.reserve(qc_hash.size() + block_hash.size() + parent_hash.size() + sizeof(leader_idx) + sizeof(view) + leader_consen_stat_hash.size());
     msg.append(qc_hash);
     msg.append(block_hash);
     msg.append(parent_hash);
     msg.append((char*)&(leader_idx), sizeof(leader_idx));
     msg.append((char*)&(view), sizeof(view));
+    msg.append(leader_consen_stat_hash);
 
     ZJC_DEBUG("do hash qc_hash: %s, block hash: %s, parent_hash: %s, leader_idx: %u, view: %lu", 
         common::Encode::HexEncode(qc_hash).c_str(), 
@@ -134,6 +141,11 @@ void ViewBlock2Proto(const std::shared_ptr<ViewBlock>& view_block, view_block::p
     } else {
         view_block_proto->set_qc_str("");
     }
+    if (view_block->leader_consen_stat) {
+        auto stat = view_block_proto->mutable_leader_consen_stat();
+        stat->set_succ_num(view_block->leader_consen_stat->succ_num);
+        stat->set_fail_num(view_block->leader_consen_stat->fail_num);
+    }
     view_block_proto->set_view(view_block->view);
 }
 
@@ -156,6 +168,14 @@ Status Proto2ViewBlock(const view_block::protobuf::ViewBlockItem& view_block_pro
         if (!view_block->qc->Unserialize(view_block_proto.qc_str())) {
             return Status::kError;
         }
+    }
+
+    if (!view_block_proto.has_leader_consen_stat()) {
+        view_block->leader_consen_stat = nullptr;
+    } else {
+        view_block->leader_consen_stat = std::make_shared<MemberConsensusStat>(
+                view_block_proto.leader_consen_stat().succ_num(),
+                view_block_proto.leader_consen_stat().fail_num());
     }
     
     return Status::kSuccess;

@@ -42,6 +42,7 @@ using SyncViewBlockFn = std::function<void(const uint32_t&, const HashStr&)>;
 static const uint64_t STUCK_PACEMAKER_DURATION_MIN_US =
     2000000lu; // the min duration that hotstuff can be considered stucking
 static const bool VOTE_MSG_WITH_VBLOCK = false; // vote msg with vblock to make sure next leader has that block, which is good for tps improvement, TODO 没有必要，其实影响不大，还占用带宽，不知道节点多了之后有没有帮助，先留着代码
+static const bool WITH_CONSENSUS_STATISTIC = true; // 是否开启 leader 的共识数据统计
 
 class Hotstuff {
 public:
@@ -77,6 +78,10 @@ public:
     void SetSyncViewBlockFn(SyncViewBlockFn sync_fn) {
         sync_view_block_fn_ = sync_fn;
     }
+
+    void SetSyncPoolFn(SyncPoolFn sync_fn) {
+        sync_pool_fn_ = sync_fn;
+    }    
     
     Status Start();
     
@@ -88,12 +93,7 @@ public:
     void NewView(const std::shared_ptr<SyncInfo>& sync_info);
     Status Propose(const std::shared_ptr<SyncInfo>& sync_info);
     Status ResetReplicaTimers();
-    Status TryCommit(const std::shared_ptr<QC> commit_qc);
-    Status VerifyViewBlock(
-            const std::shared_ptr<ViewBlock>& v_block, 
-            const std::shared_ptr<ViewBlockChain>& view_block_chain,
-            const std::shared_ptr<TC>& tc,
-            const uint32_t& elect_height);    
+    Status TryCommit(const std::shared_ptr<QC> commit_qc);    
 
     void StopVoting(const View& view) {
         if (last_vote_view_ < view) {
@@ -109,6 +109,13 @@ public:
             vblock->block->pool_index(),
             vblock->block->height());
         acceptor()->CommitSynced(vblock->block);
+        auto elect_item = elect_info()->GetElectItem(
+                vblock->block->network_id(),
+                vblock->ElectHeight());
+        if (elect_item && elect_item->IsValid()) {
+            elect_item->consensus_stat(pool_idx_)->Commit(vblock);
+        }
+        
         auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
         if (!latest_committed_block || latest_committed_block->view < vblock->view) {
             view_block_chain()->SetLatestCommittedBlock(vblock);        
@@ -199,6 +206,7 @@ private:
     common::FlowControl recover_from_struct_fc_{1};
     common::FlowControl reset_timer_fc_{1};
     SyncViewBlockFn sync_view_block_fn_ = nullptr;
+    SyncPoolFn sync_pool_fn_ = nullptr;
 
     Status Commit(
             const std::shared_ptr<ViewBlock>& v_block,
@@ -207,7 +215,12 @@ private:
     Status CommitInner(const std::shared_ptr<ViewBlock>& v_block);
     Status VerifyVoteMsg(
             const hotstuff::protobuf::VoteMsg& vote_msg);
-    Status VerifyLeader(const uint32_t& leader_idx);
+    Status VerifyLeader(const uint32_t& leader_idx);    
+    Status VerifyViewBlock(
+            const std::shared_ptr<ViewBlock>& v_block, 
+            const std::shared_ptr<ViewBlockChain>& view_block_chain,
+            const std::shared_ptr<TC>& tc,
+            const uint32_t& elect_height);    
     Status ConstructProposeMsg(
             const std::shared_ptr<SyncInfo>& sync_info,
             hotstuff::protobuf::ProposeMsg* pro_msg);
