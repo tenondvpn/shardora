@@ -292,7 +292,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             }
         }
 
-        if (pool_tps >= 0.000001) {
+        if (tps >= 0.000001) {
             ZJC_INFO("tps: %.2f", tps);
         }
     }
