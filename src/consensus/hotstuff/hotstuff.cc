@@ -954,10 +954,10 @@ Status Hotstuff::ConstructVoteMsg(
     {
         auto* tx_ptr = vote_msg->add_txs();
         *tx_ptr = *(txs[i].get());
-        ZJC_DEBUG("vote send tx message type: %d, to: %s, gid: %s", 
-            tx_ptr->step(), 
-            common::Encode::HexEncode(tx_ptr->to()).c_str(), 
-            common::Encode::HexEncode(tx_ptr->gid()).c_str());
+        // ZJC_DEBUG("vote send tx message type: %d, to: %s, gid: %s", 
+        //     tx_ptr->step(), 
+        //     common::Encode::HexEncode(tx_ptr->to()).c_str(), 
+        //     common::Encode::HexEncode(tx_ptr->gid()).c_str());
     }
 
     return Status::kSuccess;
