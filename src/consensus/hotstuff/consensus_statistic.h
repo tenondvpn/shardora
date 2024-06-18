@@ -48,4 +48,3 @@ private:
 } // namespace hotstuff
 
 } // namespace shardora
-

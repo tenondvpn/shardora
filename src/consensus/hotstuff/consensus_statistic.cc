@@ -27,7 +27,6 @@ Status ConsensusStat::Accept(std::shared_ptr<ViewBlock>& v_block) {
 }
 
 Status ConsensusStat::Commit(const std::shared_ptr<ViewBlock> &v_block) {
-    ZJC_DEBUG("pool: %d consen stat commit leader: %d, view: %lu, succ: %lu", pool_idx_, v_block->leader_idx, v_block->view, v_block->leader_consen_stat->succ_num);
     if (!v_block || !v_block->leader_consen_stat) {
         return Status::kError;
     }
