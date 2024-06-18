@@ -825,6 +825,10 @@ Status Hotstuff::ConstructProposeMsg(
     auto tx_propose = std::make_shared<hotstuff::protobuf::TxPropose>();
     Status s = ConstructViewBlock(new_view_block, tx_propose);
     if (s != Status::kSuccess) {
+        ZJC_ERROR("pool: %d construct view block failed, view: %lu, %d, member_index: %d",
+            pool_idx_, pacemaker()->HighQC()->view, s, 
+            elect_info_->GetElectItemWithShardingId(
+                common::GlobalInfo::Instance()->network_id())->LocalMember()->index);        
         return s;
     }
 
