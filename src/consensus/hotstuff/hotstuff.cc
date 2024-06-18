@@ -362,7 +362,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         ZJC_ERROR("pool: %d, Send vote message is error.", pool_idx_, header.hash64());
     }
 
-    ZJC_DEBUG("pool: %d, Send vote message is error., hash64: %lu", pool_idx_, header.hash64());
+    ZJC_DEBUG("pool: %d, Send vote message is success., hash64: %lu", pool_idx_, header.hash64());
 }
 
 void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
