@@ -269,6 +269,12 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    if (prev_handler_timer_tm_ms_ > now_tm_ms) {
+        return;
+    }
+
+    prev_handler_timer_tm_ms_ = now_tm_ms + kHandleTimerPeriodMs;
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
