@@ -329,14 +329,15 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     // 成功接入链中，标记交易占用
     acceptor()->MarkBlockTxsAsUsed(v_block->block);
         
-    ZJC_INFO("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, vblock: %lu, txs: %lu",
+    ZJC_INFO("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, vblock: %lu, txs: %lu, hash64: %lu",
         pool_idx_,
         pacemaker()->HighQC()->view,
         pacemaker()->HighTC()->view,
         view_block_chain()->Size(),
         pacemaker()->CurView(),
         v_block->view,
-        v_block->block->tx_list_size());
+        v_block->block->tx_list_size(),
+        header.hash64());
 
     // view_block_chain()->Print();
     
@@ -347,19 +348,21 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     // Construct VoteMsg
     s = ConstructVoteMsg(vote_msg, pro_msg.elect_height(), v_block);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("ConstructVoteMsg error %d", s);
+        ZJC_ERROR("pool: %d, ConstructVoteMsg error %d, hash64: %lu", pool_idx_, s, header.hash64());
         return;
     }
     // Construct HotstuffMessage and send
     s = ConstructHotstuffMsg(VOTE, nullptr, vote_msg, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("ConstructHotstuffMsg error %d", s);
+        ZJC_ERROR("pool: %d, ConstructHotstuffMsg error %d, hash64: %lu", pool_idx_, s, header.hash64());
         return;
     }
     
     if (SendMsgToLeader(trans_msg, VOTE) != Status::kSuccess) {
-        ZJC_ERROR("Send vote message is error.");
+        ZJC_ERROR("pool: %d, Send vote message is error.", pool_idx_, header.hash64());
     }
+
+    ZJC_DEBUG("pool: %d, Send vote message is error., hash64: %lu", pool_idx_, header.hash64());
 }
 
 void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
