@@ -37,6 +37,8 @@ message member {
     optional bytes pubkey = 1;
     optional int32 pool_idx_mod_num = 2;
     optional uint64 mining_amount = 3;
+    optional uint64 fts_value = 4;
+    optional uint64 consensus_gap = 5;
 }
 
 message ElectBlock {

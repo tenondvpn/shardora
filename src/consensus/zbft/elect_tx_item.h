@@ -23,6 +23,7 @@ struct ElectNodeInfo {
     uint32_t index;
     int32_t leader_mod_index;
     uint64_t mining_token;
+    uint64_t consensus_gap;
 };
 
 typedef std::shared_ptr<ElectNodeInfo> NodeDetailPtr;

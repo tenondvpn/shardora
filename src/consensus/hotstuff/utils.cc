@@ -64,6 +64,9 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
     msg.append((char*)&timestamp, sizeof(timestamp));  
     uint32_t leader_idx = block.leader_index();
     msg.append((char*)&leader_idx, sizeof(leader_idx));
+    msg.append(block.leader_ip());
+    uint32_t leader_port = block.leader_port();
+    msg.append((char*)&leader_port, sizeof(leader_port));
     if (block.change_leader_invalid_hashs_size() > 0) {
         for (int32_t i = 0; i < block.change_leader_invalid_hashs_size(); ++i) {
             msg.append(block.change_leader_invalid_hashs(i));
@@ -80,7 +83,7 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
 #endif
     ZJC_DEBUG("block.prehash(): %s, height: %lu,pool_idx: %u, sharding_id: %u, vss_random: %lu, "
         "timeblock_height: %lu, elect_height: %lu, leader_idx: %u, get block hash: %s, tmp_hash: %s, msg: %s, "
-        "is_commited_block: %d",
+        "is_commited_block: %d, leader_ip: %s, leader_port: %u",
         common::Encode::HexEncode(block.prehash()).c_str(),
         height,
         pool_idx,
@@ -92,7 +95,9 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
         common::Encode::HexEncode(common::Hash::keccak256(msg)).c_str(),
         common::Encode::HexEncode(tmp_hash).c_str(),
         common::Encode::HexEncode(msg).c_str(),
-        is_commited_block);
+        is_commited_block,
+        block.leader_ip().c_str(),
+        leader_port);
     return tmp_hash;
 }
 

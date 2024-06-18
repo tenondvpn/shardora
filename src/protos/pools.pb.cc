@@ -25,10 +25,10 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf
 namespace protobuf_protos_2fpools_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_AreaInfo;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_CrossShardStatisticItem;
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_JoinElectNode;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_ShardToTxItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_StatisticTxItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_CrossShardStatistic;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_JoinElectNode;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_PoolStatisticItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_ToTxMessageItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<2> scc_info_ToTxMessage;
@@ -257,8 +257,9 @@ static void InitDefaultsJoinElectNode() {
   ::shardora::pools::protobuf::JoinElectNode::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<0> scc_info_JoinElectNode =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsJoinElectNode}, {}};
+::google::protobuf::internal::SCCInfo<1> scc_info_JoinElectNode =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsJoinElectNode}, {
+      &protobuf_protos_2fpools_2eproto::scc_info_AreaInfo.base,}};
 
 static void InitDefaultsCrossShardStatisticItem() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -475,9 +476,13 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::PoolStatisticItem, elect_height_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::PoolStatisticItem, area_point_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::PoolStatisticItem, gas_sum_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::PoolStatisticItem, credit_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::PoolStatisticItem, consensus_gap_),
   ~0u,
   ~0u,
   0,
+  ~0u,
+  ~0u,
   ~0u,
   ~0u,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::JoinElectNode, _has_bits_),
@@ -489,10 +494,16 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::JoinElectNode, stoke_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::JoinElectNode, shard_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::JoinElectNode, elect_pos_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::JoinElectNode, area_point_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::JoinElectNode, credit_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::JoinElectNode, consensus_gap_),
   0,
-  1,
   2,
   3,
+  4,
+  1,
+  5,
+  6,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::CrossShardStatisticItem, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::CrossShardStatisticItem, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -592,13 +603,13 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 79, 85, sizeof(::shardora::pools::protobuf::AllToTxMessage)},
   { 86, 95, sizeof(::shardora::pools::protobuf::PoolLatestInfo)},
   { 99, 106, sizeof(::shardora::pools::protobuf::AreaInfo)},
-  { 108, 118, sizeof(::shardora::pools::protobuf::PoolStatisticItem)},
-  { 123, 132, sizeof(::shardora::pools::protobuf::JoinElectNode)},
-  { 136, 145, sizeof(::shardora::pools::protobuf::CrossShardStatisticItem)},
-  { 149, 157, sizeof(::shardora::pools::protobuf::CrossShardStatistic)},
-  { 160, 172, sizeof(::shardora::pools::protobuf::ElectStatistic)},
-  { 179, 187, sizeof(::shardora::pools::protobuf::SyncPoolsMaxHeight)},
-  { 190, 210, sizeof(::shardora::pools::protobuf::TxMessage)},
+  { 108, 120, sizeof(::shardora::pools::protobuf::PoolStatisticItem)},
+  { 127, 139, sizeof(::shardora::pools::protobuf::JoinElectNode)},
+  { 146, 155, sizeof(::shardora::pools::protobuf::CrossShardStatisticItem)},
+  { 159, 167, sizeof(::shardora::pools::protobuf::CrossShardStatistic)},
+  { 170, 182, sizeof(::shardora::pools::protobuf::ElectStatistic)},
+  { 189, 197, sizeof(::shardora::pools::protobuf::SyncPoolsMaxHeight)},
+  { 200, 220, sizeof(::shardora::pools::protobuf::TxMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -664,51 +675,55 @@ void AddDescriptorsImpl() {
       "ora.pools.protobuf.ToTxMessage\"X\n\016PoolLa"
       "testInfo\022\016\n\006height\030\001 \001(\004\022\014\n\004hash\030\002 \001(\014\022\025"
       "\n\rsynced_height\030\003 \001(\004\022\021\n\ttimestamp\030\004 \001(\004"
-      "\" \n\010AreaInfo\022\t\n\001x\030\001 \001(\005\022\t\n\001y\030\002 \001(\005\"\223\001\n\021P"
+      "\" \n\010AreaInfo\022\t\n\001x\030\001 \001(\005\022\t\n\001y\030\002 \001(\005\"\272\001\n\021P"
       "oolStatisticItem\022\020\n\010tx_count\030\001 \003(\r\022\016\n\006st"
       "okes\030\002 \003(\004\022\024\n\014elect_height\030\003 \001(\004\0225\n\narea"
       "_point\030\004 \003(\0132!.shardora.pools.protobuf.A"
-      "reaInfo\022\017\n\007gas_sum\030\005 \003(\004\"P\n\rJoinElectNod"
+      "reaInfo\022\017\n\007gas_sum\030\005 \003(\004\022\016\n\006credit\030\006 \003(\004"
+      "\022\025\n\rconsensus_gap\030\007 \003(\004\"\256\001\n\rJoinElectNod"
       "e\022\016\n\006pubkey\030\001 \001(\014\022\r\n\005stoke\030\002 \001(\004\022\r\n\005shar"
-      "d\030\003 \001(\r\022\021\n\telect_pos\030\004 \001(\005\"a\n\027CrossShard"
-      "StatisticItem\022\021\n\tsrc_shard\030\001 \001(\r\022\020\n\010src_"
-      "pool\030\002 \001(\r\022\016\n\006height\030\003 \001(\004\022\021\n\tdes_shard\030"
-      "\004 \001(\r\"\177\n\023CrossShardStatistic\022A\n\007crosses\030"
-      "\001 \003(\01320.shardora.pools.protobuf.CrossSha"
-      "rdStatisticItem\022\024\n\014elect_height\030\002 \001(\004\022\017\n"
-      "\007tx_hash\030\003 \001(\014\"\314\002\n\016ElectStatistic\022>\n\nsta"
-      "tistics\030\001 \003(\0132*.shardora.pools.protobuf."
-      "PoolStatisticItem\022=\n\013height_info\030\002 \001(\0132("
-      ".shardora.pools.protobuf.StatisticTxItem"
-      "\022@\n\020join_elect_nodes\030\003 \003(\0132&.shardora.po"
-      "ols.protobuf.JoinElectNode\022\023\n\013sharding_i"
-      "d\030\004 \001(\r\022\022\n\ngas_amount\030\005 \001(\004\022\023\n\013lof_leade"
-      "rs\030\006 \003(\r\022;\n\005cross\030\007 \001(\0132,.shardora.pools"
-      ".protobuf.CrossShardStatistic\"P\n\022SyncPoo"
-      "lsMaxHeight\022\022\n\003req\030\001 \001(\010:\005false\022\017\n\007heigh"
-      "ts\030\002 \003(\004\022\025\n\rcross_heights\030\003 \003(\004\"\306\002\n\tTxMe"
-      "ssage\022\017\n\007version\030\001 \001(\r\022\013\n\003gid\030\002 \001(\014\022\016\n\006p"
-      "ubkey\030\003 \001(\014\022\021\n\tgas_limit\030\004 \001(\004\022\021\n\tgas_pr"
-      "ice\030\005 \001(\004\022\013\n\003key\030\006 \001(\014\022\r\n\005value\030\007 \001(\014\022\n\n"
-      "\002to\030\010 \001(\014\022\016\n\006amount\030\t \001(\004\022<\n\004step\030\n \001(\0162"
-      "!.shardora.pools.protobuf.StepType:\013kNor"
-      "malFrom\022\033\n\023contract_prepayment\030\013 \001(\004\022\025\n\r"
-      "contract_code\030\014 \001(\014\022\026\n\016contract_input\030\r "
-      "\001(\014\022\025\n\rcontract_from\030\016 \001(\014\022\014\n\004sign\030\017 \001(\014"
-      "*\257\003\n\010StepType\022\017\n\013kNormalFrom\020\000\022\r\n\tkNorma"
-      "lTo\020\001\022\034\n\030kConsensusRootElectShard\020\002\022\033\n\027k"
-      "ConsensusRootTimeBlock\020\003\022!\n\035kConsensusCr"
-      "eateGenesisAcount\020\004\022\026\n\022kConsensusLocalTo"
-      "s\020\005\022\023\n\017kContractCreate\020\006\022\032\n\026kContractGas"
-      "Prepayment\020\007\022\023\n\017kContractExcute\020\010\022\026\n\022kRo"
-      "otCreateAddress\020\t\022#\n\037kRootCreateAddressC"
-      "rossSharding\020\013\022\016\n\nkStatistic\020\014\022\016\n\nkJoinE"
-      "lect\020\r\022\022\n\016kCreateLibrary\020\016\022\n\n\006kCross\020\017\022\016"
-      "\n\nkRootCross\020\020\022\033\n\027kContractCreateByRootT"
-      "o\020\021\022\035\n\031kContractCreateByRootFrom\020\022"
+      "d\030\003 \001(\r\022\021\n\telect_pos\030\004 \001(\005\0225\n\narea_point"
+      "\030\005 \001(\0132!.shardora.pools.protobuf.AreaInf"
+      "o\022\016\n\006credit\030\006 \001(\004\022\025\n\rconsensus_gap\030\007 \001(\004"
+      "\"a\n\027CrossShardStatisticItem\022\021\n\tsrc_shard"
+      "\030\001 \001(\r\022\020\n\010src_pool\030\002 \001(\r\022\016\n\006height\030\003 \001(\004"
+      "\022\021\n\tdes_shard\030\004 \001(\r\"\177\n\023CrossShardStatist"
+      "ic\022A\n\007crosses\030\001 \003(\01320.shardora.pools.pro"
+      "tobuf.CrossShardStatisticItem\022\024\n\014elect_h"
+      "eight\030\002 \001(\004\022\017\n\007tx_hash\030\003 \001(\014\"\314\002\n\016ElectSt"
+      "atistic\022>\n\nstatistics\030\001 \003(\0132*.shardora.p"
+      "ools.protobuf.PoolStatisticItem\022=\n\013heigh"
+      "t_info\030\002 \001(\0132(.shardora.pools.protobuf.S"
+      "tatisticTxItem\022@\n\020join_elect_nodes\030\003 \003(\013"
+      "2&.shardora.pools.protobuf.JoinElectNode"
+      "\022\023\n\013sharding_id\030\004 \001(\r\022\022\n\ngas_amount\030\005 \001("
+      "\004\022\023\n\013lof_leaders\030\006 \003(\r\022;\n\005cross\030\007 \001(\0132,."
+      "shardora.pools.protobuf.CrossShardStatis"
+      "tic\"P\n\022SyncPoolsMaxHeight\022\022\n\003req\030\001 \001(\010:\005"
+      "false\022\017\n\007heights\030\002 \003(\004\022\025\n\rcross_heights\030"
+      "\003 \003(\004\"\306\002\n\tTxMessage\022\017\n\007version\030\001 \001(\r\022\013\n\003"
+      "gid\030\002 \001(\014\022\016\n\006pubkey\030\003 \001(\014\022\021\n\tgas_limit\030\004"
+      " \001(\004\022\021\n\tgas_price\030\005 \001(\004\022\013\n\003key\030\006 \001(\014\022\r\n\005"
+      "value\030\007 \001(\014\022\n\n\002to\030\010 \001(\014\022\016\n\006amount\030\t \001(\004\022"
+      "<\n\004step\030\n \001(\0162!.shardora.pools.protobuf."
+      "StepType:\013kNormalFrom\022\033\n\023contract_prepay"
+      "ment\030\013 \001(\004\022\025\n\rcontract_code\030\014 \001(\014\022\026\n\016con"
+      "tract_input\030\r \001(\014\022\025\n\rcontract_from\030\016 \001(\014"
+      "\022\014\n\004sign\030\017 \001(\014*\257\003\n\010StepType\022\017\n\013kNormalFr"
+      "om\020\000\022\r\n\tkNormalTo\020\001\022\034\n\030kConsensusRootEle"
+      "ctShard\020\002\022\033\n\027kConsensusRootTimeBlock\020\003\022!"
+      "\n\035kConsensusCreateGenesisAcount\020\004\022\026\n\022kCo"
+      "nsensusLocalTos\020\005\022\023\n\017kContractCreate\020\006\022\032"
+      "\n\026kContractGasPrepayment\020\007\022\023\n\017kContractE"
+      "xcute\020\010\022\026\n\022kRootCreateAddress\020\t\022#\n\037kRoot"
+      "CreateAddressCrossSharding\020\013\022\016\n\nkStatist"
+      "ic\020\014\022\016\n\nkJoinElect\020\r\022\022\n\016kCreateLibrary\020\016"
+      "\022\n\n\006kCross\020\017\022\016\n\nkRootCross\020\020\022\033\n\027kContrac"
+      "tCreateByRootTo\020\021\022\035\n\031kContractCreateByRo"
+      "otFrom\020\022"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 2634);
+      descriptor, 2768);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/pools.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
@@ -3777,6 +3792,8 @@ const int PoolStatisticItem::kStokesFieldNumber;
 const int PoolStatisticItem::kElectHeightFieldNumber;
 const int PoolStatisticItem::kAreaPointFieldNumber;
 const int PoolStatisticItem::kGasSumFieldNumber;
+const int PoolStatisticItem::kCreditFieldNumber;
+const int PoolStatisticItem::kConsensusGapFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 PoolStatisticItem::PoolStatisticItem()
@@ -3793,7 +3810,9 @@ PoolStatisticItem::PoolStatisticItem(const PoolStatisticItem& from)
       tx_count_(from.tx_count_),
       stokes_(from.stokes_),
       area_point_(from.area_point_),
-      gas_sum_(from.gas_sum_) {
+      gas_sum_(from.gas_sum_),
+      credit_(from.credit_),
+      consensus_gap_(from.consensus_gap_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   elect_height_ = from.elect_height_;
   // @@protoc_insertion_point(copy_constructor:shardora.pools.protobuf.PoolStatisticItem)
@@ -3835,6 +3854,8 @@ void PoolStatisticItem::Clear() {
   stokes_.Clear();
   area_point_.Clear();
   gas_sum_.Clear();
+  credit_.Clear();
+  consensus_gap_.Clear();
   elect_height_ = GOOGLE_ULONGLONG(0);
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -3933,6 +3954,44 @@ bool PoolStatisticItem::MergePartialFromCodedStream(
         break;
       }
 
+      // repeated uint64 credit = 6;
+      case 6: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 1, 48u, input, this->mutable_credit())));
+        } else if (
+            static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(50u /* 50 & 0xFF */)) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, this->mutable_credit())));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // repeated uint64 consensus_gap = 7;
+      case 7: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(56u /* 56 & 0xFF */)) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 1, 56u, input, this->mutable_consensus_gap())));
+        } else if (
+            static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(58u /* 58 & 0xFF */)) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, this->mutable_consensus_gap())));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -3992,6 +4051,18 @@ void PoolStatisticItem::SerializeWithCachedSizes(
       5, this->gas_sum(i), output);
   }
 
+  // repeated uint64 credit = 6;
+  for (int i = 0, n = this->credit_size(); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(
+      6, this->credit(i), output);
+  }
+
+  // repeated uint64 consensus_gap = 7;
+  for (int i = 0, n = this->consensus_gap_size(); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(
+      7, this->consensus_gap(i), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -4031,6 +4102,14 @@ void PoolStatisticItem::SerializeWithCachedSizes(
   // repeated uint64 gas_sum = 5;
   target = ::google::protobuf::internal::WireFormatLite::
     WriteUInt64ToArray(5, this->gas_sum_, target);
+
+  // repeated uint64 credit = 6;
+  target = ::google::protobuf::internal::WireFormatLite::
+    WriteUInt64ToArray(6, this->credit_, target);
+
+  // repeated uint64 consensus_gap = 7;
+  target = ::google::protobuf::internal::WireFormatLite::
+    WriteUInt64ToArray(7, this->consensus_gap_, target);
 
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
@@ -4087,6 +4166,24 @@ size_t PoolStatisticItem::ByteSizeLong() const {
     total_size += data_size;
   }
 
+  // repeated uint64 credit = 6;
+  {
+    size_t data_size = ::google::protobuf::internal::WireFormatLite::
+      UInt64Size(this->credit_);
+    total_size += 1 *
+                  ::google::protobuf::internal::FromIntSize(this->credit_size());
+    total_size += data_size;
+  }
+
+  // repeated uint64 consensus_gap = 7;
+  {
+    size_t data_size = ::google::protobuf::internal::WireFormatLite::
+      UInt64Size(this->consensus_gap_);
+    total_size += 1 *
+                  ::google::protobuf::internal::FromIntSize(this->consensus_gap_size());
+    total_size += data_size;
+  }
+
   // optional uint64 elect_height = 3;
   if (has_elect_height()) {
     total_size += 1 +
@@ -4125,6 +4222,8 @@ void PoolStatisticItem::MergeFrom(const PoolStatisticItem& from) {
   stokes_.MergeFrom(from.stokes_);
   area_point_.MergeFrom(from.area_point_);
   gas_sum_.MergeFrom(from.gas_sum_);
+  credit_.MergeFrom(from.credit_);
+  consensus_gap_.MergeFrom(from.consensus_gap_);
   if (from.has_elect_height()) {
     set_elect_height(from.elect_height());
   }
@@ -4158,6 +4257,8 @@ void PoolStatisticItem::InternalSwap(PoolStatisticItem* other) {
   stokes_.InternalSwap(&other->stokes_);
   CastToBase(&area_point_)->InternalSwap(CastToBase(&other->area_point_));
   gas_sum_.InternalSwap(&other->gas_sum_);
+  credit_.InternalSwap(&other->credit_);
+  consensus_gap_.InternalSwap(&other->consensus_gap_);
   swap(elect_height_, other->elect_height_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -4172,12 +4273,17 @@ void PoolStatisticItem::InternalSwap(PoolStatisticItem* other) {
 // ===================================================================
 
 void JoinElectNode::InitAsDefaultInstance() {
+  ::shardora::pools::protobuf::_JoinElectNode_default_instance_._instance.get_mutable()->area_point_ = const_cast< ::shardora::pools::protobuf::AreaInfo*>(
+      ::shardora::pools::protobuf::AreaInfo::internal_default_instance());
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int JoinElectNode::kPubkeyFieldNumber;
 const int JoinElectNode::kStokeFieldNumber;
 const int JoinElectNode::kShardFieldNumber;
 const int JoinElectNode::kElectPosFieldNumber;
+const int JoinElectNode::kAreaPointFieldNumber;
+const int JoinElectNode::kCreditFieldNumber;
+const int JoinElectNode::kConsensusGapFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 JoinElectNode::JoinElectNode()
@@ -4196,17 +4302,22 @@ JoinElectNode::JoinElectNode(const JoinElectNode& from)
   if (from.has_pubkey()) {
     pubkey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.pubkey_);
   }
+  if (from.has_area_point()) {
+    area_point_ = new ::shardora::pools::protobuf::AreaInfo(*from.area_point_);
+  } else {
+    area_point_ = NULL;
+  }
   ::memcpy(&stoke_, &from.stoke_,
-    static_cast<size_t>(reinterpret_cast<char*>(&elect_pos_) -
-    reinterpret_cast<char*>(&stoke_)) + sizeof(elect_pos_));
+    static_cast<size_t>(reinterpret_cast<char*>(&consensus_gap_) -
+    reinterpret_cast<char*>(&stoke_)) + sizeof(consensus_gap_));
   // @@protoc_insertion_point(copy_constructor:shardora.pools.protobuf.JoinElectNode)
 }
 
 void JoinElectNode::SharedCtor() {
   pubkey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  ::memset(&stoke_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&elect_pos_) -
-      reinterpret_cast<char*>(&stoke_)) + sizeof(elect_pos_));
+  ::memset(&area_point_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&consensus_gap_) -
+      reinterpret_cast<char*>(&area_point_)) + sizeof(consensus_gap_));
 }
 
 JoinElectNode::~JoinElectNode() {
@@ -4216,6 +4327,7 @@ JoinElectNode::~JoinElectNode() {
 
 void JoinElectNode::SharedDtor() {
   pubkey_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (this != internal_default_instance()) delete area_point_;
 }
 
 void JoinElectNode::SetCachedSize(int size) const {
@@ -4239,13 +4351,19 @@ void JoinElectNode::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    pubkey_.ClearNonDefaultToEmptyNoArena();
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
+      pubkey_.ClearNonDefaultToEmptyNoArena();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      GOOGLE_DCHECK(area_point_ != NULL);
+      area_point_->Clear();
+    }
   }
-  if (cached_has_bits & 14u) {
+  if (cached_has_bits & 124u) {
     ::memset(&stoke_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&elect_pos_) -
-        reinterpret_cast<char*>(&stoke_)) + sizeof(elect_pos_));
+        reinterpret_cast<char*>(&consensus_gap_) -
+        reinterpret_cast<char*>(&stoke_)) + sizeof(consensus_gap_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -4315,6 +4433,46 @@ bool JoinElectNode::MergePartialFromCodedStream(
         break;
       }
 
+      // optional .shardora.pools.protobuf.AreaInfo area_point = 5;
+      case 5: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_area_point()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint64 credit = 6;
+      case 6: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
+          set_has_credit();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &credit_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint64 consensus_gap = 7;
+      case 7: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(56u /* 56 & 0xFF */)) {
+          set_has_consensus_gap();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &consensus_gap_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -4349,18 +4507,34 @@ void JoinElectNode::SerializeWithCachedSizes(
   }
 
   // optional uint64 stoke = 2;
-  if (cached_has_bits & 0x00000002u) {
+  if (cached_has_bits & 0x00000004u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->stoke(), output);
   }
 
   // optional uint32 shard = 3;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000008u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->shard(), output);
   }
 
   // optional int32 elect_pos = 4;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->elect_pos(), output);
+  }
+
+  // optional .shardora.pools.protobuf.AreaInfo area_point = 5;
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      5, this->_internal_area_point(), output);
+  }
+
+  // optional uint64 credit = 6;
+  if (cached_has_bits & 0x00000020u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(6, this->credit(), output);
+  }
+
+  // optional uint64 consensus_gap = 7;
+  if (cached_has_bits & 0x00000040u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(7, this->consensus_gap(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -4386,18 +4560,35 @@ void JoinElectNode::SerializeWithCachedSizes(
   }
 
   // optional uint64 stoke = 2;
-  if (cached_has_bits & 0x00000002u) {
+  if (cached_has_bits & 0x00000004u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->stoke(), target);
   }
 
   // optional uint32 shard = 3;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000008u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->shard(), target);
   }
 
   // optional int32 elect_pos = 4;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(4, this->elect_pos(), target);
+  }
+
+  // optional .shardora.pools.protobuf.AreaInfo area_point = 5;
+  if (cached_has_bits & 0x00000002u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        5, this->_internal_area_point(), deterministic, target);
+  }
+
+  // optional uint64 credit = 6;
+  if (cached_has_bits & 0x00000020u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(6, this->credit(), target);
+  }
+
+  // optional uint64 consensus_gap = 7;
+  if (cached_has_bits & 0x00000040u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(7, this->consensus_gap(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -4417,12 +4608,19 @@ size_t JoinElectNode::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 15u) {
+  if (_has_bits_[0 / 32] & 127u) {
     // optional bytes pubkey = 1;
     if (has_pubkey()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::BytesSize(
           this->pubkey());
+    }
+
+    // optional .shardora.pools.protobuf.AreaInfo area_point = 5;
+    if (has_area_point()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *area_point_);
     }
 
     // optional uint64 stoke = 2;
@@ -4444,6 +4642,20 @@ size_t JoinElectNode::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
           this->elect_pos());
+    }
+
+    // optional uint64 credit = 6;
+    if (has_credit()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->credit());
+    }
+
+    // optional uint64 consensus_gap = 7;
+    if (has_consensus_gap()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->consensus_gap());
     }
 
   }
@@ -4475,19 +4687,28 @@ void JoinElectNode::MergeFrom(const JoinElectNode& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 15u) {
+  if (cached_has_bits & 127u) {
     if (cached_has_bits & 0x00000001u) {
       set_has_pubkey();
       pubkey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.pubkey_);
     }
     if (cached_has_bits & 0x00000002u) {
-      stoke_ = from.stoke_;
+      mutable_area_point()->::shardora::pools::protobuf::AreaInfo::MergeFrom(from.area_point());
     }
     if (cached_has_bits & 0x00000004u) {
-      shard_ = from.shard_;
+      stoke_ = from.stoke_;
     }
     if (cached_has_bits & 0x00000008u) {
+      shard_ = from.shard_;
+    }
+    if (cached_has_bits & 0x00000010u) {
       elect_pos_ = from.elect_pos_;
+    }
+    if (cached_has_bits & 0x00000020u) {
+      credit_ = from.credit_;
+    }
+    if (cached_has_bits & 0x00000040u) {
+      consensus_gap_ = from.consensus_gap_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -4519,9 +4740,12 @@ void JoinElectNode::InternalSwap(JoinElectNode* other) {
   using std::swap;
   pubkey_.Swap(&other->pubkey_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
+  swap(area_point_, other->area_point_);
   swap(stoke_, other->stoke_);
   swap(shard_, other->shard_);
   swap(elect_pos_, other->elect_pos_);
+  swap(credit_, other->credit_);
+  swap(consensus_gap_, other->consensus_gap_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
