@@ -1090,7 +1090,7 @@ Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& t
 }
 
 void Hotstuff::TryRecoverFromStuck() {
-    if (IsStuck() && recover_from_struct_fc_.Permitted()) {
+    if (recover_from_struct_fc_.Permitted() && IsStuck()) {
         bool has_single_tx = wrapper()->HasSingleTx();
         std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
         if (!has_single_tx) {
