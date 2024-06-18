@@ -245,11 +245,12 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     if (s != Status::kSuccess || !tc) {
         return;
     }
-    ZJC_DEBUG("====4.1 pool: %d, create tc, view: %d, member: %d, view: %d",
-        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
 
+    ZJC_DEBUG("====4.1 pool: %d, create tc, view: %lu, member: %d, "
+        "tc view: %lu, cur view: %lu, high_qc_: %lu, high_tc_: %lu",
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
+        tc->view, CurView(), high_qc_->view, high_tc_->view);
     AdvanceView(new_sync_info()->WithTC(tc));
-    
     // NewView msg broadcast
     // TC 在 Propose 之前单独同步，不然假设 Propose 卡死，Replicas 就会一直卡死在这个视图
     // 广播 TC 的同时也应该广播 HighQC，防止只有 Leader 拥有该 HighQC，这会出现如下情况：
