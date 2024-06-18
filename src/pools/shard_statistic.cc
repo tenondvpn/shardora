@@ -555,7 +555,7 @@ std::string ShardStatistic::getLeaderIdFromBlock(shardora::block::protobuf::Bloc
 }
 
 uint64_t ShardStatistic::getStoke(uint32_t shard_id, std::string contractId, std::string temp_addr, uint64_t elect_height) {
-    auto default_stoke = shard_id * 100 + elect_height;
+    auto default_stoke = 0;
 
    std::string contract_addr;
     if (shard_id < 1) {
@@ -973,8 +973,8 @@ void ShardStatistic::addPrepareMembers2JoinStastics(shardora::common::MembersPtr
             uint64_t stoke = getStoke(shard, "", addr_info->addr(), now_elect_height_);
 
             auto join_elect_node = elect_statistic.add_join_elect_nodes();
-            join_elect_node->set_consensus_gap(1998);
-            join_elect_node->set_credit(1999);
+            join_elect_node->set_consensus_gap(0);
+            join_elect_node->set_credit(0);
             join_elect_node->set_pubkey((*prepare_members)[i]->pubkey);
             join_elect_node->set_elect_pos(addr_info->elect_pos());
             join_elect_node->set_stoke(stoke);
@@ -1067,8 +1067,8 @@ void ShardStatistic::addNewNode2JoinStatics(std::map<uint64_t, std::unordered_ma
 
         auto join_elect_node = elect_statistic.add_join_elect_nodes();
         auto iter = r_eiter->second.find(elect_nodes[i]);
-        join_elect_node->set_consensus_gap(1998);
-        join_elect_node->set_credit(1999);
+        join_elect_node->set_consensus_gap(0);
+        join_elect_node->set_credit(0);
         join_elect_node->set_pubkey(pubkey);
         join_elect_node->set_stoke(stoke);
         join_elect_node->set_shard(shard_id);
