@@ -28,11 +28,11 @@ public:
         }
     }
 
-    inline std::vector<std::shared_ptr<MemberConsensusStat>> GetAllConsensusStats() {
+    inline const std::vector<std::shared_ptr<MemberConsensusStat>> GetAllConsensusStats() {
         return member_consen_stats_;
     }
 
-    std::shared_ptr<MemberConsensusStat> GetMemberConsensusStat(uint32_t member_idx) {
+    const std::shared_ptr<MemberConsensusStat> GetMemberConsensusStat(uint32_t member_idx) {
         if (member_consen_stats_.size() <= member_idx) {
             return nullptr;
         }
