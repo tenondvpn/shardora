@@ -76,7 +76,7 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
     Status s = ConstructProposeMsg(sync_info, pb_pro_msg);
     if (s != Status::kSuccess) {
-        NewView(new_sync_info()->WithQC(pacemaker()->HighQC()));
+        NewView(new_sync_info()->WithQC(pacemaker()->HighQC())->WithTC(pacemaker()->HighTC()));
         ZJC_ERROR("pool: %d construct propose msg failed, %d, member_index: %d",
             pool_idx_, s, 
             elect_info_->GetElectItemWithShardingId(
@@ -85,7 +85,7 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     }
     s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
-        NewView(new_sync_info()->WithQC(pacemaker()->HighQC()));
+        NewView(new_sync_info()->WithQC(pacemaker()->HighQC())->WithTC(pacemaker()->HighTC()));
         ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
             pool_idx_, hotstuff_msg->pro_msg().view_item().view());
         return s;
@@ -99,7 +99,7 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     transport::TcpTransport::Instance()->SetMessageHash(header);
     s = crypto()->SignMessage(msg_ptr);
     if (s != Status::kSuccess) {
-        NewView(new_sync_info()->WithQC(pacemaker()->HighQC()));
+        NewView(new_sync_info()->WithQC(pacemaker()->HighQC())->WithTC(pacemaker()->HighTC()));
         ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
             pool_idx_, hotstuff_msg->pro_msg().view_item().view());
         return s;
@@ -218,6 +218,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     }    
     
     // 2 Veriyfy Leader
+    // NewView 和 HighQC 的同步时不能尝试 Commit，否则会影响 leader 验证
     if (VerifyLeader(v_block->leader_idx) != Status::kSuccess) {
         ZJC_WARN("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
             pool_idx_, v_block->view, header.hash64());
