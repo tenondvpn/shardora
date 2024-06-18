@@ -418,9 +418,8 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
 
     assert(block.tx_list_size() > 0);
 #endif
-
-    // 切换视图
-    // pacemaker()->AdvanceView(new_sync_info()->WithQC(new_qc));
+    
+    pacemaker()->AdvanceView(new_sync_info()->WithQC(new_qc));
     
     // 一旦生成新 QC，且本地还没有该 view_block，就直接从 VoteMsg 中获取并添加
     // 没有这个逻辑也不影响共识，只是需要同步而导致 tps 降低
@@ -438,9 +437,9 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         }        
     }
 
-    s = Propose(new_sync_info()->WithQC(new_qc));
+    s = Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
     if (s != Status::kSuccess) {
-        NewView(new_sync_info()->WithQC(new_qc)->WithTC(pacemaker()->HighTC()));
+        NewView(new_sync_info()->WithQC(pacemaker()->HighQC())->WithTC(pacemaker()->HighTC()));
     }
     return;
 }
