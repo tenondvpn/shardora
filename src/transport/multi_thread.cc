@@ -508,7 +508,7 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool htt
         }
 
         // ZJC_DEBUG("pop valid message hash: %lu, size: %u, thread: %u",
-        //     msg_obj->header.hash64(), threads_message_queues_[i][pri].size(), thread_idx);
+        //     msg_obj->header.hash64(), threads_message_queues_[thread_idx][pri].size(), thread_idx);
         return msg_obj;
     }
 

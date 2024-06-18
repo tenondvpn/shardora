@@ -383,7 +383,7 @@ void ElectManager::ProcessNewElectBlock(
         }
 
         now_elected_ids_.insert(id);
-        ELECT_DEBUG("FFFFFFFF ProcessNewElectBlock network: %d, elect height: %lu, "
+        ELECT_INFO("FFFFFFFF ProcessNewElectBlock network: %d, elect height: %lu, "
             "member leader: %s,, (*iter)->pool_index_mod_num: %d, "
             "local_waiting_node_member_index_: %d",
             elect_block.shard_network_id(),

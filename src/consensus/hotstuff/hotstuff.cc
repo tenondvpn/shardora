@@ -154,13 +154,15 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
     header.set_des_dht_key(dht_key.StrKey());
     transport::TcpTransport::Instance()->SetMessageHash(header);
     network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("pool: %d, msg pool: %d, newview, txs size: %lu, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
+    ZJC_DEBUG("pool: %d, msg pool: %d, newview, txs size: %lu, view: %lu, "
+        "hash: %s, qc_view: %lu, tc_view: %lu hash64: %lu",
         pool_idx_,
         hotstuff_msg->pool_index(),
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
         hotstuff_msg->pro_msg().view_item().view(),
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
         pacemaker()->HighQC()->view,
+        pacemaker()->HighTC()->view,
         header.hash64());
     HandleNewViewMsg(header);
     return;    
@@ -210,7 +212,9 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     // view 必须最新
     // TODO 超时情况可能相同，严格限制并不影响共识，但会减少共识参与节点数
     if (HasVoted(v_block->view)) {
-        ZJC_ERROR("pool: %d has voted: %lu", pool_idx_, v_block->view);
+        ZJC_ERROR("pool: %d has voted: %lu, last_vote_view_: %u, hash64: %lu",
+            pool_idx_, v_block->view, last_vote_view_, header.hash64());
+        assert(false);
         return;
     }    
     
@@ -239,16 +243,23 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
             view_block_chain(),
             tc,
             pro_msg.elect_height()) != Status::kSuccess) {
-        ZJC_ERROR("pool: %d, Verify ViewBlock is error. hash: %s", pool_idx_,
-            common::Encode::HexEncode(v_block->hash).c_str());
+        ZJC_ERROR("pool: %d, Verify ViewBlock is error. hash: %s, hash64: %lu", pool_idx_,
+            common::Encode::HexEncode(v_block->hash).c_str(),
+            header.hash64());
         return;
     }    
     
-    ZJC_DEBUG("====1.1 pool: %d, verify view block success, view: %lu, hash: %s, qc_view: %lu",
+    ZJC_DEBUG("====1.1 pool: %d, verify view block success, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
         pool_idx_,
         pro_msg.view_item().view(),
         common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
-        pacemaker()->HighQC()->view);
+        pacemaker()->HighQC()->view,
+        header.hash64());
+    // 切换视图
+    pacemaker()->AdvanceView(new_sync_info()->WithQC(v_block->qc));
+
+    // Commit 一定要在 Txs Accept 之前，因为一旦 v_block->qc 合法就已经可以 Commit 了，不需要 Txs 合法
+    TryCommit(v_block->qc);
         
     // Verify ViewBlock.block and tx_propose, 验证tx_propose，填充Block tx相关字段
     auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
@@ -258,6 +269,14 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     for (const auto& tx : pro_msg.tx_propose().txs()) {
         if (!view_block_chain_->CheckTxGidValid(tx.gid(), v_block->parent_hash)) {
             // assert(false);
+        ZJC_DEBUG("====1.1.1 check gid failed: %s pool: %d, verify view block success, "
+            "view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
+            common::Encode::HexEncode(tx.gid()).c_str(),
+            pool_idx_,
+            pro_msg.view_item().view(),
+            common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
+            pacemaker()->HighQC()->view,
+            header.hash64());
             return;
         }
 
@@ -267,7 +286,13 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
 
     block_info->view = v_block->view;
     if (acceptor()->Accept(block_info, true) != Status::kSuccess) {
-        ZJC_ERROR("Accept tx is error");
+        ZJC_DEBUG("====1.1.2 Accept pool: %d, verify view block success, "
+            "view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
+            pool_idx_,
+            pro_msg.view_item().view(),
+            common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
+            pacemaker()->HighQC()->view,
+            header.hash64());
         return;
     }
 
@@ -283,7 +308,28 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     
     // 更新哈希值
     v_block->UpdateHash();
+// #ifndef NDEBUG
+//     for (int32_t i = 0; i < v_block->block->tx_list_size(); ++i) {
+//         ZJC_DEBUG("block net: %u, pool: %u, height: %lu, prehash: %s, hash: %s, step: %d, "
+//             "pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, "
+//             "vblock: %lu, txs: %lu, vote block hash: %s",
+//             block_info->block->network_id(),
+//             block_info->block->pool_index(),
+//             block_info->block->height(),
+//             common::Encode::HexEncode(block_info->block->prehash()).c_str(),
+//             common::Encode::HexEncode(block_info->block->hash()).c_str(),
+//             block_info->block->tx_list(i).step(),
+//             pool_idx_,
+//             pacemaker()->HighQC()->view,
+//             pacemaker()->HighTC()->view,
+//             view_block_chain()->Size(),
+//             pacemaker()->CurView(),
+//             v_block->view,
+//             v_block->block->tx_list_size(),
+//             common::Encode::HexEncode(v_block->hash).c_str());
 
+//     }
+// #endif
     // 6 add view block
     if (view_block_chain()->Store(v_block) != Status::kSuccess) {
         ZJC_ERROR("pool: %d, add view block error. hash: %s",
@@ -294,14 +340,15 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     // 成功接入链中，标记交易占用
     acceptor()->MarkBlockTxsAsUsed(v_block->block);
         
-    ZJC_INFO("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, vblock: %lu, txs: %lu",
+    ZJC_INFO("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, vblock: %lu, txs: %lu, hash64: %lu",
         pool_idx_,
         pacemaker()->HighQC()->view,
         pacemaker()->HighTC()->view,
         view_block_chain()->Size(),
         pacemaker()->CurView(),
         v_block->view,
-        v_block->block->tx_list_size());
+        v_block->block->tx_list_size(),
+        header.hash64());
 
     // view_block_chain()->Print();
     
@@ -312,21 +359,21 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     // Construct VoteMsg
     s = ConstructVoteMsg(vote_msg, pro_msg.elect_height(), v_block);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("ConstructVoteMsg error %d", s);
+        ZJC_ERROR("pool: %d, ConstructVoteMsg error %d, hash64: %lu", pool_idx_, s, header.hash64());
         return;
     }
     // Construct HotstuffMessage and send
     s = ConstructHotstuffMsg(VOTE, nullptr, vote_msg, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("ConstructHotstuffMsg error %d", s);
+        ZJC_ERROR("pool: %d, ConstructHotstuffMsg error %d, hash64: %lu", pool_idx_, s, header.hash64());
         return;
     }
     
     if (SendMsgToLeader(trans_msg, VOTE) != Status::kSuccess) {
-        ZJC_ERROR("Send vote message is error.");
+        ZJC_ERROR("pool: %d, Send vote message is error.", pool_idx_, header.hash64());
     }
-    
-    return;
+
+    ZJC_DEBUG("pool: %d, Send vote message is success., hash64: %lu", pool_idx_, header.hash64());
 }
 
 void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
@@ -424,8 +471,12 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
 
     assert(block.tx_list_size() > 0);
 #endif
-    
+
+    // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(new_qc));
+    // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率:q高很多
+    ZJC_DEBUG("NewView propose newview called pool: %u, qc_view: %lu, tc_view: %lu",
+        pool_idx_, pacemaker()->HighQC()->view, pacemaker()->HighTC()->view);
     
     // 一旦生成新 QC，且本地还没有该 view_block，就直接从 VoteMsg 中获取并添加
     // 没有这个逻辑也不影响共识，只是需要同步而导致 tps 降低
@@ -464,7 +515,6 @@ Status Hotstuff::StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_bloc
     }
 
     TryCommit(v_block->qc);
-    
     return view_block_chain()->Store(v_block);
 }
 
@@ -511,10 +561,9 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
             pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
             // NewView 不能触发 Commit，因为 NewView 一般是 Propose 失败后触发，
             // 此时 replicas 同时触发超时逻辑，Commit 造成的 Leader 更换会导致无法成功触发超时
-            // TryCommit(qc);
+            TryCommit(qc);
         }
     }    
-    return;
 }
 
 void Hotstuff::HandlePreResetTimerMsg(const transport::protobuf::Header& header) {
@@ -541,7 +590,6 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::protobuf::Header& header)
 
     ResetReplicaTimers();
     ZJC_DEBUG("reset timer success!");
-    return;
 }
 
 Status Hotstuff::ResetReplicaTimers() {
@@ -830,6 +878,9 @@ Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
             ZJC_WARN("pool: %d, leader_idx message is error, %d, %d", pool_idx_, leader_idx, leader->index);
             return Status::kError;
         }
+
+        ZJC_DEBUG("failed verify leader index: %u, %u", leader_idx, leader->index);
+        // assert(false);
         return Status::kError;
     }
     return Status::kSuccess;
@@ -923,10 +974,10 @@ Status Hotstuff::ConstructVoteMsg(
     {
         auto* tx_ptr = vote_msg->add_txs();
         *tx_ptr = *(txs[i].get());
-        ZJC_DEBUG("vote send tx message type: %d, to: %s, gid: %s", 
-            tx_ptr->step(), 
-            common::Encode::HexEncode(tx_ptr->to()).c_str(), 
-            common::Encode::HexEncode(tx_ptr->gid()).c_str());
+        // ZJC_DEBUG("vote send tx message type: %d, to: %s, gid: %s", 
+        //     tx_ptr->step(), 
+        //     common::Encode::HexEncode(tx_ptr->to()).c_str(), 
+        //     common::Encode::HexEncode(tx_ptr->gid()).c_str());
     }
 
     return Status::kSuccess;
@@ -1052,8 +1103,9 @@ Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& t
         }
     }
  
-    ZJC_DEBUG("send to leader %d message to leader net: %u, %s, "
+    ZJC_DEBUG("pool index: %u, send to leader %d message to leader net: %u, %s, "
         "hash64: %lu, %s:%d, leader->index: %d, leader_idx: %d",
+        pool_idx_,
         msg_type,
         leader->net_id, 
         common::Encode::HexEncode(leader->id).c_str(), 
