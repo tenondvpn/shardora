@@ -19,8 +19,9 @@ ConsensusStat::ConsensusStat(
 ConsensusStat::~ConsensusStat() {}
 
 Status ConsensusStat::Accept(std::shared_ptr<ViewBlock>& v_block) {
-    v_block->leader_consen_stat = GetMemberConsensusStat(v_block->leader_idx);
-    v_block->leader_consen_stat->succ_num++;
+    auto committed_consen_stat = GetMemberConsensusStat(v_block->leader_idx);
+    v_block->leader_consen_stat = std::make_shared<MemberConsensusStat>(
+            committed_consen_stat->succ_num+1, committed_consen_stat->fail_num);
     
     return Status::kSuccess;
 }
