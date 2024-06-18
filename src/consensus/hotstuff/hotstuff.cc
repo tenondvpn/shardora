@@ -438,6 +438,8 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率高很多
+    ZJC_DEBUG("propose newview called pool: %u, qc_view: %lu, tc_view: %lu",
+        pool_idx_, pacemaker()->HighQC()->view, pacemaker()->HighTC()->view);
     NewView(new_sync_info()->WithQC(qc));
     
     // 一旦生成新 QC，且本地还没有该 view_block，就直接从 VoteMsg 中获取并添加
