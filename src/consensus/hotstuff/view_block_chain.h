@@ -92,10 +92,6 @@ public:
             }
 
             ++count;
-            ZJC_DEBUG("check gid valid called hash: %s, parent hash: %s, count: %u",
-                common::Encode::HexEncode(phash).c_str(),
-                common::Encode::HexEncode(it->second->view_block->parent_hash).c_str(),
-                count);
             phash = it->second->view_block->parent_hash;
         }
 
