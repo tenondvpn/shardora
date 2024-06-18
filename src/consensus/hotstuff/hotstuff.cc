@@ -210,8 +210,8 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     // view 必须最新
     // TODO 超时情况可能相同，严格限制并不影响共识，但会减少共识参与节点数
     if (HasVoted(v_block->view)) {
-        ZJC_ERROR("pool: %d has voted: %lu, last_vote_view_: %u",
-            pool_idx_, v_block->view, last_vote_view_);
+        ZJC_ERROR("pool: %d has voted: %lu, last_vote_view_: %u, hash64: %lu",
+            pool_idx_, v_block->view, last_vote_view_, header.hash64());
         assert(false);
         return;
     }    
@@ -229,16 +229,18 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
             view_block_chain(),
             tc,
             pro_msg.elect_height()) != Status::kSuccess) {
-        ZJC_ERROR("pool: %d, Verify ViewBlock is error. hash: %s", pool_idx_,
-            common::Encode::HexEncode(v_block->hash).c_str());
+        ZJC_ERROR("pool: %d, Verify ViewBlock is error. hash: %s, hash64: %lu", pool_idx_,
+            common::Encode::HexEncode(v_block->hash).c_str(),
+            header.hash64());
         return;
     }
     
-    ZJC_DEBUG("====1.1 pool: %d, verify view block success, view: %lu, hash: %s, qc_view: %lu",
+    ZJC_DEBUG("====1.1 pool: %d, verify view block success, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
         pool_idx_,
         pro_msg.view_item().view(),
         common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
-        pacemaker()->HighQC()->view);
+        pacemaker()->HighQC()->view,
+        header.hash64());
     // 切换视图
     pacemaker()->AdvanceView(new_sync_info()->WithQC(v_block->qc));
 
