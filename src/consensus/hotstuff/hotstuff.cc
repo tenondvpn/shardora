@@ -257,6 +257,14 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     for (const auto& tx : pro_msg.tx_propose().txs()) {
         if (!view_block_chain_->CheckTxGidValid(tx.gid(), v_block->parent_hash)) {
             // assert(false);
+        ZJC_DEBUG("====1.1.1 check gid failed: %s pool: %d, verify view block success, "
+            "view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
+            common::Encode::HexEncode(tx.gid()).c_str(),
+            pool_idx_,
+            pro_msg.view_item().view(),
+            common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
+            pacemaker()->HighQC()->view,
+            header.hash64());
             return;
         }
 
@@ -266,7 +274,13 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
 
     block_info->view = v_block->view;
     if (acceptor()->Accept(block_info, true) != Status::kSuccess) {
-        ZJC_ERROR("Accept tx is error");
+        ZJC_DEBUG("====1.1.2 Accept pool: %d, verify view block success, "
+            "view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
+            pool_idx_,
+            pro_msg.view_item().view(),
+            common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
+            pacemaker()->HighQC()->view,
+            header.hash64());
         return;
     }
     
@@ -335,8 +349,6 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     if (SendMsgToLeader(trans_msg, VOTE) != Status::kSuccess) {
         ZJC_ERROR("Send vote message is error.");
     }
-    
-    return;
 }
 
 void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {

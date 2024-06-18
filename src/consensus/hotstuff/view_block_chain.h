@@ -72,8 +72,6 @@ public:
 
     bool CheckTxGidValid(const std::string& gid, const std::string& parent_hash) {
         std::string phash = parent_hash;
-        ZJC_DEBUG("check gid valid called hash beign: %s",
-            common::Encode::HexEncode(phash).c_str());
         uint32_t count = 0;
         while (true) {
             if (phash.empty()) {
@@ -101,9 +99,6 @@ public:
             phash = it->second->view_block->parent_hash;
         }
 
-        ZJC_DEBUG("success check tx gid: %s, phash: %s", 
-            common::Encode::HexEncode(gid).c_str(), 
-            common::Encode::HexEncode(parent_hash).c_str());
         return true;
     }
     Status GetRecursiveChildren(HashStr, std::vector<std::shared_ptr<ViewBlock>>&);
