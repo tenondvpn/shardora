@@ -99,6 +99,7 @@ public:
     void SetSyncPoolFn(SyncPoolFn sync_fn) {
         for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
             pacemaker(pool_idx)->SetSyncPoolFn(sync_fn);
+            hotstuff(pool_idx)->SetSyncPoolFn(sync_fn);
         }        
     }
 

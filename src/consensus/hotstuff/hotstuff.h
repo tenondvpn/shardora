@@ -78,6 +78,10 @@ public:
     void SetSyncViewBlockFn(SyncViewBlockFn sync_fn) {
         sync_view_block_fn_ = sync_fn;
     }
+
+    void SetSyncPoolFn(SyncPoolFn sync_fn) {
+        sync_pool_fn_ = sync_fn;
+    }    
     
     Status Start();
     
@@ -202,6 +206,7 @@ private:
     common::FlowControl recover_from_struct_fc_{1};
     common::FlowControl reset_timer_fc_{1};
     SyncViewBlockFn sync_view_block_fn_ = nullptr;
+    SyncPoolFn sync_pool_fn_ = nullptr;
 
     Status Commit(
             const std::shared_ptr<ViewBlock>& v_block,

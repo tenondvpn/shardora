@@ -573,6 +573,9 @@ void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
     //     pool_idx_, rst_timer_msg.leader_idx(), elect_info_->GetElectItem()->LocalMember()->index);
     // leader 必须正确
     if (VerifyLeader(rst_timer_msg.leader_idx()) != Status::kSuccess) {
+        if (sync_pool_fn_) { // leader 不一致触发同步
+            sync_pool_fn_(pool_idx_, 1);
+        }
         return;
     }
     // 必须处于 stuck 状态
