@@ -21,14 +21,13 @@ Status Crypto::PartialSign(
     }
     
     if (elect_item->local_sk() == libff::alt_bn128_Fr::zero()) {
-        assert(false);
         return Status::kError;
     }
 
     if (elect_item->LocalMember()->bls_publick_key == libff::alt_bn128_G2::zero()) {
         return Status::kError;
     }
-    
+
     libff::alt_bn128_G1 g1_hash;
     GetG1Hash(msg_hash, &g1_hash);
     auto ret = bls_mgr_->Sign(
