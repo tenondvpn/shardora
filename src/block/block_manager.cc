@@ -1034,12 +1034,6 @@ void BlockManager::AddNewBlock(
     const auto& tx_list = block_item->tx_list();
     // 处理交易信息
     for (int32_t i = 0; i < tx_list.size(); ++i) {
-        ZJC_DEBUG("handle tx coming net: %u, pool: %u, height: %lu, status: %d, step: %d", 
-            block_item->network_id(), 
-            block_item->pool_index(), 
-            block_item->height(), 
-            tx_list[i].status(), 
-            tx_list[i].step());
         if (tx_list[i].status() != consensus::kConsensusSuccess) {
             continue;
         }
