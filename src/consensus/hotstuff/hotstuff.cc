@@ -817,6 +817,9 @@ Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
             ZJC_WARN("pool: %d, leader_idx message is error, %d, %d", pool_idx_, leader_idx, leader->index);
             return Status::kError;
         }
+
+        ZJC_DEBUG("failed verify leader index: %u, %u", leader_idx, leader->index);
+        assert(false);
         return Status::kError;
     }
     return Status::kSuccess;
