@@ -230,12 +230,6 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         ZJC_ERROR("pool: %d verify qc failed: %lu", pool_idx_, v_block->view);
         return;
     }
-
-    // 切换视图
-    pacemaker()->AdvanceView(new_sync_info()->WithQC(v_block->qc));
-    // Commit 一定要在 Txs Accept 之前，因为一旦 v_block->qc 合法就已经可以 Commit 了，不需要 Txs 合法
-    // Commit 会导致 Leader 更换，且由于 HandleProposeMsg 只接受合法 Leader 的消息，因此在 VerifyLeader 之后
-    TryCommit(v_block->qc);    
     
     // 4 Verify ViewBlock    
     if (VerifyViewBlock(
@@ -308,28 +302,6 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     
     // 更新哈希值
     v_block->UpdateHash();
-// #ifndef NDEBUG
-//     for (int32_t i = 0; i < v_block->block->tx_list_size(); ++i) {
-//         ZJC_DEBUG("block net: %u, pool: %u, height: %lu, prehash: %s, hash: %s, step: %d, "
-//             "pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, "
-//             "vblock: %lu, txs: %lu, vote block hash: %s",
-//             block_info->block->network_id(),
-//             block_info->block->pool_index(),
-//             block_info->block->height(),
-//             common::Encode::HexEncode(block_info->block->prehash()).c_str(),
-//             common::Encode::HexEncode(block_info->block->hash()).c_str(),
-//             block_info->block->tx_list(i).step(),
-//             pool_idx_,
-//             pacemaker()->HighQC()->view,
-//             pacemaker()->HighTC()->view,
-//             view_block_chain()->Size(),
-//             pacemaker()->CurView(),
-//             v_block->view,
-//             v_block->block->tx_list_size(),
-//             common::Encode::HexEncode(v_block->hash).c_str());
-
-//     }
-// #endif
     // 6 add view block
     if (view_block_chain()->Store(v_block) != Status::kSuccess) {
         ZJC_ERROR("pool: %d, add view block error. hash: %s",
