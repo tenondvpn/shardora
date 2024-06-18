@@ -256,11 +256,11 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     // 假如 Leader 是 1<-2，但 HighQC 是 3，即将打包 4
     // 但由于 3 不存在需要从其他节点处同步，但又由于 HighQC3 只有 Leader 拥有，其他节点无法同步 3 给 Leader，造成卡死
     // 即 Leader 有 QC 无块，Replicas 有块无 QC
-    if (new_view_fn_) {
-        ZJC_DEBUG("====4.2 pool: %d, broadcast tc, view: %d, member: %d, view: %d",
-            pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
-        new_view_fn_(new_sync_info()->WithTC(HighTC())->WithQC(HighQC()));
-    }
+    // if (new_view_fn_) {
+    //     ZJC_DEBUG("====4.2 pool: %d, broadcast tc, view: %d, member: %d, view: %d",
+    //         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
+    //     new_view_fn_(new_sync_info()->WithTC(HighTC())->WithQC(HighQC()));
+    // }
     
     // New Propose
     if (new_proposal_fn_) {
