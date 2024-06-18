@@ -20,14 +20,6 @@ public:
     Status Accept(std::shared_ptr<ViewBlock>& v_block);
     Status Commit(const std::shared_ptr<ViewBlock>& v_block);
 
-    void SetMemberConsensusStat(
-            uint32_t member_idx,
-            const std::shared_ptr<MemberConsensusStat>& member_consen_stat) {
-        if (member_consen_stats_.size() > member_idx) {
-            member_consen_stats_[member_idx] = member_consen_stat;
-        }
-    }
-
     inline const std::vector<std::shared_ptr<MemberConsensusStat>> GetAllConsensusStats() {
         return member_consen_stats_;
     }
@@ -41,8 +33,16 @@ public:
 
 private:
     uint32_t pool_idx_;
-    std::unordered_map<uint32_t, View> leader_last_commit_view_map_; // member_index => View, 记录所有 leader 最后一次提交的 View
+    std::vector<View> leader_last_commit_views_; // member_index => View, 记录所有 leader 最后一次提交的 View
     std::vector<std::shared_ptr<MemberConsensusStat>> member_consen_stats_;
+
+    void SetMemberConsensusStat(
+            uint32_t member_idx,
+            const std::shared_ptr<MemberConsensusStat>& member_consen_stat) {
+        if (member_consen_stats_.size() > member_idx) {
+            member_consen_stats_[member_idx] = member_consen_stat;
+        }
+    }    
 };
 
 } // namespace hotstuff
