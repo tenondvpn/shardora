@@ -64,7 +64,7 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
     msg.append((char*)&timestamp, sizeof(timestamp));  
     uint32_t leader_idx = block.leader_index();
     msg.append((char*)&leader_idx, sizeof(leader_idx));
-    // msg.append(block.leader_ip());
+    msg.append(block.leader_ip());
     uint32_t leader_port = block.leader_port();
     msg.append((char*)&leader_port, sizeof(leader_port));
     if (block.change_leader_invalid_hashs_size() > 0) {
@@ -81,7 +81,7 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
         tmp_hash = common::Hash::keccak256(tmp_hash);
     }
 #endif
-    ZJC_INFO("block.prehash(): %s, height: %lu,pool_idx: %u, sharding_id: %u, vss_random: %lu, "
+    ZJC_DEBUG("block.prehash(): %s, height: %lu,pool_idx: %u, sharding_id: %u, vss_random: %lu, "
         "timeblock_height: %lu, elect_height: %lu, leader_idx: %u, get block hash: %s, tmp_hash: %s, msg: %s, "
         "is_commited_block: %d, leader_ip: %s, leader_port: %u",
         common::Encode::HexEncode(block.prehash()).c_str(),
