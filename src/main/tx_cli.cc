@@ -14,7 +14,7 @@
 using namespace shardora;
 static bool global_stop = false;
 static const std::string kBroadcastIp = "127.0.0.1";
-static const uint16_t kBroadcastPort = 13008;
+static const uint16_t kBroadcastPort = 13001;
 static const int shardnum = 3;
 static const int delayus = 400;
 static const bool multi_pool = false;
@@ -221,7 +221,7 @@ int tx_main(int argc, char** argv) {
         return 1;
     }
 
-    std::string prikey = common::Encode::HexDecode("b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708");
+    std::string prikey = common::Encode::HexDecode("78c628f14ae20a070ef41fb89eb2e0595f723885ef60d9e3a4acb8f166688b6f");
     std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
     uint32_t prikey_pos = 0;
     auto from_prikey = prikey;
@@ -336,7 +336,7 @@ int one_tx_main(int argc, char** argv) {
         return 1;
     }
 
-    std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
+    std::string prikey = common::Encode::HexDecode("78c628f14ae20a070ef41fb89eb2e0595f723885ef60d9e3a4acb8f166688b6f");
     uint32_t prikey_pos = 0;
     auto from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
     security->SetPrivateKey(from_prikey);
@@ -444,7 +444,7 @@ int create_library(int argc, char** argv) {
     }
 
     std::string gid = common::Random::RandomString(32);
-    std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
+    std::string prikey = common::Encode::HexDecode("78c628f14ae20a070ef41fb89eb2e0595f723885ef60d9e3a4acb8f166688b6f");
     uint32_t prikey_pos = 0;
     auto from_prikey = g_prikeys[254];
     security->SetPrivateKey(from_prikey);
@@ -521,7 +521,7 @@ int contract_main(int argc, char** argv) {
     }
 
     std::string gid = common::Random::RandomString(32);
-    std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
+    std::string prikey = common::Encode::HexDecode("78c628f14ae20a070ef41fb89eb2e0595f723885ef60d9e3a4acb8f166688b6f");
     uint32_t prikey_pos = 0;
     auto from_prikey = g_prikeys[254];
     security->SetPrivateKey(from_prikey);
@@ -606,7 +606,7 @@ int contract_set_prepayment(int argc, char** argv) {
     }
 
     std::string gid = common::Random::RandomString(32);
-    std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
+    std::string prikey = common::Encode::HexDecode("78c628f14ae20a070ef41fb89eb2e0595f723885ef60d9e3a4acb8f166688b6f");
     uint32_t prikey_pos = 0;
     auto from_prikey = g_prikeys[254];
     security->SetPrivateKey(from_prikey);
@@ -682,7 +682,7 @@ int contract_call(int argc, char** argv, bool more=false) {
     }
 
     std::string gid = common::Random::RandomString(32);
-    std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
+    std::string prikey = common::Encode::HexDecode("78c628f14ae20a070ef41fb89eb2e0595f723885ef60d9e3a4acb8f166688b6f");
     uint32_t prikey_pos = 0;
     auto from_prikey = g_prikeys[254];
     security->SetPrivateKey(from_prikey);
