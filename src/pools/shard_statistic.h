@@ -50,7 +50,6 @@ public:
         uint64_t vss_random);
     int StatisticWithHeights(
         pools::protobuf::ElectStatistic &elect_statistic,
-        pools::protobuf::CrossShardStatistic &cross_statistic,
         uint64_t *statisticed_timeblock_height);
 
 
@@ -84,11 +83,6 @@ public:
         const block::protobuf::BlockTx &tx);
     void HandleStatistic(const std::shared_ptr<block::protobuf::Block> &block_ptr);
     std::string getLeaderIdFromBlock(shardora::block::protobuf::Block &block);
-    void HandleCrossShard(
-        bool is_root,
-        const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        pools::protobuf::CrossShardStatistic& cross_statistic);
     void LoadLatestHeights();
     bool LoadAndStatisticBlock(uint32_t poll_index, uint64_t height);
     bool CheckAllBlockStatisticed(uint32_t local_net_id);

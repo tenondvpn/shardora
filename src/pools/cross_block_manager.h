@@ -115,7 +115,6 @@ private:
                     &block)) {
                 ZJC_DEBUG("failed get block net: %u, pool: %u, height: %lu",
                     sharding_id, common::kRootChainPoolIndex, check_height);
-
                 if (cross_synced_max_heights_[sharding_id] != common::kInvalidUint64) {
                     uint32_t count = 0;
                     for (uint64_t h = check_height; h <= cross_synced_max_heights_[sharding_id] && ++count < 64; ++h) {
@@ -135,55 +134,30 @@ private:
 
             bool height_valid = true;
             for (int32_t tx_idx = 0; tx_idx < block.tx_list_size(); ++tx_idx) {
-                if (sharding_id == network::kRootCongressNetworkId) {
-                    if (block.tx_list(tx_idx).step() != pools::protobuf::kCross) {
-                        continue;
-                    }
-                } else {
-                    if (block.tx_list(tx_idx).step() != pools::protobuf::kStatistic) {
-                        continue;
-                    }
+                if (block.tx_list(tx_idx).step() != pools::protobuf::kNormalTo &&
+                        block.tx_list(tx_idx).step() != pools::protobuf::kRootCreateAddressCrossSharding) {
+                    continue;
                 }
-
+               
                 auto& block_tx = block.tx_list(tx_idx);
                 for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-                    const pools::protobuf::CrossShardStatistic* cross_statistic = nullptr;
-                    pools::protobuf::CrossShardStatistic tmp_cross_statistic;
-                    pools::protobuf::ElectStatistic statistic;
+                    pools::protobuf::ToTxMessage to_txs;
                     ZJC_DEBUG("handle cross tx sharding id: %u, key: %s",
-                        sharding_id, block_tx.storages(i).key().c_str());
-                    if (sharding_id == network::kRootCongressNetworkId) {
-                        if (block_tx.storages(i).key() != protos::kShardCross) {
-                            continue;
-                        }
-
-                        if (!tmp_cross_statistic.ParseFromString(block_tx.storages(i).value())) {
-                            assert(false);
-                            break;
-                        }
-
-                        cross_statistic = &tmp_cross_statistic;
-                    } else {
-                        if (block_tx.storages(i).key() != protos::kShardStatistic) {
-                            continue;
-                        }
-
-                        if (!statistic.ParseFromString(block_tx.storages(i).value())) {
-                            assert(false);
-                            break;
-                        }
-
-                        cross_statistic = &statistic.cross();
+                    sharding_id, block_tx.storages(i).key().c_str());
+            
+                    if (block_tx.storages(i).key() != protos::kNormalToShards) {
+                        continue;
                     }
 
-                    if (cross_statistic == nullptr) {
-                        continue;
+                    if (!to_txs.ParseFromString(block_tx.storages(i).value())) {
+                        assert(false);
+                        break;
                     }
 
                     ZJC_DEBUG("handle cross tx sharding id: %u, key: %s, crosses_size: %u",
-                        sharding_id, block_tx.storages(i).key().c_str(), cross_statistic->crosses_size());
-                    for (int32_t cross_idx = 0; cross_idx < cross_statistic->crosses_size(); ++cross_idx) {
-                        auto& cross = cross_statistic->crosses(cross_idx);
+                        sharding_id, block_tx.storages(i).key().c_str(), to_txs.crosses_size());
+                    for (int32_t cross_idx = 0; cross_idx < to_txs.crosses_size(); ++cross_idx) {
+                        auto& cross = to_txs.crosses(cross_idx);
                         ZJC_DEBUG("cross shard block src net: %u, src pool: %u, height: %lu,"
                             "des net: %u, local_sharding_id: %u",
                             cross.src_shard(),
@@ -241,8 +215,8 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     volatile uint32_t max_sharding_id_ = 3;
     common::Tick tick_;
-    volatile uint64_t cross_synced_max_heights_[network::kConsensusShardEndNetworkId] = { common::kInvalidUint64 };
-    volatile uint64_t cross_checked_max_heights_[network::kConsensusShardEndNetworkId] = { common::kInvalidUint64 };
+    volatile uint64_t cross_synced_max_heights_[network::kConsensusShardEndNetworkId] = { 1 };
+    volatile uint64_t cross_checked_max_heights_[network::kConsensusShardEndNetworkId] = { 1 };
     bool inited_heights_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(CrossBlockManager);

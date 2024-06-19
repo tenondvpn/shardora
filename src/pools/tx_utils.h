@@ -176,7 +176,6 @@ struct HeightStatisticInfo {
     HeightStatisticInfo() : tm_height(0), max_height(0) {}
     uint64_t tm_height;
     uint64_t max_height;
-    pools::protobuf::CrossShardStatistic cross_statistic;
     std::map<uint64_t, std::shared_ptr<ElectNodeStatisticInfo>> elect_node_info_map;
 };
 
@@ -227,6 +226,29 @@ struct PoolsTmPrioItem {
     uint32_t pool_index;
     bool operator<(const PoolsTmPrioItem& a) const {
         return max_timestamp < a.max_timestamp;
+    }
+};
+
+struct CrossItem {
+    uint32_t src_shard;
+    uint32_t src_pool;
+    uint64_t height;
+};
+
+static inline bool operator==(const struct CrossItem & X,const struct CrossItem & Y) {
+    return (Y.src_shard==X.src_shard) && (Y.src_pool==X.src_pool)  && (Y.height==X.height);
+}
+
+
+struct CrossItemRecordHash {
+    size_t operator()(const struct CrossItem& item) const {
+        char data[sizeof(CrossItem)];
+        uint32_t* u32_arr = (uint32_t*)data;
+        u32_arr[0] = item.src_shard;
+        u32_arr[1] = item.src_pool;
+        u32_arr[2] = static_cast<uint32_t>(item.height && 0xFFFFFFFFu);
+        u32_arr[3] = static_cast<uint32_t>((item.height >> 32) && 0xFFFFFFFFu);
+        return std::hash<std::string>()(data);
     }
 };
 

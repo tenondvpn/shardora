@@ -79,6 +79,12 @@ private:
         uint32_t pool_idx, 
         uint64_t min_height, 
         uint64_t max_height);
+    void HandleCrossShard(
+        bool is_root,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        std::unordered_map<uint32_t, std::unordered_set<CrossItem, CrossItemRecordHash>>& cross_map);
+
     void RemoveCacheBlock(uint32_t pool_idx, uint64_t height) {
         auto iter = added_heights_[pool_idx].find(height);
         if (iter != added_heights_[pool_idx].end()) {
@@ -118,6 +124,7 @@ private:
     std::shared_ptr<pools::protobuf::ShardToTxItem> prev_to_heights_ = nullptr;
     uint64_t has_statistic_height_[common::kInvalidPoolIndex] = { 1 };
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
+    std::unordered_map<uint64_t, std::unordered_map<uint32_t, std::unordered_set<CrossItem, CrossItemRecordHash>>> cross_sharding_map_[common::kInvalidPoolIndex];
 
     DISALLOW_COPY_AND_ASSIGN(ToTxsPools);
 };

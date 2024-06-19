@@ -37,14 +37,14 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
         }
     }
     
-#ifndef NDEBUG
-    for (uint32_t i = 0; i < view_block->block->tx_list_size(); ++i) {
-        ZJC_DEBUG("new view block store hash: %s, phash: %s, gid: %s", 
-            common::Encode::HexEncode(view_block->hash).c_str(),
-            common::Encode::HexEncode(view_block->parent_hash).c_str(),
-            common::Encode::HexEncode(view_block->block->tx_list(i).gid()).c_str());
-    }
-#endif
+// #ifndef NDEBUG
+//     for (uint32_t i = 0; i < view_block->block->tx_list_size(); ++i) {
+//         ZJC_DEBUG("new view block store hash: %s, phash: %s, gid: %s", 
+//             common::Encode::HexEncode(view_block->hash).c_str(),
+//             common::Encode::HexEncode(view_block->parent_hash).c_str(),
+//             common::Encode::HexEncode(view_block->block->tx_list(i).gid()).c_str());
+//     }
+// #endif
 
     if (!start_block_) {
         start_block_ = view_block;

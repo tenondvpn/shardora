@@ -293,6 +293,8 @@ private:
                 msg_ptr->address_info);
     }
 
+    static const uint64_t kHandleTimerPeriodMs = 3000lu;
+
     std::unordered_map<uint32_t, std::shared_ptr<Hotstuff>> pool_hotstuff_;
     std::shared_ptr<ElectInfo> elect_info_;
     
@@ -313,6 +315,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     BlockCacheCallback new_block_cache_callback_ = nullptr;
+    uint64_t prev_handler_timer_tm_ms_ = 0;
 
     uint64_t first_timeblock_timestamp_ = 0;
 
