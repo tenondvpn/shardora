@@ -230,13 +230,13 @@ struct CrossItem {
     uint64_t height;
 };
 
-bool operator==(const struct  CrossItem & X,const struct CrossItem & Y)
+bool operator==(const struct CrossItem & X,const struct CrossItem & Y)
 {
     return (Y.src_shard==X.src_shard) && (Y.src_pool==X.src_pool)  && (Y.height==X.height);
 }
 
 
-struct record_hash{
+struct CrossItemRecordHash {
     size_t operator()(const struct CrossItem& item) const {
         char data[sizeof(CrossItem)];
         uint32_t* u32_arr = (uint32_t*)data;
