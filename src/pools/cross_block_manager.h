@@ -173,7 +173,7 @@ private:
                             break;
                         }
 
-                        cross_statistic = &statistic.cross();
+                        // cross_statistic = &statistic.cross();
                     }
 
                     if (cross_statistic == nullptr) {

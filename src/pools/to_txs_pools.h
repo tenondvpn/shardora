@@ -124,7 +124,7 @@ private:
     std::shared_ptr<pools::protobuf::ShardToTxItem> prev_to_heights_ = nullptr;
     uint64_t has_statistic_height_[common::kInvalidPoolIndex] = { 1 };
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
-    std::unordered_map<uint64_t, std::unordered_map<uint32_t, std::unordered_set<CrossItem>>> cross_sharding_map_[common::kInvalidPoolIndex];
+    std::unordered_map<uint64_t, std::unordered_map<uint32_t, std::unordered_set<CrossItem, record_hash>>> cross_sharding_map_[common::kInvalidPoolIndex];
 
     DISALLOW_COPY_AND_ASSIGN(ToTxsPools);
 };

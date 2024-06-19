@@ -230,6 +230,24 @@ struct CrossItem {
     uint64_t height;
 };
 
+bool operator==(const struct  CrossItem & X,const struct CrossItem & Y)
+{
+    return (Y.src_shard==X.src_shard) && (Y.src_pool==X.src_pool)  && (Y.height==X.height);
+}
+
+
+struct record_hash{
+    size_t operator()(const struct CrossItem& item) const {
+        char data[sizeof(CrossItem)];
+        uint32_t* u32_arr = (uint32_t*)data;
+        u32_arr[0] = item.src_shard;
+        u32_arr[1] = item.src_pool;
+        u32_arr[2] = static_cast<uint32_t>(item.height && 0xFFFFFFFFu);
+        u32_arr[3] = static_cast<uint32_t>((item.height >> 32) && 0xFFFFFFFFu);
+        return std::hash<std::string>()(data);
+    }
+};
+
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {
     std::string message;
     message.reserve(tx_info.ByteSizeLong());
