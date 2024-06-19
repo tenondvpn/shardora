@@ -384,9 +384,10 @@ void ElectTxItem::GetIndexNodes(
         node_info->area_weight = min_area_weight;
         node_info->stoke = elect_statistic.join_elect_nodes(i).stoke();
         node_info->tx_count = min_tx_count;
-        node_info->credit = account_info->credit();
+        node_info->credit = elect_statistic.join_elect_nodes(i).credit();
         node_info->pubkey = elect_statistic.join_elect_nodes(i).pubkey();
         node_info->index = index;
+        node_info->consensus_gap = elect_statistic.join_elect_nodes(i).consensus_gap(); 
         elect_nodes_to_choose->push_back(node_info);
     }
 }
@@ -546,6 +547,7 @@ int ElectTxItem::CreateNewElect(
             in->set_pubkey(elect_nodes[i]->pubkey);
             in->set_pool_idx_mod_num(elect_nodes[i]->leader_mod_index);
             in->set_mining_amount(elect_nodes[i]->mining_token);
+            in->set_fts_value(elect_nodes[i]->fts_value);
         }
     }
 
@@ -657,9 +659,10 @@ int ElectTxItem::CheckWeedout(
         node_info->area_weight = min_dis;
         node_info->tx_count = statistic_item.tx_count(member_idx);
         node_info->stoke = statistic_item.stokes(member_idx);
-        node_info->credit = account_info->credit();
+        node_info->credit = statistic_item.credit(member_idx);
         node_info->index = member_idx;
         node_info->pubkey = (*members)[member_idx]->pubkey;
+        node_info->consensus_gap = statistic_item.consensus_gap(member_idx); 
 
         if (*min_area_weight > min_dis) {
             *min_area_weight = min_dis;
@@ -939,6 +942,33 @@ void ElectTxItem::SmoothFtsValue(
         }
     }
 
+      std::vector<int32_t> gap_weight;
+    {
+        gap_weight.resize(elect_nodes.size(), 0);
+        int32_t min_gap_weight = (std::numeric_limits<int32_t>::max)();
+        int32_t max_gap_weight = (std::numeric_limits<int32_t>::min)();
+        for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+            int32_t prefix_len = 0;
+            auto count = 0;
+            gap_weight[i] = elect_nodes[i]->consensus_gap;
+            if (gap_weight[i] > max_gap_weight) {
+                max_gap_weight = gap_weight[i];
+            }
+
+            if (gap_weight[i] < min_gap_weight) {
+                min_gap_weight = gap_weight[i];
+            }
+        }
+
+        int32_t weight_diff = max_gap_weight - min_gap_weight;
+        if (weight_diff > 0) {
+            int32_t weight_index = blance_diff / weight_diff;
+            for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+                gap_weight[i] = min_balance + weight_index * (gap_weight[i] - min_gap_weight);
+            }
+        }
+    }
+
     std::vector<int32_t> epoch_weight;
     {
         epoch_weight.resize(elect_nodes.size(), 0);
@@ -969,14 +999,16 @@ void ElectTxItem::SmoothFtsValue(
     std::string fts_val_str;
     for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
         elect_nodes[i]->fts_value = (2 * ip_weight[i] +
-                                     4 * credit_weight[i] +
+                                     2 * credit_weight[i] +
                                      2 * blance_weight[i] +
-                                     2 * epoch_weight[i]) /
+                                     2 * epoch_weight[i]) +
+                                     2 * gap_weight[i] /
                                     10;
         fts_val_str += std::to_string(ip_weight[i]) + "," +
                        std::to_string(credit_weight[i]) + "," +
                        std::to_string(blance_weight[i]) + "," +
                        std::to_string(epoch_weight[i]) + "," +
+                       std::to_string(gap_weight[i]) + "," +
                        std::to_string(elect_nodes[i]->fts_value) + " --- ";
         if (*max_fts_val < elect_nodes[i]->fts_value) {
             *max_fts_val = elect_nodes[i]->fts_value;

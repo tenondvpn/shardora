@@ -140,6 +140,7 @@ add_executable(tnets ${MAIN_DIR}/tnet_svr.cc)
 add_executable(tnetc ${MAIN_DIR}/tnet_cli.cc)
 add_executable(txcli ${MAIN_DIR}/tx_cli.cc)
 add_executable(blsmain ${MAIN_DIR}/bls_main.cc)
+add_executable(hotstuff ${MAIN_DIR}/hotstuff.cc)
 
 set(LINK_ARGS
     init
@@ -184,6 +185,7 @@ target_link_libraries(wss websocket common tcmalloc pthread gmp)
 target_link_libraries(tnetc transport common tcmalloc pthread gmp)
 target_link_libraries(tnets transport common tcmalloc pthread gmp)
 target_link_libraries(txcli security transport common tcmalloc pthread gmp)
+target_link_libraries(hotstuff security transport common tcmalloc pthread gmp)
 
 include_directories(SYSTEM ${SRC_DIR})
 

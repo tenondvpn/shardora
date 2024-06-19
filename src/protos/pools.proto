@@ -102,6 +102,8 @@ message PoolStatisticItem {
     optional uint64 elect_height = 3;
     repeated AreaInfo area_point = 4;
     repeated uint64 gas_sum =5;
+    repeated uint64 credit =6;
+    repeated uint64 consensus_gap = 7;
 }
 
 message JoinElectNode {
@@ -109,6 +111,9 @@ message JoinElectNode {
     optional uint64 stoke = 2;
     optional uint32 shard = 3;
     optional int32 elect_pos = 4;
+    optional AreaInfo area_point = 5;
+    optional uint64 credit =6;
+    optional uint64 consensus_gap = 7;
 }
 
 message ElectStatistic {

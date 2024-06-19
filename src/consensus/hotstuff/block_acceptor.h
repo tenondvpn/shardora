@@ -94,6 +94,7 @@ public:
             std::shared_ptr<pools::TxPoolManager>& pools_mgr,
             std::shared_ptr<block::BlockManager>& block_mgr,
             std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
+            std::shared_ptr<elect::ElectManager> elect_mgr,
             consensus::BlockCacheCallback new_block_cache_callback);
     ~BlockAcceptor();
 
@@ -134,6 +135,7 @@ private:
     std::unordered_map<pools::protobuf::StepType, TxsFunc> txs_func_map_;
     zjcvm::ZjchainHost zjc_host;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
+    std::shared_ptr<elect::ElectManager> elect_mgr_= nullptr;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;

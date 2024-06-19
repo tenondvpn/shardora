@@ -13,7 +13,7 @@
 #include "zjcvm/zjcvm_utils.h"
 #include <elect/elect_pledge.h>
 // #include <iostream>
-#include "shard_statistic.h"
+// #include "shard_statistic.h"
 
 
 namespace shardora {
@@ -39,6 +39,7 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
     ZJC_DEBUG("new block coming net: %u, pool: %u, height: %lu, timeblock height: %lu",
         block_ptr->network_id(),
         block_ptr->pool_index(), block_ptr->height(), block_ptr->timeblock_height());
+    HandleElectStatistic(block_ptr);
     block::protobuf::Block& block = *block_ptr;
     if (!checkBlockValid(block)) return;
 
@@ -201,6 +202,171 @@ void ShardStatistic::HandleStatisticBlock(
     }
 }
 
+<<<<<<< HEAD
+=======
+void ShardStatistic::HandleCrossShard(
+        bool is_root,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        pools::protobuf::CrossShardStatistic& cross_statistic) {
+    if (tx.status() != consensus::kConsensusSuccess) {
+        ZJC_DEBUG("success handle block pool: %u, height: %lu, tm height: %lu, status: %d, step: %d",
+            block.pool_index(), block.height(), block.timeblock_height(), tx.status(), tx.step());
+        return;
+    }
+
+    CrossStatisticItem cross_item;
+    switch (tx.step()) {
+    case pools::protobuf::kNormalTo: {
+        if (!is_root) {
+            for (int32_t i = 0; i < tx.storages_size(); ++i) {
+                if (tx.storages(i).key() == protos::kNormalToShards) {
+                    pools::protobuf::ToTxMessage to_tx;
+                    if (!to_tx.ParseFromString(tx.storages(i).value())) {
+                        return;
+                    }
+
+                    cross_item = CrossStatisticItem(to_tx.to_heights().sharding_id());
+                    ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
+                        tx.step(), block.pool_index(), block.height(), to_tx.to_heights().sharding_id());
+                    break;
+                }
+            }
+        }
+
+        break;
+    }
+    case pools::protobuf::kRootCross: {
+        if (is_root) {
+            for (int32_t i = 0; i < tx.storages_size(); ++i) {
+                if (tx.storages(i).key() == protos::kRootCross) {
+                    cross_item = CrossStatisticItem(0);
+                    cross_item.cross_ptr = std::make_shared<pools::protobuf::CrossShardStatistic>();
+                    pools::protobuf::CrossShardStatistic& cross = *cross_item.cross_ptr;
+                    if (!cross.ParseFromString(tx.storages(i).value())) {
+                        assert(false);
+                        break;
+                    }
+                }
+
+                break;
+            }
+            ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
+                tx.step(), block.pool_index(), block.height(), 0);
+        }
+        break;
+    }
+    case pools::protobuf::kJoinElect: {
+        if (!is_root) {
+            cross_item = CrossStatisticItem(network::kRootCongressNetworkId);
+            ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
+                tx.step(), block.pool_index(), block.height(), network::kRootCongressNetworkId);
+        }
+        
+        break;
+    }
+    case pools::protobuf::kCreateLibrary: {
+        if (is_root) {
+            cross_item = CrossStatisticItem(network::kNodeNetworkId);
+        } else {
+            cross_item = CrossStatisticItem(network::kRootCongressNetworkId);
+        }
+
+        ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
+            tx.step(), block.pool_index(), block.height(),
+            cross_item.des_net);
+        break;
+    }
+    case pools::protobuf::kRootCreateAddressCrossSharding:
+    case pools::protobuf::kConsensusRootElectShard: {
+        if (!is_root) {
+            return;
+        }
+
+        cross_item = CrossStatisticItem(network::kNodeNetworkId);
+        ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
+            tx.step(), block.pool_index(), block.height(), network::kNodeNetworkId);
+        break;
+    }
+    default:
+        break;
+    }
+
+    uint32_t src_shard = common::GlobalInfo::Instance()->network_id();
+    if (common::GlobalInfo::Instance()->network_id() >=
+            network::kConsensusShardEndNetworkId) {
+        src_shard -= network::kConsensusWaitingShardOffset;
+    }
+
+    if (cross_item.des_net != 0) {
+        auto* proto_cross_item = cross_statistic.add_crosses();
+        proto_cross_item->set_src_shard(src_shard);
+        proto_cross_item->set_src_pool(block.pool_index());
+        proto_cross_item->set_height(block.height());
+        proto_cross_item->set_des_shard(cross_item.des_net);
+        ZJC_DEBUG("succcess add cross statistic shard: %u, pool: %u, height: %lu, des: %u",
+            src_shard, block.pool_index(), block.height(), cross_item.des_net);
+    } else if (cross_item.cross_ptr != nullptr) {
+        for (int32_t i = 0; i < cross_item.cross_ptr->crosses_size(); ++i) {
+            auto* proto_cross_item = cross_statistic.add_crosses();
+            proto_cross_item->set_src_shard(cross_item.cross_ptr->crosses(i).src_shard());
+            proto_cross_item->set_src_pool(cross_item.cross_ptr->crosses(i).src_pool());
+            proto_cross_item->set_height(cross_item.cross_ptr->crosses(i).height());
+            proto_cross_item->set_des_shard(cross_item.cross_ptr->crosses(i).des_shard());
+            ZJC_DEBUG("succcess add cross statistic shard: %u, pool: %u, height: %lu, des: %u",
+                cross_item.cross_ptr->crosses(i).src_shard(),
+                cross_item.cross_ptr->crosses(i).src_pool(),
+                cross_item.cross_ptr->crosses(i).height(),
+                cross_item.cross_ptr->crosses(i).des_shard());
+        }
+    }
+}
+
+
+void ShardStatistic::HandleElectStatistic(const std::shared_ptr<block::protobuf::Block>& block_ptr) {
+    auto& block = *block_ptr;
+    elect::protobuf::ElectBlock elect_block;
+    bool isElectBlock = false;
+    for (int32_t i = 0; i < block.tx_list_size(); ++i) {
+        if (block.tx_list(i).step() == pools::protobuf::kConsensusRootElectShard) { 
+           auto block_tx = block.tx_list(i);
+           for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
+                if (block_tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
+                   
+                    if (!elect_block.ParseFromString(block_tx.storages(i).value())) {
+                        assert(false);
+                        return;
+                    }
+                    isElectBlock = true;
+                    break;                   
+                } 
+            }
+        } 
+    }
+    if (!isElectBlock) {
+       return;
+    }
+
+    if(!elect_block.has_elect_height() || elect_block.elect_height() <= least_elect_height_for_statistic_ ) {
+        ZJC_DEBUG("HandleElectStatistic have processed elect height: %lu, least_elect_height_: %lu", 
+            elect_block.elect_height(), least_elect_height_for_statistic_);
+       return;
+    }
+    least_elect_height_for_statistic_ = elect_block.elect_height();
+
+    for(auto node : elect_block.in()) {
+        auto addr = secptr_->GetAddress(node.pubkey());
+        auto& accoutPoceInfoIterm = accout_poce_info_map_.try_emplace(addr, std::make_shared<AccoutPoceInfoItem>())
+                                    .first->second;
+        accoutPoceInfoIterm->consensus_gap +=1;
+        accoutPoceInfoIterm->credit += node.fts_value();;
+        ZJC_DEBUG("HandleElectStatistic addr: %s, consensus_gap: %lu, credit: %lu", common::Encode::HexEncode(addr).c_str(), 
+            accoutPoceInfoIterm->consensus_gap, accoutPoceInfoIterm->credit);
+    }
+
+}
+
+>>>>>>> main
 void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Block>& block_ptr) {
     auto& block = *block_ptr;
     bool is_root = (
@@ -389,7 +555,7 @@ std::string ShardStatistic::getLeaderIdFromBlock(shardora::block::protobuf::Bloc
 }
 
 uint64_t ShardStatistic::getStoke(uint32_t shard_id, std::string contractId, std::string temp_addr, uint64_t elect_height) {
-    auto default_stoke = shard_id * 100 + elect_height;
+    auto default_stoke = 0;
 
    std::string contract_addr;
     if (shard_id < 1) {
@@ -796,6 +962,8 @@ void ShardStatistic::addPrepareMembers2JoinStastics(shardora::common::MembersPtr
             uint64_t stoke = getStoke(shard, "", addr_info->addr(), now_elect_height_);
 
             auto join_elect_node = elect_statistic.add_join_elect_nodes();
+            join_elect_node->set_consensus_gap(0);
+            join_elect_node->set_credit(0);
             join_elect_node->set_pubkey((*prepare_members)[i]->pubkey);
             join_elect_node->set_elect_pos(addr_info->elect_pos());
             join_elect_node->set_stoke(stoke);
@@ -888,7 +1056,8 @@ void ShardStatistic::addNewNode2JoinStatics(std::map<uint64_t, std::unordered_ma
 
         auto join_elect_node = elect_statistic.add_join_elect_nodes();
         auto iter = r_eiter->second.find(elect_nodes[i]);
-
+        join_elect_node->set_consensus_gap(0);
+        join_elect_node->set_credit(0);
         join_elect_node->set_pubkey(pubkey);
         join_elect_node->set_stoke(stoke);
         join_elect_node->set_shard(shard_id);
@@ -935,7 +1104,9 @@ void ShardStatistic::setElectStatistics(
         for (uint32_t midx = 0; midx < members->size(); ++midx) {
             auto &id = (*members)[midx]->id;
             auto node_info = node_info_map.emplace(id, StatisticMemberInfoItem()).first->second;
-
+            auto node_poce_info = accout_poce_info_map_.try_emplace(id, std::make_shared<AccoutPoceInfoItem>()).first->second;
+            statistic_item.add_credit(node_poce_info->credit);
+            statistic_item.add_consensus_gap(node_poce_info->consensus_gap);
             statistic_item.add_tx_count(node_info.tx_count);
             statistic_item.add_gas_sum(node_info.gas_sum);
             uint64_t stoke = 0;

@@ -149,6 +149,11 @@ struct StatisticMemberInfoItem {
     uint64_t gas_sum = 0;
 };
 
+struct AccoutPoceInfoItem {
+    uint64_t consensus_gap; // 边缘化程度 P
+    uint64_t credit;
+};
+
 struct CrossStatisticItem {
     CrossStatisticItem() : des_net(0), cross_ptr(nullptr) {}
     CrossStatisticItem(uint32_t shard) : des_net(shard), cross_ptr(nullptr) {}

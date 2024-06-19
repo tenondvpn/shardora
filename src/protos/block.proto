@@ -55,6 +55,8 @@ message Block {
     optional uint64 leader_index = 14;
     repeated bytes change_leader_invalid_hashs = 15;
     optional bool is_commited_block = 16 [default=false];  // not pipelined commit
+    optional bytes leader_ip = 17;
+    optional uint32 leader_port = 18;
 }
 
 message ConsensusToTxsItem {
