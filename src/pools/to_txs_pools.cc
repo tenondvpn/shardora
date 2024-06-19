@@ -751,8 +751,9 @@ int ToTxsPools::CreateToTxWithHeights(
         for (auto height = min_height; height <= max_height; ++height) {
             auto cross_iter = cross_sharding_map_[pool_idx].find(height);
             if (cross_iter != cross_sharding_map_[pool_idx].end()) {
-                if (cross_iter->first == sharding_id) {
-                    cross_set.insert(cross_iter->second.begin(), cross_iter->second.end());
+                auto item_iter = cross_iter->second.find(sharding_id);
+                if (item_iter != cross_iter->second.end()) {
+                    cross_set.insert(item_iter->second.begin(), item_iter->second.end());
                 }
             }
         }
