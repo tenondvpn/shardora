@@ -1049,9 +1049,9 @@ Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& t
         ZJC_ERROR("Get Leader failed.");
         return Status::kError;
     }
+    
     // 记录收到回执时期望的 leader 用于验证
     leader_rotation_->SetExpectedLeader(leader);
-
     header_msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     dht::DhtKeyManager dht_key(leader->net_id, leader->id);
     header_msg.set_des_dht_key(dht_key.StrKey());
@@ -1123,7 +1123,6 @@ void Hotstuff::TryRecoverFromStuck() {
             hotstuff_msg->set_type(PRE_RESET_TIMER);
             hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
             hotstuff_msg->set_pool_index(pool_idx_);
-
             SendMsgToLeader(trans_msg, PRE_RESET_TIMER);
             ZJC_DEBUG("pool: %d, send prereset msg from: %lu to: %lu, has_single_tx: %d",
                 pool_idx_, pre_rst_timer_msg->replica_idx(), leader_rotation_->GetLeader()->index, has_single_tx);

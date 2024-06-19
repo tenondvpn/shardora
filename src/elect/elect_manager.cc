@@ -294,7 +294,7 @@ bool ElectManager::ProcessPrevElectMembers(
     auto common_pk = BLSPublicKey(std::make_shared<std::vector<std::string>>(pk_vec));
     bool local_node_is_super_leader = false;
     for (auto iter = shard_members_ptr->begin(); iter != shard_members_ptr->end(); ++iter) {
-        ELECT_INFO("DDDDDDDDDD elect height: %lu, network: %d,"
+        ELECT_WARN("DDDDDDDDDD elect height: %lu, network: %d,"
             "leader: %s, pool_index_mod_num: %d, valid pk: %d",
             elect_block.prev_members().prev_elect_height(),
             prev_elect_block.shard_network_id(),
@@ -383,7 +383,7 @@ void ElectManager::ProcessNewElectBlock(
         }
 
         now_elected_ids_.insert(id);
-        ELECT_INFO("FFFFFFFF ProcessNewElectBlock network: %d, elect height: %lu, "
+        ELECT_WARN("FFFFFFFF ProcessNewElectBlock network: %d, elect height: %lu, "
             "member leader: %s,, (*iter)->pool_index_mod_num: %d, "
             "local_waiting_node_member_index_: %d",
             elect_block.shard_network_id(),
