@@ -18,11 +18,6 @@ public:
             std::shared_ptr<db::Db>& db,
             std::shared_ptr<sync::KeyValueSync>& kv_sync)
             : db_(db), kv_sync_(kv_sync) {
-        for (uint32_t i = 0; i < network::kConsensusShardEndNetworkId; ++i) {
-            cross_synced_max_heights_[i] = 1llu;
-            cross_checked_max_heights_[i] = 1llu;
-        }
-        
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
         tick_.CutOff(
             10000000lu,
