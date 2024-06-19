@@ -1,7 +1,12 @@
-
 #!/bin/bash
 # 修改配置文件
 # 确保服务器安装了 sshpass
+mv ./zjnodes/zjchain ./ci/zjnodes/
+rm -rf ./zjnodes ./conf
+mv ./ci/zjnodes ./
+mv ./ci/conf ./
+
+
 echo "==== STEP1: START DEPLOY ===="
 server0=127.0.0.1
 target=$1
@@ -57,3 +62,4 @@ done
 
 
 echo "==== STEP3: DONE ===="
+

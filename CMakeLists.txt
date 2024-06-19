@@ -140,6 +140,7 @@ add_executable(tnets ${MAIN_DIR}/tnet_svr.cc)
 add_executable(tnetc ${MAIN_DIR}/tnet_cli.cc)
 add_executable(txcli ${MAIN_DIR}/tx_cli.cc)
 add_executable(blsmain ${MAIN_DIR}/bls_main.cc)
+add_executable(hotstuff ${MAIN_DIR}/hotstuff.cc)
 
 set(LINK_ARGS
     init
