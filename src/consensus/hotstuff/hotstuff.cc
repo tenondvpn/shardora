@@ -852,7 +852,7 @@ Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
     
     view_block_chain()->SetLatestCommittedBlock(v_block);
     ZJC_DEBUG("pool: %d consensus stat, leader: %lu, succ: %lu",
-        v_block->leader_idx, pool_idx_,
+        pool_idx_, v_block->leader_idx,
         elect_item->consensus_stat(pool_idx_)->GetMemberConsensusStat(v_block->leader_idx)->succ_num);
     return Status::kSuccess;
 }
