@@ -171,7 +171,6 @@ struct HeightStatisticInfo {
     HeightStatisticInfo() : tm_height(0), max_height(0) {}
     uint64_t tm_height;
     uint64_t max_height;
-    pools::protobuf::CrossShardStatistic cross_statistic;
     std::map<uint64_t, std::shared_ptr<ElectNodeStatisticInfo>> elect_node_info_map;
 };
 
@@ -223,6 +222,12 @@ struct PoolsTmPrioItem {
     bool operator<(const PoolsTmPrioItem& a) const {
         return max_timestamp < a.max_timestamp;
     }
+};
+
+struct CrossItem {
+    uint32_t src_shard;
+    uint32_t src_pool;
+    uint64_t height;
 };
 
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {

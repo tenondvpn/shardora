@@ -201,124 +201,6 @@ void ShardStatistic::HandleStatisticBlock(
     }
 }
 
-void ShardStatistic::HandleCrossShard(
-        bool is_root,
-        const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        pools::protobuf::CrossShardStatistic& cross_statistic) {
-    if (tx.status() != consensus::kConsensusSuccess) {
-        ZJC_DEBUG("success handle block pool: %u, height: %lu, tm height: %lu, status: %d, step: %d",
-            block.pool_index(), block.height(), block.timeblock_height(), tx.status(), tx.step());
-        return;
-    }
-
-    CrossStatisticItem cross_item;
-    switch (tx.step()) {
-    case pools::protobuf::kNormalTo: {
-        if (!is_root) {
-            for (int32_t i = 0; i < tx.storages_size(); ++i) {
-                if (tx.storages(i).key() == protos::kNormalToShards) {
-                    pools::protobuf::ToTxMessage to_tx;
-                    if (!to_tx.ParseFromString(tx.storages(i).value())) {
-                        return;
-                    }
-
-                    cross_item = CrossStatisticItem(to_tx.to_heights().sharding_id());
-                    ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
-                        tx.step(), block.pool_index(), block.height(), to_tx.to_heights().sharding_id());
-                    break;
-                }
-            }
-        }
-
-        break;
-    }
-    case pools::protobuf::kRootCross: {
-        if (is_root) {
-            for (int32_t i = 0; i < tx.storages_size(); ++i) {
-                if (tx.storages(i).key() == protos::kRootCross) {
-                    cross_item = CrossStatisticItem(0);
-                    cross_item.cross_ptr = std::make_shared<pools::protobuf::CrossShardStatistic>();
-                    pools::protobuf::CrossShardStatistic& cross = *cross_item.cross_ptr;
-                    if (!cross.ParseFromString(tx.storages(i).value())) {
-                        assert(false);
-                        break;
-                    }
-                }
-
-                break;
-            }
-            ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
-                tx.step(), block.pool_index(), block.height(), 0);
-        }
-        break;
-    }
-    case pools::protobuf::kJoinElect: {
-        if (!is_root) {
-            cross_item = CrossStatisticItem(network::kRootCongressNetworkId);
-            ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
-                tx.step(), block.pool_index(), block.height(), network::kRootCongressNetworkId);
-        }
-        
-        break;
-    }
-    case pools::protobuf::kCreateLibrary: {
-        if (is_root) {
-            cross_item = CrossStatisticItem(network::kNodeNetworkId);
-        } else {
-            cross_item = CrossStatisticItem(network::kRootCongressNetworkId);
-        }
-
-        ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
-            tx.step(), block.pool_index(), block.height(),
-            cross_item.des_net);
-        break;
-    }
-    case pools::protobuf::kRootCreateAddressCrossSharding:
-    case pools::protobuf::kConsensusRootElectShard: {
-        if (!is_root) {
-            return;
-        }
-
-        cross_item = CrossStatisticItem(network::kNodeNetworkId);
-        ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
-            tx.step(), block.pool_index(), block.height(), network::kNodeNetworkId);
-        break;
-    }
-    default:
-        break;
-    }
-
-    uint32_t src_shard = common::GlobalInfo::Instance()->network_id();
-    if (common::GlobalInfo::Instance()->network_id() >=
-            network::kConsensusShardEndNetworkId) {
-        src_shard -= network::kConsensusWaitingShardOffset;
-    }
-
-    if (cross_item.des_net != 0) {
-        auto* proto_cross_item = cross_statistic.add_crosses();
-        proto_cross_item->set_src_shard(src_shard);
-        proto_cross_item->set_src_pool(block.pool_index());
-        proto_cross_item->set_height(block.height());
-        proto_cross_item->set_des_shard(cross_item.des_net);
-        ZJC_DEBUG("succcess add cross statistic shard: %u, pool: %u, height: %lu, des: %u",
-            src_shard, block.pool_index(), block.height(), cross_item.des_net);
-    } else if (cross_item.cross_ptr != nullptr) {
-        for (int32_t i = 0; i < cross_item.cross_ptr->crosses_size(); ++i) {
-            auto* proto_cross_item = cross_statistic.add_crosses();
-            proto_cross_item->set_src_shard(cross_item.cross_ptr->crosses(i).src_shard());
-            proto_cross_item->set_src_pool(cross_item.cross_ptr->crosses(i).src_pool());
-            proto_cross_item->set_height(cross_item.cross_ptr->crosses(i).height());
-            proto_cross_item->set_des_shard(cross_item.cross_ptr->crosses(i).des_shard());
-            ZJC_DEBUG("succcess add cross statistic shard: %u, pool: %u, height: %lu, des: %u",
-                cross_item.cross_ptr->crosses(i).src_shard(),
-                cross_item.cross_ptr->crosses(i).src_pool(),
-                cross_item.cross_ptr->crosses(i).height(),
-                cross_item.cross_ptr->crosses(i).des_shard());
-        }
-    }
-}
-
 void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Block>& block_ptr) {
     auto& block = *block_ptr;
     bool is_root = (
@@ -374,7 +256,6 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
                 ZJC_DEBUG("pool index: %d, set max height: %lu", block.pool_index(), block.height());
             }
 
-            HandleCrossShard(is_root, block, block.tx_list(i), tm_statistic_ptr->cross_statistic);
             if (block.tx_list(i).step() == pools::protobuf::kNormalFrom ||
                     block.tx_list(i).step() == pools::protobuf::kContractCreate ||
                     block.tx_list(i).step() == pools::protobuf::kContractCreateByRootFrom ||
@@ -660,7 +541,6 @@ bool ShardStatistic::CheckAllBlockStatisticed(uint32_t local_net_id) {
 
 int ShardStatistic::StatisticWithHeights(
         pools::protobuf::ElectStatistic& elect_statistic,
-        pools::protobuf::CrossShardStatistic& cross_statistic,
         uint64_t* statisticed_timeblock_height) {
     if (!new_block_changed_) {
         return kPoolsError;
@@ -752,14 +632,6 @@ int ShardStatistic::StatisticWithHeights(
             if (tm_iter->first > max_tm_height) {
                 max_tm_height = tm_iter->first;
             }
-
-            for (uint32_t i = 0; i < tm_iter->second->cross_statistic.crosses_size(); ++i) {
-                auto* cross_item = cross_statistic.add_crosses();
-                *cross_item = tm_iter->second->cross_statistic.crosses(i);
-                ZJC_DEBUG("0 succcess add cross statistic shard: %u, pool: %u, height: %lu, des: %u",
-                    cross_item->src_shard(), cross_item->src_pool(),
-                    cross_item->height(), cross_item->des_shard());
-            }
             
             for (auto elect_iter = tm_iter->second->elect_node_info_map.begin(); 
                     elect_iter != tm_iter->second->elect_node_info_map.end(); ++elect_iter) {
@@ -849,13 +721,11 @@ int ShardStatistic::StatisticWithHeights(
         elect_statistic.set_gas_amount(root_all_gas_amount);
     } else {
         elect_statistic.set_gas_amount(all_gas_amount);
-        *elect_statistic.mutable_cross() = cross_statistic;
     }
 
     auto net_id = common::GlobalInfo::Instance()->network_id();
     elect_statistic.set_sharding_id(net_id);
     addHeightInfo2Statics(elect_statistic, max_tm_height);
-
 
     {
         debug_for_str += std::to_string(all_gas_amount) + ",";

@@ -1328,7 +1328,6 @@ void BlockManager::CreateStatisticTx() {
     uint64_t timeblock_height = 0;
     if (statistic_mgr_->StatisticWithHeights(
             elect_statistic,
-            cross_statistic,
             &timeblock_height) != pools::kPoolsSuccess) {
         ZJC_DEBUG("failed StatisticWithHeights!");
         return;
