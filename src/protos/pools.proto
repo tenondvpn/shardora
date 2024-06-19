@@ -77,7 +77,7 @@ message ToTxMessage {
     repeated ToTxMessageItem tos = 2;
     optional ShardToTxItem to_heights = 3;
     optional uint64 elect_height = 4;
-    repeated CrossShardStatisticItem crosses = 1;
+    repeated CrossShardStatisticItem crosses = 5;
 }
 
 message AllToTxMessage {
