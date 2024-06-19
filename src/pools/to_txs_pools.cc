@@ -836,6 +836,7 @@ int ToTxsPools::CreateToTxWithHeights(
         cross_item->set_src_shard((*iter).src_shard);
         cross_item->set_src_pool((*iter).src_pool);
         cross_item->set_height((*iter).height);
+        cross_item->set_des_shard(sharding_id);
     }
 
     for (auto iter = acc_amount_map.begin(); iter != acc_amount_map.end(); ++iter) {

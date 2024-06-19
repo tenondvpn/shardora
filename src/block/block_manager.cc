@@ -679,13 +679,6 @@ void BlockManager::RootHandleNormalToTx(
         pools::protobuf::ToTxMessage& to_txs,
         db::DbWriteBatch& db_batch) {
     // 将 NormalTo 中的多个 tx 拆分成多个 kRootCreateAddress tx
-    for (int32_t i = 0; i < to_txs.crosses_size(); ++i) {
-        ZJC_DEBUG("cross tx coming src shard: %u, src pool: %u, height: %lu",
-            to_txs.crosses(i).src_shard(), 
-            to_txs.crosses(i).src_pool(), 
-            to_txs.crosses(i).height());
-    }
-    
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         auto tos_item = to_txs.tos(i);
         ZJC_INFO("to tx step: %d, new address %s, amount: %lu, prepayment: %lu, gid: %s, contract_from: %s",
