@@ -1,10 +1,10 @@
 #!/bin/bash
 # 修改配置文件
 # 确保服务器安装了 sshpass
-mv ./zjnodes/zjchain ./ci/zjnodes/
+cp -r ./zjnodes/zjchain ./ci/zjnodes/
 rm -rf ./zjnodes ./conf
-mv ./ci/zjnodes ./
-mv ./ci/conf ./
+cp -r ./ci/zjnodes ./
+cp -r ./ci/conf ./
 
 
 echo "==== STEP1: START DEPLOY ===="
