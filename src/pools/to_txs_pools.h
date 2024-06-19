@@ -83,7 +83,7 @@ private:
         bool is_root,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
-        std::unordered_map<uint32_t, std::unordered_set<CrossItem>>& cross_map);
+        std::unordered_map<uint32_t, std::unordered_set<CrossItem, CrossItemRecordHash>>& cross_map);
 
     void RemoveCacheBlock(uint32_t pool_idx, uint64_t height) {
         auto iter = added_heights_[pool_idx].find(height);
