@@ -1486,12 +1486,12 @@ void BlockManager::HandleStatisticBlock(
     }
 
     assert(block.network_id() == elect_statistic.sharding_id());
-    if (network::kRootCongressNetworkId == common::GlobalInfo::Instance()->network_id() &&
-            block.network_id() != network::kRootCongressNetworkId &&
-            elect_statistic.cross().crosses_size() > 0) {
-        // add cross shard statistic to root pool
-        RootCreateCrossTx(block, block_tx, elect_statistic, db_batch);
-    }
+    // if (network::kRootCongressNetworkId == common::GlobalInfo::Instance()->network_id() &&
+    //         block.network_id() != network::kRootCongressNetworkId &&
+    //         elect_statistic.cross().crosses_size() > 0) {
+    //     // add cross shard statistic to root pool
+    //     RootCreateCrossTx(block, block_tx, elect_statistic, db_batch);
+    // }
 
     ZJC_DEBUG("success handle statistic block net: %u, sharding: %u, "
         "pool: %u, height: %lu, elect height: %lu",
