@@ -202,6 +202,49 @@ void ShardStatistic::HandleStatisticBlock(
     }
 }
 
+void ShardStatistic::HandleElectStatistic(const std::shared_ptr<block::protobuf::Block>& block_ptr) {
+    auto& block = *block_ptr;
+    elect::protobuf::ElectBlock elect_block;
+    bool isElectBlock = false;
+    for (int32_t i = 0; i < block.tx_list_size(); ++i) {
+        if (block.tx_list(i).step() == pools::protobuf::kConsensusRootElectShard) { 
+           auto block_tx = block.tx_list(i);
+           for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
+                if (block_tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
+                   
+                    if (!elect_block.ParseFromString(block_tx.storages(i).value())) {
+                        assert(false);
+                        return;
+                    }
+                    isElectBlock = true;
+                    break;                   
+                } 
+            }
+        } 
+    }
+    if (!isElectBlock) {
+       return;
+    }
+
+    if(!elect_block.has_elect_height() || elect_block.elect_height() <= least_elect_height_for_statistic_ ) {
+        ZJC_DEBUG("HandleElectStatistic have processed elect height: %lu, least_elect_height_: %lu", 
+            elect_block.elect_height(), least_elect_height_for_statistic_);
+       return;
+    }
+    least_elect_height_for_statistic_ = elect_block.elect_height();
+
+    for(auto node : elect_block.in()) {
+        auto addr = secptr_->GetAddress(node.pubkey());
+        auto& accoutPoceInfoIterm = accout_poce_info_map_.try_emplace(addr, std::make_shared<AccoutPoceInfoItem>())
+                                    .first->second;
+        accoutPoceInfoIterm->consensus_gap +=1;
+        accoutPoceInfoIterm->credit += node.fts_value();;
+        ZJC_DEBUG("HandleElectStatistic addr: %s, consensus_gap: %lu, credit: %lu", common::Encode::HexEncode(addr).c_str(), 
+            accoutPoceInfoIterm->consensus_gap, accoutPoceInfoIterm->credit);
+    }
+
+}
+
 void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Block>& block_ptr) {
     auto& block = *block_ptr;
     bool is_root = (
