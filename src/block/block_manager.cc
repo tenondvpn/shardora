@@ -520,6 +520,7 @@ void BlockManager::HandleCrossTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& block_tx,
         db::DbWriteBatch& db_batch) {
+    assert(false);
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         if (block_tx.storages(i).key() == protos::kShardCross) {
             ZJC_DEBUG("cross tx coming 0");
