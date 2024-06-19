@@ -17,8 +17,13 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
     message.append(std::string((char*)&gas_limit, sizeof(gas_limit)));
     uint64_t gas_price = tx_info.gas_price();
     message.append(std::string((char*)&gas_price, sizeof(gas_price)));
+    uint64_t gas_used = tx_info.gas_used();
+    message.append(std::string((char*)&gas_used, sizeof(gas_used)));
+    uint32_t status = tx_info.status();
+    message.append(std::string((char*)&status, sizeof(status)));
     uint32_t step = tx_info.step();
     message.append(std::string((char*)&step, sizeof(step)));
+
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
         message.append(tx_info.storages(i).key());
         message.append(tx_info.storages(i).value());
