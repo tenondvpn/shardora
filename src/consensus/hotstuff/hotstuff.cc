@@ -302,7 +302,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
                 v_block->block->network_id(),
                 v_block->ElectHeight());
         if (elect_item && elect_item->IsValid()) {
-            elect_item->consensus_stat(pool_idx_)->Accept(v_block);
+            elect_item->consensus_stat(pool_idx_)->Accept(v_block, GetPendingSuccNumOfLeader(v_block));
         }        
     }
     
@@ -668,7 +668,7 @@ Status Hotstuff::TryCommit(const std::shared_ptr<QC> commit_qc) {
                 common::Encode::HexEncode(v_block_to_commit->hash).c_str());
             return s;
         }
-    }    
+    }
     return Status::kSuccess;
 }
 
@@ -850,7 +850,10 @@ Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
         elect_item->consensus_stat(pool_idx_)->Commit(v_block);
     }    
     
-    view_block_chain()->SetLatestCommittedBlock(v_block);    
+    view_block_chain()->SetLatestCommittedBlock(v_block);
+    ZJC_DEBUG("pool: %d consensus stat, leader: %lu, succ: %lu",
+        v_block->leader_idx, pool_idx_,
+        elect_item->consensus_stat(pool_idx_)->GetMemberConsensusStat(v_block->leader_idx)->succ_num);
     return Status::kSuccess;
 }
 
@@ -1157,6 +1160,27 @@ void Hotstuff::TryRecoverFromStuck() {
         }
     }
     return;
+}
+
+uint32_t Hotstuff::GetPendingSuccNumOfLeader(const std::shared_ptr<ViewBlock>& v_block) {
+    uint32_t ret = 1;
+    auto current = v_block;
+    auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
+    if (!latest_committed_block) {
+        return ret;
+    }
+    while (current->view > latest_committed_block->view) {
+        current = view_block_chain()->QCRef(current);
+        if (!current) {
+            return ret;
+        }
+        if (current->leader_idx == v_block->leader_idx) {
+            ret++;
+        }
+    }
+
+    ZJC_DEBUG("pool: %d add succ num: %lu, leader: %lu", pool_idx_, ret, v_block->leader_idx);
+    return ret;
 }
 
 } // namespace consensus

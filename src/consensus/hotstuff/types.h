@@ -32,8 +32,8 @@ static const double ViewDurationMultiplier = 1.3; // 选过大会造成卡住的
 
 // 本 elect height 中共识情况统计
 struct MemberConsensusStat {
-    uint16_t succ_num; // 共识成功的次数
-    uint16_t fail_num; // 共识失败的次数
+    uint32_t succ_num; // 共识成功的次数
+    uint32_t fail_num; // 共识失败的次数
 
     MemberConsensusStat() {
         succ_num = 0;
