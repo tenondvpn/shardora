@@ -931,10 +931,11 @@ int ToTxsPools::CreateToTxWithHeights(
     // assert(to_tx.ByteSize() < 1000000u);
     to_tx.mutable_to_heights()->set_sharding_id(sharding_id);
     // assert(to_tx.ByteSize() < 1000000u);
-    ZJC_DEBUG("backup sharding: %u test_heights: %s, to_tx size: %u",
+    ZJC_DEBUG("backup sharding: %u test_heights: %s, to_tx size: %u, cross size: %u",
         sharding_id,
         test_heights.c_str(),
-        to_tx.ByteSize());
+        to_tx.ByteSize(),
+        to_tx.crosses_size());
     // assert(to_tx.ByteSize() < 1000000u);
     return kPoolsSuccess;
 }
