@@ -1418,9 +1418,10 @@ void BlockManager::RootCreateCrossTx(
         const block::protobuf::BlockTx& block_tx,
         const pools::protobuf::ElectStatistic& elect_statistic,
         db::DbWriteBatch& db_batch) {
-    if (elect_statistic.cross().crosses_size() <= 0) {
-        return;
-    }
+    // assert(false);
+    // if (elect_statistic.cross().crosses_size() <= 0) {
+    //     return;
+    // }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto pool_index = block.network_id() % common::kImmutablePoolSize;
@@ -1439,7 +1440,7 @@ void BlockManager::RootCreateCrossTx(
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
     tx->set_gid(gid);
     tx->set_key(protos::kRootCross);
-    tx->set_value(elect_statistic.cross().SerializeAsString());
+    // tx->set_value(elect_statistic.cross().SerializeAsString());
     pools_mgr_->HandleMessage(msg_ptr);
     ZJC_INFO("create cross tx %s, gid: %s",
         common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
