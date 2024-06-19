@@ -1,8 +1,5 @@
 #!/bin/bash
 
-ps -ef | grep hotstuff | grep root | awk -F' ' '{print $2}' | xargs kill -9
-ps -ef | grep zjchain | grep root | awk -F' ' '{print $2}' | xargs kill -9
-
 sh -x ci/deploy.sh Release
 cd cbuild_Release && make hotstuff
 sleep 3
