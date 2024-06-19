@@ -399,10 +399,6 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     assert(thread_idx < common::kMaxThreadCount);
-    if (msg_ptr->header.tx_proto().step() == 5) {
-        assert(false);
-    }
-    
     pools_msg_queue_[thread_idx].push(msg_ptr);
     pop_tx_con_.notify_one();
 #ifndef NDEBUG

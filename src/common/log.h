@@ -35,6 +35,7 @@
 #endif
 
 #define ZJC_INFO(fmt, ...)  do {\
+    LOG_INS.info("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
 
 #define ZJC_WARN(fmt, ...)  do {\
@@ -66,6 +67,7 @@
 #endif
 
 #define ZJC_INFO(fmt, ...)  do {\
+    LOG_INS.info("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
 
 #define ZJC_WARN(fmt, ...)  do {\
