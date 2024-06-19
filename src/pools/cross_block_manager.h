@@ -217,7 +217,7 @@ private:
     volatile uint32_t max_sharding_id_ = 3;
     common::Tick tick_;
     volatile uint64_t cross_synced_max_heights_[network::kConsensusShardEndNetworkId] = { common::kInvalidUint64 };
-    volatile uint64_t cross_checked_max_heights_[network::kConsensusShardEndNetworkId] = { common::kInvalidUint64 };
+    volatile uint64_t cross_checked_max_heights_[network::kConsensusShardEndNetworkId] = { 1llu };
     bool inited_heights_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(CrossBlockManager);
