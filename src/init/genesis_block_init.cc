@@ -1684,7 +1684,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     pools::protobuf::StatisticTxItem init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     std::unordered_map<uint32_t, hotstuff::HashStr> pool_prev_vb_hash_map;
-    std::string vb_prehashes[common::kImmutablePoolSize] = {""};
     // view 从 0 开始
     hotstuff::View vb_latest_view[common::kImmutablePoolSize] = {0};
     
@@ -1762,13 +1761,13 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
 
         auto view_block = CreateViewBlock(
-                vb_prehashes[iter->first],
+                "",
                 vb_latest_view[iter->first]++,
                 tenon_block);
         
         // BlsAggSignBlock(cons_genesis_nodes, tenon_block);
 
-        auto commit_qc = CreateCommitQC(root_genesis_nodes, view_block);
+        auto commit_qc = CreateCommitQC(cons_genesis_nodes, view_block);
         if (!commit_qc) {
             assert(false);
             return kInitError;
