@@ -230,8 +230,7 @@ struct CrossItem {
     uint64_t height;
 };
 
-bool operator==(const struct CrossItem & X,const struct CrossItem & Y)
-{
+static inline bool operator==(const struct CrossItem & X,const struct CrossItem & Y) {
     return (Y.src_shard==X.src_shard) && (Y.src_pool==X.src_pool)  && (Y.height==X.height);
 }
 
