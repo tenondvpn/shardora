@@ -1764,7 +1764,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
                 "",
                 vb_latest_view[iter->first]++,
                 tenon_block);
-        
+        ZJC_DEBUG("create view block first: %lu, view: %lu, block view: %lu", iter->first, view_block->view, vb_latest_view[iter->first]);
         // BlsAggSignBlock(cons_genesis_nodes, tenon_block);
 
         auto commit_qc = CreateCommitQC(cons_genesis_nodes, view_block);
