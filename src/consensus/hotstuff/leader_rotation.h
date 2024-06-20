@@ -9,7 +9,7 @@ namespace shardora {
 
 namespace hotstuff {
 
-static const uint32_t TIME_EPOCH_TO_CHANGE_LEADER_S = 6000000; // 单位 s, 时间边界时会造成 Leader 不一致而卡顿，不过活性可以保证
+static const uint32_t TIME_EPOCH_TO_CHANGE_LEADER_S = 30; // 单位 s, 时间边界时会造成 Leader 不一致而卡顿，不过活性可以保证
 
 class LeaderRotation {
 public:
