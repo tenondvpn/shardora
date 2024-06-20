@@ -851,7 +851,7 @@ Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
         }
 
         ZJC_DEBUG("failed verify leader index: %u, %u", leader_idx, leader->index);
-        // assert(false);
+        assert(false);
         return Status::kError;
     }
     return Status::kSuccess;
