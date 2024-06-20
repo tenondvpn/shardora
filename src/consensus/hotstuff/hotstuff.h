@@ -72,10 +72,6 @@ public:
     ~Hotstuff() {};
 
     void Init();
-    
-    void SetSyncViewBlockFn(SyncViewBlockFn sync_fn) {
-        sync_view_block_fn_ = sync_fn;
-    }
 
     void SetSyncPoolFn(SyncPoolFn sync_fn) {
         sync_pool_fn_ = sync_fn;
@@ -203,7 +199,6 @@ private:
     View last_vote_view_;
     common::FlowControl recover_from_struct_fc_{1};
     common::FlowControl reset_timer_fc_{1};
-    SyncViewBlockFn sync_view_block_fn_ = nullptr;
     SyncPoolFn sync_pool_fn_ = nullptr;
 
     Status Commit(

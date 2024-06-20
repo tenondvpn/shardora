@@ -50,10 +50,6 @@ HotstuffSyncer::HotstuffSyncer(
     hotstuff_mgr_->SetSyncPoolFn(
             std::bind(&HotstuffSyncer::SyncPool,
                     this, std::placeholders::_1, std::placeholders::_2));
-    // hotstuff_mgr_->SetSyncViewBlockFn(
-    //         std::bind(&HotstuffSyncer::SyncViewBlock,
-    //             this, std::placeholders::_1, std::placeholders::_2));
-    
 
     for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
         last_timers_us_[i] = common::TimeUtils::TimestampUs();
