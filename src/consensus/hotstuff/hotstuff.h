@@ -206,6 +206,7 @@ private:
     common::FlowControl reset_timer_fc_{1};
     SyncViewBlockFn sync_view_block_fn_ = nullptr;
     SyncPoolFn sync_pool_fn_ = nullptr;
+    uint64_t timer_delay_us_ = common::TimeUtils::TimestampUs() + 10000000lu;
 
     Status Commit(
             const std::shared_ptr<ViewBlock>& v_block,

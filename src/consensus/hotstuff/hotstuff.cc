@@ -1098,6 +1098,10 @@ Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& t
 }
 
 void Hotstuff::TryRecoverFromStuck() {
+    if (timer_delay_us_ > common::TimeUtils::TimestampUs()) {
+        return;
+    }
+
     if (recover_from_struct_fc_.Permitted() && IsStuck()) {
         bool has_single_tx = wrapper()->HasSingleTx();
         std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;

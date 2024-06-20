@@ -316,7 +316,6 @@ private:
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     BlockCacheCallback new_block_cache_callback_ = nullptr;
     uint64_t prev_handler_timer_tm_ms_ = 0;
-
     uint64_t first_timeblock_timestamp_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(HotstuffManager);

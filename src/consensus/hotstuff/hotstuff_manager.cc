@@ -280,6 +280,8 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
         }
     }
 
+    }
+
     // 打印总 tps
     double tps = 0;
     if (tps_fc_.Permitted()) {
