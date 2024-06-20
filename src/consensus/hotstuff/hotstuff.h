@@ -210,6 +210,7 @@ private:
             const hotstuff::protobuf::VoteMsg& vote_msg);
     Status VerifyLeader(const uint32_t& leader_idx);
     Status VerifyQC(const std::shared_ptr<QC>& qc);
+    Status VerifyTC(const std::shared_ptr<TC>& tc);
     Status VerifyViewBlock(
             const std::shared_ptr<ViewBlock>& v_block, 
             const std::shared_ptr<ViewBlockChain>& view_block_chain,

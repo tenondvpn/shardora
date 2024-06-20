@@ -40,7 +40,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
     }
 
     uint32_t now_time_num = common::TimeUtils::TimestampSeconds() / TIME_EPOCH_TO_CHANGE_LEADER_S;
-    uint64_t random_hash = common::Hash::Hash64(qc->Serialize() + std::to_string(now_time_num));
+    uint64_t random_hash = common::Hash::Hash64(qc->Serialize() + std::to_string(now_time_num) + extra_nonce_);
     if (Members(common::GlobalInfo::Instance()->network_id())->empty()) {
         return nullptr;
     }
@@ -64,7 +64,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         common::GlobalInfo::Instance()->network_id())->consensus_stat(pool_idx_);
     auto member_consen_stat = consensus_stat->GetMemberConsensusStat(leader_idx);
     ZJC_DEBUG("pool: %d Leader is %d, local: %d, id: %s, ip: %s, port: %d, "
-        "qc view: %lu, time num: %lu, succ: %lu, fail: %lu",
+        "qc view: %lu, time num: %lu, succ: %lu, fail: %lu, extra_nonce: %s",
         pool_idx_,
         leader->index,
         GetLocalMemberIdx(),
@@ -73,7 +73,8 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         qc->view,
         now_time_num,
         member_consen_stat->succ_num,
-        member_consen_stat->fail_num);
+        member_consen_stat->fail_num,
+        extra_nonce_.c_str());
     return leader;
 }
 

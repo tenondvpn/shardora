@@ -92,6 +92,7 @@ void Pacemaker::UpdateHighQC(const std::shared_ptr<QC>& qc) {
 void Pacemaker::UpdateHighTC(const std::shared_ptr<TC>& tc) {
     if (high_tc_->view < tc->view) {
         high_tc_ = tc;
+        leader_rotation_->SetExtraNonce(std::to_string(high_tc_->view));
     }
 }
 
@@ -175,6 +176,7 @@ void Pacemaker::OnLocalTimeout() {
 void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& msg_ptr) {
     auto& msg = msg_ptr->header;
     auto leader = leader_rotation_->GetLeader();
+    leader_rotation_->SetExpectedLeader(leader);
     if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
         dht::DhtKeyManager dht_key(leader->net_id, leader->id);
         msg.set_des_dht_key(dht_key.StrKey());

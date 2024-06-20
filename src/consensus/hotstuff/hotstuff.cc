@@ -176,30 +176,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     });
     
     auto& pro_msg = header.hotstuff().pro_msg();
-    ZJC_DEBUG("====1.0 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
-        pool_idx_,
-        pro_msg.view_item().view(),
-        common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
-        pacemaker()->HighQC()->view,
-        header.hash64());
 
-    // 3 Verify TC
-    std::shared_ptr<TC> tc = nullptr;
-    if (!pro_msg.tc_str().empty()) {
-        tc = std::make_shared<TC>();
-        if (!tc->Unserialize(pro_msg.tc_str())) {
-            ZJC_ERROR("tc Unserialize is error.");
-            return;
-        }
-        if (tc->view > pacemaker()->HighTC()->view) {
-            if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
-                ZJC_ERROR("VerifyTC error.");
-                return;
-            }
-            pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));            
-        }
-    }
-    
     // 1 校验pb view block格式
     view_block::protobuf::ViewBlockItem pb_view_block = pro_msg.view_item();
     auto v_block = std::make_shared<ViewBlock>();
@@ -219,11 +196,25 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     }    
     
     // 2 Veriyfy Leader
-    // NewView 和 HighQC 的同步时不能尝试 Commit，否则会影响 leader 验证
+    // HighQC 的同步时不能尝试 Commit，否则会影响 leader 验证
     if (VerifyLeader(v_block->leader_idx) != Status::kSuccess) {
         ZJC_WARN("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
             pool_idx_, v_block->view, header.hash64());
         return;
+    }    
+
+    // 3 Verify TC
+    std::shared_ptr<TC> tc = nullptr;
+    if (!pro_msg.tc_str().empty()) {
+        tc = std::make_shared<TC>();
+        if (!tc->Unserialize(pro_msg.tc_str())) {
+            ZJC_ERROR("tc Unserialize is error.");
+            return;
+        }
+        if (VerifyTC(tc) != Status::kSuccess) {
+            ZJC_ERROR("pool: %d verify tc failed: %lu", pool_idx_, v_block->view);
+            return;
+        }
     }
 
     if (VerifyQC(v_block->qc) != Status::kSuccess) {
@@ -703,6 +694,20 @@ Status Hotstuff::VerifyQC(const std::shared_ptr<QC>& qc) {
     return Status::kSuccess;
 }
 
+Status Hotstuff::VerifyTC(const std::shared_ptr<TC>& tc) {
+    if (!tc) {
+        return Status::kError;
+    }
+    if (tc->view > pacemaker()->HighTC()->view) {
+        if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
+            ZJC_ERROR("VerifyTC error.");
+            return Status::kError;
+        }
+        pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));            
+    }
+    return Status::kSuccess;
+}
+
 Status Hotstuff::VerifyViewBlock(
         const std::shared_ptr<ViewBlock>& v_block, 
         const std::shared_ptr<ViewBlockChain>& view_block_chain,
@@ -836,10 +841,6 @@ Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
             ZJC_WARN("pool: %d, leader_idx message is error, %d, %d", pool_idx_, leader_idx, leader->index);
             return Status::kError;
         }
-
-        ZJC_DEBUG("failed verify leader index: %u, %u", leader_idx, leader->index);
-        // assert(false);
-        return Status::kError;
     }
     return Status::kSuccess;
 }
