@@ -704,7 +704,8 @@ Status Hotstuff::VerifyTC(const std::shared_ptr<TC>& tc) {
             return Status::kError;
         }
         pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));            
-    }    
+    }
+    return Status::kSuccess;
 }
 
 Status Hotstuff::VerifyViewBlock(
