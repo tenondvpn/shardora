@@ -51,7 +51,7 @@ private:
         return elect_item->Members(); 
     }
 
-    common::BftMemberPtr getLeaderByScore(uint64_t random_hash);
+    common::BftMemberPtr getLeaderByRate(uint64_t random_hash);
     common::BftMemberPtr getLeaderByRandom(uint64_t random_hash);
 
     uint32_t pool_idx_;

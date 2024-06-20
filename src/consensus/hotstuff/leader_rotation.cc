@@ -45,7 +45,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         return nullptr;
     }
     
-    auto leader = getLeader(random_hash);
+    auto leader = getLeaderByRate(random_hash);
     if (leader->public_ip == 0 || leader->public_port == 0) {
         // 刷新 members 的 ip port
         elect_info_->RefreshMemberAddrs(common::GlobalInfo::Instance()->network_id());
@@ -75,7 +75,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
     return leader;
 }
 
-common::BftMemberPtr LeaderRotation::getLeaderByScore(uint64_t random_hash) {
+common::BftMemberPtr LeaderRotation::getLeaderByRate(uint64_t random_hash) {
     auto consensus_stat = elect_info_->GetElectItemWithShardingId(
             common::GlobalInfo::Instance()->network_id())->consensus_stat(pool_idx_);
     
