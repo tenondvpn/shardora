@@ -220,6 +220,12 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     
     // 2 Veriyfy Leader
     // NewView 和 HighQC 的同步时不能尝试 Commit，否则会影响 leader 验证
+    ZJC_DEBUG("====1.0.1 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
+        pool_idx_,
+        pro_msg.view_item().view(),
+        common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
+        pacemaker()->HighQC()->view,
+        header.hash64());
     if (VerifyLeader(v_block->leader_idx) != Status::kSuccess) {
         ZJC_WARN("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
             pool_idx_, v_block->view, header.hash64());
@@ -596,8 +602,11 @@ Status Hotstuff::ResetReplicaTimers() {
 
 void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
     auto& rst_timer_msg = header.hotstuff().reset_timer_msg();
-    // ZJC_DEBUG("====5.1 pool: %d, onResetTimer leader_idx: %lu, local_idx: %lu",
-    //     pool_idx_, rst_timer_msg.leader_idx(), elect_info_->GetElectItem()->LocalMember()->index);
+    ZJC_DEBUG("====5.1 pool: %d, onResetTimer leader_idx: %u, local_idx: %u, hash64: %lu",
+        pool_idx_, rst_timer_msg.leader_idx(),
+        elect_info_->GetElectItemWithShardingId(
+            common::GlobalInfo::Instance()->network_id())->LocalMember()->index,
+        header.hash64());
     // leader 必须正确
     if (VerifyLeader(rst_timer_msg.leader_idx()) != Status::kSuccess) {
         if (sync_pool_fn_) { // leader 不一致触发同步
