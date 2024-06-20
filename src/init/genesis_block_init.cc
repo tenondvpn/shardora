@@ -996,7 +996,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     std::string prehashes[common::kImmutablePoolSize]; // 256
     std::string vb_prehashes[common::kImmutablePoolSize] = {""};
     // view 从 0 开始
-    hotstuff::View vb_latest_view[common::kImmutablePoolSize] = {0};
+    hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
     
     // 为创世账户在 root 网络中创建创世块
     // 创世块中包含：创建初始账户，以及节点选举类型的交易
@@ -1138,7 +1138,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         // 创建 view block
         auto view_block = CreateViewBlock(
                 vb_prehashes[iter->first],
-                0,
+                vb_latest_view[iter->first]++,
                 tenon_block);
         pool_prev_vb_hash_map[iter->first] = view_block->hash;
         vb_prehashes[iter->first] = view_block->hash;
@@ -1213,7 +1213,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             vb_prehashes[network::kRootCongressNetworkId],
             1,
             common::kInvalidUint64,
-            1,
+            vb_latest_view[network::kRootCongressNetworkId]++,
             root_gens_init_block_file,
             root_genesis_nodes,
             root_genesis_nodes) != kInitSuccess) {
@@ -1227,7 +1227,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             vb_prehashes[network::kRootCongressNetworkId],
             2,
             1,
-            2,
+            vb_latest_view[network::kRootCongressNetworkId]++,
             root_gens_init_block_file,
             root_genesis_nodes,
             root_genesis_nodes) != kInitSuccess) {
@@ -1250,7 +1250,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 vb_prehashes[net_id],
                 1,
                 common::kInvalidUint64,
-                1,
+                vb_latest_view[net_id]++,
                 root_gens_init_block_file,
                 root_genesis_nodes,
                 genesis_nodes) != kInitSuccess) {
@@ -1264,7 +1264,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 vb_prehashes[net_id],
                 2,
                 1,
-                2,
+                vb_latest_view[net_id]++,
                 root_gens_init_block_file,
                 root_genesis_nodes,
                 genesis_nodes) != kInitSuccess) {
@@ -1584,7 +1584,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         tenon_block->set_network_id(net_id);
         tenon_block->set_is_commited_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-
+        
         auto view_block = CreateViewBlock(pool_prev_vb_hash_map[pool_index],
             pool_latest_view[pool_index]++, tenon_block);
         
@@ -1684,7 +1684,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     std::unordered_map<uint32_t, hotstuff::HashStr> pool_prev_vb_hash_map;
     // view 从 0 开始
-    hotstuff::View vb_latest_view[common::kImmutablePoolSize] = {0};
+    hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
     
     uint32_t idx = 0;
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
@@ -1761,7 +1761,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         
         auto view_block = CreateViewBlock(
                 "",
-                0,
+                vb_latest_view[iter->first]++,
                 tenon_block);
         
         // BlsAggSignBlock(cons_genesis_nodes, tenon_block);
