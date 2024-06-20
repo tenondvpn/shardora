@@ -64,7 +64,7 @@ common::BftMemberPtr LeaderRotation::GetLeader(const std::string& seed) {
         common::GlobalInfo::Instance()->network_id())->consensus_stat(pool_idx_);
     auto member_consen_stat = consensus_stat->GetMemberConsensusStat(leader_idx);
     ZJC_DEBUG("pool: %d Leader is %d, local: %d, id: %s, ip: %s, port: %d, "
-        "qc view: %lu, time num: %lu, succ: %lu, fail: %lu",
+        "qc view: %lu, time num: %lu, succ: %lu, fail: %lu, seed: %s",
         pool_idx_,
         leader->index,
         GetLocalMemberIdx(),
@@ -73,7 +73,8 @@ common::BftMemberPtr LeaderRotation::GetLeader(const std::string& seed) {
         qc->view,
         now_time_num,
         member_consen_stat->succ_num,
-        member_consen_stat->fail_num);
+        member_consen_stat->fail_num,
+        seed.c_str());
     return leader;
 }
 
