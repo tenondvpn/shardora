@@ -258,27 +258,6 @@ public:
     }
     
 private:
-    // prune the branch starting from view_block
-    Status PruneFromBlockToTargetHash(
-        const std::shared_ptr<ViewBlock>& view_block, 
-        const std::unordered_set<HashStr>& hashes_of_branch, 
-        std::vector<std::shared_ptr<ViewBlock>>& forked_blocks, 
-        const HashStr& target_hash);
-    Status PruneHistoryTo(const std::shared_ptr<ViewBlock>&);
-    Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
-    Status DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_block);
-    
-    
-    View prune_height_;
-    std::shared_ptr<ViewBlock> start_block_;
-    std::unordered_map<View, std::vector<std::shared_ptr<ViewBlock>>> view_blocks_at_height_; // 一般一个 view 只有一个块
-    std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> view_blocks_info_;
-    std::shared_ptr<ViewBlock> latest_committed_block_; // 最新 committed block
-    std::shared_ptr<ViewBlock> latest_locked_block_; // locked_block_;
-    std::shared_ptr<db::Db> db_ = nullptr;
-    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    uint32_t pool_index_ = common::kInvalidPoolIndex;
-
     void SetViewBlockToMap(const HashStr& hash, const std::shared_ptr<ViewBlock>& view_block) {
         assert(!hash.empty());
         auto it = view_blocks_info_.find(hash);
@@ -313,6 +292,27 @@ private:
         }
         view_blocks_info_[hash]->qc = qc;        
     }
+    
+    // prune the branch starting from view_block
+    Status PruneFromBlockToTargetHash(
+        const std::shared_ptr<ViewBlock>& view_block, 
+        const std::unordered_set<HashStr>& hashes_of_branch, 
+        std::vector<std::shared_ptr<ViewBlock>>& forked_blocks, 
+        const HashStr& target_hash);
+    Status PruneHistoryTo(const std::shared_ptr<ViewBlock>&);
+    Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
+    Status DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_block);
+    
+    
+    View prune_height_;
+    std::shared_ptr<ViewBlock> start_block_;
+    std::unordered_map<View, std::vector<std::shared_ptr<ViewBlock>>> view_blocks_at_height_; // 一般一个 view 只有一个块
+    std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> view_blocks_info_;
+    std::shared_ptr<ViewBlock> latest_committed_block_; // 最新 committed block
+    std::shared_ptr<ViewBlock> latest_locked_block_; // locked_block_;
+    std::shared_ptr<db::Db> db_ = nullptr;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    uint32_t pool_index_ = common::kInvalidPoolIndex;
 };
 
 // from db

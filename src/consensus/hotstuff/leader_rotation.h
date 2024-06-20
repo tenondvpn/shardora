@@ -17,8 +17,7 @@ public:
     LeaderRotation(
             const uint32_t& pool_idx,
             const std::shared_ptr<ViewBlockChain>&,
-            const std::shared_ptr<ElectInfo>&,
-            const std::shared_ptr<vss::VssManager>&);
+            const std::shared_ptr<ElectInfo>&);
     ~LeaderRotation();
 
     LeaderRotation(const LeaderRotation&) = delete;

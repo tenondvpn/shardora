@@ -16,9 +16,8 @@ namespace hotstuff {
 LeaderRotation::LeaderRotation(
         const uint32_t& pool_idx,
         const std::shared_ptr<ViewBlockChain>& chain,
-        const std::shared_ptr<ElectInfo>& elect_info,
-        const std::shared_ptr<vss::VssManager>& vss_mgr) :
-    pool_idx_(pool_idx), chain_(chain), elect_info_(elect_info), vss_mgr_(vss_mgr) {
+        const std::shared_ptr<ElectInfo>& elect_info) :
+    pool_idx_(pool_idx), chain_(chain), elect_info_(elect_info) {
     SetExpectedLeader(GetLeader());
 }
 
@@ -41,7 +40,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
     }
 
     uint32_t now_time_num = common::TimeUtils::TimestampSeconds() / TIME_EPOCH_TO_CHANGE_LEADER_S;
-    uint64_t random_hash = vss_mgr_->EpochRandom(); // common::Hash::Hash64(qc->Serialize() + std::to_string(now_time_num));
+    uint64_t random_hash = common::Hash::Hash64(qc->Serialize() + std::to_string(now_time_num));
     if (Members(common::GlobalInfo::Instance()->network_id())->empty()) {
         return nullptr;
     }

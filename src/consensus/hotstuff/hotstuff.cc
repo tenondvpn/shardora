@@ -607,13 +607,14 @@ void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
         elect_info_->GetElectItemWithShardingId(
             common::GlobalInfo::Instance()->network_id())->LocalMember()->index,
         header.hash64());
-    // leader 必须正确
-    if (VerifyLeader(rst_timer_msg.leader_idx()) != Status::kSuccess) {
-        if (sync_pool_fn_) { // leader 不一致触发同步
-            sync_pool_fn_(pool_idx_, 1);
-        }
-        return;
-    }
+    // TODO(有逻辑安全性问题)
+    // leader 必须不需要保证正确
+    // if (VerifyLeader(rst_timer_msg.leader_idx()) != Status::kSuccess) {
+    //     if (sync_pool_fn_) { // leader 不一致触发同步
+    //         sync_pool_fn_(pool_idx_, 1);
+    //     }
+    //     return;
+    // }
     // 必须处于 stuck 状态
     if (!IsStuck()) {
         return;
