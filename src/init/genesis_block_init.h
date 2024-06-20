@@ -123,6 +123,7 @@ private:
             const std::shared_ptr<hotstuff::ViewBlock>& view_block,
             const std::shared_ptr<hotstuff::QC>& commit_qc,
             db::DbWriteBatch* db_batch) {
+        assert(view_block->view < 100);
         auto pb_v_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
         hotstuff::ViewBlock2Proto(view_block, pb_v_block.get());
         // // 不存储 block 部分，block 已经单独存过了
