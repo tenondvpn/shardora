@@ -98,8 +98,7 @@ void ThreadHandler::HandleMessage() {
         }
 
         auto btime = common::TimeUtils::TimestampUs();
-        if (timer_delay_us < btime &&
-                maping_thread_idx != common::GlobalInfo::Instance()->message_handler_thread_count() - 1) {
+        if (maping_thread_idx != common::GlobalInfo::Instance()->message_handler_thread_count() - 1) {
 #ifndef ENABLE_HOTSTUFF            
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->header.set_type(common::kConsensusTimerMessage);
