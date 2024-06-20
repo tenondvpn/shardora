@@ -74,6 +74,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
     }
     
     cur_view_ = new_v;
+    leader_rotation_->SetExtraNonce(std::to_string(cur_view_));
     
     duration_->ViewStarted();
     ZJC_DEBUG("to new view. pool: %lu, view: %llu", pool_idx_, cur_view_);

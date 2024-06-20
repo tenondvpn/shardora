@@ -38,6 +38,10 @@ public:
     void SetExpectedLeader(const common::BftMemberPtr& leader) {
         expected_leader_ = leader;
     }
+
+    void SetExtraNonce(const std::string& extra_nonce) {
+        extra_nonce_ = extra_nonce; 
+    }
 private:
     inline common::MembersPtr Members(uint32_t sharding_id) const {
         auto elect_item = elect_info_->GetElectItemWithShardingId(sharding_id);
@@ -50,6 +54,7 @@ private:
     uint32_t pool_idx_;
     std::shared_ptr<ViewBlockChain> chain_ = nullptr;
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
+    std::string extra_nonce_ = "";
     // 由于 Leader 的选择会受时间戳影响，需要记录一个 expected_leader 解决跨时间戳边界时 leader 不一致的问题
     common::BftMemberPtr expected_leader_; 
 };
