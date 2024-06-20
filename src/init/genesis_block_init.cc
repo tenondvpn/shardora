@@ -1766,7 +1766,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         tenon_block->set_is_commited_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
 
-        ZJC_DEBUG("====3 %lu", vb_latest_view[iter->first]++);
+        ZJC_DEBUG("====3 %lu", vb_latest_view[iter->first]);
         auto view_block = CreateViewBlock(
                 "",
                 vb_latest_view[iter->first]++,
