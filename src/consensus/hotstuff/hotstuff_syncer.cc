@@ -547,8 +547,11 @@ Status HotstuffSyncer::processResponseQcTc(
     auto hightc = std::make_shared<TC>();
     highqc->Unserialize(view_block_res.high_qc_str());
     hightc->Unserialize(view_block_res.high_tc_str());
-    if (highqc->network_id != common::GlobalInfo::Instance()->network_id() ||
-            hightc->network_id != common::GlobalInfo::Instance()->network_id()) {
+    if ((highqc->network_id > 0 && highqc->network_id != common::GlobalInfo::Instance()->network_id()) ||
+            (hightc->network_id > 0 && hightc->network_id != common::GlobalInfo::Instance()->network_id())) {
+        ZJC_DEBUG("error network id hight qc: %u, hight tc: %u, local: %u",
+            highqc->network_id, hightc->network_id, 
+            common::GlobalInfo::Instance()->network_id());
         assert(false);
         return Status::kError;
     }
