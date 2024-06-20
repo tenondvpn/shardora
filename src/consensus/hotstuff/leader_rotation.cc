@@ -45,10 +45,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         return nullptr;
     }
     
-    auto leader_idx = random_hash % Members(common::GlobalInfo::Instance()->network_id())->size();
-    // TODO(test)
-    // leader_idx = 0;
-    auto leader = (*Members(common::GlobalInfo::Instance()->network_id()))[leader_idx];
+    auto leader = getLeaderByRate(random_hash);
     if (leader->public_ip == 0 || leader->public_port == 0) {
         // 刷新 members 的 ip port
         elect_info_->RefreshMemberAddrs(common::GlobalInfo::Instance()->network_id());
@@ -60,11 +57,8 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
             qc->view);
     }
 
-    auto consensus_stat = elect_info_->GetElectItemWithShardingId(
-        common::GlobalInfo::Instance()->network_id())->consensus_stat(pool_idx_);
-    auto member_consen_stat = consensus_stat->GetMemberConsensusStat(leader_idx);
     ZJC_DEBUG("pool: %d Leader is %d, local: %d, id: %s, ip: %s, port: %d, "
-        "qc view: %lu, time num: %lu, succ: %lu, fail: %lu, extra_nonce: %s",
+        "qc view: %lu, time num: %lu, extra_nonce: %s",
         pool_idx_,
         leader->index,
         GetLocalMemberIdx(),
@@ -72,10 +66,36 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port,
         qc->view,
         now_time_num,
-        member_consen_stat->succ_num,
-        member_consen_stat->fail_num,
         extra_nonce_.c_str());
     return leader;
+}
+
+common::BftMemberPtr LeaderRotation::getLeaderByRate(uint64_t random_hash) {
+    auto consensus_stat = elect_info_->GetElectItemWithShardingId(
+            common::GlobalInfo::Instance()->network_id())->consensus_stat(pool_idx_);
+    
+    uint32_t total_score = consensus_stat->TotalSuccNum();
+    if (total_score == 0) {
+        return getLeaderByRandom(random_hash);        
+    }
+    
+    int32_t random_value = random_hash % total_score;
+    
+    auto all_consen_stats = consensus_stat->GetAllConsensusStats();
+    int accumulated_score = 0;
+    for (size_t leader_idx = 0; leader_idx < all_consen_stats.size(); ++leader_idx) {
+        accumulated_score += all_consen_stats[leader_idx]->succ_num;
+        if (random_value < accumulated_score) {
+            return (*Members(common::GlobalInfo::Instance()->network_id()))[leader_idx];
+        }
+    }    
+
+    return (*Members(common::GlobalInfo::Instance()->network_id()))[0];
+}
+
+common::BftMemberPtr LeaderRotation::getLeaderByRandom(uint64_t random_hash) {
+    auto leader_idx = random_hash % Members(common::GlobalInfo::Instance()->network_id())->size();
+    return (*Members(common::GlobalInfo::Instance()->network_id()))[leader_idx];
 }
 
 } // namespace hotstuff
