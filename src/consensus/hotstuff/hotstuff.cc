@@ -1136,7 +1136,6 @@ void Hotstuff::TryRecoverFromStuck() {
                 pool_idx_, pre_rst_timer_msg->replica_idx(), leader_rotation_->GetLeader()->index, has_single_tx);
         }
     }
-    return;
 }
 
 } // namespace consensus
