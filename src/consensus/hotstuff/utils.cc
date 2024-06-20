@@ -19,7 +19,7 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
     message.append(std::string((char*)&gas_price, sizeof(gas_price)));
     uint32_t step = tx_info.step();
     message.append(std::string((char*)&step, sizeof(step)));
-
+    // TODO 加上 gas_used 和 status 之后 100 节点共识发生卡顿，频繁超时
     uint64_t gas_used = tx_info.gas_used();
     message.append(std::string((char*)&gas_used, sizeof(gas_used)));
     uint32_t status = tx_info.status();
