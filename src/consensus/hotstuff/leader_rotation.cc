@@ -18,12 +18,12 @@ LeaderRotation::LeaderRotation(
         const std::shared_ptr<ViewBlockChain>& chain,
         const std::shared_ptr<ElectInfo>& elect_info) :
     pool_idx_(pool_idx), chain_(chain), elect_info_(elect_info) {
-    SetExpectedLeader(GetLeader("0"));
+    SetExpectedLeader(GetLeader());
 }
 
 LeaderRotation::~LeaderRotation() {}
 
-common::BftMemberPtr LeaderRotation::GetLeader(const std::string& seed) {
+common::BftMemberPtr LeaderRotation::GetLeader() {
     // 此处选择 CommitBlock 包含的 QC 作为随机种子，也可以选择 CommitQC 或者 LockedQC
     // 但不能选择 HighQC（由于同步延迟无法保证某时刻 HighQC 大多数节点相同）
     auto committedBlock = chain_->LatestCommittedBlock();
@@ -40,7 +40,7 @@ common::BftMemberPtr LeaderRotation::GetLeader(const std::string& seed) {
     }
 
     uint32_t now_time_num = common::TimeUtils::TimestampSeconds() / TIME_EPOCH_TO_CHANGE_LEADER_S;
-    uint64_t random_hash = common::Hash::Hash64(qc->Serialize() + std::to_string(now_time_num) + seed);
+    uint64_t random_hash = common::Hash::Hash64(qc->Serialize() + std::to_string(now_time_num) + extra_nonce_);
     if (Members(common::GlobalInfo::Instance()->network_id())->empty()) {
         return nullptr;
     }
@@ -64,7 +64,7 @@ common::BftMemberPtr LeaderRotation::GetLeader(const std::string& seed) {
         common::GlobalInfo::Instance()->network_id())->consensus_stat(pool_idx_);
     auto member_consen_stat = consensus_stat->GetMemberConsensusStat(leader_idx);
     ZJC_DEBUG("pool: %d Leader is %d, local: %d, id: %s, ip: %s, port: %d, "
-        "qc view: %lu, time num: %lu, succ: %lu, fail: %lu, seed: %s",
+        "qc view: %lu, time num: %lu, succ: %lu, fail: %lu, extra_nonce: %s",
         pool_idx_,
         leader->index,
         GetLocalMemberIdx(),
@@ -74,7 +74,7 @@ common::BftMemberPtr LeaderRotation::GetLeader(const std::string& seed) {
         now_time_num,
         member_consen_stat->succ_num,
         member_consen_stat->fail_num,
-        seed.c_str());
+        extra_nonce_.c_str());
     return leader;
 }
 
