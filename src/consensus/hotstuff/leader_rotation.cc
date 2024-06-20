@@ -57,11 +57,8 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
             qc->view);
     }
 
-    auto consensus_stat = elect_info_->GetElectItemWithShardingId(
-        common::GlobalInfo::Instance()->network_id())->consensus_stat(pool_idx_);
-    auto member_consen_stat = consensus_stat->GetMemberConsensusStat(leader->index);
     ZJC_DEBUG("pool: %d Leader is %d, local: %d, id: %s, ip: %s, port: %d, "
-        "qc view: %lu, time num: %lu, succ: %lu, fail: %lu, extra_nonce: %s",
+        "qc view: %lu, time num: %lu, extra_nonce: %s",
         pool_idx_,
         leader->index,
         GetLocalMemberIdx(),
@@ -69,8 +66,6 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port,
         qc->view,
         now_time_num,
-        member_consen_stat->succ_num,
-        member_consen_stat->fail_num,
         extra_nonce_.c_str());
     return leader;
 }
