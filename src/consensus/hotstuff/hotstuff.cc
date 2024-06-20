@@ -183,23 +183,6 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         pacemaker()->HighQC()->view,
         header.hash64());
 
-    // 3 Verify TC
-    std::shared_ptr<TC> tc = nullptr;
-    if (!pro_msg.tc_str().empty()) {
-        tc = std::make_shared<TC>();
-        if (!tc->Unserialize(pro_msg.tc_str())) {
-            ZJC_ERROR("tc Unserialize is error.");
-            return;
-        }
-        if (tc->view > pacemaker()->HighTC()->view) {
-            if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
-                ZJC_ERROR("VerifyTC error.");
-                return;
-            }
-            pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));            
-        }
-    }
-    
     // 1 校验pb view block格式
     view_block::protobuf::ViewBlockItem pb_view_block = pro_msg.view_item();
     auto v_block = std::make_shared<ViewBlock>();
@@ -224,6 +207,23 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         ZJC_WARN("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
             pool_idx_, v_block->view, header.hash64());
         return;
+    }    
+
+    // 3 Verify TC
+    std::shared_ptr<TC> tc = nullptr;
+    if (!pro_msg.tc_str().empty()) {
+        tc = std::make_shared<TC>();
+        if (!tc->Unserialize(pro_msg.tc_str())) {
+            ZJC_ERROR("tc Unserialize is error.");
+            return;
+        }
+        if (tc->view > pacemaker()->HighTC()->view) {
+            if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
+                ZJC_ERROR("VerifyTC error.");
+                return;
+            }
+            pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));            
+        }
     }
 
     if (VerifyQC(v_block->qc) != Status::kSuccess) {
