@@ -607,7 +607,7 @@ void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
         elect_info_->GetElectItemWithShardingId(
             common::GlobalInfo::Instance()->network_id())->LocalMember()->index,
         header.hash64());
-    // TODO(有逻辑安全性问题)
+    // TODO(有逻辑安全性问题)，必须是验证聚合签名才能改变本地状态
     // leader 必须不需要保证正确
     // if (VerifyLeader(rst_timer_msg.leader_idx()) != Status::kSuccess) {
     //     if (sync_pool_fn_) { // leader 不一致触发同步
