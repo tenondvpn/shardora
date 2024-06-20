@@ -29,17 +29,18 @@ public:
     }
     
     inline uint32_t GetLocalMemberIdx() const {
+        auto sharding_id = common::GlobalInfo::Instance()->network_id();
         assert(elect_info_ != nullptr);
-        assert(elect_info_->GetElectItem());
-        return elect_info_->GetElectItem()->LocalMember()->index;
+        assert(elect_info_->GetElectItemWithShardingId(sharding_id));
+        return elect_info_->GetElectItemWithShardingId(sharding_id)->LocalMember()->index;
     }
 
     void SetExpectedLeader(const common::BftMemberPtr& leader) {
         expected_leader_ = leader;
     }
 private:
-    inline common::MembersPtr Members() const {
-        auto elect_item = elect_info_->GetElectItem();
+    inline common::MembersPtr Members(uint32_t sharding_id) const {
+        auto elect_item = elect_info_->GetElectItemWithShardingId(sharding_id);
         if (!elect_item) {
             return std::make_shared<common::Members>();
         }
