@@ -2,6 +2,7 @@
 
 #include <consensus/hotstuff/types.h>
 #include <common/node_members.h>
+#include <consensus/hotstuff/view_block_chain.h>
 
 namespace shardora {
 
@@ -10,14 +11,15 @@ namespace hotstuff {
 // 用于计算和提交 leader 的共识数据
 class ConsensusStat {
 public:
-    ConsensusStat(uint32_t pool_idx, const common::MembersPtr& members);
+    ConsensusStat(uint32_t pool_idx,
+        const common::MembersPtr& members);
     ~ConsensusStat();
 
     ConsensusStat(const ConsensusStat&) = delete;
     ConsensusStat& operator=(const ConsensusStat&) = delete;
     
     // 提交并生效共识统计数据
-    Status Accept(std::shared_ptr<ViewBlock>& v_block);
+    Status Accept(std::shared_ptr<ViewBlock>& v_block, uint32_t add_succ_num);
     Status Commit(const std::shared_ptr<ViewBlock>& v_block);
 
     inline const std::vector<std::shared_ptr<MemberConsensusStat>> GetAllConsensusStats() {

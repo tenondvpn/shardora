@@ -19,7 +19,7 @@ static const int shardnum = 3;
 static const int delayus = 0;
 static const bool multi_pool = false;
 static const std::string db_path = "./txclidb";
-static const std::string from_pk = "78c628f14ae20a070ef41fb89eb2e0595f723885ef60d9e3a4acb8f166688b6f";   
+static const std::string from_pk = "b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708";   
 
 static void SignalCallback(int sig_int) { global_stop = true; }
 

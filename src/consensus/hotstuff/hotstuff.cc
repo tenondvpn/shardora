@@ -176,30 +176,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     });
     
     auto& pro_msg = header.hotstuff().pro_msg();
-    ZJC_DEBUG("====1.0 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
-        pool_idx_,
-        pro_msg.view_item().view(),
-        common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
-        pacemaker()->HighQC()->view,
-        header.hash64());
 
-    // 3 Verify TC
-    std::shared_ptr<TC> tc = nullptr;
-    if (!pro_msg.tc_str().empty()) {
-        tc = std::make_shared<TC>();
-        if (!tc->Unserialize(pro_msg.tc_str())) {
-            ZJC_ERROR("tc Unserialize is error.");
-            return;
-        }
-        if (tc->view > pacemaker()->HighTC()->view) {
-            if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
-                ZJC_ERROR("VerifyTC error.");
-                return;
-            }
-            pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));            
-        }
-    }
-    
     // 1 校验pb view block格式
     view_block::protobuf::ViewBlockItem pb_view_block = pro_msg.view_item();
     auto v_block = std::make_shared<ViewBlock>();
@@ -230,6 +207,20 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         ZJC_WARN("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
             pool_idx_, v_block->view, header.hash64());
         return;
+    }    
+
+    // 3 Verify TC
+    std::shared_ptr<TC> tc = nullptr;
+    if (!pro_msg.tc_str().empty()) {
+        tc = std::make_shared<TC>();
+        if (!tc->Unserialize(pro_msg.tc_str())) {
+            ZJC_ERROR("tc Unserialize is error.");
+            return;
+        }
+        if (VerifyTC(tc) != Status::kSuccess) {
+            ZJC_ERROR("pool: %d verify tc failed: %lu", pool_idx_, v_block->view);
+            return;
+        }
     }
 
     if (VerifyQC(v_block->qc) != Status::kSuccess) {
@@ -302,7 +293,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
                 v_block->block->network_id(),
                 v_block->ElectHeight());
         if (elect_item && elect_item->IsValid()) {
-            elect_item->consensus_stat(pool_idx_)->Accept(v_block);
+            elect_item->consensus_stat(pool_idx_)->Accept(v_block, GetPendingSuccNumOfLeader(v_block));
         }        
     }
     
@@ -455,22 +446,6 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率:q高很多
     ZJC_DEBUG("NewView propose newview called pool: %u, qc_view: %lu, tc_view: %lu",
         pool_idx_, pacemaker()->HighQC()->view, pacemaker()->HighTC()->view);
-    
-    // 一旦生成新 QC，且本地还没有该 view_block，就直接从 VoteMsg 中获取并添加
-    // 没有这个逻辑也不影响共识，只是需要同步而导致 tps 降低
-    if (vote_msg.has_view_block_item() && !view_block_chain()->Has(new_qc->view_block_hash)) {
-        auto pb_v_block = vote_msg.view_block_item();
-        auto v_block = std::make_shared<ViewBlock>();
-        s = Proto2ViewBlock(pb_v_block, v_block);
-        if (s == Status::kSuccess) {
-            s = StoreVerifiedViewBlock(v_block, new_qc);
-            if (s != Status::kSuccess) {
-                ZJC_ERROR("pool: %d store verified view block failed, ret: %d", pool_idx_, s);
-            } else {
-                ZJC_DEBUG("pool: %d store verified view block success, view: %lu", pool_idx_, v_block->view);
-            }
-        }        
-    }
 
     s = Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
     if (s != Status::kSuccess) {
@@ -650,7 +625,7 @@ Status Hotstuff::TryCommit(const std::shared_ptr<QC> commit_qc) {
                 common::Encode::HexEncode(v_block_to_commit->hash).c_str());
             return s;
         }
-    }    
+    }
     return Status::kSuccess;
 }
 
@@ -726,6 +701,20 @@ Status Hotstuff::VerifyQC(const std::shared_ptr<QC>& qc) {
             return Status::kError; 
         }
     }    
+    return Status::kSuccess;
+}
+
+Status Hotstuff::VerifyTC(const std::shared_ptr<TC>& tc) {
+    if (!tc) {
+        return Status::kError;
+    }
+    if (tc->view > pacemaker()->HighTC()->view) {
+        if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
+            ZJC_ERROR("VerifyTC error.");
+            return Status::kError;
+        }
+        pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));            
+    }
     return Status::kSuccess;
 }
 
@@ -832,7 +821,10 @@ Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
         elect_item->consensus_stat(pool_idx_)->Commit(v_block);
     }    
     
-    view_block_chain()->SetLatestCommittedBlock(v_block);    
+    view_block_chain()->SetLatestCommittedBlock(v_block);
+    ZJC_DEBUG("pool: %d consensus stat, leader: %lu, succ: %lu",
+        pool_idx_, v_block->leader_idx,
+        elect_item->consensus_stat(pool_idx_)->GetMemberConsensusStat(v_block->leader_idx)->succ_num);
     return Status::kSuccess;
 }
 
@@ -916,16 +908,6 @@ Status Hotstuff::ConstructVoteMsg(
     vote_msg->set_view(v_block->view);
     vote_msg->set_elect_height(elect_height);
     vote_msg->set_leader_idx(v_block->leader_idx);
-
-    // 将 vblock 发送给新 leader，防止新 leader 还没有收到提案造成延迟
-    // Leader 如果生成了 QC，则一定会保存 vblock，防止发起下一轮提案时没有这个块
-    // 这可能会使用一些带宽，但会提高 tps
-    // 如果不发并不会影响共识，只是有概率需要额外同步而导致延迟
-    if (VOTE_MSG_WITH_VBLOCK) {
-        view_block::protobuf::ViewBlockItem pb_view_block;
-        ViewBlock2Proto(v_block, &pb_view_block);
-        vote_msg->mutable_view_block_item()->CopyFrom(pb_view_block);
-    }
     
     std::string sign_x, sign_y;
     if (crypto()->PartialSign(
@@ -954,10 +936,6 @@ Status Hotstuff::ConstructVoteMsg(
     {
         auto* tx_ptr = vote_msg->add_txs();
         *tx_ptr = *(txs[i].get());
-        // ZJC_DEBUG("vote send tx message type: %d, to: %s, gid: %s", 
-        //     tx_ptr->step(), 
-        //     common::Encode::HexEncode(tx_ptr->to()).c_str(), 
-        //     common::Encode::HexEncode(tx_ptr->gid()).c_str());
     }
 
     return Status::kSuccess;
@@ -980,11 +958,6 @@ Status Hotstuff::ConstructViewBlock(
             pacemaker()->HighQC()->view,
             leader_idx,
             view_block_chain()->String().c_str());
-        // 从邻居节点同步 parent block
-        // 建议去掉，只使用 sync_pool_fn_ 同步，消息越多由于线程占用会导致超时时越卡顿
-        // if (sync_view_block_fn_) {
-        //     sync_view_block_fn_(pool_idx_, view_block->parent_hash);
-        // }
         return s;
     }
     
@@ -1140,6 +1113,27 @@ void Hotstuff::TryRecoverFromStuck() {
                 pool_idx_, pre_rst_timer_msg->replica_idx(), leader_rotation_->GetLeader()->index, has_single_tx);
         }
     }
+}
+
+uint32_t Hotstuff::GetPendingSuccNumOfLeader(const std::shared_ptr<ViewBlock>& v_block) {
+    uint32_t ret = 1;
+    auto current = v_block;
+    auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
+    if (!latest_committed_block) {
+        return ret;
+    }
+    while (current->view > latest_committed_block->view) {
+        current = view_block_chain()->QCRef(current);
+        if (!current) {
+            return ret;
+        }
+        if (current->leader_idx == v_block->leader_idx) {
+            ret++;
+        }
+    }
+
+    ZJC_DEBUG("pool: %d add succ num: %lu, leader: %lu", pool_idx_, ret, v_block->leader_idx);
+    return ret;
 }
 
 } // namespace consensus
