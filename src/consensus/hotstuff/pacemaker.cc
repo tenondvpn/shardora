@@ -174,7 +174,7 @@ void Pacemaker::OnLocalTimeout() {
 
 void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& msg_ptr) {
     auto& msg = msg_ptr->header;
-    auto leader = leader_rotation_->GetLeader();
+    auto leader = leader_rotation_->GetLeader(std::to_string(HighTC()->view));
     if (leader->index != leader_rotation_->GetLocalMemberIdx()) {
         dht::DhtKeyManager dht_key(leader->net_id, leader->id);
         msg.set_des_dht_key(dht_key.StrKey());

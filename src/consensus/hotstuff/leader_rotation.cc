@@ -18,12 +18,12 @@ LeaderRotation::LeaderRotation(
         const std::shared_ptr<ViewBlockChain>& chain,
         const std::shared_ptr<ElectInfo>& elect_info) :
     pool_idx_(pool_idx), chain_(chain), elect_info_(elect_info) {
-    SetExpectedLeader(GetLeader());
+    SetExpectedLeader(GetLeader("0"));
 }
 
 LeaderRotation::~LeaderRotation() {}
 
-common::BftMemberPtr LeaderRotation::GetLeader() {
+common::BftMemberPtr LeaderRotation::GetLeader(const std::string& extra_seed) {
     // 此处选择 CommitBlock 包含的 QC 作为随机种子，也可以选择 CommitQC 或者 LockedQC
     // 但不能选择 HighQC（由于同步延迟无法保证某时刻 HighQC 大多数节点相同）
     auto committedBlock = chain_->LatestCommittedBlock();
