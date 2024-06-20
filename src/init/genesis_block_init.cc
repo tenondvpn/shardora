@@ -559,7 +559,6 @@ std::shared_ptr<hotstuff::ViewBlock> GenesisBlockInit::CreateViewBlock(
     view_block->parent_hash = prehash;
     view_block->leader_idx = 0;
     view_block->qc = hotstuff::GetQCWrappedByGenesis(block->pool_index());
-    ZJC_DEBUG("====9 %lu", view);
     view_block->view = view;
     view_block->block = block;
     view_block->hash = view_block->DoHash();
@@ -650,8 +649,7 @@ int GenesisBlockInit::CreateElectBlock(
     tenon_block->set_is_commited_block(true);
     tenon_block->set_electblock_height(1);
     tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-
-    ZJC_DEBUG("====8 %lu", view);
+    
     auto view_block = CreateViewBlock(
             root_pre_vb_hash,
             view,
@@ -741,8 +739,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_is_commited_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-
-        ZJC_DEBUG("====7 %lu", root_single_block_view);
+        
         auto view_block = CreateViewBlock(
                 "",
                 root_single_block_view++,
@@ -822,8 +819,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_is_commited_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-
-        ZJC_DEBUG("====6 %lu", root_single_block_view);
+        
         auto view_block = CreateViewBlock(
                 root_pre_vb_hash,
                 root_single_block_view++,
@@ -1000,7 +996,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     std::string prehashes[common::kImmutablePoolSize]; // 256
     std::string vb_prehashes[common::kImmutablePoolSize] = {""};
     // view 从 0 开始
-    hotstuff::View vb_latest_view[common::kImmutablePoolSize] = {0};
+    hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
     
     // 为创世账户在 root 网络中创建创世块
     // 创世块中包含：创建初始账户，以及节点选举类型的交易
@@ -1140,7 +1136,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         db::DbWriteBatch db_batch;
 
         // 创建 view block
-        ZJC_DEBUG("====5 %lu", vb_latest_view[iter->first]);
         auto view_block = CreateViewBlock(
                 vb_prehashes[iter->first],
                 vb_latest_view[iter->first]++,
@@ -1589,9 +1584,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         tenon_block->set_network_id(net_id);
         tenon_block->set_is_commited_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-
-
-        ZJC_DEBUG("====4 %lu", pool_latest_view[pool_index]);
+        
         auto view_block = CreateViewBlock(pool_prev_vb_hash_map[pool_index],
             pool_latest_view[pool_index]++, tenon_block);
         
@@ -1691,7 +1684,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     std::unordered_map<uint32_t, hotstuff::HashStr> pool_prev_vb_hash_map;
     // view 从 0 开始
-    hotstuff::View vb_latest_view[common::kImmutablePoolSize] = {0};
+    hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
     
     uint32_t idx = 0;
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
@@ -1765,8 +1758,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         tenon_block->set_network_id(net_id);
         tenon_block->set_is_commited_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-
-        ZJC_DEBUG("====3 %lu", vb_latest_view[iter->first]);
+        
         auto view_block = CreateViewBlock(
                 "",
                 vb_latest_view[iter->first]++,
