@@ -26,6 +26,14 @@ public:
         return member_consen_stats_;
     }
 
+    uint32_t TotalSuccNum() {
+        uint32_t total = 0;
+        for (const auto& stat : member_consen_stats_) {
+            total += stat->succ_num;
+        }
+        return total;
+    }
+
     const std::shared_ptr<MemberConsensusStat> GetMemberConsensusStat(uint32_t member_idx) {
         if (member_consen_stats_.size() <= member_idx) {
             return nullptr;

@@ -45,10 +45,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         return nullptr;
     }
     
-    auto leader_idx = random_hash % Members(common::GlobalInfo::Instance()->network_id())->size();
-    // TODO(test)
-    // leader_idx = 0;
-    auto leader = (*Members(common::GlobalInfo::Instance()->network_id()))[leader_idx];
+    auto leader = getLeader(random_hash);
     if (leader->public_ip == 0 || leader->public_port == 0) {
         // 刷新 members 的 ip port
         elect_info_->RefreshMemberAddrs(common::GlobalInfo::Instance()->network_id());
@@ -62,7 +59,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
 
     auto consensus_stat = elect_info_->GetElectItemWithShardingId(
         common::GlobalInfo::Instance()->network_id())->consensus_stat(pool_idx_);
-    auto member_consen_stat = consensus_stat->GetMemberConsensusStat(leader_idx);
+    auto member_consen_stat = consensus_stat->GetMemberConsensusStat(leader->index);
     ZJC_DEBUG("pool: %d Leader is %d, local: %d, id: %s, ip: %s, port: %d, "
         "qc view: %lu, time num: %lu, succ: %lu, fail: %lu, extra_nonce: %s",
         pool_idx_,
@@ -76,6 +73,29 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         member_consen_stat->fail_num,
         extra_nonce_.c_str());
     return leader;
+}
+
+common::BftMemberPtr LeaderRotation::getLeader(uint64_t random_hash) {
+    // auto leader_idx = random_hash % Members(common::GlobalInfo::Instance()->network_id())->size();
+    // return (*Members(common::GlobalInfo::Instance()->network_id()))[leader_idx];
+    auto consensus_stat = elect_info_->GetElectItemWithShardingId(
+            common::GlobalInfo::Instance()->network_id())->consensus_stat(pool_idx_);
+    
+    uint32_t total_score = consensus_stat->TotalSuccNum();
+    std::mt19937 generator(random_hash); // 使用传入的随机数作为种子
+    std::uniform_int_distribution<int> distribution(0, total_score - 1);
+    int random_value = distribution(generator);
+    
+    auto all_consen_stats = consensus_stat->GetAllConsensusStats();
+    int accumulated_score = 0;
+    for (size_t leader_idx = 0; leader_idx < all_consen_stats.size(); ++leader_idx) {
+        accumulated_score += all_consen_stats[leader_idx]->succ_num;
+        if (random_value < accumulated_score) {
+            return (*Members(common::GlobalInfo::Instance()->network_id()))[leader_idx];
+        }
+    }    
+
+    return (*Members(common::GlobalInfo::Instance()->network_id()))[0];
 }
 
 } // namespace hotstuff
