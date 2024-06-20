@@ -17,7 +17,5 @@ else
     echo "[FAILED]TPS value is not greater than 500: $tps_value"
 fi
 
-ps -ef | grep hotstuff | grep root | awk -F' ' '{print $2}' | xargs kill -9
 ps -ef | grep zjchain | grep root | awk -F' ' '{print $2}' | xargs kill -9
-
-
+ps -ef | grep hotstuff | grep root | awk -F' ' '{print $2}' | xargs kill -9
