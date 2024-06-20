@@ -94,6 +94,7 @@ std::vector<dht::NodePtr> FilterBroadcast::GetlayerNodes(
         pos_vec.push_back(i);
     }
 
+    std::srand(time(NULL));
     std::random_shuffle(pos_vec.begin(), pos_vec.end());
     std::vector<dht::NodePtr> nodes;
     uint32_t neighbor_count = GetNeighborCount(message);
@@ -141,6 +142,8 @@ std::vector<dht::NodePtr> FilterBroadcast::GetRandomFilterNodes(
     for (uint32_t i = 0; i < readobly_dht->size(); ++i) {
         pos_vec.push_back(i);
     }
+
+    std::srand(time(NULL));
     std::random_shuffle(pos_vec.begin(), pos_vec.end());
     std::vector<dht::NodePtr> nodes;
     uint32_t neighbor_count = GetNeighborCount(message);

@@ -41,9 +41,10 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
         block_ptr->pool_index(), block_ptr->height(), block_ptr->timeblock_height());
     HandleElectStatistic(block_ptr);
     block::protobuf::Block& block = *block_ptr;
-    if (!checkBlockValid(block)) return;
-
-
+    if (!checkBlockValid(block)) {
+        return;
+    }
+    
     const auto& tx_list = block.tx_list();
     // one block must be one consensus pool
     uint32_t consistent_pool_index = common::kInvalidPoolIndex;
@@ -211,17 +212,18 @@ void ShardStatistic::HandleElectStatistic(const std::shared_ptr<block::protobuf:
            auto block_tx = block.tx_list(i);
            for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
                 if (block_tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
-                   
                     if (!elect_block.ParseFromString(block_tx.storages(i).value())) {
                         assert(false);
                         return;
                     }
+
                     isElectBlock = true;
-                    break;                   
+                    break;
                 } 
             }
         } 
     }
+
     if (!isElectBlock) {
        return;
     }
@@ -231,8 +233,8 @@ void ShardStatistic::HandleElectStatistic(const std::shared_ptr<block::protobuf:
             elect_block.elect_height(), least_elect_height_for_statistic_);
        return;
     }
-    least_elect_height_for_statistic_ = elect_block.elect_height();
 
+    least_elect_height_for_statistic_ = elect_block.elect_height();
     for(auto node : elect_block.in()) {
         auto addr = secptr_->GetAddress(node.pubkey());
         auto& accoutPoceInfoIterm = accout_poce_info_map_.try_emplace(addr, std::make_shared<AccoutPoceInfoItem>())
@@ -242,7 +244,6 @@ void ShardStatistic::HandleElectStatistic(const std::shared_ptr<block::protobuf:
         ZJC_DEBUG("HandleElectStatistic addr: %s, consensus_gap: %lu, credit: %lu", common::Encode::HexEncode(addr).c_str(), 
             accoutPoceInfoIterm->consensus_gap, accoutPoceInfoIterm->credit);
     }
-
 }
 
 void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Block>& block_ptr) {

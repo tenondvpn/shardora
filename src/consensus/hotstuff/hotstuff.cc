@@ -196,7 +196,13 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     }    
     
     // 2 Veriyfy Leader
-    // HighQC 的同步时不能尝试 Commit，否则会影响 leader 验证
+    // NewView 和 HighQC 的同步时不能尝试 Commit，否则会影响 leader 验证
+    ZJC_DEBUG("====1.0.1 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
+        pool_idx_,
+        pro_msg.view_item().view(),
+        common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
+        pacemaker()->HighQC()->view,
+        header.hash64());
     if (VerifyLeader(v_block->leader_idx) != Status::kSuccess) {
         ZJC_WARN("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
             pool_idx_, v_block->view, header.hash64());
@@ -571,15 +577,19 @@ Status Hotstuff::ResetReplicaTimers() {
 
 void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
     auto& rst_timer_msg = header.hotstuff().reset_timer_msg();
-    // ZJC_DEBUG("====5.1 pool: %d, onResetTimer leader_idx: %lu, local_idx: %lu",
-    //     pool_idx_, rst_timer_msg.leader_idx(), elect_info_->GetElectItem()->LocalMember()->index);
-    // leader 必须正确
-    if (VerifyLeader(rst_timer_msg.leader_idx()) != Status::kSuccess) {
-        if (sync_pool_fn_) { // leader 不一致触发同步
-            sync_pool_fn_(pool_idx_, 1);
-        }
-        return;
-    }
+    ZJC_DEBUG("====5.1 pool: %d, onResetTimer leader_idx: %u, local_idx: %u, hash64: %lu",
+        pool_idx_, rst_timer_msg.leader_idx(),
+        elect_info_->GetElectItemWithShardingId(
+            common::GlobalInfo::Instance()->network_id())->LocalMember()->index,
+        header.hash64());
+    // TODO(有逻辑安全性问题)，必须是验证聚合签名才能改变本地状态
+    // leader 必须不需要保证正确
+    // if (VerifyLeader(rst_timer_msg.leader_idx()) != Status::kSuccess) {
+    //     if (sync_pool_fn_) { // leader 不一致触发同步
+    //         sync_pool_fn_(pool_idx_, 1);
+    //     }
+    //     return;
+    // }
     // 必须处于 stuck 状态
     if (!IsStuck()) {
         return;
@@ -839,8 +849,11 @@ Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
         auto eleader = leader_rotation()->GetExpectedLeader();
         if (!eleader || leader_idx != eleader->index) {
             ZJC_WARN("pool: %d, leader_idx message is error, %d, %d", pool_idx_, leader_idx, leader->index);
+            // assert(false);
             return Status::kError;
         }
+
+        ZJC_DEBUG("use expected leader index: %u, %u", leader_idx, leader->index);
     }
     return Status::kSuccess;
 }
@@ -1058,6 +1071,10 @@ Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& t
 }
 
 void Hotstuff::TryRecoverFromStuck() {
+    if (timer_delay_us_ > common::TimeUtils::TimestampUs()) {
+        return;
+    }
+
     if (recover_from_struct_fc_.Permitted() && IsStuck()) {
         bool has_single_tx = wrapper()->HasSingleTx();
         std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
@@ -1096,7 +1113,6 @@ void Hotstuff::TryRecoverFromStuck() {
                 pool_idx_, pre_rst_timer_msg->replica_idx(), leader_rotation_->GetLeader()->index, has_single_tx);
         }
     }
-    return;
 }
 
 uint32_t Hotstuff::GetPendingSuccNumOfLeader(const std::shared_ptr<ViewBlock>& v_block) {

@@ -96,9 +96,9 @@ void ThreadHandler::HandleMessage() {
             // ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
         }
 
+        auto btime = common::TimeUtils::TimestampUs();
         if (maping_thread_idx != common::GlobalInfo::Instance()->message_handler_thread_count() - 1) {
 #ifndef ENABLE_HOTSTUFF            
-            auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->header.set_type(common::kConsensusTimerMessage);
             // ZJC_DEBUG("start kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
