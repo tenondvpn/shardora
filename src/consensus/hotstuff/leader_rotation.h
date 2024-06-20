@@ -23,7 +23,7 @@ public:
     LeaderRotation& operator=(const LeaderRotation&) = delete;
 
     // Generally committed_view_block.view is used
-    common::BftMemberPtr GetLeader();
+    common::BftMemberPtr GetLeader(const std::string& seed);
     inline common::BftMemberPtr GetExpectedLeader() const {
         return expected_leader_;
     }

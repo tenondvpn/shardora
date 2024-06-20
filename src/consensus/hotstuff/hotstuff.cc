@@ -45,7 +45,7 @@ void Hotstuff::Init() {
 
 
 Status Hotstuff::Start() {
-    auto leader = leader_rotation()->GetLeader();
+    auto leader = leader_rotation()->GetLeader(std::to_string(pacemaker()->HighTC()->view));
     auto elect_item = elect_info_->GetElectItemWithShardingId(common::GlobalInfo::Instance()->network_id());
     if (!elect_item || !elect_item->IsValid()) {
         return Status::kElectItemNotFound;
@@ -824,7 +824,7 @@ Status Hotstuff::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
 }
 
 Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
-    auto leader = leader_rotation()->GetLeader(); // 判断是否为空
+    auto leader = leader_rotation()->GetLeader(std::to_string(pacemaker()->HighTC()->view)); // 判断是否为空
     if (!leader) {
         ZJC_ERROR("Get Leader is error.");
         return  Status::kError;
@@ -1011,7 +1011,7 @@ Status Hotstuff::ConstructHotstuffMsg(
 Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& trans_msg, const MsgType msg_type) {
     Status ret = Status::kSuccess;
     auto& header_msg = trans_msg->header;
-    auto leader = leader_rotation()->GetLeader();
+    auto leader = leader_rotation()->GetLeader(std::to_string(pacemaker()->HighTC()->view));
     if (!leader) {
         ZJC_ERROR("Get Leader failed.");
         return Status::kError;
@@ -1092,7 +1092,7 @@ void Hotstuff::TryRecoverFromStuck() {
             hotstuff_msg->set_pool_index(pool_idx_);
             SendMsgToLeader(trans_msg, PRE_RESET_TIMER);
             ZJC_DEBUG("pool: %d, send prereset msg from: %lu to: %lu, has_single_tx: %d",
-                pool_idx_, pre_rst_timer_msg->replica_idx(), leader_rotation_->GetLeader()->index, has_single_tx);
+                pool_idx_, pre_rst_timer_msg->replica_idx(), leader_rotation_->GetLeader(std::to_string(pacemaker()->HighTC()->view))->index, has_single_tx);
         }
     }
     return;
