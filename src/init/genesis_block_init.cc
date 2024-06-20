@@ -649,7 +649,7 @@ int GenesisBlockInit::CreateElectBlock(
     tenon_block->set_is_commited_block(true);
     tenon_block->set_electblock_height(1);
     tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-
+    
     auto view_block = CreateViewBlock(
             root_pre_vb_hash,
             view,
@@ -739,7 +739,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_is_commited_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-
+        
         auto view_block = CreateViewBlock(
                 "",
                 root_single_block_view++,
@@ -819,7 +819,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_is_commited_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-
+        
         auto view_block = CreateViewBlock(
                 root_pre_vb_hash,
                 root_single_block_view++,
@@ -1138,7 +1138,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         // 创建 view block
         auto view_block = CreateViewBlock(
                 vb_prehashes[iter->first],
-                vb_latest_view[iter->first]++,
+                0,
                 tenon_block);
         pool_prev_vb_hash_map[iter->first] = view_block->hash;
         vb_prehashes[iter->first] = view_block->hash;
@@ -1213,7 +1213,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             vb_prehashes[network::kRootCongressNetworkId],
             1,
             common::kInvalidUint64,
-            vb_latest_view[network::kRootCongressNetworkId]++,
+            1,
             root_gens_init_block_file,
             root_genesis_nodes,
             root_genesis_nodes) != kInitSuccess) {
@@ -1227,7 +1227,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             vb_prehashes[network::kRootCongressNetworkId],
             2,
             1,
-            vb_latest_view[network::kRootCongressNetworkId]++,
+            2,
             root_gens_init_block_file,
             root_genesis_nodes,
             root_genesis_nodes) != kInitSuccess) {
@@ -1250,7 +1250,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 vb_prehashes[net_id],
                 1,
                 common::kInvalidUint64,
-                vb_latest_view[net_id]++,
+                1,
                 root_gens_init_block_file,
                 root_genesis_nodes,
                 genesis_nodes) != kInitSuccess) {
@@ -1264,7 +1264,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 vb_prehashes[net_id],
                 2,
                 1,
-                vb_latest_view[net_id]++,
+                2,
                 root_gens_init_block_file,
                 root_genesis_nodes,
                 genesis_nodes) != kInitSuccess) {
@@ -1585,7 +1585,6 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         tenon_block->set_is_commited_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
 
-
         auto view_block = CreateViewBlock(pool_prev_vb_hash_map[pool_index],
             pool_latest_view[pool_index]++, tenon_block);
         
@@ -1759,10 +1758,10 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         tenon_block->set_network_id(net_id);
         tenon_block->set_is_commited_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-
+        
         auto view_block = CreateViewBlock(
                 "",
-                vb_latest_view[iter->first]++,
+                0,
                 tenon_block);
         
         // BlsAggSignBlock(cons_genesis_nodes, tenon_block);

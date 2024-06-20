@@ -40,7 +40,6 @@ typedef hotstuff::protobuf::NewViewMsg pb_NewViewMsg;
 using SyncViewBlockFn = std::function<void(const uint32_t&, const HashStr&)>;
 
 static const uint64_t STUCK_PACEMAKER_DURATION_MIN_US = 2000000lu; // the min duration that hotstuff can be considered stucking
-static const bool VOTE_MSG_WITH_VBLOCK = false; // vote msg with vblock to make sure next leader has that block, which is good for tps improvement, TODO 没有必要，其实影响不大，还占用带宽，不知道节点多了之后有没有帮助，先留着代码
 static const bool WITH_CONSENSUS_STATISTIC = true; // 是否开启 leader 的共识数据统计
 
 class Hotstuff {
@@ -73,10 +72,6 @@ public:
     ~Hotstuff() {};
 
     void Init();
-    
-    void SetSyncViewBlockFn(SyncViewBlockFn sync_fn) {
-        sync_view_block_fn_ = sync_fn;
-    }
 
     void SetSyncPoolFn(SyncPoolFn sync_fn) {
         sync_pool_fn_ = sync_fn;
@@ -204,7 +199,6 @@ private:
     View last_vote_view_;
     common::FlowControl recover_from_struct_fc_{1};
     common::FlowControl reset_timer_fc_{1};
-    SyncViewBlockFn sync_view_block_fn_ = nullptr;
     SyncPoolFn sync_pool_fn_ = nullptr;
 
     Status Commit(

@@ -449,22 +449,6 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率:q高很多
     ZJC_DEBUG("NewView propose newview called pool: %u, qc_view: %lu, tc_view: %lu",
         pool_idx_, pacemaker()->HighQC()->view, pacemaker()->HighTC()->view);
-    
-    // 一旦生成新 QC，且本地还没有该 view_block，就直接从 VoteMsg 中获取并添加
-    // 没有这个逻辑也不影响共识，只是需要同步而导致 tps 降低
-    if (vote_msg.has_view_block_item() && !view_block_chain()->Has(new_qc->view_block_hash)) {
-        auto pb_v_block = vote_msg.view_block_item();
-        auto v_block = std::make_shared<ViewBlock>();
-        s = Proto2ViewBlock(pb_v_block, v_block);
-        if (s == Status::kSuccess) {
-            s = StoreVerifiedViewBlock(v_block, new_qc);
-            if (s != Status::kSuccess) {
-                ZJC_ERROR("pool: %d store verified view block failed, ret: %d", pool_idx_, s);
-            } else {
-                ZJC_DEBUG("pool: %d store verified view block success, view: %lu", pool_idx_, v_block->view);
-            }
-        }        
-    }
 
     s = Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
     if (s != Status::kSuccess) {
@@ -910,16 +894,6 @@ Status Hotstuff::ConstructVoteMsg(
     vote_msg->set_view(v_block->view);
     vote_msg->set_elect_height(elect_height);
     vote_msg->set_leader_idx(v_block->leader_idx);
-
-    // 将 vblock 发送给新 leader，防止新 leader 还没有收到提案造成延迟
-    // Leader 如果生成了 QC，则一定会保存 vblock，防止发起下一轮提案时没有这个块
-    // 这可能会使用一些带宽，但会提高 tps
-    // 如果不发并不会影响共识，只是有概率需要额外同步而导致延迟
-    if (VOTE_MSG_WITH_VBLOCK) {
-        view_block::protobuf::ViewBlockItem pb_view_block;
-        ViewBlock2Proto(v_block, &pb_view_block);
-        vote_msg->mutable_view_block_item()->CopyFrom(pb_view_block);
-    }
     
     std::string sign_x, sign_y;
     if (crypto()->PartialSign(
@@ -948,10 +922,6 @@ Status Hotstuff::ConstructVoteMsg(
     {
         auto* tx_ptr = vote_msg->add_txs();
         *tx_ptr = *(txs[i].get());
-        // ZJC_DEBUG("vote send tx message type: %d, to: %s, gid: %s", 
-        //     tx_ptr->step(), 
-        //     common::Encode::HexEncode(tx_ptr->to()).c_str(), 
-        //     common::Encode::HexEncode(tx_ptr->gid()).c_str());
     }
 
     return Status::kSuccess;
@@ -974,11 +944,6 @@ Status Hotstuff::ConstructViewBlock(
             pacemaker()->HighQC()->view,
             leader_idx,
             view_block_chain()->String().c_str());
-        // 从邻居节点同步 parent block
-        // 建议去掉，只使用 sync_pool_fn_ 同步，消息越多由于线程占用会导致超时时越卡顿
-        // if (sync_view_block_fn_) {
-        //     sync_view_block_fn_(pool_idx_, view_block->parent_hash);
-        // }
         return s;
     }
     

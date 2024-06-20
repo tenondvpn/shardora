@@ -12,7 +12,7 @@ namespace shardora {
 namespace hotstuff {
 
 ViewBlockChain::ViewBlockChain(
-        uint32_t pool_idx, std::shared_ptr<db::Db>& db) : pool_index_(pool_idx), db_(db) {
+        uint32_t pool_idx, std::shared_ptr<db::Db>& db) : db_(db), pool_index_(pool_idx) {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
 }
 
