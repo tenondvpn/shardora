@@ -82,9 +82,7 @@ common::BftMemberPtr LeaderRotation::getLeader(uint64_t random_hash) {
             common::GlobalInfo::Instance()->network_id())->consensus_stat(pool_idx_);
     
     uint32_t total_score = consensus_stat->TotalSuccNum();
-    std::mt19937 generator(random_hash); // 使用传入的随机数作为种子
-    std::uniform_int_distribution<int> distribution(0, total_score - 1);
-    int random_value = distribution(generator);
+    int32_t random_value = random_hash % total_score;
     
     auto all_consen_stats = consensus_stat->GetAllConsensusStats();
     int accumulated_score = 0;
