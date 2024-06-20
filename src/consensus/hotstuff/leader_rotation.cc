@@ -75,13 +75,15 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
     return leader;
 }
 
-common::BftMemberPtr LeaderRotation::getLeader(uint64_t random_hash) {
-    // auto leader_idx = random_hash % Members(common::GlobalInfo::Instance()->network_id())->size();
-    // return (*Members(common::GlobalInfo::Instance()->network_id()))[leader_idx];
+common::BftMemberPtr LeaderRotation::getLeaderByScore(uint64_t random_hash) {
     auto consensus_stat = elect_info_->GetElectItemWithShardingId(
             common::GlobalInfo::Instance()->network_id())->consensus_stat(pool_idx_);
     
     uint32_t total_score = consensus_stat->TotalSuccNum();
+    if (total_score == 0) {
+        return getLeaderByRandom(random_hash);        
+    }
+    
     int32_t random_value = random_hash % total_score;
     
     auto all_consen_stats = consensus_stat->GetAllConsensusStats();
@@ -94,6 +96,11 @@ common::BftMemberPtr LeaderRotation::getLeader(uint64_t random_hash) {
     }    
 
     return (*Members(common::GlobalInfo::Instance()->network_id()))[0];
+}
+
+common::BftMemberPtr LeaderRotation::getLeaderByRandom(uint64_t random_hash) {
+    auto leader_idx = random_hash % Members(common::GlobalInfo::Instance()->network_id())->size();
+    return (*Members(common::GlobalInfo::Instance()->network_id()))[leader_idx];
 }
 
 } // namespace hotstuff

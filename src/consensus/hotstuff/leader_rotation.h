@@ -51,7 +51,8 @@ private:
         return elect_item->Members(); 
     }
 
-    common::BftMemberPtr getLeader(uint64_t random_hash);
+    common::BftMemberPtr getLeaderByScore(uint64_t random_hash);
+    common::BftMemberPtr getLeaderByRandom(uint64_t random_hash);
 
     uint32_t pool_idx_;
     std::shared_ptr<ViewBlockChain> chain_ = nullptr;
