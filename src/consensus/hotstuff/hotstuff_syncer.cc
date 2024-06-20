@@ -547,6 +547,12 @@ Status HotstuffSyncer::processResponseQcTc(
     auto hightc = std::make_shared<TC>();
     highqc->Unserialize(view_block_res.high_qc_str());
     hightc->Unserialize(view_block_res.high_tc_str());
+    if (highqc->network_id != common::GlobalInfo::Instance()->network_id() ||
+            hightc->network_id != common::GlobalInfo::Instance()->network_id()) {
+        assert(false);
+        return Status::kError;
+    }
+
     // 设置 view_block 的 qc
     view_block_chain(pool_idx)->SetQcOf(highqc->view_block_hash, highqc);
 
