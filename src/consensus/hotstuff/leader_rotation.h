@@ -4,6 +4,7 @@
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
+#include "vss/vss_manager.h"
 
 namespace shardora {
 
@@ -16,7 +17,8 @@ public:
     LeaderRotation(
             const uint32_t& pool_idx,
             const std::shared_ptr<ViewBlockChain>&,
-            const std::shared_ptr<ElectInfo>&);
+            const std::shared_ptr<ElectInfo>&,
+            const std::shared_ptr<vss::VssManager>&);
     ~LeaderRotation();
 
     LeaderRotation(const LeaderRotation&) = delete;
@@ -52,6 +54,7 @@ private:
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     // 由于 Leader 的选择会受时间戳影响，需要记录一个 expected_leader 解决跨时间戳边界时 leader 不一致的问题
     common::BftMemberPtr expected_leader_; 
+    std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
 };
 
 } // namespace consensus
