@@ -202,50 +202,6 @@ void ShardStatistic::HandleStatisticBlock(
     }
 }
 
-void ShardStatistic::HandleElectStatistic(const std::shared_ptr<block::protobuf::Block>& block_ptr) {
-    assert(false);
-    auto& block = *block_ptr;
-    elect::protobuf::ElectBlock elect_block;
-    bool isElectBlock = false;
-    for (int32_t i = 0; i < block.tx_list_size(); ++i) {
-        if (block.tx_list(i).step() == pools::protobuf::kConsensusRootElectShard) { 
-           auto block_tx = block.tx_list(i);
-           for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-                if (block_tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
-                    if (!elect_block.ParseFromString(block_tx.storages(i).value())) {
-                        assert(false);
-                        return;
-                    }
-
-                    isElectBlock = true;
-                    break;
-                } 
-            }
-        } 
-    }
-
-    if (!isElectBlock) {
-       return;
-    }
-
-    if(!elect_block.has_elect_height() || elect_block.elect_height() <= least_elect_height_for_statistic_ ) {
-        ZJC_DEBUG("HandleElectStatistic have processed elect height: %lu, least_elect_height_: %lu", 
-            elect_block.elect_height(), least_elect_height_for_statistic_);
-       return;
-    }
-
-    least_elect_height_for_statistic_ = elect_block.elect_height();
-    for(auto node : elect_block.in()) {
-        auto addr = secptr_->GetAddress(node.pubkey());
-        auto& accoutPoceInfoIterm = accout_poce_info_map_.try_emplace(addr, std::make_shared<AccoutPoceInfoItem>())
-                                    .first->second;
-        accoutPoceInfoIterm->consensus_gap +=1;
-        accoutPoceInfoIterm->credit += node.fts_value();;
-        ZJC_DEBUG("HandleElectStatistic addr: %s, consensus_gap: %lu, credit: %lu", common::Encode::HexEncode(addr).c_str(), 
-            accoutPoceInfoIterm->consensus_gap, accoutPoceInfoIterm->credit);
-    }
-}
-
 void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Block>& block_ptr) {
     auto& block = *block_ptr;
     bool is_root = (
@@ -266,7 +222,7 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
     }
 
     if (block_ptr->timeblock_height() < latest_timeblock_height_) {
-        ZJC_DEBUG("new_block_changed_ = true timeblock not less than latest timeblock: %lu, %lu", 
+        ZJC_DEBUG("timeblock not less than latest timeblock: %lu, %lu", 
             block_ptr->timeblock_height(), latest_timeblock_height_);
     }
 
@@ -366,10 +322,12 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
                             auto addr = secptr_->GetAddress(node.pubkey());
                             auto& accoutPoceInfoIterm = accout_poce_info_map_.try_emplace(addr, std::make_shared<AccoutPoceInfoItem>())
                                                         .first->second;
-                            accoutPoceInfoIterm->consensus_gap +=1;
+                            accoutPoceInfoIterm->consensus_gap += 1;
                             accoutPoceInfoIterm->credit += node.fts_value();;
-                            ZJC_DEBUG("HandleElectStatistic addr: %s, consensus_gap: %lu, credit: %lu", common::Encode::HexEncode(addr).c_str(), 
-                                accoutPoceInfoIterm->consensus_gap, accoutPoceInfoIterm->credit);
+                            ZJC_DEBUG("HandleElectStatistic addr: %s, consensus_gap: %lu, credit: %lu",
+                                common::Encode::HexEncode(addr).c_str(), 
+                                accoutPoceInfoIterm->consensus_gap, 
+                                accoutPoceInfoIterm->credit);
                         }
                     }
 
@@ -562,7 +520,7 @@ void ShardStatistic::OnTimeBlock(
         return;
     }
 
-    ZJC_DEBUG("new_block_changed_ = true new timeblcok coming and should statistic new tx %lu, %lu.", 
+    ZJC_DEBUG("new timeblcok coming and should statistic new tx %lu, %lu.", 
         latest_timeblock_height_, latest_time_block_height);
     prev_timeblock_height_ = latest_timeblock_height_;
     latest_timeblock_height_ = latest_time_block_height;
@@ -596,10 +554,6 @@ bool ShardStatistic::CheckAllBlockStatisticed(uint32_t local_net_id) {
 int ShardStatistic::StatisticWithHeights(
         pools::protobuf::ElectStatistic& elect_statistic,
         uint64_t* statisticed_timeblock_height) {
-    if (!new_block_changed_) {
-        return kPoolsError;
-    }
-
     ZJC_DEBUG("now statistic tx.");
 #ifdef TEST_NO_CROSS
         return kPoolsError;
@@ -671,15 +625,10 @@ int ShardStatistic::StatisticWithHeights(
         for (auto tm_iter = node_height_count_map_[pool_idx].begin(); 
                 tm_iter != node_height_count_map_[pool_idx].end(); ++tm_iter) {
             ZJC_DEBUG("0 pool: %u, elect height: %lu, tm height: %lu, latest tm height: %lu, "
-                "statisticed_timeblock_height_: %lu", 
-                pool_idx, 0, tm_iter->first, latest_timeblock_height_, statisticed_timeblock_height_);
-            if (tm_iter->first >= latest_timeblock_height_) {
-                ZJC_DEBUG("failed statistic %lu, %lu", tm_iter->first, latest_timeblock_height_);
-                // assert(false);
-                break;
-            }
-
-            if (tm_iter->first <= statisticed_timeblock_height_) {
+                "statisticed_timeblock_height_: %lu, statistic_max_height: %lu, max_height: %lu", 
+                pool_idx, 0, tm_iter->first, latest_timeblock_height_, statisticed_timeblock_height_,
+                tm_iter->second->statistic_max_height, tm_iter->second->max_height);
+            if (tm_iter->second->statistic_max_height >= tm_iter->second->max_height) {
                 continue;
             }
 
@@ -754,6 +703,8 @@ int ShardStatistic::StatisticWithHeights(
                 all_gas_amount += elect_iter->second->all_gas_amount;
                 root_all_gas_amount += elect_iter->second->all_gas_for_root;
             }
+
+            tm_iter->second->statistic_max_height = tm_iter->second->max_height;
         }
     }
 
@@ -791,8 +742,6 @@ int ShardStatistic::StatisticWithHeights(
             prev_timeblock_height_);
     }
 
-    new_block_changed_ = false;
-    *statisticed_timeblock_height = prev_timeblock_height_;
     return kPoolsSuccess;
 }
 

@@ -86,12 +86,9 @@ public:
     void LoadLatestHeights();
     bool LoadAndStatisticBlock(uint32_t poll_index, uint64_t height);
     bool CheckAllBlockStatisticed(uint32_t local_net_id);
-    void SetCanStastisticTx() {
-        new_block_changed_ = true;
-    }
     void cleanUpBlocks(PoolBlocksInfo& pool_blocks_info);
     bool checkBlockValid(shardora::block::protobuf::Block &block);
-    void HandleElectStatistic(const std::shared_ptr<block::protobuf::Block>& block_ptr);
+
     static const uint32_t kLofRation = 5;
     static const uint32_t kLofMaxNodes = 8;
     static const uint32_t kLofValidMaxAvgTxCount = 1024u;
@@ -112,13 +109,11 @@ public:
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     uint64_t prepare_elect_height_ = 0;
     std::shared_ptr<security::Security> secptr_ = nullptr;
-    volatile bool new_block_changed_ = false;
     uint64_t statisticed_timeblock_height_ = 0;
     common::Tick tick_to_statistic_;
     std::unordered_map<std::string, std::shared_ptr<AccoutPoceInfoItem>> accout_poce_info_map_;
     uint64_t least_elect_height_for_statistic_=0;
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
-
 };
 
 }  // namespace pools

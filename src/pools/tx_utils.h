@@ -173,9 +173,10 @@ struct ElectNodeStatisticInfo {
 };
 
 struct HeightStatisticInfo {
-    HeightStatisticInfo() : tm_height(0), max_height(0) {}
+    HeightStatisticInfo() : tm_height(0), max_height(0), statistic_max_height(0) {}
     uint64_t tm_height;
     uint64_t max_height;
+    uint64_t statistic_max_height;
     std::map<uint64_t, std::shared_ptr<ElectNodeStatisticInfo>> elect_node_info_map;
 };
 
