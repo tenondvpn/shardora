@@ -524,7 +524,6 @@ void ShardStatistic::OnTimeBlock(
         latest_timeblock_height_, latest_time_block_height);
     prev_timeblock_height_ = latest_timeblock_height_;
     latest_timeblock_height_ = latest_time_block_height;
-    tick_to_statistic_.CutOff(10000000lu, std::bind(&ShardStatistic::SetCanStastisticTx, this));
 }
 
 bool ShardStatistic::CheckAllBlockStatisticed(uint32_t local_net_id) {
