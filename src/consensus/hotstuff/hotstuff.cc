@@ -102,11 +102,6 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
         return s;
     }
 
-    auto leader = leader_rotation()->GetLeader();
-    if (leader == nullptr || leader->index != leader_rotation()->GetLocalMemberIdx()) {
-        return Status::kError;
-    }
-    
     network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
         pool_idx_,
