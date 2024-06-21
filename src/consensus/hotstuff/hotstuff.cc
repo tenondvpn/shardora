@@ -189,11 +189,10 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     // view 必须最新
     // TODO 超时情况可能相同，严格限制并不影响共识，但会减少共识参与节点数
     if (HasVoted(v_block->view)) {
-        ZJC_ERROR("pool: %d has voted: %lu, last_vote_view_: %u, hash64: %lu",
+        ZJC_DEBUG("pool: %d has voted: %lu, last_vote_view_: %u, hash64: %lu",
             pool_idx_, v_block->view, last_vote_view_, header.hash64());
-        assert(false);
         return;
-    }    
+    }
     
     // 2 Veriyfy Leader
     // NewView 和 HighQC 的同步时不能尝试 Commit，否则会影响 leader 验证
@@ -204,7 +203,10 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         pacemaker()->HighQC()->view,
         header.hash64());
     if (VerifyLeader(v_block->leader_idx) != Status::kSuccess) {
-        ZJC_WARN("verify leader failed, pool: %d has voted: %lu, hash64: %lu", 
+        if (sync_pool_fn_) { // leader 不一致触发同步
+            sync_pool_fn_(pool_idx_, 1);
+        }
+        ZJC_WARN("verify leader failed, pool: %d view: %lu, hash64: %lu", 
             pool_idx_, v_block->view, header.hash64());
         return;
     }    
@@ -341,6 +343,9 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     if (SendMsgToLeader(trans_msg, VOTE) != Status::kSuccess) {
         ZJC_ERROR("pool: %d, Send vote message is error.", pool_idx_, header.hash64());
     }
+
+    // 避免对 view 重复投票
+    StopVoting(v_block->view);
 
     ZJC_DEBUG("pool: %d, Send vote message is success., hash64: %lu", pool_idx_, header.hash64());
 }
