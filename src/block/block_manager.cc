@@ -1864,7 +1864,7 @@ pools::TxItemPtr BlockManager::GetCrossTx(
             account_mgr_->pools_address_info(pool_index);
         auto& tx = cross_statistic_tx->tx_ptr->tx_info;
         tx.set_to(cross_statistic_tx->tx_ptr->address_info->addr());
-        cross_statistic_tx->tx_ptr->in_consensus = true;
+        // cross_statistic_tx->tx_ptr->in_consensus = true;
         ZJC_DEBUG("success get cross tx: %s, height: %lu",
             common::Encode::HexEncode(tx.gid()).c_str(), iter->first);
         return cross_statistic_tx->tx_ptr;
@@ -1975,7 +1975,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
             account_mgr_->pools_address_info(pool_index);
         auto& tx = shard_statistic_tx->tx_ptr->tx_info;
         tx.set_to(shard_statistic_tx->tx_ptr->address_info->addr());
-        shard_statistic_tx->tx_ptr->in_consensus = true;
+        // shard_statistic_tx->tx_ptr->in_consensus = true;
         ZJC_DEBUG("success get statistic tx hash: %s, prev_timeblock_tm_sec_: %lu, "
             "height: %lu, latest time block height: %lu",
             common::Encode::HexEncode(shard_statistic_tx->tx_hash).c_str(),
@@ -2005,7 +2005,7 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
         if (!shard_elect_tx->tx_ptr->in_consensus) {
             if (!tx_hash.empty()) {
                 if (shard_elect_tx->tx_ptr->unique_tx_hash == tx_hash) {
-                    shard_elect_tx->tx_ptr->in_consensus = true;
+                    // shard_elect_tx->tx_ptr->in_consensus = true;
                     ZJC_DEBUG("0 success get elect tx pool index: %u, tx hash: %s",
                         pool_index, common::Encode::HexEncode(tx_hash).c_str());
                     return shard_elect_tx->tx_ptr;
@@ -2023,7 +2023,7 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
                 continue;
             }
 
-            shard_elect_tx->tx_ptr->in_consensus = true;
+            // shard_elect_tx->tx_ptr->in_consensus = true;
             ZJC_DEBUG("1 success get elect tx pool index: %u, tx hash: %s",
                 pool_index, common::Encode::HexEncode(tx_hash).c_str());
             return shard_elect_tx->tx_ptr;
@@ -2109,7 +2109,7 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& t
             return nullptr;
         }
 
-        tmp_to_txs->tx_ptr->in_consensus = true;
+        // tmp_to_txs->tx_ptr->in_consensus = true;
         ZJC_DEBUG("success get to tx: %s", 
             common::Encode::HexEncode(tmp_to_txs->tx_hash).c_str());
         return tmp_to_txs->tx_ptr;
