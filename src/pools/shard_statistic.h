@@ -50,7 +50,7 @@ public:
         uint64_t vss_random);
     int StatisticWithHeights(
         pools::protobuf::ElectStatistic &elect_statistic,
-        uint64_t *statisticed_timeblock_height);
+        uint64_t statisticed_timeblock_height);
 
 
   private:
@@ -113,6 +113,8 @@ public:
     common::Tick tick_to_statistic_;
     std::unordered_map<std::string, std::shared_ptr<AccoutPoceInfoItem>> accout_poce_info_map_;
     uint64_t least_elect_height_for_statistic_=0;
+    std::unordered_map<uint64_t, std::shared_ptr<StatisticInfoItem>> tm_height_with_statistic_info_;
+
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };
 
