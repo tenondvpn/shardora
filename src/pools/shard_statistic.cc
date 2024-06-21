@@ -23,13 +23,7 @@ namespace pools {
 static const std::string kShardFinalStaticPrefix = common::Encode::HexDecode(
     "027a252b30589b8ed984cf437c475b069d0597fc6d51ec6570e95a681ffa9fe7");
 
-void ShardStatistic::Init() {
-    if (pools_mgr_ != nullptr) {
-        LoadLatestHeights();
-    }
-
-    assert(tx_heights_ptr_->heights_size() == (int32_t)common::kInvalidPoolIndex);
-}
+void ShardStatistic::Init() {}
 
 void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& block_ptr) {
 #ifdef TEST_NO_CROSS
@@ -142,61 +136,15 @@ void ShardStatistic::HandleStatisticBlock(
                 return;
             }
 
-            assert(elect_statistic.height_info().heights_size() > 0);
             auto& heights = elect_statistic.height_info();
-            if (heights.tm_height() > statisticed_timeblock_height_) {
-                statisticed_timeblock_height_ = heights.tm_height();
-
-                for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
-                    auto tm_iter = node_height_count_map_[pool_idx].begin();
-                    while (tm_iter != node_height_count_map_[pool_idx].end()) {
-                        if (tm_iter->first > statisticed_timeblock_height_) {
-                            break;
-                        }
-
-                        tm_iter = node_height_count_map_[pool_idx].erase(tm_iter);
-                    }
-                }
-            }
-
-            if (tx_heights_ptr_ != nullptr) {
-                if (tx_heights_ptr_->heights_size() == heights.heights_size()) {
-                    for (int32_t i = 0; i < heights.heights_size(); ++i) {
-                        if (tx_heights_ptr_->heights(i) > heights.heights(i)) {
-                            std::string init_consensus_height;
-                            for (int32_t i = 0; i < heights.heights_size(); ++i) {
-                                init_consensus_height += std::to_string(heights.heights(i)) + " ";
-                            }
-
-                            std::string src_init_consensus_height;
-                            for (int32_t i = 0; i < tx_heights_ptr_->heights_size(); ++i) {
-                                src_init_consensus_height += std::to_string(tx_heights_ptr_->heights(i)) + " ";
-                            }
-
-                            ZJC_INFO("latest statistic block coming, ignore it. %s, %s",
-                                src_init_consensus_height.c_str(), init_consensus_height.c_str());
-                            return;
-                        }
-                    }
-                } else {
-                    ZJC_WARN("statistic heights size not equal: %u, %u",
-                        tx_heights_ptr_->heights_size(), heights.heights_size());
-                    assert(false);
-                }
+            auto iter = tm_height_with_statistic_info_.find(heights.tm_height());
+            if (iter != tm_height_with_statistic_info_.end()) {
+                tm_height_with_statistic_info_.erase(iter);
             }
 
             prefix_db_->SaveStatisticLatestHeihgts(
                 common::GlobalInfo::Instance()->network_id(),
                 heights);
-            assert(heights.heights_size() == common::kInvalidPoolIndex);
-            tx_heights_ptr_ = std::make_shared<pools::protobuf::StatisticTxItem>(heights);
-            std::string init_consensus_height;
-            for (int32_t i = 0; i < tx_heights_ptr_->heights_size(); ++i) {
-                init_consensus_height += std::to_string(tx_heights_ptr_->heights(i)) + " ";
-            }
-
-            ZJC_DEBUG("success change min elect statistic heights: %s, statisticed_timeblock_height_: %lu",
-                init_consensus_height.c_str(), statisticed_timeblock_height_);
             break;
         }
     }
@@ -208,19 +156,6 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
         common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
         common::GlobalInfo::Instance()->network_id() ==
         network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset);
-    if (block_ptr->timeblock_height() != 0 &&
-            block_ptr->timeblock_height() <= tx_heights_ptr_->tm_height()) {
-        ZJC_DEBUG("failed time block height %lu, %lu, block height: %lu, "
-            "common::GlobalInfo::Instance()->main_inited_success(): %d", 
-            block_ptr->timeblock_height(), tx_heights_ptr_->tm_height(), block_ptr->height(), 
-            common::GlobalInfo::Instance()->main_inited_success());
-        if (block_ptr->height() > 0 && common::GlobalInfo::Instance()->main_inited_success()) {
-            assert(block_ptr->timeblock_height() > 0);
-        }
-
-        return;
-    }
-
     if (block_ptr->timeblock_height() < latest_timeblock_height_) {
         ZJC_DEBUG("timeblock not less than latest timeblock: %lu, %lu", 
             block_ptr->timeblock_height(), latest_timeblock_height_);
@@ -586,16 +521,6 @@ int ShardStatistic::StatisticWithHeights(
         local_net_id -= network::kConsensusWaitingShardOffset;
     }
 
-    if (tx_heights_ptr_ == nullptr) {
-        ZJC_DEBUG("x_heights_ptr_ == nullptr.");
-        return kPoolsError;
-    }
-
-    if (tx_heights_ptr_->heights_size() < (int32_t)common::kInvalidPoolIndex) {
-        ZJC_DEBUG("tx_heights_ptr_->heights_size() < (int32_t)common::kInvalidPoolIndex.");
-        return kPoolsError;
-    }
-
     if (prepare_elect_height_ == 0) {
         return kPoolsError;
     }
@@ -679,24 +604,6 @@ int ShardStatistic::StatisticWithHeights(
 void ShardStatistic::addHeightInfo2Statics(shardora::pools::protobuf::ElectStatistic &elect_statistic, uint64_t max_tm_height) {
     auto *heights_ptr = elect_statistic.mutable_height_info();
     heights_ptr->set_tm_height(max_tm_height);
-    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
-        bool valid = false;
-        for (auto tm_iter = node_height_count_map_[pool_idx].rbegin();
-             tm_iter != node_height_count_map_[pool_idx].rend(); ++tm_iter) {
-            if (tm_iter->first >= latest_timeblock_height_) {
-                continue;
-            }
-
-            heights_ptr->add_heights(tm_iter->second->max_height);
-            valid = true;
-            break;
-        }
-
-        if (!valid) {
-            heights_ptr->add_heights(tx_heights_ptr_->heights(pool_idx));
-        }
-    }
-
     heights_ptr->set_tm_height(prev_timeblock_height_);
 }
 
@@ -904,53 +811,6 @@ void ShardStatistic::setElectStatistics(
         }
 
         statistic_item.set_elect_height(hiter->first);
-    }
-}
-
-void ShardStatistic::LoadLatestHeights() {
-    tx_heights_ptr_ = std::make_shared<pools::protobuf::StatisticTxItem>();
-    auto& to_heights = *tx_heights_ptr_;
-    if (!prefix_db_->GetStatisticLatestHeihgts(
-            common::GlobalInfo::Instance()->network_id(),
-            &to_heights)) {
-        for (int32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-            pools_consensus_blocks_[i] = std::make_shared<PoolBlocksInfo>();
-            pools_consensus_blocks_[i]->latest_consensus_height_ = 0;
-            tx_heights_ptr_->add_heights(0);
-        }
-
-        ZJC_ERROR("load init statistic heights failed: %u",
-            common::GlobalInfo::Instance()->network_id());
-        return;
-    }
-
-    std::string init_consensus_height;
-    for (int32_t i = 0; i < tx_heights_ptr_->heights_size(); ++i) {
-        init_consensus_height += std::to_string(tx_heights_ptr_->heights(i)) + " ";
-        pools_consensus_blocks_[i] = std::make_shared<PoolBlocksInfo>();
-        pools_consensus_blocks_[i]->latest_consensus_height_ = tx_heights_ptr_->heights(i);
-    }
-
-    ZJC_DEBUG("init success change min elect statistic heights: %s", init_consensus_height.c_str());
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        uint64_t pool_latest_height = pools_mgr_->latest_height(i);
-        if (pool_latest_height == common::kInvalidUint64) {
-            continue;
-        }
-
-        bool consensus_stop = false;
-        auto& this_net_heights = tx_heights_ptr_->heights();
-        for (uint64_t height = this_net_heights[i];
-                height <= pool_latest_height; ++height) {
-            auto block_ptr = std::make_shared<block::protobuf::Block>();
-            block::protobuf::Block& block = *block_ptr;
-            if (!prefix_db_->GetBlockWithHeight(
-                    common::GlobalInfo::Instance()->network_id(), i, height, &block)) {
-                consensus_stop = true;
-            } else {
-                OnNewBlock(block_ptr);
-            }
-        }
     }
 }
 
