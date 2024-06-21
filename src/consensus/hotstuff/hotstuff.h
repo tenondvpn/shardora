@@ -6,9 +6,11 @@
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/leader_rotation.h>
 #include <consensus/hotstuff/pacemaker.h>
-#include <consensus/hotstuff/types.h> 
+#include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
+#include <consensus/hotstuff/hotstuff_utils.h>
 #include <protos/hotstuff.pb.h>
+#include <protos/transport.pb.h>
 #include <protos/view_block.pb.h>
 #include <security/security.h>
 
@@ -40,7 +42,8 @@ typedef hotstuff::protobuf::NewViewMsg pb_NewViewMsg;
 using SyncViewBlockFn = std::function<void(const uint32_t&, const HashStr&)>;
 
 static const uint64_t STUCK_PACEMAKER_DURATION_MIN_US = 2000000lu; // the min duration that hotstuff can be considered stucking
-static const bool WITH_CONSENSUS_STATISTIC = true; // 是否开启 leader 的共识数据统计
+static const bool WITH_CONSENSUS_STATISTIC =
+    true; // 是否开启 leader 的共识数据统计
 
 class Hotstuff {
 public:
@@ -87,7 +90,7 @@ public:
     void NewView(const std::shared_ptr<SyncInfo>& sync_info);
     Status Propose(const std::shared_ptr<SyncInfo>& sync_info);
     Status ResetReplicaTimers();
-    Status TryCommit(const std::shared_ptr<QC> commit_qc);    
+    Status TryCommit(const std::shared_ptr<QC> commit_qc);
 
     void StopVoting(const View& view) {
         if (last_vote_view_ < view) {

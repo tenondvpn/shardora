@@ -212,6 +212,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         }
         ZJC_WARN("verify leader failed, pool: %d view: %lu, hash64: %lu", 
             pool_idx_, v_block->view, header.hash64());
+
         return;
     }    
 
@@ -266,14 +267,14 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     for (const auto& tx : pro_msg.tx_propose().txs()) {
         if (!view_block_chain_->CheckTxGidValid(tx.gid(), v_block->parent_hash)) {
             // assert(false);
-        ZJC_DEBUG("====1.1.1 check gid failed: %s pool: %d, verify view block success, "
-            "view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
-            common::Encode::HexEncode(tx.gid()).c_str(),
-            pool_idx_,
-            pro_msg.view_item().view(),
-            common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
-            pacemaker()->HighQC()->view,
-            header.hash64());
+            ZJC_DEBUG("====1.1.1 check gid failed: %s pool: %d, verify view block success, "
+                "view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
+                common::Encode::HexEncode(tx.gid()).c_str(),
+                pool_idx_,
+                pro_msg.view_item().view(),
+                common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
+                pacemaker()->HighQC()->view,
+                header.hash64());
             return;
         }
 
@@ -309,9 +310,9 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     if (view_block_chain()->Store(v_block) != Status::kSuccess) {
         ZJC_ERROR("pool: %d, add view block error. hash: %s",
             pool_idx_, common::Encode::HexEncode(v_block->hash).c_str());
+        // TODO 父块不存在，则加入等待队列，后续处理
         return;
     }
-    
     // 成功接入链中，标记交易占用
     acceptor()->MarkBlockTxsAsUsed(v_block->block);
         
@@ -324,8 +325,6 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         v_block->view,
         v_block->block->tx_list_size(),
         header.hash64());
-
-    // view_block_chain()->Print();
     
     auto trans_msg = std::make_shared<transport::TransportMessage>();
     auto& trans_header = trans_msg->header;
