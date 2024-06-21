@@ -486,10 +486,6 @@ ZbftPtr BftManager::Start(ZbftPtr commited_bft_ptr) {
 
     auto zbft_ptr = StartBft(elect_item_ptr, txs_ptr, commited_bft_ptr);
     if (zbft_ptr == nullptr) {
-        for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
-            iter->second->in_consensus = false;
-        }
-
         ZJC_DEBUG("leader start bft failed, thread: %d, pool: %d, "
             "thread_item->pools.size(): %d, "
             "elect_item_ptr->elect_height: %lu,elect_item_ptr->time_valid: %lu now_tm_ms: %lu",

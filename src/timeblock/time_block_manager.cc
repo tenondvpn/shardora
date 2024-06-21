@@ -79,10 +79,6 @@ bool TimeBlockManager::HasTimeblockTx(uint32_t pool_index) {
             return false;
         }
 
-        if (tmblock_tx_ptr_->in_consensus) {
-            return false;
-        }
-
         return true;
     }
 

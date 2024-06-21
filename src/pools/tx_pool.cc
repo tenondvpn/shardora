@@ -359,7 +359,6 @@ void TxPool::CheckTimeoutTx() {
 
 void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
-        iter->second->in_consensus = false;
         auto miter = gid_map_.find(iter->first);
         if (miter != gid_map_.end()) {
             if (miter->second->is_consensus_add_tx) {
@@ -398,7 +397,6 @@ void TxPool::RemoveTx(const std::string& gid) {
         return;
     }
 
-    giter->second->in_consensus = false;
     auto prio_iter = prio_map_.find(giter->second->prio_key);
     if (prio_iter != prio_map_.end()) {
         prio_map_.erase(prio_iter);
