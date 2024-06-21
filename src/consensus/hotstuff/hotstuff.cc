@@ -191,7 +191,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     if (HasVoted(v_block->view)) {
         ZJC_ERROR("pool: %d has voted: %lu, last_vote_view_: %u, hash64: %lu",
             pool_idx_, v_block->view, last_vote_view_, header.hash64());
-        assert(false);
+        // assert(false);
         return;
     }    
     

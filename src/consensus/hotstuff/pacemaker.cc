@@ -119,7 +119,6 @@ void Pacemaker::OnLocalTimeout() {
         common::GlobalInfo::Instance()->network_id(),
         pool_idx_,
         CurView(), elect_item->ElectHeight(), 0);    
-    
     // if view is last one, deal directly.
     // 更换 epoch 后重新打包
     if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
@@ -155,7 +154,6 @@ void Pacemaker::OnLocalTimeout() {
     timeout_msg.set_elect_height(elect_item->ElectHeight());
     timeout_msg.set_pool_idx(pool_idx_); // 用于分配线程
     timeout_msg.set_leader_idx(0);
-    
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     msg.set_type(common::kHotstuffTimeoutMessage);
     last_timeout_ = msg_ptr;
