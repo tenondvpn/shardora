@@ -1324,8 +1324,7 @@ void BlockManager::CreateStatisticTx() {
     }
 
     pools::protobuf::ElectStatistic elect_statistic;
-    pools::protobuf::CrossShardStatistic cross_statistic;
-    uint64_t timeblock_height = 0;
+    uint64_t timeblock_height = prev_timeblock_height_;
     if (statistic_mgr_->StatisticWithHeights(
             elect_statistic,
             timeblock_height) != pools::kPoolsSuccess) {
@@ -1375,40 +1374,6 @@ void BlockManager::CreateStatisticTx() {
             shard_statistics_map_[timeblock_height] = tx_ptr;
             auto tmp_ptr = std::make_shared<StatisticMap>(shard_statistics_map_);
             shard_statistics_map_ptr_queue_.push(tmp_ptr);
-        }
-    }
-
-    if (cross_statistic.crosses_size() > 0) {
-        std::string cross_hash = common::Hash::keccak256(cross_statistic.SerializeAsString());
-        auto tm_statistic_iter = cross_statistics_map_.find(timeblock_height);
-        if (tm_statistic_iter == cross_statistics_map_.end()) {
-            auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-            auto* tx = new_msg_ptr->header.mutable_tx_proto();
-            tx->set_key(protos::kShardCross);
-            tx->set_value(cross_statistic.SerializeAsString());
-            tx->set_pubkey("");
-            tx->set_step(pools::protobuf::kCross);
-            auto gid = common::Hash::keccak256(
-                cross_hash + std::to_string(common::GlobalInfo::Instance()->network_id()));
-            tx->set_gas_limit(0);
-            tx->set_amount(0);
-            tx->set_gas_price(common::kBuildinTransactionGasPrice);
-            tx->set_gid(gid);
-            auto tx_ptr = std::make_shared<BlockTxsItem>();
-            tx_ptr->tx_ptr = cross_tx_cb_(new_msg_ptr);
-            tx_ptr->tx_ptr->time_valid += kStatisticValidTimeout;
-            tx_ptr->tx_ptr->in_consensus = false;
-            tx_ptr->tx_hash = cross_hash;
-            tx_ptr->tx_ptr->unique_tx_hash = tx_ptr->tx_hash;
-            tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
-            tx_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
-            ZJC_INFO("success add cross tx: %s, gid: %s, cross size: %u",
-                common::Encode::HexEncode(cross_hash).c_str(),
-                common::Encode::HexEncode(gid).c_str(),
-                tx_ptr->tx_ptr->tx_info.ByteSize());
-            cross_statistics_map_[timeblock_height] = tx_ptr;
-            auto tmp_ptr = std::make_shared<StatisticMap>(cross_statistics_map_);
-            cross_statistics_map_ptr_queue_.push(tmp_ptr);
         }
     }
 }
