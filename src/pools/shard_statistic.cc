@@ -39,7 +39,6 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
     ZJC_DEBUG("new block coming net: %u, pool: %u, height: %lu, timeblock height: %lu",
         block_ptr->network_id(),
         block_ptr->pool_index(), block_ptr->height(), block_ptr->timeblock_height());
-    HandleElectStatistic(block_ptr);
     block::protobuf::Block& block = *block_ptr;
     if (!checkBlockValid(block)) {
         return;
@@ -204,6 +203,7 @@ void ShardStatistic::HandleStatisticBlock(
 }
 
 void ShardStatistic::HandleElectStatistic(const std::shared_ptr<block::protobuf::Block>& block_ptr) {
+    assert(false);
     auto& block = *block_ptr;
     elect::protobuf::ElectBlock elect_block;
     bool isElectBlock = false;
@@ -252,7 +252,6 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
         common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
         common::GlobalInfo::Instance()->network_id() ==
         network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset);
-
     if (block_ptr->timeblock_height() != 0 &&
             block_ptr->timeblock_height() <= tx_heights_ptr_->tm_height()) {
         ZJC_DEBUG("failed time block height %lu, %lu, block height: %lu, "
@@ -361,6 +360,16 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
 
                         if (elect_block.gas_for_root() > 0) {
                             elect_static_info_item->all_gas_for_root += elect_block.gas_for_root();
+                        }
+
+                        for(auto node : elect_block.in()) {
+                            auto addr = secptr_->GetAddress(node.pubkey());
+                            auto& accoutPoceInfoIterm = accout_poce_info_map_.try_emplace(addr, std::make_shared<AccoutPoceInfoItem>())
+                                                        .first->second;
+                            accoutPoceInfoIterm->consensus_gap +=1;
+                            accoutPoceInfoIterm->credit += node.fts_value();;
+                            ZJC_DEBUG("HandleElectStatistic addr: %s, consensus_gap: %lu, credit: %lu", common::Encode::HexEncode(addr).c_str(), 
+                                accoutPoceInfoIterm->consensus_gap, accoutPoceInfoIterm->credit);
                         }
                     }
 
