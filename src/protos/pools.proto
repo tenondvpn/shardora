@@ -54,8 +54,9 @@ message ShardToTxItem {
 
 message StatisticTxItem {
     optional uint32 sharding_id = 1;
-    optional uint64 block_height = 2;
-    optional uint64 tm_height = 3;
+    repeated uint64 heights = 2;
+    optional uint64 block_height = 3;
+    optional uint64 tm_height = 4;
 }
 
 message CrossShardStatisticItem {
