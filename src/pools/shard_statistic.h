@@ -37,7 +37,7 @@ public:
     }
 
     ~ShardStatistic() {}
-    void Init();
+    void Init(const std::vector<uint64_t>& latest_heights);
     uint64_t getStoke(uint32_t shard_id, std::string contractId, std::string temp_addr, uint64_t elect_height);
     void OnNewElectBlock(
         uint32_t sharding_id,

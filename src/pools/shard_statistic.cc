@@ -23,7 +23,12 @@ namespace pools {
 static const std::string kShardFinalStaticPrefix = common::Encode::HexDecode(
     "027a252b30589b8ed984cf437c475b069d0597fc6d51ec6570e95a681ffa9fe7");
 
-void ShardStatistic::Init() {}
+void ShardStatistic::Init(const std::vector<uint64_t>& latest_heights) {
+    for (uint32_t i = 0; i < latest_heights.size(); ++i) {
+        pools_consensus_blocks_[i] = std::make_shared<PoolBlocksInfo>();
+        pools_consensus_blocks_[i]->latest_consensus_height_ = latest_heights[i];
+    }
+}
 
 void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& block_ptr) {
 #ifdef TEST_NO_CROSS
@@ -745,10 +750,6 @@ void ShardStatistic::addNewNode2JoinStatics(std::map<uint64_t, std::unordered_ma
         ZJC_DEBUG("add new elect node: %s, stoke: %lu, shard: %u", common::Encode::HexEncode(pubkey).c_str(), iter->second, shard_iter->second);
     }
 }
-
-// uint64_t getStoke(uint32_t shard_id,  std::string addr) {
-//     return 1;
-// }
 
 void ShardStatistic::setElectStatistics(
         std::map<uint64_t, std::unordered_map<std::string, shardora::pools::StatisticMemberInfoItem>> &height_node_collect_info_map,
