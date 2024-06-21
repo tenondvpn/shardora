@@ -1915,7 +1915,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
     }
 
     if (shard_statistic_tx == nullptr) {
-        ZJC_DEBUG("shard_statistic_tx == nullptr");
+        ZJC_DEBUG("shard_statistic_tx == nullptr, tx_gid: %s", common::Encode::HexEncode(tx_gid).c_str());
         return nullptr;
     }
 
