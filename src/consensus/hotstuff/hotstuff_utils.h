@@ -48,15 +48,23 @@ using StepFn = std::function<Status(std::shared_ptr<ProposeMsgWrapper>&)>;
 
 class Pipeline {
 public:
-    Pipeline(int max_try) : max_try_(max_try) {};
+    Pipeline() {};
     ~Pipeline() {};
 
     Pipeline(const Pipeline&) = delete;
     Pipeline& operator=(const Pipeline&) = delete;
 
-    void AddStepFn(StepFn pipeline_fn) {
+    void AddStepFn(StepFn pipeline_fn, int max_try) {
+        if (max_try <= 0) {
+            max_try = 1;
+        }
         pipeline_fns_.push_back(pipeline_fn);
+        pipeline_fn_max_trys_.push_back(max_try);
     }
+
+    void AddStepFn(StepFn pipeline_fn) {
+        AddStepFn(pipeline_fn, 1);
+    }    
 
     Status Call(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
         pro_msg_wrap->tried_times++;
@@ -66,7 +74,7 @@ public:
             Status s = fn(pro_msg_wrap);
             if (s != Status::kSuccess) {
                 pro_msg_wrap->breakpoint = bp; // 记录失败断点
-                if (pro_msg_wrap->tried_times < max_try_) {
+                if (pro_msg_wrap->tried_times < pipeline_fn_max_trys_[bp]) {
                     // 不知为何，protobuf 的 ProposeMsg 会被析构，这里将 pro_msg 的拷贝放入队列
                     pro_msg_wrap->pro_msg = std::make_shared<hotstuff::protobuf::ProposeMsg>(*pro_msg_wrap->pro_msg);
                     min_heap_.push(pro_msg_wrap);
@@ -104,8 +112,8 @@ public:
     
 private:
     std::vector<StepFn> pipeline_fns_;
+    std::vector<int> pipeline_fn_max_trys_;
     ProposeMsgMinHeap min_heap_;
-    int max_try_;
 };
 
 } // namespace consensus

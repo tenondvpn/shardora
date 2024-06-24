@@ -72,12 +72,12 @@ public:
         pacemaker_->SetNewViewFn(std::bind(&Hotstuff::NewView, this, std::placeholders::_1));
         pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));        
 
-        handle_propose_pipeline_.AddStepFn(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyLeader, this, std::placeholders::_1));
+        handle_propose_pipeline_.AddStepFn(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyLeader, this, std::placeholders::_1), 2);
         handle_propose_pipeline_.AddStepFn(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyTC, this, std::placeholders::_1));
         handle_propose_pipeline_.AddStepFn(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyQC, this, std::placeholders::_1));
         handle_propose_pipeline_.AddStepFn(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyViewBlockAndCommit, this, std::placeholders::_1));
         handle_propose_pipeline_.AddStepFn(std::bind(&Hotstuff::HandleProposeMsgStep_TxAccept, this, std::placeholders::_1));
-        handle_propose_pipeline_.AddStepFn(std::bind(&Hotstuff::HandleProposeMsgStep_ChainStore, this, std::placeholders::_1));
+        handle_propose_pipeline_.AddStepFn(std::bind(&Hotstuff::HandleProposeMsgStep_ChainStore, this, std::placeholders::_1), 2);
         handle_propose_pipeline_.AddStepFn(std::bind(&Hotstuff::HandleProposeMsgStep_Vote, this, std::placeholders::_1));
     }
     ~Hotstuff() {};
@@ -217,7 +217,7 @@ private:
     common::FlowControl reset_timer_fc_{1};
     SyncPoolFn sync_pool_fn_ = nullptr;
     uint64_t timer_delay_us_ = common::TimeUtils::TimestampUs() + 10000000lu;
-    Pipeline handle_propose_pipeline_{2};
+    Pipeline handle_propose_pipeline_;
 
     Status HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
         if (VerifyLeader(pro_msg_wrap->v_block->leader_idx) != Status::kSuccess) {
