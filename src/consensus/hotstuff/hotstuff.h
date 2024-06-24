@@ -217,17 +217,14 @@ private:
     Pipeline handle_propose_pipeline_{1};
 
     Status HandleProposeMsgStep_ParseMsg(ProposeMsgWrapper& pro_msg_wrap) {
-        auto& pro_msg = pro_msg_wrap.header.hotstuff().pro_msg();
-        
-        view_block::protobuf::ViewBlockItem pb_view_block = pro_msg.view_item();
+        view_block::protobuf::ViewBlockItem pb_view_block = pro_msg_wrap.pro_msg.view_item();
         auto v_block = std::make_shared<ViewBlock>();
         Status s = Proto2ViewBlock(pb_view_block, v_block);
         if (s != Status::kSuccess) {
             ZJC_ERROR("pb_view_block to ViewBlock is error.");
             return Status::kError;
         }
-
-        pro_msg_wrap.pro_msg = pro_msg;
+        
         pro_msg_wrap.v_block = v_block;
         
         return Status::kSuccess;
