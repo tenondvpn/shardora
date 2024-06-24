@@ -31,18 +31,18 @@ struct ProposeMsgWrapper {
 };
 
 struct CompareProposeMsg {
-    bool operator()(ProposeMsgWrapper* lhs, ProposeMsgWrapper* rhs) const {
+    bool operator()(std::shared_ptr<ProposeMsgWrapper> lhs, std::shared_ptr<ProposeMsgWrapper> rhs) const {
         return lhs->v_block->view > rhs->v_block->view;
     }
 };
 
 // 等待队列，用于存放暂时处理不了的 Propose 消息
 using ProposeMsgMinHeap =
-    std::priority_queue<ProposeMsgWrapper*,
-                        std::vector<ProposeMsgWrapper*>,
+    std::priority_queue<std::shared_ptr<ProposeMsgWrapper>,
+                        std::vector<std::shared_ptr<ProposeMsgWrapper>>,
                         CompareProposeMsg>;
 
-using StepFn = std::function<Status(ProposeMsgWrapper&)>;
+using StepFn = std::function<Status(std::shared_ptr<ProposeMsgWrapper>&)>;
 
 class Pipeline {
 public:
@@ -56,31 +56,28 @@ public:
         pipeline_fns_.push_back(pipeline_fn);
     }
 
-    Status Call(ProposeMsgWrapper* pro_msg_wrap) {
+    Status Call(std::shared_ptr<ProposeMsgWrapper> pro_msg_wrap) {
         pro_msg_wrap->tried_times++;
         
         for (Breakpoint bp = pro_msg_wrap->breakpoint; bp < pipeline_fns_.size(); bp++) {
             auto fn = pipeline_fns_[bp];
-            Status s = fn(*pro_msg_wrap);
+            Status s = fn(pro_msg_wrap);
             if (s != Status::kSuccess) {
                 pro_msg_wrap->breakpoint = bp; // 记录失败断点
                 if (pro_msg_wrap->tried_times < max_try_) {
                     min_heap_.push(pro_msg_wrap);
-                } else {
-                    delete pro_msg_wrap;
                 }
                 return Status::kError;
             }
         }
-
-        delete pro_msg_wrap;
+        
         return Status::kSuccess;
     }
 
     int CallWaitingProposeMsgs() {
         int succ_num;
         
-        std::vector<ProposeMsgWrapper*> ordered_msg;
+        std::vector<std::shared_ptr<ProposeMsgWrapper>> ordered_msg;
         while (!min_heap_.empty()) {
             auto pro_msg_wrap = min_heap_.top();
             min_heap_.pop();
@@ -88,7 +85,7 @@ public:
             ordered_msg.push_back(pro_msg_wrap);
         }
 
-        for (auto* pro_msg_wrap : ordered_msg) {
+        for (auto& pro_msg_wrap : ordered_msg) {
             if (Call(pro_msg_wrap) == Status::kSuccess) {
                 succ_num++;
             }            

@@ -176,7 +176,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
     });
 
 
-    ProposeMsgWrapper* pro_msg_wrap = new ProposeMsgWrapper(header);
+    auto pro_msg_wrap = std::make_shared<ProposeMsgWrapper>(header);
 
     view_block::protobuf::ViewBlockItem pb_view_block = pro_msg_wrap->pro_msg.view_item();
     auto v_block = std::make_shared<ViewBlock>();
