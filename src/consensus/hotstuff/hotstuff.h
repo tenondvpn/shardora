@@ -104,7 +104,7 @@ public:
     // 消费等待队列中的 ProposeMsg
     int TryWaitingProposeMsgs() {
         int succ = handle_propose_pipeline_.CallWaitingProposeMsgs();
-        ZJC_INFO("pool: %d, handle waiting propose, %d/%d", pool_idx_, succ, handle_propose_pipeline_.Size());
+        ZJC_INFO("pool: %d, handle waiting propose, %d --- %d", pool_idx_, succ, handle_propose_pipeline_.Size());
     }
 
     void StopVoting(const View& view) {
