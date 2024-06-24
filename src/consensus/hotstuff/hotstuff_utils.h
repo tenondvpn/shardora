@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/hash.h>
+#include <common/log.h>
 #include <protos/block.pb.h>
 #include <protos/hotstuff.pb.h>
 #include <protos/prefix_db.h>
@@ -18,6 +19,7 @@ using Breakpoint = int;
 struct ProposeMsgWrapper {
     // Context
     const transport::protobuf::Header& header;
+    std::shared_ptr<hotstuff::protobuf::ProposeMsg> pro_msg;
     std::shared_ptr<ViewBlock> v_block;
     std::shared_ptr<TC> tc;
     
@@ -26,11 +28,12 @@ struct ProposeMsgWrapper {
 
 
     ProposeMsgWrapper(const transport::protobuf::Header& h) 
-        : header(h), v_block(nullptr), tc(nullptr), breakpoint(0), tried_times(0) {}    
+        : header(h), pro_msg(std::make_shared<hotstuff::protobuf::ProposeMsg>(h.hotstuff().pro_msg())),
+          v_block(nullptr), tc(nullptr), breakpoint(0), tried_times(0) {}
 };
 
 struct CompareProposeMsg {
-    bool operator()(std::shared_ptr<ProposeMsgWrapper> lhs, std::shared_ptr<ProposeMsgWrapper> rhs) const {
+    bool operator()(const std::shared_ptr<ProposeMsgWrapper>& lhs, const std::shared_ptr<ProposeMsgWrapper>& rhs) const {
         return lhs->v_block->view > rhs->v_block->view;
     }
 };
@@ -64,6 +67,8 @@ public:
             if (s != Status::kSuccess) {
                 pro_msg_wrap->breakpoint = bp; // 记录失败断点
                 if (pro_msg_wrap->tried_times < max_try_) {
+                    // 不知为何，protobuf 的 ProposeMsg 会被析构，这里将 pro_msg 的拷贝放入队列
+                    pro_msg_wrap->pro_msg = std::make_shared<hotstuff::protobuf::ProposeMsg>(*pro_msg_wrap->pro_msg);
                     min_heap_.push(pro_msg_wrap);
                 }
                 return Status::kError;
@@ -74,13 +79,13 @@ public:
     }
 
     int CallWaitingProposeMsgs() {
-        int succ_num;
+        int succ_num = 0;
         
         std::vector<std::shared_ptr<ProposeMsgWrapper>> ordered_msg;
         while (!min_heap_.empty()) {
             auto pro_msg_wrap = min_heap_.top();
             min_heap_.pop();
-
+            
             ordered_msg.push_back(pro_msg_wrap);
         }
 
