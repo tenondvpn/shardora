@@ -101,6 +101,11 @@ public:
     Status Propose(const std::shared_ptr<SyncInfo>& sync_info);
     Status ResetReplicaTimers();
     Status TryCommit(const std::shared_ptr<QC> commit_qc);
+    // 消费等待队列中的 ProposeMsg
+    int TryWaitingProposeMsgs() {
+        int succ = handle_propose_pipeline_.CallWaitingProposeMsgs();
+        ZJC_INFO("pool: %d, handle waiting propose, %d/%d", pool_idx_, succ, handle_propose_pipeline_.Size());
+    }
 
     void StopVoting(const View& view) {
         if (last_vote_view_ < view) {
@@ -214,7 +219,7 @@ private:
     common::FlowControl reset_timer_fc_{1};
     SyncPoolFn sync_pool_fn_ = nullptr;
     uint64_t timer_delay_us_ = common::TimeUtils::TimestampUs() + 10000000lu;
-    Pipeline handle_propose_pipeline_{1};
+    Pipeline handle_propose_pipeline_{2};
 
     Status HandleProposeMsgStep_ParseMsg(ProposeMsgWrapper& pro_msg_wrap) {
         view_block::protobuf::ViewBlockItem pb_view_block = pro_msg_wrap.pro_msg.view_item();

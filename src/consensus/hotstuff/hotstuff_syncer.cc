@@ -528,7 +528,12 @@ Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
     
     processResponseQcTc(pool_idx, view_block_msg.view_block_res());
     processResponseLatestCommittedBlock(pool_idx, view_block_msg.view_block_res());
-    return processResponseChain(pool_idx, view_block_msg.view_block_res());
+    Status s = processResponseChain(pool_idx, view_block_msg.view_block_res());
+    if (s != Status::kSuccess) {
+        return s;
+    }
+    // 同步之后尝试消费之前消费失败的 Block
+    hotstuff_mgr_->hotstuff(pool_idx)->TryWaitingProposeMsgs();
 }
 
 Status HotstuffSyncer::processResponseQcTc(

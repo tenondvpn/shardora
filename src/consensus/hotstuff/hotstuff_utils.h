@@ -98,6 +98,10 @@ public:
 
         return succ_num;
     }
+
+    int Size() {
+        return min_heap_.size();
+    }
     
 private:
     std::vector<StepFn> pipeline_fns_;
