@@ -56,13 +56,13 @@ public:
     Pipeline(const Pipeline&) = delete;
     Pipeline& operator=(const Pipeline&) = delete;
 
-    void AddStepFn(StepFn pipeline_fn, int max_try) {
+    void AddRetryStep(StepFn pipeline_fn, int retry) {
         pipeline_fns_.push_back(pipeline_fn);
-        pipeline_fn_max_trys_.push_back(max_try);
+        pipeline_fn_max_trys_.push_back(retry+1);
     }
 
-    void AddStepFn(StepFn pipeline_fn) {
-        AddStepFn(pipeline_fn, 1);
+    void AddStep(StepFn pipeline_fn) {
+        AddRetryStep(pipeline_fn, 0);
     }    
 
     Status Call(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
