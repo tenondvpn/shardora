@@ -32,9 +32,7 @@ struct ProposeMsgWrapper {
 
 struct CompareProposeMsg {
     bool operator()(ProposeMsgWrapper* lhs, ProposeMsgWrapper* rhs) const {
-        auto& l_pro_msg = lhs->header.hotstuff().pro_msg();
-        auto& r_pro_msg = rhs->header.hotstuff().pro_msg();
-        return l_pro_msg.view_item().view() > r_pro_msg.view_item().view();
+        return lhs->v_block->view > rhs->v_block->view;
     }
 };
 

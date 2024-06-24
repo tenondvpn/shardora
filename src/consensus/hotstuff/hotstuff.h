@@ -70,10 +70,8 @@ public:
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
         pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1));
         pacemaker_->SetNewViewFn(std::bind(&Hotstuff::NewView, this, std::placeholders::_1));
-        pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));
+        pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));        
 
-        handle_propose_pipeline_.AddStepFn(std::bind(&Hotstuff::HandleProposeMsgStep_ParseMsg, this, std::placeholders::_1));
-        handle_propose_pipeline_.AddStepFn(std::bind(&Hotstuff::HandleProposeMsgStep_HasVoted, this, std::placeholders::_1));
         handle_propose_pipeline_.AddStepFn(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyLeader, this, std::placeholders::_1));
         handle_propose_pipeline_.AddStepFn(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyTC, this, std::placeholders::_1));
         handle_propose_pipeline_.AddStepFn(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyQC, this, std::placeholders::_1));
@@ -220,38 +218,6 @@ private:
     SyncPoolFn sync_pool_fn_ = nullptr;
     uint64_t timer_delay_us_ = common::TimeUtils::TimestampUs() + 10000000lu;
     Pipeline handle_propose_pipeline_{2};
-
-    Status HandleProposeMsgStep_ParseMsg(ProposeMsgWrapper& pro_msg_wrap) {
-        view_block::protobuf::ViewBlockItem pb_view_block = pro_msg_wrap.pro_msg.view_item();
-        auto v_block = std::make_shared<ViewBlock>();
-        Status s = Proto2ViewBlock(pb_view_block, v_block);
-        if (s != Status::kSuccess) {
-            ZJC_ERROR("pb_view_block to ViewBlock is error.");
-            return Status::kError;
-        }
-        
-        pro_msg_wrap.v_block = v_block;
-        
-        return Status::kSuccess;
-    }
-
-    Status HandleProposeMsgStep_HasVoted(ProposeMsgWrapper& pro_msg_wrap) {
-        auto& v_block = pro_msg_wrap.v_block;
-        
-        if (HasVoted(v_block->view)) {
-            ZJC_DEBUG("pool: %d has voted: %lu, last_vote_view_: %u, hash64: %lu",
-                pool_idx_, v_block->view, last_vote_view_, pro_msg_wrap.header.hash64());
-            return Status::kError;
-        }
-
-        ZJC_DEBUG("====1.0.1 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
-            pool_idx_,
-            pro_msg_wrap.pro_msg.view_item().view(),
-            common::Encode::HexEncode(pro_msg_wrap.pro_msg.view_item().hash()).c_str(),
-            pacemaker()->HighQC()->view,
-            pro_msg_wrap.header.hash64());        
-        return Status::kSuccess;
-    }
 
     Status HandleProposeMsgStep_VerifyLeader(ProposeMsgWrapper& pro_msg_wrap) {
         if (VerifyLeader(pro_msg_wrap.v_block->leader_idx) != Status::kSuccess) {
