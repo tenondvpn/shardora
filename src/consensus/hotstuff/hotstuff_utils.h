@@ -55,9 +55,6 @@ public:
     Pipeline& operator=(const Pipeline&) = delete;
 
     void AddStepFn(StepFn pipeline_fn, int max_try) {
-        if (max_try <= 0) {
-            max_try = 1;
-        }
         pipeline_fns_.push_back(pipeline_fn);
         pipeline_fn_max_trys_.push_back(max_try);
     }
@@ -87,6 +84,7 @@ public:
     }
 
     int CallWaitingProposeMsgs() {
+        ZJC_INFO("====8.1");
         int succ_num = 0;
         
         std::vector<std::shared_ptr<ProposeMsgWrapper>> ordered_msg;
@@ -96,13 +94,16 @@ public:
             
             ordered_msg.push_back(pro_msg_wrap);
         }
+        ZJC_INFO("====8.2");
 
         for (auto pro_msg_wrap : ordered_msg) {
+            ZJC_INFO("====8.3 i: %d", pro_msg_wrap->breakpoint);
             if (Call(pro_msg_wrap) == Status::kSuccess) {
                 succ_num++;
             }            
         }
 
+        ZJC_INFO("====8.4 i: %d", succ_num);
         return succ_num;
     }
 

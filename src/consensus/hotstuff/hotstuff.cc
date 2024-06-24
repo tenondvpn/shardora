@@ -40,7 +40,9 @@ void Hotstuff::Init() {
             common::Encode::HexEncode(pacemaker_->HighQC()->view_block_hash).c_str());
     } else {
         ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
-    }            
+    }
+
+    InitPipeline();
 }
 
 
