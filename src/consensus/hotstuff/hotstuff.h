@@ -94,11 +94,8 @@ public:
     Status TryCommit(const std::shared_ptr<QC> commit_qc);
     // 消费等待队列中的 ProposeMsg
     int TryWaitingProposeMsgs() {
-        ZJC_INFO("====8.0");
         int succ = handle_propose_pipeline_.CallWaitingProposeMsgs();
-        ZJC_INFO("====8.5");
-        ZJC_INFO("pool: %d, handle waiting propose, %d --- %d", pool_idx_, succ, handle_propose_pipeline_.Size());
-        ZJC_INFO("====8.6");
+        ZJC_DEBUG("pool: %d, handle waiting propose, %d/%d", pool_idx_, succ, handle_propose_pipeline_.Size());
         return succ;
     }
 

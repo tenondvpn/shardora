@@ -48,6 +48,8 @@ using StepFn = std::function<Status(std::shared_ptr<ProposeMsgWrapper>&)>;
 
 class Pipeline {
 public:
+    static const int MAX_MSG_NUM = 3;
+    
     Pipeline() {};
     ~Pipeline() {};
 
@@ -74,7 +76,7 @@ public:
                 if (pro_msg_wrap->tried_times < pipeline_fn_max_trys_[bp]) {
                     // 不知为何，protobuf 的 ProposeMsg 会被析构，这里将 pro_msg 的拷贝放入队列
                     pro_msg_wrap->pro_msg = std::make_shared<hotstuff::protobuf::ProposeMsg>(*pro_msg_wrap->pro_msg);
-                    min_heap_.push(pro_msg_wrap);
+                    PushMsg(pro_msg_wrap);
                 }
                 return Status::kError;
             }
@@ -84,7 +86,6 @@ public:
     }
 
     int CallWaitingProposeMsgs() {
-        ZJC_INFO("====8.1");
         int succ_num = 0;
         
         std::vector<std::shared_ptr<ProposeMsgWrapper>> ordered_msg;
@@ -94,21 +95,25 @@ public:
             
             ordered_msg.push_back(pro_msg_wrap);
         }
-        ZJC_INFO("====8.2");
 
         for (auto pro_msg_wrap : ordered_msg) {
-            ZJC_INFO("====8.3 i: %d", pro_msg_wrap->breakpoint);
             if (Call(pro_msg_wrap) == Status::kSuccess) {
                 succ_num++;
             }            
         }
-
-        ZJC_INFO("====8.4 i: %d", succ_num);
+        
         return succ_num;
     }
 
     int Size() {
         return min_heap_.size();
+    }
+
+    void PushMsg(std::shared_ptr<ProposeMsgWrapper> pro_msg_wrap) {
+        while (Size() >= MAX_MSG_NUM) {
+            min_heap_.pop();
+        }
+        min_heap_.push(pro_msg_wrap);
     }
     
 private:
