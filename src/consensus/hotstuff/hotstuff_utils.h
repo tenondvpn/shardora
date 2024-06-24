@@ -18,7 +18,6 @@ using Breakpoint = int;
 struct ProposeMsgWrapper {
     // Context
     const transport::protobuf::Header& header;
-    const hotstuff::protobuf::ProposeMsg& pro_msg;
     std::shared_ptr<ViewBlock> v_block;
     std::shared_ptr<TC> tc;
     
@@ -27,7 +26,7 @@ struct ProposeMsgWrapper {
 
 
     ProposeMsgWrapper(const transport::protobuf::Header& h) 
-        : header(h), pro_msg(h.hotstuff().pro_msg()), v_block(nullptr), tc(nullptr), breakpoint(0), tried_times(0) {}    
+        : header(h), v_block(nullptr), tc(nullptr), breakpoint(0), tried_times(0) {}    
 };
 
 struct CompareProposeMsg {
@@ -56,7 +55,7 @@ public:
         pipeline_fns_.push_back(pipeline_fn);
     }
 
-    Status Call(std::shared_ptr<ProposeMsgWrapper> pro_msg_wrap) {
+    Status Call(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
         pro_msg_wrap->tried_times++;
         
         for (Breakpoint bp = pro_msg_wrap->breakpoint; bp < pipeline_fns_.size(); bp++) {
@@ -85,7 +84,7 @@ public:
             ordered_msg.push_back(pro_msg_wrap);
         }
 
-        for (auto& pro_msg_wrap : ordered_msg) {
+        for (auto pro_msg_wrap : ordered_msg) {
             if (Call(pro_msg_wrap) == Status::kSuccess) {
                 succ_num++;
             }            

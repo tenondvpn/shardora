@@ -178,7 +178,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
 
     auto pro_msg_wrap = std::make_shared<ProposeMsgWrapper>(header);
 
-    view_block::protobuf::ViewBlockItem pb_view_block = pro_msg_wrap->pro_msg.view_item();
+    view_block::protobuf::ViewBlockItem pb_view_block = pro_msg_wrap->header.hotstuff().pro_msg().view_item();
     auto v_block = std::make_shared<ViewBlock>();
     Status s = Proto2ViewBlock(pb_view_block, v_block);
     if (s != Status::kSuccess) {
@@ -193,13 +193,6 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
             pool_idx_, v_block->view, last_vote_view_, pro_msg_wrap->header.hash64());
         return;
     }
-
-    ZJC_DEBUG("====1.0.1 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
-        pool_idx_,
-        pro_msg_wrap->pro_msg.view_item().view(),
-        common::Encode::HexEncode(pro_msg_wrap->pro_msg.view_item().hash()).c_str(),
-        pacemaker()->HighQC()->view,
-        pro_msg_wrap->header.hash64());
     
     handle_propose_pipeline_.Call(pro_msg_wrap);
     

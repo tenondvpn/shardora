@@ -239,9 +239,10 @@ private:
     Status HandleProposeMsgStep_VerifyTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
         // 3 Verify TC
         std::shared_ptr<TC> tc = nullptr;
-        if (!pro_msg_wrap->pro_msg.tc_str().empty()) {
+        auto pro_msg = pro_msg_wrap->header.hotstuff().pro_msg();
+        if (!pro_msg.tc_str().empty()) {
             tc = std::make_shared<TC>();
-            if (!tc->Unserialize(pro_msg_wrap->pro_msg.tc_str())) {
+            if (!tc->Unserialize(pro_msg.tc_str())) {
                 ZJC_ERROR("tc Unserialize is error.");
                 return Status::kError;
             }
@@ -264,12 +265,13 @@ private:
     }
 
     Status HandleProposeMsgStep_VerifyViewBlockAndCommit(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
-        // 4 Verify ViewBlock    
+        // 4 Verify ViewBlock
+        auto pro_msg = pro_msg_wrap->header.hotstuff().pro_msg();
         if (VerifyViewBlock(
                     pro_msg_wrap->v_block,
                     view_block_chain(),
                     pro_msg_wrap->tc,
-                    pro_msg_wrap->pro_msg.elect_height()) != Status::kSuccess) {
+                    pro_msg.elect_height()) != Status::kSuccess) {
             ZJC_ERROR("pool: %d, Verify ViewBlock is error. hash: %s, hash64: %lu", pool_idx_,
                 common::Encode::HexEncode(pro_msg_wrap->v_block->hash).c_str(),
                 pro_msg_wrap->header.hash64());
@@ -278,8 +280,8 @@ private:
     
         ZJC_DEBUG("====1.1 pool: %d, verify view block success, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
             pool_idx_,
-            pro_msg_wrap->pro_msg.view_item().view(),
-            common::Encode::HexEncode(pro_msg_wrap->pro_msg.view_item().hash()).c_str(),
+            pro_msg.view_item().view(),
+            common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
             pacemaker()->HighQC()->view,
             pro_msg_wrap->header.hash64());
         // 切换视图
@@ -292,19 +294,20 @@ private:
 
     Status HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
         // Verify ViewBlock.block and tx_propose, 验证tx_propose，填充Block tx相关字段
+        auto pro_msg = pro_msg_wrap->header.hotstuff().pro_msg();
         auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
         auto block = pro_msg_wrap->v_block->block;
         block_info->block = block;
-        block_info->tx_type = pro_msg_wrap->pro_msg.tx_propose().tx_type();
-        for (const auto& tx : pro_msg_wrap->pro_msg.tx_propose().txs()) {
+        block_info->tx_type = pro_msg.tx_propose().tx_type();
+        for (const auto& tx : pro_msg.tx_propose().txs()) {
             if (!view_block_chain_->CheckTxGidValid(tx.gid(), pro_msg_wrap->v_block->parent_hash)) {
                 // assert(false);
                 ZJC_DEBUG("====1.1.1 check gid failed: %s pool: %d, verify view block success, "
                     "view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
                     common::Encode::HexEncode(tx.gid()).c_str(),
                     pool_idx_,
-                    pro_msg_wrap->pro_msg.view_item().view(),
-                    common::Encode::HexEncode(pro_msg_wrap->pro_msg.view_item().hash()).c_str(),
+                    pro_msg.view_item().view(),
+                    common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
                     pacemaker()->HighQC()->view,
                     pro_msg_wrap->header.hash64());
                 return Status::kError;
@@ -319,8 +322,8 @@ private:
             ZJC_DEBUG("====1.1.2 Accept pool: %d, verify view block success, "
                 "view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
                 pool_idx_,
-                pro_msg_wrap->pro_msg.view_item().view(),
-                common::Encode::HexEncode(pro_msg_wrap->pro_msg.view_item().hash()).c_str(),
+                pro_msg.view_item().view(),
+                common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
                 pacemaker()->HighQC()->view,
                 pro_msg_wrap->header.hash64());
             return Status::kError;
@@ -364,13 +367,13 @@ private:
             pro_msg_wrap->v_block->view,
             pro_msg_wrap->v_block->block->tx_list_size(),
             pro_msg_wrap->header.hash64());
-    
+        
         auto trans_msg = std::make_shared<transport::TransportMessage>();
         auto& trans_header = trans_msg->header;
         auto* hotstuff_msg = trans_header.mutable_hotstuff();
         auto* vote_msg = hotstuff_msg->mutable_vote_msg();
         // Construct VoteMsg
-        Status s = ConstructVoteMsg(vote_msg, pro_msg_wrap->pro_msg.elect_height(), pro_msg_wrap->v_block);
+        Status s = ConstructVoteMsg(vote_msg, pro_msg_wrap->header.hotstuff().pro_msg().elect_height(), pro_msg_wrap->v_block);
         if (s != Status::kSuccess) {
             ZJC_ERROR("pool: %d, ConstructVoteMsg error %d, hash64: %lu", pool_idx_, s, pro_msg_wrap->header.hash64());
             return Status::kError;
