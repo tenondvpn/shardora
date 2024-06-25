@@ -212,7 +212,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWra
         if (sync_pool_fn_) { // leader 不一致触发同步
             sync_pool_fn_(pool_idx_, 1);
         }
-        ZJC_WARN("verify leader failed, pool: %d view: %lu, hash64: %lu", 
+        ZJC_ERROR("verify leader failed, pool: %d view: %lu, hash64: %lu", 
             pool_idx_, pro_msg_wrap->v_block->view, pro_msg_wrap->header.hash64());
 
         return Status::kError;
@@ -329,10 +329,14 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
 
 Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
     // 6 add view block
-    if (view_block_chain()->Store(pro_msg_wrap->v_block) != Status::kSuccess) {
+    Status s = view_block_chain()->Store(pro_msg_wrap->v_block);
+    if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, add view block error. hash: %s",
             pool_idx_, common::Encode::HexEncode(pro_msg_wrap->v_block->hash).c_str());
         // 父块不存在，则加入等待队列，后续处理
+        if (s == Status::kLackOfParentBlock && sync_pool_fn_) { // 父块缺失触发同步
+            sync_pool_fn_(pool_idx_, 1);
+        }        
         return Status::kError;
     }
     // 成功接入链中，标记交易占用
@@ -340,7 +344,8 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
     return Status::kSuccess;
 }
 
-Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) { 
+Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
+    // NOTICE: pipeline 重试时，protobuf 结构体被析构，因此 pro_msg_wrap->header.hash64() 是 0
     ZJC_INFO("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, vblock: %lu, txs: %lu, hash64: %lu",
         pool_idx_,
         pacemaker()->HighQC()->view,
@@ -882,7 +887,7 @@ Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
     if (leader_idx != leader->index) {
         auto eleader = leader_rotation()->GetExpectedLeader();
         if (!eleader || leader_idx != eleader->index) {
-            ZJC_WARN("pool: %d, leader_idx message is error, %d, %d", pool_idx_, leader_idx, leader->index);
+            ZJC_ERROR("pool: %d, leader_idx message is error, %d, %d", pool_idx_, leader_idx, leader->index);
             // assert(false);
             return Status::kError;
         }
