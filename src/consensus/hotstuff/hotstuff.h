@@ -220,13 +220,14 @@ private:
         // 因此，要在同步完成之后，给新提案重新 VerifyLeader 和 ChainStore 的机会 
         handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_HasVote, this, std::placeholders::_1));
         handle_propose_pipeline_.AddRetryStep(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyLeader, this, std::placeholders::_1), 1);
-        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyTC, this, std::placeholders::_1));        
+        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyTC, this, std::placeholders::_1));                        
         handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyQC, this, std::placeholders::_1));
         handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyViewBlock, this, std::placeholders::_1));
         handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_TxAccept, this, std::placeholders::_1));
-        handle_propose_pipeline_.AddRetryStep(std::bind(&Hotstuff::HandleProposeMsgStep_ChainStore, this, std::placeholders::_1), 1);
+        handle_propose_pipeline_.AddRetryStep(std::bind(&Hotstuff::HandleProposeMsgStep_ChainStore, this, std::placeholders::_1), 2);
         handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_Vote, this, std::placeholders::_1));
         handle_propose_pipeline_.SetCondition(std::bind(&Hotstuff::HandleProposeMsgCondition, this, std::placeholders::_1));
+        handle_propose_pipeline_.UseRetry(true); // 开启断点重试
     }
 
     Status HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
