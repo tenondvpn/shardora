@@ -215,6 +215,7 @@ enum class Status : int {
   kWrapperTxsEmpty = 10,
   kBlsHandled = 11,
   kTxRepeated = 12,
+  kLackOfParentBlock = 13,
 };
 
 enum WaitingBlockType {

@@ -329,10 +329,14 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
 
 Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
     // 6 add view block
-    if (view_block_chain()->Store(pro_msg_wrap->v_block) != Status::kSuccess) {
+    Status s = view_block_chain()->Store(pro_msg_wrap->v_block);
+    if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, add view block error. hash: %s",
             pool_idx_, common::Encode::HexEncode(pro_msg_wrap->v_block->hash).c_str());
         // 父块不存在，则加入等待队列，后续处理
+        if (s == Status::kLackOfParentBlock && sync_pool_fn_) { // 父块缺失触发同步
+            sync_pool_fn_(pool_idx_, 1);
+        }        
         return Status::kError;
     }
     // 成功接入链中，标记交易占用

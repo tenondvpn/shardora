@@ -64,7 +64,7 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     if (it == view_blocks_info_.end() || it->second->view_block == nullptr) {
         ZJC_ERROR("lack of parent view block, hash: %s, cur view: %lu",
             common::Encode::HexEncode(view_block->hash).c_str(), view_block->view);        
-        return Status::kError;
+        return Status::kLackOfParentBlock;
     }
 
     // 如果有 qc，则 qc 指向的块必须存在
