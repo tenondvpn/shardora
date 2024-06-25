@@ -49,7 +49,7 @@ using ConditionFn = std::function<bool(std::shared_ptr<ProposeMsgWrapper>&)>;
 
 class Pipeline {
 public:
-    static const int MAX_MSG_NUM = 16;
+    static const int MAX_MSG_NUM = 3;
     
     Pipeline() {};
     ~Pipeline() {};
