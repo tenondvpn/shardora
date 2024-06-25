@@ -49,7 +49,7 @@ using ConditionFn = std::function<bool(std::shared_ptr<ProposeMsgWrapper>&)>;
 
 class Pipeline {
 public:
-    static const int MAX_MSG_NUM = 3;
+    static const int MAX_MSG_NUM = 5;
     
     Pipeline() {};
     ~Pipeline() {};
@@ -104,7 +104,7 @@ public:
         for (auto pro_msg_wrap : ordered_msg) {
             if (condition_fn_ && !condition_fn_(pro_msg_wrap)) {
                 continue;
-            }            
+            }
             if (Call(pro_msg_wrap) == Status::kSuccess) {
                 succ_num++;
             }            
