@@ -882,7 +882,7 @@ Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
     if (leader_idx != leader->index) {
         auto eleader = leader_rotation()->GetExpectedLeader();
         if (!eleader || leader_idx != eleader->index) {
-            ZJC_WARN("pool: %d, leader_idx message is error, %d, %d", pool_idx_, leader_idx, leader->index);
+            ZJC_ERROR("pool: %d, leader_idx message is error, %d, %d", pool_idx_, leader_idx, leader->index);
             // assert(false);
             return Status::kError;
         }
