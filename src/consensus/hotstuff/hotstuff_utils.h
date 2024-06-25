@@ -71,10 +71,6 @@ public:
     }
 
     Status Call(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
-        if (condition_fn_ && !condition_fn_(pro_msg_wrap)) {
-            return Status::kError;
-        }
-        
         pro_msg_wrap->tried_times++;
         
         for (Breakpoint bp = pro_msg_wrap->breakpoint; bp < pipeline_fns_.size(); bp++) {
@@ -106,6 +102,9 @@ public:
         }
 
         for (auto pro_msg_wrap : ordered_msg) {
+            if (condition_fn_ && !condition_fn_(pro_msg_wrap)) {
+                continue;
+            }            
             if (Call(pro_msg_wrap) == Status::kSuccess) {
                 succ_num++;
             }            
