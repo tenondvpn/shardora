@@ -244,7 +244,13 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
         ZJC_ERROR("pool: %d verify qc failed: %lu", pool_idx_, pro_msg_wrap->v_block->view);
         return Status::kError;
     }
-    
+
+    // 切换视图
+    pacemaker()->AdvanceView(new_sync_info()->WithQC(pro_msg_wrap->v_block->qc));
+
+    // Commit 一定要在 Txs Accept 之前，因为一旦 v_block->qc 合法就已经可以 Commit 了，不需要 Txs 合法
+    // Commit 不能在 VerifyViewBlock 之后
+    TryCommit(pro_msg_wrap->v_block->qc);    
     return Status::kSuccess;
 }
 
@@ -266,12 +272,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyViewBlock(std::shared_ptr<ProposeMsg
         pro_msg_wrap->pro_msg->view_item().view(),
         common::Encode::HexEncode(pro_msg_wrap->pro_msg->view_item().hash()).c_str(),
         pacemaker()->HighQC()->view,
-        pro_msg_wrap->header.hash64());
-    // 切换视图
-    pacemaker()->AdvanceView(new_sync_info()->WithQC(pro_msg_wrap->v_block->qc));
-
-    // Commit 一定要在 Txs Accept 之前，因为一旦 v_block->qc 合法就已经可以 Commit 了，不需要 Txs 合法
-    TryCommit(pro_msg_wrap->v_block->qc);        
+        pro_msg_wrap->header.hash64());        
     return Status::kSuccess;
 }
 
