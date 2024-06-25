@@ -853,8 +853,7 @@ Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
             return Status::kError;
         }
 
-        ZJC_DEBUG("use expected leader index: %u, %u, eleader: %u",
-            leader_idx, leader->index, eleader->index);
+        ZJC_DEBUG("use expected leader index: %u, %u", leader_idx, leader->index);
     }
     return Status::kSuccess;
 }

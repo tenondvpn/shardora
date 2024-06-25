@@ -386,6 +386,9 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
         view_block_res->set_high_qc_str(pacemaker(pool_idx)->HighQC()->Serialize());
     }
 
+    // TODO LatestCommittedblock 如果限于 Propose 消息使得 Leader 变更，则会导致 replica VerifyLeader 失败，从而无法继续参与共识
+    // 理论上只需要同步 Chain 改变 Leader 即可，但由于用了 ExpectedLeader，其实可以解决这个问题，因此这里先加上
+    // 另外由于单线程，当 Propose 设置了 LatestCommittedBlock 之后肯定会继续更改 Chain，所以应该不存在只同步 LatestCommitBlock 而不同步新 Chain 的情况，因此实测下来加上更稳定
     if (shouldSyncLatestCommittedBlock) {
         auto latest_committed_qc = view_block_chain(pool_idx)->GetCommitQcFromDb(latest_committed_block);
         if (latest_committed_qc) {
