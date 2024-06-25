@@ -42,7 +42,7 @@ void Hotstuff::Init() {
         ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
     }
 
-    InitPipeline();
+    InitHandleProposeMsgPipeline();
 }
 
 
@@ -186,7 +186,11 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         return;
     }
     pro_msg_wrap->v_block = v_block;
-    
+
+    // 执行预设好的 steps
+    // 一般来说，一旦某个节点状态落后，而新提案由于还没有生成 QC 无法通过同步获得，
+    // 因此它将再也无法参与投票（由于父块缺失，chain->Store 会失败），直到一次超时发生
+    // 为了避免这种情况，pipeline 会自动将失败的提案消息放入等待队列，在父块同步过来后立刻执行之前失败的提案，追上进度
     handle_propose_pipeline_.Call(pro_msg_wrap);
 }
 
@@ -326,7 +330,7 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
     if (view_block_chain()->Store(pro_msg_wrap->v_block) != Status::kSuccess) {
         ZJC_ERROR("pool: %d, add view block error. hash: %s",
             pool_idx_, common::Encode::HexEncode(pro_msg_wrap->v_block->hash).c_str());
-        // TODO 父块不存在，则加入等待队列，后续处理
+        // 父块不存在，则加入等待队列，后续处理
         return Status::kError;
     }
     // 成功接入链中，标记交易占用

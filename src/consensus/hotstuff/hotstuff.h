@@ -213,8 +213,11 @@ private:
     uint64_t timer_delay_us_ = common::TimeUtils::TimestampUs() + 10000000lu;
     Pipeline handle_propose_pipeline_;
 
-    void InitPipeline() {
+    void InitHandleProposeMsgPipeline() {
         // 仅 VerifyLeader 和 ChainStore 出错后允许重试
+        // 因为一旦节点状态落后，父块缺失，ChainStore 会一直失败，导致无法追上进度
+        // 而对于 Leader，理论上是可以通过 QC 同步追上进度的，但 Propose&Vote 要比同步 QC 快很多，因此也会一直失败
+        // 因此，要在同步完成之后，给新提案重新 VerifyLeader 和 ChainStore 的机会 
         handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_HasVote, this, std::placeholders::_1));
         handle_propose_pipeline_.AddRetryStep(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyLeader, this, std::placeholders::_1), 1);
         handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyTC, this, std::placeholders::_1));
