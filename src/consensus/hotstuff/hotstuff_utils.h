@@ -44,7 +44,8 @@ using ProposeMsgMinHeap =
                         std::vector<std::shared_ptr<ProposeMsgWrapper>>,
                         CompareProposeMsg>;
 
-using StepFn = std::function<Status(std::shared_ptr<ProposeMsgWrapper>&)>;
+using StepFn = std::function<Status(std::shared_ptr<ProposeMsgWrapper> &)>;
+using ConditionFn = std::function<bool(std::shared_ptr<ProposeMsgWrapper>&)>;
 
 class Pipeline {
 public:
@@ -63,9 +64,17 @@ public:
 
     void AddStep(StepFn pipeline_fn) {
         AddRetryStep(pipeline_fn, 0);
-    }    
+    }
+
+    void SetCondition(ConditionFn condition_fn) {
+        condition_fn_ = condition_fn;
+    }
 
     Status Call(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
+        if (condition_fn_ && !condition_fn_(pro_msg_wrap)) {
+            return Status::kError;
+        }
+        
         pro_msg_wrap->tried_times++;
         
         for (Breakpoint bp = pro_msg_wrap->breakpoint; bp < pipeline_fns_.size(); bp++) {
@@ -118,6 +127,7 @@ public:
     
 private:
     std::vector<StepFn> pipeline_fns_;
+    ConditionFn condition_fn_;
     std::vector<int> pipeline_fn_max_trys_;
     ProposeMsgMinHeap min_heap_;
 };

@@ -177,9 +177,7 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         ZJC_DEBUG("pool: %d handle propose duration: %lu ms", pool_idx_, e-b);
     });
 
-
     auto pro_msg_wrap = std::make_shared<ProposeMsgWrapper>(header);
-
     view_block::protobuf::ViewBlockItem pb_view_block = pro_msg_wrap->header.hotstuff().pro_msg().view_item();
     auto v_block = std::make_shared<ViewBlock>();
     Status s = Proto2ViewBlock(pb_view_block, v_block);
@@ -187,193 +185,18 @@ void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
         ZJC_ERROR("pb_view_block to ViewBlock is error.");
         return;
     }
-        
     pro_msg_wrap->v_block = v_block;
-        
-    if (HasVoted(pro_msg_wrap->v_block->view)) {
-        ZJC_DEBUG("pool: %d has voted: %lu, last_vote_view_: %u, hash64: %lu",
-            pool_idx_, v_block->view, last_vote_view_, pro_msg_wrap->header.hash64());
-        return;
-    }
     
     handle_propose_pipeline_.Call(pro_msg_wrap);
-    
-    // auto& pro_msg = header.hotstuff().pro_msg();
+}
 
-    // // 1 校验pb view block格式
-    // view_block::protobuf::ViewBlockItem pb_view_block = pro_msg.view_item();
-    // auto v_block = std::make_shared<ViewBlock>();
-    // Status s = Proto2ViewBlock(pb_view_block, v_block);
-    // if (s != Status::kSuccess) {
-    //     ZJC_ERROR("pb_view_block to ViewBlock is error.");
-    //     return;
-    // }
-
-    // // view 必须最新
-    // // TODO 超时情况可能相同，严格限制并不影响共识，但会减少共识参与节点数
-    // if (HasVoted(v_block->view)) {
-    //     ZJC_DEBUG("pool: %d has voted: %lu, last_vote_view_: %u, hash64: %lu",
-    //         pool_idx_, v_block->view, last_vote_view_, header.hash64());
-    //     return;
-    // }
-    
-    // // 2 Veriyfy Leader
-    // // NewView 和 HighQC 的同步时不能尝试 Commit，否则会影响 leader 验证
-    // ZJC_DEBUG("====1.0.1 pool: %d, onPropose, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
-    //     pool_idx_,
-    //     pro_msg.view_item().view(),
-    //     common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
-    //     pacemaker()->HighQC()->view,
-    //     header.hash64());
-    // if (VerifyLeader(v_block->leader_idx) != Status::kSuccess) {
-    //     // TODO 一旦某个节点状态滞后，那么 Leader 就与其他 replica 不同，导致无法处理新提案
-    //     // 只能依赖同步，但由于同步慢于新的 Propose 消息
-    //     // 即是这里再加一次同步，也很难追上 Propose 的速度，导致该节点掉队，因此还是需要一个队列缓存一下
-    //     // 暂时无法处理的 Propose 消息
-    //     if (sync_pool_fn_) { // leader 不一致触发同步
-    //         sync_pool_fn_(pool_idx_, 1);
-    //     }
-    //     ZJC_WARN("verify leader failed, pool: %d view: %lu, hash64: %lu", 
-    //         pool_idx_, v_block->view, header.hash64());
-
-    //     return;
-    // }    
-
-    // // 3 Verify TC
-    // std::shared_ptr<TC> tc = nullptr;
-    // if (!pro_msg.tc_str().empty()) {
-    //     tc = std::make_shared<TC>();
-    //     if (!tc->Unserialize(pro_msg.tc_str())) {
-    //         ZJC_ERROR("tc Unserialize is error.");
-    //         return;
-    //     }
-    //     if (VerifyTC(tc) != Status::kSuccess) {
-    //         ZJC_ERROR("pool: %d verify tc failed: %lu", pool_idx_, v_block->view);
-    //         return;
-    //     }
-    // }
-
-    // if (VerifyQC(v_block->qc) != Status::kSuccess) {
-    //     ZJC_ERROR("pool: %d verify qc failed: %lu", pool_idx_, v_block->view);
-    //     return;
-    // }
-    
-    // // 4 Verify ViewBlock    
-    // if (VerifyViewBlock(
-    //         v_block,
-    //         view_block_chain(),
-    //         tc,
-    //         pro_msg.elect_height()) != Status::kSuccess) {
-    //     ZJC_ERROR("pool: %d, Verify ViewBlock is error. hash: %s, hash64: %lu", pool_idx_,
-    //         common::Encode::HexEncode(v_block->hash).c_str(),
-    //         header.hash64());
-    //     return;
-    // }    
-    
-    // ZJC_DEBUG("====1.1 pool: %d, verify view block success, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
-    //     pool_idx_,
-    //     pro_msg.view_item().view(),
-    //     common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
-    //     pacemaker()->HighQC()->view,
-    //     header.hash64());
-    // // 切换视图
-    // pacemaker()->AdvanceView(new_sync_info()->WithQC(v_block->qc));
-
-    // // Commit 一定要在 Txs Accept 之前，因为一旦 v_block->qc 合法就已经可以 Commit 了，不需要 Txs 合法
-    // TryCommit(v_block->qc);
-        
-    // // Verify ViewBlock.block and tx_propose, 验证tx_propose，填充Block tx相关字段
-    // auto block_info = std::make_shared<IBlockAcceptor::blockInfo>();
-    // auto block = v_block->block;
-    // block_info->block = block;
-    // block_info->tx_type = pro_msg.tx_propose().tx_type();
-    // for (const auto& tx : pro_msg.tx_propose().txs()) {
-    //     if (!view_block_chain_->CheckTxGidValid(tx.gid(), v_block->parent_hash)) {
-    //         // assert(false);
-    //         ZJC_DEBUG("====1.1.1 check gid failed: %s pool: %d, verify view block success, "
-    //             "view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
-    //             common::Encode::HexEncode(tx.gid()).c_str(),
-    //             pool_idx_,
-    //             pro_msg.view_item().view(),
-    //             common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
-    //             pacemaker()->HighQC()->view,
-    //             header.hash64());
-    //         return;
-    //     }
-
-    //     block_info->txs.push_back(&tx);
-    //     v_block->added_txs.insert(tx.gid());
-    // }
-
-    // block_info->view = v_block->view;
-    // if (acceptor()->Accept(block_info, true) != Status::kSuccess) {
-    //     ZJC_DEBUG("====1.1.2 Accept pool: %d, verify view block success, "
-    //         "view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
-    //         pool_idx_,
-    //         pro_msg.view_item().view(),
-    //         common::Encode::HexEncode(pro_msg.view_item().hash()).c_str(),
-    //         pacemaker()->HighQC()->view,
-    //         header.hash64());
-    //     return;
-    // }
-
-    // // 更新 leader 共识分数
-    // if (WITH_CONSENSUS_STATISTIC) {
-    //     auto elect_item = elect_info()->GetElectItem(
-    //             v_block->block->network_id(),
-    //             v_block->ElectHeight());
-    //     if (elect_item && elect_item->IsValid()) {
-    //         elect_item->consensus_stat(pool_idx_)->Accept(v_block, GetPendingSuccNumOfLeader(v_block));
-    //     }        
-    // }
-    
-    // // 更新哈希值
-    // v_block->UpdateHash();
-    // // 6 add view block
-    // if (view_block_chain()->Store(v_block) != Status::kSuccess) {
-    //     ZJC_ERROR("pool: %d, add view block error. hash: %s",
-    //         pool_idx_, common::Encode::HexEncode(v_block->hash).c_str());
-    //     // TODO 父块不存在，则加入等待队列，后续处理
-    //     return;
-    // }
-    // // 成功接入链中，标记交易占用
-    // acceptor()->MarkBlockTxsAsUsed(v_block->block);
-        
-    // ZJC_INFO("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, vblock: %lu, txs: %lu, hash64: %lu",
-    //     pool_idx_,
-    //     pacemaker()->HighQC()->view,
-    //     pacemaker()->HighTC()->view,
-    //     view_block_chain()->Size(),
-    //     pacemaker()->CurView(),
-    //     v_block->view,
-    //     v_block->block->tx_list_size(),
-    //     header.hash64());
-    
-    // auto trans_msg = std::make_shared<transport::TransportMessage>();
-    // auto& trans_header = trans_msg->header;
-    // auto* hotstuff_msg = trans_header.mutable_hotstuff();
-    // auto* vote_msg = hotstuff_msg->mutable_vote_msg();
-    // // Construct VoteMsg
-    // s = ConstructVoteMsg(vote_msg, pro_msg.elect_height(), v_block);
-    // if (s != Status::kSuccess) {
-    //     ZJC_ERROR("pool: %d, ConstructVoteMsg error %d, hash64: %lu", pool_idx_, s, header.hash64());
-    //     return;
-    // }
-    // // Construct HotstuffMessage and send
-    // s = ConstructHotstuffMsg(VOTE, nullptr, vote_msg, nullptr, hotstuff_msg);
-    // if (s != Status::kSuccess) {
-    //     ZJC_ERROR("pool: %d, ConstructHotstuffMsg error %d, hash64: %lu", pool_idx_, s, header.hash64());
-    //     return;
-    // }
-    
-    // if (SendMsgToLeader(trans_msg, VOTE) != Status::kSuccess) {
-    //     ZJC_ERROR("pool: %d, Send vote message is error.", pool_idx_, header.hash64());
-    // }
-
-    // // 避免对 view 重复投票
-    // StopVoting(v_block->view);
-
-    // ZJC_DEBUG("pool: %d, Send vote message is success., hash64: %lu", pool_idx_, header.hash64());
+Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
+    if (HasVoted(pro_msg_wrap->v_block->view)) {
+        ZJC_DEBUG("pool: %d has voted: %lu, last_vote_view_: %u, hash64: %lu",
+            pool_idx_, pro_msg_wrap->v_block->view, last_vote_view_, pro_msg_wrap->header.hash64());
+        return Status::kError;
+    }
+    return Status::kSuccess;
 }
 
 Status Hotstuff::HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
@@ -498,7 +321,7 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
     return Status::kSuccess;
 }
 
-Status HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
+Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
     // 6 add view block
     if (view_block_chain()->Store(pro_msg_wrap->v_block) != Status::kSuccess) {
         ZJC_ERROR("pool: %d, add view block error. hash: %s",
@@ -511,7 +334,7 @@ Status HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapper>& pro_m
     return Status::kSuccess;
 }
 
-Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
+Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) { 
     ZJC_INFO("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, vblock: %lu, txs: %lu, hash64: %lu",
         pool_idx_,
         pacemaker()->HighQC()->view,
