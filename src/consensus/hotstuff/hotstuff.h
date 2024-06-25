@@ -239,7 +239,7 @@ private:
     Status HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
     bool HandleProposeMsgCondition(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
         // 仅新 v_block 才能允许执行
-        return pro_msg_wrap->v_block->view > view_block_chain()->GetMaxHeight();
+        return pro_msg_wrap->v_block->view >= view_block_chain()->GetMaxHeight();
     }
 
     Status Commit(
