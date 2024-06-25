@@ -1849,8 +1849,8 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
     }
 
     std::shared_ptr<BlockTxsItem> shard_statistic_tx = nullptr;
-    auto iter = statistic_map_ptr->rbegin();
-    for (; iter != statistic_map_ptr->rend(); ++iter) {
+    auto iter = statistic_map_ptr->begin();
+    for (; iter != statistic_map_ptr->end(); ++iter) {
         if (leader) {
             shard_statistic_tx = iter->second;
             break;
