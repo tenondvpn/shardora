@@ -49,7 +49,7 @@ using ConditionFn = std::function<bool(std::shared_ptr<ProposeMsgWrapper>&)>;
 
 class Pipeline {
 public:
-    static const int MAX_MSG_NUM = 3;
+    static const int MAX_MSG_NUM = 5;
     
     Pipeline() {};
     ~Pipeline() {};
@@ -71,9 +71,6 @@ public:
     }
 
     Status Call(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
-        if (condition_fn_ && !condition_fn_(pro_msg_wrap)) {
-            return Status::kSuccess;
-        }
         pro_msg_wrap->tried_times++;
         
         for (Breakpoint bp = pro_msg_wrap->breakpoint; bp < pipeline_fns_.size(); bp++) {
@@ -104,7 +101,10 @@ public:
             ordered_msg.push_back(pro_msg_wrap);
         }
 
-        for (auto pro_msg_wrap : ordered_msg) {            
+        for (auto pro_msg_wrap : ordered_msg) {
+            if (condition_fn_ && !condition_fn_(pro_msg_wrap)) {
+                continue;
+            }
             if (Call(pro_msg_wrap) == Status::kSuccess) {
                 succ_num++;
             }            
