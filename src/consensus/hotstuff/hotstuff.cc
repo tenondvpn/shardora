@@ -212,7 +212,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWra
         if (sync_pool_fn_) { // leader 不一致触发同步
             sync_pool_fn_(pool_idx_, 1);
         }
-        ZJC_WARN("verify leader failed, pool: %d view: %lu, hash64: %lu", 
+        ZJC_ERROR("verify leader failed, pool: %d view: %lu, hash64: %lu", 
             pool_idx_, pro_msg_wrap->v_block->view, pro_msg_wrap->header.hash64());
 
         return Status::kError;
