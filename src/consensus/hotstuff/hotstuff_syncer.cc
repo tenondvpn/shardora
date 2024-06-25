@@ -86,6 +86,9 @@ void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
 // 批量异步处理，提高 tps
 void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
+    if (!running_) {
+        return;
+    }
     // TODO 仅共识池节点参与 view_block_chain 的同步
     SyncAllPools();
     ConsumeMessages();
@@ -528,7 +531,13 @@ Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
     
     processResponseQcTc(pool_idx, view_block_msg.view_block_res());
     processResponseLatestCommittedBlock(pool_idx, view_block_msg.view_block_res());
-    return processResponseChain(pool_idx, view_block_msg.view_block_res());
+    Status s = processResponseChain(pool_idx, view_block_msg.view_block_res());
+    if (s != Status::kSuccess) {
+        return s;
+    }
+    // 同步之后尝试消费之前消费失败的 Block
+    hotstuff_mgr_->hotstuff(pool_idx)->TryWaitingProposeMsgs();
+    return Status::kSuccess;
 }
 
 Status HotstuffSyncer::processResponseQcTc(

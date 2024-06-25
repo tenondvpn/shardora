@@ -1,69 +1,119 @@
 nodes:
-- http_port: 8201
+- http_port: 22001
   name: r1
   net: 2
   server: 127.0.0.1
   tcp_port: 12001
-- http_port: 8202
+- http_port: 22002
   name: r2
   net: 2
   server: 127.0.0.1
   tcp_port: 12002
-- http_port: 8203
+- http_port: 22003
   name: r3
   net: 2
   server: 127.0.0.1
   tcp_port: 12003
-- http_port: 8301
+- http_port: 23001
   name: s3_1
   net: 3
   server: 127.0.0.1
   tcp_port: 13001
-- http_port: 8302
+- http_port: 23002
   name: s3_2
   net: 3
   server: 127.0.0.1
   tcp_port: 13002
-- http_port: 8303
+- http_port: 23003
   name: s3_3
   net: 3
   server: 127.0.0.1
   tcp_port: 13003
-- http_port: 8304
+- http_port: 23004
   name: s3_4
   net: 3
   server: 127.0.0.1
   tcp_port: 13004
-- http_port: 8305
+- http_port: 23005
   name: s3_5
   net: 3
   server: 127.0.0.1
   tcp_port: 13005
-- http_port: 8306
+- http_port: 23006
   name: s3_6
   net: 3
   server: 127.0.0.1
   tcp_port: 13006
-- http_port: 8307
+- http_port: 23007
   name: s3_7
   net: 3
   server: 127.0.0.1
   tcp_port: 13007
-- http_port: 8308
+- http_port: 23008
   name: s3_8
   net: 3
   server: 127.0.0.1
   tcp_port: 13008
-- http_port: 8309
+- http_port: 23009
   name: s3_9
   net: 3
   server: 127.0.0.1
   tcp_port: 13009
-- http_port: 8310
+- http_port: 23010
   name: s3_10
   net: 3
   server: 127.0.0.1
   tcp_port: 13010
+- http_port: 23011
+  name: s3_11
+  net: 3
+  server: 127.0.0.1
+  tcp_port: 13011
+- http_port: 23012
+  name: s3_12
+  net: 3
+  server: 127.0.0.1
+  tcp_port: 13012
+- http_port: 23013
+  name: s3_13
+  net: 3
+  server: 127.0.0.1
+  tcp_port: 13013
+- http_port: 23014
+  name: s3_14
+  net: 3
+  server: 127.0.0.1
+  tcp_port: 13014
+- http_port: 23015
+  name: s3_15
+  net: 3
+  server: 127.0.0.1
+  tcp_port: 13015
+- http_port: 23016
+  name: s3_16
+  net: 3
+  server: 127.0.0.1
+  tcp_port: 13016
+- http_port: 23017
+  name: s3_17
+  net: 3
+  server: 127.0.0.1
+  tcp_port: 13017
+- http_port: 23018
+  name: s3_18
+  net: 3
+  server: 127.0.0.1
+  tcp_port: 13018
+- http_port: 23019
+  name: s3_19
+  net: 3
+  server: 127.0.0.1
+  tcp_port: 13019
+- http_port: 23020
+  name: s3_20
+  net: 3
+  server: 127.0.0.1
+  tcp_port: 13020
 account_sks:
   3:
     - b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708
