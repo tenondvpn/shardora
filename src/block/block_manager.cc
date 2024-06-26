@@ -548,10 +548,10 @@ void BlockManager::HandleStatisticTx(
 
             auto iter = shard_statistics_map_.find(elect_statistic.height_info().tm_height());
             if (iter != shard_statistics_map_.end()) {
-                auto tmp_ptr = std::make_shared<StatisticMap>(shard_statistics_map_);
-                shard_statistics_map_ptr_queue_.push(tmp_ptr);
                 ZJC_DEBUG("success remove shard statistic block tm height: %lu", iter->first);
                 shard_statistics_map_.erase(iter);
+                auto tmp_ptr = std::make_shared<StatisticMap>(shard_statistics_map_);
+                shard_statistics_map_ptr_queue_.push(tmp_ptr);
             }
 
             break;
