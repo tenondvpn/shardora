@@ -1563,8 +1563,8 @@ void BlockManager::PopTxTicker() {
     while (shard_statistics_map_ptr_queue_.pop(&static_tmp_map)) {}
     if (static_tmp_map != nullptr) {
         for (auto iter = static_tmp_map->begin(); iter != static_tmp_map->end(); ++iter) {
-            ZJC_DEBUG("now pop statistic tx tx hash: %s",
-                common::Encode::HexEncode(iter->second->tx_ptr->tx_info.gid()).c_str());
+            ZJC_DEBUG("now pop statistic tx tx hash: %s, tm height: %lu",
+                common::Encode::HexEncode(iter->second->tx_ptr->tx_info.gid()).c_str(), iter->first);
         }
 
         got_latest_statistic_map_ptr_ = static_tmp_map;
@@ -1607,7 +1607,7 @@ bool BlockManager::HasStatisticTx(uint32_t pool_index) {
         return false;
     }
 
-    auto iter = statistic_map_ptr->rbegin();
+    auto iter = statistic_map_ptr->begin();
     auto shard_statistic_tx = iter->second;
     if (shard_statistic_tx == nullptr) {
         ZJC_DEBUG("shard_statistic_tx == nullptr");
