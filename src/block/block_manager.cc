@@ -1010,7 +1010,7 @@ void BlockManager::AddNewBlock(
             HandleStatisticTx(*block_item, tx_list[i], db_batch);
             break;
         case pools::protobuf::kCross:
-            HandleCrossTx(*block_item, tx_list[i], db_batch);
+            assert(false);
             break;
         case pools::protobuf::kConsensusRootElectShard:
             HandleElectTx(*block_item, tx_list[i], db_batch);
