@@ -340,8 +340,6 @@ void HotstuffManager::RegisterCreateTxCallbacks() {
         std::bind(&HotstuffManager::CreateStatisticTx, this, std::placeholders::_1));
     block_mgr_->SetCreateElectTxFunction(
         std::bind(&HotstuffManager::CreateElectTx, this, std::placeholders::_1));
-    block_mgr_->SetCreateCrossTxFunction(
-        std::bind(&HotstuffManager::CreateCrossTx, this, std::placeholders::_1));
     tm_block_mgr_->SetCreateTmTxFunction(
         std::bind(&HotstuffManager::CreateTimeblockTx, this, std::placeholders::_1));
 }
