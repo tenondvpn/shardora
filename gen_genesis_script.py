@@ -456,8 +456,9 @@ done
             dbname = get_dbname_by_shard(s)
             code_str += f"""
 for n in {nodes_name_str}; do
-    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/\${{n}}/db
+    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/\${{n}}/db &
 done
+wait
 """
 
         code_str += f"""
@@ -479,8 +480,9 @@ EOF
         dbname = get_dbname_by_shard(s)
         code_str += f"""
 for n in {nodes_name_str}; do
-    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/${{n}}/db
+    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/${{n}}/db &
 done
+wait
 """    
         
     code_str += """) &\n"""
@@ -528,6 +530,7 @@ sleep 3
         
             server_pass = server_conf['passwords'].get(server_ip, '')
             code_str += f"""
+(
 echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh -f -o StrictHostKeyChecking=no root@${server_name} bash -c "'\\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \\
@@ -535,8 +538,10 @@ for node in {server_nodes_str}; do \\
     cd {datadir}/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node {tag}> /dev/null 2>&1 &\\
 done \\
 '"
+) &
+"""
 
-    """      
+    code_str += "wait\n"
             
     server0_nodes.remove('r1')
     server_nodes_str = ' '.join(server0_nodes)
