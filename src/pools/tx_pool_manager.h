@@ -303,7 +303,7 @@ private:
     uint32_t now_max_sharding_id_ = network::kConsensusShardBeginNetworkId;
     uint32_t prev_cross_sync_index_ = 0;
     std::shared_ptr<CrossBlockManager> cross_block_mgr_ = nullptr;
-    common::Tick tick_;
+    common::Tick tools_tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_[common::kMaxThreadCount];
     std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>> invalid_pools_;
     uint64_t prev_elect_height_ = common::kInvalidUint64;

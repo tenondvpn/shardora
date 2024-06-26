@@ -37,7 +37,7 @@ void KeyValueSync::Init(
     network::Route::Instance()->RegisterMessage(
         common::kSyncMessage,
         std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
-    tick_.CutOff(
+    kv_tick_.CutOff(
         100000lu,
         std::bind(&KeyValueSync::ConsensusTimerMessage, this));
 }
@@ -54,7 +54,7 @@ void KeyValueSync::Init(
     network::Route::Instance()->RegisterMessage(
         common::kSyncMessage,
         std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
-    tick_.CutOff(
+    kv_tick_.CutOff(
         100000lu,
         std::bind(&KeyValueSync::ConsensusTimerMessage, this));
 }
@@ -108,7 +108,7 @@ void KeyValueSync::ConsensusTimerMessage() {
 #ifndef ENABLE_HOTSTUFF
     CheckNotCheckedBlocks();
 #endif
-    tick_.CutOff(
+    kv_tick_.CutOff(
         100000lu,
         std::bind(&KeyValueSync::ConsensusTimerMessage, this));
 }

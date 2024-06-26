@@ -126,7 +126,7 @@ protected:
     std::unordered_map<uint64_t, uint64_t> connect_timeout_map_;
     bool is_universal_ = false;
     uint32_t valid_count_ = 0;
-    common::Tick tick_;
+    common::Tick dht_tick_;
     std::unordered_map<std::string, std::vector<NodePtr>> waiting_refresh_nodes_map_;
 
     DISALLOW_COPY_AND_ASSIGN(BaseDht);

@@ -82,16 +82,11 @@ public:
         create_elect_tx_cb_ = func;
     }
 
-    void SetCreateCrossTxFunction(pools::CreateConsensusItemFunction func) {
-        cross_tx_cb_ = func;
-    }
-
     void CreateToTx();
     void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members);
     pools::TxItemPtr GetToTx(uint32_t pool_index, const std::string& tx_hash);
     pools::TxItemPtr GetStatisticTx(uint32_t pool_index, const std::string& tx_hash);
     pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);
-    pools::TxItemPtr GetCrossTx(uint32_t pool_index, const std::string& tx_hash);
     void LoadLatestBlocks();
     // just genesis call
     void GenesisAddAllAccount(
@@ -112,7 +107,6 @@ private:
     bool HasToTx(uint32_t pool_index);
     bool HasStatisticTx(uint32_t pool_index);
     bool HasElectTx(uint32_t pool_index);
-    bool HasCrossTx(uint32_t pool_index);
     void HandleAllNewBlock();
     bool UpdateBlockItemToCache(
         std::shared_ptr<block::protobuf::Block>& block,
@@ -129,10 +123,6 @@ private:
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleStatisticTx(
-        const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch);
-    void HandleCrossTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
@@ -162,11 +152,6 @@ private:
         pools::protobuf::ToTxMessage& to_txs,
         db::DbWriteBatch& db_batch);
     void HandleStatisticBlock(
-        const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        const pools::protobuf::ElectStatistic& elect_statistic,
-        db::DbWriteBatch& db_batch);
-    void RootCreateCrossTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         const pools::protobuf::ElectStatistic& elect_statistic,
@@ -204,7 +189,6 @@ private:
     pools::CreateConsensusItemFunction create_to_tx_cb_ = nullptr;
     pools::CreateConsensusItemFunction create_statistic_tx_cb_ = nullptr;
     pools::CreateConsensusItemFunction create_elect_tx_cb_ = nullptr;
-    pools::CreateConsensusItemFunction cross_tx_cb_ = nullptr;
     uint32_t prev_pool_index_ = network::kRootCongressNetworkId;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
     uint64_t prev_to_txs_tm_us_ = 0;
@@ -227,11 +211,8 @@ private:
     int32_t leader_create_to_heights_index_ = 0;
     int32_t leader_create_statistic_heights_index_ = 0;
     StatisticMap shard_statistics_map_;
-    StatisticMap cross_statistics_map_;
     common::ThreadSafeQueue<std::shared_ptr<StatisticMap>> shard_statistics_map_ptr_queue_;
     std::shared_ptr<StatisticMap> got_latest_statistic_map_ptr_ = nullptr;
-    common::ThreadSafeQueue<std::shared_ptr<StatisticMap>> cross_statistics_map_ptr_queue_;
-    std::shared_ptr<StatisticMap> got_latest_cross_map_ptr_ = nullptr;
     common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> block_from_network_queue_[common::kMaxThreadCount];
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> to_tx_msg_queue_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> statistic_tx_msg_queue_;

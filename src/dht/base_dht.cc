@@ -1000,7 +1000,7 @@ void BaseDht::PrintDht() {
         ZJC_DEBUG("dht info sharding_id: %u, %s", local_node()->sharding_id, res.c_str());
     }
    
-    tick_.CutOff(10000000lu, std::bind(&BaseDht::PrintDht, this));
+    dht_tick_.CutOff(10000000lu, std::bind(&BaseDht::PrintDht, this));
 }
 
 }  // namespace dht
