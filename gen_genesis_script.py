@@ -322,6 +322,22 @@ echo "==== STEP1: START DEPLOY ===="
 
     code_str += f"target=$1\nno_build=$2\n"
 
+    code_str += f"""
+echo "==== STEP0: KILL OLDS ===="
+ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+"""
+
+    for server_name, server_ip in server_name_map.items():
+        if server_name == 'server0':
+            continue
+        server_pass = server_conf['passwords'].get(server_ip, '')
+        code_str += f"""
+echo "[${server_name}]"
+sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<"EOF"
+ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+EOF
+"""
+
     server0_node_names_str = ' '.join(server_node_map[server0])
     server0_pass = server_conf['passwords'].get(server0, '')
     code_str += f"""
@@ -470,13 +486,13 @@ done
     code_str += """) &\n"""
 
     code_str += "wait\n"
-        
+
     code_str += f"""
 echo "==== STEP1: DONE ===="
 
 echo "==== STEP2: CLEAR OLDS ===="
 
-ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+# ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
 """
 
     for server_name, server_ip in server_name_map.items():
@@ -485,11 +501,11 @@ ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
         server_pass = server_conf['passwords'].get(server_ip, '')
         code_str += f"""
 echo "[${server_name}]"
-sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<"EOF"
-ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
-EOF
+# sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<"EOF"
+# ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+# EOF
 """
-        
+      
     code_str += """
 echo "==== STEP2: DONE ===="
 
