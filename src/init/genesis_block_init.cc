@@ -99,6 +99,9 @@ int GenesisBlockInit::CreateGenesisBlocks(
         }
 
         ComputeG2sForNodes(prikeys);
+#ifdef ENABLE_SMALL_GENESIS
+        ClearG2s(prikeys);
+#endif
     } else { // 构建某 shard 创世网络
         // TODO 这种写法是每个 shard 单独的 shell 命令，不适用，需要改
         for (uint32_t i = 0; i < real_cons_genesis_nodes_of_shards.size(); i++) {
@@ -124,8 +127,11 @@ int GenesisBlockInit::CreateGenesisBlocks(
             }
 
             ComputeG2sForNodes(prikeys);
+#ifdef ENABLE_SMALL_GENESIS            
+            ClearG2s(prikeys);
+#endif
         }
-    }
+    }    
     
     return res;
 }
@@ -328,6 +334,21 @@ bool CheckRecomputeG2s(
     }
 
     return true;
+}
+
+void GenesisBlockInit::ClearG2s(const std::vector<std::string>& prikeys) {
+    uint32_t valid_n = prikeys.size();
+    uint32_t valid_t = common::GetSignerCount(valid_n);    
+    for (const auto& prikey : prikeys) {
+        std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
+        secptr->SetPrivateKey(prikey);
+
+        for (uint32_t mem_idx = 0; mem_idx < valid_n; mem_idx++) {
+            for (uint32_t i = 0; i < valid_t; i++) {
+                prefix_db_->DeleteVerifiedG2s(mem_idx, secptr->GetAddress(), i + 1);
+            }
+        }
+    }
 }
 
 bool GenesisBlockInit::CreateNodePrivateInfo(

@@ -1379,6 +1379,19 @@ public:
         }
     }
 
+    void DeleteVerifiedG2s(
+            uint32_t local_member_idx,
+            const std::string& id,
+            uint32_t valid_t) {
+        std::string key;
+        key.reserve(128);
+        key.append(kLocalVerifiedG2Prefix);
+        key.append((char*)&local_member_idx, sizeof(local_member_idx));
+        key.append((char*)&valid_t, sizeof(valid_t));
+        key.append(id);
+        db_->Delete(key);
+    }
+
     bool GetVerifiedG2s(
             uint32_t local_member_idx,
             const std::string& id,

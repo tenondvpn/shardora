@@ -160,7 +160,9 @@ private:
         hotstuff::Proto2ViewBlock(*pb_v_block, view_block);
         commit_qc->Unserialize(pb_v_block->self_commit_qc_str());
         return true;
-    }    
+    }
+
+    void ClearG2s(const std::vector<std::string>& prikeys);
 
     std::map<uint32_t, std::map<uint32_t, std::string>> net_pool_index_map_; // net => (pool => addr)
     std::map<uint32_t, std::string> root_account_with_pool_index_map_;
