@@ -980,14 +980,12 @@ void BlockManager::AddNewBlock(
     to_txs_pool_->NewBlock(block_item, db_batch);
 
     // 当前节点和 block 分配的 shard 不同，要跨分片交易
-    if (block_item->pool_index() == common::kRootChainPoolIndex) {
-        if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
-                block_item->network_id() + network::kConsensusWaitingShardOffset !=
-                common::GlobalInfo::Instance()->network_id()) {
-            pools_mgr_->OnNewCrossBlock(block_item);
-            ZJC_DEBUG("new cross block coming: %u, %u, %lu",
-                block_item->network_id(), block_item->pool_index(), block_item->height());
-        }
+    if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
+            block_item->network_id() + network::kConsensusWaitingShardOffset !=
+            common::GlobalInfo::Instance()->network_id()) {
+        pools_mgr_->OnNewCrossBlock(block_item);
+        ZJC_DEBUG("new cross block coming: %u, %u, %lu",
+            block_item->network_id(), block_item->pool_index(), block_item->height());
     }
 
     const auto& tx_list = block_item->tx_list();
