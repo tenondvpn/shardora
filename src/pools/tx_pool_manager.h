@@ -95,11 +95,14 @@ public:
             const std::shared_ptr<block::protobuf::Block>& block_item) {
         ZJC_DEBUG("new cross block coming net: %u, pool: %u, height: %lu",
             block_item->network_id(), block_item->pool_index(), block_item->height());
-        if (block_item->pool_index() != common::kRootChainPoolIndex) {
+        if (block_item->network_id() == network::kRootCongressNetworkId) {
+            root_cross_pools_[block_item->pool_index()].UpdateLatestInfo(block_item->height());
+            ZJC_DEBUG("root cross succcess update cross block latest info net: %u, pool: %u, height: %lu",
+                block_item->network_id(), block_item->pool_index(), block_item->height());
             return;
         }
 
-        if (block_item->network_id() == network::kRootCongressNetworkId) {
+        if (block_item->pool_index() != common::kRootChainPoolIndex) {
             return;
         }
 
