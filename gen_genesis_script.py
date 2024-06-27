@@ -204,9 +204,9 @@ then
 elif test $NO_BUILD = "noblock"
 then
 	sh build.sh a $TARGET
-	sudo mv -f {datadir}/zjnodes/zjchain /tmp/
+	sudo mv -f {datadir}/zjnodes/zjchain /mnt/
 else
-	sudo mv -f {datadir}/zjnodes/zjchain /tmp/
+	sudo mv -f {datadir}/zjnodes/zjchain /mnt/
 fi
 
 sudo rm -rf {datadir}/zjnodes
@@ -218,7 +218,7 @@ rm -rf {datadir}/zjnodes/*/zjchain {datadir}/zjnodes/*/core* {datadir}/zjnodes/*
 if [ $NO_BUILD = "nobuild" -o $NO_BUILD = "noblock" ]
 then
 	sudo rm -rf {datadir}/zjnodes/zjchain
-	sudo mv -f /tmp/zjchain {datadir}/zjnodes/
+	sudo mv -f /mnt/zjchain {datadir}/zjnodes/
 fi
 """
 
