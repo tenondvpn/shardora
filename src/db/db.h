@@ -46,7 +46,7 @@ namespace db {
 
 class DbWriteBatch {
 public:
-    DbWriteBatch();
+    DbWriteBatch() {}
     DbWriteBatch(const DbWriteBatch&) = default;
     DbWriteBatch& operator =(const DbWriteBatch&) = default;
     ~DbWriteBatch() {

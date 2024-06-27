@@ -55,10 +55,6 @@ public:
     const std::string& GetTxValidAddress(const block::protobuf::BlockTx& tx_info);
 
 private:
-    void SetPool(
-        uint32_t pool_index,
-        const std::shared_ptr<block::protobuf::Block>& block_item,
-        db::DbWriteBatch& db_batch);
     void SendRefreshHeightsRequest();
     void SendRefreshHeightsResponse(const transport::protobuf::Header& header);
     void HandleNormalFromTx(
