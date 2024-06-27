@@ -31,7 +31,7 @@ done
 (
 
 for n in r1 r2 r3; do
-    cp -rf /mnt/zjnodes/zjchain/mnt_db /mnt/zjnodes/${n}/db
+    cp -rf /mnt/zjnodes/zjchain/root_db /mnt/zjnodes/${n}/db
 done
 
 for n in s3_1 s3_2 s3_3 s3_4 s3_5 s3_6 s3_7 s3_8 s3_9 s3_10; do
