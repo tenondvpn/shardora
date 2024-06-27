@@ -149,6 +149,7 @@ void HotstuffSyncer::SyncAllPools() {
 
 // No use, about to deprecate
 void HotstuffSyncer::SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash) {
+    assert(false);
     auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
     auto req = vb_msg.mutable_single_req();
     req->set_pool_idx(pool_idx);
@@ -185,6 +186,7 @@ void HotstuffSyncer::HandleSyncedBlocks() {
 }
 
 Status HotstuffSyncer::Broadcast(const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {
+    assert(false);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
