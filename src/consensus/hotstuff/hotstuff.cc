@@ -474,7 +474,8 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
             &block)) {
         ZJC_INFO("failed get block with height net: %u, pool: %u, height: %lu",
             network::kRootCongressNetworkId, common::GlobalInfo::Instance()->network_id(), elect_height);
-        assert(false);
+        // assert(false);
+        // return;
     }
 
     assert(block.tx_list_size() > 0);
