@@ -50,7 +50,7 @@ public:
     DbWriteBatch(const DbWriteBatch&) = default;
     DbWriteBatch& operator =(const DbWriteBatch&) = default;
     ~DbWriteBatch() {
-
+        Clear();
     }
 
     void Put(const std::string& key, const std::string& value) {
