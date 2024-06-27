@@ -67,6 +67,7 @@ public:
         leader_rotation_(lr),
         elect_info_(elect_info),
         db_(db) {
+        prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
         pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1));
         pacemaker_->SetNewViewFn(std::bind(&Hotstuff::NewView, this, std::placeholders::_1));
         pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));        
@@ -204,6 +205,7 @@ private:
     std::shared_ptr<LeaderRotation> leader_rotation_;
     std::shared_ptr<ElectInfo> elect_info_;
     std::shared_ptr<db::Db> db_ = nullptr;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     View last_vote_view_;
     common::FlowControl recover_from_struct_fc_{1};
     common::FlowControl reset_timer_fc_{1};
