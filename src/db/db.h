@@ -54,9 +54,7 @@ public:
     }
 
     void Put(const std::string& key, const std::string& value) {
-        if (data_map_.find(key) != data_map_.end()) {
-            assert(false);
-        } else {
+        if (data_map_.find(key) == data_map_.end()) {
             data_map_[key] = value;
         }
 
