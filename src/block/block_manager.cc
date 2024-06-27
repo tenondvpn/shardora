@@ -1567,7 +1567,9 @@ void BlockManager::PopTxTicker() {
                 common::Encode::HexEncode(iter->second->tx_ptr->tx_info.gid()).c_str(), iter->first);
         }
 
-        got_latest_statistic_map_ptr_ = static_tmp_map;
+        auto valid_got_latest_statistic_map_ptr_index_tmp = (valid_got_latest_statistic_map_ptr_index_ + 1) % 2;
+        got_latest_statistic_map_ptr_[valid_got_latest_statistic_map_ptr_index_tmp] = static_tmp_map;
+        valid_got_latest_statistic_map_ptr_index_ = valid_got_latest_statistic_map_ptr_index_tmp;
     }
 
     pop_tx_tick_.CutOff(50000lu, std::bind(&BlockManager::PopTxTicker, this));
@@ -1598,7 +1600,7 @@ bool BlockManager::HasStatisticTx(uint32_t pool_index) {
         return false;
     }
 
-    auto statistic_map_ptr = got_latest_statistic_map_ptr_;
+    auto statistic_map_ptr = got_latest_statistic_map_ptr_[valid_got_latest_statistic_map_ptr_index_];
     if (statistic_map_ptr == nullptr) {
         return false;
     }
@@ -1658,7 +1660,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         std::this_thread::sleep_for(std::chrono::microseconds(50000ull));
     }
 
-    auto statistic_map_ptr = got_latest_statistic_map_ptr_;
+    auto statistic_map_ptr = got_latest_statistic_map_ptr_[valid_got_latest_statistic_map_ptr_index_];
     if (statistic_map_ptr == nullptr) {
         ZJC_DEBUG("statistic_map_ptr == nullptr");
         return nullptr;
