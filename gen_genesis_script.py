@@ -322,6 +322,22 @@ echo "==== STEP1: START DEPLOY ===="
 
     code_str += f"target=$1\nno_build=$2\n"
 
+    code_str += f"""
+echo "==== STEP0: KILL OLDS ===="
+ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+"""
+
+    for server_name, server_ip in server_name_map.items():
+        if server_name == 'server0':
+            continue
+        server_pass = server_conf['passwords'].get(server_ip, '')
+        code_str += f"""
+echo "[${server_name}]"
+sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<"EOF"
+ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+EOF
+"""
+
     server0_node_names_str = ' '.join(server_node_map[server0])
     server0_pass = server_conf['passwords'].get(server0, '')
     code_str += f"""
@@ -440,8 +456,9 @@ done
             dbname = get_dbname_by_shard(s)
             code_str += f"""
 for n in {nodes_name_str}; do
-    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/\${{n}}/db
+    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/\${{n}}/db &
 done
+wait
 """
 
         code_str += f"""
@@ -463,20 +480,21 @@ EOF
         dbname = get_dbname_by_shard(s)
         code_str += f"""
 for n in {nodes_name_str}; do
-    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/${{n}}/db
+    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/${{n}}/db &
 done
+wait
 """    
         
     code_str += """) &\n"""
 
     code_str += "wait\n"
-        
+
     code_str += f"""
 echo "==== STEP1: DONE ===="
 
 echo "==== STEP2: CLEAR OLDS ===="
 
-ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+# ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
 """
 
     for server_name, server_ip in server_name_map.items():
@@ -485,11 +503,11 @@ ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
         server_pass = server_conf['passwords'].get(server_ip, '')
         code_str += f"""
 echo "[${server_name}]"
-sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<"EOF"
-ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
-EOF
+# sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<"EOF"
+# ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+# EOF
 """
-        
+      
     code_str += """
 echo "==== STEP2: DONE ===="
 
@@ -512,6 +530,7 @@ sleep 3
         
             server_pass = server_conf['passwords'].get(server_ip, '')
             code_str += f"""
+(
 echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh -f -o StrictHostKeyChecking=no root@${server_name} bash -c "'\\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \\
@@ -519,8 +538,10 @@ for node in {server_nodes_str}; do \\
     cd {datadir}/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node {tag}> /dev/null 2>&1 &\\
 done \\
 '"
+) &
+"""
 
-    """      
+    code_str += "wait\n"
             
     server0_nodes.remove('r1')
     server_nodes_str = ' '.join(server0_nodes)

@@ -49,7 +49,7 @@ using ConditionFn = std::function<bool(std::shared_ptr<ProposeMsgWrapper>&)>;
 
 class Pipeline {
 public:
-    static const int MAX_MSG_NUM = 5;
+    static const int MAX_MSG_NUM = 2;
     
     Pipeline() {};
     ~Pipeline() {};
@@ -70,6 +70,10 @@ public:
         condition_fn_ = condition_fn;
     }
 
+    void UseRetry(bool on) {
+        with_retry_ = on;
+    }
+
     Status Call(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
         pro_msg_wrap->tried_times++;
         
@@ -78,7 +82,7 @@ public:
             Status s = fn(pro_msg_wrap);
             if (s != Status::kSuccess) {
                 pro_msg_wrap->breakpoint = bp; // 记录失败断点
-                if (pro_msg_wrap->tried_times < pipeline_fn_max_trys_[bp]) {
+                if (with_retry_ && pro_msg_wrap->tried_times < pipeline_fn_max_trys_[bp]) {
                     // 不知为何，protobuf 的 ProposeMsg 会被析构，这里将 pro_msg 的拷贝放入队列
                     pro_msg_wrap->pro_msg = std::make_shared<hotstuff::protobuf::ProposeMsg>(*pro_msg_wrap->pro_msg);
                     PushMsg(pro_msg_wrap);
@@ -129,6 +133,7 @@ private:
     ConditionFn condition_fn_;
     std::vector<int> pipeline_fn_max_trys_;
     ProposeMsgMinHeap min_heap_;
+    bool with_retry_ = false;
 };
 
 } // namespace consensus
