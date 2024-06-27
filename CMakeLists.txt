@@ -105,6 +105,7 @@ add_definitions(
 	-DLATENCY
 	#-DHOTSTUFF_TEST
 	-DENABLE_HOTSTUFF
+	-DENABLE_SMALL_GENESIS
 )
 
 add_compile_options(-fPIC)
