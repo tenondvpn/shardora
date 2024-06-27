@@ -694,7 +694,7 @@ int GenesisBlockInit::CreateElectBlock(
         return kInitError;
     }
 
-    StoreViewBlockWithCommitQC(view_block, commit_qc, &db_batch);
+    StoreViewBlockWithCommitQC(view_block, commit_qc);
 
     root_pre_hash = consensus::GetBlockHash(*tenon_block);
     root_pre_vb_hash = view_block->hash;
@@ -772,7 +772,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         uint64_t tm_height;
         uint64_t tm_with_block_height;
 
-        StoreViewBlockWithCommitQC(view_block, commit_qc, &db_batch);
+        StoreViewBlockWithCommitQC(view_block, commit_qc);
 
         root_pre_hash = consensus::GetBlockHash(*tenon_block);
         root_pre_vb_hash = view_block->hash;
@@ -859,7 +859,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         uint64_t tm_height;
         uint64_t tm_with_block_height;
 
-        StoreViewBlockWithCommitQC(view_block, commit_qc, &db_batch);
+        StoreViewBlockWithCommitQC(view_block, commit_qc);
 
         root_pre_hash = consensus::GetBlockHash(*tenon_block);
         root_pre_vb_hash = view_block->hash;
@@ -947,7 +947,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
                 }
             }
         }
-        StoreViewBlockWithCommitQC(view_block, commit_qc, &db_batch);
+        StoreViewBlockWithCommitQC(view_block, commit_qc);
     }
     fclose(root_gens_init_block_file);
     // flush 磁盘
@@ -1201,7 +1201,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         all_balance += account_ptr->balance();        
 
         // 保存 ViewBlock
-        StoreViewBlockWithCommitQC(view_block, commit_qc, &db_batch);
+        StoreViewBlockWithCommitQC(view_block, commit_qc);
     }
 
     // 选举 root leader，选举 shard leader
@@ -1639,7 +1639,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         all_balance += account_ptr->balance();
         init_heights.set_heights(pool_index, tenon_block->height());
 
-        StoreViewBlockWithCommitQC(view_block, commit_qc, &db_batch);
+        StoreViewBlockWithCommitQC(view_block, commit_qc);
     }
 
     if (all_balance != expect_all_balance) {
@@ -1811,7 +1811,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         // }
         
         init_heights.add_heights(0);
-        StoreViewBlockWithCommitQC(view_block, commit_qc, &db_batch);
+        StoreViewBlockWithCommitQC(view_block, commit_qc);
     }
 
     if (all_balance != common::kGenesisFoundationMaxZjc) {

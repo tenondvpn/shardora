@@ -165,7 +165,8 @@ public:
 
     Status StoreToDb(
             const std::shared_ptr<ViewBlock>& v_block,
-            const std::shared_ptr<QC>& commit_qc) {        
+            const std::shared_ptr<QC>& commit_qc,
+            uint64_t test_index) {        
         // 持久化已经生成 qc 的 ViewBlock
         if (v_block == nullptr) {
             return Status::kInvalidArgument;
@@ -174,12 +175,14 @@ public:
             return Status::kInvalidArgument;
         }
 
+        ZJC_DEBUG("pool: %u, StoreToDb 0, test_index: %lu", pool_index_, test_index);
         if (HasInDb(v_block->block->network_id(),
                 v_block->block->pool_index(),
                 v_block->block->height())) {
             return Status::kSuccess;
         }        
         
+        ZJC_DEBUG("pool: %u, StoreToDb 1, test_index: %lu", pool_index_, test_index);
         auto pb_v_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
         ViewBlock2Proto(v_block, pb_v_block.get());
         // 不存储 block 部分，block 已经单独存过了
@@ -187,14 +190,12 @@ public:
         // 保存 v_block 对应的 qc 到 db
         pb_v_block->set_self_commit_qc_str(commit_qc->Serialize());
 
-        auto db_batch = std::make_shared<db::DbWriteBatch>();
+        ZJC_DEBUG("pool: %u, StoreToDb 2, test_index: %lu", pool_index_, test_index);
         prefix_db_->SaveViewBlockInfo(v_block->block->network_id(),
             v_block->block->pool_index(),
             v_block->block->height(),
-            *pb_v_block,
-            *db_batch);
-        auto st = db_->Put(*db_batch);
-        assert(st.ok());
+            *pb_v_block);
+        ZJC_DEBUG("pool: %u, StoreToDb 3, test_index: %lu", pool_index_, test_index);
         return Status::kSuccess;
     }
 

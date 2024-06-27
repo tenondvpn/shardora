@@ -89,7 +89,7 @@ private:
 
     inline void StartTimeoutTimer() {
         last_time_us_ = common::TimeUtils::TimestampUs();
-        duration_us_ = duration_->Duration();
+        duration_us_ = duration_->Duration() + 10000000lu;
         ZJC_INFO("pool: %d duration is %lu ms", pool_idx_, duration_us_/1000);
     }
 

@@ -17,15 +17,15 @@ public:
         const transport::MessagePtr& message);
 
 private:
-    std::shared_ptr<common::BloomFilter> GetBloomfilter(
+    std::shared_ptr<std::unordered_set<uint64_t>> GetBloomfilter(
         const transport::protobuf::Header& message);
     std::vector<dht::NodePtr> GetlayerNodes(
         dht::BaseDhtPtr& dht_ptr,
-        std::shared_ptr<common::BloomFilter>& bloomfilter,
+        std::shared_ptr<std::unordered_set<uint64_t>>& bloomfilter,
         const transport::protobuf::Header& message);
     std::vector<dht::NodePtr> GetRandomFilterNodes(
         dht::BaseDhtPtr& dht_ptr,
-        std::shared_ptr<common::BloomFilter>& bloomfilter,
+        std::shared_ptr<std::unordered_set<uint64_t>>& bloomfilter,
         const transport::protobuf::Header& message);
     uint32_t BinarySearch(const dht::Dht& dht, uint64_t val);
     void LayerSend(

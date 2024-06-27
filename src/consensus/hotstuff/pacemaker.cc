@@ -180,11 +180,12 @@ void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& 
         msg.set_des_dht_key(dht_key.StrKey());
         transport::TcpTransport::Instance()->SetMessageHash(msg);
         ZJC_DEBUG("Send TimeoutMsg pool: %d, to ip: %s, port: %d, "
-            "local_idx: %d, id: %s, local id: %s, hash64: %lu, view: %lu, highqc: %lu",
+            "local_idx: %d, leader idx: %d, id: %s, local id: %s, hash64: %lu, view: %lu, highqc: %lu",
             pool_idx_,
             common::Uint32ToIp(leader->public_ip).c_str(),
             leader->public_port,
             msg.hotstuff_timeout_proto().member_id(),
+            leader->index,
             common::Encode::HexEncode(leader->id).c_str(),
             common::Encode::HexEncode(crypto_->security()->GetAddress()).c_str(),
             msg.hash64(),

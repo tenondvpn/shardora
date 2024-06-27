@@ -67,7 +67,6 @@ public:
         leader_rotation_(lr),
         elect_info_(elect_info),
         db_(db) {
-        prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
         pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1));
         pacemaker_->SetNewViewFn(std::bind(&Hotstuff::NewView, this, std::placeholders::_1));
         pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));        
@@ -91,7 +90,7 @@ public:
     void NewView(const std::shared_ptr<SyncInfo>& sync_info);
     Status Propose(const std::shared_ptr<SyncInfo>& sync_info);
     Status ResetReplicaTimers();
-    Status TryCommit(const std::shared_ptr<QC> commit_qc);
+    Status TryCommit(const std::shared_ptr<QC> commit_qc, uint64_t t_idx = 9999999lu);
     // 消费等待队列中的 ProposeMsg
     int TryWaitingProposeMsgs() {
         int succ = handle_propose_pipeline_.CallWaitingProposeMsgs();
@@ -125,7 +124,7 @@ public:
             view_block_chain()->SetLatestCommittedBlock(vblock);        
         }
         
-        view_block_chain()->StoreToDb(vblock, self_commit_qc);
+        view_block_chain()->StoreToDb(vblock, self_commit_qc, 9999999999999lu);
     }
 
     // 已经投票
@@ -205,7 +204,6 @@ private:
     std::shared_ptr<LeaderRotation> leader_rotation_;
     std::shared_ptr<ElectInfo> elect_info_;
     std::shared_ptr<db::Db> db_ = nullptr;
-    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     View last_vote_view_;
     common::FlowControl recover_from_struct_fc_{1};
     common::FlowControl reset_timer_fc_{1};
@@ -245,9 +243,10 @@ private:
 
     Status Commit(
             const std::shared_ptr<ViewBlock>& v_block,
-            const std::shared_ptr<QC> commit_qc);
+            const std::shared_ptr<QC> commit_qc,
+            uint64_t test_index);
     std::shared_ptr<ViewBlock> CheckCommit(const std::shared_ptr<QC>& qc);    
-    Status CommitInner(const std::shared_ptr<ViewBlock>& v_block);
+    Status CommitInner(const std::shared_ptr<ViewBlock>& v_block, uint64_t test_index);
     Status VerifyVoteMsg(
             const hotstuff::protobuf::VoteMsg& vote_msg);
     Status VerifyLeader(const uint32_t& leader_idx);

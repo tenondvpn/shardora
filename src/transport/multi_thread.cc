@@ -85,13 +85,14 @@ void ThreadHandler::HandleMessage() {
                 //     (etime - btime), 
                 //     t.c_str());
 
-                ZJC_INFO("1 over handle message: %d, step: %d, times_idx: %d, thread: %d use: %lu us, all: %s",
+                ZJC_INFO("1 over handle message: %d, step: %d, times_idx: %d, thread: %d use: %lu us, all: %s, hash64: %lu",
                     msg_ptr->header.type(), 
                     msg_ptr->header.hotstuff().type(), 
                     msg_ptr->times_idx, 
                     thread_idx, 
                     (etime - btime), 
-                    t.c_str());                
+                    t.c_str(),
+                    msg_ptr->header.hash64());                
             }
             // ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
         }

@@ -250,7 +250,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
 
     // Commit 一定要在 Txs Accept 之前，因为一旦 v_block->qc 合法就已经可以 Commit 了，不需要 Txs 合法
     // Commit 不能在 VerifyViewBlock 之后
-    TryCommit(pro_msg_wrap->v_block->qc);    
+    TryCommit(pro_msg_wrap->v_block->qc, 99999999lu);    
     return Status::kSuccess;
 }
 
@@ -329,6 +329,10 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
 
 Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
     // 6 add view block
+    ZJC_DEBUG("success store v block pool: %u, hash: %s, prehash: %s",
+        pool_idx_,
+        common::Encode::HexEncode(pro_msg_wrap->v_block->hash).c_str(),
+        common::Encode::HexEncode(pro_msg_wrap->v_block->parent_hash).c_str());
     Status s = view_block_chain()->Store(pro_msg_wrap->v_block);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, add view block error. hash: %s",
@@ -336,7 +340,7 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
         // 父块不存在，则加入等待队列，后续处理
         if (s == Status::kLackOfParentBlock && sync_pool_fn_) { // 父块缺失触发同步
             sync_pool_fn_(pool_idx_, 1);
-        }        
+        }
         return Status::kError;
     }
     // 成功接入链中，标记交易占用
@@ -507,17 +511,30 @@ Status Hotstuff::StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_bloc
         return s;
     }
 
-    TryCommit(v_block->qc);
+    TryCommit(v_block->qc, 99999999lu);
+    ZJC_DEBUG("success store v block pool: %u, hash: %s, prehash: %s",
+        pool_idx_,
+        common::Encode::HexEncode(v_block->hash).c_str(),
+        common::Encode::HexEncode(v_block->parent_hash).c_str());
     return view_block_chain()->Store(v_block);
 }
 
 void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
-    ZJC_DEBUG("====3.1 pool: %d, newview, message pool: %d, hash64: %lu",
-        pool_idx_, header.hotstuff().pool_index(), header.hash64());
+    auto b = common::TimeUtils::TimestampMs();
+    defer({
+            auto e = common::TimeUtils::TimestampMs();
+            ZJC_DEBUG("pool: %d HandleNewViewMsg duration: %lu ms, hash64: %lu", pool_idx_, e-b, header.hash64());
+        });
+
+    static uint64_t test_index = 0;
+    ++test_index;
+    ZJC_DEBUG("====3.1 pool: %d, newview, message pool: %d, hash64: %lu, test_index: %lu",
+        pool_idx_, header.hotstuff().pool_index(), header.hash64(), test_index);
     assert(header.hotstuff().pool_index() == pool_idx_);
     auto& newview_msg = header.hotstuff().newview_msg();
     std::shared_ptr<TC> tc = nullptr;
     if (!newview_msg.tc_str().empty()) {
+        ZJC_DEBUG("pool index: %u,  0 test_index: %lu", pool_idx_, test_index);
         tc = std::make_shared<TC>();
         if (!tc->Unserialize(newview_msg.tc_str())) {
             ZJC_ERROR("tc Unserialize is error.");
@@ -533,27 +550,33 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
             }
 
             ZJC_DEBUG("====3.2 pool: %d, tc: %lu, onNewview", pool_idx_, tc->view);
+            ZJC_DEBUG("pool index: %u,  1 test_index: %lu", pool_idx_, test_index);
             pacemaker()->AdvanceView(new_sync_info()->WithTC(tc));
+            ZJC_DEBUG("pool index: %u,  2 test_index: %lu", pool_idx_, test_index);
         }
     }
 
     std::shared_ptr<QC> qc = nullptr;
     if (!newview_msg.qc_str().empty()) {
+            ZJC_DEBUG("pool index: %u,  3 test_index: %lu", pool_idx_, test_index);
         qc = std::make_shared<QC>();
         if (!qc->Unserialize(newview_msg.qc_str())) {
             ZJC_ERROR("qc Unserialize is error.");
             return;
         }
         if (qc->view > pacemaker()->HighQC()->view) {
+            ZJC_DEBUG("pool index: %u,  4 test_index: %lu", pool_idx_, test_index);
             if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
                 ZJC_ERROR("VerifyQC error.");
                 return;
             }
 
-            ZJC_DEBUG("====3.3 pool: %d, qc: %lu, onNewview", pool_idx_, qc->view);
+            ZJC_DEBUG("====3.3 pool: %d, qc: %lu, onNewview, test_index: %lu", pool_idx_, qc->view, test_index);
             pacemaker()->AdvanceView(new_sync_info()->WithQC(qc));
+            ZJC_DEBUG("pool index: %u,  5 test_index: %lu", pool_idx_, test_index);
             
-            TryCommit(qc);
+            TryCommit(qc, test_index);
+            ZJC_DEBUG("pool index: %u,  6 test_index: %lu", pool_idx_, test_index);
         }
     }    
 }
@@ -646,7 +669,7 @@ void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
     return;
 }
 
-Status Hotstuff::TryCommit(const std::shared_ptr<QC> commit_qc) {
+Status Hotstuff::TryCommit(const std::shared_ptr<QC> commit_qc, uint64_t test_index) {
     auto b = common::TimeUtils::TimestampMs();
     defer({
             auto e = common::TimeUtils::TimestampMs();
@@ -656,9 +679,10 @@ Status Hotstuff::TryCommit(const std::shared_ptr<QC> commit_qc) {
     if (!commit_qc) {
         return Status::kInvalidArgument;
     }
+
     auto v_block_to_commit = CheckCommit(commit_qc);
     if (v_block_to_commit) {
-        Status s = Commit(v_block_to_commit, commit_qc);
+        Status s = Commit(v_block_to_commit, commit_qc, test_index);
         if (s != Status::kSuccess) {
             ZJC_ERROR("commit view_block failed, view: %lu hash: %s",
                 v_block_to_commit->view,
@@ -698,18 +722,27 @@ std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(const std::shared_ptr<QC>& qc) 
 
 Status Hotstuff::Commit(
         const std::shared_ptr<ViewBlock>& v_block,
-        const std::shared_ptr<QC> commit_qc) {
+        const std::shared_ptr<QC> commit_qc,
+        uint64_t test_index) {
+    auto b = common::TimeUtils::TimestampMs();
+    defer({
+            auto e = common::TimeUtils::TimestampMs();
+            ZJC_DEBUG("pool: %d Commit duration: %lu ms, test_index: %lu", pool_idx_, e-b, test_index);
+        });
+
+    ZJC_DEBUG("pool: %u, commit 0, test_index: %lu", pool_idx_, test_index);
     auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
     if (latest_committed_block && latest_committed_block->view >= v_block->view) {
         return Status::kSuccess;
     }
     
-    Status s = CommitInner(v_block);
+    Status s = CommitInner(v_block, test_index);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, commit inner failed s: %d, vb view: &lu", pool_idx_, s, v_block->view);
         return s;
     }
     // 剪枝
+    ZJC_DEBUG("pool: %u, commit 1, test_index: %lu", pool_idx_, test_index);
     std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
     s = view_block_chain()->PruneTo(v_block->hash, forked_blockes, true);
     if (s != Status::kSuccess) {
@@ -717,6 +750,7 @@ Status Hotstuff::Commit(
         return s;
     }
 
+    ZJC_DEBUG("pool: %u, commit 2, test_index: %lu", pool_idx_, test_index);
     // 归还分支交易
     for (const auto& forked_block : forked_blockes) {
         s = acceptor()->Return(forked_block->block);
@@ -725,9 +759,11 @@ Status Hotstuff::Commit(
         }
     }
 
+    ZJC_DEBUG("pool: %u, commit 3, test_index: %lu", pool_idx_, test_index);
     // 保存 commit vblock 及其 commitQC 用于 kv 同步
-    view_block_chain()->StoreToDb(v_block, commit_qc);    
+    view_block_chain()->StoreToDb(v_block, commit_qc, test_index);    
 
+    ZJC_DEBUG("pool: %u, commit 4, test_index: %lu", pool_idx_, test_index);
     return Status::kSuccess;
 }
 
@@ -809,12 +845,13 @@ Status Hotstuff::VerifyViewBlock(
     return ret;
 }
 
-Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
+Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block, uint64_t test_index) {
     ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit coming s: %d, "
-        "vb view: %lu, %u_%u_%lu, cur chain: %s",
+        "vb view: %lu, %u_%u_%lu, cur chain: %s, test_index: %lu",
         pool_idx_, 0, v_block->view,
         v_block->block->network_id(), v_block->block->pool_index(), v_block->block->height(),
-        view_block_chain()->String().c_str());
+        view_block_chain()->String().c_str(),
+        test_index);
     auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
     if (latest_committed_block && latest_committed_block->view >= v_block->view) {
         ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, "
@@ -838,7 +875,7 @@ Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
     std::shared_ptr<ViewBlock> parent_block = nullptr;
     Status s = view_block_chain()->Get(v_block->parent_hash, parent_block);
     if (s == Status::kSuccess && parent_block != nullptr) {
-        s = CommitInner(parent_block);
+        s = CommitInner(parent_block, test_index);
         if (s != Status::kSuccess) {
             ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, vb view: %lu, %u_%u_%lu",
                 pool_idx_, 0, v_block->view,
@@ -848,11 +885,25 @@ Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
     }
 
     v_block->block->set_is_commited_block(true);
+    ZJC_DEBUG("1 NEW BLOCK CommitInner coming pool: %d, commit coming s: %d, "
+        "vb view: %lu, %u_%u_%lu, cur chain: %s, test_index: %lu",
+        pool_idx_, 0, v_block->view,
+        v_block->block->network_id(), v_block->block->pool_index(), v_block->block->height(),
+        view_block_chain()->String().c_str(),
+        test_index);
     s = acceptor()->Commit(v_block->block);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, commit failed s: %d, vb view: %lu", pool_idx_, s, v_block->view);
         return s;
     }
+
+    ZJC_DEBUG("2 NEW BLOCK CommitInner coming pool: %d, commit coming s: %d, "
+        "vb view: %lu, %u_%u_%lu, cur chain: %s, test_index: %lu",
+        pool_idx_, 0, v_block->view,
+        v_block->block->network_id(), v_block->block->pool_index(), v_block->block->height(),
+        view_block_chain()->String().c_str(),
+        test_index);
+
     // 提交 v_block->consensus_stat 共识数据
     auto elect_item = elect_info()->GetElectItem(
             v_block->block->network_id(),
@@ -862,9 +913,10 @@ Status Hotstuff::CommitInner(const std::shared_ptr<ViewBlock>& v_block) {
     }    
     
     view_block_chain()->SetLatestCommittedBlock(v_block);
-    ZJC_DEBUG("pool: %d consensus stat, leader: %lu, succ: %lu",
+    ZJC_DEBUG("pool: %d consensus stat, leader: %lu, succ: %lu, test_index: %lu",
         pool_idx_, v_block->leader_idx,
-        elect_item->consensus_stat(pool_idx_)->GetMemberConsensusStat(v_block->leader_idx)->succ_num);
+        elect_item->consensus_stat(pool_idx_)->GetMemberConsensusStat(v_block->leader_idx)->succ_num,
+        test_index);
     return Status::kSuccess;
 }
 

@@ -62,8 +62,11 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     // 父块必须存在
     auto it = view_blocks_info_.find(view_block->parent_hash);
     if (it == view_blocks_info_.end() || it->second->view_block == nullptr) {
-        ZJC_ERROR("lack of parent view block, hash: %s, cur view: %lu",
-            common::Encode::HexEncode(view_block->hash).c_str(), view_block->view);        
+        ZJC_ERROR("lack of parent view block, hash: %s, parent hash: %s, cur view: %lu, pool: %u",
+            common::Encode::HexEncode(view_block->hash).c_str(),
+            common::Encode::HexEncode(view_block->parent_hash).c_str(),
+            view_block->view, pool_index_);
+        assert(false);      
         return Status::kLackOfParentBlock;
     }
 
