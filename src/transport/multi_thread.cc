@@ -344,6 +344,7 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
         }
 
         ZJC_INFO("get msg count: %s", debug_str.c_str());
+        memset(msg_type_count_, 0, sizeof(msg_type_count_));
         prev_log_msg_type_tm_ = now_tm_ms + 3000lu;
     }
 #endif
