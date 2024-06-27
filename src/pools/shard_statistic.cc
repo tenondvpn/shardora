@@ -369,8 +369,8 @@ uint64_t ShardStatistic::getStoke(uint32_t shard_id, std::string contractId, std
     } else {
         contract_addr = elect::ElectPlege::gen_elect_plege_contract_addr(shard_id);
         ZJC_DEBUG("contract addr: %s", contract_addr.c_str());
-
     }
+
     contract_addr = common::Encode::HexDecode(contract_addr);
     auto contract_addr_info = prefix_db_->GetAddressInfo(contract_addr);
     if (contract_addr_info == nullptr) {
