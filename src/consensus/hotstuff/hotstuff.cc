@@ -478,7 +478,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         // return;
     }
 
-    assert(block.tx_list_size() > 0);
+    // assert(block.tx_list_size() > 0);
 #endif
 
     // 切换视图
