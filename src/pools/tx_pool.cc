@@ -111,6 +111,10 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
                 net_id,
                 pool_index_,
                 invalid_heights[i]);
+            ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
+                net_id,
+                pool_index_,
+                invalid_heights[i]);
             kv_sync_->AddSyncHeight(
                 net_id,
                 pool_index_,
@@ -705,6 +709,10 @@ void TxPool::SyncBlock() {
             ++prev_synced_height_) {
         if (!height_tree_ptr_->Valid(prev_synced_height_ + 1)) {
             ZJC_DEBUG("add sync block height net: %u, pool: %u, height: %lu",
+                net_id,
+                pool_index_,
+                prev_synced_height_ + 1);
+            ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
                 net_id,
                 pool_index_,
                 prev_synced_height_ + 1);

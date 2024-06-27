@@ -121,7 +121,12 @@ private:
                         // TODO 目前创世块也会进入这个逻辑，导致创世块数据生成报错，临时注释
                         if (!kv_sync_) {
                             continue;
-                        }                        
+                        }
+
+                        ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
+                            sharding_id,
+                            common::kRootChainPoolIndex,
+                            h);        
                         kv_sync_->AddSyncHeight(
                                 sharding_id,
                                 common::kRootChainPoolIndex,
@@ -176,6 +181,10 @@ private:
                                 cross.src_shard(),
                                 cross.src_pool(),
                                 cross.height())) {
+                            ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
+                                cross.src_shard(),
+                                cross.src_pool(),
+                                cross.height());
                             ZJC_DEBUG("add sync block height net: %u, pool: %u, height: %lu",
                                 cross.src_shard(),
                                 cross.src_pool(),

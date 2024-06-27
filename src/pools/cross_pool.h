@@ -108,6 +108,10 @@ public:
                     net_id,
                     pool_index_,
                     prev_synced_height_ + 1);
+                ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
+                    net_id,
+                    pool_index_,
+                    prev_synced_height_ + 1);
                 kv_sync_->AddSyncHeight(
                     net_id,
                     pool_index_,
