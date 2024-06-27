@@ -218,7 +218,7 @@ rm -rf {datadir}/zjnodes/*/zjchain {datadir}/zjnodes/*/core* {datadir}/zjnodes/*
 if [ $NO_BUILD = "nobuild" -o $NO_BUILD = "noblock" ]
 then
 	sudo rm -rf {datadir}/zjnodes/zjchain
-	sudo mv -f /tmp/zjchain {datadir}/zjnodes/
+	sudo mv -f /tmp/zjchain {datadir}/zjnodes/zjchain
 fi
 """
 
@@ -241,25 +241,25 @@ cp -rf ./zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/zjchain/conf
 mkdir -p {datadir}/zjnodes/zjchain/log
 
 
-sudo cp -rf ./cbuild_$TARGET/zjchain {datadir}/zjnodes/zjchain
+sudo cp -rf ./cbuild_$TARGET/zjchain {datadir}/zjnodes/zjchain/xlchain
 sudo cp -f ./conf/genesis.yml {datadir}/zjnodes/zjchain/genesis.yml
 
 # for node in "${{nodes[@]}}"; do
-    # sudo cp -rf ./cbuild_$TARGET/zjchain {datadir}/zjnodes/${{node}}
+    # sudo cp -rf ./cbuild_$TARGET/zjchain {datadir}/zjnodes/${{node}}/xlchain
 # done
-sudo cp -rf ./cbuild_$TARGET/zjchain {datadir}/zjnodes/zjchain
+sudo cp -rf ./cbuild_$TARGET/zjchain {datadir}/zjnodes/zjchain/xlchain
 
 """
     code_str += """
 if test $NO_BUILD = 0
 then
 """
-    code_str += f"    cd {datadir}/zjnodes/zjchain && ./zjchain -U\n"
+    code_str += f"    cd {datadir}/zjnodes/zjchain && ./xlchain -U\n"
     for net_id in net_ids:
         if net_id == 2:
             continue
         arg_str = '-S ' + str(net_id)
-        code_str += f"    cd {datadir}/zjnodes/zjchain && ./zjchain {arg_str} &\n"
+        code_str += f"    cd {datadir}/zjnodes/zjchain && ./xlchain {arg_str} &\n"
 
     code_str += "    wait\nfi\n"
 
@@ -403,7 +403,7 @@ echo "[$server0]"
 for n in {server0_node_names_str}; do
     ln -s {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/${{n}}/conf
     ln -s {datadir}/zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/${{n}}/conf
-    ln -s {datadir}/zjnodes/zjchain/zjchain {datadir}/zjnodes/${{n}}
+    ln -s {datadir}/zjnodes/zjchain/xlchain {datadir}/zjnodes/${{n}}/xlchain
 done
 ) &
 
@@ -431,7 +431,7 @@ sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <
 for n in {server_node_names_str}; do
     ln -s {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/\${{n}}/conf
     ln -s {datadir}/zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/\${{n}}/conf
-    ln -s {datadir}/zjnodes/zjchain/zjchain {datadir}/zjnodes/\${{n}}
+    ln -s {datadir}/zjnodes/zjchain/xlchain {datadir}/zjnodes/\${{n}}/xlchain
 done
 """
 
@@ -476,7 +476,7 @@ echo "==== STEP1: DONE ===="
 
 echo "==== STEP2: CLEAR OLDS ===="
 
-ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+ps -ef | grep xlchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
 """
 
     for server_name, server_ip in server_name_map.items():
@@ -486,7 +486,7 @@ ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
         code_str += f"""
 echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<"EOF"
-ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+ps -ef | grep xlchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
 EOF
 """
         
@@ -498,7 +498,7 @@ echo "==== STEP3: EXECUTE ===="
 
     code_str += f"""
 echo "[$server0]"
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd {datadir}/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1 {tag}> /dev/null 2>&1 &
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd {datadir}/zjnodes/r1/ && nohup ./xlchain -f 1 -g 0 r1 {tag}> /dev/null 2>&1 &
 
 sleep 3
 """
@@ -516,7 +516,7 @@ echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh -f -o StrictHostKeyChecking=no root@${server_name} bash -c "'\\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \\
 for node in {server_nodes_str}; do \\
-    cd {datadir}/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node {tag}> /dev/null 2>&1 &\\
+    cd {datadir}/zjnodes/\$node/ && nohup ./xlchain -f 0 -g 0 \$node {tag}> /dev/null 2>&1 &\\
 done \\
 '"
 
@@ -529,7 +529,7 @@ done \\
 echo "[$server0]"
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64
 for node in {server_nodes_str}; do
-cd {datadir}/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node {tag}> /dev/null 2>&1 &
+cd {datadir}/zjnodes/$node/ && nohup ./xlchain -f 0 -g 0 $node {tag}> /dev/null 2>&1 &
 done
 
 """  
@@ -589,11 +589,11 @@ def main():
 
     file_path = args.config
     server_conf = parse_server_yml_file(file_path)
-    build_genesis_path = './build_genesis.sh'
+    build_genesis_path = './xl_build_genesis.sh'
     gen_zjnodes(server_conf, "./zjnodes")
     gen_genesis_yaml_file(server_conf, "./conf/genesis.yml")
     gen_genesis_sh_file(server_conf, build_genesis_path, datadir=args.datadir)
-    gen_run_nodes_sh_file(server_conf, "./deploy_genesis.sh", build_genesis_path, tag=tag, datadir=args.datadir, medium_server_num=args.medium_num)
+    gen_run_nodes_sh_file(server_conf, "./xl_deploy_genesis.sh", build_genesis_path, tag=tag, datadir=args.datadir, medium_server_num=args.medium_num)
     modify_shard_num_in_src_code(server_conf)
 
 if __name__ == '__main__':
