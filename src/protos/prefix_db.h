@@ -82,7 +82,9 @@ public:
     PrefixDb(const std::shared_ptr<db::Db>& db_ptr) : db_(db_ptr) {
     }
 
-    ~PrefixDb() {}
+    ~PrefixDb() {
+        Destroy();
+    }
 
     void InitGidManager() {
         db_batch_tick_.CutOff(
@@ -93,7 +95,6 @@ public:
     void Destroy() {
         for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
             db_->Put(db_batch_[i]);
-            db_batch_[i].Clear();
         }
     }
 
@@ -1702,7 +1703,6 @@ private:
         if (!dumped_gid_) {
             for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
                 db_->Put(db_batch_[i]);
-                db_batch_[i].Clear();
             }
 
             dumped_gid_ = true;
