@@ -78,7 +78,7 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
     Status s = ConstructProposeMsg(sync_info, pb_pro_msg);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d construct propose msg failed, %d, member_index: %d",
+        ZJC_WARN("pool: %d construct propose msg failed, %d, member_index: %d",
             pool_idx_, s, 
             elect_info_->GetElectItemWithShardingId(
                 common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
@@ -905,7 +905,7 @@ Status Hotstuff::ConstructProposeMsg(
     auto tx_propose = std::make_shared<hotstuff::protobuf::TxPropose>();
     Status s = ConstructViewBlock(new_view_block, tx_propose);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d construct view block failed, view: %lu, %d, member_index: %d",
+        ZJC_WARN("pool: %d construct view block failed, view: %lu, %d, member_index: %d",
             pool_idx_, pacemaker()->HighQC()->view, s, 
             elect_info_->GetElectItemWithShardingId(
                 common::GlobalInfo::Instance()->network_id())->LocalMember()->index);        
