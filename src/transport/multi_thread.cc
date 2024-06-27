@@ -334,6 +334,20 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
 }
 
 uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
+#ifndef NDEBUG
+    ++msg_type_count_[msg_ptr->header.type()];
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    if (prev_log_msg_type_tm_ < now_tm_ms) {
+        std::string debug_str;
+        for (uint32_t i = 0; i < common::kMaxMessageTypeCount; ++i) {
+            debug_str += std::to_string(i) + ":" + std::to_string(msg_type_count_[i]) + ", ";
+        }
+
+        ZJC_INFO("get msg count: %s", debug_str.c_str());
+        prev_log_msg_type_tm_ = now_tm_ms + 3000lu;
+    }
+#endif
+
     switch (msg_ptr->header.type()) {
     case common::kDhtMessage:
     case common::kNetworkMessage:

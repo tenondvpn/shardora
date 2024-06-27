@@ -129,6 +129,11 @@ private:
     std::condition_variable thread_wait_con_;
     std::mutex thread_wait_mutex_;
 
+#ifndef NDEBUG
+    uint32_t msg_type_count_[common::kMaxMessageTypeCount] = {0};
+    uint64_t prev_log_msg_type_tm_ = 0;
+#endif
+
     DISALLOW_COPY_AND_ASSIGN(MultiThreadHandler);
 };
 
