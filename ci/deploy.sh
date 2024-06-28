@@ -14,7 +14,7 @@ target=$1
 no_build=$2
 
 echo "[$server0]"
-sh ./build_genesis.sh $target $no_build
+sh ./ci/build_genesis.sh $target $no_build
 cd /root && sh -x fetch.sh 127.0.0.1 ${server0} '' '/root' r1 r2 r3 s3_1 s3_2 s3_3 s3_4 s3_5 s3_6 s3_7 s3_8 s3_9 s3_10
 echo "==== 同步中继服务器 ====" 
 wait
