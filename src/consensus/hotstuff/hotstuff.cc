@@ -494,8 +494,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率:q高很多
     ZJC_DEBUG("NewView propose newview called pool: %u, qc_view: %lu, tc_view: %lu",
         pool_idx_, pacemaker()->HighQC()->view, pacemaker()->HighTC()->view);
-
-    s = Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
+    auto s = Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
     if (s != Status::kSuccess) {
         NewView(new_sync_info()->WithQC(pacemaker()->HighQC())->WithTC(pacemaker()->HighTC()));
     }
