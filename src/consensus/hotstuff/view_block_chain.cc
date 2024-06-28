@@ -448,16 +448,21 @@ std::shared_ptr<QC> GetQCWrappedByGenesis(uint32_t pool_index) {
     if (net_id > network::kConsensusShardEndNetworkId) {
         net_id -= network::kConsensusWaitingShardOffset;
     }
-    
+
     return std::make_shared<QC>(
-        common::GlobalInfo::Instance()->network_id(),
+        net_id,
         pool_index,
         nullptr, BeforeGenesisView, "", "", 1, 0);
 }
 
 std::shared_ptr<QC> GetGenesisQC(uint32_t pool_index, const HashStr& genesis_view_block_hash) {
+    auto net_id = common::GlobalInfo::Instance()->network_id();
+    if (net_id > network::kConsensusShardEndNetworkId) {
+        net_id -= network::kConsensusWaitingShardOffset;
+    }
+
     return std::make_shared<QC>(
-        common::GlobalInfo::Instance()->network_id(),
+        net_id,
         pool_index,
         std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero()),
         GenesisView,
