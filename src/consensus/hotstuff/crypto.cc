@@ -295,47 +295,6 @@ Status Crypto::VerifyThresSign(
     return Status::kSuccess;
 }
 
-Status Crypto::CreateQC(
-        const HashStr& view_block_hash,
-        const HashStr& commit_view_block_hash,
-        View view,
-        uint64_t elect_height,
-        uint32_t leader_idx,
-        const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
-        std::shared_ptr<QC>& qc) {
-    if (!reconstructed_sign) {
-        return Status::kInvalidArgument;
-    }
-    qc->bls_agg_sign = reconstructed_sign;
-    qc->view = view;
-    qc->elect_height = elect_height;
-    qc->view_block_hash = view_block_hash;
-    qc->commit_view_block_hash = commit_view_block_hash;
-    qc->leader_idx = leader_idx;
-    qc->network_id = common::GlobalInfo::Instance()->network_id();
-    qc->pool_index = pool_idx_;
-    return Status::kSuccess;
-}
-
-Status Crypto::CreateTC(
-        View view,
-        uint64_t elect_height,
-        uint32_t leader_idx,
-        const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
-        std::shared_ptr<TC>& tc) {
-    if (!reconstructed_sign) {
-        tc = nullptr;
-        return Status::kInvalidArgument;
-    }
-    tc->bls_agg_sign = reconstructed_sign;
-    tc->view = view;
-    tc->elect_height = elect_height;
-    tc->leader_idx = leader_idx;
-    tc->network_id = common::GlobalInfo::Instance()->network_id();
-    tc->pool_index = pool_idx_;
-    return Status::kSuccess;
-}
-
 Status Crypto::VerifyQC(
         uint32_t sharding_id,
         const std::shared_ptr<QC>& qc) {

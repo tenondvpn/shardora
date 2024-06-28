@@ -17,10 +17,18 @@ void Hotstuff::Init() {
     last_vote_view_ = GenesisView;
     
     auto latest_view_block = std::make_shared<ViewBlock>();
-    auto latest_view_block_commit_qc = std::make_shared<QC>();
+    std::string qc_str;
     // 从 db 中获取最后一个有 QC 的 ViewBlock
-    Status s = GetLatestViewBlockFromDb(db_, pool_idx_, latest_view_block, latest_view_block_commit_qc);
+    Status s = GetLatestViewBlockFromDb(db_, pool_idx_, latest_view_block, &qc_str);
     if (s == Status::kSuccess) {
+        auto latest_view_block_commit_qc = std::make_shared<QC>(qc_str);
+        if (!latest_view_block_commit_qc->valid() || latest_view_block_commit_qc->view < GenesisView) {
+            latest_view_block_commit_qc = GetGenesisQC(pool_idx_, latest_view_block->hash);
+        }
+
+        ZJC_DEBUG("pool: %d, latest vb from db, vb view: %lu, self_commit_qc view: %lu",
+            pool_idx_, latest_view_block->view, latest_view_block_commit_qc->view);
+
         // 初始状态，使用 db 中最后一个 view_block 初始化视图链
         view_block_chain_->Store(latest_view_block);
         view_block_chain_->SetLatestLockedBlock(latest_view_block);
@@ -224,8 +232,8 @@ Status Hotstuff::HandleProposeMsgStep_VerifyTC(std::shared_ptr<ProposeMsgWrapper
     // 3 Verify TC
     std::shared_ptr<TC> tc = nullptr;
     if (!pro_msg_wrap->pro_msg->tc_str().empty()) {
-        tc = std::make_shared<TC>();
-        if (!tc->Unserialize(pro_msg_wrap->pro_msg->tc_str())) {
+        tc = std::make_shared<TC>(pro_msg_wrap->pro_msg->tc_str());
+        if (!tc->valid()) {
             ZJC_ERROR("tc Unserialize is error.");
             return Status::kError;
         }
@@ -456,19 +464,15 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
         reconstructed_sign == nullptr,
         vote_msg.view());
-    auto new_qc = std::make_shared<QC>();
-    Status s = crypto()->CreateQC(
+    auto new_qc = std::make_shared<QC>(
+        common::GlobalInfo::Instance()->network_id(), 
+        pool_idx_, 
+        reconstructed_sign, 
+        vote_msg.view(), 
         vote_msg.view_block_hash(),
         vote_msg.commit_view_block_hash(),
-        vote_msg.view(),
         elect_height,
-        vote_msg.leader_idx(),
-        reconstructed_sign,
-        new_qc);
-    if (s != Status::kSuccess) {
-        return;
-    }
-
+        vote_msg.leader_idx());
 #ifndef NDEBUG
     block::protobuf::Block block;
     if (!prefix_db_->GetBlockWithHeight(
@@ -535,8 +539,8 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
     std::shared_ptr<TC> tc = nullptr;
     if (!newview_msg.tc_str().empty()) {
         ZJC_DEBUG("pool index: %u,  0 test_index: %lu", pool_idx_, test_index);
-        tc = std::make_shared<TC>();
-        if (!tc->Unserialize(newview_msg.tc_str())) {
+        tc = std::make_shared<TC>(newview_msg.tc_str());
+        if (!tc->valid()) {
             ZJC_ERROR("tc Unserialize is error.");
             return;
         }
@@ -559,8 +563,8 @@ void Hotstuff::HandleNewViewMsg(const transport::protobuf::Header& header) {
     std::shared_ptr<QC> qc = nullptr;
     if (!newview_msg.qc_str().empty()) {
             ZJC_DEBUG("pool index: %u,  3 test_index: %lu", pool_idx_, test_index);
-        qc = std::make_shared<QC>();
-        if (!qc->Unserialize(newview_msg.qc_str())) {
+        qc = std::make_shared<QC>(newview_msg.qc_str());
+        if (!qc->valid()) {
             ZJC_ERROR("qc Unserialize is error.");
             return;
         }

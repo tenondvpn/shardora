@@ -173,10 +173,11 @@ void HotstuffSyncer::HandleSyncedBlocks() {
             if (s != Status::kSuccess) {
                 continue;
             }
-            auto self_commit_qc = std::make_shared<QC>();
-            if (!self_commit_qc->Unserialize(pb_vblock->self_commit_qc_str())) {
+            auto self_commit_qc = std::make_shared<QC>(pb_vblock->self_commit_qc_str());
+            if (!self_commit_qc->valid()) {
                 continue;
             }
+
             hotstuff_mgr_->hotstuff(pb_vblock->block_info().pool_index())->HandleSyncedViewBlock(
                     vblock, self_commit_qc);
         }
@@ -553,10 +554,12 @@ Status HotstuffSyncer::processResponseQcTc(
     if (!pm) {
         return Status::kError;
     }
-    auto highqc = std::make_shared<QC>();
-    auto hightc = std::make_shared<TC>();
-    highqc->Unserialize(view_block_res.high_qc_str());
-    hightc->Unserialize(view_block_res.high_tc_str());
+    auto highqc = std::make_shared<QC>(view_block_res.high_qc_str());
+    auto hightc = std::make_shared<TC>(view_block_res.high_tc_str());
+    if (!highqc->valid() || !hightc->valid()) {
+        return Status::kError;
+    }
+
     if ((highqc->network_id > 0 && highqc->network_id != common::GlobalInfo::Instance()->network_id()) ||
             (hightc->network_id > 0 && hightc->network_id != common::GlobalInfo::Instance()->network_id())) {
         ZJC_DEBUG("error network id hight qc: %u, hight tc: %u, local: %u",
@@ -601,8 +604,8 @@ Status HotstuffSyncer::processResponseLatestCommittedBlock(
         return s;
     }
     
-    auto latest_commit_qc = std::make_shared<QC>();
-    if (!pb_latest_committed_block.has_self_commit_qc_str()) {
+    auto latest_commit_qc = std::make_shared<QC>(pb_latest_committed_block.self_commit_qc_str());
+    if (!latest_commit_qc->valid()) {
         return Status::kError;
     }
     latest_commit_qc->Unserialize(pb_latest_committed_block.self_commit_qc_str());
@@ -647,8 +650,8 @@ Status HotstuffSyncer::processResponseChain(
     // 将 view_block_qc 放入 map 方便查询
     std::unordered_map<HashStr, std::shared_ptr<QC>> view_block_qc_map;
     for (const auto& qc_str : view_block_qc_strs) {
-        auto view_block_qc = std::make_shared<QC>();
-        if (view_block_qc->Unserialize(qc_str)) {
+        auto view_block_qc = std::make_shared<QC>(qc_str);
+        if (view_block_qc->valid()) {
             view_block_qc_map[view_block_qc->view_block_hash] = view_block_qc;
         }
     }    

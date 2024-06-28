@@ -72,31 +72,12 @@ public:
             const std::string& partial_sign_x,
             const std::string& partial_sign_y,
             std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
-    
-    Status CreateQC(
-        const HashStr& view_block_hash,
-        const HashStr& commit_view_block_hash,
-        View view,
-        uint64_t elect_height,
-        uint32_t leader_idx,
-        const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
-        std::shared_ptr<QC>& qc);
-
-    Status CreateTC(
-            View view,
-            uint64_t elect_height,
-            uint32_t leader_idx,
-            const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign,
-            std::shared_ptr<TC>& tc);
-
     Status VerifyQC(
             uint32_t sharding_id,
             const std::shared_ptr<QC>& qc);
-
     Status VerifyTC(
             uint32_t sharding_id,
             const std::shared_ptr<TC>& tc);    
-
     Status SignMessage(transport::MessagePtr& msg_ptr);
     Status VerifyMessage(const transport::MessagePtr& msg_ptr);
     void RecoverBlsCollection() {

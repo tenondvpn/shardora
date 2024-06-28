@@ -101,11 +101,13 @@ struct QC {
             commit_view_block_hash, 
             elect_height, 
             leader_idx);
+        valid_ = true;
     }
 
     QC(const std::string& s) {
         if (!Unserialize(s)) {
             assert(false);
+            return;
         }
 
         if (bls_agg_sign == nullptr) {
@@ -120,10 +122,14 @@ struct QC {
             commit_view_block_hash, 
             elect_height, 
             leader_idx);
+        valid_ = true;
     };
     
     std::string Serialize() const;
     bool Unserialize(const std::string& str);
+    inline bool valid() const {
+        return valid_;
+    }
 
     inline const HashStr& msg_hash() const {
         return hash_;
@@ -131,6 +137,7 @@ struct QC {
 
 private:
     std::string hash_;
+    bool valid_ = false;
 };
 
 // TODO TC 中可增加超时的 leader_idx，用于 Leader 选择黑名单

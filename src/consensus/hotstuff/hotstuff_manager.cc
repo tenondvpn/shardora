@@ -135,12 +135,11 @@ int HotstuffManager::VerifySyncedViewBlock(view_block::protobuf::ViewBlockItem* 
             pb_vblock->view());                
         return -1;
     }
-    auto commit_qc = std::make_shared<QC>();
-    if (!commit_qc->Unserialize(pb_vblock->self_commit_qc_str())) {
-        ZJC_ERROR("commit qc unserialize failed");
+
+    auto commit_qc = std::make_shared<QC>(pb_vblock->self_commit_qc_str());
+    if (!commit_qc->valid()) {
         return -1;
     }
-
     // 由于验签很占资源，再检查一下数据库，避免重复同步
     if (prefix_db_->HasViewBlockInfo(
                 vblock->block->network_id(),

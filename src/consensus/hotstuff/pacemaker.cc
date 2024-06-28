@@ -244,17 +244,13 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         return;
     }
     // 视图切换
-    auto tc = std::make_shared<TC>();
-    s = crypto_->CreateTC(
+    auto tc = std::make_shared<TC>(
+        common::GlobalInfo::Instance()->network_id(),
+        pool_idx_,
+        reconstructed_sign,
         timeout_proto.view(),
         timeout_proto.elect_height(),
-        timeout_proto.leader_idx(),
-        reconstructed_sign,
-        tc);
-    if (s != Status::kSuccess || !tc) {
-        return;
-    }
-
+        timeout_proto.leader_idx());
     ZJC_DEBUG("====4.1 pool: %d, create tc, view: %lu, member: %d, "
         "tc view: %lu, cur view: %lu, high_qc_: %lu, high_tc_: %lu",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(),

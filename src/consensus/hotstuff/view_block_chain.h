@@ -321,7 +321,7 @@ Status GetLatestViewBlockFromDb(
         const std::shared_ptr<db::Db>& db,
         const uint32_t& pool_index,
         std::shared_ptr<ViewBlock>& view_block,
-        std::shared_ptr<QC>& self_qc);
+        std::string* self_qc);
 std::shared_ptr<QC> GetQCWrappedByGenesis(uint32_t pool_index);
 std::shared_ptr<QC> GetGenesisQC(uint32_t pool_index, const HashStr& genesis_view_block_hash);
         
