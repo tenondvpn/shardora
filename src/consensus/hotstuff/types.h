@@ -52,21 +52,6 @@ struct MemberConsensusStat {
     }
 };
 
-HashStr GetViewHash(
-    uint32_t net_id,
-    uint32_t pool_idx,
-    const View& view, 
-    uint64_t elect_height, 
-    uint32_t leader_idx);
-HashStr GetQCMsgHash(
-    uint32_t net_id,
-    uint32_t pool_idx,
-    const View &view,
-    const HashStr &view_block_hash,
-    const HashStr& commit_view_block_hash,
-    uint64_t elect_height,
-    uint32_t leader_idx);
-
 struct QC {  
     QC(
             uint32_t net_id,
@@ -80,8 +65,8 @@ struct QC {
             network_id(net_id), pool_index(pool_idx),
             bls_agg_sign(sign), view(v), view_block_hash(hash),
             commit_view_block_hash(commit_hash), elect_height(elect_height),
-            leader_idx(leader_idx){
-        if (network_id > network::kConsensusShardEndNetworkId) {
+            leader_idx(leader_idx) {
+        if (network_id >= network::kConsensusShardEndNetworkId) {
             network_id = network_id - network::kConsensusWaitingShardOffset;
         }
 
@@ -132,6 +117,21 @@ struct QC {
     }
 
 protected:
+    HashStr GetViewHash(
+        uint32_t net_id,
+        uint32_t pool_idx,
+        const View& view, 
+        uint64_t elect_height, 
+        uint32_t leader_idx);
+    HashStr GetQCMsgHash(
+        uint32_t net_id,
+        uint32_t pool_idx,
+        const View &view,
+        const HashStr &view_block_hash,
+        const HashStr& commit_view_block_hash,
+        uint64_t elect_height,
+        uint32_t leader_idx);
+        
     std::string hash_;
     bool valid_ = false;
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;

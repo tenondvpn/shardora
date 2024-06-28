@@ -1389,20 +1389,19 @@ bool GenesisBlockInit::BlsAggSignViewBlock(
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
         const std::shared_ptr<hotstuff::ViewBlock>& vblock,
         std::shared_ptr<libff::alt_bn128_G1>& agg_sign) try {
-    hotstuff::HashStr msg_hash = hotstuff::GetQCMsgHash(
-            common::GlobalInfo::Instance()->network_id(),
+    auto qc_ptr = std::make_shared<hotstuff::QC>(
+        common::GlobalInfo::Instance()->network_id(),
             vblock->block->pool_index(),
             vblock->view,
             vblock->hash,
             vblock->hash,
             vblock->ElectHeight(),
             vblock->leader_idx);
-    
     std::vector<libff::alt_bn128_G1> all_signs;
     uint32_t n = genesis_nodes.size();
     uint32_t t = common::GetSignerCount(n);
     std::vector<size_t> idx_vec;
-    auto g1_hash = libBLS::Bls::Hashing(msg_hash);
+    auto g1_hash = libBLS::Bls::Hashing(qc_ptr->msg_hash());
     std::mutex mutex;
 
     auto sign_task = [&](uint32_t i) {
@@ -1457,7 +1456,7 @@ std::shared_ptr<hotstuff::QC> GenesisBlockInit::CreateCommitQC(
     if (!agg_sign) {
         return nullptr;
     }
-    
+
     return std::make_shared<hotstuff::QC>(
         common::GlobalInfo::Instance()->network_id(),
         vblock->block->pool_index(),
