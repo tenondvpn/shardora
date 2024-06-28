@@ -8,7 +8,7 @@ namespace shardora {
 
 namespace hotstuff {
 
-HashStr GetQCMsgHash(
+HashStr QC::GetQCMsgHash(
         uint32_t net_id,
         uint32_t pool_index,
         const View &view,
@@ -37,7 +37,7 @@ HashStr GetQCMsgHash(
     return msg_hash; 
 }
 
-HashStr GetViewHash(
+HashStr QC::GetViewHash(
         uint32_t net_id,
         uint32_t pool_index, 
         const View& view, 
