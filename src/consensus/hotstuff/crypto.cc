@@ -1,4 +1,5 @@
 #include <bls/bls_utils.h>
+#include <common/defer.h>
 #include <common/log.h>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/types.h>
@@ -208,6 +209,12 @@ Status Crypto::VerifyThresSign(
         uint64_t elect_height, 
         const HashStr &msg_hash,
         const std::shared_ptr<libff::alt_bn128_G1> &reconstructed_sign) {
+    auto b = common::TimeUtils::TimestampMs();
+    defer({
+        auto e = common::TimeUtils::TimestampMs();
+        ZJC_DEBUG("sharding_id: %d VerifyThresSign duration: %lu ms", sharding_id, e-b);
+    });
+
 #ifdef HOTSTUFF_TEST
     return Status::kSuccess;
 #endif
@@ -321,9 +328,11 @@ Status Crypto::VerifyQC(
     if (!qc) {
         return Status::kError;
     }
+
     if (qc->view == GenesisView) {
         return Status::kSuccess;
     }
+    
     Status s = VerifyThresSign(sharding_id, qc->elect_height, qc->msg_hash(), qc->bls_agg_sign);
     if (s != Status::kSuccess) {
         ZJC_ERROR("Verify qc is error.");

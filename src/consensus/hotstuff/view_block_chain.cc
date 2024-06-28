@@ -66,7 +66,7 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
             common::Encode::HexEncode(view_block->hash).c_str(),
             common::Encode::HexEncode(view_block->parent_hash).c_str(),
             view_block->view, pool_index_);
-        assert(false);      
+        assert(false);
         return Status::kLackOfParentBlock;
     }
 
