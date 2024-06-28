@@ -108,6 +108,7 @@ public:
             const address::protobuf::AddressInfo& addr_info,
             db::DbWriteBatch& db_batch) {
         db_batch.Put(kAddressPrefix + addr, addr_info.SerializeAsString());
+        std::cout << "account size: " << addr_info.ByteSizeLong() << std::endl;
         ZJC_DEBUG("success add addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
     }
 

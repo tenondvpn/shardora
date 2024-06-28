@@ -1629,6 +1629,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             }
         }
 
+        std::cout << "===================" << std::endl;
         // root 网络节点账户状态都在 shard3 中
         if (net_id == network::kRootCongressNetworkId) {
             block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);

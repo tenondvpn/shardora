@@ -1120,6 +1120,7 @@ void BlockManager::HandleJoinElectTx(
             }
 
             prefix_db_->SaveNodeVerificationVector(tx.from(), join_info, db_batch);
+            std::cout << "node veri size: " << join_info.ByteSizeLong() << ",i: " << i << std::endl;
             ZJC_DEBUG("success handle kElectJoin tx: %s, net: %u, pool: %u, height: %lu, local net id: %u",
                 common::Encode::HexEncode(tx.from()).c_str(), 
                 block.network_id(), 
