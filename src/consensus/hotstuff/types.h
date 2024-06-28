@@ -67,16 +67,7 @@ HashStr GetQCMsgHash(
     uint64_t elect_height,
     uint32_t leader_idx);
 
-struct QC {
-    std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
-    View view; // view_block_hash 对应的 view，TODO 校验正确性，避免篡改
-    HashStr view_block_hash; // 是 view_block_hash 的 prepareQC
-    HashStr commit_view_block_hash; // 是 commit_view_block_hash 的 commitQC
-    uint64_t elect_height; // 确定 epoch，用于验证 QC，理论上与 view_block_hash elect_height 相同，但对于同步场景，作为 commit_qc 时有时候 view_block 无法获取，故将 elect_height 放入 QC 中
-    uint32_t leader_idx;
-    uint32_t network_id;
-    uint32_t pool_index;
-    
+struct QC {  
     QC(
             uint32_t net_id,
             uint32_t pool_idx,
@@ -90,8 +81,8 @@ struct QC {
             bls_agg_sign(sign), view(v), view_block_hash(hash),
             commit_view_block_hash(commit_hash), elect_height(elect_height),
             leader_idx(leader_idx){
-        if (net_id > network::kConsensusShardEndNetworkId) {
-            net_id = net_id - network::kConsensusWaitingShardOffset;
+        if (network_id > network::kConsensusShardEndNetworkId) {
+            network_id = network_id - network::kConsensusWaitingShardOffset;
         }
 
         if (sign == nullptr) {
@@ -99,7 +90,7 @@ struct QC {
         }
 
         hash_ = GetQCMsgHash(
-            net_id, 
+            network_id, 
             pool_index, 
             view, 
             view_block_hash, 
@@ -140,9 +131,17 @@ struct QC {
         return hash_;
     }
 
-private:
+protected:
     std::string hash_;
     bool valid_ = false;
+    std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
+    View view; // view_block_hash 对应的 view，TODO 校验正确性，避免篡改
+    HashStr view_block_hash; // 是 view_block_hash 的 prepareQC
+    HashStr commit_view_block_hash; // 是 commit_view_block_hash 的 commitQC
+    uint64_t elect_height; // 确定 epoch，用于验证 QC，理论上与 view_block_hash elect_height 相同，但对于同步场景，作为 commit_qc 时有时候 view_block 无法获取，故将 elect_height 放入 QC 中
+    uint32_t leader_idx;
+    uint32_t network_id;
+    uint32_t pool_index;
 };
 
 // TODO TC 中可增加超时的 leader_idx，用于 Leader 选择黑名单
