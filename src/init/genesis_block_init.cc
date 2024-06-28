@@ -99,7 +99,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
         }
 
 #ifndef DISABLE_GENESIS_BLS_VERIFY
-        // 验证部分私钥并保存多项式承诺，如果不需要轮换可以注释掉，大幅度解决创世块计算时间
+        // 验证部分私钥并保存多项式承诺，如果不需要轮换可以注释掉，大幅度节约创世块计算时间和部分空间
         ComputeG2sForNodes(prikeys);
 #endif
     } else { // 构建某 shard 创世网络
