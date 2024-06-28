@@ -306,7 +306,7 @@ Status Crypto::VerifyQC(
         return Status::kSuccess;
     }
     
-    Status s = VerifyThresSign(sharding_id, qc->elect_height, qc->msg_hash(), qc->bls_agg_sign);
+    Status s = VerifyThresSign(sharding_id, qc->elect_height(), qc->msg_hash(), qc->bls_agg_sign());
     if (s != Status::kSuccess) {
         ZJC_ERROR("Verify qc is error.");
         return s;
@@ -320,7 +320,7 @@ Status Crypto::VerifyTC(
     if (!tc) {
         return Status::kError;
     }
-    if (VerifyThresSign(sharding_id, tc->elect_height, tc->msg_hash(), tc->bls_agg_sign) != Status::kSuccess) {
+    if (VerifyThresSign(sharding_id, tc->elect_height(), tc->msg_hash(), tc->bls_agg_sign()) != Status::kSuccess) {
         ZJC_ERROR("Verify tc is error.");
         return Status::kError; 
     }

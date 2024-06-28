@@ -63,15 +63,15 @@ struct QC {
             uint64_t elect_height,
             uint32_t leader_idx) :
             network_id_(net_id), pool_index(pool_idx),
-            bls_agg_sign(sign), view_(v), view_block_hash_(hash),
-            commit_view_block_hash_(commit_hash), elect_height(elect_height),
+            bls_agg_sign_(sign), view_(v), view_block_hash_(hash),
+            commit_view_block_hash_(commit_hash), elect_height_(elect_height),
             leader_idx(leader_idx) {
         if (network_id_ >= network::kConsensusShardEndNetworkId) {
             network_id_ = network_id_ - network::kConsensusWaitingShardOffset;
         }
 
         if (sign == nullptr) {
-            bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
+            bls_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
         }
 
         hash_ = GetQCMsgHash(
@@ -80,7 +80,7 @@ struct QC {
             view_, 
             view_block_hash_, 
             commit_view_block_hash_, 
-            elect_height, 
+            elect_height_, 
             leader_idx);
         valid_ = true;
     }
@@ -91,8 +91,8 @@ struct QC {
             return;
         }
 
-        if (bls_agg_sign == nullptr) {
-            bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
+        if (bls_agg_sign_ == nullptr) {
+            bls_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
         }
 
         hash_ = GetQCMsgHash(
@@ -101,7 +101,7 @@ struct QC {
             view_, 
             view_block_hash_, 
             commit_view_block_hash_, 
-            elect_height, 
+            elect_height_, 
             leader_idx);
         valid_ = true;
     };
@@ -132,6 +132,14 @@ struct QC {
         return network_id_;
     }
 
+    inline uint64_t elect_height() const {
+        return elect_height_;
+    }
+
+    inline const std::shared_ptr<libff::alt_bn128_G1>& bls_agg_sign() const {
+        return bls_agg_sign_;
+    }
+
 protected:
     HashStr GetViewHash(
         uint32_t net_id,
@@ -150,11 +158,11 @@ protected:
         
     std::string hash_;
     bool valid_ = false;
-    std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
+    std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign_;
     View view_; // view_block_hash 对应的 view，TODO 校验正确性，避免篡改
     HashStr view_block_hash_; // 是 view_block_hash 的 prepareQC
     HashStr commit_view_block_hash_; // 是 commit_view_block_hash 的 commitQC
-    uint64_t elect_height; // 确定 epoch，用于验证 QC，理论上与 view_block_hash elect_height 相同，但对于同步场景，作为 commit_qc 时有时候 view_block 无法获取，故将 elect_height 放入 QC 中
+    uint64_t elect_height_; // 确定 epoch，用于验证 QC，理论上与 view_block_hash elect_height 相同，但对于同步场景，作为 commit_qc 时有时候 view_block 无法获取，故将 elect_height 放入 QC 中
     uint32_t leader_idx;
     uint32_t network_id_;
     uint32_t pool_index;

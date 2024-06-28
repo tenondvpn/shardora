@@ -434,18 +434,19 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
-    
+    auto qc_ptr = std::make_shared<QC>(
+        common::GlobalInfo::Instance()->network_id(),
+        pool_idx_,
+        vote_msg.view(),
+        nullptr,
+        vote_msg.view_block_hash(),
+        vote_msg.commit_view_block_hash(),
+        elect_height,
+        vote_msg.leader_idx());
     Status ret = crypto()->ReconstructAndVerifyThresSign(
             elect_height,
             vote_msg.view(),
-            GetQCMsgHash(
-                common::GlobalInfo::Instance()->network_id(),
-                pool_idx_,
-                vote_msg.view(),
-                vote_msg.view_block_hash(),
-                vote_msg.commit_view_block_hash(),
-                elect_height,
-                vote_msg.leader_idx()),
+            qc_ptr->msg_hash(),
             replica_idx, 
             vote_msg.sign_x(),
             vote_msg.sign_y(),
@@ -493,7 +494,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     pacemaker()->AdvanceView(new_sync_info()->WithQC(new_qc));
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率:q高很多
     ZJC_DEBUG("NewView propose newview called pool: %u, qc_view: %lu, tc_view: %lu",
-        pool_idx_, pacemaker()->HighQC()->view, pacemaker()->HighTC()->view());
+        pool_idx_, pacemaker()->HighQC()->view(), pacemaker()->HighTC()->view());
     auto s = Propose(new_sync_info()->WithQC(pacemaker()->HighQC()));
     if (s != Status::kSuccess) {
         NewView(new_sync_info()->WithQC(pacemaker()->HighQC())->WithTC(pacemaker()->HighTC()));
@@ -1004,19 +1005,20 @@ Status Hotstuff::ConstructVoteMsg(
     vote_msg->set_view(v_block->view);
     vote_msg->set_elect_height(elect_height);
     vote_msg->set_leader_idx(v_block->leader_idx);
-    
+    auto qc_ptr = std::make_shared<QC>(
+        common::GlobalInfo::Instance()->network_id(),
+        pool_idx_,
+        v_block->view,
+        nullptr,
+        v_block->hash,
+        commit_view_block_hash,
+        elect_height,
+        v_block->leader_idx);
     std::string sign_x, sign_y;
     if (crypto()->PartialSign(
                 common::GlobalInfo::Instance()->network_id(),
                 elect_height,
-                GetQCMsgHash(
-                    common::GlobalInfo::Instance()->network_id(),
-                    pool_idx_,
-                    v_block->view,
-                    v_block->hash,
-                    commit_view_block_hash,
-                    elect_height,
-                    v_block->leader_idx),
+                qc_ptr->msg_hash(),
                 &sign_x,
                 &sign_y) != Status::kSuccess) {
         ZJC_ERROR("Sign message is error.");
