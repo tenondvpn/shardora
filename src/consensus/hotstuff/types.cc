@@ -164,8 +164,8 @@ Status Proto2ViewBlock(const view_block::protobuf::ViewBlockItem& view_block_pro
     if (!view_block_proto.has_qc_str() || view_block_proto.qc_str() == "") {
         view_block->qc = nullptr;
     } else {
-        view_block->qc = std::make_shared<QC>();
-        if (!view_block->qc->Unserialize(view_block_proto.qc_str())) {
+        view_block->qc = std::make_shared<QC>(view_block_proto.qc_str());
+        if (!view_block->qc->valid()) {
             return Status::kError;
         }
     }
