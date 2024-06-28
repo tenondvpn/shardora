@@ -101,8 +101,8 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const int32_t& node_num)
     auto req = vb_msg.mutable_view_block_req();
     req->set_pool_idx(pool_idx);
     req->set_network_id(common::GlobalInfo::Instance()->network_id());
-    req->set_high_qc_view(pacemaker(pool_idx)->HighQC()->view);
-    req->set_high_tc_view(pacemaker(pool_idx)->HighTC()->view);
+    req->set_high_qc_view(pacemaker(pool_idx)->HighQC()->view());
+    req->set_high_tc_view(pacemaker(pool_idx)->HighTC()->view());
 
     View max_view = 0;
     std::vector<std::shared_ptr<ViewBlock>> view_blocks;
@@ -292,11 +292,11 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     view_block_res->set_pool_idx(pool_idx);
 
     // src 节点的 highqc 或 hightc 落后，尝试同步
-    if (pacemaker(pool_idx)->HighQC()->view > src_high_qc_view) {
+    if (pacemaker(pool_idx)->HighQC()->view() > src_high_qc_view) {
         shouldSyncQC = true;
     }
 
-    if (pacemaker(pool_idx)->HighTC()->view > src_high_tc_view) {
+    if (pacemaker(pool_idx)->HighTC()->view() > src_high_tc_view) {
         shouldSyncTC = true;
     }
 
