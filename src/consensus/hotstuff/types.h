@@ -70,7 +70,7 @@ struct QC {
             network_id_ = network_id_ - network::kConsensusWaitingShardOffset;
         }
 
-        if (sign == nullptr) {
+        if (bls_agg_sign_ == nullptr) {
             bls_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
         }
 
@@ -86,14 +86,12 @@ struct QC {
     }
 
     QC(const std::string& s) {
+        bls_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
         if (!Unserialize(s)) {
             assert(false);
             return;
         }
 
-        if (bls_agg_sign_ == nullptr) {
-            bls_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
-        }
 
         hash_ = GetQCMsgHash(
             network_id_, 
