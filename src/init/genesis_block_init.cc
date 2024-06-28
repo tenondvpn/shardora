@@ -98,7 +98,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
             prikeys.push_back(real_root_genesis_nodes[i]->prikey);
         }
 
-#ifdef DISABLE_GENESIS_BLS_VERIFY   
+#ifndef DISABLE_GENESIS_BLS_VERIFY   
         ComputeG2sForNodes(prikeys);
 #endif
     } else { // 构建某 shard 创世网络
@@ -125,7 +125,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
                 prikeys.push_back(cons_genesis_nodes[i]->prikey);
             }
 
-#ifdef DISABLE_GENESIS_BLS_VERIFY            
+#ifndef DISABLE_GENESIS_BLS_VERIFY            
             ComputeG2sForNodes(prikeys);
 #endif
         }
