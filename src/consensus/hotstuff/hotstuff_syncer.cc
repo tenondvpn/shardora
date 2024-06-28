@@ -560,10 +560,10 @@ Status HotstuffSyncer::processResponseQcTc(
         return Status::kError;
     }
 
-    if ((highqc->network_id > 0 && highqc->network_id != common::GlobalInfo::Instance()->network_id()) ||
-            (hightc->network_id > 0 && hightc->network_id != common::GlobalInfo::Instance()->network_id())) {
+    if ((highqc->network_id() > 0 && highqc->network_id() != common::GlobalInfo::Instance()->network_id()) ||
+            (hightc->network_id() > 0 && hightc->network_id() != common::GlobalInfo::Instance()->network_id())) {
         ZJC_DEBUG("error network id hight qc: %u, hight tc: %u, local: %u",
-            highqc->network_id, hightc->network_id, 
+            highqc->network_id(), hightc->network_id(), 
             common::GlobalInfo::Instance()->network_id());
         assert(false);
         return Status::kError;

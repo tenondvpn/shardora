@@ -52,12 +52,12 @@ std::string QC::Serialize() const {
     qc_proto.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->X));
     qc_proto.set_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->Y));
     qc_proto.set_sign_z(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->Z));
-    qc_proto.set_view(view);
-    qc_proto.set_view_block_hash(view_block_hash);
-    qc_proto.set_commit_view_block_hash(commit_view_block_hash);
+    qc_proto.set_view(view_);
+    qc_proto.set_view_block_hash(view_block_hash_);
+    qc_proto.set_commit_view_block_hash(commit_view_block_hash_);
     qc_proto.set_elect_height(elect_height);
     qc_proto.set_leader_idx(leader_idx);
-    qc_proto.set_network_id(network_id);
+    qc_proto.set_network_id(network_id_);
     qc_proto.set_pool_index(pool_index);
     // TODO 不同版本 pb 结果不一样
     return qc_proto.SerializeAsString();
@@ -85,12 +85,12 @@ bool QC::Unserialize(const std::string& str) {
     }
     
     *bls_agg_sign = sign;
-    view = qc_proto.view();
-    view_block_hash = qc_proto.view_block_hash();
-    commit_view_block_hash = qc_proto.commit_view_block_hash();
+    view_ = qc_proto.view();
+    view_block_hash_ = qc_proto.view_block_hash();
+    commit_view_block_hash_ = qc_proto.commit_view_block_hash();
     elect_height = qc_proto.elect_height();
     leader_idx = qc_proto.leader_idx();
-    network_id = qc_proto.network_id();
+    network_id_ = qc_proto.network_id();
     pool_index = qc_proto.pool_index();
     
     return true;

@@ -171,10 +171,10 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(
         return Status::kSuccess;
     }
 
-    if (vblock->hash != commit_qc->commit_view_block_hash) {
+    if (vblock->hash != commit_qc->commit_view_block_hash()) {
         ZJC_ERROR("hash is not same with qc, block: %s, commit_hash: %s",
             common::Encode::HexEncode(vblock->hash).c_str(),
-            common::Encode::HexEncode(commit_qc->commit_view_block_hash).c_str());
+            common::Encode::HexEncode(commit_qc->commit_view_block_hash()).c_str());
         return Status::kInvalidArgument;
     }
 
