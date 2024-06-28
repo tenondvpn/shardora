@@ -93,6 +93,7 @@ struct QC {
     }
 
     QC() {
+        assert(false);
         bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
     };
     
@@ -123,7 +124,9 @@ struct TC : public QC {
         QC(net_id, pool_idx, sign, v, "", "", elect_height, leader_idx) {
     }
 
-    TC() {}
+    TC() {
+        assert(false);
+    }
 
     inline HashStr msg_hash() const {
         return GetViewHash(network_id, pool_index, view, elect_height, leader_idx);
