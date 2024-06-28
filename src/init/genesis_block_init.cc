@@ -467,7 +467,6 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
             sharding_id,
             genesis_nodes[idx]->id,
             enc_data);
-        std::cout << "enc_data size: %lu" << enc_data.size() << std::endl;
     }
 
     common_pk_[sharding_id] = common_public_key;
@@ -676,7 +675,6 @@ int GenesisBlockInit::CreateElectBlock(
             db_batch);
 
     prefix_db_->SaveLatestElectBlock(ec_block, db_batch);
-    std::cout << "ec_block size: " << ec_block.ByteSizeLong() << std::endl;
     ZJC_DEBUG("success save latest elect block: %u, %lu", ec_block.shard_network_id(), ec_block.elect_height());
     
     // std::string ec_val = common::Encode::HexEncode(tenon_block->SerializeAsString()) +
@@ -1618,8 +1616,6 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             db_batch);
         AddBlockItemToCache(tenon_block, db_batch);
         block_mgr_->GenesisNewBlock(tenon_block);
-
-        std::cout << "shard block size: " << tenon_block->ByteSizeLong() << std::endl;
         
         // for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
         for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
@@ -1628,8 +1624,6 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             }
         }
         // }
-
-        std::cout << "===================" << std::endl;
         // root 网络节点账户状态都在 shard3 中
         if (net_id == network::kRootCongressNetworkId) {
             block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
