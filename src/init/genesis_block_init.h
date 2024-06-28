@@ -162,8 +162,6 @@ private:
         return true;
     }
 
-    void ClearG2s(const std::vector<std::string>& prikeys);
-
     std::map<uint32_t, std::map<uint32_t, std::string>> net_pool_index_map_; // net => (pool => addr)
     std::map<uint32_t, std::string> root_account_with_pool_index_map_;
     common::Bitmap root_bitmap_{ common::kEachShardMaxNodeCount };
