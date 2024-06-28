@@ -437,8 +437,8 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
     auto qc_ptr = std::make_shared<QC>(
         common::GlobalInfo::Instance()->network_id(),
         pool_idx_,
-        vote_msg.view(),
         nullptr,
+        vote_msg.view(),
         vote_msg.view_block_hash(),
         vote_msg.commit_view_block_hash(),
         elect_height,
@@ -1008,8 +1008,8 @@ Status Hotstuff::ConstructVoteMsg(
     auto qc_ptr = std::make_shared<QC>(
         common::GlobalInfo::Instance()->network_id(),
         pool_idx_,
-        v_block->view,
         nullptr,
+        v_block->view,
         v_block->hash,
         commit_view_block_hash,
         elect_height,
