@@ -1621,13 +1621,13 @@ int GenesisBlockInit::CreateShardNodesBlocks(
 
         std::cout << "shard block size: " << tenon_block->ByteSizeLong() << std::endl;
         
-        for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
-            for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
-                if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
-                    block_mgr_->HandleJoinElectTx(*tenon_block, tenon_block->tx_list(tx_idx), db_batch);
-                }
+        // for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
+        for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
+            if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
+                block_mgr_->HandleJoinElectTx(*tenon_block, tenon_block->tx_list(tx_idx), db_batch);
             }
         }
+        // }
 
         std::cout << "===================" << std::endl;
         // root 网络节点账户状态都在 shard3 中
