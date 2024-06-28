@@ -90,6 +90,7 @@ struct QC {
             commit_view_block_hash(commit_hash), elect_height(elect_height),
             leader_idx(leader_idx){
         if (net_id > network::kConsensusShardEndNetworkId) {
+            assert(false);
             net_id = net_id - network::kConsensusWaitingShardOffset;
         }
 
