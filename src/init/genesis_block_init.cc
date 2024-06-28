@@ -130,7 +130,9 @@ int GenesisBlockInit::CreateGenesisBlocks(
             ComputeG2sForNodes(prikeys);
 #endif
         }
-    }    
+    }
+
+    db_->CompactRange("", "");
     
     return res;
 }
