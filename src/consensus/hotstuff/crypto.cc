@@ -199,7 +199,6 @@ Status Crypto::ReconstructAndVerifyThresSign(
     }
 
 #ifndef NDEBUG
-    auto elect_item = GetElectItem(common::GlobalInfo::Instance()->network_id(), elect_height);
     auto val = libBLS::ThresholdUtils::fieldElementToString(
         elect_item->common_pk().X.c0);
     auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(

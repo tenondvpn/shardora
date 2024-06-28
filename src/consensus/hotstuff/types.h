@@ -4,6 +4,8 @@
 
 #include <common/time_utils.h>
 #include <sstream>
+#include <string>
+
 #include <common/hash.h>
 #include <consensus/hotstuff/utils.h>
 #include <string>
@@ -90,18 +92,8 @@ struct QC {
         if (sign == nullptr) {
             bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
         }
-    }
 
-    QC() {
-        assert(false);
-        bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
-    };
-    
-    std::string Serialize() const;
-    bool Unserialize(const std::string& str);
-
-    inline HashStr msg_hash() const {
-        return GetQCMsgHash(
+        hash_ = GetQCMsgHash(
             network_id, 
             pool_index, 
             view, 
@@ -110,6 +102,35 @@ struct QC {
             elect_height, 
             leader_idx);
     }
+
+    QC(const std::string& s) {
+        if (!Unserialize(s)) {
+            assert(false);
+        }
+
+        if (bls_agg_sign == nullptr) {
+            bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
+        }
+
+        hash_ = GetQCMsgHash(
+            network_id, 
+            pool_index, 
+            view, 
+            view_block_hash, 
+            commit_view_block_hash, 
+            elect_height, 
+            leader_idx);
+    };
+    
+    std::string Serialize() const;
+    bool Unserialize(const std::string& str);
+
+    inline const HashStr& msg_hash() const {
+        return hash_;
+    }
+
+private:
+    std::string hash_;
 };
 
 // TODO TC 中可增加超时的 leader_idx，用于 Leader 选择黑名单
@@ -124,12 +145,7 @@ struct TC : public QC {
         QC(net_id, pool_idx, sign, v, "", "", elect_height, leader_idx) {
     }
 
-    TC() {
-        assert(false);
-    }
-
-    inline HashStr msg_hash() const {
-        return GetViewHash(network_id, pool_index, view, elect_height, leader_idx);
+    TC(const std::string& s) : QC(s) {
     }
 };
 
