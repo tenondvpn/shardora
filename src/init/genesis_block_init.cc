@@ -1390,8 +1390,9 @@ bool GenesisBlockInit::BlsAggSignViewBlock(
         const std::shared_ptr<hotstuff::ViewBlock>& vblock,
         std::shared_ptr<libff::alt_bn128_G1>& agg_sign) try {
     auto qc_ptr = std::make_shared<hotstuff::QC>(
-        common::GlobalInfo::Instance()->network_id(),
+            common::GlobalInfo::Instance()->network_id(),
             vblock->block->pool_index(),
+            nullptr,
             vblock->view,
             vblock->hash,
             vblock->hash,

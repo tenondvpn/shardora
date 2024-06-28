@@ -63,7 +63,7 @@ struct QC {
             uint64_t elect_height,
             uint32_t leader_idx) :
             network_id(net_id), pool_index(pool_idx),
-            bls_agg_sign(sign), view(v), view_block_hash(hash),
+            bls_agg_sign(sign), view(v), view_block_hash_(hash),
             commit_view_block_hash(commit_hash), elect_height(elect_height),
             leader_idx(leader_idx) {
         if (network_id >= network::kConsensusShardEndNetworkId) {
@@ -78,7 +78,7 @@ struct QC {
             network_id, 
             pool_index, 
             view, 
-            view_block_hash, 
+            view_block_hash_, 
             commit_view_block_hash, 
             elect_height, 
             leader_idx);
@@ -99,7 +99,7 @@ struct QC {
             network_id, 
             pool_index, 
             view, 
-            view_block_hash, 
+            view_block_hash_, 
             commit_view_block_hash, 
             elect_height, 
             leader_idx);
@@ -114,6 +114,10 @@ struct QC {
 
     inline const HashStr& msg_hash() const {
         return hash_;
+    }
+
+    inline const HashStr& view_block_hash() const {
+        return view_block_hash_;
     }
 
 protected:
@@ -136,7 +140,7 @@ protected:
     bool valid_ = false;
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
     View view; // view_block_hash 对应的 view，TODO 校验正确性，避免篡改
-    HashStr view_block_hash; // 是 view_block_hash 的 prepareQC
+    HashStr view_block_hash_; // 是 view_block_hash 的 prepareQC
     HashStr commit_view_block_hash; // 是 commit_view_block_hash 的 commitQC
     uint64_t elect_height; // 确定 epoch，用于验证 QC，理论上与 view_block_hash elect_height 相同，但对于同步场景，作为 commit_qc 时有时候 view_block 无法获取，故将 elect_height 放入 QC 中
     uint32_t leader_idx;
