@@ -150,7 +150,7 @@ void Pacemaker::OnLocalTimeout() {
     timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());    
     timeout_msg.set_sign_x(bls_sign_x);
     timeout_msg.set_sign_y(bls_sign_y);
-    timeout_msg.set_view_hash(view_hash);
+    timeout_msg.set_view_hash(tc_ptr->msg_hash());
     timeout_msg.set_view(CurView());
     timeout_msg.set_elect_height(elect_item->ElectHeight());
     timeout_msg.set_pool_idx(pool_idx_); // 用于分配线程
@@ -165,7 +165,7 @@ void Pacemaker::OnLocalTimeout() {
 
     ZJC_DEBUG("now send local timeout msg hash: %s, view: %u, pool: %u, "
         "elect height: %lu, bls_sign_x: %s, bls_sign_y: %s",
-        common::Encode::HexEncode(view_hash).c_str(), 
+        common::Encode::HexEncode(tc_ptr->msg_hash()).c_str(), 
         CurView(), pool_idx_, elect_item->ElectHeight(),
         bls_sign_x.c_str(),
         bls_sign_y.c_str());
