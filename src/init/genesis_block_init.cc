@@ -887,7 +887,6 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
     while (fgets(data, file_size + 1, root_gens_init_block_file) != nullptr) {
         // root_gens_init_block_file 中保存的是 root pool 账户 block，和时间快 block，同步过来
         auto view_block = std::make_shared<hotstuff::ViewBlock>();
-        auto commit_qc = std::make_shared<hotstuff::QC>();
         // auto tenon_block = std::make_shared<block::protobuf::Block>();
         std::string tmp_data(data, strlen(data) - 1);
         common::Split<> tmp_split(tmp_data.c_str(), '-', tmp_data.size());
@@ -898,14 +897,13 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
             ec_block_str = common::Encode::HexDecode(tmp_split[1]);
         }
 
-        if (!UnserializeViewBlockWithCommitQC(
-                common::Encode::HexDecode(block_str),
-                view_block,
-                commit_qc)) {
-            assert(false);
+        auto pb_v_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
+        auto str = common::Encode::HexDecode(block_str);
+        if (!pb_v_block->ParseFromString(str)) {
             return kInitError;
         }
-        
+        hotstuff::Proto2ViewBlock(*pb_v_block, view_block);
+        auto commit_qc = std::make_shared<hotstuff::QC>(pb_v_block->self_commit_qc_str());
         // if (!tenon_block->ParseFromString(common::Encode::HexDecode(block_str))) {
         //     assert(false);
         //     return kInitError;
@@ -1459,16 +1457,16 @@ std::shared_ptr<hotstuff::QC> GenesisBlockInit::CreateCommitQC(
     if (!agg_sign) {
         return nullptr;
     }
-    auto qc = std::make_shared<hotstuff::QC>();
-    qc->bls_agg_sign = agg_sign;
-    qc->view = vblock->view;
-    qc->elect_height = vblock->ElectHeight();
-    qc->view_block_hash = vblock->hash;
-    qc->commit_view_block_hash = vblock->hash;
-    qc->leader_idx = vblock->leader_idx;
-    qc->network_id = common::GlobalInfo::Instance()->network_id();
-    qc->pool_index = vblock->block->pool_index();    
-    return qc;
+    
+    return std::make_shared<hotstuff::QC>(
+        common::GlobalInfo::Instance()->network_id(),
+        vblock->block->pool_index(),
+        agg_sign,
+        vblock->view,
+        vblock->hash,
+        vblock->hash,
+        vblock->ElectHeight(),
+        vblock->leader_idx);
 }
 
 void GenesisBlockInit::AddBlockItemToCache(
