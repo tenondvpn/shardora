@@ -249,7 +249,7 @@ public:
 
     std::shared_ptr<ViewBlock> QCRef(const std::shared_ptr<ViewBlock>& view_block) {
         if (view_block->qc) {
-            auto it2 = view_blocks_info_.find(view_block->qc->view_block_hash);
+            auto it2 = view_blocks_info_.find(view_block->qc->view_block_hash());
             if (it2 == view_blocks_info_.end()) {
                 return nullptr;
             }

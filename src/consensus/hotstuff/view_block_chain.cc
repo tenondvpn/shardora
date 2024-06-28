@@ -53,7 +53,7 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
         SetViewBlockToMap(view_block->hash, view_block);
         view_blocks_at_height_[view_block->view].push_back(view_block);
         AddChildrenToMap(view_block->hash, start_block_);
-        SetQcOf(start_block_->qc->view_block_hash, start_block_->qc);
+        SetQcOf(start_block_->qc->view_block_hash(), start_block_->qc);
         // 更新 start_block_
         start_block_ = view_block;
         return Status::kSuccess;
@@ -71,7 +71,7 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     }
 
     // 如果有 qc，则 qc 指向的块必须存在
-    if (view_block->qc && !view_block->qc->view_block_hash.empty() && !QCRef(view_block)) {
+    if (view_block->qc && !view_block->qc->view_block_hash().empty() && !QCRef(view_block)) {
         ZJC_ERROR("view block qc error, hash: %s, view: %lu",
             common::Encode::HexEncode(view_block->hash).c_str(), view_block->view);        
         return Status::kError;
@@ -80,7 +80,7 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     SetViewBlockToMap(view_block->hash, view_block);
     view_blocks_at_height_[view_block->view].push_back(view_block);
     AddChildrenToMap(view_block->parent_hash, view_block);
-    SetQcOf(view_block->qc->view_block_hash, view_block->qc);
+    SetQcOf(view_block->qc->view_block_hash(), view_block->qc);
     return Status::kSuccess;
 }
 

@@ -570,7 +570,7 @@ Status HotstuffSyncer::processResponseQcTc(
     }
 
     // 设置 view_block 的 qc
-    view_block_chain(pool_idx)->SetQcOf(highqc->view_block_hash, highqc);
+    view_block_chain(pool_idx)->SetQcOf(highqc->view_block_hash(), highqc);
 
     ZJC_DEBUG("response received qctc pool_idx: %d, tc: %d, qc: %d",
         pool_idx, hightc->view, highqc->view);
@@ -652,7 +652,7 @@ Status HotstuffSyncer::processResponseChain(
     for (const auto& qc_str : view_block_qc_strs) {
         auto view_block_qc = std::make_shared<QC>(qc_str);
         if (view_block_qc->valid()) {
-            view_block_qc_map[view_block_qc->view_block_hash] = view_block_qc;
+            view_block_qc_map[view_block_qc->view_block_hash()] = view_block_qc;
         }
     }    
 
@@ -673,7 +673,7 @@ Status HotstuffSyncer::processResponseChain(
         }
         auto view_block_qc = qc_it->second;
         // 如果本地有该 view_block_qc 对应的 view_block，则不用验证 qc 了并且跳过该块，节省 CPU
-        if (!chain->Has(view_block_qc->view_block_hash) &&
+        if (!chain->Has(view_block_qc->view_block_hash()) &&
             crypto(pool_idx)->VerifyQC(
                 common::GlobalInfo::Instance()->network_id(), 
                 view_block_qc) != Status::kSuccess) {

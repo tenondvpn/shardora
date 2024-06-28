@@ -168,7 +168,7 @@ public:
         }
         // highqc 之前连续三个块都是空交易，则认为 stuck
         auto v_block1 = std::make_shared<ViewBlock>();
-        Status s = view_block_chain()->Get(pacemaker()->HighQC()->view_block_hash, v_block1);
+        Status s = view_block_chain()->Get(pacemaker()->HighQC()->view_block_hash(), v_block1);
         if (s != Status::kSuccess || v_block1->block->tx_list_size() > 0) {
             return false;
         }
@@ -188,7 +188,7 @@ public:
     std::shared_ptr<QC> GetQcOf(const std::shared_ptr<ViewBlock>& v_block) {
         auto qc = view_block_chain()->GetQcOf(v_block);
         if (!qc) {
-            if (pacemaker()->HighQC()->view_block_hash == v_block->hash) {
+            if (pacemaker()->HighQC()->view_block_hash() == v_block->hash) {
                 view_block_chain()->SetQcOf(v_block, pacemaker()->HighQC());
                 return pacemaker()->HighQC();
             }
