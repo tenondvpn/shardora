@@ -6,14 +6,15 @@
 #include <sstream>
 #include <string>
 
+#include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
+
 #include <common/hash.h>
 #include <consensus/hotstuff/utils.h>
-#include <string>
 #include <protos/block.pb.h>
 #include <protos/view_block.pb.h>
-#include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
-#include <tools/utils.h>
 #include <protos/prefix_db.h>
+#include "network/network_utils.h"
+#include <tools/utils.h>
 
 namespace shardora {
 
