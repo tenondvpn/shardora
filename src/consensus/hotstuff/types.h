@@ -99,7 +99,7 @@ struct QC {
         }
 
         hash_ = GetQCMsgHash(
-            network_id, 
+            net_id, 
             pool_index, 
             view, 
             view_block_hash, 
