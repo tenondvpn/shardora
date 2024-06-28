@@ -287,6 +287,7 @@ public:
         }
 
         tmblock.set_height(block_height);
+        std::cout << "tmblock size: " << tmblock.ByteSizeLong() << std::endl;
         db_batch.Put(key, tmblock.SerializeAsString());
         ZJC_DEBUG("dddddd success latest time block: %lu", block_height);
     }
@@ -598,6 +599,7 @@ public:
         key.append((char*)&pool_index, sizeof(pool_index));
         key.append((char*)&block_height, sizeof(block_height));
         batch.Put(key, pb_view_block.SerializeAsString());
+        std::cout << "view block size: " << pb_view_block.ByteSizeLong() << std::endl;
     }
 
     bool GetViewBlockInfo(
@@ -753,6 +755,7 @@ public:
             const bls::protobuf::VerifyVecBrdReq& verfy_req) {
         std::string key = kBlsVerifyPrefex + id;
         std::string val = verfy_req.SerializeAsString();
+        std::cout << "bls g2 size: " << verfy_req.ByteSizeLong() << std::endl;
         auto st = db_->Put(key, val);
         if (!st.ok()) {
             ZJC_FATAL("write db failed!");
@@ -1269,6 +1272,7 @@ public:
         }
 
         auto st = db_->Put(key, enc_data);
+        std::cout << "local poly size: " << enc_data.size() << std::endl;
         if (!st.ok()) {
             ZJC_FATAL("write db failed!");
         }
