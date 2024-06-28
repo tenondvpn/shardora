@@ -89,6 +89,10 @@ struct QC {
             bls_agg_sign(sign), view(v), view_block_hash(hash),
             commit_view_block_hash(commit_hash), elect_height(elect_height),
             leader_idx(leader_idx){
+        if (net_id > network::kConsensusShardEndNetworkId) {
+            net_id = net_id - network::kConsensusWaitingShardOffset;
+        }
+
         if (sign == nullptr) {
             bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
         }

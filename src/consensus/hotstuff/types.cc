@@ -16,7 +16,7 @@ HashStr GetQCMsgHash(
         const HashStr& commit_view_block_hash,
         uint64_t elect_height,
         uint32_t leader_idx) {
-    std::stringstream ss;
+    std::stringstream ss;    
     assert(net_id <= network::kConsensusShardEndNetworkId);
     assert(pool_index < common::kInvalidPoolIndex);
     ss << net_id << pool_index << view <<
