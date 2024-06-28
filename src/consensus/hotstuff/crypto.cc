@@ -302,7 +302,7 @@ Status Crypto::VerifyQC(
         return Status::kError;
     }
 
-    if (qc->view == GenesisView) {
+    if (qc->view() == GenesisView) {
         return Status::kSuccess;
     }
     

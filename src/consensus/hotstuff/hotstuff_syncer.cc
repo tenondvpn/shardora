@@ -573,7 +573,7 @@ Status HotstuffSyncer::processResponseQcTc(
     view_block_chain(pool_idx)->SetQcOf(highqc->view_block_hash(), highqc);
 
     ZJC_DEBUG("response received qctc pool_idx: %d, tc: %d, qc: %d",
-        pool_idx, hightc->view, highqc->view);
+        pool_idx, hightc->view(), highqc->view());
 
     // TODO 验证 qc 和 tc
     pm->AdvanceView(new_sync_info()->WithQC(highqc)->WithTC(hightc));
@@ -683,7 +683,7 @@ Status HotstuffSyncer::processResponseChain(
         // 记录同步链中最高的 Qc，用于 commit
         if (!high_commit_qc) {
             high_commit_qc = view_block_qc;
-        } else if (high_commit_qc->view < view_block_qc->view) {
+        } else if (high_commit_qc->view() < view_block_qc->view()) {
             high_commit_qc = view_block_qc;
         }
         

@@ -83,14 +83,14 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
 }
 
 void Pacemaker::UpdateHighQC(const std::shared_ptr<QC>& qc) {
-    if (high_qc_->view < qc->view) {
+    if (high_qc_->view < qc->view()) {
         high_qc_ = qc;
 
     }
 }
 
 void Pacemaker::UpdateHighTC(const std::shared_ptr<TC>& tc) {
-    if (high_tc_->view < tc->view) {
+    if (high_tc_->view < tc->view()) {
         high_tc_ = tc;
         leader_rotation_->SetExtraNonce(std::to_string(high_tc_->view));
     }
@@ -254,7 +254,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("====4.1 pool: %d, create tc, view: %lu, member: %d, "
         "tc view: %lu, cur view: %lu, high_qc_: %lu, high_tc_: %lu",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
-        tc->view, CurView(), high_qc_->view, high_tc_->view);
+        tc->view(), CurView(), high_qc_->view, high_tc_->view);
     AdvanceView(new_sync_info()->WithTC(tc));
     // NewView msg broadcast
     // TC 在 Propose 之前单独同步，不然假设 Propose 卡死，Replicas 就会一直卡死在这个视图
@@ -271,7 +271,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
 
     if (propose_st != Status::kSuccess && new_view_fn_) {
         ZJC_DEBUG("====4.2 pool: %d, broadcast tc, view: %d, member: %d, view: %d",
-            pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view);
+            pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view());
         new_view_fn_(new_sync_info()->WithTC(HighTC())->WithQC(HighQC()));
     }
 }

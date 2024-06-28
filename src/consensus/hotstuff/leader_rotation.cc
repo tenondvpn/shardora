@@ -54,7 +54,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
             leader->index,
             common::Encode::HexEncode(leader->id).c_str(),
             common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port,
-            qc->view);
+            qc->view());
     }
 
     ZJC_DEBUG("pool: %d Leader is %d, local: %d, id: %s, ip: %s, port: %d, "
@@ -64,7 +64,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         GetLocalMemberIdx(),
         common::Encode::HexEncode(leader->id).c_str(),
         common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port,
-        qc->view,
+        qc->view(),
         now_time_num,
         extra_nonce_.c_str());
     return leader;
