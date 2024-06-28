@@ -62,7 +62,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
         UpdateHighTC(sync_info->tc);
     }
 
-    auto new_v = std::max(high_qc_->view, high_tc_->view) + 1;
+    auto new_v = std::max(high_qc_->view(), high_tc_->view()) + 1;
     if (new_v <= cur_view_) {
         // 旧的 view
         return Status::kOldView;
@@ -83,16 +83,16 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
 }
 
 void Pacemaker::UpdateHighQC(const std::shared_ptr<QC>& qc) {
-    if (high_qc_->view < qc->view()) {
+    if (high_qc_->view() < qc->view()) {
         high_qc_ = qc;
 
     }
 }
 
 void Pacemaker::UpdateHighTC(const std::shared_ptr<TC>& tc) {
-    if (high_tc_->view < tc->view()) {
+    if (high_tc_->view() < tc->view()) {
         high_tc_ = tc;
-        leader_rotation_->SetExtraNonce(std::to_string(high_tc_->view));
+        leader_rotation_->SetExtraNonce(std::to_string(high_tc_->view()));
     }
 }
 
@@ -114,16 +114,17 @@ void Pacemaker::OnLocalTimeout() {
         return;
     }
 
-    // auto leader_idx = leader_rotation_->GetLeader()->index;    
-    auto view_hash = GetViewHash(
+    // auto leader_idx = leader_rotation_->GetLeader()->index;  
+    auto tc_ptr = std::make_shared<TC>(
         common::GlobalInfo::Instance()->network_id(),
         pool_idx_,
-        CurView(), elect_item->ElectHeight(), 0);    
+        nullptr,
+        CurView(), elect_item->ElectHeight(), 0);  
     // if view is last one, deal directly.
     // 更换 epoch 后重新打包
     if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
             last_timeout_->header.hotstuff_timeout_proto().view() >= CurView() &&
-            last_timeout_->header.hotstuff_timeout_proto().view_hash() == view_hash) {
+            last_timeout_->header.hotstuff_timeout_proto().view_hash() == tc_ptr->msg_hash()) {
         SendTimeout(last_timeout_);
         return;
     }
@@ -138,7 +139,7 @@ void Pacemaker::OnLocalTimeout() {
     if (crypto_->PartialSign(
             common::GlobalInfo::Instance()->network_id(),
             elect_item->ElectHeight(),
-            view_hash,
+            tc_ptr->msg_hash(),
             &bls_sign_x,
             &bls_sign_y) != Status::kSuccess) {
         return;
@@ -190,7 +191,7 @@ void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& 
             common::Encode::HexEncode(crypto_->security()->GetAddress()).c_str(),
             msg.hash64(),
             msg.hotstuff_timeout_proto().view(),
-            HighQC()->view);
+            HighQC()->view());
         if (leader->public_ip == 0 || leader->public_port == 0) {
             network::Route::Instance()->Send(msg_ptr);
         } else {
@@ -223,8 +224,8 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     // 统计 bls 签名
     auto& timeout_proto = msg.hotstuff_timeout_proto();
     if (timeout_proto.view() < CurView() || 
-            timeout_proto.view() < high_qc_->view || 
-            timeout_proto.view() < high_tc_->view) {
+            timeout_proto.view() < high_qc_->view() || 
+            timeout_proto.view() < high_tc_->view()) {
         return;
     }
 
