@@ -11,6 +11,7 @@
 ## Run local shardora network
       git clone git@github.com:tenondvpn/shardora.git
       sh local.sh
+      
 
 ## Transaction test
       cd ./cbuild_Debug && make txcli
