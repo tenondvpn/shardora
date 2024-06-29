@@ -28,19 +28,24 @@ public:
         // change
         if (tx_info.key().empty() ||
                 tx_info.key() != protos::kNormalTos ||
-                tx_info.value().empty() ||
-                tx_info.value().size() % 32 != 0) {
+                tx_info.value().empty()) {
+            return consensus::kConsensusError;
+        }
+
+        pools::protobuf::AllToTxMessage all_to_txs;
+        if (!all_to_txs.ParseFromString(tx_info.value())) {
             return consensus::kConsensusError;
         }
 
         uint32_t offset = 0;
-        uint32_t count = tx_info.value().size() / 32;
-        for (uint32_t i = 0; i < count; ++i) {
+        for (uint32_t i = 0; i < all_to_txs.to_tx_arr_size(); ++i) {
             auto storage = block_tx->add_storages();
-            std::string tmp(tx_info.value().c_str() + offset, 32);
             storage->set_key(protos::kNormalToShards);
-            storage->set_val_hash(tmp);
-            offset += 32;
+            storage->set_value(all_to_txs.to_tx_arr(i).SerializeAsString());
+            ZJC_DEBUG("success add normal to %s, val: %s", 
+                protos::kNormalToShards.c_str(), 
+                common::Encode::HexEncode(storage->value()).c_str());
+            assert(!storage->value().empty());
         }
         
         return consensus::kConsensusSuccess;

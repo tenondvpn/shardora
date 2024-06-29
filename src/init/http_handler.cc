@@ -196,7 +196,8 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
         return;
     }
 
-    ZJC_DEBUG("gid: %s, frompk: %s, to: %s, amount: %s, gas_limit: %s, gas_price: %s, sign_r: %s, sign_s: %s, sign_v: %s, shard_id: %s",
+    ZJC_DEBUG("gid: %s, frompk: %s, to: %s, amount: %s, gas_limit: %s, "
+        "gas_price: %s, sign_r: %s, sign_s: %s, sign_v: %s, shard_id: %s",
         gid, frompk, to, amount, gas_limit, gas_price, sign_r, sign_s, sign_v, shard_id);
     uint64_t amount_val = 0;
     if (!common::StringUtil::ToUint64(std::string(amount), &amount_val)) {
@@ -290,7 +291,8 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     std::string res = std::string("ok");
     evbuffer_add(req->buffer_out, res.c_str(), res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
-    ZJC_INFO("http transaction success %s, %s", frompk, to);
+    ZJC_DEBUG("http transaction success %s, %s, gid: %s", common::Encode::HexEncode(
+            http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk))).c_str(), to, gid);
 }
 
 static void QueryContract(evhtp_request_t* req, void* data) {
@@ -384,6 +386,13 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     }
 	
     std::string qdata((char*)result.output_data, result.output_size);
+    ZJC_DEBUG("LLLLLhttp: %s, size %d ", common::Encode::HexEncode(qdata).c_str(), result.output_size);
+    if (result.output_size < 64) {
+        auto res = common::Encode::HexEncode(qdata); 
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_OK);
+        return;
+    }
     evmc_bytes32 len_bytes;
     memcpy(len_bytes.bytes, qdata.c_str() + 32, 32);
     uint64_t len = zjcvm::EvmcBytes32ToUint64(len_bytes);
@@ -414,8 +423,14 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
 
     std::string addr = common::Encode::HexDecode(tmp_addr);
     auto addr_info = prefix_db->GetAddressInfo(addr);
+
     if (addr_info == nullptr) {
-        std::string res = "get address failed: " + addr;
+        std::string res = "get address failed from db: " + addr;
+        addr_info =  http_handler->acc_mgr()->GetAccountInfo(addr);
+    }
+
+    if (addr_info == nullptr) {
+        std::string res = "get address failed from cache: " + addr;
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
         return;

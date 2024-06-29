@@ -346,7 +346,14 @@ public:
     }
 
     bool PrepareHashNotConsensus() {
-        if (consensus_prepare_all_count_  > min_oppose_member_count_ + consensus_prepare_max_count_) {
+        uint32_t diff_count = 0;
+        for (auto iter = prepare_block_map_.begin(); iter != prepare_block_map_.end(); ++iter) {
+            if (iter->second->precommit_aggree_set_.size() != consensus_prepare_max_count_) {
+                diff_count += iter->second->precommit_aggree_set_.size();
+            }
+        }
+
+        if (diff_count  >= min_oppose_member_count_) {
             return true;
         }
 
@@ -538,6 +545,14 @@ public:
         return now_tm - consensus_prepare_tm_ms_;
     }
 
+    uint64_t block_new_height() const {
+        return block_new_height_;
+    }
+
+    uint64_t block_new_timestamp() const {
+        return block_new_timestamp_;
+    }
+    
     // TODO: for test
     transport::MessagePtr msg_ptr = nullptr;
 
@@ -605,6 +620,8 @@ protected:
     uint8_t invalid_prepare_txs_[kMaxTxCount] = { 0 };
     std::set<uint8_t> invalid_txs_;
     uint64_t consensus_prepare_tm_ms_ = 0;
+    uint64_t block_new_height_ = 0;
+    uint64_t block_new_timestamp_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(Zbft);
 public:

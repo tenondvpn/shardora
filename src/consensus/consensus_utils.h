@@ -15,6 +15,14 @@ namespace shardora {
 
 namespace consensus {
 
+// hash128(gid + from + to + amount + type + attrs(k:v))
+std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info);
+// prehash + network_id + height + random + elect version + txes's hash
+std::string GetBlockHash(const block::protobuf::Block& block);
+typedef std::function<void(
+    std::shared_ptr<block::protobuf::Block>& block,
+    db::DbWriteBatch& db_batch)> BlockCacheCallback;
+
 enum ConsensusErrorCode {
     kConsensusSuccess = 0,
     kConsensusError = 1,
@@ -159,8 +167,10 @@ typedef std::function<int(const std::shared_ptr<block::protobuf::Block>& block)>
 struct WaitingTxsItem {
     WaitingTxsItem()
         : max_txs_hash_count(0),
-        tx_type(pools::protobuf::kNormalFrom) {}
+        tx_type(pools::protobuf::kNormalFrom) {
+        }
     std::map<std::string, pools::TxItemPtr> txs;
+    std::unordered_map<std::string, std::string> kvs;
     std::unordered_map<std::string, uint32_t> all_hash_count;
     std::string max_txs_hash;
     uint32_t max_txs_hash_count;

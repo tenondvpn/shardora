@@ -80,6 +80,23 @@ int Zbft::Init(
 
     db_batch_ = std::make_shared<db::DbWriteBatch>();
     assert(leader_mem_ptr_ != nullptr);
+
+    uint64_t pool_height = pools_mgr_->latest_height(txs_ptr_->pool_index);
+    uint64_t preblock_time = pools_mgr_->latest_timestamp(txs_ptr_->pool_index);
+    if (pool_height == common::kInvalidUint64) {
+        ZJC_DEBUG("pool index not inited: %u", txs_ptr_->pool_index);
+        return kConsensusError;
+    }
+    
+    block_new_height_ = pool_height + 1;
+    if (this_node_is_leader_) {
+        uint64_t cur_time = common::TimeUtils::TimestampMs();
+        if (preblock_time < cur_time) 
+            block_new_timestamp_ = cur_time; 
+        else
+            block_new_timestamp_ = preblock_time;
+    }
+
     return kConsensusSuccess;
 }
 
@@ -126,7 +143,8 @@ int Zbft::Prepare(bool leader) {
 int Zbft::LeaderCreatePrepare(bool leader) {
     local_member_index_ = leader_index_;
     if (LeaderCallTransaction(leader) != kConsensusSuccess) {
-        assert(false);
+        // assert(false);
+        ZJC_ERROR("not all tx valid!");
         return kConsensusError;
     }
 
@@ -163,7 +181,6 @@ int Zbft::LeaderPrecommitOk(
         index,
         prepare_hash,
         backup_sign);
-
     if ((uint32_t)valid_count >= min_aggree_member_count_) {
         int32_t res = kConsensusAgree;
         if (prepare_block_->hash() != prepare_hash) {
@@ -315,7 +332,7 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
                 elect_height_, network_id_, common::Encode::HexEncode(prpare_hash).c_str(),
                 common::Encode::HexEncode(sign_precommit_hash).c_str(),
                 common::Encode::HexEncode(precommit_bls_agg_verify_hash_).c_str());
-            assert(false);
+            //assert(false);
             return kConsensusError;
         }
 
@@ -748,11 +765,7 @@ int Zbft::DoTransaction(bool leader) {
     assert(zjc_block.height() > 0);
 //     ZJC_DEBUG("add new block: %lu", zjc_block.height());
     if (leader) {
-        uint64_t cur_time = common::TimeUtils::TimestampMs();
-        if (preblock_time < cur_time) 
-            zjc_block.set_timestamp(cur_time); 
-        else
-            zjc_block.set_timestamp(preblock_time); 
+        zjc_block.set_timestamp(block_new_timestamp_); 
     } else {
         // todo backup节点使用leader节点时间
         uint64_t cur_time = common::TimeUtils::TimestampMs();
@@ -760,12 +773,16 @@ int Zbft::DoTransaction(bool leader) {
             ZJC_ERROR("timestamp is error. cur_time = %lu, preblock_time = %lu, leader_timestamp = %lu ", cur_time, preblock_time, leader_timestamp_);
             return kConsensusError;
         }
+
         zjc_block.set_timestamp(leader_timestamp_);
     }
     
-    if (txs_ptr_->tx_type != pools::protobuf::kNormalFrom) {
+    // if (txs_ptr_->tx_type != pools::protobuf::kNormalFrom) {
+        assert(tm_block_mgr_->LatestTimestampHeight() > 0);
         zjc_block.set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
-    }
+    // } else {
+    //     assert(false);
+    // }
 
     zjc_block.set_electblock_height(elect_height_);
     assert(elect_height_ >= 1);
@@ -777,6 +794,7 @@ int Zbft::DoTransaction(bool leader) {
     }
 
     zjc_block.set_is_commited_block(false);
+    // 没用 change_leader_invalid_hashs，永远是空
     std::vector<std::string> change_leader_invalid_hashs;
     pools_mgr_->GetHeightInvalidChangeLeaderHashs(
         zjc_block.pool_index(),
@@ -786,6 +804,7 @@ int Zbft::DoTransaction(bool leader) {
         zjc_block.add_change_leader_invalid_hashs(change_leader_invalid_hashs[i]);
     }
 
+    // 重新计算 hash 值
     zjc_block.set_hash(GetBlockHash(zjc_block));
     ZJC_DEBUG("pool index: %d, height: %lu, prehash: %s, hash: %s",
         pool_index(),
@@ -828,6 +847,8 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
         }
 
         block_tx.set_status(kConsensusSuccess);
+
+        ZJC_DEBUG("tx_item type: %d ", ProtobufToJson(iter->second->tx_info));
         int do_tx_res = iter->second->HandleTx(
             zjc_block,
             db_batch_,

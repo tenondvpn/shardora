@@ -1,7 +1,10 @@
 export LD_LIBRARY_PATH=/usr/local/python3/lib/python3.10/:$LD_LIBRARY_PATH
 
+#文件名
 FILE_NAME='./local.sh'
+#获取文件做后修改时间戳
 LAST_MODIFY_TIMESTAMP=`stat -c %Y  $FILE_NAME`
+#格式化时间戳
 formart_date=`date '+%Y%m%d%H%M%S' -d @$LAST_MODIFY_TIMESTAMP`
 old_tm=`cat modify_time`
 echo $old_tm
@@ -13,7 +16,11 @@ fi
 
 echo $formart_date > modify_time
 
-python3 gen_nodes_conf.py -n 20 -s 1 -m 127.0.0.1 -r 3 -m0 127.0.0.1
-tail -n 265 nodes_conf_n50_s1_m5.yml >> ./nodes_conf_n20_s1_m1.yml
-python3 gen_genesis_script.py --config "./nodes_conf_n20_s1_m1.yml"
-sh deploy_genesis.sh Debug
+# python gen_nodes_conf.py -n 10 -s 1 -m 127.0.0.1 -r 3 -m0 127.0.0.1
+# tail -n 261 nodes_conf_n50_s1_m5.yml >> ./nodes_conf_n10_s1_m1.yml
+# python3 gen_genesis_script.py --config "./nodes_conf_n10_s1_m1.yml"
+#pkill -f zjchain
+sh deploy_genesis.sh Debug || true
+sleep 5
+sh new_nodes_dispatch_coin.sh  || true
+python test_accounts.py 

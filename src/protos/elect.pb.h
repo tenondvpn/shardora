@@ -959,6 +959,20 @@ class member : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::google::protobuf::uint64 mining_amount() const;
   void set_mining_amount(::google::protobuf::uint64 value);
 
+  // optional uint64 fts_value = 4;
+  bool has_fts_value() const;
+  void clear_fts_value();
+  static const int kFtsValueFieldNumber = 4;
+  ::google::protobuf::uint64 fts_value() const;
+  void set_fts_value(::google::protobuf::uint64 value);
+
+  // optional uint64 consensus_gap = 5;
+  bool has_consensus_gap() const;
+  void clear_consensus_gap();
+  static const int kConsensusGapFieldNumber = 5;
+  ::google::protobuf::uint64 consensus_gap() const;
+  void set_consensus_gap(::google::protobuf::uint64 value);
+
   // optional int32 pool_idx_mod_num = 2;
   bool has_pool_idx_mod_num() const;
   void clear_pool_idx_mod_num();
@@ -974,12 +988,18 @@ class member : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   void clear_has_pool_idx_mod_num();
   void set_has_mining_amount();
   void clear_has_mining_amount();
+  void set_has_fts_value();
+  void clear_has_fts_value();
+  void set_has_consensus_gap();
+  void clear_has_consensus_gap();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr pubkey_;
   ::google::protobuf::uint64 mining_amount_;
+  ::google::protobuf::uint64 fts_value_;
+  ::google::protobuf::uint64 consensus_gap_;
   ::google::protobuf::int32 pool_idx_mod_num_;
   friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
 };
@@ -3536,13 +3556,13 @@ inline void member::set_allocated_pubkey(::std::string* pubkey) {
 
 // optional int32 pool_idx_mod_num = 2;
 inline bool member::has_pool_idx_mod_num() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void member::set_has_pool_idx_mod_num() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void member::clear_has_pool_idx_mod_num() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void member::clear_pool_idx_mod_num() {
   pool_idx_mod_num_ = 0;
@@ -3580,6 +3600,54 @@ inline void member::set_mining_amount(::google::protobuf::uint64 value) {
   set_has_mining_amount();
   mining_amount_ = value;
   // @@protoc_insertion_point(field_set:shardora.elect.protobuf.member.mining_amount)
+}
+
+// optional uint64 fts_value = 4;
+inline bool member::has_fts_value() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void member::set_has_fts_value() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void member::clear_has_fts_value() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void member::clear_fts_value() {
+  fts_value_ = GOOGLE_ULONGLONG(0);
+  clear_has_fts_value();
+}
+inline ::google::protobuf::uint64 member::fts_value() const {
+  // @@protoc_insertion_point(field_get:shardora.elect.protobuf.member.fts_value)
+  return fts_value_;
+}
+inline void member::set_fts_value(::google::protobuf::uint64 value) {
+  set_has_fts_value();
+  fts_value_ = value;
+  // @@protoc_insertion_point(field_set:shardora.elect.protobuf.member.fts_value)
+}
+
+// optional uint64 consensus_gap = 5;
+inline bool member::has_consensus_gap() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void member::set_has_consensus_gap() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void member::clear_has_consensus_gap() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void member::clear_consensus_gap() {
+  consensus_gap_ = GOOGLE_ULONGLONG(0);
+  clear_has_consensus_gap();
+}
+inline ::google::protobuf::uint64 member::consensus_gap() const {
+  // @@protoc_insertion_point(field_get:shardora.elect.protobuf.member.consensus_gap)
+  return consensus_gap_;
+}
+inline void member::set_consensus_gap(::google::protobuf::uint64 value) {
+  set_has_consensus_gap();
+  consensus_gap_ = value;
+  // @@protoc_insertion_point(field_set:shardora.elect.protobuf.member.consensus_gap)
 }
 
 // -------------------------------------------------------------------

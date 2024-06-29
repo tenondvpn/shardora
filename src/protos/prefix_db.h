@@ -3,6 +3,7 @@
 #include <evmc/evmc.hpp>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_init.hpp>
 #include <libbls/tools/utils.h>
+#include <protos/view_block.pb.h>
 
 #include "common/encode.h"
 #include "common/global_info.h"
@@ -21,6 +22,8 @@
 #include "protos/timeblock.pb.h"
 #include "protos/tx_storage_key.h"
 #include "security/security.h"
+#include <zjcvm/zjcvm_utils.h>
+#include "consensus/hotstuff/types.h"
 
 namespace shardora {
 
@@ -72,13 +75,16 @@ static const std::string kCrossCheckHeightPrefix = "aj\x01";
 static const std::string kElectHeightWithBlsCommonPkPrefix = "ak\x01";
 static const std::string kBftInvalidHeightHashs = "al\x01";
 static const std::string kTempBftInvalidHeightHashs = "am\x01";
+static const std::string kViewBlockInfoPrefix = "an\x01";
 
 class PrefixDb {
 public:
     PrefixDb(const std::shared_ptr<db::Db>& db_ptr) : db_(db_ptr) {
     }
 
-    ~PrefixDb() {}
+    ~PrefixDb() {
+        Destroy();
+    }
 
     void InitGidManager() {
         db_batch_tick_.CutOff(
@@ -89,7 +95,6 @@ public:
     void Destroy() {
         for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
             db_->Put(db_batch_[i]);
-            db_batch_[i].Clear();
         }
     }
 
@@ -119,6 +124,15 @@ public:
             const std::string& val,
             db::DbWriteBatch& write_batch) {
         write_batch.Put(kAddressPrefix + addr, val);
+    }
+
+    void AddNowElectHeight2Plege(const std::string& addr , const uint64_t height , db::DbWriteBatch& db_batch) {
+        auto key = common::Encode::HexDecode(addr) + common::Encode::HexDecode("0000000000000000000000000000000000000000000000000000000000000000");
+        evmc::bytes32 tmp_val{};
+        zjcvm::Uint64ToEvmcBytes32(tmp_val, height);
+
+        auto value =  std::string((char*)tmp_val.bytes, sizeof(tmp_val.bytes));
+        SaveTemporaryKv(key, value, db_batch);
     }
 
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& addr) {
@@ -307,7 +321,8 @@ public:
         key.append((char*)&pool_index, sizeof(pool_index));
         key.append((char*)&height, sizeof(height));
         batch.Put(key, block_hash);
-        ZJC_DEBUG("success save block with height: %u, %u, %lu", sharding_id, pool_index, height);
+        ZJC_DEBUG("save sync key value %u_%u_%lu, success save block with height: %u, %u, %lu",
+            sharding_id, pool_index, height, sharding_id, pool_index, height);
     }
 
     bool GetBlockHashWithBlockHeight(
@@ -326,7 +341,8 @@ public:
             return false;
         }
 
-        ZJC_DEBUG("success get block with height: %u, %u, %lu", sharding_id, pool_index, height);
+        ZJC_DEBUG("get sync key value %u_%u_%lu, success get block with height: %u, %u, %lu",
+            sharding_id, pool_index, height, sharding_id, pool_index, height);
         return true;
     }
 
@@ -335,7 +351,9 @@ public:
             return false;
         }
 
+#ifndef ENABLE_HOTSTUFF
         assert(block.has_bls_agg_sign_x() && block.has_bls_agg_sign_y());
+#endif
         std::string key;
         key.reserve(48);
         key.append(kBlockPrefix);
@@ -347,7 +365,7 @@ public:
             block.hash(),
             batch);
         batch.Put(key, block.SerializeAsString());
-        if (block.tx_list(0).step() == pools::protobuf::kConsensusRootTimeBlock) {
+        if (!block.tx_list().empty() && block.tx_list(0).step() == pools::protobuf::kConsensusRootTimeBlock) {
             ZJC_DEBUG("ddddddd save tm block: %lu", block.height());
         }
         return true;
@@ -367,8 +385,9 @@ public:
         if (!block->ParseFromString(block_str)) {
             return false;
         }
-
+#ifndef ENABLE_HOTSTUFF
         assert(block->has_bls_agg_sign_x() && block->has_bls_agg_sign_y());
+#endif
         return true;
     }
 
@@ -567,6 +586,69 @@ public:
         return true;
     }
 
+    void SaveViewBlockInfo(
+            uint32_t sharding_id,
+            uint32_t pool_index,
+            uint64_t block_height,
+            const view_block::protobuf::ViewBlockItem& pb_view_block) {
+        std::string key;
+        key.reserve(32);
+        key.append(kViewBlockInfoPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        key.append((char*)&pool_index, sizeof(pool_index));
+        key.append((char*)&block_height, sizeof(block_height));
+        // batch.Put(key, pb_view_block.SerializeAsString());
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        db_batch_[thread_idx].Put(key, pb_view_block.SerializeAsString());
+    }
+
+    bool GetViewBlockInfo(
+            uint32_t sharding_id,
+            uint32_t pool_index,
+            uint64_t block_height,
+            view_block::protobuf::ViewBlockItem* pb_view_block) {
+        std::string key;
+        key.reserve(32);
+        key.append(kViewBlockInfoPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        key.append((char*)&pool_index, sizeof(pool_index));
+        key.append((char*)&block_height, sizeof(block_height));
+        std::string val;
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        if (db_batch_[thread_idx].Get(key, &val) && pb_view_block->ParseFromString(val)) {
+            return true;
+        }
+
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            return false;
+        }
+
+        if (!pb_view_block->ParseFromString(val)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    bool HasViewBlockInfo(
+            uint32_t sharding_id,
+            uint32_t pool_index,
+            uint64_t block_height) {
+        std::string key;
+        key.reserve(32);
+        key.append(kViewBlockInfoPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        key.append((char*)&pool_index, sizeof(pool_index));
+        key.append((char*)&block_height, sizeof(block_height));
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        if (db_batch_[thread_idx].Exist(key)) {
+            return true;
+        }
+
+        return db_->Exist(key);
+    }
+
     void SaveHeightTree(
             uint32_t net_id,
             uint32_t pool_index,
@@ -758,7 +840,10 @@ public:
                 bls_prikey) != security::kSecuritySuccess) {
             return false;
         }
-        
+
+        ZJC_DEBUG("save bls success: %lu, %u, %s", elect_height,
+            sharding_id,
+            common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
         return true;
     }
 
@@ -1618,7 +1703,6 @@ private:
         if (!dumped_gid_) {
             for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
                 db_->Put(db_batch_[i]);
-                db_batch_[i].Clear();
             }
 
             dumped_gid_ = true;

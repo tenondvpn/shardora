@@ -14,7 +14,15 @@ int JoinElectTxItem::HandleTx(
     // gas just consume by from
     uint64_t from_balance = 0;
     uint64_t to_balance = 0;
+    auto tmp_id = sec_ptr_->GetAddress(from_pk_);
     auto& from = address_info->addr();
+    if (tmp_id != from) {
+        block_tx.set_status(consensus::kConsensusError);
+        // will never happen
+        assert(false);
+        return kConsensusSuccess;
+    }
+
     int balance_status = GetTempAccountBalance(from, acc_balance_map, &from_balance);
     if (balance_status != kConsensusSuccess) {
         block_tx.set_status(balance_status);
@@ -23,20 +31,15 @@ int JoinElectTxItem::HandleTx(
         return kConsensusSuccess;
     }
 
-    do  {
+    bls::protobuf::JoinElectInfo join_info;
+    do {
         gas_used = consensus::kJoinElectGas;
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // TODO(): check key exists and reserve gas
             gas_used += (block_tx.storages(i).key().size() + tx_info.value().size()) *
                 consensus::kKeyValueStorageEachBytes;
             if (block_tx.storages(i).key() == protos::kJoinElectVerifyG2) {
-                std::string val;
-                if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
-                    break;
-                }
-
-                bls::protobuf::JoinElectInfo join_info;
-                if (!join_info.ParseFromString(val)) {
+                if (!join_info.ParseFromString(block_tx.storages(i).value())) {
                     break;
                 }
 
@@ -92,21 +95,32 @@ int JoinElectTxItem::HandleTx(
         char data[8];
         uint64_t* tmp = (uint64_t*)data;
         tmp[0] = stoke;
-        stoke_storage->set_val_hash(std::string(data, sizeof(data)));
+        stoke_storage->set_value(std::string(data, sizeof(data)));
+        auto pk_storage = block_tx.add_storages();
+        pk_storage->set_key(protos::kNodePublicKey);
+        pk_storage->set_value(from_pk_);
     }
 
     acc_balance_map[from] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
-    ZJC_DEBUG("status: %d, success join elect: %s, pool: %u, height: %lu",
+    ZJC_DEBUG("status: %d, success join elect: %s, pool: %u, height: %lu, des shard: %d",
         block_tx.status(), common::Encode::HexEncode(from).c_str(),
         block.pool_index(),
-        block.height());
-//     ZJC_DEBUG("handle tx success: %s, %lu, %lu, status: %d",
-//         common::Encode::HexEncode(block_tx.gid()).c_str(),
-//         block_tx.balance(),
-//         block_tx.gas_used(),
-//         block_tx.status());
+        block.height(),
+        join_info.shard_id());
+#ifndef NDEBUG
+    for (uint32_t i = 0; i < block_tx.storages_size(); ++i) {
+        ZJC_DEBUG("status: %d, success join elect: %s, pool: %u, height: %lu, des shard: %d, key: %s, value size: %d",
+            block_tx.status(), common::Encode::HexEncode(from).c_str(),
+            block.pool_index(),
+            block.height(),
+            join_info.shard_id(),
+            block_tx.storages(i).key().c_str(),
+            block_tx.storages(i).value().size());
+    }
+#endif
+
     return kConsensusSuccess;
 }
 

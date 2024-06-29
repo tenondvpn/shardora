@@ -4,24 +4,24 @@ import "protos/bls.proto";
 package shardora.pools.protobuf;
 
 enum StepType {
-    kNormalFrom = 0;
-    kNormalTo = 1;
-    kConsensusRootElectShard = 2;  // shard consensus network election
-    kConsensusRootTimeBlock = 3;  // create time block
-    kConsensusCreateGenesisAcount = 4;
-    kConsensusLocalTos = 5;
-    kContractCreate = 6;
-    kContractGasPrepayment = 7;
-    kContractExcute = 8;
-    kRootCreateAddress = 9;
-    kRootCreateAddressCrossSharding = 11;
-    kStatistic = 12;
-    kJoinElect = 13;
-    kCreateLibrary = 14;
-    kCross = 15;
-    kRootCross = 16;
+    kNormalFrom = 0;  // 用户直接转账
+    kNormalTo = 1;  // 统计后的跨分片确认交易（from方统计交易）
+    kConsensusRootElectShard = 2;  // shard consensus network election，ROOT网络选举交易
+    kConsensusRootTimeBlock = 3;  // create time block，时间块交易
+    kConsensusCreateGenesisAcount = 4;  //  床上账号交易
+    kConsensusLocalTos = 5;  // 跨分片确认交易（to方累计交易）
+    kContractCreate = 6;  // 创建合约交易
+    kContractGasPrepayment = 7;  // 为调用合约设置预付费
+    kContractExcute = 8;  // 执行合约
+    kRootCreateAddress = 9;  // root网络创建新地址
+    kRootCreateAddressCrossSharding = 11;  // ROOT网络创建地址跨分片块确认交易
+    kStatistic = 12;  // 统计交易
+    kJoinElect = 13;  // 新节点参与选举的交易
+    kCreateLibrary = 14; // 创建合约公共库的交易
+    kCross = 15;  // 避免跨分片块缺失的交易
+    kRootCross = 16;  // root避免跨分片块缺失的交易
     kContractCreateByRootTo = 17; // ContractCreate 交易的 Local 部分
-    kContractCreateByRootFrom = 18;
+    kContractCreateByRootFrom = 18;  // ContractCreate 交易的 from 部分
 }
 
 message ToTxHeights {
@@ -56,6 +56,20 @@ message StatisticTxItem {
     optional uint32 sharding_id = 1;
     repeated uint64 heights = 2;
     optional uint64 block_height = 3;
+    optional uint64 tm_height = 4;
+}
+
+message CrossShardStatisticItem {
+    optional uint32 src_shard = 1;
+    optional uint32 src_pool = 2;
+    optional uint64 height = 3;
+    optional uint32 des_shard = 4;
+}
+
+message CrossShardStatistic {
+    repeated CrossShardStatisticItem crosses = 1;
+    optional uint64 elect_height = 2;
+    optional bytes tx_hash = 3;
 }
 
 message ToTxMessage {
@@ -63,6 +77,11 @@ message ToTxMessage {
     repeated ToTxMessageItem tos = 2;
     optional ShardToTxItem to_heights = 3;
     optional uint64 elect_height = 4;
+    repeated CrossShardStatisticItem crosses = 5;
+}
+
+message AllToTxMessage {
+    repeated ToTxMessage to_tx_arr = 1;
 }
 
 message PoolLatestInfo {
@@ -82,6 +101,9 @@ message PoolStatisticItem {
     repeated uint64 stokes = 2;
     optional uint64 elect_height = 3;
     repeated AreaInfo area_point = 4;
+    repeated uint64 gas_sum =5;
+    repeated uint64 credit =6;
+    repeated uint64 consensus_gap = 7;
 }
 
 message JoinElectNode {
@@ -89,29 +111,18 @@ message JoinElectNode {
     optional uint64 stoke = 2;
     optional uint32 shard = 3;
     optional int32 elect_pos = 4;
-}
-
-message CrossShardStatisticItem {
-    optional uint32 src_shard = 1;
-    optional uint32 src_pool = 2;
-    optional uint64 height = 3;
-    optional uint32 des_shard = 4;
-}
-
-message CrossShardStatistic {
-    repeated CrossShardStatisticItem crosses = 1;
-    optional uint64 elect_height = 2;
+    optional AreaInfo area_point = 5;
+    optional uint64 credit =6;
+    optional uint64 consensus_gap = 7;
 }
 
 message ElectStatistic {
     repeated PoolStatisticItem statistics = 1;
-    optional StatisticTxItem heights = 2;
+    optional StatisticTxItem height_info = 2;
     repeated JoinElectNode join_elect_nodes = 3;
     optional uint32 sharding_id = 4;
     optional uint64 gas_amount = 5;
     repeated uint32 lof_leaders = 6;
-    optional CrossShardStatistic cross = 7;
-    optional uint64 elect_height = 8;
 }
 
 message SyncPoolsMaxHeight {

@@ -40,15 +40,18 @@ public:
     }
 
     std::shared_ptr<WaitingTxsItem> LeaderGetValidTxs(uint32_t pool_index);
-    std::shared_ptr<WaitingTxsItem> GetToTxs(uint32_t pool_index, bool leader);
-    std::shared_ptr<WaitingTxsItem> GetStatisticTx(uint32_t pool_index, bool leader);
-    std::shared_ptr<WaitingTxsItem> GetCrossTx(uint32_t pool_index, bool leader);
+    std::shared_ptr<WaitingTxsItem> LeaderGetValidTxsIdempotently(
+        uint32_t pool_index, 
+        pools::CheckGidValidFunction gid_vlid_func);
+    std::shared_ptr<WaitingTxsItem> GetToTxs(uint32_t pool_index, const std::string& tx_hash);
+    std::shared_ptr<WaitingTxsItem> GetStatisticTx(uint32_t pool_index, const std::string& tx_hash);
     std::shared_ptr<WaitingTxsItem> GetTimeblockTx(uint32_t pool_index, bool leader);
     std::shared_ptr<WaitingTxsItem> GetElectTx(uint32_t pool_index, const std::string& tx_hash);
     std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
         std::vector<uint8_t>* invalid_txs);
+    bool HasSingleTx(uint32_t pool_index);
 
 private:
     std::shared_ptr<WaitingTxsItem> GetSingleTx(uint32_t pool_index);

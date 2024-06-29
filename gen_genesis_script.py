@@ -19,7 +19,10 @@ def input2sk(input: str) -> str:
         node_sk_map[input] = sk_str
     return sk_str
 
-def gen_node_sk(node_name: str) -> str:
+def gen_node_sk(node_name: str, server_conf: dict) -> str:
+    sk = server_conf.get('node_sks', {}).get(node_name, '')
+    if sk != '':
+        return sk
     return input2sk(node_name)
 
 def gen_account_sks(net_id: int, num: int) -> list[str]:
@@ -69,7 +72,7 @@ def parse_server_yml_file(file_path: str):
 
 def _get_node_sks_from_server_conf(server_conf, net_id):
     node_names = [n['name'] for n in server_conf['nodes'] if n['net'] == net_id]
-    return [gen_node_sk(n) for n in node_names]
+    return [gen_node_sk(n, server_conf) for n in node_names]
 
 def _gen_accounts_with_server_conf(server_conf, net_id):
     account_sks = server_conf.get('account_sks', {})
@@ -105,7 +108,7 @@ def gen_genesis_yaml_file(server_conf: dict, file_path: str):
 def _get_bootstrap_str(node_name, server_conf: dict) -> str:
     for node in server_conf['nodes']:
         if node['name'] == node_name:
-            comp_pk_str = get_compressed_pk_str(gen_node_sk(node_name))
+            comp_pk_str = get_compressed_pk_str(gen_node_sk(node_name, server_conf))
             return f'{comp_pk_str}:{node["server"]}:{node["tcp_port"]}'
 
 def gen_zjnodes(server_conf: dict, zjnodes_folder):
@@ -116,7 +119,7 @@ def gen_zjnodes(server_conf: dict, zjnodes_folder):
     root_boostrap_str = ','.join(root_boostrap_strs)
 
     for node in server_conf['nodes']:
-        sk = gen_node_sk(node['name'])
+        sk = gen_node_sk(node['name'], server_conf)
         zjchain_conf = {
             'db': {
                 'path': './db',
@@ -269,6 +272,10 @@ then
 #done
 
 """
+        
+    code_str += f"""
+# 压缩 zjnodes/zjchain，便于网络传输
+"""
 
     code_str += """
 clickhouse-client -q "drop table zjc_ck_account_key_value_table"
@@ -282,7 +289,7 @@ clickhouse-client -q "drop table zjc_ck_transaction_table"
         f.write(code_str)
 
 
-def gen_run_nodes_sh_file(server_conf: dict, file_path, build_genesis_path, tag, datadir='/root'):
+def gen_run_nodes_sh_file(server_conf: dict, file_path, build_genesis_path, tag, datadir='/root', medium_server_num=-1):
     code_str = """
 #!/bin/bash
 # 修改配置文件
@@ -315,39 +322,110 @@ echo "==== STEP1: START DEPLOY ===="
 
     code_str += f"target=$1\nno_build=$2\n"
 
+    code_str += f"""
+echo "==== STEP0: KILL OLDS ===="
+ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+"""
+
+    for server_name, server_ip in server_name_map.items():
+        if server_name == 'server0':
+            continue
+        server_pass = server_conf['passwords'].get(server_ip, '')
+        code_str += f"""
+echo "[${server_name}]"
+sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<"EOF"
+ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+EOF
+"""
+
     server0_node_names_str = ' '.join(server_node_map[server0])
     server0_pass = server_conf['passwords'].get(server0, '')
     code_str += f"""
 echo "[$server0]"
 sh {build_genesis_path} $target $no_build
-cd {datadir} && sh -x fetch.sh 127.0.0.1 ${{server0}} '{server0_pass}' '{datadir}' {server0_node_names_str};
-
-for n in {server0_node_names_str}; do
-    cp -rf {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/${{n}}/conf
-    cp -rf {datadir}/zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/${{n}}/conf
-    cp -rf {datadir}/zjnodes/zjchain/zjchain {datadir}/zjnodes/${{n}}
-done
+cd {datadir} && sh -x fetch.sh 127.0.0.1 ${{server0}} '{server0_pass}' '{datadir}' {server0_node_names_str}
 """
     
+
+    code_str += f"""echo "==== 同步中继服务器 ====" \n"""
+
     shard_nodes_map0 = {}
-    
-    for nodename in server_node_map[server0]:
-        s = get_shard_by_nodename(nodename)
-        if not shard_nodes_map0.get(s):
-            shard_nodes_map0[s] = [nodename]
-        else:
-            shard_nodes_map0[s].append(nodename)
 
-    for s, nodes in shard_nodes_map0.items():
-        nodes_name_str = ' '.join(nodes)
-        dbname = get_dbname_by_shard(s)
+    medium_server_names = [] # 中继服务器
+    
+    # 第一层，先从 server0 同步到中继服务器
+    for server_name, server_ip in server_name_map.items():
+        if server_name == 'server0':
+            continue
+        server_node_names_str = ' '.join(server_node_map[server_ip])
+        server_pass = server_conf['passwords'].get(server_ip, '')
+
         code_str += f"""
-for n in {nodes_name_str}; do
-    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/${{n}}/db
-done
-"""
+(
+echo "[${server_name}]"
+sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<EOF
+mkdir -p {datadir};
+rm -rf {datadir}/zjnodes;
+sshpass -p '{server0_pass}' scp -o StrictHostKeyChecking=no root@"${{server0}}":{datadir}/fetch.sh {datadir}/
+cd {datadir} && sh -x fetch.sh ${{server0}} ${{{server_name}}} '{server0_pass}' '{datadir}' {server_node_names_str};
 
-    
+EOF
+) &
+
+"""
+        # 如果达到中继服务器数量，则停止
+        if medium_server_num != -1:
+            medium_server_names.append(server_name)
+            if len(medium_server_names) >= medium_server_num:
+                break
+        
+    code_str += "wait\n"
+
+    # 第二层，从中继服务器同步到其他服务器
+    if len(medium_server_names) > 0:
+        code_str += f"""echo "==== 同步其他服务器 ====" \n"""
+        for idx, (server_name, server_ip) in enumerate(server_name_map.items()):
+            if server_name == 'server0':
+                continue
+            if server_name in medium_server_names:
+                continue
+            server_node_names_str = ' '.join(server_node_map[server_ip])
+            server_pass = server_conf['passwords'].get(server_ip, '')
+
+            medium_server = medium_server_names[idx % len(medium_server_names)]
+            medium_server_ip = server_name_map[medium_server]
+            medium_server_pass = server_conf['passwords'].get(medium_server_ip, '')
+
+            code_str += f"""
+(
+echo "[${server_name}]"
+sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<EOF
+mkdir -p {datadir};
+rm -rf {datadir}/zjnodes;
+sshpass -p '{server0_pass}' scp -o StrictHostKeyChecking=no root@"${{server0}}":{datadir}/fetch.sh {datadir}/
+cd {datadir} && sh -x fetch.sh ${{{medium_server}}} ${{{server_name}}} '{medium_server_pass}' '{datadir}' {server_node_names_str};
+
+EOF
+) &
+
+"""
+            
+        code_str += "wait\n"   
+
+
+    code_str += f"""
+(
+echo "[$server0]"
+for n in {server0_node_names_str}; do
+    ln -s {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/${{n}}/conf
+    ln -s {datadir}/zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/${{n}}/conf
+    ln -s {datadir}/zjnodes/zjchain/zjchain {datadir}/zjnodes/${{n}}
+done
+) &
+
+""" 
+
+
     for server_name, server_ip in server_name_map.items():
         if server_name == 'server0':
             continue
@@ -366,15 +444,10 @@ done
 (
 echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<EOF
-mkdir -p {datadir};
-rm -rf {datadir}/zjnodes;
-sshpass -p '{server0_pass}' scp -o StrictHostKeyChecking=no root@"${{server0}}":{datadir}/fetch.sh {datadir}/
-cd {datadir} && sh -x fetch.sh ${{server0}} ${{{server_name}}} '{server0_pass}' '{datadir}' {server_node_names_str};
-
 for n in {server_node_names_str}; do
-    cp -rf {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/\${{n}}/conf
-    cp -rf {datadir}/zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/\${{n}}/conf
-    cp -rf {datadir}/zjnodes/zjchain/zjchain {datadir}/zjnodes/\${{n}}
+    ln -s {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/\${{n}}/conf
+    ln -s {datadir}/zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/\${{n}}/conf
+    ln -s {datadir}/zjnodes/zjchain/zjchain {datadir}/zjnodes/\${{n}}
 done
 """
 
@@ -383,24 +456,45 @@ done
             dbname = get_dbname_by_shard(s)
             code_str += f"""
 for n in {nodes_name_str}; do
-    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/\${{n}}/db
+    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/\${{n}}/db &
 done
+wait
 """
 
         code_str += f"""
 EOF
 ) &
 
-"""
+"""    
+             
+    code_str += """(\n"""
+    for nodename in server_node_map[server0]:
+        s = get_shard_by_nodename(nodename)
+        if not shard_nodes_map0.get(s):
+            shard_nodes_map0[s] = [nodename]
+        else:
+            shard_nodes_map0[s].append(nodename)
+
+    for s, nodes in shard_nodes_map0.items():
+        nodes_name_str = ' '.join(nodes)
+        dbname = get_dbname_by_shard(s)
+        code_str += f"""
+for n in {nodes_name_str}; do
+    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/${{n}}/db &
+done
+wait
+"""    
         
+    code_str += """) &\n"""
+
     code_str += "wait\n"
-        
+
     code_str += f"""
 echo "==== STEP1: DONE ===="
 
 echo "==== STEP2: CLEAR OLDS ===="
 
-ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+# ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
 """
 
     for server_name, server_ip in server_name_map.items():
@@ -409,11 +503,11 @@ ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
         server_pass = server_conf['passwords'].get(server_ip, '')
         code_str += f"""
 echo "[${server_name}]"
-sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<"EOF"
-ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
-EOF
+# sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<"EOF"
+# ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+# EOF
 """
-        
+      
     code_str += """
 echo "==== STEP2: DONE ===="
 
@@ -436,6 +530,7 @@ sleep 3
         
             server_pass = server_conf['passwords'].get(server_ip, '')
             code_str += f"""
+(
 echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh -f -o StrictHostKeyChecking=no root@${server_name} bash -c "'\\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \\
@@ -443,8 +538,10 @@ for node in {server_nodes_str}; do \\
     cd {datadir}/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node {tag}> /dev/null 2>&1 &\\
 done \\
 '"
+) &
+"""
 
-    """      
+    code_str += "wait\n"
             
     server0_nodes.remove('r1')
     server_nodes_str = ' '.join(server0_nodes)
@@ -501,6 +598,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', help='nodes_conf.yml 文件位置', default='')
     parser.add_argument('--datadir', help='datadir', default='/root')
+    parser.add_argument('--medium_num', help='中继服务器数量', default='-1', type=int)
     args = parser.parse_args()
     if args.config == '':
         args.config = './nodes_conf.yml'
@@ -516,7 +614,7 @@ def main():
     gen_zjnodes(server_conf, "./zjnodes")
     gen_genesis_yaml_file(server_conf, "./conf/genesis.yml")
     gen_genesis_sh_file(server_conf, build_genesis_path, datadir=args.datadir)
-    gen_run_nodes_sh_file(server_conf, "./deploy_genesis.sh", build_genesis_path, tag=tag, datadir=args.datadir)
+    gen_run_nodes_sh_file(server_conf, "./deploy_genesis.sh", build_genesis_path, tag=tag, datadir=args.datadir, medium_server_num=args.medium_num)
     modify_shard_num_in_src_code(server_conf)
 
 if __name__ == '__main__':

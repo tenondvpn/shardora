@@ -143,8 +143,6 @@ private:
     void SyncConsensusBlock(
         uint32_t pool_index,
         const std::string& bft_gid);
-    void HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr);
-    bool AddSyncKeyValue(transport::protobuf::Header* msg, const block::protobuf::Block& block);
     void SaveKeyValue(const transport::protobuf::Header& msg);
     void PopAllPoolTxs();
     void LeaderBroadcastBlock(
@@ -184,12 +182,11 @@ private:
         bool agree);
     void LeaderSendPrecommitMessage(const transport::MessagePtr& leader_msg_ptr, bool agree);
     void LeaderSendCommitMessage(const transport::MessagePtr& leader_msg_ptr, bool agree);
-    void HandleCommitedSyncBlock(const zbft::protobuf::ZbftMessage& req_bft_msg);
     std::shared_ptr<WaitingTxsItem> get_txs_ptr(
         std::shared_ptr<PoolTxIndexItem>& thread_item,
         ZbftPtr& commited_bft_ptr);
     void CreateTestBlock();
-    void BackupAddLocalTxs(zbft::protobuf::TxBft* txbft, uint32_t pool_index);
+    void BackupAddLocalTxs(transport::protobuf::Header& header, uint32_t pool_index);
     void LeaderAddBackupTxs(const zbft::protobuf::TxBft& txbft, uint32_t pool_index);
     void LeaderBftTimeoutHeartbeat();
     void LeaderSendBftTimeoutMessage(
@@ -198,6 +195,7 @@ private:
     void HandleLeaderCollectTxs(
         const ElectItem& elect_item, 
         const transport::MessagePtr& leader_msg_ptr);
+    void HandleSyncedBlocks();
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(
@@ -267,7 +265,8 @@ private:
             security_ptr_, 
             prefix_db_, 
             elect_mgr_, 
-            msg_ptr->address_info);
+            msg_ptr->address_info,
+            msg_ptr->header.tx_proto().pubkey());
     }
 
     pools::TxItemPtr CreateCrossTx(const transport::MessagePtr& msg_ptr) {
@@ -419,10 +418,6 @@ private:
     std::atomic<uint32_t> tps_{ 0 };
     std::atomic<uint32_t> pre_tps_{ 0 };
     uint64_t tps_btime_{ 0 };
-    common::Tick timeout_tick_;
-    common::Tick block_to_db_tick_;
-    common::Tick verify_block_tick_;
-    common::Tick leader_resend_tick_;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
@@ -453,7 +448,7 @@ private:
     ZbftPtr changed_leader_pools_height_[common::kInvalidPoolIndex] = { nullptr };
     std::shared_ptr<BftMessageInfo> gid_with_msg_map_[common::kInvalidPoolIndex];
     uint64_t pools_prev_bft_timeout_[common::kInvalidPoolIndex] = { 0 };
-    uint64_t pools_send_to_leader_tm_ms_[common::kInvalidPoolIndex] = { 0 };
+    uint64_t pools_send_to_leader_tm_ms_ = { 0 };
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {

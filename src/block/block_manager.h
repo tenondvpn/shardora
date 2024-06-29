@@ -8,6 +8,7 @@
 #include "common/limit_hash_map.h"
 #include "common/node_members.h"
 #include "common/thread_safe_queue.h"
+#include "common/tick.h"
 #include "contract/contract_manager.h"
 #include "db/db.h"
 #include "network/network_utils.h"
@@ -81,17 +82,11 @@ public:
         create_elect_tx_cb_ = func;
     }
 
-    void SetCreateCrossTxFunction(pools::CreateConsensusItemFunction func) {
-        cross_tx_cb_ = func;
-    }
-
     void CreateToTx();
-    void CreateStatisticTx();
     void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members);
-    pools::TxItemPtr GetToTx(uint32_t pool_index, bool leader);
-    pools::TxItemPtr GetStatisticTx(uint32_t pool_index, bool leader);
+    pools::TxItemPtr GetToTx(uint32_t pool_index, const std::string& tx_hash);
+    pools::TxItemPtr GetStatisticTx(uint32_t pool_index, const std::string& tx_hash);
     pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);
-    pools::TxItemPtr GetCrossTx(uint32_t pool_index, bool leader);
     void LoadLatestBlocks();
     // just genesis call
     void GenesisAddAllAccount(
@@ -105,16 +100,20 @@ public:
     void ChangeLeader(int32_t mod_num, common::BftMemberPtr& mem_ptr);
     bool ShouldStopConsensus();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
+    bool HasSingleTx(uint32_t pool_index);
 
 private:
+    typedef std::map<uint64_t, std::shared_ptr<BlockTxsItem>, std::greater<uint64_t>> StatisticMap;
+    bool HasToTx(uint32_t pool_index);
+    bool HasStatisticTx(uint32_t pool_index);
+    bool HasElectTx(uint32_t pool_index);
     void HandleAllNewBlock();
-    bool AddBlockItemToCache(
+    bool UpdateBlockItemToCache(
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
-    void ConsensusTimerMessage();
+    void ConsensusTimerMessage(const transport::MessagePtr& message);
     void HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool recreate);
-    void HandleStatisticMessage(const transport::MessagePtr& msg_ptr);
     void HandleAllConsensusBlocks();
     void AddNewBlock(
         const std::shared_ptr<block::protobuf::Block>& block_item,
@@ -124,10 +123,6 @@ private:
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleStatisticTx(
-        const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch);
-    void HandleCrossTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
@@ -153,7 +148,7 @@ private:
         const std::string& block_hash,
         const elect::protobuf::ElectBlock& elect_block);
     void RootHandleNormalToTx(
-        uint64_t height,
+        const block::protobuf::Block& block,
         pools::protobuf::ToTxMessage& to_txs,
         db::DbWriteBatch& db_batch);
     void HandleStatisticBlock(
@@ -161,16 +156,11 @@ private:
         const block::protobuf::BlockTx& tx,
         const pools::protobuf::ElectStatistic& elect_statistic,
         db::DbWriteBatch& db_batch);
-    void RootCreateCrossTx(
-        const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        const pools::protobuf::ElectStatistic& elect_statistic,
-        db::DbWriteBatch& db_batch);
-    void StatisticWithLeaderHeights(const transport::MessagePtr& msg_ptr, bool retry);
+    void CreateStatisticTx();
     void HandleToTxMessage();
-    void HandleStatisticTxMessage();
     void AddWaitingCheckSignBlock(const std::shared_ptr<block::protobuf::Block>& block_ptr);
     void CheckWaitingBlocks(uint32_t shard, uint64_t elect_height);
+    void PopTxTicker();
 
     static const uint64_t kCreateToTxPeriodMs = 10000lu;
     static const uint64_t kRetryStatisticPeriod = 3000lu;
@@ -189,26 +179,25 @@ private:
     std::shared_ptr<pools::ToTxsPools> to_txs_pool_ = nullptr;
     std::shared_ptr<security::Security> security_ = nullptr;
     uint64_t prev_create_to_tx_ms_ = 0;
-    uint64_t prev_create_statistic_tx_ms_ = 0;
     uint64_t prev_retry_create_statistic_tx_ms_ = 0;
     common::BftMemberPtr to_tx_leader_ = nullptr;
     uint32_t max_consensus_sharding_id_ = 3;
     std::string local_id_;
     std::map<uint64_t, std::shared_ptr<LeaderWithToTxItem>, std::greater<uint64_t>> leader_to_txs_;
     std::shared_ptr<LeaderWithToTxItem> latest_to_tx_ = nullptr;
-    std::map<uint64_t, std::shared_ptr<LeaderWithStatisticTxItem>> leader_statistic_txs_;
     std::shared_ptr<BlockTxsItem> shard_elect_tx_[network::kConsensusShardEndNetworkId];
     pools::CreateConsensusItemFunction create_to_tx_cb_ = nullptr;
     pools::CreateConsensusItemFunction create_statistic_tx_cb_ = nullptr;
     pools::CreateConsensusItemFunction create_elect_tx_cb_ = nullptr;
-    pools::CreateConsensusItemFunction cross_tx_cb_ = nullptr;
     uint32_t prev_pool_index_ = network::kRootCongressNetworkId;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
     uint64_t prev_to_txs_tm_us_ = 0;
     DbBlockCallback new_block_callback_ = nullptr;
     std::shared_ptr<pools::ShardStatistic> statistic_mgr_ = nullptr;
     uint64_t latest_timeblock_height_ = 0;
+    uint64_t prev_timeblock_tm_sec_ = 0;
     uint64_t latest_timeblock_tm_sec_ = 0;
+    uint64_t prev_timeblock_height_ = 0;
     uint64_t consensused_timeblock_height_ = 0;
     std::unordered_map<uint32_t, std::map<
         uint64_t,
@@ -221,15 +210,18 @@ private:
     uint64_t latest_elect_height_ = 0;
     int32_t leader_create_to_heights_index_ = 0;
     int32_t leader_create_statistic_heights_index_ = 0;
-    std::shared_ptr<BlockTxsItem> latest_shard_statistic_tx_ = nullptr;
-    std::shared_ptr<BlockTxsItem> latest_cross_statistic_tx_ = nullptr;
-    std::shared_ptr<transport::TransportMessage> statistic_message_ = nullptr;
-    common::Tick test_sync_block_tick_;
-    common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> block_from_network_queue_;
+    StatisticMap shard_statistics_map_;
+    common::ThreadSafeQueue<std::shared_ptr<StatisticMap>> shard_statistics_map_ptr_queue_;
+    std::shared_ptr<StatisticMap> got_latest_statistic_map_ptr_[2] = { nullptr };
+    uint32_t valid_got_latest_statistic_map_ptr_index_ = 0;
+    common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> block_from_network_queue_[common::kMaxThreadCount];
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> to_tx_msg_queue_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> statistic_tx_msg_queue_;
     std::map<uint32_t, std::map<uint64_t, std::queue<std::shared_ptr<block::protobuf::Block>>>> waiting_check_sign_blocks_;
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
+    uint64_t prev_create_statistic_tx_tm_us_ = 0;
+    uint64_t prev_timer_ms_ = 0;
+    common::Tick pop_tx_tick_;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

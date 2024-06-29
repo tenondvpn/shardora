@@ -10,6 +10,8 @@
 #include "log4cpp/BasicLayout.hh"
 #include "log4cpp/Priority.hh"
 #include "log4cpp/PropertyConfigurator.hh"
+#include <google/protobuf/util/json_util.h>
+
 
 #ifdef _WIN32
 #define ZJC_LOG_FILE_NAME strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__
@@ -127,3 +129,15 @@
 } while (0)
 
 #endif
+
+static std::string ProtobufToJson(const google::protobuf::Message& message, bool pretty_print = false) {
+    std::string json_str;
+    google::protobuf::util::JsonPrintOptions options;
+    options.add_whitespace = pretty_print;
+    auto status = google::protobuf::util::MessageToJsonString(message, &json_str, options);
+    if (!status.ok()) {
+
+        return "";
+    }
+    return json_str;
+}

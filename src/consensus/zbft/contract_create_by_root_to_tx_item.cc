@@ -27,19 +27,11 @@ int ContractCreateByRootToTxItem::HandleTx(
         return consensus::kConsensusSuccess;
     }
 
-	std::string cc_tx_str;
-    if (!prefix_db_->GetTemporaryKv(block_tx.storages(0).val_hash(), &cc_tx_str)) {
-        block_tx.set_status(kConsensusError);
-        ZJC_WARN("local get cc to txs info failed: %s",
-            common::Encode::HexEncode(block_tx.storages(0).val_hash()).c_str());
-        return consensus::kConsensusSuccess;
-    }
-
 	pools::protobuf::ToTxMessage cc_to_tx;
-	if (!cc_to_tx.ParseFromString(cc_tx_str)) {
+	if (!cc_to_tx.ParseFromString(block_tx.storages(0).value())) {
         block_tx.set_status(kConsensusError);
         ZJC_WARN("local get cc to txs info failed: %s",
-            common::Encode::HexEncode(block_tx.storages(0).val_hash()).c_str());
+            common::Encode::HexEncode(block_tx.storages(0).value()).c_str());
         return consensus::kConsensusSuccess;
     }
 
@@ -248,7 +240,7 @@ int ContractCreateByRootToTxItem::SaveContractCreateInfo(
         int64_t& gas_more) {
     auto storage = block_tx.add_storages();
     storage->set_key(protos::kCreateContractBytesCode);
-    storage->set_val_hash(zjc_host.create_bytes_code_);
+    storage->set_value(zjc_host.create_bytes_code_);
     for (auto account_iter = zjc_host.accounts_.begin();
             account_iter != zjc_host.accounts_.end(); ++account_iter) {
         for (auto storage_iter = account_iter->second.storage.begin();
@@ -262,7 +254,7 @@ int ContractCreateByRootToTxItem::SaveContractCreateInfo(
             auto str_key = std::string((char*)account_iter->first.bytes, sizeof(account_iter->first.bytes)) +
                 std::string((char*)storage_iter->first.bytes, sizeof(storage_iter->first.bytes));
             kv->set_key(str_key);
-            kv->set_val_hash(std::string(
+            kv->set_value(std::string(
                 (char*)storage_iter->second.value.bytes,
                 sizeof(storage_iter->second.value.bytes)));
             gas_more += (sizeof(account_iter->first.bytes) +
@@ -283,14 +275,7 @@ int ContractCreateByRootToTxItem::SaveContractCreateInfo(
                 (char*)account_iter->first.bytes,
                 sizeof(account_iter->first.bytes)) + storage_iter->first;
             kv->set_key(str_key);
-            if (storage_iter->second.str_val.size() > 32) {
-                kv->set_val_hash(common::Hash::keccak256(storage_iter->second.str_val));
-                kv->set_val_size(storage_iter->second.str_val.size());
-                prefix_db_->SaveTemporaryKv(kv->val_hash(), storage_iter->second.str_val);
-            } else {
-                kv->set_val_hash(storage_iter->second.str_val);
-            }
-
+            kv->set_value(storage_iter->second.str_val);
             gas_more += (sizeof(account_iter->first.bytes) +
                 storage_iter->first.size() +
                 storage_iter->second.str_val.size()) *

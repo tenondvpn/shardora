@@ -74,6 +74,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, g2s_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, elect_pos_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, destructed_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, consensus_gap_),
   0,
   3,
   4,
@@ -84,11 +85,12 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   8,
   7,
   ~0u,
+  11,
   10,
   9,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 17, sizeof(::shardora::address::protobuf::AddressInfo)},
+  { 0, 18, sizeof(::shardora::address::protobuf::AddressInfo)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -117,7 +119,7 @@ void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
       "\n\024protos/address.proto\022\031shardora.address"
-      ".protobuf\032\020protos/bls.proto\"\276\002\n\013AddressI"
+      ".protobuf\032\020protos/bls.proto\"\325\002\n\013AddressI"
       "nfo\022\016\n\006pubkey\030\001 \001(\014\022\017\n\007balance\030\002 \001(\004\022\023\n\013"
       "sharding_id\030\003 \001(\r\022\022\n\npool_index\030\004 \001(\r\022\014\n"
       "\004addr\030\005 \001(\014\0224\n\004type\030\006 \001(\0162&.shardora.add"
@@ -125,14 +127,15 @@ void AddDescriptorsImpl() {
       "\007 \001(\014\022\025\n\rlatest_height\030\010 \001(\004\022\021\n\006credit\030\t"
       " \001(\005:\0010\0220\n\003g2s\030\n \003(\0132#.shardora.bls.prot"
       "obuf.BlsPublicKey\022\035\n\telect_pos\030\013 \001(\r:\n42"
-      "94967295\022\022\n\ndestructed\030\014 \001(\010*\225\001\n\013Address"
-      "Type\022\013\n\007kNormal\020\000\022\r\n\tkContract\020\001\022\016\n\nkRoo"
-      "tElect\020\002\022\016\n\nkRootTimer\020\003\022\016\n\nkStatistic\020\004"
-      "\022\020\n\014kToTxAddress\020\005\022\025\n\021kLocalToTxAddress\020"
-      "\006\022\021\n\rkElectAddress\020\007"
+      "94967295\022\022\n\ndestructed\030\014 \001(\010\022\025\n\rconsensu"
+      "s_gap\030\r \001(\004*\225\001\n\013AddressType\022\013\n\007kNormal\020\000"
+      "\022\r\n\tkContract\020\001\022\016\n\nkRootElect\020\002\022\016\n\nkRoot"
+      "Timer\020\003\022\016\n\nkStatistic\020\004\022\020\n\014kToTxAddress\020"
+      "\005\022\025\n\021kLocalToTxAddress\020\006\022\021\n\rkElectAddres"
+      "s\020\007"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 540);
+      descriptor, 563);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/address.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
@@ -193,6 +196,7 @@ const int AddressInfo::kCreditFieldNumber;
 const int AddressInfo::kG2SFieldNumber;
 const int AddressInfo::kElectPosFieldNumber;
 const int AddressInfo::kDestructedFieldNumber;
+const int AddressInfo::kConsensusGapFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 AddressInfo::AddressInfo()
@@ -285,7 +289,7 @@ void AddressInfo::Clear() {
         reinterpret_cast<char*>(&credit_) -
         reinterpret_cast<char*>(&balance_)) + sizeof(credit_));
   }
-  if (cached_has_bits & 1792u) {
+  if (cached_has_bits & 3840u) {
     ::memset(&latest_height_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&destructed_) -
         reinterpret_cast<char*>(&latest_height_)) + sizeof(destructed_));
@@ -471,6 +475,20 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
+      // optional uint64 consensus_gap = 13;
+      case 13: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(104u /* 104 & 0xFF */)) {
+          set_has_consensus_gap();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &consensus_gap_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -557,13 +575,18 @@ void AddressInfo::SerializeWithCachedSizes(
   }
 
   // optional uint32 elect_pos = 11 [default = 4294967295];
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000800u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(11, this->elect_pos(), output);
   }
 
   // optional bool destructed = 12;
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000400u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(12, this->destructed(), output);
+  }
+
+  // optional uint64 consensus_gap = 13;
+  if (cached_has_bits & 0x00000200u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(13, this->consensus_gap(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -642,13 +665,18 @@ void AddressInfo::SerializeWithCachedSizes(
   }
 
   // optional uint32 elect_pos = 11 [default = 4294967295];
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000800u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(11, this->elect_pos(), target);
   }
 
   // optional bool destructed = 12;
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000400u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(12, this->destructed(), target);
+  }
+
+  // optional uint64 consensus_gap = 13;
+  if (cached_has_bits & 0x00000200u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(13, this->consensus_gap(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -736,12 +764,19 @@ size_t AddressInfo::ByteSizeLong() const {
     }
 
   }
-  if (_has_bits_[8 / 32] & 1792u) {
+  if (_has_bits_[8 / 32] & 3840u) {
     // optional uint64 latest_height = 8;
     if (has_latest_height()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt64Size(
           this->latest_height());
+    }
+
+    // optional uint64 consensus_gap = 13;
+    if (has_consensus_gap()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->consensus_gap());
     }
 
     // optional bool destructed = 12;
@@ -816,14 +851,17 @@ void AddressInfo::MergeFrom(const AddressInfo& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-  if (cached_has_bits & 1792u) {
+  if (cached_has_bits & 3840u) {
     if (cached_has_bits & 0x00000100u) {
       latest_height_ = from.latest_height_;
     }
     if (cached_has_bits & 0x00000200u) {
-      destructed_ = from.destructed_;
+      consensus_gap_ = from.consensus_gap_;
     }
     if (cached_has_bits & 0x00000400u) {
+      destructed_ = from.destructed_;
+    }
+    if (cached_has_bits & 0x00000800u) {
       elect_pos_ = from.elect_pos_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -867,6 +905,7 @@ void AddressInfo::InternalSwap(AddressInfo* other) {
   swap(type_, other->type_);
   swap(credit_, other->credit_);
   swap(latest_height_, other->latest_height_);
+  swap(consensus_gap_, other->consensus_gap_);
   swap(destructed_, other->destructed_);
   swap(elect_pos_, other->elect_pos_);
   swap(_has_bits_[0], other->_has_bits_[0]);

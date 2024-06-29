@@ -12,6 +12,7 @@
 #include "network/network_utils.h"
 #include "pools/cross_block_manager.h"
 #include "pools/cross_pool.h"
+#include "pools/root_cross_pool.h"
 #include "pools/tx_pool.h"
 #include "protos/address.pb.h"
 #include "protos/pools.pb.h"
@@ -41,7 +42,14 @@ public:
     void GetTx(
         uint32_t pool_index,
         uint32_t count,
-        std::map<std::string, TxItemPtr>& res_map);
+        std::map<std::string, TxItemPtr>& res_map,
+        std::unordered_map<std::string, std::string>& kvs);
+    void GetTxIdempotently(
+        uint32_t pool_index,
+        uint32_t count,
+        std::map<std::string, TxItemPtr>& res_map,
+        std::unordered_map<std::string, std::string>& kvs,
+        pools::CheckGidValidFunction gid_vlid_func);    
     void TxOver(
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
@@ -50,13 +58,26 @@ public:
     void InitCrossPools();
     void BftCheckInvalidGids(uint32_t pool_index, std::vector<std::shared_ptr<InvalidGidItem>>& items);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
+    bool GidValid(uint32_t pool_index, const std::string& gid) {
+        return tx_pool_[pool_index].GidValid(gid);
+    }
+
     void GetTx(
         uint32_t pool_index,
         uint32_t count,
         const std::map<std::string, pools::TxItemPtr>& invalid_txs,
-        zbft::protobuf::TxBft* txbft);
+        transport::protobuf::Header& header);
+    void GetTxByGids(
+            uint32_t pool_index,
+            std::vector<std::string> gids,
+            std::map<std::string, pools::TxItemPtr>& res_map);
     int BackupConsensusAddTxs(uint32_t pool_index, const std::map<std::string, pools::TxItemPtr>& txs);
     void ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs);
+    std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& address);
+
+    uint32_t all_tx_size(uint32_t pool_index) const {
+        return tx_pool_[pool_index].all_tx_size();
+    }
 
     uint32_t tx_size(uint32_t pool_index) const {
         return tx_pool_[pool_index].tx_size();
@@ -66,33 +87,26 @@ public:
         tx_pool_[pool_index].RemoveTx(gid);
     }
 
+    void RecoverTx(uint32_t pool_index, const std::string& gid) {
+        tx_pool_[pool_index].RecoverTx(gid);
+    }    
+
     void OnNewCrossBlock(
             const std::shared_ptr<block::protobuf::Block>& block_item) {
         ZJC_DEBUG("new cross block coming net: %u, pool: %u, height: %lu",
             block_item->network_id(), block_item->pool_index(), block_item->height());
+        if (block_item->network_id() == network::kRootCongressNetworkId) {
+            root_cross_pools_[block_item->pool_index()].UpdateLatestInfo(block_item->height());
+            ZJC_DEBUG("root cross succcess update cross block latest info net: %u, pool: %u, height: %lu",
+                block_item->network_id(), block_item->pool_index(), block_item->height());
+            return;
+        }
+
         if (block_item->pool_index() != common::kRootChainPoolIndex) {
             return;
         }
 
-        if (cross_pools_ == nullptr) {
-            return;
-        }
-
-        uint32_t index = 0;
-        if (max_cross_pools_size_ > 1 && block_item->network_id() >= network::kConsensusShardBeginNetworkId) {
-            index = block_item->network_id() - network::kConsensusShardBeginNetworkId;
-        } else {
-            if (block_item->network_id() != network::kRootCongressNetworkId) {
-                return;
-            }
-        }
-
-        if (index >= max_cross_pools_size_) {
-            assert(false);
-            return;
-        }
-
-        cross_pools_[index].UpdateLatestInfo(block_item->height());
+        cross_pools_[block_item->network_id()].UpdateLatestInfo(block_item->height());
         ZJC_DEBUG("succcess update cross block latest info net: %u, pool: %u, height: %lu",
             block_item->network_id(), block_item->pool_index(), block_item->height());
     }
@@ -120,10 +134,11 @@ public:
             }
         }
 
-        if (sharding_id - network::kRootCongressNetworkId > now_sharding_count_) {
-            now_sharding_count_ = sharding_id - network::kRootCongressNetworkId;
+        ZJC_DEBUG("succcess set elect max sharding id: %u", sharding_id);
+        if (sharding_id > now_max_sharding_id_) {
+            now_max_sharding_id_ = sharding_id;
         }
-
+        
         cross_block_mgr_->UpdateMaxShardingId(sharding_id);
     }
 
@@ -191,6 +206,17 @@ public:
         prefix_db_->SaveLatestPoolInfo(sharding_id, pool_index, pool_info, db_batch);
     }
 
+    void UpdateCrossLatestInfo(
+            std::shared_ptr<block::protobuf::Block>& block,
+            db::DbWriteBatch& db_batch) {
+        uint32_t pool_index = block->pool_index();
+        if (pool_index != common::kImmutablePoolSize) {
+            return;
+        }
+
+        cross_block_mgr_->UpdateMaxHeight(block->network_id(), block->height());
+    }
+
     void CheckTimeoutTx(uint32_t pool_index) {
         if (pool_index >= common::kInvalidPoolIndex) {
             return;
@@ -227,7 +253,9 @@ private:
     void SyncPoolsMaxHeight();
     void HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_ptr);
     void SyncMinssingHeights(uint64_t now_tm_ms);
+    void SyncMinssingRootHeights(uint64_t now_tm_ms);
     void SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height);
+    void SyncRootBlockWithMaxHeights(uint32_t pool_idx, uint64_t height);
     void CheckLeaderValid(const std::vector<double>& factors, std::vector<int32_t>* invalid_pools);
     bool SaveNodeVerfiyVec(
         const std::string& id,
@@ -264,19 +292,21 @@ private:
     uint64_t prev_cacultate_leader_valid_ms_ = 0;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     uint64_t prev_synced_pool_index_ = 0;
+    uint64_t root_prev_synced_pool_index_ = 0;
     uint64_t prev_sync_height_tree_tm_ms_ = 0;
     volatile uint64_t synced_max_heights_[common::kInvalidPoolIndex] = { 0 };
-    volatile uint64_t cross_synced_max_heights_[network::kConsensusWaitingShardOffset] = { 0 };
+    volatile uint64_t root_synced_max_heights_[common::kInvalidPoolIndex] = { 0 };
+    volatile uint64_t cross_synced_max_heights_[network::kConsensusShardEndNetworkId] = { 0 };
     common::MembersPtr latest_members_;
     uint64_t latest_elect_height_ = 0;
     uint32_t latest_leader_count_ = 0;
     uint32_t member_index_ = common::kInvalidUint32;
     CrossPool* cross_pools_ = nullptr;
-    uint32_t max_cross_pools_size_ = 1;
-    uint32_t now_sharding_count_ = 1;
+    RootCrossPool* root_cross_pools_ = nullptr;
+    uint32_t now_max_sharding_id_ = network::kConsensusShardBeginNetworkId;
     uint32_t prev_cross_sync_index_ = 0;
     std::shared_ptr<CrossBlockManager> cross_block_mgr_ = nullptr;
-    common::Tick tick_;
+    common::Tick tools_tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_[common::kMaxThreadCount];
     std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>> invalid_pools_;
     uint64_t prev_elect_height_ = common::kInvalidUint64;

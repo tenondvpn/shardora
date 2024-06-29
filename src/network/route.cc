@@ -163,11 +163,11 @@ bool Route::CheckPoolsMessage(const transport::MessagePtr& header_ptr, dht::Base
             (*members)[store_member_index]->id);
         header.set_des_dht_key(dht_key.StrKey());
         dht_ptr->SendToClosestNode(header_ptr);
-        ZJC_DEBUG("pools message check route coming not this node.");
+        // ZJC_DEBUG("pools message check route coming not this node.");
         return false;
     }
 
-    ZJC_DEBUG("pools message check route coming success this node.");
+    // ZJC_DEBUG("pools message check route coming success this node.");
     return true;
 }
 

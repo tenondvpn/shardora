@@ -11,6 +11,7 @@
 #include "db/db.h"
 #include "protos/pools.pb.h"
 #include "protos/prefix_db.h"
+#include "network/network_utils.h"
 #include "security/security.h"
 #include "transport/transport_utils.h"
 #include "zjcvm/zjc_host.h"
@@ -19,7 +20,7 @@ namespace shardora {
 
 namespace pools {
 
-static const uint64_t kBftStartDeltaTime = 3000000lu; // 预留交易生效时间，避免部分节点找不到交易（但会增大交易 latency）
+static const uint64_t kBftStartDeltaTime = 10000000lu; // 预留交易生效时间，避免部分节点找不到交易（但会增大交易 latency）
 static const uint32_t kTxPoolTimeoutUs = 10u * 1000u * 1000u;
 static const uint32_t kTxStorageKeyMaxSize = 12u;
 static const uint32_t kMaxToTxsCount = 10000u;
@@ -46,7 +47,6 @@ public:
     TxItem(const pools::protobuf::TxMessage& tx, protos::AddressInfoPtr& addr_info)
             : prev_consensus_tm_us(0),
             gas_price(tx.gas_price()),
-            in_consensus(false),
             tx_info(tx),
             address_info(addr_info),
             is_consensus_add_tx(false) {
@@ -84,7 +84,6 @@ public:
     int32_t step = pools::protobuf::kNormalFrom;
     std::string unique_tx_hash;
     std::string prio_key;
-    bool in_consensus;
     pools::protobuf::TxMessage tx_info;
     protos::AddressInfoPtr address_info;
     bool is_consensus_add_tx;
@@ -92,6 +91,7 @@ public:
 
 typedef std::shared_ptr<TxItem> TxItemPtr;
 typedef std::function<TxItemPtr(const transport::MessagePtr& msg_ptr)> CreateConsensusItemFunction;
+typedef std::function<bool(const std::string& gid)> CheckGidValidFunction;
 
 struct StatisticElectItem {
     StatisticElectItem() : elect_height(0) {
@@ -141,9 +141,15 @@ struct ElectItem {
 };
 
 struct StatisticMemberInfoItem {
-    uint32_t tx_count;
-    uint32_t member_index;
-    uint32_t leader_index;
+    uint32_t tx_count = 0;
+    uint32_t member_index = 0;
+    uint32_t leader_index = 0;
+    uint64_t gas_sum = 0;
+};
+
+struct AccoutPoceInfoItem {
+    uint64_t consensus_gap; // 边缘化程度 P
+    uint64_t credit;
 };
 
 struct CrossStatisticItem {
@@ -153,15 +159,28 @@ struct CrossStatisticItem {
     std::shared_ptr<pools::protobuf::CrossShardStatistic> cross_ptr;
 };
 
-struct HeightStatisticInfo {
-    HeightStatisticInfo() : elect_height(0), all_gas_amount(0), all_gas_for_root(0) {}
-    std::unordered_map<std::string, StatisticMemberInfoItem> node_tx_count_map;
-    std::unordered_map<std::string, uint64_t> node_stoke_map;
-    std::unordered_map<std::string, uint32_t> node_shard_map;
-    std::unordered_map<uint32_t, std::unordered_map<uint64_t, uint32_t>> pool_cross_shard_heights;
-    uint64_t elect_height;
+struct ElectNodeStatisticInfo {
+    ElectNodeStatisticInfo() : all_gas_amount(0), 
+        all_gas_for_root(0) {}
+    std::map<std::string, StatisticMemberInfoItem> node_tx_count_map;
+    std::map<std::string, uint64_t> node_stoke_map;
+    std::map<std::string, uint32_t> node_shard_map;
+    std::map<std::string, std::string> node_pubkey_map;
     uint64_t all_gas_amount;
     uint64_t all_gas_for_root;
+};
+
+struct HeightStatisticInfo {
+    HeightStatisticInfo() : tm_height(0), max_height(0) {}
+    uint64_t tm_height;
+    uint64_t max_height;
+    std::map<uint64_t, std::shared_ptr<ElectNodeStatisticInfo>> elect_node_info_map;
+};
+
+struct PoolBlocksInfo {
+    PoolBlocksInfo() : latest_consensus_height_(0) {}
+    std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> blocks;
+    uint64_t latest_consensus_height_;
 };
 
 struct RootStatisticItem {
@@ -208,6 +227,40 @@ struct PoolsTmPrioItem {
     }
 };
 
+struct CrossItem {
+    uint32_t src_shard;
+    uint32_t src_pool;
+    uint64_t height;
+};
+
+static inline bool operator==(const struct CrossItem & X,const struct CrossItem & Y) {
+    return (Y.src_shard==X.src_shard) && (Y.src_pool==X.src_pool)  && (Y.height==X.height);
+}
+
+
+struct CrossItemRecordHash {
+    size_t operator()(const struct CrossItem& item) const {
+        char data[sizeof(CrossItem)];
+        uint32_t* u32_arr = (uint32_t*)data;
+        u32_arr[0] = item.src_shard;
+        u32_arr[1] = item.src_pool;
+        u32_arr[2] = static_cast<uint32_t>(item.height && 0xFFFFFFFFu);
+        u32_arr[3] = static_cast<uint32_t>((item.height >> 32) && 0xFFFFFFFFu);
+        return std::hash<std::string>()(data);
+    }
+};
+
+struct StatisticInfoItem {
+    StatisticInfoItem() : all_gas_amount(0), root_all_gas_amount(0), statistic_max_height(0) {}
+    uint64_t all_gas_amount;
+    uint64_t root_all_gas_amount;
+    std::map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
+    std::map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
+    std::map<uint64_t, std::unordered_map<std::string, StatisticMemberInfoItem>> height_node_collect_info_map;
+    std::unordered_map<std::string, std::string> id_pk_map;
+    uint64_t statistic_max_height;
+};
+
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {
     std::string message;
     message.reserve(tx_info.ByteSizeLong());
@@ -245,7 +298,22 @@ static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_
         }
     }
 
-    ZJC_DEBUG("message: %s", common::Encode::HexEncode(message).c_str());
+    // ZJC_DEBUG("gid: %s, pk: %s, to: %s, amount: %lu, gas limit: %lu, gas price: %lu, "
+    //     "step: %d, contract code: %s, input: %s, prepayment: %lu, key: %s, value: %s", 
+    //     common::Encode::HexEncode(tx_info.gid()).c_str(),
+    //     common::Encode::HexEncode(tx_info.pubkey()).c_str(),
+    //     common::Encode::HexEncode(tx_info.to()).c_str(),
+    //     tx_info.amount(),
+    //     tx_info.gas_limit(),
+    //     tx_info.gas_price(),
+    //     tx_info.step(),
+    //     common::Encode::HexEncode(tx_info.contract_code()).c_str(),
+    //     common::Encode::HexEncode(tx_info.contract_input()).c_str(),
+    //     tx_info.contract_prepayment(),
+    //     common::Encode::HexEncode(tx_info.key()).c_str(),
+    //     common::Encode::HexEncode(tx_info.value()).c_str());
+
+    // ZJC_DEBUG("message: %s", common::Encode::HexEncode(message).c_str());
     return common::Hash::keccak256(message);
 }
 
@@ -274,6 +342,16 @@ static std::string GetTxMessageHashByJoin(const pools::protobuf::TxMessage& tx_i
     message.append(std::to_string(tx_info.gas_price()));
     ZJC_DEBUG("src message: %s", message.c_str());
     return common::Hash::keccak256(message);
+}
+
+static inline bool IsRootNode() {
+    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId || 
+            common::GlobalInfo::Instance()->network_id() == 
+            network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset) {
+        return true;
+    }
+
+    return false;
 }
 
 };  // namespace pools

@@ -71,6 +71,11 @@ enum MessageType {
     kPoolTimerMessage = 11,
     kInitMessage = 12,
     kC2cMessage = 13,
+    kHotstuffSyncMessage = 14,
+    kHotstuffTimeoutMessage = 15,
+    kHotstuffMessage = 16,
+    kHotstuffSyncTimerMessage = 17,
+    kPacemakerTimerMessage = 18,
     // max (message) type
     kMaxMessageTypeCount,
 };
@@ -177,9 +182,13 @@ static const uint32_t kInvalidInt32 = (std::numeric_limits<int32_t>::max)();
 static const uint32_t kInvalidFloat = (std::numeric_limits<float>::max)();
 static const uint8_t kMaxThreadCount = 16;
 
+#ifdef ENABLE_HOTSTUFF
+// TODO Chained HotStuff 由于要同步 4-5 个块，块中的交易目前不能过大，实测 8192 会造成同步失败，在同步逻辑优化完成前不要修改
+static const uint32_t kSingleBlockMaxTransactions = 4096u; // 1M 大约 4000+ 交易
+#else
 static const uint32_t kSingleBlockMaxTransactions = 8192u; // 1M 大约 4000+ 交易
+#endif
 static const uint32_t kSingleBlockMaxMBytes = 2u;
-
 static const uint32_t kVpnShareStakingPrice = 1u;
 
 static const uint64_t kZjcMiniTransportUnit = 100000000llu;
@@ -202,7 +211,7 @@ static const uint64_t kBuildinTransactionGasPrice = 999999999lu;
 static const std::string kRootPoolsAddress = common::Encode::HexDecode(
     "0000000000000000000000000000000000000000");
 
-#pragma pack(push) 
+#pragma pack(push)
 #pragma pack(1)
 union DhtKey {
     DhtKey() {

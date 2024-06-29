@@ -40,10 +40,13 @@ int AccountManager::Init(
     pools_mgr_ = pools_mgr;
     CreatePoolsAddressInfo();
     inited_ = true;
+    ZJC_DEBUG("thread init acc wait 0");
     update_acc_thread_ = std::make_shared<std::thread>(
         std::bind(&AccountManager::RunUpdateAccounts, this));
+    ZJC_DEBUG("thread init acc wait 1");
     std::unique_lock<std::mutex> lock(thread_wait_mutex_);
-    thread_wait_conn_.wait(lock);
+    thread_wait_conn_.wait_for(lock, std::chrono::milliseconds(1000));
+    ZJC_DEBUG("thread init acc wait 2");
     return kBlockSuccess;
 }
 
@@ -122,7 +125,8 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(
     if (iter != thread_address_map_[thread_idx].end()) {
         return iter->second;
     }
-
+    
+    BLOCK_WARN("get account failed[%s] in thread_idx:%d", common::Encode::HexEncode(addr).c_str(), thread_idx);
     return nullptr;
 }
 
@@ -165,6 +169,7 @@ const std::string& AccountManager::GetTxValidAddress(const block::protobuf::Bloc
     case pools::protobuf::kConsensusCreateGenesisAcount:
     case pools::protobuf::kContractExcute:
     case pools::protobuf::kStatistic:
+    case pools::protobuf::kContractCreate:
         return tx_info.to();
     case pools::protobuf::kJoinElect:
     case pools::protobuf::kNormalFrom:
@@ -184,8 +189,48 @@ void AccountManager::HandleNormalFromTx(
     auto& account_id = GetTxValidAddress(tx);
     auto account_info = GetAccountInfo(account_id);
     if (account_info == nullptr) {
-        assert(false);
+        ZJC_INFO("get address info failed create new address to this id: %s,"
+            "shard: %u, local shard: %u",
+            common::Encode::HexEncode(account_id).c_str(), block.network_id(),
+            common::GlobalInfo::Instance()->network_id());
+        account_info = std::make_shared<address::protobuf::AddressInfo>();
+        account_info->set_pool_index(block.pool_index());
+        account_info->set_addr(account_id);
+        account_info->set_type(address::protobuf::kNormal);
+        account_info->set_sharding_id(block.network_id());
+    }
+
+    if (account_info->latest_height() >= block.height()) {
         return;
+    }
+
+    account_info->set_latest_height(block.height());
+    account_info->set_balance(tx.balance());
+    prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    thread_update_accounts_queue_[thread_idx].push(account_info);
+    update_acc_con_.notify_one();
+    ZJC_DEBUG("transfer from address new balance %s: %lu, height: %lu, pool: %u",
+        common::Encode::HexEncode(account_id).c_str(), tx.balance(),
+        block.height(), block.pool_index());
+}
+
+void AccountManager::HandleCreateGenesisAcount(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
+    auto& account_id = tx.to();
+    auto account_info = GetAccountInfo(account_id);
+    if (account_info == nullptr) {
+        ZJC_INFO("get address info failed create new address to this id: %s,"
+            "shard: %u, local shard: %u",
+            common::Encode::HexEncode(account_id).c_str(), block.network_id(),
+            common::GlobalInfo::Instance()->network_id());
+        account_info = std::make_shared<address::protobuf::AddressInfo>();
+        account_info->set_pool_index(block.pool_index());
+        account_info->set_addr(account_id);
+        account_info->set_type(address::protobuf::kNormal);
+        account_info->set_sharding_id(block.network_id());
     }
 
     if (account_info->latest_height() >= block.height()) {
@@ -237,26 +282,21 @@ void AccountManager::HandleLocalToTx(
         return;
     }
 
-    std::string to_txs_str;
+    const std::string* to_txs_str = nullptr;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kConsensusLocalNormalTos) {
-            if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &to_txs_str)) {
-                ZJC_DEBUG("handle local to tx failed get val hash error: %s",
-                    common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
-                return;
-            }
-
+            to_txs_str = &tx.storages(i).value();
             break;
         }
     }
 
-    if (to_txs_str.empty()) {
+    if (to_txs_str == nullptr) {
         ZJC_WARN("get local tos info failed!");
         return;
     }
 
     block::protobuf::ConsensusToTxs to_txs;
-    if (!to_txs.ParseFromString(to_txs_str)) {
+    if (!to_txs.ParseFromString(*to_txs_str)) {
         assert(false);
         return;
     }
@@ -323,7 +363,7 @@ void AccountManager::HandleContractCreateByRootTo(
 	for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
             account_info = std::make_shared<address::protobuf::AddressInfo>();
-            auto& bytes_code = tx.storages(i).val_hash();
+            auto& bytes_code = tx.storages(i).value();
             account_info->set_type(address::protobuf::kContract);
             account_info->set_pool_index(block.pool_index());
             account_info->set_addr(tx.to());
@@ -381,14 +421,14 @@ void AccountManager::HandleCreateContract(
     if (tx.status() == consensus::kConsensusSuccess) {
         auto account_info = GetAccountInfo(tx.to());
         if (account_info != nullptr) {
-            assert(false);
+            // assert(false);
             return;
         }
 
         for (int32_t i = 0; i < tx.storages_size(); ++i) {
             if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
                 account_info = std::make_shared<address::protobuf::AddressInfo>();
-                auto& bytes_code = tx.storages(i).val_hash();
+                auto& bytes_code = tx.storages(i).value();
                 account_info->set_type(address::protobuf::kContract);
                 account_info->set_pool_index(block.pool_index());
                 account_info->set_addr(tx.to());
@@ -504,7 +544,7 @@ void AccountManager::HandleRootCreateAddressTx(
     uint32_t sharding_id = common::kInvalidUint32;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kRootCreateAddressKey) {
-            uint32_t* tmp = (uint32_t*)tx.storages(i).val_hash().c_str();
+            uint32_t* tmp = (uint32_t*)tx.storages(i).value().c_str();
             sharding_id = tmp[0];
             break;
         }
@@ -552,14 +592,7 @@ void AccountManager::HandleJoinElectTx(
     bls::protobuf::JoinElectInfo join_info;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
-            std::string val;
-            if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
-                ZJC_DEBUG("handle local to tx failed get val hash error: %s",
-                    common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
-                return;
-            }
-
-            if (!join_info.ParseFromString(val)) {
+            if (!join_info.ParseFromString(tx.storages(i).value())) {
                 assert(false);
                 break;
             }
@@ -610,10 +643,14 @@ void AccountManager::HandleJoinElectTx(
 }
 
 void AccountManager::RunUpdateAccounts() {
+    ZJC_DEBUG("thread init acc 0");
     {
         auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+        ZJC_DEBUG("thread init acc 1");
         std::unique_lock<std::mutex> lock(thread_wait_mutex_);
+        ZJC_DEBUG("thread init acc 2");
         thread_wait_conn_.notify_one();
+        ZJC_DEBUG("thread init acc 3");
     }
     
     while (!destroy_) {
@@ -686,7 +723,11 @@ void AccountManager::NewBlockWithTx(
     case pools::protobuf::kContractCreateByRootTo:
         HandleContractCreateByRootTo(*block_item, tx, db_batch);
         break;
+    case pools::protobuf::kConsensusCreateGenesisAcount:
+        HandleCreateGenesisAcount(*block_item, tx, db_batch);
+        break;
     default:
+        // ZJC_FATAL("invalid step: %d", tx.step());
         break;
     }
 }

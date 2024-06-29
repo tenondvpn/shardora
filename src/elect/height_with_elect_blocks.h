@@ -111,8 +111,16 @@ public:
             uint32_t network_id,
             libff::alt_bn128_G2* common_pk,
             libff::alt_bn128_Fr* local_sec_key) {
-        ZJC_DEBUG("get bls pk and secret key success.height: %lu, network_id: %u",
-            height, network_id);
+        if (height == 0) {
+            return nullptr;
+        }
+        
+        ZJC_DEBUG("get bls pk and secret key success.height: %lu, "
+            "network_id: %u, end net id: %u, offset: %u",
+            height, 
+            network_id, 
+            network::kConsensusShardEndNetworkId, 
+            network::kConsensusWaitingShardOffset);
         if (network_id >= network::kConsensusShardEndNetworkId) {
             network_id -= network::kConsensusWaitingShardOffset;
         }
@@ -160,13 +168,15 @@ public:
 
         auto shard_members = GetMembers(security, network_id, height);
         if (shard_members == nullptr) {
+            ZJC_DEBUG("failed get members.");
             return nullptr;
         }
 
         auto new_item = std::make_shared<HeightMembersItem>(shard_members, height);
         new_item->common_bls_publick_key = GetCommonPublicKey(network_id, height);
         if (new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()) {
-            return nullptr;
+            ZJC_DEBUG("ew_item->common_bls_publick_key == libff::alt_bn128_G2::zero().");
+            return shard_members;
         }
 
         height_with_members_[network_id][height] = new_item;
@@ -245,28 +255,22 @@ private:
         }
 
         bool eb_valid = false;
+        assert(block.tx_list_size() > 0);
         elect::protobuf::ElectBlock elect_block;
         for (int32_t tx_idx = 0; tx_idx < block.tx_list_size(); ++tx_idx) {
+            ZJC_DEBUG("get tx step %d, %d, network_id: %u",
+                tx_idx, block.tx_list(tx_idx).step(), network_id);
             if (block.tx_list(tx_idx).step() != pools::protobuf::kConsensusRootElectShard) {
                 continue;
             }
 
+            ZJC_DEBUG("success get elect block step: %d", block.tx_list(tx_idx).step());
             for (int32_t i = 0; i < block.tx_list(tx_idx).storages_size(); ++i) {
+                ZJC_DEBUG("get elect block key: %s", block.tx_list(tx_idx).storages(i).key().c_str());
                 if (block.tx_list(tx_idx).storages(i).key() == protos::kElectNodeAttrElectBlock) {
-                    std::string val;
-                    if (!prefix_db_->GetTemporaryKv(block.tx_list(0).storages(i).val_hash(), &val)) {
-                        ZJC_FATAL("elect block get temp kv from db failed!");
-                        return nullptr;
-                    }
-
-                    if (!elect_block.ParseFromString(val)) {
+                    ZJC_DEBUG("success get elect block key: %s", block.tx_list(tx_idx).storages(i).key().c_str());
+                    if (!elect_block.ParseFromString(block.tx_list(0).storages(i).value())) {
                         assert(false);
-                        return nullptr;
-                    }
-
-                    std::string ec_hash = protos::GetElectBlockHash(elect_block);
-                    if (ec_hash != block.tx_list(tx_idx).storages(i).val_hash()) {
-                        ZJC_FATAL("elect block get temp kv from db failed!");
                         return nullptr;
                     }
 

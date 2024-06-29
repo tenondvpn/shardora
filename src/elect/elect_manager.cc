@@ -10,9 +10,11 @@
 #include "dht/dht_utils.h"
 #include "db/db_utils.h"
 #include "elect/elect_proto.h"
+#include "elect/elect_pledge.h"
 #include "network/route.h"
 #include "network/shard_network.h"
 #include "vss/vss_manager.h"
+#include <protos/prefix_db.h>
 
 namespace shardora {
 
@@ -259,31 +261,40 @@ bool ElectManager::ProcessPrevElectMembers(
         return false;
     }
 
+    int32_t expect_leader_count = (int32_t)pow(
+        2.0,
+        (double)((int32_t)log2(double(in.size() / 3))));
+    if (expect_leader_count > (int32_t)common::kImmutablePoolSize) {
+        expect_leader_count = (int32_t)common::kImmutablePoolSize;
+    }
+
     uint32_t leader_count = 0;
     for (int32_t i = 0; i < in.size(); ++i) {
         auto id = security_->GetAddress(in[i].pubkey());
-        int32_t pool_idx_mod_num = elect_block.prev_members().bls_pubkey(i).pool_idx_mod_num();
+        int32_t pool_idx_mod_num = leader_count;  // elect_block.prev_members().bls_pubkey(i).pool_idx_mod_num();
+        if (leader_count >= expect_leader_count) {
+            pool_idx_mod_num = -1;
+        } else {
+            ++leader_count;
+        }
+
         shard_members_ptr->push_back(std::make_shared<common::BftMember>(
             prev_elect_block.shard_network_id(),
             id,
             in[i].pubkey(),
             i,
             pool_idx_mod_num));
-        if (pool_idx_mod_num >= 0) {
-            ++leader_count;
-        }
-
         now_elected_ids_.insert(id);
         AddNewNodeWithIdAndIp(prev_elect_block.shard_network_id(), id);
     }
 
-    latest_leader_count_[prev_elect_block.shard_network_id()] = leader_count;
+    latest_leader_count_[prev_elect_block.shard_network_id()] = expect_leader_count;
     std::vector<std::string> pk_vec;
     UpdatePrevElectMembers(shard_members_ptr, elect_block, elected, &pk_vec);
     auto common_pk = BLSPublicKey(std::make_shared<std::vector<std::string>>(pk_vec));
     bool local_node_is_super_leader = false;
     for (auto iter = shard_members_ptr->begin(); iter != shard_members_ptr->end(); ++iter) {
-        ELECT_INFO("DDDDDDDDDD elect height: %lu, network: %d,"
+        ELECT_WARN("DDDDDDDDDD elect height: %lu, network: %d,"
             "leader: %s, pool_index_mod_num: %d, valid pk: %d",
             elect_block.prev_members().prev_elect_height(),
             prev_elect_block.shard_network_id(),
@@ -323,6 +334,12 @@ bool ElectManager::ProcessPrevElectMembers(
             elect_net_heights_map_[prev_elect_block.shard_network_id()]) {
         elect_net_heights_map_[prev_elect_block.shard_network_id()] =
             elect_block.prev_members().prev_elect_height();
+
+        {// hack 质押合约中 nowElectHeight 字段 
+         // src/contract/tests/contracts/ElectPlegde/ElectPledgeContract.sol
+            auto plege_addr = elect::ElectPlege::gen_elect_plege_contract_addr(prev_elect_block.shard_network_id());
+            prefix_db_->AddNowElectHeight2Plege(plege_addr, elect_block.prev_members().prev_elect_height(), db_batch);
+        }
         ELECT_DEBUG("set netid: %d, elect height: %lu",
             prev_elect_block.shard_network_id(), elect_block.prev_members().prev_elect_height());
     }
@@ -366,7 +383,7 @@ void ElectManager::ProcessNewElectBlock(
         }
 
         now_elected_ids_.insert(id);
-        ELECT_DEBUG("FFFFFFFF ProcessNewElectBlock network: %d, elect height: %lu, "
+        ELECT_WARN("FFFFFFFF ProcessNewElectBlock network: %d, elect height: %lu, "
             "member leader: %s,, (*iter)->pool_index_mod_num: %d, "
             "local_waiting_node_member_index_: %d",
             elect_block.shard_network_id(),
@@ -474,6 +491,10 @@ common::MembersPtr ElectManager::GetNetworkMembersWithHeight(
         uint32_t network_id,
         libff::alt_bn128_G2* common_pk,
         libff::alt_bn128_Fr* sec_key) {
+    if (elect_height == 0) {
+        return nullptr;
+    }
+    
     return height_with_block_->GetMembersPtr(
         security_, elect_height, network_id, common_pk, sec_key);
 }

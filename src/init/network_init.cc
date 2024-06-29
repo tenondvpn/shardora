@@ -1,6 +1,18 @@
 #include "init/network_init.h"
+#include <common/encode.h>
 #include <common/log.h>
+#include <common/utils.h>
+#include <consensus/hotstuff/crypto.h>
+#include <consensus/hotstuff/elect_info.h>
+#include <consensus/hotstuff/hotstuff_manager.h>
+#include <consensus/hotstuff/leader_rotation.h>
+#include <consensus/hotstuff/pacemaker.h>
+#include <consensus/hotstuff/types.h>
+#include <consensus/hotstuff/view_block_chain.h>
+#include <consensus/hotstuff/hotstuff_syncer.h>
+#include <consensus/consensus_utils.h>
 #include <functional>
+#include <memory>
 #include <protos/pools.pb.h>
 
 #include "block/block_manager.h"
@@ -12,7 +24,9 @@
 #include "common/random.h"
 #include "common/time_utils.h"
 #include "db/db.h"
+#include "db/db_utils.h"
 #include "elect/elect_manager.h"
+#include "elect/elect_pledge.h"
 #include "http/http_server.h"
 #include "http/http_client.h"
 #include "init/genesis_block_init.h"
@@ -48,6 +62,7 @@ NetworkInit::~NetworkInit() {
 }
 
 int NetworkInit::Init(int argc, char** argv) {
+    ZJC_DEBUG("init 0 0");
     auto b_time = common::TimeUtils::TimestampMs();
     if (inited_) {
         INIT_ERROR("network inited!");
@@ -69,6 +84,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    ZJC_DEBUG("init 0 1");
     contract_mgr_ = std::make_shared<contract::ContractManager>();
     contract_mgr_->Init(security_);
     common::ParserArgs parser_arg;
@@ -84,6 +100,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return genesis_check;
     }
 
+    ZJC_DEBUG("init 0 2");
     std::string db_path = "./db";
     conf_.Get("zjchain", "db_path", db_path);
     db_ = std::make_shared<db::Db>();
@@ -92,32 +109,39 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    ZJC_DEBUG("init 0 3");
     common::Ip::Instance();
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     // 随机数
-    vss_mgr_ = std::make_shared<vss::VssManager>(security_);
+    vss_mgr_ = std::make_shared<vss::VssManager>();
     kv_sync_ = std::make_shared<sync::KeyValueSync>();
     gas_prepayment_ = std::make_shared<consensus::ContractGasPrepayment>(db_);
+    ZJC_DEBUG("init 0 4");
     InitLocalNetworkId();
     ZJC_DEBUG("id: %s, init sharding id: %u",
         common::Encode::HexEncode(security_->GetAddress()).c_str(),
         common::GlobalInfo::Instance()->network_id());
-    if (net_handler_.Init(db_) != transport::kTransportSuccess) {
+    ZJC_DEBUG("init 0 5");
+    if (net_handler_.Init(db_, security_) != transport::kTransportSuccess) {
         return kInitError;
     }
 
+    ZJC_DEBUG("init 0 6");
     net_handler_.Start();
+    ZJC_DEBUG("init 0 7");
     int transport_res = transport::TcpTransport::Instance()->Init(
         common::GlobalInfo::Instance()->config_local_ip() + ":" +
         std::to_string(common::GlobalInfo::Instance()->config_local_port()),
         128,
         true,
         &net_handler_);
+    ZJC_DEBUG("init 0 8");
     if (transport_res != transport::kTransportSuccess) {
         INIT_ERROR("int tcp transport failed!");
         return kInitError;
     }
 
+    ZJC_DEBUG("init 0 9");
     network::DhtManager::Instance();
     network::Route::Instance()->Init(security_);
     network::Route::Instance()->RegisterMessage(
@@ -125,6 +149,7 @@ int NetworkInit::Init(int argc, char** argv) {
         std::bind(&NetworkInit::HandleMessage, this, std::placeholders::_1));
     account_mgr_ = std::make_shared<block::AccountManager>();
     network::UniversalManager::Instance()->Init(security_, db_, account_mgr_);
+    ZJC_DEBUG("init 0 10");
     if (InitNetworkSingleton() != kInitSuccess) {
         INIT_ERROR("InitNetworkSingleton failed!");
         return kInitError;
@@ -135,20 +160,28 @@ int NetworkInit::Init(int argc, char** argv) {
     elect_mgr_ = std::make_shared<elect::ElectManager>(
         vss_mgr_, account_mgr_, block_mgr_, security_, bls_mgr_, db_,
         nullptr);
+    ZJC_DEBUG("init 0 11");
+#ifndef ENABLE_HOTSTUFF
     kv_sync_->Init(
         block_mgr_,
-        db_);
+        db_,
+        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
+#endif
+    ZJC_DEBUG("init 0 12");
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(
         security_, db_, kv_sync_, account_mgr_);
+    ZJC_DEBUG("init 0 13");
     account_mgr_->Init(db_, pools_mgr_);
+    ZJC_DEBUG("init 0 14");
     zjcvm::Execution::Instance()->Init(db_, account_mgr_);
+    ZJC_DEBUG("init 0 15");
     auto new_db_cb = std::bind(
         &NetworkInit::DbNewBlockCallback,
         this,
         std::placeholders::_1,
         std::placeholders::_2);
     shard_statistic_ = std::make_shared<pools::ShardStatistic>(
-        elect_mgr_, db_, security_, pools_mgr_);
+        elect_mgr_, db_, security_, pools_mgr_, contract_mgr_);
     block_mgr_->Init(
         account_mgr_,
         db_,
@@ -159,9 +192,34 @@ int NetworkInit::Init(int argc, char** argv) {
         security_->GetAddress(),
         new_db_cb,
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
+    ZJC_DEBUG("init 0 14");
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
+
+
+#ifdef ENABLE_HOTSTUFF
+    hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
+    kv_sync_->Init(
+        block_mgr_,
+        db_,
+        std::bind(&consensus::HotstuffManager::VerifySyncedViewBlock,
+            hotstuff_mgr_, std::placeholders::_1));
+    auto consensus_init_res = hotstuff_mgr_->Init(
+        contract_mgr_,
+        gas_prepayment_,
+        vss_mgr_,
+        account_mgr_,
+        block_mgr_,
+        elect_mgr_,
+        pools_mgr_,
+        security_,
+        tm_block_mgr_,
+        bls_mgr_,
+        db_,
+        std::bind(&NetworkInit::AddBlockItemToCache, this,
+            std::placeholders::_1, std::placeholders::_2));
+#else
     bft_mgr_ = std::make_shared<consensus::BftManager>();
-    auto bft_init_res = bft_mgr_->Init(
+    auto consensus_init_res = bft_mgr_->Init(
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1),
         contract_mgr_,
         gas_prepayment_,
@@ -179,17 +237,21 @@ int NetworkInit::Init(int argc, char** argv) {
         common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
         std::bind(&NetworkInit::AddBlockItemToCache, this,
             std::placeholders::_1, std::placeholders::_2));
-    if (bft_init_res != consensus::kConsensusSuccess) {
+#endif
+
+    if (consensus_init_res != consensus::kConsensusSuccess) {
         INIT_ERROR("init bft failed!");
         return kInitError;
     }
 
+    ZJC_DEBUG("init 1");
     tm_block_mgr_->Init(vss_mgr_,account_mgr_);
     if (elect_mgr_->Init() != elect::kElectSuccess) {
         INIT_ERROR("init elect manager failed!");
         return kInitError;
     }
 
+    ZJC_DEBUG("init 2");
     if (common::GlobalInfo::Instance()->network_id() != common::kInvalidUint32 &&
             common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
         if (elect_mgr_->Join(
@@ -200,14 +262,34 @@ int NetworkInit::Init(int argc, char** argv) {
         }
     }
 
+    std::vector<uint64_t> latest_heights;
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        latest_heights.push_back(pools_mgr_->latest_height(i));
+    }
+
+    ZJC_DEBUG("init 3");
+    shard_statistic_->Init(latest_heights);
+    ZJC_DEBUG("init 4");
     block_mgr_->LoadLatestBlocks();
-    shard_statistic_->Init();
+    ZJC_DEBUG("init 5");
     RegisterFirewallCheck();
+
+#ifdef ENABLE_HOTSTUFF
+    // 启动共识和同步
+    hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(hotstuff_mgr_, db_, kv_sync_);
+    hotstuff_syncer_->Start();
+    hotstuff_mgr_->Start();
+    // 以上应该放入 hotstuff 实例初始化中，并接收创世块
+    AddCmds();
+#endif
+
     transport::TcpTransport::Instance()->Start(false);
+    ZJC_DEBUG("init 6");
     if (InitHttpServer() != kInitSuccess) {
         INIT_ERROR("InitHttpServer failed!");
         return kInitError;
     }
+    ZJC_DEBUG("init 7");
     GetAddressShardingId();
     if (InitCommand() != kInitSuccess) {
         INIT_ERROR("InitCommand failed!");
@@ -216,21 +298,87 @@ int NetworkInit::Init(int argc, char** argv) {
 
     inited_ = true;
     common::GlobalInfo::Instance()->set_main_inited_success();
+    cmd_.AddCommand("gs", [this](const std::vector<std::string>& args) {
+        if (args.size() < 3) {
+            return;
+        }
+        uint32_t shard_id = std::stoi(args[0]);
+        std::string addr = args[1];
+        uint64_t elect_height = std::stoull(args[2]);
+        std::string con_addr = "";
+        if (shard_id < 1){
+           con_addr = args[3];
+        }
+        std::cout << "shard_id: " << shard_id << std::endl;
+        std::cout << "addr: " << addr << std::endl;
+        std::cout << "elect_height: " << elect_height << std::endl;
+        std::cout << "con_addr: " << con_addr << std::endl;
+        auto stoke = shard_statistic_->getStoke(shard_id,  con_addr, addr,  elect_height);
+        std::cout << "stoke: " << stoke << std::endl;
+
+    });
+
+    cmd_.AddCommand("sph", [this](const std::vector<std::string>& args) {
+        if (args.size() < 2) {
+            return;
+        }
+        uint32_t shard_id = std::stoi(args[0]);
+        uint64_t elect_height = std::stoull(args[1]);
+        std::string con_addr = "";
+        auto plege_addr = elect::ElectPlege::gen_elect_plege_contract_addr(shard_id);
+        db::DbWriteBatch db_batch;
+        prefix_db_->AddNowElectHeight2Plege(plege_addr, elect_height, db_batch);
+        db_->Put(db_batch);
+
+    });
+
     cmd_.Run();
     // std::this_thread::sleep_for(std::chrono::seconds(120));
     return kInitSuccess;
 }
 
+void NetworkInit::AddCmds() {
+#ifdef ENABLE_HOTSTUFF
+    cmd_.AddCommand("pc", [this](const std::vector<std::string>& args){
+        if (args.size() < 1) {
+            return;
+        }
+        uint32_t pool_idx = std::stoi(args[0]);
+
+        auto chain = hotstuff_mgr_->chain(pool_idx);
+        if (!chain) {
+            return;
+        }
+        auto pacemaker = hotstuff_mgr_->pacemaker(pool_idx);
+        if (!pacemaker) {
+            return;
+        }
+        std::cout << "highQC: " << pacemaker->HighQC()->view()
+                  << ",highTC: " << pacemaker->HighTC()->view()
+                  << ",chainSize: " << chain->Size()
+                  << ",commitView: " << chain->LatestCommittedBlock()->view
+                  << ",CurView: " << pacemaker->CurView() << std::endl;
+        chain->Print();
+    });
+#endif
+}
+
 void NetworkInit::RegisterFirewallCheck() {
-    net_handler_.AddFirewallCheckCallback(
-        common::kVssMessage,
-        std::bind(&vss::VssManager::FirewallCheckMessage, vss_mgr_.get(), std::placeholders::_1));
     net_handler_.AddFirewallCheckCallback(
         common::kBlsMessage,
         std::bind(&bls::BlsManager::FirewallCheckMessage, bls_mgr_.get(), std::placeholders::_1));
+#ifdef ENABLE_HOTSTUFF
+    net_handler_.AddFirewallCheckCallback(
+        common::kHotstuffMessage,
+        std::bind(&consensus::HotstuffManager::FirewallCheckMessage, hotstuff_mgr_.get(), std::placeholders::_1));
+    net_handler_.AddFirewallCheckCallback(
+        common::kHotstuffSyncMessage,
+        std::bind(&hotstuff::HotstuffSyncer::FirewallCheckMessage, hotstuff_syncer_.get(), std::placeholders::_1));
+#else
     net_handler_.AddFirewallCheckCallback(
         common::kConsensusMessage,
         std::bind(&consensus::BftManager::FirewallCheckMessage, bft_mgr_.get(), std::placeholders::_1));
+#endif
     net_handler_.AddFirewallCheckCallback(
         common::kBlockMessage,
         std::bind(&block::BlockManager::FirewallCheckMessage, block_mgr_.get(), std::placeholders::_1));
@@ -312,7 +460,7 @@ void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
         if (block.tx_list(i).to() == security_->GetAddress()) {
             for (int32_t j = 0; j < block.tx_list(i).storages_size(); ++j) {
                 if (block.tx_list(i).storages(j).key() == protos::kRootCreateAddressKey) {
-                    uint32_t* tmp = (uint32_t*)block.tx_list(i).storages(j).val_hash().c_str();
+                    uint32_t* tmp = (uint32_t*)block.tx_list(i).storages(j).value().c_str();
                     sharding_id = tmp[0];
                     break;
                 }
@@ -322,8 +470,6 @@ void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
         }
     }
 
-    std::cout << "success handle init res message. response shard: " << sharding_id
-        << ", join type: " << common::GlobalInfo::Instance()->join_root() <<  std::endl;
     if (sharding_id == common::kInvalidUint32) {
         return;
     }
@@ -336,18 +482,15 @@ void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
             common::Random::RandomInt32() % 4 == 1) {
         sharding_id = network::kRootCongressNetworkId;
     }
-        
-    std::cout << "success handle init res message. response shard: " << sharding_id
-        << ", join type: " << common::GlobalInfo::Instance()->join_root() << ", rand join: " << sharding_id << std::endl;
+
     prefix_db_->SaveJoinShard(sharding_id, des_sharding_id_);
+    ZJC_DEBUG("success save local sharding %u, %u", sharding_id, des_sharding_id_);
     auto waiting_network_id = sharding_id + network::kConsensusWaitingShardOffset;
     if (elect_mgr_->Join(waiting_network_id) != elect::kElectSuccess) {
         INIT_ERROR("join waiting pool network[%u] failed!", waiting_network_id);
         return;
     }
 
-    std::cout << "success handle init res message. join waiting shard: " << waiting_network_id
-        << ", des_sharding_id_: " << des_sharding_id_ <<std::endl;
     common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
 }
 
@@ -382,6 +525,7 @@ void NetworkInit::InitLocalNetworkId() {
         got_sharding_id = local_node_account_info->sharding_id();
         des_sharding_id_ = got_sharding_id;
         prefix_db_->SaveJoinShard(got_sharding_id, des_sharding_id_);
+        ZJC_DEBUG("success save local sharding %u, %u", got_sharding_id, des_sharding_id_);
         std::cout << "success handle init res message. join waiting shard: " << got_sharding_id
             << ", des_sharding_id_: " << des_sharding_id_ << std::endl;
     }
@@ -444,25 +588,24 @@ void NetworkInit::SendJoinElectTransaction() {
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kPoolsMessage);
     msg.set_hop_count(0);
-    auto broadcast = msg.mutable_broadcast();
     auto new_tx = msg.mutable_tx_proto();
     std::string gid = common::Hash::keccak256(
         std::to_string(tm_block_mgr_->LatestTimestamp()) + security_->GetAddress());
     new_tx->set_gid(gid);
     new_tx->set_pubkey(security_->GetPublicKeyUnCompressed());
     new_tx->set_step(pools::protobuf::kJoinElect);
-    new_tx->set_gas_limit(consensus::kJoinElectGas + 100000);
+    new_tx->set_gas_limit(consensus::kJoinElectGas + 10000000lu);
     new_tx->set_gas_price(10);
-    new_tx->set_key(protos::kElectJoinShard);
+    new_tx->set_key(protos::kJoinElectVerifyG2);
     bls::protobuf::JoinElectInfo join_info;
     uint32_t pos = common::kInvalidUint32;
     prefix_db_->GetLocalElectPos(security_->GetAddress(), &pos);
     join_info.set_member_idx(pos);
     
     if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
-            join_info.set_shard_id(
-                common::GlobalInfo::Instance()->network_id() -
-                network::kConsensusWaitingShardOffset);
+        join_info.set_shard_id(
+            common::GlobalInfo::Instance()->network_id() -
+            network::kConsensusWaitingShardOffset);
     } else {
         join_info.set_shard_id(common::GlobalInfo::Instance()->network_id());
     }
@@ -484,7 +627,7 @@ void NetworkInit::SendJoinElectTransaction() {
         return;
     }
 
-    msg.set_sign(sign);
+    new_tx->set_sign(sign);
     // msg_ptr->msg_hash = tx_hash; // TxPoolmanager::HandleElectTx 接收端计算了，这里不必传输
     network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("success send join elect request transaction: %u, join: %u, gid: %s, "
@@ -494,7 +637,7 @@ void NetworkInit::SendJoinElectTransaction() {
         msg.hash64(),
         common::Encode::HexEncode(tx_hash).c_str(),
         common::Encode::HexEncode(new_tx->pubkey()).c_str(),
-        common::Encode::HexEncode(msg.sign()).c_str());
+        common::Encode::HexEncode(new_tx->sign()).c_str());
 }
 
 void NetworkInit::CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req) {
@@ -581,7 +724,7 @@ std::string http_ip = "0.0.0.0";
         cli.Request(peer_ip.c_str(), http_port, "ok", http_init_callback);
         ZJC_DEBUG("http init wait response coming.");
         std::unique_lock<std::mutex> lock(wait_mutex_);
-        wait_con_.wait(lock);
+        wait_con_.wait_for(lock, std::chrono::milliseconds(1000));
     }
 
     return kInitSuccess;
@@ -999,10 +1142,11 @@ void NetworkInit::AddBlockItemToCache(
     }
 
     const auto& tx_list = block->tx_list();
-    if (tx_list.empty()) {
-        assert(false);
-        return;
-    }
+    // 没有交易也可以提交
+    // if (tx_list.empty()) {
+    //     assert(false);
+    //     return;
+    // }
 
     ZJC_DEBUG("cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
         block->network_id(),
@@ -1013,11 +1157,11 @@ void NetworkInit::AddBlockItemToCache(
     if (block->network_id() == common::GlobalInfo::Instance()->network_id() ||
             block->network_id() + network::kConsensusWaitingShardOffset ==
             common::GlobalInfo::Instance()->network_id()) {
-        pools_mgr_->UpdateLatestInfo(
-            block,
-            db_batch);
+        pools_mgr_->UpdateLatestInfo(block, db_batch);
+    } else {
+        pools_mgr_->UpdateCrossLatestInfo(block, db_batch);
     }
-    
+
     // one block must be one consensus pool
     for (int32_t i = 0; i < tx_list.size(); ++i) {
 //         if (tx_list[i].status() != consensus::kConsensusSuccess) {
@@ -1039,6 +1183,9 @@ void NetworkInit::AddBlockItemToCache(
         case pools::protobuf::kContractExcute:
             account_mgr_->NewBlockWithTx(block, tx_list[i], db_batch);
             gas_prepayment_->NewBlockWithTx(block, tx_list[i], db_batch);
+            ZJC_DEBUG("DDD txInfo: %s", ProtobufToJson(tx_list[i], true).c_str());
+            // ZJC_DEBUG("ddd 00");
+            // db::print_write_batch(db_batch);
             zjcvm::Execution::Instance()->NewBlockWithTx(block, tx_list[i], db_batch);
             break;
         default:
@@ -1064,7 +1211,7 @@ bool NetworkInit::DbNewBlockCallback(
         }
     }
 
-    shard_statistic_->OnNewBlock(*block);
+    shard_statistic_->OnNewBlock(block);
     return true;
 }
 
@@ -1072,14 +1219,15 @@ void NetworkInit::HandleTimeBlock(
         const std::shared_ptr<block::protobuf::Block>& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
+    ZJC_DEBUG("time block coming.");
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kAttrTimerBlock) {
-            if (tx.storages(i).val_hash().size() != 16) {
+            if (tx.storages(i).value().size() != 16) {
                 return;
             }
 
-            uint64_t* data_arr = (uint64_t*)tx.storages(i).val_hash().c_str();
-            vss_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
+            uint64_t* data_arr = (uint64_t*)tx.storages(i).value().c_str();
+            vss_mgr_->OnTimeBlock(block);
             tm_block_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             bls_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             shard_statistic_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
@@ -1105,38 +1253,19 @@ void NetworkInit::HandleElectionBlock(
     auto prev_elect_block = std::make_shared<elect::protobuf::ElectBlock>();
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         if (block_tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
-            std::string val;
-            if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
-                ZJC_FATAL("elect block get temp kv from db failed!");
-                return;
-            }
-
-            if (!elect_block->ParseFromString(val)) {
-                ZJC_FATAL("parse elect block failed!");
-                return;
-            }
-
-            std::string hash = protos::GetElectBlockHash(*elect_block);
-            if (hash != block_tx.storages(i).val_hash()) {
+            ZJC_DEBUG("now handle storage index: %d, key: %s, val size: %u, value: %s",
+                i,
+                block_tx.storages(i).key().c_str(),
+                block_tx.storages(i).value().size(),
+                common::Encode::HexEncode(block_tx.storages(i).value()).c_str());
+            if (!elect_block->ParseFromString(block_tx.storages(i).value())) {
                 ZJC_FATAL("parse elect block failed!");
                 return;
             }
         }
 
         if (block_tx.storages(i).key() == protos::kShardElectionPrevInfo) {
-            std::string val;
-            if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
-                ZJC_FATAL("elect block get temp kv from db failed!");
-                return;
-            }
-
-            if (!prev_elect_block->ParseFromString(val)) {
-                ZJC_FATAL("parse elect block failed!");
-                return;
-            }
-
-            std::string hash = protos::GetElectBlockHash(*prev_elect_block);
-            if (hash != block_tx.storages(i).val_hash()) {
+            if (!prev_elect_block->ParseFromString(block_tx.storages(i).value())) {
                 ZJC_FATAL("parse elect block failed!");
                 return;
             }
@@ -1161,8 +1290,8 @@ void NetworkInit::HandleElectionBlock(
         ZJC_ERROR("elect manager handle elect block failed!");
         return;
     }
-    // TODO log members
 
+    // TODO log members
     auto sharding_id = elect_block->shard_network_id();
     auto elect_height = elect_mgr_->latest_height(sharding_id);
     libff::alt_bn128_G2 common_pk;
@@ -1229,13 +1358,18 @@ void NetworkInit::HandleElectionBlock(
         elect_height,
         members,
         elect_block);
+#ifdef ENABLE_HOTSTUFF
+    hotstuff_mgr_->OnNewElectBlock(block->timestamp(),sharding_id, elect_height, members, common_pk, sec_key);
+#else
     bft_mgr_->OnNewElectBlock(block->timestamp(),sharding_id, elect_height, members, common_pk, sec_key);
+#endif
+
     block_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
-    vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     bls_mgr_->OnNewElectBlock(sharding_id, block->height(), elect_block);
     pools_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     shard_statistic_->OnNewElectBlock(sharding_id, block->height(), elect_height);
     kv_sync_->OnNewElectBlock(sharding_id, block->height());
+
     network::UniversalManager::Instance()->OnNewElectBlock(
         sharding_id,
         elect_height,
@@ -1250,30 +1384,32 @@ void NetworkInit::HandleElectionBlock(
     if (sharding_id + network::kConsensusWaitingShardOffset ==
             common::GlobalInfo::Instance()->network_id()) {
         join_elect_tick_.CutOff(
-            uint64_t(rand()) % (common::kTimeBlockCreatePeriodSeconds / 4 * 3 * 1000000lu),
+            3000000lu,
             std::bind(&NetworkInit::SendJoinElectTransaction, this));
         ZJC_DEBUG("now send join elect request transaction. first message.");
         another_join_elect_msg_needed_ = true;
     } else if (another_join_elect_msg_needed_ && sharding_id == common::GlobalInfo::Instance()->network_id()) {
         join_elect_tick_.CutOff(
-            uint64_t(rand()) % (common::kTimeBlockCreatePeriodSeconds / 4 * 3 * 1000000lu),
+            3000000lu,
             std::bind(&NetworkInit::SendJoinElectTransaction, this));
         ZJC_DEBUG("now send join elect request transaction. second message.");
         another_join_elect_msg_needed_ = false;
     }
 }
 
-bool NetworkInit::BlockBlsAggSignatureValid(
+int NetworkInit::BlockBlsAggSignatureValid(
         const block::protobuf::Block& block) try {
-    if (block.bls_agg_sign_x().empty() || block.bls_agg_sign_y().empty()) {
-        assert(false);
-        return false;
+#ifdef ENABLE_HOTSTUFF
+    return 0;
+#endif
+    // TODO: fix check genesis block
+    if (block.height() == 0) {
+        return 0;
     }
 
-    auto block_hash = consensus::GetBlockHash(block);
-    if (block_hash != block.hash()) {
+    if (block.bls_agg_sign_x().empty() || block.bls_agg_sign_y().empty()) {
         assert(false);
-        return false;
+        return -1;
     }
 
     libff::alt_bn128_G2 common_pk = libff::alt_bn128_G2::zero();
@@ -1292,7 +1428,13 @@ bool NetworkInit::BlockBlsAggSignatureValid(
            block.network_id(),
            block.electblock_height(),
            sync::kSyncHigh);
-        return false;
+        return 1;
+    }
+
+    auto block_hash = consensus::GetBlockHash(block);
+    if (block_hash != block.hash()) {
+        assert(false);
+        return -1;
     }
 
     libff::alt_bn128_G1 sign;
@@ -1313,7 +1455,7 @@ bool NetworkInit::BlockBlsAggSignatureValid(
         //assert(check_res);
     }
 
-    return check_res;
+    return check_res ? 0 : -1;
 } catch (std::exception& e) {
     ZJC_ERROR("get invalid bls sign: %s, net: %u, height: %lu, prehash: %s, hash: %s, sign: %s, %s",
         e.what(), block.network_id(), block.height(),
@@ -1321,7 +1463,7 @@ bool NetworkInit::BlockBlsAggSignatureValid(
         common::Encode::HexEncode(block.hash()).c_str(),
         common::Encode::HexEncode(block.bls_agg_sign_x()).c_str(),
         common::Encode::HexEncode(block.bls_agg_sign_y()).c_str());
-    return false;
+    return -1;
 }
 
 }  // namespace init

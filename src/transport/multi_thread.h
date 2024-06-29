@@ -60,7 +60,7 @@ class MultiThreadHandler {
 public:
     MultiThreadHandler();
     ~MultiThreadHandler();
-    int Init(std::shared_ptr<db::Db>& db);
+    int Init(std::shared_ptr<db::Db>& db, std::shared_ptr<security::Security>& security);
     void Start();
     void HandleMessage(MessagePtr& msg_ptr);
     MessagePtr GetMessageFromQueue(uint32_t thread_idx, bool);
@@ -97,11 +97,8 @@ private:
     bool IsMessageUnique(uint64_t msg_hash);
     void InitThreadPriorityMessageQueues();
     uint8_t GetThreadIndex(MessagePtr& msg_ptr);
-    void HandleSyncBlockResponse(MessagePtr& msg_ptr);
+    void HandleSyncBftTimeout(MessagePtr& msg_ptr);
     void SaveKeyValue(const transport::protobuf::Header& msg, db::DbWriteBatch& db_batch);
-    void CreateConsensusBlockMessage(
-        std::shared_ptr<transport::TransportMessage>& new_msg_ptr,
-        std::shared_ptr<block::protobuf::Block>& block_ptr);
     bool IsFromMessageUnique(const std::string& from_ip, uint64_t msg_hash);
     int CheckMessageValid(MessagePtr& msg_ptr);
     int CheckSignValid(MessagePtr& msg_ptr);
@@ -131,6 +128,11 @@ private:
     common::LimitHashSet<uint64_t> from_unique_message_sets_{10240};
     std::condition_variable thread_wait_con_;
     std::mutex thread_wait_mutex_;
+
+#ifndef NDEBUG
+    uint32_t msg_type_count_[common::kMaxMessageTypeCount] = {0};
+    uint64_t prev_log_msg_type_tm_ = 0;
+#endif
 
     DISALLOW_COPY_AND_ASSIGN(MultiThreadHandler);
 };

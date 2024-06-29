@@ -79,11 +79,11 @@ ShardNetwork<DhtType>::~ShardNetwork() {}
 template<class DhtType>
 int ShardNetwork<DhtType>::Init(
         std::shared_ptr<block::AccountManager>& acc_mgr) {
+    acc_mgr_ = acc_mgr;
     if (JoinShard() != kNetworkSuccess) {
         return kNetworkJoinShardFailed;
     }
 
-    acc_mgr_ = acc_mgr;
     return kNetworkSuccess;
 }
 

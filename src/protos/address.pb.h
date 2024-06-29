@@ -285,6 +285,13 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::uint64 latest_height() const;
   void set_latest_height(::google::protobuf::uint64 value);
 
+  // optional uint64 consensus_gap = 13;
+  bool has_consensus_gap() const;
+  void clear_consensus_gap();
+  static const int kConsensusGapFieldNumber = 13;
+  ::google::protobuf::uint64 consensus_gap() const;
+  void set_consensus_gap(::google::protobuf::uint64 value);
+
   // optional bool destructed = 12;
   bool has_destructed() const;
   void clear_destructed();
@@ -323,6 +330,8 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   void clear_has_elect_pos();
   void set_has_destructed();
   void clear_has_destructed();
+  void set_has_consensus_gap();
+  void clear_has_consensus_gap();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -337,6 +346,7 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   int type_;
   ::google::protobuf::int32 credit_;
   ::google::protobuf::uint64 latest_height_;
+  ::google::protobuf::uint64 consensus_gap_;
   bool destructed_;
   ::google::protobuf::uint32 elect_pos_;
   friend struct ::protobuf_protos_2faddress_2eproto::TableStruct;
@@ -724,13 +734,13 @@ AddressInfo::g2s() const {
 
 // optional uint32 elect_pos = 11 [default = 4294967295];
 inline bool AddressInfo::has_elect_pos() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00000800u) != 0;
 }
 inline void AddressInfo::set_has_elect_pos() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00000800u;
 }
 inline void AddressInfo::clear_has_elect_pos() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00000800u;
 }
 inline void AddressInfo::clear_elect_pos() {
   elect_pos_ = 4294967295u;
@@ -748,13 +758,13 @@ inline void AddressInfo::set_elect_pos(::google::protobuf::uint32 value) {
 
 // optional bool destructed = 12;
 inline bool AddressInfo::has_destructed() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void AddressInfo::set_has_destructed() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void AddressInfo::clear_has_destructed() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline void AddressInfo::clear_destructed() {
   destructed_ = false;
@@ -768,6 +778,30 @@ inline void AddressInfo::set_destructed(bool value) {
   set_has_destructed();
   destructed_ = value;
   // @@protoc_insertion_point(field_set:shardora.address.protobuf.AddressInfo.destructed)
+}
+
+// optional uint64 consensus_gap = 13;
+inline bool AddressInfo::has_consensus_gap() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void AddressInfo::set_has_consensus_gap() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void AddressInfo::clear_has_consensus_gap() {
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline void AddressInfo::clear_consensus_gap() {
+  consensus_gap_ = GOOGLE_ULONGLONG(0);
+  clear_has_consensus_gap();
+}
+inline ::google::protobuf::uint64 AddressInfo::consensus_gap() const {
+  // @@protoc_insertion_point(field_get:shardora.address.protobuf.AddressInfo.consensus_gap)
+  return consensus_gap_;
+}
+inline void AddressInfo::set_consensus_gap(::google::protobuf::uint64 value) {
+  set_has_consensus_gap();
+  consensus_gap_ = value;
+  // @@protoc_insertion_point(field_set:shardora.address.protobuf.AddressInfo.consensus_gap)
 }
 
 #ifdef __GNUC__

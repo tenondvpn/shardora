@@ -17,6 +17,9 @@ public:
     Tick();
     ~Tick();
 
+    Tick(const Tick&) = delete;
+    Tick& operator=(const Tick&) = default;
+
     void CutOff(int64_t cutoff_us, TickCallbackFunction call);
     void Destroy();
     uint32_t tick_index() {
@@ -26,7 +29,7 @@ public:
 private:
     uint32_t tick_index_{ 0 };
 
-    DISALLOW_COPY_AND_ASSIGN(Tick);
+    // DISALLOW_COPY_AND_ASSIGN(Tick);
 };
 
 }  // namespace common

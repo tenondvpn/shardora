@@ -22,7 +22,6 @@ void CrossPool::Init(
         std::shared_ptr<sync::KeyValueSync>& kv_sync) {
     des_sharding_id_ = des_sharding_id;
     kv_sync_ = kv_sync;
-    pool_index_ = common::kRootChainPoolIndex; // pool 256
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     InitLatestInfo();
@@ -30,10 +29,6 @@ void CrossPool::Init(
 }
 
 void CrossPool::InitHeightTree() {
-    if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
-        return;
-    }
-
     height_tree_ptr_ = std::make_shared<HeightTreeLevel>(
         des_sharding_id_,
         pool_index_,
@@ -48,12 +43,36 @@ void CrossPool::InitHeightTree() {
 }
 
 uint32_t CrossPool::SyncMissingBlocks(uint64_t now_tm_ms) {
+    if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
+        return 0;
+    }
+
+    if (des_sharding_id_ == common::GlobalInfo::Instance()->network_id() || 
+            (des_sharding_id_ + network::kConsensusWaitingShardOffset) == 
+            common::GlobalInfo::Instance()->network_id()) {
+        return 0;
+    }
+
+    if (kv_sync_ == nullptr) {
+        ZJC_DEBUG("kv_sync_ == nullptr");
+        return 0;
+    }
+
     if (height_tree_ptr_ == nullptr) {
+        ZJC_DEBUG("height_tree_ptr_ == nullptr");
         return 0;
     }
 
     if (latest_height_ == common::kInvalidUint64) {
         // sync latest height from neighbors
+        ZJC_DEBUG("add sync block height net: %u, pool: %u, height: %lu",
+            des_sharding_id_,
+            pool_index_,
+            0);
+        ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
+            des_sharding_id_,
+            pool_index_,
+            0);
         kv_sync_->AddSyncHeight(
             des_sharding_id_,
             pool_index_,
@@ -82,6 +101,14 @@ uint32_t CrossPool::SyncMissingBlocks(uint64_t now_tm_ms) {
                 "invaid heights size: %u, height: %lu",
                 des_sharding_id_, pool_index_, latest_height_,
                 invalid_heights.size(), invalid_heights[i]);
+            ZJC_DEBUG("add sync block height net: %u, pool: %u, height: %lu",
+                des_sharding_id_,
+                pool_index_,
+                invalid_heights[i]);
+            ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
+                des_sharding_id_,
+                pool_index_,
+                invalid_heights[i]);
             kv_sync_->AddSyncHeight(
                 des_sharding_id_,
                 pool_index_,

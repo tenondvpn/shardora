@@ -176,7 +176,7 @@ bool TnetTransport::Start() {
                 this,
                 event_loop_vec_[i]));
         std::unique_lock<std::mutex> lock(mutex_);
-        con_.wait(lock);
+        con_.wait_for(lock, std::chrono::milliseconds(1000));
 //         tmp_thread->detach();
         thread_vec_.push_back(tmp_thread);
     }

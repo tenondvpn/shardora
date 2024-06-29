@@ -1,7 +1,11 @@
 #pragma once
 
+#include <memory>
+#include <unordered_map>
+
 #include "common/utils.h"
 #include "common/log.h"
+#include "protos/block.pb.h"
 
 namespace shardora {
 
@@ -33,6 +37,10 @@ static const uint32_t kSyncPacketMaxSize = 1u * 1024u * 1024u;  // sync data 1M
 static const uint32_t kSyncMaxKeyCount = 1024u;
 static const uint32_t kSyncMaxRetryTimes = 7u;  // fail retry 3 times
 static const uint32_t kPoolHeightPairCount = 2u * (common::kImmutablePoolSize + 1u);
+
+struct PoolWithBlocks {
+    std::unordered_map<uint64_t, std::shared_ptr<block::protobuf::Block>> pool_blocks[common::kInvalidPoolIndex];
+};
 
 }  // namespace sync
 

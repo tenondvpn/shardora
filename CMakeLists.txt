@@ -103,6 +103,8 @@ add_definitions(
 #    -DMAKE_CLIENT_LIB
     #-DARMEABI_V7A
 	-DLATENCY
+	#-DHOTSTUFF_TEST
+	-DENABLE_HOTSTUFF
 )
 
 add_compile_options(-fPIC)
@@ -138,6 +140,7 @@ add_executable(tnets ${MAIN_DIR}/tnet_svr.cc)
 add_executable(tnetc ${MAIN_DIR}/tnet_cli.cc)
 add_executable(txcli ${MAIN_DIR}/tx_cli.cc)
 add_executable(blsmain ${MAIN_DIR}/bls_main.cc)
+add_executable(hotstuff ${MAIN_DIR}/hotstuff.cc)
 
 set(LINK_ARGS
     init
@@ -182,6 +185,7 @@ target_link_libraries(wss websocket common tcmalloc pthread gmp)
 target_link_libraries(tnetc transport common tcmalloc pthread gmp)
 target_link_libraries(tnets transport common tcmalloc pthread gmp)
 target_link_libraries(txcli security transport common tcmalloc pthread gmp)
+target_link_libraries(hotstuff security transport common tcmalloc pthread gmp)
 
 include_directories(SYSTEM ${SRC_DIR})
 
@@ -210,6 +214,7 @@ add_subdirectory(${SRC_DIR}/ck ck)
 add_subdirectory(${SRC_DIR}/vss vss)
 add_subdirectory(${SRC_DIR}/sync sync)
 
+
 add_subdirectory(${SRC_DIR}/common/tests common_test)
 add_subdirectory(${SRC_DIR}/http/tests http_test)
 add_subdirectory(${SRC_DIR}/websocket/tests websocket_test)
@@ -224,6 +229,8 @@ add_subdirectory(${SRC_DIR}/big_num/tests bignum_test)
 add_subdirectory(${SRC_DIR}/contract/tests contract_test)
 add_subdirectory(${SRC_DIR}/elect/tests elect_test)
 add_subdirectory(${SRC_DIR}/consensus/tests consensus_test)
+add_subdirectory(${SRC_DIR}/consensus/hotstuff/tests hotstuff_test)
 add_subdirectory(${SRC_DIR}/ck/tests ck_test)
 add_subdirectory(${SRC_DIR}/vss/tests vss_test)
 add_subdirectory(${SRC_DIR}/sync/tests sync_test)
+

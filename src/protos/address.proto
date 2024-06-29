@@ -27,4 +27,11 @@ message AddressInfo {
     repeated bls.protobuf.BlsPublicKey g2s = 10;
     optional uint32 elect_pos = 11 [default=4294967295];
     optional bool destructed = 12;
+    // 该值从 0 开始计数，一旦节点被选为共识节点则
+    // 该值加 1，否则减 1，直到 0 为止。root 网络会计算所有节点最大的选举累积状态值，用该最大值减去每
+    // 个节点的选举累积状态值，以这个值作为共识边缘化程度 P i 。P i 越大表示该节点已经很久没有被选为共
+    // 识节点了，处于边缘化状态。Shardora 希望长期没有被选为共识节点的节点有更高一些的概率在之后的选
+    // 举中被选中。
+    optional uint64 consensus_gap = 13; // 边缘化程度 P
+
 }

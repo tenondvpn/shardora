@@ -32,28 +32,22 @@ public:
             return;
         }
 
-        std::string to_txs_str;
+        const std::string* to_txs_str = nullptr;
         for (int32_t i = 0; i < tx.storages_size(); ++i) {
             if (tx.storages(i).key() == protos::kConsensusLocalNormalTos) {
-                if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &to_txs_str)) {
-                    ZJC_DEBUG("handle local to tx failed get val hash error: %s",
-                        common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
-                    assert(false);
-                    return;
-                }
-
+                to_txs_str = &tx.storages(i).value();
                 break;
             }
         }
 
-        if (to_txs_str.empty()) {
+        if (to_txs_str == nullptr) {
             ZJC_WARN("get local tos info failed!");
             assert(false);
             return;
         }
 
         block::protobuf::ConsensusToTxs to_txs;
-        if (!to_txs.ParseFromString(to_txs_str)) {
+        if (!to_txs.ParseFromString(*to_txs_str)) {
             assert(false);
             return;
         }
@@ -82,9 +76,9 @@ public:
     }
 
     void HandleUserCreate(
-        const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch) {
+            const block::protobuf::Block& block,
+            const block::protobuf::BlockTx& tx,
+            db::DbWriteBatch& db_batch) {
         if (tx.contract_prepayment() <= 0) {
             return;
         }
@@ -103,7 +97,8 @@ public:
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         prepayment_gas_[thread_idx].Insert(key, tx.contract_prepayment());
         pools_max_heights_[block.pool_index()] = block.height();
-        ZJC_DEBUG("success save contract prepayment contract: %s, set user: %s, prepayment: %lu, pool: %u, height: %lu",
+        ZJC_DEBUG("success save contract prepayment contract: %s, "
+            "set user: %s, prepayment: %lu, pool: %u, height: %lu",
             common::Encode::HexEncode(tx.to()).c_str(),
             common::Encode::HexEncode(tx.from()).c_str(),
             tx.contract_prepayment(),

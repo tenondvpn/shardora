@@ -1,12 +1,37 @@
 #pragma once
 
 #include <string>
+#include <array>
+#include <sstream>
+#include <iomanip>
 
 #include "common/utils.h"
 
 namespace shardora {
 
 namespace common {
+
+struct HashValue {
+    std::array<uint8_t, 32> data;
+
+    HashValue(const std::string& str) {
+        if (str.size() != 64) {
+            throw std::invalid_argument("Invalid string length for HashValue");
+        }
+
+        for (size_t i = 0; i < 32; ++i) {
+            data[i] = static_cast<uint8_t>(std::stoi(str.substr(i * 2, 2), nullptr, 16));
+        }
+    }    
+
+    std::string to_string() const {
+        std::ostringstream oss;
+        for (uint8_t byte : data) {
+            oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
+        }
+        return oss.str();
+    }
+};
 
 class Hash {
 public:
