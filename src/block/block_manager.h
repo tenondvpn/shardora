@@ -155,7 +155,6 @@ private:
         const pools::protobuf::ElectStatistic& elect_statistic,
         db::DbWriteBatch& db_batch);
     void CreateStatisticTx();
-    void HandleToTxMessage();
     void AddWaitingCheckSignBlock(const std::shared_ptr<block::protobuf::Block>& block_ptr);
     void CheckWaitingBlocks(uint32_t shard, uint64_t elect_height);
     void PopTxTicker();

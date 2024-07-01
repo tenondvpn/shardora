@@ -88,7 +88,6 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& message) {
 
     ZJC_DEBUG("timer coming.");
     prev_timer_ms_ = now_tm_ms;
-    HandleToTxMessage();
     HandleAllNewBlock();
     auto now_tm = common::TimeUtils::TimestampUs();
     if (prev_create_statistic_tx_tm_us_ < now_tm) {
@@ -117,38 +116,6 @@ void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, 
         latest_members_ = members;
         latest_elect_height_ = elect_height;
     }
-}
-
-void BlockManager::HandleToTxMessage() {
-    std::shared_ptr<transport::TransportMessage> msg_ptr = nullptr;
-    if (!to_tx_msg_queue_.pop(&msg_ptr)) {
-        return;
-    }
-
-    if (latest_members_ == nullptr) {
-        return;
-    }
-
-    if (!msg_ptr->header.has_sign()) {
-        assert(false);
-        return;
-    }
-
-    if (latest_members_->size() <= msg_ptr->header.block_proto().shard_to().leader_idx()) {
-        return;
-    }
-
-    auto& mem_ptr = (*latest_members_)[msg_ptr->header.block_proto().shard_to().leader_idx()];
-    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
-    if (security_->Verify(
-            msg_hash,
-            mem_ptr->pubkey,
-            msg_ptr->header.sign()) != security::kSecuritySuccess) {
-//         assert(false);
-        return;
-    }
-
-    HandleToTxsMessage(msg_ptr, false);
 }
 
 void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
@@ -532,23 +499,6 @@ void BlockManager::HandleNormalToTx(
         if (!to_txs.ParseFromString(tx.storages(i).value())) {
             ZJC_WARN("parse to txs failed.");
             continue;
-        }
-
-        auto iter = leader_to_txs_.find(to_txs.elect_height());
-        if (iter != leader_to_txs_.end()) {
-            if (iter->second.get() == latest_to_tx_.get()) {
-                ZJC_DEBUG("totx success add remove latest to tx: %s",
-                    common::Encode::HexEncode(iter->second->to_tx->tx_hash).c_str());
-                latest_to_tx_ = nullptr;
-            }
-
-            if (iter->second->to_tx != nullptr) {
-                ZJC_DEBUG("totx success add elect height reset to tx: %s",
-                    common::Encode::HexEncode(iter->second->to_tx->tx_hash).c_str());
-                iter->second->to_tx = nullptr;
-            }
-
-            leader_to_txs_.erase(iter);
         }
 
         if (tx.step() == pools::protobuf::kRootCreateAddressCrossSharding) {
@@ -1373,14 +1323,14 @@ std::shared_ptr<BlockTxsItem> BlockManager::HandleToTxsMessage(
     }
 
     if (create_to_tx_cb_ == nullptr) {
-        return;
+        return nullptr;
     }
 
     bool all_valid = true;
     // 聚合不同 to shard 的交易
     if (!to_txs_pool_->StatisticTos(heights)) {
         ZJC_DEBUG("statistic tos failed!");
-        return;
+        return nullptr;
     }
 
     pools::protobuf::AllToTxMessage all_to_txs;
@@ -1398,7 +1348,7 @@ std::shared_ptr<BlockTxsItem> BlockManager::HandleToTxsMessage(
     }
 
     if (all_to_txs.to_tx_arr_size() == 0) {
-        return;
+        return nullptr;
     }
     
     auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
