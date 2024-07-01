@@ -541,7 +541,6 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
     return kPoolsError;
 #endif
     bool valid = false;
-    std::string heights;
     auto timeout = common::TimeUtils::TimestampMs();
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         uint64_t cons_height = pool_consensus_heihgts_[i];
@@ -552,24 +551,17 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
                 return kPoolsError;
             }
 
-//             if (add_iter->second->timestamp() + common::kToPeriodMs > timeout) {
-//                 --cons_height;
-//                 continue;
-//             }
-
             valid = true;
             break;
         }
 
         to_heights.add_heights(cons_height);
-        heights += std::to_string(cons_height) + " ";
     }
 
     if (!valid) {
         return kPoolsError;
     }
 
-    ZJC_DEBUG("leader success create to heights: %s", heights.c_str());
     return kPoolsSuccess;
 }
 

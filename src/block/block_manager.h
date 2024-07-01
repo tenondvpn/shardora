@@ -82,9 +82,7 @@ public:
         create_elect_tx_cb_ = func;
     }
 
-    void CreateToTx();
     void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members);
-    pools::TxItemPtr GetToTx(uint32_t pool_index, const std::string& tx_hash);
     pools::TxItemPtr GetStatisticTx(uint32_t pool_index, const std::string& tx_hash);
     pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);
     void LoadLatestBlocks();
@@ -97,7 +95,6 @@ public:
                               const block::protobuf::BlockTx& tx,
                               const uint64_t& latest_height,
                               db::DbWriteBatch& db_batch);
-    void ChangeLeader(int32_t mod_num, common::BftMemberPtr& mem_ptr);
     bool ShouldStopConsensus();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     bool HasSingleTx(uint32_t pool_index);
@@ -113,7 +110,8 @@ private:
         db::DbWriteBatch& db_batch);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& message);
-    void HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool recreate);
+    std::shared_ptr<BlockTxsItem> HandleToTxsMessage(
+        const pools::protobuf::ShardToTxItem& msg_ptr);
     void HandleAllConsensusBlocks();
     void AddNewBlock(
         const std::shared_ptr<block::protobuf::Block>& block_item,
@@ -180,18 +178,13 @@ private:
     std::shared_ptr<security::Security> security_ = nullptr;
     uint64_t prev_create_to_tx_ms_ = 0;
     uint64_t prev_retry_create_statistic_tx_ms_ = 0;
-    common::BftMemberPtr to_tx_leader_ = nullptr;
     uint32_t max_consensus_sharding_id_ = 3;
-    std::string local_id_;
-    std::map<uint64_t, std::shared_ptr<LeaderWithToTxItem>, std::greater<uint64_t>> leader_to_txs_;
-    std::shared_ptr<LeaderWithToTxItem> latest_to_tx_ = nullptr;
     std::shared_ptr<BlockTxsItem> shard_elect_tx_[network::kConsensusShardEndNetworkId];
     pools::CreateConsensusItemFunction create_to_tx_cb_ = nullptr;
     pools::CreateConsensusItemFunction create_statistic_tx_cb_ = nullptr;
     pools::CreateConsensusItemFunction create_elect_tx_cb_ = nullptr;
     uint32_t prev_pool_index_ = network::kRootCongressNetworkId;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
-    uint64_t prev_to_txs_tm_us_ = 0;
     DbBlockCallback new_block_callback_ = nullptr;
     std::shared_ptr<pools::ShardStatistic> statistic_mgr_ = nullptr;
     uint64_t latest_timeblock_height_ = 0;
