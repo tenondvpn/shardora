@@ -90,10 +90,10 @@ int GenesisBlockInit::CreateGenesisBlocks(
         
         common::GlobalInfo::Instance()->set_network_id(network::kRootCongressNetworkId);
         PrepareCreateGenesisBlocks();
+        SaveGenisisPoolHeights(network::kRootCongressNetworkId);
         res = CreateRootGenesisBlocks(real_root_genesis_nodes,
                                       real_cons_genesis_nodes_of_shards,
                                       genesis_acount_balance_map);
-
         for (uint32_t i = 0; i < real_root_genesis_nodes.size(); ++i) {
             prikeys.push_back(real_root_genesis_nodes[i]->prikey);
         }
@@ -117,6 +117,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
             CreateNodePrivateInfo(shard_node_net_id, 1llu, cons_genesis_nodes);
             common::GlobalInfo::Instance()->set_network_id(shard_node_net_id);
             PrepareCreateGenesisBlocks();            
+            SaveGenisisPoolHeights(shard_node_net_id);
             res = CreateShardGenesisBlocks(real_root_genesis_nodes,
                                            cons_genesis_nodes,
                                            shard_node_net_id,
