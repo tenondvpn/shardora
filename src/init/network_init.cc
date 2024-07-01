@@ -262,8 +262,13 @@ int NetworkInit::Init(int argc, char** argv) {
         }
     }
 
+    std::vector<uint64_t> latest_heights;
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        latest_heights.push_back(pools_mgr_->latest_height(i));
+    }
+
     ZJC_DEBUG("init 3");
-    shard_statistic_->Init();
+    shard_statistic_->Init(latest_heights);
     ZJC_DEBUG("init 4");
     block_mgr_->LoadLatestBlocks();
     ZJC_DEBUG("init 5");
@@ -348,8 +353,8 @@ void NetworkInit::AddCmds() {
         if (!pacemaker) {
             return;
         }
-        std::cout << "highQC: " << pacemaker->HighQC()->view
-                  << ",highTC: " << pacemaker->HighTC()->view
+        std::cout << "highQC: " << pacemaker->HighQC()->view()
+                  << ",highTC: " << pacemaker->HighTC()->view()
                   << ",chainSize: " << chain->Size()
                   << ",commitView: " << chain->LatestCommittedBlock()->view
                   << ",CurView: " << pacemaker->CurView() << std::endl;

@@ -55,10 +55,6 @@ public:
     const std::string& GetTxValidAddress(const block::protobuf::BlockTx& tx_info);
 
 private:
-    void SetPool(
-        uint32_t pool_index,
-        const std::shared_ptr<block::protobuf::Block>& block_item,
-        db::DbWriteBatch& db_batch);
     void SendRefreshHeightsRequest();
     void SendRefreshHeightsResponse(const transport::protobuf::Header& header);
     void HandleNormalFromTx(
@@ -115,10 +111,6 @@ private:
     static const uint64_t kRefreshPoolMaxHeightPeriod = 4000000llu;
 
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
-    common::Tick check_missing_height_tick_;
-    common::Tick flush_db_tick_;
-    common::Tick refresh_pool_max_height_tick_;
-    common::Tick merge_updated_accounts_tick_;
     uint64_t prev_refresh_heights_tm_{ 0 };
     common::LimitHashSet<std::string> block_hash_limit_set_{ 2048u };
     bool inited_{ false };

@@ -85,13 +85,14 @@ void ThreadHandler::HandleMessage() {
                 //     (etime - btime), 
                 //     t.c_str());
 
-                ZJC_INFO("1 over handle message: %d, step: %d, times_idx: %d, thread: %d use: %lu us, all: %s",
+                ZJC_INFO("1 over handle message: %d, step: %d, times_idx: %d, thread: %d use: %lu us, all: %s, hash64: %lu",
                     msg_ptr->header.type(), 
                     msg_ptr->header.hotstuff().type(), 
                     msg_ptr->times_idx, 
                     thread_idx, 
                     (etime - btime), 
-                    t.c_str());                
+                    t.c_str(),
+                    msg_ptr->header.hash64());                
             }
             // ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
         }
@@ -334,6 +335,21 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
 }
 
 uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
+#ifndef NDEBUG
+    ++msg_type_count_[msg_ptr->header.type()];
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    if (prev_log_msg_type_tm_ < now_tm_ms) {
+        std::string debug_str;
+        for (uint32_t i = 0; i < common::kMaxMessageTypeCount; ++i) {
+            debug_str += std::to_string(i) + ":" + std::to_string(msg_type_count_[i]) + ", ";
+        }
+
+        ZJC_INFO("get msg count: %s", debug_str.c_str());
+        memset(msg_type_count_, 0, sizeof(msg_type_count_));
+        prev_log_msg_type_tm_ = now_tm_ms + 3000lu;
+    }
+#endif
+
     switch (msg_ptr->header.type()) {
     case common::kDhtMessage:
     case common::kNetworkMessage:
@@ -507,8 +523,8 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool htt
             continue;
         }
 
-        // ZJC_DEBUG("pop valid message hash: %lu, size: %u, thread: %u",
-        //     msg_obj->header.hash64(), threads_message_queues_[thread_idx][pri].size(), thread_idx);
+        ZJC_DEBUG("pop valid message hash: %lu, size: %u, thread: %u",
+            msg_obj->header.hash64(), threads_message_queues_[thread_idx][pri].size(), thread_idx);
         return msg_obj;
     }
 

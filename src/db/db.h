@@ -27,7 +27,7 @@ namespace shardora {
 namespace db {
 
 #ifdef LEVELDB
-    typedef leveldb::WriteBatch DbWriteBatch;
+    typedef leveldb::WriteBatch TmpDbWriteBatch;
     typedef leveldb::Status DbStatus;
     typedef leveldb::DB DickDb;
     typedef leveldb::WriteOptions DbWriteOptions;
@@ -35,7 +35,7 @@ namespace db {
     typedef leveldb::Slice DbSlice;
     typedef leveldb::Iterator DbIterator;
 #else
-    typedef rocksdb::WriteBatch DbWriteBatch;
+    typedef rocksdb::WriteBatch TmpDbWriteBatch;
     typedef rocksdb::Status DbStatus;
     typedef rocksdb::DB DickDb;
     typedef rocksdb::WriteOptions DbWriteOptions;
@@ -43,6 +43,62 @@ namespace db {
     typedef rocksdb::Slice DbSlice;
     typedef rocksdb::Iterator DbIterator;
 #endif // LEVELDB
+
+class DbWriteBatch {
+public:
+    DbWriteBatch() {}
+    DbWriteBatch(const DbWriteBatch&) = default;
+    DbWriteBatch& operator =(const DbWriteBatch&) = default;
+    ~DbWriteBatch() {
+        Clear();
+    }
+
+    void Put(const std::string& key, const std::string& value) {
+        if (data_map_.find(key) == data_map_.end()) {
+            data_map_[key] = value;
+        }
+
+        db_batch_.Put(key, value);
+    }
+
+    bool Exist(const std::string& key) {
+        return data_map_.find(key) != data_map_.end();
+    }
+
+    bool Get(const std::string& key, std::string* value) {
+        auto iter = data_map_.find(key);
+        if (iter == data_map_.end()) {
+            return false;
+        }
+        
+        *value = iter->second;
+        return true;
+    }
+
+    void Delete(const std::string& key) {
+        auto iter = data_map_.find(key);
+        if (iter != data_map_.end()) {
+            data_map_.erase(iter);
+            db_batch_.Delete(key);
+        }
+    }
+
+    void Clear() {
+        data_map_.clear();
+        db_batch_.Clear();
+    }
+
+    size_t ApproximateSize() const {
+#ifdef LEVELDB
+        return db_batch_.ApproximateSize();
+#else
+        return data_map_.size() > 0 ? 100 : 0;
+#endif
+    }
+
+    TmpDbWriteBatch db_batch_;
+    std::unordered_map<std::string, std::string> data_map_;
+};
 
 class Db {
 public:
@@ -69,7 +125,9 @@ public:
         }
 
         DbWriteOptions write_opt;
-        return db_->Write(write_opt, &db_batch);
+        auto st = db_->Write(write_opt, &db_batch.db_batch_);
+        db_batch.Clear();
+        return st;
     }
 
     DbStatus Put(const std::string& key, const std::string& value) {

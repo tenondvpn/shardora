@@ -701,7 +701,7 @@ int GenesisBlockInit::CreateElectBlock(
         return kInitError;
     }
 
-    StoreViewBlockWithCommitQC(view_block, commit_qc, &db_batch);
+    StoreViewBlockWithCommitQC(view_block, commit_qc);
 
     root_pre_hash = consensus::GetBlockHash(*tenon_block);
     root_pre_vb_hash = view_block->hash;
@@ -779,7 +779,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         uint64_t tm_height;
         uint64_t tm_with_block_height;
 
-        StoreViewBlockWithCommitQC(view_block, commit_qc, &db_batch);
+        StoreViewBlockWithCommitQC(view_block, commit_qc);
 
         root_pre_hash = consensus::GetBlockHash(*tenon_block);
         root_pre_vb_hash = view_block->hash;
@@ -866,7 +866,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         uint64_t tm_height;
         uint64_t tm_with_block_height;
 
-        StoreViewBlockWithCommitQC(view_block, commit_qc, &db_batch);
+        StoreViewBlockWithCommitQC(view_block, commit_qc);
 
         root_pre_hash = consensus::GetBlockHash(*tenon_block);
         root_pre_vb_hash = view_block->hash;
@@ -894,7 +894,6 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
     while (fgets(data, file_size + 1, root_gens_init_block_file) != nullptr) {
         // root_gens_init_block_file 中保存的是 root pool 账户 block，和时间快 block，同步过来
         auto view_block = std::make_shared<hotstuff::ViewBlock>();
-        auto commit_qc = std::make_shared<hotstuff::QC>();
         // auto tenon_block = std::make_shared<block::protobuf::Block>();
         std::string tmp_data(data, strlen(data) - 1);
         common::Split<> tmp_split(tmp_data.c_str(), '-', tmp_data.size());
@@ -905,14 +904,13 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
             ec_block_str = common::Encode::HexDecode(tmp_split[1]);
         }
 
-        if (!UnserializeViewBlockWithCommitQC(
-                common::Encode::HexDecode(block_str),
-                view_block,
-                commit_qc)) {
-            assert(false);
+        auto pb_v_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
+        auto str = common::Encode::HexDecode(block_str);
+        if (!pb_v_block->ParseFromString(str)) {
             return kInitError;
         }
-        
+        hotstuff::Proto2ViewBlock(*pb_v_block, view_block);
+        auto commit_qc = std::make_shared<hotstuff::QC>(pb_v_block->self_commit_qc_str());
         // if (!tenon_block->ParseFromString(common::Encode::HexDecode(block_str))) {
         //     assert(false);
         //     return kInitError;
@@ -954,7 +952,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
                 }
             }
         }
-        StoreViewBlockWithCommitQC(view_block, commit_qc, &db_batch);
+        StoreViewBlockWithCommitQC(view_block, commit_qc);
     }
     fclose(root_gens_init_block_file);
     // flush 磁盘
@@ -1208,7 +1206,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         all_balance += account_ptr->balance();        
 
         // 保存 ViewBlock
-        StoreViewBlockWithCommitQC(view_block, commit_qc, &db_batch);
+        StoreViewBlockWithCommitQC(view_block, commit_qc);
     }
 
     // 选举 root leader，选举 shard leader
@@ -1398,20 +1396,20 @@ bool GenesisBlockInit::BlsAggSignViewBlock(
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
         const std::shared_ptr<hotstuff::ViewBlock>& vblock,
         std::shared_ptr<libff::alt_bn128_G1>& agg_sign) try {
-    hotstuff::HashStr msg_hash = hotstuff::GetQCMsgHash(
+    auto qc_ptr = std::make_shared<hotstuff::QC>(
             common::GlobalInfo::Instance()->network_id(),
             vblock->block->pool_index(),
+            nullptr,
             vblock->view,
             vblock->hash,
             vblock->hash,
             vblock->ElectHeight(),
             vblock->leader_idx);
-    
     std::vector<libff::alt_bn128_G1> all_signs;
     uint32_t n = genesis_nodes.size();
     uint32_t t = common::GetSignerCount(n);
     std::vector<size_t> idx_vec;
-    auto g1_hash = libBLS::Bls::Hashing(msg_hash);
+    auto g1_hash = libBLS::Bls::Hashing(qc_ptr->msg_hash());
     std::mutex mutex;
 
     auto sign_task = [&](uint32_t i) {
@@ -1466,16 +1464,16 @@ std::shared_ptr<hotstuff::QC> GenesisBlockInit::CreateCommitQC(
     if (!agg_sign) {
         return nullptr;
     }
-    auto qc = std::make_shared<hotstuff::QC>();
-    qc->bls_agg_sign = agg_sign;
-    qc->view = vblock->view;
-    qc->elect_height = vblock->ElectHeight();
-    qc->view_block_hash = vblock->hash;
-    qc->commit_view_block_hash = vblock->hash;
-    qc->leader_idx = vblock->leader_idx;
-    qc->network_id = common::GlobalInfo::Instance()->network_id();
-    qc->pool_index = vblock->block->pool_index();    
-    return qc;
+
+    return std::make_shared<hotstuff::QC>(
+        common::GlobalInfo::Instance()->network_id(),
+        vblock->block->pool_index(),
+        agg_sign,
+        vblock->view,
+        vblock->hash,
+        vblock->hash,
+        vblock->ElectHeight(),
+        vblock->leader_idx);
 }
 
 void GenesisBlockInit::AddBlockItemToCache(
@@ -1646,7 +1644,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         all_balance += account_ptr->balance();
         init_heights.set_heights(pool_index, tenon_block->height());
 
-        StoreViewBlockWithCommitQC(view_block, commit_qc, &db_batch);
+        StoreViewBlockWithCommitQC(view_block, commit_qc);
     }
 
     if (all_balance != expect_all_balance) {
@@ -1770,7 +1768,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
                 "",
                 vb_latest_view[iter->first]++,
                 tenon_block);
-        ZJC_DEBUG("create view block first: %lu, view: %lu, block view: %lu", iter->first, view_block->view, vb_latest_view[iter->first]);
+        
         // BlsAggSignBlock(cons_genesis_nodes, tenon_block);
 
         auto commit_qc = CreateCommitQC(cons_genesis_nodes, view_block);
@@ -1818,7 +1816,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         // }
         
         init_heights.add_heights(0);
-        StoreViewBlockWithCommitQC(view_block, commit_qc, &db_batch);
+        StoreViewBlockWithCommitQC(view_block, commit_qc);
     }
 
     if (all_balance != common::kGenesisFoundationMaxZjc) {

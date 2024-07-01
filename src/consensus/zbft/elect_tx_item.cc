@@ -204,6 +204,70 @@ int ElectTxItem::getMaxElectHeightInfo(shardora::pools::protobuf::ElectStatistic
         return kConsensusError;
     }
 
+    if (max_elect_height < now_elect_height) {
+        auto older_members = elect_mgr_->GetNetworkMembersWithHeight(
+            max_elect_height,
+            elect_statistic.sharding_id(),
+            nullptr,
+            nullptr);
+        if (older_members == nullptr) {
+            ZJC_WARN("get members failed, elect height: %lu, net: %u",
+                max_elect_height, elect_statistic.sharding_id());
+            // assert(false);
+            return kConsensusError;
+        }
+
+        struct ElectItemInfo {
+            uint32_t tx_count;
+            uint64_t stoke;
+            int32_t pos_x;
+            int32_t pos_y;
+            uint64_t gas_sum;
+            uint64_t credit;
+            uint64_t consensus_gap;
+        };
+
+        std::unordered_map<std::string, ElectItemInfo> elect_info_map;
+        for (uint32_t i = 0; i < statistic->tx_count_size(); ++i) {
+            ElectItemInfo tmp_info;
+            tmp_info.tx_count = statistic->tx_count(i);
+            tmp_info.stoke = statistic->stokes(i);
+            tmp_info.pos_x = statistic->area_point(i).x();
+            tmp_info.pos_y = statistic->area_point(i).y();
+            tmp_info.gas_sum = statistic->gas_sum(i);
+            tmp_info.credit = statistic->credit(i);
+            tmp_info.consensus_gap = statistic->consensus_gap(i);
+            elect_info_map[(*older_members)[i]->id] = tmp_info;
+        }
+
+        auto new_statistic = elect_statistic.add_statistics();
+        for (uint32_t i = 0; i < members->size(); ++i) {
+            auto iter = elect_info_map.find((*members)[i]->id);
+            if (iter != elect_info_map.end()) {
+                new_statistic->add_tx_count(iter->second.tx_count);
+                new_statistic->add_stokes(iter->second.stoke);
+                auto area_point = new_statistic->add_area_point();
+                area_point->set_x(iter->second.pos_x);
+                area_point->set_y(iter->second.pos_y);
+                new_statistic->add_gas_sum(iter->second.gas_sum);
+                new_statistic->add_credit(iter->second.credit);
+                new_statistic->add_consensus_gap(iter->second.consensus_gap);
+            } else {
+                new_statistic->add_tx_count(0);
+                new_statistic->add_stokes(0);
+                auto area_point = new_statistic->add_area_point();
+                area_point->set_x(0);
+                area_point->set_y(0);
+                new_statistic->add_gas_sum(0);
+                new_statistic->add_credit(0);
+                new_statistic->add_consensus_gap(0);
+            }
+        }
+
+        statistic = new_statistic;
+        max_elect_height = now_elect_height;
+    }
+
     // TODO: check if elect height valid
     if (max_elect_height != now_elect_height) {
         ZJC_DEBUG("old elect coming max_elect_height: %lu, now_elect_height: %lu",

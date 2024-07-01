@@ -159,7 +159,7 @@ private:
     uint64_t prev_sync_tm_us_ = 0;
     uint64_t prev_sync_tmout_us_ = 0;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
-    common::Tick tick_;
+    common::Tick kv_tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> kv_msg_queue_;
     std::set<uint64_t> shard_with_elect_height_[network::kConsensusShardEndNetworkId];
     uint64_t elect_net_heights_map_[network::kConsensusShardEndNetworkId] = { 0 };

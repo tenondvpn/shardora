@@ -30,12 +30,12 @@ void FilterBroadcast::Broadcasting(
 
     assert(message.broadcast().bloomfilter_size() < 64);
     auto bloomfilter = GetBloomfilter(message);
-    bloomfilter->Add(dht_ptr->local_node()->id_hash);
+    bloomfilter->insert(dht_ptr->local_node()->id_hash);
     if (message.broadcast().has_hop_to_layer() &&
             message.hop_count() >= message.broadcast().hop_to_layer()) {
         auto nodes = GetlayerNodes(dht_ptr, bloomfilter, message);
         for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
-            bloomfilter->Add((*iter)->id_hash);
+            bloomfilter->insert((*iter)->id_hash);
         }
 
 //         ZJC_DEBUG("layer Broadcasting: %lu, size: %u", msg_ptr->header.hash64(), nodes.size());
@@ -43,7 +43,7 @@ void FilterBroadcast::Broadcasting(
     } else {
         auto nodes = GetRandomFilterNodes(dht_ptr, bloomfilter, message);
         for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
-            bloomfilter->Add((*iter)->id_hash);
+            bloomfilter->insert((*iter)->id_hash);
         }
 
 //         ZJC_DEBUG("random Broadcasting: %lu, size: %u",
@@ -53,27 +53,26 @@ void FilterBroadcast::Broadcasting(
     }
 }
 
-std::shared_ptr<common::BloomFilter> FilterBroadcast::GetBloomfilter(
+std::shared_ptr<std::unordered_set<uint64_t>> FilterBroadcast::GetBloomfilter(
         const transport::protobuf::Header& message) {
+    auto data_set = std::make_shared<std::unordered_set<uint64_t>>();
     if (message.broadcast().bloomfilter_size() <= 0) {
-        return std::make_shared<common::BloomFilter>(
-                kBloomfilterBitSize,
-                kBloomfilterHashCount);
+        return data_set;
     }
 
     std::vector<uint64_t> data;
     assert(message.broadcast().bloomfilter_size() < 64);
     for (auto i = 0; i < message.broadcast().bloomfilter_size(); ++i) {
-        data.push_back(message.broadcast().bloomfilter(i));
+        data_set->insert(message.broadcast().bloomfilter(i));
     }
 
     assert(data.size() < 64);
-    return std::make_shared<common::BloomFilter>(data, kBloomfilterHashCount);
+    return data_set;
 }
 
 std::vector<dht::NodePtr> FilterBroadcast::GetlayerNodes(
         dht::BaseDhtPtr& dht_ptr,
-        std::shared_ptr<common::BloomFilter>& bloomfilter,
+        std::shared_ptr<std::unordered_set<uint64_t>>& bloomfilter,
         const transport::protobuf::Header& message) {
     auto cast_msg = const_cast<transport::protobuf::Header*>(&message);
     auto broad_param = cast_msg->mutable_broadcast();
@@ -99,17 +98,18 @@ std::vector<dht::NodePtr> FilterBroadcast::GetlayerNodes(
     std::vector<dht::NodePtr> nodes;
     uint32_t neighbor_count = GetNeighborCount(message);
     for (uint32_t i = 0; i < pos_vec.size(); ++i) {
-        if (bloomfilter->Contain((*hash_order_dht)[pos_vec[i]]->id_hash)) {
-//             ZJC_DEBUG("bloom filtered: %s:%d, %lu",
-//                 (*hash_order_dht)[pos_vec[i]]->public_ip.c_str(),
-//                 (*hash_order_dht)[pos_vec[i]]->public_port,
-//                 (*hash_order_dht)[pos_vec[i]]->id_hash);
+        if (bloomfilter->find((*hash_order_dht)[pos_vec[i]]->id_hash) != bloomfilter->end()) {
+            ZJC_DEBUG("bloom filtered: %s:%d, %lu, hash64: %lu",
+                (*hash_order_dht)[pos_vec[i]]->public_ip.c_str(),
+                (*hash_order_dht)[pos_vec[i]]->public_port,
+                (*hash_order_dht)[pos_vec[i]]->id_hash,
+                message.hash64());
             continue;
         }
 
         nodes.push_back((*hash_order_dht)[pos_vec[i]]);
         if (message.broadcast().ign_bloomfilter_hop() <= message.hop_count() + 1) {
-            bloomfilter->Add((*hash_order_dht)[pos_vec[i]]->id_hash);
+            bloomfilter->insert((*hash_order_dht)[pos_vec[i]]->id_hash);
         }
 
         if (nodes.size() >= neighbor_count) {
@@ -117,10 +117,9 @@ std::vector<dht::NodePtr> FilterBroadcast::GetlayerNodes(
         }
     }
 
-    auto& data = bloomfilter->data();
     broad_param->clear_bloomfilter();
-    for (uint32_t i = 0; i < data.size(); ++i) {
-        broad_param->add_bloomfilter(data[i]);
+    for (auto iter = bloomfilter->begin(); iter != bloomfilter->end(); ++iter) {
+        broad_param->add_bloomfilter(*iter);
     }
 
     std::sort(
@@ -134,7 +133,7 @@ std::vector<dht::NodePtr> FilterBroadcast::GetlayerNodes(
 
 std::vector<dht::NodePtr> FilterBroadcast::GetRandomFilterNodes(
         dht::BaseDhtPtr& dht_ptr,
-        std::shared_ptr<common::BloomFilter>& bloomfilter,
+        std::shared_ptr<std::unordered_set<uint64_t>>& bloomfilter,
         const transport::protobuf::Header& message) {
     auto readobly_dht = dht_ptr->readonly_hash_sort_dht();
     std::vector<uint32_t> pos_vec;
@@ -148,17 +147,18 @@ std::vector<dht::NodePtr> FilterBroadcast::GetRandomFilterNodes(
     std::vector<dht::NodePtr> nodes;
     uint32_t neighbor_count = GetNeighborCount(message);
     for (uint32_t i = 0; i < pos_vec.size(); ++i) {
-        if (bloomfilter->Contain((*readobly_dht)[pos_vec[i]]->id_hash)) {
-//             ZJC_DEBUG("bloom filtered: %s:%d, %lu",
-//                 (*readobly_dht)[pos_vec[i]]->public_ip.c_str(),
-//                 (*readobly_dht)[pos_vec[i]]->public_port,
-//                 (*readobly_dht)[pos_vec[i]]->id_hash);
+        if (bloomfilter->find((*readobly_dht)[pos_vec[i]]->id_hash) != bloomfilter->end()) {
+            ZJC_DEBUG("bloom filtered: %s:%d, %lu, hash64: %lu",
+                (*readobly_dht)[pos_vec[i]]->public_ip.c_str(),
+                (*readobly_dht)[pos_vec[i]]->public_port,
+                (*readobly_dht)[pos_vec[i]]->id_hash,
+                message.hash64());
             continue;
         }
 
         nodes.push_back((*readobly_dht)[pos_vec[i]]);
         if (message.broadcast().ign_bloomfilter_hop() <= message.hop_count() + 1) {
-            bloomfilter->Add((*readobly_dht)[pos_vec[i]]->id_hash);
+            bloomfilter->insert((*readobly_dht)[pos_vec[i]]->id_hash);
         }
 
         if (nodes.size() >= neighbor_count) {
@@ -172,12 +172,11 @@ std::vector<dht::NodePtr> FilterBroadcast::GetRandomFilterNodes(
 //         ZJC_DEBUG("data i: %d, data: %lu", i, bloomfilter->data()[i]);
 //     }
 
-    auto& data = bloomfilter->data();
     auto cast_msg = const_cast<transport::protobuf::Header*>(&message);
     auto broad_param = cast_msg->mutable_broadcast();
     broad_param->clear_bloomfilter();
-    for (uint32_t i = 0; i < data.size(); ++i) {
-        broad_param->add_bloomfilter(data[i]);
+    for (auto iter = bloomfilter->begin(); iter != bloomfilter->end(); ++iter) {
+        broad_param->add_bloomfilter(*iter);
     }
     return nodes;
 }

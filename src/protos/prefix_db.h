@@ -82,7 +82,9 @@ public:
     PrefixDb(const std::shared_ptr<db::Db>& db_ptr) : db_(db_ptr) {
     }
 
-    ~PrefixDb() {}
+    ~PrefixDb() {
+        Destroy();
+    }
 
     void InitGidManager() {
         db_batch_tick_.CutOff(
@@ -93,7 +95,6 @@ public:
     void Destroy() {
         for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
             db_->Put(db_batch_[i]);
-            db_batch_[i].Clear();
         }
     }
 
@@ -589,15 +590,16 @@ public:
             uint32_t sharding_id,
             uint32_t pool_index,
             uint64_t block_height,
-            const view_block::protobuf::ViewBlockItem& pb_view_block,
-            db::DbWriteBatch& batch) {
+            const view_block::protobuf::ViewBlockItem& pb_view_block) {
         std::string key;
         key.reserve(32);
         key.append(kViewBlockInfoPrefix);
         key.append((char*)&sharding_id, sizeof(sharding_id));
         key.append((char*)&pool_index, sizeof(pool_index));
         key.append((char*)&block_height, sizeof(block_height));
-        batch.Put(key, pb_view_block.SerializeAsString());
+        // batch.Put(key, pb_view_block.SerializeAsString());
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        db_batch_[thread_idx].Put(key, pb_view_block.SerializeAsString());
     }
 
     bool GetViewBlockInfo(
@@ -612,6 +614,11 @@ public:
         key.append((char*)&pool_index, sizeof(pool_index));
         key.append((char*)&block_height, sizeof(block_height));
         std::string val;
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        if (db_batch_[thread_idx].Get(key, &val) && pb_view_block->ParseFromString(val)) {
+            return true;
+        }
+
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
             return false;
@@ -634,13 +641,12 @@ public:
         key.append((char*)&sharding_id, sizeof(sharding_id));
         key.append((char*)&pool_index, sizeof(pool_index));
         key.append((char*)&block_height, sizeof(block_height));
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            return false;
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        if (db_batch_[thread_idx].Exist(key)) {
+            return true;
         }
 
-        return true;
+        return db_->Exist(key);
     }
 
     void SaveHeightTree(
@@ -1710,7 +1716,6 @@ private:
         if (!dumped_gid_) {
             for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
                 db_->Put(db_batch_[i]);
-                db_batch_[i].Clear();
             }
 
             dumped_gid_ = true;

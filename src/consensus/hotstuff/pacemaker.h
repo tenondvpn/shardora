@@ -89,7 +89,7 @@ private:
 
     inline void StartTimeoutTimer() {
         last_time_us_ = common::TimeUtils::TimestampUs();
-        duration_us_ = duration_->Duration();
+        duration_us_ = duration_->Duration() + 10000000lu;
         ZJC_INFO("pool: %d duration is %lu ms", pool_idx_, duration_us_/1000);
     }
 
@@ -113,7 +113,6 @@ private:
     View cur_view_;
     std::shared_ptr<Crypto> crypto_;
     std::shared_ptr<LeaderRotation> leader_rotation_ = nullptr;
-    // std::shared_ptr<common::Tick> one_shot_tick_ = nullptr;
     std::shared_ptr<ViewDuration> duration_;
     NewProposalFn new_proposal_fn_ = nullptr;
     StopVotingFn stop_voting_fn_ = nullptr;

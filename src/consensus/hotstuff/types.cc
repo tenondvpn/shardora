@@ -8,7 +8,7 @@ namespace shardora {
 
 namespace hotstuff {
 
-HashStr GetQCMsgHash(
+HashStr QC::GetQCMsgHash(
         uint32_t net_id,
         uint32_t pool_index,
         const View &view,
@@ -16,7 +16,7 @@ HashStr GetQCMsgHash(
         const HashStr& commit_view_block_hash,
         uint64_t elect_height,
         uint32_t leader_idx) {
-    std::stringstream ss;
+    std::stringstream ss;    
     assert(net_id <= network::kConsensusShardEndNetworkId);
     assert(pool_index < common::kInvalidPoolIndex);
     ss << net_id << pool_index << view <<
@@ -37,7 +37,7 @@ HashStr GetQCMsgHash(
     return msg_hash; 
 }
 
-HashStr GetViewHash(
+HashStr QC::GetViewHash(
         uint32_t net_id,
         uint32_t pool_index, 
         const View& view, 
@@ -49,15 +49,15 @@ HashStr GetViewHash(
 std::string QC::Serialize() const {
     auto qc_proto = view_block::protobuf::QC();
         
-    qc_proto.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->X));
-    qc_proto.set_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->Y));
-    qc_proto.set_sign_z(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign->Z));
-    qc_proto.set_view(view);
-    qc_proto.set_view_block_hash(view_block_hash);
-    qc_proto.set_commit_view_block_hash(commit_view_block_hash);
-    qc_proto.set_elect_height(elect_height);
+    qc_proto.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign_->X));
+    qc_proto.set_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign_->Y));
+    qc_proto.set_sign_z(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign_->Z));
+    qc_proto.set_view(view_);
+    qc_proto.set_view_block_hash(view_block_hash_);
+    qc_proto.set_commit_view_block_hash(commit_view_block_hash_);
+    qc_proto.set_elect_height(elect_height_);
     qc_proto.set_leader_idx(leader_idx);
-    qc_proto.set_network_id(network_id);
+    qc_proto.set_network_id(network_id_);
     qc_proto.set_pool_index(pool_index);
     // TODO 不同版本 pb 结果不一样
     return qc_proto.SerializeAsString();
@@ -84,13 +84,13 @@ bool QC::Unserialize(const std::string& str) {
         return false;
     }
     
-    *bls_agg_sign = sign;
-    view = qc_proto.view();
-    view_block_hash = qc_proto.view_block_hash();
-    commit_view_block_hash = qc_proto.commit_view_block_hash();
-    elect_height = qc_proto.elect_height();
+    *bls_agg_sign_ = sign;
+    view_ = qc_proto.view();
+    view_block_hash_ = qc_proto.view_block_hash();
+    commit_view_block_hash_ = qc_proto.commit_view_block_hash();
+    elect_height_ = qc_proto.elect_height();
     leader_idx = qc_proto.leader_idx();
-    network_id = qc_proto.network_id();
+    network_id_ = qc_proto.network_id();
     pool_index = qc_proto.pool_index();
     
     return true;
@@ -164,8 +164,8 @@ Status Proto2ViewBlock(const view_block::protobuf::ViewBlockItem& view_block_pro
     if (!view_block_proto.has_qc_str() || view_block_proto.qc_str() == "") {
         view_block->qc = nullptr;
     } else {
-        view_block->qc = std::make_shared<QC>();
-        if (!view_block->qc->Unserialize(view_block_proto.qc_str())) {
+        view_block->qc = std::make_shared<QC>(view_block_proto.qc_str());
+        if (!view_block->qc->valid()) {
             return Status::kError;
         }
     }

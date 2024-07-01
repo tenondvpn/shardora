@@ -140,8 +140,6 @@ void BftManager::RegisterCreateTxCallbacks() {
         std::bind(&BftManager::CreateStatisticTx, this, std::placeholders::_1));
     block_mgr_->SetCreateElectTxFunction(
         std::bind(&BftManager::CreateElectTx, this, std::placeholders::_1));
-    block_mgr_->SetCreateCrossTxFunction(
-        std::bind(&BftManager::CreateCrossTx, this, std::placeholders::_1));
     tm_block_mgr_->SetCreateTmTxFunction(
         std::bind(&BftManager::CreateTimeblockTx, this, std::placeholders::_1));
 }
@@ -486,10 +484,6 @@ ZbftPtr BftManager::Start(ZbftPtr commited_bft_ptr) {
 
     auto zbft_ptr = StartBft(elect_item_ptr, txs_ptr, commited_bft_ptr);
     if (zbft_ptr == nullptr) {
-        for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
-            iter->second->in_consensus = false;
-        }
-
         ZJC_DEBUG("leader start bft failed, thread: %d, pool: %d, "
             "thread_item->pools.size(): %d, "
             "elect_item_ptr->elect_height: %lu,elect_item_ptr->time_valid: %lu now_tm_ms: %lu",
@@ -876,7 +870,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 return;
             }
             if (new_height > latest_commit_height(zbft.pool_index()) + 1) {
-                ZJC_DEBUG("add sync block height net: %u, pool: %u, height: %lu",
+                ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
                     common::GlobalInfo::Instance()->network_id(),
                     zbft.pool_index(),
                     new_height);
@@ -1381,14 +1375,7 @@ ZbftPtr BftManager::CreateBftPtr(
                     bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
             }
         } else if (bft_msg.tx_bft().tx_type() == pools::protobuf::kCross) {
-            txs_ptr = txs_pools_->GetCrossTx(bft_msg.pool_index(), bft_msg.tx_bft().txs(0).value());
-            if (txs_ptr == nullptr) {
-                ZJC_ERROR("invalid consensus kCross, txs not equal to leader. "
-                    "pool_index: %d, gid: %s, tx hash: %s",
-                    bft_msg.pool_index(), 
-                    common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), 
-                    common::Encode::HexEncode(bft_msg.tx_bft().txs(0).value()).c_str());
-            }
+            assert(false);
         } else if (bft_msg.tx_bft().tx_type() == pools::protobuf::kConsensusRootElectShard) {
             txs_ptr = txs_pools_->GetElectTx(bft_msg.pool_index(), bft_msg.tx_bft().txs(0).value());
             if (txs_ptr == nullptr) {

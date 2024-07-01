@@ -43,7 +43,7 @@ TxPoolManager::TxPoolManager(
         &TxPoolManager::PopPoolsMessage, 
         this);
     // 每 10ms 会共识一次时间块
-    tick_.CutOff(
+    tools_tick_.CutOff(
         10000lu,
         std::bind(&TxPoolManager::ConsensusTimerMessage, this));
     // 注册 kPoolsMessage 的回调函数
@@ -146,6 +146,10 @@ void TxPoolManager::SyncCrossPool() {
                     network::kRootCongressNetworkId,
                     common::kRootChainPoolIndex,
                     i);
+                ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
+                    network::kRootCongressNetworkId,
+                    common::kRootChainPoolIndex,
+                    i);
                 kv_sync_->AddSyncHeight(
                     network::kRootCongressNetworkId,
                     common::kRootChainPoolIndex,
@@ -218,7 +222,7 @@ void TxPoolManager::ConsensusTimerMessage() {
         ZJC_DEBUG("TxPoolManager handle message use time: %lu", (etime - now_tm_ms));
     }
 
-    tick_.CutOff(
+    tools_tick_.CutOff(
         100000lu,
         std::bind(&TxPoolManager::ConsensusTimerMessage, this));
 }
@@ -346,6 +350,10 @@ void TxPoolManager::SyncRootBlockWithMaxHeights(uint32_t pool_idx, uint64_t heig
         network::kRootCongressNetworkId,
         pool_idx,
         height);
+    ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
+        network::kRootCongressNetworkId,
+        pool_idx,
+        height);
     kv_sync_->AddSyncHeight(
         network::kRootCongressNetworkId,
         pool_idx,
@@ -369,6 +377,10 @@ void TxPoolManager::SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height) 
     }
 
     ZJC_DEBUG("add sync block height net: %u, pool: %u, height: %lu",
+        net_id,
+        pool_idx,
+        height);
+    ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
         net_id,
         pool_idx,
         height);

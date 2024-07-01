@@ -135,12 +135,11 @@ int HotstuffManager::VerifySyncedViewBlock(view_block::protobuf::ViewBlockItem* 
             pb_vblock->view());                
         return -1;
     }
-    auto commit_qc = std::make_shared<QC>();
-    if (!commit_qc->Unserialize(pb_vblock->self_commit_qc_str())) {
-        ZJC_ERROR("commit qc unserialize failed");
+
+    auto commit_qc = std::make_shared<QC>(pb_vblock->self_commit_qc_str());
+    if (!commit_qc->valid()) {
         return -1;
     }
-
     // 由于验签很占资源，再检查一下数据库，避免重复同步
     if (prefix_db_->HasViewBlockInfo(
                 vblock->block->network_id(),
@@ -172,17 +171,17 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(
         return Status::kSuccess;
     }
 
-    if (vblock->hash != commit_qc->commit_view_block_hash) {
+    if (vblock->hash != commit_qc->commit_view_block_hash()) {
         ZJC_ERROR("hash is not same with qc, block: %s, commit_hash: %s",
             common::Encode::HexEncode(vblock->hash).c_str(),
-            common::Encode::HexEncode(commit_qc->commit_view_block_hash).c_str());
+            common::Encode::HexEncode(commit_qc->commit_view_block_hash()).c_str());
         return Status::kInvalidArgument;
     }
 
     auto hf = hotstuff(vblock->block->pool_index());
     Status s = hf->crypto()->VerifyQC(vblock->block->network_id(), commit_qc);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("qc verify failed, s: %d, blockview: %lu, qcview: %lu", s, vblock->view, commit_qc->view);
+        ZJC_ERROR("qc verify failed, s: %d, blockview: %lu, qcview: %lu", s, vblock->view, commit_qc->view());
         return s;
     }
     return Status::kSuccess;
@@ -340,8 +339,6 @@ void HotstuffManager::RegisterCreateTxCallbacks() {
         std::bind(&HotstuffManager::CreateStatisticTx, this, std::placeholders::_1));
     block_mgr_->SetCreateElectTxFunction(
         std::bind(&HotstuffManager::CreateElectTx, this, std::placeholders::_1));
-    block_mgr_->SetCreateCrossTxFunction(
-        std::bind(&HotstuffManager::CreateCrossTx, this, std::placeholders::_1));
     tm_block_mgr_->SetCreateTmTxFunction(
         std::bind(&HotstuffManager::CreateTimeblockTx, this, std::placeholders::_1));
 }

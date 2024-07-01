@@ -418,10 +418,6 @@ private:
     std::atomic<uint32_t> tps_{ 0 };
     std::atomic<uint32_t> pre_tps_{ 0 };
     uint64_t tps_btime_{ 0 };
-    common::Tick timeout_tick_;
-    common::Tick block_to_db_tick_;
-    common::Tick verify_block_tick_;
-    common::Tick leader_resend_tick_;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;

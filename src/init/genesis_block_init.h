@@ -121,8 +121,7 @@ private:
         block::protobuf::BlockTx& block_tx);
     void StoreViewBlockWithCommitQC(
             const std::shared_ptr<hotstuff::ViewBlock>& view_block,
-            const std::shared_ptr<hotstuff::QC>& commit_qc,
-            db::DbWriteBatch* db_batch) {
+            const std::shared_ptr<hotstuff::QC>& commit_qc) {
         assert(view_block->view < 100);
         auto pb_v_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
         hotstuff::ViewBlock2Proto(view_block, pb_v_block.get());
@@ -134,10 +133,7 @@ private:
         prefix_db_->SaveViewBlockInfo(view_block->block->network_id(),
             view_block->block->pool_index(),
             view_block->block->height(),
-            *pb_v_block,
-            *db_batch);
-        auto st = db_->Put(*db_batch);
-        assert(st.ok());        
+            *pb_v_block);
     }
 
     std::string SerializeViewBlockWithCommitQC(

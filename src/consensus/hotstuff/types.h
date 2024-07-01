@@ -4,14 +4,17 @@
 
 #include <common/time_utils.h>
 #include <sstream>
+#include <string>
+
+#include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
+
 #include <common/hash.h>
 #include <consensus/hotstuff/utils.h>
-#include <string>
 #include <protos/block.pb.h>
 #include <protos/view_block.pb.h>
-#include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
-#include <tools/utils.h>
 #include <protos/prefix_db.h>
+#include "network/network_utils.h"
+#include <tools/utils.h>
 
 namespace shardora {
 
@@ -49,31 +52,7 @@ struct MemberConsensusStat {
     }
 };
 
-HashStr GetViewHash(
-    uint32_t net_id,
-    uint32_t pool_idx,
-    const View& view, 
-    uint64_t elect_height, 
-    uint32_t leader_idx);
-HashStr GetQCMsgHash(
-    uint32_t net_id,
-    uint32_t pool_idx,
-    const View &view,
-    const HashStr &view_block_hash,
-    const HashStr& commit_view_block_hash,
-    uint64_t elect_height,
-    uint32_t leader_idx);
-
-struct QC {
-    std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign;
-    View view; // view_block_hash 对应的 view，TODO 校验正确性，避免篡改
-    HashStr view_block_hash; // 是 view_block_hash 的 prepareQC
-    HashStr commit_view_block_hash; // 是 commit_view_block_hash 的 commitQC
-    uint64_t elect_height; // 确定 epoch，用于验证 QC，理论上与 view_block_hash elect_height 相同，但对于同步场景，作为 commit_qc 时有时候 view_block 无法获取，故将 elect_height 放入 QC 中
-    uint32_t leader_idx;
-    uint32_t network_id;
-    uint32_t pool_index;
-    
+struct QC {  
     QC(
             uint32_t net_id,
             uint32_t pool_idx,
@@ -83,32 +62,108 @@ struct QC {
             const HashStr& commit_hash,
             uint64_t elect_height,
             uint32_t leader_idx) :
-            network_id(net_id), pool_index(pool_idx),
-            bls_agg_sign(sign), view(v), view_block_hash(hash),
-            commit_view_block_hash(commit_hash), elect_height(elect_height),
-            leader_idx(leader_idx){
-        if (sign == nullptr) {
-            bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
+            network_id_(net_id), pool_index(pool_idx),
+            bls_agg_sign_(sign), view_(v), view_block_hash_(hash),
+            commit_view_block_hash_(commit_hash), elect_height_(elect_height),
+            leader_idx(leader_idx) {
+        if (network_id_ >= network::kConsensusShardEndNetworkId) {
+            network_id_ = network_id_ - network::kConsensusWaitingShardOffset;
         }
+
+        if (bls_agg_sign_ == nullptr) {
+            bls_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
+        }
+
+        hash_ = GetQCMsgHash(
+            network_id_, 
+            pool_index, 
+            view_, 
+            view_block_hash_, 
+            commit_view_block_hash_, 
+            elect_height_, 
+            leader_idx);
+        valid_ = true;
     }
 
-    QC() {
-        bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
+    QC(const std::string& s) {
+        bls_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
+        if (!Unserialize(s)) {
+            assert(false);
+            return;
+        }
+
+
+        hash_ = GetQCMsgHash(
+            network_id_, 
+            pool_index, 
+            view_, 
+            view_block_hash_, 
+            commit_view_block_hash_, 
+            elect_height_, 
+            leader_idx);
+        valid_ = true;
     };
     
     std::string Serialize() const;
     bool Unserialize(const std::string& str);
-
-    inline HashStr msg_hash() const {
-        return GetQCMsgHash(
-            network_id, 
-            pool_index, 
-            view, 
-            view_block_hash, 
-            commit_view_block_hash, 
-            elect_height, 
-            leader_idx);
+    inline bool valid() const {
+        return valid_;
     }
+
+    inline const HashStr& msg_hash() const {
+        return hash_;
+    }
+
+    inline const HashStr& view_block_hash() const {
+        return view_block_hash_;
+    }
+
+    inline const HashStr& commit_view_block_hash() const {
+        return commit_view_block_hash_;
+    }
+
+    inline View view() const {
+        return view_;
+    }
+
+    inline uint32_t network_id() const {
+        return network_id_;
+    }
+
+    inline uint64_t elect_height() const {
+        return elect_height_;
+    }
+
+    inline const std::shared_ptr<libff::alt_bn128_G1>& bls_agg_sign() const {
+        return bls_agg_sign_;
+    }
+
+protected:
+    HashStr GetViewHash(
+        uint32_t net_id,
+        uint32_t pool_idx,
+        const View& view, 
+        uint64_t elect_height, 
+        uint32_t leader_idx);
+    HashStr GetQCMsgHash(
+        uint32_t net_id,
+        uint32_t pool_idx,
+        const View &view,
+        const HashStr &view_block_hash,
+        const HashStr& commit_view_block_hash,
+        uint64_t elect_height,
+        uint32_t leader_idx);
+        
+    std::string hash_;
+    bool valid_ = false;
+    std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign_;
+    View view_; // view_block_hash 对应的 view，TODO 校验正确性，避免篡改
+    HashStr view_block_hash_; // 是 view_block_hash 的 prepareQC
+    HashStr commit_view_block_hash_; // 是 commit_view_block_hash 的 commitQC
+    uint64_t elect_height_; // 确定 epoch，用于验证 QC，理论上与 view_block_hash elect_height 相同，但对于同步场景，作为 commit_qc 时有时候 view_block 无法获取，故将 elect_height 放入 QC 中
+    uint32_t leader_idx;
+    uint32_t network_id_;
+    uint32_t pool_index;
 };
 
 // TODO TC 中可增加超时的 leader_idx，用于 Leader 选择黑名单
@@ -123,10 +178,7 @@ struct TC : public QC {
         QC(net_id, pool_idx, sign, v, "", "", elect_height, leader_idx) {
     }
 
-    TC() {}
-
-    inline HashStr msg_hash() const {
-        return GetViewHash(network_id, pool_index, view, elect_height, leader_idx);
+    TC(const std::string& s) : QC(s) {
     }
 };
 

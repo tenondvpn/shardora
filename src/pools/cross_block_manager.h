@@ -19,7 +19,7 @@ public:
             std::shared_ptr<sync::KeyValueSync>& kv_sync)
             : db_(db), kv_sync_(kv_sync) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-        tick_.CutOff(
+        cross_tick_.CutOff(
             10000000lu,
             std::bind(&CrossBlockManager::Ticking, this));
     }
@@ -54,7 +54,7 @@ private:
             ZJC_DEBUG("CrossBlockManager handle message use time: %lu", (etime - now_tm_ms));
         }
 
-        tick_.CutOff(
+        cross_tick_.CutOff(
             10000000lu,
             std::bind(&CrossBlockManager::Ticking, this));
     }
@@ -121,7 +121,12 @@ private:
                         // TODO 目前创世块也会进入这个逻辑，导致创世块数据生成报错，临时注释
                         if (!kv_sync_) {
                             continue;
-                        }                        
+                        }
+
+                        ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
+                            sharding_id,
+                            common::kRootChainPoolIndex,
+                            h);        
                         kv_sync_->AddSyncHeight(
                                 sharding_id,
                                 common::kRootChainPoolIndex,
@@ -176,6 +181,10 @@ private:
                                 cross.src_shard(),
                                 cross.src_pool(),
                                 cross.height())) {
+                            ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
+                                cross.src_shard(),
+                                cross.src_pool(),
+                                cross.height());
                             ZJC_DEBUG("add sync block height net: %u, pool: %u, height: %lu",
                                 cross.src_shard(),
                                 cross.src_pool(),
@@ -214,7 +223,7 @@ private:
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     volatile uint32_t max_sharding_id_ = 3;
-    common::Tick tick_;
+    common::Tick cross_tick_;
     volatile uint64_t cross_synced_max_heights_[network::kConsensusShardEndNetworkId] = { 1 };
     volatile uint64_t cross_checked_max_heights_[network::kConsensusShardEndNetworkId] = { 1 };
     bool inited_heights_ = false;

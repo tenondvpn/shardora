@@ -47,7 +47,6 @@ public:
     TxItem(const pools::protobuf::TxMessage& tx, protos::AddressInfoPtr& addr_info)
             : prev_consensus_tm_us(0),
             gas_price(tx.gas_price()),
-            in_consensus(false),
             tx_info(tx),
             address_info(addr_info),
             is_consensus_add_tx(false) {
@@ -85,7 +84,6 @@ public:
     int32_t step = pools::protobuf::kNormalFrom;
     std::string unique_tx_hash;
     std::string prio_key;
-    bool in_consensus;
     pools::protobuf::TxMessage tx_info;
     protos::AddressInfoPtr address_info;
     bool is_consensus_add_tx;
@@ -250,6 +248,17 @@ struct CrossItemRecordHash {
         u32_arr[3] = static_cast<uint32_t>((item.height >> 32) && 0xFFFFFFFFu);
         return std::hash<std::string>()(data);
     }
+};
+
+struct StatisticInfoItem {
+    StatisticInfoItem() : all_gas_amount(0), root_all_gas_amount(0), statistic_max_height(0) {}
+    uint64_t all_gas_amount;
+    uint64_t root_all_gas_amount;
+    std::map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
+    std::map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
+    std::map<uint64_t, std::unordered_map<std::string, StatisticMemberInfoItem>> height_node_collect_info_map;
+    std::unordered_map<std::string, std::string> id_pk_map;
+    uint64_t statistic_max_height;
 };
 
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {

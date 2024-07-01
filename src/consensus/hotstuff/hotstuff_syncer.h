@@ -68,6 +68,10 @@ public:
     }
     
 private:
+    inline std::shared_ptr<Hotstuff> hotstuff(uint32_t pool_idx) const {
+        return hotstuff_mgr_->hotstuff(pool_idx);
+    }
+
     inline std::shared_ptr<ViewBlockChain> view_block_chain(uint32_t pool_idx) const {
         return hotstuff_mgr_->chain(pool_idx);
     }

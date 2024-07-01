@@ -45,7 +45,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         return nullptr;
     }
     
-    auto leader = getLeaderByRate(random_hash);
+    auto leader = getLeaderByRate(static_cast<uint64_t>(random_hash));
     if (leader->public_ip == 0 || leader->public_port == 0) {
         // 刷新 members 的 ip port
         elect_info_->RefreshMemberAddrs(common::GlobalInfo::Instance()->network_id());
@@ -54,7 +54,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
             leader->index,
             common::Encode::HexEncode(leader->id).c_str(),
             common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port,
-            qc->view);
+            qc->view());
     }
 
     ZJC_DEBUG("pool: %d Leader is %d, local: %d, id: %s, ip: %s, port: %d, "
@@ -64,7 +64,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         GetLocalMemberIdx(),
         common::Encode::HexEncode(leader->id).c_str(),
         common::Uint32ToIp(leader->public_ip).c_str(), leader->public_port,
-        qc->view,
+        qc->view(),
         now_time_num,
         extra_nonce_.c_str());
     return leader;

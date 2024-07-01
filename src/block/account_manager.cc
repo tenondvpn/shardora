@@ -126,7 +126,7 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(
         return iter->second;
     }
     
-    BLOCK_ERROR("get account failed[%s] in thread_idx:%d", common::Encode::HexEncode(addr).c_str(), thread_idx);
+    BLOCK_WARN("get account failed[%s] in thread_idx:%d", common::Encode::HexEncode(addr).c_str(), thread_idx);
     return nullptr;
 }
 

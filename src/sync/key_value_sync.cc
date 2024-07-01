@@ -37,7 +37,7 @@ void KeyValueSync::Init(
     network::Route::Instance()->RegisterMessage(
         common::kSyncMessage,
         std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
-    tick_.CutOff(
+    kv_tick_.CutOff(
         100000lu,
         std::bind(&KeyValueSync::ConsensusTimerMessage, this));
 }
@@ -54,7 +54,7 @@ void KeyValueSync::Init(
     network::Route::Instance()->RegisterMessage(
         common::kSyncMessage,
         std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
-    tick_.CutOff(
+    kv_tick_.CutOff(
         100000lu,
         std::bind(&KeyValueSync::ConsensusTimerMessage, this));
 }
@@ -72,7 +72,7 @@ void KeyValueSync::AddSyncHeight(
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     item_queues_[thread_idx].push(item);
-    ZJC_DEBUG("block height add new sync item key: %s, priority: %u",
+    ZJC_INFO("block height add new sync item key: %s, priority: %u",
         item->key.c_str(), item->priority);
 }
 
@@ -108,7 +108,7 @@ void KeyValueSync::ConsensusTimerMessage() {
 #ifndef ENABLE_HOTSTUFF
     CheckNotCheckedBlocks();
 #endif
-    tick_.CutOff(
+    kv_tick_.CutOff(
         100000lu,
         std::bind(&KeyValueSync::ConsensusTimerMessage, this));
 }

@@ -248,7 +248,7 @@ Status BlockAcceptor::addTxsToPool(
         case pools::protobuf::kRootCreateAddressCrossSharding:
         case pools::protobuf::kNormalTo: {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
-            auto tx_item = tx_pools_->GetToTxs(pool_idx(), "");
+            auto tx_item = tx_pools_->GetToTxs(pool_idx(), tx->gid());
             if (tx_item != nullptr && !tx_item->txs.empty()) {
                 tx_ptr = tx_item->txs.begin()->second;
             }
@@ -268,12 +268,7 @@ Status BlockAcceptor::addTxsToPool(
         }
         case pools::protobuf::kCross:
         {
-            // TODO 这些 Single Tx 还是从本地交易池直接拿
-            auto tx_item = tx_pools_->GetCrossTx(pool_idx(), tx->gid());
-            if (tx_item != nullptr && !tx_item->txs.empty()) {
-                tx_ptr = tx_item->txs.begin()->second;
-            }
-            
+            assert(false);
             break;
         }
         case pools::protobuf::kConsensusRootElectShard:
@@ -370,8 +365,15 @@ Status BlockAcceptor::GetAndAddTxsLocally(
     }
 
     if (txs_ptr->txs.size() != block_info->txs.size()) {
+#ifndef NDEBUG
+        for (uint32_t i = 0; i < uint32_t(block_info->txs.size()); i++) {
+            auto& tx = block_info->txs[i];
+            ZJC_DEBUG("leader tx step: %u, gid: %s", tx->step(), common::Encode::HexEncode(tx->gid()).c_str());
+        }
+#endif
         ZJC_ERROR("invalid consensus, txs not equal to leader %u, %u",
             txs_ptr->txs.size(), block_info->txs.size());
+        // assert(false);
         return Status::kAcceptorTxsEmpty;
     }
     

@@ -101,8 +101,8 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const int32_t& node_num)
     auto req = vb_msg.mutable_view_block_req();
     req->set_pool_idx(pool_idx);
     req->set_network_id(common::GlobalInfo::Instance()->network_id());
-    req->set_high_qc_view(pacemaker(pool_idx)->HighQC()->view);
-    req->set_high_tc_view(pacemaker(pool_idx)->HighTC()->view);
+    req->set_high_qc_view(pacemaker(pool_idx)->HighQC()->view());
+    req->set_high_tc_view(pacemaker(pool_idx)->HighTC()->view());
 
     View max_view = 0;
     std::vector<std::shared_ptr<ViewBlock>> view_blocks;
@@ -149,6 +149,7 @@ void HotstuffSyncer::SyncAllPools() {
 
 // No use, about to deprecate
 void HotstuffSyncer::SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash) {
+    assert(false);
     auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
     auto req = vb_msg.mutable_single_req();
     req->set_pool_idx(pool_idx);
@@ -172,10 +173,11 @@ void HotstuffSyncer::HandleSyncedBlocks() {
             if (s != Status::kSuccess) {
                 continue;
             }
-            auto self_commit_qc = std::make_shared<QC>();
-            if (!self_commit_qc->Unserialize(pb_vblock->self_commit_qc_str())) {
+            auto self_commit_qc = std::make_shared<QC>(pb_vblock->self_commit_qc_str());
+            if (!self_commit_qc->valid()) {
                 continue;
             }
+
             hotstuff_mgr_->hotstuff(pb_vblock->block_info().pool_index())->HandleSyncedViewBlock(
                     vblock, self_commit_qc);
         }
@@ -185,6 +187,7 @@ void HotstuffSyncer::HandleSyncedBlocks() {
 }
 
 Status HotstuffSyncer::Broadcast(const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {
+    assert(false);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -289,11 +292,11 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     view_block_res->set_pool_idx(pool_idx);
 
     // src 节点的 highqc 或 hightc 落后，尝试同步
-    if (pacemaker(pool_idx)->HighQC()->view > src_high_qc_view) {
+    if (pacemaker(pool_idx)->HighQC()->view() > src_high_qc_view) {
         shouldSyncQC = true;
     }
 
-    if (pacemaker(pool_idx)->HighTC()->view > src_high_tc_view) {
+    if (pacemaker(pool_idx)->HighTC()->view() > src_high_tc_view) {
         shouldSyncTC = true;
     }
 
@@ -551,24 +554,26 @@ Status HotstuffSyncer::processResponseQcTc(
     if (!pm) {
         return Status::kError;
     }
-    auto highqc = std::make_shared<QC>();
-    auto hightc = std::make_shared<TC>();
-    highqc->Unserialize(view_block_res.high_qc_str());
-    hightc->Unserialize(view_block_res.high_tc_str());
-    if ((highqc->network_id > 0 && highqc->network_id != common::GlobalInfo::Instance()->network_id()) ||
-            (hightc->network_id > 0 && hightc->network_id != common::GlobalInfo::Instance()->network_id())) {
+    auto highqc = std::make_shared<QC>(view_block_res.high_qc_str());
+    auto hightc = std::make_shared<TC>(view_block_res.high_tc_str());
+    if (!highqc->valid() || !hightc->valid()) {
+        return Status::kError;
+    }
+
+    if ((highqc->network_id() > 0 && highqc->network_id() != common::GlobalInfo::Instance()->network_id()) ||
+            (hightc->network_id() > 0 && hightc->network_id() != common::GlobalInfo::Instance()->network_id())) {
         ZJC_DEBUG("error network id hight qc: %u, hight tc: %u, local: %u",
-            highqc->network_id, hightc->network_id, 
+            highqc->network_id(), hightc->network_id(), 
             common::GlobalInfo::Instance()->network_id());
         assert(false);
         return Status::kError;
     }
 
     // 设置 view_block 的 qc
-    view_block_chain(pool_idx)->SetQcOf(highqc->view_block_hash, highqc);
+    view_block_chain(pool_idx)->SetQcOf(highqc->view_block_hash(), highqc);
 
     ZJC_DEBUG("response received qctc pool_idx: %d, tc: %d, qc: %d",
-        pool_idx, hightc->view, highqc->view);
+        pool_idx, hightc->view(), highqc->view());
 
     // TODO 验证 qc 和 tc
     pm->AdvanceView(new_sync_info()->WithQC(highqc)->WithTC(hightc));
@@ -599,8 +604,8 @@ Status HotstuffSyncer::processResponseLatestCommittedBlock(
         return s;
     }
     
-    auto latest_commit_qc = std::make_shared<QC>();
-    if (!pb_latest_committed_block.has_self_commit_qc_str()) {
+    auto latest_commit_qc = std::make_shared<QC>(pb_latest_committed_block.self_commit_qc_str());
+    if (!latest_commit_qc->valid()) {
         return Status::kError;
     }
     latest_commit_qc->Unserialize(pb_latest_committed_block.self_commit_qc_str());
@@ -645,9 +650,9 @@ Status HotstuffSyncer::processResponseChain(
     // 将 view_block_qc 放入 map 方便查询
     std::unordered_map<HashStr, std::shared_ptr<QC>> view_block_qc_map;
     for (const auto& qc_str : view_block_qc_strs) {
-        auto view_block_qc = std::make_shared<QC>();
-        if (view_block_qc->Unserialize(qc_str)) {
-            view_block_qc_map[view_block_qc->view_block_hash] = view_block_qc;
+        auto view_block_qc = std::make_shared<QC>(qc_str);
+        if (view_block_qc->valid()) {
+            view_block_qc_map[view_block_qc->view_block_hash()] = view_block_qc;
         }
     }    
 
@@ -668,7 +673,7 @@ Status HotstuffSyncer::processResponseChain(
         }
         auto view_block_qc = qc_it->second;
         // 如果本地有该 view_block_qc 对应的 view_block，则不用验证 qc 了并且跳过该块，节省 CPU
-        if (!chain->Has(view_block_qc->view_block_hash) &&
+        if (!chain->Has(view_block_qc->view_block_hash()) &&
             crypto(pool_idx)->VerifyQC(
                 common::GlobalInfo::Instance()->network_id(), 
                 view_block_qc) != Status::kSuccess) {
@@ -678,7 +683,7 @@ Status HotstuffSyncer::processResponseChain(
         // 记录同步链中最高的 Qc，用于 commit
         if (!high_commit_qc) {
             high_commit_qc = view_block_qc;
-        } else if (high_commit_qc->view < view_block_qc->view) {
+        } else if (high_commit_qc->view() < view_block_qc->view()) {
             high_commit_qc = view_block_qc;
         }
         
