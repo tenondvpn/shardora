@@ -1336,6 +1336,8 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& h
         if (to_txs_pool_->LeaderCreateToHeights(heights) != pools::kPoolsSuccess) {
             return nullptr;
         }
+
+        heights.set_sharding_id(common::GlobalInfo::Instance()->network_id());
     }
 
     if (!heights.ParseFromString(heights_str)) {
