@@ -1372,9 +1372,9 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& h
     auto tx_ptr = HandleToTxsMessage(heights);
     if (tx_ptr != nullptr) {
         heights_str_map_[height_hash] = tx_ptr;
+        ZJC_DEBUG("success get to tx tx info: %s", ProtobufToJson(tx_ptr->tx_info).c_str());
     }
 
-    ZJC_DEBUG("success get to tx tx info: %s", ProtobufToJson(tx_ptr->tx_info).c_str());
     return tx_ptr;
 }
 
