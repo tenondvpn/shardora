@@ -736,7 +736,7 @@ int ToTxsPools::CreateToTxWithHeights(
         }
 
         auto hiter = pool_iter->second.find(max_height);
-        if (hiter == pool_iter->second.end()) {
+        if (max_height > 0llu && hiter == pool_iter->second.end()) {
             ZJC_DEBUG("failed find pool index: %u height: %lu", pool_idx, max_height);
             return kPoolsError;
         }
