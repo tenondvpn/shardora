@@ -373,7 +373,7 @@ Status BlockAcceptor::GetAndAddTxsLocally(
 #endif
         ZJC_ERROR("invalid consensus, txs not equal to leader %u, %u",
             txs_ptr->txs.size(), block_info->txs.size());
-        assert(false);
+        // assert(false);
         return Status::kAcceptorTxsEmpty;
     }
     
