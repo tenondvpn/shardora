@@ -98,7 +98,10 @@ int GenesisBlockInit::CreateGenesisBlocks(
             prikeys.push_back(real_root_genesis_nodes[i]->prikey);
         }
 
+#ifndef DISABLE_GENESIS_BLS_VERIFY
+        // 验证部分私钥并保存多项式承诺，如果不需要轮换可以注释掉，大幅度节约创世块计算时间和部分空间
         ComputeG2sForNodes(prikeys);
+#endif
     } else { // 构建某 shard 创世网络
         // TODO 这种写法是每个 shard 单独的 shell 命令，不适用，需要改
         for (uint32_t i = 0; i < real_cons_genesis_nodes_of_shards.size(); i++) {
@@ -123,9 +126,13 @@ int GenesisBlockInit::CreateGenesisBlocks(
                 prikeys.push_back(cons_genesis_nodes[i]->prikey);
             }
 
+#ifndef DISABLE_GENESIS_BLS_VERIFY            
             ComputeG2sForNodes(prikeys);
+#endif
         }
     }
+
+    db_->CompactRange("", "");
     
     return res;
 }
@@ -1607,14 +1614,14 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             db_batch);
         AddBlockItemToCache(tenon_block, db_batch);
         block_mgr_->GenesisNewBlock(tenon_block);
-        for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
-            for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
-                if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
-                    block_mgr_->HandleJoinElectTx(*tenon_block, tenon_block->tx_list(tx_idx), db_batch);
-                }
+        
+        // for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
+        for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
+            if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
+                block_mgr_->HandleJoinElectTx(*tenon_block, tenon_block->tx_list(tx_idx), db_batch);
             }
         }
-
+        // }
         // root 网络节点账户状态都在 shard3 中
         if (net_id == network::kRootCongressNetworkId) {
             block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);

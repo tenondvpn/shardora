@@ -145,6 +145,19 @@ private:
         return pb_v_block->SerializeAsString();
     }
 
+    bool UnserializeViewBlockWithCommitQC(
+            const std::string str,
+            std::shared_ptr<hotstuff::ViewBlock>& view_block,
+            std::shared_ptr<hotstuff::QC>& commit_qc) {
+        auto pb_v_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
+        if (!pb_v_block->ParseFromString(str)) {
+            return false;
+        }
+        hotstuff::Proto2ViewBlock(*pb_v_block, view_block);
+        commit_qc->Unserialize(pb_v_block->self_commit_qc_str());
+        return true;
+    }
+
     std::map<uint32_t, std::map<uint32_t, std::string>> net_pool_index_map_; // net => (pool => addr)
     std::map<uint32_t, std::string> root_account_with_pool_index_map_;
     common::Bitmap root_bitmap_{ common::kEachShardMaxNodeCount };
