@@ -1896,8 +1896,10 @@ void BlockManager::CreateToTx() {
     }
 
     if (latest_to_tx_ != nullptr &&
-            latest_to_tx_->to_tx != nullptr &&
-            latest_to_tx_->to_tx->timeout > now_tm_ms) {
+            latest_to_tx_->to_tx != nullptr) {
+        ZJC_ERROR("latest to tx invalid latest_to_tx_ != nullptr: %d, tx != null: %d",
+            (latest_to_tx_ != nullptr),
+            (latest_to_tx_ == nullptr ? 1 : (latest_to_tx_->to_tx != nullptr)));
         return;
     }
 
