@@ -1896,7 +1896,8 @@ void BlockManager::CreateToTx() {
     }
 
     if (latest_to_tx_ != nullptr &&
-            latest_to_tx_->to_tx != nullptr) {
+            latest_to_tx_->to_tx != nullptr &&
+            latest_to_tx_->to_tx->timeout > now_tm_ms) {
         return;
     }
 
