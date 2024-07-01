@@ -217,6 +217,7 @@ private:
     common::Tick pop_tx_tick_;
     std::shared_ptr<block::protobuf::Block> latest_to_block_ptr_[2] = { nullptr };
     uint32_t latest_to_block_ptr_index_ = 0;
+    std::map<std::string, pools::TxItemPtr> heights_str_map_;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

@@ -1320,8 +1320,18 @@ void BlockManager::HandleStatisticBlock(
 }
 
 pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& heights_str) {
+    if (pool_index != 0) {
+        return nullptr;
+    }
+
     pools::protobuf::ShardToTxItem heights;
     if (heights_str.empty()) {
+        auto cur_time = common::TimeUtils::TimestampMs();
+        if (latest_to_block_ptr_[latest_to_block_ptr_index_]->timestamp() + 10000lu >= cur_time) {
+            return nullptr;
+        }
+
+
         if (to_txs_pool_->LeaderCreateToHeights(heights) != pools::kPoolsSuccess) {
             return nullptr;
         }
@@ -1332,12 +1342,31 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& h
         return nullptr;
     }
 
+    std::string string_for_hash;
+    auto shard_id = heights.sharding_id();
+    string_for_hash.append((char*)&shard_id, sizeof(shard_id));
+    for (uint32_t i = 0; i < heights.heights_size(); ++i) {
+        auto height = heights.heights(i);
+        string_for_hash.append((char*)&height, sizeof(height));
+    }
+
+    auto height_hash = common::Hash::keccak256(string_for_hash);
+    auto iter = heights_str_map_.find(height_hash);
+    if (iter != heights_str_map_.end()) {
+        return iter->second;
+    }
+    
     if (heights.sharding_id() != common::GlobalInfo::Instance()->network_id()) {
         assert(false);
         return nullptr;
     }
 
-    return HandleToTxsMessage(heights);
+    auto tx_ptr = HandleToTxsMessage(heights);
+    if (tx_ptr != nullptr) {
+        heights_str_map_[height_hash] = tx_ptr;
+    }
+
+    return tx_ptr;
 }
 
 pools::TxItemPtr BlockManager::HandleToTxsMessage(

@@ -388,10 +388,12 @@ bool BlockAcceptor::IsBlockValid(const std::shared_ptr<block::protobuf::Block>& 
         ZJC_DEBUG("Accept height error: %lu, %lu", zjc_block->height(), pool_height);
         return false;
     }
+
+    auto cur_time = common::TimeUtils::TimestampMs();
     // 新块的时间戳必须大于上一个块的时间戳
     uint64_t preblock_time = pools_mgr_->latest_timestamp(pool_idx());
-    if (zjc_block->timestamp() <= preblock_time) {
-        ZJC_DEBUG("Accept timestamp error: %lu, %lu", zjc_block->timestamp(), preblock_time);
+    if (zjc_block->timestamp() <= preblock_time && zjc_block->timestamp() + 10000lu >= cur_time) {
+        ZJC_DEBUG("Accept timestamp error: %lu, %lu, cur: %lu", zjc_block->timestamp(), preblock_time, cur_time);
         return false;
     }
     

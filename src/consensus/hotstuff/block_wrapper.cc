@@ -45,7 +45,7 @@ Status BlockWrapper::Wrap(
     }
 
     uint64_t cur_time = common::TimeUtils::TimestampMs();
-    block->set_timestamp(prev_block->timestamp() > cur_time ? prev_block->timestamp() : cur_time);
+    block->set_timestamp(prev_block->timestamp() > cur_time ? prev_block->timestamp() + 1 : cur_time);
 
     // 打包交易
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
