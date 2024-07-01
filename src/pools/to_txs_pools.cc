@@ -731,11 +731,13 @@ int ToTxsPools::CreateToTxWithHeights(
         uint64_t max_height = leader_to_heights.heights(pool_idx);
         auto pool_iter = network_txs_pools_.find(pool_idx);
         if (pool_iter == network_txs_pools_.end()) {
+            ZJC_DEBUG("failed find pool index: %u", pool_idx);
             return kPoolsError;
         }
 
         auto hiter = pool_iter->second.find(max_height);
         if (hiter == pool_iter->second.end()) {
+            ZJC_DEBUG("failed find pool index: %u height: %lu", pool_idx, max_height);
             return kPoolsError;
         }
 
