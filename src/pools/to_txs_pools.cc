@@ -581,10 +581,17 @@ bool ToTxsPools::StatisticTos(
     for (uint32_t pool_idx = 0; pool_idx < common::kImmutablePoolSize; ++pool_idx) {
         uint64_t min_height = has_statistic_height_[pool_idx] + 1;
         uint64_t max_height = leader_to_heights.heights(pool_idx);
-        if (max_height >= min_height)
+        if (max_height >= min_height) {
             ZJC_DEBUG("now statistic to tx pool: %u, min: %lu, max: %lu",
                 pool_idx, min_height, max_height);
+        }
+
         if (!PreStatisticTos(pool_idx, min_height, max_height)) {
+            if (max_height >= min_height) {
+                ZJC_DEBUG("failed now statistic to tx pool: %u, min: %lu, max: %lu",
+                    pool_idx, min_height, max_height);
+            }
+            
             return false;
         }
     }
@@ -825,12 +832,6 @@ int ToTxsPools::CreateToTxWithHeights(
         return kPoolsError;
     }
 
-    std::string test_heights;
-    for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
-        auto height = leader_to_heights.heights(i);
-        test_heights += std::to_string(height) + " ";
-    }
-
     for (auto iter = cross_set.begin(); iter != cross_set.end(); ++iter) {
         auto cross_item = to_tx.add_crosses();
         cross_item->set_src_shard((*iter).src_shard);
@@ -927,18 +928,8 @@ int ToTxsPools::CreateToTxWithHeights(
     }
 
     to_tx.set_elect_height(elect_height);
-    // assert(to_tx.ByteSize() < 1000000u);
     *to_tx.mutable_to_heights() = leader_to_heights;
-    // assert(to_tx.ByteSize() < 1000000u);
     to_tx.mutable_to_heights()->set_sharding_id(sharding_id);
-    // assert(to_tx.ByteSize() < 1000000u);
-    ZJC_DEBUG("backup sharding: %u test_heights: %s, to_tx size: %u, to size: %u, cross size: %u",
-        sharding_id,
-        test_heights.c_str(),
-        to_tx.ByteSize(),
-        to_tx.tos_size(),
-        to_tx.crosses_size());
-    // assert(to_tx.ByteSize() < 1000000u);
     return kPoolsSuccess;
 }
 
