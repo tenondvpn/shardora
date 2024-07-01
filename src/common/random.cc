@@ -38,14 +38,17 @@ IntType RandomInt() {
     return distribution(kRandomNumberGenerator);
 }
 
-
-template <typename IntType>
-IntType RandomInt(IntType seed) {
-    static std::uniform_int_distribution<IntType> distribution(
-            (std::numeric_limits<IntType>::min)(),
-            (std::numeric_limits<IntType>::max)());
-    std::mt19937 random_gen(seed)
-    return distribution(random_gen);
+template <typename String>
+String GetRandomString(size_t size) {
+    std::uniform_int_distribution<> distribution(0, 255);
+    String random_string(size, 0);
+    {
+        std::generate(
+                random_string.begin(),
+                random_string.end(),
+                [&] { return distribution(kRandomNumberGenerator);});
+    }
+    return random_string;
 }
 
 int8_t Random::RandomInt8() {
