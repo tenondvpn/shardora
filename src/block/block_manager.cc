@@ -1408,10 +1408,12 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
                 to_tx) != pools::kPoolsSuccess) {
             all_valid = false;
             all_to_txs.mutable_to_tx_arr()->RemoveLast();
+            ZJC_DEBUG("1 failed get to tx tx info: %s", ProtobufToJson(heights).c_str());
         }
     }
 
     if (all_to_txs.to_tx_arr_size() == 0) {
+        ZJC_DEBUG("2 failed get to tx tx info: %s", ProtobufToJson(heights).c_str());
         return nullptr;
     }
     
@@ -1443,6 +1445,7 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     auto tx_ptr = create_to_tx_cb_(new_msg_ptr);
     tx_ptr->time_valid += kToValidTimeout;
     tx_ptr->unique_tx_hash = tos_hashs;
+    ZJC_DEBUG("success get to tx tx info: %s", ProtobufToJson(heights).c_str());
     return tx_ptr;
 }
 
