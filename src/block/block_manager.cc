@@ -1327,7 +1327,8 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& h
     pools::protobuf::ShardToTxItem heights;
     if (heights_str.empty()) {
         auto cur_time = common::TimeUtils::TimestampMs();
-        if (latest_to_block_ptr_[latest_to_block_ptr_index_]->timestamp() + 10000lu >= cur_time) {
+        auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_];
+        if (latest_to_block_ptr != nullptr && latest_to_block_ptr->timestamp() + 10000lu >= cur_time) {
             return nullptr;
         }
 
@@ -1355,7 +1356,7 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& h
     if (iter != heights_str_map_.end()) {
         return iter->second;
     }
-    
+
     if (heights.sharding_id() != common::GlobalInfo::Instance()->network_id()) {
         assert(false);
         return nullptr;
