@@ -903,12 +903,13 @@ void BlockManager::AddNewBlock(
         switch (tx_list[i].step()) {
         case pools::protobuf::kRootCreateAddressCrossSharding:
             // ZJC_DEBUG("success handle root create address tx.");
-        case pools::protobuf::kNormalTo:
+        case pools::protobuf::kNormalTo: {
             HandleNormalToTx(*block_item, tx_list[i], db_batch);
             auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
             latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = block_item;
             latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
             break;
+        }
         case pools::protobuf::kConsensusRootTimeBlock:
             prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
             break;
