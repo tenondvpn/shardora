@@ -89,8 +89,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
         }
         
         common::GlobalInfo::Instance()->set_network_id(network::kRootCongressNetworkId);
-        PrepareCreateGenesisBlocks();
-        SaveGenisisPoolHeights(network::kRootCongressNetworkId);
+        PrepareCreateGenesisBlocks(network::kRootCongressNetworkId);
         res = CreateRootGenesisBlocks(real_root_genesis_nodes,
                                       real_cons_genesis_nodes_of_shards,
                                       genesis_acount_balance_map);
@@ -116,8 +115,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
 
             CreateNodePrivateInfo(shard_node_net_id, 1llu, cons_genesis_nodes);
             common::GlobalInfo::Instance()->set_network_id(shard_node_net_id);
-            PrepareCreateGenesisBlocks();            
-            SaveGenisisPoolHeights(shard_node_net_id);
+            PrepareCreateGenesisBlocks(shard_node_net_id);            
             res = CreateShardGenesisBlocks(real_root_genesis_nodes,
                                            cons_genesis_nodes,
                                            shard_node_net_id,
@@ -258,11 +256,12 @@ void GenesisBlockInit::ComputeG2sForNodes(const std::vector<std::string>& prikey
     db_->ClearPrefix("db_for_gid_");
 }
 
-void GenesisBlockInit::PrepareCreateGenesisBlocks() {
+void GenesisBlockInit::PrepareCreateGenesisBlocks(uint32_t shard_node_net_id) {
         std::shared_ptr<security::Security> security = nullptr;
         std::shared_ptr<sync::KeyValueSync> kv_sync = nullptr;
         // 初始化本节点所有的 tx pool 和 cross tx pool
         pools_mgr_ = std::make_shared<pools::TxPoolManager>(security, db_, kv_sync, account_mgr_);
+        SaveGenisisPoolHeights(shard_node_net_id);
         std::shared_ptr<pools::ShardStatistic> statistic_mgr = nullptr;
         std::shared_ptr<contract::ContractManager> ct_mgr = nullptr;
         account_mgr_->Init(db_, pools_mgr_);
