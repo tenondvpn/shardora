@@ -48,20 +48,6 @@ IntType RandomInt(IntType seed) {
     return distribution(random_gen);
 }
 
-
-template <typename String>
-String GetRandomString(size_t size) {
-    std::uniform_int_distribution<> distribution(0, 255);
-    String random_string(size, 0);
-    {
-        std::generate(
-                random_string.begin(),
-                random_string.end(),
-                [&] { return distribution(kRandomNumberGenerator);});
-    }
-    return random_string;
-}
-
 int8_t Random::RandomInt8() {
     return RandomInt<int8_t>();
 }
@@ -92,10 +78,6 @@ uint32_t Random::RandomUint32() {
 
 uint64_t Random::RandomUint64() {
     return RandomInt<uint64_t>();
-}
-
-uint64_t Random::RandomUint64(uint64_t seed) {
-    return RandomInt<uint64_t>(seed);
 }
 
 std::string Random::RandomString(uint32_t size) {

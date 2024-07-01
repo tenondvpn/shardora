@@ -19,7 +19,6 @@ public:
     static uint32_t RandomUint32();
     static uint64_t RandomUint64();
     static std::string RandomString(uint32_t size);
-    static uint64_t RandomUint64(uint64_t seed);
 private:
     Random();
     ~Random();
