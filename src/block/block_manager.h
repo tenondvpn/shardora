@@ -162,7 +162,7 @@ private:
     void CheckWaitingBlocks(uint32_t shard, uint64_t elect_height);
     void PopTxTicker();
 
-    static const uint64_t kCreateToTxPeriodMs = 30000lu;
+    static const uint64_t kCreateToTxPeriodMs = 10000lu;
     static const uint64_t kRetryStatisticPeriod = 3000lu;
     static const uint64_t kStatisticTimeoutMs = 20000lu;
     static const uint64_t kToTimeoutMs = 10000lu;
