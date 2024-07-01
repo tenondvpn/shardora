@@ -147,6 +147,7 @@ void GenesisBlockInit::SaveGenisisPoolHeights(uint32_t shard_id) {
     }
 
     prefix_db_->SaveLatestToTxsHeights(heights);
+    ZJC_INFO("save latest info: %s", ProtobufToJson(heights).c_str());
 }
 
 void ComputeG2ForNode(
