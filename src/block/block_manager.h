@@ -218,6 +218,7 @@ private:
     std::shared_ptr<block::protobuf::Block> latest_to_block_ptr_[2] = { nullptr };
     uint32_t latest_to_block_ptr_index_ = 0;
     std::map<std::string, pools::TxItemPtr> heights_str_map_;
+    uint32_t leader_prev_get_to_tx_tm_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

@@ -1327,6 +1327,11 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& h
     pools::protobuf::ShardToTxItem heights;
     if (heights_str.empty()) {
         auto cur_time = common::TimeUtils::TimestampMs();
+        if (leader_prev_get_to_tx_tm_ > cur_time) {
+            return nullptr;
+        }
+
+        leader_prev_get_to_tx_tm_ = cur_time + 10000lu;
         auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_];
         if (latest_to_block_ptr != nullptr && latest_to_block_ptr->timestamp() + 10000lu >= cur_time) {
             return nullptr;
