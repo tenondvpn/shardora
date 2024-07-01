@@ -1814,12 +1814,12 @@ bool BlockManager::ShouldStopConsensus() {
 pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& tx_gid) {
     bool leader = tx_gid.empty();
     if (latest_to_tx_ == nullptr) {
-        ZJC_DEBUG("backup get to tx failed, latest_to_tx_ == nullptr!");
+        ZJC_DEBUG("get to tx failed, latest_to_tx_ == nullptr!");
         return nullptr;
     }
 
     if (pool_index != 0) {
-        ZJC_DEBUG("backup get to tx failed, pool_index != 0!");
+        ZJC_DEBUG("get to tx failed, pool_index != 0!");
         return nullptr;
     }
 
@@ -1827,7 +1827,9 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& t
     auto latest_to_tx = latest_to_tx_;
     auto tmp_to_txs = latest_to_tx->to_tx;
     if (!leader && tmp_to_txs->tx_ptr->tx_info.gid() != tx_gid) {
-        ZJC_DEBUG("gid invalid!");
+        ZJC_DEBUG("back up gid invalid: %s, %s",
+            common::Encode::HexEncode(tmp_to_txs->tx_ptr->tx_info.gid()).c_str(),
+            common::Encode::HexEncode(tx_gid).c_str());
         return nullptr;
     }
 
