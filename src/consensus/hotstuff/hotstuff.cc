@@ -237,6 +237,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyTC(std::shared_ptr<ProposeMsgWrapper
             ZJC_ERROR("tc Unserialize is error.");
             return Status::kError;
         }
+
         if (VerifyTC(tc) != Status::kSuccess) {
             ZJC_ERROR("pool: %d verify tc failed: %lu", pool_idx_, pro_msg_wrap->v_block->view);
             return Status::kError;
@@ -244,6 +245,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyTC(std::shared_ptr<ProposeMsgWrapper
     }
 
     pro_msg_wrap->tc = tc;
+    
     return Status::kSuccess;
 }
 

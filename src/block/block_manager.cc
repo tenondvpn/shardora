@@ -905,6 +905,9 @@ void BlockManager::AddNewBlock(
             // ZJC_DEBUG("success handle root create address tx.");
         case pools::protobuf::kNormalTo:
             HandleNormalToTx(*block_item, tx_list[i], db_batch);
+            auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
+            latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = block_item;
+            latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
             break;
         case pools::protobuf::kConsensusRootTimeBlock:
             prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
@@ -1315,7 +1318,28 @@ void BlockManager::HandleStatisticBlock(
         0);
 }
 
-std::shared_ptr<BlockTxsItem> BlockManager::HandleToTxsMessage(
+pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& heights_str) {
+    pools::protobuf::ShardToTxItem heights;
+    if (heights_str.empty()) {
+        if (to_txs_pool_->LeaderCreateToHeights(heights) != pools::kPoolsSuccess) {
+            return nullptr;
+        }
+    }
+
+    if (!heights.ParseFromString(heights_str)) {
+        assert(false);
+        return nullptr;
+    }
+
+    if (heights.sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+        assert(false);
+        return nullptr;
+    }
+
+    return HandleToTxsMessage(heights);
+}
+
+pools::TxItemPtr BlockManager::HandleToTxsMessage(
         const pools::protobuf::ShardToTxItem& heights) {
     std::string str_heights;
     for (int32_t i = 0; i < heights.heights_size(); ++i) {
@@ -1366,20 +1390,20 @@ std::shared_ptr<BlockTxsItem> BlockManager::HandleToTxsMessage(
         tx->set_step(pools::protobuf::kNormalTo);
     }
 
-    auto gid = tos_hashs;
+    std::string gid = common::Hash::keccak256("0000");
+    auto latest_to_block = latest_to_block_ptr_[latest_to_block_ptr_index_];
+    if (latest_to_block == nullptr) {
+        gid = common::Hash::keccak256(latest_to_block->bls_agg_sign_x() + latest_to_block->bls_agg_sign_y());
+    }
+
     tx->set_gas_limit(0);
     tx->set_amount(0);
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
     tx->set_gid(gid);
-    auto to_txs_ptr = std::make_shared<BlockTxsItem>();
-    to_txs_ptr->tx_ptr = create_to_tx_cb_(new_msg_ptr);
-    to_txs_ptr->tx_ptr->time_valid += kToValidTimeout;
-    to_txs_ptr->tx_hash = gid;
-    to_txs_ptr->timeout = common::TimeUtils::TimestampMs() + kToValidTimeout + kToTimeoutMs;
-    to_txs_ptr->stop_consensus_timeout = to_txs_ptr->timeout + kStopConsensusTimeoutMs;
-    to_txs_ptr->tx_ptr->unique_tx_hash = to_txs_ptr->tx_hash;
-    to_txs_ptr->success = true;
-    return to_txs_ptr;
+    auto tx_ptr = create_to_tx_cb_(new_msg_ptr);
+    tx_ptr->time_valid += kToValidTimeout;
+    tx_ptr->unique_tx_hash = tos_hashs;
+    return tx_ptr;
 }
 
 bool BlockManager::HasSingleTx(uint32_t pool_index) {

@@ -464,7 +464,7 @@ void ToTxsPools::LoadLatestHeights() {
     if (net_id >= network::kConsensusShardEndNetworkId) {
         net_id = net_id - network::kConsensusWaitingShardOffset;
     }
-    
+
     if (!prefix_db_->GetLatestToTxsHeights(net_id, &to_heights)) {
         assert(false);
         return;
@@ -729,6 +729,16 @@ int ToTxsPools::CreateToTxWithHeights(
         }
 
         uint64_t max_height = leader_to_heights.heights(pool_idx);
+        auto pool_iter = network_txs_pools_.find(pool_idx);
+        if (pool_iter == network_txs_pools_.end()) {
+            return kPoolsError;
+        }
+
+        auto hiter = pool_iter->second.find(max_height);
+        if (hiter == pool_iter->second.end()) {
+            return kPoolsError;
+        }
+
         if (max_height > pool_consensus_heihgts_[pool_idx]) {
             ZJC_DEBUG("pool %u, invalid height: %lu, consensus height: %lu",
                 pool_idx,
@@ -736,11 +746,6 @@ int ToTxsPools::CreateToTxWithHeights(
                 pool_consensus_heihgts_[pool_idx]);
             return kPoolsError;
         }
-// 
-//         if (max_height > 0) {
-//             ZJC_DEBUG("sharding_id: %u, pool: %d, min_height: %lu, max_height: %lu",
-//                 sharding_id, pool_idx, min_height, max_height);
-//         }
 
         for (auto height = min_height; height <= max_height; ++height) {
             auto cross_iter = cross_sharding_map_[pool_idx].find(height);
@@ -752,7 +757,6 @@ int ToTxsPools::CreateToTxWithHeights(
             }
         }
 
-        auto pool_iter = network_txs_pools_.find(pool_idx);
         if (pool_iter != network_txs_pools_.end()) {
             for (auto height = min_height; height <= max_height; ++height) {
                 auto hiter = pool_iter->second.find(height);

@@ -85,6 +85,7 @@ public:
     void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members);
     pools::TxItemPtr GetStatisticTx(uint32_t pool_index, const std::string& tx_hash);
     pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);
+    pools::TxItemPtr GetToTx(uint32_t pool_index, const std::string& tx_hash);
     void LoadLatestBlocks();
     // just genesis call
     void GenesisAddAllAccount(
@@ -110,7 +111,7 @@ private:
         db::DbWriteBatch& db_batch);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& message);
-    std::shared_ptr<BlockTxsItem> HandleToTxsMessage(
+    pools::TxItemPtr HandleToTxsMessage(
         const pools::protobuf::ShardToTxItem& msg_ptr);
     void HandleAllConsensusBlocks();
     void AddNewBlock(
@@ -214,6 +215,8 @@ private:
     uint64_t prev_create_statistic_tx_tm_us_ = 0;
     uint64_t prev_timer_ms_ = 0;
     common::Tick pop_tx_tick_;
+    std::shared_ptr<block::protobuf::Block> latest_to_block_ptr_[2] = { nullptr };
+    uint32_t latest_to_block_ptr_index_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };
