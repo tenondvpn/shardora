@@ -1512,10 +1512,10 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     to_txs_ptr->tx_ptr->unique_tx_hash = to_txs_ptr->tx_hash;
     to_txs_ptr->success = true;
     to_txs_ptr->leader_to_index = shard_to.leader_to_idx();
-    ZJC_DEBUG("totx success add txs: %s, leader idx: %u, leader to index: %d, gid: %s",
+    ZJC_DEBUG("totx success add txs: %s, leader idx: %u, leader to index: %d, gid: %s, %s",
         common::Encode::HexEncode(tos_hashs).c_str(),
         shard_to.leader_idx(), shard_to.leader_to_idx(),
-        common::Encode::HexEncode(gid).c_str());
+        common::Encode::HexEncode(gid).c_str(), ProtobufToJson(all_to_txs).c_str());
     if (all_valid) {
         leader_to_txs->to_txs_msg = nullptr;
     }
