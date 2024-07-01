@@ -1338,11 +1338,11 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& h
         }
 
         heights.set_sharding_id(common::GlobalInfo::Instance()->network_id());
-    }
-
-    if (!heights.ParseFromString(heights_str)) {
-        assert(false);
-        return nullptr;
+    } else {
+        if (!heights.ParseFromString(heights_str)) {
+            assert(false);
+            return nullptr;
+        }
     }
 
     std::string string_for_hash;
