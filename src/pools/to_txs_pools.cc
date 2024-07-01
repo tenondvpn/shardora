@@ -454,21 +454,23 @@ void ToTxsPools::HandleNormalToTx(
 
 void ToTxsPools::LoadLatestHeights() {
     if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
+        assert(false);
         return;
     }
 
-    for (uint32_t i = network::kRootCongressNetworkId;
-            i < network::kConsensusShardEndNetworkId; ++i) {
-        auto heights_ptr = std::make_shared<pools::protobuf::ShardToTxItem>();
-        pools::protobuf::ShardToTxItem& to_heights = *heights_ptr;
-        if (!prefix_db_->GetLatestToTxsHeights(i, &to_heights)) {
-            continue;
-        }
-
-        prev_to_heights_ = heights_ptr;
-        break;
+    auto heights_ptr = std::make_shared<pools::protobuf::ShardToTxItem>();
+    pools::protobuf::ShardToTxItem& to_heights = *heights_ptr;
+    auto net_id = common::GlobalInfo::Instance()->network_id();
+    if (net_id >= network::kConsensusShardEndNetworkId) {
+        net_id = net_id - network::kConsensusWaitingShardOffset;
+    }
+    
+    if (!prefix_db_->GetLatestToTxsHeights(net_id, &to_heights)) {
+        assert(false);
+        return;
     }
 
+    prev_to_heights_ = heights_ptr;
     uint32_t max_pool_index = common::kImmutablePoolSize;
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         ++max_pool_index;

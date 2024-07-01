@@ -119,6 +119,7 @@ private:
     void SetPrevElectInfo(
         const elect::protobuf::ElectBlock& elect_block,
         block::protobuf::BlockTx& block_tx);
+    void SaveGenisisPoolHeights(uint32_t shard_id);
     void StoreViewBlockWithCommitQC(
             const std::shared_ptr<hotstuff::ViewBlock>& view_block,
             const std::shared_ptr<hotstuff::QC>& commit_qc) {

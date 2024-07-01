@@ -102,6 +102,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
         // 验证部分私钥并保存多项式承诺，如果不需要轮换可以注释掉，大幅度节约创世块计算时间和部分空间
         ComputeG2sForNodes(prikeys);
 #endif
+        SaveGenisisPoolHeights(network::kRootCongressNetworkId);
     } else { // 构建某 shard 创世网络
         // TODO 这种写法是每个 shard 单独的 shell 命令，不适用，需要改
         for (uint32_t i = 0; i < real_cons_genesis_nodes_of_shards.size(); i++) {
@@ -129,12 +130,22 @@ int GenesisBlockInit::CreateGenesisBlocks(
 #ifndef DISABLE_GENESIS_BLS_VERIFY            
             ComputeG2sForNodes(prikeys);
 #endif
+            SaveGenisisPoolHeights(shard_node_net_id);
         }
     }
 
     db_->CompactRange("", "");
-    
     return res;
+}
+
+void GenesisBlockInit::SaveGenisisPoolHeights(uint32_t shard_id) {
+    pools::protobuf::ShardToTxItem heights;
+    heights.set_sharding_id(shard_id);
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        heights.add_heights(pools_mgr_->latest_height(i));
+    }
+
+    prefix_db_->SaveLatestToTxsHeights(heights);
 }
 
 void ComputeG2ForNode(

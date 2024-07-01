@@ -55,6 +55,7 @@ public:
     void OnRemoteTimeout(const transport::MessagePtr& msg_ptr);
     // 视图切换
     Status AdvanceView(const std::shared_ptr<SyncInfo>& sync_info);
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
     inline std::shared_ptr<QC> HighQC() const {
         return high_qc_;
@@ -67,8 +68,6 @@ public:
     inline View CurView() const {
         return cur_view_;
     }
-
-    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
     // 重置超时实例
     void ResetViewDuration(const std::shared_ptr<ViewDuration>& dur) {
