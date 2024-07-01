@@ -1415,11 +1415,10 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     std::string str_heights;
     for (int32_t i = 0; i < heights.heights_size(); ++i) {
         str_heights += std::to_string(i) + "_" + std::to_string(heights.heights(i)) + " ";
-
     }
 
-    ZJC_DEBUG("to tx message coming: %lu, elect height: %lu, heights: %s",
-        msg_ptr->header.hash64(), shard_to.elect_height(), str_heights.c_str());
+    ZJC_DEBUG("to tx message coming: %lu, elect height: %lu, heights: %s, recreate: %d",
+        msg_ptr->header.hash64(), shard_to.elect_height(), str_heights.c_str(), recreate);
     if (create_to_tx_cb_ == nullptr || msg_ptr == nullptr) {
         return;
     }
