@@ -1337,7 +1337,6 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& h
             return nullptr;
         }
 
-
         if (to_txs_pool_->LeaderCreateToHeights(heights) != pools::kPoolsSuccess) {
             return nullptr;
         }
@@ -1373,6 +1372,8 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& h
     if (tx_ptr != nullptr) {
         heights_str_map_[height_hash] = tx_ptr;
         ZJC_DEBUG("success get to tx tx info: %s", ProtobufToJson(tx_ptr->tx_info).c_str());
+    } else {
+        ZJC_DEBUG("failed get to tx tx info: %s", ProtobufToJson(heights).c_str());
     }
 
     return tx_ptr;
