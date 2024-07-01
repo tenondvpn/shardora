@@ -1811,37 +1811,29 @@ bool BlockManager::ShouldStopConsensus() {
     return false;
 }
 
-pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& tx_hash) {
-    bool leader = tx_hash.empty();
-    if (leader) {
-        ZJC_DEBUG("backup get to tx coming!");
-    }
-
+pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& tx_gid) {
+    bool leader = tx_gid.empty();
     if (latest_to_tx_ == nullptr) {
-        if (leader) {
-            ZJC_DEBUG("backup get to tx failed, latest_to_tx_ == nullptr!");
-        }
-
+        ZJC_DEBUG("backup get to tx failed, latest_to_tx_ == nullptr!");
         return nullptr;
     }
 
     if (pool_index != 0) {
-        if (leader) {
-            ZJC_DEBUG("backup get to tx failed, pool_index != 0!");
-        }
-
+        ZJC_DEBUG("backup get to tx failed, pool_index != 0!");
         return nullptr;
     }
 
     auto now_tm = common::TimeUtils::TimestampUs();
     auto latest_to_tx = latest_to_tx_;
     auto tmp_to_txs = latest_to_tx->to_tx;
-    if (!leader && tmp_to_txs->tx_hash != tx_hash) {
+    if (!leader && tmp_to_txs->tx_ptr->tx_info.gid() != tx_gid) {
+        ZJC_DEBUG("gid invalid!");
         return nullptr;
     }
 
     if (tmp_to_txs != nullptr) {
         if (leader && tmp_to_txs->tx_ptr->time_valid > now_tm) {
+            ZJC_DEBUG("time invalid!");
             return nullptr;
         }
 
@@ -1850,9 +1842,7 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& t
         return tmp_to_txs->tx_ptr;
     }
 
-    if (leader) {
-        ZJC_DEBUG("backup get to tx failed elect height: %lu", latest_to_tx_->elect_height);
-    }
+    ZJC_DEBUG("backup get to tx failed elect height: %lu", latest_to_tx_->elect_height);
     return nullptr;
 }
 

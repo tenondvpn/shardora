@@ -264,7 +264,8 @@ private:
         auto it = view_blocks_info_.find(hash);
         if (it == view_blocks_info_.end()) {
             view_blocks_info_[hash] = std::make_shared<ViewBlockInfo>();
-            ZJC_DEBUG("add new view block %s", common::Encode::HexEncode(hash).c_str());
+            ZJC_DEBUG("add new view block %s, leader: %d",
+                common::Encode::HexEncode(hash).c_str(), view_block->leader_idx);
         }
         view_blocks_info_[hash]->view_block = view_block;
     }

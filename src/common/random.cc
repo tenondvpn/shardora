@@ -38,6 +38,17 @@ IntType RandomInt() {
     return distribution(kRandomNumberGenerator);
 }
 
+
+template <typename IntType>
+IntType RandomInt(IntType seed) {
+    static std::uniform_int_distribution<IntType> distribution(
+            (std::numeric_limits<IntType>::min)(),
+            (std::numeric_limits<IntType>::max)());
+    std::mt19937 random_gen(seed)
+    return distribution(random_gen);
+}
+
+
 template <typename String>
 String GetRandomString(size_t size) {
     std::uniform_int_distribution<> distribution(0, 255);
@@ -81,6 +92,10 @@ uint32_t Random::RandomUint32() {
 
 uint64_t Random::RandomUint64() {
     return RandomInt<uint64_t>();
+}
+
+uint64_t Random::RandomUint64(uint64_t seed) {
+    return RandomInt<uint64_t>(seed);
 }
 
 std::string Random::RandomString(uint32_t size) {
