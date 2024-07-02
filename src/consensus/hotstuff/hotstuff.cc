@@ -113,14 +113,18 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     }
 
     network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
+    ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+        "hash: %s, qc_view: %lu, hash64: %lu, gid: %s",
         pool_idx_,
         header.hotstuff().pool_index(),
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
         hotstuff_msg->pro_msg().view_item().view(),
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
         pacemaker()->HighQC()->view(),
-        header.hash64());
+        header.hash64(),
+        (hotstuff_msg->pro_msg().tx_propose().txs_size() > 0 ? 
+        common::Encode::HexEncode(hotstuff_msg->pro_msg().tx_propose().txs(0).gid()).c_str() :
+        ""));
     HandleProposeMsg(header);
     return Status::kSuccess;
 }
