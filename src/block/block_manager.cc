@@ -1455,12 +1455,22 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
             std::to_string(latest_to_block->height()) +
             std::to_string(latest_to_block->timestamp()));
         ZJC_DEBUG("success get to tx  latest height: %lu, tm: %lu, "
-            "gid: %s, heights: %s tx info: %s",
+            "gid: %s, heights: %s tx info: %s, hash: %s",
             latest_to_block->height(),
             latest_to_block->timestamp(),
             common::Encode::HexEncode(gid).c_str(),
             ProtobufToJson(heights).c_str(),
-            ProtobufToJson(all_to_txs).c_str());
+            ProtobufToJson(all_to_txs).c_str(),
+            common::Encode::HexEncode(common::Hash::keccak256(tx->value())).c_str());
+    } else {
+        ZJC_DEBUG("success get to tx  latest height: %lu, tm: %lu, "
+            "gid: %s, heights: %s tx info: %s, hash: %s",
+            0,
+            0,
+            common::Encode::HexEncode(gid).c_str(),
+            ProtobufToJson(heights).c_str(),
+            ProtobufToJson(all_to_txs).c_str(),
+            common::Encode::HexEncode(common::Hash::keccak256(tx->value())).c_str());
     }
 
     tx->set_gas_limit(0);
