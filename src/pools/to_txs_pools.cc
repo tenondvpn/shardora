@@ -83,6 +83,7 @@ bool ToTxsPools::PreStatisticTos(
             block_ptr = std::make_shared<block::protobuf::Block>();
             auto& block = *block_ptr;
             if (!prefix_db_->GetBlockWithHeight(net_id, pool_idx, height, &block)) {
+                ZJC_DEBUG("failed get block pool: %u, height: %lu", pool_idx, height);
                 return false;
             }
         } else {
@@ -551,9 +552,15 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         uint64_t cons_height = pool_consensus_heihgts_[i];
         while (cons_height > 0) {
-            auto exist_iter = valided_heights_[i].find(cons_height);
-            if (exist_iter == valided_heights_[i].end()) {
-                ZJC_INFO("invalid height, pool: %u, height: %lu", i, cons_height);
+            auto exist_iter = added_heights_[i].find(cons_height);
+            if (exist_iter != added_heights_[i].end()) {
+                if (exist_iter->second->timestamp() + 5000lu > timeout) {
+                    --cons_height;
+                    continue;
+                }
+            }
+
+            if (valided_heights_[i].find(cons_height) == valided_heights_[i].end()) {
                 return kPoolsError;
             }
 
