@@ -614,8 +614,8 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::protobuf::Header& header)
         return;
     }
 
-    Propose(new_sync_info()->WithQC(pacemaker()->HighQC())->WithTC(pacemaker()->HighTC()));
-    // ResetReplicaTimers();
+    // Propose(new_sync_info()->WithQC(pacemaker()->HighQC())->WithTC(pacemaker()->HighTC()));
+    ResetReplicaTimers();
     ZJC_DEBUG("reset timer success!");
 }
 
