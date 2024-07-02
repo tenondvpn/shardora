@@ -520,12 +520,7 @@ Status BlockAcceptor::commit(std::shared_ptr<block::protobuf::Block>& block) {
                 block->network_id(),
                 block->pool_index(),
                 block->height());
-            if (txs[i].step() != pools::protobuf::kNormalFrom && 
-                    txs[i].step() != pools::protobuf::kContractCreate && 
-                    txs[i].step() != pools::protobuf::kContractExcute && 
-                    txs[i].step() != pools::protobuf::kContractGasPrepayment && 
-                    txs[i].step() != pools::protobuf::kJoinElect && 
-                    txs[i].step() != pools::protobuf::kCreateLibrary) {
+            if (pools::IsUserTransaction(txs[i].step())) {
                 ZJC_DEBUG("invalid tx add to consensus tx map: %d", txs[i].step());
                 continue;
             }
