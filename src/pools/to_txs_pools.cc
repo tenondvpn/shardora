@@ -350,6 +350,7 @@ void ToTxsPools::AddTxToMap(
         TxMap tx_map;
         pool_iter->second[block.height()] = tx_map;
         height_iter = pool_iter->second.find(block.height());
+        ZJC_DEBUG("success add block pool: %u, height: %lu", block.pool_index(), block.height());
     }
 
     auto to_iter = height_iter->second.find(to);
@@ -742,8 +743,7 @@ int ToTxsPools::CreateToTxWithHeights(
             return kPoolsError;
         }
 
-        auto hiter = pool_iter->second.find(max_height);
-        if (max_height > min_height && hiter == pool_iter->second.end()) {
+        if (max_height > min_height && pool_iter->second.find(max_height) == pool_iter->second.end()) {
             ZJC_DEBUG("failed find pool index: %u height: %lu", pool_idx, max_height);
             return kPoolsError;
         }
