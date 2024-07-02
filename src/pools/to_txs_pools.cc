@@ -746,11 +746,6 @@ int ToTxsPools::CreateToTxWithHeights(
             return kPoolsError;
         }
 
-        if (max_height > min_height && pool_iter->second.find(max_height) == pool_iter->second.end()) {
-            ZJC_DEBUG("failed find pool index: %u height: %lu", pool_idx, max_height);
-            return kPoolsError;
-        }
-
         if (max_height > pool_consensus_heihgts_[pool_idx]) {
             ZJC_DEBUG("pool %u, invalid height: %lu, consensus height: %lu",
                 pool_idx,
