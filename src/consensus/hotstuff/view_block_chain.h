@@ -96,7 +96,7 @@ public:
         }
 
         if (prefix_db_->JustCheckGidExists(gid)) {
-            ZJC_DEBUG("gid exists in db: %s", common::Encode::HexEncode(gid).c_str());
+            ZJC_DEBUG("failed check tx gid exists in db: %s", common::Encode::HexEncode(gid).c_str());
             return false;
         }
 
