@@ -1452,7 +1452,15 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     auto latest_to_block = latest_to_block_ptr_[latest_to_block_ptr_index_];
     if (latest_to_block != nullptr) {
         gid = common::Hash::keccak256(
-            latest_to_block->bls_agg_sign_x() + latest_to_block->bls_agg_sign_y());
+            std::to_string(latest_to_block->height()) +
+            std::to_string(latest_to_block->timestamp()));
+        ZJC_DEBUG("success get to tx  latest height: %lu, tm: %lu, "
+            "gid: %s, heights: %s tx info: %s",
+            latest_to_block->height(),
+            latest_to_block->timestamp(),
+            common::Encode::HexEncode(gid).c_str(),
+            ProtobufToJson(heights).c_str(),
+            ProtobufToJson(all_to_txs).c_str());
     }
 
     tx->set_gas_limit(0);
@@ -1462,7 +1470,6 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     auto tx_ptr = create_to_tx_cb_(new_msg_ptr);
     tx_ptr->time_valid += kToValidTimeout;
     tx_ptr->unique_tx_hash = tos_hashs;
-    ZJC_DEBUG("success get to tx tx info: %s", ProtobufToJson(all_to_txs).c_str());
     return tx_ptr;
 }
 
