@@ -95,7 +95,7 @@ public:
             phash = it->second->view_block->parent_hash;
         }
 
-        if (prefix_db_->GidExists(gid)) {
+        if (prefix_db_->JustCheckGidExists(gid)) {
             ZJC_DEBUG("gid exists in db: %s", common::Encode::HexEncode(gid).c_str());
             return false;
         }

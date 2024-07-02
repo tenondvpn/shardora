@@ -511,8 +511,8 @@ Status BlockAcceptor::commit(std::shared_ptr<block::protobuf::Block>& block) {
 
     if (block->tx_list_size() > 0) {
         pools_mgr_->TxOver(block->pool_index(), block->tx_list());
-#ifndef NDEBUG
-        for (uint32_t i = 0; i < block->tx_list_size(); ++i) {
+        auto& txs = block->tx_list();
+        for (uint32_t i = 0; i < txs.size(); ++i) {
             ZJC_DEBUG("commit block tx over step: %d, to: %s, gid: %s, net: %d, pool: %d, height: %lu", 
                 block->tx_list(i).step(),
                 common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
@@ -520,8 +520,18 @@ Status BlockAcceptor::commit(std::shared_ptr<block::protobuf::Block>& block) {
                 block->network_id(),
                 block->pool_index(),
                 block->height());
+            if (txs[i].step() != pools::protobuf::kNormalFrom && 
+                    txs[i].step() != pools::protobuf::kContractCreate && 
+                    txs[i].step() != pools::protobuf::kContractExcute && 
+                    txs[i].step() != pools::protobuf::kContractGasPrepayment && 
+                    txs[i].step() != pools::protobuf::kJoinElect && 
+                    txs[i].step() != pools::protobuf::kCreateLibrary) {
+                ZJC_DEBUG("invalid tx add to consensus tx map: %d", txs[i].step());
+                continue;
+            }
+            
+            prefix_db_->GidExists(txs[i].gid());
         }
-#endif        
     } else {
         ZJC_DEBUG("commit block tx over no tx, net: %d, pool: %d, height: %lu", 
             block->network_id(),
