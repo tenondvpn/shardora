@@ -104,6 +104,9 @@ bool ToTxsPools::PreStatisticTos(
         // one block must be one consensus pool
         uint32_t consistent_pool_index = common::kInvalidPoolIndex;
         std::unordered_map<uint32_t, std::unordered_set<CrossItem, CrossItemRecordHash>> cross_map;
+        ZJC_DEBUG("now handle block net: %u, pool: %u, height: %lu, tx size: %u",
+            common::GlobalInfo::Instance()->network_id(), pool_idx, height, tx_list.size());
+
         for (int32_t i = 0; i < tx_list.size(); ++i) {
             if (tx_list[i].status() != consensus::kConsensusSuccess) {
                 ZJC_INFO("tx status error: %d, gid: %s, net: %u, pool: %u, height: %lu, hash: %s",
