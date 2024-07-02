@@ -1363,7 +1363,10 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& h
     auto tx_ptr = HandleToTxsMessage(heights);
     if (tx_ptr != nullptr) {
         heights_str_map_[height_hash] = tx_ptr;
-        ZJC_DEBUG("success get to tx tx info: %s", ProtobufToJson(tx_ptr->tx_info).c_str());
+        ZJC_DEBUG("success get to tx tx info: %s, gid: %s, val: %s", 
+            ProtobufToJson(tx_ptr->tx_info).c_str(),
+            common::Encode::HexEncode(gid).c_str(), 
+            common::Encode::HexEncode(tx_ptr->tx_info.value()).c_str());
     } else {
         ZJC_DEBUG("failed get to tx tx info: %s", ProtobufToJson(heights).c_str());
     }
@@ -1427,7 +1430,8 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     std::string gid = common::Hash::keccak256("0000");
     auto latest_to_block = latest_to_block_ptr_[latest_to_block_ptr_index_];
     if (latest_to_block != nullptr) {
-        gid = common::Hash::keccak256(latest_to_block->bls_agg_sign_x() + latest_to_block->bls_agg_sign_y());
+        gid = common::Hash::keccak256(
+            latest_to_block->bls_agg_sign_x() + latest_to_block->bls_agg_sign_y());
     }
 
     tx->set_gas_limit(0);
@@ -1437,7 +1441,7 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     auto tx_ptr = create_to_tx_cb_(new_msg_ptr);
     tx_ptr->time_valid += kToValidTimeout;
     tx_ptr->unique_tx_hash = tos_hashs;
-    ZJC_DEBUG("success get to tx tx info: %s", ProtobufToJson(heights).c_str());
+    ZJC_DEBUG("success get to tx tx info: %s", ProtobufToJson(all_to_txs).c_str());
     return tx_ptr;
 }
 
