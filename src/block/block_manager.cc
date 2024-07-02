@@ -1366,7 +1366,8 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& h
         auto latest_to_block = latest_to_block_ptr_[latest_to_block_ptr_index_];
         if (latest_to_block != nullptr) {
             gid = common::Hash::keccak256(
-                latest_to_block->bls_agg_sign_x() + latest_to_block->bls_agg_sign_y());
+                std::to_string(latest_to_block->height()) +
+                std::to_string(latest_to_block->timestamp()));
         }
         
         auto tx_ptr = iter->second;
