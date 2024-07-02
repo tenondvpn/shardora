@@ -1357,7 +1357,15 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& h
     auto height_hash = common::Hash::keccak256(string_for_hash);
     auto iter = heights_str_map_.find(height_hash);
     if (iter != heights_str_map_.end()) {
+        std::string gid = common::Hash::keccak256("0000");
+        auto latest_to_block = latest_to_block_ptr_[latest_to_block_ptr_index_];
+        if (latest_to_block != nullptr) {
+            gid = common::Hash::keccak256(
+                latest_to_block->bls_agg_sign_x() + latest_to_block->bls_agg_sign_y());
+        }
+        
         auto tx_ptr = iter->second;
+        tx_ptr->tx_info.set_gid(gid);
         ZJC_DEBUG("success get exists to tx tx info: %s, gid: %s, val: %s, heights: %s", 
             ProtobufToJson(tx_ptr->tx_info).c_str(),
             common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(), 
