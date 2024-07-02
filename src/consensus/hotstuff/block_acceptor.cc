@@ -248,7 +248,13 @@ Status BlockAcceptor::addTxsToPool(
         case pools::protobuf::kRootCreateAddressCrossSharding:
         case pools::protobuf::kNormalTo: {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
-            auto tx_item = tx_pools_->GetToTxs(pool_idx(), tx->value());
+            pools::protobuf::AllToTxMessage all_to_txs;
+            if (!all_to_txs.ParseFromString(tx->value()) || all_to_txs.to_tx_arr_size() == 0) {
+                assert(false);
+                break;
+            }
+
+            auto tx_item = tx_pools_->GetToTxs(pool_idx(), all_to_txs.to_tx_arr(0).to_heights().SerializeAsString());
             if (tx_item != nullptr && !tx_item->txs.empty()) {
                 tx_ptr = tx_item->txs.begin()->second;
             }
