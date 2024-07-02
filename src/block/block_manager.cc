@@ -909,6 +909,10 @@ void BlockManager::AddNewBlock(
             auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
             latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = block_item;
             latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
+            ZJC_DEBUG("success handle to tx gid: %s, bls: %s, %s",
+                common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+                common::Encode::HexEncode(block_item->bls_agg_sign_x()).c_str(),
+                common::Encode::HexEncode(block_item->bls_agg_sign_y()).c_str());
             break;
         }
         case pools::protobuf::kConsensusRootTimeBlock:
