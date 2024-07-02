@@ -248,7 +248,7 @@ Status BlockAcceptor::addTxsToPool(
         case pools::protobuf::kRootCreateAddressCrossSharding:
         case pools::protobuf::kNormalTo: {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
-            auto tx_item = tx_pools_->GetToTxs(pool_idx(), tx->gid());
+            auto tx_item = tx_pools_->GetToTxs(pool_idx(), tx->value());
             if (tx_item != nullptr && !tx_item->txs.empty()) {
                 tx_ptr = tx_item->txs.begin()->second;
             }
@@ -347,12 +347,6 @@ Status BlockAcceptor::addTxsToPool(
 Status BlockAcceptor::GetAndAddTxsLocally(
         const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    // auto txs_func = GetTxsFunc(block_info->tx_type);
-    // Status s = txs_func(block_info, txs_ptr);
-    // if (s != Status::kSuccess) {
-    //     return s;
-    // }
-    
     auto add_txs_status = addTxsToPool(block_info->txs, txs_ptr);
     if (add_txs_status != Status::kSuccess) {
         ZJC_ERROR("invalid consensus, add_txs_status failed: %d.", add_txs_status);
