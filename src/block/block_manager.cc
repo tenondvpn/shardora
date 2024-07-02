@@ -1365,6 +1365,8 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& h
     }
 
     if (heights.sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+        ZJC_DEBUG("sharding id invalid failed get to tx tx info: %s",
+            ProtobufToJson(heights).c_str());
         assert(false);
         return nullptr;
     }
