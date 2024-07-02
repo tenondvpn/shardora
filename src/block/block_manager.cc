@@ -1351,8 +1351,6 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& h
     }
 
     std::string string_for_hash;
-    auto shard_id = heights.sharding_id();
-    string_for_hash.append((char*)&shard_id, sizeof(shard_id));
     for (uint32_t i = 0; i < heights.heights_size(); ++i) {
         auto height = heights.heights(i);
         string_for_hash.append((char*)&height, sizeof(height));
@@ -1362,13 +1360,6 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& h
     auto iter = heights_str_map_.find(height_hash);
     if (iter != heights_str_map_.end()) {
         return iter->second;
-    }
-
-    if (heights.sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-        ZJC_DEBUG("sharding id invalid failed get to tx tx info: %s",
-            ProtobufToJson(heights).c_str());
-        assert(false);
-        return nullptr;
     }
 
     auto tx_ptr = HandleToTxsMessage(heights);
