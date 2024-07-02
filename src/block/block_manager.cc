@@ -1357,16 +1357,23 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& h
     auto height_hash = common::Hash::keccak256(string_for_hash);
     auto iter = heights_str_map_.find(height_hash);
     if (iter != heights_str_map_.end()) {
+        auto tx_ptr = iter->second;
+        ZJC_DEBUG("success get exists to tx tx info: %s, gid: %s, val: %s, heights: %s", 
+            ProtobufToJson(tx_ptr->tx_info).c_str(),
+            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(), 
+            common::Encode::HexEncode(tx_ptr->tx_info.value()).c_str(),
+            ProtobufToJson(heights).c_str());
         return iter->second;
     }
 
     auto tx_ptr = HandleToTxsMessage(heights);
     if (tx_ptr != nullptr) {
         heights_str_map_[height_hash] = tx_ptr;
-        ZJC_DEBUG("success get to tx tx info: %s, gid: %s, val: %s", 
+        ZJC_DEBUG("success get to tx tx info: %s, gid: %s, val: %s, heights: %s", 
             ProtobufToJson(tx_ptr->tx_info).c_str(),
-            common::Encode::HexEncode(gid).c_str(), 
-            common::Encode::HexEncode(tx_ptr->tx_info.value()).c_str());
+            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(), 
+            common::Encode::HexEncode(tx_ptr->tx_info.value()).c_str(),
+            ProtobufToJson(heights).c_str());
     } else {
         ZJC_DEBUG("failed get to tx tx info: %s", ProtobufToJson(heights).c_str());
     }
