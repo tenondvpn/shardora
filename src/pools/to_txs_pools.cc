@@ -123,7 +123,6 @@ bool ToTxsPools::PreStatisticTos(
                 common::GlobalInfo::Instance()->network_id(), pool_idx, height, tx_list[i].step());
             switch (tx_list[i].step()) {
             case pools::protobuf::kNormalTo:
-            case pools::protobuf::kRootCreateAddress:
                 HandleNormalToTx(block, tx_list[i]);
                 break;
             case pools::protobuf::kContractCreate:
