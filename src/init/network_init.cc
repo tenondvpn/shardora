@@ -120,7 +120,7 @@ int NetworkInit::Init(int argc, char** argv) {
     InitLocalNetworkId();
     if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
         uint32_t config_net_id = 0;
-        if (conf_.Get("zjchain", "net_id", &config_net_id) &&
+        if (conf_.Get("zjchain", "net_id", config_net_id) &&
                 config_net_id >= network::kRootCongressNetworkId && 
                 config_net_id <= network::kConsensusShardEndNetworkId) {
             common::GlobalInfo::Instance()->set_network_id(config_net_id + network::kConsensusWaitingShardOffset);
