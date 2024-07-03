@@ -1188,7 +1188,7 @@ Status Hotstuff::SendMsgToLeader(
 #endif
 
     ZJC_DEBUG("pool index: %u, send to leader %d message to leader net: %u, %s, "
-        "hash64: %lu, %s:%d, leader->index: %d, leader_idx: %d",
+        "hash64: %lu, %s:%d, leader->index: %d, local_idx: %d",
         pool_idx_,
         msg_type,
         leader->net_id, 
@@ -1197,7 +1197,7 @@ Status Hotstuff::SendMsgToLeader(
         common::Uint32ToIp(leader->public_ip).c_str(),
         leader->public_port,
         leader->index,
-        leader_idx);
+        local_idx);
     return ret;
 }
 
