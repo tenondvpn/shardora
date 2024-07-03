@@ -123,7 +123,7 @@ bool ToTxsPools::PreStatisticTos(
                 common::GlobalInfo::Instance()->network_id(), pool_idx, height, tx_list[i].step());
             switch (tx_list[i].step()) {
             case pools::protobuf::kNormalTo:
-            case pools::protobuf::kRootCreateAddressCrossSharding:
+            case pools::protobuf::kRootCreateAddress:
                 HandleNormalToTx(block, tx_list[i]);
                 break;
             case pools::protobuf::kContractCreate:
@@ -683,7 +683,7 @@ void ToTxsPools::HandleCrossShard(
             cross_item.des_net);
         break;
     }
-    case pools::protobuf::kRootCreateAddressCrossSharding:
+    case pools::protobuf::kRootCreateAddress:
     case pools::protobuf::kConsensusRootElectShard: {
         if (!is_root) {
             return;

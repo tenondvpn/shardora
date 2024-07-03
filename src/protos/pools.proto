@@ -14,7 +14,6 @@ enum StepType {
     kContractGasPrepayment = 7;  // 为调用合约设置预付费
     kContractExcute = 8;  // 执行合约
     kRootCreateAddress = 9;  // root网络创建新地址
-    kRootCreateAddressCrossSharding = 11;  // ROOT网络创建地址跨分片块确认交易
     kStatistic = 12;  // 统计交易
     kJoinElect = 13;  // 新节点参与选举的交易
     kCreateLibrary = 14; // 创建合约公共库的交易

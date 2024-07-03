@@ -502,18 +502,6 @@ void BlockManager::HandleNormalToTx(
             continue;
         }
 
-        if (tx.step() == pools::protobuf::kRootCreateAddressCrossSharding) {
-            if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
-                    common::GlobalInfo::Instance()->network_id() ==
-                    network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset) {
-                ZJC_WARN("sharding step invalid: %u, %u, to hash: %s",
-                    to_txs.to_heights().sharding_id(),
-                    common::GlobalInfo::Instance()->network_id(),
-                    common::Encode::HexEncode(to_txs.heights_hash()).c_str());
-                continue;
-            }
-        }
-
         ZJC_DEBUG("success handle tox tx heights net: %u, local net: %u, step: %d",
             to_txs.to_heights().sharding_id(),
             common::GlobalInfo::Instance()->network_id(),
@@ -657,7 +645,7 @@ void BlockManager::HandleLocalNormalToTx(
         auto account_info = account_mgr_->GetAccountInfo(addr);
         if (account_info == nullptr) {
             // 只接受 root 发回来的块
-            if (step != pools::protobuf::kRootCreateAddressCrossSharding) {
+            if (step != pools::protobuf::kRootCreateAddress) {
                 ZJC_WARN("failed add local transfer tx tos heights_hash: %s, id: %s",
                     common::Encode::HexEncode(heights_hash).c_str(),
                     common::Encode::HexEncode(addr).c_str());
@@ -909,7 +897,7 @@ void BlockManager::AddNewBlock(
     // 处理交易信息
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         ZJC_DEBUG("new block coming sharding id: %u, pool: %d, height: %lu, "
-            "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, gid: %s, status: %d",
+            "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, gid: %s, status: %d, step: %d",
             block_item->network_id(),
             block_item->pool_index(),
             block_item->height(),
@@ -918,13 +906,14 @@ void BlockManager::AddNewBlock(
             block_item->electblock_height(),
             block_item->timeblock_height(),
             common::Encode::HexEncode(tx_list[i].gid()).c_str(),
-            tx_list[i].status());
+            tx_list[i].status(),
+            tx_list[i].step());
         if (tx_list[i].status() != consensus::kConsensusSuccess) {
             continue;
         }
 
         switch (tx_list[i].step()) {
-        case pools::protobuf::kRootCreateAddressCrossSharding:
+        case pools::protobuf::kRootCreateAddress:
             // ZJC_DEBUG("success handle root create address tx.");
         case pools::protobuf::kNormalTo: {
             HandleNormalToTx(*block_item, tx_list[i], db_batch);
@@ -1347,6 +1336,10 @@ void BlockManager::HandleStatisticBlock(
 }
 
 pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, const std::string& heights_str) {
+    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+        return nullptr;
+    }
+
     if (pool_index != 0) {
         return nullptr;
     }
@@ -1464,12 +1457,7 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     tx->set_value(all_to_txs.SerializeAsString());
     tx->set_pubkey("");
     tx->set_to(new_msg_ptr->address_info->addr());
-    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-        tx->set_step(pools::protobuf::kRootCreateAddressCrossSharding);
-    } else {
-        tx->set_step(pools::protobuf::kNormalTo);
-    }
-
+    tx->set_step(pools::protobuf::kNormalTo);
     std::string gid = common::Hash::keccak256("0000");
     auto latest_to_block = latest_to_block_ptr_[latest_to_block_ptr_index_];
     if (latest_to_block != nullptr) {
