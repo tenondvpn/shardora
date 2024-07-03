@@ -129,7 +129,7 @@ int NetworkInit::Init(int argc, char** argv) {
             return kInitError;
         }
     }
-    
+
     ZJC_DEBUG("id: %s, init sharding id: %u",
         common::Encode::HexEncode(security_->GetAddress()).c_str(),
         common::GlobalInfo::Instance()->network_id());
