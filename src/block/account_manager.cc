@@ -568,7 +568,7 @@ void AccountManager::HandleRootCreateAddressTx(
     
     account_info->set_sharding_id(sharding_id);
     account_info->set_latest_height(block.height());
-    account_info->set_balance(tx.amount());
+    account_info->set_balance(0);  // root address balance invalid
     prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
@@ -578,11 +578,10 @@ void AccountManager::HandleRootCreateAddressTx(
         common::Encode::HexEncode(tx.to()).c_str(), sharding_id,
         common::GlobalInfo::Instance()->network_id());
 
-    ZJC_DEBUG("create root address direct: %s, sharding: %u, pool index: %u, balance: %lu",
+    ZJC_DEBUG("create root address direct: %s, sharding: %u, pool index: %u",
         common::Encode::HexEncode(tx.to()).c_str(),
         sharding_id,
-        pool_index,
-        account_info->balance());
+        pool_index);
 }
 
 
