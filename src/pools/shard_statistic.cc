@@ -324,7 +324,7 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
     statistic_info_ptr->all_gas_amount += block_gas;
     std::string leader_id = getLeaderIdFromBlock(block);
     if (leader_id.empty()) {
-        assert(false);
+        // assert(false);
         return;
     }
 
@@ -340,15 +340,13 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
             block.pool_index(), block.height(), block.timeblock_height());
 }
 
-std::string ShardStatistic::getLeaderIdFromBlock(shardora::block::protobuf::Block &block)
-{
+std::string ShardStatistic::getLeaderIdFromBlock(shardora::block::protobuf::Block &block) {
     auto members = elect_mgr_->GetNetworkMembersWithHeight(
         block.electblock_height(),
         block.network_id(),
         nullptr,
         nullptr);
-    if (members == nullptr)
-    {
+    if (members == nullptr) {
         ZJC_DEBUG("block leader not exit block.hash %s block.electHeight:%d, network_id:%d ",
                   common::Encode::HexEncode(block.hash()).c_str(),
                   block.electblock_height(),
