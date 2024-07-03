@@ -1148,8 +1148,8 @@ Status Hotstuff::SendMsgToLeader(
     header_msg.set_des_dht_key(dht_key.StrKey());
     header_msg.set_type(common::kHotstuffMessage);
     transport::TcpTransport::Instance()->SetMessageHash(header_msg);
-    auto leader_idx = leader_rotation_->GetLocalMemberIdx();
-    if (leader->index != leader_idx) {
+    auto local_idx = leader_rotation_->GetLocalMemberIdx();
+    if (leader->index != local_idx) {
         if (leader->public_ip == 0 || leader->public_port == 0) {
             network::Route::Instance()->Send(trans_msg);
         } else {
@@ -1171,7 +1171,7 @@ Status Hotstuff::SendMsgToLeader(
         for (uint32_t i = 0; i < header_msg.hotstuff().pre_reset_timer_msg().txs_size(); ++i) {
             auto& tx = header_msg.hotstuff().pre_reset_timer_msg().txs(i);
             ZJC_DEBUG("pool index: %u, send to leader %d message to leader net: %u, %s, "
-                "hash64: %lu, %s:%d, leader->index: %d, leader_idx: %d, gid: %s, to: %s",
+                "hash64: %lu, %s:%d, leader->index: %d, local_idx: %d, gid: %s, to: %s",
                 pool_idx_,
                 msg_type,
                 leader->net_id, 
@@ -1180,7 +1180,7 @@ Status Hotstuff::SendMsgToLeader(
                 common::Uint32ToIp(leader->public_ip).c_str(),
                 leader->public_port,
                 leader->index,
-                leader_idx,
+                local_idx,
                 common::Encode::HexEncode(tx.gid()).c_str(),
                 common::Encode::HexEncode(tx.to()).c_str());
         }
