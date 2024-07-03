@@ -782,13 +782,10 @@ std::shared_ptr<consensus::WaitingTxsItem> TxPool::GetTx(
 
 void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
     for (uint32_t i = 0; i < txs.size(); ++i) {
-        if (txs[i]->tx_info.step() != pools::protobuf::kNormalFrom && 
-                txs[i]->tx_info.step() != pools::protobuf::kContractCreate && 
-                txs[i]->tx_info.step() != pools::protobuf::kContractExcute && 
-                txs[i]->tx_info.step() != pools::protobuf::kContractGasPrepayment && 
-                txs[i]->tx_info.step() != pools::protobuf::kJoinElect && 
-                txs[i]->tx_info.step() != pools::protobuf::kCreateLibrary) {
-            ZJC_DEBUG("invalid tx add to consensus tx map: %d", txs[i]->tx_info.step());
+        if (!pools::IsUserTransaction(txs[i]->tx_info.step())) {
+            ZJC_DEBUG("invalid tx add to consensus tx map: %d, gid: %s",
+                txs[i]->tx_info.step(),
+                common::Encode::HexEncode(txs[i]->tx_info.gid()).c_str());
             continue;
         }
 

@@ -354,6 +354,19 @@ static inline bool IsRootNode() {
     return false;
 }
 
+static inline bool IsUserTransaction(uint32_t step) {
+    if (step != pools::protobuf::kNormalFrom && 
+            step != pools::protobuf::kContractCreate && 
+            step != pools::protobuf::kContractExcute && 
+            step != pools::protobuf::kContractGasPrepayment && 
+            step != pools::protobuf::kJoinElect && 
+            step != pools::protobuf::kCreateLibrary) {
+        return false;
+    }
+
+    return true;   
+}
+
 };  // namespace pools
 
 };  // namespace shardora

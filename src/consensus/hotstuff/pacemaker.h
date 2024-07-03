@@ -55,6 +55,7 @@ public:
     void OnRemoteTimeout(const transport::MessagePtr& msg_ptr);
     // 视图切换
     Status AdvanceView(const std::shared_ptr<SyncInfo>& sync_info);
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
     inline std::shared_ptr<QC> HighQC() const {
         return high_qc_;
@@ -67,8 +68,6 @@ public:
     inline View CurView() const {
         return cur_view_;
     }
-
-    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
     // 重置超时实例
     void ResetViewDuration(const std::shared_ptr<ViewDuration>& dur) {
@@ -89,7 +88,7 @@ private:
 
     inline void StartTimeoutTimer() {
         last_time_us_ = common::TimeUtils::TimestampUs();
-        duration_us_ = duration_->Duration() + 10000000lu;
+        duration_us_ = duration_->Duration();
         ZJC_INFO("pool: %d duration is %lu ms", pool_idx_, duration_us_/1000);
     }
 

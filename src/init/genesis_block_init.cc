@@ -89,11 +89,10 @@ int GenesisBlockInit::CreateGenesisBlocks(
         }
         
         common::GlobalInfo::Instance()->set_network_id(network::kRootCongressNetworkId);
-        PrepareCreateGenesisBlocks();
+        PrepareCreateGenesisBlocks(network::kRootCongressNetworkId);
         res = CreateRootGenesisBlocks(real_root_genesis_nodes,
                                       real_cons_genesis_nodes_of_shards,
                                       genesis_acount_balance_map);
-
         for (uint32_t i = 0; i < real_root_genesis_nodes.size(); ++i) {
             prikeys.push_back(real_root_genesis_nodes[i]->prikey);
         }
@@ -102,6 +101,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
         // 验证部分私钥并保存多项式承诺，如果不需要轮换可以注释掉，大幅度节约创世块计算时间和部分空间
         ComputeG2sForNodes(prikeys);
 #endif
+        SaveGenisisPoolHeights(network::kRootCongressNetworkId);
     } else { // 构建某 shard 创世网络
         // TODO 这种写法是每个 shard 单独的 shell 命令，不适用，需要改
         for (uint32_t i = 0; i < real_cons_genesis_nodes_of_shards.size(); i++) {
@@ -115,7 +115,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
 
             CreateNodePrivateInfo(shard_node_net_id, 1llu, cons_genesis_nodes);
             common::GlobalInfo::Instance()->set_network_id(shard_node_net_id);
-            PrepareCreateGenesisBlocks();            
+            PrepareCreateGenesisBlocks(shard_node_net_id);            
             res = CreateShardGenesisBlocks(real_root_genesis_nodes,
                                            cons_genesis_nodes,
                                            shard_node_net_id,
@@ -129,12 +129,23 @@ int GenesisBlockInit::CreateGenesisBlocks(
 #ifndef DISABLE_GENESIS_BLS_VERIFY            
             ComputeG2sForNodes(prikeys);
 #endif
+            SaveGenisisPoolHeights(shard_node_net_id);
         }
     }
 
     db_->CompactRange("", "");
-    
     return res;
+}
+
+void GenesisBlockInit::SaveGenisisPoolHeights(uint32_t shard_id) {
+    pools::protobuf::ShardToTxItem heights;
+    heights.set_sharding_id(shard_id);
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        heights.add_heights(pools_mgr_->latest_height(i));
+    }
+
+    prefix_db_->SaveLatestToTxsHeights(heights);
+    ZJC_INFO("save latest info: %s", ProtobufToJson(heights).c_str());
 }
 
 void ComputeG2ForNode(
@@ -245,11 +256,12 @@ void GenesisBlockInit::ComputeG2sForNodes(const std::vector<std::string>& prikey
     db_->ClearPrefix("db_for_gid_");
 }
 
-void GenesisBlockInit::PrepareCreateGenesisBlocks() {
+void GenesisBlockInit::PrepareCreateGenesisBlocks(uint32_t shard_node_net_id) {
         std::shared_ptr<security::Security> security = nullptr;
         std::shared_ptr<sync::KeyValueSync> kv_sync = nullptr;
         // 初始化本节点所有的 tx pool 和 cross tx pool
         pools_mgr_ = std::make_shared<pools::TxPoolManager>(security, db_, kv_sync, account_mgr_);
+        SaveGenisisPoolHeights(shard_node_net_id);
         std::shared_ptr<pools::ShardStatistic> statistic_mgr = nullptr;
         std::shared_ptr<contract::ContractManager> ct_mgr = nullptr;
         account_mgr_->Init(db_, pools_mgr_);

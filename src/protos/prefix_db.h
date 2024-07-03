@@ -692,14 +692,31 @@ public:
         return true;
     }
 
-    bool GidExists(const std::string& gid) {
+    bool JustCheckGidExists(const std::string& gid) {
         std::string key = kGidPrefix + gid;
-
         if (db_->Exist(key)) {
             return true;
         }
 
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        if (db_batch_[thread_idx].Exist(key)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    bool GidExists(const std::string& gid) {
+        std::string key = kGidPrefix + gid;
+        if (db_->Exist(key)) {
+            return true;
+        }
+
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        if (db_batch_[thread_idx].Exist(key)) {
+            return true;
+        }
+
         db_batch_[thread_idx].Put(key, "1");
         return false;
     }

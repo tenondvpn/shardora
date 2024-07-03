@@ -113,14 +113,18 @@ Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     }
 
     network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
+    ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+        "hash: %s, qc_view: %lu, hash64: %lu, gid: %s",
         pool_idx_,
         header.hotstuff().pool_index(),
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
         hotstuff_msg->pro_msg().view_item().view(),
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
         pacemaker()->HighQC()->view(),
-        header.hash64());
+        header.hash64(),
+        (hotstuff_msg->pro_msg().tx_propose().txs_size() > 0 ? 
+        common::Encode::HexEncode(hotstuff_msg->pro_msg().tx_propose().txs(0).gid()).c_str() :
+        ""));
     HandleProposeMsg(header);
     return Status::kSuccess;
 }
@@ -237,6 +241,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyTC(std::shared_ptr<ProposeMsgWrapper
             ZJC_ERROR("tc Unserialize is error.");
             return Status::kError;
         }
+
         if (VerifyTC(tc) != Status::kSuccess) {
             ZJC_ERROR("pool: %d verify tc failed: %lu", pool_idx_, pro_msg_wrap->v_block->view);
             return Status::kError;
@@ -244,6 +249,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyTC(std::shared_ptr<ProposeMsgWrapper
     }
 
     pro_msg_wrap->tc = tc;
+    
     return Status::kSuccess;
 }
 
@@ -608,6 +614,7 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::protobuf::Header& header)
         return;
     }
 
+    // Propose(new_sync_info()->WithQC(pacemaker()->HighQC())->WithTC(pacemaker()->HighTC()));
     ResetReplicaTimers();
     ZJC_DEBUG("reset timer success!");
 }
@@ -659,7 +666,10 @@ void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
     //     return;
     // }
     // 必须处于 stuck 状态
-    if (!IsStuck()) {
+    auto stuck_st = IsStuck();
+    if (stuck_st != 0) {
+        ZJC_DEBUG("reset timer failed: %u, hash64: %lu, status: %d",
+            pool_idx_, header.hash64(), stuck_st);
         return;
     }
     // ZJC_DEBUG("====5.2 pool: %d, ResetTimer", pool_idx_);
@@ -670,7 +680,7 @@ void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
                 ViewDurationStartTimeoutMs,
                 ViewDurationMaxTimeoutMs,
                 ViewDurationMultiplier));
-    ZJC_DEBUG("reset timer success: %u", pool_idx_);
+    ZJC_DEBUG("reset timer success: %u, hash64: %lu", pool_idx_, header.hash64());
     return;
 }
 
@@ -1120,7 +1130,9 @@ Status Hotstuff::ConstructHotstuffMsg(
     return Status::kSuccess;
 }
 
-Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& trans_msg, const MsgType msg_type) {
+Status Hotstuff::SendMsgToLeader(
+        std::shared_ptr<transport::TransportMessage>& trans_msg, 
+        const MsgType msg_type) {
     Status ret = Status::kSuccess;
     auto& header_msg = trans_msg->header;
     auto leader = leader_rotation()->GetLeader();
@@ -1136,8 +1148,8 @@ Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& t
     header_msg.set_des_dht_key(dht_key.StrKey());
     header_msg.set_type(common::kHotstuffMessage);
     transport::TcpTransport::Instance()->SetMessageHash(header_msg);
-    auto leader_idx = leader_rotation_->GetLocalMemberIdx();
-    if (leader->index != leader_idx) {
+    auto local_idx = leader_rotation_->GetLocalMemberIdx();
+    if (leader->index != local_idx) {
         if (leader->public_ip == 0 || leader->public_port == 0) {
             network::Route::Instance()->Send(trans_msg);
         } else {
@@ -1153,9 +1165,30 @@ Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& t
             HandlePreResetTimerMsg(header_msg);
         }
     }
- 
+
+#ifndef NDEBUG
+    if (msg_type == PRE_RESET_TIMER) {
+        for (uint32_t i = 0; i < header_msg.hotstuff().pre_reset_timer_msg().txs_size(); ++i) {
+            auto& tx = header_msg.hotstuff().pre_reset_timer_msg().txs(i);
+            ZJC_DEBUG("pool index: %u, send to leader %d message to leader net: %u, %s, "
+                "hash64: %lu, %s:%d, leader->index: %d, local_idx: %d, gid: %s, to: %s",
+                pool_idx_,
+                msg_type,
+                leader->net_id, 
+                common::Encode::HexEncode(leader->id).c_str(), 
+                header_msg.hash64(),
+                common::Uint32ToIp(leader->public_ip).c_str(),
+                leader->public_port,
+                leader->index,
+                local_idx,
+                common::Encode::HexEncode(tx.gid()).c_str(),
+                common::Encode::HexEncode(tx.to()).c_str());
+        }
+    }
+#endif
+
     ZJC_DEBUG("pool index: %u, send to leader %d message to leader net: %u, %s, "
-        "hash64: %lu, %s:%d, leader->index: %d, leader_idx: %d",
+        "hash64: %lu, %s:%d, leader->index: %d, local_idx: %d",
         pool_idx_,
         msg_type,
         leader->net_id, 
@@ -1164,7 +1197,7 @@ Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& t
         common::Uint32ToIp(leader->public_ip).c_str(),
         leader->public_port,
         leader->index,
-        leader_idx);
+        local_idx);
     return ret;
 }
 
@@ -1173,7 +1206,8 @@ void Hotstuff::TryRecoverFromStuck() {
         return;
     }
 
-    if (recover_from_struct_fc_.Permitted() && IsStuck()) {
+    auto stuck_st = IsStuck();
+    if (recover_from_struct_fc_.Permitted() && stuck_st == 0) {
         bool has_single_tx = wrapper()->HasSingleTx();
         std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
         if (!has_single_tx) {
@@ -1196,7 +1230,6 @@ void Hotstuff::TryRecoverFromStuck() {
             }
             
             pre_rst_timer_msg->set_replica_idx(elect_item->LocalMember()->index);
-            ZJC_DEBUG("pool: %d, get tx size: %u", pool_idx_, txs.size());            
             for (size_t i = 0; i < txs.size(); i++) {
                 auto& tx_ptr = *(pre_rst_timer_msg->add_txs());
                 tx_ptr = *(txs[i].get());

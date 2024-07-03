@@ -95,6 +95,11 @@ public:
             phash = it->second->view_block->parent_hash;
         }
 
+        if (prefix_db_->JustCheckGidExists(gid)) {
+            ZJC_DEBUG("failed check tx gid exists in db: %s", common::Encode::HexEncode(gid).c_str());
+            return false;
+        }
+
         return true;
     }
     Status GetRecursiveChildren(HashStr, std::vector<std::shared_ptr<ViewBlock>>&);

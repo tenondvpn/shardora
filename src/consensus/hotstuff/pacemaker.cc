@@ -231,19 +231,20 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
 
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
     Status s = crypto_->ReconstructAndVerifyThresSign(
-            timeout_proto.elect_height(),
-            timeout_proto.view(),
-            timeout_proto.view_hash(),
-            timeout_proto.member_id(),
-            timeout_proto.sign_x(),
-            timeout_proto.sign_y(),
-            reconstructed_sign);
+        timeout_proto.elect_height(),
+        timeout_proto.view(),
+        timeout_proto.view_hash(),
+        timeout_proto.member_id(),
+        timeout_proto.sign_x(),
+        timeout_proto.sign_y(),
+        reconstructed_sign);
     ZJC_DEBUG("====4.0 pool: %d, view: %d, member: %d, status: %d, hash64: %lu", 
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), s,
         msg_ptr->header.hash64());
     if (s != Status::kSuccess) {
         return;
     }
+    
     // 视图切换
     auto tc = std::make_shared<TC>(
         common::GlobalInfo::Instance()->network_id(),

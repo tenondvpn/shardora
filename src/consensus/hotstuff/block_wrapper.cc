@@ -45,7 +45,7 @@ Status BlockWrapper::Wrap(
     }
 
     uint64_t cur_time = common::TimeUtils::TimestampMs();
-    block->set_timestamp(prev_block->timestamp() > cur_time ? prev_block->timestamp() : cur_time);
+    block->set_timestamp(prev_block->timestamp() > cur_time ? prev_block->timestamp() + 1 : cur_time);
 
     // 打包交易
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
@@ -69,13 +69,15 @@ Status BlockWrapper::Wrap(
             auto* tx_info = tx_propose->add_txs();
             *tx_info = it->second->tx_info;
             assert(tx_info->gid().size() == 32);
-            ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, step: %d, to: %s, gid: %s",
+            ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, "
+                "step: %d, to: %s, gid: %s, tx info: %s",
                 block->pool_index(),
                 common::Encode::HexEncode(block->prehash()).c_str(),
                 block->height(),
                 tx_info->step(),
                 common::Encode::HexEncode(tx_info->to()).c_str(),
-                common::Encode::HexEncode(tx_info->gid()).c_str());
+                common::Encode::HexEncode(tx_info->gid()).c_str(),
+                ProtobufToJson(*tx_info).c_str());
         }
         tx_propose->set_tx_type(txs_ptr->tx_type);
     }

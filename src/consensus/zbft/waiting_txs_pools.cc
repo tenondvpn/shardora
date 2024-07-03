@@ -231,7 +231,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(
     }
 
     bool leader = !tx_hash.empty();
-    auto tx_ptr = block_mgr_->GetToTx(pool_index, tx_hash);
+    pools::TxItemPtr tx_ptr = block_mgr_->GetToTx(pool_index, tx_hash);
     if (tx_ptr != nullptr) {
         if (leader) {
             auto now_tm = common::TimeUtils::TimestampUs();

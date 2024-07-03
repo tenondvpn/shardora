@@ -248,7 +248,13 @@ Status BlockAcceptor::addTxsToPool(
         case pools::protobuf::kRootCreateAddressCrossSharding:
         case pools::protobuf::kNormalTo: {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
-            auto tx_item = tx_pools_->GetToTxs(pool_idx(), tx->gid());
+            pools::protobuf::AllToTxMessage all_to_txs;
+            if (!all_to_txs.ParseFromString(tx->value()) || all_to_txs.to_tx_arr_size() == 0) {
+                assert(false);
+                break;
+            }
+
+            auto tx_item = tx_pools_->GetToTxs(pool_idx(), all_to_txs.to_tx_arr(0).to_heights().SerializeAsString());
             if (tx_item != nullptr && !tx_item->txs.empty()) {
                 tx_ptr = tx_item->txs.begin()->second;
             }
@@ -347,12 +353,6 @@ Status BlockAcceptor::addTxsToPool(
 Status BlockAcceptor::GetAndAddTxsLocally(
         const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    // auto txs_func = GetTxsFunc(block_info->tx_type);
-    // Status s = txs_func(block_info, txs_ptr);
-    // if (s != Status::kSuccess) {
-    //     return s;
-    // }
-    
     auto add_txs_status = addTxsToPool(block_info->txs, txs_ptr);
     if (add_txs_status != Status::kSuccess) {
         ZJC_ERROR("invalid consensus, add_txs_status failed: %d.", add_txs_status);
@@ -388,10 +388,12 @@ bool BlockAcceptor::IsBlockValid(const std::shared_ptr<block::protobuf::Block>& 
         ZJC_DEBUG("Accept height error: %lu, %lu", zjc_block->height(), pool_height);
         return false;
     }
+
+    auto cur_time = common::TimeUtils::TimestampMs();
     // 新块的时间戳必须大于上一个块的时间戳
     uint64_t preblock_time = pools_mgr_->latest_timestamp(pool_idx());
-    if (zjc_block->timestamp() <= preblock_time) {
-        ZJC_DEBUG("Accept timestamp error: %lu, %lu", zjc_block->timestamp(), preblock_time);
+    if (zjc_block->timestamp() <= preblock_time && zjc_block->timestamp() + 10000lu >= cur_time) {
+        ZJC_DEBUG("Accept timestamp error: %lu, %lu, cur: %lu", zjc_block->timestamp(), preblock_time, cur_time);
         return false;
     }
     
@@ -509,8 +511,8 @@ Status BlockAcceptor::commit(std::shared_ptr<block::protobuf::Block>& block) {
 
     if (block->tx_list_size() > 0) {
         pools_mgr_->TxOver(block->pool_index(), block->tx_list());
-#ifndef NDEBUG
-        for (uint32_t i = 0; i < block->tx_list_size(); ++i) {
+        auto& txs = block->tx_list();
+        for (uint32_t i = 0; i < txs.size(); ++i) {
             ZJC_DEBUG("commit block tx over step: %d, to: %s, gid: %s, net: %d, pool: %d, height: %lu", 
                 block->tx_list(i).step(),
                 common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
@@ -518,8 +520,13 @@ Status BlockAcceptor::commit(std::shared_ptr<block::protobuf::Block>& block) {
                 block->network_id(),
                 block->pool_index(),
                 block->height());
+            if (pools::IsUserTransaction(txs[i].step())) {
+                ZJC_DEBUG("invalid tx add to consensus tx map: %d", txs[i].step());
+                continue;
+            }
+            
+            prefix_db_->GidExists(txs[i].gid());
         }
-#endif        
     } else {
         ZJC_DEBUG("commit block tx over no tx, net: %d, pool: %d, height: %lu", 
             block->network_id(),
