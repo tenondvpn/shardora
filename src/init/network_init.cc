@@ -223,12 +223,12 @@ int NetworkInit::Init(int argc, char** argv) {
         common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
         std::bind(&NetworkInit::AddBlockItemToCache, this,
             std::placeholders::_1, std::placeholders::_2));
-#endif
-
     if (consensus_init_res != consensus::kConsensusSuccess) {
         INIT_ERROR("init bft failed!");
         return kInitError;
     }
+#endif
+
 
     ZJC_DEBUG("init 1");
     tm_block_mgr_->Init(vss_mgr_,account_mgr_);
@@ -276,6 +276,11 @@ int NetworkInit::Init(int argc, char** argv) {
         db_,
         std::bind(&NetworkInit::AddBlockItemToCache, this,
             std::placeholders::_1, std::placeholders::_2));
+    if (consensus_init_res != consensus::kConsensusSuccess) {
+        INIT_ERROR("init bft failed!");
+        return kInitError;
+    }
+    
     // 启动共识和同步
     hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(hotstuff_mgr_, db_, kv_sync_);
     hotstuff_syncer_->Start();
