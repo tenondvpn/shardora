@@ -118,6 +118,18 @@ int NetworkInit::Init(int argc, char** argv) {
     gas_prepayment_ = std::make_shared<consensus::ContractGasPrepayment>(db_);
     ZJC_DEBUG("init 0 4");
     InitLocalNetworkId();
+    if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
+        uint32_t config_net_id = 0;
+        if (conf_.Get("zjchain", "net_id", &config_net_id) &&
+                config_net_id >= network::kRootCongressNetworkId && 
+                config_net_id <= network::kConsensusShardEndNetworkId) {
+            common::GlobalInfo::Instance()->set_network_id(config_net_id + network::kConsensusWaitingShardOffset);
+        } else {
+            INIT_ERROR("init network id failed!");
+            return kInitError;
+        }
+    }
+    
     ZJC_DEBUG("id: %s, init sharding id: %u",
         common::Encode::HexEncode(security_->GetAddress()).c_str(),
         common::GlobalInfo::Instance()->network_id());
@@ -203,6 +215,20 @@ int NetworkInit::Init(int argc, char** argv) {
         db_,
         std::bind(&consensus::HotstuffManager::VerifySyncedViewBlock,
             hotstuff_mgr_, std::placeholders::_1));
+    auto consensus_init_res = hotstuff_mgr_->Init(
+        contract_mgr_,
+        gas_prepayment_,
+        vss_mgr_,
+        account_mgr_,
+        block_mgr_,
+        elect_mgr_,
+        pools_mgr_,
+        security_,
+        tm_block_mgr_,
+        bls_mgr_,
+        db_,
+        std::bind(&NetworkInit::AddBlockItemToCache, this,
+            std::placeholders::_1, std::placeholders::_2));
 #else
     bft_mgr_ = std::make_shared<consensus::BftManager>();
     auto consensus_init_res = bft_mgr_->Init(
@@ -223,12 +249,12 @@ int NetworkInit::Init(int argc, char** argv) {
         common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
         std::bind(&NetworkInit::AddBlockItemToCache, this,
             std::placeholders::_1, std::placeholders::_2));
+#endif
+
     if (consensus_init_res != consensus::kConsensusSuccess) {
         INIT_ERROR("init bft failed!");
         return kInitError;
     }
-#endif
-
 
     ZJC_DEBUG("init 1");
     tm_block_mgr_->Init(vss_mgr_,account_mgr_);
@@ -260,27 +286,7 @@ int NetworkInit::Init(int argc, char** argv) {
     ZJC_DEBUG("init 5");
     RegisterFirewallCheck();
 
-    assert(common::GlobalInfo::Instance()->network_id() != common::kInvalidUint32);
 #ifdef ENABLE_HOTSTUFF
-    auto consensus_init_res = hotstuff_mgr_->Init(
-        contract_mgr_,
-        gas_prepayment_,
-        vss_mgr_,
-        account_mgr_,
-        block_mgr_,
-        elect_mgr_,
-        pools_mgr_,
-        security_,
-        tm_block_mgr_,
-        bls_mgr_,
-        db_,
-        std::bind(&NetworkInit::AddBlockItemToCache, this,
-            std::placeholders::_1, std::placeholders::_2));
-    if (consensus_init_res != consensus::kConsensusSuccess) {
-        INIT_ERROR("init bft failed!");
-        return kInitError;
-    }
-    
     // 启动共识和同步
     hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(hotstuff_mgr_, db_, kv_sync_);
     hotstuff_syncer_->Start();
