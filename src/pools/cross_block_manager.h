@@ -140,7 +140,7 @@ private:
             bool height_valid = true;
             for (int32_t tx_idx = 0; tx_idx < block.tx_list_size(); ++tx_idx) {
                 if (block.tx_list(tx_idx).step() != pools::protobuf::kNormalTo &&
-                        block.tx_list(tx_idx).step() != pools::protobuf::kRootCreateAddres) {
+                        block.tx_list(tx_idx).step() != pools::protobuf::kRootCreateAddress) {
                     continue;
                 }
                
