@@ -908,6 +908,17 @@ void BlockManager::AddNewBlock(
     const auto& tx_list = block_item->tx_list();
     // 处理交易信息
     for (int32_t i = 0; i < tx_list.size(); ++i) {
+        ZJC_DEBUG("new block coming sharding id: %u, pool: %d, height: %lu, "
+            "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, gid: %s, status: %d",
+            block_item->network_id(),
+            block_item->pool_index(),
+            block_item->height(),
+            block_item->tx_list_size(),
+            common::Encode::HexEncode(block_item->hash()).c_str(),
+            block_item->electblock_height(),
+            block_item->timeblock_height(),
+            common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+            tx_list[i].status());
         if (tx_list[i].status() != consensus::kConsensusSuccess) {
             continue;
         }
