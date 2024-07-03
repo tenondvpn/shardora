@@ -452,13 +452,14 @@ void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    std::cout << "success handle init req message." << std::endl;
+    ZJC_DEBUG("success handle init req message: %s"
+        common::Encode::HexEncode(msg_ptr->header.init_proto().addr_req().id()).c_str());
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
 }
 
 void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
-    if (common::GlobalInfo::Instance()->network_id() != common::kInvalidUint32) {
+    if (des_sharding_id_ != common::kInvalidUint32) {
         return;
     }
 
@@ -522,7 +523,7 @@ void NetworkInit::GetAddressShardingId() {
     init_req.set_id(security_->GetAddress());
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     network::Route::Instance()->Send(msg_ptr);
-    std::cout << "sent get addresss info: " << common::Encode::HexEncode(security_->GetAddress()) << std::endl;
+    ZJC_DEBUG("sent get addresss info success.");
     init_tick_.CutOff(10000000lu, std::bind(&NetworkInit::GetAddressShardingId, this));
 }
 
@@ -538,8 +539,6 @@ void NetworkInit::InitLocalNetworkId() {
         des_sharding_id_ = got_sharding_id;
         prefix_db_->SaveJoinShard(got_sharding_id, des_sharding_id_);
         ZJC_DEBUG("success save local sharding %u, %u", got_sharding_id, des_sharding_id_);
-        std::cout << "success handle init res message. join waiting shard: " << got_sharding_id
-            << ", des_sharding_id_: " << des_sharding_id_ << std::endl;
     }
 
     elect::ElectBlockManager elect_block_mgr;
