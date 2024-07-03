@@ -507,7 +507,7 @@ void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
 }
 
 void NetworkInit::GetAddressShardingId() {
-    if (common::GlobalInfo::Instance()->network_id() != common::kInvalidUint32) {
+    if (des_sharding_id_ != common::kInvalidUint32) {
         return;
     }
 
