@@ -1127,7 +1127,9 @@ Status Hotstuff::ConstructHotstuffMsg(
     return Status::kSuccess;
 }
 
-Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& trans_msg, const MsgType msg_type) {
+Status Hotstuff::SendMsgToLeader(
+        std::shared_ptr<transport::TransportMessage>& trans_msg, 
+        const MsgType msg_type) {
     Status ret = Status::kSuccess;
     auto& header_msg = trans_msg->header;
     auto leader = leader_rotation()->GetLeader();
@@ -1160,7 +1162,28 @@ Status Hotstuff::SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& t
             HandlePreResetTimerMsg(header_msg);
         }
     }
- 
+
+#ifndef NDEBUG
+    if (msg_type == PRE_RESET_TIMER) {
+        for (uint32_t i = 0; i < header_msg.hotstuff().pre_reset_timer_msg().txs_size(); ++i) {
+            auto& tx = header_msg.hotstuff().pre_reset_timer_msg().txs(i);
+            ZJC_DEBUG("pool index: %u, send to leader %d message to leader net: %u, %s, "
+                "hash64: %lu, %s:%d, leader->index: %d, leader_idx: %d, gid: %s, to: %s",
+                pool_idx_,
+                msg_type,
+                leader->net_id, 
+                common::Encode::HexEncode(leader->id).c_str(), 
+                header_msg.hash64(),
+                common::Uint32ToIp(leader->public_ip).c_str(),
+                leader->public_port,
+                leader->index,
+                leader_idx,
+                common::Encode::HexEncode(tx.gid()).c_str(),
+                common::Encode::HexEncode(tx.to()).c_str());
+        }
+    }
+#endif
+
     ZJC_DEBUG("pool index: %u, send to leader %d message to leader net: %u, %s, "
         "hash64: %lu, %s:%d, leader->index: %d, leader_idx: %d",
         pool_idx_,
@@ -1203,7 +1226,6 @@ void Hotstuff::TryRecoverFromStuck() {
             }
             
             pre_rst_timer_msg->set_replica_idx(elect_item->LocalMember()->index);
-            ZJC_DEBUG("pool: %d, get tx size: %u", pool_idx_, txs.size());            
             for (size_t i = 0; i < txs.size(); i++) {
                 auto& tx_ptr = *(pre_rst_timer_msg->add_txs());
                 tx_ptr = *(txs[i].get());
