@@ -801,13 +801,13 @@ int ToTxsPools::CreateToTxWithHeights(
 
                     if (des_sharding_id != sharding_id) {
                         ZJC_DEBUG("find pool index: %u height: %lu sharding: %u, %u failed id: %s, amount: %lu",
-                            pool_idx, height, des_sharding_id, sharding_id, common::Encode::HexEncode(to_iter->first).c_str(), to_iter->second.amount);
+                            pool_idx, height, des_sharding_id,
+                            sharding_id, common::Encode::HexEncode(to_iter->first).c_str(),
+                            to_iter->second.amount);
                         continue;
                     }
 
-                    ZJC_DEBUG("to block pool: %u, height: %lu, success add account transfer amount height: %lu, id: %s, amount: %lu",
-                        pool_idx, height,
-                        height, common::Encode::HexEncode(to_iter->first).c_str(), to_iter->second.amount);
+                   
                     auto amount_iter = acc_amount_map.find(to_iter->first);
                     if (amount_iter == acc_amount_map.end()) {
                         ZJC_DEBUG("len: %u, addr: %s",
@@ -818,6 +818,12 @@ int ToTxsPools::CreateToTxWithHeights(
                                 to_iter->second.elect_join_g2_value,
                                 acc_amount_map[to_iter->first].verify_reqs);
                         }
+
+                        ZJC_DEBUG("to block pool: %u, height: %lu, success add account "
+                            "transfer amount height: %lu, id: %s, amount: %lu",
+                            pool_idx, height,
+                            height, common::Encode::HexEncode(to_iter->first).c_str(),
+                            to_iter->second.amount);
                     } else {
                         amount_iter->second.amount += to_iter->second.amount;
                         if (!to_iter->second.elect_join_g2_value.empty()) {
@@ -825,6 +831,13 @@ int ToTxsPools::CreateToTxWithHeights(
                                 to_iter->second.elect_join_g2_value,
                                 amount_iter->second.verify_reqs);
                         }
+
+                        ZJC_DEBUG("to block pool: %u, height: %lu, success add account "
+                            "transfer amount height: %lu, id: %s, amount: %lu, all: %lu",
+                            pool_idx, height,
+                            height, common::Encode::HexEncode(to_iter->first).c_str(),
+                            to_iter->second.amount,
+                            amount_iter->second.amount);
                     }
                 }
             }
