@@ -452,7 +452,7 @@ void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    ZJC_DEBUG("success handle init req message: %s"
+    ZJC_DEBUG("success handle init req message: %s",
         common::Encode::HexEncode(msg_ptr->header.init_proto().addr_req().id()).c_str());
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
