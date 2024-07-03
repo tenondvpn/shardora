@@ -131,9 +131,10 @@ private:
         db::DbWriteBatch& db_batch);
     void HandleLocalNormalToTx(
         const pools::protobuf::ToTxMessage& to_txs,
-        uint32_t step,
+        const block::protobuf::BlockTx& tx,
         const std::string& heights_hash);
     void createConsensusLocalToTxs(
+        const block::protobuf::BlockTx& tx,
         std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map,
         const std::string& heights_hash);
     void createContractCreateByRootToTxs(

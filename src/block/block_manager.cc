@@ -532,7 +532,7 @@ void BlockManager::HandleNormalToTx(
 
             ZJC_DEBUG("success add local transfer tx tos hash: %s",
                 common::Encode::HexEncode(tx.storages(i).value()).c_str());
-            HandleLocalNormalToTx(to_txs, tx.step(), tx.storages(0).value());
+            HandleLocalNormalToTx(to_txs, tx, tx.storages(i).value());
         } else {
             ZJC_DEBUG("root handle normal to tx to_txs size: %u", to_txs.tos_size());
             RootHandleNormalToTx(block, to_txs, db_batch);
@@ -633,8 +633,9 @@ void BlockManager::RootHandleNormalToTx(
 // TODO refactor needed!
 void BlockManager::HandleLocalNormalToTx(
         const pools::protobuf::ToTxMessage& to_txs,
-        uint32_t step,
+        const block::protobuf::BlockTx& tx,
         const std::string& heights_hash) {
+        uint32_t step = tx.step();
     // 根据 to 聚合转账类 localtotx
     std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map;
     // 摘出 contract_create 类 localtotx
@@ -713,12 +714,13 @@ void BlockManager::HandleLocalNormalToTx(
     }
 
     // 1. 处理转账类交易
-    createConsensusLocalToTxs(addr_amount_map, heights_hash);
+    createConsensusLocalToTxs(tx, addr_amount_map, heights_hash);
     // 2. 生成 ContractCreateByRootTo 交易
     createContractCreateByRootToTxs(contract_create_tx_infos, heights_hash);
 }
 
 void BlockManager::createConsensusLocalToTxs(
+        const block::protobuf::BlockTx& to_tx,
         std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map,
         const std::string& heights_hash) {
     // 根据 pool_index 将 addr_amount_map 中的转账交易分类，一个 pool 生成一个 Consensuslocaltos，其中可能包含给多个地址的转账交易
@@ -773,10 +775,11 @@ void BlockManager::createConsensusLocalToTxs(
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
         pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_INFO("success add local transfer tx tos hash: %s, heights_hash: %s, gid: %s",
+        ZJC_INFO("success add local transfer tx tos hash: %s, heights_hash: %s, gid: %s, src to tx gid: %s",
             common::Encode::HexEncode(tos_hash).c_str(),
             common::Encode::HexEncode(heights_hash).c_str(),
-            common::Encode::HexEncode(gid).c_str());
+            common::Encode::HexEncode(gid).c_str(),
+            common::Encode::HexEncode(to_tx.gid()).c_str());
     }
 }
 
