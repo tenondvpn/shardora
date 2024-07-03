@@ -666,7 +666,10 @@ void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
     //     return;
     // }
     // 必须处于 stuck 状态
-    if (!IsStuck()) {
+    auto stuck_st = IsStuck();
+    if (stuck_st != 0) {
+        ZJC_DEBUG("reset timer failed: %u, hash64: %lu, status: %d",
+            pool_idx_, header.hash64(), stuck_st);
         return;
     }
     // ZJC_DEBUG("====5.2 pool: %d, ResetTimer", pool_idx_);
@@ -677,7 +680,7 @@ void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
                 ViewDurationStartTimeoutMs,
                 ViewDurationMaxTimeoutMs,
                 ViewDurationMultiplier));
-    ZJC_DEBUG("reset timer success: %u", pool_idx_);
+    ZJC_DEBUG("reset timer success: %u, hash64: %lu", pool_idx_, header.hash64());
     return;
 }
 
@@ -1203,7 +1206,8 @@ void Hotstuff::TryRecoverFromStuck() {
         return;
     }
 
-    if (recover_from_struct_fc_.Permitted() && IsStuck()) {
+    auto stuck_st = IsStuck();
+    if (recover_from_struct_fc_.Permitted() && stuck_st == 0) {
         bool has_single_tx = wrapper()->HasSingleTx();
         std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
         if (!has_single_tx) {

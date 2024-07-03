@@ -161,26 +161,26 @@ public:
         return elect_info_;
     }
 
-    bool IsStuck() const {
+    int IsStuck() const {
         // 超时时间必须大于阈值
         if (pacemaker()->DurationUs() < STUCK_PACEMAKER_DURATION_MIN_US) {
-            return false;
+            return 1;
         }
         // highqc 之前连续三个块都是空交易，则认为 stuck
         auto v_block1 = std::make_shared<ViewBlock>();
         Status s = view_block_chain()->Get(pacemaker()->HighQC()->view_block_hash(), v_block1);
         if (s != Status::kSuccess || v_block1->block->tx_list_size() > 0) {
-            return false;
+            return 2;
         }
         auto v_block2 = view_block_chain()->QCRef(v_block1);
         if (!v_block2 || v_block2->block->tx_list_size() > 0) {
-            return false;
+            return 3;
         }
         auto v_block3 = view_block_chain()->QCRef(v_block2);
         if (!v_block3 || v_block3->block->tx_list_size() > 0) {
-            return false;
+            return 4;
         }
-        return true;   
+        return 0;   
     }
 
     void TryRecoverFromStuck();
