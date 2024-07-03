@@ -776,9 +776,9 @@ void ShardStatistic::setElectStatistics(
         for (uint32_t midx = 0; midx < members->size(); ++midx) {
             auto &id = (*members)[midx]->id;
             auto node_info = node_info_map.emplace(id, StatisticMemberInfoItem()).first->second;
-            // auto node_poce_info = accout_poce_info_map_.try_emplace(id, std::make_shared<AccoutPoceInfoItem>()).first->second;
-            // statistic_item.add_credit(node_poce_info->credit);
-            // statistic_item.add_consensus_gap(node_poce_info->consensus_gap);
+            auto node_poce_info = accout_poce_info_map_.try_emplace(id, std::make_shared<AccoutPoceInfoItem>()).first->second;
+            statistic_item.add_credit(0);  // (node_poce_info->credit);
+            statistic_item.add_consensus_gap(0);  // (node_poce_info->consensus_gap);
             statistic_item.add_tx_count(node_info.tx_count);
             statistic_item.add_gas_sum(node_info.gas_sum);
             uint64_t stoke = 0;
