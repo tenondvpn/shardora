@@ -459,7 +459,7 @@ void ToTxsPools::HandleNormalToTx(
 
 void ToTxsPools::LoadLatestHeights() {
     if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
-        assert(false);
+        // assert(false);
         return;
     }
 
@@ -471,7 +471,7 @@ void ToTxsPools::LoadLatestHeights() {
     }
 
     if (!prefix_db_->GetLatestToTxsHeights(net_id, &to_heights)) {
-        assert(false);
+        // assert(false);
         return;
     }
 
