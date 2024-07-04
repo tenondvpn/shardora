@@ -22,7 +22,6 @@ Pacemaker::Pacemaker(
         std::shared_ptr<LeaderRotation>& lr,
         const std::shared_ptr<ViewDuration>& d) :
     pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d) {
-    
     high_qc_ = GetQCWrappedByGenesis(pool_idx_);
     high_tc_ = std::make_shared<TC>(
         common::GlobalInfo::Instance()->network_id(), 

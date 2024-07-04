@@ -56,13 +56,17 @@ int JoinElectTxItem::HandleTx(
 
         if (from_balance < block_tx.gas_limit()  * block_tx.gas_price()) {
             block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
-            ZJC_DEBUG("balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), block_tx.gas_price());
+            ZJC_DEBUG("id: %s balance error: %lu, %lu, %lu",
+                common::Encode::HexEncode(from).c_str(),
+                from_balance, block_tx.gas_limit(), block_tx.gas_price());
             break;
         }
 
         if (block_tx.gas_limit() < gas_used) {
             block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
-            ZJC_DEBUG("1 balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), gas_used);
+            ZJC_DEBUG("1 id: %s  balance error: %lu, %lu, %lu",
+                common::Encode::HexEncode(from).c_str(),
+                from_balance, block_tx.gas_limit(), gas_used);
             break;
         }
     } while (0);
@@ -74,7 +78,8 @@ int JoinElectTxItem::HandleTx(
         } else {
             from_balance = 0;
             block_tx.set_status(consensus::kConsensusAccountBalanceError);
-            ZJC_ERROR("leader balance error: %llu, %llu",
+            ZJC_ERROR("id: %s leader balance error: %llu, %llu",
+                common::Encode::HexEncode(from).c_str(),
                 from_balance, gas_used * block_tx.gas_price());
         }
     } else {

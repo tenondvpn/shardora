@@ -324,7 +324,7 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
     statistic_info_ptr->all_gas_amount += block_gas;
     std::string leader_id = getLeaderIdFromBlock(block);
     if (leader_id.empty()) {
-        assert(false);
+        // assert(false);
         return;
     }
 
@@ -340,15 +340,13 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
             block.pool_index(), block.height(), block.timeblock_height());
 }
 
-std::string ShardStatistic::getLeaderIdFromBlock(shardora::block::protobuf::Block &block)
-{
+std::string ShardStatistic::getLeaderIdFromBlock(shardora::block::protobuf::Block &block) {
     auto members = elect_mgr_->GetNetworkMembersWithHeight(
         block.electblock_height(),
         block.network_id(),
         nullptr,
         nullptr);
-    if (members == nullptr)
-    {
+    if (members == nullptr) {
         ZJC_DEBUG("block leader not exit block.hash %s block.electHeight:%d, network_id:%d ",
                   common::Encode::HexEncode(block.hash()).c_str(),
                   block.electblock_height(),
@@ -454,8 +452,6 @@ uint64_t ShardStatistic::getStoke(uint32_t shard_id, std::string contractId, std
     uint64_t stoke = zjcvm::EvmcBytes32ToUint64(stoke_bytes);
     return stoke;
 }
-
-
 
 void ShardStatistic::OnNewElectBlock(
         uint32_t sharding_id,
@@ -781,8 +777,8 @@ void ShardStatistic::setElectStatistics(
             auto &id = (*members)[midx]->id;
             auto node_info = node_info_map.emplace(id, StatisticMemberInfoItem()).first->second;
             auto node_poce_info = accout_poce_info_map_.try_emplace(id, std::make_shared<AccoutPoceInfoItem>()).first->second;
-            statistic_item.add_credit(node_poce_info->credit);
-            statistic_item.add_consensus_gap(node_poce_info->consensus_gap);
+            statistic_item.add_credit(0);  // (node_poce_info->credit);
+            statistic_item.add_consensus_gap(0);  // (node_poce_info->consensus_gap);
             statistic_item.add_tx_count(node_info.tx_count);
             statistic_item.add_gas_sum(node_info.gas_sum);
             uint64_t stoke = 0;

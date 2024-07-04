@@ -1947,7 +1947,7 @@ int BftManager::LeaderPrepare(
         if (iter->second->tx_info.step() == pools::protobuf::kStatistic || 
                 iter->second->tx_info.step() == pools::protobuf::kCross ||
                 iter->second->tx_info.step() == pools::protobuf::kNormalTo ||
-                iter->second->tx_info.step() == pools::protobuf::kRootCreateAddressCrossSharding ||
+                iter->second->tx_info.step() == pools::protobuf::kRootCreateAddress ||
                 iter->second->tx_info.step() == pools::protobuf::kConsensusRootElectShard) {
             tx_info->set_step(iter->second->tx_info.step());
             tx_info->set_key(protos::kSingleTxHashTag);
@@ -3082,7 +3082,6 @@ void BftManager::LeaderBroadcastBlock(
     }
 
     switch (block->tx_list(0).step()) {
-    case pools::protobuf::kRootCreateAddressCrossSharding:
     case pools::protobuf::kNormalTo:
         ZJC_DEBUG("broadcast to block step: %u, height: %lu",
             block->tx_list(0).step(), block->height());

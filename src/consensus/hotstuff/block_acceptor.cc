@@ -245,7 +245,6 @@ Status BlockAcceptor::addTxsToPool(
                     security_ptr_, 
                     address_info);
             break;
-        case pools::protobuf::kRootCreateAddressCrossSharding:
         case pools::protobuf::kNormalTo: {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
             pools::protobuf::AllToTxMessage all_to_txs;
@@ -443,7 +442,6 @@ void BlockAcceptor::LeaderBroadcastBlock(const std::shared_ptr<block::protobuf::
     }
 
     switch (block->tx_list(0).step()) {
-    case pools::protobuf::kRootCreateAddressCrossSharding:
     case pools::protobuf::kNormalTo:
         ZJC_DEBUG("broadcast to block step: %u, height: %lu",
             block->tx_list(0).step(), block->height());
