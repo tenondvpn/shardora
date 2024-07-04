@@ -414,7 +414,6 @@ void BlockManager::GenesisAddOneAccount(uint32_t des_sharding_id,
                                         const uint64_t& latest_height,
                                         db::DbWriteBatch& db_batch) {
     auto& account_id = account_mgr_->GetTxValidAddress(tx);
-
     auto account_info = std::make_shared<address::protobuf::AddressInfo>();
     account_info->set_pool_index(common::GetAddressPoolIndex(account_id));
     account_info->set_addr(account_id);
@@ -422,7 +421,6 @@ void BlockManager::GenesisAddOneAccount(uint32_t des_sharding_id,
     account_info->set_sharding_id(des_sharding_id);
     account_info->set_latest_height(latest_height);
     account_info->set_balance(tx.balance());
-
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.step() ==  pools::protobuf::kContractCreate && tx.storages(i).key() == protos::kCreateContractBytesCode) {
             auto& bytes_code = tx.storages(i).value();
@@ -431,6 +429,7 @@ void BlockManager::GenesisAddOneAccount(uint32_t des_sharding_id,
             break;
         }
     }
+    
     ZJC_DEBUG("genesis add new account %s : %lu, shard: %u",
               common::Encode::HexEncode(account_info->addr()).c_str(),
               account_info->balance(),
