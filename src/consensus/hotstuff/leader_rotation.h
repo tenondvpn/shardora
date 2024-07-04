@@ -54,6 +54,16 @@ public:
     void SetExtraNonce(const std::string& extra_nonce) {
         extra_nonce_ = extra_nonce; 
     }
+
+    inline uint32_t MemberSize(uint32_t sharding_id) const {
+        auto elect_item = elect_info_->GetElectItemWithShardingId(sharding_id);
+        if (!elect_item) {
+            return common::kInvalidUint32;
+        }
+        
+        return elect_item->Members()->size(); 
+    }
+
 private:
     inline common::MembersPtr Members(uint32_t sharding_id) const {
         auto elect_item = elect_info_->GetElectItemWithShardingId(sharding_id);

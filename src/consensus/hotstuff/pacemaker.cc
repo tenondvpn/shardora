@@ -105,7 +105,7 @@ void Pacemaker::OnLocalTimeout() {
     if (leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32) {
         return;
     }
-    
+
     // 超时后先触发一次同步，主要是尽量同步最新的 HighQC，降低因 HighQC 不一致造成多次超时的概率
     // 由于 HotstuffSyncer 周期性同步，这里不触发同步影响也不大
     if (sync_pool_fn_) {
@@ -176,6 +176,9 @@ void Pacemaker::OnLocalTimeout() {
 }
 
 void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& msg_ptr) {
+    assert(leader_rotation_->MemberSize(common::GlobalInfo::Instance()->network_id()) != common::kInvalidUint32);
+    assert(msg_ptr->header.hotstuff_timeout_proto().member_id() <
+        leader_rotation_->MemberSize(common::GlobalInfo::Instance()->network_id()));
     auto& msg = msg_ptr->header;
     auto leader = leader_rotation_->GetLeader();
     leader_rotation_->SetExpectedLeader(leader);
@@ -223,9 +226,13 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         assert(false);
         return;
     }
-    
+
     // 统计 bls 签名
     auto& timeout_proto = msg.hotstuff_timeout_proto();
+    if (timeout_proto.member_id() >= leader_rotation_->MemberSize(common::GlobalInfo::Instance()->network_id())) {
+        return;
+    }
+
     if (timeout_proto.view() < CurView() || 
             timeout_proto.view() < high_qc_->view() || 
             timeout_proto.view() < high_tc_->view()) {
