@@ -652,10 +652,21 @@ Status Hotstuff::ResetReplicaTimers() {
 
 void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
     auto& rst_timer_msg = header.hotstuff().reset_timer_msg();
+    auto elect_item = elect_info_->GetElectItemWithShardingId(
+            common::GlobalInfo::Instance()->network_id());
+    if (elect_item == nullptr) {
+        assert(false);
+        return;
+    }
+
+    if (elect_item->LocalMember() == nullptr) {
+        assert(false);
+        return;
+    }
+
     ZJC_DEBUG("====5.1 pool: %d, onResetTimer leader_idx: %u, local_idx: %u, hash64: %lu",
         pool_idx_, rst_timer_msg.leader_idx(),
-        elect_info_->GetElectItemWithShardingId(
-            common::GlobalInfo::Instance()->network_id())->LocalMember()->index,
+        elect_item->LocalMember()->index,
         header.hash64());
     // TODO(有逻辑安全性问题)，必须是验证聚合签名才能改变本地状态
     // leader 必须不需要保证正确
