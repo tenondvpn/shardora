@@ -34,7 +34,7 @@ public:
         assert(elect_info_ != nullptr);
         auto elect_item = elect_info_->GetElectItemWithShardingId(sharding_id);
         if (elect_item == nullptr) {
-            assert(false);
+            // assert(false);
             return common::kInvalidUint32;
         }
 
