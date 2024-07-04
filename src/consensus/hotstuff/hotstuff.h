@@ -248,7 +248,10 @@ private:
             const std::shared_ptr<QC> commit_qc,
             uint64_t test_index);
     std::shared_ptr<ViewBlock> CheckCommit(const std::shared_ptr<QC>& qc);    
-    Status CommitInner(const std::shared_ptr<ViewBlock>& v_block, uint64_t test_index);
+    void CommitInner(
+        const std::shared_ptr<ViewBlock>& v_block,
+        uint64_t test_index,
+        std::shared_ptr<block::BlockToDbItem>&);
     Status VerifyVoteMsg(
             const hotstuff::protobuf::VoteMsg& vote_msg);
     Status VerifyLeader(const uint32_t& leader_idx);

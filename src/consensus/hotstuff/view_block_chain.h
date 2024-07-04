@@ -171,11 +171,13 @@ public:
     Status StoreToDb(
             const std::shared_ptr<ViewBlock>& v_block,
             const std::shared_ptr<QC>& commit_qc,
-            uint64_t test_index) {        
+            uint64_t test_index,
+            std::shared_ptr<db::DbWriteBatch>& db_batch) {        
         // 持久化已经生成 qc 的 ViewBlock
         if (v_block == nullptr) {
             return Status::kInvalidArgument;
         }
+
         if (commit_qc == nullptr) {
             return Status::kInvalidArgument;
         }
@@ -199,7 +201,8 @@ public:
         prefix_db_->SaveViewBlockInfo(v_block->block->network_id(),
             v_block->block->pool_index(),
             v_block->block->height(),
-            *pb_v_block);
+            *pb_v_block,
+            db_batch);
         ZJC_DEBUG("pool: %u, StoreToDb 3, test_index: %lu", pool_index_, test_index);
         return Status::kSuccess;
     }

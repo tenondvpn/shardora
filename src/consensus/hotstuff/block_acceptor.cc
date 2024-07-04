@@ -115,13 +115,10 @@ Status BlockAcceptor::AcceptSync(const std::shared_ptr<block::protobuf::Block>& 
     return Status::kSuccess;
 }
 
-Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
+void BlockAcceptor::Commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
     // commit block
-    Status s = commit(block);
-    if (s != Status::kSuccess) {
-        return s;
-    }
-
+    commit(queue_item_ptr);
+    auto block = queue_item_ptr->block_ptr;
     if (block->tx_list_size() > 0) {
         auto elect_item = elect_info_->GetElectItem(
             common::GlobalInfo::Instance()->network_id(), 
@@ -148,7 +145,6 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
 #endif
         }
     }
-    return Status::kSuccess;
 }
 
 void BlockAcceptor::CommitSynced(std::shared_ptr<block::protobuf::Block>& block_ptr) {
@@ -498,10 +494,11 @@ void BlockAcceptor::BroadcastLocalTosBlock(
     }
 }
 
-Status BlockAcceptor::commit(std::shared_ptr<block::protobuf::Block>& block) {
+void BlockAcceptor::commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
     // commit block
-    auto db_batch = std::make_shared<db::DbWriteBatch>();
-    auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block, db_batch);
+    // auto db_batch = std::make_shared<db::DbWriteBatch>();
+    // auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block, db_batch);
+    auto block = queue_item_ptr->block_ptr;
     new_block_cache_callback_(
             queue_item_ptr->block_ptr,
             *queue_item_ptr->db_batch);
@@ -543,7 +540,6 @@ Status BlockAcceptor::commit(std::shared_ptr<block::protobuf::Block>& block) {
         block->electblock_height(),
         block->timestamp(),
         block->tx_list_size());
-    return Status::kSuccess;
 }
 
 } // namespace hotstuff
