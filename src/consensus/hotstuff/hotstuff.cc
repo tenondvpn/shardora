@@ -626,10 +626,12 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::protobuf::Header& header)
 Status Hotstuff::ResetReplicaTimers() {
     // Reset timer msg broadcast
     auto rst_timer_msg = std::make_shared<hotstuff::protobuf::ResetTimerMsg>();
-    rst_timer_msg->set_leader_idx(
-        elect_info_->GetElectItemWithShardingId(
-            common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
+    auto local_index = leader_rotation()->GetLocalMemberIdx();
+    if (local_index == common::kInvalidUint32) {
+        return Status::kError;
+    }
 
+    rst_timer_msg->set_leader_idx(local_index);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
