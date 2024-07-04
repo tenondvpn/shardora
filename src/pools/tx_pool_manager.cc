@@ -675,14 +675,14 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                         update_height = cross_heights[0];
                         break;
                     }
-                } while (0);
                 
-                ZJC_DEBUG("net: %u, get response pool heights, cross pool heights: %lu, update_height: %lu, "
-                    "cross_synced_max_heights_[i]: %lu, cross_pools_[i].latest_height(): %lu, cross_heights[i]: %lu",
-                    sharding_id, update_height, update_height,
-                    cross_synced_max_heights_[sharding_id], cross_pools_[sharding_id].latest_height(),
-                    cross_heights[0]);
-                cross_synced_max_heights_[sharding_id] = cross_heights[0];
+                    ZJC_DEBUG("net: %u, get response pool heights, cross pool heights: %lu, update_height: %lu, "
+                        "cross_synced_max_heights_[i]: %lu, cross_pools_[i].latest_height(): %lu, cross_heights[i]: %lu",
+                        sharding_id, update_height, update_height,
+                        cross_synced_max_heights_[sharding_id], cross_pools_[sharding_id].latest_height(),
+                        cross_heights[0]);
+                    cross_synced_max_heights_[sharding_id] = cross_heights[0];
+                } while (0);
                 cross_block_mgr_->UpdateMaxHeight(sharding_id, update_height);
             } else {
                 auto& heights = msg_ptr->header.sync_heights().heights();
