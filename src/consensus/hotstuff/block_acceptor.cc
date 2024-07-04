@@ -147,12 +147,9 @@ void BlockAcceptor::Commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr
     }
 }
 
-void BlockAcceptor::CommitSynced(std::shared_ptr<block::protobuf::Block>& block_ptr) {
-    Status s = commit(block_ptr);
-    if (s != Status::kSuccess) {
-        return;
-    }
-    
+void BlockAcceptor::CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
+    commit(queue_item_ptr);
+    auto block_ptr = queue_item_ptr->block_ptr;
     ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s",
         block_ptr->network_id(),
         block_ptr->pool_index(),

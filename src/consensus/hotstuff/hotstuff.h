@@ -108,11 +108,14 @@ public:
     void HandleSyncedViewBlock(
             const std::shared_ptr<ViewBlock>& vblock,
             const std::shared_ptr<QC>& self_commit_qc) {
+        auto db_batch = std::make_shared<db::DbWriteBatch>();
+        auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(vblock->block, db_batch);
         ZJC_DEBUG("now handle synced view block %u_%u_%lu",
             vblock->block->network_id(),
             vblock->block->pool_index(),
             vblock->block->height());
-        acceptor()->CommitSynced(vblock->block);
+        view_block_chain()->StoreToDb(vblock, self_commit_qc, 99999999lu, db_batch);
+        acceptor()->CommitSynced(queue_item_ptr);
         auto elect_item = elect_info()->GetElectItem(
                 vblock->block->network_id(),
                 vblock->ElectHeight());
@@ -125,7 +128,6 @@ public:
             view_block_chain()->SetLatestCommittedBlock(vblock);        
         }
         
-        view_block_chain()->StoreToDb(vblock, self_commit_qc, 9999999999999lu);
     }
 
     // 已经投票

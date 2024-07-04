@@ -71,7 +71,7 @@ public:
     // Return block txs to pool
     virtual Status Return(const std::shared_ptr<block::protobuf::Block>&) = 0;
     // Handle Synced Block From KeyValueSyncer
-    virtual void CommitSynced(std::shared_ptr<block::protobuf::Block>& block_ptr) = 0;
+    virtual void CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) = 0;
     virtual void MarkBlockTxsAsUsed(const std::shared_ptr<block::protobuf::Block>&) = 0;
     virtual double Tps() = 0;
 };
@@ -121,7 +121,7 @@ public:
         return Status::kSuccess;
     }
 
-    void CommitSynced(std::shared_ptr<block::protobuf::Block>& block_ptr) override;
+    void CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) override;
     // 将 block txs 从交易池中取出，当 block 成功加入链中后调用
     void MarkBlockTxsAsUsed(const std::shared_ptr<block::protobuf::Block>&) override;
 
