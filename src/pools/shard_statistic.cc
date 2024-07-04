@@ -170,6 +170,7 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
     auto tm_statistic_iter = tm_height_with_statistic_info_.find(block_ptr->timeblock_height());
     if (tm_statistic_iter == tm_height_with_statistic_info_.end()) {
         statistic_info_ptr = std::make_shared<StatisticInfoItem>();
+        tm_height_with_statistic_info_[block_ptr->timeblock_height()] = statistic_info_ptr;
     } else {
         statistic_info_ptr = tm_statistic_iter->second;
     }
@@ -208,10 +209,11 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
                         auto& elect_stoke_map = join_elect_stoke_map[block.electblock_height()];
                         uint64_t* tmp_stoke = (uint64_t*)block.tx_list(i).storages(storage_idx).value().c_str();
                         elect_stoke_map[block.tx_list(i).from()] = tmp_stoke[0];
-                        ZJC_DEBUG("success add elect node stoke %s, %lu, elect height: %lu",
+                        ZJC_DEBUG("success add elect node stoke %s, %lu, elect height: %lu, tm height: %lu",
                             common::Encode::HexEncode(block.tx_list(i).from()).c_str(), 
                             tmp_stoke[0],
-                            block.electblock_height());
+                            block.electblock_height(),
+                            block.timeblock_height());
                     }
 
                     if (block.tx_list(i).storages(storage_idx).key() == protos::kNodePublicKey) {
@@ -512,7 +514,8 @@ bool ShardStatistic::CheckAllBlockStatisticed(uint32_t local_net_id) {
 int ShardStatistic::StatisticWithHeights(
         pools::protobuf::ElectStatistic& elect_statistic,
         uint64_t statisticed_timeblock_height) {
-    ZJC_DEBUG("38d2a932186ba9f9b2aa74c4c1ee8090a51b49a0 now statistic tx: statisticed_timeblock_height: %lu", statisticed_timeblock_height);
+    ZJC_DEBUG("38d2a932186ba9f9b2aa74c4c1ee8090a51b49a0 now statistic tx: statisticed_timeblock_height: %lu",
+        statisticed_timeblock_height);
 #ifdef TEST_NO_CROSS
         return kPoolsError;
 #endif
