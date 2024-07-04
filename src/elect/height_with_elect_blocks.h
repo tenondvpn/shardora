@@ -172,6 +172,10 @@ public:
             return nullptr;
         }
 
+        if (common_pk == nullptr) {
+            return shard_members;
+        }
+
         auto new_item = std::make_shared<HeightMembersItem>(shard_members, height);
         new_item->common_bls_publick_key = GetCommonPublicKey(network_id, height);
         if (new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()) {
