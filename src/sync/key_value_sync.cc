@@ -82,7 +82,8 @@ void KeyValueSync::AddSyncElectBlock(
         uint64_t height,
         uint32_t priority) {
     assert(priority <= kSyncHighest);
-    auto item = std::make_shared<SyncItem>(network_id, elect_network_id, height, priority);
+    auto item = std::make_shared<SyncItem>(
+        network_id, elect_network_id, height, priority, kElectBlock);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     item_queues_[thread_idx].push(item);
     ZJC_DEBUG("block height add new sync item key: %s, priority: %u",
@@ -495,7 +496,8 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     msg.set_type(common::kSyncMessage);
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
-    ZJC_DEBUG("sync response ok des: %u, hash64: %lu", msg_ptr->header.src_sharding_id(), msg.hash64());
+    ZJC_DEBUG("sync response ok des: %u, src hash64: %lu, des hash64: %lu",
+        msg_ptr->header.src_sharding_id(), msg_ptr->header.hash64(), msg.hash64());
 }
 
 void KeyValueSync::ResponseElectBlock(
