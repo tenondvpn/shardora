@@ -486,6 +486,43 @@ void BlockManager::HandleStatisticTx(
     }
 }
 
+void BlockManager::ConsensusShardHandleRootCreateAddress(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx) {
+    if (network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
+        return;
+    }
+
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        ZJC_DEBUG("get normal to tx key: %s", tx.storages(i).key().c_str());
+        if (tx.storages(i).key() != protos::kRootCreateAddressKey) {
+            continue;
+        }
+
+        uint32_t* des_sharding_and_pool = (uint32_t*)(tx.storages(i).value().c_str());
+        if (des_sharding_and_pool[0] != common::GlobalInfo::Instance()->network_id()) {
+            return;
+        }
+
+        if (des_sharding_and_pool[1] >= common::kInvalidPoolIndex) {
+            return;
+        }
+        
+        pools::protobuf::ToTxMessage to_txs;
+        auto* tos = to_txs.add_tos();
+        tos->set_amount(tx.amount());
+        tos->set_des(tx.to());
+        tos->set_sharding_id(des_sharding_and_pool[0]);
+        tos->set_pool_index(des_sharding_and_pool[1]);
+        to_txs.mutable_to_heights()->set_sharding_id(des_sharding_and_pool[0]);
+        ZJC_DEBUG("success handle root create address: %u, local net: %u, step: %d",
+            to_txs.to_heights().sharding_id(),
+            common::GlobalInfo::Instance()->network_id(),
+            tx.step());
+        HandleLocalNormalToTx(to_txs, tx);
+    }
+}
+
 void BlockManager::HandleNormalToTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
@@ -506,21 +543,18 @@ void BlockManager::HandleNormalToTx(
             to_txs.to_heights().sharding_id(),
             common::GlobalInfo::Instance()->network_id(),
             tx.step());
-        if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
-                common::GlobalInfo::Instance()->network_id() != 
-                (network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
+        if (!network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
             if (to_txs.to_heights().sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-                ZJC_WARN("sharding invalid: %u, %u, to hash: %s",
+                ZJC_WARN("sharding invalid: %u, %u",
                     to_txs.to_heights().sharding_id(),
-                    common::GlobalInfo::Instance()->network_id(),
-                    common::Encode::HexEncode(to_txs.heights_hash()).c_str());
+                    common::GlobalInfo::Instance()->network_id());
     //             assert(false);
                 continue;
             }
 
             ZJC_DEBUG("success add local transfer tx tos hash: %s",
                 common::Encode::HexEncode(tx.storages(i).value()).c_str());
-            HandleLocalNormalToTx(to_txs, tx, tx.storages(i).value());
+            HandleLocalNormalToTx(to_txs, tx);
         } else {
             ZJC_DEBUG("root handle normal to tx to_txs size: %u", to_txs.tos_size());
             RootHandleNormalToTx(block, to_txs, db_batch);
@@ -621,9 +655,8 @@ void BlockManager::RootHandleNormalToTx(
 // TODO refactor needed!
 void BlockManager::HandleLocalNormalToTx(
         const pools::protobuf::ToTxMessage& to_txs,
-        const block::protobuf::BlockTx& tx,
-        const std::string& heights_hash) {
-        uint32_t step = tx.step();
+        const block::protobuf::BlockTx& tx) {
+    uint32_t step = tx.step();
     // 根据 to 聚合转账类 localtotx
     std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map;
     // 摘出 contract_create 类 localtotx
@@ -646,8 +679,7 @@ void BlockManager::HandleLocalNormalToTx(
         if (account_info == nullptr) {
             // 只接受 root 发回来的块
             if (step != pools::protobuf::kRootCreateAddress) {
-                ZJC_WARN("failed add local transfer tx tos heights_hash: %s, id: %s",
-                    common::Encode::HexEncode(heights_hash).c_str(),
+                ZJC_WARN("failed add local transfer tx tos id: %s",
                     common::Encode::HexEncode(addr).c_str());
                 continue;
             }
@@ -710,15 +742,14 @@ void BlockManager::HandleLocalNormalToTx(
     }
 
     // 1. 处理转账类交易
-    createConsensusLocalToTxs(tx, addr_amount_map, heights_hash);
+    createConsensusLocalToTxs(tx, addr_amount_map);
     // 2. 生成 ContractCreateByRootTo 交易
-    createContractCreateByRootToTxs(contract_create_tx_infos, heights_hash);
+    createContractCreateByRootToTxs(contract_create_tx_infos);
 }
 
 void BlockManager::createConsensusLocalToTxs(
         const block::protobuf::BlockTx& to_tx,
-        std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map,
-        const std::string& heights_hash) {
+        std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map) {
     // 根据 pool_index 将 addr_amount_map 中的转账交易分类，一个 pool 生成一个 Consensuslocaltos，其中可能包含给多个地址的转账交易
     std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_tx_map;
     for (auto iter = addr_amount_map.begin(); iter != addr_amount_map.end(); ++iter) {
@@ -746,8 +777,7 @@ void BlockManager::createConsensusLocalToTxs(
         for (int32_t i = 0; i < iter->second.tos_size(); ++i) {
             uint32_t pool_idx = iter->second.tos(i).pool_index();
             uint64_t amount = iter->second.tos(i).amount();
-            ZJC_DEBUG("heights_hash: %s, ammount success add local transfer to %s, %lu",
-                common::Encode::HexEncode(heights_hash).c_str(),
+            ZJC_DEBUG("ammount success add local transfer to %s, %lu",
                 common::Encode::HexEncode(iter->second.tos(i).des()).c_str(), amount);
         }
 
@@ -765,23 +795,21 @@ void BlockManager::createConsensusLocalToTxs(
         tx->set_pubkey("");
         tx->set_to(msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kConsensusLocalTos);
-        auto gid = common::Hash::keccak256(tos_hash + heights_hash);
+        auto gid = common::Hash::keccak256(tos_hash);
         tx->set_gas_limit(0);
         tx->set_amount(0); // 具体 amount 在 kv 中
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
         pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_INFO("success add local transfer tx tos hash: %s, heights_hash: %s, gid: %s, src to tx gid: %s",
+        ZJC_INFO("success add local transfer tx tos hash: %s, gid: %s, src to tx gid: %s",
             common::Encode::HexEncode(tos_hash).c_str(),
-            common::Encode::HexEncode(heights_hash).c_str(),
             common::Encode::HexEncode(gid).c_str(),
             common::Encode::HexEncode(to_tx.gid()).c_str());
     }
 }
 
 void BlockManager::createContractCreateByRootToTxs(
-        std::vector<std::shared_ptr<localToTxInfo>> contract_create_tx_infos,
-        const std::string& heights_hash) {
+        std::vector<std::shared_ptr<localToTxInfo>> contract_create_tx_infos) {
     std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_cc_tx_map;
     for (uint32_t i = 0; i < contract_create_tx_infos.size(); i++) {
         auto contract_create_tx = contract_create_tx_infos[i];
@@ -801,7 +829,8 @@ void BlockManager::createContractCreateByRootToTxs(
         to_item->set_contract_from(contract_create_tx->contract_from);
         to_item->set_prepayment(contract_create_tx->contract_prepayment);
         
-        ZJC_DEBUG("success add local contract create to %s, %lu, contract_from %s, contract_code: %s, prepayment: %lu",
+        ZJC_DEBUG("success add local contract create to %s, %lu, "
+            "contract_from %s, contract_code: %s, prepayment: %lu",
             common::Encode::HexEncode(contract_create_tx->des).c_str(),
             contract_create_tx->amount,
             common::Encode::HexEncode(contract_create_tx->contract_from).c_str(),
@@ -839,7 +868,7 @@ void BlockManager::createContractCreateByRootToTxs(
         tx->set_pubkey("");
         tx->set_to(msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kContractCreateByRootTo);
-        auto gid = common::Hash::keccak256(cc_hash + heights_hash);
+        auto gid = common::Hash::keccak256(cc_hash);
         // TODO 暂时写死用于调试，实际需要 ContractCreateByRootFrom 交易传
         tx->set_gas_limit(1000000);
         tx->set_gas_price(1);
@@ -851,11 +880,11 @@ void BlockManager::createContractCreateByRootToTxs(
         tx->set_contract_from(to_msg.contract_from());
         tx->set_contract_prepayment(to_msg.prepayment());
         
-        ZJC_DEBUG("create contract to tx add to pool, to: %s, gid: %s, cc_hash: %s, height_hash: %s, pool_idx: %lu, amount: %lu, contract_from: %s",
+        ZJC_DEBUG("create contract to tx add to pool, to: %s, gid: %s, "
+            "cc_hash: %s, pool_idx: %lu, amount: %lu, contract_from: %s",
             common::Encode::HexEncode(to_msg.des()).c_str(),
             common::Encode::HexEncode(gid).c_str(),
             common::Encode::HexEncode(cc_hash).c_str(),
-            common::Encode::HexEncode(heights_hash).c_str(),
             pool_idx, amount, common::Encode::HexEncode(contract_from).c_str());
         pools_mgr_->HandleMessage(msg_ptr);        
     }
@@ -915,12 +944,21 @@ void BlockManager::AddNewBlock(
         switch (tx_list[i].step()) {
         case pools::protobuf::kRootCreateAddress:
             // ZJC_DEBUG("success handle root create address tx.");
+            ConsensusShardHandleRootCreateAddress(*block_item, tx_list[i]);
+            break;
         case pools::protobuf::kNormalTo: {
             HandleNormalToTx(*block_item, tx_list[i], db_batch);
-            auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
-            latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = block_item;
-            latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
-            ZJC_DEBUG("success handle to tx gid: %s, bls: %s, %s",
+            if (network::IsSameToLocalShard(block_item->network_id())) {
+                auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
+                latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = block_item;
+                latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
+            }
+
+            ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
+                "gid: %s, bls: %s, %s",
+                block_item->network_id(),
+                block_item->pool_index(),
+                block_item->height(),
                 common::Encode::HexEncode(tx_list[i].gid()).c_str(),
                 common::Encode::HexEncode(block_item->bls_agg_sign_x()).c_str(),
                 common::Encode::HexEncode(block_item->bls_agg_sign_y()).c_str());

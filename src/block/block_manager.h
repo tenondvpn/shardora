@@ -129,17 +129,17 @@ private:
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
+    void ConsensusShardHandleRootCreateAddress(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx);
     void HandleLocalNormalToTx(
         const pools::protobuf::ToTxMessage& to_txs,
-        const block::protobuf::BlockTx& tx,
-        const std::string& heights_hash);
+        const block::protobuf::BlockTx& tx);
     void createConsensusLocalToTxs(
         const block::protobuf::BlockTx& tx,
-        std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map,
-        const std::string& heights_hash);
+        std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map);
     void createContractCreateByRootToTxs(
-        std::vector<std::shared_ptr<localToTxInfo>> contract_create_tx_infos,
-        const std::string& heights_hash);
+        std::vector<std::shared_ptr<localToTxInfo>> contract_create_tx_infos);
     void HandleJoinElectTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,

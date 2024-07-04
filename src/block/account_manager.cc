@@ -534,11 +534,11 @@ void AccountManager::HandleRootCreateAddressTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    // if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
-    //         common::GlobalInfo::Instance()->network_id() !=
-    //         (network::kRootCongressNetworkId + network::kRootCongressNetworkId)) {
-    //     return;
-    // }
+    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
+            common::GlobalInfo::Instance()->network_id() !=
+            (network::kRootCongressNetworkId + network::kRootCongressNetworkId)) {
+        return;
+    }
 
     auto account_info = GetAccountInfo(tx.to());
     if (account_info != nullptr) {
