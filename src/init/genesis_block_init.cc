@@ -700,6 +700,12 @@ int GenesisBlockInit::CreateElectBlock(
     block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
     block_mgr_->GenesisNewBlock(tenon_block);
 
+
+    StoreViewBlockWithCommitQC(view_block, commit_qc, db_batch_ptr);
+
+    root_pre_hash = consensus::GetBlockHash(*tenon_block);
+    root_pre_vb_hash = view_block->hash;
+    db_->Put(db_batch);
     auto account_ptr = account_mgr_->GetAcountInfoFromDb(account_info->addr());
     if (account_ptr == nullptr) {
         ZJC_FATAL("get address failed! [%s]",
@@ -711,11 +717,6 @@ int GenesisBlockInit::CreateElectBlock(
             common::Encode::HexEncode(account_info->addr()).c_str());
     }
 
-    StoreViewBlockWithCommitQC(view_block, commit_qc, db_batch_ptr);
-
-    root_pre_hash = consensus::GetBlockHash(*tenon_block);
-    root_pre_vb_hash = view_block->hash;
-    db_->Put(db_batch);
     return kInitSuccess;
 }
 
@@ -1643,6 +1644,11 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             block_mgr_->GenesisAddAllAccount(net_id, tenon_block, db_batch);
         }
         
+        
+        init_heights.set_heights(pool_index, tenon_block->height());
+
+        StoreViewBlockWithCommitQC(view_block, commit_qc, db_batch_ptr);
+        db_->Put(db_batch);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
             ZJC_FATAL("get address failed! [%s]", common::Encode::HexEncode(address).c_str());
@@ -1653,12 +1659,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             ZJC_FATAL("get address balance failed! [%s]", common::Encode::HexEncode(address).c_str());
             return kInitError;
         }
-
         all_balance += account_ptr->balance();
-        init_heights.set_heights(pool_index, tenon_block->height());
-
-        StoreViewBlockWithCommitQC(view_block, commit_qc, db_batch_ptr);
-        db_->Put(db_batch);
     }
 
     if (all_balance != expect_all_balance) {
@@ -1805,6 +1806,15 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         block_mgr_->GenesisNewBlock(tenon_block);
         block_mgr_->GenesisAddAllAccount(net_id, tenon_block, db_batch);
 
+
+        // if (net_id != network::kConsensusShardBeginNetworkId) {
+        //     all_balance = common::kGenesisFoundationMaxZjc;
+        // }
+        
+        init_heights.add_heights(0);
+        StoreViewBlockWithCommitQC(view_block, commit_qc, db_batch_ptr);
+        db_->Put(db_batch);
+        
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
             ZJC_FATAL("get address failed! [%s]", common::Encode::HexEncode(address).c_str());
@@ -1824,14 +1834,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         }
 
         all_balance += account_ptr->balance();    
-
-        // if (net_id != network::kConsensusShardBeginNetworkId) {
-        //     all_balance = common::kGenesisFoundationMaxZjc;
-        // }
-        
-        init_heights.add_heights(0);
-        StoreViewBlockWithCommitQC(view_block, commit_qc, db_batch_ptr);
-        db_->Put(db_batch);
     }
 
     if (all_balance != common::kGenesisFoundationMaxZjc) {
