@@ -40,7 +40,7 @@ public:
 
         auto local_mem_ptr = elect_info_->GetElectItemWithShardingId(sharding_id)->LocalMember();
         if (local_mem_ptr == nullptr) {
-            assert(false);
+            // assert(false);
             return common::kInvalidUint32;
         }
 

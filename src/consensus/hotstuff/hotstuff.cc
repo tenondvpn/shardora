@@ -183,6 +183,10 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
 }
 
 void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
+    if (leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32) {
+        return;
+    }
+
     auto b = common::TimeUtils::TimestampMs();
     defer({
         auto e = common::TimeUtils::TimestampMs();
@@ -660,7 +664,7 @@ void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
     }
 
     if (elect_item->LocalMember() == nullptr) {
-        assert(false);
+        // assert(false);
         return;
     }
 
@@ -1200,6 +1204,10 @@ Status Hotstuff::SendMsgToLeader(
 }
 
 void Hotstuff::TryRecoverFromStuck() {
+    if (leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32) {
+        return;
+    }
+
     if (timer_delay_us_ > common::TimeUtils::TimestampUs()) {
         return;
     }
