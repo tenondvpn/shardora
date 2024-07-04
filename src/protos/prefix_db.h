@@ -600,6 +600,8 @@ public:
         // batch.Put(key, pb_view_block.SerializeAsString());
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         db_batch_[thread_idx].Put(key, pb_view_block.SerializeAsString());
+        ZJC_DEBUG("success save view block %u_%u_%lu, thread idx: %d",
+            sharding_id, pool_index, block_height, thread_idx);
     }
 
     bool GetViewBlockInfo(
@@ -616,6 +618,8 @@ public:
         std::string val;
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         if (db_batch_[thread_idx].Get(key, &val) && pb_view_block->ParseFromString(val)) {
+            ZJC_DEBUG("success get view block %u_%u_%lu, thread: %d",
+                sharding_id, pool_index, block_height, thread_idx);
             return true;
         }
 
@@ -628,6 +632,8 @@ public:
             return false;
         }
 
+        ZJC_DEBUG("success get view block %u_%u_%lu, thread: %d",
+            sharding_id, pool_index, block_height, thread_idx);
         return true;
     }
 
