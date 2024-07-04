@@ -512,7 +512,7 @@ bool ShardStatistic::CheckAllBlockStatisticed(uint32_t local_net_id) {
 int ShardStatistic::StatisticWithHeights(
         pools::protobuf::ElectStatistic& elect_statistic,
         uint64_t statisticed_timeblock_height) {
-    ZJC_DEBUG("now statistic tx.");
+    ZJC_DEBUG("now statistic tx: statisticed_timeblock_height: %lu", statisticed_timeblock_height);
 #ifdef TEST_NO_CROSS
         return kPoolsError;
 #endif
@@ -598,10 +598,12 @@ int ShardStatistic::StatisticWithHeights(
         debug_for_str += std::to_string(all_gas_amount) + ",";
         debug_for_str += std::to_string(net_id) + ",";
         ZJC_DEBUG("LLLLLL statistic :%s", ProtobufToJson(elect_statistic).c_str());
-        ZJC_DEBUG("success create statistic message: %s, heights: %s, prev_timeblock_height_: %lu",
+        ZJC_DEBUG("success create statistic message: %s, heights: %s, "
+            "prev_timeblock_height_: %lu, statisticed_timeblock_height: %lu",
             debug_for_str.c_str(),
             "heights.c_str()",
-            prev_timeblock_height_);
+            prev_timeblock_height_,
+            statisticed_timeblock_height);
     }
 
     return kPoolsSuccess;
