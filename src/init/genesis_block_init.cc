@@ -1204,7 +1204,11 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
 
         init_heights.add_heights(0);
 
-        // 获取该 pool 对应的 root 账户，做一些余额校验，这里 root 账户中余额其实是 0
+       
+        // 保存 ViewBlock
+        StoreViewBlockWithCommitQC(view_block, commit_qc, db_batch_ptr);
+        db_->Put(db_batch);
+         // 获取该 pool 对应的 root 账户，做一些余额校验，这里 root 账户中余额其实是 0
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
             ZJC_FATAL("get address info failed! [%s]",
@@ -1218,9 +1222,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
 
         all_balance += account_ptr->balance();        
 
-        // 保存 ViewBlock
-        StoreViewBlockWithCommitQC(view_block, commit_qc, db_batch_ptr);
-        db_->Put(db_batch);
     }
 
     // 选举 root leader，选举 shard leader
