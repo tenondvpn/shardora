@@ -167,10 +167,12 @@ void Pacemaker::OnLocalTimeout() {
     }
 
     ZJC_DEBUG("now send local timeout msg hash: %s, view: %u, pool: %u, "
-        "elect height: %lu, member index: %u, bls_sign_x: %s, bls_sign_y: %s",
+        "elect height: %lu, member index: %u, member size: %u, "
+        "bls_sign_x: %s, bls_sign_y: %s",
         common::Encode::HexEncode(tc_ptr->msg_hash()).c_str(), 
         CurView(), pool_idx_, elect_item->ElectHeight(),
         timeout_msg.member_id(),
+        leader_rotation_->MemberSize(common::GlobalInfo::Instance()->network_id()),
         bls_sign_x.c_str(),
         bls_sign_y.c_str());
     SendTimeout(msg_ptr);
