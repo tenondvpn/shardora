@@ -794,7 +794,7 @@ void BlockManager::createConsensusLocalToTxs(
         tx->set_pubkey("");
         tx->set_to(msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kConsensusLocalTos);
-        auto gid = common::Hash::keccak256(tos_hash);
+        auto gid = common::Hash::keccak256(to_tx.gid());
         tx->set_gas_limit(0);
         tx->set_amount(0); // 具体 amount 在 kv 中
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
