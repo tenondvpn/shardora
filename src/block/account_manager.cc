@@ -643,8 +643,9 @@ void AccountManager::HandleJoinElectTx(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
-    ZJC_DEBUG("join elect to address new elect pos %s: %lu",
-        common::Encode::HexEncode(tx.from()).c_str(), join_info.member_idx());
+    ZJC_DEBUG("join elect to address new elect pos %s: %lu, balance: %lu",
+        common::Encode::HexEncode(tx.from()).c_str(),
+        join_info.member_idx(), account_info->balance());
 }
 
 void AccountManager::RunUpdateAccounts() {

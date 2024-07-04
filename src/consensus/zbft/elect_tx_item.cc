@@ -346,6 +346,7 @@ void ElectTxItem::JoinNewNodes2ElectNodes(shardora::common::MembersPtr &members,
         ZJC_DEBUG("LLLLLL after join elect: count:%d, %s", count, ids.c_str());
     }
 }
+
 void ElectTxItem::ChooseNodeForEachIndex(
     bool hold_pos,
     uint32_t min_area_weight,
