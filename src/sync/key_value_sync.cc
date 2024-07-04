@@ -82,7 +82,7 @@ void KeyValueSync::AddSyncElectBlock(
         uint64_t height,
         uint32_t priority) {
     assert(priority <= kSyncHighest);
-    auto item = std::make_shared<SyncItem>(network_id, elect_network_id, height, priority, kElectBlock);
+    auto item = std::make_shared<SyncItem>(network_id, elect_network_id, height, priority);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     item_queues_[thread_idx].push(item);
     ZJC_DEBUG("block height add new sync item key: %s, priority: %u",
