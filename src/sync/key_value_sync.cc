@@ -395,7 +395,8 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                         sync_msg.sync_value_req().heights(i).pool_idx(),
                         sync_msg.sync_value_req().heights(i).height(),
                         &pb_view_block)) {
-                ZJC_DEBUG("sync key value %u_%u_%lu, handle sync value failed, view block info not found, request hash: %lu, "
+                ZJC_DEBUG("sync key value %u_%u_%lu, "
+                    "handle sync value failed, view block info not found, request hash: %lu, "
                     "net: %u, pool: %u, height: %lu",
                     network_id, 
                     sync_msg.sync_value_req().heights(i).pool_idx(),
