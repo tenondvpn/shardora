@@ -178,7 +178,6 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
     auto& join_elect_shard_map = statistic_info_ptr->join_elect_shard_map;
     auto& height_node_collect_info_map = statistic_info_ptr->height_node_collect_info_map;
     auto& id_pk_map = statistic_info_ptr->id_pk_map;
-
     uint64_t block_gas = 0;
     auto callback = [&](const block::protobuf::Block& block) {
         for (int32_t i = 0; i < block.tx_list_size(); ++i) {
@@ -209,6 +208,10 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
                         auto& elect_stoke_map = join_elect_stoke_map[block.electblock_height()];
                         uint64_t* tmp_stoke = (uint64_t*)block.tx_list(i).storages(storage_idx).value().c_str();
                         elect_stoke_map[block.tx_list(i).from()] = tmp_stoke[0];
+                        ZJC_DEBUG("success add elect node stoke %s, %lu, elect height: %lu",
+                            common::Encode::HexEncode(block.tx_list(i).from()).c_str(), 
+                            tmp_stoke[0],
+                            block.electblock_height());
                     }
 
                     if (block.tx_list(i).storages(storage_idx).key() == protos::kNodePublicKey) {
@@ -568,17 +571,19 @@ int ShardStatistic::StatisticWithHeights(
     std::string debug_for_str;
     // 为当前委员会的节点填充共识工作的奖励信息
     setElectStatistics(height_node_collect_info_map, now_elect_members, elect_statistic, is_root);
-    addNewNode2JoinStatics(join_elect_stoke_map,
-                          join_elect_shard_map,
-                          added_id_set,
-                          debug_for_str,
-                          id_pk_map,
-                          elect_statistic);
-    addPrepareMembers2JoinStastics(prepare_members,
-                                  added_id_set,
-                                  elect_statistic,
-                                  debug_for_str,
-                                  now_elect_members);
+    addNewNode2JoinStatics(
+        join_elect_stoke_map,
+        join_elect_shard_map,
+        added_id_set,
+        debug_for_str,
+        id_pk_map,
+        elect_statistic);
+    addPrepareMembers2JoinStastics(
+        prepare_members,
+        added_id_set,
+        elect_statistic,
+        debug_for_str,
+        now_elect_members);
     if (is_root) {
         elect_statistic.set_gas_amount(root_all_gas_amount);
     } else {
@@ -602,41 +607,47 @@ int ShardStatistic::StatisticWithHeights(
     return kPoolsSuccess;
 }
 
-void ShardStatistic::addHeightInfo2Statics(shardora::pools::protobuf::ElectStatistic &elect_statistic, uint64_t max_tm_height) {
+void ShardStatistic::addHeightInfo2Statics(
+        shardora::pools::protobuf::ElectStatistic &elect_statistic, 
+        uint64_t max_tm_height) {
     auto *heights_ptr = elect_statistic.mutable_height_info();
     heights_ptr->set_tm_height(max_tm_height);
     heights_ptr->set_tm_height(prev_timeblock_height_);
 }
 
-void ShardStatistic::addPrepareMembers2JoinStastics(shardora::common::MembersPtr &prepare_members,
-                                                 std::unordered_set<std::string> &added_id_set,
-                                                 shardora::pools::protobuf::ElectStatistic &elect_statistic,
-                                                 std::string &debug_for_str,
-                                                 shardora::common::MembersPtr &now_elect_members) {
+void ShardStatistic::addPrepareMembers2JoinStastics(
+        shardora::common::MembersPtr &prepare_members,
+        std::unordered_set<std::string> &added_id_set,
+        shardora::pools::protobuf::ElectStatistic &elect_statistic,
+        std::string &debug_for_str,
+        shardora::common::MembersPtr &now_elect_members) {
     if (prepare_members != nullptr) {
         for (uint32_t i = 0; i < prepare_members->size(); ++i) {
             auto inc_iter = added_id_set.find((*prepare_members)[i]->pubkey);
             if (inc_iter != added_id_set.end()) {
-                ZJC_DEBUG("id is in elect: %s", common::Encode::HexEncode(secptr_->GetAddress((*prepare_members)[i]->pubkey)).c_str());
+                ZJC_DEBUG("id is in elect: %s", common::Encode::HexEncode(
+                    secptr_->GetAddress((*prepare_members)[i]->pubkey)).c_str());
                 continue;
             }
 
             auto addr_info = pools_mgr_->GetAddressInfo(secptr_->GetAddress((*prepare_members)[i]->pubkey));
             if (addr_info == nullptr) {
-                ZJC_DEBUG("id is in elect get addr failed: %s", common::Encode::HexEncode(secptr_->GetAddress((*prepare_members)[i]->pubkey)).c_str());
+                ZJC_DEBUG("id is in elect get addr failed: %s", common::Encode::HexEncode(
+                    secptr_->GetAddress((*prepare_members)[i]->pubkey)).c_str());
                 continue;
             }
 
             if (addr_info->elect_pos() != common::kInvalidUint32) {
                 if (addr_info->elect_pos() < 0 ||
                     addr_info->elect_pos() >= common::GlobalInfo::Instance()->each_shard_max_members()) {
-                    ZJC_DEBUG("id is in elect get pos failed: %s", common::Encode::HexEncode(secptr_->GetAddress((*prepare_members)[i]->pubkey)).c_str());
+                    ZJC_DEBUG("id is in elect get pos failed: %s", common::Encode::HexEncode(
+                        secptr_->GetAddress((*prepare_members)[i]->pubkey)).c_str());
                     continue;
                 }
             }
+
             uint32_t shard = common::GlobalInfo::Instance()->network_id();
             uint64_t stoke = getStoke(shard, "", addr_info->addr(), now_elect_height_);
-
             auto join_elect_node = elect_statistic.add_join_elect_nodes();
             join_elect_node->set_consensus_gap(0);
             join_elect_node->set_credit(0);
@@ -655,48 +666,69 @@ void ShardStatistic::addPrepareMembers2JoinStastics(shardora::common::MembersPtr
 
     if (prepare_members != nullptr) {
         ZJC_DEBUG("kJoinElect add new elect node now elect_height: %lu, prepare elect height: %lu, "
-                  "new nodes size: %u, now members size: %u, prepare members size: %u",
-                  now_elect_height_,
-                  prepare_elect_height_,
+            "new nodes size: %u, now members size: %u, prepare members size: %u",
+            now_elect_height_,
+            prepare_elect_height_,
 
-                  elect_statistic.join_elect_nodes_size(),
-                  now_elect_members->size(),
-                  prepare_members->size());
+            elect_statistic.join_elect_nodes_size(),
+            now_elect_members->size(),
+            prepare_members->size());
     }
 }
 
-void ShardStatistic::addNewNode2JoinStatics(std::map<uint64_t, std::unordered_map<std::string, uint64_t>> &join_elect_stoke_map,
-                                            std::map<uint64_t, std::unordered_map<std::string, uint32_t>> &join_elect_shard_map,
-                                            std::unordered_set<std::string> &added_id_set,
-                                            std::string &debug_for_str,
-                                            std::unordered_map<std::string, std::string> &id_pk_map,
-                                            shardora::pools::protobuf::ElectStatistic &elect_statistic) {
+void ShardStatistic::addNewNode2JoinStatics(
+        std::map<uint64_t, std::unordered_map<std::string, uint64_t>> &join_elect_stoke_map,
+        std::map<uint64_t, std::unordered_map<std::string, uint32_t>> &join_elect_shard_map,
+        std::unordered_set<std::string> &added_id_set,
+        std::string &debug_for_str,
+        std::unordered_map<std::string, std::string> &id_pk_map,
+        shardora::pools::protobuf::ElectStatistic &elect_statistic) {
+#ifndef NDEBUG
+    for (auto iter = join_elect_stoke_map.begin(); iter != join_elect_stoke_map.end(); ++iter) {
+        for (auto id_iter = iter->second.begin(); id_iter != iter->second.end(); ++id_iter) {
+            ZJC_DEBUG("stoke map eh: %lu, id: %s, stoke: %lu",
+                iter->first,
+                common::Encode::HexEncode(id_iter->first).c_str(),
+                id_iter->second);
+        }
+    }
+
+    for (auto iter = join_elect_shard_map.begin(); iter != join_elect_shard_map.end(); ++iter) {
+        for (auto id_iter = iter->second.begin(); id_iter != iter->second.end(); ++id_iter) {
+            ZJC_DEBUG("shard map eh: %lu, id: %s, shard: %u",
+                iter->first,
+                common::Encode::HexEncode(id_iter->first).c_str(),
+                id_iter->second);
+        }
+    }
+#endif
     std::vector<std::string> elect_nodes; // collect new ndoe
     auto r_eiter = join_elect_stoke_map.rbegin();
     auto r_siter = join_elect_shard_map.rbegin();
     if (r_eiter != join_elect_stoke_map.rend() &&
-        r_siter != join_elect_shard_map.rend() &&
-        r_eiter->first == r_siter->first) {
-
+            r_siter != join_elect_shard_map.rend() &&
+            r_eiter->first == r_siter->first) {
         const auto &stoke_map = r_eiter->second;
         const auto &shard_map = r_siter->second;
         for (auto &[node_id, stoke] : stoke_map) {
-
             if (shard_map.count(node_id) == 0) {
                 ZJC_DEBUG("failed get shard: %s", common::Encode::HexEncode(node_id).c_str());
                 continue;
             }
+
             if (added_id_set.count(node_id) > 0) {
                 // 说明节点是之前的委员会成员 。
                 ZJC_DEBUG("not added id: %s", common::Encode::HexEncode(node_id).c_str());
                 continue;
             }
+
             elect_nodes.push_back(node_id);
             ZJC_DEBUG("elect nodes add: %s, %lu",
                       common::Encode::HexEncode(node_id).c_str(), stoke);
             added_id_set.insert(node_id);
         }
     }
+
     debug_for_str += "stoke: ";
     for (uint32_t i = 0; i < elect_nodes.size() && i < kWaitingElectNodesMaxCount; ++i) {
         std::string pubkey = elect_nodes[i];
@@ -726,10 +758,10 @@ void ShardStatistic::addNewNode2JoinStatics(std::map<uint64_t, std::unordered_ma
                 continue;
             }
         }
+
         auto shard_iter = r_siter->second.find(elect_nodes[i]);
         auto shard_id = shard_iter->second;
         auto stoke = getStoke(shard_id, "", addr_info->addr(), now_elect_height_);
-
         auto join_elect_node = elect_statistic.add_join_elect_nodes();
         auto iter = r_eiter->second.find(elect_nodes[i]);
         join_elect_node->set_consensus_gap(0);
@@ -738,12 +770,14 @@ void ShardStatistic::addNewNode2JoinStatics(std::map<uint64_t, std::unordered_ma
         join_elect_node->set_stoke(stoke);
         join_elect_node->set_shard(shard_id);
         join_elect_node->set_elect_pos(addr_info->elect_pos());
-        debug_for_str += common::Encode::HexEncode(elect_nodes[i]) + "," + std::to_string(iter->second) + "," + std::to_string(shard_iter->second) + ",";
+        debug_for_str += common::Encode::HexEncode(elect_nodes[i]) + "," +
+            std::to_string(iter->second) + "," + std::to_string(shard_iter->second) + ",";
         ZJC_DEBUG("add node to election new member: %s, %s, stoke: %lu, shard: %u",
                   common::Encode::HexEncode(pubkey).c_str(),
                   common::Encode::HexEncode(secptr_->GetAddress(pubkey)).c_str(),
                   iter->second, shard_iter->second);
-        ZJC_DEBUG("add new elect node: %s, stoke: %lu, shard: %u", common::Encode::HexEncode(pubkey).c_str(), iter->second, shard_iter->second);
+        ZJC_DEBUG("add new elect node: %s, stoke: %lu, shard: %u",
+            common::Encode::HexEncode(pubkey).c_str(), iter->second, shard_iter->second);
     }
 }
 
@@ -776,7 +810,8 @@ void ShardStatistic::setElectStatistics(
         for (uint32_t midx = 0; midx < members->size(); ++midx) {
             auto &id = (*members)[midx]->id;
             auto node_info = node_info_map.emplace(id, StatisticMemberInfoItem()).first->second;
-            auto node_poce_info = accout_poce_info_map_.try_emplace(id, std::make_shared<AccoutPoceInfoItem>()).first->second;
+            auto node_poce_info = accout_poce_info_map_.try_emplace(
+                id, std::make_shared<AccoutPoceInfoItem>()).first->second;
             statistic_item.add_credit(0);  // (node_poce_info->credit);
             statistic_item.add_consensus_gap(0);  // (node_poce_info->consensus_gap);
             statistic_item.add_tx_count(node_info.tx_count);
