@@ -122,7 +122,8 @@ private:
     void SaveGenisisPoolHeights(uint32_t shard_id);
     void StoreViewBlockWithCommitQC(
             const std::shared_ptr<hotstuff::ViewBlock>& view_block,
-            const std::shared_ptr<hotstuff::QC>& commit_qc) {
+            const std::shared_ptr<hotstuff::QC>& commit_qc,
+            std::shared_ptr<db::DbWriteBatch>& db_batch) {
         assert(view_block->view < 100);
         auto pb_v_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
         hotstuff::ViewBlock2Proto(view_block, pb_v_block.get());
@@ -134,7 +135,8 @@ private:
         prefix_db_->SaveViewBlockInfo(view_block->block->network_id(),
             view_block->block->pool_index(),
             view_block->block->height(),
-            *pb_v_block);
+            *pb_v_block,
+            db_batch);
     }
 
     std::string SerializeViewBlockWithCommitQC(

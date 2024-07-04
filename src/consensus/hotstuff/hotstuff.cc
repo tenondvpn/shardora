@@ -899,12 +899,7 @@ void Hotstuff::CommitInner(
         v_block->block->network_id(), v_block->block->pool_index(), v_block->block->height(),
         view_block_chain()->String().c_str(),
         test_index);
-    auto s = acceptor()->Commit(queue_block_item);
-    if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d, commit failed s: %d, vb view: %lu", pool_idx_, s, v_block->view);
-        return;
-    }
-
+    acceptor()->Commit(queue_block_item);
     ZJC_DEBUG("2 NEW BLOCK CommitInner coming pool: %d, commit coming s: %d, "
         "vb view: %lu, %u_%u_%lu, cur chain: %s, test_index: %lu",
         pool_idx_, 0, v_block->view,
