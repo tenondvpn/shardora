@@ -864,22 +864,27 @@ bool BlsManager::VerifyAggSignValid(
 }
 
 int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
+    auto pre_ec_members = ec_block.mutable_prev_members();
     auto iter = finish_networks_map_.find(ec_block.shard_network_id());
     if (iter == finish_networks_map_.end()) {
         BLS_ERROR("find finish_networks_map_ failed![%u]", ec_block.shard_network_id());
+        assert(false);
         return kBlsError;
     }
 
     if (!iter->second->success_verified) {
         BLS_ERROR("success_verified failed![%u]", ec_block.shard_network_id());
+        assert(false);
         return kBlsError;
     }
 
     auto elect_iter = elect_members_.find(ec_block.shard_network_id());
     if (elect_iter == elect_members_.end()) {
+        assert(false);
         return kBlsError;
     }
 
+    pre_ec_members->set_prev_elect_height(elect_iter->second->height);
     auto members = elect_iter->second->members;
     if (members == nullptr) {
         BLS_ERROR("get waiting members failed![%u]", ec_block.shard_network_id());
@@ -929,7 +934,6 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
         return kBlsError;
     }
 
-    auto pre_ec_members = ec_block.mutable_prev_members();
     for (size_t i = 0; i < members->size(); ++i) {
         auto mem_bls_pk = pre_ec_members->add_bls_pubkey();
         if (!item_iter->second->bitmap.Valid(i)) {
@@ -980,7 +984,6 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
         libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.Y.c0));
     common_pk->set_y_c1(
         libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.Y.c1));
-    pre_ec_members->set_prev_elect_height(elect_iter->second->height);
     ResetLeaders(members, ec_block.mutable_prev_members());
 //     BLS_DEBUG("network: %u, elect height: %lu, AddBlsConsensusInfo success max_finish_count_: %d,"
 //         "member count: %d, x_c0: %s, x_c1: %s, y_c0: %s, y_c1: %s.",
