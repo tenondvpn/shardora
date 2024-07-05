@@ -44,6 +44,7 @@ GenesisBlockInit::GenesisBlockInit(
         std::shared_ptr<db::Db>& db)
         : account_mgr_(account_mgr), block_mgr_(block_mgr), db_(db) {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+    bls_pk_json_ = nlohmann::json::array();
 }
 
 GenesisBlockInit::~GenesisBlockInit() {}
@@ -671,7 +672,6 @@ int GenesisBlockInit::CreateElectBlock(
             common_pk_strs->at(1).c_str(), 
             common_pk_strs->at(2).c_str(), 
             common_pk_strs->at(3).c_str());
-        bls_pk_json_ = nlohmann::json::array();
         nlohmann::json item;
         item["n"] = genesis_nodes.size();
         item["shard_id"] = shard_netid;
