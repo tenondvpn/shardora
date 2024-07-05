@@ -536,7 +536,11 @@ void KeyValueSync::ResponseElectBlock(
             ZJC_DEBUG("block invalid network: %u, pool: %lu, height: %lu",
                 network::kRootCongressNetworkId, elect_network_id % common::kImmutablePoolSize, elect_height);
             return;
-        }        
+        }      
+
+        ZJC_DEBUG("success elect_network_id: %u, now get elect with height now: %lu, min: %lu",
+            elect_network_id,
+            elect_height, min_height);  
 
         elect::protobuf::ElectBlock prev_elect_block;
         bool ec_block_loaded = false;
@@ -568,7 +572,11 @@ void KeyValueSync::ResponseElectBlock(
             return;
         }
 
+        ZJC_DEBUG("success elect_network_id: %u, now get elect with height now: %lu, min: %lu, prev: %lu",
+            elect_network_id,
+            elect_height, min_height, prev_elect_block.prev_members().prev_elect_height());  
         elect_height = prev_elect_block.prev_members().prev_elect_height();
+
     }
 
     for (auto iter = valid_elect_heights.begin(); iter != valid_elect_heights.end(); ++iter) {
