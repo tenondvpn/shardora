@@ -179,13 +179,7 @@ private:
         char data[1024*1024] = {0};
         fread(data, 1, sizeof(data), fd);
         fclose(fd);
-        nlohmann::json bls_pk_json;
-        if (!bls_pk_json.parse(data)) {
-            assert(false);
-            return;
-        }
-
-
+        nlohmann::json bls_pk_json = nlohmann::json::parse(data);
         for (auto item: bls_pk_json) {
             uint32_t shard_id = item["shard_id"];
             if (shard_id >= network::kConsensusShardEndNetworkId) {
