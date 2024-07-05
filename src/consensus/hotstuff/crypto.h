@@ -117,7 +117,7 @@ private:
             ZJC_ERROR("elect_item not found, elect_height: %lu", elect_height);
             return Status::kElectItemNotFound;
         }
-        
+
         libff::alt_bn128_G1 g1_hash;
         GetG1Hash(msg_hash, &g1_hash);
         if (bls_mgr_->GetVerifyHash(
@@ -162,11 +162,16 @@ private:
         return Status::kSuccess;
     }
 
+    void LoadInitGenesisCommonPk() {
+        
+    }
+
     // 保留上一次 elect_item，避免 epoch 切换的影响
     uint32_t pool_idx_;
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     std::shared_ptr<bls::IBlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
+    std::shared_ptr<ElectItem> genesis_elect_items_[network::kConsensusShardEndNetworkId] = { nullptr };
 };
 
 } // namespace consensus

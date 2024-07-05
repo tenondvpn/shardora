@@ -172,6 +172,8 @@ private:
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     libff::alt_bn128_G2 common_pk_[16] = { libff::alt_bn128_G2::zero() };
     YAML::Node genesis_config_;
+    nlohmann::json bls_pk_json_;
+    uint32_t bls_pk_json_index_;
     
     DISALLOW_COPY_AND_ASSIGN(GenesisBlockInit);
 };

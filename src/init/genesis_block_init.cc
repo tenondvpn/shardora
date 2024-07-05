@@ -134,6 +134,16 @@ int GenesisBlockInit::CreateGenesisBlocks(
     }
 
     db_->CompactRange("", "");
+    if (net_type == GenisisNetworkType::RootNetwork) {
+        FILE* fd = fopen("./bls_pk");
+        auto str = bls_pk_json_.dump();
+        auto w_size = fwrite(str.c_str(), 1, str.size(), fd);
+        fclose(fd);
+        if (w_size != str.size()) {
+            return kInitError;
+        }
+    }
+
     return res;
 }
 
@@ -661,22 +671,14 @@ int GenesisBlockInit::CreateElectBlock(
             common_pk_strs->at(1).c_str(), 
             common_pk_strs->at(2).c_str(), 
             common_pk_strs->at(3).c_str());
-        FILE* fd = fopen("./bls_pk", "a");
-        nlohmann::json tmp_json;
-        tmp_json["n"] = genesis_nodes.size();
-        tmp_json["shard_id"] = shard_netid;
-        tmp_json["prev_height"] = prev_height;
-        tmp_json["x_c0"] = common_pk_strs->at(0);
-        tmp_json["x_c1"] = common_pk_strs->at(1);
-        tmp_json["y_c0"] = common_pk_strs->at(2);
-        tmp_json["y_c1"] = common_pk_strs->at(3);
-        auto str = tmp_json.dump();
-        auto w_size = fwrite(str.c_str(), 1, str.size(), fd);
-        if (w_size != str.size()) {
-            return kInitError;
-        }
-
-        fclose(fd);
+        bls_pk_json_[bls_pk_json_index_]["n"] = genesis_nodes.size();
+        bls_pk_json_[bls_pk_json_index_]["shard_id"] = shard_netid;
+        bls_pk_json_[bls_pk_json_index_]["prev_height"] = prev_height;
+        bls_pk_json_[bls_pk_json_index_]["x_c0"] = common_pk_strs->at(0);
+        bls_pk_json_[bls_pk_json_index_]["x_c1"] = common_pk_strs->at(1);
+        bls_pk_json_[bls_pk_json_index_]["y_c0"] = common_pk_strs->at(2);
+        bls_pk_json_[bls_pk_json_index_]["y_c1"] = common_pk_strs->at(3);
+        ++bls_pk_json_index_;
     }
 
     auto storage = tx_info->add_storages();
