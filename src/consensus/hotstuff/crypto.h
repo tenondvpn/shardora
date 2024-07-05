@@ -52,7 +52,7 @@ public:
             const std::shared_ptr<ElectInfo>& elect_info,
             const std::shared_ptr<bls::IBlsManager>& bls_mgr) :
             pool_idx_(pool_idx), elect_info_(elect_info), bls_mgr_(bls_mgr) {
-        // LoadInitGenesisCommonPk();
+        LoadInitGenesisCommonPk();
     };
 
     ~Crypto() {};
@@ -88,12 +88,17 @@ public:
     }
     
     inline std::shared_ptr<ElectItem> GetElectItem(uint32_t sharding_id, uint64_t elect_height) {
+        auto item = elect_info_->GetElectItem(sharding_id, elect_height);
+        if (item != nullptr) {
+            return item;
+        }
+
         if (genesis_elect_items_[sharding_id] != nullptr && 
                 genesis_elect_items_[sharding_id]->ElectHeight() == elect_height) {
             return genesis_elect_items_[sharding_id];
         }
 
-        return elect_info_->GetElectItem(sharding_id, elect_height);
+        return nullptr;
     }
 
     inline std::shared_ptr<ElectItem> GetLatestElectItem(uint32_t sharding_id) {
