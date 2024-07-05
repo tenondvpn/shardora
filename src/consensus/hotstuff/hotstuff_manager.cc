@@ -189,7 +189,7 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(
         return s;
     }
 
-    ZJC_DEBUG("qc verify failed, s: %d, blockview: %lu, "
+    ZJC_DEBUG("qc verify success, s: %d, blockview: %lu, "
         "qcview: %lu, %u_%u_%lu, ",
         s, vblock->view, commit_qc->view(),
         vblock->block->network_id(),

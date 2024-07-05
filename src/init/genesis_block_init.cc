@@ -654,6 +654,13 @@ int GenesisBlockInit::CreateElectBlock(
         auto st = db_->Put(db_batch);
         assert(st.ok());
         SetPrevElectInfo(ec_block, *tx_info);
+        ZJC_WARN("genesis elect shard: %u, prev_height: %lu, "
+            "init bls common public key: %s, %s, %s, %s", 
+            shard_netid, prev_height, 
+            common_pk_strs->at(0).c_str(), 
+            common_pk_strs->at(1).c_str(), 
+            common_pk_strs->at(2).c_str(), 
+            common_pk_strs->at(3).c_str());
     }
 
     auto storage = tx_info->add_storages();
