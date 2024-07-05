@@ -103,7 +103,6 @@ void Pacemaker::OnLocalTimeout() {
     duration_->ViewTimeout();
     defer(StartTimeoutTimer());
     if (leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32) {
-        assert(false);
         return;
     }
 

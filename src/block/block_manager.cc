@@ -87,7 +87,6 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& message) {
         return;
     }
 
-    ZJC_DEBUG("timer coming.");
     prev_timer_ms_ = now_tm_ms;
     HandleAllNewBlock();
     auto now_tm = common::TimeUtils::TimestampUs();
@@ -102,7 +101,10 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& message) {
     }
 }
 
-void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members) {
+void BlockManager::OnNewElectBlock(
+        uint32_t sharding_id, 
+        uint64_t elect_height, 
+        common::MembersPtr& members) {
     if (sharding_id > max_consensus_sharding_id_) {
         max_consensus_sharding_id_ = sharding_id;
     }
