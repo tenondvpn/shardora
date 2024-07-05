@@ -623,17 +623,11 @@ int ElectTxItem::CreateNewElect(
     if (bls_mgr_->AddBlsConsensusInfo(elect_block) != bls::kBlsSuccess) {
         ZJC_WARN("add prev elect bls consensus info failed sharding id: %u",
                  elect_statistic.sharding_id());
-        elect_block.mutable_prev_members()->set_prev_elect_height(block.electblock_height());
     } else {
         ZJC_DEBUG("success add bls consensus info: %u, %lu",
                   elect_statistic.sharding_id(),
                   elect_block.prev_members().prev_elect_height());
         SetPrevElectInfo(elect_block, block_tx);
-    }
-
-    if (elect_block.prev_members().prev_elect_height() != block.electblock_height()) {
-        assert(false);
-        return kConsensusError;
     }
     
     std::string val = elect_block.SerializeAsString();

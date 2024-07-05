@@ -1082,7 +1082,6 @@ void BlockManager::HandleElectTx(
                 common::Encode::HexEncode(
                 elect_block.prev_members().common_pubkey().SerializeAsString()).c_str(),
                 elect_block.prev_members().prev_elect_height());
-
             // 将 elect block 中的 common_pk 持久化
             if (elect_block.prev_members().prev_elect_height() > 0) {
                 prefix_db_->SaveElectHeightCommonPk(
