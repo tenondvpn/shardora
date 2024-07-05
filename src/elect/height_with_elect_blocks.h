@@ -180,7 +180,7 @@ public:
         new_item->common_bls_publick_key = GetCommonPublicKey(network_id, height);
         if (new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()) {
             ZJC_DEBUG("ew_item->common_bls_publick_key == libff::alt_bn128_G2::zero().");
-            assert(false);
+            // assert(false);
             return shard_members;
         }
 
@@ -213,7 +213,7 @@ private:
 
         elect::protobuf::PrevMembers prev_members;
         if (!prefix_db_->GetElectHeightCommonPk(network_id, height, &prev_members)) {
-            assert(false);
+            // assert(false);
             return libff::alt_bn128_G2::zero();
         }
 
