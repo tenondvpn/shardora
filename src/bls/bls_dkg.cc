@@ -957,7 +957,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     if (!prefix_db_->GetLocalPolynomial(security_, security_->GetAddress(), &local_poly)) {
         ZJC_ERROR("failed GetLocalPolynomial: %s",
             common::Encode::HexEncode(security_->GetAddress()).c_str());
-        assert(false);
+        // assert(false);
         return;
     }
 

@@ -620,6 +620,13 @@ void NetworkInit::SendJoinElectTransaction() {
     } else {
         join_info.set_shard_id(common::GlobalInfo::Instance()->network_id());
     }
+
+    if (pos != common::kInvalidUint32) {
+        bls::protobuf::LocalPolynomial poly;
+        if (!prefix_db_->GetLocalPolynomial(security_, security_->GetAddress(), &poly)) {
+            pos = common::kInvalidUint32;
+        }
+    }
     
     if (pos == common::kInvalidUint32) {
         auto* req = join_info.mutable_g2_req();
