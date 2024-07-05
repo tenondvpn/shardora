@@ -1386,8 +1386,14 @@ void NetworkInit::HandleElectionBlock(
         elect_height,
         members,
         elect_block);
-    ZJC_DEBUG("1 success called election block. height: %lu, elect height: %lu, used elect height: %lu, net: %u, local net id: %u",
-        block->height(), elect_height, block->electblock_height(), elect_block->shard_network_id(), common::GlobalInfo::Instance()->network_id());
+    ZJC_DEBUG("1 success called election block. height: %lu, "
+        "elect height: %lu, used elect height: %lu, net: %u, "
+        "local net id: %u, prev elect height: %lu",
+        block->height(), elect_height, 
+        block->electblock_height(), 
+        elect_block->shard_network_id(), 
+        common::GlobalInfo::Instance()->network_id(),
+        elect_block->prev_members().prev_elect_height());
     
     // 从候选池申请加入共识池
     // 新节点加入共识池需要发送两次 JoinElect
