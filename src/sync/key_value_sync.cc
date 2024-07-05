@@ -132,12 +132,12 @@ void KeyValueSync::PopItems() {
             }
 
             added_key_set_.insert(item->key);
-            auto tmp_iter = synced_map_.find(item->key);
-            if (tmp_iter != synced_map_.end()) {
-                ZJC_DEBUG("key synced add new sync item key: %s, priority: %u",
-                    item->key.c_str(), item->priority);
-                continue;
-            }
+            // auto tmp_iter = synced_map_.find(item->key);
+            // if (tmp_iter != synced_map_.end()) {
+            //     ZJC_DEBUG("key synced add new sync item key: %s, priority: %u",
+            //         item->key.c_str(), item->priority);
+            //     continue;
+            // }
 
             prio_sync_queue_[item->priority].push(item);
             ZJC_DEBUG("add new sync item key: %s, priority: %u",
@@ -644,12 +644,14 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
     auto& sync_msg = msg_ptr->header.sync_proto();
     assert(sync_msg.has_sync_value_res());
     auto& res_arr = sync_msg.sync_value_res().res();
+    ZJC_DEBUG("now handle kv response hash64: %lu", msg_ptr->header.hash64());
     for (auto iter = res_arr.begin(); iter != res_arr.end(); ++iter) {
         std::string key = iter->key();
         if (iter->has_height()) {
             key = std::to_string(iter->network_id()) + "_" +
                 std::to_string(iter->pool_idx()) + "_" +
                 std::to_string(iter->height());
+        ZJC_DEBUG("now handle kv response hash64: %lu, key: %s", msg_ptr->header.hash64(), key.c_str());
 #ifndef ENABLE_HOTSTUFF
             auto block_item = std::make_shared<block::protobuf::Block>();
             if (block_item->ParseFromString(iter->value())) {
@@ -676,15 +678,18 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             auto pb_vblock = std::make_shared<view_block::protobuf::ViewBlockItem>();
             if (!pb_vblock->ParseFromString(iter->value())) {
                 ZJC_ERROR("pb vblock parse failed");
+                assert(false);
                 continue;
             }
             if (!pb_vblock->has_self_commit_qc_str()) {
                 ZJC_ERROR("pb vblock has no qc");
+                assert(false);
                 continue;
             }
 
             if (!view_block_synced_callback_) {
                 ZJC_ERROR("no view block synced callback inited");
+                assert(false);
                 continue;
             }
             int res = view_block_synced_callback_(pb_vblock.get());
@@ -698,7 +703,8 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                         pb_vblock->block_info().network_id(),
                         pb_vblock->block_info().electblock_height(),
                         sync::kSyncHigh);
-                ZJC_ERROR("no elect item, %lu_%lu",
+                ZJC_ERROR("no elect item, %u_%u_%lu",
+                    network::kRootCongressNetworkId,
                     pb_vblock->block_info().network_id(),
                     pb_vblock->block_info().electblock_height());
                 continue;
