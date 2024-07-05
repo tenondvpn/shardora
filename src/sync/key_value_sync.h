@@ -41,12 +41,14 @@ enum SyncItemTag : uint32_t {
 
 struct SyncItem {
     SyncItem(uint32_t net_id, const std::string& in_key, uint32_t pri)
-            : network_id(net_id), key(in_key), priority(pri), sync_times(0) {
+            : network_id(net_id), key(in_key), 
+            priority(pri), sync_times(0), responsed_timeout_us(0) {
         tag = kKeyValue;
     }
 
     SyncItem(uint32_t net_id, uint32_t in_pool_idx, uint64_t in_height, uint32_t pri)
-            : network_id(net_id), pool_idx(in_pool_idx), height(in_height), priority(pri), sync_times(0) {
+            : network_id(net_id), pool_idx(in_pool_idx), 
+            height(in_height), priority(pri), sync_times(0), responsed_timeout_us(0) {
         key = std::to_string(network_id) + "_" +
             std::to_string(pool_idx) + "_" +
             std::to_string(height);
@@ -54,7 +56,8 @@ struct SyncItem {
     }
 
     SyncItem(uint32_t net_id, uint32_t in_pool_idx, uint64_t in_height, uint32_t pri, uint32_t in_tag)
-        : network_id(net_id), pool_idx(in_pool_idx), height(in_height), priority(pri), sync_times(0), tag(in_tag) {
+            : network_id(net_id), pool_idx(in_pool_idx), height(in_height), 
+            priority(pri), sync_times(0), responsed_timeout_us(0), tag(in_tag) {
         key = std::to_string(network_id) + "_" +
             std::to_string(pool_idx) + "_" +
             std::to_string(height);
@@ -67,6 +70,7 @@ struct SyncItem {
     uint32_t pool_idx{ common::kInvalidUint32 }; // 对于 SyncElectBlock 来说pool 就是 elect network id
     uint64_t height{ common::kInvalidUint64 };
     uint64_t sync_tm_us;
+    uint64_t responsed_timeout_us;
     uint32_t tag;
 };
 

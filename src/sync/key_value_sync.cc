@@ -644,6 +644,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
     auto& sync_msg = msg_ptr->header.sync_proto();
     assert(sync_msg.has_sync_value_res());
     auto& res_arr = sync_msg.sync_value_res().res();
+    auto now_tm_us = common::TimeUtils::TimestampUs();
     ZJC_DEBUG("now handle kv response hash64: %lu", msg_ptr->header.hash64());
     for (auto iter = res_arr.begin(); iter != res_arr.end(); ++iter) {
         std::string key = iter->key();
@@ -723,10 +724,10 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
 
 #endif
         }
+
         auto tmp_iter = synced_map_.find(key);
         if (tmp_iter != synced_map_.end()) {
-            added_key_set_.erase(tmp_iter->second->key);
-            synced_map_.erase(tmp_iter);
+            tmp_iter->second->responsed_timeout_us = now_tm_us + kSyncTimeoutPeriodUs;
         } else {
 //             assert(false);
         }
@@ -784,15 +785,16 @@ void KeyValueSync::CheckNotCheckedBlocks() {
 #endif
 
 void KeyValueSync::CheckSyncTimeout() {
-    auto now_tm = common::TimeUtils::TimestampUs();
+    auto now_tm_us = common::TimeUtils::TimestampUs();
     for (auto iter = synced_map_.begin(); iter != synced_map_.end();) {
-        if (iter->second->sync_times >= kSyncMaxRetryTimes) {
+        if (iter->second->sync_times >= kSyncMaxRetryTimes ||
+                iter->second->responsed_timeout_us <= now_tm_us) {
             added_key_set_.erase(iter->second->key);
             iter = synced_map_.erase(iter);
             continue;
         }
 
-        if (iter->second->sync_tm_us + 500000 >= now_tm) {
+        if (iter->second->sync_tm_us + 1000000 >= now_tm_us) {
             ++iter;
             continue;
         }
