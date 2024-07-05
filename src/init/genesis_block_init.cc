@@ -671,6 +671,7 @@ int GenesisBlockInit::CreateElectBlock(
             common_pk_strs->at(1).c_str(), 
             common_pk_strs->at(2).c_str(), 
             common_pk_strs->at(3).c_str());
+        bls_pk_json_[bls_pk_json_index_] = {};
         bls_pk_json_[bls_pk_json_index_]["n"] = genesis_nodes.size();
         bls_pk_json_[bls_pk_json_index_]["shard_id"] = shard_netid;
         bls_pk_json_[bls_pk_json_index_]["prev_height"] = prev_height;
