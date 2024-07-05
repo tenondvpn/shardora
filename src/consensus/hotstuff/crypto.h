@@ -159,11 +159,14 @@ private:
             elect_item->common_pk().to_affine_coordinates();
             auto cpk = std::make_shared<BLSPublicKey>(elect_item->common_pk());
             auto cpk_strs = cpk->toString();
+            auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(
+                reconstructed_sign.X);
             ZJC_ERROR("failed leader verify leader precommit agg sign! t: %u, n: %u,"
-                "common public key: %s, %s, %s, %s, elect height: %lu, ",
+                "common public key: %s, %s, %s, %s, elect height: %lu, sign x: %s",
                 elect_item->t(), elect_item->n(), cpk_strs->at(0).c_str(), cpk_strs->at(1).c_str(),
                 cpk_strs->at(2).c_str(), cpk_strs->at(3).c_str(),
-                elect_height);
+                elect_height,
+                agg_sign_str.c_str());
             return Status::kError;
         }
 
