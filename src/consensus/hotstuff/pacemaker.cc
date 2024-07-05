@@ -103,6 +103,7 @@ void Pacemaker::OnLocalTimeout() {
     duration_->ViewTimeout();
     defer(StartTimeoutTimer());
     if (leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32) {
+        assert(false);
         return;
     }
 
@@ -114,6 +115,7 @@ void Pacemaker::OnLocalTimeout() {
 
     auto elect_item = crypto_->GetLatestElectItem(common::GlobalInfo::Instance()->network_id());
     if (!elect_item) {
+        assert(false);
         return;
     }
 
