@@ -661,6 +661,21 @@ int GenesisBlockInit::CreateElectBlock(
             common_pk_strs->at(1).c_str(), 
             common_pk_strs->at(2).c_str(), 
             common_pk_strs->at(3).c_str());
+        FILE* fd = fopen("./bls_pk", "wa");
+        nlohmann::json tmp_json;
+        tmp_json["shard_id"] = shard_netid;
+        tmp_json["prev_height"] = prev_height;
+        tmp_json["x_c0"] = common_pk_strs->at(0);
+        tmp_json["x_c1"] = common_pk_strs->at(1);
+        tmp_json["y_c0"] = common_pk_strs->at(2);
+        tmp_json["y_c1"] = common_pk_strs->at(3);
+        auto str = tmp_json.dump();
+        auto w_size = fwrite(str.c_str(), 1, str.size(), fd);
+        if (w_size != str.size()) {
+            return kInitError;
+        }
+
+        fclose(fd);
     }
 
     auto storage = tx_info->add_storages();
@@ -675,12 +690,10 @@ int GenesisBlockInit::CreateElectBlock(
     tenon_block->set_is_commited_block(true);
     tenon_block->set_electblock_height(1);
     tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-    
     auto view_block = CreateViewBlock(
             root_pre_vb_hash,
             view,
             tenon_block);
-
     auto commit_qc = CreateCommitQC(root_genesis_nodes, view_block);
     if (!commit_qc) {
         assert(false);
@@ -693,7 +706,6 @@ int GenesisBlockInit::CreateElectBlock(
     pools_mgr_->UpdateLatestInfo(
             tenon_block,
             db_batch);
-
     prefix_db_->SaveLatestElectBlock(ec_block, db_batch);
     ZJC_DEBUG("success save latest elect block: %u, %lu", ec_block.shard_network_id(), ec_block.elect_height());
     
