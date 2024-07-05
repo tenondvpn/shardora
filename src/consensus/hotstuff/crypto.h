@@ -184,6 +184,7 @@ private:
             return;
         }
 
+
         for (auto item: bls_pk_json) {
             uint32_t shard_id = item["shard_id"];
             if (shard_id >= network::kConsensusShardEndNetworkId) {
@@ -196,9 +197,11 @@ private:
                 item["y_c0"],
                 item["y_c1"]
             };
+
             BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
             genesis_elect_items_[shard_id] = std::make_shared<ElectItem>(
                 shard_id, item["prev_height"], item["n"], *pkey.getPublicKey());
+            ZJC_DEBUG("success load genesis item: %s", item.dump().c_str());
         }
     }
 
