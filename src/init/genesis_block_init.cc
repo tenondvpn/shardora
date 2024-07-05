@@ -661,7 +661,7 @@ int GenesisBlockInit::CreateElectBlock(
             common_pk_strs->at(1).c_str(), 
             common_pk_strs->at(2).c_str(), 
             common_pk_strs->at(3).c_str());
-        FILE* fd = fopen("./bls_pk", "wa");
+        FILE* fd = fopen("./bls_pk", "a+");
         nlohmann::json tmp_json;
         tmp_json["shard_id"] = shard_netid;
         tmp_json["prev_height"] = prev_height;
