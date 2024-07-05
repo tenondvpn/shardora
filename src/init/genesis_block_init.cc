@@ -135,7 +135,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
 
     db_->CompactRange("", "");
     if (net_type == GenisisNetworkType::RootNetwork) {
-        FILE* fd = fopen("./bls_pk");
+        FILE* fd = fopen("./bls_pk", "w");
         auto str = bls_pk_json_.dump();
         auto w_size = fwrite(str.c_str(), 1, str.size(), fd);
         fclose(fd);
