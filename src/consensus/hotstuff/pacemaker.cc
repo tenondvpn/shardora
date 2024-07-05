@@ -147,6 +147,7 @@ void Pacemaker::OnLocalTimeout() {
             tc_ptr->msg_hash(),
             &bls_sign_x,
             &bls_sign_y) != Status::kSuccess) {
+        assert(false);
         return;
     }
 
