@@ -54,7 +54,7 @@ public:
             pool_idx_(pool_idx), elect_info_(elect_info), bls_mgr_(bls_mgr) {
         LoadInitGenesisCommonPk();
     };
-    
+
     ~Crypto() {};
 
     Crypto(const Crypto&) = delete;
@@ -171,7 +171,7 @@ private:
     }
 
     void LoadInitGenesisCommonPk() {
-        FILE* fd = fopen("./bls_pk", "r");
+        FILE* fd = fopen("./conf/bls_pk", "r");
         if (fd == NULL) {
             return;
         }
