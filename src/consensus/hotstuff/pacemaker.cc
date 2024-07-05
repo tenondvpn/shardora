@@ -146,7 +146,10 @@ void Pacemaker::OnLocalTimeout() {
             tc_ptr->msg_hash(),
             &bls_sign_x,
             &bls_sign_y) != Status::kSuccess) {
-        assert(false);
+        ZJC_ERROR("sign message failed: %u, elect height: %lu, hash: %s",
+            common::GlobalInfo::Instance()->network_id(),
+            elect_item->ElectHeight(),
+            common::Encode::HexEncode(tc_ptr->msg_hash()).c_str());
         return;
     }
 
