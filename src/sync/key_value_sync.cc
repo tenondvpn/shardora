@@ -523,6 +523,9 @@ void KeyValueSync::ResponseElectBlock(
     }
 
     uint64_t elect_height = elect_net_heights_map_[elect_network_id];
+    ZJC_DEBUG("begin elect_network_id: %u, now get elect with height now: %lu, min: %lu",
+        elect_network_id,
+        elect_height, min_height);
     while (elect_height >= min_height) {
         ZJC_DEBUG("elect_network_id: %u, now get elect with height now: %lu, min: %lu",
             elect_network_id,
