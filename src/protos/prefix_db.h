@@ -1563,6 +1563,8 @@ public:
         std::string val = prv_info.SerializeAsString();
         db_batch.Put(key, val);
         ZJC_DEBUG("save elect height prev info success: %u, %lu", des_shard, height);
+        assert(prv_info.has_common_pubkey());
+        assert(!prv_info.common_pubkey().x_c0().empty());
     }
 
     bool GetElectHeightCommonPk(
@@ -1587,6 +1589,8 @@ public:
         }
 
         ZJC_DEBUG("get elect height prev info success: %u, %lu", des_shard, height);
+        assert(prv_info->has_common_pubkey());
+        assert(!prv_info->common_pubkey().x_c0().empty());
         return true;
     }
 
