@@ -672,14 +672,15 @@ int GenesisBlockInit::CreateElectBlock(
             common_pk_strs->at(2).c_str(), 
             common_pk_strs->at(3).c_str());
         bls_pk_json_ = nlohmann::json::array();
-        bls_pk_json_[bls_pk_json_index_]["n"] = genesis_nodes.size();
-        bls_pk_json_[bls_pk_json_index_]["shard_id"] = shard_netid;
-        bls_pk_json_[bls_pk_json_index_]["prev_height"] = prev_height;
-        bls_pk_json_[bls_pk_json_index_]["x_c0"] = common_pk_strs->at(0);
-        bls_pk_json_[bls_pk_json_index_]["x_c1"] = common_pk_strs->at(1);
-        bls_pk_json_[bls_pk_json_index_]["y_c0"] = common_pk_strs->at(2);
-        bls_pk_json_[bls_pk_json_index_]["y_c1"] = common_pk_strs->at(3);
-        ++bls_pk_json_index_;
+        nlohmann::json item;
+        item["n"] = genesis_nodes.size();
+        item["shard_id"] = shard_netid;
+        item["prev_height"] = prev_height;
+        item["x_c0"] = common_pk_strs->at(0);
+        item["x_c1"] = common_pk_strs->at(1);
+        item["y_c0"] = common_pk_strs->at(2);
+        item["y_c1"] = common_pk_strs->at(3);
+        bls_pk_json_.push_back(item);
     }
 
     auto storage = tx_info->add_storages();
