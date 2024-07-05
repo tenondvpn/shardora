@@ -181,14 +181,20 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(
     Status s = hf->crypto()->VerifyQC(vblock->block->network_id(), commit_qc);
     if (s != Status::kSuccess) {
         ZJC_ERROR("qc verify failed, s: %d, blockview: %lu, "
-            "qcview: %lu, %u_%u_%lu",
+            "qcview: %lu, %u_%u_%lu, ",
             s, vblock->view, commit_qc->view(),
             vblock->block->network_id(),
             vblock->block->pool_index(),
             vblock->block->height());
         return s;
     }
-    
+
+    ZJC_DEBUG("qc verify failed, s: %d, blockview: %lu, "
+        "qcview: %lu, %u_%u_%lu, ",
+        s, vblock->view, commit_qc->view(),
+        vblock->block->network_id(),
+        vblock->block->pool_index(),
+        vblock->block->height());
     return Status::kSuccess;
 }
 
