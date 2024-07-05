@@ -591,10 +591,6 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
 void TxPoolManager::SyncPoolsMaxHeight() {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto net_id = common::GlobalInfo::Instance()->network_id();
-    if (net_id >= network::kConsensusWaitingShardBeginNetworkId) {
-        net_id -= network::kConsensusWaitingShardOffset;
-    }
-
     msg_ptr->header.set_src_sharding_id(net_id);
     for (uint32_t i = network::kRootCongressNetworkId; i <= now_max_sharding_id_; ++i) {
         dht::DhtKeyManager dht_key(i);
@@ -630,7 +626,12 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
         uint32_t pool_idx = common::kInvalidPoolIndex;
         std::string sync_debug;
         std::string cross_debug;
-        if (msg_ptr->header.src_sharding_id() == common::GlobalInfo::Instance()->network_id()) {
+        auto src_net_id = msg_ptr->header.src_sharding_id();
+        if (src_net_id >= network::kConsensusWaitingShardBeginNetworkId) {
+            src_net_id -= network::kConsensusWaitingShardOffset;
+        }
+
+        if (src_net_id == common::GlobalInfo::Instance()->network_id()) {
             for (uint32_t i = 0; i < pool_idx; ++i) {
                 sync_heights->add_heights(tx_pool_[i].latest_height());
                 sync_debug += std::to_string(tx_pool_[i].latest_height()) + " ";
