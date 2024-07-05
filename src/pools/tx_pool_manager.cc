@@ -650,9 +650,10 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
         transport::TcpTransport::Instance()->SetMessageHash(msg);
         transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
         ZJC_DEBUG("response pool heights: %s, cross pool heights: %s, "
-            "now_max_sharding_id_: %u, src sharding id: %u",
+            "now_max_sharding_id_: %u, src sharding id: %u, src hash64: %lu, des hash64: %lu",
             sync_debug.c_str(), cross_debug.c_str(),
-            now_max_sharding_id_, msg_ptr->header.src_sharding_id());
+            now_max_sharding_id_, msg_ptr->header.src_sharding_id(),
+            msg_ptr->header.hash64(), msg.hash64());
     } else {
         if (msg_ptr->header.src_sharding_id() != common::GlobalInfo::Instance()->network_id()) {
             if (msg_ptr->header.src_sharding_id() != network::kRootCongressNetworkId) {
