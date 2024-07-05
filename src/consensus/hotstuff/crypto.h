@@ -97,12 +97,6 @@ public:
     }
     
 private:
-    // 保留上一次 elect_item，避免 epoch 切换的影响
-    uint32_t pool_idx_;
-    std::shared_ptr<ElectInfo> elect_info_ = nullptr;
-    std::shared_ptr<bls::IBlsManager> bls_mgr_ = nullptr;
-    std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
-
     Status VerifyThresSign(
         uint32_t sharding_id,
         uint64_t elect_height,
@@ -122,10 +116,10 @@ private:
         if (!elect_item || elect_item->common_pk() == libff::alt_bn128_G2::zero()) {
             ZJC_ERROR("elect_item not found, elect_height: %lu", elect_height);
             return Status::kElectItemNotFound;
-        }        
+        }
+        
         libff::alt_bn128_G1 g1_hash;
         GetG1Hash(msg_hash, &g1_hash);
-        
         if (bls_mgr_->GetVerifyHash(
                     elect_item->t(),
                     elect_item->n(),
@@ -168,6 +162,11 @@ private:
         return Status::kSuccess;
     }
 
+    // 保留上一次 elect_item，避免 epoch 切换的影响
+    uint32_t pool_idx_;
+    std::shared_ptr<ElectInfo> elect_info_ = nullptr;
+    std::shared_ptr<bls::IBlsManager> bls_mgr_ = nullptr;
+    std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
 };
 
 } // namespace consensus
