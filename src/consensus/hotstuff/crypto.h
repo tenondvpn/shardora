@@ -51,7 +51,10 @@ public:
             const uint32_t& pool_idx,
             const std::shared_ptr<ElectInfo>& elect_info,
             const std::shared_ptr<bls::IBlsManager>& bls_mgr) :
-        pool_idx_(pool_idx), elect_info_(elect_info), bls_mgr_(bls_mgr) {};
+            pool_idx_(pool_idx), elect_info_(elect_info), bls_mgr_(bls_mgr) {
+        LoadInitGenesisCommonPk();
+    };
+    
     ~Crypto() {};
 
     Crypto(const Crypto&) = delete;
@@ -85,6 +88,11 @@ public:
     }
     
     inline std::shared_ptr<ElectItem> GetElectItem(uint32_t sharding_id, uint64_t elect_height) {
+        if (genesis_elect_items_[sharding_id] != nullptr && 
+                genesis_elect_items_[sharding_id]->ElectHeight() == elect_height) {
+            return genesis_elect_items_[sharding_id];
+        }
+
         return elect_info_->GetElectItem(sharding_id, elect_height);
     }
 
@@ -163,7 +171,35 @@ private:
     }
 
     void LoadInitGenesisCommonPk() {
-        
+        FILE* fd = fopen("./bls_pk", "r");
+        if (fd == NULL) {
+            return;
+        }
+
+        char data[1024*1024] = {0};
+        fread(data, 1, sizeof(data), fd);
+        fclose(fd);
+        nlohmann::json bls_pk_json;
+        if (!bls_pk_json.parse(data)) {
+            return;
+        }
+
+        for (auto item: bls_pk_json) {
+            uint32_t shard_id = item["shard_id"];
+            if (shard_id >= network::kConsensusShardEndNetworkId) {
+                return;
+            }
+
+            std::vector<std::string> pkey_str = {
+                item["x_c0"],
+                item["x_c1"],
+                item["y_c0"],
+                item["y_c1"]
+            };
+            BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
+            genesis_elect_items_[shard_id] = std::make_shared<ElectItem>(
+                shard_id, item["prev_height"], item["n"], *pkey.getPublicKey());
+        }
     }
 
     // 保留上一次 elect_item，避免 epoch 切换的影响
