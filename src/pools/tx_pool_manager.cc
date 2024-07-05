@@ -590,7 +590,6 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
 
 void TxPoolManager::SyncPoolsMaxHeight() {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     auto net_id = common::GlobalInfo::Instance()->network_id();
     if (net_id >= network::kConsensusWaitingShardBeginNetworkId) {
         net_id -= network::kConsensusWaitingShardOffset;
@@ -604,7 +603,8 @@ void TxPoolManager::SyncPoolsMaxHeight() {
         auto* sync_heights = msg_ptr->header.mutable_sync_heights();
         sync_heights->set_req(true);
         transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header);
-        ZJC_DEBUG("sync net data from network: %u, hash64: %lu", i, msg_ptr->header.hash64());
+        ZJC_DEBUG("sync net data from network: %u, hash64: %lu, src sharding id: %u",
+            i, msg_ptr->header.hash64(), msg_ptr->header.src_sharding_id());
         network::Route::Instance()->Send(msg_ptr);
     }
 }
@@ -639,16 +639,20 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
                 for (uint32_t i = 0; i < pool_idx; ++i) {
                     sync_heights->add_heights(tx_pool_[i].latest_height());
+                    sync_debug += std::to_string(tx_pool_[i].latest_height()) + " ";
                 }
             } else {
                 sync_heights->add_cross_heights(tx_pool_[common::kInvalidPoolIndex - 1].latest_height());
+                cross_debug += std::to_string(tx_pool_[common::kInvalidPoolIndex - 1].latest_height()) + " ";
             }
         }
 
         transport::TcpTransport::Instance()->SetMessageHash(msg);
         transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
-        ZJC_DEBUG("response pool heights: %s, cross pool heights: %s, now_max_sharding_id_: %u",
-            sync_debug.c_str(), cross_debug.c_str(), now_max_sharding_id_);
+        ZJC_DEBUG("response pool heights: %s, cross pool heights: %s, "
+            "now_max_sharding_id_: %u, src sharding id: %u",
+            sync_debug.c_str(), cross_debug.c_str(),
+            now_max_sharding_id_, msg_ptr->header.src_sharding_id());
     } else {
         if (msg_ptr->header.src_sharding_id() != common::GlobalInfo::Instance()->network_id()) {
             if (msg_ptr->header.src_sharding_id() != network::kRootCongressNetworkId) {
