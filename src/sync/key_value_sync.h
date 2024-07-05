@@ -36,7 +36,6 @@ using ViewBlockSyncedCallback = std::function<int(view_block::protobuf::ViewBloc
 enum SyncItemTag : uint32_t {
     kKeyValue = 0,
     kBlockHeight = 1,
-    kElectBlock = 2,
 };
 
 struct SyncItem {
@@ -81,11 +80,6 @@ public:
     KeyValueSync();
     ~KeyValueSync();
     void AddSyncHeight(
-        uint32_t network_id,
-        uint32_t pool_idx,
-        uint64_t height,
-        uint32_t priority);
-    void AddSyncElectBlock(
         uint32_t network_id,
         uint32_t pool_idx,
         uint64_t height,

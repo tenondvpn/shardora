@@ -1440,11 +1440,6 @@ int NetworkInit::BlockBlsAggSignatureValid(
             block.network_id(),
             block.electblock_height(),
             (common_pk == libff::alt_bn128_G2::zero()));
-        kv_sync_->AddSyncElectBlock(
-           network::kRootCongressNetworkId,
-           block.network_id(),
-           block.electblock_height(),
-           sync::kSyncHigh);
         return 1;
     }
 

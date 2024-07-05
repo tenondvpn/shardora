@@ -76,20 +76,6 @@ void KeyValueSync::AddSyncHeight(
         item->key.c_str(), item->priority);
 }
 
-void KeyValueSync::AddSyncElectBlock(
-        uint32_t network_id,
-        uint32_t elect_network_id,
-        uint64_t height,
-        uint32_t priority) {
-    assert(priority <= kSyncHighest);
-    auto item = std::make_shared<SyncItem>(
-        network_id, elect_network_id, height, priority, kElectBlock);
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    item_queues_[thread_idx].push(item);
-    ZJC_DEBUG("block height add new sync item key: %s, priority: %u",
-        item->key.c_str(), item->priority);
-}
-
 void KeyValueSync::ConsensusTimerMessage() {
     auto now_tm_us = common::TimeUtils::TimestampUs();
     auto now_tm_ms = common::TimeUtils::TimestampMs();
@@ -187,11 +173,7 @@ void KeyValueSync::CheckSyncItem() {
                 height_item->set_pool_idx(item->pool_idx);
                 height_item->set_height(item->height);
                 height_item->set_tag(item->tag);
-                if (item->tag == kElectBlock) {
-                    ZJC_DEBUG("try to sync elect block: %u_%u_%lu", item->network_id, item->pool_idx, item->height);
-                } else {
-                    ZJC_DEBUG("try to sync normal block: %u_%u_%lu", item->network_id, item->pool_idx, item->height);
-                }
+                ZJC_DEBUG("try to sync normal block: %u_%u_%lu", item->network_id, item->pool_idx, item->height);
             } else {
                 sync_req->add_keys(item->key);
             }
@@ -478,8 +460,6 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                     msg_ptr->header.hash64());
                 break;
             }
-        } else if (sync_msg.sync_value_req().heights(i).tag() == kElectBlock) {
-            ResponseElectBlock(network_id, sync_msg.sync_value_req().heights(i), msg, sync_res, add_size);
         } else {
             assert(false);
             continue;
@@ -498,146 +478,6 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
     ZJC_DEBUG("sync response ok des: %u, src hash64: %lu, des hash64: %lu",
         msg_ptr->header.src_sharding_id(), msg_ptr->header.hash64(), msg.hash64());
-}
-
-void KeyValueSync::ResponseElectBlock(
-        uint32_t network_id,
-        const sync::protobuf::SyncHeightItem& sync_item,
-        transport::protobuf::Header& msg,
-        sync::protobuf::SyncValueResponse* sync_res,
-        uint32_t& add_size) {
-    ZJC_DEBUG("request elect block coming.");
-    if (network_id >= network::kConsensusShardEndNetworkId ||
-            network_id < network::kRootCongressNetworkId) {
-        ZJC_DEBUG("request elect block coming network invalid: %u", network_id);
-        return;
-    }
-
-    auto elect_network_id = sync_item.pool_idx();
-    auto& shard_set = shard_with_elect_height_[elect_network_id];
-    auto iter = shard_set.rbegin();
-    std::vector<uint64_t> valid_elect_heights;
-    uint64_t min_height = 1;
-    if (iter != shard_set.rend()) {
-        min_height = *iter;
-    }
-
-    uint64_t elect_height = elect_net_heights_map_[elect_network_id];
-    ZJC_DEBUG("begin elect_network_id: %u, now get elect with height now: %lu, min: %lu",
-        elect_network_id,
-        elect_height, min_height);
-    while (elect_height >= min_height) {
-        ZJC_DEBUG("elect_network_id: %u, now get elect with height now: %lu, min: %lu",
-            elect_network_id,
-            elect_height, min_height);
-        block::protobuf::Block block;
-        if (!prefix_db_->GetBlockWithHeight(
-                network::kRootCongressNetworkId,
-                elect_network_id % common::kImmutablePoolSize,
-                elect_height,
-                &block)) {
-            ZJC_DEBUG("block invalid network: %u, pool: %lu, height: %lu",
-                network::kRootCongressNetworkId, elect_network_id % common::kImmutablePoolSize, elect_height);
-            return;
-        }      
-
-        ZJC_DEBUG("success elect_network_id: %u, now get elect with height now: %lu, min: %lu",
-            elect_network_id,
-            elect_height, min_height);  
-
-        elect::protobuf::ElectBlock prev_elect_block;
-        bool ec_block_loaded = false;
-        assert(block.tx_list_size() == 1);
-        for (int32_t i = 0; i < block.tx_list(0).storages_size(); ++i) {
-            ZJC_DEBUG("get tx storage key: %s, tx size: %d", block.tx_list(0).storages(i).key().c_str(), block.tx_list_size());
-            if (block.tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
-                if (!prev_elect_block.ParseFromString(block.tx_list(0).storages(i).value())) {
-                    assert(false);
-                    return;
-                }
-
-                ec_block_loaded = true;
-                break;
-            }
-        }
-
-        if (!ec_block_loaded) {
-            assert(false);
-            return;
-        }
-
-        valid_elect_heights.push_back(elect_height);
-        ZJC_DEBUG("success get network_id: %u, pool: %u, elect height: %lu, prev: %lu, min_height: %lu",
-            network::kRootCongressNetworkId, sync_item.pool_idx(), elect_height,
-            prev_elect_block.prev_members().prev_elect_height(), min_height);
-        if (elect_height == prev_elect_block.prev_members().prev_elect_height()) {
-            assert(false);
-            return;
-        }
-
-        ZJC_DEBUG("success elect_network_id: %u, now get elect with height now: %lu, min: %lu, prev: %lu",
-            elect_network_id,
-            elect_height, min_height, prev_elect_block.prev_members().prev_elect_height());  
-        elect_height = prev_elect_block.prev_members().prev_elect_height();
-
-    }
-
-    for (auto iter = valid_elect_heights.begin(); iter != valid_elect_heights.end(); ++iter) {
-        shard_set.insert(*iter);
-    }
-
-    auto fiter = shard_set.find(sync_item.height());
-    if (fiter == shard_set.end()) {
-        ZJC_DEBUG("find height error block invalid network: %u, pool: %lu, height: %lu",
-            network::kRootCongressNetworkId, network_id % common::kImmutablePoolSize, sync_item.height());
-        return;
-    }
-
-//    ++fiter;
-    for (; fiter != shard_set.end(); ++fiter) {
-        block::protobuf::Block block;
-        if (!prefix_db_->GetBlockWithHeight(
-                network::kRootCongressNetworkId,
-                elect_network_id % common::kImmutablePoolSize,
-                *fiter,
-                &block)) {
-            ZJC_DEBUG("block invalid network: %u, pool: %lu, height: %lu",
-                network::kRootCongressNetworkId, elect_network_id % common::kImmutablePoolSize, *fiter);
-            return;
-        }
-
-#ifdef ENABLE_HOTSTUFF
-        view_block::protobuf::ViewBlockItem pb_view_block;
-        if (!prefix_db_->GetViewBlockInfo(
-                    network::kRootCongressNetworkId,
-                    elect_network_id % common::kImmutablePoolSize,
-                    *fiter,
-                    &pb_view_block)) {
-            ZJC_DEBUG("view block invalid network: %u, pool: %lu, height: %lu",
-                network::kRootCongressNetworkId, elect_network_id % common::kImmutablePoolSize, *fiter);
-            return;
-        }
-
-        pb_view_block.mutable_block_info()->CopyFrom(block);
-#endif        
-
-        auto res = sync_res->add_res();
-        res->set_network_id(block.network_id());
-        res->set_pool_idx(block.pool_index());
-        res->set_height(block.height());
-#ifdef ENABLE_HOTSTUFF
-        res->set_value(pb_view_block.SerializeAsString());
-#else
-        res->set_value(block.SerializeAsString());
-#endif
-        res->set_tag(kElectBlock); // no use
-        add_size += 16 + res->value().size();
-        ZJC_DEBUG("block success network: %u, pool: %lu, height: %lu, add_size: %u, kSyncPacketMaxSize: %u",
-            block.network_id(), block.pool_index(), block.height(), add_size, kSyncPacketMaxSize);
-        if (add_size >= kSyncPacketMaxSize) {
-            break;
-        }
-    }
 }
 
 void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr) {
@@ -699,11 +539,6 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             }
 
             if (res == 1) {
-                AddSyncElectBlock(
-                        network::kRootCongressNetworkId,
-                        pb_vblock->block_info().network_id(),
-                        pb_vblock->block_info().electblock_height(),
-                        sync::kSyncHigh);
                 ZJC_ERROR("no elect item, %u_%u_%lu",
                     network::kRootCongressNetworkId,
                     pb_vblock->block_info().network_id(),
