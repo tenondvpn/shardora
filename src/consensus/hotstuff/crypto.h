@@ -181,6 +181,7 @@ private:
         fclose(fd);
         nlohmann::json bls_pk_json;
         if (!bls_pk_json.parse(data)) {
+            assert(false);
             return;
         }
 
@@ -188,6 +189,7 @@ private:
         for (auto item: bls_pk_json) {
             uint32_t shard_id = item["shard_id"];
             if (shard_id >= network::kConsensusShardEndNetworkId) {
+                assert(false);
                 return;
             }
 
