@@ -52,7 +52,7 @@ public:
             const std::shared_ptr<ElectInfo>& elect_info,
             const std::shared_ptr<bls::IBlsManager>& bls_mgr) :
             pool_idx_(pool_idx), elect_info_(elect_info), bls_mgr_(bls_mgr) {
-        LoadInitGenesisCommonPk();
+        // LoadInitGenesisCommonPk();
     };
 
     ~Crypto() {};
