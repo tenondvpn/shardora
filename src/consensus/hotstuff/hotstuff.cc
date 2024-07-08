@@ -1057,14 +1057,24 @@ Status Hotstuff::ConstructViewBlock(
         std::shared_ptr<ViewBlock>& view_block,
         std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose) {
     view_block->parent_hash = (pacemaker()->HighQC()->view_block_hash());
-    auto leader_idx = elect_info_->GetElectItemWithShardingId(
-        common::GlobalInfo::Instance()->network_id())->LocalMember()->index;
-    view_block->leader_idx = leader_idx;
+    auto elect_item = elect_info_->GetElectItemWithShardingId(
+        common::GlobalInfo::Instance()->network_id());
+    if (elect_item == nullptr) {
+        return Status::kError;
+    }
 
+    auto local_member = elect_item->LocalMember();
+    if (local_member == nullptr) {
+        return Status::kError;
+    }
+
+    auto leader_idx = local_member->index;
+    view_block->leader_idx = leader_idx;
     auto pre_v_block = std::make_shared<ViewBlock>();
     Status s = view_block_chain()->Get(view_block->parent_hash, pre_v_block);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("parent view block has not found, pool: %d, view: %lu, parent_view: %lu, leader: %lu, chain: %s",
+        ZJC_ERROR("parent view block has not found, pool: %d, view: %lu, "
+            "parent_view: %lu, leader: %lu, chain: %s",
             pool_idx_,
             pacemaker()->CurView(),
             pacemaker()->HighQC()->view(),
