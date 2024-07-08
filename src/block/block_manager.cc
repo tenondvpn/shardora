@@ -201,63 +201,31 @@ void BlockManager::HandleAllNewBlock() {
 bool BlockManager::UpdateBlockItemToCache(
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
-    if (!block->is_commited_block()) {
-        assert(false);
-        return false;
-    }
+    // if (!block->is_commited_block()) {
+    //     assert(false);
+    //     return false;
+    // }
 
-    if (prefix_db_->BlockExists(block->hash())) {
-        ZJC_DEBUG("failed cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
-                  block->network_id(),
-                  block->pool_index(),
-                  block->height(),
-                  block->tx_list_size(),
-                  common::Encode::HexEncode(block->hash()).c_str());
-        return false;
-    }
+    // if (prefix_db_->BlockExists(block->hash())) {
+    //     ZJC_DEBUG("failed cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
+    //               block->network_id(),
+    //               block->pool_index(),
+    //               block->height(),
+    //               block->tx_list_size(),
+    //               common::Encode::HexEncode(block->hash()).c_str());
+    //     return false;
+    // }
 
-    if (prefix_db_->BlockExists(block->network_id(), block->pool_index(), block->height())) {
-        ZJC_DEBUG("failed cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
-                  block->network_id(),
-                  block->pool_index(),
-                  block->height(),
-                  block->tx_list_size(),
-                  common::Encode::HexEncode(block->hash()).c_str());
-        return false;
-    }
+    // if (prefix_db_->BlockExists(block->network_id(), block->pool_index(), block->height())) {
+    //     ZJC_DEBUG("failed cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
+    //               block->network_id(),
+    //               block->pool_index(),
+    //               block->height(),
+    //               block->tx_list_size(),
+    //               common::Encode::HexEncode(block->hash()).c_str());
+    //     return false;
+    // }
 
-    const auto& tx_list = block->tx_list();
-#ifndef ENABLE_HOTSTUFF
-    if (tx_list.empty()) {
-        assert(false);
-        return false;
-    }
-#endif
-
-    ZJC_DEBUG("block manager cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
-              block->network_id(),
-              block->pool_index(),
-              block->height(),
-              block->tx_list_size(),
-              common::Encode::HexEncode(block->hash()).c_str());
-    for (int32_t i = 0; i < tx_list.size(); ++i) {
-        try
-        {
-            account_mgr_->NewBlockWithTx(block, tx_list[i], db_batch);
-
-        }
-        catch(const std::exception& e)
-        {
-            ZJC_ERROR("NewBlockWithTx failed, sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
-                block->network_id(),
-                block->pool_index(),
-                block->height(),
-                block->tx_list_size(),
-                common::Encode::HexEncode(block->hash()).c_str());
-            return false;
-        }
-        
-    }
     return true;
 }
 

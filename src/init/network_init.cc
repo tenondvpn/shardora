@@ -1159,13 +1159,6 @@ void NetworkInit::AddBlockItemToCache(
         return;
     }
 
-    const auto& tx_list = block->tx_list();
-    // 没有交易也可以提交
-    // if (tx_list.empty()) {
-    //     assert(false);
-    //     return;
-    // }
-
     ZJC_DEBUG("cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
         block->network_id(),
         block->pool_index(),
@@ -1181,6 +1174,7 @@ void NetworkInit::AddBlockItemToCache(
     }
 
     // one block must be one consensus pool
+    const auto& tx_list = block->tx_list();
     for (int32_t i = 0; i < tx_list.size(); ++i) {
 //         if (tx_list[i].status() != consensus::kConsensusSuccess) {
 //             continue;
