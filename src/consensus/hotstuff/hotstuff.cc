@@ -1057,8 +1057,8 @@ Status Hotstuff::ConstructViewBlock(
         std::shared_ptr<ViewBlock>& view_block,
         std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose) {
     view_block->parent_hash = (pacemaker()->HighQC()->view_block_hash());
-    auto elect_item = elect_info_->GetElectItem(
-            common::GlobalInfo::Instance()->network_id(), view_block->ElectHeight());
+    auto elect_item = elect_info_->GetElectItemWithShardingId(
+        common::GlobalInfo::Instance()->network_id());
     if (elect_item == nullptr) {
         return Status::kError;
     }
@@ -1106,6 +1106,12 @@ Status Hotstuff::ConstructViewBlock(
     }
 
     view_block->block = pb_block;
+    auto elect_item = elect_info_->GetElectItem(
+            common::GlobalInfo::Instance()->network_id(), view_block->ElectHeight());
+    if (!elect_item || !elect_item->IsValid()) {
+        return Status::kError;
+    }
+    
     view_block->hash = view_block->DoHash();
     return Status::kSuccess;
 }
