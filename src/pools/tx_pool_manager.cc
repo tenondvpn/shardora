@@ -617,6 +617,10 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
     }
 
     if (msg_ptr->header.sync_heights().req()) {
+        if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
+            return;
+        }
+        
         transport::protobuf::Header msg;
         msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
         dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
@@ -656,6 +660,10 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             now_max_sharding_id_, msg_ptr->header.src_sharding_id(),
             msg_ptr->header.hash64(), msg.hash64());
     } else {
+        if (msg_ptr->header.src_sharding_id() >= network::kConsensusShardEndNetworkId) {
+            return;
+        }
+
         if (msg_ptr->header.src_sharding_id() != common::GlobalInfo::Instance()->network_id()) {
             if (msg_ptr->header.src_sharding_id() != network::kRootCongressNetworkId) {
                 auto sharding_id = msg_ptr->header.src_sharding_id();
