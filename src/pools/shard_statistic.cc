@@ -678,10 +678,11 @@ void ShardStatistic::addPrepareMembers2JoinStastics(
             join_elect_node->set_elect_pos(addr_info->elect_pos());
             join_elect_node->set_stoke(stoke);
             join_elect_node->set_shard(shard);
-            ZJC_DEBUG("add node to election prepare member: %s, %s, stoke: %lu, shard: %u",
+            ZJC_DEBUG("add node to election prepare member: %s, %s, stoke: %lu, shard: %u, elect pos: %d",
                       common::Encode::HexEncode((*prepare_members)[i]->pubkey).c_str(),
                       common::Encode::HexEncode(secptr_->GetAddress((*prepare_members)[i]->pubkey)).c_str(),
-                      stoke, shard);
+                      stoke, shard,
+                      addr_info->elect_pos());
         }
     }
 
@@ -789,10 +790,11 @@ void ShardStatistic::addNewNode2JoinStatics(
         join_elect_node->set_stoke(stoke);
         join_elect_node->set_shard(shard_id);
         join_elect_node->set_elect_pos(addr_info->elect_pos());
-        ZJC_DEBUG("add node to election new member: %s, %s, stoke: %lu, shard: %u",
+        ZJC_DEBUG("add node to election new member: %s, %s, stoke: %lu, shard: %u, elect pos: %d",
                   common::Encode::HexEncode(pubkey).c_str(),
                   common::Encode::HexEncode(secptr_->GetAddress(pubkey)).c_str(),
-                  iter->second, shard_iter->second);
+                  iter->second, shard_iter->second,
+                  addr_info->elect_pos());
         ZJC_DEBUG("add new elect node: %s, stoke: %lu, shard: %u",
             common::Encode::HexEncode(pubkey).c_str(), iter->second, shard_iter->second);
     }
