@@ -620,7 +620,7 @@ int ShardStatistic::StatisticWithHeights(
     auto net_id = common::GlobalInfo::Instance()->network_id();
     elect_statistic.set_sharding_id(net_id);
     addHeightInfo2Statics(elect_statistic, statisticed_timeblock_height);
-    ZJC_DEBUG("success create statistic message: %s, "
+    ZJC_DEBUG("success create statistic message "
         "prev_timeblock_height_: %lu, statisticed_timeblock_height: %lu, "
         "now tm height: %lu, statistic: %s",
         prev_timeblock_height_,
