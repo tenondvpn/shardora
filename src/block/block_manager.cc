@@ -1663,7 +1663,9 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
     }
 
     if (shard_statistic_tx == nullptr) {
-        ZJC_DEBUG("shard_statistic_tx == nullptr, tx_gid: %s", common::Encode::HexEncode(tx_gid).c_str());
+        ZJC_DEBUG("shard_statistic_tx == nullptr, tx_gid: %s, is leader: %d",
+            common::Encode::HexEncode(tx_gid).c_str(),
+            leader);
         return nullptr;
     }
 
@@ -1712,9 +1714,10 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         auto& tx = shard_statistic_tx->tx_ptr->tx_info;
         tx.set_to(shard_statistic_tx->tx_ptr->address_info->addr());
         ZJC_DEBUG("success get statistic tx hash: %s, prev_timeblock_tm_sec_: %lu, "
-            "height: %lu, latest time block height: %lu",
+            "height: %lu, latest time block height: %lu, is leader: %d",
             common::Encode::HexEncode(shard_statistic_tx->tx_hash).c_str(),
-            prev_timeblock_tm_sec_, iter->first, latest_timeblock_height_);
+            prev_timeblock_tm_sec_, iter->first, latest_timeblock_height_,
+            leader);
         return shard_statistic_tx->tx_ptr;
     }
 
