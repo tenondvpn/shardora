@@ -1057,13 +1057,13 @@ Status Hotstuff::ConstructViewBlock(
         std::shared_ptr<ViewBlock>& view_block,
         std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose) {
     view_block->parent_hash = (pacemaker()->HighQC()->view_block_hash());
-    auto elect_item = elect_info_->GetElectItemWithShardingId(
+    auto local_elect_item = elect_info_->GetElectItemWithShardingId(
         common::GlobalInfo::Instance()->network_id());
-    if (elect_item == nullptr) {
+    if (local_elect_item == nullptr) {
         return Status::kError;
     }
 
-    auto local_member = elect_item->LocalMember();
+    auto local_member = local_elect_item->LocalMember();
     if (local_member == nullptr) {
         return Status::kError;
     }
