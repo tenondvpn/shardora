@@ -174,7 +174,7 @@ void Pacemaker::OnLocalTimeout() {
     ZJC_DEBUG("now send local timeout msg hash: %s, view: %u, pool: %u, "
         "elect height: %lu, member index: %u, member size: %u, "
         "bls_sign_x: %s, bls_sign_y: %s",
-        common::Encode::HexEncode(tc_ptr->msg_hash()).c_str(), 
+        common::Encode::HexEncode(tc_ptr->msg_hash()).c_str(),
         CurView(), pool_idx_, elect_item->ElectHeight(),
         timeout_msg.member_id(),
         leader_rotation_->MemberSize(common::GlobalInfo::Instance()->network_id()),
@@ -184,9 +184,16 @@ void Pacemaker::OnLocalTimeout() {
 }
 
 void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& msg_ptr) {
-    assert(leader_rotation_->MemberSize(common::GlobalInfo::Instance()->network_id()) != common::kInvalidUint32);
-    assert(msg_ptr->header.hotstuff_timeout_proto().member_id() <
-        leader_rotation_->MemberSize(common::GlobalInfo::Instance()->network_id()));
+    if (leader_rotation_->MemberSize(
+            common::GlobalInfo::Instance()->network_id()) == common::kInvalidUint32) {
+        return;
+    }
+
+    if (msg_ptr->header.hotstuff_timeout_proto().member_id() >=
+            leader_rotation_->MemberSize(common::GlobalInfo::Instance()->network_id())) {
+        return;
+    }
+
     auto& msg = msg_ptr->header;
     auto leader = leader_rotation_->GetLeader();
     leader_rotation_->SetExpectedLeader(leader);
