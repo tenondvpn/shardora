@@ -1629,10 +1629,6 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         uint32_t pool_index, 
         const std::string& tx_gid) {
     bool leader = tx_gid.empty();
-    if (leader) {
-        ZJC_DEBUG("leader get statistic tx coming.");
-    }
-
     while (shard_statistics_map_ptr_queue_.size() > 0) {
         std::this_thread::sleep_for(std::chrono::microseconds(50000ull));
     }

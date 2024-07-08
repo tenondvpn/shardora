@@ -541,7 +541,7 @@ bool ShardStatistic::CheckAllBlockStatisticed(uint32_t local_net_id) {
 int ShardStatistic::StatisticWithHeights(
         pools::protobuf::ElectStatistic& elect_statistic,
         uint64_t statisticed_timeblock_height) {
-    ZJC_DEBUG("38d2a932186ba9f9b2aa74c4c1ee8090a51b49a0 now statistic tx: statisticed_timeblock_height: %lu",
+    ZJC_DEBUG("now statistic tx: statisticed_timeblock_height: %lu",
         statisticed_timeblock_height);
 #ifdef TEST_NO_CROSS
         return kPoolsError;
@@ -598,21 +598,18 @@ int ShardStatistic::StatisticWithHeights(
     auto& join_elect_shard_map = statistic_info_ptr->join_elect_shard_map;
     auto& height_node_collect_info_map = statistic_info_ptr->height_node_collect_info_map;
     auto& id_pk_map = statistic_info_ptr->id_pk_map;
-    std::string debug_for_str;
     // 为当前委员会的节点填充共识工作的奖励信息
     setElectStatistics(height_node_collect_info_map, now_elect_members, elect_statistic, is_root);
     addNewNode2JoinStatics(
         join_elect_stoke_map,
         join_elect_shard_map,
         added_id_set,
-        debug_for_str,
         id_pk_map,
         elect_statistic);
     addPrepareMembers2JoinStastics(
         prepare_members,
         added_id_set,
         elect_statistic,
-        debug_for_str,
         now_elect_members);
     if (is_root) {
         elect_statistic.set_gas_amount(root_all_gas_amount);
@@ -623,18 +620,13 @@ int ShardStatistic::StatisticWithHeights(
     auto net_id = common::GlobalInfo::Instance()->network_id();
     elect_statistic.set_sharding_id(net_id);
     addHeightInfo2Statics(elect_statistic, statisticed_timeblock_height);
-
-    {
-        debug_for_str += std::to_string(all_gas_amount) + ",";
-        debug_for_str += std::to_string(net_id) + ",";
-        ZJC_DEBUG("38d2a932186ba9f9b2aa74c4c1ee8090a51b49a0 LLLLLL statistic :%s", ProtobufToJson(elect_statistic).c_str());
-        ZJC_DEBUG("38d2a932186ba9f9b2aa74c4c1ee8090a51b49a0 success create statistic message: %s, heights: %s, "
-            "prev_timeblock_height_: %lu, statisticed_timeblock_height: %lu",
-            debug_for_str.c_str(),
-            "heights.c_str()",
-            prev_timeblock_height_,
-            statisticed_timeblock_height);
-    }
+    ZJC_DEBUG("success create statistic message: %s, "
+        "prev_timeblock_height_: %lu, statisticed_timeblock_height: %lu, "
+        "now tm height: %lu, statistic: %s",
+        prev_timeblock_height_,
+        statisticed_timeblock_height,
+        latest_timeblock_height_,
+        ProtobufToJson(elect_statistic).c_str());
 
     return kPoolsSuccess;
 }
@@ -651,7 +643,6 @@ void ShardStatistic::addPrepareMembers2JoinStastics(
         shardora::common::MembersPtr &prepare_members,
         std::unordered_set<std::string> &added_id_set,
         shardora::pools::protobuf::ElectStatistic &elect_statistic,
-        std::string &debug_for_str,
         shardora::common::MembersPtr &now_elect_members) {
     if (prepare_members != nullptr) {
         for (uint32_t i = 0; i < prepare_members->size(); ++i) {
@@ -687,8 +678,6 @@ void ShardStatistic::addPrepareMembers2JoinStastics(
             join_elect_node->set_elect_pos(addr_info->elect_pos());
             join_elect_node->set_stoke(stoke);
             join_elect_node->set_shard(shard);
-            debug_for_str += common::Encode::HexEncode((*prepare_members)[i]->pubkey) + "," +
-                             std::to_string(stoke) + "," + std::to_string(shard) + ",";
             ZJC_DEBUG("add node to election prepare member: %s, %s, stoke: %lu, shard: %u",
                       common::Encode::HexEncode((*prepare_members)[i]->pubkey).c_str(),
                       common::Encode::HexEncode(secptr_->GetAddress((*prepare_members)[i]->pubkey)).c_str(),
@@ -712,7 +701,6 @@ void ShardStatistic::addNewNode2JoinStatics(
         std::map<uint64_t, std::unordered_map<std::string, uint64_t>> &join_elect_stoke_map,
         std::map<uint64_t, std::unordered_map<std::string, uint32_t>> &join_elect_shard_map,
         std::unordered_set<std::string> &added_id_set,
-        std::string &debug_for_str,
         std::unordered_map<std::string, std::string> &id_pk_map,
         shardora::pools::protobuf::ElectStatistic &elect_statistic) {
 #ifndef NDEBUG
@@ -761,7 +749,6 @@ void ShardStatistic::addNewNode2JoinStatics(
         }
     }
 
-    debug_for_str += "stoke: ";
     for (uint32_t i = 0; i < elect_nodes.size() && i < kWaitingElectNodesMaxCount; ++i) {
         std::string pubkey = elect_nodes[i];
         if (pubkey.size() == security::kUnicastAddressLength) {
@@ -802,8 +789,6 @@ void ShardStatistic::addNewNode2JoinStatics(
         join_elect_node->set_stoke(stoke);
         join_elect_node->set_shard(shard_id);
         join_elect_node->set_elect_pos(addr_info->elect_pos());
-        debug_for_str += common::Encode::HexEncode(elect_nodes[i]) + "," +
-            std::to_string(iter->second) + "," + std::to_string(shard_iter->second) + ",";
         ZJC_DEBUG("add node to election new member: %s, %s, stoke: %lu, shard: %u",
                   common::Encode::HexEncode(pubkey).c_str(),
                   common::Encode::HexEncode(secptr_->GetAddress(pubkey)).c_str(),
