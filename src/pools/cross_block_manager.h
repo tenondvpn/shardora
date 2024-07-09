@@ -37,7 +37,10 @@ public:
             return;
         }
 
-        assert(shard_id < network::kConsensusShardEndNetworkId);
+        if (shard_id >= network::kConsensusShardEndNetworkId) {
+            return;
+        }
+        
         if (cross_synced_max_heights_[shard_id] < height ||
                 cross_synced_max_heights_[shard_id] == common::kInvalidUint64) {
             cross_synced_max_heights_[shard_id] = height;

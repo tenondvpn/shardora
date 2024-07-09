@@ -591,10 +591,10 @@ Status HotstuffSyncer::processResponseLatestCommittedBlock(
     }
     
     auto& pb_latest_committed_block = view_block_res.latest_committed_block();
-
     // 可能已经更新，无需同步
     auto cur_latest_committed_block = view_block_chain(pool_idx)->LatestCommittedBlock();
-    if (cur_latest_committed_block && cur_latest_committed_block->view >= pb_latest_committed_block.view()) {
+    if (cur_latest_committed_block &&
+            cur_latest_committed_block->view >= pb_latest_committed_block.view()) {
         return Status::kSuccess;
     }
 
@@ -608,13 +608,12 @@ Status HotstuffSyncer::processResponseLatestCommittedBlock(
     if (!latest_commit_qc->valid()) {
         return Status::kError;
     }
-    latest_commit_qc->Unserialize(pb_latest_committed_block.self_commit_qc_str());
 
+    latest_commit_qc->Unserialize(pb_latest_committed_block.self_commit_qc_str());
     ZJC_DEBUG("pool: %d sync latest committed block: %lu", pool_idx, latest_vblock->view);
     // 执行 latest committed block
     auto hf = hotstuff_mgr_->hotstuff(pb_latest_committed_block.block_info().pool_index());
     hf->HandleSyncedViewBlock(latest_vblock, latest_commit_qc);
-    
     return Status::kSuccess;
 }
 
@@ -671,12 +670,19 @@ Status HotstuffSyncer::processResponseChain(
         if (qc_it == view_block_qc_map.end()) {
             continue;
         }
+
         auto view_block_qc = qc_it->second;
+        if (*view_block_qc->bls_agg_sign() == libff::alt_bn128_G1::zero()) {
+            ZJC_ERROR("failed get invalid commit qc agg sign invalid! %u",
+                view_block_qc->network_id());
+            continue;
+        }
+        
         // 如果本地有该 view_block_qc 对应的 view_block，则不用验证 qc 了并且跳过该块，节省 CPU
-        if (!chain->Has(view_block_qc->view_block_hash()) &&
-            crypto(pool_idx)->VerifyQC(
-                common::GlobalInfo::Instance()->network_id(), 
-                view_block_qc) != Status::kSuccess) {
+        if (!chain->Has(view_block_qc->view_block_hash()) && 
+                crypto(pool_idx)->VerifyQC(
+                    common::GlobalInfo::Instance()->network_id(), 
+                    view_block_qc) != Status::kSuccess) {
             continue;
         }
         

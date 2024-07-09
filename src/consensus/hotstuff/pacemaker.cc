@@ -102,6 +102,10 @@ void Pacemaker::OnLocalTimeout() {
     StopTimeoutTimer();
     duration_->ViewTimeout();
     defer(StartTimeoutTimer());
+    if (leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32) {
+        return;
+    }
+
     // 超时后先触发一次同步，主要是尽量同步最新的 HighQC，降低因 HighQC 不一致造成多次超时的概率
     // 由于 HotstuffSyncer 周期性同步，这里不触发同步影响也不大
     if (sync_pool_fn_) {
@@ -110,6 +114,7 @@ void Pacemaker::OnLocalTimeout() {
 
     auto elect_item = crypto_->GetLatestElectItem(common::GlobalInfo::Instance()->network_id());
     if (!elect_item) {
+        assert(false);
         return;
     }
 
@@ -141,6 +146,10 @@ void Pacemaker::OnLocalTimeout() {
             tc_ptr->msg_hash(),
             &bls_sign_x,
             &bls_sign_y) != Status::kSuccess) {
+        ZJC_ERROR("sign message failed: %u, elect height: %lu, hash: %s",
+            common::GlobalInfo::Instance()->network_id(),
+            elect_item->ElectHeight(),
+            common::Encode::HexEncode(tc_ptr->msg_hash()).c_str());
         return;
     }
 
@@ -163,15 +172,28 @@ void Pacemaker::OnLocalTimeout() {
     }
 
     ZJC_DEBUG("now send local timeout msg hash: %s, view: %u, pool: %u, "
-        "elect height: %lu, bls_sign_x: %s, bls_sign_y: %s",
-        common::Encode::HexEncode(tc_ptr->msg_hash()).c_str(), 
+        "elect height: %lu, member index: %u, member size: %u, "
+        "bls_sign_x: %s, bls_sign_y: %s",
+        common::Encode::HexEncode(tc_ptr->msg_hash()).c_str(),
         CurView(), pool_idx_, elect_item->ElectHeight(),
+        timeout_msg.member_id(),
+        leader_rotation_->MemberSize(common::GlobalInfo::Instance()->network_id()),
         bls_sign_x.c_str(),
         bls_sign_y.c_str());
     SendTimeout(msg_ptr);
 }
 
 void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& msg_ptr) {
+    if (leader_rotation_->MemberSize(
+            common::GlobalInfo::Instance()->network_id()) == common::kInvalidUint32) {
+        return;
+    }
+
+    if (msg_ptr->header.hotstuff_timeout_proto().member_id() >=
+            leader_rotation_->MemberSize(common::GlobalInfo::Instance()->network_id())) {
+        return;
+    }
+
     auto& msg = msg_ptr->header;
     auto leader = leader_rotation_->GetLeader();
     leader_rotation_->SetExpectedLeader(leader);
@@ -219,9 +241,13 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         assert(false);
         return;
     }
-    
+
     // 统计 bls 签名
     auto& timeout_proto = msg.hotstuff_timeout_proto();
+    if (timeout_proto.member_id() >= leader_rotation_->MemberSize(common::GlobalInfo::Instance()->network_id())) {
+        return;
+    }
+
     if (timeout_proto.view() < CurView() || 
             timeout_proto.view() < high_qc_->view() || 
             timeout_proto.view() < high_tc_->view()) {

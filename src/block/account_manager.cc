@@ -625,9 +625,10 @@ void AccountManager::HandleJoinElectTx(
         account_info->set_elect_pos(join_info.member_idx());
         prefix_db_->AddAddressInfo(tx.from(), *account_info);
         ZJC_INFO("3 get address info failed create new address to this id: %s,"
-            "shard: %u, local shard: %u",
+            "shard: %u, local shard: %u, elect pos: %u",
             common::Encode::HexEncode(tx.from()).c_str(), block.network_id(),
-            common::GlobalInfo::Instance()->network_id());
+            common::GlobalInfo::Instance()->network_id(),
+            join_info.member_idx());
 
     } else {
         if (account_info->latest_height() >= block.height()) {
@@ -638,13 +639,19 @@ void AccountManager::HandleJoinElectTx(
         account_info->set_balance(tx.balance());
         account_info->set_elect_pos(join_info.member_idx());
         prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
+        ZJC_INFO("3 1 get address info failed create new address to this id: %s,"
+            "shard: %u, local shard: %u, elect pos: %u",
+            common::Encode::HexEncode(tx.from()).c_str(), block.network_id(),
+            common::GlobalInfo::Instance()->network_id(),
+            join_info.member_idx());
     }
 
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
-    ZJC_DEBUG("join elect to address new elect pos %s: %lu",
-        common::Encode::HexEncode(tx.from()).c_str(), join_info.member_idx());
+    ZJC_DEBUG("join elect to address new elect pos %s: %lu, balance: %lu",
+        common::Encode::HexEncode(tx.from()).c_str(),
+        join_info.member_idx(), account_info->balance());
 }
 
 void AccountManager::RunUpdateAccounts() {

@@ -60,20 +60,22 @@ public:
     void addHeightInfo2Statics(shardora::pools::protobuf::ElectStatistic &elect_statistic, uint64_t max_tm_height);
 
 
-    void addPrepareMembers2JoinStastics(shardora::common::MembersPtr &prepare_members,
-                                        std::unordered_set<std::string> &added_id_set,
-                                        shardora::pools::protobuf::ElectStatistic &elect_statistic,
-                                        std::string &debug_for_str,
-                                        shardora::common::MembersPtr &now_elect_members);
+    void addPrepareMembers2JoinStastics(
+        shardora::common::MembersPtr &prepare_members,
+        std::unordered_set<std::string> &added_id_set,
+        shardora::pools::protobuf::ElectStatistic &elect_statistic,
+        shardora::common::MembersPtr &now_elect_members);
 
-    void addNewNode2JoinStatics(std::map<uint64_t, std::unordered_map<std::string, uint64_t>> &join_elect_stoke_map, 
-                                std::map<uint64_t, std::unordered_map<std::string, uint32_t>> &join_elect_shard_map, 
-                                std::unordered_set<std::string> &added_id_set, 
-                                std::string &debug_for_str, 
-                                std::unordered_map<std::string, std::string> &id_pk_map, 
-                                shardora::pools::protobuf::ElectStatistic &elect_statistic);
+    void addNewNode2JoinStatics(
+        std::map<uint64_t, std::unordered_map<std::string, uint64_t>> &join_elect_stoke_map, 
+        std::map<uint64_t, std::unordered_map<std::string, uint32_t>> &join_elect_shard_map, 
+        std::unordered_set<std::string> &added_id_set, 
+        std::unordered_map<std::string, std::string> &id_pk_map, 
+        shardora::pools::protobuf::ElectStatistic &elect_statistic);
 
-    void setElectStatistics(std::map<uint64_t, std::unordered_map<std::string, shardora::pools::StatisticMemberInfoItem>> &height_node_collect_info_map, 
+    void setElectStatistics(
+        std::map<uint64_t, 
+        std::unordered_map<std::string, shardora::pools::StatisticMemberInfoItem>>&,
         shardora::common::MembersPtr &now_elect_members, 
         shardora::pools::protobuf::ElectStatistic &elect_statistic,
         bool is_root);

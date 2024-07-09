@@ -346,6 +346,7 @@ void ElectTxItem::JoinNewNodes2ElectNodes(shardora::common::MembersPtr &members,
         ZJC_DEBUG("LLLLLL after join elect: count:%d, %s", count, ids.c_str());
     }
 }
+
 void ElectTxItem::ChooseNodeForEachIndex(
     bool hold_pos,
     uint32_t min_area_weight,
@@ -628,7 +629,7 @@ int ElectTxItem::CreateNewElect(
                   elect_block.prev_members().prev_elect_height());
         SetPrevElectInfo(elect_block, block_tx);
     }
-
+    
     std::string val = elect_block.SerializeAsString();
     auto &storage = *block_tx.add_storages();
     storage.set_key(protos::kElectNodeAttrElectBlock);

@@ -183,6 +183,10 @@ void Hotstuff::NewView(const std::shared_ptr<SyncInfo>& sync_info) {
 }
 
 void Hotstuff::HandleProposeMsg(const transport::protobuf::Header& header) {
+    if (leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32) {
+        return;
+    }
+
     auto b = common::TimeUtils::TimestampMs();
     defer({
         auto e = common::TimeUtils::TimestampMs();
@@ -622,10 +626,12 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::protobuf::Header& header)
 Status Hotstuff::ResetReplicaTimers() {
     // Reset timer msg broadcast
     auto rst_timer_msg = std::make_shared<hotstuff::protobuf::ResetTimerMsg>();
-    rst_timer_msg->set_leader_idx(
-        elect_info_->GetElectItemWithShardingId(
-            common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
+    auto local_index = leader_rotation()->GetLocalMemberIdx();
+    if (local_index == common::kInvalidUint32) {
+        return Status::kError;
+    }
 
+    rst_timer_msg->set_leader_idx(local_index);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -652,10 +658,21 @@ Status Hotstuff::ResetReplicaTimers() {
 
 void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
     auto& rst_timer_msg = header.hotstuff().reset_timer_msg();
+    auto elect_item = elect_info_->GetElectItemWithShardingId(
+            common::GlobalInfo::Instance()->network_id());
+    if (elect_item == nullptr) {
+        assert(false);
+        return;
+    }
+
+    if (elect_item->LocalMember() == nullptr) {
+        // assert(false);
+        return;
+    }
+
     ZJC_DEBUG("====5.1 pool: %d, onResetTimer leader_idx: %u, local_idx: %u, hash64: %lu",
         pool_idx_, rst_timer_msg.leader_idx(),
-        elect_info_->GetElectItemWithShardingId(
-            common::GlobalInfo::Instance()->network_id())->LocalMember()->index,
+        elect_item->LocalMember()->index,
         header.hash64());
     // TODO(有逻辑安全性问题)，必须是验证聚合签名才能改变本地状态
     // leader 必须不需要保证正确
@@ -1040,14 +1057,24 @@ Status Hotstuff::ConstructViewBlock(
         std::shared_ptr<ViewBlock>& view_block,
         std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose) {
     view_block->parent_hash = (pacemaker()->HighQC()->view_block_hash());
-    auto leader_idx = elect_info_->GetElectItemWithShardingId(
-        common::GlobalInfo::Instance()->network_id())->LocalMember()->index;
-    view_block->leader_idx = leader_idx;
+    auto local_elect_item = elect_info_->GetElectItemWithShardingId(
+        common::GlobalInfo::Instance()->network_id());
+    if (local_elect_item == nullptr) {
+        return Status::kError;
+    }
 
+    auto local_member = local_elect_item->LocalMember();
+    if (local_member == nullptr) {
+        return Status::kError;
+    }
+
+    auto leader_idx = local_member->index;
+    view_block->leader_idx = leader_idx;
     auto pre_v_block = std::make_shared<ViewBlock>();
     Status s = view_block_chain()->Get(view_block->parent_hash, pre_v_block);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("parent view block has not found, pool: %d, view: %lu, parent_view: %lu, leader: %lu, chain: %s",
+        ZJC_ERROR("parent view block has not found, pool: %d, view: %lu, "
+            "parent_view: %lu, leader: %lu, chain: %s",
             pool_idx_,
             pacemaker()->CurView(),
             pacemaker()->HighQC()->view(),
@@ -1189,6 +1216,10 @@ Status Hotstuff::SendMsgToLeader(
 }
 
 void Hotstuff::TryRecoverFromStuck() {
+    if (leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32) {
+        return;
+    }
+
     if (timer_delay_us_ > common::TimeUtils::TimestampUs()) {
         return;
     }

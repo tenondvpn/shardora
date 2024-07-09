@@ -50,6 +50,16 @@ public:
             pool_consen_stat_map_[pool_idx] = std::make_shared<ConsensusStat>(pool_idx, members);
         }
     }
+
+    ElectItem(
+            uint32_t sharding_id,
+            uint64_t elect_height,
+            uint32_t n,
+            const libff::alt_bn128_G2& common_pk) :
+        members_(nullptr), local_member_(nullptr), elect_height_(elect_height), common_pk_(common_pk), security_ptr_(nullptr) {
+        SetMemberCount(n);
+    }
+
     ~ElectItem() {};
 
     ElectItem(const ElectItem&) = delete;

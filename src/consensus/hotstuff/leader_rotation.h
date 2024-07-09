@@ -32,8 +32,19 @@ public:
     inline uint32_t GetLocalMemberIdx() const {
         auto sharding_id = common::GlobalInfo::Instance()->network_id();
         assert(elect_info_ != nullptr);
-        assert(elect_info_->GetElectItemWithShardingId(sharding_id));
-        return elect_info_->GetElectItemWithShardingId(sharding_id)->LocalMember()->index;
+        auto elect_item = elect_info_->GetElectItemWithShardingId(sharding_id);
+        if (elect_item == nullptr) {
+            // assert(false);
+            return common::kInvalidUint32;
+        }
+
+        auto local_mem_ptr = elect_info_->GetElectItemWithShardingId(sharding_id)->LocalMember();
+        if (local_mem_ptr == nullptr) {
+            // assert(false);
+            return common::kInvalidUint32;
+        }
+
+        return local_mem_ptr->index;
     }
 
     void SetExpectedLeader(const common::BftMemberPtr& leader) {
@@ -43,6 +54,16 @@ public:
     void SetExtraNonce(const std::string& extra_nonce) {
         extra_nonce_ = extra_nonce; 
     }
+
+    inline uint32_t MemberSize(uint32_t sharding_id) const {
+        auto elect_item = elect_info_->GetElectItemWithShardingId(sharding_id);
+        if (!elect_item) {
+            return common::kInvalidUint32;
+        }
+        
+        return elect_item->Members()->size(); 
+    }
+
 private:
     inline common::MembersPtr Members(uint32_t sharding_id) const {
         auto elect_item = elect_info_->GetElectItemWithShardingId(sharding_id);
