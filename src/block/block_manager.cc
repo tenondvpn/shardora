@@ -42,8 +42,7 @@ int BlockManager::Init(
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<contract::ContractManager>& contract_mgr,
         const std::string& local_id,
-        DbBlockCallback new_block_callback,
-        block::BlockAggValidCallback block_agg_valid_func) {
+        DbBlockCallback new_block_callback) {
     account_mgr_ = account_mgr;
     db_ = db;
     pools_mgr_ = pools_mgr;
@@ -54,7 +53,6 @@ int BlockManager::Init(
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(
         db_, local_id, max_consensus_sharding_id_, pools_mgr_, account_mgr_);
-    block_agg_valid_func_ = block_agg_valid_func;
     if (common::GlobalInfo::Instance()->for_ck_server()) {
         ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "", db, contract_mgr_);
         ZJC_DEBUG("support ck");
@@ -158,13 +156,13 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         auto block_ptr = std::make_shared<block::protobuf::Block>(header.block());
-        if (block_agg_valid_func_(*block_ptr) == 0) {
-            // just one thread
-            auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-            block_from_network_queue_[thread_idx].push(block_ptr);
-            ZJC_DEBUG("success add new network block 2 net: %u, pool: %u, height: %lu",
-                block_ptr->network_id(), block_ptr->pool_index(), block_ptr->height());
-        }
+        // if (block_agg_valid_func_(*block_ptr) == 0) {
+        //     // just one thread
+        //     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        //     block_from_network_queue_[thread_idx].push(block_ptr);
+        //     ZJC_DEBUG("success add new network block 2 net: %u, pool: %u, height: %lu",
+        //         block_ptr->network_id(), block_ptr->pool_index(), block_ptr->height());
+        // }
     }
 }
 
@@ -259,35 +257,36 @@ void BlockManager::AddWaitingCheckSignBlock(
 }
 
 void BlockManager::CheckWaitingBlocks(uint32_t shard, uint64_t elect_height) {
-    auto net_iter = waiting_check_sign_blocks_.find(shard);
-    if (net_iter == waiting_check_sign_blocks_.end()) {
-        return;
-    }
+    assert(false);
+    // auto net_iter = waiting_check_sign_blocks_.find(shard);
+    // if (net_iter == waiting_check_sign_blocks_.end()) {
+    //     return;
+    // }
 
-    auto height_iter = net_iter->second.find(elect_height);
-    if (height_iter == net_iter->second.end()) {
-        return;
-    }
+    // auto height_iter = net_iter->second.find(elect_height);
+    // if (height_iter == net_iter->second.end()) {
+    //     return;
+    // }
 
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    while (!height_iter->second.empty()) {
-        auto block_item = height_iter->second.front();
-        height_iter->second.pop();
-        if (block_agg_valid_func_ != nullptr && block_agg_valid_func_(*block_item) == 0) {
-            ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, "
-                "net: %u, pool: %u, height: %lu",
-                common::Encode::HexEncode(block_item->hash()).c_str(),
-                common::Encode::HexEncode(block_item->bls_agg_sign_x()).c_str(),
-                block_item->network_id(),
-                block_item->pool_index(),
-                block_item->height());
-            continue;
-        }
+    // auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    // while (!height_iter->second.empty()) {
+    //     auto block_item = height_iter->second.front();
+    //     height_iter->second.pop();
+    //     if (block_agg_valid_func_ != nullptr && block_agg_valid_func_(*block_item) == 0) {
+    //         ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, "
+    //             "net: %u, pool: %u, height: %lu",
+    //             common::Encode::HexEncode(block_item->hash()).c_str(),
+    //             common::Encode::HexEncode(block_item->bls_agg_sign_x()).c_str(),
+    //             block_item->network_id(),
+    //             block_item->pool_index(),
+    //             block_item->height());
+    //         continue;
+    //     }
 
-        ZJC_DEBUG("success add new network block 0 net: %u, pool: %u, height: %lu",
-            block_item->network_id(), block_item->pool_index(), block_item->height());
-        block_from_network_queue_[thread_idx].push(block_item);
-    }
+    //     ZJC_DEBUG("success add new network block 0 net: %u, pool: %u, height: %lu",
+    //         block_item->network_id(), block_item->pool_index(), block_item->height());
+    //     block_from_network_queue_[thread_idx].push(block_item);
+    // }
 }
 
 void BlockManager::ConsensusAddBlock(

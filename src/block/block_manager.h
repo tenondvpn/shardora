@@ -43,8 +43,7 @@ public:
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<contract::ContractManager>& contract_mgr,
         const std::string& local_id,
-        DbBlockCallback new_block_callback,
-        block::BlockAggValidCallback block_agg_valid_func);
+        DbBlockCallback new_block_callback);
     // just for genesis create new block
     void GenesisNewBlock(
         const std::shared_ptr<block::protobuf::Block>& block_item);
@@ -190,7 +189,6 @@ private:
         uint64_t,
         std::shared_ptr<pools::protobuf::ElectStatistic>>> shard_timeblock_statistic_;
     transport::MultiThreadHandler& net_handler_;
-    block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
     std::shared_ptr<pools::protobuf::ToTxHeights> statistic_heights_ptr_ = nullptr;
 //     std::shared_ptr<pools::protobuf::ToTxHeights> to_tx_heights_ptr_ = nullptr;
     common::MembersPtr latest_members_ = nullptr;

@@ -191,8 +191,7 @@ int NetworkInit::Init(int argc, char** argv) {
         security_,
         contract_mgr_,
         security_->GetAddress(),
-        new_db_cb,
-        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
+        new_db_cb);
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
     kv_sync_->Init(
