@@ -276,7 +276,7 @@ void GenesisBlockInit::PrepareCreateGenesisBlocks(uint32_t shard_node_net_id) {
         std::shared_ptr<pools::ShardStatistic> statistic_mgr = nullptr;
         std::shared_ptr<contract::ContractManager> ct_mgr = nullptr;
         account_mgr_->Init(db_, pools_mgr_);
-        block_mgr_->Init(account_mgr_, db_, pools_mgr_, statistic_mgr, security, ct_mgr, "", nullptr, nullptr);
+        block_mgr_->Init(account_mgr_, db_, pools_mgr_, statistic_mgr, security, ct_mgr, "", nullptr);
         return;
 };
 
