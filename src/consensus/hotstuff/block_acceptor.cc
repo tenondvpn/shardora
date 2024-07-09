@@ -499,6 +499,7 @@ void BlockAcceptor::commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr
     new_block_cache_callback_(
             queue_item_ptr->block_ptr,
             *queue_item_ptr->db_batch);
+    assert(network::IsSameToLocalShard(block->network_id()));
     block_mgr_->ConsensusAddBlock(queue_item_ptr);
     if (block->tx_list_size() > 0) {
         pools_mgr_->TxOver(block->pool_index(), block->tx_list());

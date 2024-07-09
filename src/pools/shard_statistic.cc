@@ -691,7 +691,6 @@ void ShardStatistic::addPrepareMembers2JoinStastics(
             "new nodes size: %u, now members size: %u, prepare members size: %u",
             now_elect_height_,
             prepare_elect_height_,
-
             elect_statistic.join_elect_nodes_size(),
             now_elect_members->size(),
             prepare_members->size());

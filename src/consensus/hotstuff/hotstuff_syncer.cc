@@ -591,10 +591,10 @@ Status HotstuffSyncer::processResponseLatestCommittedBlock(
     }
     
     auto& pb_latest_committed_block = view_block_res.latest_committed_block();
-
     // 可能已经更新，无需同步
     auto cur_latest_committed_block = view_block_chain(pool_idx)->LatestCommittedBlock();
-    if (cur_latest_committed_block && cur_latest_committed_block->view >= pb_latest_committed_block.view()) {
+    if (cur_latest_committed_block &&
+            cur_latest_committed_block->view >= pb_latest_committed_block.view()) {
         return Status::kSuccess;
     }
 
@@ -608,13 +608,12 @@ Status HotstuffSyncer::processResponseLatestCommittedBlock(
     if (!latest_commit_qc->valid()) {
         return Status::kError;
     }
-    latest_commit_qc->Unserialize(pb_latest_committed_block.self_commit_qc_str());
 
+    latest_commit_qc->Unserialize(pb_latest_committed_block.self_commit_qc_str());
     ZJC_DEBUG("pool: %d sync latest committed block: %lu", pool_idx, latest_vblock->view);
     // 执行 latest committed block
     auto hf = hotstuff_mgr_->hotstuff(pb_latest_committed_block.block_info().pool_index());
     hf->HandleSyncedViewBlock(latest_vblock, latest_commit_qc);
-    
     return Status::kSuccess;
 }
 
