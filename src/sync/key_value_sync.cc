@@ -567,7 +567,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
 //             assert(false);
         }
 
-        // synced_keys_.insert(key);
+        synced_keys_.insert(key);
         timeout_queue_.push_back(key);
         if (timeout_queue_.size() >= 10240) {
             synced_keys_.erase(timeout_queue_.front());

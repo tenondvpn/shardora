@@ -172,21 +172,10 @@ int NetworkInit::Init(int argc, char** argv) {
     elect_mgr_ = std::make_shared<elect::ElectManager>(
         vss_mgr_, account_mgr_, block_mgr_, security_, bls_mgr_, db_,
         nullptr);
-    ZJC_DEBUG("init 0 11");
-#ifndef ENABLE_HOTSTUFF
-    kv_sync_->Init(
-        block_mgr_,
-        db_,
-        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
-#endif
-    ZJC_DEBUG("init 0 12");
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(
         security_, db_, kv_sync_, account_mgr_);
-    ZJC_DEBUG("init 0 13");
     account_mgr_->Init(db_, pools_mgr_);
-    ZJC_DEBUG("init 0 14");
     zjcvm::Execution::Instance()->Init(db_, account_mgr_);
-    ZJC_DEBUG("init 0 15");
     auto new_db_cb = std::bind(
         &NetworkInit::DbNewBlockCallback,
         this,
@@ -204,11 +193,7 @@ int NetworkInit::Init(int argc, char** argv) {
         security_->GetAddress(),
         new_db_cb,
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
-    ZJC_DEBUG("init 0 14");
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
-
-
-#ifdef ENABLE_HOTSTUFF
     hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
     kv_sync_->Init(
         block_mgr_,
@@ -229,41 +214,17 @@ int NetworkInit::Init(int argc, char** argv) {
         db_,
         std::bind(&NetworkInit::AddBlockItemToCache, this,
             std::placeholders::_1, std::placeholders::_2));
-#else
-    bft_mgr_ = std::make_shared<consensus::BftManager>();
-    auto consensus_init_res = bft_mgr_->Init(
-        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1),
-        contract_mgr_,
-        gas_prepayment_,
-        vss_mgr_,
-        account_mgr_,
-        block_mgr_,
-        elect_mgr_,
-        pools_mgr_,
-        security_,
-        tm_block_mgr_,
-        bls_mgr_,
-        kv_sync_,
-        db_,
-        nullptr,
-        common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
-        std::bind(&NetworkInit::AddBlockItemToCache, this,
-            std::placeholders::_1, std::placeholders::_2));
-#endif
-
     if (consensus_init_res != consensus::kConsensusSuccess) {
         INIT_ERROR("init bft failed!");
         return kInitError;
     }
 
-    ZJC_DEBUG("init 1");
     tm_block_mgr_->Init(vss_mgr_,account_mgr_);
     if (elect_mgr_->Init() != elect::kElectSuccess) {
         INIT_ERROR("init elect manager failed!");
         return kInitError;
     }
 
-    ZJC_DEBUG("init 2");
     if (common::GlobalInfo::Instance()->network_id() != common::kInvalidUint32 &&
             common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
         if (elect_mgr_->Join(
@@ -279,22 +240,15 @@ int NetworkInit::Init(int argc, char** argv) {
         latest_heights.push_back(pools_mgr_->latest_height(i));
     }
 
-    ZJC_DEBUG("init 3");
     shard_statistic_->Init(latest_heights);
-    ZJC_DEBUG("init 4");
     block_mgr_->LoadLatestBlocks();
-    ZJC_DEBUG("init 5");
     RegisterFirewallCheck();
-
-#ifdef ENABLE_HOTSTUFF
     // 启动共识和同步
     hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(hotstuff_mgr_, db_, kv_sync_);
     hotstuff_syncer_->Start();
     hotstuff_mgr_->Start();
     // 以上应该放入 hotstuff 实例初始化中，并接收创世块
     AddCmds();
-#endif
-
     transport::TcpTransport::Instance()->Start(false);
     ZJC_DEBUG("init 6");
     if (InitHttpServer() != kInitSuccess) {
@@ -350,7 +304,6 @@ int NetworkInit::Init(int argc, char** argv) {
 }
 
 void NetworkInit::AddCmds() {
-#ifdef ENABLE_HOTSTUFF
     cmd_.AddCommand("pc", [this](const std::vector<std::string>& args){
         if (args.size() < 1) {
             return;
@@ -372,25 +325,18 @@ void NetworkInit::AddCmds() {
                   << ",CurView: " << pacemaker->CurView() << std::endl;
         chain->Print();
     });
-#endif
 }
 
 void NetworkInit::RegisterFirewallCheck() {
     net_handler_.AddFirewallCheckCallback(
         common::kBlsMessage,
         std::bind(&bls::BlsManager::FirewallCheckMessage, bls_mgr_.get(), std::placeholders::_1));
-#ifdef ENABLE_HOTSTUFF
     net_handler_.AddFirewallCheckCallback(
         common::kHotstuffMessage,
         std::bind(&consensus::HotstuffManager::FirewallCheckMessage, hotstuff_mgr_.get(), std::placeholders::_1));
     net_handler_.AddFirewallCheckCallback(
         common::kHotstuffSyncMessage,
         std::bind(&hotstuff::HotstuffSyncer::FirewallCheckMessage, hotstuff_syncer_.get(), std::placeholders::_1));
-#else
-    net_handler_.AddFirewallCheckCallback(
-        common::kConsensusMessage,
-        std::bind(&consensus::BftManager::FirewallCheckMessage, bft_mgr_.get(), std::placeholders::_1));
-#endif
     net_handler_.AddFirewallCheckCallback(
         common::kBlockMessage,
         std::bind(&block::BlockManager::FirewallCheckMessage, block_mgr_.get(), std::placeholders::_1));
@@ -1411,70 +1357,6 @@ void NetworkInit::HandleElectionBlock(
         ZJC_DEBUG("now send join elect request transaction. second message.");
         another_join_elect_msg_needed_ = false;
     }
-}
-
-int NetworkInit::BlockBlsAggSignatureValid(
-        const block::protobuf::Block& block) try {
-#ifdef ENABLE_HOTSTUFF
-    return 0;
-#endif
-    // TODO: fix check genesis block
-    if (block.height() == 0) {
-        return 0;
-    }
-
-    if (block.bls_agg_sign_x().empty() || block.bls_agg_sign_y().empty()) {
-        assert(false);
-        return -1;
-    }
-
-    libff::alt_bn128_G2 common_pk = libff::alt_bn128_G2::zero();
-    auto members = elect_mgr_->GetNetworkMembersWithHeight(
-        block.electblock_height(),
-        block.network_id(),
-        &common_pk,
-        nullptr);
-    if (members == nullptr || common_pk == libff::alt_bn128_G2::zero()) {
-        ZJC_ERROR("failed get elect members or common pk: %u, %lu, %d",
-            block.network_id(),
-            block.electblock_height(),
-            (common_pk == libff::alt_bn128_G2::zero()));
-        return 1;
-    }
-
-    auto block_hash = consensus::GetBlockHash(block);
-    if (block_hash != block.hash()) {
-        assert(false);
-        return -1;
-    }
-
-    libff::alt_bn128_G1 sign;
-    sign.X = libff::alt_bn128_Fq(common::Encode::HexEncode(block.bls_agg_sign_x()).c_str());
-    sign.Y = libff::alt_bn128_Fq(common::Encode::HexEncode(block.bls_agg_sign_y()).c_str());
-    sign.Z = libff::alt_bn128_Fq::one();
-    auto g1_hash = libBLS::Bls::Hashing(block_hash);
-#if MOCK_SIGN
-    bool check_res = true;
-#else            
-    bool check_res = libBLS::Bls::Verification(g1_hash, sign, common_pk);
-#endif
-    if (!check_res) {
-        ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, common pk x: %s",
-            common::Encode::HexEncode(block_hash).c_str(),
-            common::Encode::HexEncode(block.bls_agg_sign_x()).c_str(),
-            libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0).c_str());
-        //assert(check_res);
-    }
-
-    return check_res ? 0 : -1;
-} catch (std::exception& e) {
-    ZJC_ERROR("get invalid bls sign: %s, net: %u, height: %lu, prehash: %s, hash: %s, sign: %s, %s",
-        e.what(), block.network_id(), block.height(),
-        common::Encode::HexEncode(block.prehash()).c_str(),
-        common::Encode::HexEncode(block.hash()).c_str(),
-        common::Encode::HexEncode(block.bls_agg_sign_x()).c_str(),
-        common::Encode::HexEncode(block.bls_agg_sign_y()).c_str());
-    return -1;
 }
 
 }  // namespace init
