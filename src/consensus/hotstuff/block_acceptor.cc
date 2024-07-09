@@ -34,11 +34,11 @@ BlockAcceptor::BlockAcceptor(
         std::shared_ptr<timeblock::TimeBlockManager> &tm_block_mgr,
         std::shared_ptr<elect::ElectManager> elect_mgr,
         consensus::BlockCacheCallback new_block_cache_callback):
-    pool_idx_(pool_idx), security_ptr_(security), account_mgr_(account_mgr),
-    elect_info_(elect_info), vss_mgr_(vss_mgr), contract_mgr_(contract_mgr),
-    db_(db), gas_prepayment_(gas_prepayment), pools_mgr_(pools_mgr),
-    block_mgr_(block_mgr), tm_block_mgr_(tm_block_mgr), elect_mgr_(elect_mgr), new_block_cache_callback_(new_block_cache_callback) {
-    
+        pool_idx_(pool_idx), security_ptr_(security), account_mgr_(account_mgr),
+        elect_info_(elect_info), vss_mgr_(vss_mgr), contract_mgr_(contract_mgr),
+        db_(db), gas_prepayment_(gas_prepayment), pools_mgr_(pools_mgr),
+        block_mgr_(block_mgr), tm_block_mgr_(tm_block_mgr), elect_mgr_(elect_mgr), 
+        new_block_cache_callback_(new_block_cache_callback) {
     tx_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr_, block_mgr_, tm_block_mgr_);
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);    
 };
@@ -500,7 +500,6 @@ void BlockAcceptor::commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr
             queue_item_ptr->block_ptr,
             *queue_item_ptr->db_batch);
     block_mgr_->ConsensusAddBlock(queue_item_ptr);
-
     if (block->tx_list_size() > 0) {
         pools_mgr_->TxOver(block->pool_index(), block->tx_list());
         auto& txs = block->tx_list();

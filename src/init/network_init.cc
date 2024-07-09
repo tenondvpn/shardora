@@ -1138,28 +1138,29 @@ void NetworkInit::AddBlockItemToCache(
     }
 
     if (prefix_db_->BlockExists(block->hash())) {
-        ZJC_DEBUG("failed cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
+        ZJC_DEBUG("failed cache new block coming sharding id: %u, "
+            "pool: %d, height: %lu, tx size: %u, hash: %s",
             block->network_id(),
             block->pool_index(),
             block->height(),
             block->tx_list_size(),
             common::Encode::HexEncode(block->hash()).c_str());
-//         assert(false);
         return;
     }
 
     if (prefix_db_->BlockExists(block->network_id(), block->pool_index(), block->height())) {
-        ZJC_DEBUG("failed cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
+        ZJC_DEBUG("failed cache new block coming sharding id: %u, "
+            "pool: %d, height: %lu, tx size: %u, hash: %s",
             block->network_id(),
             block->pool_index(),
             block->height(),
             block->tx_list_size(),
             common::Encode::HexEncode(block->hash()).c_str());
-//         assert(false);
         return;
     }
 
-    ZJC_DEBUG("cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
+    ZJC_DEBUG("cache new block coming sharding id: %u, "
+        "pool: %d, height: %lu, tx size: %u, hash: %s",
         block->network_id(),
         block->pool_index(),
         block->height(),
@@ -1176,9 +1177,9 @@ void NetworkInit::AddBlockItemToCache(
     // one block must be one consensus pool
     const auto& tx_list = block->tx_list();
     for (int32_t i = 0; i < tx_list.size(); ++i) {
-//         if (tx_list[i].status() != consensus::kConsensusSuccess) {
-//             continue;
-//         }
+        if (tx_list[i].status() != consensus::kConsensusSuccess) {
+            continue;
+        }
 
         switch (tx_list[i].step()) {
         case pools::protobuf::kNormalFrom:
@@ -1187,7 +1188,6 @@ void NetworkInit::AddBlockItemToCache(
         case pools::protobuf::kContractGasPrepayment:
         case pools::protobuf::kContractCreateByRootFrom: // 只处理 from 不处理合约账户
             account_mgr_->NewBlockWithTx(block, tx_list[i], db_batch);
-            // 对于 kRootCreateAddress 的合约账户创建不需要增加 prepayment，root 只记录路由
             break;
         case pools::protobuf::kConsensusLocalTos:
         case pools::protobuf::kContractCreate:
@@ -1196,8 +1196,6 @@ void NetworkInit::AddBlockItemToCache(
             account_mgr_->NewBlockWithTx(block, tx_list[i], db_batch);
             gas_prepayment_->NewBlockWithTx(block, tx_list[i], db_batch);
             ZJC_DEBUG("DDD txInfo: %s", ProtobufToJson(tx_list[i], true).c_str());
-            // ZJC_DEBUG("ddd 00");
-            // db::print_write_batch(db_batch);
             zjcvm::Execution::Instance()->NewBlockWithTx(block, tx_list[i], db_batch);
             break;
         default:

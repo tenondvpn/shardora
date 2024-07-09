@@ -289,55 +289,12 @@ void BlockManager::CheckWaitingBlocks(uint32_t shard, uint64_t elect_height) {
     }
 }
 
-int BlockManager::NetworkNewBlock(
-        const std::shared_ptr<block::protobuf::Block>& block_item,
-        const bool need_valid) {
-    ZJC_DEBUG("success add new network block 1 net: %u, pool: %u, height: %lu",
-        block_item->network_id(), block_item->pool_index(), block_item->height());
-    if (block_item != nullptr) {
-        if (!block_item->is_commited_block()) {
-            ZJC_ERROR("not cross block coming: %s, signx: %s, net: %u, pool: %u, height: %lu",
-                common::Encode::HexEncode(block_item->hash()).c_str(),
-                common::Encode::HexEncode(block_item->bls_agg_sign_x()).c_str(),
-                block_item->network_id(),
-                block_item->pool_index(),
-                block_item->height());
-            assert(false);
-            return kBlockError;
-        }
-
-        if (need_valid && block_agg_valid_func_ != nullptr && block_agg_valid_func_(*block_item) == 0) {
-            ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, net: %u, pool: %u, height: %lu",
-                common::Encode::HexEncode(block_item->hash()).c_str(),
-                common::Encode::HexEncode(block_item->bls_agg_sign_x()).c_str(),
-                block_item->network_id(),
-                block_item->pool_index(),
-                block_item->height());
-            //assert(false);
-            AddWaitingCheckSignBlock(block_item);
-            return kBlockVerifyAggSignFailed;
-        }
-
-        CheckWaitingBlocks(block_item->network_id(), block_item->electblock_height());
-        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-        block_from_network_queue_[thread_idx].push(block_item);
-    }
-
-    return kBlockSuccess;
-}
-
 void BlockManager::ConsensusAddBlock(
         const BlockToDbItemPtr& block_item) {
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     consensus_block_queues_[thread_idx].push(block_item);
     ZJC_DEBUG("queue size thread_idx: %d consensus_block_queues_: %d",
         thread_idx, consensus_block_queues_[thread_idx].size());
-}
-
-void BlockManager::NewBlockWithTx(
-        const std::shared_ptr<block::protobuf::Block>& block_item,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch) {
 }
 
 void BlockManager::HandleAllConsensusBlocks() {

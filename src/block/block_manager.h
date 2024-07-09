@@ -45,9 +45,6 @@ public:
         const std::string& local_id,
         DbBlockCallback new_block_callback,
         block::BlockAggValidCallback block_agg_valid_func);
-    int NetworkNewBlock(
-        const std::shared_ptr<block::protobuf::Block>& block_item,
-        const bool need_valid);
     // just for genesis create new block
     void GenesisNewBlock(
         const std::shared_ptr<block::protobuf::Block>& block_item);
@@ -55,17 +52,31 @@ public:
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random);
-    void ConsensusAddBlock(
-        const BlockToDbItemPtr& block_item);
+    void ConsensusAddBlock(const BlockToDbItemPtr& block_item);
     int GetBlockWithHeight(
         uint32_t network_id,
         uint32_t pool_index,
         uint64_t height,
         block::protobuf::Block& block_item);
-    void NewBlockWithTx(
+    void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members);
+    pools::TxItemPtr GetStatisticTx(uint32_t pool_index, const std::string& tx_hash);
+    pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);
+    pools::TxItemPtr GetToTx(uint32_t pool_index, const std::string& tx_hash);
+    void LoadLatestBlocks();
+    // just genesis call
+    void GenesisAddAllAccount(
+        uint32_t des_sharding_id,
         const std::shared_ptr<block::protobuf::Block>& block_item,
-        const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
+    void GenesisAddOneAccount(
+        uint32_t des_sharding_id,
+        const block::protobuf::BlockTx& tx,
+        const uint64_t& latest_height,
+        db::DbWriteBatch& db_batch);
+    bool ShouldStopConsensus();
+    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
+    bool HasSingleTx(uint32_t pool_index);
+
     void SetMaxConsensusShardingId(uint32_t sharding_id) {
         max_consensus_sharding_id_ = sharding_id;
     }
@@ -81,24 +92,6 @@ public:
     void SetCreateElectTxFunction(pools::CreateConsensusItemFunction func) {
         create_elect_tx_cb_ = func;
     }
-
-    void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members);
-    pools::TxItemPtr GetStatisticTx(uint32_t pool_index, const std::string& tx_hash);
-    pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);
-    pools::TxItemPtr GetToTx(uint32_t pool_index, const std::string& tx_hash);
-    void LoadLatestBlocks();
-    // just genesis call
-    void GenesisAddAllAccount(
-        uint32_t des_sharding_id,
-        const std::shared_ptr<block::protobuf::Block>& block_item,
-        db::DbWriteBatch& db_batch);
-    void GenesisAddOneAccount(uint32_t des_sharding_id,
-                              const block::protobuf::BlockTx& tx,
-                              const uint64_t& latest_height,
-                              db::DbWriteBatch& db_batch);
-    bool ShouldStopConsensus();
-    int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
-    bool HasSingleTx(uint32_t pool_index);
 
 private:
     typedef std::map<uint64_t, std::shared_ptr<BlockTxsItem>, std::greater<uint64_t>> StatisticMap;
