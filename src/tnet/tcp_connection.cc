@@ -309,7 +309,7 @@ void TcpConnection::OnWrite() {
                 out_buffer_list_.pop_front();
                 break;
             }
-
+            
             int n = socket_->Write(bufferPtr->data(), len);
             if (n < 0) {
                 if (errno != EAGAIN && errno != EWOULDBLOCK) {
@@ -324,6 +324,7 @@ void TcpConnection::OnWrite() {
 
                 break;
             }
+            ZJC_DEBUG("====0.2 write success");
 
             bufferPtr->AddOffset(n);
         }
