@@ -1,5 +1,6 @@
 #include "transport/multi_thread.h"
 
+#include <common/log.h>
 #include <functional>
 
 #include "common/utils.h"
@@ -63,6 +64,7 @@ void ThreadHandler::HandleMessage() {
                 }
                 break;
             }
+            ZJC_DEBUG("====1.2 thread handle msg, hash64: %llu", msg_ptr->header.hash64());
 
             // ZJC_DEBUG("start message handled msg hash: %lu, thread idx: %d",
             //     msg_ptr->header.hash64(), thread_idx);

@@ -295,9 +295,10 @@ int BaseDht::Bootstrap(
                 boot_nodes[i]->public_ip.c_str(),
                 boot_nodes[i]->public_port);
         } else {
-            DHT_DEBUG("bootstrap from %s:%d success\n",
+            DHT_DEBUG("bootstrap from %s:%d success, hash64: %llu\n",
                 boot_nodes[i]->public_ip.c_str(),
-                boot_nodes[i]->public_port);
+                boot_nodes[i]->public_port,
+                msg.hash64());
         }
     }
 
@@ -380,6 +381,8 @@ NodePtr BaseDht::FindNodeDirect(transport::protobuf::Header& message) {
 }
 
 void BaseDht::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    ZJC_DEBUG("====1.0 base dht recv msg, hash: %llu",
+        msg_ptr->header.hash64());
     auto& header = msg_ptr->header;
     if (header.type() != common::kDhtMessage) {
         //         DHT_ERROR("invalid message type[%d]", header.type());

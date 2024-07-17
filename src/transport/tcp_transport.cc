@@ -332,7 +332,7 @@ void TcpTransport::Output() {
 
                     TRANSPORT_INFO("====0.2 send");
                     int res = tcp_conn->Send(item_ptr->hash64, item_ptr->msg);
-                    TRANSPORT_INFO("====0.3 send %d", res);
+                    TRANSPORT_INFO("====0.3 send hash: %llu, res: %d", item_ptr->hash64, res);
                     if (res != 0) {
                         TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu] res: %d",
                             item_ptr->des_ip.c_str(), item_ptr->port, 0, res);
