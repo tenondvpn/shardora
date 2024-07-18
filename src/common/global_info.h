@@ -277,7 +277,7 @@ private:
     int32_t tcp_server_thread_count_ = 4;
     std::string ip_db_path_;
     std::unordered_map<uint64_t, uint16_t> thread_with_index_;
-    uint8_t message_handler_thread_count_ = 8;
+    uint8_t message_handler_thread_count_ = 4;
     bool for_ck_server_ = false;
     std::string ck_host_ = "127.0.0.1";
     uint16_t ck_port_ = 9000;

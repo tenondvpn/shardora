@@ -154,11 +154,7 @@ int NetworkInit::Init(int argc, char** argv) {
     if (InitNetworkSingleton() != kInitSuccess) {
         INIT_ERROR("InitNetworkSingleton failed!");
         return kInitError;
-    }
-
-
-    transport::TcpTransport::Instance()->Start(false);
-    common::GlobalInfo::Instance()->set_main_inited_success();    
+    }    
 
     block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
     bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_);
@@ -203,11 +199,6 @@ int NetworkInit::Init(int argc, char** argv) {
     
 #ifdef ENABLE_HOTSTUFF
     hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
-    kv_sync_->Init(
-        block_mgr_,
-        db_,
-        std::bind(&consensus::HotstuffManager::VerifySyncedViewBlock,
-            hotstuff_mgr_, std::placeholders::_1));
     auto consensus_init_res = hotstuff_mgr_->Init(
         contract_mgr_,
         gas_prepayment_,
@@ -274,10 +265,18 @@ int NetworkInit::Init(int argc, char** argv) {
     ZJC_DEBUG("init 5");
     RegisterFirewallCheck();
 
+    transport::TcpTransport::Instance()->Start(false);
+    common::GlobalInfo::Instance()->set_main_inited_success();
+    
 #ifdef ENABLE_HOTSTUFF
-    // 启动共识和同步
+    // 启动共识和同步    
     hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(hotstuff_mgr_, db_, kv_sync_);
     hotstuff_syncer_->Start();
+    kv_sync_->Init(
+        block_mgr_,
+        db_,
+        std::bind(&consensus::HotstuffManager::VerifySyncedViewBlock,
+            hotstuff_mgr_, std::placeholders::_1));    
     hotstuff_mgr_->Start();
     // 以上应该放入 hotstuff 实例初始化中，并接收创世块
     AddCmds();
