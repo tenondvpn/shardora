@@ -106,6 +106,7 @@ add_definitions(
 	#-DHOTSTUFF_TEST
 	-DENABLE_HOTSTUFF
 	-DDISABLE_GENESIS_BLS_VERIFY
+	-DDISABLE_TO_TXS
 )
 
 add_compile_options(-fPIC)

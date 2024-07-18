@@ -1018,7 +1018,9 @@ void BlockManager::AddNewBlock(
     }
 
     // db_batch 并没有用，只是更新下 to_txs_pool 的状态，如高度
+#ifndef DISABLE_TO_TXS
     to_txs_pool_->NewBlock(block_item, db_batch);
+#endif
 
     // 当前节点和 block 分配的 shard 不同，要跨分片交易
     if (block_item->pool_index() == common::kRootChainPoolIndex) {
