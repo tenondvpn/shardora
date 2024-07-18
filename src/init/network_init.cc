@@ -181,8 +181,10 @@ int NetworkInit::Init(int argc, char** argv) {
         this,
         std::placeholders::_1,
         std::placeholders::_2);
+    ZJC_DEBUG("init 0 16");
     shard_statistic_ = std::make_shared<pools::ShardStatistic>(
         elect_mgr_, db_, security_, pools_mgr_, contract_mgr_);
+    ZJC_DEBUG("init 0 17");
     block_mgr_->Init(
         account_mgr_,
         db_,
@@ -193,9 +195,9 @@ int NetworkInit::Init(int argc, char** argv) {
         security_->GetAddress(),
         new_db_cb,
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
-    ZJC_DEBUG("init 0 14");
+    ZJC_DEBUG("init 0 18");
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
-    
+    ZJC_DEBUG("init 0 19");
     
 #ifdef ENABLE_HOTSTUFF
     hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
