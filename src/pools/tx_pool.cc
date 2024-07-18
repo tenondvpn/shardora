@@ -446,7 +446,7 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
             uint64_t p50 = common::GetNthElement(latencys_us_, 0.5);
             latencys_us_.clear();
         
-            ZJC_DEBUG("tx latency p50: %llu", p50);
+            ZJC_INFO("tx latency p50: %llu", p50);
         }
 #endif
     }
