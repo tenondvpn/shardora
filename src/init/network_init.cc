@@ -156,6 +156,10 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+
+    transport::TcpTransport::Instance()->Start(false);
+    common::GlobalInfo::Instance()->set_main_inited_success();    
+
     block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
     bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_);
     elect_mgr_ = std::make_shared<elect::ElectManager>(
@@ -195,8 +199,8 @@ int NetworkInit::Init(int argc, char** argv) {
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
     ZJC_DEBUG("init 0 14");
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
-
-
+    
+    
 #ifdef ENABLE_HOTSTUFF
     hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
     kv_sync_->Init(
@@ -279,7 +283,7 @@ int NetworkInit::Init(int argc, char** argv) {
     AddCmds();
 #endif
 
-    transport::TcpTransport::Instance()->Start(false);
+    // transport::TcpTransport::Instance()->Start(false);
     ZJC_DEBUG("init 6");
     if (InitHttpServer() != kInitSuccess) {
         INIT_ERROR("InitHttpServer failed!");
@@ -293,7 +297,7 @@ int NetworkInit::Init(int argc, char** argv) {
     }
 
     inited_ = true;
-    common::GlobalInfo::Instance()->set_main_inited_success();
+    // common::GlobalInfo::Instance()->set_main_inited_success();
     cmd_.AddCommand("gs", [this](const std::vector<std::string>& args) {
         if (args.size() < 3) {
             return;
