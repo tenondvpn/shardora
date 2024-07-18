@@ -46,7 +46,6 @@ void ThreadHandler::HandleMessage() {
     msg_handler_->ThreadWaitNotify();
     ZJC_DEBUG("====1.1 thread handle msg, destory: %d", destroy_);
     while (!destroy_) {
-        ZJC_DEBUG("====1.2 thread handle msg, %d", common::GlobalInfo::Instance()->main_inited_success());
         if (!common::GlobalInfo::Instance()->main_inited_success()) {
             usleep(100000);
             continue;
