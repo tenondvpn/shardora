@@ -150,8 +150,6 @@ int NetworkInit::Init(int argc, char** argv) {
     account_mgr_ = std::make_shared<block::AccountManager>();
     network::UniversalManager::Instance()->Init(security_, db_, account_mgr_);
     
-    transport::TcpTransport::Instance()->Start(false);
-    
     ZJC_DEBUG("init 0 10");
     if (InitNetworkSingleton() != kInitSuccess) {
         INIT_ERROR("InitNetworkSingleton failed!");
@@ -281,7 +279,7 @@ int NetworkInit::Init(int argc, char** argv) {
     AddCmds();
 #endif
 
-    // transport::TcpTransport::Instance()->Start(false);
+    transport::TcpTransport::Instance()->Start(false);
     ZJC_DEBUG("init 6");
     if (InitHttpServer() != kInitSuccess) {
         INIT_ERROR("InitHttpServer failed!");
