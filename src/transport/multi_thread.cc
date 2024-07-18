@@ -44,13 +44,11 @@ void ThreadHandler::HandleMessage() {
     ZJC_DEBUG("thread handler thread index coming thread_idx: %d, maping_thread_idx: %d, message_handler_thread_count: %d", 
         thread_idx, maping_thread_idx, common::GlobalInfo::Instance()->message_handler_thread_count());
     msg_handler_->ThreadWaitNotify();
-    ZJC_DEBUG("====1.1 thread handle msg, destory: %d", destroy_);
     while (!destroy_) {
         if (!common::GlobalInfo::Instance()->main_inited_success()) {
             usleep(100000);
             continue;
         }
-        ZJC_DEBUG("====1.3 thread handle msg");
         
         uint32_t count = 0;
         while (count++ < kMaxHandleMessageCount) {
@@ -58,7 +56,6 @@ void ThreadHandler::HandleMessage() {
             auto msg_ptr = msg_handler_->GetMessageFromQueue(
                 thread_idx, 
                 (maping_thread_idx == (common::GlobalInfo::Instance()->message_handler_thread_count() - 1)));
-            ZJC_DEBUG("====1.4 thread handle msg, has msg ptr: %d", msg_ptr == nullptr);
             if (!msg_ptr) {
                 auto etime = common::TimeUtils::TimestampUs();
                 if (etime - btime > 200000) {
@@ -67,7 +64,6 @@ void ThreadHandler::HandleMessage() {
                 }
                 break;
             }
-            ZJC_DEBUG("====1.5 thread handle msg, hash64: %llu", msg_ptr->header.hash64());
 
             // ZJC_DEBUG("start message handled msg hash: %lu, thread idx: %d",
             //     msg_ptr->header.hash64(), thread_idx);
@@ -502,22 +498,16 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool htt
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     for (uint32_t pri = kTransportPrioritySystem; pri < kTransportPriorityMaxCount; ++pri) {
         MessagePtr msg_obj;
-        threads_message_queues_[thread_idx][pri].pop(&msg_obj);
-        ZJC_DEBUG("====1.3.5 pop valid message: %d, size: %u, thread: %u",
-            msg_obj == nullptr, threads_message_queues_[thread_idx][pri].size(), thread_idx);        
+        threads_message_queues_[thread_idx][pri].pop(&msg_obj);        
         if (msg_obj == nullptr) {
             continue;
         }
-
-        ZJC_DEBUG("====1.3.6 pop valid message hash: %lu, size: %u, thread: %u",
-            msg_obj->header.hash64(), threads_message_queues_[thread_idx][pri].size(), thread_idx);        
+        
         if (msg_obj->handle_timeout < now_tm_ms) {
             ZJC_DEBUG("remove handle timeout invalid message hash: %lu", msg_obj->header.hash64());
             continue;
         }
-
-        ZJC_DEBUG("====1.4 pop valid message hash: %lu, size: %u, thread: %u",
-            msg_obj->header.hash64(), threads_message_queues_[thread_idx][pri].size(), thread_idx);
+        
         return msg_obj;
     }
 

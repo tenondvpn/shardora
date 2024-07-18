@@ -381,8 +381,6 @@ NodePtr BaseDht::FindNodeDirect(transport::protobuf::Header& message) {
 }
 
 void BaseDht::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    ZJC_DEBUG("====1.6 base dht recv msg, hash: %llu",
-        msg_ptr->header.hash64());
     auto& header = msg_ptr->header;
     if (header.type() != common::kDhtMessage) {
         //         DHT_ERROR("invalid message type[%d]", header.type());
@@ -400,8 +398,6 @@ void BaseDht::HandleMessage(const transport::MessagePtr& msg_ptr) {
 void BaseDht::DhtDispatchMessage(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.dht_proto().has_bootstrap_req()) {
         ZJC_DEBUG("has_bootstrap_req");
-        ZJC_DEBUG("====1.7 base dht recv msg, hash: %llu",
-            msg_ptr->header.hash64());
         ProcessBootstrapRequest(msg_ptr);
         return;
     }
@@ -440,8 +436,6 @@ void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    ZJC_DEBUG("====1.8 base dht recv msg, hash: %llu", msg_ptr->header.hash64());    
-
     // 验证消息签名
     std::string sign_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(header);
     if (security_->Verify(
@@ -451,8 +445,6 @@ void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
         DHT_ERROR("verifi signature failed!");
         return;
     }
-
-    ZJC_DEBUG("====1.9 base dht recv msg, hash: %llu", msg_ptr->header.hash64());
 
     auto id = security_->GetAddress(dht_msg.bootstrap_req().pubkey());
     DhtKeyManager dhtkey(header.src_sharding_id(), id);
@@ -471,9 +463,6 @@ void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    ZJC_DEBUG("====1.10 base dht recv msg, hash: %llu", msg_ptr->header.hash64());
-    auto hash64 = msg_ptr->header.hash64();
-
     msg.set_sign(sign);
     DHT_DEBUG("bootstrap response to: %s:%d, node: %s:%d",
         msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort(),
@@ -481,7 +470,6 @@ void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
         dht_msg.bootstrap_req().public_port());
     auto msg_str = msg.SerializeAsString();
     msg_ptr->conn->Send(msg_str);
-    ZJC_DEBUG("====1.11 base dht recv msg, hash: %llu", hash64);
     NodePtr node = std::make_shared<Node>(
         msg.src_sharding_id(),
         dht_msg.bootstrap_req().public_ip(),
@@ -491,7 +479,6 @@ void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
     msg_ptr->conn->SetPeerIp(dht_msg.bootstrap_req().public_ip());
     msg_ptr->conn->SetPeerPort(dht_msg.bootstrap_req().public_port());
     node->join_way = kJoinFromBootstrapReq;
-    ZJC_DEBUG("====1.12 base dht recv msg, hash: %llu", hash64);
     Join(node);
 }
 

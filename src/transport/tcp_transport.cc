@@ -296,9 +296,7 @@ int TcpTransport::Send(
 }
 
 void TcpTransport::Output() {
-    TRANSPORT_INFO("====0.0.0 output enter");
     while (!destroy_) {
-        TRANSPORT_INFO("====0.0.1 enter while");
         while (true) {
             std::shared_ptr<tnet::TcpConnection> conn = nullptr;
             from_client_conn_queues_.pop(&conn);
@@ -309,8 +307,7 @@ void TcpTransport::Output() {
             std::string key = conn->PeerIp() + ":" + std::to_string(conn->PeerPort());
             from_conn_map_[key] = conn;
         }
-
-        TRANSPORT_INFO("====0.0.2 about to try");
+        
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             while (true) {
                 std::shared_ptr<ClientItem> item_ptr = nullptr;
@@ -318,21 +315,17 @@ void TcpTransport::Output() {
                 if (item_ptr == nullptr) {
                     break;
                 }
-
-                TRANSPORT_INFO("====0.0 pop item");
+                
                 int32_t try_times = 0;
                 while (try_times++ < 3) {
                     auto tcp_conn = GetConnection(item_ptr->des_ip, item_ptr->port);
-                    TRANSPORT_INFO("====0.1 get connection, %d", tcp_conn == nullptr);
                     if (tcp_conn == nullptr) {
                         TRANSPORT_ERROR("get tcp connection failed[%s][%d][hash64: %llu]",
                             item_ptr->des_ip.c_str(), item_ptr->port, 0);
                         continue;
                     }
-
-                    TRANSPORT_INFO("====0.2 send");
+                    
                     int res = tcp_conn->Send(item_ptr->hash64, item_ptr->msg);
-                    TRANSPORT_INFO("====0.3 send hash: %llu, res: %d", item_ptr->hash64, res);
                     if (res != 0) {
                         TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu] res: %d",
                             item_ptr->des_ip.c_str(), item_ptr->port, 0, res);
@@ -342,7 +335,6 @@ void TcpTransport::Output() {
                         
                         continue;
                     }
-                    TRANSPORT_INFO("====0.4 send to tcp connection success");
 
                     break;
                 }

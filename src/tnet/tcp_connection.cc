@@ -324,7 +324,6 @@ void TcpConnection::OnWrite() {
 
                 break;
             }
-            ZJC_DEBUG("====0.2 write success");
 
             bufferPtr->AddOffset(n);
         }
