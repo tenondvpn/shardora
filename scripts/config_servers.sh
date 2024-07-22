@@ -120,7 +120,7 @@ servers=(
 	10.0.0.116
 	10.0.0.117
 	10.0.0.118
-	10.0.0.119	
+	10.0.0.119
 )
 
 pass='Xf4aGbTaf!'
@@ -159,13 +159,22 @@ sudo sysctl -w net.core.rmem_max=16777216
 sudo sysctl -w net.core.wmem_max=16777216
 sudo sysctl -w net.ipv4.tcp_rmem='4096 87380 16777216'
 sudo sysctl -w net.ipv4.tcp_wmem='4096 65536 16777216'
+sudo sysctl -w net.ipv4.tcp_max_syn_backlog=4096
+sudo sysctl -w net.core.somaxconn=4096
+sudo sysctl -w net.ipv4.ip_local_port_range="1024 65535"
 
 echo 'net.core.rmem_max=16777216' | sudo tee -a /etc/sysctl.conf
 echo 'net.core.wmem_max=16777216' | sudo tee -a /etc/sysctl.conf
 echo 'net.ipv4.tcp_rmem=4096 87380 16777216' | sudo tee -a /etc/sysctl.conf
 echo 'net.ipv4.tcp_wmem=4096 65536 16777216' | sudo tee -a /etc/sysctl.conf
+echo 'net.ipv4.tcp_max_syn_backlog=4096' | sudo tee -a /etc/sysctl.conf
+echo 'net.core.somaxconn=4096' | sudo tee -a /etc/sysctl.conf
+echo 'net.ipv4.ip_local_port_range=1024 65535' | sudo tee -a /etc/sysctl.conf
+
 sudo sysctl -p
 
+ulimit -c unlimited
+ulimit -n 65535
 
 echo "[$server] == done"
 EOF

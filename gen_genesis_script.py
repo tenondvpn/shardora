@@ -456,8 +456,9 @@ done
             dbname = get_dbname_by_shard(s)
             code_str += f"""
 for n in {nodes_name_str}; do
-    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/\${{n}}/db
+    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/\${{n}}/db &
 done
+wait
 """
 
         code_str += f"""
@@ -479,8 +480,9 @@ EOF
         dbname = get_dbname_by_shard(s)
         code_str += f"""
 for n in {nodes_name_str}; do
-    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/${{n}}/db
+    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/${{n}}/db &
 done
+wait
 """    
         
     code_str += """) &\n"""

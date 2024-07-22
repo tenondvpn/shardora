@@ -161,11 +161,12 @@ int NetworkInit::Init(int argc, char** argv) {
         std::bind(&NetworkInit::HandleMessage, this, std::placeholders::_1));
     account_mgr_ = std::make_shared<block::AccountManager>();
     network::UniversalManager::Instance()->Init(security_, db_, account_mgr_);
+    
     ZJC_DEBUG("init 0 10");
     if (InitNetworkSingleton() != kInitSuccess) {
         INIT_ERROR("InitNetworkSingleton failed!");
         return kInitError;
-    }
+    }    
 
     block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
     bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_);
@@ -181,8 +182,10 @@ int NetworkInit::Init(int argc, char** argv) {
         this,
         std::placeholders::_1,
         std::placeholders::_2);
+    ZJC_DEBUG("init 0 16");
     shard_statistic_ = std::make_shared<pools::ShardStatistic>(
         elect_mgr_, db_, security_, pools_mgr_, contract_mgr_);
+    ZJC_DEBUG("init 0 17");
     block_mgr_->Init(
         account_mgr_,
         db_,
@@ -194,11 +197,6 @@ int NetworkInit::Init(int argc, char** argv) {
         new_db_cb);
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
-    kv_sync_->Init(
-        block_mgr_,
-        db_,
-        std::bind(&consensus::HotstuffManager::VerifySyncedViewBlock,
-            hotstuff_mgr_, std::placeholders::_1));
     auto consensus_init_res = hotstuff_mgr_->Init(
         contract_mgr_,
         gas_prepayment_,
@@ -238,16 +236,25 @@ int NetworkInit::Init(int argc, char** argv) {
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         latest_heights.push_back(pools_mgr_->latest_height(i));
     }
-
+    
     shard_statistic_->Init(latest_heights);
     block_mgr_->LoadLatestBlocks();
     RegisterFirewallCheck();
     // 启动共识和同步
+
+#ifdef ENABLE_HOTSTUFF            
     hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(hotstuff_mgr_, db_, kv_sync_);
     hotstuff_syncer_->Start();
+    kv_sync_->Init(
+        block_mgr_,
+        db_,
+        std::bind(&consensus::HotstuffManager::VerifySyncedViewBlock,
+            hotstuff_mgr_, std::placeholders::_1));    
     hotstuff_mgr_->Start();
     // 以上应该放入 hotstuff 实例初始化中，并接收创世块
-    AddCmds();
+    // AddCmds();
+#endif
+    
     transport::TcpTransport::Instance()->Start(false);
     ZJC_DEBUG("init 6");
     if (InitHttpServer() != kInitSuccess) {

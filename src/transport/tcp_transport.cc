@@ -90,6 +90,7 @@ int TcpTransport::Init(
 int TcpTransport::Start(bool hold) {
     transport_->Dispatch();
     if (!transport_->Start()) {
+        TRANSPORT_ERROR("start tcp transport failed"); 
         return kTransportError;
     }
 
@@ -174,7 +175,7 @@ bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tne
 
     conn->SetPeerIp(from_ip);
     conn->SetPeerPort(from_port);
-    // ZJC_DEBUG("message coming: %s:%d", from_ip.c_str(), from_port);
+    ZJC_DEBUG("message coming: %s:%d", from_ip.c_str(), from_port);
     msg_ptr->conn = conn;
     msg_handler_->HandleMessage(msg_ptr);
     if (!conn->is_client() && added_conns_.Push(conn)) {
@@ -306,7 +307,7 @@ void TcpTransport::Output() {
             std::string key = conn->PeerIp() + ":" + std::to_string(conn->PeerPort());
             from_conn_map_[key] = conn;
         }
-
+        
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             while (true) {
                 std::shared_ptr<ClientItem> item_ptr = nullptr;
@@ -314,7 +315,7 @@ void TcpTransport::Output() {
                 if (item_ptr == nullptr) {
                     break;
                 }
-
+                
                 int32_t try_times = 0;
                 while (try_times++ < 3) {
                     auto tcp_conn = GetConnection(item_ptr->des_ip, item_ptr->port);
@@ -323,7 +324,7 @@ void TcpTransport::Output() {
                             item_ptr->des_ip.c_str(), item_ptr->port, 0);
                         continue;
                     }
-
+                    
                     int res = tcp_conn->Send(item_ptr->hash64, item_ptr->msg);
                     if (res != 0) {
                         TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu] res: %d",
