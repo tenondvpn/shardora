@@ -16,11 +16,12 @@ fi
 
 echo $formart_date > modify_time
 
-# python gen_nodes_conf.py -n 10 -s 1 -m 127.0.0.1 -r 3 -m0 127.0.0.1
-# tail -n 261 nodes_conf_n50_s1_m5.yml >> ./nodes_conf_n10_s1_m1.yml
-# python3 gen_genesis_script.py --config "./nodes_conf_n10_s1_m1.yml"
+python3 gen_nodes_conf.py -n 10 -s 1 -m 127.0.0.1 -r 3 -m0 127.0.0.1
+tail -n 261 nodes_conf_n50_s1_m5.yml >> ./nodes_conf_n10_s1_m1.yml
+python3 gen_genesis_script.py --config "./nodes_conf_n10_s1_m1.yml"
 #pkill -f zjchain
 sh deploy_genesis.sh Debug || true
 sleep 5
+exit 0
 sh new_nodes_dispatch_coin.sh  || true
 python test_accounts.py 

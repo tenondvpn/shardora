@@ -71,6 +71,15 @@ inline static bool IsSameShardOrSameWaitingPool(uint32_t local_net_id, uint32_t 
     return false;
 }
 
+inline static bool IsSameToLocalShard(uint32_t net_id) {
+    if (net_id == common::GlobalInfo::Instance()->network_id() ||
+            common::GlobalInfo::Instance()->network_id() == net_id + network::kConsensusWaitingShardOffset) {
+        return true;
+    }
+
+    return false;
+}
+
 }  // namespace network
 
 }  // namespace shardora

@@ -366,7 +366,8 @@ void BaseDht::SendToClosestNode(const transport::MessagePtr& msg_ptr) {
         closest_node->public_ip,
         closest_node->public_port,
         message);
-    ZJC_DEBUG("send to closest node: %s:%u", closest_node->public_ip.c_str(), closest_node->public_port);
+    ZJC_DEBUG("send to closest node: %s:%u, hash64: %lu",
+        closest_node->public_ip.c_str(), closest_node->public_port, message.hash64());
 }
 
 NodePtr BaseDht::FindNodeDirect(transport::protobuf::Header& message) {
@@ -1001,7 +1002,7 @@ void BaseDht::PrintDht() {
         ZJC_DEBUG("dht info sharding_id: %u, %s", local_node()->sharding_id, res.c_str());
     }
    
-    tick_.CutOff(10000000lu, std::bind(&BaseDht::PrintDht, this));
+    dht_tick_.CutOff(10000000lu, std::bind(&BaseDht::PrintDht, this));
 }
 
 }  // namespace dht

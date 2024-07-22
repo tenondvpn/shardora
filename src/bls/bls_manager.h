@@ -144,7 +144,7 @@ private:
     std::shared_ptr<TimeBlockItem> latest_timeblock_info_ = nullptr;
     uint64_t latest_elect_height_ = 0;
     std::unordered_map<uint32_t, std::shared_ptr<ElectItem>> elect_members_;
-    common::Tick tick_;
+    common::Tick bls_tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> finish_msg_queue_;
 
     DISALLOW_COPY_AND_ASSIGN(BlsManager);

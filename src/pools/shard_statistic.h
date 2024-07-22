@@ -37,7 +37,7 @@ public:
     }
 
     ~ShardStatistic() {}
-    void Init();
+    void Init(const std::vector<uint64_t>& latest_heights);
     uint64_t getStoke(uint32_t shard_id, std::string contractId, std::string temp_addr, uint64_t elect_height);
     void OnNewElectBlock(
         uint32_t sharding_id,
@@ -50,7 +50,7 @@ public:
         uint64_t vss_random);
     int StatisticWithHeights(
         pools::protobuf::ElectStatistic &elect_statistic,
-        uint64_t *statisticed_timeblock_height);
+        uint64_t statisticed_timeblock_height);
 
 
   private:
@@ -60,20 +60,22 @@ public:
     void addHeightInfo2Statics(shardora::pools::protobuf::ElectStatistic &elect_statistic, uint64_t max_tm_height);
 
 
-    void addPrepareMembers2JoinStastics(shardora::common::MembersPtr &prepare_members,
-                                        std::unordered_set<std::string> &added_id_set,
-                                        shardora::pools::protobuf::ElectStatistic &elect_statistic,
-                                        std::string &debug_for_str,
-                                        shardora::common::MembersPtr &now_elect_members);
+    void addPrepareMembers2JoinStastics(
+        shardora::common::MembersPtr &prepare_members,
+        std::unordered_set<std::string> &added_id_set,
+        shardora::pools::protobuf::ElectStatistic &elect_statistic,
+        shardora::common::MembersPtr &now_elect_members);
 
-    void addNewNode2JoinStatics(std::map<uint64_t, std::unordered_map<std::string, uint64_t>> &join_elect_stoke_map, 
-                                std::map<uint64_t, std::unordered_map<std::string, uint32_t>> &join_elect_shard_map, 
-                                std::unordered_set<std::string> &added_id_set, 
-                                std::string &debug_for_str, 
-                                std::unordered_map<std::string, std::string> &id_pk_map, 
-                                shardora::pools::protobuf::ElectStatistic &elect_statistic);
+    void addNewNode2JoinStatics(
+        std::map<uint64_t, std::unordered_map<std::string, uint64_t>> &join_elect_stoke_map, 
+        std::map<uint64_t, std::unordered_map<std::string, uint32_t>> &join_elect_shard_map, 
+        std::unordered_set<std::string> &added_id_set, 
+        std::unordered_map<std::string, std::string> &id_pk_map, 
+        shardora::pools::protobuf::ElectStatistic &elect_statistic);
 
-    void setElectStatistics(std::map<uint64_t, std::unordered_map<std::string, shardora::pools::StatisticMemberInfoItem>> &height_node_collect_info_map, 
+    void setElectStatistics(
+        std::map<uint64_t, 
+        std::unordered_map<std::string, shardora::pools::StatisticMemberInfoItem>>&,
         shardora::common::MembersPtr &now_elect_members, 
         shardora::pools::protobuf::ElectStatistic &elect_statistic,
         bool is_root);
@@ -83,15 +85,11 @@ public:
         const block::protobuf::BlockTx &tx);
     void HandleStatistic(const std::shared_ptr<block::protobuf::Block> &block_ptr);
     std::string getLeaderIdFromBlock(shardora::block::protobuf::Block &block);
-    void LoadLatestHeights();
     bool LoadAndStatisticBlock(uint32_t poll_index, uint64_t height);
     bool CheckAllBlockStatisticed(uint32_t local_net_id);
-    void SetCanStastisticTx() {
-        new_block_changed_ = true;
-    }
     void cleanUpBlocks(PoolBlocksInfo& pool_blocks_info);
     bool checkBlockValid(shardora::block::protobuf::Block &block);
-    void HandleElectStatistic(const std::shared_ptr<block::protobuf::Block>& block_ptr);
+
     static const uint32_t kLofRation = 5;
     static const uint32_t kLofMaxNodes = 8;
     static const uint32_t kLofValidMaxAvgTxCount = 1024u;
@@ -104,7 +102,6 @@ public:
     std::map<uint64_t, std::shared_ptr<HeightStatisticInfo>> node_height_count_map_[common::kInvalidPoolIndex];
     std::shared_ptr<PoolBlocksInfo> pools_consensus_blocks_[common::kInvalidPoolIndex];
     std::unordered_map<uint32_t, std::shared_ptr<common::Point>> point_ptr_map_;
-    std::shared_ptr<pools::protobuf::StatisticTxItem> tx_heights_ptr_ = nullptr;
     std::unordered_set<uint64_t> added_heights_[common::kInvalidPoolIndex];
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint64_t prev_elect_height_ = 0;
@@ -112,13 +109,12 @@ public:
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     uint64_t prepare_elect_height_ = 0;
     std::shared_ptr<security::Security> secptr_ = nullptr;
-    volatile bool new_block_changed_ = false;
-    uint64_t statisticed_timeblock_height_ = 0;
     common::Tick tick_to_statistic_;
     std::unordered_map<std::string, std::shared_ptr<AccoutPoceInfoItem>> accout_poce_info_map_;
     uint64_t least_elect_height_for_statistic_=0;
-    DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
+    std::unordered_map<uint64_t, std::shared_ptr<StatisticInfoItem>> tm_height_with_statistic_info_;
 
+    DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };
 
 }  // namespace pools

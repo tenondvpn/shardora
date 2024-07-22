@@ -91,7 +91,7 @@ public:
     void NewView(const std::shared_ptr<SyncInfo>& sync_info);
     Status Propose(const std::shared_ptr<SyncInfo>& sync_info);
     Status ResetReplicaTimers();
-    Status TryCommit(const std::shared_ptr<QC> commit_qc);
+    Status TryCommit(const std::shared_ptr<QC> commit_qc, uint64_t t_idx = 9999999lu);
     // 消费等待队列中的 ProposeMsg
     int TryWaitingProposeMsgs() {
         int succ = handle_propose_pipeline_.CallWaitingProposeMsgs();
@@ -108,11 +108,14 @@ public:
     void HandleSyncedViewBlock(
             const std::shared_ptr<ViewBlock>& vblock,
             const std::shared_ptr<QC>& self_commit_qc) {
+        auto db_batch = std::make_shared<db::DbWriteBatch>();
+        auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(vblock->block, db_batch);
         ZJC_DEBUG("now handle synced view block %u_%u_%lu",
             vblock->block->network_id(),
             vblock->block->pool_index(),
             vblock->block->height());
-        acceptor()->CommitSynced(vblock->block);
+        view_block_chain()->StoreToDb(vblock, self_commit_qc, 99999999lu, db_batch);
+        acceptor()->CommitSynced(queue_item_ptr);
         auto elect_item = elect_info()->GetElectItem(
                 vblock->block->network_id(),
                 vblock->ElectHeight());
@@ -125,7 +128,6 @@ public:
             view_block_chain()->SetLatestCommittedBlock(vblock);        
         }
         
-        view_block_chain()->StoreToDb(vblock, self_commit_qc);
     }
 
     // 已经投票
@@ -161,26 +163,26 @@ public:
         return elect_info_;
     }
 
-    bool IsStuck() const {
+    int IsStuck() const {
         // 超时时间必须大于阈值
         if (pacemaker()->DurationUs() < STUCK_PACEMAKER_DURATION_MIN_US) {
-            return false;
+            return 1;
         }
         // highqc 之前连续三个块都是空交易，则认为 stuck
         auto v_block1 = std::make_shared<ViewBlock>();
-        Status s = view_block_chain()->Get(pacemaker()->HighQC()->view_block_hash, v_block1);
+        Status s = view_block_chain()->Get(pacemaker()->HighQC()->view_block_hash(), v_block1);
         if (s != Status::kSuccess || v_block1->block->tx_list_size() > 0) {
-            return false;
+            return 2;
         }
         auto v_block2 = view_block_chain()->QCRef(v_block1);
         if (!v_block2 || v_block2->block->tx_list_size() > 0) {
-            return false;
+            return 3;
         }
         auto v_block3 = view_block_chain()->QCRef(v_block2);
         if (!v_block3 || v_block3->block->tx_list_size() > 0) {
-            return false;
+            return 4;
         }
-        return true;   
+        return 0;   
     }
 
     void TryRecoverFromStuck();
@@ -188,7 +190,7 @@ public:
     std::shared_ptr<QC> GetQcOf(const std::shared_ptr<ViewBlock>& v_block) {
         auto qc = view_block_chain()->GetQcOf(v_block);
         if (!qc) {
-            if (pacemaker()->HighQC()->view_block_hash == v_block->hash) {
+            if (pacemaker()->HighQC()->view_block_hash() == v_block->hash) {
                 view_block_chain()->SetQcOf(v_block, pacemaker()->HighQC());
                 return pacemaker()->HighQC();
             }
@@ -245,9 +247,13 @@ private:
 
     Status Commit(
             const std::shared_ptr<ViewBlock>& v_block,
-            const std::shared_ptr<QC> commit_qc);
+            const std::shared_ptr<QC> commit_qc,
+            uint64_t test_index);
     std::shared_ptr<ViewBlock> CheckCommit(const std::shared_ptr<QC>& qc);    
-    Status CommitInner(const std::shared_ptr<ViewBlock>& v_block);
+    void CommitInner(
+        const std::shared_ptr<ViewBlock>& v_block,
+        uint64_t test_index,
+        std::shared_ptr<block::BlockToDbItem>&);
     Status VerifyVoteMsg(
             const hotstuff::protobuf::VoteMsg& vote_msg);
     Status VerifyLeader(const uint32_t& leader_idx);

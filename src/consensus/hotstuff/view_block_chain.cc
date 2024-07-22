@@ -53,7 +53,7 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
         SetViewBlockToMap(view_block->hash, view_block);
         view_blocks_at_height_[view_block->view].push_back(view_block);
         AddChildrenToMap(view_block->hash, start_block_);
-        SetQcOf(start_block_->qc->view_block_hash, start_block_->qc);
+        SetQcOf(start_block_->qc->view_block_hash(), start_block_->qc);
         // 更新 start_block_
         start_block_ = view_block;
         return Status::kSuccess;
@@ -62,13 +62,16 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     // 父块必须存在
     auto it = view_blocks_info_.find(view_block->parent_hash);
     if (it == view_blocks_info_.end() || it->second->view_block == nullptr) {
-        ZJC_ERROR("lack of parent view block, hash: %s, cur view: %lu",
-            common::Encode::HexEncode(view_block->hash).c_str(), view_block->view);        
+        ZJC_ERROR("lack of parent view block, hash: %s, parent hash: %s, cur view: %lu, pool: %u",
+            common::Encode::HexEncode(view_block->hash).c_str(),
+            common::Encode::HexEncode(view_block->parent_hash).c_str(),
+            view_block->view, pool_index_);
+        // assert(false);
         return Status::kLackOfParentBlock;
     }
 
     // 如果有 qc，则 qc 指向的块必须存在
-    if (view_block->qc && !view_block->qc->view_block_hash.empty() && !QCRef(view_block)) {
+    if (view_block->qc && !view_block->qc->view_block_hash().empty() && !QCRef(view_block)) {
         ZJC_ERROR("view block qc error, hash: %s, view: %lu",
             common::Encode::HexEncode(view_block->hash).c_str(), view_block->view);        
         return Status::kError;
@@ -77,7 +80,7 @@ Status ViewBlockChain::Store(const std::shared_ptr<ViewBlock>& view_block) {
     SetViewBlockToMap(view_block->hash, view_block);
     view_blocks_at_height_[view_block->view].push_back(view_block);
     AddChildrenToMap(view_block->parent_hash, view_block);
-    SetQcOf(view_block->qc->view_block_hash, view_block->qc);
+    SetQcOf(view_block->qc->view_block_hash(), view_block->qc);
     return Status::kSuccess;
 }
 
@@ -341,8 +344,8 @@ std::shared_ptr<QC> ViewBlockChain::GetCommitQcFromDb(const std::shared_ptr<View
     if (!ok) {
         return nullptr;
     }
-    auto commit_qc = std::make_shared<QC>();
-    if (commit_qc->Unserialize(pb_vblock.self_commit_qc_str())) {
+    auto commit_qc = std::make_shared<QC>(pb_vblock.self_commit_qc_str());
+    if (commit_qc->valid()) {
         return commit_qc;
     }
     return nullptr;
@@ -392,7 +395,7 @@ Status GetLatestViewBlockFromDb(
         const std::shared_ptr<db::Db>& db,
         const uint32_t& pool_index,
         std::shared_ptr<ViewBlock>& view_block,
-        std::shared_ptr<QC>& self_commit_qc) {
+        std::string* self_commit_qc_str) {
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
     uint32_t sharding_id = common::GlobalInfo::Instance()->network_id();
     pools::protobuf::PoolLatestInfo pool_info;
@@ -436,26 +439,30 @@ Status GetLatestViewBlockFromDb(
         view, leader_idx,
         common::Encode::HexEncode(parent_hash).c_str());    
     
-    r = self_commit_qc->Unserialize(pb_view_block.self_commit_qc_str());
-    if (!r || self_commit_qc->view < GenesisView) {
-        self_commit_qc = GetGenesisQC(pool_index, view_block->hash);
-    }
-
-    ZJC_DEBUG("pool: %d, latest vb from db, vb view: %lu, self_commit_qc view: %lu",
-        pool_index, view_block->view, self_commit_qc->view);
+    *self_commit_qc_str = pb_view_block.self_commit_qc_str();
     return Status::kSuccess;
 }
 
 std::shared_ptr<QC> GetQCWrappedByGenesis(uint32_t pool_index) {
+    auto net_id = common::GlobalInfo::Instance()->network_id();
+    if (net_id > network::kConsensusShardEndNetworkId) {
+        net_id -= network::kConsensusWaitingShardOffset;
+    }
+
     return std::make_shared<QC>(
-        common::GlobalInfo::Instance()->network_id(),
+        net_id,
         pool_index,
         nullptr, BeforeGenesisView, "", "", 1, 0);
 }
 
 std::shared_ptr<QC> GetGenesisQC(uint32_t pool_index, const HashStr& genesis_view_block_hash) {
+    auto net_id = common::GlobalInfo::Instance()->network_id();
+    if (net_id > network::kConsensusShardEndNetworkId) {
+        net_id -= network::kConsensusWaitingShardOffset;
+    }
+
     return std::make_shared<QC>(
-        common::GlobalInfo::Instance()->network_id(),
+        net_id,
         pool_index,
         std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero()),
         GenesisView,

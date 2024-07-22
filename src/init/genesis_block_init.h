@@ -7,6 +7,7 @@
 
 #include <dkg/dkg.h>
 #include <yaml-cpp/node/node.h>
+#include <json/json.hpp>
 
 #include "common/bitmap.h"
 #include "common/utils.h"
@@ -62,7 +63,7 @@ private:
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
         uint32_t net_id,
         std::unordered_map<std::string, uint64_t> genesis_acount_balance_map);
-    void PrepareCreateGenesisBlocks();
+    void PrepareCreateGenesisBlocks(uint32_t shard_node_net_id);
     void ComputeG2sForNodes(const std::vector<std::string>& prikeys);
     int CreateShardNodesBlocks(
         std::unordered_map<uint32_t, std::string>& pool_prev_hash_map,
@@ -119,10 +120,11 @@ private:
     void SetPrevElectInfo(
         const elect::protobuf::ElectBlock& elect_block,
         block::protobuf::BlockTx& block_tx);
+    void SaveGenisisPoolHeights(uint32_t shard_id);
     void StoreViewBlockWithCommitQC(
             const std::shared_ptr<hotstuff::ViewBlock>& view_block,
             const std::shared_ptr<hotstuff::QC>& commit_qc,
-            db::DbWriteBatch* db_batch) {
+            std::shared_ptr<db::DbWriteBatch>& db_batch) {
         assert(view_block->view < 100);
         auto pb_v_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
         hotstuff::ViewBlock2Proto(view_block, pb_v_block.get());
@@ -135,9 +137,7 @@ private:
             view_block->block->pool_index(),
             view_block->block->height(),
             *pb_v_block,
-            *db_batch);
-        auto st = db_->Put(*db_batch);
-        assert(st.ok());        
+            db_batch);
     }
 
     std::string SerializeViewBlockWithCommitQC(
@@ -173,6 +173,7 @@ private:
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     libff::alt_bn128_G2 common_pk_[16] = { libff::alt_bn128_G2::zero() };
     YAML::Node genesis_config_;
+    nlohmann::json bls_pk_json_;
     
     DISALLOW_COPY_AND_ASSIGN(GenesisBlockInit);
 };

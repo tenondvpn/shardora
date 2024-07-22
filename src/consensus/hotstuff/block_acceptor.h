@@ -65,13 +65,13 @@ public:
     // Accept a block and txs in it from sync msg.
     virtual Status AcceptSync(const std::shared_ptr<block::protobuf::Block>& block) = 0;
     // Commit a block
-    virtual Status Commit(std::shared_ptr<block::protobuf::Block>&) = 0;
+    virtual void Commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) = 0;
     // Add txs to local pool
     virtual Status AddTxs(const std::vector<const pools::protobuf::TxMessage*>& txs) = 0;
     // Return block txs to pool
     virtual Status Return(const std::shared_ptr<block::protobuf::Block>&) = 0;
     // Handle Synced Block From KeyValueSyncer
-    virtual void CommitSynced(std::shared_ptr<block::protobuf::Block>& block_ptr) = 0;
+    virtual void CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) = 0;
     virtual void MarkBlockTxsAsUsed(const std::shared_ptr<block::protobuf::Block>&) = 0;
     virtual double Tps() = 0;
 };
@@ -108,7 +108,7 @@ public:
     // Accept a synced block.
     Status AcceptSync(const std::shared_ptr<block::protobuf::Block>& block) override;
     // Commit a block and execute its txs.
-    Status Commit(std::shared_ptr<block::protobuf::Block>& block) override;
+    void Commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) override;
     // Add txs from hotstuff msg to local pool
     Status AddTxs(const std::vector<const pools::protobuf::TxMessage*>& txs) override;
     // Return expired or invalid block txs to pool
@@ -121,7 +121,7 @@ public:
         return Status::kSuccess;
     }
 
-    void CommitSynced(std::shared_ptr<block::protobuf::Block>& block_ptr) override;
+    void CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) override;
     // 将 block txs 从交易池中取出，当 block 成功加入链中后调用
     void MarkBlockTxsAsUsed(const std::shared_ptr<block::protobuf::Block>&) override;
 
@@ -175,7 +175,7 @@ private:
     void LeaderBroadcastBlock(const std::shared_ptr<block::protobuf::Block>& block);
     void BroadcastBlock(uint32_t des_shard, const std::shared_ptr<block::protobuf::Block>& block_item);
     void BroadcastLocalTosBlock(const std::shared_ptr<block::protobuf::Block>& block_item);
-    Status commit(std::shared_ptr<block::protobuf::Block>& block);
+    void commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr);
 
     void CalculateTps(uint64_t tx_list_size) {
         auto now_tm_us = common::TimeUtils::TimestampUs();

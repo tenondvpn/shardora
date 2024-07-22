@@ -111,6 +111,10 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
                 net_id,
                 pool_index_,
                 invalid_heights[i]);
+            ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
+                net_id,
+                pool_index_,
+                invalid_heights[i]);
             kv_sync_->AddSyncHeight(
                 net_id,
                 pool_index_,
@@ -359,7 +363,6 @@ void TxPool::CheckTimeoutTx() {
 
 void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
-        iter->second->in_consensus = false;
         auto miter = gid_map_.find(iter->first);
         if (miter != gid_map_.end()) {
             if (miter->second->is_consensus_add_tx) {
@@ -398,7 +401,6 @@ void TxPool::RemoveTx(const std::string& gid) {
         return;
     }
 
-    giter->second->in_consensus = false;
     auto prio_iter = prio_map_.find(giter->second->prio_key);
     if (prio_iter != prio_map_.end()) {
         prio_map_.erase(prio_iter);
@@ -710,6 +712,10 @@ void TxPool::SyncBlock() {
                 net_id,
                 pool_index_,
                 prev_synced_height_ + 1);
+            ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
+                net_id,
+                pool_index_,
+                prev_synced_height_ + 1);
             kv_sync_->AddSyncHeight(
                 net_id,
                 pool_index_,
@@ -776,13 +782,10 @@ std::shared_ptr<consensus::WaitingTxsItem> TxPool::GetTx(
 
 void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
     for (uint32_t i = 0; i < txs.size(); ++i) {
-        if (txs[i]->tx_info.step() != pools::protobuf::kNormalFrom && 
-                txs[i]->tx_info.step() != pools::protobuf::kContractCreate && 
-                txs[i]->tx_info.step() != pools::protobuf::kContractExcute && 
-                txs[i]->tx_info.step() != pools::protobuf::kContractGasPrepayment && 
-                txs[i]->tx_info.step() != pools::protobuf::kJoinElect && 
-                txs[i]->tx_info.step() != pools::protobuf::kCreateLibrary) {
-            ZJC_DEBUG("invalid tx add to consensus tx map: %d", txs[i]->tx_info.step());
+        if (!pools::IsUserTransaction(txs[i]->tx_info.step())) {
+            ZJC_DEBUG("invalid tx add to consensus tx map: %d, gid: %s",
+                txs[i]->tx_info.step(),
+                common::Encode::HexEncode(txs[i]->tx_info.gid()).c_str());
             continue;
         }
 

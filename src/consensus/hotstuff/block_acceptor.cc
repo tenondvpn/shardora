@@ -34,11 +34,11 @@ BlockAcceptor::BlockAcceptor(
         std::shared_ptr<timeblock::TimeBlockManager> &tm_block_mgr,
         std::shared_ptr<elect::ElectManager> elect_mgr,
         consensus::BlockCacheCallback new_block_cache_callback):
-    pool_idx_(pool_idx), security_ptr_(security), account_mgr_(account_mgr),
-    elect_info_(elect_info), vss_mgr_(vss_mgr), contract_mgr_(contract_mgr),
-    db_(db), gas_prepayment_(gas_prepayment), pools_mgr_(pools_mgr),
-    block_mgr_(block_mgr), tm_block_mgr_(tm_block_mgr), elect_mgr_(elect_mgr), new_block_cache_callback_(new_block_cache_callback) {
-    
+        pool_idx_(pool_idx), security_ptr_(security), account_mgr_(account_mgr),
+        elect_info_(elect_info), vss_mgr_(vss_mgr), contract_mgr_(contract_mgr),
+        db_(db), gas_prepayment_(gas_prepayment), pools_mgr_(pools_mgr),
+        block_mgr_(block_mgr), tm_block_mgr_(tm_block_mgr), elect_mgr_(elect_mgr), 
+        new_block_cache_callback_(new_block_cache_callback) {
     tx_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr_, block_mgr_, tm_block_mgr_);
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);    
 };
@@ -115,13 +115,10 @@ Status BlockAcceptor::AcceptSync(const std::shared_ptr<block::protobuf::Block>& 
     return Status::kSuccess;
 }
 
-Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
+void BlockAcceptor::Commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
     // commit block
-    Status s = commit(block);
-    if (s != Status::kSuccess) {
-        return s;
-    }
-
+    commit(queue_item_ptr);
+    auto block = queue_item_ptr->block_ptr;
     if (block->tx_list_size() > 0) {
         auto elect_item = elect_info_->GetElectItem(
             common::GlobalInfo::Instance()->network_id(), 
@@ -148,15 +145,11 @@ Status BlockAcceptor::Commit(std::shared_ptr<block::protobuf::Block>& block) {
 #endif
         }
     }
-    return Status::kSuccess;
 }
 
-void BlockAcceptor::CommitSynced(std::shared_ptr<block::protobuf::Block>& block_ptr) {
-    Status s = commit(block_ptr);
-    if (s != Status::kSuccess) {
-        return;
-    }
-    
+void BlockAcceptor::CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
+    commit(queue_item_ptr);
+    auto block_ptr = queue_item_ptr->block_ptr;
     ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s",
         block_ptr->network_id(),
         block_ptr->pool_index(),
@@ -245,10 +238,15 @@ Status BlockAcceptor::addTxsToPool(
                     security_ptr_, 
                     address_info);
             break;
-        case pools::protobuf::kRootCreateAddressCrossSharding:
         case pools::protobuf::kNormalTo: {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
-            auto tx_item = tx_pools_->GetToTxs(pool_idx(), "");
+            pools::protobuf::AllToTxMessage all_to_txs;
+            if (!all_to_txs.ParseFromString(tx->value()) || all_to_txs.to_tx_arr_size() == 0) {
+                assert(false);
+                break;
+            }
+
+            auto tx_item = tx_pools_->GetToTxs(pool_idx(), all_to_txs.to_tx_arr(0).to_heights().SerializeAsString());
             if (tx_item != nullptr && !tx_item->txs.empty()) {
                 tx_ptr = tx_item->txs.begin()->second;
             }
@@ -268,12 +266,7 @@ Status BlockAcceptor::addTxsToPool(
         }
         case pools::protobuf::kCross:
         {
-            // TODO 这些 Single Tx 还是从本地交易池直接拿
-            auto tx_item = tx_pools_->GetCrossTx(pool_idx(), tx->gid());
-            if (tx_item != nullptr && !tx_item->txs.empty()) {
-                tx_ptr = tx_item->txs.begin()->second;
-            }
-            
+            assert(false);
             break;
         }
         case pools::protobuf::kConsensusRootElectShard:
@@ -352,12 +345,6 @@ Status BlockAcceptor::addTxsToPool(
 Status BlockAcceptor::GetAndAddTxsLocally(
         const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr) {
-    // auto txs_func = GetTxsFunc(block_info->tx_type);
-    // Status s = txs_func(block_info, txs_ptr);
-    // if (s != Status::kSuccess) {
-    //     return s;
-    // }
-    
     auto add_txs_status = addTxsToPool(block_info->txs, txs_ptr);
     if (add_txs_status != Status::kSuccess) {
         ZJC_ERROR("invalid consensus, add_txs_status failed: %d.", add_txs_status);
@@ -370,8 +357,15 @@ Status BlockAcceptor::GetAndAddTxsLocally(
     }
 
     if (txs_ptr->txs.size() != block_info->txs.size()) {
+#ifndef NDEBUG
+        for (uint32_t i = 0; i < uint32_t(block_info->txs.size()); i++) {
+            auto& tx = block_info->txs[i];
+            ZJC_DEBUG("leader tx step: %u, gid: %s", tx->step(), common::Encode::HexEncode(tx->gid()).c_str());
+        }
+#endif
         ZJC_ERROR("invalid consensus, txs not equal to leader %u, %u",
             txs_ptr->txs.size(), block_info->txs.size());
+        // assert(false);
         return Status::kAcceptorTxsEmpty;
     }
     
@@ -386,10 +380,12 @@ bool BlockAcceptor::IsBlockValid(const std::shared_ptr<block::protobuf::Block>& 
         ZJC_DEBUG("Accept height error: %lu, %lu", zjc_block->height(), pool_height);
         return false;
     }
+
+    auto cur_time = common::TimeUtils::TimestampMs();
     // 新块的时间戳必须大于上一个块的时间戳
     uint64_t preblock_time = pools_mgr_->latest_timestamp(pool_idx());
-    if (zjc_block->timestamp() <= preblock_time) {
-        ZJC_DEBUG("Accept timestamp error: %lu, %lu", zjc_block->timestamp(), preblock_time);
+    if (zjc_block->timestamp() <= preblock_time && zjc_block->timestamp() + 10000lu >= cur_time) {
+        ZJC_DEBUG("Accept timestamp error: %lu, %lu, cur: %lu", zjc_block->timestamp(), preblock_time, cur_time);
         return false;
     }
     
@@ -439,7 +435,6 @@ void BlockAcceptor::LeaderBroadcastBlock(const std::shared_ptr<block::protobuf::
     }
 
     switch (block->tx_list(0).step()) {
-    case pools::protobuf::kRootCreateAddressCrossSharding:
     case pools::protobuf::kNormalTo:
         ZJC_DEBUG("broadcast to block step: %u, height: %lu",
             block->tx_list(0).step(), block->height());
@@ -496,19 +491,19 @@ void BlockAcceptor::BroadcastLocalTosBlock(
     }
 }
 
-Status BlockAcceptor::commit(std::shared_ptr<block::protobuf::Block>& block) {
+void BlockAcceptor::commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
     // commit block
-    auto db_batch = std::make_shared<db::DbWriteBatch>();
-    auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block, db_batch);
+    // auto db_batch = std::make_shared<db::DbWriteBatch>();
+    // auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block, db_batch);
+    auto block = queue_item_ptr->block_ptr;
     new_block_cache_callback_(
             queue_item_ptr->block_ptr,
             *queue_item_ptr->db_batch);
     block_mgr_->ConsensusAddBlock(queue_item_ptr);
-
     if (block->tx_list_size() > 0) {
         pools_mgr_->TxOver(block->pool_index(), block->tx_list());
-#ifndef NDEBUG
-        for (uint32_t i = 0; i < block->tx_list_size(); ++i) {
+        auto& txs = block->tx_list();
+        for (uint32_t i = 0; i < txs.size(); ++i) {
             ZJC_DEBUG("commit block tx over step: %d, to: %s, gid: %s, net: %d, pool: %d, height: %lu", 
                 block->tx_list(i).step(),
                 common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
@@ -516,8 +511,13 @@ Status BlockAcceptor::commit(std::shared_ptr<block::protobuf::Block>& block) {
                 block->network_id(),
                 block->pool_index(),
                 block->height());
+            if (pools::IsUserTransaction(txs[i].step())) {
+                ZJC_DEBUG("invalid tx add to consensus tx map: %d", txs[i].step());
+                continue;
+            }
+            
+            prefix_db_->GidExists(txs[i].gid());
         }
-#endif        
     } else {
         ZJC_DEBUG("commit block tx over no tx, net: %d, pool: %d, height: %lu", 
             block->network_id(),
@@ -536,7 +536,6 @@ Status BlockAcceptor::commit(std::shared_ptr<block::protobuf::Block>& block) {
         block->electblock_height(),
         block->timestamp(),
         block->tx_list_size());
-    return Status::kSuccess;
 }
 
 } // namespace hotstuff

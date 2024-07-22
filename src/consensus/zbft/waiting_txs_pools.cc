@@ -99,12 +99,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
         txs_item = GetElectTx(pool_index, "");
     }
 
-    if (txs_item == nullptr) {
-        txs_item = GetCrossTx(pool_index, "");
-    }
-
     if (txs_item == nullptr && pool_index == 0) {
-        txs_item = GetToTxs(pool_index, "1");
+        txs_item = GetToTxs(pool_index, "");
         ZJC_DEBUG("leader get to tx coming: %d", (txs_item != nullptr));
     }
 
@@ -139,7 +135,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetElectTx(
         if (tx_hash.empty()) {
             auto now_tm = common::TimeUtils::TimestampUs();
             if (tx_ptr->prev_consensus_tm_us + 300000lu > now_tm) {
-                tx_ptr->in_consensus = false;
                 return nullptr;
             }
 
@@ -184,44 +179,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_in
     return nullptr;
 }
 
-std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetCrossTx(
-        uint32_t pool_index, 
-        const std::string& tx_hash) {
-    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId ||
-            pool_index != common::kRootChainPoolIndex) {
-        return nullptr;
-    }
-
-    auto tx_ptr = block_mgr_->GetCrossTx(pool_index, tx_hash);
-    if (tx_ptr != nullptr) {
-        if (tx_hash.empty()) {
-            auto now_tm = common::TimeUtils::TimestampUs();
-            if (tx_ptr->prev_consensus_tm_us + 300000lu > now_tm) {
-                tx_ptr->in_consensus = false;
-                return nullptr;
-            }
-
-            tx_ptr->prev_consensus_tm_us = now_tm;
-        }
-
-        if (tx_ptr->unique_tx_hash.empty()) {
-            tx_ptr->unique_tx_hash = pools::GetTxMessageHash(tx_ptr->tx_info);
-        }
-
-        auto txs_item = std::make_shared<WaitingTxsItem>();
-        txs_item->pool_index = pool_index;
-        txs_item->txs[tx_ptr->unique_tx_hash] = tx_ptr;
-        txs_item->tx_type = pools::protobuf::kCross;
-        ZJC_DEBUG("single tx success get cross tx %u, %d, tx hash: %s, gid: %s", 
-            pool_index, tx_hash.empty(), 
-            common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
-            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
-        return txs_item;
-    }
-
-    return nullptr;
-}
-
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
         uint32_t pool_index, 
         const std::string& tx_gid) {
@@ -241,7 +198,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
         if (leader) {
             auto now_tm = common::TimeUtils::TimestampUs();
             if (tx_ptr->prev_consensus_tm_us + 300000lu > now_tm) {
-                tx_ptr->in_consensus = false;
                 ZJC_DEBUG("leader failed get statistic tx.");
                 return nullptr;
             }
@@ -275,12 +231,11 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(
     }
 
     bool leader = !tx_hash.empty();
-    auto tx_ptr = block_mgr_->GetToTx(pool_index, "");
+    pools::TxItemPtr tx_ptr = block_mgr_->GetToTx(pool_index, tx_hash);
     if (tx_ptr != nullptr) {
         if (leader) {
             auto now_tm = common::TimeUtils::TimestampUs();
             if (tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm) {
-                tx_ptr->in_consensus = false;
                 ZJC_DEBUG("leader get to tx coming failed 1");
                 return nullptr;
             }

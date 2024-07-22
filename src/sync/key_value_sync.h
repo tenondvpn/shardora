@@ -36,17 +36,18 @@ using ViewBlockSyncedCallback = std::function<int(view_block::protobuf::ViewBloc
 enum SyncItemTag : uint32_t {
     kKeyValue = 0,
     kBlockHeight = 1,
-    kElectBlock = 2,
 };
 
 struct SyncItem {
     SyncItem(uint32_t net_id, const std::string& in_key, uint32_t pri)
-            : network_id(net_id), key(in_key), priority(pri), sync_times(0) {
+            : network_id(net_id), key(in_key), 
+            priority(pri), sync_times(0), responsed_timeout_us(0) {
         tag = kKeyValue;
     }
 
     SyncItem(uint32_t net_id, uint32_t in_pool_idx, uint64_t in_height, uint32_t pri)
-            : network_id(net_id), pool_idx(in_pool_idx), height(in_height), priority(pri), sync_times(0) {
+            : network_id(net_id), pool_idx(in_pool_idx), 
+            height(in_height), priority(pri), sync_times(0), responsed_timeout_us(0) {
         key = std::to_string(network_id) + "_" +
             std::to_string(pool_idx) + "_" +
             std::to_string(height);
@@ -54,7 +55,8 @@ struct SyncItem {
     }
 
     SyncItem(uint32_t net_id, uint32_t in_pool_idx, uint64_t in_height, uint32_t pri, uint32_t in_tag)
-        : network_id(net_id), pool_idx(in_pool_idx), height(in_height), priority(pri), sync_times(0), tag(in_tag) {
+            : network_id(net_id), pool_idx(in_pool_idx), height(in_height), 
+            priority(pri), sync_times(0), responsed_timeout_us(0), tag(in_tag) {
         key = std::to_string(network_id) + "_" +
             std::to_string(pool_idx) + "_" +
             std::to_string(height);
@@ -67,6 +69,7 @@ struct SyncItem {
     uint32_t pool_idx{ common::kInvalidUint32 }; // 对于 SyncElectBlock 来说pool 就是 elect network id
     uint64_t height{ common::kInvalidUint64 };
     uint64_t sync_tm_us;
+    uint64_t responsed_timeout_us;
     uint32_t tag;
 };
 
@@ -77,11 +80,6 @@ public:
     KeyValueSync();
     ~KeyValueSync();
     void AddSyncHeight(
-        uint32_t network_id,
-        uint32_t pool_idx,
-        uint64_t height,
-        uint32_t priority);
-    void AddSyncElectBlock(
         uint32_t network_id,
         uint32_t pool_idx,
         uint64_t height,
@@ -159,7 +157,7 @@ private:
     uint64_t prev_sync_tm_us_ = 0;
     uint64_t prev_sync_tmout_us_ = 0;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
-    common::Tick tick_;
+    common::Tick kv_tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> kv_msg_queue_;
     std::set<uint64_t> shard_with_elect_height_[network::kConsensusShardEndNetworkId];
     uint64_t elect_net_heights_map_[network::kConsensusShardEndNetworkId] = { 0 };

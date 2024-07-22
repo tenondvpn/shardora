@@ -126,7 +126,7 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(
         return iter->second;
     }
     
-    BLOCK_ERROR("get account failed[%s] in thread_idx:%d", common::Encode::HexEncode(addr).c_str(), thread_idx);
+    BLOCK_WARN("get account failed[%s] in thread_idx:%d", common::Encode::HexEncode(addr).c_str(), thread_idx);
     return nullptr;
 }
 
@@ -161,7 +161,6 @@ const std::string& AccountManager::GetTxValidAddress(const block::protobuf::Bloc
     switch (tx_info.step()) {
     case pools::protobuf::kNormalTo:
     case pools::protobuf::kRootCreateAddress:
-    case pools::protobuf::kRootCreateAddressCrossSharding:
     case pools::protobuf::kContractCreateByRootTo:
     case pools::protobuf::kConsensusLocalTos:
     case pools::protobuf::kConsensusRootElectShard:
@@ -535,6 +534,12 @@ void AccountManager::HandleRootCreateAddressTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
+    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
+            common::GlobalInfo::Instance()->network_id() !=
+            (network::kRootCongressNetworkId + network::kRootCongressNetworkId)) {
+        return;
+    }
+
     auto account_info = GetAccountInfo(tx.to());
     if (account_info != nullptr) {
 //         assert(false);
@@ -620,9 +625,10 @@ void AccountManager::HandleJoinElectTx(
         account_info->set_elect_pos(join_info.member_idx());
         prefix_db_->AddAddressInfo(tx.from(), *account_info);
         ZJC_INFO("3 get address info failed create new address to this id: %s,"
-            "shard: %u, local shard: %u",
+            "shard: %u, local shard: %u, elect pos: %u",
             common::Encode::HexEncode(tx.from()).c_str(), block.network_id(),
-            common::GlobalInfo::Instance()->network_id());
+            common::GlobalInfo::Instance()->network_id(),
+            join_info.member_idx());
 
     } else {
         if (account_info->latest_height() >= block.height()) {
@@ -633,13 +639,19 @@ void AccountManager::HandleJoinElectTx(
         account_info->set_balance(tx.balance());
         account_info->set_elect_pos(join_info.member_idx());
         prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
+        ZJC_INFO("3 1 get address info failed create new address to this id: %s,"
+            "shard: %u, local shard: %u, elect pos: %u",
+            common::Encode::HexEncode(tx.from()).c_str(), block.network_id(),
+            common::GlobalInfo::Instance()->network_id(),
+            join_info.member_idx());
     }
 
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
-    ZJC_DEBUG("join elect to address new elect pos %s: %lu",
-        common::Encode::HexEncode(tx.from()).c_str(), join_info.member_idx());
+    ZJC_DEBUG("join elect to address new elect pos %s: %lu, balance: %lu",
+        common::Encode::HexEncode(tx.from()).c_str(),
+        join_info.member_idx(), account_info->balance());
 }
 
 void AccountManager::RunUpdateAccounts() {

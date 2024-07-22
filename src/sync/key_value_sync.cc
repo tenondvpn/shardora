@@ -37,7 +37,7 @@ void KeyValueSync::Init(
     network::Route::Instance()->RegisterMessage(
         common::kSyncMessage,
         std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
-    tick_.CutOff(
+    kv_tick_.CutOff(
         100000lu,
         std::bind(&KeyValueSync::ConsensusTimerMessage, this));
 }
@@ -54,7 +54,7 @@ void KeyValueSync::Init(
     network::Route::Instance()->RegisterMessage(
         common::kSyncMessage,
         std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
-    tick_.CutOff(
+    kv_tick_.CutOff(
         100000lu,
         std::bind(&KeyValueSync::ConsensusTimerMessage, this));
 }
@@ -72,20 +72,7 @@ void KeyValueSync::AddSyncHeight(
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     item_queues_[thread_idx].push(item);
-    ZJC_DEBUG("block height add new sync item key: %s, priority: %u",
-        item->key.c_str(), item->priority);
-}
-
-void KeyValueSync::AddSyncElectBlock(
-        uint32_t network_id,
-        uint32_t elect_network_id,
-        uint64_t height,
-        uint32_t priority) {
-    assert(priority <= kSyncHighest);
-    auto item = std::make_shared<SyncItem>(network_id, elect_network_id, height, priority, kElectBlock);
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    item_queues_[thread_idx].push(item);
-    ZJC_DEBUG("block height add new sync item key: %s, priority: %u",
+    ZJC_INFO("block height add new sync item key: %s, priority: %u",
         item->key.c_str(), item->priority);
 }
 
@@ -108,7 +95,7 @@ void KeyValueSync::ConsensusTimerMessage() {
 #ifndef ENABLE_HOTSTUFF
     CheckNotCheckedBlocks();
 #endif
-    tick_.CutOff(
+    kv_tick_.CutOff(
         100000lu,
         std::bind(&KeyValueSync::ConsensusTimerMessage, this));
 }
@@ -131,12 +118,12 @@ void KeyValueSync::PopItems() {
             }
 
             added_key_set_.insert(item->key);
-            auto tmp_iter = synced_map_.find(item->key);
-            if (tmp_iter != synced_map_.end()) {
-                ZJC_DEBUG("key synced add new sync item key: %s, priority: %u",
-                    item->key.c_str(), item->priority);
-                continue;
-            }
+            // auto tmp_iter = synced_map_.find(item->key);
+            // if (tmp_iter != synced_map_.end()) {
+            //     ZJC_DEBUG("key synced add new sync item key: %s, priority: %u",
+            //         item->key.c_str(), item->priority);
+            //     continue;
+            // }
 
             prio_sync_queue_[item->priority].push(item);
             ZJC_DEBUG("add new sync item key: %s, priority: %u",
@@ -186,11 +173,7 @@ void KeyValueSync::CheckSyncItem() {
                 height_item->set_pool_idx(item->pool_idx);
                 height_item->set_height(item->height);
                 height_item->set_tag(item->tag);
-                if (item->tag == kElectBlock) {
-                    ZJC_DEBUG("try to sync elect block: %u_%u_%lu", item->network_id, item->pool_idx, item->height);
-                } else {
-                    ZJC_DEBUG("try to sync normal block: %u_%u_%lu", item->network_id, item->pool_idx, item->height);
-                }
+                ZJC_DEBUG("try to sync normal block: %u_%u_%lu", item->network_id, item->pool_idx, item->height);
             } else {
                 sync_req->add_keys(item->key);
             }
@@ -395,7 +378,8 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                         sync_msg.sync_value_req().heights(i).pool_idx(),
                         sync_msg.sync_value_req().heights(i).height(),
                         &pb_view_block)) {
-                ZJC_DEBUG("sync key value %u_%u_%lu, handle sync value failed, view block info not found, request hash: %lu, "
+                ZJC_DEBUG("sync key value %u_%u_%lu, "
+                    "handle sync value failed, view block info not found, request hash: %lu, "
                     "net: %u, pool: %u, height: %lu",
                     network_id, 
                     sync_msg.sync_value_req().heights(i).pool_idx(),
@@ -476,8 +460,6 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                     msg_ptr->header.hash64());
                 break;
             }
-        } else if (sync_msg.sync_value_req().heights(i).tag() == kElectBlock) {
-            ResponseElectBlock(network_id, sync_msg.sync_value_req().heights(i), msg, sync_res, add_size);
         } else {
             assert(false);
             continue;
@@ -494,145 +476,23 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     msg.set_type(common::kSyncMessage);
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
-    ZJC_DEBUG("sync response ok des: %u, hash64: %lu", msg_ptr->header.src_sharding_id(), msg.hash64());
-}
-
-void KeyValueSync::ResponseElectBlock(
-        uint32_t network_id,
-        const sync::protobuf::SyncHeightItem& sync_item,
-        transport::protobuf::Header& msg,
-        sync::protobuf::SyncValueResponse* sync_res,
-        uint32_t& add_size) {
-    ZJC_DEBUG("request elect block coming.");
-    if (network_id >= network::kConsensusShardEndNetworkId ||
-            network_id < network::kRootCongressNetworkId) {
-        ZJC_DEBUG("request elect block coming network invalid: %u", network_id);
-        return;
-    }
-
-    auto elect_network_id = sync_item.pool_idx();
-    auto& shard_set = shard_with_elect_height_[elect_network_id];
-    auto iter = shard_set.rbegin();
-    std::vector<uint64_t> valid_elect_heights;
-    uint64_t min_height = 1;
-    if (iter != shard_set.rend()) {
-        min_height = *iter;
-    }
-
-    uint64_t elect_height = elect_net_heights_map_[elect_network_id];
-    while (elect_height >= min_height) {
-        block::protobuf::Block block;
-        if (!prefix_db_->GetBlockWithHeight(
-                network::kRootCongressNetworkId,
-                elect_network_id % common::kImmutablePoolSize,
-                elect_height,
-                &block)) {
-            ZJC_DEBUG("block invalid network: %u, pool: %lu, height: %lu",
-                network::kRootCongressNetworkId, elect_network_id % common::kImmutablePoolSize, elect_height);
-            return;
-        }        
-
-        elect::protobuf::ElectBlock prev_elect_block;
-        bool ec_block_loaded = false;
-        assert(block.tx_list_size() == 1);
-        for (int32_t i = 0; i < block.tx_list(0).storages_size(); ++i) {
-            ZJC_DEBUG("get tx storage key: %s, tx size: %d", block.tx_list(0).storages(i).key().c_str(), block.tx_list_size());
-            if (block.tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
-                if (!prev_elect_block.ParseFromString(block.tx_list(0).storages(i).value())) {
-                    assert(false);
-                    return;
-                }
-
-                ec_block_loaded = true;
-                break;
-            }
-        }
-
-        if (!ec_block_loaded) {
-            assert(false);
-            return;
-        }
-
-        valid_elect_heights.push_back(elect_height);
-        ZJC_DEBUG("success get network_id: %u, pool: %u, elect height: %lu, prev: %lu, min_height: %lu",
-            network::kRootCongressNetworkId, sync_item.pool_idx(), elect_height,
-            prev_elect_block.prev_members().prev_elect_height(), min_height);
-        if (elect_height == prev_elect_block.prev_members().prev_elect_height()) {
-            assert(false);
-            return;
-        }
-
-        elect_height = prev_elect_block.prev_members().prev_elect_height();
-    }
-
-    for (auto iter = valid_elect_heights.begin(); iter != valid_elect_heights.end(); ++iter) {
-        shard_set.insert(*iter);
-    }
-
-    auto fiter = shard_set.find(sync_item.height());
-    if (fiter == shard_set.end()) {
-        ZJC_DEBUG("find height error block invalid network: %u, pool: %lu, height: %lu",
-            network::kRootCongressNetworkId, network_id % common::kImmutablePoolSize, sync_item.height());
-        return;
-    }
-
-//    ++fiter;
-    for (; fiter != shard_set.end(); ++fiter) {
-        block::protobuf::Block block;
-        if (!prefix_db_->GetBlockWithHeight(
-                network::kRootCongressNetworkId,
-                elect_network_id % common::kImmutablePoolSize,
-                *fiter,
-                &block)) {
-            ZJC_DEBUG("block invalid network: %u, pool: %lu, height: %lu",
-                network::kRootCongressNetworkId, elect_network_id % common::kImmutablePoolSize, *fiter);
-            return;
-        }
-
-#ifdef ENABLE_HOTSTUFF
-        view_block::protobuf::ViewBlockItem pb_view_block;
-        if (!prefix_db_->GetViewBlockInfo(
-                    network::kRootCongressNetworkId,
-                    elect_network_id % common::kImmutablePoolSize,
-                    *fiter,
-                    &pb_view_block)) {
-            ZJC_DEBUG("view block invalid network: %u, pool: %lu, height: %lu",
-                network::kRootCongressNetworkId, elect_network_id % common::kImmutablePoolSize, *fiter);
-            return;
-        }
-
-        pb_view_block.mutable_block_info()->CopyFrom(block);
-#endif        
-
-        auto res = sync_res->add_res();
-        res->set_network_id(block.network_id());
-        res->set_pool_idx(block.pool_index());
-        res->set_height(block.height());
-#ifdef ENABLE_HOTSTUFF
-        res->set_value(pb_view_block.SerializeAsString());
-#else
-        res->set_value(block.SerializeAsString());
-#endif
-        res->set_tag(kElectBlock); // no use
-        add_size += 16 + res->value().size();
-        ZJC_DEBUG("block success network: %u, pool: %lu, height: %lu, add_size: %u, kSyncPacketMaxSize: %u",
-            block.network_id(), block.pool_index(), block.height(), add_size, kSyncPacketMaxSize);
-        if (add_size >= kSyncPacketMaxSize) {
-            break;
-        }
-    }
+    ZJC_DEBUG("sync response ok des: %u, src hash64: %lu, des hash64: %lu",
+        msg_ptr->header.src_sharding_id(), msg_ptr->header.hash64(), msg.hash64());
 }
 
 void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr) {
     auto& sync_msg = msg_ptr->header.sync_proto();
     assert(sync_msg.has_sync_value_res());
     auto& res_arr = sync_msg.sync_value_res().res();
+    auto now_tm_us = common::TimeUtils::TimestampUs();
+    ZJC_DEBUG("now handle kv response hash64: %lu", msg_ptr->header.hash64());
     for (auto iter = res_arr.begin(); iter != res_arr.end(); ++iter) {
         std::string key = iter->key();
         if (iter->has_height()) {
             key = std::to_string(iter->network_id()) + "_" +
                 std::to_string(iter->pool_idx()) + "_" +
                 std::to_string(iter->height());
+        ZJC_DEBUG("now handle kv response hash64: %lu, key: %s", msg_ptr->header.hash64(), key.c_str());
 #ifndef ENABLE_HOTSTUFF
             auto block_item = std::make_shared<block::protobuf::Block>();
             if (block_item->ParseFromString(iter->value())) {
@@ -659,15 +519,18 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             auto pb_vblock = std::make_shared<view_block::protobuf::ViewBlockItem>();
             if (!pb_vblock->ParseFromString(iter->value())) {
                 ZJC_ERROR("pb vblock parse failed");
+                assert(false);
                 continue;
             }
             if (!pb_vblock->has_self_commit_qc_str()) {
                 ZJC_ERROR("pb vblock has no qc");
+                assert(false);
                 continue;
             }
 
             if (!view_block_synced_callback_) {
                 ZJC_ERROR("no view block synced callback inited");
+                assert(false);
                 continue;
             }
             int res = view_block_synced_callback_(pb_vblock.get());
@@ -676,12 +539,8 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             }
 
             if (res == 1) {
-                AddSyncElectBlock(
-                        network::kRootCongressNetworkId,
-                        pb_vblock->block_info().network_id(),
-                        pb_vblock->block_info().electblock_height(),
-                        sync::kSyncHigh);
-                ZJC_ERROR("no elect item, %lu_%lu",
+                ZJC_ERROR("no elect item, %u_%u_%lu",
+                    network::kRootCongressNetworkId,
                     pb_vblock->block_info().network_id(),
                     pb_vblock->block_info().electblock_height());
                 continue;
@@ -700,15 +559,15 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
 
 #endif
         }
+
         auto tmp_iter = synced_map_.find(key);
         if (tmp_iter != synced_map_.end()) {
-            added_key_set_.erase(tmp_iter->second->key);
-            synced_map_.erase(tmp_iter);
+            tmp_iter->second->responsed_timeout_us = now_tm_us + kSyncTimeoutPeriodUs;
         } else {
 //             assert(false);
         }
 
-        // synced_keys_.insert(key);
+        synced_keys_.insert(key);
         timeout_queue_.push_back(key);
         if (timeout_queue_.size() >= 10240) {
             synced_keys_.erase(timeout_queue_.front());
@@ -761,15 +620,16 @@ void KeyValueSync::CheckNotCheckedBlocks() {
 #endif
 
 void KeyValueSync::CheckSyncTimeout() {
-    auto now_tm = common::TimeUtils::TimestampUs();
+    auto now_tm_us = common::TimeUtils::TimestampUs();
     for (auto iter = synced_map_.begin(); iter != synced_map_.end();) {
-        if (iter->second->sync_times >= kSyncMaxRetryTimes) {
+        if (iter->second->sync_times >= kSyncMaxRetryTimes ||
+                iter->second->responsed_timeout_us <= now_tm_us) {
             added_key_set_.erase(iter->second->key);
             iter = synced_map_.erase(iter);
             continue;
         }
 
-        if (iter->second->sync_tm_us + 500000 >= now_tm) {
+        if (iter->second->sync_tm_us + 1000000 >= now_tm_us) {
             ++iter;
             continue;
         }
