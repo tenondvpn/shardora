@@ -13,6 +13,7 @@
 #include <consensus/consensus_utils.h>
 #include <functional>
 #include <memory>
+#include <network/network_status.h>
 #include <protos/pools.pb.h>
 
 #include "block/block_manager.h"
@@ -78,6 +79,8 @@ int NetworkInit::Init(int argc, char** argv) {
         INIT_ERROR("init global info failed!");
         return kInitError;
     }
+
+    network::NetsInfo::Instance()->Init();
 
     if (InitSecurity() != kInitSuccess) {
         INIT_ERROR("InitSecurity failed!");
