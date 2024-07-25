@@ -986,6 +986,7 @@ void BlockManager::HandleElectTx(
         ZJC_DEBUG("handle elect tx storage index: %u, key: %s, protos::kElectNodeAttrElectBlock: %s",
             i, tx.storages(i).key().c_str(), protos::kElectNodeAttrElectBlock.c_str());
         if (tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
+            // TODO xufeisofly net 处理 root 发来的 elect 块，在这里执行打开 preopen 网络
             elect::protobuf::ElectBlock elect_block;
             if (!elect_block.ParseFromString(tx.storages(i).value())) {
                 assert(false);
@@ -1188,7 +1189,7 @@ void BlockManager::CreateStatisticTx() {
     if (!statistic_hash.empty()) {
         auto tm_statistic_iter = shard_statistics_map_.find(timeblock_height);
         if (tm_statistic_iter == shard_statistics_map_.end()) {
-           auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+            auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
             auto* tx = new_msg_ptr->header.mutable_tx_proto();
             tx->set_key(protos::kShardStatistic);
             tx->set_value(elect_statistic.SerializeAsString());
@@ -1291,6 +1292,7 @@ void BlockManager::HandleStatisticBlock(
         shard_elect_tx->tx_ptr->tx_info);
     shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + kElectTimeout;
     shard_elect_tx->stop_consensus_timeout = shard_elect_tx->timeout + kStopConsensusTimeoutMs;
+    // 在 root 网络生成 kConsensusRootElectShard 交易，等待共识
     shard_elect_tx_[block.network_id()] = shard_elect_tx;
     ZJC_INFO("success add elect tx: %u, %lu, gid: %s, txhash: %s, statistic elect height: %lu",
         block.network_id(), block.timeblock_height(),

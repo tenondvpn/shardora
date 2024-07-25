@@ -890,10 +890,10 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::std::string* release_sign_y();
   void set_allocated_sign_y(::std::string* sign_y);
 
-  // optional bytes commit_view_block_hash = 9;
+  // optional bytes commit_view_block_hash = 8;
   bool has_commit_view_block_hash() const;
   void clear_commit_view_block_hash();
-  static const int kCommitViewBlockHashFieldNumber = 9;
+  static const int kCommitViewBlockHashFieldNumber = 8;
   const ::std::string& commit_view_block_hash() const;
   void set_commit_view_block_hash(const ::std::string& value);
   #if LANG_CXX11
@@ -904,18 +904,6 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::std::string* mutable_commit_view_block_hash();
   ::std::string* release_commit_view_block_hash();
   void set_allocated_commit_view_block_hash(::std::string* commit_view_block_hash);
-
-  // optional .shardora.view_block.protobuf.ViewBlockItem view_block_item = 8;
-  bool has_view_block_item() const;
-  void clear_view_block_item();
-  static const int kViewBlockItemFieldNumber = 8;
-  private:
-  const ::shardora::view_block::protobuf::ViewBlockItem& _internal_view_block_item() const;
-  public:
-  const ::shardora::view_block::protobuf::ViewBlockItem& view_block_item() const;
-  ::shardora::view_block::protobuf::ViewBlockItem* release_view_block_item();
-  ::shardora::view_block::protobuf::ViewBlockItem* mutable_view_block_item();
-  void set_allocated_view_block_item(::shardora::view_block::protobuf::ViewBlockItem* view_block_item);
 
   // optional uint64 view = 3;
   bool has_view() const;
@@ -938,10 +926,10 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::uint32 replica_idx() const;
   void set_replica_idx(::google::protobuf::uint32 value);
 
-  // optional uint32 leader_idx = 10;
+  // optional uint32 leader_idx = 9;
   bool has_leader_idx() const;
   void clear_leader_idx();
-  static const int kLeaderIdxFieldNumber = 10;
+  static const int kLeaderIdxFieldNumber = 9;
   ::google::protobuf::uint32 leader_idx() const;
   void set_leader_idx(::google::protobuf::uint32 value);
 
@@ -959,8 +947,6 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   void clear_has_sign_x();
   void set_has_sign_y();
   void clear_has_sign_y();
-  void set_has_view_block_item();
-  void clear_has_view_block_item();
   void set_has_commit_view_block_hash();
   void clear_has_commit_view_block_hash();
   void set_has_leader_idx();
@@ -974,7 +960,6 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::internal::ArenaStringPtr sign_x_;
   ::google::protobuf::internal::ArenaStringPtr sign_y_;
   ::google::protobuf::internal::ArenaStringPtr commit_view_block_hash_;
-  ::shardora::view_block::protobuf::ViewBlockItem* view_block_item_;
   ::google::protobuf::uint64 view_;
   ::google::protobuf::uint64 elect_height_;
   ::google::protobuf::uint32 replica_idx_;
@@ -2033,13 +2018,13 @@ inline void ProposeMsg::set_allocated_tx_propose(::shardora::hotstuff::protobuf:
 
 // optional uint32 replica_idx = 1;
 inline bool VoteMsg::has_replica_idx() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void VoteMsg::set_has_replica_idx() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void VoteMsg::clear_has_replica_idx() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void VoteMsg::clear_replica_idx() {
   replica_idx_ = 0u;
@@ -2123,13 +2108,13 @@ inline void VoteMsg::set_allocated_view_block_hash(::std::string* view_block_has
 
 // optional uint64 view = 3;
 inline bool VoteMsg::has_view() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void VoteMsg::set_has_view() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void VoteMsg::clear_has_view() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void VoteMsg::clear_view() {
   view_ = GOOGLE_ULONGLONG(0);
@@ -2147,13 +2132,13 @@ inline void VoteMsg::set_view(::google::protobuf::uint64 value) {
 
 // optional uint64 elect_height = 4;
 inline bool VoteMsg::has_elect_height() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void VoteMsg::set_has_elect_height() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void VoteMsg::clear_has_elect_height() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void VoteMsg::clear_elect_height() {
   elect_height_ = GOOGLE_ULONGLONG(0);
@@ -2328,61 +2313,7 @@ VoteMsg::txs() const {
   return txs_;
 }
 
-// optional .shardora.view_block.protobuf.ViewBlockItem view_block_item = 8;
-inline bool VoteMsg::has_view_block_item() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void VoteMsg::set_has_view_block_item() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void VoteMsg::clear_has_view_block_item() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline const ::shardora::view_block::protobuf::ViewBlockItem& VoteMsg::_internal_view_block_item() const {
-  return *view_block_item_;
-}
-inline const ::shardora::view_block::protobuf::ViewBlockItem& VoteMsg::view_block_item() const {
-  const ::shardora::view_block::protobuf::ViewBlockItem* p = view_block_item_;
-  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.VoteMsg.view_block_item)
-  return p != NULL ? *p : *reinterpret_cast<const ::shardora::view_block::protobuf::ViewBlockItem*>(
-      &::shardora::view_block::protobuf::_ViewBlockItem_default_instance_);
-}
-inline ::shardora::view_block::protobuf::ViewBlockItem* VoteMsg::release_view_block_item() {
-  // @@protoc_insertion_point(field_release:shardora.hotstuff.protobuf.VoteMsg.view_block_item)
-  clear_has_view_block_item();
-  ::shardora::view_block::protobuf::ViewBlockItem* temp = view_block_item_;
-  view_block_item_ = NULL;
-  return temp;
-}
-inline ::shardora::view_block::protobuf::ViewBlockItem* VoteMsg::mutable_view_block_item() {
-  set_has_view_block_item();
-  if (view_block_item_ == NULL) {
-    auto* p = CreateMaybeMessage<::shardora::view_block::protobuf::ViewBlockItem>(GetArenaNoVirtual());
-    view_block_item_ = p;
-  }
-  // @@protoc_insertion_point(field_mutable:shardora.hotstuff.protobuf.VoteMsg.view_block_item)
-  return view_block_item_;
-}
-inline void VoteMsg::set_allocated_view_block_item(::shardora::view_block::protobuf::ViewBlockItem* view_block_item) {
-  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
-    delete reinterpret_cast< ::google::protobuf::MessageLite*>(view_block_item_);
-  }
-  if (view_block_item) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
-    if (message_arena != submessage_arena) {
-      view_block_item = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, view_block_item, submessage_arena);
-    }
-    set_has_view_block_item();
-  } else {
-    clear_has_view_block_item();
-  }
-  view_block_item_ = view_block_item;
-  // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.VoteMsg.view_block_item)
-}
-
-// optional bytes commit_view_block_hash = 9;
+// optional bytes commit_view_block_hash = 8;
 inline bool VoteMsg::has_commit_view_block_hash() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -2448,15 +2379,15 @@ inline void VoteMsg::set_allocated_commit_view_block_hash(::std::string* commit_
   // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.VoteMsg.commit_view_block_hash)
 }
 
-// optional uint32 leader_idx = 10;
+// optional uint32 leader_idx = 9;
 inline bool VoteMsg::has_leader_idx() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void VoteMsg::set_has_leader_idx() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void VoteMsg::clear_has_leader_idx() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void VoteMsg::clear_leader_idx() {
   leader_idx_ = 0u;

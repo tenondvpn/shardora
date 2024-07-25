@@ -122,6 +122,13 @@ message ElectStatistic {
     optional uint32 sharding_id = 4;
     optional uint64 gas_amount = 5;
     repeated uint32 lof_leaders = 6;
+    optional bool shard_perf_limit_reached = 7;
+    // optional NetsInfo nets_info = 9;
+}
+
+message NetsInfo {
+    optional uint32 preopened_network_id = 1;
+    optional uint32 biggest_opened_network_id = 2;
 }
 
 message SyncPoolsMaxHeight {

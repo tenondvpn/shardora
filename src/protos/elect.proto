@@ -48,6 +48,17 @@ message ElectBlock {
     optional uint64 elect_height = 4;
     optional uint64 all_gas_amount = 5;
     optional uint64 gas_for_root = 6;
+    optional DynamicShardingInfo dynamic_sharding_info = 7;
+}
+
+enum ShardingAction {
+    kPreopen = 0;
+    kOpen = 1;
+}
+
+message DynamicShardingInfo {
+    optional uint32 network_id = 1;
+    optional ShardingAction action = 2;
 }
 
 message WaitingNodesMessage {

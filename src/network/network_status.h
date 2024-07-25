@@ -45,6 +45,10 @@ public:
     const inline Status Status() {
         return status_;
     }
+
+    inline bool IsShard() {
+        return net_id_ >= network::kConsensusShardBeginNetworkId && net_id_ < network::kConsensusShardEndNetworkId; 
+    }
     
     inline bool IsClosed() {
         return status_ == Status::kClosed;
@@ -58,19 +62,21 @@ public:
         return status_ == Status::kOpened;
     }
     
-    void SetPreopened() {
+    bool SetPreopened() {
         if (!IsClosed()) {
-            return;
+            return false;
         }
         status_ = Status::kPreopened;
+        return true;
     }
     
-    void SetOpened(uint32_t net_id) {
+    bool SetOpened() {
         if (!IsPreopened()) {
-            return;
+            return false;
         }
         status_ = Status::kOpened;
-    }    
+        return true;
+    }
 
 private:
     enum Status status_;
@@ -87,11 +93,49 @@ public:
     void Init() {
         for (uint32_t net_id = 0; net_id < network::kConsensusShardEndNetworkId; net_id++) {
             net_infos_[net_id] = NetInfo(net_id);
-        }        
+        }
+
+        biggest_opened_net_id_ = network::kInitOpenedShardCount + network::kConsensusShardBeginNetworkId - 1;
+        cur_preopened_net_id_ = 0;
     }
+
+    inline uint32_t BiggestOpenedNetId() {
+        return biggest_opened_net_id_;
+    }
+
+    inline bool AllOpened() {
+        return biggest_opened_net_id_ == network::kConsensusShardEndNetworkId - 1;
+    }
+
+    inline uint32_t PreopenedNetworkId() {
+        return cur_preopened_net_id_;
+    }
+
+    inline bool HasPreopenedNetwork() {
+        return cur_preopened_net_id_ != 0;
+    }
+
+    void SetPreopened(uint32_t net_id) {
+        bool ok = net_infos_[net_id].SetPreopened();
+        if (ok) {
+            cur_preopened_net_id_ = net_id;
+        }
+    }
+    
+    void SetOpened(uint32_t net_id) {
+        bool ok = net_infos_[net_id].SetOpened();
+        if (ok) {
+            cur_preopened_net_id_ = 0;
+            if (net_id > biggest_opened_net_id_) {
+                biggest_opened_net_id_ = net_id;
+            }
+        }
+    }    
     
 private:
     NetInfo net_infos_[network::kConsensusShardEndNetworkId];
+    uint32_t cur_preopened_net_id_;
+    uint32_t biggest_opened_net_id_;
 
     NetsInfo() {};
     ~NetsInfo() {};  

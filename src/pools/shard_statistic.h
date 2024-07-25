@@ -90,6 +90,10 @@ public:
     void cleanUpBlocks(PoolBlocksInfo& pool_blocks_info);
     bool checkBlockValid(shardora::block::protobuf::Block &block);
 
+    bool IsShardReachPerformanceLimit(
+            std::shared_ptr<StatisticInfoItem>& statistic_info_ptr,
+            const block::protobuf::Block& block);
+
     static const uint32_t kLofRation = 5;
     static const uint32_t kLofMaxNodes = 8;
     static const uint32_t kLofValidMaxAvgTxCount = 1024u;

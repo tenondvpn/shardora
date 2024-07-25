@@ -40,7 +40,7 @@ namespace protobuf_protos_2fpools_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[15];
+  static const ::google::protobuf::internal::ParseTable schema[16];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -68,6 +68,9 @@ extern ElectStatisticDefaultTypeInternal _ElectStatistic_default_instance_;
 class JoinElectNode;
 class JoinElectNodeDefaultTypeInternal;
 extern JoinElectNodeDefaultTypeInternal _JoinElectNode_default_instance_;
+class NetsInfo;
+class NetsInfoDefaultTypeInternal;
+extern NetsInfoDefaultTypeInternal _NetsInfo_default_instance_;
 class PoolLatestInfo;
 class PoolLatestInfoDefaultTypeInternal;
 extern PoolLatestInfoDefaultTypeInternal _PoolLatestInfo_default_instance_;
@@ -106,6 +109,7 @@ template<> ::shardora::pools::protobuf::CrossShardStatistic* Arena::CreateMaybeM
 template<> ::shardora::pools::protobuf::CrossShardStatisticItem* Arena::CreateMaybeMessage<::shardora::pools::protobuf::CrossShardStatisticItem>(Arena*);
 template<> ::shardora::pools::protobuf::ElectStatistic* Arena::CreateMaybeMessage<::shardora::pools::protobuf::ElectStatistic>(Arena*);
 template<> ::shardora::pools::protobuf::JoinElectNode* Arena::CreateMaybeMessage<::shardora::pools::protobuf::JoinElectNode>(Arena*);
+template<> ::shardora::pools::protobuf::NetsInfo* Arena::CreateMaybeMessage<::shardora::pools::protobuf::NetsInfo>(Arena*);
 template<> ::shardora::pools::protobuf::PoolLatestInfo* Arena::CreateMaybeMessage<::shardora::pools::protobuf::PoolLatestInfo>(Arena*);
 template<> ::shardora::pools::protobuf::PoolStatisticItem* Arena::CreateMaybeMessage<::shardora::pools::protobuf::PoolStatisticItem>(Arena*);
 template<> ::shardora::pools::protobuf::ShardToTxItem* Arena::CreateMaybeMessage<::shardora::pools::protobuf::ShardToTxItem>(Arena*);
@@ -132,7 +136,6 @@ enum StepType {
   kContractGasPrepayment = 7,
   kContractExcute = 8,
   kRootCreateAddress = 9,
-  kRootCreateAddressCrossSharding = 11,
   kStatistic = 12,
   kJoinElect = 13,
   kCreateLibrary = 14,
@@ -2246,6 +2249,13 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::uint32 sharding_id() const;
   void set_sharding_id(::google::protobuf::uint32 value);
 
+  // optional bool shard_perf_limit_reached = 7;
+  bool has_shard_perf_limit_reached() const;
+  void clear_shard_perf_limit_reached();
+  static const int kShardPerfLimitReachedFieldNumber = 7;
+  bool shard_perf_limit_reached() const;
+  void set_shard_perf_limit_reached(bool value);
+
   // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.ElectStatistic)
  private:
   void set_has_height_info();
@@ -2254,6 +2264,8 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   void clear_has_sharding_id();
   void set_has_gas_amount();
   void clear_has_gas_amount();
+  void set_has_shard_perf_limit_reached();
+  void clear_has_shard_perf_limit_reached();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -2264,6 +2276,131 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   ::shardora::pools::protobuf::StatisticTxItem* height_info_;
   ::google::protobuf::uint64 gas_amount_;
   ::google::protobuf::uint32 sharding_id_;
+  bool shard_perf_limit_reached_;
+  friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
+class NetsInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.pools.protobuf.NetsInfo) */ {
+ public:
+  NetsInfo();
+  virtual ~NetsInfo();
+
+  NetsInfo(const NetsInfo& from);
+
+  inline NetsInfo& operator=(const NetsInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  NetsInfo(NetsInfo&& from) noexcept
+    : NetsInfo() {
+    *this = ::std::move(from);
+  }
+
+  inline NetsInfo& operator=(NetsInfo&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const NetsInfo& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const NetsInfo* internal_default_instance() {
+    return reinterpret_cast<const NetsInfo*>(
+               &_NetsInfo_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    13;
+
+  void Swap(NetsInfo* other);
+  friend void swap(NetsInfo& a, NetsInfo& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline NetsInfo* New() const final {
+    return CreateMaybeMessage<NetsInfo>(NULL);
+  }
+
+  NetsInfo* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<NetsInfo>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const NetsInfo& from);
+  void MergeFrom(const NetsInfo& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(NetsInfo* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional uint32 preopened_network_id = 1;
+  bool has_preopened_network_id() const;
+  void clear_preopened_network_id();
+  static const int kPreopenedNetworkIdFieldNumber = 1;
+  ::google::protobuf::uint32 preopened_network_id() const;
+  void set_preopened_network_id(::google::protobuf::uint32 value);
+
+  // optional uint32 biggest_opened_network_id = 2;
+  bool has_biggest_opened_network_id() const;
+  void clear_biggest_opened_network_id();
+  static const int kBiggestOpenedNetworkIdFieldNumber = 2;
+  ::google::protobuf::uint32 biggest_opened_network_id() const;
+  void set_biggest_opened_network_id(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.NetsInfo)
+ private:
+  void set_has_preopened_network_id();
+  void clear_has_preopened_network_id();
+  void set_has_biggest_opened_network_id();
+  void clear_has_biggest_opened_network_id();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::uint32 preopened_network_id_;
+  ::google::protobuf::uint32 biggest_opened_network_id_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -2310,7 +2447,7 @@ class SyncPoolsMaxHeight : public ::google::protobuf::Message /* @@protoc_insert
                &_SyncPoolsMaxHeight_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    14;
 
   void Swap(SyncPoolsMaxHeight* other);
   friend void swap(SyncPoolsMaxHeight& a, SyncPoolsMaxHeight& b) {
@@ -2450,7 +2587,7 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
                &_TxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    15;
 
   void Swap(TxMessage* other);
   friend void swap(TxMessage& a, TxMessage& b) {
@@ -4858,6 +4995,82 @@ ElectStatistic::mutable_lof_leaders() {
   return &lof_leaders_;
 }
 
+// optional bool shard_perf_limit_reached = 7;
+inline bool ElectStatistic::has_shard_perf_limit_reached() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void ElectStatistic::set_has_shard_perf_limit_reached() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void ElectStatistic::clear_has_shard_perf_limit_reached() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void ElectStatistic::clear_shard_perf_limit_reached() {
+  shard_perf_limit_reached_ = false;
+  clear_has_shard_perf_limit_reached();
+}
+inline bool ElectStatistic::shard_perf_limit_reached() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ElectStatistic.shard_perf_limit_reached)
+  return shard_perf_limit_reached_;
+}
+inline void ElectStatistic::set_shard_perf_limit_reached(bool value) {
+  set_has_shard_perf_limit_reached();
+  shard_perf_limit_reached_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ElectStatistic.shard_perf_limit_reached)
+}
+
+// -------------------------------------------------------------------
+
+// NetsInfo
+
+// optional uint32 preopened_network_id = 1;
+inline bool NetsInfo::has_preopened_network_id() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void NetsInfo::set_has_preopened_network_id() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void NetsInfo::clear_has_preopened_network_id() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void NetsInfo::clear_preopened_network_id() {
+  preopened_network_id_ = 0u;
+  clear_has_preopened_network_id();
+}
+inline ::google::protobuf::uint32 NetsInfo::preopened_network_id() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.NetsInfo.preopened_network_id)
+  return preopened_network_id_;
+}
+inline void NetsInfo::set_preopened_network_id(::google::protobuf::uint32 value) {
+  set_has_preopened_network_id();
+  preopened_network_id_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.NetsInfo.preopened_network_id)
+}
+
+// optional uint32 biggest_opened_network_id = 2;
+inline bool NetsInfo::has_biggest_opened_network_id() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void NetsInfo::set_has_biggest_opened_network_id() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void NetsInfo::clear_has_biggest_opened_network_id() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void NetsInfo::clear_biggest_opened_network_id() {
+  biggest_opened_network_id_ = 0u;
+  clear_has_biggest_opened_network_id();
+}
+inline ::google::protobuf::uint32 NetsInfo::biggest_opened_network_id() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.NetsInfo.biggest_opened_network_id)
+  return biggest_opened_network_id_;
+}
+inline void NetsInfo::set_biggest_opened_network_id(::google::protobuf::uint32 value) {
+  set_has_biggest_opened_network_id();
+  biggest_opened_network_id_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.NetsInfo.biggest_opened_network_id)
+}
+
 // -------------------------------------------------------------------
 
 // SyncPoolsMaxHeight
@@ -5692,6 +5905,8 @@ inline void TxMessage::set_allocated_sign(::std::string* sign) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

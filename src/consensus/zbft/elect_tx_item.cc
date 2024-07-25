@@ -3,7 +3,11 @@
 #include "common/fts_tree.h"
 #include "elect_tx_item.h"
 #include "protos/get_proto_hash.h"
+#include <common/utils.h>
 #include <google/protobuf/util/json_util.h>
+#include <network/network_status.h>
+#include <network/network_utils.h>
+#include <protos/elect.pb.h>
 
 namespace shardora {
 
@@ -52,6 +56,7 @@ int ElectTxItem::HandleTx(
                     ZJC_DEBUG("LLLLL elect_statistic:%s", json_str.c_str() );
                 }
             }
+            // 计算交易，xufeisofly root 网络根据 shard 上报的 elect_statistic 进行选举
             return processElect(elect_statistic, block, db_batch, block_tx);
         }
     }
@@ -620,6 +625,13 @@ int ElectTxItem::CreateNewElect(
     elect_block.set_shard_network_id(elect_statistic.sharding_id());
     elect_block.set_elect_height(block.height());
     elect_block.set_all_gas_amount(elect_statistic.gas_amount());
+    // 动态扩容信息
+    elect::protobuf::DynamicShardingInfo* dynamic_sharding_info;
+    bool ok = GetDynamicShardingInfo(elect_statistic, dynamic_sharding_info);
+    if (ok && dynamic_sharding_info != nullptr) {
+        elect_block.mutable_dynamic_sharding_info()->CopyFrom(*dynamic_sharding_info);
+    }
+    
     if (bls_mgr_->AddBlsConsensusInfo(elect_block) != bls::kBlsSuccess) {
         ZJC_WARN("add prev elect bls consensus info failed sharding id: %u",
                  elect_statistic.sharding_id());
@@ -1081,6 +1093,40 @@ void ElectTxItem::SmoothFtsValue(
     }
 
     ZJC_DEBUG("fts value final: %s", fts_val_str.c_str());
+}
+
+bool ElectTxItem::GetDynamicShardingInfo(
+        const pools::protobuf::ElectStatistic &elect_statistic,
+        elect::protobuf::DynamicShardingInfo* dynamic_sharding_info) {
+    auto shard_id = elect_statistic.sharding_id();
+    
+    // 尝试 Preopen 一个新的分片
+    if (!network::NetsInfo::Instance()->HasPreopenedNetwork() &&
+        shard_id == network::NetsInfo::Instance()->BiggestOpenedNetId()) {
+        // 所有分片都已经 Open
+        if (network::NetsInfo::Instance()->AllOpened()) {
+            return false;
+        }
+        // shard_id 还未达到吞吐量上限
+        if (!elect_statistic.shard_perf_limit_reached()) {
+            return false;
+        }
+        // 尝试 Preopen 下一个分片
+        dynamic_sharding_info->set_network_id(network::NetsInfo::Instance()->BiggestOpenedNetId()+1);
+        dynamic_sharding_info->set_action(elect::protobuf::ShardingAction::kPreopen);
+    } else if (network::NetsInfo::Instance()->PreopenedNetworkId() == shard_id) {
+        // 尝试 Open 当前处于 Preopen 的分片
+        auto shard_member_count = elect_mgr_->GetMemberCount(shard_id);
+        if (shard_member_count < common::kOpenShardMemberCountMinThres) {
+            return false;
+        }
+
+        dynamic_sharding_info->set_network_id(shard_id);
+        dynamic_sharding_info->set_action(elect::protobuf::ShardingAction::kOpen);
+    }
+
+    // 尝试 open
+    return true;
 }
 
 }; // namespace consensus
