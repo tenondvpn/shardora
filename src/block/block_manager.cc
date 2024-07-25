@@ -14,6 +14,8 @@
 #include "protos/elect.pb.h"
 #include "transport/processor.h"
 #include <common/log.h>
+#include <network/network_status.h>
+#include <network/network_utils.h>
 #include <protos/pools.pb.h>
 #include <protos/tx_storage_key.h>
 #include "db/db_utils.h"
@@ -994,6 +996,8 @@ void BlockManager::HandleElectTx(
             }
 
             AddMiningToken(block.hash(), elect_block);
+            // 尝试扩容
+            TryDynamicSharding(elect_block);
             if (shard_elect_tx_[elect_block.shard_network_id()] != nullptr) {
                 if (shard_elect_tx_[elect_block.shard_network_id()]->tx_ptr->tx_info.gid() == tx.gid()) {
                     shard_elect_tx_[elect_block.shard_network_id()] = nullptr;
@@ -1020,6 +1024,40 @@ void BlockManager::HandleElectTx(
             }
         }
     }
+}
+
+// 尝试分片扩容
+void BlockManager::TryDynamicSharding(const elect::protobuf::ElectBlock& elect_block) {
+    if (!elect_block.has_dynamic_sharding_info()) {
+        return;
+    }
+    
+    auto dynamic_sharding_info = elect_block.dynamic_sharding_info();
+    auto shard_id = dynamic_sharding_info.network_id();
+
+    if (shard_id < network::kConsensusShardBeginNetworkId ||
+        shard_id >= network::kConsensusShardEndNetworkId) {
+        return;
+    }
+
+    if (dynamic_sharding_info.action() == elect::protobuf::ShardingAction::kPreopen) {
+        if (network::NetsInfo::Instance()->HasPreopenedNetwork() ||
+            shard_id != network::NetsInfo::Instance()->BiggestOpenedNetId()+1) {
+            return;
+        }
+        network::NetsInfo::Instance()->SetPreopened(shard_id);
+        return;
+    }
+
+    if (dynamic_sharding_info.action() == elect::protobuf::ShardingAction::kOpen) {
+        if (network::NetsInfo::Instance()->PreopenedNetworkId() != shard_id) {
+            return;
+        }
+        network::NetsInfo::Instance()->SetOpened(shard_id);
+        return;
+    }
+    
+    return;
 }
 
 void BlockManager::AddMiningToken(
