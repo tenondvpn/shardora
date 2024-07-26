@@ -449,6 +449,7 @@ void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
     }
 
     // 验证请求节点的分片状态，不接受 Closed 分片的请求
+    DHT_WARN("src shard: %d status: %d.", header.src_sharding_id(), network::NetsInfo::Instance()->net_info(header.has_src_sharding_id()).Status());
     if (network::NetsInfo::Instance()->IsClosed(header.src_sharding_id())) {
         DHT_WARN("src shard: %d is closed.", header.src_sharding_id());
         return;

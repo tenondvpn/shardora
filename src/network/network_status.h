@@ -17,22 +17,14 @@ enum class ShardStatus : uint8_t {
 class NetInfo {
 public:
     NetInfo() : status_(ShardStatus::kClosed), net_id_(common::kInvalidUint32) {}
-    NetInfo(uint32_t net_id) {
-        if (net_id == common::kInvalidUint32) {
-            return;
-        }
-        
+    NetInfo(uint32_t net_id) {        
         if (net_id >= network::kConsensusWaitingShardBeginNetworkId &&
             net_id < network::kConsensusWaitingShardEndNetworkId) {
             net_id -= network::kConsensusWaitingShardOffset;
         }
 
-        if (net_id < network::kRootCongressNetworkId ||
-            net_id >= network::kConsensusShardEndNetworkId) {
-            return;
-        }
-
         net_id_ = net_id;
+
         if (net_id < network::kInitOpenedShardCount + network::kConsensusShardBeginNetworkId) {
             status_ = ShardStatus::kOpened;
         } else {
@@ -44,10 +36,6 @@ public:
 
     const inline ShardStatus Status() {
         return status_;
-    }
-
-    inline bool IsShard() {
-        return net_id_ >= network::kConsensusShardBeginNetworkId && net_id_ < network::kConsensusShardEndNetworkId; 
     }
     
     inline bool IsClosed() {
@@ -121,8 +109,7 @@ public:
             net_id -= network::kConsensusWaitingShardOffset;
         }
 
-        if (net_id < network::kRootCongressNetworkId ||
-            net_id >= network::kConsensusShardEndNetworkId) {
+        if (net_id >= network::kConsensusShardEndNetworkId) {
             return NetInfo(common::kInvalidUint32);
         }
         
