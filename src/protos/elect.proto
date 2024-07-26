@@ -51,14 +51,9 @@ message ElectBlock {
     optional DynamicShardingInfo dynamic_sharding_info = 7;
 }
 
-enum ShardingAction {
-    kPreopen = 0;
-    kOpen = 1;
-}
-
 message DynamicShardingInfo {
     optional uint32 network_id = 1;
-    optional ShardingAction action = 2;
+    optional uint32 action = 2;
 }
 
 message WaitingNodesMessage {

@@ -29,7 +29,6 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
-#include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
 #define PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto 
@@ -120,25 +119,6 @@ namespace shardora {
 namespace elect {
 namespace protobuf {
 
-enum ShardingAction {
-  kPreopen = 0,
-  kOpen = 1
-};
-bool ShardingAction_IsValid(int value);
-const ShardingAction ShardingAction_MIN = kPreopen;
-const ShardingAction ShardingAction_MAX = kOpen;
-const int ShardingAction_ARRAYSIZE = ShardingAction_MAX + 1;
-
-const ::google::protobuf::EnumDescriptor* ShardingAction_descriptor();
-inline const ::std::string& ShardingAction_Name(ShardingAction value) {
-  return ::google::protobuf::internal::NameOfEnum(
-    ShardingAction_descriptor(), value);
-}
-inline bool ShardingAction_Parse(
-    const ::std::string& name, ShardingAction* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<ShardingAction>(
-    ShardingAction_descriptor(), name, value);
-}
 // ===================================================================
 
 class VerifyVecValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.elect.protobuf.VerifyVecValue) */ {
@@ -1317,12 +1297,12 @@ class DynamicShardingInfo : public ::google::protobuf::Message /* @@protoc_inser
   ::google::protobuf::uint32 network_id() const;
   void set_network_id(::google::protobuf::uint32 value);
 
-  // optional .shardora.elect.protobuf.ShardingAction action = 2;
+  // optional uint32 action = 2;
   bool has_action() const;
   void clear_action();
   static const int kActionFieldNumber = 2;
-  ::shardora::elect::protobuf::ShardingAction action() const;
-  void set_action(::shardora::elect::protobuf::ShardingAction value);
+  ::google::protobuf::uint32 action() const;
+  void set_action(::google::protobuf::uint32 value);
 
   // @@protoc_insertion_point(class_scope:shardora.elect.protobuf.DynamicShardingInfo)
  private:
@@ -1335,7 +1315,7 @@ class DynamicShardingInfo : public ::google::protobuf::Message /* @@protoc_inser
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::uint32 network_id_;
-  int action_;
+  ::google::protobuf::uint32 action_;
   friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -4087,7 +4067,7 @@ inline void DynamicShardingInfo::set_network_id(::google::protobuf::uint32 value
   // @@protoc_insertion_point(field_set:shardora.elect.protobuf.DynamicShardingInfo.network_id)
 }
 
-// optional .shardora.elect.protobuf.ShardingAction action = 2;
+// optional uint32 action = 2;
 inline bool DynamicShardingInfo::has_action() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -4098,15 +4078,14 @@ inline void DynamicShardingInfo::clear_has_action() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void DynamicShardingInfo::clear_action() {
-  action_ = 0;
+  action_ = 0u;
   clear_has_action();
 }
-inline ::shardora::elect::protobuf::ShardingAction DynamicShardingInfo::action() const {
+inline ::google::protobuf::uint32 DynamicShardingInfo::action() const {
   // @@protoc_insertion_point(field_get:shardora.elect.protobuf.DynamicShardingInfo.action)
-  return static_cast< ::shardora::elect::protobuf::ShardingAction >(action_);
+  return action_;
 }
-inline void DynamicShardingInfo::set_action(::shardora::elect::protobuf::ShardingAction value) {
-  assert(::shardora::elect::protobuf::ShardingAction_IsValid(value));
+inline void DynamicShardingInfo::set_action(::google::protobuf::uint32 value) {
   set_has_action();
   action_ = value;
   // @@protoc_insertion_point(field_set:shardora.elect.protobuf.DynamicShardingInfo.action)
@@ -5379,18 +5358,6 @@ inline void ElectMessage::set_allocated_sync_stoke_res(::shardora::elect::protob
 }  // namespace protobuf
 }  // namespace elect
 }  // namespace shardora
-
-namespace google {
-namespace protobuf {
-
-template <> struct is_proto_enum< ::shardora::elect::protobuf::ShardingAction> : ::std::true_type {};
-template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::shardora::elect::protobuf::ShardingAction>() {
-  return ::shardora::elect::protobuf::ShardingAction_descriptor();
-}
-
-}  // namespace protobuf
-}  // namespace google
 
 // @@protoc_insertion_point(global_scope)
 

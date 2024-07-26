@@ -37,6 +37,10 @@ public:
     const inline ShardStatus Status() {
         return status_;
     }
+
+    inline bool IsValidShard() {
+        return net_id_ >= network::kConsensusShardBeginNetworkId && net_id_ < network::kConsensusShardEndNetworkId;
+    }
     
     inline bool IsClosed() {
         return status_ == ShardStatus::kClosed;

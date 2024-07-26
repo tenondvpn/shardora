@@ -358,7 +358,6 @@ void InitDefaults() {
 }
 
 ::google::protobuf::Metadata file_level_metadata[15];
-const ::google::protobuf::EnumDescriptor* file_level_enum_descriptors[1];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::elect::protobuf::VerifyVecValue, _has_bits_),
@@ -597,7 +596,7 @@ void protobuf_AssignDescriptors() {
   AddDescriptors();
   AssignDescriptors(
       "protos/elect.proto", schemas, file_default_instances, TableStruct::offsets,
-      file_level_metadata, file_level_enum_descriptors, NULL);
+      file_level_metadata, NULL, NULL);
 }
 
 void protobuf_AssignDescriptorsOnce() {
@@ -636,43 +635,41 @@ void AddDescriptorsImpl() {
       "_id\030\003 \001(\r\022\024\n\014elect_height\030\004 \001(\004\022\026\n\016all_g"
       "as_amount\030\005 \001(\004\022\024\n\014gas_for_root\030\006 \001(\004\022K\n"
       "\025dynamic_sharding_info\030\007 \001(\0132,.shardora."
-      "elect.protobuf.DynamicShardingInfo\"b\n\023Dy"
-      "namicShardingInfo\022\022\n\nnetwork_id\030\001 \001(\r\0227\n"
-      "\006action\030\002 \001(\0162\'.shardora.elect.protobuf."
-      "ShardingAction\"Y\n\023WaitingNodesMessage\022\024\n"
-      "\014nodes_filter\030\001 \003(\004\022\030\n\020waiting_shard_id\030"
-      "\002 \001(\r\022\022\n\nstoke_hash\030\003 \001(\014\"i\n\024WaitingNode"
-      "Heartbeat\022\021\n\tpublic_ip\030\001 \001(\014\022\023\n\013public_p"
-      "ort\030\002 \001(\r\022\022\n\nnetwork_id\030\003 \001(\r\022\025\n\rtimesta"
-      "mp_sec\030\004 \001(\004\"@\n\025LeaderRotationMessage\022\021\n"
-      "\tleader_id\030\001 \001(\014\022\024\n\014pool_mod_num\030\002 \001(\r\"9"
-      "\n\021SyncNodeStokeItem\022\n\n\002id\030\001 \001(\014\022\030\n\020synce"
-      "d_tm_height\030\002 \001(\004\"l\n\024SyncNodeStokeReques"
-      "t\022=\n\tsync_item\030\001 \003(\0132*.shardora.elect.pr"
-      "otobuf.SyncNodeStokeItem\022\025\n\rnow_tm_heigh"
-      "t\030\002 \001(\004\"3\n\024SyncNodeStokeResItem\022\n\n\002id\030\001 "
-      "\001(\014\022\017\n\007balance\030\002 \001(\004\"l\n\025SyncNodeStokeRes"
-      "ponse\022<\n\005items\030\001 \003(\0132-.shardora.elect.pr"
-      "otobuf.SyncNodeStokeResItem\022\025\n\rnow_tm_he"
-      "ight\030\002 \001(\004\"\247\004\n\014ElectMessage\0228\n\013elect_blo"
-      "ck\030\001 \001(\0132#.shardora.elect.protobuf.Elect"
-      "Block\022=\n\020prev_elect_block\030\002 \001(\0132#.shardo"
-      "ra.elect.protobuf.ElectBlock\022C\n\rwaiting_"
-      "nodes\030\003 \001(\0132,.shardora.elect.protobuf.Wa"
-      "itingNodesMessage\022\024\n\014member_index\030\004 \001(\005\022"
-      "\017\n\007sign_ch\030\005 \001(\014\022\020\n\010sign_res\030\006 \001(\014\022H\n\021wa"
-      "iting_heartbeat\030\007 \001(\0132-.shardora.elect.p"
-      "rotobuf.WaitingNodeHeartbeat\022G\n\017leader_r"
-      "otation\030\010 \001(\0132..shardora.elect.protobuf."
-      "LeaderRotationMessage\022E\n\016sync_stoke_req\030"
-      "\t \001(\0132-.shardora.elect.protobuf.SyncNode"
-      "StokeRequest\022F\n\016sync_stoke_res\030\n \001(\0132..s"
-      "hardora.elect.protobuf.SyncNodeStokeResp"
-      "onse*)\n\016ShardingAction\022\014\n\010kPreopen\020\000\022\t\n\005"
-      "kOpen\020\001"
+      "elect.protobuf.DynamicShardingInfo\"9\n\023Dy"
+      "namicShardingInfo\022\022\n\nnetwork_id\030\001 \001(\r\022\016\n"
+      "\006action\030\002 \001(\r\"Y\n\023WaitingNodesMessage\022\024\n\014"
+      "nodes_filter\030\001 \003(\004\022\030\n\020waiting_shard_id\030\002"
+      " \001(\r\022\022\n\nstoke_hash\030\003 \001(\014\"i\n\024WaitingNodeH"
+      "eartbeat\022\021\n\tpublic_ip\030\001 \001(\014\022\023\n\013public_po"
+      "rt\030\002 \001(\r\022\022\n\nnetwork_id\030\003 \001(\r\022\025\n\rtimestam"
+      "p_sec\030\004 \001(\004\"@\n\025LeaderRotationMessage\022\021\n\t"
+      "leader_id\030\001 \001(\014\022\024\n\014pool_mod_num\030\002 \001(\r\"9\n"
+      "\021SyncNodeStokeItem\022\n\n\002id\030\001 \001(\014\022\030\n\020synced"
+      "_tm_height\030\002 \001(\004\"l\n\024SyncNodeStokeRequest"
+      "\022=\n\tsync_item\030\001 \003(\0132*.shardora.elect.pro"
+      "tobuf.SyncNodeStokeItem\022\025\n\rnow_tm_height"
+      "\030\002 \001(\004\"3\n\024SyncNodeStokeResItem\022\n\n\002id\030\001 \001"
+      "(\014\022\017\n\007balance\030\002 \001(\004\"l\n\025SyncNodeStokeResp"
+      "onse\022<\n\005items\030\001 \003(\0132-.shardora.elect.pro"
+      "tobuf.SyncNodeStokeResItem\022\025\n\rnow_tm_hei"
+      "ght\030\002 \001(\004\"\247\004\n\014ElectMessage\0228\n\013elect_bloc"
+      "k\030\001 \001(\0132#.shardora.elect.protobuf.ElectB"
+      "lock\022=\n\020prev_elect_block\030\002 \001(\0132#.shardor"
+      "a.elect.protobuf.ElectBlock\022C\n\rwaiting_n"
+      "odes\030\003 \001(\0132,.shardora.elect.protobuf.Wai"
+      "tingNodesMessage\022\024\n\014member_index\030\004 \001(\005\022\017"
+      "\n\007sign_ch\030\005 \001(\014\022\020\n\010sign_res\030\006 \001(\014\022H\n\021wai"
+      "ting_heartbeat\030\007 \001(\0132-.shardora.elect.pr"
+      "otobuf.WaitingNodeHeartbeat\022G\n\017leader_ro"
+      "tation\030\010 \001(\0132..shardora.elect.protobuf.L"
+      "eaderRotationMessage\022E\n\016sync_stoke_req\030\t"
+      " \001(\0132-.shardora.elect.protobuf.SyncNodeS"
+      "tokeRequest\022F\n\016sync_stoke_res\030\n \001(\0132..sh"
+      "ardora.elect.protobuf.SyncNodeStokeRespo"
+      "nse"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 2207);
+      descriptor, 2123);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/elect.proto", &protobuf_RegisterTypes);
 }
@@ -691,20 +688,6 @@ struct StaticDescriptorInitializer {
 namespace shardora {
 namespace elect {
 namespace protobuf {
-const ::google::protobuf::EnumDescriptor* ShardingAction_descriptor() {
-  protobuf_protos_2felect_2eproto::protobuf_AssignDescriptorsOnce();
-  return protobuf_protos_2felect_2eproto::file_level_enum_descriptors[0];
-}
-bool ShardingAction_IsValid(int value) {
-  switch (value) {
-    case 0:
-    case 1:
-      return true;
-    default:
-      return false;
-  }
-}
-
 
 // ===================================================================
 
@@ -3370,20 +3353,14 @@ bool DynamicShardingInfo::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .shardora.elect.protobuf.ShardingAction action = 2;
+      // optional uint32 action = 2;
       case 2: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
-          int value;
+          set_has_action();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
-                 input, &value)));
-          if (::shardora::elect::protobuf::ShardingAction_IsValid(value)) {
-            set_action(static_cast< ::shardora::elect::protobuf::ShardingAction >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(
-                2, static_cast< ::google::protobuf::uint64>(value));
-          }
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &action_)));
         } else {
           goto handle_unusual;
         }
@@ -3422,10 +3399,9 @@ void DynamicShardingInfo::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->network_id(), output);
   }
 
-  // optional .shardora.elect.protobuf.ShardingAction action = 2;
+  // optional uint32 action = 2;
   if (cached_has_bits & 0x00000002u) {
-    ::google::protobuf::internal::WireFormatLite::WriteEnum(
-      2, this->action(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->action(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3448,10 +3424,9 @@ void DynamicShardingInfo::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->network_id(), target);
   }
 
-  // optional .shardora.elect.protobuf.ShardingAction action = 2;
+  // optional uint32 action = 2;
   if (cached_has_bits & 0x00000002u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->action(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->action(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3479,10 +3454,11 @@ size_t DynamicShardingInfo::ByteSizeLong() const {
           this->network_id());
     }
 
-    // optional .shardora.elect.protobuf.ShardingAction action = 2;
+    // optional uint32 action = 2;
     if (has_action()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::EnumSize(this->action());
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->action());
     }
 
   }

@@ -3,6 +3,7 @@
 #include "common/fts_tree.h"
 #include "elect_tx_item.h"
 #include "protos/get_proto_hash.h"
+#include <common/log.h>
 #include <common/utils.h>
 #include <google/protobuf/util/json_util.h>
 #include <network/network_status.h>
@@ -626,11 +627,10 @@ int ElectTxItem::CreateNewElect(
     elect_block.set_elect_height(block.height());
     elect_block.set_all_gas_amount(elect_statistic.gas_amount());
     // 动态扩容信息
-    elect::protobuf::DynamicShardingInfo* dynamic_sharding_info;
-    bool ok = GetDynamicShardingInfo(elect_statistic, dynamic_sharding_info);
-    if (ok && dynamic_sharding_info != nullptr) {
-        elect_block.mutable_dynamic_sharding_info()->CopyFrom(*dynamic_sharding_info);
-    }
+    auto& dynamic_sharding_info = *elect_block.mutable_dynamic_sharding_info();
+    bool ok = GetDynamicShardingInfo(elect_statistic, &dynamic_sharding_info);
+
+    ZJC_DEBUG("dynamic sharding info, s: %d, act: %d", dynamic_sharding_info.network_id(), dynamic_sharding_info.action());
     
     if (bls_mgr_->AddBlsConsensusInfo(elect_block) != bls::kBlsSuccess) {
         ZJC_WARN("add prev elect bls consensus info failed sharding id: %u",
@@ -1099,6 +1099,12 @@ bool ElectTxItem::GetDynamicShardingInfo(
         const pools::protobuf::ElectStatistic &elect_statistic,
         elect::protobuf::DynamicShardingInfo* dynamic_sharding_info) {
     auto shard_id = elect_statistic.sharding_id();
+    ZJC_DEBUG("all sharding info, s: %d, biggest open net: %d, all opened: %d, perfreached: %d, preopened: %d",
+        shard_id,
+        network::NetsInfo::Instance()->BiggestOpenedNetId(),
+        network::NetsInfo::Instance()->AllOpened(),
+        elect_statistic.shard_perf_limit_reached(),
+        network::NetsInfo::Instance()->PreopenedNetworkId());
     
     // 尝试 Preopen 一个新的分片
     if (!network::NetsInfo::Instance()->HasPreopenedNetwork() &&
@@ -1113,7 +1119,7 @@ bool ElectTxItem::GetDynamicShardingInfo(
         }
         // 尝试 Preopen 下一个分片
         dynamic_sharding_info->set_network_id(network::NetsInfo::Instance()->BiggestOpenedNetId()+1);
-        dynamic_sharding_info->set_action(elect::protobuf::ShardingAction::kPreopen);
+        dynamic_sharding_info->set_action(uint32_t(network::ShardStatus::kPreopened));
     } else if (network::NetsInfo::Instance()->PreopenedNetworkId() == shard_id) {
         // 尝试 Open 当前处于 Preopen 的分片
         auto shard_member_count = elect_mgr_->GetMemberCount(shard_id);
@@ -1122,7 +1128,7 @@ bool ElectTxItem::GetDynamicShardingInfo(
         }
 
         dynamic_sharding_info->set_network_id(shard_id);
-        dynamic_sharding_info->set_action(elect::protobuf::ShardingAction::kOpen);
+        dynamic_sharding_info->set_action(uint32_t(network::ShardStatus::kOpened));
     }
 
     // 尝试 open

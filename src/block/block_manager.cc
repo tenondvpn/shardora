@@ -1043,7 +1043,6 @@ void BlockManager::TryDynamicSharding(const elect::protobuf::ElectBlock& elect_b
     auto dynamic_sharding_info = elect_block.dynamic_sharding_info();
     auto shard_id = dynamic_sharding_info.network_id();
 
-
     ZJC_DEBUG("dynamic sharding begin, s: %d, act: %d, cur: %d",
         shard_id,
         dynamic_sharding_info.action(),
@@ -1061,7 +1060,7 @@ void BlockManager::TryDynamicSharding(const elect::protobuf::ElectBlock& elect_b
         return;
     }
 
-    if (dynamic_sharding_info.action() == elect::protobuf::ShardingAction::kPreopen) {
+    if (dynamic_sharding_info.action() == uint32_t(network::ShardStatus::kPreopened)) {
         if (network::NetsInfo::Instance()->HasPreopenedNetwork() ||
             shard_id != network::NetsInfo::Instance()->BiggestOpenedNetId()+1) {
             return;
@@ -1070,7 +1069,7 @@ void BlockManager::TryDynamicSharding(const elect::protobuf::ElectBlock& elect_b
         return;
     }
 
-    if (dynamic_sharding_info.action() == elect::protobuf::ShardingAction::kOpen) {
+    if (dynamic_sharding_info.action() == uint32_t(network::ShardStatus::kOpened)) {
         if (network::NetsInfo::Instance()->PreopenedNetworkId() != shard_id) {
             return;
         }
