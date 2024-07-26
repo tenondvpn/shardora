@@ -7,7 +7,7 @@ namespace shardora {
 
 namespace network {
 
-enum class Status : uint8_t {
+enum class ShardStatus : uint8_t {
     kClosed = 0,
     kPreopened = 1,
     kOpened = 2,
@@ -16,7 +16,7 @@ enum class Status : uint8_t {
 
 class NetInfo {
 public:
-    NetInfo() : status_(Status::kClosed), net_id_(common::kInvalidUint32) {}
+    NetInfo() : status_(ShardStatus::kClosed), net_id_(common::kInvalidUint32) {}
     NetInfo(uint32_t net_id) {
         if (net_id == common::kInvalidUint32) {
             return;
@@ -34,15 +34,15 @@ public:
 
         net_id_ = net_id;
         if (net_id < network::kInitOpenedShardCount + network::kConsensusShardBeginNetworkId) {
-            status_ = Status::kOpened;
+            status_ = ShardStatus::kOpened;
         } else {
-            status_ = Status::kClosed;
+            status_ = ShardStatus::kClosed;
         }
     }
     
     ~NetInfo() {};
 
-    const inline Status Status() {
+    const inline ShardStatus Status() {
         return status_;
     }
 
@@ -51,22 +51,22 @@ public:
     }
     
     inline bool IsClosed() {
-        return status_ == Status::kClosed;
+        return status_ == ShardStatus::kClosed;
     }
     
     inline bool IsPreopened() {
-        return status_ == Status::kPreopened;
+        return status_ == ShardStatus::kPreopened;
     }
     
     inline bool IsOpened() {
-        return status_ == Status::kOpened;
+        return status_ == ShardStatus::kOpened;
     }
     
     bool SetPreopened() {
         if (!IsClosed()) {
             return false;
         }
-        status_ = Status::kPreopened;
+        status_ = ShardStatus::kPreopened;
         return true;
     }
     
@@ -74,12 +74,12 @@ public:
         if (!IsPreopened()) {
             return false;
         }
-        status_ = Status::kOpened;
+        status_ = ShardStatus::kOpened;
         return true;
     }
 
 private:
-    enum Status status_;
+    enum ShardStatus status_;
     uint32_t net_id_;
 };
 
