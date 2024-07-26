@@ -10,8 +10,10 @@
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <libbls/tools/utils.h>
+#include <network/network_status.h>
 #include <protos/pools.pb.h>
 #include <sys/socket.h>
+#include <transport/transport_utils.h>
 
 #include "bls/bls_utils.h"
 #include "bls/bls_manager.h"
@@ -204,6 +206,14 @@ void HotstuffManager::OnNewElectBlock(uint64_t block_tm_ms, uint32_t sharding_id
 }
 
 void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    // 仅接受 Opened 分片的共识消息
+    if (!network::NetsInfo::Instance()->IsOpened(msg_ptr->header.src_sharding_id())) {
+        ZJC_WARN("wrong shard status: %d %d.",
+            msg_ptr->header.src_sharding_id(),
+            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id()).Status());
+        return;
+    }
+    
     auto& header = msg_ptr->header;
     if (header.has_hotstuff_timeout_proto() ||
         (header.has_hotstuff() && header.hotstuff().type() == VOTE) ||
@@ -279,6 +289,13 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
+    if (!network::NetsInfo::Instance()->IsOpened(msg_ptr->header.src_sharding_id())) {
+        ZJC_WARN("wrong shard status: %d %d.",
+            msg_ptr->header.src_sharding_id(),
+            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id()).Status());
+        return;
+    }    
+    
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {

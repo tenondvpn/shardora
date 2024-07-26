@@ -8,6 +8,7 @@
 #include "network/universal_manager.h"
 #include "network/network_utils.h"
 #include "transport/processor.h"
+#include <network/network_status.h>
 
 namespace shardora {
 
@@ -210,6 +211,13 @@ void Route::Broadcasting() {
 }
 
 void Route::HandleDhtMessage(const transport::MessagePtr& header_ptr) {
+    if (network::NetsInfo::Instance()->IsClosed(header_ptr->header.src_sharding_id())) {
+        ZJC_WARN("wrong shard status: %d %d.",
+            header_ptr->header.src_sharding_id(),
+            network::NetsInfo::Instance()->net_info(header_ptr->header.src_sharding_id()).Status());
+        return;
+    }    
+    
     auto& header = header_ptr->header;
     auto dht = GetDht(header.des_dht_key());
     if (!dht) {

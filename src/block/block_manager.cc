@@ -18,6 +18,7 @@
 #include <network/network_utils.h>
 #include <protos/pools.pb.h>
 #include <protos/tx_storage_key.h>
+#include <transport/transport_utils.h>
 #include "db/db_utils.h"
 
 namespace shardora {
@@ -77,7 +78,7 @@ int BlockManager::Init(
     return kBlockSuccess;
 }
 
-int BlockManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+int BlockManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {    
     return transport::kFirewallCheckSuccess;
 }
 
@@ -122,7 +123,13 @@ void BlockManager::OnNewElectBlock(
 }
 
 void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    assert(false);
+    if (network::NetsInfo::Instance()->IsClosed(msg_ptr->header.src_sharding_id())) {
+        ZJC_WARN("wrong shard status: %d %d.",
+            msg_ptr->header.src_sharding_id(),
+            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id()).Status());
+        return;
+    }    
+    // assert(false);
     if (msg_ptr->header.block_proto().has_shard_to() > 0) {
         to_tx_msg_queue_.push(msg_ptr);
         ZJC_DEBUG("queue size to_tx_msg_queue_: %d", to_tx_msg_queue_.size());

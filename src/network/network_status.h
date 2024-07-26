@@ -143,7 +143,7 @@ public:
                 biggest_opened_net_id_ = net_id;
             }
         }
-    }    
+    }
     
 private:
     NetInfo net_infos_[network::kConsensusShardEndNetworkId];

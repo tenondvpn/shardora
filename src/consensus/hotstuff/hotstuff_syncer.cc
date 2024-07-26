@@ -12,6 +12,7 @@
 #include <dht/dht_key.h>
 #include <dht/dht_utils.h>
 #include <memory>
+#include <network/network_status.h>
 #include <network/network_utils.h>
 #include <network/universal_manager.h>
 #include <protos/block.pb.h>
@@ -72,13 +73,21 @@ void HotstuffSyncer::Stop() {
     running_ = false;
 }
 
-int HotstuffSyncer::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+int HotstuffSyncer::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {    
     return transport::kFirewallCheckSuccess;
 }
 
 void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto header = msg_ptr->header;
     assert(header.type() == common::kHotstuffSyncMessage);
+
+    // 仅接受 Opened 分片的共识消息
+    if (!network::NetsInfo::Instance()->IsOpened(msg_ptr->header.src_sharding_id())) {
+        ZJC_WARN("wrong shard status: %d %d.",
+            msg_ptr->header.src_sharding_id(),
+            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id()).Status());
+        return;
+    }    
     
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();    
     consume_queues_[thread_idx].push(msg_ptr);
@@ -89,6 +98,14 @@ void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr)
     if (!running_) {
         return;
     }
+    // 仅接受 Opened 分片的共识消息
+    if (!network::NetsInfo::Instance()->IsOpened(msg_ptr->header.src_sharding_id())) {
+        ZJC_WARN("wrong shard status: %d %d.",
+            msg_ptr->header.src_sharding_id(),
+            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id()).Status());
+        return;
+    }
+    
     // TODO 仅共识池节点参与 view_block_chain 的同步
     SyncAllPools();
     ConsumeMessages();

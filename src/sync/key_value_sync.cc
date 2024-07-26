@@ -14,6 +14,7 @@
 #include "sync/sync_utils.h"
 #include "transport/processor.h"
 #include <common/log.h>
+#include <network/network_status.h>
 #include <protos/view_block.pb.h>
 
 namespace shardora {
@@ -293,6 +294,13 @@ uint64_t KeyValueSync::SendSyncRequest(
 }
 
 void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    if (network::NetsInfo::Instance()->IsClosed(msg_ptr->header.src_sharding_id())) {
+        ZJC_WARN("wrong shard status: %d %d.",
+            msg_ptr->header.src_sharding_id(),
+            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id()).Status());
+        return;
+    }
+    
     auto& header = msg_ptr->header;
     assert(header.type() == common::kSyncMessage);
 //     ZJC_DEBUG("key value sync message coming req: %d, res: %d",
