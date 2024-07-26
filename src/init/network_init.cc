@@ -166,6 +166,7 @@ int NetworkInit::Init(int argc, char** argv) {
     network::UniversalManager::Instance()->Init(security_, db_, account_mgr_);
     
     ZJC_DEBUG("init 0 10");
+    // 通过种子节点组网
     if (InitNetworkSingleton() != kInitSuccess) {
         INIT_ERROR("InitNetworkSingleton failed!");
         return kInitError;
@@ -265,6 +266,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
     ZJC_DEBUG("init 7");
+    // 根据 account info 信息加入 waiting 分片，如果是创始节点不走这个逻辑
     GetAddressShardingId();
     if (InitCommand() != kInitSuccess) {
         INIT_ERROR("InitCommand failed!");

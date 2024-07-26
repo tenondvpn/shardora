@@ -115,15 +115,34 @@ public:
         return cur_preopened_net_id_ != 0;
     }
 
+    inline NetInfo net_info(uint32_t net_id) {
+        if (net_id >= network::kConsensusShardEndNetworkId) {
+            return NetInfo(common::kInvalidUint32);
+        }
+        return net_infos_[net_id];
+    }
+
+    inline bool IsClosed(uint32_t net_id) {
+        return net_info(net_id).IsClosed();
+    }
+    
+    inline bool IsPreopened(uint32_t net_id) {
+        return net_info(net_id).IsPreopened();
+    }
+    
+    inline bool IsOpened(uint32_t net_id) {
+        return net_info(net_id).IsOpened();
+    }    
+
     void SetPreopened(uint32_t net_id) {
-        bool ok = net_infos_[net_id].SetPreopened();
+        bool ok = net_info(net_id).SetPreopened();
         if (ok) {
             cur_preopened_net_id_ = net_id;
         }
     }
     
     void SetOpened(uint32_t net_id) {
-        bool ok = net_infos_[net_id].SetOpened();
+        bool ok = net_info(net_id).SetOpened();
         if (ok) {
             cur_preopened_net_id_ = 0;
             if (net_id > biggest_opened_net_id_) {

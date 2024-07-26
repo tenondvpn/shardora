@@ -1,5 +1,6 @@
 #include "dht/base_dht.h"
 
+#include <network/network_status.h>
 #include <stdio.h>
 
 #include <bitset>
@@ -444,6 +445,12 @@ void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
             dht_msg.bootstrap_req().pubkey(),
             header.sign()) != security::kSecuritySuccess) {
         DHT_ERROR("verifi signature failed!");
+        return;
+    }
+
+    // 验证请求节点的分片状态，不接受 Closed 分片的请求
+    if (network::NetsInfo::Instance()->IsClosed(header.src_sharding_id())) {
+        DHT_WARN("src shard: %d is closed.", header.src_sharding_id());
         return;
     }
 
