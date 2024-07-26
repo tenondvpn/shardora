@@ -27,7 +27,6 @@ void RootZbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) 
             RootCreateElectConsensusShardBlock(zjc_block);
             break;
         case pools::protobuf::kConsensusRootTimeBlock:
-        case pools::protobuf::kRootCreateAddressCrossSharding:
         case pools::protobuf::kStatistic:
         case pools::protobuf::kCross:
             RootDefaultTx(zjc_block);

@@ -14,7 +14,6 @@ Status RootBlockExecutor::DoTransactionAndCreateTxBlock(
             RootCreateElectConsensusShardBlock(txs_ptr, block);
             break;
         case pools::protobuf::kConsensusRootTimeBlock:
-        case pools::protobuf::kRootCreateAddressCrossSharding:
         case pools::protobuf::kStatistic:
         case pools::protobuf::kCross:
             RootDefaultTx(txs_ptr, block);
