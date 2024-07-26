@@ -115,10 +115,17 @@ public:
         return cur_preopened_net_id_ != 0;
     }
 
-    inline NetInfo net_info(uint32_t net_id) {
-        if (net_id >= network::kConsensusShardEndNetworkId) {
+    NetInfo net_info(uint32_t net_id) {
+        if (net_id >= network::kConsensusWaitingShardBeginNetworkId &&
+            net_id < network::kConsensusWaitingShardEndNetworkId) {
+            net_id -= network::kConsensusWaitingShardOffset;
+        }
+
+        if (net_id < network::kRootCongressNetworkId ||
+            net_id >= network::kConsensusShardEndNetworkId) {
             return NetInfo(common::kInvalidUint32);
         }
+        
         return net_infos_[net_id];
     }
 

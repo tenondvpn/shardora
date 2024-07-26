@@ -359,10 +359,18 @@ void NetworkInit::RegisterFirewallCheck() {
         std::bind(&pools::TxPoolManager::FirewallCheckMessage, pools_mgr_.get(), std::placeholders::_1));
     net_handler_.AddFirewallCheckCallback(
         common::kInitMessage,
-        std::bind(&NetworkInit::FirewallCheckMessage, this, std::placeholders::_1));
+        std::bind(&NetworkInit::FirewallCheckMessage, this, std::placeholders::_1));    
 }
 
 int NetworkInit::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+    auto& header = msg_ptr->header;
+
+    // 不接受 Closed 分片的 sharding init 请求
+    if (network::NetsInfo::Instance()->IsClosed(header.src_sharding_id())) {
+        ZJC_WARN("src shard: %d is closed.", header.src_sharding_id());
+        return transport::kFirewallCheckError;
+    }
+    
     return transport::kFirewallCheckSuccess;
 }
 
