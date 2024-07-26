@@ -20,6 +20,7 @@
 #include <protos/tx_storage_key.h>
 #include <transport/transport_utils.h>
 #include "db/db_utils.h"
+#include "common/defer.h"
 
 namespace shardora {
 
@@ -1042,6 +1043,19 @@ void BlockManager::TryDynamicSharding(const elect::protobuf::ElectBlock& elect_b
     auto dynamic_sharding_info = elect_block.dynamic_sharding_info();
     auto shard_id = dynamic_sharding_info.network_id();
 
+
+    ZJC_DEBUG("dynamic sharding begin, s: %d, act: %d, cur: %d",
+        shard_id,
+        dynamic_sharding_info.action(),
+        network::NetsInfo::Instance()->net_info(shard_id).Status());
+    defer({
+            ZJC_DEBUG("dynamic sharding end, s: %d, act: %d, cur: %d",
+                shard_id,
+                dynamic_sharding_info.action(),
+                network::NetsInfo::Instance()->net_info(shard_id).Status()
+                );
+        });
+    
     if (shard_id < network::kConsensusShardBeginNetworkId ||
         shard_id >= network::kConsensusShardEndNetworkId) {
         return;

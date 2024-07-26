@@ -875,7 +875,7 @@ void ShardStatistic::setElectStatistics(
 bool ShardStatistic::IsShardReachPerformanceLimit(
         std::shared_ptr<StatisticInfoItem>& statistic_info_ptr,
         const block::protobuf::Block& block) {
-    return false;
+    return true;
 }
 
 }  // namespace pools
