@@ -98,13 +98,13 @@ void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr)
     if (!running_) {
         return;
     }
-    // 仅接受 Opened 分片的共识消息
-    if (network::NetsInfo::Instance()->IsClosed(msg_ptr->header.src_sharding_id())) {
-        ZJC_WARN("wrong shard status: %d %d.",
-            msg_ptr->header.src_sharding_id(),
-            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id())->Status());
-        return;
-    }
+    // // 仅接受 Opened 分片的共识消息
+    // if (network::NetsInfo::Instance()->IsClosed(msg_ptr->header.src_sharding_id())) {
+    //     ZJC_WARN("wrong shard status: %d %d.",
+    //         msg_ptr->header.src_sharding_id(),
+    //         network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id())->Status());
+    //     return;
+    // }
     
     // TODO 仅共识池节点参与 view_block_chain 的同步
     SyncAllPools();
