@@ -71,7 +71,7 @@ public:
     }
 
 private:
-    enum ShardStatus status_;
+    ShardStatus status_;
     uint32_t net_id_;
 };
 
@@ -84,7 +84,7 @@ public:
 
     void Init() {
         for (uint32_t net_id = 0; net_id < network::kConsensusShardEndNetworkId; net_id++) {
-            net_infos_[net_id] = NetInfo(net_id);
+            net_infos_[net_id] = std::make_shared<NetInfo>(net_id);
         }
 
         biggest_opened_net_id_ = network::kInitOpenedShardCount + network::kConsensusShardBeginNetworkId - 1;
@@ -107,40 +107,40 @@ public:
         return cur_preopened_net_id_ != 0;
     }
 
-    NetInfo net_info(uint32_t net_id) {
+    std::shared_ptr<NetInfo> net_info(uint32_t net_id) {
         if (net_id >= network::kConsensusWaitingShardBeginNetworkId &&
             net_id < network::kConsensusWaitingShardEndNetworkId) {
             net_id -= network::kConsensusWaitingShardOffset;
         }
 
         if (net_id >= network::kConsensusShardEndNetworkId) {
-            return NetInfo(common::kInvalidUint32);
+            return std::make_shared<NetInfo>(common::kInvalidUint32);
         }
         
         return net_infos_[net_id];
     }
 
     inline bool IsClosed(uint32_t net_id) {
-        return net_info(net_id).IsClosed();
+        return net_info(net_id)->IsClosed();
     }
     
     inline bool IsPreopened(uint32_t net_id) {
-        return net_info(net_id).IsPreopened();
+        return net_info(net_id)->IsPreopened();
     }
     
     inline bool IsOpened(uint32_t net_id) {
-        return net_info(net_id).IsOpened();
+        return net_info(net_id)->IsOpened();
     }    
 
     void SetPreopened(uint32_t net_id) {
-        bool ok = net_info(net_id).SetPreopened();
+        bool ok = net_info(net_id)->SetPreopened();
         if (ok) {
             cur_preopened_net_id_ = net_id;
         }
     }
     
     void SetOpened(uint32_t net_id) {
-        bool ok = net_info(net_id).SetOpened();
+        bool ok = net_info(net_id)->SetOpened();
         if (ok) {
             cur_preopened_net_id_ = 0;
             if (net_id > biggest_opened_net_id_) {
@@ -150,7 +150,7 @@ public:
     }
     
 private:
-    NetInfo net_infos_[network::kConsensusShardEndNetworkId];
+    std::shared_ptr<NetInfo> net_infos_[network::kConsensusShardEndNetworkId];
     uint32_t cur_preopened_net_id_;
     uint32_t biggest_opened_net_id_;
 
