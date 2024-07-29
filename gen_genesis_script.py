@@ -566,7 +566,7 @@ def filter_nodes_by_init_shard_num(server_nodes, init_shard_num):
     filter_server_nodes = []
     for node in server_nodes:
         for shard_num in range(3, init_shard_num+3):
-            if node.startswith(f"s{shard_num}"):
+            if node.startswith(f"s{shard_num}") or node.startswith("r"):
                 filter_server_nodes.append(node)
     return filter_server_nodes
 
