@@ -394,13 +394,6 @@ void TxPoolManager::SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height) 
 }
 
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    if (!network::NetsInfo::Instance()->IsOpened(msg_ptr->header.src_sharding_id())) {
-        ZJC_WARN("wrong shard status: %d %d.",
-            msg_ptr->header.src_sharding_id(),
-            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id())->Status());
-        return;
-    }
-    
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     // just one thread
     ZJC_DEBUG("success add message hash64: %lu, thread idx: %u, msg size: %u, max: %u",
@@ -418,6 +411,13 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         HandleSyncPoolsMaxHeight(msg_ptr);
         return;
     }
+
+    if (!network::NetsInfo::Instance()->IsOpened(msg_ptr->header.src_sharding_id())) {
+        ZJC_WARN("wrong shard status: %d %d.",
+            msg_ptr->header.src_sharding_id(),
+            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id())->Status());
+        return;
+    }    
 
     assert(thread_idx < common::kMaxThreadCount);
     pools_msg_queue_[thread_idx].push(msg_ptr);
