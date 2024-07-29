@@ -1043,10 +1043,12 @@ void BlockManager::TryDynamicSharding(const elect::protobuf::ElectBlock& elect_b
     auto dynamic_sharding_info = elect_block.dynamic_sharding_info();
     auto shard_id = dynamic_sharding_info.network_id();
 
-    ZJC_DEBUG("dynamic sharding begin, s: %d, act: %d, cur: %d",
+    ZJC_DEBUG("dynamic sharding begin, s: %d, act: %d, cur: %d, has preopened: %d, biggest opened: %d",
         shard_id,
         dynamic_sharding_info.action(),
-        network::NetsInfo::Instance()->net_info(shard_id).Status());
+        network::NetsInfo::Instance()->net_info(shard_id).Status(),
+        network::NetsInfo::Instance()->HasPreopenedNetwork(),
+        network::NetsInfo::Instance()->BiggestOpenedNetId());
     defer({
             ZJC_DEBUG("dynamic sharding end, s: %d, act: %d, cur: %d",
                 shard_id,
@@ -1065,7 +1067,15 @@ void BlockManager::TryDynamicSharding(const elect::protobuf::ElectBlock& elect_b
             shard_id != network::NetsInfo::Instance()->BiggestOpenedNetId()+1) {
             return;
         }
+        ZJC_DEBUG("dynamic sharding set, s: %d, act: %d, cur: %d",
+            shard_id,
+            dynamic_sharding_info.action(),
+            network::NetsInfo::Instance()->net_info(shard_id).Status());        
         network::NetsInfo::Instance()->SetPreopened(shard_id);
+        ZJC_DEBUG("dynamic sharding set done, s: %d, act: %d, cur: %d",
+            shard_id,
+            dynamic_sharding_info.action(),
+            network::NetsInfo::Instance()->net_info(shard_id).Status());        
         return;
     }
 
