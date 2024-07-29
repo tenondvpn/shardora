@@ -117,7 +117,8 @@ public:
     std::unordered_map<std::string, std::shared_ptr<AccoutPoceInfoItem>> accout_poce_info_map_;
     uint64_t least_elect_height_for_statistic_=0;
     std::unordered_map<uint64_t, std::shared_ptr<StatisticInfoItem>> tm_height_with_statistic_info_;
-
+    uint64_t shard_pref_bitmap_ = 0; // 64 位 bit 队列，保存了最近 64 个 block 是否达到 shard 性能处理上限
+    
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };
 

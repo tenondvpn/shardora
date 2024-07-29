@@ -11,6 +11,7 @@
 #include "zjcvm/execution.h"
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
+#include <common/utils.h>
 #include <elect/elect_pledge.h>
 #include <network/network_status.h>
 // #include <iostream>
@@ -875,7 +876,20 @@ void ShardStatistic::setElectStatistics(
 bool ShardStatistic::IsShardReachPerformanceLimit(
         std::shared_ptr<StatisticInfoItem>& statistic_info_ptr,
         const block::protobuf::Block& block) {
-    return true;
+    auto condition_fn = [](const block::protobuf::Block& block) -> bool {
+        // 通过判断 block 当中的 tx size 来贡献 shard 当前的 tps 压力
+        if (block.tx_list_size() > 10) {
+            return true;
+        }
+        return false;
+    };
+
+    // 将新 block 的情况放入 bit 队列
+    shard_pref_bitmap_ = (shard_pref_bitmap_ << 1) + static_cast<uint32_t>(condition_fn(block));
+    uint64_t mask = (1 << common::kPreopenShardMaxBlockWindowSize) - 1;
+    
+    // 连续 kPreopenShardMaxBlockWindowSize 块中 tx size 数量满足要求时就认为达到 shard 性能上限
+    return (shard_pref_bitmap_ & mask) == mask;
 }
 
 }  // namespace pools
