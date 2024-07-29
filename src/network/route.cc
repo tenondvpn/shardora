@@ -214,7 +214,7 @@ void Route::HandleDhtMessage(const transport::MessagePtr& header_ptr) {
     if (network::NetsInfo::Instance()->IsClosed(header_ptr->header.src_sharding_id())) {
         ZJC_WARN("wrong shard status: %d %d.",
             header_ptr->header.src_sharding_id(),
-            network::NetsInfo::Instance()->net_info(header_ptr->header.src_sharding_id()).Status());
+            network::NetsInfo::Instance()->net_info(header_ptr->header.src_sharding_id())->Status());
         return;
     }    
     

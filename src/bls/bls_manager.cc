@@ -412,7 +412,7 @@ void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (network::NetsInfo::Instance()->IsClosed(msg_ptr->header.src_sharding_id())) {
         ZJC_WARN("wrong shard status: %d %d.",
             msg_ptr->header.src_sharding_id(),
-            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id()).Status());
+            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id())->Status());
         return;
     }
     
