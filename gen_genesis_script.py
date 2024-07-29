@@ -526,7 +526,9 @@ sleep 3
         if server_name == 'server0':
             server0_nodes = server_node_map[server_ip]
         else:
-            server_nodes_str = ' '.join(server_node_map[server_ip])
+            server_nodes = server_node_map[server_ip]
+            filter_server_nodes = filter_nodes_by_init_shard_num(server_nodes, init_shard_num)
+            server_nodes_str = ' '.join(filter_server_nodes)
         
             server_pass = server_conf['passwords'].get(server_ip, '')
             code_str += f"""
@@ -540,7 +542,8 @@ done \\
 """
             
     server0_nodes.remove('r1')
-    server_nodes_str = ' '.join(server0_nodes)
+    filter_server_nodes = filter_nodes_by_init_shard_num(server0_nodes, init_shard_num)
+    server_nodes_str = ' '.join(filter_server_nodes)    
     server_pass = server_conf['passwords'].get(server_ip, '')
     code_str += f"""
 echo "[$server0]"
@@ -550,7 +553,6 @@ cd {datadir}/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node {tag}> /dev/null 
 done
 
 """  
-            
 
     code_str += """
 echo "==== STEP3: DONE ===="
@@ -558,6 +560,16 @@ echo "==== STEP3: DONE ===="
 
     with open(file_path, 'w') as f:
         f.write(code_str)
+
+
+def filter_nodes_by_init_shard_num(server_nodes, init_shard_num):
+    filter_server_nodes = []
+    for node in server_nodes:
+        for shard_num in range(3, init_shard_num+3):
+            if node.startswith(f"s{shard_num}"):
+                filter_server_nodes.append(node)
+    return filter_server_nodes
+
 
 def modify_shard_num_in_src_code(server_conf, init_shard_num=1, file_path='./src/network/network_utils.h'):
     shards_set = set()

@@ -66,7 +66,7 @@ sleep 3
 
 echo "[$server0]"
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64
-for node in r2 r3 s3_1 s3_2 s3_3 s3_4 s3_5 s4_1 s4_2 s4_3 s4_4 s4_5 s5_1 s5_2 s5_3 s5_4 s5_5; do
+for node in s3_1 s3_2 s3_3 s3_4 s3_5; do
 cd /root/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node root> /dev/null 2>&1 &
 done
 
