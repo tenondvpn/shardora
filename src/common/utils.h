@@ -161,7 +161,7 @@ static const uint32_t kEachShardMinNodeCount = 3u;
 static const uint32_t kEachShardMaxNodeCount = 1024u;
 static const uint32_t kNodeModIndexMaxCount = 64u;
 static const uint32_t kNodePublicIpMaskLen = 22u;  // node public ip just Mask length to protect security
-static const uint32_t kOpenShardMemberCountMinThres = 600u; // shard 转为 open 状态需要的最少节点数量
+static const uint32_t kOpenShardMemberCountMinThres = 4u; // shard 转为 open 状态需要的最少节点数量
 static const int32_t kInitNodeCredit = 30;
 static const double kMiningTokenMultiplicationFactor = 1.0;
 

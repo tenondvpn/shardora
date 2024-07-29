@@ -1066,16 +1066,8 @@ void BlockManager::TryDynamicSharding(const elect::protobuf::ElectBlock& elect_b
         if (network::NetsInfo::Instance()->HasPreopenedNetwork() ||
             shard_id != network::NetsInfo::Instance()->BiggestOpenedNetId()+1) {
             return;
-        }
-        ZJC_DEBUG("dynamic sharding set, s: %d, act: %d, cur: %d",
-            shard_id,
-            dynamic_sharding_info.action(),
-            network::NetsInfo::Instance()->net_info(shard_id)->Status());        
-        network::NetsInfo::Instance()->SetPreopened(shard_id);
-        ZJC_DEBUG("dynamic sharding set done, s: %d, act: %d, cur: %d",
-            shard_id,
-            dynamic_sharding_info.action(),
-            network::NetsInfo::Instance()->net_info(shard_id)->Status());        
+        }        
+        network::NetsInfo::Instance()->SetPreopened(shard_id);        
         return;
     }
 
