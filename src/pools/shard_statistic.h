@@ -117,7 +117,7 @@ public:
     std::unordered_map<std::string, std::shared_ptr<AccoutPoceInfoItem>> accout_poce_info_map_;
     uint64_t least_elect_height_for_statistic_=0;
     std::unordered_map<uint64_t, std::shared_ptr<StatisticInfoItem>> tm_height_with_statistic_info_;
-    common::Bitmap shard_pref_bitmap_{common::kPreopenShardMaxBlockWindowSize}; // bit 窗口，保存了最近多个 block 是否达到 shard 性能处理上限
+    common::Bitmap shard_pref_bitmap_{(common::kPreopenShardMaxBlockWindowSize/64+1)*64}; // bit 窗口，保存了最近多个 block 是否达到 shard 性能处理上限
     
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };

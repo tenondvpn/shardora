@@ -886,6 +886,11 @@ bool ShardStatistic::IsShardReachPerformanceLimit(
         return false;
     };
 
+    // 不统计系统块，TODO 有更好的方案
+    if (block.tx_list_size() == 1) {
+        return false;
+    }
+
     // 将新 block 的情况放入 bit 队列
     shard_pref_bitmap_ << 1;
     if (condition_fn(block)) {
