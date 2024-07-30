@@ -66,6 +66,27 @@ TEST_F(TestBitmap, AddAndContainClear) {
     }
 }
 
+TEST_F(TestBitmap, ShiftLeft) {
+    Bitmap bitmap{ 10 };
+    bitmap.Set(0);
+    
+    ASSERT_TRUE(!bitmap.Valid(1));
+    bitmap.ShiftLeft(1);
+    ASSERT_TRUE(bitmap.Valid(1));
+
+    ASSERT_TRUE(!bitmap.Valid(2));
+    bitmap.ShiftLeft(1);
+    ASSERT_TRUE(bitmap.Valid(2));
+    ASSERT_TRUE(!bitmap.Valid(1));
+
+    for (int i = 0; i < 10; i++) {
+        bitmap.ShiftLeft(1);
+        bitmap.Set(0);
+    }
+
+    ASSERT_TRUE(bitmap.valid_count() == 10);
+}
+
 }  // namespace test
 
 }  // namespace common
