@@ -251,7 +251,7 @@ struct CrossItemRecordHash {
 };
 
 struct StatisticInfoItem {
-    StatisticInfoItem() : all_gas_amount(0), root_all_gas_amount(0), statistic_max_height(0) {}
+    StatisticInfoItem() : all_gas_amount(0), root_all_gas_amount(0), statistic_max_height(0), shard_perf_limit_reached(false) {}
     uint64_t all_gas_amount;
     uint64_t root_all_gas_amount;
     std::map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
