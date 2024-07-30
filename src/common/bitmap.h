@@ -54,6 +54,40 @@ public:
         valid_count_ = max_idx - valid_count;
     }
 
+    Bitmap& operator<<(uint32_t shift) {
+        return ShiftLeft(shift);
+    }
+
+    Bitmap& ShiftLeft(uint32_t shift) {
+        if (shift == 0) return *this;
+
+        uint32_t u64_shift = shift / 64;
+        uint32_t bit_shift = shift % 64;
+
+        if (bit_shift == 0) {
+            // 完全的 64 位移位
+            for (int i = data_.size() - 1; i >= u64_shift; --i) {
+                data_[i] = data_[i - u64_shift];
+            }
+        } else {
+            // 部分的 64 位移位
+            for (int i = data_.size() - 1; i > u64_shift; --i) {
+                data_[i] = (data_[i - u64_shift] << bit_shift) | (data_[i - u64_shift - 1] >> (64 - bit_shift));
+            }
+            data_[u64_shift] = data_[0] << bit_shift;
+        }
+
+        // 填充低位
+        for (uint32_t i = 0; i < u64_shift; ++i) {
+            data_[i] = 0;
+        }
+        if (bit_shift != 0) {
+            data_[u64_shift - 1] = 0;
+        }
+
+        return *this;
+    }    
+
 private:
     std::vector<uint64_t> data_;
     uint32_t valid_count_{ 0 };
