@@ -15,6 +15,7 @@
 #include <memory>
 #include <network/network_status.h>
 #include <protos/pools.pb.h>
+#include <sync/key_value_sync.h>
 
 #include "block/block_manager.h"
 #include "common/global_info.h"
@@ -214,7 +215,9 @@ int NetworkInit::Init(int argc, char** argv) {
         bls_mgr_,
         db_,
         std::bind(&NetworkInit::AddBlockItemToCache, this,
-            std::placeholders::_1, std::placeholders::_2));
+            std::placeholders::_1, std::placeholders::_2),
+        std::bind(&sync::KeyValueSync::AddSyncHeight, kv_sync_,
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
     if (consensus_init_res != consensus::kConsensusSuccess) {
         INIT_ERROR("init bft failed!");
         return kInitError;

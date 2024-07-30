@@ -11,7 +11,9 @@
 #include <consensus/hotstuff/view_block_chain.h>
 #include <libbls/tools/utils.h>
 #include <network/network_status.h>
+#include <network/network_utils.h>
 #include <protos/pools.pb.h>
+#include <sync/sync_utils.h>
 #include <sys/socket.h>
 #include <transport/transport_utils.h>
 
@@ -53,7 +55,8 @@ int HotstuffManager::Init(
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         std::shared_ptr<db::Db>& db,
-        BlockCacheCallback new_block_cache_callback) {
+        BlockCacheCallback new_block_cache_callback,
+        NoElectItemCallback no_elect_item_callback) {
     contract_mgr_ = contract_mgr;
     gas_prepayment_ = gas_prepayment;
     vss_mgr_ = vss_mgr;
@@ -66,6 +69,7 @@ int HotstuffManager::Init(
     bls_mgr_ = bls_mgr;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+    no_elect_item_callback_ = no_elect_item_callback;
 
     elect_info_ = std::make_shared<ElectInfo>(security_ptr, elect_mgr_);
     
@@ -155,7 +159,17 @@ int HotstuffManager::VerifySyncedViewBlock(view_block::protobuf::ViewBlockItem* 
     
     s = VerifyViewBlockWithCommitQC(vblock, commit_qc);
     if (s != Status::kSuccess) {
-        return s == Status::kElectItemNotFound ? 1 : -1;
+        if (s == Status::kElectItemNotFound) {
+            if (no_elect_item_callback_) {
+                no_elect_item_callback_(
+                        network::kRootCongressNetworkId,
+                        commit_qc->network_id(),
+                        commit_qc->elect_height(),
+                        sync::kSyncHighest);
+            }
+            return 1;
+        }
+        return -1;
     }
     return 0;
 }

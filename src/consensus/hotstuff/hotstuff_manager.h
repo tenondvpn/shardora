@@ -75,7 +75,8 @@ public:
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         std::shared_ptr<db::Db>& db,
-        BlockCacheCallback new_block_cache_callback);
+        BlockCacheCallback new_block_cache_callback,
+        NoElectItemCallback no_elect_item_callback);
     void OnNewElectBlock(
         uint64_t block_tm_ms,
         uint32_t sharding_id,
@@ -309,6 +310,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     BlockCacheCallback new_block_cache_callback_ = nullptr;
+    NoElectItemCallback no_elect_item_callback_ = nullptr;
     uint64_t prev_handler_timer_tm_ms_ = 0;
     uint64_t first_timeblock_timestamp_ = 0;
 
