@@ -14,6 +14,8 @@
 #include "sync/sync_utils.h"
 #include "transport/processor.h"
 #include <common/log.h>
+#include <network/network_status.h>
+#include <network/network_utils.h>
 #include <protos/view_block.pb.h>
 
 namespace shardora {

@@ -289,7 +289,7 @@ clickhouse-client -q "drop table zjc_ck_transaction_table"
         f.write(code_str)
 
 
-def gen_run_nodes_sh_file(server_conf: dict, file_path, build_genesis_path, tag, datadir='/root', medium_server_num=-1):
+def gen_run_nodes_sh_file(server_conf: dict, file_path, build_genesis_path, tag, datadir='/root', medium_server_num=-1, init_shard_num=1):
     code_str = """
 #!/bin/bash
 # 修改配置文件
@@ -526,7 +526,9 @@ sleep 3
         if server_name == 'server0':
             server0_nodes = server_node_map[server_ip]
         else:
-            server_nodes_str = ' '.join(server_node_map[server_ip])
+            server_nodes = server_node_map[server_ip]
+            filter_server_nodes = filter_nodes_by_init_shard_num(server_nodes, init_shard_num)
+            server_nodes_str = ' '.join(filter_server_nodes)
         
             server_pass = server_conf['passwords'].get(server_ip, '')
             code_str += f"""
@@ -540,7 +542,8 @@ done \\
 """
             
     server0_nodes.remove('r1')
-    server_nodes_str = ' '.join(server0_nodes)
+    filter_server_nodes = filter_nodes_by_init_shard_num(server0_nodes, init_shard_num)
+    server_nodes_str = ' '.join(filter_server_nodes)    
     server_pass = server_conf['passwords'].get(server_ip, '')
     code_str += f"""
 echo "[$server0]"
@@ -550,7 +553,6 @@ cd {datadir}/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node {tag}> /dev/null 
 done
 
 """  
-            
 
     code_str += """
 echo "==== STEP3: DONE ===="
@@ -559,7 +561,17 @@ echo "==== STEP3: DONE ===="
     with open(file_path, 'w') as f:
         f.write(code_str)
 
-def modify_shard_num_in_src_code(server_conf, file_path='./src/network/network_utils.h'):
+
+def filter_nodes_by_init_shard_num(server_nodes, init_shard_num):
+    filter_server_nodes = []
+    for node in server_nodes:
+        for shard_num in range(3, init_shard_num+3):
+            if node.startswith(f"s{shard_num}") or node.startswith("r"):
+                filter_server_nodes.append(node)
+    return filter_server_nodes
+
+
+def modify_shard_num_in_src_code(server_conf, init_shard_num=1, file_path='./src/network/network_utils.h'):
     shards_set = set()
     for node in server_conf['nodes']:
         shards_set.add(int(node['net']))
@@ -569,6 +581,7 @@ def modify_shard_num_in_src_code(server_conf, file_path='./src/network/network_u
         content = f.read()
     
     new_content = re.sub(r'static const uint32_t kConsensusShardEndNetworkId = \d+u;', f"static const uint32_t kConsensusShardEndNetworkId = {3+len(shards_set)}u;", content)
+    new_content = re.sub(r'static const uint32_t kInitOpenedShardCount = \d+u;', f"static const uint32_t kInitOpenedShardCount = {init_shard_num}u;", new_content)
     with open(file_path, 'w') as f:
         f.write(new_content)
 
@@ -595,6 +608,7 @@ def main():
     parser.add_argument('--config', help='nodes_conf.yml 文件位置', default='')
     parser.add_argument('--datadir', help='datadir', default='/root')
     parser.add_argument('--medium_num', help='中继服务器数量', default='-1', type=int)
+    parser.add_argument('--init_shard_num', help='初始开启的 shard', default=1, type=int)
     args = parser.parse_args()
     if args.config == '':
         args.config = './nodes_conf.yml'
@@ -610,8 +624,8 @@ def main():
     gen_zjnodes(server_conf, "./zjnodes")
     gen_genesis_yaml_file(server_conf, "./conf/genesis.yml")
     gen_genesis_sh_file(server_conf, build_genesis_path, datadir=args.datadir)
-    gen_run_nodes_sh_file(server_conf, "./deploy_genesis.sh", build_genesis_path, tag=tag, datadir=args.datadir, medium_server_num=args.medium_num)
-    modify_shard_num_in_src_code(server_conf)
+    gen_run_nodes_sh_file(server_conf, "./deploy_genesis.sh", build_genesis_path, tag=tag, datadir=args.datadir, medium_server_num=args.medium_num, init_shard_num=args.init_shard_num)
+    modify_shard_num_in_src_code(server_conf, args.init_shard_num)
 
 if __name__ == '__main__':
     main()

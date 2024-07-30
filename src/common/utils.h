@@ -141,7 +141,7 @@ static const uint32_t kTestForNetworkId = 4u;
 static const uint16_t kDefaultVpnPort = 9033u;
 static const uint16_t kDefaultRoutePort = 9034u;
 // static const int64_t kRotationPeriod = 600ll * 1000ll * 1000ll; // epoch time
-static const int64_t kRotationPeriod = 120ll * 1000ll * 1000ll; // for quicker debugging
+static const int64_t kRotationPeriod = 180ll * 1000ll * 1000ll; // for quicker debugging
 static const int64_t kMessageTimeoutMs = 10000ll;
 static const uint32_t kMaxRotationCount = 4u;
 static const uint16_t kNodePortRangeMin = 1000u;
@@ -161,6 +161,8 @@ static const uint32_t kEachShardMinNodeCount = 3u;
 static const uint32_t kEachShardMaxNodeCount = 1024u;
 static const uint32_t kNodeModIndexMaxCount = 64u;
 static const uint32_t kNodePublicIpMaskLen = 22u;  // node public ip just Mask length to protect security
+static const uint32_t kPreopenShardMaxBlockWindowSize = 30u; // 开启新的 preopened shard 需要连续满足条件的 block 数量
+static const uint32_t kOpenShardMemberCountMinThres = 4u; // shard 转为 open 状态需要的最少节点数量
 static const int32_t kInitNodeCredit = 30;
 static const double kMiningTokenMultiplicationFactor = 1.0;
 

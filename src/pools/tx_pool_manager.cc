@@ -14,6 +14,7 @@
 #include "transport/processor.h"
 #include "transport/tcp_transport.h"
 #include <common/time_utils.h>
+#include <network/network_status.h>
 #include <protos/pools.pb.h>
 
 namespace shardora {
@@ -91,6 +92,7 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     // return transport::kFirewallCheckSuccess;
     auto& header = msg_ptr->header;
     auto& tx_msg = header.tx_proto();
+    
     if (msg_ptr->header.has_sync_heights() && !msg_ptr->header.has_tx_proto()) {
         // TODO: check all message with valid signature
         ZJC_DEBUG("pools message fierwall coming is sync heights.");
@@ -409,6 +411,13 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         HandleSyncPoolsMaxHeight(msg_ptr);
         return;
     }
+
+    if (!network::NetsInfo::Instance()->IsOpened(msg_ptr->header.src_sharding_id())) {
+        ZJC_WARN("wrong shard status: %d %d.",
+            msg_ptr->header.src_sharding_id(),
+            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id())->Status());
+        return;
+    }    
 
     assert(thread_idx < common::kMaxThreadCount);
     pools_msg_queue_[thread_idx].push(msg_ptr);

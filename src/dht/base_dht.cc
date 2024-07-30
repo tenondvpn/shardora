@@ -1,5 +1,6 @@
 #include "dht/base_dht.h"
 
+#include <network/network_status.h>
 #include <stdio.h>
 
 #include <bitset>

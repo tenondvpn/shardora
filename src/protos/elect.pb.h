@@ -38,7 +38,7 @@ namespace protobuf_protos_2felect_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[14];
+  static const ::google::protobuf::internal::ParseTable schema[15];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -51,6 +51,9 @@ namespace protobuf {
 class BlsPublicKey;
 class BlsPublicKeyDefaultTypeInternal;
 extern BlsPublicKeyDefaultTypeInternal _BlsPublicKey_default_instance_;
+class DynamicShardingInfo;
+class DynamicShardingInfoDefaultTypeInternal;
+extern DynamicShardingInfoDefaultTypeInternal _DynamicShardingInfo_default_instance_;
 class ElectBlock;
 class ElectBlockDefaultTypeInternal;
 extern ElectBlockDefaultTypeInternal _ElectBlock_default_instance_;
@@ -96,6 +99,7 @@ extern memberDefaultTypeInternal _member_default_instance_;
 namespace google {
 namespace protobuf {
 template<> ::shardora::elect::protobuf::BlsPublicKey* Arena::CreateMaybeMessage<::shardora::elect::protobuf::BlsPublicKey>(Arena*);
+template<> ::shardora::elect::protobuf::DynamicShardingInfo* Arena::CreateMaybeMessage<::shardora::elect::protobuf::DynamicShardingInfo>(Arena*);
 template<> ::shardora::elect::protobuf::ElectBlock* Arena::CreateMaybeMessage<::shardora::elect::protobuf::ElectBlock>(Arena*);
 template<> ::shardora::elect::protobuf::ElectMessage* Arena::CreateMaybeMessage<::shardora::elect::protobuf::ElectMessage>(Arena*);
 template<> ::shardora::elect::protobuf::LeaderRotationMessage* Arena::CreateMaybeMessage<::shardora::elect::protobuf::LeaderRotationMessage>(Arena*);
@@ -1123,6 +1127,18 @@ class ElectBlock : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::shardora::elect::protobuf::PrevMembers* mutable_prev_members();
   void set_allocated_prev_members(::shardora::elect::protobuf::PrevMembers* prev_members);
 
+  // optional .shardora.elect.protobuf.DynamicShardingInfo dynamic_sharding_info = 7;
+  bool has_dynamic_sharding_info() const;
+  void clear_dynamic_sharding_info();
+  static const int kDynamicShardingInfoFieldNumber = 7;
+  private:
+  const ::shardora::elect::protobuf::DynamicShardingInfo& _internal_dynamic_sharding_info() const;
+  public:
+  const ::shardora::elect::protobuf::DynamicShardingInfo& dynamic_sharding_info() const;
+  ::shardora::elect::protobuf::DynamicShardingInfo* release_dynamic_sharding_info();
+  ::shardora::elect::protobuf::DynamicShardingInfo* mutable_dynamic_sharding_info();
+  void set_allocated_dynamic_sharding_info(::shardora::elect::protobuf::DynamicShardingInfo* dynamic_sharding_info);
+
   // optional uint64 elect_height = 4;
   bool has_elect_height() const;
   void clear_elect_height();
@@ -1163,16 +1179,143 @@ class ElectBlock : public ::google::protobuf::Message /* @@protoc_insertion_poin
   void clear_has_all_gas_amount();
   void set_has_gas_for_root();
   void clear_has_gas_for_root();
+  void set_has_dynamic_sharding_info();
+  void clear_has_dynamic_sharding_info();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::shardora::elect::protobuf::member > in_;
   ::shardora::elect::protobuf::PrevMembers* prev_members_;
+  ::shardora::elect::protobuf::DynamicShardingInfo* dynamic_sharding_info_;
   ::google::protobuf::uint64 elect_height_;
   ::google::protobuf::uint64 all_gas_amount_;
   ::google::protobuf::uint64 gas_for_root_;
   ::google::protobuf::uint32 shard_network_id_;
+  friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
+class DynamicShardingInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.elect.protobuf.DynamicShardingInfo) */ {
+ public:
+  DynamicShardingInfo();
+  virtual ~DynamicShardingInfo();
+
+  DynamicShardingInfo(const DynamicShardingInfo& from);
+
+  inline DynamicShardingInfo& operator=(const DynamicShardingInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  DynamicShardingInfo(DynamicShardingInfo&& from) noexcept
+    : DynamicShardingInfo() {
+    *this = ::std::move(from);
+  }
+
+  inline DynamicShardingInfo& operator=(DynamicShardingInfo&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const DynamicShardingInfo& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const DynamicShardingInfo* internal_default_instance() {
+    return reinterpret_cast<const DynamicShardingInfo*>(
+               &_DynamicShardingInfo_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    6;
+
+  void Swap(DynamicShardingInfo* other);
+  friend void swap(DynamicShardingInfo& a, DynamicShardingInfo& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline DynamicShardingInfo* New() const final {
+    return CreateMaybeMessage<DynamicShardingInfo>(NULL);
+  }
+
+  DynamicShardingInfo* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<DynamicShardingInfo>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const DynamicShardingInfo& from);
+  void MergeFrom(const DynamicShardingInfo& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(DynamicShardingInfo* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional uint32 network_id = 1;
+  bool has_network_id() const;
+  void clear_network_id();
+  static const int kNetworkIdFieldNumber = 1;
+  ::google::protobuf::uint32 network_id() const;
+  void set_network_id(::google::protobuf::uint32 value);
+
+  // optional uint32 action = 2;
+  bool has_action() const;
+  void clear_action();
+  static const int kActionFieldNumber = 2;
+  ::google::protobuf::uint32 action() const;
+  void set_action(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:shardora.elect.protobuf.DynamicShardingInfo)
+ private:
+  void set_has_network_id();
+  void clear_has_network_id();
+  void set_has_action();
+  void clear_has_action();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::uint32 network_id_;
+  ::google::protobuf::uint32 action_;
   friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -1219,7 +1362,7 @@ class WaitingNodesMessage : public ::google::protobuf::Message /* @@protoc_inser
                &_WaitingNodesMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    7;
 
   void Swap(WaitingNodesMessage* other);
   friend void swap(WaitingNodesMessage& a, WaitingNodesMessage& b) {
@@ -1364,7 +1507,7 @@ class WaitingNodeHeartbeat : public ::google::protobuf::Message /* @@protoc_inse
                &_WaitingNodeHeartbeat_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    8;
 
   void Swap(WaitingNodeHeartbeat* other);
   friend void swap(WaitingNodeHeartbeat& a, WaitingNodeHeartbeat& b) {
@@ -1516,7 +1659,7 @@ class LeaderRotationMessage : public ::google::protobuf::Message /* @@protoc_ins
                &_LeaderRotationMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    9;
 
   void Swap(LeaderRotationMessage* other);
   friend void swap(LeaderRotationMessage& a, LeaderRotationMessage& b) {
@@ -1648,7 +1791,7 @@ class SyncNodeStokeItem : public ::google::protobuf::Message /* @@protoc_inserti
                &_SyncNodeStokeItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    10;
 
   void Swap(SyncNodeStokeItem* other);
   friend void swap(SyncNodeStokeItem& a, SyncNodeStokeItem& b) {
@@ -1780,7 +1923,7 @@ class SyncNodeStokeRequest : public ::google::protobuf::Message /* @@protoc_inse
                &_SyncNodeStokeRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    11;
 
   void Swap(SyncNodeStokeRequest* other);
   friend void swap(SyncNodeStokeRequest& a, SyncNodeStokeRequest& b) {
@@ -1907,7 +2050,7 @@ class SyncNodeStokeResItem : public ::google::protobuf::Message /* @@protoc_inse
                &_SyncNodeStokeResItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    12;
 
   void Swap(SyncNodeStokeResItem* other);
   friend void swap(SyncNodeStokeResItem& a, SyncNodeStokeResItem& b) {
@@ -2039,7 +2182,7 @@ class SyncNodeStokeResponse : public ::google::protobuf::Message /* @@protoc_ins
                &_SyncNodeStokeResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    13;
 
   void Swap(SyncNodeStokeResponse* other);
   friend void swap(SyncNodeStokeResponse& a, SyncNodeStokeResponse& b) {
@@ -2166,7 +2309,7 @@ class ElectMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_ElectMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    14;
 
   void Swap(ElectMessage* other);
   friend void swap(ElectMessage& a, ElectMessage& b) {
@@ -3744,13 +3887,13 @@ inline void ElectBlock::set_allocated_prev_members(::shardora::elect::protobuf::
 
 // optional uint32 shard_network_id = 3;
 inline bool ElectBlock::has_shard_network_id() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void ElectBlock::set_has_shard_network_id() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void ElectBlock::clear_has_shard_network_id() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void ElectBlock::clear_shard_network_id() {
   shard_network_id_ = 0u;
@@ -3768,13 +3911,13 @@ inline void ElectBlock::set_shard_network_id(::google::protobuf::uint32 value) {
 
 // optional uint64 elect_height = 4;
 inline bool ElectBlock::has_elect_height() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void ElectBlock::set_has_elect_height() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void ElectBlock::clear_has_elect_height() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void ElectBlock::clear_elect_height() {
   elect_height_ = GOOGLE_ULONGLONG(0);
@@ -3792,13 +3935,13 @@ inline void ElectBlock::set_elect_height(::google::protobuf::uint64 value) {
 
 // optional uint64 all_gas_amount = 5;
 inline bool ElectBlock::has_all_gas_amount() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void ElectBlock::set_has_all_gas_amount() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void ElectBlock::clear_has_all_gas_amount() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void ElectBlock::clear_all_gas_amount() {
   all_gas_amount_ = GOOGLE_ULONGLONG(0);
@@ -3816,13 +3959,13 @@ inline void ElectBlock::set_all_gas_amount(::google::protobuf::uint64 value) {
 
 // optional uint64 gas_for_root = 6;
 inline bool ElectBlock::has_gas_for_root() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void ElectBlock::set_has_gas_for_root() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void ElectBlock::clear_has_gas_for_root() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void ElectBlock::clear_gas_for_root() {
   gas_for_root_ = GOOGLE_ULONGLONG(0);
@@ -3836,6 +3979,116 @@ inline void ElectBlock::set_gas_for_root(::google::protobuf::uint64 value) {
   set_has_gas_for_root();
   gas_for_root_ = value;
   // @@protoc_insertion_point(field_set:shardora.elect.protobuf.ElectBlock.gas_for_root)
+}
+
+// optional .shardora.elect.protobuf.DynamicShardingInfo dynamic_sharding_info = 7;
+inline bool ElectBlock::has_dynamic_sharding_info() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ElectBlock::set_has_dynamic_sharding_info() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ElectBlock::clear_has_dynamic_sharding_info() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ElectBlock::clear_dynamic_sharding_info() {
+  if (dynamic_sharding_info_ != NULL) dynamic_sharding_info_->Clear();
+  clear_has_dynamic_sharding_info();
+}
+inline const ::shardora::elect::protobuf::DynamicShardingInfo& ElectBlock::_internal_dynamic_sharding_info() const {
+  return *dynamic_sharding_info_;
+}
+inline const ::shardora::elect::protobuf::DynamicShardingInfo& ElectBlock::dynamic_sharding_info() const {
+  const ::shardora::elect::protobuf::DynamicShardingInfo* p = dynamic_sharding_info_;
+  // @@protoc_insertion_point(field_get:shardora.elect.protobuf.ElectBlock.dynamic_sharding_info)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::elect::protobuf::DynamicShardingInfo*>(
+      &::shardora::elect::protobuf::_DynamicShardingInfo_default_instance_);
+}
+inline ::shardora::elect::protobuf::DynamicShardingInfo* ElectBlock::release_dynamic_sharding_info() {
+  // @@protoc_insertion_point(field_release:shardora.elect.protobuf.ElectBlock.dynamic_sharding_info)
+  clear_has_dynamic_sharding_info();
+  ::shardora::elect::protobuf::DynamicShardingInfo* temp = dynamic_sharding_info_;
+  dynamic_sharding_info_ = NULL;
+  return temp;
+}
+inline ::shardora::elect::protobuf::DynamicShardingInfo* ElectBlock::mutable_dynamic_sharding_info() {
+  set_has_dynamic_sharding_info();
+  if (dynamic_sharding_info_ == NULL) {
+    auto* p = CreateMaybeMessage<::shardora::elect::protobuf::DynamicShardingInfo>(GetArenaNoVirtual());
+    dynamic_sharding_info_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:shardora.elect.protobuf.ElectBlock.dynamic_sharding_info)
+  return dynamic_sharding_info_;
+}
+inline void ElectBlock::set_allocated_dynamic_sharding_info(::shardora::elect::protobuf::DynamicShardingInfo* dynamic_sharding_info) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete dynamic_sharding_info_;
+  }
+  if (dynamic_sharding_info) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      dynamic_sharding_info = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, dynamic_sharding_info, submessage_arena);
+    }
+    set_has_dynamic_sharding_info();
+  } else {
+    clear_has_dynamic_sharding_info();
+  }
+  dynamic_sharding_info_ = dynamic_sharding_info;
+  // @@protoc_insertion_point(field_set_allocated:shardora.elect.protobuf.ElectBlock.dynamic_sharding_info)
+}
+
+// -------------------------------------------------------------------
+
+// DynamicShardingInfo
+
+// optional uint32 network_id = 1;
+inline bool DynamicShardingInfo::has_network_id() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void DynamicShardingInfo::set_has_network_id() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void DynamicShardingInfo::clear_has_network_id() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void DynamicShardingInfo::clear_network_id() {
+  network_id_ = 0u;
+  clear_has_network_id();
+}
+inline ::google::protobuf::uint32 DynamicShardingInfo::network_id() const {
+  // @@protoc_insertion_point(field_get:shardora.elect.protobuf.DynamicShardingInfo.network_id)
+  return network_id_;
+}
+inline void DynamicShardingInfo::set_network_id(::google::protobuf::uint32 value) {
+  set_has_network_id();
+  network_id_ = value;
+  // @@protoc_insertion_point(field_set:shardora.elect.protobuf.DynamicShardingInfo.network_id)
+}
+
+// optional uint32 action = 2;
+inline bool DynamicShardingInfo::has_action() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void DynamicShardingInfo::set_has_action() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void DynamicShardingInfo::clear_has_action() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void DynamicShardingInfo::clear_action() {
+  action_ = 0u;
+  clear_has_action();
+}
+inline ::google::protobuf::uint32 DynamicShardingInfo::action() const {
+  // @@protoc_insertion_point(field_get:shardora.elect.protobuf.DynamicShardingInfo.action)
+  return action_;
+}
+inline void DynamicShardingInfo::set_action(::google::protobuf::uint32 value) {
+  set_has_action();
+  action_ = value;
+  // @@protoc_insertion_point(field_set:shardora.elect.protobuf.DynamicShardingInfo.action)
 }
 
 // -------------------------------------------------------------------
@@ -5071,6 +5324,8 @@ inline void ElectMessage::set_allocated_sync_stoke_res(::shardora::elect::protob
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

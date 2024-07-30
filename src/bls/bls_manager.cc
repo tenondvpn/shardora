@@ -8,6 +8,7 @@
 #include <libbls/tools/utils.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
 #include <libff/common/profiling.hpp>
+#include <network/network_status.h>
 
 #include "bls/bls_sign.h"
 #include "common/global_info.h"
@@ -408,6 +409,13 @@ int BlsManager::GetVerifyHash(
 }
 
 void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    if (network::NetsInfo::Instance()->IsClosed(msg_ptr->header.src_sharding_id())) {
+        ZJC_WARN("wrong shard status: %d %d.",
+            msg_ptr->header.src_sharding_id(),
+            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id())->Status());
+        return;
+    }
+    
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
     if (bls_msg.has_finish_req()) {

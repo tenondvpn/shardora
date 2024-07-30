@@ -139,6 +139,7 @@ private:
     void AddMiningToken(
         const std::string& block_hash,
         const elect::protobuf::ElectBlock& elect_block);
+    void TryDynamicSharding(const elect::protobuf::ElectBlock& elect_block);
     void RootHandleNormalToTx(
         const block::protobuf::Block& block,
         pools::protobuf::ToTxMessage& to_txs,

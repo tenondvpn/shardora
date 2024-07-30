@@ -22,6 +22,12 @@ std::string GetBlockHash(const block::protobuf::Block& block);
 typedef std::function<void(
     std::shared_ptr<block::protobuf::Block>& block,
     db::DbWriteBatch& db_batch)> BlockCacheCallback;
+typedef std::function<void(
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t height,
+        uint32_t priority)> NoElectItemCallback;
+
 
 enum ConsensusErrorCode {
     kConsensusSuccess = 0,

@@ -13,7 +13,9 @@
 #include <consensus/consensus_utils.h>
 #include <functional>
 #include <memory>
+#include <network/network_status.h>
 #include <protos/pools.pb.h>
+#include <sync/key_value_sync.h>
 
 #include "block/block_manager.h"
 #include "common/global_info.h"
@@ -78,6 +80,8 @@ int NetworkInit::Init(int argc, char** argv) {
         INIT_ERROR("init global info failed!");
         return kInitError;
     }
+
+    network::NetsInfo::Instance()->Init();
 
     if (InitSecurity() != kInitSuccess) {
         INIT_ERROR("InitSecurity failed!");
@@ -163,6 +167,7 @@ int NetworkInit::Init(int argc, char** argv) {
     network::UniversalManager::Instance()->Init(security_, db_, account_mgr_);
     
     ZJC_DEBUG("init 0 10");
+    // 通过种子节点组网
     if (InitNetworkSingleton() != kInitSuccess) {
         INIT_ERROR("InitNetworkSingleton failed!");
         return kInitError;
@@ -210,7 +215,9 @@ int NetworkInit::Init(int argc, char** argv) {
         bls_mgr_,
         db_,
         std::bind(&NetworkInit::AddBlockItemToCache, this,
-            std::placeholders::_1, std::placeholders::_2));
+            std::placeholders::_1, std::placeholders::_2),
+        std::bind(&sync::KeyValueSync::AddSyncHeight, kv_sync_,
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
     if (consensus_init_res != consensus::kConsensusSuccess) {
         INIT_ERROR("init bft failed!");
         return kInitError;
@@ -262,6 +269,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
     ZJC_DEBUG("init 7");
+    // 根据 account info 信息加入 waiting 分片，如果是创始节点不走这个逻辑
     GetAddressShardingId();
     if (InitCommand() != kInitSuccess) {
         INIT_ERROR("InitCommand failed!");
@@ -354,14 +362,22 @@ void NetworkInit::RegisterFirewallCheck() {
         std::bind(&pools::TxPoolManager::FirewallCheckMessage, pools_mgr_.get(), std::placeholders::_1));
     net_handler_.AddFirewallCheckCallback(
         common::kInitMessage,
-        std::bind(&NetworkInit::FirewallCheckMessage, this, std::placeholders::_1));
+        std::bind(&NetworkInit::FirewallCheckMessage, this, std::placeholders::_1));    
 }
 
 int NetworkInit::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
-    return transport::kFirewallCheckSuccess;
+     return transport::kFirewallCheckSuccess;
 }
 
 void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    // 不接受 Closed 分片的 sharding init 请求
+    if (network::NetsInfo::Instance()->IsClosed(msg_ptr->header.src_sharding_id())) {
+        ZJC_WARN("wrong shard status: %d %d.",
+            msg_ptr->header.src_sharding_id(),
+            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id())->Status());
+        return;
+    }
+    
     if (msg_ptr->header.init_proto().has_addr_req()) {
         HandleAddrReq(msg_ptr);
     }

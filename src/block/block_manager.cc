@@ -14,9 +14,13 @@
 #include "protos/elect.pb.h"
 #include "transport/processor.h"
 #include <common/log.h>
+#include <network/network_status.h>
+#include <network/network_utils.h>
 #include <protos/pools.pb.h>
 #include <protos/tx_storage_key.h>
+#include <transport/transport_utils.h>
 #include "db/db_utils.h"
+#include "common/defer.h"
 
 namespace shardora {
 
@@ -75,7 +79,7 @@ int BlockManager::Init(
     return kBlockSuccess;
 }
 
-int BlockManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
+int BlockManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {    
     return transport::kFirewallCheckSuccess;
 }
 
@@ -120,7 +124,13 @@ void BlockManager::OnNewElectBlock(
 }
 
 void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    assert(false);
+    if (network::NetsInfo::Instance()->IsClosed(msg_ptr->header.src_sharding_id())) {
+        ZJC_WARN("wrong shard status: %d %d.",
+            msg_ptr->header.src_sharding_id(),
+            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id())->Status());
+        return;
+    }    
+    // assert(false);
     if (msg_ptr->header.block_proto().has_shard_to() > 0) {
         to_tx_msg_queue_.push(msg_ptr);
         ZJC_DEBUG("queue size to_tx_msg_queue_: %d", to_tx_msg_queue_.size());
@@ -993,6 +1003,8 @@ void BlockManager::HandleElectTx(
             }
 
             AddMiningToken(block.hash(), elect_block);
+            // 尝试扩容
+            TryDynamicSharding(elect_block);
             if (shard_elect_tx_[elect_block.shard_network_id()] != nullptr) {
                 if (shard_elect_tx_[elect_block.shard_network_id()]->tx_ptr->tx_info.gid() == tx.gid()) {
                     shard_elect_tx_[elect_block.shard_network_id()] = nullptr;
@@ -1019,6 +1031,54 @@ void BlockManager::HandleElectTx(
             }
         }
     }
+}
+
+// 尝试分片扩容
+void BlockManager::TryDynamicSharding(const elect::protobuf::ElectBlock& elect_block) {
+    if (!elect_block.has_dynamic_sharding_info()) {
+        return;
+    }
+    
+    auto dynamic_sharding_info = elect_block.dynamic_sharding_info();
+    auto shard_id = dynamic_sharding_info.network_id();
+
+    ZJC_DEBUG("dynamic sharding begin, s: %d, act: %d, cur: %d, has preopened: %d, biggest opened: %d",
+        shard_id,
+        dynamic_sharding_info.action(),
+        network::NetsInfo::Instance()->net_info(shard_id)->Status(),
+        network::NetsInfo::Instance()->HasPreopenedNetwork(),
+        network::NetsInfo::Instance()->BiggestOpenedNetId());
+    defer({
+            ZJC_DEBUG("dynamic sharding end, s: %d, act: %d, cur: %d",
+                shard_id,
+                dynamic_sharding_info.action(),
+                network::NetsInfo::Instance()->net_info(shard_id)->Status()
+                );
+        });
+    
+    if (shard_id < network::kConsensusShardBeginNetworkId ||
+        shard_id >= network::kConsensusShardEndNetworkId) {
+        return;
+    }
+
+    if (dynamic_sharding_info.action() == uint32_t(network::ShardStatus::kPreopened)) {
+        if (network::NetsInfo::Instance()->HasPreopenedNetwork() ||
+            shard_id != network::NetsInfo::Instance()->BiggestOpenedNetId()+1) {
+            return;
+        }        
+        network::NetsInfo::Instance()->SetPreopened(shard_id);        
+        return;
+    }
+
+    if (dynamic_sharding_info.action() == uint32_t(network::ShardStatus::kOpened)) {
+        if (network::NetsInfo::Instance()->PreopenedNetworkId() != shard_id) {
+            return;
+        }
+        network::NetsInfo::Instance()->SetOpened(shard_id);
+        return;
+    }
+    
+    return;
 }
 
 void BlockManager::AddMiningToken(
@@ -1188,7 +1248,7 @@ void BlockManager::CreateStatisticTx() {
     if (!statistic_hash.empty()) {
         auto tm_statistic_iter = shard_statistics_map_.find(timeblock_height);
         if (tm_statistic_iter == shard_statistics_map_.end()) {
-           auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+            auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
             auto* tx = new_msg_ptr->header.mutable_tx_proto();
             tx->set_key(protos::kShardStatistic);
             tx->set_value(elect_statistic.SerializeAsString());
@@ -1291,6 +1351,7 @@ void BlockManager::HandleStatisticBlock(
         shard_elect_tx->tx_ptr->tx_info);
     shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + kElectTimeout;
     shard_elect_tx->stop_consensus_timeout = shard_elect_tx->timeout + kStopConsensusTimeoutMs;
+    // 在 root 网络生成 kConsensusRootElectShard 交易，等待共识
     shard_elect_tx_[block.network_id()] = shard_elect_tx;
     ZJC_INFO("success add elect tx: %u, %lu, gid: %s, txhash: %s, statistic elect height: %lu",
         block.network_id(), block.timeblock_height(),

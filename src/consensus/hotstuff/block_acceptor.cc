@@ -442,6 +442,7 @@ void BlockAcceptor::LeaderBroadcastBlock(const std::shared_ptr<block::protobuf::
         break;
     case pools::protobuf::kRootCreateAddress:
     case pools::protobuf::kConsensusRootElectShard:
+        // 选举块交易，从 root 广播全网
         BroadcastBlock(network::kNodeNetworkId, block);
         break;
     default:

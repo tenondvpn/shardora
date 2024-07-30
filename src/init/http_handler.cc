@@ -11,8 +11,12 @@
 #include "zjcvm/execution.h"
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
+#include "rapidjson/prettywriter.h"
 
 #include <google/protobuf/util/json_util.h>
+#include <network/network_status.h>
+#include <network/network_utils.h>
+#include <rapidjson/stringbuffer.h>
 
 namespace shardora {
 
@@ -450,6 +454,35 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
     return;
 }
 
+static void QueryNetsInfo(evhtp_request_t* req, void* data) {
+    ZJC_DEBUG("query nets info.");
+    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
+    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
+    auto header3 = evhtp_header_new(
+        "Access-Control-Allow-Headers",
+        "x-requested-with,content-type", 0, 0);
+    evhtp_headers_add_header(req->headers_out, header1);
+    evhtp_headers_add_header(req->headers_out, header2);
+    evhtp_headers_add_header(req->headers_out, header3);
+
+    
+    rapidjson::StringBuffer buf;
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buf);
+    
+    writer.StartObject();
+    writer.Key("biggest_net_id");
+    writer.Int(network::kConsensusShardEndNetworkId-1);
+    writer.Key("biggest_opened_net_id");
+    writer.Int(network::NetsInfo::Instance()->BiggestOpenedNetId());
+    writer.Key("preopened_net_id");
+    writer.Int(network::NetsInfo::Instance()->PreopenedNetworkId());    
+    writer.EndObject();
+
+    evbuffer_add(req->buffer_out, buf.GetString(), buf.GetSize());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+    return;
+}
+
 static void QueryInit(evhtp_request_t* req, void* data) {
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     std::string res = "ok";
@@ -478,6 +511,7 @@ void HttpHandler::Init(
     http_server.AddCallback("/transaction", HttpTransaction);
     http_server.AddCallback("/query_contract", QueryContract);
     http_server.AddCallback("/query_account", QueryAccount);
+    http_server.AddCallback("/query_netsinfo", QueryNetsInfo);
     http_server.AddCallback("/query_init", QueryInit);
 }
 

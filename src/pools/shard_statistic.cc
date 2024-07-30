@@ -11,7 +11,11 @@
 #include "zjcvm/execution.h"
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
+#include <common/bitmap.h>
+#include <common/log.h>
+#include <common/utils.h>
 #include <elect/elect_pledge.h>
+#include <network/network_status.h>
 // #include <iostream>
 // #include "shard_statistic.h"
 
@@ -350,6 +354,10 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
     
     callback(block);
     statistic_info_ptr->all_gas_amount += block_gas;
+
+    // shard 性能是否到达上限
+    statistic_info_ptr->shard_perf_limit_reached = IsShardReachPerformanceLimit(statistic_info_ptr, block);
+    
     std::string leader_id = getLeaderIdFromBlock(block);
     if (leader_id.empty()) {
         // assert(false);
@@ -615,6 +623,8 @@ int ShardStatistic::StatisticWithHeights(
         elect_statistic.set_gas_amount(root_all_gas_amount);
     } else {
         elect_statistic.set_gas_amount(all_gas_amount);
+        // shard 网络携带吞吐量统计结果
+        elect_statistic.set_shard_perf_limit_reached(statistic_info_ptr->shard_perf_limit_reached);
     }
 
     auto net_id = common::GlobalInfo::Instance()->network_id();
@@ -862,6 +872,37 @@ void ShardStatistic::setElectStatistics(
 
         statistic_item.set_elect_height(hiter->first);
     }
+}
+
+// 流式统计
+bool ShardStatistic::IsShardReachPerformanceLimit(
+        std::shared_ptr<StatisticInfoItem>& statistic_info_ptr,
+        const block::protobuf::Block& block) {
+    auto condition_fn = [](const block::protobuf::Block& block) -> bool {
+        // 通过判断 block 当中的 tx size 来贡献 shard 当前的 tps 压力
+        if (block.tx_list_size() > common::kSingleBlockMaxTransactions * 0.9) {
+            return true;
+        }
+        return false;
+    };
+
+    // 不统计系统块，TODO 有更好的方案
+    if (block.tx_list_size() == 1) {
+        return false;
+    }
+
+    // 将新 block 的情况放入 bit 队列
+    shard_pref_bitmap_ << 1;
+    if (condition_fn(block)) {
+        shard_pref_bitmap_.Set(0);
+    } else {
+        shard_pref_bitmap_.UnSet(0);
+    }
+
+    ZJC_DEBUG("shard_pref_bitmap valid count: %lu, shard: %lu", shard_pref_bitmap_.valid_count(), block.network_id());
+    
+    // 连续 kPreopenShardMaxBlockWindowSize 块中 tx size 数量满足要求时就认为达到 shard 性能上限
+    return shard_pref_bitmap_.valid_count() >= common::kPreopenShardMaxBlockWindowSize;
 }
 
 }  // namespace pools

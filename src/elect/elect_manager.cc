@@ -60,7 +60,8 @@ ElectManager::ElectManager(
     bls_mgr_ = bls_mgr;
 //     network::Route::Instance()->RegisterMessage(
 //         common::kElectMessage,
-//         std::bind(&ElectManager::HandleMessage, this, std::placeholders::_1));
+//         std::bind(&ElectManager::HandleMessage, this, std::placeholders::_1));    
+
     memset(latest_leader_count_, 0, sizeof(latest_leader_count_));
     memset(latest_member_count_, 0, sizeof(latest_member_count_));
     for (uint32_t i = 0; i < network::kConsensusShardEndNetworkId; ++i) {

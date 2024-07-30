@@ -10,8 +10,12 @@
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <libbls/tools/utils.h>
+#include <network/network_status.h>
+#include <network/network_utils.h>
 #include <protos/pools.pb.h>
+#include <sync/sync_utils.h>
 #include <sys/socket.h>
+#include <transport/transport_utils.h>
 
 #include "bls/bls_utils.h"
 #include "bls/bls_manager.h"
@@ -51,7 +55,8 @@ int HotstuffManager::Init(
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         std::shared_ptr<db::Db>& db,
-        BlockCacheCallback new_block_cache_callback) {
+        BlockCacheCallback new_block_cache_callback,
+        NoElectItemCallback no_elect_item_callback) {
     contract_mgr_ = contract_mgr;
     gas_prepayment_ = gas_prepayment;
     vss_mgr_ = vss_mgr;
@@ -64,6 +69,7 @@ int HotstuffManager::Init(
     bls_mgr_ = bls_mgr;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+    no_elect_item_callback_ = no_elect_item_callback;
 
     elect_info_ = std::make_shared<ElectInfo>(security_ptr, elect_mgr_);
     
@@ -153,7 +159,17 @@ int HotstuffManager::VerifySyncedViewBlock(view_block::protobuf::ViewBlockItem* 
     
     s = VerifyViewBlockWithCommitQC(vblock, commit_qc);
     if (s != Status::kSuccess) {
-        return s == Status::kElectItemNotFound ? 1 : -1;
+        if (s == Status::kElectItemNotFound) {
+            if (no_elect_item_callback_) {
+                no_elect_item_callback_(
+                        network::kRootCongressNetworkId,
+                        commit_qc->network_id(),
+                        commit_qc->elect_height(),
+                        sync::kSyncHighest);
+            }
+            return 1;
+        }
+        return -1;
     }
     return 0;
 }
@@ -204,6 +220,14 @@ void HotstuffManager::OnNewElectBlock(uint64_t block_tm_ms, uint32_t sharding_id
 }
 
 void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    // 仅接受 Opened 分片的共识消息
+    if (!network::NetsInfo::Instance()->IsOpened(msg_ptr->header.src_sharding_id())) {
+        ZJC_WARN("wrong shard status: %d %d.",
+            msg_ptr->header.src_sharding_id(),
+            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id())->Status());
+        return;
+    }
+    
     auto& header = msg_ptr->header;
     if (header.has_hotstuff_timeout_proto() ||
         (header.has_hotstuff() && header.hotstuff().type() == VOTE) ||
@@ -279,6 +303,13 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
+    if (!network::NetsInfo::Instance()->IsOpened(msg_ptr->header.src_sharding_id())) {
+        ZJC_WARN("wrong shard status: %d %d.",
+            msg_ptr->header.src_sharding_id(),
+            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id())->Status());
+        return;
+    }    
+    
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {

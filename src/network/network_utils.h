@@ -34,7 +34,7 @@ static const uint32_t kNodeNetworkId = 1u;  // just node id join(for broadcast)
 static const uint32_t kRootCongressNetworkId = 2u;
 static const uint32_t kConsensusShardBeginNetworkId = 3u;  // eq
 // static const uint32_t kConsensusShardEndNetworkId = 6; // less
-static const uint32_t kConsensusShardEndNetworkId = 4u; // less
+static const uint32_t kConsensusShardEndNetworkId = 7u; // less
 static const uint32_t kConsensusWaitingShardOffset = kConsensusShardEndNetworkId - kRootCongressNetworkId;
 static const uint32_t kRootCongressWaitingNetworkId = kRootCongressNetworkId + kConsensusWaitingShardOffset;
 static const uint32_t kConsensusWaitingShardBeginNetworkId = kRootCongressNetworkId + kConsensusWaitingShardOffset;  // eq
@@ -43,7 +43,8 @@ static const uint32_t kConsensusWaitingShardEndNetworkId = kConsensusShardEndNet
 static const uint32_t kConsensusShardNetworkCount = (
         kConsensusShardEndNetworkId - kConsensusShardBeginNetworkId + 1);
 static const uint32_t kServiceShardBeginNetworkId = kConsensusWaitingShardEndNetworkId;  // eq
-static const uint32_t kServiceShardEndNetworkId = 2048;  // less
+static const uint32_t kServiceShardEndNetworkId = 2048; // less
+static const uint32_t kInitOpenedShardCount = 1u; // 初始默认开启的 shard 数，>= 1, 如 2 表示 s3, s4 初始为开启状态
 
 enum ServiceNetworkType {
     kVpnNetworkId = kServiceShardBeginNetworkId,

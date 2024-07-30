@@ -3,7 +3,13 @@
 #include "common/fts_tree.h"
 #include "elect_tx_item.h"
 #include "protos/get_proto_hash.h"
+#include <common/log.h>
+#include <common/utils.h>
 #include <google/protobuf/util/json_util.h>
+#include <network/network_status.h>
+#include <network/network_utils.h>
+#include <protos/elect.pb.h>
+#include "common/defer.h"
 
 namespace shardora {
 
@@ -620,6 +626,12 @@ int ElectTxItem::CreateNewElect(
     elect_block.set_shard_network_id(elect_statistic.sharding_id());
     elect_block.set_elect_height(block.height());
     elect_block.set_all_gas_amount(elect_statistic.gas_amount());
+    // 动态扩容信息
+    auto& dynamic_sharding_info = *elect_block.mutable_dynamic_sharding_info();
+    bool ok = GetDynamicShardingInfo(elect_statistic, &dynamic_sharding_info);
+
+    ZJC_DEBUG("dynamic sharding info, s: %d, act: %d", dynamic_sharding_info.network_id(), dynamic_sharding_info.action());
+    
     if (bls_mgr_->AddBlsConsensusInfo(elect_block) != bls::kBlsSuccess) {
         ZJC_WARN("add prev elect bls consensus info failed sharding id: %u",
                  elect_statistic.sharding_id());
@@ -1081,6 +1093,51 @@ void ElectTxItem::SmoothFtsValue(
     }
 
     ZJC_DEBUG("fts value final: %s", fts_val_str.c_str());
+}
+
+bool ElectTxItem::GetDynamicShardingInfo(
+        const pools::protobuf::ElectStatistic &elect_statistic,
+        elect::protobuf::DynamicShardingInfo* dynamic_sharding_info) {
+    auto shard_id = elect_statistic.sharding_id();
+    ZJC_DEBUG("all sharding info, s: %d, biggest open net: %d, all opened: %d, perfreached: %d, preopened: %d",
+        shard_id,
+        network::NetsInfo::Instance()->BiggestOpenedNetId(),
+        network::NetsInfo::Instance()->AllOpened(),
+        elect_statistic.shard_perf_limit_reached(),
+        network::NetsInfo::Instance()->PreopenedNetworkId());
+
+    // 仅使用 BiggestOpenedNetId 选举块进行扩容
+    if (shard_id != network::NetsInfo::Instance()->BiggestOpenedNetId()) {
+        return false;
+    }
+    
+    // 尝试 Preopen 一个新的分片
+    if (!network::NetsInfo::Instance()->HasPreopenedNetwork()) {
+        // 所有分片都已经 Open
+        if (network::NetsInfo::Instance()->AllOpened()) {
+            return false;
+        }
+        // shard_id 还未达到吞吐量上限
+        if (!elect_statistic.shard_perf_limit_reached()) {
+            return false;
+        }
+        // 尝试 Preopen 下一个分片
+        dynamic_sharding_info->set_network_id(network::NetsInfo::Instance()->BiggestOpenedNetId()+1);
+        dynamic_sharding_info->set_action(uint32_t(network::ShardStatus::kPreopened));
+    } else {
+        // 尝试 Open 当前处于 Preopen 的分片
+        auto open_shard_id = network::NetsInfo::Instance()->PreopenedNetworkId();
+        auto shard_member_count = elect_mgr_->GetMemberCount(open_shard_id);
+        if (shard_member_count < common::kOpenShardMemberCountMinThres) {
+            return false;
+        }
+
+        dynamic_sharding_info->set_network_id(open_shard_id);
+        dynamic_sharding_info->set_action(uint32_t(network::ShardStatus::kOpened));
+    }
+
+    // 尝试 open
+    return true;
 }
 
 }; // namespace consensus

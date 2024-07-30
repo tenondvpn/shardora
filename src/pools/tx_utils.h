@@ -251,7 +251,7 @@ struct CrossItemRecordHash {
 };
 
 struct StatisticInfoItem {
-    StatisticInfoItem() : all_gas_amount(0), root_all_gas_amount(0), statistic_max_height(0) {}
+    StatisticInfoItem() : all_gas_amount(0), root_all_gas_amount(0), statistic_max_height(0), shard_perf_limit_reached(false) {}
     uint64_t all_gas_amount;
     uint64_t root_all_gas_amount;
     std::map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
@@ -259,6 +259,7 @@ struct StatisticInfoItem {
     std::map<uint64_t, std::unordered_map<std::string, StatisticMemberInfoItem>> height_node_collect_info_map;
     std::unordered_map<std::string, std::string> id_pk_map;
     uint64_t statistic_max_height;
+    bool shard_perf_limit_reached; // 达到 shard 性能上限
 };
 
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {
