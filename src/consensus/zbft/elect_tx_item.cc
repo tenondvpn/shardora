@@ -9,6 +9,7 @@
 #include <network/network_status.h>
 #include <network/network_utils.h>
 #include <protos/elect.pb.h>
+#include "common/defer.h"
 
 namespace shardora {
 
@@ -1105,6 +1106,18 @@ bool ElectTxItem::GetDynamicShardingInfo(
         network::NetsInfo::Instance()->AllOpened(),
         elect_statistic.shard_perf_limit_reached(),
         network::NetsInfo::Instance()->PreopenedNetworkId());
+
+    // 仅使用 BiggestOpenedNetId 选举块进行扩容
+    if (shard_id != network::NetsInfo::Instance()->BiggestOpenedNetId()) {
+        return false;
+    }
+
+    // 避免重复处理
+    if (elect_statistic.height_info().block_height() <= last_block_height_) {
+        return false;
+    }
+    
+    defer(last_block_height_ = elect_statistic.height_info().block_height());
     
     // 尝试 Preopen 一个新的分片
     if (!network::NetsInfo::Instance()->HasPreopenedNetwork() &&

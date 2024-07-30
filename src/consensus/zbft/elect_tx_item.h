@@ -150,6 +150,7 @@ private:
     uint32_t network_count_ = 2;
     std::set<std::string> added_nodes_;
     common::MembersPtr elect_members_ = nullptr;
+    uint64_t last_block_height_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(ElectTxItem);
 };
