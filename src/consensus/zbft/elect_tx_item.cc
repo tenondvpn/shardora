@@ -1111,17 +1111,9 @@ bool ElectTxItem::GetDynamicShardingInfo(
     if (shard_id != network::NetsInfo::Instance()->BiggestOpenedNetId()) {
         return false;
     }
-
-    // 避免重复处理
-    if (elect_statistic.height_info().block_height() <= last_block_height_) {
-        return false;
-    }
-    
-    defer(last_block_height_ = elect_statistic.height_info().block_height());
     
     // 尝试 Preopen 一个新的分片
-    if (!network::NetsInfo::Instance()->HasPreopenedNetwork() &&
-        shard_id == network::NetsInfo::Instance()->BiggestOpenedNetId()) {
+    if (!network::NetsInfo::Instance()->HasPreopenedNetwork()) {
         // 所有分片都已经 Open
         if (network::NetsInfo::Instance()->AllOpened()) {
             return false;
@@ -1133,10 +1125,7 @@ bool ElectTxItem::GetDynamicShardingInfo(
         // 尝试 Preopen 下一个分片
         dynamic_sharding_info->set_network_id(network::NetsInfo::Instance()->BiggestOpenedNetId()+1);
         dynamic_sharding_info->set_action(uint32_t(network::ShardStatus::kPreopened));
-        return true;
-    }
-
-    if (network::NetsInfo::Instance()->HasPreopenedNetwork()) {
+    } else {
         // 尝试 Open 当前处于 Preopen 的分片
         auto open_shard_id = network::NetsInfo::Instance()->PreopenedNetworkId();
         auto shard_member_count = elect_mgr_->GetMemberCount(open_shard_id);
@@ -1146,7 +1135,6 @@ bool ElectTxItem::GetDynamicShardingInfo(
 
         dynamic_sharding_info->set_network_id(open_shard_id);
         dynamic_sharding_info->set_action(uint32_t(network::ShardStatus::kOpened));
-        return true;
     }
 
     // 尝试 open
