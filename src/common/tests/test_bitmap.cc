@@ -67,7 +67,8 @@ TEST_F(TestBitmap, AddAndContainClear) {
 }
 
 TEST_F(TestBitmap, ShiftLeft) {
-    Bitmap bitmap{ 64 };
+    const uint32_t bitsize = 64;
+    Bitmap bitmap{ bitsize };
     bitmap.Set(0);
     
     ASSERT_TRUE(!bitmap.Valid(1));
@@ -79,12 +80,12 @@ TEST_F(TestBitmap, ShiftLeft) {
     ASSERT_TRUE(bitmap.Valid(2));
     ASSERT_TRUE(!bitmap.Valid(1));
 
-    for (int i = 0; i < 64; i++) {
-        bitmap.ShiftLeft(1);
+    for (int i = 0; i < bitsize; i++) {
+        bitmap << 1;
         bitmap.Set(0);
     }
 
-    ASSERT_TRUE(bitmap.valid_count() == 10);
+    ASSERT_TRUE(bitmap.valid_count() == bitsize);
 }
 
 }  // namespace test

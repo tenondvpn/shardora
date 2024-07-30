@@ -12,6 +12,7 @@
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
 #include <common/bitmap.h>
+#include <common/log.h>
 #include <common/utils.h>
 #include <elect/elect_pledge.h>
 #include <network/network_status.h>
@@ -892,9 +893,11 @@ bool ShardStatistic::IsShardReachPerformanceLimit(
     } else {
         shard_pref_bitmap_.UnSet(0);
     }
+
+    ZJC_DEBUG("shard_pref_bitmap valid count: %lu, shard: %lu", shard_pref_bitmap_.valid_count(), block.network_id());
     
     // 连续 kPreopenShardMaxBlockWindowSize 块中 tx size 数量满足要求时就认为达到 shard 性能上限
-    return shard_pref_bitmap_.valid_count() == common::kPreopenShardMaxBlockWindowSize;
+    return shard_pref_bitmap_.valid_count() >= common::kPreopenShardMaxBlockWindowSize;
 }
 
 }  // namespace pools
