@@ -34,12 +34,9 @@ public:
             std::shared_ptr<contract::ContractManager>& tmp_contract_mgr)
             : elect_mgr_(elect_mgr), secptr_(sec_ptr), pools_mgr_(pools_mgr), contract_mgr_(tmp_contract_mgr) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
-        shard_pref_bitmap_ = new common::Bitmap(common::kPreopenShardMaxBlockWindowSize);
     }
 
-    ~ShardStatistic() {
-        delete shard_pref_bitmap_;
-    }
+    ~ShardStatistic() {}
     void Init(const std::vector<uint64_t>& latest_heights);
     uint64_t getStoke(uint32_t shard_id, std::string contractId, std::string temp_addr, uint64_t elect_height);
     void OnNewElectBlock(
@@ -120,7 +117,7 @@ public:
     std::unordered_map<std::string, std::shared_ptr<AccoutPoceInfoItem>> accout_poce_info_map_;
     uint64_t least_elect_height_for_statistic_=0;
     std::unordered_map<uint64_t, std::shared_ptr<StatisticInfoItem>> tm_height_with_statistic_info_;
-    common::Bitmap* shard_pref_bitmap_ = nullptr; // bit 窗口，保存了最近多个 block 是否达到 shard 性能处理上限
+    common::Bitmap shard_pref_bitmap_{common::kPreopenShardMaxBlockWindowSize}; // bit 窗口，保存了最近多个 block 是否达到 shard 性能处理上限
     
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };

@@ -886,15 +886,15 @@ bool ShardStatistic::IsShardReachPerformanceLimit(
     };
 
     // 将新 block 的情况放入 bit 队列
-    shard_pref_bitmap_->ShiftLeft(1);
+    shard_pref_bitmap_ << 1;
     if (condition_fn(block)) {
-        shard_pref_bitmap_->Set(0);
+        shard_pref_bitmap_.Set(0);
     } else {
-        shard_pref_bitmap_->UnSet(0);
+        shard_pref_bitmap_.UnSet(0);
     }
     
     // 连续 kPreopenShardMaxBlockWindowSize 块中 tx size 数量满足要求时就认为达到 shard 性能上限
-    return shard_pref_bitmap_->valid_count() == common::kPreopenShardMaxBlockWindowSize;
+    return shard_pref_bitmap_.valid_count() == common::kPreopenShardMaxBlockWindowSize;
 }
 
 }  // namespace pools
