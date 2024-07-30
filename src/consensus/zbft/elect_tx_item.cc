@@ -58,7 +58,6 @@ int ElectTxItem::HandleTx(
                     ZJC_DEBUG("LLLLL elect_statistic:%s", json_str.c_str() );
                 }
             }
-            // 计算交易，xufeisofly root 网络根据 shard 上报的 elect_statistic 进行选举
             return processElect(elect_statistic, block, db_batch, block_tx);
         }
     }

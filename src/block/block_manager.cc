@@ -996,7 +996,6 @@ void BlockManager::HandleElectTx(
         ZJC_DEBUG("handle elect tx storage index: %u, key: %s, protos::kElectNodeAttrElectBlock: %s",
             i, tx.storages(i).key().c_str(), protos::kElectNodeAttrElectBlock.c_str());
         if (tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
-            // TODO xufeisofly net 处理 root 发来的 elect 块，在这里执行打开 preopen 网络
             elect::protobuf::ElectBlock elect_block;
             if (!elect_block.ParseFromString(tx.storages(i).value())) {
                 assert(false);
