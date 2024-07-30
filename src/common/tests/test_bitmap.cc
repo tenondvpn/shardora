@@ -67,7 +67,7 @@ TEST_F(TestBitmap, AddAndContainClear) {
 }
 
 TEST_F(TestBitmap, ShiftLeft) {
-    Bitmap bitmap{ 10 };
+    Bitmap bitmap{ 64 };
     bitmap.Set(0);
     
     ASSERT_TRUE(!bitmap.Valid(1));
@@ -79,7 +79,7 @@ TEST_F(TestBitmap, ShiftLeft) {
     ASSERT_TRUE(bitmap.Valid(2));
     ASSERT_TRUE(!bitmap.Valid(1));
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 64; i++) {
         bitmap.ShiftLeft(1);
         bitmap.Set(0);
     }
