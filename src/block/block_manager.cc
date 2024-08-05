@@ -131,11 +131,13 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }    
     // assert(false);
+    // TODO to_tx_msg_queue_ 没有用啊
     if (msg_ptr->header.block_proto().has_shard_to() > 0) {
         to_tx_msg_queue_.push(msg_ptr);
         ZJC_DEBUG("queue size to_tx_msg_queue_: %d", to_tx_msg_queue_.size());
     }
 
+    // TODO statistic_tx_msg_queue_ 没有用啊
     if (msg_ptr->header.block_proto().has_statistic_tx()) {
         statistic_tx_msg_queue_.push(msg_ptr);
         ZJC_DEBUG("queue size statistic_tx_msg_queue_: %d", statistic_tx_msg_queue_.size());
