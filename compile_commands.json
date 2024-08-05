@@ -54,6 +54,12 @@
   "output": "CMakeFiles/blsmain.dir/src/main/bls_main.cc.o"
 },
 {
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DENABLE_HOTSTUFF -DGUID_CFUUID -DLATENCY -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/hotstuff.dir/src/main/hotstuff.cc.o -c /Users/sofly/projects/c/zjchain/src/main/hotstuff.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/main/hotstuff.cc",
+  "output": "CMakeFiles/hotstuff.dir/src/main/hotstuff.cc.o"
+},
+{
   "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
   "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DENABLE_HOTSTUFF -DGUID_CFUUID -DLATENCY -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/bitmap.cc.o -c /Users/sofly/projects/c/zjchain/src/common/bitmap.cc",
   "file": "/Users/sofly/projects/c/zjchain/src/common/bitmap.cc",
@@ -553,6 +559,12 @@
 },
 {
   "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/pools",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DENABLE_HOTSTUFF -DGUID_CFUUID -DLATENCY -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/pools.dir/root_cross_pool.cc.o -c /Users/sofly/projects/c/zjchain/src/pools/root_cross_pool.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/pools/root_cross_pool.cc",
+  "output": "pools/CMakeFiles/pools.dir/root_cross_pool.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/pools",
   "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DENABLE_HOTSTUFF -DGUID_CFUUID -DLATENCY -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/pools.dir/shard_statistic.cc.o -c /Users/sofly/projects/c/zjchain/src/pools/shard_statistic.cc",
   "file": "/Users/sofly/projects/c/zjchain/src/pools/shard_statistic.cc",
   "output": "pools/CMakeFiles/pools.dir/shard_statistic.cc.o"
@@ -808,6 +820,12 @@
   "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DENABLE_HOTSTUFF -DGUID_CFUUID -DLATENCY -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/consensus.dir/hotstuff/block_wrapper.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/hotstuff/block_wrapper.cc",
   "file": "/Users/sofly/projects/c/zjchain/src/consensus/hotstuff/block_wrapper.cc",
   "output": "consensus/CMakeFiles/consensus.dir/hotstuff/block_wrapper.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DENABLE_HOTSTUFF -DGUID_CFUUID -DLATENCY -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/consensus.dir/hotstuff/consensus_statistic.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/hotstuff/consensus_statistic.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/hotstuff/consensus_statistic.cc",
+  "output": "consensus/CMakeFiles/consensus.dir/hotstuff/consensus_statistic.cc.o"
 },
 {
   "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus",
