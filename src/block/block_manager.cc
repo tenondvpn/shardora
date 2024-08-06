@@ -167,7 +167,7 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             return;
         }
 
-        auto block_ptr = std::make_shared<block::protobuf::Block>(header.block());
+        auto block_ptr = std::make_shared<block::protobuf::Block>(header.view_block().block_info());
         // if (block_agg_valid_func_(*block_ptr) == 0) {
         // just one thread
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
