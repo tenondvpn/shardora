@@ -143,11 +143,11 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         ZJC_DEBUG("queue size statistic_tx_msg_queue_: %d", statistic_tx_msg_queue_.size());
     }
 
-    if (msg_ptr->header.has_block()) {
-        ZJC_DEBUG("block message coming net: %u, pool: %u, height: %lu, hash64: %lu",
-            msg_ptr->header.block().network_id(),
-            msg_ptr->header.block().pool_index(),
-            msg_ptr->header.block().height(),
+    if (msg_ptr->header.has_view_block() && msg_ptr->header.view_block().has_block_info()) {
+        ZJC_DEBUG("view block message coming net: %u, pool: %u, height: %lu, hash64: %lu",
+            msg_ptr->header.view_block().block_info().network_id(),
+            msg_ptr->header.view_block().block_info().pool_index(),
+            msg_ptr->header.view_block().block_info().height(),
             msg_ptr->header.hash64());
         auto& header = msg_ptr->header;
         auto local_net = common::GlobalInfo::Instance()->network_id();
@@ -156,7 +156,7 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         // 过滤掉自己给自己发的消息
-        if (header.block().network_id() == local_net) {
+        if (header.view_block().block_info().network_id() == local_net) {
             ZJC_DEBUG("network block failed cache new block coming sharding id: %u, "
                 "pool: %d, height: %lu, tx size: %u, hash: %s",
                 header.block().network_id(),

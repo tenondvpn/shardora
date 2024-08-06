@@ -772,7 +772,7 @@ Status Hotstuff::Commit(
         auto db_batch = std::make_shared<db::DbWriteBatch>();
         auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(tmp_block->block, db_batch);
         view_block_chain()->StoreToDb(tmp_block, commit_qc, test_index, db_batch);
-        CommitInner(tmp_block, test_index, queue_item_ptr);
+        CommitInner(tmp_block, test_index, queue_item_ptr, commit_qc);
         std::shared_ptr<ViewBlock> parent_block = nullptr;
         Status s = view_block_chain()->Get(tmp_block->parent_hash, parent_block);
         if (s != Status::kSuccess || parent_block == nullptr) {
@@ -882,7 +882,8 @@ Status Hotstuff::VerifyViewBlock(
 void Hotstuff::CommitInner(
         const std::shared_ptr<ViewBlock>& v_block, 
         uint64_t test_index, 
-        std::shared_ptr<block::BlockToDbItem>& queue_block_item) {
+        std::shared_ptr<block::BlockToDbItem>& queue_block_item,
+        const std::shared_ptr<QC>& commit_qc) {
     ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit coming s: %d, "
         "vb view: %lu, %u_%u_%lu, cur chain: %s, test_index: %lu",
         pool_idx_, 0, v_block->view,
@@ -916,7 +917,9 @@ void Hotstuff::CommitInner(
         v_block->block->network_id(), v_block->block->pool_index(), v_block->block->height(),
         view_block_chain()->String().c_str(),
         test_index);
-    acceptor()->Commit(queue_block_item);
+
+    auto vblock_with_proof = std::make_shared<ViewBlockWithCommitQC>(v_block, commit_qc);
+    acceptor()->Commit(queue_block_item, vblock_with_proof);
     ZJC_DEBUG("2 NEW BLOCK CommitInner coming pool: %d, commit coming s: %d, "
         "vb view: %lu, %u_%u_%lu, cur chain: %s, test_index: %lu",
         pool_idx_, 0, v_block->view,

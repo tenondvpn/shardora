@@ -60,7 +60,8 @@ message Header {
     optional block.protobuf.ElectBlockMessage elect_block = 24;
     optional init.protobuf.InitMessage init_proto = 25;
     optional pools.protobuf.SyncPoolsMaxHeight sync_heights = 26;
-    optional block.protobuf.Block block = 27;
+    optional block.protobuf.Block block = 27; // Deprecated! use view_block instead
+    optional view_block.protobuf.ViewBlockItem view_block = 28;
     optional uint32 from_public_port = 29;
     optional c2c.protobuf.C2cMessage c2c = 30;
     optional bytes pubkey = 31;

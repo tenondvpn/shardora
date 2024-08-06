@@ -12,6 +12,7 @@
 #include <consensus/zbft/root_cross_tx_item.h>
 #include <consensus/zbft/join_elect_tx_item.h>
 #include <protos/pools.pb.h>
+#include <protos/view_block.pb.h>
 #include <protos/zbft.pb.h>
 #include <zjcvm/zjcvm_utils.h>
 #include <common/defer.h>
@@ -115,7 +116,11 @@ Status BlockAcceptor::AcceptSync(const std::shared_ptr<block::protobuf::Block>& 
     return Status::kSuccess;
 }
 
-void BlockAcceptor::Commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
+// vblock_with_proof if mainly for leader to broadcast
+// TODO actually queue_item_ptr.block is duplicate with vblock_with_proof.block
+void BlockAcceptor::Commit(
+        std::shared_ptr<block::BlockToDbItem>& queue_item_ptr,
+        const std::shared_ptr<ViewBlockWithCommitQC>& vblock_with_proof) {
     // commit block
     commit(queue_item_ptr);
     auto block = queue_item_ptr->block_ptr;
@@ -127,7 +132,7 @@ void BlockAcceptor::Commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr
             if (block->leader_index() == elect_item->LocalMember()->index) {
                 // leader broadcast block to other shards
                 // TODO to 交易会大量占用 CPU，先屏蔽
-                LeaderBroadcastBlock(block);
+                LeaderBroadcastBlock(vblock_with_proof);
             }
 #ifndef NDEBUG                
             for (uint32_t i = 0; i < block->tx_list_size(); ++i) {
@@ -419,12 +424,14 @@ Status BlockAcceptor::DoTransactions(
     return s;
 }
 
-void BlockAcceptor::LeaderBroadcastBlock(const std::shared_ptr<block::protobuf::Block>& block) {
+void BlockAcceptor::LeaderBroadcastBlock(const std::shared_ptr<ViewBlockWithCommitQC>& vblock_with_proof) {
+    auto block = vblock_with_proof->vblock()->block;
+    auto pb_vblock = vblock_with_proof->ToProto();
     if (block->pool_index() == common::kRootChainPoolIndex) {
         if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-            BroadcastBlock(network::kNodeNetworkId, block);
+            BroadcastBlock(network::kNodeNetworkId, pb_vblock);
         } else {
-            BroadcastBlock(network::kRootCongressNetworkId, block);
+            BroadcastBlock(network::kRootCongressNetworkId, pb_vblock);
         }
 
         return;
@@ -438,12 +445,12 @@ void BlockAcceptor::LeaderBroadcastBlock(const std::shared_ptr<block::protobuf::
     case pools::protobuf::kNormalTo:
         ZJC_DEBUG("broadcast to block step: %u, height: %lu",
             block->tx_list(0).step(), block->height());
-        BroadcastLocalTosBlock(block);
+        BroadcastLocalTosBlock(pb_vblock);
         break;
     case pools::protobuf::kRootCreateAddress:
     case pools::protobuf::kConsensusRootElectShard:
         // 选举块交易，从 root 广播全网
-        BroadcastBlock(network::kNodeNetworkId, block);
+        BroadcastBlock(network::kNodeNetworkId, pb_vblock);
         break;
     default:
         break;
@@ -452,25 +459,27 @@ void BlockAcceptor::LeaderBroadcastBlock(const std::shared_ptr<block::protobuf::
 
 void BlockAcceptor::BroadcastBlock(
         uint32_t des_shard,
-        const std::shared_ptr<block::protobuf::Block>& block_item) {
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& pb_vblock) {
+    auto block_item = pb_vblock->block_info();
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
     msg.set_src_sharding_id(des_shard);
     msg.set_type(common::kBlockMessage);
     dht::DhtKeyManager dht_key(des_shard);
     msg.set_des_dht_key(dht_key.StrKey());
-    auto& tx = block_item->tx_list(0);
-    *msg.mutable_block() = *block_item;
+    auto& tx = block_item.tx_list(0);
+    *msg.mutable_view_block() = *pb_vblock;
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     auto* brdcast = msg.mutable_broadcast();
     network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("success broadcast to %u, pool: %u, height: %lu, hash64: %lu",
-        des_shard, block_item->pool_index(), block_item->height(), msg.hash64());
+        des_shard, block_item.pool_index(), block_item.height(), msg.hash64());
 }
 
 void BlockAcceptor::BroadcastLocalTosBlock(
-        const std::shared_ptr<block::protobuf::Block>& block_item) {
-    auto& tx = block_item->tx_list(0);
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& pb_vblock) {
+    auto block_item = pb_vblock->block_info();
+    auto& tx = block_item.tx_list(0);
     pools::protobuf::ToTxMessage to_tx;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -483,11 +492,11 @@ void BlockAcceptor::BroadcastLocalTosBlock(
         dht::DhtKeyManager dht_key(to_tx.to_heights().sharding_id());
         msg.set_des_dht_key(dht_key.StrKey());
         transport::TcpTransport::Instance()->SetMessageHash(msg);
-        *msg.mutable_block() = *block_item;
+        *msg.mutable_view_block() = *pb_vblock;
         auto* brdcast = msg.mutable_broadcast();
         network::Route::Instance()->Send(msg_ptr);
         ZJC_DEBUG("success broadcast cross tos height: %lu, sharding id: %u",
-            block_item->height(), to_tx.to_heights().sharding_id());
+            block_item.height(), to_tx.to_heights().sharding_id());
       
     }
 }
