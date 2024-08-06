@@ -169,11 +169,11 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
         auto block_ptr = std::make_shared<block::protobuf::Block>(header.block());
         // if (block_agg_valid_func_(*block_ptr) == 0) {
-        //     // just one thread
-        //     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-        //     block_from_network_queue_[thread_idx].push(block_ptr);
-        //     ZJC_DEBUG("success add new network block 2 net: %u, pool: %u, height: %lu",
-        //         block_ptr->network_id(), block_ptr->pool_index(), block_ptr->height());
+        // just one thread
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        block_from_network_queue_[thread_idx].push(block_ptr);
+        ZJC_DEBUG("success add new network block 2 net: %u, pool: %u, height: %lu",
+            block_ptr->network_id(), block_ptr->pool_index(), block_ptr->height());
         // }
     }
 }
