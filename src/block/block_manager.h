@@ -1,6 +1,7 @@
 #pragma once
 
 #include <deque>
+#include <protos/view_block.pb.h>
 
 #include "block/block_utils.h"
 #include "ck/ck_client.h"
@@ -30,10 +31,15 @@ namespace pools{
 
 namespace block {
 
+typedef std::function<bool(
+        const view_block::protobuf::ViewBlockItem& pb_vblock)> ViewBlockVerifyFn;
+
 class AccountManager;
 class BlockManager {
 public:
-    BlockManager(transport::MultiThreadHandler& net_handler_);
+    BlockManager(
+            transport::MultiThreadHandler& net_handler_,
+            ViewBlockVerifyFn verify_view_block_fn);
     ~BlockManager();
     int Init(
         std::shared_ptr<AccountManager>& account_mgr,
@@ -212,6 +218,7 @@ private:
     uint32_t latest_to_block_ptr_index_ = 0;
     std::map<std::string, pools::TxItemPtr> heights_str_map_;
     uint32_t leader_prev_get_to_tx_tm_ = 0;
+    ViewBlockVerifyFn verify_view_block_fn_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

@@ -307,19 +307,19 @@ struct ViewBlockWithCommitQC {
         return pb_v_block;
     }
 
-    bool FromProto(view_block::protobuf::ViewBlockItem* pb_vblock) {
-        if (!pb_vblock->has_self_commit_qc_str()) {
+    bool FromProto(const view_block::protobuf::ViewBlockItem& pb_vblock) {
+        if (!pb_vblock.has_self_commit_qc_str()) {
             commit_qc_ = nullptr;
         }
 
         auto vblock = std::make_shared<ViewBlock>();
-        Status s = Proto2ViewBlock(*pb_vblock, vblock);
+        Status s = Proto2ViewBlock(pb_vblock, vblock);
         if (s != Status::kSuccess) {
-            ZJC_DEBUG("view block parsed failed: %lu", pb_vblock->view());            
+            ZJC_DEBUG("view block parsed failed: %lu", pb_vblock.view());            
             return false;
         }
 
-        auto commit_qc = std::make_shared<QC>(pb_vblock->self_commit_qc_str());
+        auto commit_qc = std::make_shared<QC>(pb_vblock.self_commit_qc_str());
         if (!commit_qc->valid()) {
             return false;
         }

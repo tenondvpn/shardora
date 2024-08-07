@@ -29,8 +29,10 @@ namespace block {
 static const std::string kShardElectPrefix = common::Encode::HexDecode(
     "227a252b30589b8ed984cf437c475b069d0597fc6d51ec6570e95a681ffa9fe2");
 
-BlockManager::BlockManager(transport::MultiThreadHandler& net_handler) : net_handler_(net_handler) {
-}
+BlockManager::BlockManager(
+        transport::MultiThreadHandler& net_handler,
+        ViewBlockVerifyFn verify_view_block_fn) :
+    net_handler_(net_handler), verify_view_block_fn_(verify_view_block_fn) {}
 
 BlockManager::~BlockManager() {
     if (consensus_block_queues_ != nullptr) {
@@ -168,13 +170,13 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         auto block_ptr = std::make_shared<block::protobuf::Block>(header.view_block().block_info());
-        // if (block_agg_valid_func_(*block_ptr) == 0) {
-        // just one thread
-        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-        block_from_network_queue_[thread_idx].push(block_ptr);
-        ZJC_DEBUG("success add new network block 2 net: %u, pool: %u, height: %lu",
-            block_ptr->network_id(), block_ptr->pool_index(), block_ptr->height());
-        // }
+        if (verify_view_block_fn_ && verify_view_block_fn_(header.view_block())) {
+            // just one thread
+            auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+            block_from_network_queue_[thread_idx].push(block_ptr);
+            ZJC_DEBUG("success add new network block 2 net: %u, pool: %u, height: %lu",
+                block_ptr->network_id(), block_ptr->pool_index(), block_ptr->height());
+        }
     }
 }
 

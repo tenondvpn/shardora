@@ -152,13 +152,22 @@ public:
         return hf->wrapper();   
     }
 
+    bool VerifyPbViewBlockWithCommitQC(const view_block::protobuf::ViewBlockItem& pb_vblock) {
+        auto vblock_with_proof = std::make_shared<ViewBlockWithCommitQC>();
+        if (!vblock_with_proof->FromProto(pb_vblock)) {
+            return false;
+        }
+        return VerifyViewBlockWithCommitQC(vblock_with_proof->vblock(), vblock_with_proof->commit_qc()) == Status::kSuccess;
+    }
+
 private:
-    void HandleMessage(const transport::MessagePtr& msg_ptr);
-    void HandleTimerMessage(const transport::MessagePtr& msg_ptr);
-    void RegisterCreateTxCallbacks();
     Status VerifyViewBlockWithCommitQC(
             const std::shared_ptr<ViewBlock>& vblock,
             const std::shared_ptr<QC>& commit_qc);
+    
+    void HandleMessage(const transport::MessagePtr& msg_ptr);
+    void HandleTimerMessage(const transport::MessagePtr& msg_ptr);
+    void RegisterCreateTxCallbacks();
     
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(
