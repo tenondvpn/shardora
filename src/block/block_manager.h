@@ -47,8 +47,12 @@ public:
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<contract::ContractManager>& contract_mgr,
         const std::string& local_id,
-        DbBlockCallback new_block_callback,
-        ViewBlockVerifyFn verify_view_block_fn);
+        DbBlockCallback new_block_callback);
+
+    void SetVerifyViewBlockFn(ViewBlockVerifyFn fn) {
+        verify_view_block_fn_ = fn;
+    }
+    
     // just for genesis create new block
     void GenesisNewBlock(
         const std::shared_ptr<block::protobuf::Block>& block_item);

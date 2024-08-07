@@ -45,8 +45,7 @@ int BlockManager::Init(
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<contract::ContractManager>& contract_mgr,
         const std::string& local_id,
-        DbBlockCallback new_block_callback,
-        ViewBlockVerifyFn verify_view_block_fn) {
+        DbBlockCallback new_block_callback) {
     account_mgr_ = account_mgr;
     db_ = db;
     pools_mgr_ = pools_mgr;
@@ -55,7 +54,6 @@ int BlockManager::Init(
     security_ = security;
     contract_mgr_ = contract_mgr;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-    verify_view_block_fn_ = verify_view_block_fn;
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(
         db_, local_id, max_consensus_sharding_id_, pools_mgr_, account_mgr_);
     if (common::GlobalInfo::Instance()->for_ck_server()) {

@@ -199,9 +199,7 @@ int NetworkInit::Init(int argc, char** argv) {
         security_,
         contract_mgr_,
         security_->GetAddress(),
-        new_db_cb,
-        std::bind(&consensus::HotstuffManager::VerifyPbViewBlockWithCommitQC,
-            hotstuff_mgr_, std::placeholders::_1));
+        new_db_cb);
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
     auto consensus_init_res = hotstuff_mgr_->Init(
@@ -224,6 +222,10 @@ int NetworkInit::Init(int argc, char** argv) {
         INIT_ERROR("init bft failed!");
         return kInitError;
     }
+
+    block_mgr_->SetVerifyViewBlockFn(
+            std::bind(&consensus::HotstuffManager::VerifyPbViewBlockWithCommitQC,
+                hotstuff_mgr_, std::placeholders::_1));
 
     tm_block_mgr_->Init(vss_mgr_,account_mgr_);
     if (elect_mgr_->Init() != elect::kElectSuccess) {
