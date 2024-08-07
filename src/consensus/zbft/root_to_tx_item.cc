@@ -64,7 +64,9 @@ int RootToTxItem::HandleTx(
 
         std::mt19937_64 g2(block.height() ^ vss_mgr_->EpochRandom());
         if (sharding_id == 0) {
-            des_info[0] = (g2() % (network::NetsInfo::Instance()->BiggestOpenedNetId() - network::kConsensusShardBeginNetworkId + 1)) +
+            des_info[0] = (g2() % (
+                        network::NetsInfo::Instance()->BiggestOpenedNetId() -
+                        network::kConsensusShardBeginNetworkId + 1)) +
                 network::kConsensusShardBeginNetworkId;
             // pool index just binding with address
             des_info[1] = common::GetAddressPoolIndex(block_tx.to());
