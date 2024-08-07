@@ -525,6 +525,7 @@ void BlockManager::RootHandleNormalToTx(
             account_info->set_pool_index(tos_item.pool_index());
             account_info->set_addr(tos_item.des());
             account_info->set_type(address::protobuf::kContract);
+            // TODO 需要对 shard_id 是否合法做校验
             account_info->set_sharding_id(tos_item.sharding_id());
             account_info->set_latest_height(block.height());
             account_info->set_balance(tos_item.amount());

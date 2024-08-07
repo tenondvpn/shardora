@@ -19,11 +19,8 @@ RootToTxItem::RootToTxItem(
         : TxItemBase(msg, account_mgr, sec_ptr, addr_info),
         max_sharding_id_(max_consensus_sharding_id),
         vss_mgr_(vss_mgr) {
-    // if (max_sharding_id_ < network::kConsensusShardBeginNetworkId) {
-    //     max_sharding_id_ = network::kConsensusShardBeginNetworkId;
-    // }
-    if (max_sharding_id_ < network::NetsInfo::Instance()->BiggestOpenedNetId()) {
-        max_sharding_id_ = network::NetsInfo::Instance()->BiggestOpenedNetId();
+    if (max_sharding_id_ < network::kConsensusShardBeginNetworkId) {
+        max_sharding_id_ = network::kConsensusShardBeginNetworkId;
     }    
 }
 
@@ -67,7 +64,7 @@ int RootToTxItem::HandleTx(
 
         std::mt19937_64 g2(block.height() ^ vss_mgr_->EpochRandom());
         if (sharding_id == 0) {
-            des_info[0] = (g2() % (max_sharding_id_ - network::kConsensusShardBeginNetworkId + 1)) +
+            des_info[0] = (g2() % (network::NetsInfo::Instance()->BiggestOpenedNetId() - network::kConsensusShardBeginNetworkId + 1)) +
                 network::kConsensusShardBeginNetworkId;
             // pool index just binding with address
             des_info[1] = common::GetAddressPoolIndex(block_tx.to());
