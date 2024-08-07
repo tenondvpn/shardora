@@ -287,7 +287,9 @@ Proto2ViewBlock(const view_block::protobuf::ViewBlockItem &view_block_proto,
 struct ViewBlockWithCommitQC {
     std::shared_ptr<ViewBlock> vblock_;
     std::shared_ptr<QC> commit_qc_;
-
+    
+    ViewBlockWithCommitQC() : vblock_(nullptr), commit_qc_(nullptr) {}
+    
     ViewBlockWithCommitQC(
             const std::shared_ptr<ViewBlock>& vblock,
             const std::shared_ptr<QC>& commit_qc) : vblock_(vblock), commit_qc_(commit_qc) {}
