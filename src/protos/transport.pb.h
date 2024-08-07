@@ -728,6 +728,18 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::shardora::block::protobuf::Block* mutable_block();
   void set_allocated_block(::shardora::block::protobuf::Block* block);
 
+  // optional .shardora.view_block.protobuf.ViewBlockItem view_block = 28;
+  bool has_view_block() const;
+  void clear_view_block();
+  static const int kViewBlockFieldNumber = 28;
+  private:
+  const ::shardora::view_block::protobuf::ViewBlockItem& _internal_view_block() const;
+  public:
+  const ::shardora::view_block::protobuf::ViewBlockItem& view_block() const;
+  ::shardora::view_block::protobuf::ViewBlockItem* release_view_block();
+  ::shardora::view_block::protobuf::ViewBlockItem* mutable_view_block();
+  void set_allocated_view_block(::shardora::view_block::protobuf::ViewBlockItem* view_block);
+
   // optional .shardora.c2c.protobuf.C2cMessage c2c = 30;
   bool has_c2c() const;
   void clear_c2c();
@@ -874,6 +886,8 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   void clear_has_sync_heights();
   void set_has_block();
   void clear_has_block();
+  void set_has_view_block();
+  void clear_has_view_block();
   void set_has_from_public_port();
   void clear_has_from_public_port();
   void set_has_c2c();
@@ -912,6 +926,7 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::shardora::init::protobuf::InitMessage* init_proto_;
   ::shardora::pools::protobuf::SyncPoolsMaxHeight* sync_heights_;
   ::shardora::block::protobuf::Block* block_;
+  ::shardora::view_block::protobuf::ViewBlockItem* view_block_;
   ::shardora::c2c::protobuf::C2cMessage* c2c_;
   ::shardora::view_block::protobuf::ViewBlockSyncMessage* view_block_proto_;
   ::shardora::view_block::protobuf::TimeoutMessage* hotstuff_timeout_proto_;
@@ -1368,13 +1383,13 @@ inline void BroadcastParam::set_ign_bloomfilter_hop(::google::protobuf::uint32 v
 
 // optional int32 src_sharding_id = 1;
 inline bool Header::has_src_sharding_id() const {
-  return (_has_bits_[0] & 0x08000000u) != 0;
+  return (_has_bits_[0] & 0x10000000u) != 0;
 }
 inline void Header::set_has_src_sharding_id() {
-  _has_bits_[0] |= 0x08000000u;
+  _has_bits_[0] |= 0x10000000u;
 }
 inline void Header::clear_has_src_sharding_id() {
-  _has_bits_[0] &= ~0x08000000u;
+  _has_bits_[0] &= ~0x10000000u;
 }
 inline void Header::clear_src_sharding_id() {
   src_sharding_id_ = 0;
@@ -1458,13 +1473,13 @@ inline void Header::set_allocated_des_dht_key(::std::string* des_dht_key) {
 
 // optional uint32 hop_count = 3 [default = 0];
 inline bool Header::has_hop_count() const {
-  return (_has_bits_[0] & 0x10000000u) != 0;
+  return (_has_bits_[0] & 0x20000000u) != 0;
 }
 inline void Header::set_has_hop_count() {
-  _has_bits_[0] |= 0x10000000u;
+  _has_bits_[0] |= 0x20000000u;
 }
 inline void Header::clear_has_hop_count() {
-  _has_bits_[0] &= ~0x10000000u;
+  _has_bits_[0] &= ~0x20000000u;
 }
 inline void Header::clear_hop_count() {
   hop_count_ = 0u;
@@ -1548,13 +1563,13 @@ inline void Header::set_allocated_debug(::std::string* debug) {
 
 // optional uint64 hash64 = 5;
 inline bool Header::has_hash64() const {
-  return (_has_bits_[0] & 0x20000000u) != 0;
+  return (_has_bits_[0] & 0x40000000u) != 0;
 }
 inline void Header::set_has_hash64() {
-  _has_bits_[0] |= 0x20000000u;
+  _has_bits_[0] |= 0x40000000u;
 }
 inline void Header::clear_has_hash64() {
-  _has_bits_[0] &= ~0x20000000u;
+  _has_bits_[0] &= ~0x40000000u;
 }
 inline void Header::clear_hash64() {
   hash64_ = GOOGLE_ULONGLONG(0);
@@ -1572,13 +1587,13 @@ inline void Header::set_hash64(::google::protobuf::uint64 value) {
 
 // optional uint32 type = 6;
 inline bool Header::has_type() const {
-  return (_has_bits_[0] & 0x40000000u) != 0;
+  return (_has_bits_[0] & 0x80000000u) != 0;
 }
 inline void Header::set_has_type() {
-  _has_bits_[0] |= 0x40000000u;
+  _has_bits_[0] |= 0x80000000u;
 }
 inline void Header::clear_has_type() {
-  _has_bits_[0] &= ~0x40000000u;
+  _has_bits_[0] &= ~0x80000000u;
 }
 inline void Header::clear_type() {
   type_ = 0u;
@@ -1720,13 +1735,13 @@ inline void Header::set_allocated_sign(::std::string* sign) {
 
 // optional int32 version = 9 [default = 0];
 inline bool Header::has_version() const {
-  return (_has_bits_[0] & 0x80000000u) != 0;
+  return (_has_bits_[1] & 0x00000001u) != 0;
 }
 inline void Header::set_has_version() {
-  _has_bits_[0] |= 0x80000000u;
+  _has_bits_[1] |= 0x00000001u;
 }
 inline void Header::clear_has_version() {
-  _has_bits_[0] &= ~0x80000000u;
+  _has_bits_[1] &= ~0x00000001u;
 }
 inline void Header::clear_version() {
   version_ = 0;
@@ -2714,15 +2729,69 @@ inline void Header::set_allocated_block(::shardora::block::protobuf::Block* bloc
   // @@protoc_insertion_point(field_set_allocated:shardora.transport.protobuf.Header.block)
 }
 
+// optional .shardora.view_block.protobuf.ViewBlockItem view_block = 28;
+inline bool Header::has_view_block() const {
+  return (_has_bits_[0] & 0x00800000u) != 0;
+}
+inline void Header::set_has_view_block() {
+  _has_bits_[0] |= 0x00800000u;
+}
+inline void Header::clear_has_view_block() {
+  _has_bits_[0] &= ~0x00800000u;
+}
+inline const ::shardora::view_block::protobuf::ViewBlockItem& Header::_internal_view_block() const {
+  return *view_block_;
+}
+inline const ::shardora::view_block::protobuf::ViewBlockItem& Header::view_block() const {
+  const ::shardora::view_block::protobuf::ViewBlockItem* p = view_block_;
+  // @@protoc_insertion_point(field_get:shardora.transport.protobuf.Header.view_block)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::view_block::protobuf::ViewBlockItem*>(
+      &::shardora::view_block::protobuf::_ViewBlockItem_default_instance_);
+}
+inline ::shardora::view_block::protobuf::ViewBlockItem* Header::release_view_block() {
+  // @@protoc_insertion_point(field_release:shardora.transport.protobuf.Header.view_block)
+  clear_has_view_block();
+  ::shardora::view_block::protobuf::ViewBlockItem* temp = view_block_;
+  view_block_ = NULL;
+  return temp;
+}
+inline ::shardora::view_block::protobuf::ViewBlockItem* Header::mutable_view_block() {
+  set_has_view_block();
+  if (view_block_ == NULL) {
+    auto* p = CreateMaybeMessage<::shardora::view_block::protobuf::ViewBlockItem>(GetArenaNoVirtual());
+    view_block_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:shardora.transport.protobuf.Header.view_block)
+  return view_block_;
+}
+inline void Header::set_allocated_view_block(::shardora::view_block::protobuf::ViewBlockItem* view_block) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete reinterpret_cast< ::google::protobuf::MessageLite*>(view_block_);
+  }
+  if (view_block) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      view_block = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, view_block, submessage_arena);
+    }
+    set_has_view_block();
+  } else {
+    clear_has_view_block();
+  }
+  view_block_ = view_block;
+  // @@protoc_insertion_point(field_set_allocated:shardora.transport.protobuf.Header.view_block)
+}
+
 // optional uint32 from_public_port = 29;
 inline bool Header::has_from_public_port() const {
-  return (_has_bits_[1] & 0x00000001u) != 0;
+  return (_has_bits_[1] & 0x00000002u) != 0;
 }
 inline void Header::set_has_from_public_port() {
-  _has_bits_[1] |= 0x00000001u;
+  _has_bits_[1] |= 0x00000002u;
 }
 inline void Header::clear_has_from_public_port() {
-  _has_bits_[1] &= ~0x00000001u;
+  _has_bits_[1] &= ~0x00000002u;
 }
 inline void Header::clear_from_public_port() {
   from_public_port_ = 0u;
@@ -2740,13 +2809,13 @@ inline void Header::set_from_public_port(::google::protobuf::uint32 value) {
 
 // optional .shardora.c2c.protobuf.C2cMessage c2c = 30;
 inline bool Header::has_c2c() const {
-  return (_has_bits_[0] & 0x00800000u) != 0;
+  return (_has_bits_[0] & 0x01000000u) != 0;
 }
 inline void Header::set_has_c2c() {
-  _has_bits_[0] |= 0x00800000u;
+  _has_bits_[0] |= 0x01000000u;
 }
 inline void Header::clear_has_c2c() {
-  _has_bits_[0] &= ~0x00800000u;
+  _has_bits_[0] &= ~0x01000000u;
 }
 inline const ::shardora::c2c::protobuf::C2cMessage& Header::_internal_c2c() const {
   return *c2c_;
@@ -2860,13 +2929,13 @@ inline void Header::set_allocated_pubkey(::std::string* pubkey) {
 
 // optional .shardora.view_block.protobuf.ViewBlockSyncMessage view_block_proto = 32;
 inline bool Header::has_view_block_proto() const {
-  return (_has_bits_[0] & 0x01000000u) != 0;
+  return (_has_bits_[0] & 0x02000000u) != 0;
 }
 inline void Header::set_has_view_block_proto() {
-  _has_bits_[0] |= 0x01000000u;
+  _has_bits_[0] |= 0x02000000u;
 }
 inline void Header::clear_has_view_block_proto() {
-  _has_bits_[0] &= ~0x01000000u;
+  _has_bits_[0] &= ~0x02000000u;
 }
 inline const ::shardora::view_block::protobuf::ViewBlockSyncMessage& Header::_internal_view_block_proto() const {
   return *view_block_proto_;
@@ -2914,13 +2983,13 @@ inline void Header::set_allocated_view_block_proto(::shardora::view_block::proto
 
 // optional .shardora.view_block.protobuf.TimeoutMessage hotstuff_timeout_proto = 33;
 inline bool Header::has_hotstuff_timeout_proto() const {
-  return (_has_bits_[0] & 0x02000000u) != 0;
+  return (_has_bits_[0] & 0x04000000u) != 0;
 }
 inline void Header::set_has_hotstuff_timeout_proto() {
-  _has_bits_[0] |= 0x02000000u;
+  _has_bits_[0] |= 0x04000000u;
 }
 inline void Header::clear_has_hotstuff_timeout_proto() {
-  _has_bits_[0] &= ~0x02000000u;
+  _has_bits_[0] &= ~0x04000000u;
 }
 inline const ::shardora::view_block::protobuf::TimeoutMessage& Header::_internal_hotstuff_timeout_proto() const {
   return *hotstuff_timeout_proto_;
@@ -2968,13 +3037,13 @@ inline void Header::set_allocated_hotstuff_timeout_proto(::shardora::view_block:
 
 // optional .shardora.hotstuff.protobuf.HotstuffMessage hotstuff = 34;
 inline bool Header::has_hotstuff() const {
-  return (_has_bits_[0] & 0x04000000u) != 0;
+  return (_has_bits_[0] & 0x08000000u) != 0;
 }
 inline void Header::set_has_hotstuff() {
-  _has_bits_[0] |= 0x04000000u;
+  _has_bits_[0] |= 0x08000000u;
 }
 inline void Header::clear_has_hotstuff() {
-  _has_bits_[0] &= ~0x04000000u;
+  _has_bits_[0] &= ~0x08000000u;
 }
 inline const ::shardora::hotstuff::protobuf::HotstuffMessage& Header::_internal_hotstuff() const {
   return *hotstuff_;

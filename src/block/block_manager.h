@@ -1,6 +1,7 @@
 #pragma once
 
 #include <deque>
+#include <protos/view_block.pb.h>
 
 #include "block/block_utils.h"
 #include "ck/ck_client.h"
@@ -30,6 +31,9 @@ namespace pools{
 
 namespace block {
 
+typedef std::function<bool(
+        const view_block::protobuf::ViewBlockItem& pb_vblock)> ViewBlockVerifyFn;
+
 class AccountManager;
 class BlockManager {
 public:
@@ -44,6 +48,11 @@ public:
         std::shared_ptr<contract::ContractManager>& contract_mgr,
         const std::string& local_id,
         DbBlockCallback new_block_callback);
+
+    void SetVerifyViewBlockFn(ViewBlockVerifyFn fn) {
+        verify_view_block_fn_ = fn;
+    }
+    
     // just for genesis create new block
     void GenesisNewBlock(
         const std::shared_ptr<block::protobuf::Block>& block_item);
@@ -212,6 +221,7 @@ private:
     uint32_t latest_to_block_ptr_index_ = 0;
     std::map<std::string, pools::TxItemPtr> heights_str_map_;
     uint32_t leader_prev_get_to_tx_tm_ = 0;
+    ViewBlockVerifyFn verify_view_block_fn_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

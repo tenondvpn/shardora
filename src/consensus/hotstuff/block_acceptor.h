@@ -65,7 +65,9 @@ public:
     // Accept a block and txs in it from sync msg.
     virtual Status AcceptSync(const std::shared_ptr<block::protobuf::Block>& block) = 0;
     // Commit a block
-    virtual void Commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) = 0;
+    virtual void Commit(
+            std::shared_ptr<block::BlockToDbItem>& queue_item_ptr,
+            const std::shared_ptr<ViewBlockWithCommitQC>& vblock_with_proof) = 0;
     // Add txs to local pool
     virtual Status AddTxs(const std::vector<const pools::protobuf::TxMessage*>& txs) = 0;
     // Return block txs to pool
@@ -108,7 +110,9 @@ public:
     // Accept a synced block.
     Status AcceptSync(const std::shared_ptr<block::protobuf::Block>& block) override;
     // Commit a block and execute its txs.
-    void Commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) override;
+    void Commit(
+            std::shared_ptr<block::BlockToDbItem>& queue_item_ptr,
+            const std::shared_ptr<ViewBlockWithCommitQC>& vblock_with_proof) override;
     // Add txs from hotstuff msg to local pool
     Status AddTxs(const std::vector<const pools::protobuf::TxMessage*>& txs) override;
     // Return expired or invalid block txs to pool
@@ -172,9 +176,9 @@ private:
             const std::shared_ptr<IBlockAcceptor::blockInfo>& block_info,
             std::shared_ptr<consensus::WaitingTxsItem>&);
 
-    void LeaderBroadcastBlock(const std::shared_ptr<block::protobuf::Block>& block);
-    void BroadcastBlock(uint32_t des_shard, const std::shared_ptr<block::protobuf::Block>& block_item);
-    void BroadcastLocalTosBlock(const std::shared_ptr<block::protobuf::Block>& block_item);
+    void LeaderBroadcastBlock(const std::shared_ptr<ViewBlockWithCommitQC>& vblock_with_proof);
+    void BroadcastBlock(uint32_t des_shard, const std::shared_ptr<view_block::protobuf::ViewBlockItem>& pb_vblock);
+    void BroadcastLocalTosBlock(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& pb_vblock);
     void commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr);
 
     void CalculateTps(uint64_t tx_list_size) {

@@ -223,6 +223,10 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    block_mgr_->SetVerifyViewBlockFn(
+            std::bind(&consensus::HotstuffManager::VerifyPbViewBlockWithCommitQC,
+                hotstuff_mgr_, std::placeholders::_1));
+
     tm_block_mgr_->Init(vss_mgr_,account_mgr_);
     if (elect_mgr_->Init() != elect::kElectSuccess) {
         INIT_ERROR("init elect manager failed!");

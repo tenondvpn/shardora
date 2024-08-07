@@ -196,11 +196,11 @@ def gen_prikeys(count):
 
 
 def get_new_http_port(node_idx, net_id):
-    return 7000 + net_id * 100 + node_idx
+    return 40000 + net_id * 1000 + node_idx
 
 
 def get_new_tcp_port(node_idx, net_id):
-    return 20000 + net_id * 1000 + node_idx
+    return 30000 + net_id * 1000 + node_idx
 
 
 def get_root_boostrap_strs():

@@ -29,8 +29,7 @@ namespace block {
 static const std::string kShardElectPrefix = common::Encode::HexDecode(
     "227a252b30589b8ed984cf437c475b069d0597fc6d51ec6570e95a681ffa9fe2");
 
-BlockManager::BlockManager(transport::MultiThreadHandler& net_handler) : net_handler_(net_handler) {
-}
+BlockManager::BlockManager(transport::MultiThreadHandler& net_handler) : net_handler_(net_handler) {}
 
 BlockManager::~BlockManager() {
     if (consensus_block_queues_ != nullptr) {
@@ -131,21 +130,23 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }    
     // assert(false);
+    // TODO to_tx_msg_queue_ 没有用啊
     if (msg_ptr->header.block_proto().has_shard_to() > 0) {
         to_tx_msg_queue_.push(msg_ptr);
         ZJC_DEBUG("queue size to_tx_msg_queue_: %d", to_tx_msg_queue_.size());
     }
 
+    // TODO statistic_tx_msg_queue_ 没有用啊
     if (msg_ptr->header.block_proto().has_statistic_tx()) {
         statistic_tx_msg_queue_.push(msg_ptr);
         ZJC_DEBUG("queue size statistic_tx_msg_queue_: %d", statistic_tx_msg_queue_.size());
     }
 
-    if (msg_ptr->header.has_block()) {
-        ZJC_DEBUG("block message coming net: %u, pool: %u, height: %lu, hash64: %lu",
-            msg_ptr->header.block().network_id(),
-            msg_ptr->header.block().pool_index(),
-            msg_ptr->header.block().height(),
+    if (msg_ptr->header.has_view_block() && msg_ptr->header.view_block().has_block_info()) {
+        ZJC_DEBUG("view block message coming net: %u, pool: %u, height: %lu, hash64: %lu",
+            msg_ptr->header.view_block().block_info().network_id(),
+            msg_ptr->header.view_block().block_info().pool_index(),
+            msg_ptr->header.view_block().block_info().height(),
             msg_ptr->header.hash64());
         auto& header = msg_ptr->header;
         auto local_net = common::GlobalInfo::Instance()->network_id();
@@ -154,7 +155,7 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         // 过滤掉自己给自己发的消息
-        if (header.block().network_id() == local_net) {
+        if (header.view_block().block_info().network_id() == local_net) {
             ZJC_DEBUG("network block failed cache new block coming sharding id: %u, "
                 "pool: %d, height: %lu, tx size: %u, hash: %s",
                 header.block().network_id(),
@@ -164,15 +165,15 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 common::Encode::HexEncode(header.block().hash()).c_str());
             return;
         }
-
-        auto block_ptr = std::make_shared<block::protobuf::Block>(header.block());
-        // if (block_agg_valid_func_(*block_ptr) == 0) {
-        //     // just one thread
-        //     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-        //     block_from_network_queue_[thread_idx].push(block_ptr);
-        //     ZJC_DEBUG("success add new network block 2 net: %u, pool: %u, height: %lu",
-        //         block_ptr->network_id(), block_ptr->pool_index(), block_ptr->height());
-        // }
+        
+        if (verify_view_block_fn_ && verify_view_block_fn_(header.view_block())) {
+            // just one thread
+            auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+            auto block_ptr = std::make_shared<block::protobuf::Block>(header.view_block().block_info());
+            block_from_network_queue_[thread_idx].push(block_ptr);
+            ZJC_DEBUG("success add new network block 2 net: %u, pool: %u, height: %lu",
+                block_ptr->network_id(), block_ptr->pool_index(), block_ptr->height());
+        }
     }
 }
 

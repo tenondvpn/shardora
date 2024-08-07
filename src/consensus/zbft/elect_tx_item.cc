@@ -1128,6 +1128,11 @@ bool ElectTxItem::GetDynamicShardingInfo(
         // 尝试 Open 当前处于 Preopen 的分片
         auto open_shard_id = network::NetsInfo::Instance()->PreopenedNetworkId();
         auto shard_member_count = elect_mgr_->GetMemberCount(open_shard_id);
+        // 当 preopen 分片中节点数量超过阈值时，才会 open 该分片，但 root 不会将账户分配到一个 preopen 分片，
+        // 那么如何为 preopen 分片增加节点数量？有两种方案：
+        // 1. 准备的创始节点数量一开始就满足要求，那么经过一个 epoch 后 preopen 的分片自动开启。
+        // 2. To 账户创建时支持指定分片
+        // 由于让用户 0 成本指定分片有点反直觉，目前使用第一种方案，即保证创始节点数量永远满足要求
         if (shard_member_count < common::kOpenShardMemberCountMinThres) {
             return false;
         }

@@ -283,6 +283,55 @@ Status
 Proto2ViewBlock(const view_block::protobuf::ViewBlockItem &view_block_proto,
                 std::shared_ptr<ViewBlock> &view_block);
 
+// ViewBlock with commit qc to be verified
+struct ViewBlockWithCommitQC {
+    std::shared_ptr<ViewBlock> vblock_;
+    std::shared_ptr<QC> commit_qc_;
+    
+    ViewBlockWithCommitQC() : vblock_(nullptr), commit_qc_(nullptr) {}
+    
+    ViewBlockWithCommitQC(
+            const std::shared_ptr<ViewBlock>& vblock,
+            const std::shared_ptr<QC>& commit_qc) : vblock_(vblock), commit_qc_(commit_qc) {}
+
+    std::shared_ptr<ViewBlock> vblock() {
+        return vblock_;
+    }
+
+    std::shared_ptr<QC> commit_qc() {
+        return commit_qc_;
+    }
+
+    std::shared_ptr<view_block::protobuf::ViewBlockItem> ToProto() {
+        auto pb_v_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
+        ViewBlock2Proto(vblock_, pb_v_block.get());
+        pb_v_block->set_self_commit_qc_str(commit_qc_->Serialize());
+        return pb_v_block;
+    }
+
+    bool FromProto(const view_block::protobuf::ViewBlockItem& pb_vblock) {
+        if (!pb_vblock.has_self_commit_qc_str()) {
+            commit_qc_ = nullptr;
+        }
+
+        vblock_ = std::make_shared<ViewBlock>();
+        Status s = Proto2ViewBlock(pb_vblock, vblock_);
+        if (s != Status::kSuccess) {
+            ZJC_DEBUG("view block parsed failed: %lu", pb_vblock.view());            
+            return false;
+        }
+
+        auto commit_qc = std::make_shared<QC>(pb_vblock.self_commit_qc_str());
+        if (!commit_qc->valid()) {
+            return false;
+        }
+
+        commit_qc_ = commit_qc;
+        return true;
+    }
+};
+
+
 } // namespace hotstuff
 
 } // namespace shardora

@@ -3,7 +3,7 @@
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/
 ps -ef | grep zjchain | grep new_node | awk -F' ' '{print $2}' | xargs kill -9
 
-nodes=("new_1" "new_2" "new_3" "new_4" "new_5" "new_6" "new_7" "new_8" "new_9" "new_10")
+nodes=("new_1" "new_2" "new_3")
 
 
 rm -rf /root/zjnodes/new*
