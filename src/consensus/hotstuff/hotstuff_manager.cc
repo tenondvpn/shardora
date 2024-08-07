@@ -194,7 +194,7 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(
     }
 
     // 如果是创始块，直接验证通过
-    if (vblock->block->height() == 1) {
+    if (vblock->block->electblock_height() == 1) {
         return Status::kSuccess;
     }
     
