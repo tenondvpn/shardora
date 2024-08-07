@@ -313,9 +313,8 @@ struct ViewBlockWithCommitQC {
         if (!pb_vblock.has_self_commit_qc_str()) {
             commit_qc_ = nullptr;
         }
-
-        auto vblock = std::make_shared<ViewBlock>();
-        Status s = Proto2ViewBlock(pb_vblock, vblock);
+        
+        Status s = Proto2ViewBlock(pb_vblock, vblock_);
         if (s != Status::kSuccess) {
             ZJC_DEBUG("view block parsed failed: %lu", pb_vblock.view());            
             return false;
