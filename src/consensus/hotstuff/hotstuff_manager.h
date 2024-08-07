@@ -157,7 +157,19 @@ public:
         if (!vblock_with_proof->FromProto(pb_vblock)) {
             return false;
         }
-        return VerifyViewBlockWithCommitQC(vblock_with_proof->vblock(), vblock_with_proof->commit_qc()) == Status::kSuccess;
+        Status s = VerifyViewBlockWithCommitQC(vblock_with_proof->vblock(), vblock_with_proof->commit_qc());
+        if (s != Status::kSuccess) {
+            if (s == Status::kElectItemNotFound && no_elect_item_callback_) {
+                no_elect_item_callback_(
+                        network::kRootCongressNetworkId,
+                        vblock_with_proof->commit_qc()->network_id(),
+                        vblock_with_proof->commit_qc()->elect_height(),
+                        sync::kSyncHighest);
+            }
+            return false;
+        }
+
+        return true;
     }
 
 private:

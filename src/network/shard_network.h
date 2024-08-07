@@ -148,7 +148,7 @@ int ShardNetwork<DhtType>::JoinNewNodeValid(dht::NodePtr& node) {
 
     auto network_id = dht::DhtKeyManager::DhtKeyGetNetId(node->dht_key);
     if (!IsThisNetworkNode(network_id, node->id)) {
-//         NETWORK_ERROR("node is not in this shard.");
+        NETWORK_ERROR("node is not in this shard.");
         return dht::kDhtError;
     }
 
