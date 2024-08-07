@@ -320,6 +320,10 @@ struct ViewBlockWithCommitQC {
             return false;
         }
 
+        if (vblock_ == nullptr) {
+            return false;
+        }
+
         auto commit_qc = std::make_shared<QC>(pb_vblock.self_commit_qc_str());
         if (!commit_qc->valid()) {
             return false;
