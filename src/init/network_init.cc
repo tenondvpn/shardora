@@ -173,9 +173,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }    
 
-    block_mgr_ = std::make_shared<block::BlockManager>(
-            net_handler_,
-            std::bind(&consensus::HotstuffManager::VerifyPbViewBlockWithCommitQC, hotstuff_mgr_, std::placeholders::_1));
+    block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
     bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_);
     elect_mgr_ = std::make_shared<elect::ElectManager>(
         vss_mgr_, account_mgr_, block_mgr_, security_, bls_mgr_, db_,
@@ -201,7 +199,9 @@ int NetworkInit::Init(int argc, char** argv) {
         security_,
         contract_mgr_,
         security_->GetAddress(),
-        new_db_cb);
+        new_db_cb,
+        std::bind(&consensus::HotstuffManager::VerifyPbViewBlockWithCommitQC,
+            hotstuff_mgr_, std::placeholders::_1));
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
     auto consensus_init_res = hotstuff_mgr_->Init(
@@ -985,7 +985,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         }
 
         account_mgr_ = std::make_shared<block::AccountManager>();
-        block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, nullptr);
+        block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
         genesis_block.SetGenesisConfig(genesis_config);
         
@@ -1031,7 +1031,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         }
 
         account_mgr_ = std::make_shared<block::AccountManager>();
-        block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, nullptr);
+        block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
         genesis_block.SetGenesisConfig(genesis_config);
 

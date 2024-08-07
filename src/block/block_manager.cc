@@ -29,10 +29,7 @@ namespace block {
 static const std::string kShardElectPrefix = common::Encode::HexDecode(
     "227a252b30589b8ed984cf437c475b069d0597fc6d51ec6570e95a681ffa9fe2");
 
-BlockManager::BlockManager(
-        transport::MultiThreadHandler& net_handler,
-        ViewBlockVerifyFn verify_view_block_fn) :
-    net_handler_(net_handler), verify_view_block_fn_(verify_view_block_fn) {}
+BlockManager::BlockManager(transport::MultiThreadHandler& net_handler) : net_handler_(net_handler) {}
 
 BlockManager::~BlockManager() {
     if (consensus_block_queues_ != nullptr) {
@@ -48,7 +45,8 @@ int BlockManager::Init(
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<contract::ContractManager>& contract_mgr,
         const std::string& local_id,
-        DbBlockCallback new_block_callback) {
+        DbBlockCallback new_block_callback,
+        ViewBlockVerifyFn verify_view_block_fn) {
     account_mgr_ = account_mgr;
     db_ = db;
     pools_mgr_ = pools_mgr;
@@ -57,6 +55,7 @@ int BlockManager::Init(
     security_ = security;
     contract_mgr_ = contract_mgr;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+    verify_view_block_fn_ = verify_view_block_fn;
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(
         db_, local_id, max_consensus_sharding_id_, pools_mgr_, account_mgr_);
     if (common::GlobalInfo::Instance()->for_ck_server()) {

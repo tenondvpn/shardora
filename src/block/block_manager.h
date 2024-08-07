@@ -37,9 +37,7 @@ typedef std::function<bool(
 class AccountManager;
 class BlockManager {
 public:
-    BlockManager(
-            transport::MultiThreadHandler& net_handler_,
-            ViewBlockVerifyFn verify_view_block_fn);
+    BlockManager(transport::MultiThreadHandler& net_handler_);
     ~BlockManager();
     int Init(
         std::shared_ptr<AccountManager>& account_mgr,
@@ -49,7 +47,8 @@ public:
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<contract::ContractManager>& contract_mgr,
         const std::string& local_id,
-        DbBlockCallback new_block_callback);
+        DbBlockCallback new_block_callback,
+        ViewBlockVerifyFn verify_view_block_fn);
     // just for genesis create new block
     void GenesisNewBlock(
         const std::shared_ptr<block::protobuf::Block>& block_item);
