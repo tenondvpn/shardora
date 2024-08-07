@@ -3,6 +3,7 @@
 #include "network/network_utils.h"
 #include "protos/tx_storage_key.h"
 #include "vss/vss_manager.h"
+#include <network/network_status.h>
 
 namespace shardora {
 
@@ -18,9 +19,12 @@ RootToTxItem::RootToTxItem(
         : TxItemBase(msg, account_mgr, sec_ptr, addr_info),
         max_sharding_id_(max_consensus_sharding_id),
         vss_mgr_(vss_mgr) {
-    if (max_sharding_id_ < network::kConsensusShardBeginNetworkId) {
-        max_sharding_id_ = network::kConsensusShardBeginNetworkId;
-    }
+    // if (max_sharding_id_ < network::kConsensusShardBeginNetworkId) {
+    //     max_sharding_id_ = network::kConsensusShardBeginNetworkId;
+    // }
+    if (max_sharding_id_ < network::NetsInfo::Instance()->BiggestOpenedNetId()) {
+        max_sharding_id_ = network::NetsInfo::Instance()->BiggestOpenedNetId();
+    }    
 }
 
 RootToTxItem::~RootToTxItem() {}
