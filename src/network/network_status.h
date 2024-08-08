@@ -63,7 +63,7 @@ public:
     }
     
     bool SetOpened() {
-        if (!IsPreopened()) {
+        if (!IsPreopened() && !IsClosed()) {
             return false;
         }
         status_ = ShardStatus::kOpened;

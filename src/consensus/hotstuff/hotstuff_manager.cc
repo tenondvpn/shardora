@@ -193,6 +193,11 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(
         return Status::kInvalidArgument;
     }
 
+    // 如果是创始块，直接验证通过
+    if (vblock->block->electblock_height() == 1) {
+        return Status::kSuccess;
+    }
+    
     auto hf = hotstuff(vblock->block->pool_index());
     Status s = hf->crypto()->VerifyQC(vblock->block->network_id(), commit_qc);
     if (s != Status::kSuccess) {
