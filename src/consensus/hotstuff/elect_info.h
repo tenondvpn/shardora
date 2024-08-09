@@ -37,7 +37,7 @@ public:
                     bls_valid_ = true;
                 }
             }
-            member_bls_pk_map_[(*members)[i]->index] = (*members)[i]->bls_publick_key;
+            member_aggbls_pk_map_[(*members)[i]->index] = (*members)[i]->agg_bls_pk;
         }
 
         elect_height_ = elect_height;
@@ -106,9 +106,9 @@ public:
         return pool_consen_stat_map_[pool_idx];
     }
 
-    libff::alt_bn128_G2* bls_pk(uint32_t member_idx) {
-        if (member_bls_pk_map_.find(member_idx) != member_bls_pk_map_.end()) {
-            return &member_bls_pk_map_[member_idx];
+    libff::alt_bn128_G2* agg_bls_pk(uint32_t member_idx) {
+        if (member_aggbls_pk_map_.find(member_idx) != member_aggbls_pk_map_.end()) {
+            return &member_aggbls_pk_map_[member_idx];
         }
         return nullptr;
     }
@@ -128,7 +128,7 @@ private:
     bool bls_valid_{false};
     uint32_t bls_t_{0};
     uint32_t bls_n_{0};
-    std::unordered_map<uint32_t, libff::alt_bn128_G2> member_bls_pk_map_;
+    std::unordered_map<uint32_t, libff::alt_bn128_G2> member_aggbls_pk_map_;
     
     std::unordered_map<uint32_t, std::shared_ptr<ConsensusStat>> pool_consen_stat_map_; 
 };
