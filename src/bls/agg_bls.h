@@ -9,23 +9,6 @@ namespace shardora {
 
 namespace bls {
 
-struct AggregateSignature {
-    libff::alt_bn128_G1 sig_;
-    std::unordered_set<uint32_t> participants_; // member indexes who submit signatures
-
-    AggregateSignature(
-            const libff::alt_bn128_G1& sig,
-            const std::unordered_set<uint32_t>& parts) : sig_(sig), participants_(parts) {}
-
-    std::unordered_set<uint32_t> participants() {
-        return participants_;
-    }
-
-    libff::alt_bn128_G1 signature() {
-        return sig_;
-    }
-};
-
 class AggBls {
 public:
     // sign a partial sig
