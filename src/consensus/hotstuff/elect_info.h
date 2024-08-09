@@ -36,8 +36,8 @@ public:
                 if (local_member_->bls_publick_key != libff::alt_bn128_G2::zero()) {
                     bls_valid_ = true;
                 }
-                break;
             }
+            member_bls_pk_map_[(*members)[i]->index] = (*members)[i]->bls_publick_key;
         }
 
         elect_height_ = elect_height;
@@ -105,6 +105,13 @@ public:
     inline std::shared_ptr<ConsensusStat> consensus_stat(uint32_t pool_idx) {
         return pool_consen_stat_map_[pool_idx];
     }
+
+    libff::alt_bn128_G2* bls_pk(uint32_t member_idx) {
+        if (member_bls_pk_map_.find(member_idx) != member_bls_pk_map_.end()) {
+            return &member_bls_pk_map_[member_idx];
+        }
+        return nullptr;
+    }
     
 private:
     void SetMemberCount(uint32_t mem_cnt) {
@@ -121,6 +128,7 @@ private:
     bool bls_valid_{false};
     uint32_t bls_t_{0};
     uint32_t bls_n_{0};
+    std::unordered_map<uint32_t, libff::alt_bn128_G2> member_bls_pk_map_;
     
     std::unordered_map<uint32_t, std::shared_ptr<ConsensusStat>> pool_consen_stat_map_; 
 };
