@@ -3,19 +3,21 @@
 #include <common/bitmap.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_init.hpp>
+#include <unordered_set>
+
 namespace shardora {
 
 namespace bls {
 
 struct AggregateSignature {
     libff::alt_bn128_G1 sig_;
-    common::Bitmap participants_; // member indexes who submit signatures
+    std::unordered_set<uint32_t> participants_; // member indexes who submit signatures
 
     AggregateSignature(
             const libff::alt_bn128_G1& sig,
-            const common::Bitmap& parts) : sig_(sig), participants_(parts) {}
+            const std::unordered_set<uint32_t>& parts) : sig_(sig), participants_(parts) {}
 
-    common::Bitmap participants() {
+    std::unordered_set<uint32_t> participants() {
         return participants_;
     }
 
@@ -32,14 +34,14 @@ public:
             uint32_t n,
             const libff::alt_bn128_Fr& sec_key,
             const libff::alt_bn128_G1& g1_hash,
-            AggregateSignature* signature);
+            libff::alt_bn128_G1* signature);
 
     // aggregate sigs to an agg_sig
     static void Aggregate(
             uint32_t t,
             uint32_t n,
             const std::vector<AggregateSignature>& sigs,
-            AggregateSignature* agg_sig);
+            libff::alt_bn128_G1* signature);
 
     // verify agg_sig for different messages 
     static bool AggregateVerify(
@@ -64,6 +66,10 @@ public:
             const libff::alt_bn128_G2& public_key,
             const libff::alt_bn128_G1& g1_hash,
             const libff::alt_bn128_G1& signature);
+
+private:
+    AggBls() = default;
+    ~AggBls() = default;
 };
 
 }
