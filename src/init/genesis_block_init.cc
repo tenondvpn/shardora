@@ -632,6 +632,8 @@ int GenesisBlockInit::CreateElectBlock(
     for (auto iter = genesis_nodes.begin(); iter != genesis_nodes.end(); ++iter, ++node_idx) {
         auto in = ec_block.add_in();
         in->set_pubkey((*iter)->pubkey);
+        // xufeisofly
+        in->set_agg_bls_pk((*iter)->agg_bls_pk);
         in->set_pool_idx_mod_num(node_idx < expect_leader_count ? node_idx : -1);
     }
 

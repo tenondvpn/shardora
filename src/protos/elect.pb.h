@@ -956,6 +956,21 @@ class member : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::std::string* release_pubkey();
   void set_allocated_pubkey(::std::string* pubkey);
 
+  // optional bytes agg_bls_pk = 6;
+  bool has_agg_bls_pk() const;
+  void clear_agg_bls_pk();
+  static const int kAggBlsPkFieldNumber = 6;
+  const ::std::string& agg_bls_pk() const;
+  void set_agg_bls_pk(const ::std::string& value);
+  #if LANG_CXX11
+  void set_agg_bls_pk(::std::string&& value);
+  #endif
+  void set_agg_bls_pk(const char* value);
+  void set_agg_bls_pk(const void* value, size_t size);
+  ::std::string* mutable_agg_bls_pk();
+  ::std::string* release_agg_bls_pk();
+  void set_allocated_agg_bls_pk(::std::string* agg_bls_pk);
+
   // optional uint64 mining_amount = 3;
   bool has_mining_amount() const;
   void clear_mining_amount();
@@ -996,11 +1011,14 @@ class member : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   void clear_has_fts_value();
   void set_has_consensus_gap();
   void clear_has_consensus_gap();
+  void set_has_agg_bls_pk();
+  void clear_has_agg_bls_pk();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr pubkey_;
+  ::google::protobuf::internal::ArenaStringPtr agg_bls_pk_;
   ::google::protobuf::uint64 mining_amount_;
   ::google::protobuf::uint64 fts_value_;
   ::google::protobuf::uint64 consensus_gap_;
@@ -3699,13 +3717,13 @@ inline void member::set_allocated_pubkey(::std::string* pubkey) {
 
 // optional int32 pool_idx_mod_num = 2;
 inline bool member::has_pool_idx_mod_num() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void member::set_has_pool_idx_mod_num() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void member::clear_has_pool_idx_mod_num() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void member::clear_pool_idx_mod_num() {
   pool_idx_mod_num_ = 0;
@@ -3723,13 +3741,13 @@ inline void member::set_pool_idx_mod_num(::google::protobuf::int32 value) {
 
 // optional uint64 mining_amount = 3;
 inline bool member::has_mining_amount() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void member::set_has_mining_amount() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void member::clear_has_mining_amount() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void member::clear_mining_amount() {
   mining_amount_ = GOOGLE_ULONGLONG(0);
@@ -3747,13 +3765,13 @@ inline void member::set_mining_amount(::google::protobuf::uint64 value) {
 
 // optional uint64 fts_value = 4;
 inline bool member::has_fts_value() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void member::set_has_fts_value() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void member::clear_has_fts_value() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void member::clear_fts_value() {
   fts_value_ = GOOGLE_ULONGLONG(0);
@@ -3771,13 +3789,13 @@ inline void member::set_fts_value(::google::protobuf::uint64 value) {
 
 // optional uint64 consensus_gap = 5;
 inline bool member::has_consensus_gap() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void member::set_has_consensus_gap() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void member::clear_has_consensus_gap() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void member::clear_consensus_gap() {
   consensus_gap_ = GOOGLE_ULONGLONG(0);
@@ -3791,6 +3809,72 @@ inline void member::set_consensus_gap(::google::protobuf::uint64 value) {
   set_has_consensus_gap();
   consensus_gap_ = value;
   // @@protoc_insertion_point(field_set:shardora.elect.protobuf.member.consensus_gap)
+}
+
+// optional bytes agg_bls_pk = 6;
+inline bool member::has_agg_bls_pk() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void member::set_has_agg_bls_pk() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void member::clear_has_agg_bls_pk() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void member::clear_agg_bls_pk() {
+  agg_bls_pk_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_agg_bls_pk();
+}
+inline const ::std::string& member::agg_bls_pk() const {
+  // @@protoc_insertion_point(field_get:shardora.elect.protobuf.member.agg_bls_pk)
+  return agg_bls_pk_.GetNoArena();
+}
+inline void member::set_agg_bls_pk(const ::std::string& value) {
+  set_has_agg_bls_pk();
+  agg_bls_pk_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.elect.protobuf.member.agg_bls_pk)
+}
+#if LANG_CXX11
+inline void member::set_agg_bls_pk(::std::string&& value) {
+  set_has_agg_bls_pk();
+  agg_bls_pk_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.elect.protobuf.member.agg_bls_pk)
+}
+#endif
+inline void member::set_agg_bls_pk(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_agg_bls_pk();
+  agg_bls_pk_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.elect.protobuf.member.agg_bls_pk)
+}
+inline void member::set_agg_bls_pk(const void* value, size_t size) {
+  set_has_agg_bls_pk();
+  agg_bls_pk_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.elect.protobuf.member.agg_bls_pk)
+}
+inline ::std::string* member::mutable_agg_bls_pk() {
+  set_has_agg_bls_pk();
+  // @@protoc_insertion_point(field_mutable:shardora.elect.protobuf.member.agg_bls_pk)
+  return agg_bls_pk_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* member::release_agg_bls_pk() {
+  // @@protoc_insertion_point(field_release:shardora.elect.protobuf.member.agg_bls_pk)
+  if (!has_agg_bls_pk()) {
+    return NULL;
+  }
+  clear_has_agg_bls_pk();
+  return agg_bls_pk_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void member::set_allocated_agg_bls_pk(::std::string* agg_bls_pk) {
+  if (agg_bls_pk != NULL) {
+    set_has_agg_bls_pk();
+  } else {
+    clear_has_agg_bls_pk();
+  }
+  agg_bls_pk_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), agg_bls_pk);
+  // @@protoc_insertion_point(field_set_allocated:shardora.elect.protobuf.member.agg_bls_pk)
 }
 
 // -------------------------------------------------------------------

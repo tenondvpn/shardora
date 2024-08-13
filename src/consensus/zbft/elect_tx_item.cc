@@ -613,11 +613,15 @@ int ElectTxItem::CreateNewElect(
 
             auto in = elect_block.add_in();
             in->set_pubkey((*elect_members_)[i]->pubkey);
+            // xufeisofly
+            in->set_agg_bls_pk((*elect_members_)[i]->agg_bls_pk);
             in->set_pool_idx_mod_num(-1);
             in->set_mining_amount(0);
         } else {
             auto in = elect_block.add_in();
             in->set_pubkey(elect_nodes[i]->pubkey);
+            // xufeisofly
+            in->set_agg_bls_pk(elect_nodes[i]->agg_bls_pk);
             in->set_pool_idx_mod_num(elect_nodes[i]->leader_mod_index);
             in->set_mining_amount(elect_nodes[i]->mining_token);
             in->set_fts_value(elect_nodes[i]->fts_value);
