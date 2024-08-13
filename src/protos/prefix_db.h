@@ -862,12 +862,10 @@ public:
     // 用于保存 agg bls 的私钥，目前私钥与 elect_height 无关
     void SaveAggBlsPrikey(
             std::shared_ptr<security::Security>& security_ptr,
-            uint32_t sharding_id,
             const libff::alt_bn128_Fr& bls_prikey) {
         std::string key;
         key.reserve(32);
         key.append(kAggBlsPrivateKeyPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
         key.append(security_ptr->GetAddress());
 
         std::string enc_data;
@@ -887,18 +885,15 @@ public:
 
     bool GetAggBlsPrikey(
             std::shared_ptr<security::Security>& security_ptr,
-            uint32_t sharding_id,
             libff::alt_bn128_Fr* bls_prikey) {
         std::string key;
         key.reserve(32);
         key.append(kAggBlsPrivateKeyPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
         key.append(security_ptr->GetAddress());
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_DEBUG("get agg bls failed: %u, %s",
-                sharding_id,
+            ZJC_DEBUG("get agg bls failed: %s",
                 common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
             return false;
         }
@@ -911,8 +906,7 @@ public:
             return false;
         }
 
-        ZJC_DEBUG("save agg bls success: %u, %s",
-            sharding_id,
+        ZJC_DEBUG("save agg bls success: %s",
             common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
 
         *bls_prikey = libff::alt_bn128_Fr(prikey_str.c_str());

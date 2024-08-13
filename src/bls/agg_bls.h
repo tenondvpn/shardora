@@ -18,6 +18,7 @@ public:
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<security::Security>& security) : t_(t), n_(n), db_(db), security_(security) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+        agg_keypair_ = std::make_pair(libff::alt_bn128_Fr::zero(), libff::alt_bn128_G2::zero());
     }
     ~AggBls() {}
     
@@ -64,6 +65,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<security::Security> security_ = nullptr;
+    std::pair<libff::alt_bn128_Fr, libff::alt_bn128_G2> agg_keypair_;
 };
 
 }
