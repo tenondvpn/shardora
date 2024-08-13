@@ -457,6 +457,8 @@ void ElectTxItem::GetIndexNodes(
         node_info->tx_count = min_tx_count;
         node_info->credit = elect_statistic.join_elect_nodes(i).credit();
         node_info->pubkey = elect_statistic.join_elect_nodes(i).pubkey();
+        // xufeisofly 新增节点的 bls_agg_pk
+        node_info->agg_bls_pk = elect_statistic.join_elect_nodes(i).agg_bls_pk();
         node_info->index = index;
         node_info->consensus_gap = elect_statistic.join_elect_nodes(i).consensus_gap(); 
         elect_nodes_to_choose->push_back(node_info);
@@ -738,6 +740,7 @@ int ElectTxItem::CheckWeedout(
         node_info->stoke = statistic_item.stokes(member_idx);
         node_info->credit = statistic_item.credit(member_idx);
         node_info->index = member_idx;
+        // xufeisofly 此处增加上一轮已有节点的 bls_agg_pk
         node_info->pubkey = (*members)[member_idx]->pubkey;
         node_info->consensus_gap = statistic_item.consensus_gap(member_idx); 
 

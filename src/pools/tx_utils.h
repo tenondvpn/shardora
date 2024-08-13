@@ -258,6 +258,7 @@ struct StatisticInfoItem {
     std::map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
     std::map<uint64_t, std::unordered_map<std::string, StatisticMemberInfoItem>> height_node_collect_info_map;
     std::unordered_map<std::string, std::string> id_pk_map;
+    std::unordered_map<std::string, std::string> id_agg_bls_pk_map;
     uint64_t statistic_max_height;
     bool shard_perf_limit_reached; // 达到 shard 性能上限
 };

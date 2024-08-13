@@ -113,6 +113,7 @@ message JoinElectNode {
     optional AreaInfo area_point = 5;
     optional uint64 credit =6;
     optional uint64 consensus_gap = 7;
+    optional bytes agg_bls_pk = 8;
 }
 
 message ElectStatistic {

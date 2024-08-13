@@ -18,7 +18,8 @@ public:
             std::shared_ptr<protos::PrefixDb>& prefix_db,
             std::shared_ptr<elect::ElectManager>& elect_mgr,
             protos::AddressInfoPtr& addr_info,
-            const std::string& from_pk)
+            const std::string& from_pk,
+            const std::string& from_agg_bls_pk)
             : TxItemBase(msg, account_mgr, sec_ptr, addr_info), 
             prefix_db_(prefix_db), 
             elect_mgr_(elect_mgr), 
@@ -37,6 +38,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
     std::string from_pk_;
+    std::string from_agg_bls_pk_;
 
     DISALLOW_COPY_AND_ASSIGN(JoinElectTxItem);
 };

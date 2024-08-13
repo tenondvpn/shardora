@@ -2015,6 +2015,21 @@ class JoinElectNode : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::std::string* release_pubkey();
   void set_allocated_pubkey(::std::string* pubkey);
 
+  // optional bytes agg_bls_pk = 8;
+  bool has_agg_bls_pk() const;
+  void clear_agg_bls_pk();
+  static const int kAggBlsPkFieldNumber = 8;
+  const ::std::string& agg_bls_pk() const;
+  void set_agg_bls_pk(const ::std::string& value);
+  #if LANG_CXX11
+  void set_agg_bls_pk(::std::string&& value);
+  #endif
+  void set_agg_bls_pk(const char* value);
+  void set_agg_bls_pk(const void* value, size_t size);
+  ::std::string* mutable_agg_bls_pk();
+  ::std::string* release_agg_bls_pk();
+  void set_allocated_agg_bls_pk(::std::string* agg_bls_pk);
+
   // optional .shardora.pools.protobuf.AreaInfo area_point = 5;
   bool has_area_point() const;
   void clear_area_point();
@@ -2078,11 +2093,14 @@ class JoinElectNode : public ::google::protobuf::Message /* @@protoc_insertion_p
   void clear_has_credit();
   void set_has_consensus_gap();
   void clear_has_consensus_gap();
+  void set_has_agg_bls_pk();
+  void clear_has_agg_bls_pk();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr pubkey_;
+  ::google::protobuf::internal::ArenaStringPtr agg_bls_pk_;
   ::shardora::pools::protobuf::AreaInfo* area_point_;
   ::google::protobuf::uint64 stoke_;
   ::google::protobuf::uint32 shard_;
@@ -4619,13 +4637,13 @@ inline void JoinElectNode::set_allocated_pubkey(::std::string* pubkey) {
 
 // optional uint64 stoke = 2;
 inline bool JoinElectNode::has_stoke() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void JoinElectNode::set_has_stoke() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void JoinElectNode::clear_has_stoke() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void JoinElectNode::clear_stoke() {
   stoke_ = GOOGLE_ULONGLONG(0);
@@ -4643,13 +4661,13 @@ inline void JoinElectNode::set_stoke(::google::protobuf::uint64 value) {
 
 // optional uint32 shard = 3;
 inline bool JoinElectNode::has_shard() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void JoinElectNode::set_has_shard() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void JoinElectNode::clear_has_shard() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void JoinElectNode::clear_shard() {
   shard_ = 0u;
@@ -4667,13 +4685,13 @@ inline void JoinElectNode::set_shard(::google::protobuf::uint32 value) {
 
 // optional int32 elect_pos = 4;
 inline bool JoinElectNode::has_elect_pos() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void JoinElectNode::set_has_elect_pos() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void JoinElectNode::clear_has_elect_pos() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void JoinElectNode::clear_elect_pos() {
   elect_pos_ = 0;
@@ -4691,13 +4709,13 @@ inline void JoinElectNode::set_elect_pos(::google::protobuf::int32 value) {
 
 // optional .shardora.pools.protobuf.AreaInfo area_point = 5;
 inline bool JoinElectNode::has_area_point() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void JoinElectNode::set_has_area_point() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void JoinElectNode::clear_has_area_point() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void JoinElectNode::clear_area_point() {
   if (area_point_ != NULL) area_point_->Clear();
@@ -4749,13 +4767,13 @@ inline void JoinElectNode::set_allocated_area_point(::shardora::pools::protobuf:
 
 // optional uint64 credit = 6;
 inline bool JoinElectNode::has_credit() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void JoinElectNode::set_has_credit() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void JoinElectNode::clear_has_credit() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void JoinElectNode::clear_credit() {
   credit_ = GOOGLE_ULONGLONG(0);
@@ -4773,13 +4791,13 @@ inline void JoinElectNode::set_credit(::google::protobuf::uint64 value) {
 
 // optional uint64 consensus_gap = 7;
 inline bool JoinElectNode::has_consensus_gap() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void JoinElectNode::set_has_consensus_gap() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void JoinElectNode::clear_has_consensus_gap() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void JoinElectNode::clear_consensus_gap() {
   consensus_gap_ = GOOGLE_ULONGLONG(0);
@@ -4793,6 +4811,72 @@ inline void JoinElectNode::set_consensus_gap(::google::protobuf::uint64 value) {
   set_has_consensus_gap();
   consensus_gap_ = value;
   // @@protoc_insertion_point(field_set:shardora.pools.protobuf.JoinElectNode.consensus_gap)
+}
+
+// optional bytes agg_bls_pk = 8;
+inline bool JoinElectNode::has_agg_bls_pk() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void JoinElectNode::set_has_agg_bls_pk() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void JoinElectNode::clear_has_agg_bls_pk() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void JoinElectNode::clear_agg_bls_pk() {
+  agg_bls_pk_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_agg_bls_pk();
+}
+inline const ::std::string& JoinElectNode::agg_bls_pk() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.JoinElectNode.agg_bls_pk)
+  return agg_bls_pk_.GetNoArena();
+}
+inline void JoinElectNode::set_agg_bls_pk(const ::std::string& value) {
+  set_has_agg_bls_pk();
+  agg_bls_pk_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.JoinElectNode.agg_bls_pk)
+}
+#if LANG_CXX11
+inline void JoinElectNode::set_agg_bls_pk(::std::string&& value) {
+  set_has_agg_bls_pk();
+  agg_bls_pk_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.pools.protobuf.JoinElectNode.agg_bls_pk)
+}
+#endif
+inline void JoinElectNode::set_agg_bls_pk(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_agg_bls_pk();
+  agg_bls_pk_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.pools.protobuf.JoinElectNode.agg_bls_pk)
+}
+inline void JoinElectNode::set_agg_bls_pk(const void* value, size_t size) {
+  set_has_agg_bls_pk();
+  agg_bls_pk_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.pools.protobuf.JoinElectNode.agg_bls_pk)
+}
+inline ::std::string* JoinElectNode::mutable_agg_bls_pk() {
+  set_has_agg_bls_pk();
+  // @@protoc_insertion_point(field_mutable:shardora.pools.protobuf.JoinElectNode.agg_bls_pk)
+  return agg_bls_pk_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* JoinElectNode::release_agg_bls_pk() {
+  // @@protoc_insertion_point(field_release:shardora.pools.protobuf.JoinElectNode.agg_bls_pk)
+  if (!has_agg_bls_pk()) {
+    return NULL;
+  }
+  clear_has_agg_bls_pk();
+  return agg_bls_pk_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void JoinElectNode::set_allocated_agg_bls_pk(::std::string* agg_bls_pk) {
+  if (agg_bls_pk != NULL) {
+    set_has_agg_bls_pk();
+  } else {
+    clear_has_agg_bls_pk();
+  }
+  agg_bls_pk_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), agg_bls_pk);
+  // @@protoc_insertion_point(field_set_allocated:shardora.pools.protobuf.JoinElectNode.agg_bls_pk)
 }
 
 // -------------------------------------------------------------------
