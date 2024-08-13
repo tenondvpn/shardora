@@ -2,6 +2,7 @@
 #include <bls/bls.h>
 #include <bls/bls_utils.h>
 #include <common/bitmap.h>
+#include <common/global_info.h>
 #include <common/hash.h>
 #include <tools/utils.h>
 
@@ -9,14 +10,29 @@ namespace shardora {
 
 namespace bls {
 
+std::pair<libff::alt_bn128_Fr, libff::alt_bn128_G2> AggBls::GetOrGenKeyPair() {
+    auto bls_prikey = libff::alt_bn128_Fr::zero();
+    auto ok = prefix_db_->GetAggBlsPrikey(security_, common::GlobalInfo::Instance()->network_id(), &bls_prikey);
+    if (ok && bls_prikey != libff::alt_bn128_Fr::zero()) {
+        return std::make_pair(bls_prikey, GetPublicKey(bls_prikey));
+    }
+    
+    auto keypair = libBLS::Bls(t_, n_).KeyGeneration();
+    
+    prefix_db_->SaveAggBlsPrikey(
+            security_,
+            common::GlobalInfo::Instance()->network_id(),
+            keypair.first);
+
+    return keypair;
+}
+
 void AggBls::Sign(
-        uint32_t t,
-        uint32_t n,
         const libff::alt_bn128_Fr &sec_key,
         const std::string &str_hash,
         libff::alt_bn128_G1* signature) try {
     auto g1_hash = libBLS::Bls::Hashing(str_hash);
-    libBLS::Bls bls_instance = libBLS::Bls(t, n);
+    libBLS::Bls bls_instance = libBLS::Bls(t_, n_);
     *signature = bls_instance.Signing(g1_hash, sec_key);
     BLS_DEBUG("agg bls sign message success: %s, hash: %s, %s, %s",
         libBLS::ThresholdUtils::fieldElementToString(sec_key).c_str(),
@@ -29,11 +45,9 @@ void AggBls::Sign(
 }
     
 void AggBls::Aggregate(
-        uint32_t t,
-        uint32_t n,
         const std::vector<libff::alt_bn128_G1>& sigs,
         libff::alt_bn128_G1* signature) try {
-    *signature = libBLS::Bls(t, n).Aggregate(sigs);
+    *signature = libBLS::Bls(t_, n_).Aggregate(sigs);
 } catch (std::exception& e) {
     BLS_ERROR("agg bls aggregate message failed: %s", e.what());
     *signature = libff::alt_bn128_G1::zero();
@@ -41,8 +55,6 @@ void AggBls::Aggregate(
 
 
 bool AggBls::AggregateVerify(
-        uint32_t t,
-        uint32_t n,
         const std::vector<libff::alt_bn128_G2>& pks,
         const std::vector<std::string>& str_hashes,
         const libff::alt_bn128_G1& signature) {
@@ -52,7 +64,7 @@ bool AggBls::AggregateVerify(
         hash_byte_arr.push_back(std::make_shared<std::array<uint8_t, 32>>(h.data));
     }
     auto agg_pk = AggregatePk(pks);
-    return libBLS::Bls(t, n).AggregatedVerification(
+    return libBLS::Bls(t_, n_).AggregatedVerification(
             hash_byte_arr,
             std::vector<libff::alt_bn128_G1>{signature},
             agg_pk);
@@ -60,25 +72,21 @@ bool AggBls::AggregateVerify(
 
 
 bool AggBls::FastAggregateVerify(
-        uint32_t t,
-        uint32_t n,
         const std::vector<libff::alt_bn128_G2>& pks,
         const std::string& str_hash,
         const libff::alt_bn128_G1& signature) {
-    return libBLS::Bls(t, n).FastAggregateVerify(pks, str_hash, signature);
+    return libBLS::Bls(t_, n_).FastAggregateVerify(pks, str_hash, signature);
 }
 
 bool AggBls::CoreVerify(
-        uint32_t t,
-        uint32_t n,
         const libff::alt_bn128_G2& pk,
         const std::string& str_hash,
         const libff::alt_bn128_G1& signature) {
-    return libBLS::Bls(t, n).CoreVerify(pk, str_hash, signature);     
+    return libBLS::Bls(t_, n_).CoreVerify(pk, str_hash, signature);     
 }
 
 libff::alt_bn128_G2 AggBls::AggregatePk(const std::vector<libff::alt_bn128_G2>& pks) {
-    return std::accumulate( pks.begin(), pks.end(), libff::alt_bn128_G2::zero() );
+    return std::accumulate(pks.begin(), pks.end(), libff::alt_bn128_G2::zero());
 }
         
 
