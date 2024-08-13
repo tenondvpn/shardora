@@ -13,7 +13,8 @@ namespace bls {
 std::pair<libff::alt_bn128_Fr, libff::alt_bn128_G2> AggBls::GetOrGenKeyPair() {
     auto bls_prikey = libff::alt_bn128_Fr::zero();
     if (agg_keypair_.first != libff::alt_bn128_Fr::zero() &&
-        agg_keypair_.second != libff::alt_bn128_G2::zero()) {
+        agg_keypair_.second != libff::alt_bn128_G2::zero() &&
+        agg_keypair_.second == GetPublicKey(agg_keypair_.first)) {
         return agg_keypair_;
     }
     auto ok = prefix_db_->GetAggBlsPrikey(security_, &bls_prikey);
