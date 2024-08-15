@@ -24,8 +24,7 @@ public:
           prefix_db_(prefix_db), 
           elect_mgr_(elect_mgr), 
           from_pk_(from_pk),
-          from_agg_bls_pk_(from_agg_bls_pk){
-    }
+          from_agg_bls_pk_(from_agg_bls_pk) {}
 
     virtual ~JoinElectTxItem() {}
     virtual int HandleTx(
