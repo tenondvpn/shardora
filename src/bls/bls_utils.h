@@ -84,13 +84,13 @@ static inline bool IsValidBigInt(const std::string& big_int) {
 }
 
 static elect::protobuf::BlsPublicKey* BlsPublicKey2Proto(const libff::alt_bn128_G2& bls_pk) {
-    elect::protobuf::BlsPublicKey* bls_pk_proto{};
+    auto bls_pk_proto = std::make_shared<elect::protobuf::BlsPublicKey>();
     auto bls_pk_strs = std::make_shared<BLSPublicKey>(bls_pk)->toString();
     bls_pk_proto->set_x_c0(bls_pk_strs->at(0));
     bls_pk_proto->set_x_c1(bls_pk_strs->at(1));
     bls_pk_proto->set_y_c0(bls_pk_strs->at(2));
     bls_pk_proto->set_y_c1(bls_pk_strs->at(3));
-    return bls_pk_proto;
+    return bls_pk_proto.get();
 }
 
 static std::shared_ptr<libff::alt_bn128_G2> Proto2BlsPublicKey(const elect::protobuf::BlsPublicKey& bls_pk_proto) {
