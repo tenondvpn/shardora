@@ -459,7 +459,8 @@ void ElectTxItem::GetIndexNodes(
         node_info->credit = elect_statistic.join_elect_nodes(i).credit();
         node_info->pubkey = elect_statistic.join_elect_nodes(i).pubkey();
         // xufeisofly 新增节点的 bls_agg_pk
-        node_info->agg_bls_pk = elect_statistic.join_elect_nodes(i).agg_bls_pk();
+        auto agg_bls_pk_proto = elect_statistic.join_elect_nodes(i).agg_bls_pk();
+        node_info->agg_bls_pk = *bls::Proto2BlsPublicKey(agg_bls_pk_proto);
         node_info->index = index;
         node_info->consensus_gap = elect_statistic.join_elect_nodes(i).consensus_gap(); 
         elect_nodes_to_choose->push_back(node_info);

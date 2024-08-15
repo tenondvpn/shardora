@@ -1,5 +1,6 @@
 #include "init/genesis_block_init.h"
 
+#include <bls/bls_utils.h>
 #include <cmath>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <utility>
@@ -633,7 +634,8 @@ int GenesisBlockInit::CreateElectBlock(
         auto in = ec_block.add_in();
         in->set_pubkey((*iter)->pubkey);
         // xufeisofly
-        in->set_agg_bls_pk((*iter)->agg_bls_pk);
+        auto agg_bls_pk_proto = bls::BlsPublicKey2Proto((*iter)->agg_bls_pk);
+        in->mutable_agg_bls_pk()->CopyFrom(*agg_bls_pk_proto);
         in->set_pool_idx_mod_num(node_idx < expect_leader_count ? node_idx : -1);
     }
 
