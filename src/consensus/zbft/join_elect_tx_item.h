@@ -20,10 +20,11 @@ public:
             protos::AddressInfoPtr& addr_info,
             const std::string& from_pk,
             const std::string& from_agg_bls_pk)
-            : TxItemBase(msg, account_mgr, sec_ptr, addr_info), 
-            prefix_db_(prefix_db), 
-            elect_mgr_(elect_mgr), 
-            from_pk_(from_pk) {
+        : TxItemBase(msg, account_mgr, sec_ptr, addr_info), 
+          prefix_db_(prefix_db), 
+          elect_mgr_(elect_mgr), 
+          from_pk_(from_pk),
+          from_agg_bls_pk_(from_agg_bls_pk){
     }
 
     virtual ~JoinElectTxItem() {}

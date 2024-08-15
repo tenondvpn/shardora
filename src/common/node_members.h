@@ -39,7 +39,7 @@ struct BftMember {
     bool valid_leader{ true };
     std::string peer_ecdh_key;
     // aggbls
-    std::string agg_bls_pk;
+    libff::alt_bn128_G2 agg_bls_pk;
 };
 
 typedef std::shared_ptr<BftMember> BftMemberPtr;
