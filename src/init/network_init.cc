@@ -1075,6 +1075,7 @@ void NetworkInit::GetNetworkNodesFromConf(const YAML::Node& genesis_config,
                     secptr->SetPrivateKey(node_ptr->prikey);
                     node_ptr->pubkey = secptr->GetPublicKey();
                     node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
+                    // 为创始块生成 agg bls keypair
                     node_ptr->agg_bls_pk = bls::AggBls().GenerateKeyPair(t, n, secptr, prefix_db_)->pk();
                     root_genesis_nodes.push_back(node_ptr);
                 }
