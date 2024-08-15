@@ -6,6 +6,7 @@
 #include "block_acceptor.h"
 #include "block_wrapper.h"
 
+#include <bls/agg_bls.h>
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/leader_rotation.h>
 #include <consensus/hotstuff/types.h>
@@ -243,6 +244,11 @@ private:
     }
 
     pools::TxItemPtr CreateJoinElectTx(const transport::MessagePtr& msg_ptr) {
+        auto agg_bls = bls::AggBls();
+        auto keypair = agg_bls.GetKeyPair(security_ptr_, prefix_db_);
+        if (keypair == nullptr || !keypair->IsValid()) {
+            return nullptr;
+        }
         return std::make_shared<JoinElectTxItem>(
                 msg_ptr->header.tx_proto(), 
                 account_mgr_, 
@@ -250,7 +256,8 @@ private:
                 prefix_db_, 
                 elect_mgr_, 
                 msg_ptr->address_info,
-                msg_ptr->header.tx_proto().pubkey());
+                msg_ptr->header.tx_proto().pubkey(),
+                keypair->pk());
     }
 
     pools::TxItemPtr CreateCrossTx(const transport::MessagePtr& msg_ptr) {

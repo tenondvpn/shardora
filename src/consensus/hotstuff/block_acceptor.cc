@@ -309,7 +309,9 @@ Status BlockAcceptor::addTxsToPool(
         {
             auto agg_bls = bls::AggBls();
             auto keypair = agg_bls.GetKeyPair(security_ptr_, prefix_db_);
-            if (keypair.first == libff::alt_bn128_)
+            if (keypair == nullptr || !keypair->IsValid()) {
+                break;
+            }
             tx_ptr = std::make_shared<consensus::JoinElectTxItem>(
                     *tx, 
                     account_mgr_, 
@@ -317,7 +319,8 @@ Status BlockAcceptor::addTxsToPool(
                     prefix_db_, 
                     elect_mgr_, 
                     address_info,
-                    (*tx).pubkey());
+                    (*tx).pubkey(),
+                    keypair->pk());
             ZJC_DEBUG("add tx now get join elect tx: %u", pool_idx());
             break;
         }
