@@ -31,43 +31,42 @@ public:
         return sk * libff::alt_bn128_G2::one();
     }
     // sign a partial sig
-    void Sign(
+    static void Sign(
             uint32_t t, uint32_t n,
             const libff::alt_bn128_Fr& sec_key,
             const std::string& str_hash,
             libff::alt_bn128_G1* signature);
 
     // aggregate sigs to an agg_sig
-    void Aggregate(
+    static void Aggregate(
             uint32_t t, uint32_t n,
             const std::vector<libff::alt_bn128_G1>& sigs,
             libff::alt_bn128_G1* signature);
 
     // verify agg_sig for different messages
-    bool AggregateVerify(
+    static bool AggregateVerify(
             uint32_t t, uint32_t n,
             const std::vector<libff::alt_bn128_G2>& pks,
             const std::vector<std::string>& str_hashes,
             const libff::alt_bn128_G1& signature);    
 
     // verify agg_sig for a same message
-    bool FastAggregateVerify(
+    static bool FastAggregateVerify(
             uint32_t t, uint32_t n,
             const std::vector<libff::alt_bn128_G2>& pks,
             const std::string& str_hash,
             const libff::alt_bn128_G1& signature);
 
     // verify partial sig for a message
-    bool CoreVerify(
+    static bool CoreVerify(
             uint32_t t, uint32_t n,
             const libff::alt_bn128_G2& public_key,
             const std::string& str_hash,
             const libff::alt_bn128_G1& signature);
 
-    libff::alt_bn128_G2 AggregatePk(const std::vector<libff::alt_bn128_G2>& pks);
+    static libff::alt_bn128_G2 AggregatePk(const std::vector<libff::alt_bn128_G2>& pks);
 
 private:
-    std::shared_ptr<security::Security> security_ = nullptr;
     libff::alt_bn128_Fr agg_bls_sk_;
 };
 
