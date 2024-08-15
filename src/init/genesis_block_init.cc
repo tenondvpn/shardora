@@ -635,7 +635,9 @@ int GenesisBlockInit::CreateElectBlock(
         in->set_pubkey((*iter)->pubkey);
         // xufeisofly
         auto agg_bls_pk_proto = bls::BlsPublicKey2Proto((*iter)->agg_bls_pk);
-        in->mutable_agg_bls_pk()->CopyFrom(*agg_bls_pk_proto);
+        if (agg_bls_pk_proto) {
+            in->mutable_agg_bls_pk()->CopyFrom(*agg_bls_pk_proto);
+        }
         in->set_pool_idx_mod_num(node_idx < expect_leader_count ? node_idx : -1);
     }
 

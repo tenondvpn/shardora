@@ -108,8 +108,10 @@ int JoinElectTxItem::HandleTx(
         pk_storage->set_value(from_pk_);
 
         auto agg_bls_pk_proto = bls::BlsPublicKey2Proto(from_agg_bls_pk_);
-        pk_storage->set_key(protos::kAggBlsPublicKey);
-        pk_storage->set_value(agg_bls_pk_proto->SerializeAsString());        
+        if (agg_bls_pk_proto) {
+            pk_storage->set_key(protos::kAggBlsPublicKey);
+            pk_storage->set_value(agg_bls_pk_proto->SerializeAsString());
+        }
     }
 
     acc_balance_map[from] = from_balance;

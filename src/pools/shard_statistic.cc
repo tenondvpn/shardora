@@ -708,7 +708,9 @@ void ShardStatistic::addPrepareMembers2JoinStastics(
             join_elect_node->set_pubkey((*prepare_members)[i]->pubkey);
             // agg bls pk
             auto agg_bls_pk_proto = bls::BlsPublicKey2Proto((*prepare_members)[i]->agg_bls_pk);
-            join_elect_node->mutable_agg_bls_pk()->CopyFrom(*agg_bls_pk_proto);
+            if (agg_bls_pk_proto) {
+                join_elect_node->mutable_agg_bls_pk()->CopyFrom(*agg_bls_pk_proto);
+            }
             
             join_elect_node->set_elect_pos(addr_info->elect_pos());
             join_elect_node->set_stoke(stoke);
