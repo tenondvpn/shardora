@@ -1062,6 +1062,10 @@ void NetworkInit::GetNetworkNodesFromConf(const YAML::Node& genesis_config,
                                           std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards) {
             if (genesis_config["root"]) {
             auto root_config = genesis_config["root"];
+
+            uint32_t n = root_config["sk"].size();
+            uint32_t t = common::GetSignerCount(n);
+            
             if (root_config["sks"]) {
                 for (uint32_t i = 0; i < root_config["sks"].size(); i++) {
                     std::string sk = root_config["sks"][i].as<std::string>();
@@ -1071,7 +1075,7 @@ void NetworkInit::GetNetworkNodesFromConf(const YAML::Node& genesis_config,
                     secptr->SetPrivateKey(node_ptr->prikey);
                     node_ptr->pubkey = secptr->GetPublicKey();
                     node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
-                    node_ptr->agg_bls_pk = libff::alt_bn128_G2::zero();
+                    node_ptr->agg_bls_pk = bls::AggBls().GenerateKeyPair(t, n, secptr, prefix_db_)->pk();
                     root_genesis_nodes.push_back(node_ptr);
                 }
             }
