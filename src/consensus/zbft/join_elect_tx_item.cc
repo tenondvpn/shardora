@@ -1,4 +1,5 @@
 #include "consensus/zbft/join_elect_tx_item.h"
+#include <bls/bls_utils.h>
 #include <protos/tx_storage_key.h>
 
 namespace shardora {
@@ -105,8 +106,10 @@ int JoinElectTxItem::HandleTx(
         auto pk_storage = block_tx.add_storages();
         pk_storage->set_key(protos::kNodePublicKey);
         pk_storage->set_value(from_pk_);
+
+        auto agg_bls_pk_proto = bls::BlsPublicKey2Proto(from_agg_bls_pk_);
         pk_storage->set_key(protos::kAggBlsPublicKey);
-        pk_storage->set_value(from_agg_bls_pk_);
+        pk_storage->set_value(agg_bls_pk_proto->SerializeAsString());        
     }
 
     acc_balance_map[from] = from_balance;

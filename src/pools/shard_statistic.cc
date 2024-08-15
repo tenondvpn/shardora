@@ -17,6 +17,7 @@
 #include <common/utils.h>
 #include <elect/elect_pledge.h>
 #include <network/network_status.h>
+#include <protos/elect.pb.h>
 #include <protos/tx_storage_key.h>
 // #include <iostream>
 // #include "shard_statistic.h"
@@ -249,7 +250,11 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<block::protobuf::Bloc
                             continue;
                         }
 
-                        id_agg_bls_pk_map[block.tx_list(i).from()] = block.tx_list(i).storages(storage_idx).value();
+                        auto agg_bls_pk_proto_str = block.tx_list(i).storages(storage_idx).value();
+                        auto agg_bls_pk_proto = std::make_shared<elect::protobuf::BlsPublicKey>();
+                        if (agg_bls_pk_proto->ParseFromString(agg_bls_pk_proto_str)) {
+                            id_agg_bls_pk_map[block.tx_list(i).from()] = agg_bls_pk_proto.get();
+                        }
                     }
 
                     if (block.tx_list(i).storages(storage_idx).key() == 
@@ -732,7 +737,7 @@ void ShardStatistic::addNewNode2JoinStatics(
         std::map<uint64_t, std::unordered_map<std::string, uint32_t>> &join_elect_shard_map,
         std::unordered_set<std::string> &added_id_set,
         std::unordered_map<std::string, std::string> &id_pk_map,
-        std::unordered_map<std::string, std::string> &id_agg_bls_pk_map,
+        std::unordered_map<std::string, elect::protobuf::BlsPublicKey*> &id_agg_bls_pk_map,
         shardora::pools::protobuf::ElectStatistic &elect_statistic) {
 #ifndef NDEBUG
     for (auto iter = join_elect_stoke_map.begin(); iter != join_elect_stoke_map.end(); ++iter) {
@@ -783,7 +788,7 @@ void ShardStatistic::addNewNode2JoinStatics(
     for (uint32_t i = 0; i < elect_nodes.size() && i < kWaitingElectNodesMaxCount; ++i) {
         std::string node_id = elect_nodes[i];
         std::string pubkey;
-        std::string agg_bls_pk;
+        elect::protobuf::BlsPublicKey* agg_bls_pk;
         if (node_id.size() == security::kUnicastAddressLength) {
             auto iter = id_pk_map.find(node_id);
             if (iter == id_pk_map.end()) {
@@ -826,14 +831,14 @@ void ShardStatistic::addNewNode2JoinStatics(
         join_elect_node->set_consensus_gap(0);
         join_elect_node->set_credit(0);
         join_elect_node->set_pubkey(pubkey);
-        join_elect_node->set_agg_bls_pk(agg_bls_pk);
+
+        join_elect_node->mutable_agg_bls_pk()->CopyFrom(*agg_bls_pk);
         join_elect_node->set_stoke(stoke);
         join_elect_node->set_shard(shard_id);
         join_elect_node->set_elect_pos(addr_info->elect_pos());
-        ZJC_DEBUG("add node to election new member: %s, %s, %s, stoke: %lu, shard: %u, elect pos: %d",
+        ZJC_DEBUG("add node to election new member: %s, %s, stoke: %lu, shard: %u, elect pos: %d",
             common::Encode::HexEncode(pubkey).c_str(),
             common::Encode::HexEncode(secptr_->GetAddress(pubkey)).c_str(),
-            common::Encode::HexEncode(agg_bls_pk).c_str(),
             iter->second, shard_iter->second,
             addr_info->elect_pos());
         ZJC_DEBUG("add new elect node: %s, stoke: %lu, shard: %u",
