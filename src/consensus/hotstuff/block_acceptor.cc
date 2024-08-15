@@ -1,4 +1,5 @@
 #include <bls/agg_bls.h>
+#include <common/global_info.h>
 #include <common/utils.h>
 #include <consensus/consensus_utils.h>
 #include <consensus/hotstuff/block_acceptor.h>
@@ -310,7 +311,8 @@ Status BlockAcceptor::addTxsToPool(
             auto agg_bls = bls::AggBls();
             auto keypair = agg_bls.GetKeyPair(security_ptr_, prefix_db_);
             if (keypair == nullptr || !keypair->IsValid()) {
-                break;
+                auto elect_item = elect_info_->GetElectItemWithShardingId(common::GlobalInfo::Instance()->network_id());
+                keypair = agg_bls.GenerateKeyPair(elect_item->t(), elect_item->n(), security_ptr_, prefix_db_);
             }
             tx_ptr = std::make_shared<consensus::JoinElectTxItem>(
                     *tx, 
