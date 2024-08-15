@@ -1,4 +1,5 @@
 #include "init/network_init.h"
+#include <bls/agg_bls.h>
 #include <common/encode.h>
 #include <common/log.h>
 #include <common/utils.h>
@@ -1070,7 +1071,8 @@ void NetworkInit::GetNetworkNodesFromConf(const YAML::Node& genesis_config,
                     secptr->SetPrivateKey(node_ptr->prikey);
                     node_ptr->pubkey = secptr->GetPublicKey();
                     node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
-                    root_genesis_nodes.push_back(node_ptr);                    
+                    node_ptr->agg_bls_pk = libff::alt_bn128_G2::zero();
+                    root_genesis_nodes.push_back(node_ptr);
                 }
             }
         }
