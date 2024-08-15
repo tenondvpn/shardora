@@ -14,16 +14,35 @@ namespace bls {
 
 class AggBls {
 public:
+    struct KeyPair {
+        libff::alt_bn128_Fr sk_;
+        libff::alt_bn128_G2 pk_;
+
+        KeyPair(const libff::alt_bn128_Fr& sk, const libff::alt_bn128_G2& pk) : sk_(sk), pk_(pk) {}
+
+        inline bool IsValid() const {
+            return !sk_.is_zero() && !pk_.is_zero() && GetPublicKey(sk_) == pk_; 
+        }
+
+        inline libff::alt_bn128_Fr sk() {
+            return sk_;
+        }
+
+        inline libff::alt_bn128_G2 pk() {
+            return pk_;
+        } 
+    };
+    
     AggBls() {
         agg_bls_sk_ = libff::alt_bn128_Fr::zero();
     }
     ~AggBls() {}
     
-    std::pair<libff::alt_bn128_Fr, libff::alt_bn128_G2> GenerateKeyPair(
+    std::shared_ptr<KeyPair> GenerateKeyPair(
             uint32_t t, uint32_t n,
             std::shared_ptr<security::Security>& security,
             const std::shared_ptr<protos::PrefixDb>& prefix_db);
-    std::pair<libff::alt_bn128_Fr, libff::alt_bn128_G2> GetKeyPair(
+    std::shared_ptr<KeyPair> GetKeyPair(
             std::shared_ptr<security::Security>& security,
             const std::shared_ptr<protos::PrefixDb>& prefix_db);
 

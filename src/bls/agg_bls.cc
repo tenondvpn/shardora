@@ -10,30 +10,30 @@ namespace shardora {
 
 namespace bls {
 
-std::pair<libff::alt_bn128_Fr, libff::alt_bn128_G2> AggBls::GenerateKeyPair(
+std::shared_ptr<AggBls::KeyPair> AggBls::GenerateKeyPair(
         uint32_t t, uint32_t n,
         std::shared_ptr<security::Security>& security,
         const std::shared_ptr<protos::PrefixDb>& prefix_db) {
     auto keypair = libBLS::Bls(t, n).KeyGeneration();
     agg_bls_sk_ = keypair.first;
     prefix_db->SaveAggBlsPrikey(security, keypair.first);
-    return keypair;
+    return std::make_shared<AggBls::KeyPair>(keypair.first, keypair.second);
 }
 
-std::pair<libff::alt_bn128_Fr, libff::alt_bn128_G2> AggBls::GetKeyPair(
+std::shared_ptr<AggBls::KeyPair> AggBls::GetKeyPair(
         std::shared_ptr<security::Security>& security,
         const std::shared_ptr<protos::PrefixDb>& prefix_db) {
     if (agg_bls_sk_ != libff::alt_bn128_Fr::zero()) {
-        return std::make_pair(agg_bls_sk_, GetPublicKey(agg_bls_sk_));
+        return std::make_shared<AggBls::KeyPair>(agg_bls_sk_, GetPublicKey(agg_bls_sk_));
     }
 
     auto bls_prikey = libff::alt_bn128_Fr::zero();
     auto ok = prefix_db->GetAggBlsPrikey(security, &bls_prikey);
     if (ok && bls_prikey != libff::alt_bn128_Fr::zero()) {
-        return std::make_pair(bls_prikey, GetPublicKey(bls_prikey));
+        return std::make_shared<AggBls::KeyPair>(bls_prikey, GetPublicKey(bls_prikey));
     }
 
-    return std::make_pair(libff::alt_bn128_Fr::zero(), libff::alt_bn128_G2::zero());
+    return std::make_shared<AggBls::KeyPair>(libff::alt_bn128_Fr::zero(), libff::alt_bn128_G2::zero());
 }
 
 void AggBls::Sign(

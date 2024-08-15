@@ -307,7 +307,9 @@ Status BlockAcceptor::addTxsToPool(
         }
         case pools::protobuf::kJoinElect:
         {
-            auto agg_bls = bls::AggBls(elect_info_->);  
+            auto agg_bls = bls::AggBls();
+            auto keypair = agg_bls.GetKeyPair(security_ptr_, prefix_db_);
+            if (keypair.first == libff::alt_bn128_)
             tx_ptr = std::make_shared<consensus::JoinElectTxItem>(
                     *tx, 
                     account_mgr_, 
