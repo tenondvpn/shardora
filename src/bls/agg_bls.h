@@ -14,16 +14,18 @@ namespace bls {
 
 class AggBls {
 public:
-    AggBls(
-        std::shared_ptr<db::Db>& db,
-        std::shared_ptr<security::Security>& security) : db_(db), security_(security) {
-        agg_keypair_ = std::make_pair(libff::alt_bn128_Fr::zero(), libff::alt_bn128_G2::zero());
+    AggBls() {
+        agg_bls_sk_ = libff::alt_bn128_Fr::zero();
     }
     ~AggBls() {}
     
     std::pair<libff::alt_bn128_Fr, libff::alt_bn128_G2> GenerateKeyPair(
-            uint32_t t, uint32_t n, const std::shared_ptr<protos::PrefixDb>& prefix_db);
-    std::pair<libff::alt_bn128_Fr, libff::alt_bn128_G2> GetKeyPair(const std::shared_ptr<protos::PrefixDb>& prefix_db);
+            uint32_t t, uint32_t n,
+            std::shared_ptr<security::Security>& security,
+            const std::shared_ptr<protos::PrefixDb>& prefix_db);
+    std::pair<libff::alt_bn128_Fr, libff::alt_bn128_G2> GetKeyPair(
+            std::shared_ptr<security::Security>& security,
+            const std::shared_ptr<protos::PrefixDb>& prefix_db);
 
     static libff::alt_bn128_G2 GetPublicKey(const libff::alt_bn128_Fr& sk) {
         return sk * libff::alt_bn128_G2::one();
@@ -65,7 +67,6 @@ public:
     libff::alt_bn128_G2 AggregatePk(const std::vector<libff::alt_bn128_G2>& pks);
 
 private:
-    std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<security::Security> security_ = nullptr;
     libff::alt_bn128_Fr agg_bls_sk_;
 };

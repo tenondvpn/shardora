@@ -12,21 +12,23 @@ namespace bls {
 
 std::pair<libff::alt_bn128_Fr, libff::alt_bn128_G2> AggBls::GenerateKeyPair(
         uint32_t t, uint32_t n,
+        std::shared_ptr<security::Security>& security,
         const std::shared_ptr<protos::PrefixDb>& prefix_db) {
     auto keypair = libBLS::Bls(t, n).KeyGeneration();
     agg_bls_sk_ = keypair.first;
-    prefix_db->SaveAggBlsPrikey(security_, keypair.first);
+    prefix_db->SaveAggBlsPrikey(security, keypair.first);
     return keypair;
 }
 
 std::pair<libff::alt_bn128_Fr, libff::alt_bn128_G2> AggBls::GetKeyPair(
+        std::shared_ptr<security::Security>& security,
         const std::shared_ptr<protos::PrefixDb>& prefix_db) {
     if (agg_bls_sk_ != libff::alt_bn128_Fr::zero()) {
         return std::make_pair(agg_bls_sk_, GetPublicKey(agg_bls_sk_));
     }
 
     auto bls_prikey = libff::alt_bn128_Fr::zero();
-    auto ok = prefix_db->GetAggBlsPrikey(security_, &bls_prikey);
+    auto ok = prefix_db->GetAggBlsPrikey(security, &bls_prikey);
     if (ok && bls_prikey != libff::alt_bn128_Fr::zero()) {
         return std::make_pair(bls_prikey, GetPublicKey(bls_prikey));
     }
