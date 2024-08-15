@@ -267,7 +267,7 @@ private:
             elect_mgr_, 
             msg_ptr->address_info,
             msg_ptr->header.tx_proto().pubkey(),
-            nullptr);
+            libff::alt_bn128_G2::zero());
     }
 
     pools::TxItemPtr CreateCrossTx(const transport::MessagePtr& msg_ptr) {
