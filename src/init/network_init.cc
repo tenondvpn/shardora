@@ -995,6 +995,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
         std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
 
+        prefix_db_ = std::make_shared<protos::PrefixDb>(db);
         GetNetworkNodesFromConf(genesis_config, root_genesis_nodes, cons_genesis_nodes_of_shards);
 
         if (genesis_block.CreateGenesisBlocks(
@@ -1041,6 +1042,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
         std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
 
+        prefix_db_ = std::make_shared<protos::PrefixDb>(db);
         GetNetworkNodesFromConf(genesis_config, root_genesis_nodes, cons_genesis_nodes_of_shards);
 
         if (genesis_block.CreateGenesisBlocks(
