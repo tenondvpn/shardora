@@ -751,8 +751,9 @@ int ElectTxItem::CheckWeedout(
         node_info->stoke = statistic_item.stokes(member_idx);
         node_info->credit = statistic_item.credit(member_idx);
         node_info->index = member_idx;
-        // xufeisofly 此处增加上一轮已有节点的 bls_agg_pk
+        // 此处增加上一轮已有节点的 bls_agg_pk
         node_info->pubkey = (*members)[member_idx]->pubkey;
+        node_info->agg_bls_pk = (*members)[member_idx]->agg_bls_pk;
         node_info->consensus_gap = statistic_item.consensus_gap(member_idx); 
 
         if (*min_area_weight > min_dis) {
