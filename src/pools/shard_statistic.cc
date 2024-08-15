@@ -700,7 +700,14 @@ void ShardStatistic::addPrepareMembers2JoinStastics(
             join_elect_node->set_consensus_gap(0);
             join_elect_node->set_credit(0);
             join_elect_node->set_pubkey((*prepare_members)[i]->pubkey);
-            join_elect_node->set_agg_bls_pk((*prepare_members)[i]->agg_bls_pk);
+            // agg bls pk
+            auto agg_bls_pk_strs = std::make_shared<BLSPublicKey>((*prepare_members)[i]->agg_bls_pk)->toString();
+            auto* agg_bls_pk = join_elect_node->mutable_agg_bls_pk();
+            agg_bls_pk->set_x_c0(agg_bls_pk_strs->at(0));
+            agg_bls_pk->set_x_c1(agg_bls_pk_strs->at(1));
+            agg_bls_pk->set_y_c0(agg_bls_pk_strs->at(2));
+            agg_bls_pk->set_y_c1(agg_bls_pk_strs->at(3));
+            
             join_elect_node->set_elect_pos(addr_info->elect_pos());
             join_elect_node->set_stoke(stoke);
             join_elect_node->set_shard(shard);

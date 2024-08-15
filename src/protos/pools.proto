@@ -1,6 +1,7 @@
 syntax = "proto2";
 
 import "protos/bls.proto";
+import "protos/elect.proto";
 package shardora.pools.protobuf;
 
 enum StepType {
@@ -105,6 +106,7 @@ message PoolStatisticItem {
     repeated uint64 consensus_gap = 7;
 }
 
+
 message JoinElectNode {
     optional bytes pubkey = 1;
     optional uint64 stoke = 2;
@@ -113,7 +115,7 @@ message JoinElectNode {
     optional AreaInfo area_point = 5;
     optional uint64 credit =6;
     optional uint64 consensus_gap = 7;
-    optional bytes agg_bls_pk = 8;
+    optional elect.protobuf.BlsPublicKey agg_bls_pk = 8;
 }
 
 message ElectStatistic {
