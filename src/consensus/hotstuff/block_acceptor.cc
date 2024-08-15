@@ -1,3 +1,4 @@
+#include <bls/agg_bls.h>
 #include <common/utils.h>
 #include <consensus/consensus_utils.h>
 #include <consensus/hotstuff/block_acceptor.h>
@@ -306,14 +307,15 @@ Status BlockAcceptor::addTxsToPool(
         }
         case pools::protobuf::kJoinElect:
         {
+            auto agg_bls = bls::AggBls(elect_info_->);  
             tx_ptr = std::make_shared<consensus::JoinElectTxItem>(
-            *tx, 
-            account_mgr_, 
-            security_ptr_, 
-            prefix_db_, 
-            elect_mgr_, 
-            address_info,
-            (*tx).pubkey());
+                    *tx, 
+                    account_mgr_, 
+                    security_ptr_, 
+                    prefix_db_, 
+                    elect_mgr_, 
+                    address_info,
+                    (*tx).pubkey());
             ZJC_DEBUG("add tx now get join elect tx: %u", pool_idx());
             break;
         }

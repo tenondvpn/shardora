@@ -14,44 +14,50 @@ namespace bls {
 
 class AggBls {
 public:
-    AggBls(uint32_t t, uint32_t n,
+    AggBls(
         std::shared_ptr<db::Db>& db,
-        std::shared_ptr<security::Security>& security) : t_(t), n_(n), db_(db), security_(security) {
-        prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+        std::shared_ptr<security::Security>& security) : db_(db), security_(security) {
         agg_keypair_ = std::make_pair(libff::alt_bn128_Fr::zero(), libff::alt_bn128_G2::zero());
     }
     ~AggBls() {}
     
-    std::pair<libff::alt_bn128_Fr, libff::alt_bn128_G2> GetOrGenKeyPair();
+    std::pair<libff::alt_bn128_Fr, libff::alt_bn128_G2> GenerateKeyPair(
+            uint32_t t, uint32_t n, const std::shared_ptr<protos::PrefixDb>& prefix_db);
+    std::pair<libff::alt_bn128_Fr, libff::alt_bn128_G2> GetKeyPair(const std::shared_ptr<protos::PrefixDb>& prefix_db);
 
-    libff::alt_bn128_G2 GetPublicKey(const libff::alt_bn128_Fr& sk) {
+    static libff::alt_bn128_G2 GetPublicKey(const libff::alt_bn128_Fr& sk) {
         return sk * libff::alt_bn128_G2::one();
     }
     // sign a partial sig
     void Sign(
+            uint32_t t, uint32_t n,
             const libff::alt_bn128_Fr& sec_key,
             const std::string& str_hash,
             libff::alt_bn128_G1* signature);
 
     // aggregate sigs to an agg_sig
     void Aggregate(
+            uint32_t t, uint32_t n,
             const std::vector<libff::alt_bn128_G1>& sigs,
             libff::alt_bn128_G1* signature);
 
     // verify agg_sig for different messages
     bool AggregateVerify(
+            uint32_t t, uint32_t n,
             const std::vector<libff::alt_bn128_G2>& pks,
             const std::vector<std::string>& str_hashes,
             const libff::alt_bn128_G1& signature);    
 
     // verify agg_sig for a same message
     bool FastAggregateVerify(
+            uint32_t t, uint32_t n,
             const std::vector<libff::alt_bn128_G2>& pks,
             const std::string& str_hash,
             const libff::alt_bn128_G1& signature);
 
     // verify partial sig for a message
     bool CoreVerify(
+            uint32_t t, uint32_t n,
             const libff::alt_bn128_G2& public_key,
             const std::string& str_hash,
             const libff::alt_bn128_G1& signature);
@@ -59,13 +65,9 @@ public:
     libff::alt_bn128_G2 AggregatePk(const std::vector<libff::alt_bn128_G2>& pks);
 
 private:
-    uint32_t t_;
-    uint32_t n_;
-
     std::shared_ptr<db::Db> db_ = nullptr;
-    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<security::Security> security_ = nullptr;
-    std::pair<libff::alt_bn128_Fr, libff::alt_bn128_G2> agg_keypair_;
+    libff::alt_bn128_Fr agg_bls_sk_;
 };
 
 }
