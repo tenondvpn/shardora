@@ -306,12 +306,14 @@ private:
         uint32_t member_index = 0;
         for (int32_t i = 0; i < in.size(); ++i) {
             auto id = security->GetAddress(in[i].pubkey());
+            auto agg_bls_pk = bls::Proto2BlsPublicKey(in[i].agg_bls_pk());
             shard_members_ptr->push_back(std::make_shared<common::BftMember>(
                 elect_block.shard_network_id(),
                 id,
                 in[i].pubkey(),
                 member_index++,
-                in[i].pool_idx_mod_num()));
+                in[i].pool_idx_mod_num(),
+                *agg_bls_pk));
         }
 
         return shard_members_ptr;
