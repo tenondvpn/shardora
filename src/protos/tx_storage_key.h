@@ -41,6 +41,7 @@ static const std::string kVssRandomAttr = "__vssrandomattr";
 
 static const std::string kStatisticAttr = "__kStatisticAttr";
 static const std::string kNodePublicKey = "__node_pk";
+static const std::string kAggBlsPublicKey = "__agg_bls_pk";
 
 static const std::string kSingleTxHashTag = "__single_tx_hash";
 

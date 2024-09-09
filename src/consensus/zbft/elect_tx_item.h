@@ -21,6 +21,7 @@ struct ElectNodeInfo {
     int32_t credit;
     int32_t area_weight;
     std::string pubkey;
+    libff::alt_bn128_G2 agg_bls_pk; // agg bls 公钥
     uint32_t index;
     int32_t leader_mod_index;
     uint64_t mining_token;

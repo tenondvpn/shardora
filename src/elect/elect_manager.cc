@@ -279,12 +279,14 @@ bool ElectManager::ProcessPrevElectMembers(
             ++leader_count;
         }
 
+        auto agg_bls_pk = bls::Proto2BlsPublicKey(in[i].agg_bls_pk());
         shard_members_ptr->push_back(std::make_shared<common::BftMember>(
             prev_elect_block.shard_network_id(),
             id,
             in[i].pubkey(),
             i,
-            pool_idx_mod_num));
+            pool_idx_mod_num,
+            *agg_bls_pk));
         now_elected_ids_.insert(id);
         AddNewNodeWithIdAndIp(prev_elect_block.shard_network_id(), id);
     }
@@ -371,12 +373,14 @@ void ElectManager::ProcessNewElectBlock(
 
     for (int32_t i = 0; i < in.size(); ++i) {
         auto id = security_->GetAddress(in[i].pubkey());
+        auto agg_bls_pk = bls::Proto2BlsPublicKey(in[i].agg_bls_pk());
         shard_members_ptr->push_back(std::make_shared<common::BftMember>(
             elect_block.shard_network_id(),
             id,
             in[i].pubkey(),
             i,
-            in[i].pool_idx_mod_num()));
+            in[i].pool_idx_mod_num(),
+            *agg_bls_pk));
         AddNewNodeWithIdAndIp(elect_block.shard_network_id(), id);
         if (id == security_->GetAddress()) {
             *elected = true;
