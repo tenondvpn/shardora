@@ -1,6 +1,9 @@
 #pragma once
 #include <bls/agg_bls.h>
+#include <common/bitmap.h>
+#include <common/utils.h>
 #include <consensus/hotstuff/elect_info.h>
+#include <consensus/hotstuff/types.h>
 #include <transport/transport_utils.h>
 
 namespace shardora {
@@ -26,6 +29,36 @@ struct AggregateSignature {
 
 class AggCrypto {
 public:
+    struct BlsCollectionItem {
+        HashStr msg_hash;
+        common::Bitmap ok_bitmap{ common::kEachShardMaxNodeCount };
+        AggregateSignature partial_sigs[common::kEachShardMaxNodeCount];
+        AggregateSignature* agg_sig;
+
+        inline uint32_t OkCount() const {
+            return ok_bitmap.valid_count();
+        }
+    };
+
+    struct BlsCollection {
+        View view;
+        std::unordered_map<HashStr, std::shared_ptr<BlsCollectionItem>> msg_collection_map;
+        bool handled;
+
+        std::shared_ptr<BlsCollectionItem> GetItem(const HashStr& msg_hash) {
+            std::shared_ptr<BlsCollectionItem> collection_item = nullptr;
+            auto it = msg_collection_map.find(msg_hash);
+            if (it == msg_collection_map.end()) {
+                collection_item = std::make_shared<BlsCollectionItem>();
+                collection_item->msg_hash = msg_hash;
+                msg_collection_map[msg_hash] = collection_item; 
+            } else {
+                collection_item = it->second;
+            }
+            return collection_item;
+        }        
+    };
+    
     AggCrypto(
             const uint32_t pool_idx,
             const std::shared_ptr<ElectInfo>& elect_info) :
@@ -72,6 +105,7 @@ public:
 private:
     uint32_t pool_idx_;
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
+    std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
 
     // Verify verifies the given quorum signature against the message.
     Status Verify(
