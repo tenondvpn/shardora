@@ -167,15 +167,13 @@ struct QC {
         return elect_height_;
     }
 
-#ifdef USE_AGG_BLS
     inline const std::shared_ptr<AggregateSignature>& agg_bls_agg_sign() const {
         return agg_bls_agg_sign_;
     }    
-#else
+
     inline const std::shared_ptr<libff::alt_bn128_G1>& bls_agg_sign() const {
         return bls_agg_sign_;
     }
-#endif
     
 protected:
     HashStr GetViewHash(
@@ -195,11 +193,8 @@ protected:
         
     std::string hash_;
     bool valid_ = false;
-#ifdef USE_AGG_BLS
     std::shared_ptr<AggregateSignature> agg_bls_agg_sign_;
-#else
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign_;
-#endif
     View view_; // view_block_hash 对应的 view，TODO 校验正确性，避免篡改
     HashStr view_block_hash_; // 是 view_block_hash 的 prepareQC
     HashStr commit_view_block_hash_; // 是 commit_view_block_hash 的 commitQC

@@ -44,8 +44,9 @@ public:
     
     AggCrypto(
             const uint32_t pool_idx,
-            const std::shared_ptr<ElectInfo>& elect_info) :
-        pool_idx_(pool_idx), elect_info_(elect_info) {}
+            const std::shared_ptr<ElectInfo>& elect_info,
+            const std::shared_ptr<bls::IBlsManager>& bls_mgr) :
+        pool_idx_(pool_idx), elect_info_(elect_info), bls_mgr_(bls_mgr) {}
     ~AggCrypto() {};
     
     AggCrypto(const AggCrypto&) = delete;
@@ -83,11 +84,16 @@ public:
 
     inline std::shared_ptr<ElectItem> GetLatestElectItem(uint32_t sharding_id) {
         return elect_info_->GetElectItemWithShardingId(sharding_id);
+    }
+
+    inline std::shared_ptr<security::Security> security() const {
+        return bls_mgr_->security();
     }    
     
 private:
     uint32_t pool_idx_;
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
+    std::shared_ptr<bls::IBlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
 
     // Verify verifies the given quorum signature against the message.
