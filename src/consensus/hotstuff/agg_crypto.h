@@ -10,23 +10,6 @@ namespace shardora {
 
 namespace hotstuff {
 
-struct AggregateSignature {
-    libff::alt_bn128_G1 sig_;
-    std::unordered_set<uint32_t> participants_; // member indexes who submit signatures
-
-    AggregateSignature(
-            const libff::alt_bn128_G1& sig,
-            const std::unordered_set<uint32_t>& parts) : sig_(sig), participants_(parts) {}
-
-    inline std::unordered_set<uint32_t> participants() const {
-        return participants_;
-    }
-
-    inline libff::alt_bn128_G1 signature() const {
-        return sig_;
-    }
-};
-
 class AggCrypto {
 public:
     struct BlsCollectionItem {

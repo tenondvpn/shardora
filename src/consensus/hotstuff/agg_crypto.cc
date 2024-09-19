@@ -68,9 +68,12 @@ Status AggCrypto::VerifyAndAggregateSig(
         return Status::kError;
     }    
 
+    std::unordered_set<uint32_t> participant_set;
     auto collection_item = bls_collection_->GetItem(msg_hash);
     collection_item->ok_bitmap.Set(member_idx);
     collection_item->partial_sigs[member_idx] = partial_sig;
+    participant_set.insert(member_idx);
+    
     if (collection_item->OkCount() < elect_item->t()) {
         return Status::kBlsVerifyWaiting;
     }
@@ -84,8 +87,15 @@ Status AggCrypto::VerifyAndAggregateSig(
     libff::alt_bn128_G1* agg_g1_sig;
     bls::AggBls().Aggregate(elect_item->t(), elect_item->n(), partial_g1_sigs, agg_g1_sig);
     agg_sig.sig_ = *agg_g1_sig;
+    agg_sig.participants_ = participant_set;
     
     return Status::kSuccess;
+}
+
+Status AggCrypto::VerifyQC(uint32_t sharding_id, const std::shared_ptr<QC>& qc) {
+    if (!qc) {
+        return Status::kError;
+    }
 }
     
 }

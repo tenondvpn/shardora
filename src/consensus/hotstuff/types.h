@@ -33,6 +33,23 @@ static const double ViewDurationStartTimeoutMs = 300;
 static const double ViewDurationMaxTimeoutMs = 60000;
 static const double ViewDurationMultiplier = 1.3; // 选过大会造成卡住的成本很高，一旦卡住则恢复时间很长（如 leader 不一致），过小会导致没有交易时 CPU 长时间降不下来
 
+struct AggregateSignature {
+    libff::alt_bn128_G1 sig_;
+    std::unordered_set<uint32_t> participants_; // member indexes who submit signatures
+
+    AggregateSignature(
+            const libff::alt_bn128_G1& sig,
+            const std::unordered_set<uint32_t>& parts) : sig_(sig), participants_(parts) {}
+
+    inline std::unordered_set<uint32_t> participants() const {
+        return participants_;
+    }
+
+    inline libff::alt_bn128_G1 signature() const {
+        return sig_;
+    }
+};
+
 // 本 elect height 中共识情况统计
 struct MemberConsensusStat {
     uint32_t succ_num; // 共识成功的次数
@@ -56,24 +73,36 @@ struct QC {
     QC(
             uint32_t net_id,
             uint32_t pool_idx,
+#ifdef USE_AGG_BLS
+            const std::shared_ptr<AggregateSignature>& sign,
+#else
             const std::shared_ptr<libff::alt_bn128_G1>& sign,
+#endif
             const View& v,
             const HashStr& hash,
             const HashStr& commit_hash,
             uint64_t elect_height,
             uint32_t leader_idx) :
             network_id_(net_id), pool_index(pool_idx),
-            bls_agg_sign_(sign), view_(v), view_block_hash_(hash),
+            view_(v), view_block_hash_(hash),
             commit_view_block_hash_(commit_hash), elect_height_(elect_height),
             leader_idx(leader_idx) {
         if (network_id_ >= network::kConsensusShardEndNetworkId) {
             network_id_ = network_id_ - network::kConsensusWaitingShardOffset;
-        }
+        }        
 
+#ifdef USE_AGG_BLS
+        agg_bls_agg_sign_ = sign;
+        if (agg_bls_agg_sign_ == nullptr) {
+            agg_bls_agg_sign_ = std::make_shared<AggregateSignature>(libff::alt_bn128_G1::zero(), nullptr);
+        }
+#else
+        bls_agg_sign_ = sign;
         if (bls_agg_sign_ == nullptr) {
             bls_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
         }
-
+#endif
+        
         hash_ = GetQCMsgHash(
             network_id_, 
             pool_index, 
@@ -86,7 +115,11 @@ struct QC {
     }
 
     QC(const std::string& s) {
+#ifdef USE_AGG_BLS
+        agg_bls_agg_sign_ = std::make_shared<AggregateSignature>(libff::alt_bn128_G1::zero(), nullptr);
+#else
         bls_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
+#endif
         if (!Unserialize(s)) {
             assert(false);
             return;
@@ -134,10 +167,16 @@ struct QC {
         return elect_height_;
     }
 
+#ifdef USE_AGG_BLS
+    inline const std::shared_ptr<AggregateSignature>& agg_bls_agg_sign() const {
+        return agg_bls_agg_sign_;
+    }    
+#else
     inline const std::shared_ptr<libff::alt_bn128_G1>& bls_agg_sign() const {
         return bls_agg_sign_;
     }
-
+#endif
+    
 protected:
     HashStr GetViewHash(
         uint32_t net_id,
@@ -156,7 +195,11 @@ protected:
         
     std::string hash_;
     bool valid_ = false;
+#ifdef USE_AGG_BLS
+    std::shared_ptr<AggregateSignature> agg_bls_agg_sign_;
+#else
     std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign_;
+#endif
     View view_; // view_block_hash 对应的 view，TODO 校验正确性，避免篡改
     HashStr view_block_hash_; // 是 view_block_hash 的 prepareQC
     HashStr commit_view_block_hash_; // 是 commit_view_block_hash 的 commitQC
@@ -171,7 +214,11 @@ struct TC : public QC {
     TC(
             uint32_t net_id,
             uint32_t pool_idx,
+#ifdef USE_AGG_BLS
+            const std::shared_ptr<AggregateSignature>& sign,
+#else
             const std::shared_ptr<libff::alt_bn128_G1>& sign,
+#endif
             const View& v,
             uint64_t elect_height,
             uint32_t leader_idx) :
