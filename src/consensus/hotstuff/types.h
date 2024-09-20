@@ -301,6 +301,10 @@ struct AggregateQC {
     inline View GetView() const {
         return view_;
     }
+
+    inline bool IsValid() const {
+        return sig_->IsValid() && sig_->participants().size() == qcs_.size();  
+    }
 };
 
 struct ViewBlock {

@@ -330,7 +330,6 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
             timeout_proto.elect_height(),
             timeout_proto.view(),
             timeout_proto.view_hash(),
-            timeout_proto.member_id(),
             *partial_sig,
             *agg_sig);
     ZJC_DEBUG("====4.0 pool: %d, view: %d, member: %d, status: %d, hash64: %lu", 
@@ -348,7 +347,36 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         timeout_proto.elect_height(),
         timeout_proto.leader_idx());
 
-    // TODO CreateAggregateQC()
+    auto agg_qc = crypto_->CreateAggregateQC(
+            common::GlobalInfo::Instance()->network_id(),
+            timeout_proto.elect_height(),
+            timeout_proto.view(),
+            high_qcs_,
+            high_qc_sigs_);
+    if (!agg_qc || !agg_qc->IsValid()) {
+        return;
+    }
+
+    AdvanceView(new_sync_info()->WithTC(tc)->WithAggQC(agg_qc));
+
+    // NewView msg broadcast
+    // TC 在 Propose 之前单独同步，不然假设 Propose 卡死，Replicas 就会一直卡死在这个视图
+    // 广播 TC 的同时也应该广播 HighQC，防止只有 Leader 拥有该 HighQC，这会出现如下情况：
+    // 假如 Leader 是 1<-2，但 HighQC 是 3，即将打包 4
+    // 但由于 3 不存在需要从其他节点处同步，但又由于 HighQC3 只有 Leader 拥有，其他节点无法同步 3 给 Leader，造成卡死
+    // 即 Leader 有 QC 无块，Replicas 有块无 QC
+    auto propose_st = Status::kError;
+    // New Propose
+    if (new_proposal_fn_) {
+        ZJC_DEBUG("now ontime called propose: %d", pool_idx_);
+        propose_st = new_proposal_fn_(new_sync_info()->WithQC(HighQC())->WithTC(HighTC())->WithAggQC(agg_qc));
+    }
+
+    if (propose_st != Status::kSuccess && new_view_fn_) {
+        ZJC_DEBUG("====4.2 pool: %d, broadcast tc, view: %d, member: %d, view: %d",
+            pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view());
+        new_view_fn_(new_sync_info()->WithTC(HighTC())->WithQC(HighQC())->WithAggQC(agg_qc));
+    }    
 #else
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
     Status s = crypto_->ReconstructAndVerifyThresSign(
@@ -373,13 +401,14 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         timeout_proto.view(),
         timeout_proto.elect_height(),
         timeout_proto.leader_idx());
-#endif
+
     // 视图切换
     ZJC_DEBUG("====4.1 pool: %d, create tc, view: %lu, member: %d, "
         "tc view: %lu, cur view: %lu, high_qc_: %lu, high_tc_: %lu",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
         tc->view(), CurView(), high_qc_->view(), high_tc_->view());
     AdvanceView(new_sync_info()->WithTC(tc));
+
     // NewView msg broadcast
     // TC 在 Propose 之前单独同步，不然假设 Propose 卡死，Replicas 就会一直卡死在这个视图
     // 广播 TC 的同时也应该广播 HighQC，防止只有 Leader 拥有该 HighQC，这会出现如下情况：
@@ -397,7 +426,8 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         ZJC_DEBUG("====4.2 pool: %d, broadcast tc, view: %d, member: %d, view: %d",
             pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view());
         new_view_fn_(new_sync_info()->WithTC(HighTC())->WithQC(HighQC()));
-    }
+    }    
+#endif
 }
 
 int Pacemaker::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
