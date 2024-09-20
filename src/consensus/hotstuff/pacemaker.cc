@@ -18,7 +18,11 @@ namespace hotstuff {
 
 Pacemaker::Pacemaker(
         const uint32_t& pool_idx,
+#ifdef USE_AGG_BLS
+        const std::shared_ptr<AggCrypto>& c,
+#else
         const std::shared_ptr<Crypto>& c,
+#endif
         std::shared_ptr<LeaderRotation>& lr,
         const std::shared_ptr<ViewDuration>& d) :
     pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d) {
@@ -139,6 +143,8 @@ void Pacemaker::OnLocalTimeout() {
     std::string bls_sign_x;
     std::string bls_sign_y;
 
+#ifdef USE_AGG_BLS
+#else
     // 使用最新的 elect_height 签名
     if (crypto_->PartialSign(
             common::GlobalInfo::Instance()->network_id(),
@@ -152,7 +158,7 @@ void Pacemaker::OnLocalTimeout() {
             common::Encode::HexEncode(tc_ptr->msg_hash()).c_str());
         return;
     }
-
+#endif
     
     view_block::protobuf::TimeoutMessage& timeout_msg = *msg.mutable_hotstuff_timeout_proto();
     timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());    
@@ -163,6 +169,7 @@ void Pacemaker::OnLocalTimeout() {
     timeout_msg.set_elect_height(elect_item->ElectHeight());
     timeout_msg.set_pool_idx(pool_idx_); // 用于分配线程
     timeout_msg.set_leader_idx(0);
+    
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     msg.set_type(common::kHotstuffTimeoutMessage);
     last_timeout_ = msg_ptr;
@@ -254,6 +261,8 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+#ifdef USE_AGG_BLS
+#else
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
     Status s = crypto_->ReconstructAndVerifyThresSign(
         timeout_proto.elect_height(),
@@ -278,6 +287,8 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         timeout_proto.view(),
         timeout_proto.elect_height(),
         timeout_proto.leader_idx());
+#endif
+    
     ZJC_DEBUG("====4.1 pool: %d, create tc, view: %lu, member: %d, "
         "tc view: %lu, cur view: %lu, high_qc_: %lu, high_tc_: %lu",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(),

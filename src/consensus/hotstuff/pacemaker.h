@@ -2,6 +2,7 @@
 
 #include <common/tick.h>
 #include <common/time_utils.h>
+#include <consensus/hotstuff/agg_crypto.h>
 #include <functional>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/leader_rotation.h>
@@ -24,7 +25,11 @@ class Pacemaker {
 public:
     Pacemaker(
             const uint32_t& pool_idx,
+#ifdef USE_AGG_BLS
+            const std::shared_ptr<AggCrypto>& crypto,
+#else
             const std::shared_ptr<Crypto>& crypto,
+#endif
             std::shared_ptr<LeaderRotation>& leader_rotation,
             const std::shared_ptr<ViewDuration>& duration);
     ~Pacemaker();
@@ -110,7 +115,11 @@ private:
     std::shared_ptr<QC> high_qc_ = nullptr;
     std::shared_ptr<TC> high_tc_ = nullptr;
     View cur_view_;
+#ifdef USE_AGG_BLS
+    std::shared_ptr<AggCrypto> crypto_;
+#else
     std::shared_ptr<Crypto> crypto_;
+#endif
     std::shared_ptr<LeaderRotation> leader_rotation_ = nullptr;
     std::shared_ptr<ViewDuration> duration_;
     NewProposalFn new_proposal_fn_ = nullptr;

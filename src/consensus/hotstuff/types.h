@@ -48,6 +48,44 @@ struct AggregateSignature {
     inline libff::alt_bn128_G1 signature() const {
         return sig_;
     }
+
+    std::string Serialize() const {
+        auto agg_sig_proto = view_block::protobuf::AggregateSig();
+
+        agg_sig_proto.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(sig_.X));
+        agg_sig_proto.set_sign_y(libBLS::ThresholdUtils::fieldElementToString(sig_.Y));
+
+        for (auto par : participants_) {
+            agg_sig_proto.add_participants(par);
+        }
+        
+        return agg_sig_proto.SerializeAsString();
+    }
+    
+    bool Unserialize(const std::string& str) {
+        auto agg_sig_proto = view_block::protobuf::AggregateSig();
+        bool ok = agg_sig_proto.ParseFromString(str);
+        if (!ok) {
+            return false;
+        }
+
+        sig_ = libff::alt_bn128_G1::zero();
+        try {
+            if (agg_sig_proto.sign_x() != "") {
+                sig_.X = libff::alt_bn128_Fq(agg_sig_proto.sign_x().c_str());
+            }
+            if (agg_sig_proto.sign_y() != "") {
+                sig_.Y = libff::alt_bn128_Fq(agg_sig_proto.sign_y().c_str());
+            }            
+        } catch (...) {
+            return false;
+        }
+
+        for (auto par : agg_sig_proto.participants()) {
+            participants_.insert(par);
+        }
+        return true;
+    }
 };
 
 // 本 elect height 中共识情况统计
