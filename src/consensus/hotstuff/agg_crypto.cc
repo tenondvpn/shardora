@@ -119,7 +119,7 @@ Status AggCrypto::VerifyTC(uint32_t sharding_id, const std::shared_ptr<TC>& tc) 
     return Verify(*tc->agg_bls_agg_sign(), tc->msg_hash(), sharding_id, tc->elect_height());
 }
 
-Status AggCrypto::CreateAggregateQC(
+std::shared_ptr<AggregateQC> AggCrypto::CreateAggregateQC(
         uint32_t sharding_id,
         uint64_t elect_height,        
         View view,
@@ -127,15 +127,19 @@ Status AggCrypto::CreateAggregateQC(
         const std::vector<AggregateSignature*>& high_qc_sigs) {
     auto elect_item = GetElectItem(sharding_id, elect_height);
     if (!elect_item) {
-        return Status::kError;
+        return nullptr;
     }
     
     AggregateSignature* agg_high_qc_sig;
     Status s = AggregateSigs(elect_item, high_qc_sigs, agg_high_qc_sig);
     if (s != Status::kSuccess) {
-        return s;
+        return nullptr;
     }
-    return Status::kSuccess;
+
+    return std::make_shared<AggregateQC>(
+            high_qcs,
+            std::make_shared<AggregateSignature>(*agg_high_qc_sig),
+            view);
 }
 
 Status AggCrypto::SignMessage(transport::MessagePtr& msg_ptr) {

@@ -280,14 +280,17 @@ struct TC : public QC {
 
 // For Fast HotStuff
 struct AggregateQC {
-    std::unordered_map<uint32_t, QC> qcs_;
+    std::unordered_map<uint32_t, std::shared_ptr<QC>> qcs_;
     std::shared_ptr<AggregateSignature> sig_;
     View view_;
 
-    AggregateQC(std::unordered_map<uint32_t, QC> qcs, std::shared_ptr<AggregateSignature> sig, View view) :
+    AggregateQC(
+            const std::unordered_map<uint32_t, std::shared_ptr<QC>>& qcs,
+            const std::shared_ptr<AggregateSignature>& sig,
+            View view) :
         qcs_(qcs), sig_(sig), view_(view) {}
 
-    inline std::unordered_map<uint32_t, QC> QCs() const {
+    inline std::unordered_map<uint32_t, std::shared_ptr<QC>> QCs() const {
         return qcs_;
     }
 
