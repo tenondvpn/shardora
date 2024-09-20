@@ -786,10 +786,10 @@ class AggregateSig : public ::google::protobuf::Message /* @@protoc_insertion_po
 
   // accessors -------------------------------------------------------
 
-  // repeated uint32 participants = 3;
+  // repeated uint32 participants = 4;
   int participants_size() const;
   void clear_participants();
-  static const int kParticipantsFieldNumber = 3;
+  static const int kParticipantsFieldNumber = 4;
   ::google::protobuf::uint32 participants(int index) const;
   void set_participants(int index, ::google::protobuf::uint32 value);
   void add_participants(::google::protobuf::uint32 value);
@@ -828,12 +828,29 @@ class AggregateSig : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::std::string* release_sign_y();
   void set_allocated_sign_y(::std::string* sign_y);
 
+  // optional bytes sign_z = 3;
+  bool has_sign_z() const;
+  void clear_sign_z();
+  static const int kSignZFieldNumber = 3;
+  const ::std::string& sign_z() const;
+  void set_sign_z(const ::std::string& value);
+  #if LANG_CXX11
+  void set_sign_z(::std::string&& value);
+  #endif
+  void set_sign_z(const char* value);
+  void set_sign_z(const void* value, size_t size);
+  ::std::string* mutable_sign_z();
+  ::std::string* release_sign_z();
+  void set_allocated_sign_z(::std::string* sign_z);
+
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.AggregateSig)
  private:
   void set_has_sign_x();
   void clear_has_sign_x();
   void set_has_sign_y();
   void clear_has_sign_y();
+  void set_has_sign_z();
+  void clear_has_sign_z();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -841,6 +858,7 @@ class AggregateSig : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > participants_;
   ::google::protobuf::internal::ArenaStringPtr sign_x_;
   ::google::protobuf::internal::ArenaStringPtr sign_y_;
+  ::google::protobuf::internal::ArenaStringPtr sign_z_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -2948,7 +2966,73 @@ inline void AggregateSig::set_allocated_sign_y(::std::string* sign_y) {
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.AggregateSig.sign_y)
 }
 
-// repeated uint32 participants = 3;
+// optional bytes sign_z = 3;
+inline bool AggregateSig::has_sign_z() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void AggregateSig::set_has_sign_z() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void AggregateSig::clear_has_sign_z() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void AggregateSig::clear_sign_z() {
+  sign_z_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_sign_z();
+}
+inline const ::std::string& AggregateSig::sign_z() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.AggregateSig.sign_z)
+  return sign_z_.GetNoArena();
+}
+inline void AggregateSig::set_sign_z(const ::std::string& value) {
+  set_has_sign_z();
+  sign_z_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.AggregateSig.sign_z)
+}
+#if LANG_CXX11
+inline void AggregateSig::set_sign_z(::std::string&& value) {
+  set_has_sign_z();
+  sign_z_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.view_block.protobuf.AggregateSig.sign_z)
+}
+#endif
+inline void AggregateSig::set_sign_z(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_sign_z();
+  sign_z_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.view_block.protobuf.AggregateSig.sign_z)
+}
+inline void AggregateSig::set_sign_z(const void* value, size_t size) {
+  set_has_sign_z();
+  sign_z_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.view_block.protobuf.AggregateSig.sign_z)
+}
+inline ::std::string* AggregateSig::mutable_sign_z() {
+  set_has_sign_z();
+  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.AggregateSig.sign_z)
+  return sign_z_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* AggregateSig::release_sign_z() {
+  // @@protoc_insertion_point(field_release:shardora.view_block.protobuf.AggregateSig.sign_z)
+  if (!has_sign_z()) {
+    return NULL;
+  }
+  clear_has_sign_z();
+  return sign_z_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void AggregateSig::set_allocated_sign_z(::std::string* sign_z) {
+  if (sign_z != NULL) {
+    set_has_sign_z();
+  } else {
+    clear_has_sign_z();
+  }
+  sign_z_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), sign_z);
+  // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.AggregateSig.sign_z)
+}
+
+// repeated uint32 participants = 4;
 inline int AggregateSig::participants_size() const {
   return participants_.size();
 }

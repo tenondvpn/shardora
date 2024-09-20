@@ -49,11 +49,16 @@ struct AggregateSignature {
         return sig_;
     }
 
+    void add_participant(uint32_t member_idx) {
+        participants_.insert(member_idx);
+    }
+
     std::string Serialize() const {
         auto agg_sig_proto = view_block::protobuf::AggregateSig();
 
         agg_sig_proto.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(sig_.X));
         agg_sig_proto.set_sign_y(libBLS::ThresholdUtils::fieldElementToString(sig_.Y));
+        agg_sig_proto.set_sign_z(libBLS::ThresholdUtils::fieldElementToString(sig_.Z));
 
         for (auto par : participants_) {
             agg_sig_proto.add_participants(par);
@@ -76,6 +81,9 @@ struct AggregateSignature {
             }
             if (agg_sig_proto.sign_y() != "") {
                 sig_.Y = libff::alt_bn128_Fq(agg_sig_proto.sign_y().c_str());
+            }
+            if (agg_sig_proto.sign_z() != "") {
+                sig_.Z = libff::alt_bn128_Fq(agg_sig_proto.sign_z().c_str());
             }            
         } catch (...) {
             return false;

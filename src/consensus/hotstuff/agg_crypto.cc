@@ -21,7 +21,8 @@ Status AggCrypto::PartialSign(
             elect_item->local_sk(),
             msg_hash,
             &partial_sig->sig_);
-
+    partial_sig->add_participant(elect_item->LocalMember()->index);
+    
     return Status::kSuccess;
 }
 

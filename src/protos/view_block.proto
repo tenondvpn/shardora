@@ -36,7 +36,8 @@ message QC {
 message AggregateSig {
     optional bytes sign_x = 1;
     optional bytes sign_y = 2;
-    repeated uint32 participants = 3;
+    optional bytes sign_z = 3;
+    repeated uint32 participants = 4;
 }
 
 message ViewBlockSyncRequest {

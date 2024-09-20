@@ -140,11 +140,25 @@ void Pacemaker::OnLocalTimeout() {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
     
-    std::string bls_sign_x;
-    std::string bls_sign_y;
+
 
 #ifdef USE_AGG_BLS
+    AggregateSignature* partial_sig;
+    if (crypto_->PartialSign(
+            common::GlobalInfo::Instance()->network_id(),
+            elect_item->ElectHeight(),
+            tc_ptr->msg_hash(),
+            partial_sig) != Status::kSuccess) {
+        ZJC_ERROR("sign message failed: %u, elect height: %lu, hash: %s",
+            common::GlobalInfo::Instance()->network_id(),
+            elect_item->ElectHeight(),
+            common::Encode::HexEncode(tc_ptr->msg_hash()).c_str());
+        return;        
+    }
 #else
+    std::string bls_sign_x;
+    std::string bls_sign_y;
+    
     // 使用最新的 elect_height 签名
     if (crypto_->PartialSign(
             common::GlobalInfo::Instance()->network_id(),
@@ -161,9 +175,28 @@ void Pacemaker::OnLocalTimeout() {
 #endif
     
     view_block::protobuf::TimeoutMessage& timeout_msg = *msg.mutable_hotstuff_timeout_proto();
-    timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());    
+    timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());
+#ifdef USE_AGG_BLS
+    timeout_msg.set_view_sig_str(partial_sig->Serialize());
+    // 对本节点的 high qc 签名
+    AggregateSignature* high_qc_sig;
+    if (crypto_->PartialSign(
+            common::GlobalInfo::Instance()->network_id(),
+            elect_item->ElectHeight(),
+            HighQC()->msg_hash(),
+            high_qc_sig) != Status::kSuccess) {
+        ZJC_ERROR("sign high qc failed: %u, elect height: %lu, hash: %s",
+            common::GlobalInfo::Instance()->network_id(),
+            elect_item->ElectHeight(),
+            common::Encode::HexEncode(HighQC()->msg_hash()).c_str());
+        return;
+    }
+    timeout_msg.set_high_qc_str(HighQC()->Serialize());
+    timeout_msg.set_high_qc_sig_str(high_qc_sig->Serialize());
+#else
     timeout_msg.set_sign_x(bls_sign_x);
     timeout_msg.set_sign_y(bls_sign_y);
+#endif
     timeout_msg.set_view_hash(tc_ptr->msg_hash());
     timeout_msg.set_view(CurView());
     timeout_msg.set_elect_height(elect_item->ElectHeight());
