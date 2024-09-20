@@ -49,8 +49,16 @@ struct AggregateSignature {
         return sig_;
     }
 
+    void set_signature(libff::alt_bn128_G1 g1_sig) {
+        sig_ = g1_sig;
+    }
+
     void add_participant(uint32_t member_idx) {
         participants_.insert(member_idx);
+    }
+
+    inline bool IsValid() const {
+        return !sig_.is_zero() && participants_.size() > 0;
     }
 
     std::string Serialize() const {

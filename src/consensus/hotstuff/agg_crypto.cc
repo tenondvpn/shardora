@@ -1,6 +1,7 @@
 #include <bls/agg_bls.h>
 #include <common/global_info.h>
 #include <consensus/hotstuff/agg_crypto.h>
+#include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
 
 namespace shardora {
 namespace hotstuff {
@@ -30,7 +31,6 @@ Status AggCrypto::VerifyAndAggregateSig(
         uint64_t elect_height,
         View view,
         const HashStr& msg_hash,
-        uint32_t member_idx,
         const AggregateSignature& partial_sig,
         AggregateSignature& agg_sig) {
     auto s = Verify(partial_sig, msg_hash, common::GlobalInfo::Instance()->network_id(), elect_height);
@@ -67,17 +67,29 @@ Status AggCrypto::VerifyAndAggregateSig(
     auto elect_item = GetElectItem(common::GlobalInfo::Instance()->network_id(), elect_height);
     if (!elect_item) {
         return Status::kError;
-    }    
+    }
 
-    std::unordered_set<uint32_t> participant_set;
+    if (!partial_sig.IsValid()) {
+        return Status::kError;
+    }
+    uint32_t member_idx = *partial_sig.participants().begin();
+    
     auto collection_item = bls_collection_->GetItem(msg_hash);
     collection_item->ok_bitmap.Set(member_idx);
     collection_item->partial_sigs[member_idx] = partial_sig;
-    participant_set.insert(member_idx);
     
     if (collection_item->OkCount() < elect_item->t()) {
         return Status::kBlsVerifyWaiting;
     }
+
+    std::vector<AggregateSignature*> partial_sigs;
+    for (auto partial_sig : collection_item->partial_sigs) {
+        partial_sigs.push_back(&partial_sig);
+    }
+    s = AggregateSigs(elect_item, partial_sigs, &agg_sig);
+    if (s != Status::kSuccess) {
+        return s;
+    } 
 
     // Aggregate partial signatures
     std::vector<libff::alt_bn128_G1> partial_g1_sigs;
@@ -87,8 +99,6 @@ Status AggCrypto::VerifyAndAggregateSig(
 
     libff::alt_bn128_G1* agg_g1_sig;
     bls::AggBls().Aggregate(elect_item->t(), elect_item->n(), partial_g1_sigs, agg_g1_sig);
-    agg_sig.sig_ = *agg_g1_sig;
-    agg_sig.participants_ = participant_set;
     
     return Status::kSuccess;
 }
@@ -107,6 +117,25 @@ Status AggCrypto::VerifyTC(uint32_t sharding_id, const std::shared_ptr<TC>& tc) 
     }
 
     return Verify(*tc->agg_bls_agg_sign(), tc->msg_hash(), sharding_id, tc->elect_height());
+}
+
+Status AggCrypto::CreateAggregateQC(
+        uint32_t sharding_id,
+        uint64_t elect_height,        
+        View view,
+        const std::unordered_map<uint32_t, std::shared_ptr<QC>>& high_qcs,
+        const std::vector<AggregateSignature*>& high_qc_sigs) {
+    auto elect_item = GetElectItem(sharding_id, elect_height);
+    if (!elect_item) {
+        return Status::kError;
+    }
+    
+    AggregateSignature* agg_high_qc_sig;
+    Status s = AggregateSigs(elect_item, high_qc_sigs, agg_high_qc_sig);
+    if (s != Status::kSuccess) {
+        return s;
+    }
+    return Status::kSuccess;
 }
 
 Status AggCrypto::SignMessage(transport::MessagePtr& msg_ptr) {

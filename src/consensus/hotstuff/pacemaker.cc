@@ -196,6 +196,16 @@ void Pacemaker::OnLocalTimeout() {
 #else
     timeout_msg.set_sign_x(bls_sign_x);
     timeout_msg.set_sign_y(bls_sign_y);
+
+    ZJC_DEBUG("now send local timeout msg hash: %s, view: %u, pool: %u, "
+        "elect height: %lu, member index: %u, member size: %u, "
+        "bls_sign_x: %s, bls_sign_y: %s",
+        common::Encode::HexEncode(tc_ptr->msg_hash()).c_str(),
+        CurView(), pool_idx_, elect_item->ElectHeight(),
+        timeout_msg.member_id(),
+        leader_rotation_->MemberSize(common::GlobalInfo::Instance()->network_id()),
+        bls_sign_x.c_str(),
+        bls_sign_y.c_str());    
 #endif
     timeout_msg.set_view_hash(tc_ptr->msg_hash());
     timeout_msg.set_view(CurView());
@@ -211,15 +221,6 @@ void Pacemaker::OnLocalTimeout() {
         stop_voting_fn_(CurView());
     }
 
-    ZJC_DEBUG("now send local timeout msg hash: %s, view: %u, pool: %u, "
-        "elect height: %lu, member index: %u, member size: %u, "
-        "bls_sign_x: %s, bls_sign_y: %s",
-        common::Encode::HexEncode(tc_ptr->msg_hash()).c_str(),
-        CurView(), pool_idx_, elect_item->ElectHeight(),
-        timeout_msg.member_id(),
-        leader_rotation_->MemberSize(common::GlobalInfo::Instance()->network_id()),
-        bls_sign_x.c_str(),
-        bls_sign_y.c_str());
     SendTimeout(msg_ptr);
 }
 
@@ -295,6 +296,59 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     }
 
 #ifdef USE_AGG_BLS
+    // 统计 high_qc，用于生成 AggQC
+    if (timeout_proto.view() < high_qcs_view_) {
+        return;
+    }
+
+    if (timeout_proto.view() > high_qcs_view_) {
+        high_qcs_.clear();
+        high_qc_sigs_.clear();
+        high_qcs_view_ = timeout_proto.view();
+    }
+    
+    auto high_qc_of_node = std::make_shared<QC>();
+    if (!high_qc_of_node->Unserialize(timeout_proto.high_qc_str())) {
+        return;
+    }
+    AggregateSignature* high_qc_sig_of_node;
+    if (!high_qc_sig_of_node->Unserialize(timeout_proto.high_qc_sig_str())) {
+        return;
+    }
+    
+    high_qcs_.insert(std::make_pair(timeout_proto.member_id(), high_qc_of_node));
+    high_qc_sigs_.push_back(high_qc_sig_of_node);
+    
+    // 生成 TC
+    AggregateSignature* partial_sig;
+    if (!partial_sig->Unserialize(timeout_proto.view_sig_str())) {
+        return;
+    }
+    
+    AggregateSignature* agg_sig;
+    Status s = crypto_->VerifyAndAggregateSig(
+            timeout_proto.elect_height(),
+            timeout_proto.view(),
+            timeout_proto.view_hash(),
+            timeout_proto.member_id(),
+            *partial_sig,
+            *agg_sig);
+    ZJC_DEBUG("====4.0 pool: %d, view: %d, member: %d, status: %d, hash64: %lu", 
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), s,
+        msg_ptr->header.hash64());    
+    if (s != Status::kSuccess || !agg_sig->IsValid()) {
+        return;
+    }
+    
+    auto tc = std::make_shared<TC>(
+        common::GlobalInfo::Instance()->network_id(),
+        pool_idx_,
+        agg_sig,
+        timeout_proto.view(),
+        timeout_proto.elect_height(),
+        timeout_proto.leader_idx());
+
+    // TODO CreateAggregateQC()
 #else
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
     Status s = crypto_->ReconstructAndVerifyThresSign(
@@ -312,7 +366,6 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         return;
     }
     
-    // 视图切换
     auto tc = std::make_shared<TC>(
         common::GlobalInfo::Instance()->network_id(),
         pool_idx_,
@@ -321,7 +374,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         timeout_proto.elect_height(),
         timeout_proto.leader_idx());
 #endif
-    
+    // 视图切换
     ZJC_DEBUG("====4.1 pool: %d, create tc, view: %lu, member: %d, "
         "tc view: %lu, cur view: %lu, high_qc_: %lu, high_tc_: %lu",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(),

@@ -129,6 +129,11 @@ private:
     uint64_t last_time_us_ = 0;
     uint64_t duration_us_ = 0;
     std::shared_ptr<transport::TransportMessage> last_timeout_ = nullptr;
+#ifdef USE_AGG_BLS
+    std::unordered_map<uint32_t, std::shared_ptr<QC>> high_qcs_; // 统计 high_qcs
+    std::vector<AggregateSignature*> high_qc_sigs_;
+    View high_qcs_view_ = BeforeGenesisView;
+#endif
 };
 
 } // namespace consensus

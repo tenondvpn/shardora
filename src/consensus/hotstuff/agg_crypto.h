@@ -63,13 +63,17 @@ public:
             uint64_t elect_height,
             View view,
             const HashStr& msg_hash,
-            uint32_t member_idx,
             const AggregateSignature& partial_sig,
             AggregateSignature& agg_sig);
 
     Status VerifyQC(uint32_t sharding_id, const std::shared_ptr<QC>& qc);
     Status VerifyTC(uint32_t sharding_id, const std::shared_ptr<TC>& tc);
-    Status CreateAggregateQC();
+    Status CreateAggregateQC(
+            uint32_t sharding_id,
+            uint64_t elect_height,
+            View view,
+            const std::unordered_map<uint32_t, std::shared_ptr<QC>>& high_qcs,
+            const std::vector<AggregateSignature*>& high_qc_sigs);
 
     Status SignMessage(transport::MessagePtr& msg_ptr);
     Status VerifyMessage(const transport::MessagePtr& msg_ptr);
@@ -145,7 +149,29 @@ private:
         return verified ? Status::kSuccess : Status::kBlsVerifyFailed; 
     }
     // BatchVerify verifies the given quorum signature against the batch of messages.
-    Status BatchVerify(const AggregateSignature& sig, const std::unordered_map<uint32_t, HashStr> msg_hash_map);    
+    Status BatchVerify(const AggregateSignature& sig, const std::unordered_map<uint32_t, HashStr> msg_hash_map);
+
+    Status AggregateSigs(
+            const std::shared_ptr<ElectItem>& elect_item,
+            const std::vector<AggregateSignature*>& sigs,
+            AggregateSignature* agg_sig) {
+        std::vector<libff::alt_bn128_G1> g1_sigs;
+        for (const auto sig : sigs) {
+            if (!sig->IsValid()) {
+                continue;
+            }
+            g1_sigs.push_back(sig->signature());
+            for (const uint32_t member_id : sig->participants()) {
+                agg_sig->add_participant(member_id);
+            }
+        }
+
+        libff::alt_bn128_G1* agg_g1_sig;
+        bls::AggBls().Aggregate(elect_item->t(), elect_item->n(), g1_sigs, agg_g1_sig);
+        agg_sig->set_signature(*agg_g1_sig);
+
+        return Status::kSuccess;
+    }
 };
 
 } // namespace hotstuff
