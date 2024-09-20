@@ -224,6 +224,28 @@ struct TC : public QC {
     }
 };
 
+// For Fast HotStuff
+struct AggregateQC {
+    std::unordered_map<uint32_t, QC> qcs_;
+    std::shared_ptr<AggregateSignature> sig_;
+    View view_;
+
+    AggregateQC(std::unordered_map<uint32_t, QC> qcs, std::shared_ptr<AggregateSignature> sig, View view) :
+        qcs_(qcs), sig_(sig), view_(view) {}
+
+    inline std::unordered_map<uint32_t, QC> QCs() const {
+        return qcs_;
+    }
+
+    inline std::shared_ptr<AggregateSignature> Sig() const {
+        return sig_;
+    }
+
+    inline View GetView() const {
+        return view_;
+    }
+};
+
 struct ViewBlock {
     HashStr hash;
     HashStr parent_hash;
@@ -278,7 +300,7 @@ struct ViewBlock {
 struct SyncInfo : public std::enable_shared_from_this<SyncInfo> {
     std::shared_ptr<QC> qc;
     std::shared_ptr<TC> tc;
-    // std::shared_ptr<ViewBlock> view_block;
+    std::shared_ptr<AggregateQC> agg_qc;
 
     SyncInfo() : qc(nullptr), tc(nullptr) {};
 
@@ -291,6 +313,11 @@ struct SyncInfo : public std::enable_shared_from_this<SyncInfo> {
         tc = t;
         return shared_from_this();
     }
+
+    std::shared_ptr<SyncInfo> WithAggQC(const std::shared_ptr<AggregateQC>& a) {
+        agg_qc = a;
+        return shared_from_this();
+    }    
 };
 
 std::shared_ptr<SyncInfo> new_sync_info();

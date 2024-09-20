@@ -69,6 +69,7 @@ public:
 
     Status VerifyQC(uint32_t sharding_id, const std::shared_ptr<QC>& qc);
     Status VerifyTC(uint32_t sharding_id, const std::shared_ptr<TC>& tc);
+    Status CreateAggregateQC();
 
     Status SignMessage(transport::MessagePtr& msg_ptr);
     Status VerifyMessage(const transport::MessagePtr& msg_ptr);
