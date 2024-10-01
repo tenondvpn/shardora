@@ -79,7 +79,7 @@ public:
                 to_txs.tos(i).balance(),
                 db_batch);
             prepayment_gas_[thread_idx].Insert(to_txs.tos(i).to(), to_txs.tos(i).balance());
-            ZJC_DEBUG("success save contract prepayment contract: %s, prepayment: %lu, pool: %u, height: %lu",
+            ZJC_INFO("success save contract prepayment contract: %s, prepayment: %lu, pool: %u, height: %lu",
                 common::Encode::HexEncode(to_txs.tos(i).to()).c_str(),
                 to_txs.tos(i).balance(),
                 view_block.qc().pool_index(),
@@ -112,7 +112,7 @@ public:
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         prepayment_gas_[thread_idx].Insert(key, tx.contract_prepayment());
         pools_max_heights_[view_block.qc().pool_index()] = block.height();
-        ZJC_DEBUG("success save contract prepayment contract: %s, "
+        ZJC_INFO("success save contract prepayment contract: %s, "
             "set user: %s, prepayment: %lu, pool: %u, height: %lu",
             common::Encode::HexEncode(tx.to()).c_str(),
             common::Encode::HexEncode(tx.from()).c_str(),
@@ -140,7 +140,7 @@ public:
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         prepayment_gas_[thread_idx].Insert(key, tx.balance());
         pools_max_heights_[view_block.qc().pool_index()] = block.height();
-        ZJC_DEBUG("success save contract prepayment contract: %s, set user: %s, prepayment: %lu, pool: %u, height: %lu",
+        ZJC_INFO("success save contract prepayment contract: %s, set user: %s, prepayment: %lu, pool: %u, height: %lu",
             common::Encode::HexEncode(tx.to()).c_str(),
             common::Encode::HexEncode(tx.from()).c_str(),
             tx.balance(),
@@ -199,7 +199,7 @@ public:
             prepayment,
             pool_index,
             height);
-        ZJC_DEBUG("success get contract prepayment from db %s, %s, %lu", common::Encode::HexEncode(contract_addr).c_str(), common::Encode::HexEncode(user_addr).c_str(), prepayment);
+        ZJC_INFO("success get contract prepayment from db %s, %s, %lu", common::Encode::HexEncode(contract_addr).c_str(), common::Encode::HexEncode(user_addr).c_str(), prepayment);
         return prepayment;
     }
 
