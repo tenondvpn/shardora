@@ -107,9 +107,7 @@ Status ViewBlockChain::Store(
     ZJC_DEBUG("success add block info hash: %s, parent hash: %s, %u_%u_%lu, propose_debug: %s", 
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), 
         common::Encode::HexEncode(view_block->parent_hash()).c_str(), 
-        view_block->qc().network_id(), view_block->qc().pool_index(), 
-        view_block->qc().view(), 
-        view_block->debug().c_str());
+        view_block->qc().network_id(), view_block->qc().pool_index(), view_block->qc().view(), view_block->debug().c_str());
     return Status::kSuccess;
 }
 

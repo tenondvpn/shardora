@@ -81,7 +81,6 @@ static const std::string kViewBlockInfoPrefix = "an\x01";
 static const std::string kBandwidthPrefix = "ao\x01";
 static const std::string kC2cSelloutPrefix = "ap\x01";
 static const std::string kC2cSellorderPrefix = "aq\x01";
-static const std::string kAggBlsPrivateKeyPrefix = "ar\x01";
 
 class PrefixDb {
 public:
@@ -1857,60 +1856,6 @@ public:
 
         return sell_info->ParseFromString(val);
     }
-
-    // 用于保存 agg bls 的私钥，目前私钥与 elect_height 无关
-    void SaveAggBlsPrikey(
-            std::shared_ptr<security::Security>& security_ptr,
-            const libff::alt_bn128_Fr& bls_prikey) {
-        std::string key;
-        key.reserve(32);
-        key.append(kAggBlsPrivateKeyPrefix);
-        key.append(security_ptr->GetAddress());
-
-        std::string enc_data;
-        std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(bls_prikey);
-        if (security_ptr->Encrypt(
-                    sec_key,
-                    security_ptr->GetPrikey(),
-                    &enc_data) != security::kSecuritySuccess) {
-            return;
-        }        
-        
-        auto st = db_->Put(key, enc_data);
-        if (!st.ok()) {
-            ZJC_FATAL("write db failed!");
-        }
-    }
-
-    bool GetAggBlsPrikey(
-            std::shared_ptr<security::Security>& security_ptr,
-            libff::alt_bn128_Fr* bls_prikey) {
-        std::string key;
-        key.reserve(32);
-        key.append(kAggBlsPrivateKeyPrefix);
-        key.append(security_ptr->GetAddress());
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            ZJC_DEBUG("get agg bls failed: %s",
-                common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
-            return false;
-        }
-
-        std::string prikey_str;
-        if (security_ptr->Decrypt(
-                val,
-                security_ptr->GetPrikey(),
-                &prikey_str) != security::kSecuritySuccess) {
-            return false;
-        }
-
-        ZJC_DEBUG("save agg bls success: %s",
-            common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
-
-        *bls_prikey = libff::alt_bn128_Fr(prikey_str.c_str());
-        return true;
-    }    
 
 private:
     static const uint32_t kSaveElectHeightCount = 4u;
