@@ -1,6 +1,5 @@
 #include "transport/multi_thread.h"
 
-#include <common/log.h>
 #include <functional>
 
 #include "common/utils.h"
@@ -514,11 +513,11 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool htt
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     for (uint32_t pri = kTransportPrioritySystem; pri < kTransportPriorityMaxCount; ++pri) {
         MessagePtr msg_obj;
-        threads_message_queues_[thread_idx][pri].pop(&msg_obj);        
+        threads_message_queues_[thread_idx][pri].pop(&msg_obj);
         if (msg_obj == nullptr) {
             continue;
         }
-        
+
         if (msg_obj->handle_timeout < now_tm_ms) {
             ZJC_DEBUG("remove handle timeout invalid message hash: %lu", msg_obj->header.hash64());
             continue;
@@ -526,7 +525,6 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool htt
 
         ZJC_DEBUG("pop valid message hash: %lu, size: %u, thread: %u",
             msg_obj->header.hash64(), threads_message_queues_[thread_idx][pri].size(), thread_idx);
-
         return msg_obj;
     }
 
@@ -535,10 +533,13 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool htt
         MessagePtr msg_obj;
         http_server_message_queue_.pop(&msg_obj);
         if (msg_obj != nullptr) {
-            ZJC_DEBUG("get msg http transaction success %s, %s", 
+            ZJC_DEBUG("get msg http transaction success %s, %s, hash64: %lu, step: %d, gid: %s", 
                 common::Encode::HexEncode(
                 security_->GetAddress(msg_obj->header.tx_proto().pubkey())).c_str(),
-                common::Encode::HexEncode(msg_obj->header.tx_proto().to()).c_str());
+                common::Encode::HexEncode(msg_obj->header.tx_proto().to()).c_str(),
+                msg_obj->header.hash64(),
+                msg_obj->header.tx_proto().step(),
+                common::Encode::HexEncode(msg_obj->header.tx_proto().gid()).c_str());
         }
         return msg_obj;
     }

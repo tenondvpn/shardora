@@ -1,7 +1,6 @@
 syntax = "proto2";
 
 import "protos/bls.proto";
-import "protos/elect.proto";
 package shardora.pools.protobuf;
 
 enum StepType {
@@ -106,7 +105,6 @@ message PoolStatisticItem {
     repeated uint64 consensus_gap = 7;
 }
 
-
 message JoinElectNode {
     optional bytes pubkey = 1;
     optional uint64 stoke = 2;
@@ -115,7 +113,6 @@ message JoinElectNode {
     optional AreaInfo area_point = 5;
     optional uint64 credit =6;
     optional uint64 consensus_gap = 7;
-    optional elect.protobuf.BlsPublicKey agg_bls_pk = 8;
 }
 
 message ElectStatistic {
@@ -125,13 +122,6 @@ message ElectStatistic {
     optional uint32 sharding_id = 4;
     optional uint64 gas_amount = 5;
     repeated uint32 lof_leaders = 6;
-    optional bool shard_perf_limit_reached = 7;
-    // optional NetsInfo nets_info = 9;
-}
-
-message NetsInfo {
-    optional uint32 preopened_network_id = 1;
-    optional uint32 biggest_opened_network_id = 2;
 }
 
 message SyncPoolsMaxHeight {

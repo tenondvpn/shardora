@@ -36,8 +36,8 @@ public:
                 if (local_member_->bls_publick_key != libff::alt_bn128_G2::zero()) {
                     bls_valid_ = true;
                 }
+                break;
             }
-            member_aggbls_pk_map_[(*members)[i]->index] = (*members)[i]->agg_bls_pk;
         }
 
         elect_height_ = elect_height;
@@ -105,13 +105,6 @@ public:
     inline std::shared_ptr<ConsensusStat> consensus_stat(uint32_t pool_idx) {
         return pool_consen_stat_map_[pool_idx];
     }
-
-    libff::alt_bn128_G2* agg_bls_pk(uint32_t member_idx) {
-        if (member_aggbls_pk_map_.find(member_idx) != member_aggbls_pk_map_.end()) {
-            return &member_aggbls_pk_map_[member_idx];
-        }
-        return nullptr;
-    }
     
 private:
     void SetMemberCount(uint32_t mem_cnt) {
@@ -128,7 +121,6 @@ private:
     bool bls_valid_{false};
     uint32_t bls_t_{0};
     uint32_t bls_n_{0};
-    std::unordered_map<uint32_t, libff::alt_bn128_G2> member_aggbls_pk_map_;
     
     std::unordered_map<uint32_t, std::shared_ptr<ConsensusStat>> pool_consen_stat_map_; 
 };
@@ -195,11 +187,12 @@ public:
             sharding_id,
             &common_pk,
             &sec_key);
-        if (members == nullptr || common_pk == libff::alt_bn128_G2::zero()) {
+        if (members == nullptr) {
             ZJC_ERROR("failed get elect members or common pk: %u, %lu, %d",
                 sharding_id,
                 elect_height,
-                (common_pk == libff::alt_bn128_G2::zero()));            
+                (common_pk == libff::alt_bn128_G2::zero()));
+            assert(false);      
             return nullptr;
         }
         
@@ -227,17 +220,16 @@ public:
             return;
         }
         for (auto& member : *(elect_items_[sharding_id]->Members())) {
-            ZJC_DEBUG("get Leader pool %s failed: %d, %u %d", 
-                common::Encode::HexEncode(member->id).c_str(), 
-                common::GlobalInfo::Instance()->network_id(),
-                member->public_ip,
-                member->public_port);
+            // ZJC_DEBUG("get Leader pool %s failed: %d, %u %d", 
+            //     common::Encode::HexEncode(member->id).c_str(), 
+            //     common::GlobalInfo::Instance()->network_id(),
+            //     member->public_ip,
+            //     member->public_port);
             if (member->public_ip == 0 || member->public_port == 0) {
                 auto dht_ptr = network::DhtManager::Instance()->GetDht(common::GlobalInfo::Instance()->network_id());
                 if (dht_ptr != nullptr) {
                     auto nodes = dht_ptr->readonly_hash_sort_dht();
                     for (auto iter = nodes->begin(); iter != nodes->end(); ++iter) {
-                        ZJC_DEBUG("Leader pool dht node: %s", common::Encode::HexEncode((*iter)->id).c_str());
                         if ((*iter)->id == member->id) {
                             member->public_ip = common::IpToUint32((*iter)->public_ip.c_str());
                             member->public_port = (*iter)->public_port;
@@ -247,13 +239,7 @@ public:
                                 (*iter)->public_port);
                         }
                     }
-                } else {
-                    ZJC_DEBUG("Leader pool dht failed: %d", common::GlobalInfo::Instance()->network_id());
                 }
-            } else {
-                ZJC_DEBUG("Leader pool %s failed: %d", 
-                    common::Encode::HexEncode(member->id).c_str(), 
-                    common::GlobalInfo::Instance()->network_id());
             }
         }        
     }

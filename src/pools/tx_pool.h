@@ -90,7 +90,7 @@ public:
             return false;
         }
 
-        if (prefix_db_->GidExists(gid)) {
+        if (prefix_db_->JustCheckGidExists(gid)) {
             return false;
         }
 

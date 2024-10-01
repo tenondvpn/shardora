@@ -142,11 +142,6 @@ struct BftMessageInfo {
     std::string gid;
 };
 
-typedef std::function<void(
-    std::shared_ptr<block::protobuf::Block>& block,
-    db::DbWriteBatch& db_batch)> BlockCacheCallback;
-
-
 std::string StatusToString(uint32_t status);
 
 std::string GetCommitedBlockHash(const std::string& prepare_hash);

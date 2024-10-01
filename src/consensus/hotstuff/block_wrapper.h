@@ -20,12 +20,12 @@ public:
     virtual Status Wrap(
             const std::shared_ptr<ViewBlock>& prev_block,
             const uint32_t& leader_idx,
-            std::shared_ptr<block::protobuf::Block>& block,
-            std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose,
+            view_block::protobuf::ViewBlockItem* view_block,
+            hotstuff::protobuf::TxPropose* tx_propose,
             const bool& no_tx_allowed,
             std::shared_ptr<ViewBlockChain>& view_block_chain) = 0;
     virtual Status GetTxsIdempotently(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>& txs) = 0;
-    virtual bool HasSingleTx() = 0;
+    virtual bool HasSingleTx(pools::CheckGidValidFunction gid_valid_fn) = 0;
 };
 
 class BlockWrapper : public IBlockWrapper {
@@ -45,15 +45,15 @@ public:
     Status Wrap(
             const std::shared_ptr<ViewBlock>& prev_block,
             const uint32_t& leader_idx,
-            std::shared_ptr<block::protobuf::Block>& block,
-            std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose,
+            view_block::protobuf::ViewBlockItem* view_block,
+            hotstuff::protobuf::TxPropose* tx_propose,
             const bool& no_tx_allowed,
             std::shared_ptr<ViewBlockChain>& view_block_chain) override;
 
     // 幂等，用于同步 replica 向 leader 同步交易
     Status GetTxsIdempotently(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>& txs) override;
     // 是否存在内置交易
-    bool HasSingleTx() override;
+    bool HasSingleTx(pools::CheckGidValidFunction gid_valid_fn) override;
 
 private:
     uint32_t pool_idx_;
@@ -66,7 +66,7 @@ private:
     Status LeaderGetTxsIdempotently(
             std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
             pools::CheckGidValidFunction gid_vlid_func) {
-        pools_mgr_->PopTxs(pool_idx_, false);
+        pools_mgr_->PopTxs(pool_idx_, false, nullptr, nullptr);
         pools_mgr_->CheckTimeoutTx(pool_idx_);
         
         txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(pool_idx_, gid_vlid_func);

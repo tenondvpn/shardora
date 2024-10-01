@@ -1,7 +1,6 @@
 #pragma once
 
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g2.hpp>
-#include <libff/algebra/curves/alt_bn128/alt_bn128_init.hpp>
 
 #include "common/utils.h"
 
@@ -11,20 +10,18 @@ namespace common {
 
 struct BftMember {
     BftMember(
-            uint32_t nid,
-            const std::string& in_id,
-            const std::string& pkey,
-            uint32_t idx,
-            int32_t pool_mode_num,
-            libff::alt_bn128_G2 agg_bls_pk)
+        uint32_t nid,
+        const std::string& in_id,
+        const std::string& pkey,
+        uint32_t idx,
+        int32_t pool_mode_num)
         : net_id(nid),
-          id(in_id),
-          pubkey(pkey),
-          index(idx),
-          public_ip(0),
-          public_port(0),
-          pool_index_mod_num(pool_mode_num),
-          agg_bls_pk(agg_bls_pk) {
+        id(in_id),
+        pubkey(pkey),
+        index(idx),
+        public_ip(0),
+        public_port(0),
+        pool_index_mod_num(pool_mode_num) {
         pool_index_mod_num = pool_mode_num;
     }
 
@@ -41,8 +38,6 @@ struct BftMember {
     libff::alt_bn128_G2 bls_publick_key;
     bool valid_leader{ true };
     std::string peer_ecdh_key;
-    // aggbls
-    libff::alt_bn128_G2 agg_bls_pk;
 };
 
 typedef std::shared_ptr<BftMember> BftMemberPtr;

@@ -29,20 +29,16 @@ function hexToBytes(hex) {
 }
 
 function init_private_key() {
-    //const privateKeyBuf = Secp256k1.uint256("b5b3128c236fcec044c303b54d55a97e20bf98b625fec1de6a2a0fffcd8c7cf7", 16)
-    //const privateKeyBuf = Secp256k1.uint256("1b2f993407b95324155ecbfcf2577e32174c8b66e5fdfa4da5677bccdc788763", 16)
-    //const privateKeyBuf = Secp256k1.uint256("1ef07e73ed6211e7b0a512bc6468419fbdcd9b345b49a3331b4c8f8070172a70", 16)
-    //const privateKeyBuf = Secp256k1.uint256("373a3165ec09edea6e7a1c8cff21b06f5fb074386ece283927aef730c6d44596", 16)
-    //const privateKeyBuf = Secp256k1.uint256("fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971", 16)
-    //manager
-    //const privateKeyBuf = Secp256k1.uint256("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 16)
-    const privateKeyBuf = Secp256k1.uint256("9f5acebfa8f32ad4ce046aaa9aaa93406fcc0c91f66543098ac99d64beee7508", 16)
+    //const privateKeyBuf = Secp256k1.uint256("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 16) // e252d01a37b85e2007ed3cc13797aa92496204a4
+    //const privateKeyBuf = Secp256k1.uint256("10ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 16) // b5f4bf70ae9afb2649e47488d8cd1574eef2c691 
+    const privateKeyBuf = Secp256k1.uint256("a65500a2e10387caf218b6751b172954e7fd178398ee85f78bc9b13de6459dd7", 16) // e10fe8543f02ca7739803df692b8122cd200c9d7 
+    //const privateKeyBuf = Secp256k1.uint256("d5a4758b94d34da11f818efbbc7b6739949aa7cb249c9403022b4ed54fa7b0a8", 16)
     self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
     self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
     var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
     var address = keccak256(pk_bytes).toString('hex')
-    console.log("self_account_id: " + address.toString('hex'));
     address = address.slice(address.length - 40, address.length)
+    console.log("self_account_id: " + address.toString('hex'));
     self_account_id = address;
     contract_address = fs.readFileSync('contract_address', 'utf-8');
     console.log("contract_address: " + contract_address);
@@ -313,7 +309,7 @@ function QueryPostCode(path, data) {
     var post_data = querystring.stringify(data);
     var post_options = {
         host: '127.0.0.1',
-        port: '8301',
+        port: '23001',
         path: path,
         method: 'POST',
         headers: {

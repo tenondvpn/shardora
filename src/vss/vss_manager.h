@@ -20,7 +20,7 @@ class VssManager {
 public:
     VssManager();
     ~VssManager() {}
-    void OnTimeBlock(const std::shared_ptr<block::protobuf::Block>& block);
+    void OnTimeBlock(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block);
 
     uint64_t EpochRandom() {
         return epoch_random_;

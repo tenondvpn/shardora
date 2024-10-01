@@ -29,7 +29,7 @@ function hexToBytes(hex) {
 }
 
 function init_private_key() {
-    const privateKeyBuf = Secp256k1.uint256("78c628f14ae20a070ef41fb89eb2e0595f723885ef60d9e3a4acb8f166688b6f", 16)
+    const privateKeyBuf = Secp256k1.uint256("9f5acebfa8f32ad4ce046aaa9aaa93406fcc0c91f66543098ac99d64beee7508", 16)
     self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
     self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
     var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
@@ -47,7 +47,7 @@ function PostCode(data) {
     console.log('post_data length: ' + Buffer.byteLength(post_data));
     var post_options = {
         host: '127.0.0.1',
-        port: '8301',
+        port: '23001',
         path: '/transaction',
         method: 'POST',
         headers: {
@@ -292,7 +292,7 @@ function do_transaction(to_addr, amount, gas_limit, gas_price) {
 
 function CreatePhr() {
     console.log("test smart contract signature: ");
-    var account1 = web3.eth.accounts.privateKeyToAccount('0x78c628f14ae20a070ef41fb89eb2e0595f723885ef60d9e3a4acb8f166688b6f');
+    var account1 = web3.eth.accounts.privateKeyToAccount('0x9f5acebfa8f32ad4ce046aaa9aaa93406fcc0c91f66543098ac99d64beee7508');
     console.log("account1 :");
     console.log(account1.address);
     var account2 = web3.eth.accounts.privateKeyToAccount('0x93d851df1e44fa6ba0fbb3731267b967a4e3894e33a8e324a6802c7c06a37628');
@@ -306,7 +306,7 @@ function CreatePhr() {
     
     {
         var updateRootFunc = web3.eth.abi.encodeFunctionSignature('updateRoot(bytes32)');
-        var updateRootFunc_param_codes = web3.eth.abi.encodeParameters(['bytes32'], ['0x78c628f14ae20a070ef41fb89eb2e0595f723885ef60d9e3a4acb8f166688b6f']);
+        var updateRootFunc_param_codes = web3.eth.abi.encodeParameters(['bytes32'], ['0x9f5acebfa8f32ad4ce046aaa9aaa93406fcc0c91f66543098ac99d64beee7508']);
         console.log("updateRootFunc: " + updateRootFunc.substring(2) + updateRootFunc_param_codes.substring(2));
     }
 
@@ -339,7 +339,7 @@ function CreatePhr() {
         var test = "test";
         var hashValue = web3.utils.keccak256(test);
         var buyer_sig = web3.eth.accounts.sign(hashValue, '0x93d851df1e44fa6ba0fbb3731267b967a4e3894e33a8e324a6802c7c06a37628');
-        var seller_sig = web3.eth.accounts.sign(hashValue, '0x78c628f14ae20a070ef41fb89eb2e0595f723885ef60d9e3a4acb8f166688b6f');
+        var seller_sig = web3.eth.accounts.sign(hashValue, '0x9f5acebfa8f32ad4ce046aaa9aaa93406fcc0c91f66543098ac99d64beee7508');
      
        var verifyFuncParam = web3.eth.abi.encodeParameters(['address','address','bytes','bytes','uint256','bytes'], [account1.address, account2.address, buyer_sig.signature,seller_sig.signature,1,hashValue]);
         console.log("verifySignatures func: " + verifyFunc.substring(2) + verifyFuncParam.substring(2));
@@ -549,7 +549,7 @@ function Prepayment2( prepay) {
      
 
 function create_tx3(to, amount, gas_limit, gas_price, prepay, tx_type) {
-    const privateKeyBuf2 = Secp256k1.uint256("78c628f14ae20a070ef41fb89eb2e0595f723885ef60d9e3a4acb8f166688b6f", 16)
+    const privateKeyBuf2 = Secp256k1.uint256("9f5acebfa8f32ad4ce046aaa9aaa93406fcc0c91f66543098ac99d64beee7508", 16)
     self_private_key2 = Secp256k1.uint256(privateKeyBuf2, 16)
     self_public_key2 = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key2)
 

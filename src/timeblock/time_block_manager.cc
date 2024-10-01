@@ -62,7 +62,9 @@ void TimeBlockManager::CreateTimeBlockTx() {
     ZJC_INFO("success create timeblock gid: %s", common::Encode::HexEncode(gid).c_str());
 }
 
-bool TimeBlockManager::HasTimeblockTx(uint32_t pool_index) {
+bool TimeBlockManager::HasTimeblockTx(
+        uint32_t pool_index, 
+        pools::CheckGidValidFunction gid_valid_fn) {
     if (pool_index != common::kRootChainPoolIndex ||
             common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         return false;
@@ -79,6 +81,10 @@ bool TimeBlockManager::HasTimeblockTx(uint32_t pool_index) {
             return false;
         }
 
+        if (!gid_valid_fn(tmblock_tx_ptr_->tx_info.gid())) {
+            return false;
+        }
+        
         return true;
     }
 

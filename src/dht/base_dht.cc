@@ -1,6 +1,5 @@
 #include "dht/base_dht.h"
 
-#include <network/network_status.h>
 #include <stdio.h>
 
 #include <bitset>
@@ -296,10 +295,9 @@ int BaseDht::Bootstrap(
                 boot_nodes[i]->public_ip.c_str(),
                 boot_nodes[i]->public_port);
         } else {
-            DHT_DEBUG("bootstrap from %s:%d success, hash64: %llu\n",
+            DHT_DEBUG("bootstrap from %s:%d success\n",
                 boot_nodes[i]->public_ip.c_str(),
-                boot_nodes[i]->public_port,
-                msg.hash64());
+                boot_nodes[i]->public_port);
         }
     }
 

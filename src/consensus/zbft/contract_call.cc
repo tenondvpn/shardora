@@ -7,14 +7,14 @@ namespace shardora {
 namespace consensus {
 
 void ContractCall::GetTempPerpaymentBalance(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& block_tx,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         uint64_t* balance) {
     auto iter = acc_balance_map.find("pre_" + block_tx.from());
     if (iter == acc_balance_map.end()) {
         uint64_t from_balance = prepayment_->GetAddressPrepayment(
-            block.pool_index(),
+            view_block.qc().pool_index(),
             block_tx.to(),
             block_tx.from());
         acc_balance_map["pre_" + block_tx.from()] = from_balance;
@@ -25,7 +25,7 @@ void ContractCall::GetTempPerpaymentBalance(
 }
 
 int ContractCall::HandleTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
@@ -33,7 +33,7 @@ int ContractCall::HandleTx(
     // gas just consume from 's prepayment
     ZJC_DEBUG("contract called now.");
     uint64_t from_balance = 0;
-    GetTempPerpaymentBalance(block, block_tx, acc_balance_map, &from_balance);
+    GetTempPerpaymentBalance(view_block, block_tx, acc_balance_map, &from_balance);
     if (from_balance <= kCallContractDefaultUseGas * block_tx.gas_price()) {
         block_tx.set_status(kConsensusOutOfGas);
         assert(false);

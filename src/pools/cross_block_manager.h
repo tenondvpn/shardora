@@ -110,12 +110,12 @@ private:
 
         auto check_height = prev_checked_height;
         while (true) {
-            block::protobuf::Block block;
+            view_block::protobuf::ViewBlockItem view_block;
             if (!prefix_db_->GetBlockWithHeight(
                     sharding_id,
                     common::kRootChainPoolIndex,
                     check_height,
-                    &block)) {
+                    &view_block)) {
                 ZJC_DEBUG("failed get block net: %u, pool: %u, height: %lu",
                     sharding_id, common::kRootChainPoolIndex, check_height);
                 if (cross_synced_max_heights_[sharding_id] != common::kInvalidUint64) {
@@ -140,6 +140,7 @@ private:
                 break;
             }
 
+            auto& block = view_block.block_info();
             bool height_valid = true;
             for (int32_t tx_idx = 0; tx_idx < block.tx_list_size(); ++tx_idx) {
                 if (block.tx_list(tx_idx).step() != pools::protobuf::kNormalTo &&

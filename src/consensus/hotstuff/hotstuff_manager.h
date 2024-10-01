@@ -6,7 +6,6 @@
 #include "block_acceptor.h"
 #include "block_wrapper.h"
 
-#include <bls/agg_bls.h>
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/leader_rotation.h>
 #include <consensus/hotstuff/types.h>
@@ -76,8 +75,7 @@ public:
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         std::shared_ptr<db::Db>& db,
-        BlockCacheCallback new_block_cache_callback,
-        NoElectItemCallback no_elect_item_callback);
+        BlockCacheCallback new_block_cache_callback);
     void OnNewElectBlock(
         uint64_t block_tm_ms,
         uint32_t sharding_id,
@@ -99,7 +97,7 @@ public:
         }        
     }
 
-    int VerifySyncedViewBlock(view_block::protobuf::ViewBlockItem* pb_vblock);    
+    int VerifySyncedViewBlock(const view_block::protobuf::ViewBlockItem& pb_vblock);    
 
     inline std::shared_ptr<Hotstuff> hotstuff(uint32_t pool_idx) const {
         auto it = pool_hotstuff_.find(pool_idx);
@@ -153,35 +151,12 @@ public:
         return hf->wrapper();   
     }
 
-    bool VerifyPbViewBlockWithCommitQC(const view_block::protobuf::ViewBlockItem& pb_vblock) {
-        auto vblock_with_proof = std::make_shared<ViewBlockWithCommitQC>();
-        if (!vblock_with_proof->FromProto(pb_vblock)) {
-            return false;
-        }
-        Status s = VerifyViewBlockWithCommitQC(vblock_with_proof->vblock(), vblock_with_proof->commit_qc());
-        if (s != Status::kSuccess) {
-            if (s == Status::kElectItemNotFound && no_elect_item_callback_) {
-                no_elect_item_callback_(
-                        network::kRootCongressNetworkId,
-                        vblock_with_proof->commit_qc()->network_id(),
-                        vblock_with_proof->commit_qc()->elect_height(),
-                        sync::kSyncHighest);
-            }
-            return false;
-        }
-
-        return true;
-    }
-
 private:
-    Status VerifyViewBlockWithCommitQC(
-            const std::shared_ptr<ViewBlock>& vblock,
-            const std::shared_ptr<QC>& commit_qc);
-    
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void HandleTimerMessage(const transport::MessagePtr& msg_ptr);
     void RegisterCreateTxCallbacks();
-    
+    Status VerifyViewBlockWithCommitQC(const view_block::protobuf::ViewBlockItem& pb_vblock);
+
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(
                 msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
@@ -244,11 +219,6 @@ private:
     }
 
     pools::TxItemPtr CreateJoinElectTx(const transport::MessagePtr& msg_ptr) {
-        auto agg_bls = bls::AggBls();
-        auto keypair = agg_bls.GetKeyPair(security_ptr_, prefix_db_);
-        if (keypair == nullptr || !keypair->IsValid()) {
-            return nullptr;
-        }
         return std::make_shared<JoinElectTxItem>(
                 msg_ptr->header.tx_proto(), 
                 account_mgr_, 
@@ -256,8 +226,7 @@ private:
                 prefix_db_, 
                 elect_mgr_, 
                 msg_ptr->address_info,
-                msg_ptr->header.tx_proto().pubkey(),
-                keypair->pk());
+                msg_ptr->header.tx_proto().pubkey());
     }
 
     pools::TxItemPtr CreateCrossTx(const transport::MessagePtr& msg_ptr) {
@@ -328,7 +297,6 @@ private:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
-    common::FlowControl tps_fc_{3};
     double prev_tps_[common::kInvalidPoolIndex];
     
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
@@ -337,8 +305,6 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
-    BlockCacheCallback new_block_cache_callback_ = nullptr;
-    NoElectItemCallback no_elect_item_callback_ = nullptr;
     uint64_t prev_handler_timer_tm_ms_ = 0;
     uint64_t first_timeblock_timestamp_ = 0;
 

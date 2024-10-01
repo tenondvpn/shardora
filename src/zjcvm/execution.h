@@ -42,7 +42,6 @@ public:
             const evmc::address& addr,
             const evmc::bytes32& key);
     void NewBlockWithTx(
-            const std::shared_ptr<block::protobuf::Block>& block_item,
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch);
     void UpdateStorage(

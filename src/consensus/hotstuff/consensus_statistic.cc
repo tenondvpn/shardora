@@ -22,29 +22,28 @@ ConsensusStat::ConsensusStat(
 ConsensusStat::~ConsensusStat() {}
 
 Status ConsensusStat::Accept(std::shared_ptr<ViewBlock>& v_block, uint32_t add_succ_num) {
-    auto committed_consen_stat = GetMemberConsensusStat(v_block->leader_idx);
-    
-    v_block->leader_consen_stat = std::make_shared<MemberConsensusStat>(
-            committed_consen_stat->succ_num+add_succ_num, committed_consen_stat->fail_num);
-    
+    auto committed_consen_stat = GetMemberConsensusStat(
+        v_block->qc().leader_idx());
     return Status::kSuccess;
 }
 
 Status ConsensusStat::Commit(const std::shared_ptr<ViewBlock> &v_block) {
-    if (!v_block || !v_block->leader_consen_stat) {
+    if (!v_block) {
         return Status::kError;
     }
 
     // 旧的 Commit 过滤掉
-    auto last_view = leader_last_commit_views_[v_block->leader_idx];
-    if (last_view >= v_block->view) {
+    auto last_view = leader_last_commit_views_[v_block->qc().leader_idx()];
+    if (last_view >= v_block->qc().view()) {
         return Status::kSuccess;
     }
-    leader_last_commit_views_[v_block->leader_idx] = v_block->view;
+    leader_last_commit_views_[v_block->qc().leader_idx()] =
+        v_block->qc().view();
 
 
-    ZJC_DEBUG("pool: %d set consen stat leader: %d, view: %lu, succ: %lu", pool_idx_, v_block->leader_idx, v_block->view, v_block->leader_consen_stat->succ_num);
-    SetMemberConsensusStat(v_block->leader_idx, v_block->leader_consen_stat);
+    // SetMemberConsensusStat(
+    //     v_block->qc().leader_idx(), 
+    //     v_block->leader_consen_stat());
 
     // std::string ret;
     // auto all_consen_stats = GetAllConsensusStats();

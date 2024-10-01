@@ -7,7 +7,7 @@ namespace shardora {
 namespace consensus {
 
 int ContractUserCall::HandleTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
@@ -79,11 +79,12 @@ int ContractUserCall::HandleTx(
     acc_balance_map[from] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
-    ZJC_DEBUG("set contract prepayment called: %d, from: %s, to: %s, amount: %lu",
+    ZJC_DEBUG("set contract prepayment called: %d, from: %s, to: %s, amount: %lu, balance: %lu",
         block_tx.status(),
         common::Encode::HexEncode(block_tx.from()).c_str(),
         common::Encode::HexEncode(block_tx.to()).c_str(),
-        block_tx.contract_prepayment());
+        block_tx.contract_prepayment(),
+        from_balance);
     return kConsensusSuccess;
 }
 

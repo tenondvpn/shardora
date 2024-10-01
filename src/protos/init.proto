@@ -1,7 +1,7 @@
 syntax = "proto2";
 
 import "protos/bls.proto";
-import "protos/block.proto";
+import "protos/view_block.proto";
 package shardora.init.protobuf;
 
 message GetAddressInfoRequest {
@@ -9,7 +9,7 @@ message GetAddressInfoRequest {
 }
 
 message GetAddressInfoResponse {
-    optional block.protobuf.Block block = 1;
+    optional view_block.protobuf.ViewBlockItem view_block = 1;
 }
 
 message InvalidLeaderPools {

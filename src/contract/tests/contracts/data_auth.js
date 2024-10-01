@@ -31,18 +31,10 @@ function hexToBytes(hex) {
 }
 
 function init_private_key() {
-    //const privateKeyBuf = Secp256k1.uint256("b5b3128c236fcec044c303b54d55a97e20bf98b625fec1de6a2a0fffcd8c7cf7", 16)
-    //const privateKeyBuf = Secp256k1.uint256("1b2f993407b95324155ecbfcf2577e32174c8b66e5fdfa4da5677bccdc788763", 16)
-    //const privateKeyBuf = Secp256k1.uint256("1ef07e73ed6211e7b0a512bc6468419fbdcd9b345b49a3331b4c8f8070172a70", 16)
-    //const privateKeyBuf = Secp256k1.uint256("373a3165ec09edea6e7a1c8cff21b06f5fb074386ece283927aef730c6d44596", 16)
-    //const privateKeyBuf = Secp256k1.uint256("fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971", 16)
-    //manager
-    const privateKeyBuf2 = Secp256k1.uint256("4b07a853acfa8ebd71fd1585dd02289ec983bd125bbb6a5316c8015562a22e82", 16)
-    const privateKeyBuf = Secp256k1.uint256("3701d2b9951b41390aaf198bb3fe096c4c8b5f3697b577fd06c350bbca2dfa5b", 16)
+    //const privateKeyBuf = Secp256k1.uint256("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 16) // e252d01a37b85e2007ed3cc13797aa92496204a4
+    const privateKeyBuf = Secp256k1.uint256("d5a4758b94d34da11f818efbbc7b6739949aa7cb249c9403022b4ed54fa7b0a8", 16)
     self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
-    self_private_key2 = Secp256k1.uint256(privateKeyBuf2, 16)
     self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
-    self_public_key2 = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key2)
     var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
     var address = keccak256(pk_bytes).toString('hex')
     console.log("self_account_id: " + address.toString('hex'));

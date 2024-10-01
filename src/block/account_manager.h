@@ -30,7 +30,7 @@ public:
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<pools::TxPoolManager>& pools_mgr);
     void NewBlockWithTx(
-        const std::shared_ptr<block::protobuf::Block>& block_item,
+        const view_block::protobuf::ViewBlockItem& view_block_item,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     protos::AddressInfoPtr GetAccountInfo(const std::string& acc_id);
@@ -58,44 +58,44 @@ private:
     void SendRefreshHeightsRequest();
     void SendRefreshHeightsResponse(const transport::protobuf::Header& header);
     void HandleNormalFromTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleContractPrepayment(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleCreateContract(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleCreateContractByRootFrom(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleContractCreateByRootTo(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleLocalToTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleRootCreateAddressTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleContractExecuteTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void CreatePoolsAddressInfo();
     void HandleJoinElectTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleCreateGenesisAcount(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void UpdateAccountsThread();

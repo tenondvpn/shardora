@@ -8,10 +8,10 @@ namespace shardora {
 namespace consensus {
 
 int ContractCreateByRootFromTxItem::HandleTx(
-    const block::protobuf::Block &block,
-    std::shared_ptr<db::DbWriteBatch> &db_batch, zjcvm::ZjchainHost &zjc_host,
-    std::unordered_map<std::string, int64_t> &acc_balance_map,
-    block::protobuf::BlockTx &block_tx) {
+        const view_block::protobuf::ViewBlockItem& view_block,
+        std::shared_ptr<db::DbWriteBatch> &db_batch, zjcvm::ZjchainHost &zjc_host,
+        std::unordered_map<std::string, int64_t> &acc_balance_map,
+        block::protobuf::BlockTx &block_tx) {
 	uint64_t gas_used = 0;
     // gas just consume by from
     uint64_t from_balance = 0;

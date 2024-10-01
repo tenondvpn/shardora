@@ -77,10 +77,10 @@ public:
             std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
     Status VerifyQC(
             uint32_t sharding_id,
-            const std::shared_ptr<QC>& qc);
+            const QC& qc);
     Status VerifyTC(
             uint32_t sharding_id,
-            const std::shared_ptr<TC>& tc);    
+            const TC& tc);    
     Status SignMessage(transport::MessagePtr& msg_ptr);
     Status VerifyMessage(const transport::MessagePtr& msg_ptr);
     void RecoverBlsCollection() {
@@ -109,12 +109,13 @@ public:
         return bls_mgr_->security();
     }
     
-private:
     Status VerifyThresSign(
         uint32_t sharding_id,
         uint64_t elect_height,
         const HashStr& msg_hash,
-        const std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign);
+        const libff::alt_bn128_G1& reconstructed_sign);
+
+private:
     
     void GetG1Hash(const HashStr& msg_hash, libff::alt_bn128_G1* g1_hash) {
         bls_mgr_->GetLibffHash(msg_hash, g1_hash);

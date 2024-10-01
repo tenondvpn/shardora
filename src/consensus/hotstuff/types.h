@@ -33,6 +33,34 @@ static const double ViewDurationStartTimeoutMs = 300;
 static const double ViewDurationMaxTimeoutMs = 60000;
 static const double ViewDurationMultiplier = 1.3; // 选过大会造成卡住的成本很高，一旦卡住则恢复时间很长（如 leader 不一致），过小会导致没有交易时 CPU 长时间降不下来
 
+enum class Status : int {
+  kSuccess = 0,
+  kError = 1,
+  kNotFound = 2,
+  kInvalidArgument = 3,
+  kBlsVerifyWaiting = 4,
+  kBlsVerifyFailed = 5,
+  kAcceptorTxsEmpty = 6,
+  kAcceptorBlockInvalid = 7,
+  kOldView = 8,
+  kElectItemNotFound = 9,
+  kWrapperTxsEmpty = 10,
+  kBlsHandled = 11,
+  kTxRepeated = 12,
+  kLackOfParentBlock = 13,
+  kNotExpectHash = 14,
+};
+
+enum WaitingBlockType {
+    kRootBlock,
+    kSyncBlock,
+    kToBlock,
+};
+
+HashStr GetQCMsgHash(const view_block::protobuf::QcItem& qc_item);
+HashStr GetTCMsgHash(const view_block::protobuf::QcItem& tc_item);
+// HashStr GetViewBlockHash(const view_block::protobuf::ViewBlockItem& view_block_item);
+
 // 本 elect height 中共识情况统计
 struct MemberConsensusStat {
     uint32_t succ_num; // 共识成功的次数
@@ -52,192 +80,27 @@ struct MemberConsensusStat {
     }
 };
 
-struct QC {  
-    QC(
-            uint32_t net_id,
-            uint32_t pool_idx,
-            const std::shared_ptr<libff::alt_bn128_G1>& sign,
-            const View& v,
-            const HashStr& hash,
-            const HashStr& commit_hash,
-            uint64_t elect_height,
-            uint32_t leader_idx) :
-            network_id_(net_id), pool_index(pool_idx),
-            bls_agg_sign_(sign), view_(v), view_block_hash_(hash),
-            commit_view_block_hash_(commit_hash), elect_height_(elect_height),
-            leader_idx(leader_idx) {
-        if (network_id_ >= network::kConsensusShardEndNetworkId) {
-            network_id_ = network_id_ - network::kConsensusWaitingShardOffset;
-        }
+using ViewBlock = view_block::protobuf::ViewBlockItem;
+using QC = view_block::protobuf::QcItem;
+using TC = QC;
 
-        if (bls_agg_sign_ == nullptr) {
-            bls_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
-        }
-
-        hash_ = GetQCMsgHash(
-            network_id_, 
-            pool_index, 
-            view_, 
-            view_block_hash_, 
-            commit_view_block_hash_, 
-            elect_height_, 
-            leader_idx);
-        valid_ = true;
-    }
-
-    QC(const std::string& s) {
-        bls_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::zero());
-        if (!Unserialize(s)) {
-            assert(false);
-            return;
-        }
-
-
-        hash_ = GetQCMsgHash(
-            network_id_, 
-            pool_index, 
-            view_, 
-            view_block_hash_, 
-            commit_view_block_hash_, 
-            elect_height_, 
-            leader_idx);
-        valid_ = true;
-    };
-    
-    std::string Serialize() const;
-    bool Unserialize(const std::string& str);
-    inline bool valid() const {
-        return valid_;
-    }
-
-    inline const HashStr& msg_hash() const {
-        return hash_;
-    }
-
-    inline const HashStr& view_block_hash() const {
-        return view_block_hash_;
-    }
-
-    inline const HashStr& commit_view_block_hash() const {
-        return commit_view_block_hash_;
-    }
-
-    inline View view() const {
-        return view_;
-    }
-
-    inline uint32_t network_id() const {
-        return network_id_;
-    }
-
-    inline uint64_t elect_height() const {
-        return elect_height_;
-    }
-
-    inline const std::shared_ptr<libff::alt_bn128_G1>& bls_agg_sign() const {
-        return bls_agg_sign_;
-    }
-
-protected:
-    HashStr GetViewHash(
-        uint32_t net_id,
-        uint32_t pool_idx,
-        const View& view, 
+inline static void CreateTc(
+        uint32_t network_id, 
+        uint32_t pool_index, 
+        uint64_t view, 
         uint64_t elect_height, 
-        uint32_t leader_idx);
-    HashStr GetQCMsgHash(
-        uint32_t net_id,
-        uint32_t pool_idx,
-        const View &view,
-        const HashStr &view_block_hash,
-        const HashStr& commit_view_block_hash,
-        uint64_t elect_height,
-        uint32_t leader_idx);
-        
-    std::string hash_;
-    bool valid_ = false;
-    std::shared_ptr<libff::alt_bn128_G1> bls_agg_sign_;
-    View view_; // view_block_hash 对应的 view，TODO 校验正确性，避免篡改
-    HashStr view_block_hash_; // 是 view_block_hash 的 prepareQC
-    HashStr commit_view_block_hash_; // 是 commit_view_block_hash 的 commitQC
-    uint64_t elect_height_; // 确定 epoch，用于验证 QC，理论上与 view_block_hash elect_height 相同，但对于同步场景，作为 commit_qc 时有时候 view_block 无法获取，故将 elect_height 放入 QC 中
-    uint32_t leader_idx;
-    uint32_t network_id_;
-    uint32_t pool_index;
-};
-
-// TODO TC 中可增加超时的 leader_idx，用于 Leader 选择黑名单
-struct TC : public QC {
-    TC(
-            uint32_t net_id,
-            uint32_t pool_idx,
-            const std::shared_ptr<libff::alt_bn128_G1>& sign,
-            const View& v,
-            uint64_t elect_height,
-            uint32_t leader_idx) :
-        QC(net_id, pool_idx, sign, v, "", "", elect_height, leader_idx) {
-    }
-
-    TC(const std::string& s) : QC(s) {
-    }
-};
-
-struct ViewBlock {
-    HashStr hash;
-    HashStr parent_hash;
-
-    uint32_t leader_idx;
-    std::shared_ptr<block::protobuf::Block> block;
-    std::unordered_set<std::string> added_txs;
-    std::shared_ptr<QC> qc;
-    View view;
-    std::shared_ptr<MemberConsensusStat> leader_consen_stat; // 计算后的共识统计，在 replica 接收块后，计算出 leader 应该的分数，写入次字段，类似交易执行
-
-    uint64_t created_time_us;
-
-    ViewBlock(
-            const HashStr& parent,
-            const std::shared_ptr<QC>& qc,
-            const std::shared_ptr<block::protobuf::Block>& block,
-            const View& view,
-            uint32_t leader_idx) :
-        parent_hash(parent),
-        leader_idx(leader_idx),
-        block(block),
-        qc(qc),
-        view(view),
-        created_time_us(common::TimeUtils::TimestampUs()) {
-        leader_consen_stat = std::make_shared<MemberConsensusStat>();
-        hash = DoHash();
-    };
-
-    ViewBlock() : qc(nullptr), view(0), created_time_us(common::TimeUtils::TimestampUs()) {
-        leader_consen_stat = std::make_shared<MemberConsensusStat>();
-    };
-
-    inline bool Valid() {
-        return hash != "" && hash == DoHash() && block != nullptr; 
-    }
-    
-    HashStr DoHash() const;
-
-    inline uint64_t ElectHeight() const {
-        if (!block) {
-            return 0;
-        } 
-        return block->electblock_height();
-    }
-
-    inline void UpdateHash() {
-        hash = DoHash();
-    }
-};
+        uint32_t leader_idx, 
+        TC* tc) {
+    tc->set_network_id(network_id);
+    tc->set_pool_index(pool_index);
+    tc->set_view(view);
+    tc->set_elect_height(elect_height);
+    tc->set_leader_idx(leader_idx);
+}
 
 struct SyncInfo : public std::enable_shared_from_this<SyncInfo> {
     std::shared_ptr<QC> qc;
     std::shared_ptr<TC> tc;
-    // std::shared_ptr<ViewBlock> view_block;
-
     SyncInfo() : qc(nullptr), tc(nullptr) {};
 
     std::shared_ptr<SyncInfo> WithQC(const std::shared_ptr<QC>& q) {
@@ -252,85 +115,6 @@ struct SyncInfo : public std::enable_shared_from_this<SyncInfo> {
 };
 
 std::shared_ptr<SyncInfo> new_sync_info();
-
-enum class Status : int {
-  kSuccess = 0,
-  kError = 1,
-  kNotFound = 2,
-  kInvalidArgument = 3,
-  kBlsVerifyWaiting = 4,
-  kBlsVerifyFailed = 5,
-  kAcceptorTxsEmpty = 6,
-  kAcceptorBlockInvalid = 7,
-  kOldView = 8,
-  kElectItemNotFound = 9,
-  kWrapperTxsEmpty = 10,
-  kBlsHandled = 11,
-  kTxRepeated = 12,
-  kLackOfParentBlock = 13,
-};
-
-enum WaitingBlockType {
-    kRootBlock,
-    kSyncBlock,
-    kToBlock,
-};
-
-
-
-void ViewBlock2Proto(const std::shared_ptr<ViewBlock> &view_block, view_block::protobuf::ViewBlockItem *view_block_proto);
-Status
-Proto2ViewBlock(const view_block::protobuf::ViewBlockItem &view_block_proto,
-                std::shared_ptr<ViewBlock> &view_block);
-
-// ViewBlock with commit qc to be verified
-struct ViewBlockWithCommitQC {
-    std::shared_ptr<ViewBlock> vblock_;
-    std::shared_ptr<QC> commit_qc_;
-    
-    ViewBlockWithCommitQC() : vblock_(nullptr), commit_qc_(nullptr) {}
-    
-    ViewBlockWithCommitQC(
-            const std::shared_ptr<ViewBlock>& vblock,
-            const std::shared_ptr<QC>& commit_qc) : vblock_(vblock), commit_qc_(commit_qc) {}
-
-    std::shared_ptr<ViewBlock> vblock() {
-        return vblock_;
-    }
-
-    std::shared_ptr<QC> commit_qc() {
-        return commit_qc_;
-    }
-
-    std::shared_ptr<view_block::protobuf::ViewBlockItem> ToProto() {
-        auto pb_v_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
-        ViewBlock2Proto(vblock_, pb_v_block.get());
-        pb_v_block->set_self_commit_qc_str(commit_qc_->Serialize());
-        return pb_v_block;
-    }
-
-    bool FromProto(const view_block::protobuf::ViewBlockItem& pb_vblock) {
-        if (!pb_vblock.has_self_commit_qc_str()) {
-            commit_qc_ = nullptr;
-        }
-
-        vblock_ = std::make_shared<ViewBlock>();
-        Status s = Proto2ViewBlock(pb_vblock, vblock_);
-        if (s != Status::kSuccess) {
-            ZJC_DEBUG("view block parsed failed: %lu", pb_vblock.view());            
-            return false;
-        }
-
-        auto commit_qc = std::make_shared<QC>(pb_vblock.self_commit_qc_str());
-        if (!commit_qc->valid()) {
-            return false;
-        }
-
-        commit_qc_ = commit_qc;
-        return true;
-    }
-};
-
 
 } // namespace hotstuff
 

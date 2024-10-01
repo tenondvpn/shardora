@@ -17,7 +17,7 @@ namespace consensus {
 // 处理 ContractCreate 交易的 Local 部分（to 部分，已经过 root 分配 shard）
 // from 部分已经在 ContractUserCreateCall::HandleTx 处理完成
 int ContractCreateByRootToTxItem::HandleTx(
-		const block::protobuf::Block& block,
+		const view_block::protobuf::ViewBlockItem& view_block,
 		std::shared_ptr<db::DbWriteBatch>& db_batch,
 		zjcvm::ZjchainHost& zjc_host,
 		std::unordered_map<std::string, int64_t>& acc_balance_map,

@@ -190,7 +190,6 @@ contract C2CSellOrder {
 
         orders[seller] = order;
         emit NewSelloutValue(9);
-
     }
 
     function SellerRelease() public payable {

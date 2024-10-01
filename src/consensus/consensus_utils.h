@@ -9,25 +9,19 @@
 #include "common/log.h"
 #include "common/utils.h"
 #include "pools/tx_utils.h"
-#include "protos/block.pb.h"
+#include "protos/view_block.pb.h"
 
 namespace shardora {
 
 namespace consensus {
 
 // hash128(gid + from + to + amount + type + attrs(k:v))
-std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info);
-// prehash + network_id + height + random + elect version + txes's hash
-std::string GetBlockHash(const block::protobuf::Block& block);
+// std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info);
+// // prehash + network_id + height + random + elect version + txes's hash
+// std::string GetViewBlockHash(const view_block::protobuf::ViewBlockItem& view_block);
 typedef std::function<void(
-    std::shared_ptr<block::protobuf::Block>& block,
+    std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
     db::DbWriteBatch& db_batch)> BlockCacheCallback;
-typedef std::function<void(
-        uint32_t network_id,
-        uint32_t pool_idx,
-        uint64_t height,
-        uint32_t priority)> NoElectItemCallback;
-
 
 enum ConsensusErrorCode {
     kConsensusSuccess = 0,

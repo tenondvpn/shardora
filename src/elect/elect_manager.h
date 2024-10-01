@@ -93,6 +93,7 @@ private:
         bool* elected,
         std::vector<std::string>* pkey_str_vect);
     bool ProcessPrevElectMembers(
+        uint64_t height,
         protobuf::ElectBlock& elect_block,
         bool* elected,
         elect::protobuf::ElectBlock& prev_elect_block,

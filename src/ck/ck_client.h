@@ -17,10 +17,15 @@ namespace ck {
 
 class ClickHouseClient {
 public:
-    ClickHouseClient(const std::string& host, const std::string& user, const std::string& passwd, std::shared_ptr<db::Db> db_ptr, std::shared_ptr<contract::ContractManager> contract_mgr);
+    ClickHouseClient(
+        const std::string& host, 
+        const std::string& user, 
+        const std::string& passwd, 
+        std::shared_ptr<db::Db> db_ptr, 
+        std::shared_ptr<contract::ContractManager> contract_mgr);
     ~ClickHouseClient();
     bool CreateTable(bool statistic, std::shared_ptr<db::Db> db_ptr);
-    bool AddNewBlock(const std::shared_ptr<block::protobuf::Block>& block_item);
+    bool AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& block_item);
 
 private:
     bool CreateTransactionTable();
