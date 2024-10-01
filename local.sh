@@ -1,5 +1,4 @@
 export LD_LIBRARY_PATH=/usr/local/python3/lib/python3.10/:$LD_LIBRARY_PATH
-
 #文件名
 FILE_NAME='./local.sh'
 #获取文件做后修改时间戳
