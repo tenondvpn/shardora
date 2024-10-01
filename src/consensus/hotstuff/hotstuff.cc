@@ -528,7 +528,7 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
         pro_msg_wrap->view_block_ptr, 
         false, 
         pro_msg_wrap->acc_balance_map_ptr);
-    ZJC_ERROR("pool: %d, add view block hash: %s, status: %d, view: %u_%u_%lu, tx size: %u, propose_debug: %s",
+    ZJC_DEBUG("pool: %d, add view block hash: %s, status: %d, view: %u_%u_%lu, tx size: %u, propose_debug: %s",
         pool_idx_, 
         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
         s,
