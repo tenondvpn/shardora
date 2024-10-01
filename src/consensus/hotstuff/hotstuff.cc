@@ -86,7 +86,7 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
     Status s = ConstructProposeMsg(pb_pro_msg);
     if (s != Status::kSuccess) {
-        ZJC_WARN("pool: %d construct propose msg failed, %d, member_index: %d",
+        ZJC_DEBUG("pool: %d construct propose msg failed, %d, member_index: %d",
             pool_idx_, s, 
             elect_info_->GetElectItemWithShardingId(
                 common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
@@ -1131,7 +1131,7 @@ Status Hotstuff::ConstructProposeMsg(hotstuff::protobuf::ProposeMsg* pro_msg) {
     auto* tx_propose = pro_msg->mutable_tx_propose();
     Status s = ConstructViewBlock(new_view_block, tx_propose);
     if (s != Status::kSuccess) {
-        ZJC_WARN("pool: %d construct view block failed, view: %lu, %d, member_index: %d",
+        ZJC_DEBUG("pool: %d construct view block failed, view: %lu, %d, member_index: %d",
             pool_idx_, view_block_chain()->HighViewBlock()->qc().view(), s, 
             elect_info_->GetElectItemWithShardingId(
                 common::GlobalInfo::Instance()->network_id())->LocalMember()->index);        
@@ -1236,7 +1236,7 @@ Status Hotstuff::ConstructViewBlock(
         IsEmptyBlockAllowed(*pre_v_block), 
         view_block_chain_);
     if (s != Status::kSuccess) {
-        ZJC_WARN("pool: %d wrap failed, %d", pool_idx_, static_cast<int>(s));
+        ZJC_DEBUG("pool: %d wrap failed, %d", pool_idx_, static_cast<int>(s));
         return s;
     }
 
