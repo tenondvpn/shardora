@@ -194,7 +194,7 @@ void AccountManager::HandleNormalFromTx(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
-    ZJC_DEBUG("transfer from address new balance %s: %lu, height: %lu, pool: %u",
+    ZJC_INFO("transfer from address new balance %s: %lu, height: %lu, pool: %u",
         common::Encode::HexEncode(account_id).c_str(), tx.balance(),
         block.height(), view_block.qc().pool_index());
 }
@@ -228,7 +228,7 @@ void AccountManager::HandleCreateGenesisAcount(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
-    ZJC_DEBUG("transfer from address new balance %s: %lu, height: %lu, pool: %u",
+    ZJC_INFO("transfer from address new balance %s: %lu, height: %lu, pool: %u",
         common::Encode::HexEncode(account_id).c_str(), tx.balance(),
         block.height(), view_block.qc().pool_index());
 }
@@ -255,7 +255,7 @@ void AccountManager::HandleContractPrepayment(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
-    ZJC_DEBUG("contract prepayment address new balance %s: %lu, height: %lu, pool: %u",
+    ZJC_INFO("contract prepayment address new balance %s: %lu, height: %lu, pool: %u",
         common::Encode::HexEncode(account_id).c_str(), tx.balance(),
         block.height(), view_block.qc().pool_index());
 }
@@ -362,7 +362,7 @@ void AccountManager::HandleContractCreateByRootTo(
             prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
             thread_update_accounts_queue_[thread_idx].push(account_info);
             update_acc_con_.notify_one();
-            ZJC_DEBUG("create add local contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
+            ZJC_INFO("create add local contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
                 common::Encode::HexEncode(tx.to()).c_str(),
                 tx.amount(),
                 view_block.qc().network_id(),
@@ -480,7 +480,7 @@ void AccountManager::HandleCreateContractByRootFrom(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
-    ZJC_DEBUG("contract create by root from new balance %s: %lu, height: %lu, pool: %u",
+    ZJC_INFO("contract create by root from new balance %s: %lu, height: %lu, pool: %u",
         common::Encode::HexEncode(account_id).c_str(), tx.balance(),
         block.height(), view_block.qc().pool_index());
 }
@@ -518,7 +518,7 @@ void AccountManager::HandleContractExecuteTx(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
-    ZJC_DEBUG("contract call address new balance %s: %lu",
+    ZJC_INFO("contract call address new balance %s: %lu",
         common::Encode::HexEncode(account_id).c_str(), tx.amount());
 }
 
@@ -643,7 +643,7 @@ void AccountManager::HandleJoinElectTx(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
-    ZJC_DEBUG("join elect to address new elect pos %s: %lu, balance: %lu",
+    ZJC_INFO("join elect to address new elect pos %s: %lu, balance: %lu",
         common::Encode::HexEncode(tx.from()).c_str(),
         join_info.member_idx(), account_info->balance());
 }
