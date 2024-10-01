@@ -46,10 +46,7 @@ then
 fi
 root=("r1" "r2" "r3")
 shard3=("s3_1" "s3_2" "s3_3" "s3_4")
-shard4=("s4_1" "s4_2" "s4_3" "s4_4")
-shard5=("s5_1" "s5_2" "s5_3" "s5_4")
-shard6=("s6_1" "s6_2" "s6_3" "s6_4")
-nodes=("r1" "r2" "r3" "s3_1" "s3_2" "s3_3" "s3_4" "s4_1" "s4_2" "s4_3" "s4_4" "s5_1" "s5_2" "s5_3" "s5_4" "s6_1" "s6_2" "s6_3" "s6_4")
+nodes=("r1" "r2" "r3" "s3_1" "s3_2" "s3_3" "s3_4")
 
 for node in "${nodes[@]}"; do
     mkdir -p "/root/zjnodes/${node}/log"
@@ -74,9 +71,6 @@ if test $NO_BUILD = 0
 then
     cd /root/zjnodes/zjchain && ./zjchain -U
     cd /root/zjnodes/zjchain && ./zjchain -S 3 &
-    cd /root/zjnodes/zjchain && ./zjchain -S 4 &
-    cd /root/zjnodes/zjchain && ./zjchain -S 5 &
-    cd /root/zjnodes/zjchain && ./zjchain -S 6 &
     wait
 fi
 
@@ -87,21 +81,6 @@ fi
 
 #for node in "${shard3[@]}"; do
 #	cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/${node}/db
-#done
-
-
-#for node in "${shard4[@]}"; do
-#	cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/${node}/db
-#done
-
-
-#for node in "${shard5[@]}"; do
-#	cp -rf /root/zjnodes/zjchain/shard_db_5 /root/zjnodes/${node}/db
-#done
-
-
-#for node in "${shard6[@]}"; do
-#	cp -rf /root/zjnodes/zjchain/shard_db_6 /root/zjnodes/${node}/db
 #done
 
 

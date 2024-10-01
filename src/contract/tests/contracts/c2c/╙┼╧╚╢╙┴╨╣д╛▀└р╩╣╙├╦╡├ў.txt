@@ -1,0 +1,53 @@
+PublicHeap.sol 是一个合约类，底层调用Heap库。
+
+heapify(int128[] memory priorities )函数：
+按照[priority1,priority2 ....]数组生成优先队列(我们业务中优先级是币的单价)，id默认从1开始自增，即priority1对应id=1，priority2对应id=2 ....
+
+insert(int128 priority)函数：
+根据优先级priority单个插入优先队列。（id在原有的基础上自增）
+
+insertWithId(int128 priority,int128 id)函数：
+//（chengzongxing 新增）根据id和优先级priority单个插入优先队列
+id一方面可映射到其它object对象，另一方面id在priority相同时，id越小优先级越高（insert函数和insertWithId函数仅可使用其中之一） 
+
+extractMax()函数： 
+最大优先级出队，会重新调整优先队列
+
+extractById(int128 id) 函数： 
+根据id出队，比如：根据挂单订单号（id）删除优先队列中数据。
+
+dump()函数：
+打印优先队列中所有数据（id和priority，id在前，priority在后）
+
+getMax()函数：
+获取最大优先级，但不出队
+
+getById(int128 id)函数：
+根据id获取优先队列中数据，但不出队
+
+getByIndex(uint i)函数：
+根据index获取优先队列中数据（业务场景用的不多），因为数据保存使用数组，向上(_bubbleUp)或向下(_bubbleDown)调整都是根据数组下标index进行，最大优先级对应index是1。
+
+size()函数：
+获取优先队列的个数
+
+idCount()函数：
+获取id总数，因为id始终自增， 不等于size函数中优先队列中个数（不断入队出队）， 即idCount函数返回值 >= size函数返回值
+
+indices(int128 id)函数：
+根据id获取index ,id和index是保存在map中，mapping (int128 => uint) indices; 
+
+
+Heap.sol中：
+
+_bubbleUp 函数：
+节点从index大的往index小的方向调整， 比如：插入节点时，先把节点放在最后位置，然后判断优先级，往上调整。
+
+_bubbleDown 函数：
+节点从index小的往index大的方向调整，比如：删除队头节点时，先向上调整（尾结点index=size-1放到队头位置index=1），然后从头部节点向下调整。
+
+测试结果：
+1、在remix平台连续执行1次 insert操作，耗时1秒内，             消耗gas费  6万（gas limit 300万）
+2、在remix平台连续执行100次 insert操作，耗时7秒左右，      消耗gas费  600万 
+3、在remix平台连续执行500次 insert操作，耗时70秒左右，    消耗gas费  3000 万 ， 连续执行网页就崩溃了
+4、在remix平台连续执行1000次 insert操作，                                                            网页直接崩溃了

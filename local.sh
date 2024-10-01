@@ -8,17 +8,17 @@ LAST_MODIFY_TIMESTAMP=`stat -c %Y  $FILE_NAME`
 formart_date=`date '+%Y%m%d%H%M%S' -d @$LAST_MODIFY_TIMESTAMP`
 old_tm=`cat modify_time`
 echo $old_tm
+
 if [ "$old_tm" -eq "$formart_date" ];then
      echo "eq called!"
      sh deploy_genesis.sh Debug
      exit 0
 fi
-
 echo $formart_date > modify_time
-
-python3 gen_nodes_conf.py -n 10 -s 1 -m 127.0.0.1 -r 3 -m0 127.0.0.1
-tail -n 261 nodes_conf_n50_s1_m5.yml >> ./nodes_conf_n10_s1_m1.yml
-python3 gen_genesis_script.py --config "./nodes_conf_n10_s1_m1.yml"
+echo "new deploy"
+python3 gen_nodes_conf.py -n 4 -s 1 -m 127.0.0.1 -r 3 -m0 127.0.0.1
+tail -n 261 nodes_conf_n50_s1_m5.yml >> ./nodes_conf_n4_s1_m1.yml
+python3 gen_genesis_script.py --config "./nodes_conf_n4_s1_m1.yml"
 #pkill -f zjchain
 sh deploy_genesis.sh Debug || true
 sleep 5
