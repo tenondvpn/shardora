@@ -1,6 +1,6 @@
 // Boost.Geometry (aka GGL, Generic Geometry Library)
 
-// Copyright (c) 2015 Barend Gehrels, Amsterdam, the Netherlands.
+//  Barend Gehrels, Amsterdam, the Netherlands.
 
 // This file was modified by Oracle on 2017-2021.
 // Modifications copyright (c) 2017-2021 Oracle and/or its affiliates.

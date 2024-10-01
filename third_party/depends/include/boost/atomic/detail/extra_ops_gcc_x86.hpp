@@ -3,7 +3,7 @@
  * (See accompanying file LICENSE_1_0.txt or copy at
  * http://www.boost.org/LICENSE_1_0.txt)
  *
- * Copyright (c) 2015 Andrey Semashev
+ *  Andrey Semashev
  */
 /*!
  * \file   atomic/detail/extra_ops_gcc_x86.hpp

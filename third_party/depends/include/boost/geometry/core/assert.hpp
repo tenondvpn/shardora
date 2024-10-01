@@ -3,7 +3,7 @@
 // Copyright (c) 2001, 2002 Peter Dimov and Multi Media Ltd.
 // Copyright (c) 2007, 2014 Peter Dimov
 // Copyright (c) Beman Dawes 2011
-// Copyright (c) 2015 Oracle and/or its affiliates.
+//  Oracle and/or its affiliates.
 
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 

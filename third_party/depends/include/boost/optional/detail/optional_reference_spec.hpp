@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2018 Andrzej Krzemienski.
+// -2018 Andrzej Krzemienski.
 //
 // Use, modification, and distribution is subject to the Boost Software
 // License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at

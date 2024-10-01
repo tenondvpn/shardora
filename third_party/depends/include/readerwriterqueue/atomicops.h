@@ -360,7 +360,7 @@ namespace moodycamel
 	// portable + lightweight semaphore implementations, originally from
 	// https://github.com/preshing/cpp11-on-multicore/blob/master/common/sema.h
 	// LICENSE:
-	// Copyright (c) 2015 Jeff Preshing
+	//  Jeff Preshing
 	//
 	// This software is provided 'as-is', without any express or implied
 	// warranty. In no event will the authors be held liable for any damages

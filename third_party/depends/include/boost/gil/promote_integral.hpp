@@ -1,6 +1,6 @@
 // Boost.GIL (Generic Image Library)
 //
-// Copyright (c) 2015, Oracle and/or its affiliates.
+// , Oracle and/or its affiliates.
 // Contributed and/or modified by Menelaos Karavelas, on behalf of Oracle
 //
 // Copyright (c) 2020, Debabrata Mandal <mandaldebabrata123@gmail.com>

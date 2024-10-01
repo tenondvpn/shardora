@@ -7,7 +7,7 @@
  * Authentication is defined in <em>RFC-4493: The AES-CMAC Algorithm</em>.
  */
 /*
- *  Copyright (C) 2015-2018, Arm Limited (or its affiliates), All Rights Reserved
+ *  -2018, Arm Limited (or its affiliates), All Rights Reserved
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may

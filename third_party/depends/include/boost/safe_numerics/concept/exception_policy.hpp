@@ -1,7 +1,7 @@
 #ifndef BOOST_NUMERIC_CONCEPT_EXCEPTION_POLICY_HPP
 #define BOOST_NUMERIC_CONCEPT_EXCEPTION_POLICY_HPP
 
-//  Copyright (c) 2015 Robert Ramey
+//   Robert Ramey
 //
 // Distributed under the Boost Software License, Version 1.0. (See
 // accompanying file LICENSE_1_0.txt or copy at

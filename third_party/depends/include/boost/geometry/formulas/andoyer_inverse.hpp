@@ -2,7 +2,7 @@
 
 // Copyright (c) 2018 Adam Wulkiewicz, Lodz, Poland.
 
-// Copyright (c) 2015-2020 Oracle and/or its affiliates.
+// -2020 Oracle and/or its affiliates.
 
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
