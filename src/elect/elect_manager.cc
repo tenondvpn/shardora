@@ -155,6 +155,7 @@ common::MembersPtr ElectManager::OnNewElectBlock(
 
     ElectedToConsensusShard(elect_block, elected);
     elect_block_mgr_.OnNewElectBlock(height, elect_block, db_batch);
+    assert(members_ptr_[elect_block.shard_network_id()] != nullptr);
     return members_ptr_[elect_block.shard_network_id()];
 //     if (new_elect_cb_ != nullptr) {
 //         new_elect_cb_(

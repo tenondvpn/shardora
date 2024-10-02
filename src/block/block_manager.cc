@@ -999,36 +999,46 @@ void BlockManager::LoadLatestBlocks() {
         }
     }
 
-    for (uint32_t i = network::kRootCongressNetworkId;
-            i < network::kConsensusShardEndNetworkId; ++i) {
-        elect::protobuf::ElectBlock elect_block;
-        if (!prefix_db_->GetLatestElectBlock(i, &elect_block)) {
-            ZJC_ERROR("get elect latest block failed: %u", i);
-            break;
-        }
-
-        auto elect_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
-        auto& block = *elect_block_ptr;
-        if (GetBlockWithHeight(
-                network::kRootCongressNetworkId,
-                elect_block.shard_network_id() % common::kImmutablePoolSize,
-                elect_block.elect_height(),
-                block) == kBlockSuccess) {
-            if (new_block_callback_ != nullptr) {
-                new_block_callback_(elect_block_ptr, db_batch);
+    for (uint32_t load_idx = 0; load_idx < 2; ++load_idx) {
+        for (uint32_t i = network::kRootCongressNetworkId;
+                i < network::kConsensusShardEndNetworkId; ++i) {
+            elect::protobuf::ElectBlock elect_block;
+            if (load_idx == 0) {
+                if (!prefix_db_->GetLatestElectBlock(i, &elect_block)) {
+                    ZJC_ERROR("get elect latest block failed: %u", i);
+                    break;
+                }
+            } else {
+                if (!prefix_db_->GetHavePrevlatestElectBlock(i, &elect_block)) {
+                    ZJC_ERROR("get elect latest block failed: %u", i);
+                    break;
+                }
             }
 
-            ZJC_INFO("get block with height success: %u, %u, %lu",
-                network::kRootCongressNetworkId,
-                elect_block.shard_network_id() % common::kImmutablePoolSize,
-                elect_block.elect_height());
-        } else {
-            ZJC_FATAL("get block with height failed: %u, %u, %lu",
-                network::kRootCongressNetworkId,
-                elect_block.shard_network_id() % common::kImmutablePoolSize,
-                elect_block.elect_height());
+            auto elect_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
+            auto& block = *elect_block_ptr;
+            if (GetBlockWithHeight(
+                    network::kRootCongressNetworkId,
+                    elect_block.shard_network_id() % common::kImmutablePoolSize,
+                    elect_block.elect_height(),
+                    block) == kBlockSuccess) {
+                if (new_block_callback_ != nullptr) {
+                    new_block_callback_(elect_block_ptr, db_batch);
+                }
+
+                ZJC_INFO("get block with height success: %u, %u, %lu",
+                    network::kRootCongressNetworkId,
+                    elect_block.shard_network_id() % common::kImmutablePoolSize,
+                    elect_block.elect_height());
+            } else {
+                ZJC_FATAL("get block with height failed: %u, %u, %lu",
+                    network::kRootCongressNetworkId,
+                    elect_block.shard_network_id() % common::kImmutablePoolSize,
+                    elect_block.elect_height());
+            }
         }
     }
+    
 
     db_->Put(db_batch);
 }

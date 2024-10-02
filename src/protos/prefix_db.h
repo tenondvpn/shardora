@@ -81,6 +81,7 @@ static const std::string kViewBlockInfoPrefix = "an\x01";
 static const std::string kBandwidthPrefix = "ao\x01";
 static const std::string kC2cSelloutPrefix = "ap\x01";
 static const std::string kC2cSellorderPrefix = "aq\x01";
+static const std::string kSaveHavePrevLatestElectHeightPrefix = "ar\x01";
 
 class PrefixDb {
 public:
@@ -253,8 +254,41 @@ public:
 
         std::string db_val(data, sizeof(data));
         db_batch.Put(key, db_val);
+
+        if (elect_block.has_prev_members()) {
+            key.clear();
+            key.reserve(64);
+            key.append(kSaveHavePrevLatestElectHeightPrefix);
+            key.append((char*)&sharding_id, sizeof(sharding_id));
+            db_batch.Put(key, elect_block.SerializeAsString());
+        }
+
         ZJC_DEBUG("save elect block sharding id: %u, height: %lu",
             sharding_id, elect_block.elect_height());
+    }
+
+    bool GetHavePrevlatestElectBlock(
+            uint32_t sharding_id,
+            elect::protobuf::ElectBlock* elect_block) {
+        std::string key;
+        key.reserve(48);
+        key.append(kSaveHavePrevLatestElectHeightPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        std::string val;
+        ZJC_DEBUG("get elect block sharding id: %u",
+            sharding_id);
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            return false;
+        }
+
+        if (!elect_block->ParseFromString(val)) {
+            return false;
+        }
+
+        ZJC_DEBUG("success get elect block sharding id: %u, height: %lu",
+            sharding_id, elect_block->elect_height());
+        return true;
     }
 
     bool GetLatestElectBlock(uint32_t sharding_id,
