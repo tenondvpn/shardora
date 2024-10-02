@@ -151,7 +151,7 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
             tc->view());
     }
 
-    last_vote_view_ = hotstuff_msg->pro_msg().view_item().qc().view() - 1;
+    // last_vote_view_ = hotstuff_msg->pro_msg().view_item().qc().view() - 1;
     HandleProposeMsg(msg_ptr);
     return Status::kSuccess;
 }
@@ -1404,7 +1404,7 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
         if (stuck_st != 1) {
             ZJC_DEBUG("pool: %u stuck_st != 0: %d", pool_idx_, stuck_st);
         }
-        
+
         return;
     }
 
