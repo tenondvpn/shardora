@@ -86,10 +86,8 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
     Status s = ConstructProposeMsg(pb_pro_msg);
     if (s != Status::kSuccess) {
-        ZJC_DEBUG("pool: %d construct propose msg failed, %d, member_index: %d",
-            pool_idx_, s, 
-            elect_info_->GetElectItemWithShardingId(
-                common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
+        ZJC_DEBUG("pool: %d construct propose msg failed, %d",
+            pool_idx_, s);
         return s;
     }
 
@@ -174,9 +172,13 @@ void Hotstuff::NewView(
     header.set_hop_count(0);
     auto* hotstuff_msg = header.mutable_hotstuff();
     auto* pb_newview_msg = hotstuff_msg->mutable_newview_msg();
-    pb_newview_msg->set_elect_height(
-        elect_info_->GetElectItemWithShardingId(
-            common::GlobalInfo::Instance()->network_id())->ElectHeight());
+    auto elect_item = elect_info_->GetElectItemWithShardingId(
+            common::GlobalInfo::Instance()->network_id());
+    if (!elect_item || !elect_item->IsValid()) {
+        return;
+    }
+
+    pb_newview_msg->set_elect_height(elect_item->ElectHeight());
     if (tc == nullptr && !view_block) {
         return;
     }
@@ -1127,20 +1129,23 @@ Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
 }
 
 Status Hotstuff::ConstructProposeMsg(hotstuff::protobuf::ProposeMsg* pro_msg) {
+    auto elect_item = elect_info_->GetElectItemWithShardingId(
+        common::GlobalInfo::Instance()->network_id());
+    if (!elect_item || !elect_item->IsValid()) {
+        return Status::kError;
+    }
+
     auto new_view_block = pro_msg->mutable_view_item();
     auto* tx_propose = pro_msg->mutable_tx_propose();
     Status s = ConstructViewBlock(new_view_block, tx_propose);
     if (s != Status::kSuccess) {
         ZJC_DEBUG("pool: %d construct view block failed, view: %lu, %d, member_index: %d",
             pool_idx_, view_block_chain()->HighViewBlock()->qc().view(), s, 
-            elect_info_->GetElectItemWithShardingId(
-                common::GlobalInfo::Instance()->network_id())->LocalMember()->index);        
+            elect_item->LocalMember()->index);        
         return s;
     }
 
-    pro_msg->set_elect_height(
-        elect_info_->GetElectItemWithShardingId(
-            common::GlobalInfo::Instance()->network_id())->ElectHeight());
+    pro_msg->set_elect_height(elect_item->ElectHeight());
     return Status::kSuccess;
 }
 
@@ -1375,7 +1380,6 @@ Status Hotstuff::SendMsgToLeader(
 void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     // Propose(latest_qc_item_ptr_);
     if (!has_user_tx && !has_system_tx) {
-        ZJC_DEBUG("pool: %u has no user tx and system tx.", pool_idx_);
         return;
     }
 
