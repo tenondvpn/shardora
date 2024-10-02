@@ -1132,7 +1132,7 @@ Status Hotstuff::ConstructProposeMsg(hotstuff::protobuf::ProposeMsg* pro_msg) {
     auto elect_item = elect_info_->GetElectItemWithShardingId(
         common::GlobalInfo::Instance()->network_id());
     if (!elect_item || !elect_item->IsValid()) {
-        return Status::kError;
+        return Status::kElectItemNotFound;
     }
 
     auto new_view_block = pro_msg->mutable_view_item();
