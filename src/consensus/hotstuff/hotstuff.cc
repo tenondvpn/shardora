@@ -258,31 +258,31 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
 }
 
 Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
-    // ZJC_DEBUG("HandleProposeMsgStep_HasVote called hash: %lu",
-    //     pro_msg_wrap->msg_ptr->header.hash64());
-    // auto& view_item = *pro_msg_wrap->view_block_ptr;
-    // if (last_vote_view_ >= view_item.qc().view()) {
-    //     ZJC_DEBUG("pool: %d has voted: %lu, last_vote_view_: %u, "
-    //         "hash64: %lu, pacemaker()->CurView(): %lu",
-    //         pool_idx_, view_item.qc().view(),
-    //         last_vote_view_, pro_msg_wrap->msg_ptr->header.hash64(),
-    //         pacemaker()->CurView());
-    //     if (pacemaker()->CurView() < view_item.qc().view()) {
-    //         auto iter = voted_msgs_.find(view_item.qc().view());
-    //         if (iter != voted_msgs_.end()) {
-    //             ZJC_DEBUG("pool: %d has voted: %lu, last_vote_view_: %u, hash64: %lu and resend vote: hash: %s",
-    //                 pool_idx_, view_item.qc().view(),
-    //                 last_vote_view_, pro_msg_wrap->msg_ptr->header.hash64(),
-    //                 common::Encode::HexEncode(iter->second->header.hotstuff().vote_msg().view_block_hash()).c_str());
-    //             if (SendMsgToLeader(iter->second, VOTE) != Status::kSuccess) {
-    //                 ZJC_ERROR("pool: %d, Send vote message is error.",
-    //                     pool_idx_, pro_msg_wrap->msg_ptr->header.hash64());
-    //             }
-    //         }
-    //     }
+    ZJC_DEBUG("HandleProposeMsgStep_HasVote called hash: %lu",
+        pro_msg_wrap->msg_ptr->header.hash64());
+    auto& view_item = *pro_msg_wrap->view_block_ptr;
+    if (last_vote_view_ >= view_item.qc().view()) {
+        ZJC_DEBUG("pool: %d has voted: %lu, last_vote_view_: %u, "
+            "hash64: %lu, pacemaker()->CurView(): %lu",
+            pool_idx_, view_item.qc().view(),
+            last_vote_view_, pro_msg_wrap->msg_ptr->header.hash64(),
+            pacemaker()->CurView());
+        if (pacemaker()->CurView() < view_item.qc().view()) {
+            auto iter = voted_msgs_.find(view_item.qc().view());
+            if (iter != voted_msgs_.end()) {
+                ZJC_DEBUG("pool: %d has voted: %lu, last_vote_view_: %u, hash64: %lu and resend vote: hash: %s",
+                    pool_idx_, view_item.qc().view(),
+                    last_vote_view_, pro_msg_wrap->msg_ptr->header.hash64(),
+                    common::Encode::HexEncode(iter->second->header.hotstuff().vote_msg().view_block_hash()).c_str());
+                if (SendMsgToLeader(iter->second, VOTE) != Status::kSuccess) {
+                    ZJC_ERROR("pool: %d, Send vote message is error.",
+                        pool_idx_, pro_msg_wrap->msg_ptr->header.hash64());
+                }
+            }
+        }
         
-    //     return Status::kError;
-    // }
+        return Status::kError;
+    }
 
     return Status::kSuccess;
 }
@@ -603,7 +603,11 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
 
     // 避免对 view 重复投票
     voted_msgs_[pro_msg_wrap->view_block_ptr->qc().view()] = trans_msg;
-    StopVoting(pro_msg_wrap->view_block_ptr->qc().view());
+    auto local_idx = leader_rotation_->GetLocalMemberIdx();
+    if (pro_msg_wrap->view_block_ptr->qc().leader_idx() != local_idx) {
+        StopVoting(pro_msg_wrap->view_block_ptr->qc().view());
+    }
+
     ZJC_DEBUG("pool: %d, Send vote message is success., hash64: %lu, last_vote_view_: %lu",
         pool_idx_, pro_msg_wrap->msg_ptr->header.hash64(),
         pro_msg_wrap->view_block_ptr->qc().view());        
