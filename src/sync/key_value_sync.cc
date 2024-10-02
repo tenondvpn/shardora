@@ -27,7 +27,7 @@ KeyValueSync::~KeyValueSync() {}
 
 void KeyValueSync::Init(
         const std::shared_ptr<block::BlockManager>& block_mgr,
-        const std::shared_ptr<hotstuff::HotstuffManager>& hotstuff_mgr,
+        const std::shared_ptr<consensus::HotstuffManager>& hotstuff_mgr,
         const std::shared_ptr<db::Db>& db,
         ViewBlockSyncedCallback view_block_synced_callback) {
     block_mgr_ = block_mgr;
