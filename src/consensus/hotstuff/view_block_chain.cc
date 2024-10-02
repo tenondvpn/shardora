@@ -68,6 +68,7 @@ Status ViewBlockChain::Store(
         //view_blocks_[view_block->hash] = view_block;
         SetViewBlockToMap(block_info_ptr);
         view_blocks_at_height_[view_block->qc().view()].push_back(view_block);
+        assert(view_blocks_at_height_[view_block->qc().view()].size() == 1);
         prune_height_ = view_block->qc().view();
         return Status::kSuccess;
     }
@@ -76,6 +77,7 @@ Status ViewBlockChain::Store(
     if (start_block_->parent_hash() == view_block->qc().view_block_hash()) {
         SetViewBlockToMap(block_info_ptr);
         view_blocks_at_height_[view_block->qc().view()].push_back(view_block);
+        assert(view_blocks_at_height_[view_block->qc().view()].size() == 1);
         AddChildrenToMap(view_block->qc().view_block_hash(), start_block_);
         // 更新 start_block_
         start_block_ = view_block;
@@ -103,6 +105,7 @@ Status ViewBlockChain::Store(
     // }
     SetViewBlockToMap(block_info_ptr);
     view_blocks_at_height_[view_block->qc().view()].push_back(view_block);
+    assert(view_blocks_at_height_[view_block->qc().view()].size() == 1);
     AddChildrenToMap(view_block->parent_hash(), view_block);
     ZJC_DEBUG("success add block info hash: %s, parent hash: %s, %u_%u_%lu, propose_debug: %s", 
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), 
@@ -341,6 +344,7 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
         if (!original_child_blocks.empty()) {
             view_blocks_info_[view_block->parent_hash()]->children = original_child_blocks;
         }
+
         view_blocks_at_height_[view_block->qc().view()] = original_blocks_at_height;
         throw;
     }

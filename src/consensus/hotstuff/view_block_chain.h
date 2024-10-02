@@ -64,6 +64,15 @@ public:
         BalanceMapPtr balane_map_ptr);
     // Get Block by hash value, fetch from neighbor nodes if necessary
     std::shared_ptr<ViewBlock> Get(const HashStr& hash);
+    std::shared_ptr<ViewBlock> Get(View view) {
+        if (view_blocks_at_height_[view].empty()) {
+            return nullptr;
+        }
+
+        assert(view_blocks_at_height_[view].size() == 1);
+        return view_blocks_at_height_[view][0];
+    }
+
     // If has block
     bool Has(const HashStr& hash);
     // if in the same branch

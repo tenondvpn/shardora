@@ -204,11 +204,6 @@ int NetworkInit::Init(int argc, char** argv) {
         new_db_cb);
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
-    kv_sync_->Init(
-        block_mgr_,
-        db_,
-        std::bind(&consensus::HotstuffManager::VerifySyncedViewBlock,
-            hotstuff_mgr_, std::placeholders::_1));
     auto consensus_init_res = hotstuff_mgr_->Init(
         contract_mgr_,
         gas_prepayment_,
@@ -228,6 +223,12 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    kv_sync_->Init(
+        block_mgr_,
+        hotstuff_mgr_,
+        db_,
+        std::bind(&consensus::HotstuffManager::VerifySyncedViewBlock,
+            hotstuff_mgr_, std::placeholders::_1));
     tm_block_mgr_->Init(vss_mgr_,account_mgr_);
     if (elect_mgr_->Init() != elect::kElectSuccess) {
         INIT_ERROR("init elect manager failed!");

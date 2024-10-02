@@ -29,6 +29,10 @@ namespace block {
     class BlockManager;
 }
 
+namespace hotstuff {
+    class HotstuffManager;
+}
+
 namespace sync {
 
 using ViewBlockSyncedCallback = std::function<int(const view_block::protobuf::ViewBlockItem& pb_vblock)>;
@@ -36,6 +40,7 @@ using ViewBlockSyncedCallback = std::function<int(const view_block::protobuf::Vi
 enum SyncItemTag : uint32_t {
     kKeyValue = 0,
     kBlockHeight = 1,
+    kViewHeight = 2,
 };
 
 struct SyncItem {
@@ -59,7 +64,8 @@ struct SyncItem {
             priority(pri), sync_times(0), responsed_timeout_us(0), tag(in_tag) {
         key = std::to_string(network_id) + "_" +
             std::to_string(pool_idx) + "_" +
-            std::to_string(height);
+            std::to_string(height) + "_" +
+            std::to_string(in_tag);
     }
 
     uint32_t network_id{ 0 };
@@ -86,6 +92,7 @@ public:
         uint32_t priority);
     void Init(
             const std::shared_ptr<block::BlockManager>& block_mgr,
+            const std::shared_ptr<hotstuff::HotstuffManager>& hotstuff_mgr,
             const std::shared_ptr<db::Db>& db,
             ViewBlockSyncedCallback view_block_synced_callback);
     void HandleMessage(const transport::MessagePtr& msg);
@@ -158,6 +165,7 @@ private:
     ViewBlockSyncedCallback view_block_synced_callback_ = nullptr;
     common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> vblock_queues_[common::kMaxThreadCount];
     common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> bft_block_queues_[common::kMaxThreadCount];  
+    std::shared_ptr<hotstuff::HotstuffManager> hotstuff_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(KeyValueSync);
 };
