@@ -151,6 +151,7 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
             tc->view());
     }
 
+    last_vote_view_ = hotstuff_msg->pro_msg().view_item().qc().view() - 1;
     HandleProposeMsg(msg_ptr);
     return Status::kSuccess;
 }
@@ -603,11 +604,6 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
 
     // 避免对 view 重复投票
     voted_msgs_[pro_msg_wrap->view_block_ptr->qc().view()] = trans_msg;
-    auto local_idx = leader_rotation_->GetLocalMemberIdx();
-    if (pro_msg_wrap->view_block_ptr->qc().leader_idx() != local_idx) {
-        StopVoting(pro_msg_wrap->view_block_ptr->qc().view());
-    }
-
     ZJC_DEBUG("pool: %d, Send vote message is success., hash64: %lu, last_vote_view_: %lu",
         pool_idx_, pro_msg_wrap->msg_ptr->header.hash64(),
         pro_msg_wrap->view_block_ptr->qc().view());        
