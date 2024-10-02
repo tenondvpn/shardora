@@ -63,17 +63,31 @@ Status ViewBlockChain::Store(
 
     ZJC_DEBUG("merge prev all balance store size: %u, propose_debug: %s", balane_map_ptr ? balane_map_ptr->size() : 0, view_block->debug().c_str());
     auto block_info_ptr = GetViewBlockInfo(view_block, balane_map_ptr);
+    auto& view_block_at_height_vec = view_blocks_at_height_[view_block->qc().view()];
+    if (!view_block_at_height_vec.empty()) {
+        for (auto iter = view_block_at_height_vec.begin(); iter != view_block_at_height_vec.end();) {
+            if ((*iter)->qc().has_sign_x()) {
+                ZJC_DEBUG("invalid view has much more view block: %lu, count: %u", 
+                    view_block->qc().view(),
+                    view_block_at_height_vec.size());
+                assert(false);
+                ++iter;
+            } else {
+                iter = view_block_at_height_vec.erase(iter);
+            }
+        }
+    }
     if (!start_block_) {
         start_block_ = view_block;
         //view_blocks_[view_block->hash] = view_block;
         SetViewBlockToMap(block_info_ptr);
-        view_blocks_at_height_[view_block->qc().view()].push_back(view_block);
+        view_block_at_height_vec.push_back(view_block);
 #ifndef NDEBUG
-    if (view_blocks_at_height_[view_block->qc().view()].size() > 1) {
+    if (view_block_at_height_vec.size() > 1) {
         ZJC_DEBUG("invalid view has much more view block: %lu, count: %u", 
             view_block->qc().view(),
-            view_blocks_at_height_[view_block->qc().view()].size());
-        assert(view_blocks_at_height_[view_block->qc().view()].size() == 1);
+            view_block_at_height_vec.size());
+        assert(view_block_at_height_vec.size() == 1);
     }
 #endif
         prune_height_ = view_block->qc().view();
@@ -83,13 +97,13 @@ Status ViewBlockChain::Store(
     // 当 view_block 是 start_block_ 的父块，允许添加
     if (start_block_->parent_hash() == view_block->qc().view_block_hash()) {
         SetViewBlockToMap(block_info_ptr);
-        view_blocks_at_height_[view_block->qc().view()].push_back(view_block);
+        view_block_at_height_vec.push_back(view_block);
 #ifndef NDEBUG
-    if (view_blocks_at_height_[view_block->qc().view()].size() > 1) {
+    if (view_block_at_height_vec.size() > 1) {
         ZJC_DEBUG("invalid view has much more view block: %lu, count: %u", 
             view_block->qc().view(),
-            view_blocks_at_height_[view_block->qc().view()].size());
-        assert(view_blocks_at_height_[view_block->qc().view()].size() == 1);
+            view_block_at_height_vec.size());
+        assert(view_block_at_height_vec.size() == 1);
     }
 #endif
         AddChildrenToMap(view_block->qc().view_block_hash(), start_block_);
@@ -118,14 +132,14 @@ Status ViewBlockChain::Store(
     //     return Status::kError;
     // }
     SetViewBlockToMap(block_info_ptr);
-    view_blocks_at_height_[view_block->qc().view()].push_back(view_block);
+    view_block_at_height_vec.push_back(view_block);
 
 #ifndef NDEBUG
-    if (view_blocks_at_height_[view_block->qc().view()].size() > 1) {
+    if (view_block_at_height_vec.size() > 1) {
         ZJC_DEBUG("invalid view has much more view block: %lu, count: %u", 
             view_block->qc().view(),
-            view_blocks_at_height_[view_block->qc().view()].size());
-        assert(view_blocks_at_height_[view_block->qc().view()].size() == 1);
+            view_block_at_height_vec.size());
+        assert(view_block_at_height_vec.size() == 1);
     }
 #endif
 
