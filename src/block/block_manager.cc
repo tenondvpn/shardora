@@ -974,6 +974,7 @@ void BlockManager::AddMiningToken(
 }
 
 void BlockManager::LoadLatestBlocks() {
+    ZJC_DEBUG("load latest block called!");
     if (!prefix_db_->GetConsensusedStatisticTimeBlockHeight(
             common::GlobalInfo::Instance()->network_id(),
             &consensused_timeblock_height_)) {
@@ -983,6 +984,7 @@ void BlockManager::LoadLatestBlocks() {
     timeblock::protobuf::TimeBlock tmblock;
     db::DbWriteBatch db_batch;
     if (prefix_db_->GetLatestTimeBlock(&tmblock)) {
+        ZJC_DEBUG("load latest time block called!");
         auto tmblock_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
         auto& block = *tmblock_ptr;
         if (GetBlockWithHeight(
@@ -990,6 +992,7 @@ void BlockManager::LoadLatestBlocks() {
                 common::kRootChainPoolIndex,
                 tmblock.height(),
                 block) == kBlockSuccess) {
+            ZJC_DEBUG("load latest elect block called!");
             if (new_block_callback_ != nullptr) {
                 new_block_callback_(tmblock_ptr, db_batch);
             }
