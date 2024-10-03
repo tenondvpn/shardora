@@ -232,7 +232,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    if (timeout_proto.view() <= CurView()) {
+    if (timeout_proto.view() < CurView()) {
         ZJC_DEBUG("====4.5 over 0 pool: %d, view: %d, curview: %lu, member: %d, hash64: %lu", 
             pool_idx_, timeout_proto.view(), CurView(), timeout_proto.member_id(),
             msg_ptr->header.hash64());
