@@ -171,12 +171,20 @@ public:
         }
         // highqc 之前连续三个块都是空交易，则认为 stuck
         auto v_block1 = view_block_chain()->HighViewBlock();
+        if (!v_block1) {
+            return 0;
+        }
+
         if (v_block1->block_info().tx_list_size() > 0) {
             return 2;
         }
 
         auto v_block2 = view_block_chain()->ParentBlock(*v_block1);
-        if (v_block2 && v_block2->block_info().tx_list_size() > 0) {
+        if (!v_block2) {
+            return 0;
+        }
+
+        if (v_block2->block_info().tx_list_size() > 0) {
             return 3;
         }
 
