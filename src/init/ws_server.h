@@ -120,7 +120,7 @@ private:
     uint64_t min_c2c_sellout_amount_ = 10000lu;
     uint64_t min_c2c_prepayment_ = 20000000lu;
     std::string c2c_contract_addr_;
-    std::string chain_ips_ = "127.0.0.1:21001,127.0.0.1:22001,127.0.0.1:23001";
+    std::string chain_ips_ = "127.0.0.1:13001";
     uint64_t c2c_timeout_ms_ = 10000lu;
     uint64_t c2c_min_purchase_amount_ = 100000000lu;
 
