@@ -120,12 +120,13 @@ Status Crypto::ReconstructAndVerifyThresSign(
     // TODO(HT): 先判断是否已经处理过的index
     collection_item->ok_bitmap.Set(index);
     collection_item->partial_signs[index] = partial_sign;
-    ZJC_DEBUG("msg hash: %s, ok count: %u, t: %u, index: %u, elect_height: %lu",
+    ZJC_DEBUG("msg hash: %s, ok count: %u, t: %u, index: %u, elect_height: %lu, pool: %u",
         common::Encode::HexEncode(msg_hash).c_str(), 
         collection_item->OkCount(), 
         elect_item->t(),
         index,
-        elect_height);
+        elect_height,
+        pool_idx_);
     if (collection_item->OkCount() < elect_item->t()) {
         return Status::kBlsVerifyWaiting;
     }
