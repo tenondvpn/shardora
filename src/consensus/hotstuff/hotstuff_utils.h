@@ -133,7 +133,6 @@ public:
         while (!min_heap_.empty()) {
             auto pro_msg_wrap = min_heap_.top();
             min_heap_.pop();
-            
             ordered_msg.push_back(pro_msg_wrap);
         }
 

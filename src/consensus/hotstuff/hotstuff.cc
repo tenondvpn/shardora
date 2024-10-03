@@ -251,6 +251,10 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         pro_msg_wrap->view_block_ptr->block_info().timestamp(),
         msg_ptr->header.debug().c_str());
     assert(pro_msg_wrap->view_block_ptr->block_info().tx_list_size() == 0);
+    if (msg_ptr->header.hotstuff().pro_msg().has_tc()) {
+        HandleTC(pro_msg_wrap);
+    }
+    
     // 执行预设好的 steps
     // 一般来说，一旦某个节点状态落后，而新提案由于还没有生成 QC 无法通过同步获得，
     // 因此它将再也无法参与投票（由于父块缺失，chain->Store 会失败），直到一次超时发生
@@ -307,9 +311,9 @@ Status Hotstuff::HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWra
     return Status::kSuccess;
 }
 
-Status Hotstuff::HandleProposeMsgStep_VerifyTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
+Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
     // 3 Verify TC
-    ZJC_DEBUG("HandleProposeMsgStep_VerifyTC called hash: %lu, propose_debug: %s", pro_msg_wrap->msg_ptr->header.hash64(), pro_msg_wrap->msg_ptr->header.debug().c_str());
+    ZJC_DEBUG("HandleTC called hash: %lu, propose_debug: %s", pro_msg_wrap->msg_ptr->header.hash64(), pro_msg_wrap->msg_ptr->header.debug().c_str());
     std::shared_ptr<TC> tc = nullptr;
     auto& pro_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
     if (pro_msg.has_tc() && !pro_msg.tc().has_view_block_hash()) {
@@ -323,7 +327,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyTC(std::shared_ptr<ProposeMsgWrapper
         pacemaker()->NewTc(tc_ptr);
 #ifndef NDEBUG
         auto msg_hash = GetTCMsgHash(pro_msg.tc());
-        ZJC_DEBUG("HandleProposeMsgStep_VerifyTC success verify tc %u_%u_%lu, hash: %s called hash: %lu, propose_debug: %s",
+        ZJC_DEBUG("HandleTC success verify tc %u_%u_%lu, hash: %s called hash: %lu, propose_debug: %s",
             tc_ptr->network_id(), 
             tc_ptr->pool_index(), 
             tc_ptr->view(), 
