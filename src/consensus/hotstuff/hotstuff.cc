@@ -1382,7 +1382,10 @@ Status Hotstuff::SendMsgToLeader(
 }
 
 void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
-    // Propose(latest_qc_item_ptr_);
+    if (!latest_qc_item_ptr_) {
+        return;
+    }
+
     if (!has_user_tx && !has_system_tx) {
         return;
     }
