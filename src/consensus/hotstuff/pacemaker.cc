@@ -140,7 +140,7 @@ void Pacemaker::OnLocalTimeout() {
     timeout_msg.set_sign_x(bls_sign_x);
     timeout_msg.set_sign_y(bls_sign_y);
     timeout_msg.set_view_hash(tc_msg_hash);
-    timeout_msg.set_view(CurView() + 1);
+    timeout_msg.set_view(CurView());
     timeout_msg.set_elect_height(elect_item->ElectHeight());
     timeout_msg.set_pool_idx(pool_idx_); // 用于分配线程
     timeout_msg.set_leader_idx(0);
