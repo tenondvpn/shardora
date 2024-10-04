@@ -66,7 +66,9 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
             txs_item = GetToTxs(pool_index, "");
             ZJC_DEBUG("GetToTxs: %d", (txs_item != nullptr));
         } else {
-            ZJC_DEBUG("GetToTxGid failed: %d", (txs_item != nullptr));
+            ZJC_DEBUG("GetToTxGid failed: %d, gid: %s", 
+                (txs_item != nullptr), 
+                common::Encode::HexEncode(gid).c_str());
         }
     }
 
