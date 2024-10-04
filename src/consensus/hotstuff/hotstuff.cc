@@ -325,6 +325,10 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
 
         auto tc_ptr = std::make_shared<view_block::protobuf::QcItem>(pro_msg.tc());
         pacemaker()->NewTc(tc_ptr);
+        if (latest_qc_item_ptr_ == nullptr ||
+                tc_ptr->view() >= latest_qc_item_ptr_->view()) {
+            latest_qc_item_ptr_ = tc_ptr;
+        }
 #ifndef NDEBUG
         auto msg_hash = GetTCMsgHash(pro_msg.tc());
         ZJC_DEBUG("HandleTC success verify tc %u_%u_%lu, hash: %s called hash: %lu, propose_debug: %s",
@@ -360,6 +364,10 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
         pacemaker()->NewQcView(pro_msg.tc().view());
         view_block_chain()->UpdateHighViewBlock(pro_msg.tc());
         TryCommit(pro_msg.tc(), 99999999lu);
+        if (latest_qc_item_ptr_ == nullptr ||
+                pro_msg.tc().view() >= latest_qc_item_ptr_->view()) {
+            latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(pro_msg.tc());
+        }
 #ifndef NDEBUG
         auto msg_hash = GetQCMsgHash(pro_msg.tc());
         auto* tc_ptr = &pro_msg.tc();
