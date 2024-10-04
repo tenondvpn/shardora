@@ -1391,29 +1391,29 @@ Status Hotstuff::SendMsgToLeader(
 
 void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     if (!latest_qc_item_ptr_) {
-        ZJC_DEBUG("latest_qc_item_ptr_ null");
+        // ZJC_DEBUG("latest_qc_item_ptr_ null");
         return;
     }
 
     if (!has_user_tx && !has_system_tx) {
-        ZJC_DEBUG("!has_user_tx && !has_system_tx");
+        // ZJC_DEBUG("!has_user_tx && !has_system_tx");
         return;
     }
 
     if (leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32) {
-        ZJC_DEBUG("leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32");
+        // ZJC_DEBUG("leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32");
         return;
     }
 
     if (timer_delay_us_ > common::TimeUtils::TimestampUs()) {
-        ZJC_DEBUG("pool: %u timer_delay_us_ > common::TimeUtils::TimestampUs(): %lu, %lu",
-            pool_idx_, timer_delay_us_, common::TimeUtils::TimestampUs());
+        // ZJC_DEBUG("pool: %u timer_delay_us_ > common::TimeUtils::TimestampUs(): %lu, %lu",
+        //     pool_idx_, timer_delay_us_, common::TimeUtils::TimestampUs());
         return;
     }
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (now_tm_ms < latest_propse_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs) {
-        ZJC_DEBUG("pool: %u now_tm_ms < latest_propse_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs: %lu, %lu", pool_idx_, now_tm_ms, (latest_propse_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs));
+        // ZJC_DEBUG("pool: %u now_tm_ms < latest_propse_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs: %lu, %lu", pool_idx_, now_tm_ms, (latest_propse_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs));
         return;
     }
 
@@ -1423,7 +1423,7 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
             ZJC_DEBUG("pool: %u stuck_st != 0: %d", pool_idx_, stuck_st);
         }
 
-        ZJC_DEBUG("stuck_st != 0 %d", stuck_st);
+        // ZJC_DEBUG("stuck_st != 0 %d", stuck_st);
         return;
     }
 
