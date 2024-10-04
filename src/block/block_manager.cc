@@ -750,6 +750,7 @@ void BlockManager::AddNewBlock(
                 auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
                 latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = view_block_item;
                 latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
+                ZJC_DEBUG("success set latest to block ptr: %lu, tm: %lu", view_block_item->block_info().height(), view_block_item->block_info().timestamp());
             }
 
             ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
@@ -1286,6 +1287,10 @@ std::string BlockManager::GetToTxGid() {
         gid = common::Hash::keccak256(
             std::to_string(latest_to_block->block_info().height()) +
             std::to_string(latest_to_block->block_info().timestamp()));
+        ZJC_DEBUG("set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
+            common::Encode::HexEncode(gid).c_str(),
+            latest_to_block->block_info().height(), 
+            latest_to_block->block_info().timestamp());
     }
     
     return gid;
