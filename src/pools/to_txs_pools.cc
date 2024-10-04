@@ -824,8 +824,8 @@ int ToTxsPools::CreateToTxWithHeights(
                     uint32_t* tmp_data = (uint32_t*)to_iter->first.c_str();
                     uint32_t step = tmp_data[0];
                     std::string to(to_iter->first.c_str() + 4, to_iter->first.size() - 4);
-                    ZJC_DEBUG("statistic shard: %u, new tx coming sharding id: %u, to: %s, step: %u",
-                        sharding_id, des_sharding_id, common::Encode::HexEncode(to).c_str(), step);
+                    ZJC_DEBUG("statistic shard: %u, new tx coming sharding id: %u, to: %s, step: %u, pool: %u, min height: %lu, max height: %lu",
+                        sharding_id, des_sharding_id, common::Encode::HexEncode(to).c_str(), step, pool_idx, min_height, max_height);
 #endif
                     if (to_iter->second.sharding_id == common::kInvalidUint32) {
                         uint32_t* tmp_data = (uint32_t*)to_iter->first.c_str();
