@@ -1902,6 +1902,7 @@ public:
         std::string value;
         value.reserve(24);
         uint64_t* val_data = (uint64_t*)value.data();
+        memset(val_data, 0, 24);
         val_data[0] = view_block->qc().network_id();
         val_data[1] = view_block->qc().pool_index();
         val_data[2] = view_block->block_info().height();
