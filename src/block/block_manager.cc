@@ -1249,6 +1249,7 @@ pools::TxItemPtr BlockManager::GetToTx(
                 std::to_string(latest_to_block->block_info().height()) +
                 std::to_string(latest_to_block->block_info().timestamp()));
             ZJC_DEBUG("set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
+                common::Encode::HexEncode(gid).c_str(),
                 latest_to_block->block_info().height(), 
                 latest_to_block->block_info().timestamp());
         }
