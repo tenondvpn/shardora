@@ -1296,13 +1296,13 @@ std::string BlockManager::GetToTxGid() {
         gid = common::Hash::keccak256(
             std::to_string(latest_to_block->block_info().height()) +
             std::to_string(latest_to_block->block_info().timestamp()));
-        ZJC_DEBUG("set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
-            common::Encode::HexEncode(gid).c_str(),
-            latest_to_block->block_info().height(), 
-            latest_to_block->block_info().timestamp());
+        // ZJC_DEBUG("set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
+        //     common::Encode::HexEncode(gid).c_str(),
+        //     latest_to_block->block_info().height(), 
+        //     latest_to_block->block_info().timestamp());
     } else {
-        ZJC_DEBUG("default 0000 set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
-            common::Encode::HexEncode(gid).c_str(), 0, 0);
+        // ZJC_DEBUG("default 0000 set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
+        //     common::Encode::HexEncode(gid).c_str(), 0, 0);
     }
     
     return gid;
