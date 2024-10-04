@@ -1248,6 +1248,9 @@ pools::TxItemPtr BlockManager::GetToTx(
             gid = common::Hash::keccak256(
                 std::to_string(latest_to_block->block_info().height()) +
                 std::to_string(latest_to_block->block_info().timestamp()));
+            ZJC_DEBUG("set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
+                latest_to_block->block_info().height(), 
+                latest_to_block->block_info().timestamp());
         }
         
         auto tx_ptr = iter->second;
