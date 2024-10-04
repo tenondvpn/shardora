@@ -1293,9 +1293,7 @@ std::string BlockManager::GetToTxGid() {
             latest_to_block->block_info().timestamp());
     } else {
         ZJC_DEBUG("default 0000 set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
-            common::Encode::HexEncode(gid).c_str(),
-            latest_to_block->block_info().height(), 
-            latest_to_block->block_info().timestamp());
+            common::Encode::HexEncode(gid).c_str(), 0, 0);
     }
     
     return gid;
