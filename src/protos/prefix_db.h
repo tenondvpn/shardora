@@ -1900,7 +1900,7 @@ public:
         key.reserve(64);
         key.append(kLatestToTxBlock);
         std::string value;
-        value.reserve(24);
+        value.resize(24);
         uint64_t* val_data = (uint64_t*)value.data();
         memset(val_data, 0, 24);
         val_data[0] = view_block->qc().network_id();
