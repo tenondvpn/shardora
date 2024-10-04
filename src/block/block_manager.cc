@@ -1047,8 +1047,9 @@ void BlockManager::LoadLatestBlocks() {
         auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
         latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = latest_to_tx_block;
         latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
+        ZJC_DEBUG("success set latest to block ptr: %lu, tm: %lu", latest_to_tx_block->block_info().height(), latest_to_tx_block->block_info().timestamp());
     }
-    
+
     db_->Put(db_batch);
 }
 
