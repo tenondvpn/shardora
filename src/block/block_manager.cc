@@ -750,6 +750,7 @@ void BlockManager::AddNewBlock(
                 auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
                 latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = view_block_item;
                 latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
+                prefix_db_->SaveLatestToBlock(view_block_item, db_batch);
                 ZJC_DEBUG("success set latest to block ptr: %lu, tm: %lu", view_block_item->block_info().height(), view_block_item->block_info().timestamp());
             }
 
@@ -1040,7 +1041,14 @@ void BlockManager::LoadLatestBlocks() {
         }
     }
     
-
+    auto latest_to_tx_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
+    auto& block = *latest_to_tx_block;
+    if (prefix_db_->GetLatestToBlock(&block)) {
+        auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
+        latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = latest_to_tx_block;
+        latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
+    }
+    
     db_->Put(db_batch);
 }
 

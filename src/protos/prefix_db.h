@@ -22,6 +22,7 @@
 #include "protos/timeblock.pb.h"
 #include "protos/tx_storage_key.h"
 #include "protos/ws.pb.h"
+#include "protos/view_block.pb.h"
 #include "security/security.h"
 #include <zjcvm/zjcvm_utils.h>
 #include "consensus/hotstuff/types.h"
@@ -82,6 +83,7 @@ static const std::string kBandwidthPrefix = "ao\x01";
 static const std::string kC2cSelloutPrefix = "ap\x01";
 static const std::string kC2cSellorderPrefix = "aq\x01";
 static const std::string kSaveHavePrevLatestElectHeightPrefix = "ar\x01";
+static const std::string kLatestToTxBlock = "as\x01";
 
 class PrefixDb {
 public:
@@ -1889,6 +1891,39 @@ public:
         }
 
         return sell_info->ParseFromString(val);
+    }
+
+    void SaveLatestToBlock(
+            const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block, 
+            db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(64);
+        key.append(kLatestToTxBlock);
+        std::string value;
+        value.reserve(24);
+        uint64_t* val_data = (uint64_t*)value.data();
+        val_data[0] = view_block->qc().network_id();
+        val_data[1] = view_block->qc().pool_index();
+        val_data[2] = view_block->block_info().height();
+        db_batch.Put(key, value);
+    }
+
+    bool GetLatestToBlock(view_block::protobuf::ViewBlockItem* block) {
+        std::string key;
+        key.reserve(64);
+        key.append(kLatestToTxBlock);
+        std::string value;
+        auto st = db_->Get(key, &value);
+        if (!st.ok()) {
+            return false;
+        }
+
+        uint64_t* val_data = (uint64_t*)value.data();
+        return GetBlockWithHeight(
+            static_cast<uint32_t>(val_data[0]), 
+            static_cast<uint32_t>(val_data[1]), 
+            val_data[2],
+            block);
     }
 
 private:
