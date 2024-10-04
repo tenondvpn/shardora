@@ -1906,6 +1906,7 @@ public:
         val_data[1] = view_block->qc().pool_index();
         val_data[2] = view_block->block_info().height();
         db_batch.Put(key, value);
+        ZJC_DEBUG("success save latest to block: %u_%u_%lu", view_block->qc().network_id(), view_block->qc().pool_index(), view_block->block_info().height());
     }
 
     bool GetLatestToBlock(view_block::protobuf::ViewBlockItem* block) {
@@ -1919,6 +1920,9 @@ public:
         }
 
         uint64_t* val_data = (uint64_t*)value.data();
+        ZJC_DEBUG("success get latest to block: %u_%u_%lu", static_cast<uint32_t>(val_data[0]), 
+            static_cast<uint32_t>(val_data[1]), 
+            val_data[2]);
         return GetBlockWithHeight(
             static_cast<uint32_t>(val_data[0]), 
             static_cast<uint32_t>(val_data[1]), 
