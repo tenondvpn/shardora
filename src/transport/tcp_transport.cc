@@ -262,15 +262,6 @@ int TcpTransport::Send(
     // assert(output_item->msg.size() < 1000000u);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     output_queues_[thread_idx].push(output_item);
-    // ZJC_INFO("get output_queues_ size %d, %d", thread_idx, output_queues_[thread_idx].size());
-// #ifndef NDEBUG
-//     static std::atomic<uint32_t> max_count = 0;
-//     if (output_queues_[thread_idx].size() > max_count) {
-//         max_count = output_queues_[thread_idx].size();
-//         ZJC_DEBUG("get output_queues_ size %d, %d", thread_idx, output_queues_[thread_idx].size());
-//     }
-// #endif
-
     output_con_.notify_one();
     return kTransportSuccess;
 }
@@ -335,6 +326,8 @@ void TcpTransport::Output() {
                         continue;
                     }
 
+                    TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu] res: %d, tcp_conn: %lu",
+                        item_ptr->des_ip.c_str(), item_ptr->port, 0, res, tcp_conn.get());
                     break;
                 }
 
