@@ -14,17 +14,16 @@ HashStr GetQCMsgHash(const view_block::protobuf::QcItem& qc_item) {
     assert(proto_qc->network_id() <= network::kConsensusShardEndNetworkId);
     assert(proto_qc->pool_index() < common::kInvalidPoolIndex);
     ss << proto_qc->network_id() << proto_qc->pool_index() << proto_qc->view() <<
-        proto_qc->view_block_hash() << proto_qc->commit_view_block_hash() <<
+        proto_qc->view_block_hash() <<
         proto_qc->elect_height() << proto_qc->leader_idx();
     std::string msg = ss.str();
     auto msg_hash = common::Hash::keccak256(msg); 
     ZJC_DEBUG("success get qc msg hash net: %u, pool: %u, view: %lu, view_block_hash: %s, "
-        "commit_view_block_hash: %s, elect_height: %lu, leader_idx: %u, msg_hash: %s",
+        " elect_height: %lu, leader_idx: %u, msg_hash: %s",
         proto_qc->network_id(),
         proto_qc->pool_index(),
         proto_qc->view(), 
         common::Encode::HexEncode(proto_qc->view_block_hash()).c_str(),
-        common::Encode::HexEncode(proto_qc->commit_view_block_hash()).c_str(),
         proto_qc->elect_height(),
         proto_qc->leader_idx(),
         common::Encode::HexEncode(msg_hash).c_str());
@@ -33,7 +32,6 @@ HashStr GetQCMsgHash(const view_block::protobuf::QcItem& qc_item) {
 
 HashStr GetTCMsgHash(const view_block::protobuf::QcItem& tc_item) {
     assert(!tc_item.has_view_block_hash());
-    assert(!tc_item.has_commit_view_block_hash());
     return GetQCMsgHash(tc_item);
 }
 
