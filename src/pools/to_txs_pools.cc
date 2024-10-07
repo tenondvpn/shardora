@@ -598,6 +598,7 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
             }
 
             if (valided_heights_[i].find(cons_height) == valided_heights_[i].end()) {
+                ZJC_DEBUG("leader get to heights error, pool: %u, height: %lu", i, cons_height);
                 return kPoolsError;
             }
 
@@ -609,6 +610,7 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
     }
 
     if (!valid) {
+        ZJC_DEBUG("final leader get to heights error, pool: %u, height: %lu", 0, 0);
         return kPoolsError;
     }
 
