@@ -158,6 +158,16 @@ std::shared_ptr<ViewBlock> ViewBlockChain::Get(const HashStr &hash) {
         return it->second->view_block;
     }
 
+    if (latest_committed_block_->qc().view_block_hash() == hash) {
+        ZJC_DEBUG("now use latest commited block: %s, %u_%u_%lu, height: %lu",
+            common::Encode::HexEncode(hash).c_str(),
+            latest_committed_block_->qc().network_id(),
+            latest_committed_block_->qc().pool_index(),
+            latest_committed_block_->qc().view(),
+            latest_committed_block_->block_info().height());
+        return latest_committed_block_;
+    }
+
     return nullptr;    
 }
 
