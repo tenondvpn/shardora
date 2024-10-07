@@ -881,21 +881,6 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::std::string* release_sign_y();
   void set_allocated_sign_y(::std::string* sign_y);
 
-  // optional bytes commit_view_block_hash = 8;
-  bool has_commit_view_block_hash() const;
-  void clear_commit_view_block_hash();
-  static const int kCommitViewBlockHashFieldNumber = 8;
-  const ::std::string& commit_view_block_hash() const;
-  void set_commit_view_block_hash(const ::std::string& value);
-  #if LANG_CXX11
-  void set_commit_view_block_hash(::std::string&& value);
-  #endif
-  void set_commit_view_block_hash(const char* value);
-  void set_commit_view_block_hash(const void* value, size_t size);
-  ::std::string* mutable_commit_view_block_hash();
-  ::std::string* release_commit_view_block_hash();
-  void set_allocated_commit_view_block_hash(::std::string* commit_view_block_hash);
-
   // optional uint64 view = 3;
   bool has_view() const;
   void clear_view();
@@ -917,10 +902,10 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::uint32 replica_idx() const;
   void set_replica_idx(::google::protobuf::uint32 value);
 
-  // optional uint32 leader_idx = 9;
+  // optional uint32 leader_idx = 8;
   bool has_leader_idx() const;
   void clear_leader_idx();
-  static const int kLeaderIdxFieldNumber = 9;
+  static const int kLeaderIdxFieldNumber = 8;
   ::google::protobuf::uint32 leader_idx() const;
   void set_leader_idx(::google::protobuf::uint32 value);
 
@@ -938,8 +923,6 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   void clear_has_sign_x();
   void set_has_sign_y();
   void clear_has_sign_y();
-  void set_has_commit_view_block_hash();
-  void clear_has_commit_view_block_hash();
   void set_has_leader_idx();
   void clear_has_leader_idx();
 
@@ -950,7 +933,6 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::internal::ArenaStringPtr view_block_hash_;
   ::google::protobuf::internal::ArenaStringPtr sign_x_;
   ::google::protobuf::internal::ArenaStringPtr sign_y_;
-  ::google::protobuf::internal::ArenaStringPtr commit_view_block_hash_;
   ::google::protobuf::uint64 view_;
   ::google::protobuf::uint64 elect_height_;
   ::google::protobuf::uint32 replica_idx_;
@@ -1973,13 +1955,13 @@ inline void ProposeMsg::set_allocated_tx_propose(::shardora::hotstuff::protobuf:
 
 // optional uint32 replica_idx = 1;
 inline bool VoteMsg::has_replica_idx() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void VoteMsg::set_has_replica_idx() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void VoteMsg::clear_has_replica_idx() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void VoteMsg::clear_replica_idx() {
   replica_idx_ = 0u;
@@ -2063,13 +2045,13 @@ inline void VoteMsg::set_allocated_view_block_hash(::std::string* view_block_has
 
 // optional uint64 view = 3;
 inline bool VoteMsg::has_view() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void VoteMsg::set_has_view() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void VoteMsg::clear_has_view() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void VoteMsg::clear_view() {
   view_ = GOOGLE_ULONGLONG(0);
@@ -2087,13 +2069,13 @@ inline void VoteMsg::set_view(::google::protobuf::uint64 value) {
 
 // optional uint64 elect_height = 4;
 inline bool VoteMsg::has_elect_height() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void VoteMsg::set_has_elect_height() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void VoteMsg::clear_has_elect_height() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void VoteMsg::clear_elect_height() {
   elect_height_ = GOOGLE_ULONGLONG(0);
@@ -2268,81 +2250,15 @@ VoteMsg::txs() const {
   return txs_;
 }
 
-// optional bytes commit_view_block_hash = 8;
-inline bool VoteMsg::has_commit_view_block_hash() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void VoteMsg::set_has_commit_view_block_hash() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void VoteMsg::clear_has_commit_view_block_hash() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void VoteMsg::clear_commit_view_block_hash() {
-  commit_view_block_hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_commit_view_block_hash();
-}
-inline const ::std::string& VoteMsg::commit_view_block_hash() const {
-  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.VoteMsg.commit_view_block_hash)
-  return commit_view_block_hash_.GetNoArena();
-}
-inline void VoteMsg::set_commit_view_block_hash(const ::std::string& value) {
-  set_has_commit_view_block_hash();
-  commit_view_block_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:shardora.hotstuff.protobuf.VoteMsg.commit_view_block_hash)
-}
-#if LANG_CXX11
-inline void VoteMsg::set_commit_view_block_hash(::std::string&& value) {
-  set_has_commit_view_block_hash();
-  commit_view_block_hash_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:shardora.hotstuff.protobuf.VoteMsg.commit_view_block_hash)
-}
-#endif
-inline void VoteMsg::set_commit_view_block_hash(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_commit_view_block_hash();
-  commit_view_block_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:shardora.hotstuff.protobuf.VoteMsg.commit_view_block_hash)
-}
-inline void VoteMsg::set_commit_view_block_hash(const void* value, size_t size) {
-  set_has_commit_view_block_hash();
-  commit_view_block_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:shardora.hotstuff.protobuf.VoteMsg.commit_view_block_hash)
-}
-inline ::std::string* VoteMsg::mutable_commit_view_block_hash() {
-  set_has_commit_view_block_hash();
-  // @@protoc_insertion_point(field_mutable:shardora.hotstuff.protobuf.VoteMsg.commit_view_block_hash)
-  return commit_view_block_hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* VoteMsg::release_commit_view_block_hash() {
-  // @@protoc_insertion_point(field_release:shardora.hotstuff.protobuf.VoteMsg.commit_view_block_hash)
-  if (!has_commit_view_block_hash()) {
-    return NULL;
-  }
-  clear_has_commit_view_block_hash();
-  return commit_view_block_hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void VoteMsg::set_allocated_commit_view_block_hash(::std::string* commit_view_block_hash) {
-  if (commit_view_block_hash != NULL) {
-    set_has_commit_view_block_hash();
-  } else {
-    clear_has_commit_view_block_hash();
-  }
-  commit_view_block_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), commit_view_block_hash);
-  // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.VoteMsg.commit_view_block_hash)
-}
-
-// optional uint32 leader_idx = 9;
+// optional uint32 leader_idx = 8;
 inline bool VoteMsg::has_leader_idx() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void VoteMsg::set_has_leader_idx() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void VoteMsg::clear_has_leader_idx() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void VoteMsg::clear_leader_idx() {
   leader_idx_ = 0u;

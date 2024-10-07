@@ -248,21 +248,6 @@ class QcItem : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::std::string* release_view_block_hash();
   void set_allocated_view_block_hash(::std::string* view_block_hash);
 
-  // optional bytes commit_view_block_hash = 6;
-  bool has_commit_view_block_hash() const;
-  void clear_commit_view_block_hash();
-  static const int kCommitViewBlockHashFieldNumber = 6;
-  const ::std::string& commit_view_block_hash() const;
-  void set_commit_view_block_hash(const ::std::string& value);
-  #if LANG_CXX11
-  void set_commit_view_block_hash(::std::string&& value);
-  #endif
-  void set_commit_view_block_hash(const char* value);
-  void set_commit_view_block_hash(const void* value, size_t size);
-  ::std::string* mutable_commit_view_block_hash();
-  ::std::string* release_commit_view_block_hash();
-  void set_allocated_commit_view_block_hash(::std::string* commit_view_block_hash);
-
   // optional uint64 view = 4;
   bool has_view() const;
   void clear_view();
@@ -270,31 +255,31 @@ class QcItem : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::google::protobuf::uint64 view() const;
   void set_view(::google::protobuf::uint64 value);
 
-  // optional uint64 elect_height = 7;
+  // optional uint64 elect_height = 6;
   bool has_elect_height() const;
   void clear_elect_height();
-  static const int kElectHeightFieldNumber = 7;
+  static const int kElectHeightFieldNumber = 6;
   ::google::protobuf::uint64 elect_height() const;
   void set_elect_height(::google::protobuf::uint64 value);
 
-  // optional uint32 leader_idx = 8;
+  // optional uint32 leader_idx = 7;
   bool has_leader_idx() const;
   void clear_leader_idx();
-  static const int kLeaderIdxFieldNumber = 8;
+  static const int kLeaderIdxFieldNumber = 7;
   ::google::protobuf::uint32 leader_idx() const;
   void set_leader_idx(::google::protobuf::uint32 value);
 
-  // optional uint32 network_id = 9;
+  // optional uint32 network_id = 8;
   bool has_network_id() const;
   void clear_network_id();
-  static const int kNetworkIdFieldNumber = 9;
+  static const int kNetworkIdFieldNumber = 8;
   ::google::protobuf::uint32 network_id() const;
   void set_network_id(::google::protobuf::uint32 value);
 
-  // optional uint32 pool_index = 10;
+  // optional uint32 pool_index = 9;
   bool has_pool_index() const;
   void clear_pool_index();
-  static const int kPoolIndexFieldNumber = 10;
+  static const int kPoolIndexFieldNumber = 9;
   ::google::protobuf::uint32 pool_index() const;
   void set_pool_index(::google::protobuf::uint32 value);
 
@@ -310,8 +295,6 @@ class QcItem : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   void clear_has_view();
   void set_has_view_block_hash();
   void clear_has_view_block_hash();
-  void set_has_commit_view_block_hash();
-  void clear_has_commit_view_block_hash();
   void set_has_elect_height();
   void clear_has_elect_height();
   void set_has_leader_idx();
@@ -328,7 +311,6 @@ class QcItem : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::google::protobuf::internal::ArenaStringPtr sign_y_;
   ::google::protobuf::internal::ArenaStringPtr sign_z_;
   ::google::protobuf::internal::ArenaStringPtr view_block_hash_;
-  ::google::protobuf::internal::ArenaStringPtr commit_view_block_hash_;
   ::google::protobuf::uint64 view_;
   ::google::protobuf::uint64 elect_height_;
   ::google::protobuf::uint32 leader_idx_;
@@ -1801,13 +1783,13 @@ inline void QcItem::set_allocated_sign_z(::std::string* sign_z) {
 
 // optional uint64 view = 4;
 inline bool QcItem::has_view() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void QcItem::set_has_view() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void QcItem::clear_has_view() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void QcItem::clear_view() {
   view_ = GOOGLE_ULONGLONG(0);
@@ -1889,81 +1871,15 @@ inline void QcItem::set_allocated_view_block_hash(::std::string* view_block_hash
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.QcItem.view_block_hash)
 }
 
-// optional bytes commit_view_block_hash = 6;
-inline bool QcItem::has_commit_view_block_hash() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void QcItem::set_has_commit_view_block_hash() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void QcItem::clear_has_commit_view_block_hash() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void QcItem::clear_commit_view_block_hash() {
-  commit_view_block_hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_commit_view_block_hash();
-}
-inline const ::std::string& QcItem::commit_view_block_hash() const {
-  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.QcItem.commit_view_block_hash)
-  return commit_view_block_hash_.GetNoArena();
-}
-inline void QcItem::set_commit_view_block_hash(const ::std::string& value) {
-  set_has_commit_view_block_hash();
-  commit_view_block_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.QcItem.commit_view_block_hash)
-}
-#if LANG_CXX11
-inline void QcItem::set_commit_view_block_hash(::std::string&& value) {
-  set_has_commit_view_block_hash();
-  commit_view_block_hash_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:shardora.view_block.protobuf.QcItem.commit_view_block_hash)
-}
-#endif
-inline void QcItem::set_commit_view_block_hash(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_commit_view_block_hash();
-  commit_view_block_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:shardora.view_block.protobuf.QcItem.commit_view_block_hash)
-}
-inline void QcItem::set_commit_view_block_hash(const void* value, size_t size) {
-  set_has_commit_view_block_hash();
-  commit_view_block_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:shardora.view_block.protobuf.QcItem.commit_view_block_hash)
-}
-inline ::std::string* QcItem::mutable_commit_view_block_hash() {
-  set_has_commit_view_block_hash();
-  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.QcItem.commit_view_block_hash)
-  return commit_view_block_hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* QcItem::release_commit_view_block_hash() {
-  // @@protoc_insertion_point(field_release:shardora.view_block.protobuf.QcItem.commit_view_block_hash)
-  if (!has_commit_view_block_hash()) {
-    return NULL;
-  }
-  clear_has_commit_view_block_hash();
-  return commit_view_block_hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void QcItem::set_allocated_commit_view_block_hash(::std::string* commit_view_block_hash) {
-  if (commit_view_block_hash != NULL) {
-    set_has_commit_view_block_hash();
-  } else {
-    clear_has_commit_view_block_hash();
-  }
-  commit_view_block_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), commit_view_block_hash);
-  // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.QcItem.commit_view_block_hash)
-}
-
-// optional uint64 elect_height = 7;
+// optional uint64 elect_height = 6;
 inline bool QcItem::has_elect_height() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void QcItem::set_has_elect_height() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void QcItem::clear_has_elect_height() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void QcItem::clear_elect_height() {
   elect_height_ = GOOGLE_ULONGLONG(0);
@@ -1979,15 +1895,15 @@ inline void QcItem::set_elect_height(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.QcItem.elect_height)
 }
 
-// optional uint32 leader_idx = 8;
+// optional uint32 leader_idx = 7;
 inline bool QcItem::has_leader_idx() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void QcItem::set_has_leader_idx() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void QcItem::clear_has_leader_idx() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void QcItem::clear_leader_idx() {
   leader_idx_ = 0u;
@@ -2003,15 +1919,15 @@ inline void QcItem::set_leader_idx(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.QcItem.leader_idx)
 }
 
-// optional uint32 network_id = 9;
+// optional uint32 network_id = 8;
 inline bool QcItem::has_network_id() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void QcItem::set_has_network_id() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void QcItem::clear_has_network_id() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void QcItem::clear_network_id() {
   network_id_ = 0u;
@@ -2027,15 +1943,15 @@ inline void QcItem::set_network_id(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.QcItem.network_id)
 }
 
-// optional uint32 pool_index = 10;
+// optional uint32 pool_index = 9;
 inline bool QcItem::has_pool_index() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void QcItem::set_has_pool_index() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void QcItem::clear_has_pool_index() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void QcItem::clear_pool_index() {
   pool_index_ = 0u;
