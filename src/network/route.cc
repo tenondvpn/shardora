@@ -253,6 +253,7 @@ Route::~Route() {
 void Route::Broadcast(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     if (!header.has_broadcast() || !header.has_des_dht_key()) {
+        ZJC_WARN("broadcast error: %lu", header.hash64());
         return;
     }
 
@@ -260,6 +261,7 @@ void Route::Broadcast(const transport::MessagePtr& msg_ptr) {
     auto des_dht = GetDht(header.des_dht_key());
     if (!des_dht) {
         RouteByUniversal(msg_ptr);
+        ZJC_WARN("broadcast by universal error: %lu", header.hash64());
         return;
     }
 
@@ -279,6 +281,7 @@ void Route::Broadcast(const transport::MessagePtr& msg_ptr) {
     }
 
     assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
+    ZJC_DEBUG("broadcast success: %lu", header.hash64());
     broadcast_->Broadcasting(des_dht, msg_ptr);
 }
 
