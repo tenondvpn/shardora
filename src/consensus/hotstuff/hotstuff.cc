@@ -106,6 +106,7 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
         auto broadcast = header.mutable_broadcast();
     }
 
+#ifndef NDEBUG
     std::string propose_debug_str = common::StringUtil::Format(
         "%u-%u-%lu", 
         common::GlobalInfo::Instance()->network_id(), 
@@ -118,7 +119,7 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
 
     header.set_debug(propose_debug_str);
     ZJC_DEBUG("leader begin propose_debug: %s", header.debug().c_str());
-
+#endif
     dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
     header.set_des_dht_key(dht_key.StrKey());
     transport::TcpTransport::Instance()->SetMessageHash(header);
@@ -263,9 +264,9 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
 }
 
 Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
-    ZJC_DEBUG("HandleProposeMsgStep_HasVote called hash: %lu",
-        pro_msg_wrap->msg_ptr->header.hash64());
     auto& view_item = *pro_msg_wrap->view_block_ptr;
+    ZJC_DEBUG("HandleProposeMsgStep_HasVote called hash: %lu, last_vote_view_: %lu, view_item.qc().view(): %lu",
+        pro_msg_wrap->msg_ptr->header.hash64(), last_vote_view_, view_item.qc().view());
     if (last_vote_view_ >= view_item.qc().view()) {
         ZJC_DEBUG("pool: %d has voted view: %lu, last_vote_view_: %u, "
             "hash64: %lu, pacemaker()->CurView(): %lu",
