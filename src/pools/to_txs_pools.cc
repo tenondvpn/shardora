@@ -469,6 +469,7 @@ void ToTxsPools::HandleNormalToTx(
                 pool_consensus_heihgts_[i] = heights.heights(i);
                 for (; pool_consensus_heihgts_[i] <= pool_max_heihgts_[i];
                     ++pool_consensus_heihgts_[i]) {
+                    ZJC_DEBUG("set new to tx height pool: %u, height: %lu", i, pool_consensus_heihgts_[i]);
                 }
             }
 
@@ -514,9 +515,9 @@ void ToTxsPools::LoadLatestHeights() {
 
     prev_to_heights_ = heights_ptr;
     uint32_t max_pool_index = common::kImmutablePoolSize;
-    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-        ++max_pool_index;
-    }
+    // if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+    //     ++max_pool_index;
+    // }
 
     if (prev_to_heights_ != nullptr) {
         auto& this_net_heights = prev_to_heights_->heights();
@@ -527,12 +528,8 @@ void ToTxsPools::LoadLatestHeights() {
         }
     }
 
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        ZJC_DEBUG("has set consensus height: %u, height: %lu", i, pool_consensus_heihgts_[i]);
-    }
-
     db::DbWriteBatch db_batch;
-    for (uint32_t i = 0; i < max_pool_index; ++i) {
+    for (uint32_t i = 0; i <= max_pool_index; ++i) {
         uint64_t pool_latest_height = pools_mgr_->latest_height(i);
         if (pool_latest_height == common::kInvalidUint64) {
             continue;
@@ -557,7 +554,7 @@ void ToTxsPools::LoadLatestHeights() {
     }
 
     std::string init_consensus_height;
-    for (uint32_t i = 0; i < max_pool_index; ++i) {
+    for (uint32_t i = 0; i <= max_pool_index; ++i) {
         init_consensus_height += std::to_string(pool_consensus_heihgts_[i]) + " ";
     }
 
