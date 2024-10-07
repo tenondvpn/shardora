@@ -28,7 +28,6 @@ Pacemaker::Pacemaker(
     qc_item.set_pool_index(pool_idx_);
     qc_item.set_view(BeforeGenesisView);
     qc_item.set_view_block_hash("");
-    qc_item.set_commit_view_block_hash("");
     qc_item.set_elect_height(1);
     qc_item.set_leader_idx(0);
     cur_view_ = GenesisView;

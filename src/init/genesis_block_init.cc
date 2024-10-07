@@ -736,7 +736,6 @@ int GenesisBlockInit::CreateAllQc(
     commit_qc->set_leader_idx(0);
     commit_qc->set_elect_height(1);
     auto view_block_hash = hotstuff::GetBlockHash(*view_block_ptr);
-    commit_qc->set_commit_view_block_hash(view_block_hash);
     commit_qc->set_view_block_hash(view_block_hash);
     std::shared_ptr<libff::alt_bn128_G1> agg_sign;
     BlsAggSignViewBlock(genesis_nodes, *commit_qc, agg_sign);

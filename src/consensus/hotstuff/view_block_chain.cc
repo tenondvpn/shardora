@@ -505,7 +505,6 @@ void GetQCWrappedByGenesis(uint32_t pool_index, QC* qc) {
     qc_item.set_pool_index(pool_index);
     qc_item.set_view(BeforeGenesisView);
     qc_item.set_view_block_hash("");
-    qc_item.set_commit_view_block_hash("");
     qc_item.set_elect_height(1);
     qc_item.set_leader_idx(0);
 }

@@ -673,7 +673,6 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     qc_item.set_view(vote_msg.view());
     qc_item.set_view_block_hash(vote_msg.view_block_hash());
     assert(!prefix_db_->BlockExists(qc_item.view_block_hash()));
-    qc_item.set_commit_view_block_hash(vote_msg.commit_view_block_hash());
     qc_item.set_elect_height(elect_height);
     qc_item.set_leader_idx(vote_msg.leader_idx());
     auto qc_hash = GetQCMsgHash(qc_item);
@@ -1176,13 +1175,6 @@ Status Hotstuff::ConstructVoteMsg(
     vote_msg->set_replica_idx(replica_idx);
     vote_msg->set_view_block_hash(v_block->qc().view_block_hash());
     assert(!prefix_db_->BlockExists(v_block->qc().view_block_hash()));
-    HashStr commit_view_block_hash = "";
-    if (view_block_chain()->LatestLockedBlock()) {
-        commit_view_block_hash = view_block_chain()->LatestLockedBlock()->qc().view_block_hash();
-        // 设置下一个 QC 的 commit_view_block_hash
-        vote_msg->set_commit_view_block_hash(commit_view_block_hash); 
-    }
-
     vote_msg->set_view(v_block->qc().view());
     vote_msg->set_elect_height(elect_height);
     vote_msg->set_leader_idx(v_block->qc().leader_idx());
@@ -1192,7 +1184,6 @@ Status Hotstuff::ConstructVoteMsg(
     qc_item.set_view(v_block->qc().view());
     qc_item.set_view_block_hash(v_block->qc().view_block_hash());
     assert(!prefix_db_->BlockExists(v_block->qc().view_block_hash()));
-    qc_item.set_commit_view_block_hash(commit_view_block_hash);
     qc_item.set_elect_height(elect_height);
     qc_item.set_leader_idx(v_block->qc().leader_idx());
     auto qc_hash = GetQCMsgHash(qc_item);
