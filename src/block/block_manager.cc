@@ -1230,10 +1230,12 @@ pools::TxItemPtr BlockManager::GetToTx(
         auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_];
         if (latest_to_block_ptr != nullptr &&
                 latest_to_block_ptr->block_info().timestamp() + 10000lu >= cur_time) {
+            ZJC_DEBUG("now leader get to to tx timestamp error");
             return nullptr;
         }
 
         if (to_txs_pool_->LeaderCreateToHeights(heights) != pools::kPoolsSuccess) {
+            ZJC_DEBUG("now leader get to to tx leader get error");
             return nullptr;
         }
     } else {
