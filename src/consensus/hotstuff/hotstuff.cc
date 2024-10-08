@@ -205,6 +205,7 @@ void Hotstuff::NewView(
     header.set_des_dht_key(dht_key.StrKey());
     transport::TcpTransport::Instance()->SetMessageHash(header);
     if (conn) {
+        header.release_broadcast();
         transport::TcpTransport::Instance()->Send(conn.get(), msg_ptr->header);
     } else {
         network::Route::Instance()->Send(msg_ptr);
