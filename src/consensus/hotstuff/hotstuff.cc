@@ -1422,7 +1422,6 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
             ZJC_DEBUG("pool: %u stuck_st != 0: %d", pool_idx_, stuck_st);
         }
 
-        ZJC_DEBUG("stuck_st != 0 %d", stuck_st);
         return;
     }
 

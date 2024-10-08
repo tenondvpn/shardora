@@ -164,11 +164,14 @@ public:
         return elect_info_;
     }
 
-    int IsStuck() const {
+    int IsStuck() {
+        auto now_tm_us = common::TimeUtils::TimestampUs();
         // 超时时间必须大于阈值
-        if (pacemaker()->DurationUs() < STUCK_PACEMAKER_DURATION_MIN_US) {
+        if (recover_from_stuck_timeout_ >= now_tm_us) {
             return 1;
         }
+
+        recover_from_stuck_timeout_ = now_tm_us + STUCK_PACEMAKER_DURATION_MIN_US;
         // highqc 之前连续三个块都是空交易，则认为 stuck
         auto v_block1 = view_block_chain()->HighViewBlock();
         if (!v_block1) {
@@ -294,6 +297,7 @@ private:
     uint64_t latest_propse_msg_tm_ms_ = 0;
     std::shared_ptr<view_block::protobuf::QcItem> latest_qc_item_ptr_;
     uint64_t propose_debug_index_ = 0;
+    uint64_t recover_from_stuck_timeout_ = 0;
 
 };
 
