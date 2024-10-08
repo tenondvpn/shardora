@@ -90,7 +90,7 @@ public:
     void HandleNewViewMsg(const transport::MessagePtr& msg_ptr);
     void HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr);
     void HandleVoteMsg(const transport::MessagePtr& msg_ptr);
-    void NewView(std::shared_ptr<ViewBlock> view_block, std::shared_ptr<view_block::protobuf::QcItem> qc);
+    void NewView(std::shared_ptr<tnet::TcpInterface> conn, std::shared_ptr<view_block::protobuf::QcItem> qc);
     Status Propose(std::shared_ptr<view_block::protobuf::QcItem> tc);
     Status TryCommit(const QC& commit_qc, uint64_t t_idx = 9999999lu);
     // 消费等待队列中的 ProposeMsg

@@ -158,7 +158,7 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
 }
 
 void Hotstuff::NewView(
-        std::shared_ptr<ViewBlock> view_block, 
+        std::shared_ptr<tnet::TcpInterface> conn,
         std::shared_ptr<view_block::protobuf::QcItem> tc) {
     if (tc->view() >= latest_qc_item_ptr_->view()) {
         assert(tc->pool_index() == pool_idx_);
@@ -181,7 +181,7 @@ void Hotstuff::NewView(
     }
 
     pb_newview_msg->set_elect_height(elect_item->ElectHeight());
-    if (tc == nullptr && !view_block) {
+    if (tc == nullptr) {
         return;
     }
 
@@ -204,7 +204,12 @@ void Hotstuff::NewView(
     dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
     header.set_des_dht_key(dht_key.StrKey());
     transport::TcpTransport::Instance()->SetMessageHash(header);
-    network::Route::Instance()->Send(msg_ptr);
+    if (conn) {
+        transport::TcpTransport::Instance()->Send(conn.get(), msg_ptr->header);
+    } else {
+        network::Route::Instance()->Send(msg_ptr);
+    }
+
     ZJC_DEBUG("pool: %d, msg pool: %d, newview, txs size: %lu, view: %lu, "
         "hash: %s, qc_view: %lu, tc_view: %lu hash64: %lu",
         pool_idx_,

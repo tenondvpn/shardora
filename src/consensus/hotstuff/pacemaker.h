@@ -19,7 +19,7 @@ using NewProposalFn = std::function<Status(std::shared_ptr<view_block::protobuf:
 using StopVotingFn = std::function<void(const View &view)>;
 using SyncPoolFn = std::function<void(const uint32_t &, const int32_t&)>;
 using NewViewFn = std::function<void(
-    const std::shared_ptr<ViewBlock>& view_block, 
+    const std::shared_ptr<tnet::TcpInterface> conn, 
     std::shared_ptr<view_block::protobuf::QcItem> tc)>;
 
 class Pacemaker {

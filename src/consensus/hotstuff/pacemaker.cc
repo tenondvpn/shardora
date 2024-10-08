@@ -240,6 +240,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         ZJC_DEBUG("====4.5 over 0 pool: %d, view: %d, curview: %lu, member: %d, hash64: %lu", 
             pool_idx_, timeout_proto.view(), CurView(), timeout_proto.member_id(),
             msg_ptr->header.hash64());
+        new_view_fn_(msg_ptr->conn, high_tc_);
         return;
     }
     
