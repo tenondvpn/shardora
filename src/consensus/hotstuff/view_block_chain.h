@@ -338,13 +338,13 @@ public:
             ZJC_DEBUG("final success add update high hash: %s, "
                 "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",
                 common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str(),
-                view_block_ptr->qc().view(),
+                high_view_block_->qc().view(),
                 common::Encode::HexEncode(view_block_ptr->qc().view_block_hash()).c_str(),
-                view_block_ptr->qc().network_id(),
-                view_block_ptr->qc().pool_index(),
-                view_block_ptr->block_info().height(),
-                common::Encode::HexEncode(view_block_ptr->parent_hash()).c_str(),
-                view_block_ptr->block_info().tx_list_size());
+                high_view_block_->qc().network_id(),
+                high_view_block_->qc().pool_index(),
+                high_view_block_->block_info().height(),
+                common::Encode::HexEncode(high_view_block_->parent_hash()).c_str(),
+                high_view_block_->block_info().tx_list_size());
         }
     }
 

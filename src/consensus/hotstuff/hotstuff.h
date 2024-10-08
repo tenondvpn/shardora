@@ -291,7 +291,6 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     View last_vote_view_ = 0;
     SyncPoolFn sync_pool_fn_ = nullptr;
-    uint64_t timer_delay_us_ = common::TimeUtils::TimestampUs() + 10000000lu;
     Pipeline handle_propose_pipeline_;
     std::unordered_map<View, transport::MessagePtr> voted_msgs_;
     uint64_t latest_propse_msg_tm_ms_ = 0;
