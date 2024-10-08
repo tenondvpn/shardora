@@ -623,9 +623,11 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
 
     // 避免对 view 重复投票
     voted_msgs_[pro_msg_wrap->view_block_ptr->qc().view()] = trans_msg;
-    ZJC_DEBUG("pool: %d, Send vote message is success., hash64: %lu, last_vote_view_: %lu",
+    ZJC_DEBUG("pool: %d, Send vote message is success., hash64: %lu, "
+        "last_vote_view_: %lu, send to leader tx size: %u",
         pool_idx_, pro_msg_wrap->msg_ptr->header.hash64(),
-        pro_msg_wrap->view_block_ptr->qc().view()); 
+        pro_msg_wrap->view_block_ptr->qc().view(),
+        vote_msg->txs_size()); 
     StopVoting(pro_msg_wrap->view_block_ptr->qc().view());  
     return Status::kSuccess;
 }
@@ -1412,10 +1414,7 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
 
     auto stuck_st = IsStuck();
     if (stuck_st != 0) {
-        if (stuck_st != 1) {
-            ZJC_DEBUG("pool: %u stuck_st != 0: %d", pool_idx_, stuck_st);
-        }
-
+        ZJC_DEBUG("pool: %u stuck_st != 0: %d", pool_idx_, stuck_st);
         return;
     }
 
