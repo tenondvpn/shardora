@@ -335,10 +335,10 @@ public:
     #endif
             
             high_view_block_ = view_block_ptr;
-            ZJC_DEBUG("final update success add update high hash: %s, "
+            ZJC_DEBUG("final success add update high hash: %s, "
                 "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",
-                high_view_block_->qc().view(),
                 common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str(),
+                view_block_ptr->qc().view(),
                 common::Encode::HexEncode(view_block_ptr->qc().view_block_hash()).c_str(),
                 view_block_ptr->qc().network_id(),
                 view_block_ptr->qc().pool_index(),
