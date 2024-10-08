@@ -321,7 +321,7 @@ public:
 #ifndef NDEBUG
             if (high_view_block_ != nullptr) {
                 ZJC_DEBUG("success add update old high view: %lu, high hash: %s, "
-                    "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s ",
+                    "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",
                     high_view_block_->qc().view(),
                     common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str(),
                     view_block_ptr->qc().view(),
@@ -329,7 +329,8 @@ public:
                     view_block_ptr->qc().network_id(),
                     view_block_ptr->qc().pool_index(),
                     view_block_ptr->block_info().height(),
-                    common::Encode::HexEncode(view_block_ptr->parent_hash()).c_str());
+                    common::Encode::HexEncode(view_block_ptr->parent_hash()).c_str(),
+                    view_block_ptr->block_info().tx_list_size());
             }
     #endif
             
@@ -346,12 +347,14 @@ private:
         }
 
         view_blocks_info_[view_block_info->view_block->qc().view_block_hash()] = view_block_info;
-        ZJC_DEBUG("success add view block: %s, %u_%u_%lu, parent hash: %s",
+        ZJC_DEBUG("success add view block: %s, %u_%u_%lu, view: %lu, parent hash: %s, tx size: %u",
             common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
             view_block_info->view_block->qc().network_id(),
             view_block_info->view_block->qc().pool_index(),
             view_block_info->view_block->block_info().height(),
-            common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str());
+            view_block_info->view_block->qc().view(),
+            common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str(),
+            view_block_info->view_block->block_info().tx_list_size());
     }
 
     std::shared_ptr<ViewBlockInfo> GetViewBlockInfo(

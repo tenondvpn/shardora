@@ -77,6 +77,7 @@ Status ViewBlockChain::Store(
             }
         }
     }
+    
     if (!start_block_) {
         start_block_ = view_block;
         //view_blocks_[view_block->hash] = view_block;
