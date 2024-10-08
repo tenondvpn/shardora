@@ -111,6 +111,11 @@ void Pacemaker::OnLocalTimeout() {
     if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
             last_timeout_->header.hotstuff_timeout_proto().view() >= CurView() &&
             last_timeout_->header.hotstuff_timeout_proto().view_hash() == tc_msg_hash) {
+        ZJC_DEBUG("use exist local timeout message pool: %u, "
+            "last_timeout_->header.hotstuff_timeout_proto().view(): %lu, cur view: %lu",
+            pool_idx_, 
+            last_timeout_->header.hotstuff_timeout_proto().view(), 
+            CurView());
         SendTimeout(last_timeout_);
         return;
     }

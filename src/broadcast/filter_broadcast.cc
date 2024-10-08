@@ -23,8 +23,8 @@ void FilterBroadcast::Broadcasting(
 //     assert(!dht_ptr->readonly_hash_sort_dht()->empty());
     auto& message = msg_ptr->header;
     if (message.broadcast().hop_limit() <= message.hop_count()) {
-//         BROAD_INFO("message.broadcast().hop_limit() <= message.hop_count()[%d, %d].",
-//             message.broadcast().hop_limit(), message.hop_count());
+        BROAD_DEBUG("message.broadcast().hop_limit() <= message.hop_count()[%d, %d] hash: %lu",
+            message.broadcast().hop_limit(), message.hop_count(), message.hash64());
         return;
     }
 
