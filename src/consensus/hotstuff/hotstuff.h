@@ -128,7 +128,8 @@ public:
                 latest_committed_block->qc().view() < vblock->qc().view()) {
             view_block_chain()->SetLatestCommittedBlock(vblock);        
         }
-        
+
+        view_block_chain()->UpdateHighViewBlock(vblock->qc());
     }
 
     // 已经投票
