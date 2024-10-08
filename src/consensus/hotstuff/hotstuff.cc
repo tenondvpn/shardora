@@ -628,7 +628,8 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
         pool_idx_, pro_msg_wrap->msg_ptr->header.hash64(),
         pro_msg_wrap->view_block_ptr->qc().view(),
         vote_msg->txs_size()); 
-    StopVoting(pro_msg_wrap->view_block_ptr->qc().view());  
+    StopVoting(pro_msg_wrap->view_block_ptr->qc().view());
+    has_user_tx_tag_ = false;
     return Status::kSuccess;
 }
 
@@ -1396,8 +1397,12 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
         return;
     }
 
-    if (!has_user_tx && !has_system_tx) {
-        ZJC_DEBUG("!has_user_tx && !has_system_tx, pool: %u", pool_idx_);
+    if (has_user_tx) {
+        has_user_tx_tag_ = true;
+    }
+
+    if (!has_user_tx_tag_ && !has_system_tx) {
+        ZJC_DEBUG("!has_user_tx_tag_ && !has_system_tx, pool: %u", pool_idx_);
         return;
     }
 
@@ -1435,8 +1440,8 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
         }
     }
 
-    if (!has_user_tx) {
-        ZJC_DEBUG("pool: %u not has_user_tx.", pool_idx_);
+    if (!has_user_tx_tag_) {
+        ZJC_DEBUG("pool: %u not has_user_tx_tag_.", pool_idx_);
         return;
     }
 

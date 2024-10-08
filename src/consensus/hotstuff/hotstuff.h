@@ -298,6 +298,7 @@ private:
     std::shared_ptr<view_block::protobuf::QcItem> latest_qc_item_ptr_;
     uint64_t propose_debug_index_ = 0;
     uint64_t recover_from_stuck_timeout_ = 0;
+    bool has_user_tx_tag_ = false;
 
 };
 
