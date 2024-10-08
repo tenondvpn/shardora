@@ -23,14 +23,47 @@ namespace pools {
 static const std::string kShardFinalStaticPrefix = common::Encode::HexDecode(
     "027a252b30589b8ed984cf437c475b069d0597fc6d51ec6570e95a681ffa9fe7");
 
-void ShardStatistic::Init(const std::vector<uint64_t>& latest_heights) {
-    for (uint32_t i = 0; i < latest_heights.size(); ++i) {
+void ShardStatistic::Init() {
+    if (common::GlobalInfo::Instance()->network_id() < network::kRootCongressNetworkId ||
+            common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
+        assert(false);
+        return;
+    }
+
+    pools::protobuf::StatisticTxItem to_heights;
+    if (!prefix_db_->GetStatisticLatestHeihgts(
+            common::GlobalInfo::Instance()->network_id(), 
+            &to_heights)) {
+        assert(false);
+        return;
+    }
+
+    if (to_heights.heights_size() != common::kInvalidPoolIndex) {
+        assert(false);
+        return;
+    }
+
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         pools_consensus_blocks_[i] = std::make_shared<PoolBlocksInfo>();
-        pools_consensus_blocks_[i]->latest_consensus_height_ = latest_heights[i];
+        pools_consensus_blocks_[i]->latest_consensus_height_ = to_heights.heights(i);
+        for (uint64_t height = to_heights.heights(i) + 1;; ++height) {
+            auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
+            auto& view_block = *view_block_ptr;
+            if (!prefix_db_->GetBlockWithHeight(
+                    common::GlobalInfo::Instance()->network_id(), 
+                    i, 
+                    height, 
+                    &view_block)) {
+                break;
+            }
+                
+            OnNewBlock(view_block_ptr);
+        }
     }
 }
 
-void ShardStatistic::OnNewBlock(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
+void ShardStatistic::OnNewBlock(
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
 #ifdef TEST_NO_CROSS
     return;
 #endif

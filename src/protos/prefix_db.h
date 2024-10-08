@@ -1057,6 +1057,8 @@ public:
         if (!st.ok()) {
             ZJC_FATAL("write db failed!");
         }
+
+        ZJC_DEBUG("success save latest statistic info: %s", ProtobufToJson(to_heights).c_str());
     }
 
     bool GetStatisticLatestHeihgts(
@@ -1077,6 +1079,7 @@ public:
             return false;
         }
 
+        ZJC_DEBUG("success get latest statistic info: %s", ProtobufToJson(*to_heights).c_str());
         return true;
     }
 

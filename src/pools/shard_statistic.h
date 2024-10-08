@@ -37,7 +37,7 @@ public:
     }
 
     ~ShardStatistic() {}
-    void Init(const std::vector<uint64_t>& latest_heights);
+    void Init();
     void OnNewElectBlock(
         uint32_t sharding_id,
         uint64_t prepare_elect_height,

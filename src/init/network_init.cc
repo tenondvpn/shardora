@@ -245,12 +245,7 @@ int NetworkInit::Init(int argc, char** argv) {
         }
     }
 
-    std::vector<uint64_t> latest_heights;
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        latest_heights.push_back(pools_mgr_->latest_height(i));
-    }
-
-    shard_statistic_->Init(latest_heights);
+    shard_statistic_->Init();
     block_mgr_->LoadLatestBlocks();
     RegisterFirewallCheck();
     // 启动共识和同步
