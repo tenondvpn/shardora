@@ -39,6 +39,8 @@ void ShardStatistic::Init() {
     }
 
     if (to_heights.heights_size() != common::kInvalidPoolIndex) {
+        ZJC_DEBUG("to heights size: %u not equal to: %u",
+            to_heights.heights_size(), common::kInvalidPoolIndex);
         assert(false);
         return;
     }
