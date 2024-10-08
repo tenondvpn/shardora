@@ -1436,7 +1436,7 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     }
 
     if (!has_user_tx) {
-        // ZJC_DEBUG("pool: %u has_user_tx.", pool_idx_);
+        ZJC_DEBUG("pool: %u not has_user_tx.", pool_idx_);
         return;
     }
 
