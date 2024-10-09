@@ -708,7 +708,7 @@ void AddDescriptorsImpl() {
       "tobuf.StepType:\013kNormalFrom\022\033\n\023contract_"
       "prepayment\030\013 \001(\004\022\025\n\rcontract_code\030\014 \001(\014\022"
       "\026\n\016contract_input\030\r \001(\014\022\025\n\rcontract_from"
-      "\030\016 \001(\014\022\014\n\004sign\030\017 \001(\014*\212\003\n\010StepType\022\017\n\013kNo"
+      "\030\016 \001(\014\022\014\n\004sign\030\017 \001(\014*\241\003\n\010StepType\022\017\n\013kNo"
       "rmalFrom\020\000\022\r\n\tkNormalTo\020\001\022\034\n\030kConsensusR"
       "ootElectShard\020\002\022\033\n\027kConsensusRootTimeBlo"
       "ck\020\003\022!\n\035kConsensusCreateGenesisAcount\020\004\022"
@@ -718,10 +718,10 @@ void AddDescriptorsImpl() {
       "\nkStatistic\020\014\022\016\n\nkJoinElect\020\r\022\022\n\016kCreate"
       "Library\020\016\022\n\n\006kCross\020\017\022\016\n\nkRootCross\020\020\022\033\n"
       "\027kContractCreateByRootTo\020\021\022\035\n\031kContractC"
-      "reateByRootFrom\020\022"
+      "reateByRootFrom\020\022\022\025\n\021kPoolStatisticTag\020\023"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 2737);
+      descriptor, 2760);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/pools.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
@@ -764,6 +764,7 @@ bool StepType_IsValid(int value) {
     case 16:
     case 17:
     case 18:
+    case 19:
       return true;
     default:
       return false;

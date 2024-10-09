@@ -138,11 +138,12 @@ enum StepType {
   kCross = 15,
   kRootCross = 16,
   kContractCreateByRootTo = 17,
-  kContractCreateByRootFrom = 18
+  kContractCreateByRootFrom = 18,
+  kPoolStatisticTag = 19
 };
 bool StepType_IsValid(int value);
 const StepType StepType_MIN = kNormalFrom;
-const StepType StepType_MAX = kContractCreateByRootFrom;
+const StepType StepType_MAX = kPoolStatisticTag;
 const int StepType_ARRAYSIZE = StepType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* StepType_descriptor();
