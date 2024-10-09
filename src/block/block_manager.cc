@@ -24,6 +24,8 @@ namespace block {
 
 static const std::string kShardElectPrefix = common::Encode::HexDecode(
     "227a252b30589b8ed984cf437c475b069d0597fc6d51ec6570e95a681ffa9fe2");
+static const std::string kPoolStatisticTagPrefix = common::Encode::HexDecode(
+    "7d501a4dda1b70eced7336fe49d6c1dbdf3dd2b8274981314cc959fe14552023");
 
 BlockManager::BlockManager(transport::MultiThreadHandler& net_handler) : net_handler_(net_handler) {
 }
@@ -904,6 +906,35 @@ void BlockManager::HandleElectTx(
                     db_batch);
             }
         }
+    }
+}
+
+void BlockManager::AddPoolStatisticTag(
+        const std::string& block_hash,
+        const elect::protobuf::ElectBlock& elect_block) {
+    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+        return;
+    }
+
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        auto gid = common::Hash::keccak256(block_hash + kPoolStatisticTagPrefix);
+        auto msg_ptr = std::make_shared<transport::TransportMessage>();
+        msg_ptr->address_info = account_mgr_->pools_address_info(i);
+        auto tx = msg_ptr->header.mutable_tx_proto();
+        tx->set_key(protos::kLocalNormalTos);
+        tx->set_pubkey("");
+        tx->set_to(msg_ptr->address_info->addr());
+        tx->set_step(pools::protobuf::kPoolStatisticTag);
+        tx->set_gas_limit(0);
+        tx->set_amount(0);
+        tx->set_gas_price(common::kBuildinTransactionGasPrice);
+        tx->set_gid(gid);
+        pools_mgr_->HandleMessage(msg_ptr);
+        ZJC_INFO("success create kPoolStatisticTag gid: %s, pool idx: %u, pool addr: %s, addr get pool: %u",
+            common::Encode::HexEncode(gid).c_str(), 
+            i,
+            common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
+            common::GetAddressPoolIndex(msg_ptr->address_info->addr()));
     }
 }
 

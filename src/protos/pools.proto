@@ -21,6 +21,7 @@ enum StepType {
     kRootCross = 16;  // root避免跨分片块缺失的交易
     kContractCreateByRootTo = 17; // ContractCreate 交易的 Local 部分
     kContractCreateByRootFrom = 18;  // ContractCreate 交易的 from 部分
+    kPoolStatisticTag = 19;  // 此轮交易池统计结束标记块
 }
 
 message ToTxHeights {
