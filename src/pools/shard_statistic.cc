@@ -76,7 +76,9 @@ void ShardStatistic::OnNewBlock(
     auto* block_ptr = &view_block_ptr->block_info();
     ZJC_DEBUG("new block coming net: %u, pool: %u, height: %lu, timeblock height: %lu",
         view_block_ptr->qc().network_id(),
-        view_block_ptr->qc().pool_index(), block_ptr->height(), block_ptr->timeblock_height());
+        view_block_ptr->qc().pool_index(),
+        block_ptr->height(),
+        block_ptr->timeblock_height());
     auto& block = *block_ptr;
     if (!network::IsSameToLocalShard(view_block_ptr->qc().network_id())) {
         return;
@@ -91,6 +93,11 @@ void ShardStatistic::OnNewBlock(
         }
 
         if (tx_list[i].step() == pools::protobuf::kStatistic) {
+            ZJC_DEBUG("handle statsitic block %u_%u_%lu, block height: %lu, tm height: %lu", 
+                view_block_ptr->qc().network_id(),
+                view_block_ptr->qc().pool_index(),
+                view_block_ptr->qc().view(),
+                view_block_ptr->block_info().height());
             HandleStatisticBlock(block, tx_list[i]);
         }
     }
@@ -150,7 +157,6 @@ void ShardStatistic::cleanUpBlocks(PoolBlocksInfo& pool_blocks_info) {
 void ShardStatistic::HandleStatisticBlock(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx) {
-    ZJC_DEBUG("now handle statisticed block.");
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kShardStatistic) {
             pools::protobuf::ElectStatistic elect_statistic;
