@@ -626,10 +626,11 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
     // 避免对 view 重复投票
     voted_msgs_[pro_msg_wrap->view_block_ptr->qc().view()] = trans_msg;
     ZJC_DEBUG("pool: %d, Send vote message is success., hash64: %lu, "
-        "last_vote_view_: %lu, send to leader tx size: %u",
+        "last_vote_view_: %lu, send to leader tx size: %u, last_vote_view_: %lu",
         pool_idx_, pro_msg_wrap->msg_ptr->header.hash64(),
         pro_msg_wrap->view_block_ptr->qc().view(),
-        vote_msg->txs_size()); 
+        vote_msg->txs_size(),
+        last_vote_view_);
     StopVoting(pro_msg_wrap->view_block_ptr->qc().view());
     has_user_tx_tag_ = false;
     return Status::kSuccess;
