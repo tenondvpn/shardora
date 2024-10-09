@@ -245,7 +245,11 @@ int NetworkInit::Init(int argc, char** argv) {
         }
     }
 
-    shard_statistic_->Init();
+    if (shard_statistic_->Init() != pools::kPoolsSuccess) {
+        INIT_ERROR("init shard statistic failed!");
+        return kInitError;
+    }
+
     block_mgr_->LoadLatestBlocks();
     RegisterFirewallCheck();
     // 启动共识和同步
