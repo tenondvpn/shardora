@@ -1263,12 +1263,14 @@ Status Hotstuff::ConstructViewBlock(
     }
 
     ZJC_DEBUG("success failed check is empty block allowd: %d, %u_%u_%lu, "
-        "tx size: %u, cur view: %lu, pre view: %lu",
+        "tx size: %u, cur view: %lu, pre view: %lu, last_vote_view_: %lu",
         pool_idx_, view_block->qc().network_id(), 
         view_block->qc().pool_index(), view_block->qc().view(),
         tx_propose->txs_size(),
         qc->view(),
-        pre_v_block->qc().view());
+        pre_v_block->qc().view(),
+        last_vote_view_);
+    assert(last_vote_view_ < pacemaker()->CurView());
     auto elect_item = elect_info_->GetElectItem(
         common::GlobalInfo::Instance()->network_id(),
         view_block->qc().elect_height());
