@@ -23,11 +23,11 @@ namespace pools {
 static const std::string kShardFinalStaticPrefix = common::Encode::HexDecode(
     "027a252b30589b8ed984cf437c475b069d0597fc6d51ec6570e95a681ffa9fe7");
 
-void ShardStatistic::Init() {
+int ShardStatistic::Init() {
     if (common::GlobalInfo::Instance()->network_id() < network::kRootCongressNetworkId ||
             common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
         assert(false);
-        return;
+        return kPoolsError;
     }
 
     pools::protobuf::StatisticTxItem to_heights;
@@ -35,17 +35,20 @@ void ShardStatistic::Init() {
             common::GlobalInfo::Instance()->network_id(), 
             &to_heights)) {
         assert(false);
-        return;
-    }
-
-    if (to_heights.heights_size() != common::kInvalidPoolIndex) {
-        ZJC_DEBUG("to heights size: %u not equal to: %u",
-            to_heights.heights_size(), common::kInvalidPoolIndex);
-        assert(false);
-        return;
+        return kPoolsError;
     }
 
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        pools::protobuf::PoolLatestInfo pool_latest_info;
+        if (!prefix_db_->GetLatestPoolInfo(
+                common::GlobalInfo::Instance()->network_id(), 
+                i, 
+                &pool_latest_info)) {
+            assert(false);
+            return kPoolsError;
+        }
+        
+        assert(false);
         pools_consensus_blocks_[i] = std::make_shared<PoolBlocksInfo>();
         pools_consensus_blocks_[i]->latest_consensus_height_ = to_heights.heights(i);
         for (uint64_t height = to_heights.heights(i) + 1;; ++height) {
@@ -62,6 +65,8 @@ void ShardStatistic::Init() {
             OnNewBlock(view_block_ptr);
         }
     }
+
+    return kPoolsSuccess;
 }
 
 void ShardStatistic::OnNewBlock(

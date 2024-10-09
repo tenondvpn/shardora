@@ -37,7 +37,7 @@ public:
     }
 
     ~ShardStatistic() {}
-    void Init();
+    int Init();
     void OnNewElectBlock(
         uint32_t sharding_id,
         uint64_t prepare_elect_height,

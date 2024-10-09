@@ -617,6 +617,7 @@ public:
         key.append((char*)&sharding_id, sizeof(sharding_id));
         key.append((char*)&pool_index, sizeof(pool_index));
         batch.Put(key, pool_info.SerializeAsString());
+        ZJC_DEBUG("save latest pool info: %s", ProtobufToJson(pool_info).c_str());
     }
 
     bool GetLatestPoolInfo(
@@ -638,6 +639,7 @@ public:
             return false;
         }
 
+        ZJC_DEBUG("get latest pool info: %s", ProtobufToJson(*pool_info).c_str());
         return true;
     }
 
