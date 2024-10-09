@@ -30,7 +30,8 @@ int ShardStatistic::Init() {
         return kPoolsError;
     }
 
-    pools::protobuf::StatisticTxItem to_heights;
+    latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>();
+    auto& to_heights = *latest_statistic_item_;
     if (!prefix_db_->GetStatisticLatestHeihgts(
             common::GlobalInfo::Instance()->network_id(), 
             &to_heights)) {
@@ -172,6 +173,7 @@ void ShardStatistic::HandleStatisticBlock(
             prefix_db_->SaveStatisticLatestHeihgts(
                 common::GlobalInfo::Instance()->network_id(),
                 heights);
+            latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>(heights);
             break;
         }
     }
@@ -201,6 +203,12 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<view_block::protobuf:
     auto& join_elect_shard_map = statistic_info_ptr->join_elect_shard_map;
     auto& height_node_collect_info_map = statistic_info_ptr->height_node_collect_info_map;
     auto& id_pk_map = statistic_info_ptr->id_pk_map;
+    auto& pool_with_timeblock_height = statistic_info_ptr->pool_with_timeblock_height;
+    auto pool_idx = view_block_ptr->qc().pool_index();
+    if (pool_with_timeblock_height[pool_idx] < view_block_ptr->block_info().height()) {
+        pool_with_timeblock_height[pool_idx] = view_block_ptr->block_info().height();
+    }
+
     uint64_t block_gas = 0;
     auto callback = [&](const block::protobuf::Block& block) {
         for (int32_t i = 0; i < block.tx_list_size(); ++i) {
@@ -389,7 +397,6 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<view_block::protobuf:
         StatisticMemberInfoItem()).first->second;
     node_info.gas_sum += block_gas;
     node_info.tx_count += block.tx_list_size();
-  
     ZJC_DEBUG("success handle block pool: %u, height: %lu, tm height: %lu",
             view_block_ptr->qc().pool_index(), block.height(), block.timeblock_height());
 }
@@ -548,7 +555,10 @@ int ShardStatistic::StatisticWithHeights(
 
     auto net_id = common::GlobalInfo::Instance()->network_id();
     elect_statistic.set_sharding_id(net_id);
-    addHeightInfo2Statics(elect_statistic, statisticed_timeblock_height);
+    addHeightInfo2Statics(
+        elect_statistic,
+        statisticed_timeblock_height,
+        statistic_info_ptr->pool_with_timeblock_height);
     ZJC_DEBUG("success create statistic message "
         "prev_timeblock_height_: %lu, statisticed_timeblock_height: %lu, "
         "now tm height: %lu, statistic: %s",
@@ -562,10 +572,17 @@ int ShardStatistic::StatisticWithHeights(
 
 void ShardStatistic::addHeightInfo2Statics(
         shardora::pools::protobuf::ElectStatistic &elect_statistic, 
-        uint64_t max_tm_height) {
-    auto *heights_ptr = elect_statistic.mutable_height_info();
-    heights_ptr->set_tm_height(max_tm_height);
-    heights_ptr->set_tm_height(prev_timeblock_height_);
+        uint64_t max_tm_height,
+        uint64_t* pool_with_timeblock_height) {
+    auto *heights_info = elect_statistic.mutable_height_info();
+    heights_info->set_tm_height(max_tm_height);
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        if (pool_with_timeblock_height[i] < latest_statistic_item_->heights(i)) {
+            pool_with_timeblock_height[i] = latest_statistic_item_->heights(i);
+        }
+
+        heights_info->add_heights(pool_with_timeblock_height[i]);
+    }
 }
 
 void ShardStatistic::addPrepareMembers2JoinStastics(

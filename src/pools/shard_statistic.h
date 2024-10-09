@@ -53,7 +53,10 @@ public:
 
 
   private:
-    void addHeightInfo2Statics(shardora::pools::protobuf::ElectStatistic &elect_statistic, uint64_t max_tm_height);
+    void addHeightInfo2Statics(
+        shardora::pools::protobuf::ElectStatistic &elect_statistic, 
+        uint64_t max_tm_height, 
+        uint64_t* pool_with_timeblock_height);
 
 
     void addPrepareMembers2JoinStastics(
@@ -108,6 +111,7 @@ public:
     std::unordered_map<std::string, std::shared_ptr<AccoutPoceInfoItem>> accout_poce_info_map_;
     uint64_t least_elect_height_for_statistic_=0;
     std::unordered_map<uint64_t, std::shared_ptr<StatisticInfoItem>> tm_height_with_statistic_info_;
+    std::shared_ptr<pools::protobuf::StatisticTxItem> latest_statistic_item_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };
