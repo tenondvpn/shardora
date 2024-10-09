@@ -14,7 +14,7 @@ namespace hotstuff {
 
 void Hotstuff::Init() {
     // set pacemaker timeout callback function
-    last_vote_view_ = GenesisView;
+    last_vote_view_ = 0lu;
     
     auto latest_view_block = std::make_shared<ViewBlock>();
     // 从 db 中获取最后一个有 QC 的 ViewBlock
@@ -1271,10 +1271,10 @@ Status Hotstuff::ConstructViewBlock(
         pre_v_block->qc().view(),
         last_vote_view_);
     if (last_vote_view_ >= pacemaker()->CurView()) {
+        assert(last_vote_view_ < pacemaker()->CurView());
         return Status::kError;
     }
 
-    // assert(last_vote_view_ < pacemaker()->CurView());
     auto elect_item = elect_info_->GetElectItem(
         common::GlobalInfo::Instance()->network_id(),
         view_block->qc().elect_height());
