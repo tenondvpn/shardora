@@ -1270,7 +1270,11 @@ Status Hotstuff::ConstructViewBlock(
         qc->view(),
         pre_v_block->qc().view(),
         last_vote_view_);
-    assert(last_vote_view_ < pacemaker()->CurView());
+    if (last_vote_view_ >= pacemaker()->CurView()) {
+        return Status::kError;
+    }
+
+    // assert(last_vote_view_ < pacemaker()->CurView());
     auto elect_item = elect_info_->GetElectItem(
         common::GlobalInfo::Instance()->network_id(),
         view_block->qc().elect_height());
