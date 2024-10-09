@@ -153,6 +153,7 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
     }
 
     // last_vote_view_ = hotstuff_msg->pro_msg().view_item().qc().view() - 1;
+    msg_ptr->is_leader = true;
     HandleProposeMsg(msg_ptr);
     return Status::kSuccess;
 }
@@ -584,7 +585,8 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
 Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
     ZJC_DEBUG("HandleProposeMsgStep_Vote called hash: %lu", pro_msg_wrap->msg_ptr->header.hash64());
     // NOTICE: pipeline 重试时，protobuf 结构体被析构，因此 pro_msg_wrap->header.hash64() 是 0
-    ZJC_INFO("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, curView: %lu, vblock: %lu, txs: %lu, hash64: %lu, propose_debug: %s",
+    ZJC_INFO("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, "
+        "curView: %lu, vblock: %lu, txs: %lu, hash64: %lu, propose_debug: %s",
         pool_idx_,
         view_block_chain()->HighViewBlock()->qc().view(),
         pacemaker()->HighTC()->view(),
@@ -593,7 +595,6 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
         pro_msg_wrap->view_block_ptr->qc().view(),
         pro_msg_wrap->view_block_ptr->block_info().tx_list_size(),
         pro_msg_wrap->msg_ptr->header.hash64(), pro_msg_wrap->msg_ptr->header.debug().c_str());
-        
     auto trans_msg = std::make_shared<transport::TransportMessage>();
     auto& trans_header = trans_msg->header;
     trans_header.set_debug(pro_msg_wrap->msg_ptr->header.debug());
@@ -623,15 +624,18 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
             pool_idx_, pro_msg_wrap->msg_ptr->header.hash64());
     }
 
-    // 避免对 view 重复投票
-    voted_msgs_[pro_msg_wrap->view_block_ptr->qc().view()] = trans_msg;
-    ZJC_DEBUG("pool: %d, Send vote message is success., hash64: %lu, "
-        "last_vote_view_: %lu, send to leader tx size: %u, last_vote_view_: %lu",
-        pool_idx_, pro_msg_wrap->msg_ptr->header.hash64(),
-        pro_msg_wrap->view_block_ptr->qc().view(),
-        vote_msg->txs_size(),
-        last_vote_view_);
-    StopVoting(pro_msg_wrap->view_block_ptr->qc().view());
+    if (!pro_msg_wrap->msg_ptr->is_leader) {
+        // 避免对 view 重复投票
+        voted_msgs_[pro_msg_wrap->view_block_ptr->qc().view()] = trans_msg;
+        ZJC_DEBUG("pool: %d, Send vote message is success., hash64: %lu, "
+            "last_vote_view_: %lu, send to leader tx size: %u, last_vote_view_: %lu",
+            pool_idx_, pro_msg_wrap->msg_ptr->header.hash64(),
+            pro_msg_wrap->view_block_ptr->qc().view(),
+            vote_msg->txs_size(),
+            last_vote_view_);
+        StopVoting(pro_msg_wrap->view_block_ptr->qc().view());
+    }
+    
     has_user_tx_tag_ = false;
     return Status::kSuccess;
 }
