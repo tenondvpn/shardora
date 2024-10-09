@@ -73,12 +73,16 @@ int ShardStatistic::Init() {
             debug_str += common::StringUtil::Format("%u: %lu %lu, ", 
                 i, 
                 static_info->pool_with_height[i], 
-                static_info->pool_with_max_tm_height);
+                static_info->pool_with_max_tm_height[i]);
         }
 
         ZJC_DEBUG("time block hight: %lu, debug str: %s", iter->first, debug_str.c_str());
     }
 #endif
+
+    if (prev_timeblock_height_ < to_heights.tm_height()) {
+        prev_timeblock_height_ = latest_timeblock_height_;
+    }
 
     return kPoolsSuccess;
 }
