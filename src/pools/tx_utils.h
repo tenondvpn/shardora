@@ -253,9 +253,10 @@ struct CrossItemRecordHash {
 
 struct StatisticInfoItem {
     StatisticInfoItem() : all_gas_amount(0), root_all_gas_amount(0), statistic_max_height(0) {
-        memset(pool_with_timeblock_height, 0, sizeof(pool_with_timeblock_height));
+        memset(pool_with_height, 0, sizeof(pool_with_height));
+        memset(pool_with_max_tm_height, 0, sizeof(pool_with_max_tm_height));
     }
-    
+
     uint64_t all_gas_amount;
     uint64_t root_all_gas_amount;
     std::map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
@@ -263,7 +264,8 @@ struct StatisticInfoItem {
     std::map<uint64_t, std::unordered_map<std::string, StatisticMemberInfoItem>> height_node_collect_info_map;
     std::unordered_map<std::string, std::string> id_pk_map;
     uint64_t statistic_max_height;
-    uint64_t pool_with_timeblock_height[common::kInvalidPoolIndex];
+    uint64_t pool_with_height[common::kInvalidPoolIndex];
+    uint64_t pool_with_max_tm_height[common::kInvalidPoolIndex];
 };
 
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {
