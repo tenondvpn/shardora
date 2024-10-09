@@ -76,7 +76,8 @@ int ShardStatistic::Init() {
                 static_info->pool_with_max_tm_height[i]);
         }
 
-        ZJC_DEBUG("time block hight: %lu, debug str: %s", iter->first, debug_str.c_str());
+        ZJC_DEBUG("time block hight: %lu, debug str: %s, latest statistic info: %s", 
+            iter->first, debug_str.c_str(), ProtobufToJson(to_heights).c_str());
     }
 #endif
 
