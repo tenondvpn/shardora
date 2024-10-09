@@ -30,7 +30,8 @@ int ShardStatistic::Init() {
         return kPoolsError;
     }
 
-    pools::protobuf::StatisticTxItem to_heights;
+    latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>();
+    auto& to_heights = *latest_statistic_item_;
     if (!prefix_db_->GetStatisticLatestHeihgts(
             common::GlobalInfo::Instance()->network_id(), 
             &to_heights)) {
