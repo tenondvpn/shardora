@@ -64,6 +64,22 @@ int ShardStatistic::Init() {
         }
     }
 
+#ifndef NDEBUG
+    std::string debug_str;
+    for (auto iter = tm_height_with_statistic_info_.begin();
+            iter != tm_height_with_statistic_info_.end(); ++iter) {
+        auto static_info = iter->second;
+        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+            debug_str += common::StringUtil::Format("%u: %lu %lu, ", 
+                i, 
+                static_info->pool_with_height[i], 
+                static_info->pool_with_max_tm_height);
+        }
+
+        ZJC_DEBUG("time block hight: %lu, debug str: %s", iter->first, debug_str.c_str());
+    }
+#endif
+
     return kPoolsSuccess;
 }
 
