@@ -9,6 +9,7 @@
 #include <consensus/zbft/contract_user_create_call.h>
 #include <consensus/zbft/elect_tx_item.h>
 #include <consensus/zbft/from_tx_item.h>
+#include <consensus/zbft/pool_statistic_tag.h>
 #include <consensus/zbft/to_tx_local_item.h>
 #include <consensus/zbft/to_tx_item.h>
 #include <consensus/zbft/time_block_tx.h>
@@ -350,6 +351,16 @@ Status BlockAcceptor::addTxsToPool(
             address_info,
             (*tx).pubkey());
             ZJC_DEBUG("add tx now get join elect tx: %u", pool_idx());
+            break;
+        }
+        case pools::protobuf::kPoolStatisticTag:
+        {
+            tx_ptr = std::make_shared<consensus::PoolStatisticTag>(
+                *tx, 
+                account_mgr_, 
+                security_ptr_, 
+                address_info);
+            ZJC_DEBUG("add tx now get kPoolStatisticTag tx: %u", pool_idx());
             break;
         }
         default:

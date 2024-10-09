@@ -881,6 +881,7 @@ void BlockManager::HandleElectTx(
             }
 
             AddMiningToken(view_block.qc().view_block_hash(), elect_block);
+            AddPoolStatisticTag(view_block.qc().view_block_hash());
             if (shard_elect_tx_[elect_block.shard_network_id()] != nullptr) {
                 if (shard_elect_tx_[elect_block.shard_network_id()]->tx_ptr->tx_info.gid() == tx.gid()) {
                     shard_elect_tx_[elect_block.shard_network_id()] = nullptr;
@@ -909,9 +910,7 @@ void BlockManager::HandleElectTx(
     }
 }
 
-void BlockManager::AddPoolStatisticTag(
-        const std::string& block_hash,
-        const elect::protobuf::ElectBlock& elect_block) {
+void BlockManager::AddPoolStatisticTag(const std::string& block_hash) {
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         return;
     }

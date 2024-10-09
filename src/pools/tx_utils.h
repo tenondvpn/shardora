@@ -391,6 +391,7 @@ static inline bool IsTxUseFromAddress(uint32_t step) {
         case pools::protobuf::kNormalFrom:
         case pools::protobuf::kContractCreateByRootFrom:
         case pools::protobuf::kContractGasPrepayment:
+        case pools::protobuf::kPoolStatisticTag:
             return true;
         default:
             assert(false);

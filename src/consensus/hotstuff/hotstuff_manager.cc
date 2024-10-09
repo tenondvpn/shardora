@@ -369,6 +369,9 @@ void HotstuffManager::RegisterCreateTxCallbacks() {
     pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kRootCross,
         std::bind(&HotstuffManager::CreateRootCrossTx, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kPoolStatisticTag,
+        std::bind(&HotstuffManager::CreatePoolStatisticTagTx, this, std::placeholders::_1));
     block_mgr_->SetCreateToTxFunction(
         std::bind(&HotstuffManager::CreateToTx, this, std::placeholders::_1));
     block_mgr_->SetCreateStatisticTxFunction(

@@ -20,6 +20,7 @@
 #include <consensus/zbft/elect_tx_item.h>
 #include <consensus/zbft/from_tx_item.h>
 #include <consensus/zbft/join_elect_tx_item.h>
+#include <consensus/zbft/pool_statistic_tag.h>
 #include <consensus/zbft/root_cross_tx_item.h>
 #include <consensus/zbft/root_to_tx_item.h>
 #include <consensus/zbft/statistic_tx_item.h>
@@ -287,6 +288,11 @@ private:
                 account_mgr_, 
                 security_ptr_, 
                 msg_ptr->address_info);
+    }
+
+    pools::TxItemPtr CreatePoolStatisticTagTx(const transport::MessagePtr& msg_ptr) {
+        return std::make_shared<PoolStatisticTag>(
+                msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     static const uint64_t kHandleTimerPeriodMs = 3000lu;
