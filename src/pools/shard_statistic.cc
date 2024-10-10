@@ -230,7 +230,7 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<view_block::protobuf:
         if (pool_iter != pool_statistic_riter->second.end()) {
             ZJC_DEBUG("get block height and statistic height: %lu, max_height: %lu",
                 block.height(), pool_iter->second.statistic_max_height);
-            if (pool_iter->second.statistic_max_height < block.height()) {
+            if (pool_iter->second.statistic_max_height <= block.height()) {
                 break;
             }
         }
