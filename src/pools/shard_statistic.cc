@@ -513,6 +513,7 @@ int ShardStatistic::StatisticWithHeights(
         uint64_t statisticed_timeblock_height) {
     ZJC_DEBUG("now statistic tx: statisticed_timeblock_height: %lu",
         statisticed_timeblock_height);
+    return kPoolsError;
 #ifdef TEST_NO_CROSS
         return kPoolsError;
 #endif

@@ -187,7 +187,7 @@ void ComputeG2ForNode(
     if (prefix_db->GetLocalPolynomial(secptr, secptr->GetAddress(), &local_poly)) {
         for (int32_t i = 0; i < local_poly.polynomial_size(); ++i) {
             polynomial.push_back(libff::alt_bn128_Fr(
-                        common::Encode::HexEncode(local_poly.polynomial(i)).c_str()));
+                common::Encode::HexEncode(local_poly.polynomial(i)).c_str()));
         }
 
         uint32_t valid_n = prikeys.size();

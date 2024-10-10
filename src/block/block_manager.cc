@@ -882,7 +882,7 @@ void BlockManager::HandleElectTx(
 
             AddMiningToken(view_block.qc().view_block_hash(), elect_block);
             if (elect_block.shard_network_id() == common::GlobalInfo::Instance()->network_id()) {
-                AddPoolStatisticTag(block.height());
+                AddPoolStatisticTag(elect_block.elect_height());
             }
 
             if (shard_elect_tx_[elect_block.shard_network_id()] != nullptr) {
@@ -919,7 +919,8 @@ void BlockManager::AddPoolStatisticTag(uint64_t height) {
     }
 
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        auto gid = common::Hash::keccak256(std::to_string(height) + kPoolStatisticTagPrefix + std::to_string(i));
+        auto gid = common::Hash::keccak256(
+            std::to_string(height) + kPoolStatisticTagPrefix + std::to_string(i));
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         msg_ptr->address_info = account_mgr_->pools_address_info(i);
         auto tx = msg_ptr->header.mutable_tx_proto();
