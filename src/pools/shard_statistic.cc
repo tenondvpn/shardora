@@ -30,6 +30,26 @@ int ShardStatistic::Init() {
         return kPoolsError;
     }
 
+    pools::protobuf::PoolStatisticTxInfo statistic_info;
+    if (prefix_db_->GetLatestPoolStatisticTag(
+            common::GlobalInfo::Instance()->network_id(), 
+            &statistic_info)) {
+        latest_statisticed_height_ = statistic_info.height();
+        if (statistic_info.pool_statisitcs_size() != common::kInvalidPoolIndex) {
+            assert(false);
+            return kPoolsError;
+        }
+
+        std::map<uint32_t, StatisticInfoItem> tmp_pool_map;
+        statistic_pool_info_[statistic_info.height()] = tmp_pool_map;
+        auto& pool_map = statistic_pool_info_[statistic_info.height()];
+        for (uint32_t i = 0; i < statistic_info.pool_statisitcs_size(); ++i) {
+            StatisticInfoItem statistic_item;
+            statistic_item.statistic_min_height = statistic_info.pool_statisitcs(i).max_height() + 1;
+            pool_map[i] = statistic_item;
+        }
+    }
+
     latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>();
     auto& to_heights = *latest_statistic_item_;
     if (!prefix_db_->GetStatisticLatestHeihgts(
@@ -66,26 +86,6 @@ int ShardStatistic::Init() {
 
     if (prev_timeblock_height_ < to_heights.tm_height()) {
         prev_timeblock_height_ = latest_timeblock_height_;
-    }
-
-    pools::protobuf::PoolStatisticTxInfo statistic_info;
-    if (prefix_db_->GetLatestPoolStatisticTag(
-            common::GlobalInfo::Instance()->network_id(), 
-            &statistic_info)) {
-        latest_statisticed_height_ = statistic_info.height();
-        if (statistic_info.pool_statisitcs_size() != common::kInvalidPoolIndex) {
-            assert(false);
-            return kPoolsError;
-        }
-
-        std::map<uint32_t, StatisticInfoItem> tmp_pool_map;
-        statistic_pool_info_[statistic_info.height()] = tmp_pool_map;
-        auto& pool_map = statistic_pool_info_[statistic_info.height()];
-        for (uint32_t i = 0; i < statistic_info.pool_statisitcs_size(); ++i) {
-            StatisticInfoItem statistic_item;
-            statistic_item.statistic_min_height = statistic_info.pool_statisitcs(i).max_height() + 1;
-            pool_map[i] = statistic_item;
-        }
     }
 
     return kPoolsSuccess;
