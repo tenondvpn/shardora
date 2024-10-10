@@ -916,6 +916,7 @@ void BlockManager::AddPoolStatisticTag(uint64_t height) {
 
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         auto gid = common::Hash::keccak256(
+            std::to_string(common::GlobalInfo::Instance()->network_id()) + "_" +
             std::to_string(height) + kPoolStatisticTagPrefix + std::to_string(i));
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         msg_ptr->address_info = account_mgr_->pools_address_info(i);
@@ -933,11 +934,12 @@ void BlockManager::AddPoolStatisticTag(uint64_t height) {
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
         pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_INFO("success create kPoolStatisticTag gid: %s, pool idx: %u, pool addr: %s, addr get pool: %u",
+        ZJC_INFO("success create kPoolStatisticTag gid: %s, pool idx: %u, pool addr: %s, addr get pool: %u, height: %lu",
             common::Encode::HexEncode(gid).c_str(), 
             i,
             common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
-            common::GetAddressPoolIndex(msg_ptr->address_info->addr()));
+            common::GetAddressPoolIndex(msg_ptr->address_info->addr()),
+            height);
     }
 }
 
