@@ -136,6 +136,8 @@ void ShardStatistic::OnNewBlock(
     auto& pool_blocks_info = pools_consensus_blocks_[view_block_ptr->qc().pool_index()];
     if (block_ptr->height() != pool_blocks_info->latest_consensus_height_ + 1) {
         pool_blocks_info->blocks[block_ptr->height()] = view_block_ptr;
+        ZJC_DEBUG("pool latest height not continus: %lu, %lu",
+            block_ptr->height(), pool_blocks_info->latest_consensus_height_);
     } else {
         HandleStatistic(view_block_ptr);
         pool_blocks_info->latest_consensus_height_ = block_ptr->height();
