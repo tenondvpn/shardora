@@ -114,6 +114,7 @@ public:
 
     std::map<uint64_t, std::map<uint32_t, StatisticInfoItem>> statistic_pool_info_;
     uint64_t latest_statisticed_height_ = 0;
+    std::map<uint64_t, pools::protobuf::ElectStatistic> statistic_height_map_;
 
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };

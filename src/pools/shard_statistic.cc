@@ -588,8 +588,18 @@ int ShardStatistic::StatisticWithHeights(
     }
 
     auto iter = statistic_pool_info_.begin();
+    while (iter != statistic_pool_info_.end() && iter->first <= latest_statisticed_height_) {
+        ++iter;
+    }
+
     if (iter == statistic_pool_info_.end()) {
         return kPoolsError;
+    }
+
+    auto exist_iter = statistic_height_map_.find(iter->first);
+    if (exist_iter != statistic_height_map_.end()) {
+        elect_statistic = exist_iter->second;
+        return kPoolsSuccess;
     }
 
     if (iter->second.size() != common::kInvalidPoolIndex) {
@@ -652,6 +662,7 @@ int ShardStatistic::StatisticWithHeights(
         statisticed_timeblock_height,
         latest_timeblock_height_,
         ProtobufToJson(elect_statistic).c_str());
+    statistic_height_map_[iter->first] = elect_statistic;
     return kPoolsSuccess;
 }
 
