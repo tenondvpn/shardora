@@ -1986,6 +1986,8 @@ public:
             return false;
         }
 
+        ZJC_DEBUG("success GetLatestPoolStatisticTag network: %u, message: %s",
+            network_id, ProtobufToJson(*statistic_info).c_str());
         return true;
     }
 
