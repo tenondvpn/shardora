@@ -546,9 +546,6 @@ bool ShardStatistic::CheckAllBlockStatisticed(uint32_t local_net_id) {
 int ShardStatistic::StatisticWithHeights(
         pools::protobuf::ElectStatistic& elect_statistic,
         uint64_t statisticed_timeblock_height) {
-    ZJC_DEBUG("now statistic tx: statisticed_timeblock_height: %lu",
-        statisticed_timeblock_height);
-    return kPoolsError;
 #ifdef TEST_NO_CROSS
         return kPoolsError;
 #endif
@@ -590,20 +587,40 @@ int ShardStatistic::StatisticWithHeights(
         ZJC_DEBUG("failed get prepare members prepare_elect_height_: %lu", prepare_elect_height_);
     }
 
-    std::shared_ptr<StatisticInfoItem> statistic_info_ptr = nullptr;
-    auto statistic_iter = tm_height_with_statistic_info_.find(statisticed_timeblock_height);
-    if (statistic_iter == tm_height_with_statistic_info_.end()) {
-        statistic_info_ptr = std::make_shared<StatisticInfoItem>();
-    } else {
-        statistic_info_ptr = statistic_iter->second;
+    auto iter = statistic_pool_info_.begin();
+    if (iter == statistic_pool_info_.end()) {
+        return kPoolsError;
     }
 
-    uint64_t all_gas_amount = statistic_info_ptr->all_gas_amount;
-    uint64_t root_all_gas_amount = statistic_info_ptr->root_all_gas_amount;
-    auto& join_elect_stoke_map = statistic_info_ptr->join_elect_stoke_map;
-    auto& join_elect_shard_map = statistic_info_ptr->join_elect_shard_map;
-    auto& height_node_collect_info_map = statistic_info_ptr->height_node_collect_info_map;
-    auto& id_pk_map = statistic_info_ptr->id_pk_map;
+    if (iter->second.size() != common::kInvalidPoolIndex) {
+        ZJC_DEBUG("pool not full: %u, %u", iter->second.size(), common::kInvalidPoolIndex);
+        return kPoolsError;
+    }
+
+    uint64_t all_gas_amount = 0;
+    uint64_t root_all_gas_amount = 0;
+    std::map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
+    std::map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
+    std::map<uint64_t, std::unordered_map<std::string, StatisticMemberInfoItem>> height_node_collect_info_map;
+    std::unordered_map<std::string, std::string> id_pk_map;
+    for (auto pool_iter = iter->second.begin(); pool_iter != iter->second.end(); ++pool_iter) {
+        auto* statistic_info_ptr = &pool_iter->second;
+        all_gas_amount += statistic_info_ptr->all_gas_amount;
+        root_all_gas_amount += statistic_info_ptr->root_all_gas_amount;
+        join_elect_stoke_map.insert(
+            statistic_info_ptr->join_elect_stoke_map.begin(), 
+            statistic_info_ptr->join_elect_stoke_map.end());
+        join_elect_shard_map.insert(
+            statistic_info_ptr->join_elect_shard_map.begin(), 
+            statistic_info_ptr->join_elect_shard_map.end());
+        height_node_collect_info_map.insert(
+            statistic_info_ptr->height_node_collect_info_map.begin(), 
+            statistic_info_ptr->height_node_collect_info_map.end());
+        id_pk_map.insert(
+            statistic_info_ptr->id_pk_map.begin(), 
+            statistic_info_ptr->id_pk_map.end());
+    }
+    
     // 为当前委员会的节点填充共识工作的奖励信息
     setElectStatistics(height_node_collect_info_map, now_elect_members, elect_statistic, is_root);
     addNewNode2JoinStatics(
