@@ -245,9 +245,9 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<view_block::protobuf:
         return;
     }
 
-    auto pool_iter = pool_statistic_riter->second.find(view_block_ptr->qc().pool_index());
+    auto pool_iter = pool_statistic_riter->second.find(pool_idx);
     if (pool_iter == pool_statistic_riter->second.end()) {
-        pool_statistic_riter->second[view_block_ptr->qc().pool_index()] = StatisticInfoItem();
+        pool_statistic_riter->second[pool_idx] = StatisticInfoItem();
         pool_iter = pool_statistic_riter->second.begin();
     }
 
@@ -272,13 +272,16 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<view_block::protobuf:
                     }
                 }
 
-                if (latest_statisticed_height_ < statistic_height) {
-                    latest_statisticed_height_ = statistic_height;
+                auto exist_iter = statistic_pool_info_.find(statistic_height);
+                if (exist_iter == statistic_pool_info_.end()) {
                     StatisticInfoItem statistic_item;
                     statistic_item.statistic_min_height = block.height() + 1;
                     std::map<uint32_t, StatisticInfoItem> pool_map;
                     pool_map[pool_idx] = statistic_item;
                     statistic_pool_info_[statistic_height] = pool_map;
+                    ZJC_DEBUG("success handle kPoolStatisticTag tx "
+                        "statistic_height: %lu, pool: %u, height: %lu, statistic_min_height: %lu", 
+                        statistic_height, pool_idx, block.height(), statistic_item.statistic_min_height);
                 }
             }
 
