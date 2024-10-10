@@ -1942,6 +1942,22 @@ public:
 
     void SaveLatestPoolStatisticTag(
             uint64_t network_id, 
+            const pools::protobuf::PoolStatisticTxInfo& statistic_info) {
+        std::string key;
+        key.reserve(64);
+        key.append(kLatestPoolStatisticTagPrefix);
+        key.append((char*)&network_id, sizeof(network_id));
+        auto pst = db_->Put(key, statistic_info.SerializeAsString());
+        if (!pst.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+        
+        ZJC_DEBUG("success SaveLatestPoolStatisticTag network: %u, message: %s",
+            network_id, ProtobufToJson(statistic_info).c_str());
+    }
+
+    void SaveLatestPoolStatisticTag(
+            uint64_t network_id, 
             const pools::protobuf::PoolStatisticTxInfo& statistic_info, 
             db::DbWriteBatch& db_batch) {
         std::string key;
@@ -1966,7 +1982,7 @@ public:
             return false;
         }
 
-        if (!statistic_info.ParseFromString(value)) {
+        if (!statistic_info->ParseFromString(value)) {
             return false;
         }
 

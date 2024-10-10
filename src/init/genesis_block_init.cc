@@ -156,7 +156,21 @@ void GenesisBlockInit::SaveGenisisPoolHeights(uint32_t shard_id) {
     }
 
     prefix_db_->SaveLatestToTxsHeights(heights);
-    ZJC_INFO("save latest info: %s", ProtobufToJson(heights).c_str());
+    shardora::elect::protobuf::ElectBlock elect_block;
+    if (!prefix_db_->GetLatestElectBlock(shard_id, &elect_block)) {
+        assert(false);
+    }
+
+    pools::protobuf::PoolStatisticTxInfo pool_st_info;
+    pool_st_info.set_height(elect_block.elect_height());
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        auto statistic_info = pool_st_info.add_pool_statisitcs();
+        statistic_info->set_pool_index(i);
+        statistic_info->set_min_height(pools_mgr_->latest_height(i));
+        statistic_info->set_max_height(pools_mgr_->latest_height(i));
+    }
+
+    prefix_db_->SaveLatestPoolStatisticTag(shard_id, pool_st_info);
 }
 
 void ComputeG2ForNode(
@@ -272,12 +286,11 @@ void GenesisBlockInit::PrepareCreateGenesisBlocks(uint32_t shard_node_net_id) {
         std::shared_ptr<sync::KeyValueSync> kv_sync = nullptr;
         // 初始化本节点所有的 tx pool 和 cross tx pool
         pools_mgr_ = std::make_shared<pools::TxPoolManager>(security, db_, kv_sync, account_mgr_);
-        SaveGenisisPoolHeights(shard_node_net_id);
+        // SaveGenisisPoolHeights(shard_node_net_id);
         std::shared_ptr<pools::ShardStatistic> statistic_mgr = nullptr;
         std::shared_ptr<contract::ContractManager> ct_mgr = nullptr;
         account_mgr_->Init(db_, pools_mgr_);
         block_mgr_->Init(account_mgr_, db_, pools_mgr_, statistic_mgr, security, ct_mgr, "", nullptr);
-        return;
 };
 
 bool CheckRecomputeG2s(
