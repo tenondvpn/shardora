@@ -78,8 +78,8 @@ int ShardStatistic::Init() {
             return kPoolsError;
         }
 
-        std::map<uint32_t, StatisticInfoItem> pool_map;
-        statistic_pool_info_[statistic_info.height()] = pool_map;
+        std::map<uint32_t, StatisticInfoItem> tmp_pool_map;
+        statistic_pool_info_[statistic_info.height()] = tmp_pool_map;
         auto& pool_map = statistic_pool_info_[statistic_info.height()];
         for (uint32_t i = 0; i < statistic_info.pool_statisitcs_size(); ++i) {
             StatisticInfoItem statistic_item;
