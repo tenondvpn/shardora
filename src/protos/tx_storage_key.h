@@ -43,6 +43,7 @@ static const std::string kStatisticAttr = "__kStatisticAttr";
 static const std::string kNodePublicKey = "__node_pk";
 
 static const std::string kSingleTxHashTag = "__single_tx_hash";
+static const std::string kPoolStatisticTag = "__pool_st_tag";
 
 };  // namespace protos
 

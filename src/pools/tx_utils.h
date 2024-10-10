@@ -184,10 +184,9 @@ struct PoolBlocksInfo {
     uint64_t latest_consensus_height_;
 };
 
-struct RootStatisticItem {
-    uint32_t history_tx_count;
-    uint32_t tmp_tx_count;
-    uint32_t epoch_tx_count;
+struct PoolStatisticItem {
+    uint64_t min_height;
+    uint64_t max_height;
 };
 
 struct CrossShardItem {
@@ -252,10 +251,11 @@ struct CrossItemRecordHash {
 };
 
 struct StatisticInfoItem {
-    StatisticInfoItem() : all_gas_amount(0), root_all_gas_amount(0), statistic_max_height(0) {
-        memset(pool_with_height, 0, sizeof(pool_with_height));
-        memset(pool_with_max_tm_height, 0, sizeof(pool_with_max_tm_height));
-    }
+    StatisticInfoItem() 
+        : all_gas_amount(0), 
+        root_all_gas_amount(0), 
+        statistic_min_height(0), 
+        statistic_max_height(0) {}
 
     uint64_t all_gas_amount;
     uint64_t root_all_gas_amount;
@@ -263,9 +263,8 @@ struct StatisticInfoItem {
     std::map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
     std::map<uint64_t, std::unordered_map<std::string, StatisticMemberInfoItem>> height_node_collect_info_map;
     std::unordered_map<std::string, std::string> id_pk_map;
+    uint64_t statistic_min_height;
     uint64_t statistic_max_height;
-    uint64_t pool_with_height[common::kInvalidPoolIndex];
-    uint64_t pool_with_max_tm_height[common::kInvalidPoolIndex];
 };
 
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {

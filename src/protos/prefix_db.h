@@ -84,6 +84,7 @@ static const std::string kC2cSelloutPrefix = "ap\x01";
 static const std::string kC2cSellorderPrefix = "aq\x01";
 static const std::string kSaveHavePrevLatestElectHeightPrefix = "ar\x01";
 static const std::string kLatestToTxBlock = "as\x01";
+static const std::string kLatestPoolStatisticTagPrefix = "at\x01";
 
 class PrefixDb {
 public:
@@ -1912,7 +1913,10 @@ public:
         val_data[1] = view_block->qc().pool_index();
         val_data[2] = view_block->block_info().height();
         db_batch.Put(key, value);
-        ZJC_DEBUG("success save latest to block: %u_%u_%lu", view_block->qc().network_id(), view_block->qc().pool_index(), view_block->block_info().height());
+        ZJC_DEBUG("success save latest to block: %u_%u_%lu",
+            view_block->qc().network_id(), 
+            view_block->qc().pool_index(), 
+            view_block->block_info().height());
     }
 
     bool GetLatestToBlock(view_block::protobuf::ViewBlockItem* block) {
@@ -1935,6 +1939,40 @@ public:
             val_data[2],
             block);
     }
+
+    void SaveLatestPoolStatisticTag(
+            uint64_t network_id, 
+            const pools::protobuf::PoolStatisticTxInfo& statistic_info, 
+            db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(64);
+        key.append(kLatestPoolStatisticTagPrefix);
+        key.append((char*)&network_id, sizeof(network_id));
+        db_batch.Put(key, statistic_info.SerializeAsString());
+        ZJC_DEBUG("success SaveLatestPoolStatisticTag network: %u, message: %s",
+            network_id, ProtobufToJson(statistic_info).c_str());
+    }
+
+    bool GetLatestPoolStatisticTag(
+            uint64_t network_id, 
+            pools::protobuf::PoolStatisticTxInfo* statistic_info) {
+        std::string key;
+        key.reserve(64);
+        key.append(kLatestPoolStatisticTagPrefix);
+        key.append((char*)&network_id, sizeof(network_id));
+        std::string value;
+        auto st = db_->Get(key, &value);
+        if (!st.ok()) {
+            return false;
+        }
+
+        if (!statistic_info.ParseFromString(value)) {
+            return false;
+        }
+
+        return true;
+    }
+
 
 private:
     static const uint32_t kSaveElectHeightCount = 4u;

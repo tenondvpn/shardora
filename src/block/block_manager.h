@@ -137,7 +137,7 @@ private:
     void AddMiningToken(
         const std::string& block_hash,
         const elect::protobuf::ElectBlock& elect_block);
-    void AddPoolStatisticTag(const std::string& block_hash);
+    void AddPoolStatisticTag(uint64_t height);
     void RootHandleNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         pools::protobuf::ToTxMessage& to_txs,

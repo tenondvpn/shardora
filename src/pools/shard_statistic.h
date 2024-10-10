@@ -2,8 +2,9 @@
 
 #include <unordered_map>
 #include <atomic>
-#include <random>
+#include <queue>
 #include <memory>
+#include <random>
 
 #include "common/bitmap.h"
 #include "common/lof.h"
@@ -55,8 +56,7 @@ public:
   private:
     void addHeightInfo2Statics(
         shardora::pools::protobuf::ElectStatistic &elect_statistic, 
-        uint64_t max_tm_height, 
-        uint64_t* pool_with_timeblock_height);
+        uint64_t max_tm_height);
 
 
     void addPrepareMembers2JoinStastics(
@@ -110,8 +110,11 @@ public:
     common::Tick tick_to_statistic_;
     std::unordered_map<std::string, std::shared_ptr<AccoutPoceInfoItem>> accout_poce_info_map_;
     uint64_t least_elect_height_for_statistic_=0;
-    std::unordered_map<uint64_t, std::shared_ptr<StatisticInfoItem>> tm_height_with_statistic_info_;
+    std::map<uint64_t, std::shared_ptr<StatisticInfoItem>> tm_height_with_statistic_info_;
     std::shared_ptr<pools::protobuf::StatisticTxItem> latest_statistic_item_ = nullptr;
+
+    std::map<uint64_t, std::map<uint32_t, StatisticInfoItem>> statistic_pool_info_;
+    uint64_t latest_statisticed_height_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };
