@@ -224,6 +224,8 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<view_block::protobuf:
     auto pool_statistic_riter = statistic_pool_info_.rbegin();
     while (pool_statistic_riter != statistic_pool_info_.rend()) {
         auto pool_iter = pool_statistic_riter->second.find(pool_idx);
+        ZJC_DEBUG("check elect height: %lu, pool: %u, block height: %lu",
+            pool_iter->first, pool_idx, block.height());
         if (pool_iter != pool_statistic_riter->second.end()) {
             ZJC_DEBUG("get block height and statistic height: %lu, max_height: %lu",
                 block.height(), pool_iter->second.statistic_max_height);
