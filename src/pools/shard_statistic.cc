@@ -280,8 +280,12 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<view_block::protobuf:
                     pool_map[pool_idx] = statistic_item;
                     statistic_pool_info_[statistic_height] = pool_map;
                     ZJC_DEBUG("success handle kPoolStatisticTag tx "
-                        "statistic_height: %lu, pool: %u, height: %lu, statistic_min_height: %lu", 
-                        statistic_height, pool_idx, block.height(), statistic_item.statistic_min_height);
+                        "statistic_height: %lu, pool: %u, height: %lu, statistic_min_height: %lu, gid: %s", 
+                        statistic_height, 
+                        pool_idx, 
+                        block.height(), 
+                        statistic_item.statistic_min_height,
+                        common::Encode::HexEncode(tx.gid()).c_str());
                 }
             }
 
