@@ -881,10 +881,6 @@ void BlockManager::HandleElectTx(
             }
 
             AddMiningToken(view_block.qc().view_block_hash(), elect_block);
-            if (elect_block.shard_network_id() == common::GlobalInfo::Instance()->network_id()) {
-                AddPoolStatisticTag(elect_block.elect_height());
-            }
-
             if (shard_elect_tx_[elect_block.shard_network_id()] != nullptr) {
                 if (shard_elect_tx_[elect_block.shard_network_id()]->tx_ptr->tx_info.gid() == tx.gid()) {
                     shard_elect_tx_[elect_block.shard_network_id()] = nullptr;
@@ -1705,6 +1701,7 @@ void BlockManager::OnTimeBlock(
         return;
     }
 
+    AddPoolStatisticTag(latest_time_block_height);
     prev_timeblock_height_ = latest_timeblock_height_;
     latest_timeblock_height_ = latest_time_block_height;
     prev_timeblock_tm_sec_ = latest_timeblock_tm_sec_;
