@@ -195,10 +195,10 @@ void ShardStatistic::HandleStatisticBlock(
             }
 
             auto& heights = elect_statistic.height_info();
-            auto iter = tm_height_with_statistic_info_.find(heights.tm_height());
-            if (iter != tm_height_with_statistic_info_.end()) {
-                tm_height_with_statistic_info_.erase(iter);
-            }
+            // auto iter = tm_height_with_statistic_info_.find(heights.tm_height());
+            // if (iter != tm_height_with_statistic_info_.end()) {
+            //     tm_height_with_statistic_info_.erase(iter);
+            // }
 
             prefix_db_->SaveStatisticLatestHeihgts(
                 common::GlobalInfo::Instance()->network_id(),
