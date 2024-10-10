@@ -45,7 +45,7 @@ int ShardStatistic::Init() {
         auto& pool_map = statistic_pool_info_[statistic_info.height()];
         for (uint32_t i = 0; i < statistic_info.pool_statisitcs_size(); ++i) {
             StatisticInfoItem statistic_item;
-            statistic_item.statistic_min_height = statistic_info.pool_statisitcs(i).max_height() + 1;
+            statistic_item.statistic_max_height = statistic_info.pool_statisitcs(i).max_height() + 1;
             pool_map[i] = statistic_item;
         }
     } else {
@@ -220,10 +220,16 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<view_block::protobuf:
             block.timeblock_height(), latest_timeblock_height_);
     }
 
+    auto pool_idx = view_block_ptr->qc().pool_index();
     auto pool_statistic_riter = statistic_pool_info_.rbegin();
     while (pool_statistic_riter != statistic_pool_info_.rend()) {
-        if (pool_statistic_riter->first < block.height()) {
-            break;
+        auto pool_iter = pool_statistic_riter->second.find(pool_idx);
+        if (pool_iter != pool_statistic_riter->second.end()) {
+            ZJC_DEBUG("get block height and statistic height: %lu, max_height: %lu",
+                block.height(), pool_iter->second.statistic_max_height);
+            if (pool_iter->second.statistic_max_height < block.height()) {
+                break;
+            }
         }
 
         ++pool_statistic_riter;
@@ -246,7 +252,6 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<view_block::protobuf:
     auto& join_elect_shard_map = statistic_info_ptr->join_elect_shard_map;
     auto& height_node_collect_info_map = statistic_info_ptr->height_node_collect_info_map;
     auto& id_pk_map = statistic_info_ptr->id_pk_map;
-    auto pool_idx = view_block_ptr->qc().pool_index();
     uint64_t block_gas = 0;
     auto callback = [&](const block::protobuf::Block& block) {
         for (int32_t i = 0; i < block.tx_list_size(); ++i) {
