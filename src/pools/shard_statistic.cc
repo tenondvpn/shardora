@@ -222,6 +222,8 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<view_block::protobuf:
         if (pool_statistic_riter->first < block.height()) {
             break;
         }
+
+        ++pool_statistic_riter;
     }
 
     if (pool_statistic_riter == statistic_pool_info_.rend()) {
