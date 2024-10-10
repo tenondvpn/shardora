@@ -549,6 +549,28 @@ int ShardStatistic::StatisticWithHeights(
 #ifdef TEST_NO_CROSS
         return kPoolsError;
 #endif
+
+    auto iter = statistic_pool_info_.begin();
+    while (iter != statistic_pool_info_.end() && iter->first <= latest_statisticed_height_) {
+        ++iter;
+    }
+
+    if (iter == statistic_pool_info_.end()) {
+        ZJC_DEBUG("failed iter == statistic_pool_info_.end()");
+        return kPoolsError;
+    }
+
+    auto exist_iter = statistic_height_map_.find(iter->first);
+    if (exist_iter != statistic_height_map_.end()) {
+        elect_statistic = exist_iter->second;
+        return kPoolsSuccess;
+    }
+
+    if (iter->second.size() != common::kInvalidPoolIndex) {
+        ZJC_DEBUG("pool not full: %u, %u", iter->second.size(), common::kInvalidPoolIndex);
+        return kPoolsError;
+    }
+
     bool is_root = (
         common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
         common::GlobalInfo::Instance()->network_id() ==
@@ -556,10 +578,6 @@ int ShardStatistic::StatisticWithHeights(
     uint32_t local_net_id = common::GlobalInfo::Instance()->network_id();
     if (local_net_id >= network::kConsensusShardEndNetworkId) {
         local_net_id -= network::kConsensusWaitingShardOffset;
-    }
-
-    if (prepare_elect_height_ == 0) {
-        return kPoolsError;
     }
 
     auto prepare_members = elect_mgr_->GetNetworkMembersWithHeight(
@@ -585,26 +603,6 @@ int ShardStatistic::StatisticWithHeights(
         }
     } else {
         ZJC_DEBUG("failed get prepare members prepare_elect_height_: %lu", prepare_elect_height_);
-    }
-
-    auto iter = statistic_pool_info_.begin();
-    while (iter != statistic_pool_info_.end() && iter->first <= latest_statisticed_height_) {
-        ++iter;
-    }
-
-    if (iter == statistic_pool_info_.end()) {
-        return kPoolsError;
-    }
-
-    auto exist_iter = statistic_height_map_.find(iter->first);
-    if (exist_iter != statistic_height_map_.end()) {
-        elect_statistic = exist_iter->second;
-        return kPoolsSuccess;
-    }
-
-    if (iter->second.size() != common::kInvalidPoolIndex) {
-        ZJC_DEBUG("pool not full: %u, %u", iter->second.size(), common::kInvalidPoolIndex);
-        return kPoolsError;
     }
 
     uint64_t all_gas_amount = 0;

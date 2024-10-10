@@ -910,9 +910,9 @@ void BlockManager::HandleElectTx(
 }
 
 void BlockManager::AddPoolStatisticTag(uint64_t height) {
-    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-        return;
-    }
+    // if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+    //     return;
+    // }
 
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         auto gid = common::Hash::keccak256(
