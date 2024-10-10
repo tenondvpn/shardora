@@ -68,6 +68,26 @@ int ShardStatistic::Init() {
         prev_timeblock_height_ = latest_timeblock_height_;
     }
 
+    pools::protobuf::PoolStatisticTxInfo statistic_info;
+    if (prefix_db_->GetLatestPoolStatisticTag(
+            common::GlobalInfo::Instance()->network_id(), 
+            &statistic_info)) {
+        latest_statisticed_height_ = statistic_info.height();
+        if (statistic_info.pool_statisitcs_size() != common::kInvalidPoolIndex) {
+            assert(false);
+            return kPoolsError;
+        }
+
+        std::map<uint32_t, StatisticInfoItem> pool_map;
+        statistic_pool_info_[statistic_info.height()] = pool_map;
+        auto& pool_map = statistic_pool_info_[statistic_info.height()];
+        for (uint32_t i = 0; i < statistic_info.pool_statisitcs_size(); ++i) {
+            StatisticInfoItem statistic_item;
+            statistic_item.statistic_min_height = statistic_info.pool_statisitcs(i).max_height() + 1;
+            pool_map[i] = statistic_item;
+        }
+    }
+
     return kPoolsSuccess;
 }
 
@@ -600,7 +620,6 @@ int ShardStatistic::StatisticWithHeights(
         statisticed_timeblock_height,
         latest_timeblock_height_,
         ProtobufToJson(elect_statistic).c_str());
-
     return kPoolsSuccess;
 }
 
