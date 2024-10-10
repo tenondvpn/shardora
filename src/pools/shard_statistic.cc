@@ -262,6 +262,7 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<view_block::protobuf:
         for (int32_t i = 0; i < block.tx_list_size(); ++i) {
             auto& tx = block.tx_list(i);
             if (tx.step() == pools::protobuf::kPoolStatisticTag) {
+                ZJC_DEBUG("success handle kPoolStatisticTag tx");
                 uint64_t statistic_height = 0;
                 for (uint32_t storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
                     if (tx.storages(storage_idx).key() == protos::kPoolStatisticTag) {
