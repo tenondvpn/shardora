@@ -48,6 +48,9 @@ int ShardStatistic::Init() {
             statistic_item.statistic_min_height = statistic_info.pool_statisitcs(i).max_height() + 1;
             pool_map[i] = statistic_item;
         }
+    } else {
+        ZJC_DEBUG("failed load latest pool statistic tag.");
+        assert(false);
     }
 
     latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>();

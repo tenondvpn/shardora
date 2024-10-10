@@ -40,8 +40,10 @@ void ThreadHandler::HandleMessage() {
     static const uint32_t kMaxHandleMessageCount = 16u;
     uint8_t thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     uint8_t maping_thread_idx = common::GlobalInfo::Instance()->SetConsensusRealThreadIdx(thread_idx);
-    ZJC_DEBUG("thread handler thread index coming thread_idx: %d, maping_thread_idx: %d, message_handler_thread_count: %d", 
-        thread_idx, maping_thread_idx, common::GlobalInfo::Instance()->message_handler_thread_count());
+    ZJC_DEBUG("thread handler thread index coming thread_idx: %d, "
+        "maping_thread_idx: %d, message_handler_thread_count: %d", 
+        thread_idx, maping_thread_idx, 
+        common::GlobalInfo::Instance()->message_handler_thread_count());
     msg_handler_->ThreadWaitNotify();
     while (!destroy_) {
         if (!common::GlobalInfo::Instance()->main_inited_success()) {
@@ -327,7 +329,8 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
 
     threads_message_queues_[thread_index][priority].push(msg_ptr);
     wait_con_[thread_index % all_thread_count_].notify_one();
-    ZJC_DEBUG("queue size message push success: %lu, queue_idx: %d, priority: %d, thread queue size: %u, net: %u, type: %d",
+    ZJC_DEBUG("queue size message push success: %lu, queue_idx: %d, "
+        "priority: %d, thread queue size: %u, net: %u, type: %d",
         msg_ptr->header.hash64(), thread_index, priority,
         threads_message_queues_[thread_index][priority].size(),
         common::GlobalInfo::Instance()->network_id(),
