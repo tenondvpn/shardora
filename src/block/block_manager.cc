@@ -934,7 +934,8 @@ void BlockManager::AddPoolStatisticTag(uint64_t height) {
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
         pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_INFO("success create kPoolStatisticTag gid: %s, pool idx: %u, pool addr: %s, addr get pool: %u, height: %lu",
+        ZJC_INFO("success create kPoolStatisticTag gid: %s, pool idx: %u, "
+            "pool addr: %s, addr get pool: %u, height: %lu",
             common::Encode::HexEncode(gid).c_str(), 
             i,
             common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
