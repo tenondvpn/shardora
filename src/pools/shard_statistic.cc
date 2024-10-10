@@ -124,15 +124,11 @@ void ShardStatistic::OnNewBlock(
             view_block_ptr->qc().network_id(),
             view_block_ptr->qc().pool_index(),
             view_block_ptr->qc().view(),
+            view_block_ptr->block_info().height(),
             view_block_ptr->block_info().timeblock_height(),
             common::Encode::HexEncode(tx_list[i].gid()).c_str(),
             tx_list[i].step());
         if (tx_list[i].step() == pools::protobuf::kStatistic) {
-            ZJC_DEBUG("handle statsitic block %u_%u_%lu, block height: %lu, tm height: %lu", 
-                view_block_ptr->qc().network_id(),
-                view_block_ptr->qc().pool_index(),
-                view_block_ptr->qc().view(),
-                view_block_ptr->block_info().timeblock_height());
             HandleStatisticBlock(block, tx_list[i]);
         }
     }
