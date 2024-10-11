@@ -1191,6 +1191,16 @@ void BlockManager::HandleStatisticBlock(
         return;
     }
 
+    pools::protobuf::PoolStatisticTxInfo pool_st_info;
+    pool_st_info.set_height(elect_statistic.statistic_height());
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        auto statistic_info = pool_st_info.add_pool_statisitcs();
+        statistic_info->set_pool_index(i);
+        statistic_info->set_min_height(elect_statistic.height_info().heights(i));
+        statistic_info->set_max_height(elect_statistic.height_info().heights(i));
+    }
+
+    prefix_db_->SaveLatestPoolStatisticTag(elect_statistic.sharding_id(), pool_st_info, db_batch);
     prefix_db_->SaveStatisticedShardingHeight(
         view_block.qc().network_id(),
         block.timeblock_height(),
