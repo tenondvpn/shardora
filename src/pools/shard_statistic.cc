@@ -665,10 +665,32 @@ int ShardStatistic::StatisticWithHeights(
     std::map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
     std::map<uint64_t, std::unordered_map<std::string, StatisticMemberInfoItem>> height_node_collect_info_map;
     std::unordered_map<std::string, std::string> id_pk_map;
+    std::string debug_str;
     for (auto pool_iter = iter->second.begin(); pool_iter != iter->second.end(); ++pool_iter) {
         auto* statistic_info_ptr = &pool_iter->second;
         all_gas_amount += statistic_info_ptr->all_gas_amount;
         root_all_gas_amount += statistic_info_ptr->root_all_gas_amount;
+        debug_str += "pool: " + std::to_string(pool_iter->first) + 
+            ", gas_amount: " + std::to_string(statistic_info_ptr->root_all_gas_amount) + 
+            ", root_all_gas_amount: " + std::to_string(statistic_info_ptr->root_all_gas_amount) +
+            ", join_elect_stoke_map height: ";
+        for (auto titer = statistic_info_ptr->join_elect_stoke_map.begin(); 
+                titer != statistic_info_ptr->join_elect_stoke_map.end(); ++titer) {
+            debug_str += std::to_string(titer->first) + ",";
+        }
+
+        debug_str += ", join_elect_shard_map height: ";
+        for (auto titer = statistic_info_ptr->join_elect_shard_map.begin(); 
+                titer != statistic_info_ptr->join_elect_shard_map.end(); ++titer) {
+            debug_str += std::to_string(titer->first) + ",";
+        }
+
+        debug_str += ", height_node_collect_info_map height: ";
+        for (auto titer = statistic_info_ptr->height_node_collect_info_map.begin(); 
+                titer != statistic_info_ptr->height_node_collect_info_map.end(); ++titer) {
+            debug_str += std::to_string(titer->first) + ",";
+        }
+
         join_elect_stoke_map.insert(
             statistic_info_ptr->join_elect_stoke_map.begin(), 
             statistic_info_ptr->join_elect_stoke_map.end());
@@ -682,7 +704,8 @@ int ShardStatistic::StatisticWithHeights(
             statistic_info_ptr->id_pk_map.begin(), 
             statistic_info_ptr->id_pk_map.end());
     }
-    
+
+    ZJC_DEBUG("statistic with height now: %s", debug_str.c_str());    
     // 为当前委员会的节点填充共识工作的奖励信息
     setElectStatistics(height_node_collect_info_map, now_elect_members, elect_statistic, is_root);
     addNewNode2JoinStatics(
@@ -870,7 +893,7 @@ void ShardStatistic::setElectStatistics(
     }
 
     for (auto hiter = height_node_collect_info_map.begin();
-         hiter != height_node_collect_info_map.end(); ++hiter) {
+            hiter != height_node_collect_info_map.end(); ++hiter) {
         auto &node_info_map = hiter->second;
         auto &statistic_item = *elect_statistic.add_statistics();
         auto members = elect_mgr_->GetNetworkMembersWithHeight(
