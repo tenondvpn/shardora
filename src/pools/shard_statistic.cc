@@ -203,7 +203,8 @@ void ShardStatistic::HandleStatisticBlock(
                 return;
             }
 
-            ZJC_DEBUG("success handle statistic block: %s", ProtobufToJson(elect_statistic).c_str());
+            ZJC_DEBUG("success handle statistic block: %s, latest_statisticed_height_: %lu",
+                ProtobufToJson(elect_statistic).c_str(), latest_statisticed_height_);
             auto& heights = elect_statistic.height_info();
             auto st_iter = statistic_pool_info_.begin();
             while (st_iter != statistic_pool_info_.end()) {
@@ -213,7 +214,7 @@ void ShardStatistic::HandleStatisticBlock(
                     
                 st_iter = statistic_pool_info_.erase(st_iter);
             }
-            
+
             latest_statisticed_height_ = elect_statistic.statistic_height();
             // auto iter = tm_height_with_statistic_info_.find(heights.tm_height());
             // if (iter != tm_height_with_statistic_info_.end()) {
@@ -592,7 +593,7 @@ int ShardStatistic::StatisticWithHeights(
     auto iter = statistic_pool_info_.rbegin();
     auto piter = statistic_pool_info_.rend();
     while (iter != statistic_pool_info_.rend() && iter->first > latest_statisticed_height_) {
-        ZJC_DEBUG("invalid height: %lu, %lu", iter->first, latest_statisticed_height_);
+        ZJC_DEBUG("invalid height: piter: %lu, iter: %lu, %lu", iter->first, latest_statisticed_height_);
         piter = iter;
         ++iter;
     }
