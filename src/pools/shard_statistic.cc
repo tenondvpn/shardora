@@ -582,7 +582,6 @@ int ShardStatistic::StatisticWithHeights(
     auto iter = statistic_pool_info_.rbegin();
     auto piter = statistic_pool_info_.rend();
     while (iter != statistic_pool_info_.rend() && iter->first > latest_statisticed_height_) {
-        ZJC_DEBUG("invalid height: %lu, %lu", iter->first, latest_statisticed_height_);
         piter = iter;
         --iter;
     }
