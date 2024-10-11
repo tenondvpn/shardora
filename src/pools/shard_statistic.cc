@@ -296,27 +296,27 @@ void ShardStatistic::HandleStatistic(
                 auto exist_iter = statistic_pool_info_.find(statistic_height);
                 if (exist_iter == statistic_pool_info_.end()) {
                     StatisticInfoItem statistic_item;
-                    statistic_item.statistic_min_height = block.height() + 1;
+                    statistic_item.statistic_max_height = block.height() + 1;
                     std::map<uint32_t, StatisticInfoItem> pool_map;
                     pool_map[pool_idx] = statistic_item;
                     statistic_pool_info_[statistic_height] = pool_map;
                     ZJC_DEBUG("success handle kPoolStatisticTag tx "
-                        "statistic_height: %lu, pool: %u, height: %lu, statistic_min_height: %lu, gid: %s", 
+                        "statistic_height: %lu, pool: %u, height: %lu, statistic_max_height: %lu, gid: %s", 
                         statistic_height, 
                         pool_idx, 
                         block.height(), 
-                        statistic_item.statistic_min_height,
+                        statistic_item.statistic_max_height,
                         common::Encode::HexEncode(tx.gid()).c_str());
                 } else {
                     StatisticInfoItem statistic_item;
-                    statistic_item.statistic_min_height = block.height() + 1;
+                    statistic_item.statistic_max_height = block.height() + 1;
                     exist_iter->second[pool_idx] = statistic_item;
                     ZJC_DEBUG("exists success handle kPoolStatisticTag tx "
-                        "statistic_height: %lu, pool: %u, height: %lu, statistic_min_height: %lu, gid: %s", 
+                        "statistic_height: %lu, pool: %u, height: %lu, statistic_max_height: %lu, gid: %s", 
                         statistic_height, 
                         pool_idx, 
                         block.height(), 
-                        statistic_item.statistic_min_height,
+                        statistic_item.statistic_max_height,
                         common::Encode::HexEncode(tx.gid()).c_str());
                 }
             }
