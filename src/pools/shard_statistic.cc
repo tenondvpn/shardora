@@ -506,8 +506,12 @@ void ShardStatistic::HandleStatistic(
         StatisticMemberInfoItem()).first->second;
     node_info.gas_sum += block_gas;
     node_info.tx_count += block.tx_list_size();
-    ZJC_DEBUG("success handle block pool: %u, height: %lu, tm height: %lu",
-            view_block_ptr->qc().pool_index(), block.height(), block.timeblock_height());
+    ZJC_DEBUG("success handle block pool: %u, height: %lu, tm height: %lu, leader_id: %s, tx_count: %u, tx size: %u",
+            view_block_ptr->qc().pool_index(), block.height(), 
+            block.timeblock_height(), 
+            common::Encode::HexEncode(leader_id).c_str(),
+            node_info.tx_count,
+            block.tx_list_size());
 }
 
 std::string ShardStatistic::getLeaderIdFromBlock(
