@@ -690,9 +690,12 @@ int ShardStatistic::StatisticWithHeights(
     auto net_id = common::GlobalInfo::Instance()->network_id();
     elect_statistic.set_sharding_id(net_id);
     elect_statistic.set_statistic_height(iter->first);
-    addHeightInfo2Statics(
-        elect_statistic,
-        statisticed_timeblock_height);
+    auto *heights_info = elect_statistic.mutable_height_info();
+    heights_info->set_tm_height(statisticed_timeblock_height);
+    for (uint32_t tmp_pool_idx = 0; tmp_pool_idx < common::kInvalidPoolIndex; ++tmp_pool_idx) {
+        heights_info->add_heights(iter->second[tmp_pool_idx].statistic_max_height);
+    }
+
     ZJC_DEBUG("success create statistic message "
         "prev_timeblock_height_: %lu, statisticed_timeblock_height: %lu, "
         "now tm height: %lu, statistic: %s",
