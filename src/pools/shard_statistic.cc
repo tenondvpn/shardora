@@ -576,13 +576,15 @@ int ShardStatistic::StatisticWithHeights(
         return kPoolsError;
 #endif
 
-    auto iter = statistic_pool_info_.begin();
-    while (iter != statistic_pool_info_.end() && iter->first <= latest_statisticed_height_) {
+    auto iter = statistic_pool_info_.rbegin();
+    auto piter = statistic_pool_info_.rend();
+    while (iter != statistic_pool_info_.rend() && iter->first > latest_statisticed_height_) {
         ZJC_DEBUG("invalid height: %lu, %lu", iter->first, latest_statisticed_height_);
-        ++iter;
+        piter = iter;
+        --iter;
     }
 
-    if (iter == statistic_pool_info_.end()) {
+    if (piter == statistic_pool_info_.rend() || iter == statistic_pool_info_.rend()) {
         ZJC_DEBUG("failed iter == statistic_pool_info_.end()");
         return kPoolsError;
     }
