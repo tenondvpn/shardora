@@ -201,6 +201,7 @@ void ShardStatistic::HandleStatisticBlock(
                 return;
             }
 
+            ZJC_DEBUG("success handle statistic block: %s", ProtobufToJson(elect_statistic).c_str());
             auto& heights = elect_statistic.height_info();
             // auto iter = tm_height_with_statistic_info_.find(heights.tm_height());
             // if (iter != tm_height_with_statistic_info_.end()) {
