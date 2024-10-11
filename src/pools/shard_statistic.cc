@@ -589,6 +589,11 @@ int ShardStatistic::StatisticWithHeights(
         return kPoolsError;
     }
 
+    if (piter->second.size() != common::kInvalidPoolIndex) {
+        ZJC_DEBUG("pool not full: %u, %u", iter->second.size(), common::kInvalidPoolIndex);
+        return kPoolsError;
+    }
+
     auto exist_iter = statistic_height_map_.find(iter->first);
     if (exist_iter != statistic_height_map_.end()) {
         elect_statistic = exist_iter->second;
@@ -601,12 +606,7 @@ int ShardStatistic::StatisticWithHeights(
             ProtobufToJson(elect_statistic).c_str());
         return kPoolsSuccess;
     }
-
-    if (iter->second.size() != common::kInvalidPoolIndex) {
-        ZJC_DEBUG("pool not full: %u, %u", iter->second.size(), common::kInvalidPoolIndex);
-        return kPoolsError;
-    }
-
+    
     bool is_root = (
         common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
         common::GlobalInfo::Instance()->network_id() ==
