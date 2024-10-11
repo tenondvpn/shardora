@@ -35,6 +35,7 @@ int ShardStatistic::Init() {
             common::GlobalInfo::Instance()->network_id(), 
             &statistic_info)) {
         latest_statisticed_height_ = statistic_info.height();
+        ZJC_INFO("success set latest statisticed height: %lu", latest_statisticed_height_);
         if (statistic_info.pool_statisitcs_size() != common::kInvalidPoolIndex) {
             assert(false);
             return kPoolsError;
@@ -215,7 +216,8 @@ void ShardStatistic::HandleStatisticBlock(
     }
 }
 
-void ShardStatistic::HandleStatistic(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
+void ShardStatistic::HandleStatistic(
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
     auto& block = view_block_ptr->block_info();
     bool is_root = (
         common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
