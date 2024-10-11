@@ -686,6 +686,7 @@ int ShardStatistic::StatisticWithHeights(
 
     auto net_id = common::GlobalInfo::Instance()->network_id();
     elect_statistic.set_sharding_id(net_id);
+    elect_statistic.set_statistic_height(iter->first);
     addHeightInfo2Statics(
         elect_statistic,
         statisticed_timeblock_height);
