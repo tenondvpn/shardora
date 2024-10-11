@@ -278,8 +278,10 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<view_block::protobuf:
                 }
 
                 auto exist_iter = statistic_pool_info_.find(statistic_height);
-                ZJC_DEBUG("success handle kPoolStatisticTag tx statistic_height: %lu, find: %d",
-                    statistic_height, (exist_iter == statistic_pool_info_.end()));
+                ZJC_DEBUG("pool: %u get success handle kPoolStatisticTag tx statistic_height: %lu, find: %d",
+                    pool_idx,
+                    statistic_height,
+                    (exist_iter == statistic_pool_info_.end()));
                 if (exist_iter == statistic_pool_info_.end()) {
                     StatisticInfoItem statistic_item;
                     statistic_item.statistic_min_height = block.height() + 1;
