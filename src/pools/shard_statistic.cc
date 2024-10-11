@@ -295,6 +295,17 @@ void ShardStatistic::HandleStatistic(const std::shared_ptr<view_block::protobuf:
                         block.height(), 
                         statistic_item.statistic_min_height,
                         common::Encode::HexEncode(tx.gid()).c_str());
+                } else {
+                    StatisticInfoItem statistic_item;
+                    statistic_item.statistic_min_height = block.height() + 1;
+                    exist_iter->second[pool_idx] = statistic_item;
+                    ZJC_DEBUG("exists success handle kPoolStatisticTag tx "
+                        "statistic_height: %lu, pool: %u, height: %lu, statistic_min_height: %lu, gid: %s", 
+                        statistic_height, 
+                        pool_idx, 
+                        block.height(), 
+                        statistic_item.statistic_min_height,
+                        common::Encode::HexEncode(tx.gid()).c_str());
                 }
             }
 
