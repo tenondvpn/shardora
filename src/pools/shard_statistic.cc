@@ -205,6 +205,16 @@ void ShardStatistic::HandleStatisticBlock(
 
             ZJC_DEBUG("success handle statistic block: %s", ProtobufToJson(elect_statistic).c_str());
             auto& heights = elect_statistic.height_info();
+            auto st_iter = statistic_pool_info_.begin();
+            while (st_iter != statistic_pool_info_.end()) {
+                if (st_iter->first > latest_statisticed_height_) {
+                    break;
+                }
+                    
+                st_iter = statistic_pool_info_.erase(st_iter);
+            }
+            
+            latest_statisticed_height_ = elect_statistic.statistic_height();
             // auto iter = tm_height_with_statistic_info_.find(heights.tm_height());
             // if (iter != tm_height_with_statistic_info_.end()) {
             //     tm_height_with_statistic_info_.erase(iter);
@@ -689,7 +699,7 @@ int ShardStatistic::StatisticWithHeights(
 
     auto net_id = common::GlobalInfo::Instance()->network_id();
     elect_statistic.set_sharding_id(net_id);
-    elect_statistic.set_statistic_height(iter->first);
+    elect_statistic.set_statistic_height(piter->first);
     auto *heights_info = elect_statistic.mutable_height_info();
     heights_info->set_tm_height(statisticed_timeblock_height);
     for (uint32_t tmp_pool_idx = 0; tmp_pool_idx < common::kInvalidPoolIndex; ++tmp_pool_idx) {
