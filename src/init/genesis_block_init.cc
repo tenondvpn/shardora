@@ -158,11 +158,16 @@ void GenesisBlockInit::SaveGenisisPoolHeights(uint32_t shard_id) {
     prefix_db_->SaveLatestToTxsHeights(heights);
     shardora::elect::protobuf::ElectBlock elect_block;
     if (!prefix_db_->GetLatestElectBlock(shard_id, &elect_block)) {
-        assert(false);
+        ZJC_FATAL("failed!");
+    }
+
+    timeblock::protobuf::TimeBlock tmblock;
+    if (!prefix_db_->GetLatestTimeBlock(&tmblock)) {
+        ZJC_FATAL("failed!");
     }
 
     pools::protobuf::PoolStatisticTxInfo pool_st_info;
-    pool_st_info.set_height(elect_block.elect_height());
+    pool_st_info.set_height(tmblock.height());
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         auto statistic_info = pool_st_info.add_pool_statisitcs();
         statistic_info->set_pool_index(i);
