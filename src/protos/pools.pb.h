@@ -2508,6 +2508,13 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::uint64 gas_amount() const;
   void set_gas_amount(::google::protobuf::uint64 value);
 
+  // optional uint64 statistic_height = 7;
+  bool has_statistic_height() const;
+  void clear_statistic_height();
+  static const int kStatisticHeightFieldNumber = 7;
+  ::google::protobuf::uint64 statistic_height() const;
+  void set_statistic_height(::google::protobuf::uint64 value);
+
   // optional uint32 sharding_id = 4;
   bool has_sharding_id() const;
   void clear_sharding_id();
@@ -2523,6 +2530,8 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   void clear_has_sharding_id();
   void set_has_gas_amount();
   void clear_has_gas_amount();
+  void set_has_statistic_height();
+  void clear_has_statistic_height();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -2532,6 +2541,7 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > lof_leaders_;
   ::shardora::pools::protobuf::StatisticTxItem* height_info_;
   ::google::protobuf::uint64 gas_amount_;
+  ::google::protobuf::uint64 statistic_height_;
   ::google::protobuf::uint32 sharding_id_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
@@ -5185,13 +5195,13 @@ ElectStatistic::join_elect_nodes() const {
 
 // optional uint32 sharding_id = 4;
 inline bool ElectStatistic::has_sharding_id() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void ElectStatistic::set_has_sharding_id() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void ElectStatistic::clear_has_sharding_id() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void ElectStatistic::clear_sharding_id() {
   sharding_id_ = 0u;
@@ -5259,6 +5269,30 @@ inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
 ElectStatistic::mutable_lof_leaders() {
   // @@protoc_insertion_point(field_mutable_list:shardora.pools.protobuf.ElectStatistic.lof_leaders)
   return &lof_leaders_;
+}
+
+// optional uint64 statistic_height = 7;
+inline bool ElectStatistic::has_statistic_height() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void ElectStatistic::set_has_statistic_height() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void ElectStatistic::clear_has_statistic_height() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void ElectStatistic::clear_statistic_height() {
+  statistic_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_statistic_height();
+}
+inline ::google::protobuf::uint64 ElectStatistic::statistic_height() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ElectStatistic.statistic_height)
+  return statistic_height_;
+}
+inline void ElectStatistic::set_statistic_height(::google::protobuf::uint64 value) {
+  set_has_statistic_height();
+  statistic_height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ElectStatistic.statistic_height)
 }
 
 // -------------------------------------------------------------------
