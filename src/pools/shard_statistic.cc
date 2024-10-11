@@ -588,6 +588,13 @@ int ShardStatistic::StatisticWithHeights(
     auto exist_iter = statistic_height_map_.find(iter->first);
     if (exist_iter != statistic_height_map_.end()) {
         elect_statistic = exist_iter->second;
+        ZJC_DEBUG("success get exists statistic message "
+            "prev_timeblock_height_: %lu, statisticed_timeblock_height: %lu, "
+            "now tm height: %lu, statistic: %s",
+            prev_timeblock_height_,
+            statisticed_timeblock_height,
+            latest_timeblock_height_,
+            ProtobufToJson(elect_statistic).c_str());
         return kPoolsSuccess;
     }
 
