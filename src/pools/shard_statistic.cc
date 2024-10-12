@@ -529,8 +529,9 @@ void ShardStatistic::HandleStatistic(
         }
     }
 
-    ZJC_DEBUG("success handle block pool: %u, height: %lu, "
+    ZJC_DEBUG("statistic height: %lu, success handle block pool: %u, height: %lu, "
         "tm height: %lu, leader_id: %s, tx_count: %u, tx size: %u, debug_str: %s",
+        pool_statistic_riter->first,
         view_block_ptr->qc().pool_index(), block.height(), 
         block.timeblock_height(), 
         common::Encode::HexEncode(leader_id).c_str(),
