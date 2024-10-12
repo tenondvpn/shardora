@@ -301,7 +301,7 @@ void ShardStatistic::HandleStatistic(
                     std::map<uint32_t, StatisticInfoItem> pool_map;
                     pool_map[pool_idx] = statistic_item;
                     statistic_pool_info_[statistic_height] = pool_map;
-                    ZJC_DEBUG("success handle kPoolStatisticTag tx "
+                    ZJC_DEBUG("new success handle kPoolStatisticTag tx "
                         "statistic_height: %lu, pool: %u, height: %lu, statistic_max_height: %lu, gid: %s", 
                         statistic_height, 
                         pool_idx, 
@@ -831,12 +831,17 @@ int ShardStatistic::StatisticWithHeights(
 
     ZJC_DEBUG("success create statistic message "
         "prev_timeblock_height_: %lu, statisticed_timeblock_height: %lu, "
-        "now tm height: %lu, statistic: %s",
+        "now tm height: %lu, statistic: %s, new statistic height: %lu, now satistic height: %lu",
         prev_timeblock_height_,
         statisticed_timeblock_height,
         latest_timeblock_height_,
-        ProtobufToJson(elect_statistic).c_str());
+        ProtobufToJson(elect_statistic).c_str(),
+        piter->first,
+        iter->first);
+    assert(piter->first > iter->first);
     statistic_height_map_[iter->first] = elect_statistic;
+    auto eiter = statistic_pool_info_.find(iter->first);
+    statistic_pool_info_.erase(eiter);
     return kPoolsSuccess;
 }
 
