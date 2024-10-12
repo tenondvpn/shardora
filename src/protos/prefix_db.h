@@ -618,7 +618,13 @@ public:
         key.append((char*)&sharding_id, sizeof(sharding_id));
         key.append((char*)&pool_index, sizeof(pool_index));
         batch.Put(key, pool_info.SerializeAsString());
-        ZJC_DEBUG("save latest pool info: %s", ProtobufToJson(pool_info).c_str());
+        ZJC_DEBUG("save latest pool info: %s, %u_%u_%lu, synced_height: %lu, hash: %s",
+            ProtobufToJson(pool_info).c_str(), 
+            sharding_id, 
+            pool_index, 
+            pool_info.height(), 
+            pool_info.synced_height(), 
+            common::Encode::HexEncode(pool_info.hash()).c_str());
     }
 
     bool GetLatestPoolInfo(
@@ -640,7 +646,13 @@ public:
             return false;
         }
 
-        ZJC_DEBUG("get latest pool info: %s", ProtobufToJson(*pool_info).c_str());
+        ZJC_DEBUG("get latest pool info: %s, %u_%u_%lu, synced_height: %lu, hash: %s",
+            ProtobufToJson(*pool_info).c_str(), 
+            sharding_id, 
+            pool_index, 
+            pool_info->height(), 
+            pool_info->synced_height(), 
+            common::Encode::HexEncode(pool_info->hash()).c_str());        
         return true;
     }
 
