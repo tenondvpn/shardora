@@ -495,15 +495,22 @@ void ShardStatistic::HandleStatistic(
         return;
     }
 
-    auto& node_info_map = height_node_collect_info_map
-        .insert_or_assign(
-            view_block_ptr->qc().elect_height(), 
-            std::unordered_map<std::string, StatisticMemberInfoItem>())
-        .first->second;
+    auto elect_height_iter = height_node_collect_info_map.find(view_block_ptr->qc().elect_height());
+    if (elect_height_iter == height_node_collect_info_map.end()) {
+        height_node_collect_info_map[view_block_ptr->qc().elect_height()] = 
+            std::unordered_map<std::string, StatisticMemberInfoItem>();
+        elect_height_iter = height_node_collect_info_map.find(view_block_ptr->qc().elect_height());
+    }
+
+    auto& node_info_map = elect_height_iter->second;
     // 聚合每个选举高度，每个节点在各个pool 中完成交易的gas总和
-    auto& node_info = node_info_map.insert_or_assign(
-        leader_id, 
-        StatisticMemberInfoItem()).first->second;
+    auto node_iter = node_info_map.find(leader_id);
+    if (node_iter == node_info_map.end()) {
+        node_info_map[leader_id] = StatisticMemberInfoItem();
+        node_iter = node_info_map.find(leader_id);
+    }
+    
+    auto& node_info = node_iter->second;
     node_info.gas_sum += block_gas;
     node_info.tx_count += block.tx_list_size();
     std::string debug_str = ", height_node_collect_info_map height: ";
