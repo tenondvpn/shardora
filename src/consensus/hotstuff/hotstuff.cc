@@ -30,11 +30,12 @@ void Hotstuff::Init() {
         view_block_chain_->SetLatestLockedBlock(latest_view_block);
         view_block_chain_->SetLatestCommittedBlock(latest_view_block);
         // 开启第一个视图
-        ZJC_DEBUG("success new set qc view: %lu, %u_%u_%lu",
+        ZJC_DEBUG("success new set qc view: %lu, %u_%u_%lu, hash: %s",
             latest_view_block->qc().view(),
             latest_view_block->qc().network_id(),
             latest_view_block->qc().pool_index(),
-            latest_view_block->qc().view());
+            latest_view_block->qc().view(),
+            common::Encode::HexEncode(latest_view_block->qc().view_block_hash()).c_str());
 
         pacemaker_->NewQcView(latest_view_block->qc().view());
     } else {
