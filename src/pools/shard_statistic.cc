@@ -496,12 +496,12 @@ void ShardStatistic::HandleStatistic(
     }
 
     auto& node_info_map = height_node_collect_info_map
-        .try_emplace(
+        .insert_or_assign(
             view_block_ptr->qc().elect_height(), 
             std::unordered_map<std::string, StatisticMemberInfoItem>())
         .first->second;
     // 聚合每个选举高度，每个节点在各个pool 中完成交易的gas总和
-    auto& node_info = node_info_map.try_emplace(
+    auto& node_info = node_info_map.insert_or_assign(
         leader_id, 
         StatisticMemberInfoItem()).first->second;
     node_info.gas_sum += block_gas;
