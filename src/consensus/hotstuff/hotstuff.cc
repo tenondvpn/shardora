@@ -390,7 +390,6 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
             pro_msg_wrap->msg_ptr->header.hash64(),
             pro_msg_wrap->msg_ptr->header.debug().c_str());
 #endif
-
     }
     
     return Status::kSuccess;

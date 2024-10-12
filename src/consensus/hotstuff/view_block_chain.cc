@@ -117,12 +117,15 @@ Status ViewBlockChain::Store(
         // 父块必须存在
         auto it = view_blocks_info_.find(view_block->parent_hash());
         if (it == view_blocks_info_.end() || it->second->view_block == nullptr) {
-            ZJC_ERROR("lack of parent view block, hash: %s, parent hash: %s, cur view: %lu, pool: %u",
-                common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
-                common::Encode::HexEncode(view_block->parent_hash()).c_str(),
-                view_block->qc().view(), pool_index_);
-            // assert(false);
-            return Status::kLackOfParentBlock;
+            if (latest_committed_block_ == nullptr ||
+                    latest_committed_block_->qc().view_block_hash() != view_block->parent_hash()) {
+                ZJC_ERROR("lack of parent view block, hash: %s, parent hash: %s, cur view: %lu, pool: %u",
+                    common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
+                    common::Encode::HexEncode(view_block->parent_hash()).c_str(),
+                    view_block->qc().view(), pool_index_);
+                assert(false);
+                return Status::kLackOfParentBlock;
+            }
         }
     }
 
