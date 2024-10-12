@@ -208,7 +208,7 @@ void ShardStatistic::HandleStatisticBlock(
             auto& heights = elect_statistic.height_info();
             auto st_iter = statistic_pool_info_.begin();
             while (st_iter != statistic_pool_info_.end()) {
-                if (st_iter->first > latest_statisticed_height_) {
+                if (st_iter->first >= latest_statisticed_height_) {
                     break;
                 }
                     
