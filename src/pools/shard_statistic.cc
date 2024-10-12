@@ -421,8 +421,13 @@ void ShardStatistic::HandleStatistic(
 
                         for(auto node : elect_block.in()) {
                             auto addr = secptr_->GetAddress(node.pubkey());
-                            auto& accoutPoceInfoIterm = accout_poce_info_map_.try_emplace(
-                                    addr, std::make_shared<AccoutPoceInfoItem>()).first->second;
+                            auto acc_iter = accout_poce_info_map_.find(addr);
+                            if (acc_iter == accout_poce_info_map_.end()) {
+                                accout_poce_info_map_[addr] = std::make_shared<AccoutPoceInfoItem>();
+                                acc_iter = accout_poce_info_map_.find(addr);
+                            }
+
+                            auto& accoutPoceInfoIterm = acc_iter->second;
                             accoutPoceInfoIterm->consensus_gap += 1;
                             accoutPoceInfoIterm->credit += node.fts_value();;
                             ZJC_DEBUG("HandleElectStatistic addr: %s, consensus_gap: %lu, credit: %lu",
@@ -509,7 +514,7 @@ void ShardStatistic::HandleStatistic(
         node_info_map[leader_id] = StatisticMemberInfoItem();
         node_iter = node_info_map.find(leader_id);
     }
-    
+
     auto& node_info = node_iter->second;
     node_info.gas_sum += block_gas;
     node_info.tx_count += block.tx_list_size();
@@ -681,12 +686,17 @@ int ShardStatistic::StatisticWithHeights(
 
     uint64_t all_gas_amount = 0;
     uint64_t root_all_gas_amount = 0;
-    std::map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
-    std::map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
-    std::map<uint64_t, std::unordered_map<std::string, StatisticMemberInfoItem>> height_node_collect_info_map;
-    std::unordered_map<std::string, std::string> id_pk_map;
+    auto pool_iter = iter->second.begin();
+    auto* statistic_info_ptr = &pool_iter->second;
+    all_gas_amount += statistic_info_ptr->all_gas_amount;
+    root_all_gas_amount += statistic_info_ptr->root_all_gas_amount;
+    auto join_elect_stoke_map = statistic_info_ptr->join_elect_stoke_map;
+    auto join_elect_shard_map = statistic_info_ptr->join_elect_shard_map;
+    auto height_node_collect_info_map = statistic_info_ptr->height_node_collect_info_map;
+    auto id_pk_map = statistic_info_ptr->id_pk_map;
     std::string debug_str;
-    for (auto pool_iter = iter->second.begin(); pool_iter != iter->second.end(); ++pool_iter) {
+    ++pool_iter;
+    for (; pool_iter != iter->second.end(); ++pool_iter) {
         auto* statistic_info_ptr = &pool_iter->second;
         all_gas_amount += statistic_info_ptr->all_gas_amount;
         root_all_gas_amount += statistic_info_ptr->root_all_gas_amount;
@@ -711,15 +721,78 @@ int ShardStatistic::StatisticWithHeights(
             debug_str += std::to_string(titer->first) + ",";
         }
 
-        join_elect_stoke_map.insert(
-            statistic_info_ptr->join_elect_stoke_map.begin(), 
-            statistic_info_ptr->join_elect_stoke_map.end());
-        join_elect_shard_map.insert(
-            statistic_info_ptr->join_elect_shard_map.begin(), 
-            statistic_info_ptr->join_elect_shard_map.end());
-        height_node_collect_info_map.insert(
-            statistic_info_ptr->height_node_collect_info_map.begin(), 
-            statistic_info_ptr->height_node_collect_info_map.end());
+        for (auto h_join_elect_stoke_iter = statistic_info_ptr->join_elect_stoke_map.begin();
+                h_join_elect_stoke_iter != statistic_info_ptr->join_elect_stoke_map.end(); 
+                ++h_join_elect_stoke_iter) {
+            auto tmp_iter = join_elect_stoke_map.find(h_join_elect_stoke_iter->first);
+            if (tmp_iter == join_elect_stoke_map.end()) {
+                join_elect_stoke_map[h_join_elect_stoke_iter->first] = h_join_elect_stoke_iter->second;
+            } else {
+                for (auto join_elect_stoke_iter = h_join_elect_stoke_iter->second.begin();
+                        join_elect_stoke_iter != h_join_elect_stoke_iter->second.end();
+                        ++join_elect_stoke_iter) {
+                    auto stoke_iter = tmp_iter->second.find(join_elect_stoke_iter->first);
+                    if (stoke_iter == tmp_iter->second.end()) {
+                        tmp_iter->second[join_elect_stoke_iter->first] = join_elect_stoke_iter->second;
+                    } else {
+                        stoke_iter->second += join_elect_stoke_iter->second;
+                    }
+                }
+            }
+        }
+
+        // join_elect_stoke_map.insert(
+        //     statistic_info_ptr->join_elect_stoke_map.begin(), 
+        //     statistic_info_ptr->join_elect_stoke_map.end());
+        for (auto h_join_elect_shard_iter = statistic_info_ptr->join_elect_shard_map.begin();
+                h_join_elect_shard_iter != statistic_info_ptr->join_elect_shard_map.end(); 
+                ++h_join_elect_shard_iter) {
+            auto tmp_iter = join_elect_shard_map.find(h_join_elect_shard_iter->first);
+            if (tmp_iter == join_elect_shard_map.end()) {
+                join_elect_shard_map[h_join_elect_shard_iter->first] = h_join_elect_shard_iter->second;
+            } else {
+                for (auto join_elect_shard_iter = h_join_elect_shard_iter->second.begin();
+                        join_elect_shard_iter != h_join_elect_shard_iter->second.end();
+                        ++join_elect_shard_iter) {
+                    auto stoke_iter = tmp_iter->second.find(join_elect_shard_iter->first);
+                    if (stoke_iter == tmp_iter->second.end()) {
+                        tmp_iter->second[join_elect_shard_iter->first] = join_elect_shard_iter->second;
+                    } else {
+                        ZJC_ERROR("invalid pk and shard id: %s, %u",
+                            common::Encode::HexEncode(join_elect_shard_iter->first).c_str(), 
+                            join_elect_shard_iter->second);
+                        assert(false);
+                    }
+                }
+            }
+        }
+
+        // join_elect_shard_map.insert(
+        //     statistic_info_ptr->join_elect_shard_map.begin(), 
+        //     statistic_info_ptr->join_elect_shard_map.end());
+        for (auto h_height_node_collect_info_iter = statistic_info_ptr->height_node_collect_info_map.begin();
+                h_height_node_collect_info_iter != statistic_info_ptr->height_node_collect_info_map.end(); 
+                ++h_height_node_collect_info_iter) {
+            auto tmp_iter = height_node_collect_info_map.find(h_height_node_collect_info_iter->first);
+            if (tmp_iter == height_node_collect_info_map.end()) {
+                height_node_collect_info_map[h_height_node_collect_info_iter->first] = h_height_node_collect_info_iter->second;
+            } else {
+                for (auto height_node_collect_info_iter = h_height_node_collect_info_iter->second.begin();
+                        height_node_collect_info_iter != h_height_node_collect_info_iter->second.end();
+                        ++height_node_collect_info_iter) {
+                    auto stoke_iter = tmp_iter->second.find(height_node_collect_info_iter->first);
+                    if (stoke_iter == tmp_iter->second.end()) {
+                        tmp_iter->second[height_node_collect_info_iter->first] = height_node_collect_info_iter->second;
+                    } else {
+                        stoke_iter->second.tx_count += height_node_collect_info_iter->second.tx_count;
+                        stoke_iter->second.gas_sum += height_node_collect_info_iter->second.gas_sum;
+                    }
+                }
+            }
+        }
+        // height_node_collect_info_map.insert(
+        //     statistic_info_ptr->height_node_collect_info_map.begin(), 
+        //     statistic_info_ptr->height_node_collect_info_map.end());
         id_pk_map.insert(
             statistic_info_ptr->id_pk_map.begin(), 
             statistic_info_ptr->id_pk_map.end());
