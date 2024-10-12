@@ -212,6 +212,7 @@ void ShardStatistic::HandleStatisticBlock(
                     break;
                 }
                     
+                ZJC_DEBUG("erase statistic height: %lu", st_iter->first);
                 st_iter = statistic_pool_info_.erase(st_iter);
             }
 
@@ -252,7 +253,7 @@ void ShardStatistic::HandleStatistic(
         if (pool_iter != pool_statistic_riter->second.end()) {
             ZJC_DEBUG("pool: %u, get block height and statistic height: %lu, max_height: %lu",
                 pool_idx,
-                block.height(), 
+                block.height(),
                 pool_iter->second.statistic_max_height);
             if (pool_iter->second.statistic_max_height <= block.height()) {
                 break;
