@@ -509,9 +509,13 @@ void ShardStatistic::HandleStatistic(
     std::string debug_str = ", height_node_collect_info_map height: ";
     for (auto titer = statistic_info_ptr->height_node_collect_info_map.begin(); 
             titer != statistic_info_ptr->height_node_collect_info_map.end(); ++titer) {
-        debug_str += std::to_string(titer->first) + ",";
+        for (auto siter = titer->second.begin(); siter != titer->second.end(); ++siter) {
+            debug_str += ", leader id: " + common::Encode::HexEncode(siter->first) + 
+            ", block_gas: " + std::to_string(siter->second.gas_sum) + 
+            ", tx count: " + std::to_string(siter->second.tx_count) + ", ";
+        }
     }
-    
+
     ZJC_DEBUG("success handle block pool: %u, height: %lu, "
         "tm height: %lu, leader_id: %s, tx_count: %u, tx size: %u, debug_str: %s",
         view_block_ptr->qc().pool_index(), block.height(), 
