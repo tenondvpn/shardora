@@ -141,6 +141,7 @@ struct ElectItem {
 };
 
 struct StatisticMemberInfoItem {
+    StatisticMemberInfoItem() : tx_count(0), member_index(0), leader_index(0), gas_sum(0), max_height(0) {}
     uint32_t tx_count = 0;
     uint32_t member_index = 0;
     uint32_t leader_index = 0;
