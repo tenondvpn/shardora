@@ -357,17 +357,19 @@ Status ViewBlockChain::GetChildren(const HashStr& hash, std::vector<std::shared_
 }
 
 Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_block) {
-    ZJC_DEBUG("del view block: %s view: %lu",
-        common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view());
+    ZJC_DEBUG("del view block: %s view: %lu, hash: %s",
+        common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), 
+        view_block->qc().view(),
+        common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
     auto original_child_blocks = std::vector<std::shared_ptr<ViewBlock>>();
     auto childIt = view_blocks_info_.find(view_block->parent_hash());
     if (childIt != view_blocks_info_.end()) {
         original_child_blocks = view_blocks_info_[view_block->parent_hash()]->children;
     }
+
     auto original_blocks_at_height = view_blocks_at_height_[view_block->qc().view()];
     auto& hash = view_block->qc().view_block_hash();
     auto view = view_block->qc().view();
-
     try {
         auto it = view_blocks_info_.find(view_block->parent_hash());
         if (it != view_blocks_info_.end() && !it->second->children.empty()) {
@@ -386,11 +388,12 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
         }
 
         view_blocks_info_.erase(hash);
-        ZJC_DEBUG("delete view block %u_%u_%lu, height: %lu", 
+        ZJC_DEBUG("delete view block %u_%u_%lu, height: %lu, %s", 
             view_block->qc().network_id(), 
             view_block->qc().pool_index(), 
             view_block->qc().view(), 
-            view_block->block_info().height());
+            view_block->block_info().height(),
+            common::Encode::HexEncode(hash).c_str());
     } catch (std::exception& e) {
         ZJC_ERROR("del view block error %s", e.what());
         if (!original_child_blocks.empty()) {

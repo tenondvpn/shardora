@@ -394,13 +394,10 @@ private:
     void AddChildrenToMap(const HashStr& parent_hash, const std::shared_ptr<ViewBlock>& view_block) {
         auto it = view_blocks_info_.find(parent_hash);
         if (it == view_blocks_info_.end()) {
-            if (latest_committed_block_ == nullptr ||
-                    latest_committed_block_->qc().view_block_hash() != parent_hash) {
-                ZJC_DEBUG("failed find parent hash: %s",
-                    common::Encode::HexEncode(parent_hash).c_str());
-                assert(false);
-                return;
-            }
+            ZJC_DEBUG("failed find parent hash: %s",
+                common::Encode::HexEncode(parent_hash).c_str());
+            assert(false);
+            return;
         }
 
         ZJC_DEBUG("success find parent hash: %s", common::Encode::HexEncode(parent_hash).c_str());
