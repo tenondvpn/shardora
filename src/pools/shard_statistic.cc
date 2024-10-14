@@ -635,7 +635,7 @@ int ShardStatistic::StatisticWithHeights(
     }
 
     if (piter->second.size() != common::kInvalidPoolIndex) {
-        ZJC_DEBUG("pool not full: %u, %u", iter->second.size(), common::kInvalidPoolIndex);
+        ZJC_DEBUG("pool not full: %u, %u", piter->second.size(), common::kInvalidPoolIndex);
         return kPoolsError;
     }
 
