@@ -1529,9 +1529,9 @@ bool BlockManager::HasStatisticTx(uint32_t pool_index, pools::CheckGidValidFunct
             return false;
         }
 
-        ZJC_DEBUG("has statistic %u, tx gid: %s", 
-            pool_index, 
-            common::Encode::HexEncode(iter->second->tx_ptr->tx_info.gid()).c_str());
+        // ZJC_DEBUG("has statistic %u, tx gid: %s", 
+        //     pool_index, 
+        //     common::Encode::HexEncode(iter->second->tx_ptr->tx_info.gid()).c_str());
         return true;
     }
 
