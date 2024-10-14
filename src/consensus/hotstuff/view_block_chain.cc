@@ -26,6 +26,10 @@ Status ViewBlockChain::Store(
         const std::shared_ptr<ViewBlock>& view_block, 
         bool directly_store, 
         BalanceMapPtr balane_map_ptr) {
+    if (!network::IsSameToLocalShard(view_block->qc().network_id())) {
+        return Status::kSuccess;
+    }
+    
     if (Has(view_block->qc().view_block_hash())) {
         ZJC_ERROR("view block already stored, hash: %s, view: %lu, propose_debug: %s",
             common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view(),
