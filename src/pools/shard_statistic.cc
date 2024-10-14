@@ -698,7 +698,9 @@ int ShardStatistic::StatisticWithHeights(
     auto id_pk_map = statistic_info_ptr->id_pk_map;
     std::string debug_str;
     ++pool_iter;
+    std::string tx_count_debug_str;
     for (; pool_iter != iter->second.end(); ++pool_iter) {
+        tx_count_debug_str += "pool idx: " + std::to_string(pool_iter->first) + ", ";
         auto* statistic_info_ptr = &pool_iter->second;
         all_gas_amount += statistic_info_ptr->all_gas_amount;
         root_all_gas_amount += statistic_info_ptr->root_all_gas_amount;
@@ -775,6 +777,7 @@ int ShardStatistic::StatisticWithHeights(
         for (auto h_height_node_collect_info_iter = statistic_info_ptr->height_node_collect_info_map.begin();
                 h_height_node_collect_info_iter != statistic_info_ptr->height_node_collect_info_map.end(); 
                 ++h_height_node_collect_info_iter) {
+            tx_count_debug_str += "height: " + std::to_string(h_height_node_collect_info_iter->first) + ", ";
             auto tmp_iter = height_node_collect_info_map.find(h_height_node_collect_info_iter->first);
             if (tmp_iter == height_node_collect_info_map.end()) {
                 height_node_collect_info_map[h_height_node_collect_info_iter->first] = h_height_node_collect_info_iter->second;
@@ -782,6 +785,7 @@ int ShardStatistic::StatisticWithHeights(
                 for (auto height_node_collect_info_iter = h_height_node_collect_info_iter->second.begin();
                         height_node_collect_info_iter != h_height_node_collect_info_iter->second.end();
                         ++height_node_collect_info_iter) {
+                    tx_count_debug_str += "id: " + common::Encode::HexEncode(height_node_collect_info_iter->first) + ": " + std::to_string(height_node_collect_info_iter->second.tx_count) + ", ";
                     auto stoke_iter = tmp_iter->second.find(height_node_collect_info_iter->first);
                     if (stoke_iter == tmp_iter->second.end()) {
                         tmp_iter->second[height_node_collect_info_iter->first] = height_node_collect_info_iter->second;
@@ -800,7 +804,6 @@ int ShardStatistic::StatisticWithHeights(
             statistic_info_ptr->id_pk_map.end());
     }
 
-    ZJC_DEBUG("statistic with height now: %s", debug_str.c_str());    
     // 为当前委员会的节点填充共识工作的奖励信息
     setElectStatistics(height_node_collect_info_map, now_elect_members, elect_statistic, is_root);
     addNewNode2JoinStatics(
@@ -831,13 +834,16 @@ int ShardStatistic::StatisticWithHeights(
 
     ZJC_DEBUG("success create statistic message "
         "prev_timeblock_height_: %lu, statisticed_timeblock_height: %lu, "
-        "now tm height: %lu, statistic: %s, new statistic height: %lu, now satistic height: %lu",
+        "now tm height: %lu, statistic: %s, new statistic height: %lu, "
+        "now satistic height: %lu, statistic with height now: %s, tx_count_debug_str: %s",
         prev_timeblock_height_,
         statisticed_timeblock_height,
         latest_timeblock_height_,
         ProtobufToJson(elect_statistic).c_str(),
         piter->first,
-        iter->first);
+        iter->first, 
+        debug_str.c_str(), 
+        tx_count_debug_str.c_str());
     assert(piter->first > iter->first);
     statistic_height_map_[iter->first] = elect_statistic;
     auto eiter = statistic_pool_info_.find(iter->first);
