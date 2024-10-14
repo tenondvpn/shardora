@@ -63,9 +63,7 @@ int HotstuffManager::Init(
     bls_mgr_ = bls_mgr;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-
     elect_info_ = std::make_shared<ElectInfo>(security_ptr, elect_mgr_);
-    
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         auto crypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
         auto chain = std::make_shared<ViewBlockChain>(pool_idx, db_, account_mgr_);
@@ -94,7 +92,6 @@ int HotstuffManager::Init(
     }
 
     RegisterCreateTxCallbacks();
-
     network::Route::Instance()->RegisterMessage(common::kHotstuffMessage,
         std::bind(&HotstuffManager::HandleMessage, this, std::placeholders::_1));
     network::Route::Instance()->RegisterMessage(common::kHotstuffTimeoutMessage,
@@ -102,7 +99,6 @@ int HotstuffManager::Init(
     transport::Processor::Instance()->RegisterProcessor(
         common::kPacemakerTimerMessage,
         std::bind(&HotstuffManager::HandleTimerMessage, this, std::placeholders::_1));    
-
     return kConsensusSuccess;
 }
 

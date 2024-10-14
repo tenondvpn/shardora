@@ -130,6 +130,7 @@ public:
             view_block_chain()->SetLatestCommittedBlock(vblock);        
         }
 
+        view_block_chain()->Store(vblock, true, nullptr);
         view_block_chain()->UpdateHighViewBlock(vblock->qc());
     }
 
