@@ -198,9 +198,9 @@ bool ViewBlockChain::Has(const HashStr& hash) {
         return true;
     }
 
-    if (prefix_db_->BlockExists(hash)) {
-        return true;
-    }
+    // if (prefix_db_->BlockExists(hash)) {
+    //     return true;
+    // }
 
     return false;
 }
