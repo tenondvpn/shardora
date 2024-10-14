@@ -61,15 +61,19 @@ Status ViewBlockChain::Store(
     }
 #endif
 
-    ZJC_DEBUG("merge prev all balance store size: %u, propose_debug: %s", balane_map_ptr ? balane_map_ptr->size() : 0, view_block->debug().c_str());
+    ZJC_DEBUG("merge prev all balance store size: %u, propose_debug: %s",
+        balane_map_ptr ? balane_map_ptr->size() : 0, view_block->debug().c_str());
     auto block_info_ptr = GetViewBlockInfo(view_block, balane_map_ptr);
     auto& view_block_at_height_vec = view_blocks_at_height_[view_block->qc().view()];
     if (!view_block_at_height_vec.empty()) {
         for (auto iter = view_block_at_height_vec.begin(); iter != view_block_at_height_vec.end();) {
             if ((*iter)->qc().has_sign_x()) {
-                ZJC_DEBUG("invalid view has much more view block: %lu, count: %u", 
+                ZJC_DEBUG("invalid view has much more view block: %lu, "
+                    "count: %u, hash: %s, new block hash: %s", 
                     view_block->qc().view(),
-                    view_block_at_height_vec.size());
+                    view_block_at_height_vec.size(),
+                    common::Encode::HexEncode((*iter)->qc().view_block_hash()).c_str(),
+                    common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
                 assert(false);
                 ++iter;
             } else {
