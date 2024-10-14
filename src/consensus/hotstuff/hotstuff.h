@@ -109,6 +109,14 @@ public:
 
     void HandleSyncedViewBlock(
             std::shared_ptr<view_block::protobuf::ViewBlockItem>& vblock) {
+        if (view_block_chain_->Has(vblock->qc().view_block_hash())) {
+            return;
+        }
+
+        if (prefix_db_->BlockExists(vblock->qc().view_block_hash())) {
+            return;
+        }
+        
         auto db_batch = std::make_shared<db::DbWriteBatch>();
         auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(vblock, db_batch);
         ZJC_DEBUG("now handle synced view block %u_%u_%lu",
