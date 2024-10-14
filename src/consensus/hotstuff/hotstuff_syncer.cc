@@ -101,12 +101,17 @@ void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr)
 }
 
 void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const int32_t& node_num) {
+    auto latest_view_block = view_block_chain(pool_idx)->HighViewBlock();
+    if (!latest_view_block) {
+        return;
+    }
+
     // TODO(HT): test
     auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
     auto req = vb_msg.mutable_view_block_req();
     req->set_pool_idx(pool_idx);
     req->set_network_id(common::GlobalInfo::Instance()->network_id());
-    req->set_high_qc_view(view_block_chain(pool_idx)->HighViewBlock()->qc().view());
+    req->set_high_qc_view(latest_view_block->qc().view());
     req->set_high_tc_view(pacemaker(pool_idx)->HighTC()->view());
 
     View max_view = 0;
