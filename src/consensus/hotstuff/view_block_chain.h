@@ -394,10 +394,26 @@ private:
     void AddChildrenToMap(const HashStr& parent_hash, const std::shared_ptr<ViewBlock>& view_block) {
         auto it = view_blocks_info_.find(parent_hash);
         if (it == view_blocks_info_.end()) {
-            ZJC_DEBUG("failed find parent hash: %s",
-                common::Encode::HexEncode(parent_hash).c_str());
-            assert(false);
-            return;
+            if (latest_committed_block_ == nullptr || latest_locked_block_->qc().view_block_hash() != parent_hash) {
+                ZJC_DEBUG("failed find parent hash: %s",
+                    common::Encode::HexEncode(parent_hash).c_str());
+                assert(false);
+                return;
+            }
+
+            auto balane_map_ptr = std::make_shared<BalanceMap>();
+            for (uint32_t i = 0; i < latest_committed_block_->block_info().tx_list_size(); ++i) {
+                auto& tx = latest_committed_block_->block_info().tx_list(i);
+                if (tx.balance() == 0) {
+                    continue;
+                }
+
+                auto& addr = account_mgr_->GetTxValidAddress(tx);
+                (*balane_map_ptr)[addr] = tx.balance();
+            }
+            
+            auto block_info_ptr = GetViewBlockInfo(latest_committed_block_, balane_map_ptr);
+            view_blocks_info_[parent_hash] = block_info_ptr;
         }
 
         ZJC_DEBUG("success find parent hash: %s", common::Encode::HexEncode(parent_hash).c_str());
