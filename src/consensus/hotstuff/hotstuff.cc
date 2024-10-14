@@ -68,6 +68,11 @@ Status Hotstuff::Start() {
 Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
     // TODO(HT): 打包的交易，超时后如何释放？
     // 打包参与共识中的交易，如何保证幂等
+    auto pre_v_block = view_block_chain()->HighViewBlock();
+    if (!pre_v_block) {
+        return Status::kError;
+    }
+
     latest_propse_msg_tm_ms_ = common::TimeUtils::TimestampMs();
     if (tc != nullptr) {
         if (latest_qc_item_ptr_ == nullptr || tc->view() >= latest_qc_item_ptr_->view()) {
