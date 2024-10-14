@@ -167,7 +167,7 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
 void Hotstuff::NewView(
         std::shared_ptr<tnet::TcpInterface> conn,
         std::shared_ptr<view_block::protobuf::QcItem> tc) {
-    if (tc->view() >= latest_qc_item_ptr_->view()) {
+    if (latest_qc_item_ptr_ == nullptr || tc->view() >= latest_qc_item_ptr_->view()) {
         assert(tc->pool_index() == pool_idx_);
         assert(tc->network_id() == common::GlobalInfo::Instance()->network_id());
 
