@@ -194,7 +194,15 @@ std::shared_ptr<ViewBlock> ViewBlockChain::Get(const HashStr &hash) {
 
 bool ViewBlockChain::Has(const HashStr& hash) {
     auto it = view_blocks_info_.find(hash);
-    return (it != view_blocks_info_.end() && it->second->view_block != nullptr);    
+    if (it != view_blocks_info_.end() && it->second->view_block != nullptr) {
+        return true;
+    }
+
+    if (prefix_db_->BlockExists(hash)) {
+        return true;
+    }
+
+    return false;
 }
 
 bool ViewBlockChain::Extends(const ViewBlock& block, const ViewBlock& target) {
