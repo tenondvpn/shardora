@@ -297,6 +297,10 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             bool has_user_tx = false;
             auto gid_valid_func = [&](const std::string& gid) -> bool {
                 auto latest_block = pool_hotstuff_[pool_idx]->view_block_chain()->HighViewBlock();
+                if (!latest_block) {
+                    return false;
+                }
+                
                 return pool_hotstuff_[pool_idx]->view_block_chain()->CheckTxGidValid(
                     gid, 
                     latest_block->qc().view_block_hash());
