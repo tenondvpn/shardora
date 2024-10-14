@@ -395,8 +395,11 @@ private:
         auto it = view_blocks_info_.find(parent_hash);
         if (it == view_blocks_info_.end()) {
             if (latest_committed_block_ == nullptr || latest_locked_block_->qc().view_block_hash() != parent_hash) {
-                ZJC_DEBUG("failed find parent hash: %s",
-                    common::Encode::HexEncode(parent_hash).c_str());
+                ZJC_DEBUG("failed find parent hash: %s, latest_locked_block_ hash: %s",
+                    common::Encode::HexEncode(parent_hash).c_str(),
+                    (latest_committed_block_ ? 
+                    common::Encode::HexEncode(latest_locked_block_->qc().view_block_hash()).c_str() : 
+                    ""));
                 assert(false);
                 return;
             }
