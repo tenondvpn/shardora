@@ -317,9 +317,8 @@ void BlockManager::HandleNormalToTx(
             }
 
             for (uint32_t i = 0; i < to_txs.tos_size(); ++i) {
-                ZJC_DEBUG("success add local transfer tx tos hash: %s, %u_%u_%lu, "
+                ZJC_DEBUG("success add local transfer tx tos %u_%u_%lu, "
                     "view height: %lu, address: %s, amount: %lu",
-                    common::Encode::HexEncode(tx.storages(i).value()).c_str(), 
                     view_block.qc().network_id(), 
                     view_block.qc().pool_index(), 
                     view_block.block_info().height(), 
