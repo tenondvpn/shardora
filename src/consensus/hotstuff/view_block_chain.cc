@@ -123,7 +123,7 @@ Status ViewBlockChain::Store(
         assert(view_block_at_height_vec.size() == 1);
     }
 #endif
-        AddChildrenToMap(view_block->qc().view_block_hash(), start_block_);
+        AddChildrenToMap(start_block_);
         // 更新 start_block_
         start_block_ = view_block;
         return Status::kSuccess;
@@ -163,7 +163,7 @@ Status ViewBlockChain::Store(
     }
 #endif
 
-    AddChildrenToMap(view_block->parent_hash(), view_block);
+    AddChildrenToMap(view_block);
     ZJC_DEBUG("success add block info hash: %s, parent hash: %s, %u_%u_%lu, propose_debug: %s", 
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), 
         common::Encode::HexEncode(view_block->parent_hash()).c_str(), 

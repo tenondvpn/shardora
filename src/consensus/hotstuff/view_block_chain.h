@@ -391,7 +391,8 @@ private:
         view_blocks_info_[hash]->status = status;        
     }
 
-    void AddChildrenToMap(const HashStr& parent_hash, const std::shared_ptr<ViewBlock>& view_block) {
+    void AddChildrenToMap(const std::shared_ptr<ViewBlock>& view_block) {
+        const HashStr& parent_hash = view_block->parent_hash();
         auto it = view_blocks_info_.find(parent_hash);
         if (it == view_blocks_info_.end()) {
             if (view_block->qc().view() <= latest_committed_block_->qc().view()) {
@@ -427,9 +428,10 @@ private:
         std::string debug_str;
         auto debug_view_block = view_block;
         while (true) {
-            auto pview_block = view_blocks_info_[debug_view_block->parent_hash()]->view_block;
-            if (pview_block == nullptr) {
-                pview_block = latest_committed_block_;
+            auto iter = view_blocks_info_.find(debug_view_block->parent_hash());
+            auto pview_block = latest_committed_block_;
+            if (iter != view_blocks_info_.end()) {
+                pview_block = iter->second->view_block;
             }
 
             if (pview_block == nullptr) {
