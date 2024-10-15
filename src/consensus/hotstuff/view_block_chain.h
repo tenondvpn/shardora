@@ -438,7 +438,7 @@ private:
                 break;
             }
 
-            debug_str += common::StringUtil::Format("%u_%u_%lu_%lu-_%u_%u_%lu_%lu-%s_%s --> ", 
+            debug_str += common::StringUtil::Format("%u_%u_%lu_%lu-_%u_%u_%lu_%lu-%s_%s-%s_%s --> ", 
                 debug_view_block->qc().network_id(),
                 debug_view_block->qc().pool_index(),
                 debug_view_block->block_info().height(),
@@ -448,7 +448,9 @@ private:
                 pview_block->block_info().height(),
                 pview_block->qc().view(),
                 common::Encode::HexEncode(debug_view_block->qc().view_block_hash()).c_str(),
-                common::Encode::HexEncode(debug_view_block->parent_hash()).c_str());
+                common::Encode::HexEncode(debug_view_block->parent_hash()).c_str(),
+                common::Encode::HexEncode(pview_block->qc().view_block_hash()).c_str(),
+                common::Encode::HexEncode(pview_block->parent_hash()).c_str());
             if (debug_view_block->block_info().height() != pview_block->block_info().height() + 1) {
                 ZJC_DEBUG("failed add view block: %s", debug_str.c_str());
                 assert(false);
