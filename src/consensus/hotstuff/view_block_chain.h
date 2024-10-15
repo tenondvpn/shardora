@@ -439,12 +439,12 @@ private:
             debug_str += common::StringUtil::Format("%u_%u_%lu_%lu-_%u_%u_%lu_%lu-%s_%s --> ", 
                 debug_view_block->qc().network_id(),
                 debug_view_block->qc().pool_index(),
-                debug_view_block->qc().view(),
                 debug_view_block->block_info().height(),
+                debug_view_block->qc().view(),
                 pview_block->qc().network_id(),
                 pview_block->qc().pool_index(),
-                pview_block->qc().view(),
                 pview_block->block_info().height(),
+                pview_block->qc().view(),
                 common::Encode::HexEncode(debug_view_block->qc().view_block_hash()).c_str(),
                 common::Encode::HexEncode(debug_view_block->parent_hash()).c_str());
             if (debug_view_block->block_info().height() != pview_block->block_info().height() + 1) {
