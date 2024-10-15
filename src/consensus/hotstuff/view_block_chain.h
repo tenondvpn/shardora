@@ -393,6 +393,11 @@ private:
 
     void AddChildrenToMap(const std::shared_ptr<ViewBlock>& view_block) {
         const HashStr& parent_hash = view_block->parent_hash();
+        if (latest_committed_block_ != nullptr && 
+                view_block->qc().view() <= latest_committed_block_->qc().view()) {
+            return;
+        }
+
         auto it = view_blocks_info_.find(parent_hash);
         if (it == view_blocks_info_.end()) {
             if (view_block->qc().view() <= latest_committed_block_->qc().view()) {
