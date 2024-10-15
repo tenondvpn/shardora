@@ -247,6 +247,9 @@ private:
         return pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().view_item().qc().view() > view_block_chain()->GetMaxHeight();
     }
 
+    void StoreVerifiedViewBlockToDb(const std::shared_ptr<ViewBlock>& v_block);
+    void StoreVerifiedViewBlockToDb(const std::shared_ptr<ViewBlock>& v_block);
+
     Status HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
     Status Commit(
             const std::shared_ptr<ViewBlock>& v_block,

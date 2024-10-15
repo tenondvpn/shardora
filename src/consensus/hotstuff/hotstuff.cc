@@ -15,7 +15,6 @@ namespace hotstuff {
 void Hotstuff::Init() {
     // set pacemaker timeout callback function
     last_vote_view_ = 0lu;
-    
     auto latest_view_block = std::make_shared<ViewBlock>();
     // 从 db 中获取最后一个有 QC 的 ViewBlock
     Status s = GetLatestViewBlockFromDb(db_, pool_idx_, latest_view_block);
@@ -23,7 +22,6 @@ void Hotstuff::Init() {
         ZJC_DEBUG("pool: %d, latest vb from db, vb view: %lu",
             pool_idx_, 
             latest_view_block->qc().view());
-
         // 初始状态，使用 db 中最后一个 view_block 初始化视图链
         view_block_chain_->Store(latest_view_block, true, nullptr);
         view_block_chain_->UpdateHighViewBlock(latest_view_block->qc());
@@ -504,9 +502,20 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
 
         return Status::kError;
     }
+
+    StoreVerifiedViewBlockToDb(pro_msg_wrap->view_block_ptr);
     // 成功接入链中，标记交易占用
     acceptor()->MarkBlockTxsAsUsed(pro_msg_wrap->view_block_ptr->block_info());
     return Status::kSuccess;    
+}
+
+void Hotstuff::StoreVerifiedViewBlockToDb(const std::shared_ptr<ViewBlock>& v_block) {
+    auto db_bach = std::make_shared<db::DbWriteBatch>();
+    view_block_chain_->StoreToDb(v_block, 999999, db_bach);
+    auto st = db_->Put(*db_bach);
+    if (!st.ok()) {
+        ZJC_FATAL("write data failed!");
+    }
 }
 
 Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
@@ -582,6 +591,8 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
 
         return Status::kError;
     }
+
+    StoreVerifiedViewBlockToDb(pro_msg_wrap->view_block_ptr);
     // 成功接入链中，标记交易占用
     acceptor()->MarkBlockTxsAsUsed(pro_msg_wrap->view_block_ptr->block_info());
     return Status::kSuccess;
@@ -765,6 +776,7 @@ Status Hotstuff::StoreVerifiedViewBlock(
         pool_idx_,
         common::Encode::HexEncode(v_block->qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(v_block->parent_hash()).c_str());
+    StoreVerifiedViewBlockToDb(v_block);
     return view_block_chain()->Store(v_block, true, nullptr);
 }
 
