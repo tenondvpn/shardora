@@ -447,6 +447,11 @@ private:
                 pview_block->block_info().height(),
                 common::Encode::HexEncode(debug_view_block->qc().view_block_hash()).c_str(),
                 common::Encode::HexEncode(debug_view_block->parent_hash()).c_str());
+            if (debug_view_block->block_info().height() != pview_block->block_info().height() + 1) {
+                ZJC_DEBUG("failed add view block: %s", debug_str.c_str());
+                assert(false);
+            }
+            
             if (pview_block == latest_committed_block_) {
                 break;
             }
