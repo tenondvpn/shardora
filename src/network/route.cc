@@ -195,7 +195,7 @@ void Route::Broadcasting() {
                     break;
                 }
             
-                msg_ptr->header.mutable_broadcast()->set_hop_to_layer(2);
+                msg_ptr->header.mutable_broadcast()->set_hop_to_layer(1);
                 Broadcast(msg_ptr);
                 if (!has_data) {
                     has_data = true;
