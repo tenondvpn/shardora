@@ -451,10 +451,12 @@ private:
                 ZJC_DEBUG("failed add view block: %s", debug_str.c_str());
                 assert(false);
             }
-            
+
             if (pview_block == latest_committed_block_) {
                 break;
             }
+
+            debug_view_block = pview_block;
         }
         ZJC_DEBUG("success add view block: %s", debug_str.c_str());
 #endif
