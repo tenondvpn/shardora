@@ -967,6 +967,7 @@ Status Hotstuff::Commit(
         tmp_block = parent_block;
     }
     
+    view_block_chain()->SetLatestCommittedBlock(v_block);
     // 剪枝
     std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
     auto s = view_block_chain()->PruneTo(v_block->qc().view_block_hash(), forked_blockes, true);
@@ -1125,7 +1126,6 @@ void Hotstuff::CommitInner(
         elect_item->consensus_stat(pool_idx_)->Commit(v_block);
     }    
     
-    view_block_chain()->SetLatestCommittedBlock(v_block);
     ZJC_DEBUG("pool: %d consensus stat, leader: %lu, succ: %lu, test_index: %lu",
         pool_idx_, v_block->qc().leader_idx(),
         0,
