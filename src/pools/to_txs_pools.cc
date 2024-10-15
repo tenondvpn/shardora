@@ -63,7 +63,8 @@ void ToTxsPools::NewBlock(
         }
     }
 
-    ZJC_DEBUG("to txs new block coming pool: %u, height: %lu, cons height: %lu, tx size: %d, propose_debug: %s",
+    ZJC_DEBUG("to txs new block coming pool: %u, height: %lu, "
+        "cons height: %lu, tx size: %d, propose_debug: %s",
         view_block_ptr->qc().pool_index(), 
         block.height(), 
         pool_consensus_heihgts_[view_block_ptr->qc().pool_index()], 

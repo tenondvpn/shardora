@@ -52,28 +52,29 @@ int ShardStatistic::Init() {
     } else {
         ZJC_DEBUG("failed load latest pool statistic tag.");
         assert(false);
-    }
-
-    latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>();
-    auto& to_heights = *latest_statistic_item_;
-    if (!prefix_db_->GetStatisticLatestHeihgts(
-            common::GlobalInfo::Instance()->network_id(), 
-            &to_heights)) {
-        assert(false);
         return kPoolsError;
     }
 
-    if (to_heights.heights_size() != common::kInvalidPoolIndex) {
-        ZJC_DEBUG("to heights size: %u not equal to: %u",
-            to_heights.heights_size(), common::kInvalidPoolIndex);
-        assert(false);
-        return kPoolsError;
-    }
+    // latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>();
+    // auto& to_heights = *latest_statistic_item_;
+    // if (!prefix_db_->GetStatisticLatestHeihgts(
+    //         common::GlobalInfo::Instance()->network_id(), 
+    //         &to_heights)) {
+    //     assert(false);
+    //     return kPoolsError;
+    // }
+
+    // if (to_heights.heights_size() != common::kInvalidPoolIndex) {
+    //     ZJC_DEBUG("to heights size: %u not equal to: %u",
+    //         to_heights.heights_size(), common::kInvalidPoolIndex);
+    //     assert(false);
+    //     return kPoolsError;
+    // }
 
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         pools_consensus_blocks_[i] = std::make_shared<PoolBlocksInfo>();
-        pools_consensus_blocks_[i]->latest_consensus_height_ = to_heights.heights(i);
-        for (uint64_t height = to_heights.heights(i) + 1;; ++height) {
+        pools_consensus_blocks_[i]->latest_consensus_height_ = statistic_info.pool_statisitcs(i).max_height() + 1;
+        for (uint64_t height = statistic_info.pool_statisitcs(i).max_height() + 1;; ++height) {
             auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
             auto& view_block = *view_block_ptr;
             if (!prefix_db_->GetBlockWithHeight(
@@ -86,10 +87,6 @@ int ShardStatistic::Init() {
                 
             OnNewBlock(view_block_ptr);
         }
-    }
-
-    if (prev_timeblock_height_ < to_heights.tm_height()) {
-        prev_timeblock_height_ = latest_timeblock_height_;
     }
 
     return kPoolsSuccess;
@@ -301,8 +298,8 @@ void ShardStatistic::HandleStatistic(
                     std::map<uint32_t, StatisticInfoItem> pool_map;
                     pool_map[pool_idx] = statistic_item;
                     statistic_pool_info_[statistic_height] = pool_map;
-                    ZJC_DEBUG("new success handle kPoolStatisticTag tx "
-                        "statistic_height: %lu, pool: %u, height: %lu, statistic_max_height: %lu, gid: %s", 
+                    ZJC_DEBUG("new success handle kPoolStatisticTag tx statistic_height: %lu, "
+                        "pool: %u, height: %lu, statistic_max_height: %lu, gid: %s", 
                         statistic_height, 
                         pool_idx, 
                         block.height(), 
@@ -634,8 +631,12 @@ int ShardStatistic::StatisticWithHeights(
         return kPoolsError;
     }
 
-    if (piter->second.size() != common::kInvalidPoolIndex) {
-        ZJC_DEBUG("pool not full: %u, %u", piter->second.size(), common::kInvalidPoolIndex);
+    if (piter->second.size() != common::kInvalidPoolIndex ||
+            iter->second.size() != common::kInvalidPoolIndex) {
+        ZJC_DEBUG("pool not full: %u, %u, now_size: %u", 
+            piter->second.size(), 
+            common::kInvalidPoolIndex, 
+            iter->second.size());
         return kPoolsError;
     }
 
@@ -785,7 +786,8 @@ int ShardStatistic::StatisticWithHeights(
                 for (auto height_node_collect_info_iter = h_height_node_collect_info_iter->second.begin();
                         height_node_collect_info_iter != h_height_node_collect_info_iter->second.end();
                         ++height_node_collect_info_iter) {
-                    tx_count_debug_str += "id: " + common::Encode::HexEncode(height_node_collect_info_iter->first) + ": " + std::to_string(height_node_collect_info_iter->second.tx_count) + ", ";
+                    tx_count_debug_str += "id: " + common::Encode::HexEncode(height_node_collect_info_iter->first) + 
+                        ": " + std::to_string(height_node_collect_info_iter->second.tx_count) + ", ";
                     auto stoke_iter = tmp_iter->second.find(height_node_collect_info_iter->first);
                     if (stoke_iter == tmp_iter->second.end()) {
                         tmp_iter->second[height_node_collect_info_iter->first] = height_node_collect_info_iter->second;
@@ -832,8 +834,8 @@ int ShardStatistic::StatisticWithHeights(
         heights_info->add_heights(iter->second[tmp_pool_idx].statistic_max_height);
     }
 
-    ZJC_DEBUG("success create statistic message "
-        "prev_timeblock_height_: %lu, statisticed_timeblock_height: %lu, "
+    ZJC_DEBUG("success create statistic message prev_timeblock_height_: %lu, "
+        "statisticed_timeblock_height: %lu, "
         "now tm height: %lu, statistic: %s, new statistic height: %lu, "
         "now satistic height: %lu, statistic with height now: %s, tx_count_debug_str: %s",
         prev_timeblock_height_,
