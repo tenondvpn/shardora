@@ -175,7 +175,8 @@ Status ViewBlockChain::Store(
 std::shared_ptr<ViewBlock> ViewBlockChain::Get(const HashStr &hash) {
     auto it = view_blocks_info_.find(hash);
     if (it != view_blocks_info_.end()) {
-        ZJC_DEBUG("get view block from store propose_debug: %s", it->second->view_block->debug().c_str());
+        // ZJC_DEBUG("get view block from store propose_debug: %s",
+        //     it->second->view_block->debug().c_str());
         return it->second->view_block;
     }
 

@@ -688,7 +688,7 @@ void BlockManager::AddNewBlock(
     auto* block_item = &view_block_item->block_info();
     // TODO: check all block saved success
     ZJC_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
-        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
+        "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu",
         view_block_item->qc().network_id(),
         view_block_item->qc().pool_index(),
         block_item->height(),
@@ -697,6 +697,7 @@ void BlockManager::AddNewBlock(
         view_block_item->qc().view(),
         block_item->tx_list_size(),
         common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
+        common::Encode::HexEncode(view_block_item->parent_hash()).c_str(),
         view_block_item->qc().elect_height(),
         block_item->timeblock_height());
     assert(view_block_item->qc().elect_height() >= 1);
@@ -1357,11 +1358,6 @@ std::string BlockManager::GetToTxGid() {
 
 pools::TxItemPtr BlockManager::HandleToTxsMessage(
         const pools::protobuf::ShardToTxItem& heights) {
-    std::string str_heights;
-    for (int32_t i = 0; i < heights.heights_size(); ++i) {
-        str_heights += std::to_string(i) + "_" + std::to_string(heights.heights(i)) + " ";
-    }
-
     if (create_to_tx_cb_ == nullptr) {
         return nullptr;
     }

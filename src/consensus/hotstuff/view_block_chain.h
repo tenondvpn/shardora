@@ -423,8 +423,37 @@ private:
             view_blocks_info_[parent_hash] = block_info_ptr;
         }
 
-        ZJC_DEBUG("success find parent hash: %s", common::Encode::HexEncode(parent_hash).c_str());
-        view_blocks_info_[parent_hash]->children.push_back(view_block);        
+#ifndef NDEBUG
+        std::string debug_str;
+        auto debug_view_block = view_block;
+        while (true) {
+            auto pview_block = view_blocks_info_[debug_view_block->parent_hash()]->view_block;
+            if (pview_block == nullptr) {
+                pview_block = latest_committed_block_;
+            }
+
+            if (pview_block == nullptr) {
+                break;
+            }
+
+            debug_str += common::StringUtil::Format("%u_%u_%lu_%lu-_%u_%u_%lu_%lu-%s_%s --> ", 
+                debug_view_block->qc().network_id(),
+                debug_view_block->qc().pool_index(),
+                debug_view_block->qc().view(),
+                debug_view_block->block_info().height(),
+                pview_block->qc().network_id(),
+                pview_block->qc().pool_index(),
+                pview_block->qc().view(),
+                pview_block->block_info().height(),
+                common::Encode::HexEncode(debug_view_block->qc().view_block_hash()).c_str(),
+                common::Encode::HexEncode(debug_view_block->parent_hash()).c_str());
+            if (pview_block == latest_committed_block_) {
+                break;
+            }
+        }
+        ZJC_DEBUG("success add view block: %s", debug_str.c_str());
+#endif
+        view_blocks_info_[parent_hash]->children.push_back(view_block);
     }
 
     // prune the branch starting from view_block

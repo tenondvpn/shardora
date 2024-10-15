@@ -37,8 +37,9 @@ Status BlockWrapper::Wrap(
     block->set_version(common::kTransactionVersion);
     block->set_consistency_random(0);
     block->set_height(prev_block->height()+1);
-    // ZJC_DEBUG("propose block net: %u, pool: %u, set height: %lu, pre height: %lu",
-    //     view_block->qc().network_id(), view_block->qc().pool_index(), block->height(), prev_block->height());
+    ZJC_DEBUG("propose block net: %u, pool: %u, set height: %lu, pre height: %lu",
+        view_block->qc().network_id(), view_block->qc().pool_index(), 
+        block->height(), prev_block->height());
     if (block->height() <= 0) {
         return Status::kInvalidArgument;
     }
