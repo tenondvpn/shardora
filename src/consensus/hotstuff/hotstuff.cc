@@ -271,13 +271,13 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     // 一般来说，一旦某个节点状态落后，而新提案由于还没有生成 QC 无法通过同步获得，
     // 因此它将再也无法参与投票（由于父块缺失，chain->Store 会失败），直到一次超时发生
     // 为了避免这种情况，pipeline 会自动将失败的提案消息放入等待队列，在父块同步过来后立刻执行之前失败的提案，追上进度
-    if (msg_ptr->is_leader) {
-        HandleProposeMsgStep_Directly(
-            pro_msg_wrap, 
-            msg_ptr->header.hotstuff().pro_msg().tc().view_block_hash());
-    } else {
+    // if (msg_ptr->is_leader) {
+    //     HandleProposeMsgStep_Directly(
+    //         pro_msg_wrap, 
+    //         msg_ptr->header.hotstuff().pro_msg().qc().view_block_hash());
+    // } else {
         handle_propose_pipeline_.Call(pro_msg_wrap);
-    }
+    // }
 }
 
 Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
