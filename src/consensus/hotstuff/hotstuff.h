@@ -248,8 +248,6 @@ private:
     }
 
     void StoreVerifiedViewBlockToDb(const std::shared_ptr<ViewBlock>& v_block);
-    void StoreVerifiedViewBlockToDb(const std::shared_ptr<ViewBlock>& v_block);
-
     Status HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
     Status Commit(
             const std::shared_ptr<ViewBlock>& v_block,
