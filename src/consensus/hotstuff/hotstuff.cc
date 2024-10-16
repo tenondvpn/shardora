@@ -19,7 +19,30 @@ void Hotstuff::Init() {
     // 从 db 中获取最后一个有 QC 的 ViewBlock
     Status s = GetLatestViewBlockFromDb(db_, pool_idx_, latest_view_block);
     if (s == Status::kSuccess) {
-        ZJC_DEBUG("pool: %d, latest vb from db, vb view: %lu",
+        InitAddNewViewBlock(latest_view_block);
+        LoadAllViewBlockWithLatestCommitedBlock(latest_view_block);
+    } else {
+        ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
+    }
+
+    InitHandleProposeMsgPipeline();
+}
+
+void Hotstuff::LoadAllViewBlockWithLatestCommitedBlock(
+        std::shared_ptr<ViewBlock>& view_block) {
+    std::vector<std::shared_ptr<ViewBlock>> children_view_blocks;
+    prefix_db_->GetChildrenViewBlock(
+        view_block->qc().view_block_hash(), 
+        children_view_blocks);
+    for (auto iter = children_view_blocks.begin(); iter != children_view_blocks.end(); ++iter) {
+        assert(!view_block_chain_->Has((*iter)->qc().view_block_hash()));
+        InitAddNewViewBlock(*iter);
+        LoadAllViewBlockWithLatestCommitedBlock(*iter);
+    }
+}
+    
+void Hotstuff::InitAddNewViewBlock(std::shared_ptr<ViewBlock>& latest_view_block) {
+    ZJC_DEBUG("pool: %d, latest vb from db, vb view: %lu",
             pool_idx_, 
             latest_view_block->qc().view());
         // 初始状态，使用 db 中最后一个 view_block 初始化视图链
@@ -36,13 +59,7 @@ void Hotstuff::Init() {
             common::Encode::HexEncode(latest_view_block->qc().view_block_hash()).c_str());
 
         pacemaker_->NewQcView(latest_view_block->qc().view());
-    } else {
-        ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
-    }
-
-    InitHandleProposeMsgPipeline();
 }
-
 
 Status Hotstuff::Start() {
     auto leader = leader_rotation()->GetLeader();

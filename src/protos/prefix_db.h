@@ -86,6 +86,7 @@ static const std::string kSaveHavePrevLatestElectHeightPrefix = "ar\x01";
 static const std::string kLatestToTxBlock = "as\x01";
 static const std::string kLatestPoolStatisticTagPrefix = "at\x01";
 static const std::string kViewBlockHashKeyPrefix = "au\x01";
+static const std::string kViewBlockParentHashKeyPrefix = "av\x01";
 
 class PrefixDb {
 public:
@@ -663,46 +664,35 @@ public:
             uint64_t block_height,
             const view_block::protobuf::ViewBlockItem& pb_view_block,
             std::shared_ptr<db::DbWriteBatch>& db_batch) {
-        std::string key;
-        key.reserve(32);
-        key.append(kViewBlockInfoPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        key.append((char*)&pool_index, sizeof(pool_index));
-        key.append((char*)&block_height, sizeof(block_height));
-        // batch.Put(key, pb_view_block.SerializeAsString());
-        db_batch->Put(key, pb_view_block.SerializeAsString());
         std::string hash_key;
         hash_key.append(kViewBlockHashKeyPrefix);
         hash_key.append(pb_view_block.qc().view_block_hash());
-        db_batch->Put(hash_key, key);
+        db_batch->Put(hash_key, pb_view_block.SerializeAsString());
+        std::string pre_hash_key;
+        pre_hash_key.append(kViewBlockParentHashKeyPrefix);
+        pre_hash_key.append(pb_view_block.parent_hash());
+        pre_hash_key.append(pb_view_block.qc().view_block_hash());
+        db_batch->Put(pre_hash_key, hash_key);
         ZJC_DEBUG("success save view block %u_%u_%lu",
             sharding_id, pool_index, block_height);
     }
 
-    bool GetViewBlockInfo(
-            uint32_t sharding_id,
-            uint32_t pool_index,
-            uint64_t block_height,
-            view_block::protobuf::ViewBlockItem* pb_view_block) {
-        std::string key;
-        key.reserve(32);
-        key.append(kViewBlockInfoPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        key.append((char*)&pool_index, sizeof(pool_index));
-        key.append((char*)&block_height, sizeof(block_height));
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            return false;
-        }
+    void GetChildrenViewBlock(
+            const std::string& parent_hash,
+            std::vector<std::shared_ptr<view_block::protobuf::ViewBlockItem>>& res_vec) {
+        std::string pre_hash_key;
+        pre_hash_key.append(kViewBlockParentHashKeyPrefix);
+        pre_hash_key.append(parent_hash);
+        std::map<std::string, std::string> view_block_map;
+        db_->GetAllPrefix(pre_hash_key, view_block_map);
+        for (auto iter = view_block_map.begin(); iter != view_block_map.end(); ++iter) {
+            auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
+            if (!view_block_ptr->ParseFromString(iter->second)) {
+                continue;
+            }
 
-        if (!pb_view_block->ParseFromString(val)) {
-            return false;
+            res_vec.push_back(view_block_ptr);
         }
-
-        ZJC_DEBUG("success get view block %u_%u_%lu",
-            sharding_id, pool_index, block_height);
-        return true;
     }
 
     bool HasViewBlockInfo(const std::string& view_block_hash) {

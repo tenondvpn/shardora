@@ -213,6 +213,8 @@ public:
     void TryRecoverFromStuck(bool has_new_tx, bool has_system_tx);
 
 private:
+    void LoadAllViewBlockWithLatestCommitedBlock(std::shared_ptr<ViewBlock>& view_block);
+    void InitAddNewViewBlock(std::shared_ptr<ViewBlock>& view_block);
     void InitHandleProposeMsgPipeline() {
         // 仅 VerifyLeader 和 ChainStore 出错后允许重试
         // 因为一旦节点状态落后，父块缺失，ChainStore 会一直失败，导致无法追上进度

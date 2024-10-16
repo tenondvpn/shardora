@@ -514,7 +514,11 @@ Status GetLatestViewBlockFromDb(
     uint32_t leader_idx = 0;
     HashStr parent_hash = "";
     auto& pb_view_block = *view_block;
-    auto r = prefix_db->GetViewBlockInfo(sharding_id, pool_index, pool_info.height(), &pb_view_block);
+    auto r = prefix_db->GetBlockWithHeight(
+        sharding_id, 
+        pool_index, 
+        pool_info.height(), 
+        &pb_view_block);
     if (!r) {
         ZJC_DEBUG("failed get genesis block net: %u, pool: %u, height: %lu",
             sharding_id, pool_index, pool_info.height());
@@ -522,15 +526,12 @@ Status GetLatestViewBlockFromDb(
         return Status::kError;
     }
 
-    view = pb_view_block.qc().view();
-    leader_idx = pb_view_block.qc().leader_idx();
-    parent_hash = pb_view_block.parent_hash();
     ZJC_DEBUG("pool: %d, latest vb from db2, hash: %s, view: %lu, "
         "leader: %d, parent_hash: %s, sign x: %s, sign y: %s",
         pool_index,
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
-        view, leader_idx,
-        common::Encode::HexEncode(parent_hash).c_str(),
+        pb_view_block.qc().view(), pb_view_block.qc().leader_idx(),
+        common::Encode::HexEncode(pb_view_block.parent_hash()).c_str(),
         common::Encode::HexEncode(view_block->qc().sign_x()).c_str(),
         common::Encode::HexEncode(view_block->qc().sign_y()).c_str());    
     
