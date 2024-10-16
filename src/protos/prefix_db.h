@@ -673,8 +673,12 @@ public:
         pre_hash_key.append(pb_view_block.parent_hash());
         pre_hash_key.append(pb_view_block.qc().view_block_hash());
         db_batch->Put(pre_hash_key, hash_key);
-        ZJC_DEBUG("success save view block %u_%u_%lu",
-            sharding_id, pool_index, block_height);
+        auto* view_block = &pb_view_block;
+        ZJC_DEBUG("success save view block, init load view block %u_%u_%lu, %lu, hash: %s, phash: %s",
+            view_block->qc().network_id(), view_block->qc().pool_index(), 
+            view_block->qc().view(), view_block->block_info().height(),
+            common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
+            common::Encode::HexEncode(view_block->parent_hash()).c_str());
     }
 
     void GetChildrenViewBlock(
