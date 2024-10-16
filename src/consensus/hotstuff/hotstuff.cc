@@ -34,6 +34,11 @@ void Hotstuff::LoadAllViewBlockWithLatestCommitedBlock(
     prefix_db_->GetChildrenViewBlock(
         view_block->qc().view_block_hash(), 
         children_view_blocks);
+    ZJC_DEBUG("init load view block %u_%u_%lu, %lu, hash: %s, phash: %s",
+        view_block->qc().network_id(), view_block->qc().pool_index(), 
+        view_block->qc().view(), view_block->block_info().height(),
+        common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
+        common::Encode::HexEncode(view_block->parent_hash()).c_str());
     for (auto iter = children_view_blocks.begin(); iter != children_view_blocks.end(); ++iter) {
         assert(!view_block_chain_->Has((*iter)->qc().view_block_hash()));
         InitAddNewViewBlock(*iter);
