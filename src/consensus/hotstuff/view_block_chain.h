@@ -216,9 +216,7 @@ public:
             return Status::kInvalidArgument;
         }
 
-        if (HasInDb(v_block->qc().network_id(),
-                v_block->qc().pool_index(),
-                v_block->block_info().height())) {
+        if (prefix_db_->HasViewBlockInfo(v_block->qc().view_block_hash())) {
             ZJC_DEBUG("has in db, pool: %u, StoreToDb 0, test_index: %lu, tx size: %u, %u_%u_%lu, hash: %s",
                 pool_index_, test_index, v_block->block_info().tx_list_size(),
                 v_block->qc().network_id(),
@@ -241,10 +239,6 @@ public:
             v_block->qc().view(),
             common::Encode::HexEncode(v_block->qc().view_block_hash()).c_str());
         return Status::kSuccess;
-    }
-
-    bool HasInDb(const uint32_t& network_id, const uint32_t& pool_idx, const uint64_t& block_height) {
-        return prefix_db_->HasViewBlockInfo(network_id, pool_idx, block_height);
     }
     
     // If a chain is valid

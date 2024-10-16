@@ -124,14 +124,12 @@ int HotstuffManager::VerifySyncedViewBlock(const view_block::protobuf::ViewBlock
     }
 
     // 由于验签很占资源，再检查一下数据库，避免重复同步
-    if (prefix_db_->HasViewBlockInfo(
+    if (prefix_db_->HasViewBlockInfo(pb_vblock.qc().view_block_hash())) {
+        ZJC_DEBUG("already stored, %lu_%lu_%lu, hash: %s",
             pb_vblock.qc().network_id(),
             pb_vblock.qc().pool_index(),
-            pb_vblock.block_info().height())) {
-        ZJC_DEBUG("already stored, %lu_%lu_%lu",
-            pb_vblock.qc().network_id(),
-            pb_vblock.qc().pool_index(),
-            pb_vblock.block_info().height());
+            pb_vblock.block_info().height(),
+            common::Encode::HexEncode(pb_vblock.qc().view_block_hash()).c_str());
         return -1;
     }
     

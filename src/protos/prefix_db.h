@@ -85,6 +85,7 @@ static const std::string kC2cSellorderPrefix = "aq\x01";
 static const std::string kSaveHavePrevLatestElectHeightPrefix = "ar\x01";
 static const std::string kLatestToTxBlock = "as\x01";
 static const std::string kLatestPoolStatisticTagPrefix = "at\x01";
+static const std::string kViewBlockHashKeyPrefix = "au\x01";
 
 class PrefixDb {
 public:
@@ -670,6 +671,10 @@ public:
         key.append((char*)&block_height, sizeof(block_height));
         // batch.Put(key, pb_view_block.SerializeAsString());
         db_batch->Put(key, pb_view_block.SerializeAsString());
+        std::string hash_key;
+        hash_key.append(kViewBlockHashKeyPrefix);
+        hash_key.append(pb_view_block.qc().view_block_hash());
+        db_batch->Put(hash_key, key);
         ZJC_DEBUG("success save view block %u_%u_%lu",
             sharding_id, pool_index, block_height);
     }
@@ -700,17 +705,11 @@ public:
         return true;
     }
 
-    bool HasViewBlockInfo(
-            uint32_t sharding_id,
-            uint32_t pool_index,
-            uint64_t block_height) {
-        std::string key;
-        key.reserve(32);
-        key.append(kViewBlockInfoPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        key.append((char*)&pool_index, sizeof(pool_index));
-        key.append((char*)&block_height, sizeof(block_height));
-        return db_->Exist(key);
+    bool HasViewBlockInfo(const std::string& view_block_hash) {
+        std::string hash_key;
+        hash_key.append(kViewBlockHashKeyPrefix);
+        hash_key.append(view_block_hash);
+        return db_->Exist(hash_key);
     }
 
     void SaveHeightTree(
