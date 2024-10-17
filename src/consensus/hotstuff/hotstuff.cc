@@ -298,14 +298,96 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     //         pro_msg_wrap, 
     //         msg_ptr->header.hotstuff().pro_msg().qc().view_block_hash());
     // } else {
-        handle_propose_pipeline_.Call(pro_msg_wrap);
-    // }
+        // handle_propose_pipeline_.Call(pro_msg_wrap);
+
+    std::string key = std::to_string(
+        pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().leader_idx()) + "_" + 
+        std::to_string(pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view());
+    if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_x() &&
+            pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_y()) {
+        std::string key = std::to_string(
+            pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().leader_idx()) + "_" + 
+            std::to_string(pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view());
+        auto iter = leader_view_with_propose_msgs_.find(key);
+        if (iter != leader_view_with_propose_msgs_.end()) {
+            if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view() > 
+                    iter->second->view_block_ptr->qc().view()) {
+                Status prev_s = HandleProposeMsgStep_Directly(
+                    iter->second, 
+                    pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view_block_hash());
+                if (prev_s != Status::kSuccess) {
+                    ZJC_WARN("failed handle prev message chain store: %s, hash64: %lu, block timestamp: %lu", 
+                        key.c_str(),
+                        iter->second->msg_ptr->header.hash64(),
+                        iter->second->view_block_ptr->block_info().timestamp());
+                    assert(false);
+                }
+            }                                                                                                                                                                                                                                              
+            
+            leader_view_with_propose_msgs_.erase(iter);
+        }
+    }
+    
+    auto st = HandleProposeMessageByStep(pro_msg_wrap);
+    if (st != Status::kSuccess) {
+        ZJC_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
+            msg_ptr->header.hash64(), 
+            msg_ptr->header.debug().c_str());
+        leader_view_with_propose_msgs_[key] = pro_msg_wrap;
+    }
 }
+
+Status Hotstuff::HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> pro_msg_wrap) {
+    auto& view_item = *pro_msg_wrap->view_block_ptr;
+    ZJC_DEBUG("HandleProposeMessageByStep called hash: %lu, "
+        "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
+        pro_msg_wrap->msg_ptr->header.hash64(), last_vote_view_, view_item.qc().view(),
+        pro_msg_wrap->msg_ptr->header.debug().c_str());
+    auto st = HandleProposeMsgStep_HasVote(pro_msg_wrap);
+    if (st != Status::kSuccess) {
+        return st;
+    }
+
+    st = HandleProposeMsgStep_VerifyLeader(pro_msg_wrap);
+    if (st != Status::kSuccess) {
+        return st;
+    }
+
+    st = HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
+    if (st != Status::kSuccess) {
+        return st;
+    }
+
+    st = HandleProposeMsgStep_VerifyViewBlock(pro_msg_wrap);
+    if (st != Status::kSuccess) {
+        return st;
+    }
+
+    st = HandleProposeMsgStep_TxAccept(pro_msg_wrap);
+    if (st != Status::kSuccess) {
+        return st;
+    }
+
+    st = HandleProposeMsgStep_ChainStore(pro_msg_wrap);
+    if (st != Status::kSuccess) {
+        return st;
+    }
+
+    st = HandleProposeMsgStep_Vote(pro_msg_wrap);
+    if (st != Status::kSuccess) {
+        return st;
+    }
+
+    return Status::kSuccess;
+}
+
 
 Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
     auto& view_item = *pro_msg_wrap->view_block_ptr;
-    ZJC_DEBUG("HandleProposeMsgStep_HasVote called hash: %lu, last_vote_view_: %lu, view_item.qc().view(): %lu",
-        pro_msg_wrap->msg_ptr->header.hash64(), last_vote_view_, view_item.qc().view());
+    ZJC_DEBUG("HandleProposeMsgStep_HasVote called hash: %lu, "
+        "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
+        pro_msg_wrap->msg_ptr->header.hash64(), last_vote_view_, view_item.qc().view(),
+        pro_msg_wrap->msg_ptr->header.debug().c_str());
     if (last_vote_view_ >= view_item.qc().view()) {
         ZJC_DEBUG("pool: %d has voted view: %lu, last_vote_view_: %u, "
             "hash64: %lu, pacemaker()->CurView(): %lu",
@@ -315,7 +397,8 @@ Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>
         if (pacemaker()->CurView() < view_item.qc().view()) {
             auto iter = voted_msgs_.find(view_item.qc().view());
             if (iter != voted_msgs_.end()) {
-                ZJC_DEBUG("pool: %d has voted: %lu, last_vote_view_: %u, hash64: %lu and resend vote: hash: %s",
+                ZJC_DEBUG("pool: %d has voted: %lu, last_vote_view_: %u, "
+                    "hash64: %lu and resend vote: hash: %s",
                     pool_idx_, view_item.qc().view(),
                     last_vote_view_, pro_msg_wrap->msg_ptr->header.hash64(),
                     common::Encode::HexEncode(iter->second->header.hotstuff().vote_msg().view_block_hash()).c_str());
@@ -333,7 +416,8 @@ Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>
 }
 
 Status Hotstuff::HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
-    ZJC_DEBUG("HandleProposeMsgStep_VerifyLeader called hash: %lu, propose_debug: %s", pro_msg_wrap->msg_ptr->header.hash64(), pro_msg_wrap->msg_ptr->header.debug().c_str());
+    ZJC_DEBUG("HandleProposeMsgStep_VerifyLeader called hash: %lu, propose_debug: %s", 
+        pro_msg_wrap->msg_ptr->header.hash64(), pro_msg_wrap->msg_ptr->header.debug().c_str());
     auto& view_item = *pro_msg_wrap->view_block_ptr;
     if (VerifyLeader(view_item.qc().leader_idx()) != Status::kSuccess) {
         // TODO 一旦某个节点状态滞后，那么 Leader 就与其他 replica 不同，导致无法处理新提案

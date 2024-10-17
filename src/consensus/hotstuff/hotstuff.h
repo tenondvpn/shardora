@@ -93,6 +93,7 @@ public:
     void NewView(std::shared_ptr<tnet::TcpInterface> conn, std::shared_ptr<view_block::protobuf::QcItem> qc);
     Status Propose(std::shared_ptr<view_block::protobuf::QcItem> tc);
     Status TryCommit(const QC& commit_qc, uint64_t t_idx = 9999999lu);
+    Status HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> propose_msg_wrap);
     // 消费等待队列中的 ProposeMsg
     int TryWaitingProposeMsgs() {
         int succ = handle_propose_pipeline_.CallWaitingProposeMsgs();
@@ -312,6 +313,7 @@ private:
     uint64_t propose_debug_index_ = 0;
     uint64_t recover_from_stuck_timeout_ = 0;
     bool has_user_tx_tag_ = false;
+    std::unordered_map<std::string, std::shared_ptr<ProposeMsgWrapper>> leader_view_with_propose_msgs_;
 
 };
 
