@@ -698,6 +698,9 @@ public:
         for (auto iter = view_block_map.begin(); iter != view_block_map.end(); ++iter) {
             auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
             auto& view_block = *view_block_ptr;
+             std::string hash_key;
+            hash_key.append(kViewBlockHashKeyPrefix);
+            hash_key.append(iter->second);
             if (!GetViewBlockInfo(iter->second, view_block)) {
                 ZJC_DEBUG("invalid view block");
                 // assert(false);
