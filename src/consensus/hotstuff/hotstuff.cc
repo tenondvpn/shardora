@@ -300,40 +300,40 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     // } else {
         // handle_propose_pipeline_.Call(pro_msg_wrap);
 
-    std::string key = std::to_string(
-        pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().leader_idx()) + "_" + 
-        std::to_string(pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view());
-    if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_x() &&
-            pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_y()) {
-        std::string key = std::to_string(
-            pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().leader_idx()) + "_" + 
-            std::to_string(pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view());
-        auto iter = leader_view_with_propose_msgs_.find(key);
-        if (iter != leader_view_with_propose_msgs_.end()) {
-            if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view() > 
-                    iter->second->view_block_ptr->qc().view()) {
-                Status prev_s = HandleProposeMsgStep_Directly(
-                    iter->second, 
-                    pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view_block_hash());
-                if (prev_s != Status::kSuccess) {
-                    ZJC_WARN("failed handle prev message chain store: %s, hash64: %lu, block timestamp: %lu", 
-                        key.c_str(),
-                        iter->second->msg_ptr->header.hash64(),
-                        iter->second->view_block_ptr->block_info().timestamp());
-                    assert(false);
-                }
-            }                                                                                                                                                                                                                                              
+    // std::string key = std::to_string(
+    //     pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().leader_idx()) + "_" + 
+    //     std::to_string(pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view());
+    // if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_x() &&
+    //         pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_y()) {
+    //     std::string key = std::to_string(
+    //         pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().leader_idx()) + "_" + 
+    //         std::to_string(pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view());
+    //     auto iter = leader_view_with_propose_msgs_.find(key);
+    //     if (iter != leader_view_with_propose_msgs_.end()) {
+    //         if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view() > 
+    //                 iter->second->view_block_ptr->qc().view()) {
+    //             Status prev_s = HandleProposeMsgStep_Directly(
+    //                 iter->second, 
+    //                 pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view_block_hash());
+    //             if (prev_s != Status::kSuccess) {
+    //                 ZJC_WARN("failed handle prev message chain store: %s, hash64: %lu, block timestamp: %lu", 
+    //                     key.c_str(),
+    //                     iter->second->msg_ptr->header.hash64(),
+    //                     iter->second->view_block_ptr->block_info().timestamp());
+    //                 assert(false);
+    //             }
+    //         }                                                                                                                                                                                                                                              
             
-            leader_view_with_propose_msgs_.erase(iter);
-        }
-    }
+    //         leader_view_with_propose_msgs_.erase(iter);
+    //     }
+    // }
     
     auto st = HandleProposeMessageByStep(pro_msg_wrap);
     if (st != Status::kSuccess) {
         ZJC_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
             msg_ptr->header.hash64(), 
             msg_ptr->header.debug().c_str());
-        leader_view_with_propose_msgs_[key] = pro_msg_wrap;
+        // leader_view_with_propose_msgs_[key] = pro_msg_wrap;
     }
 }
 
