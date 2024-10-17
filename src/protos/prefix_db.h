@@ -697,12 +697,34 @@ public:
             view_block_map.size());
         for (auto iter = view_block_map.begin(); iter != view_block_map.end(); ++iter) {
             auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
-            if (!view_block_ptr->ParseFromString(iter->second)) {
+            auto& view_block = *view_block_ptr;
+            if (!GetViewBlockInfo(iter->second, view_block)) {
+                ZJC_ERROR("invalid view block");
+                assert(false);
                 continue;
             }
 
             res_vec.push_back(view_block_ptr);
         }
+    }
+
+    bool GetViewBlockInfo(
+            const std::string& view_block_hash, 
+            view_block::protobuf::ViewBlockItem& view_block) {
+        std::string hash_key;
+        hash_key.append(kViewBlockHashKeyPrefix);
+        hash_key.append(view_block_hash);
+        std::string val;
+        auto st = db_->Get(hash_key, &val);
+        if (!st.ok()) {
+            return false;
+        }
+
+        if (!view_block.ParseFromString(val)) {
+            return false;
+        }
+
+        return true;
     }
 
     bool HasViewBlockInfo(const std::string& view_block_hash) {
