@@ -185,7 +185,6 @@ public:
         DbReadOptions option;
         auto iter = db_->NewIterator(option);
         iter->Seek(prefix);
-        int32_t valid_count = 0;
         while (iter->Valid()) {
             if (memcmp(prefix.c_str(), iter->key().data(), prefix.size()) != 0) {
                 break;

@@ -674,11 +674,13 @@ public:
         pre_hash_key.append(pb_view_block.qc().view_block_hash());
         db_batch->Put(pre_hash_key, hash_key);
         auto* view_block = &pb_view_block;
-        ZJC_DEBUG("success save view block, init load view block %u_%u_%lu, %lu, hash: %s, phash: %s",
+        ZJC_DEBUG("success save view block, init load view block %u_%u_%lu, "
+            "%lu, hash: %s, phash: %s, prefix: %s",
             view_block->qc().network_id(), view_block->qc().pool_index(), 
             view_block->qc().view(), view_block->block_info().height(),
             common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
-            common::Encode::HexEncode(view_block->parent_hash()).c_str());
+            common::Encode::HexEncode(view_block->parent_hash()).c_str(),
+            common::Encode::HexEncode(pre_hash_key).c_str());
     }
 
     void GetChildrenViewBlock(
@@ -689,6 +691,10 @@ public:
         pre_hash_key.append(parent_hash);
         std::map<std::string, std::string> view_block_map;
         db_->GetAllPrefix(pre_hash_key, view_block_map);
+        ZJC_DEBUG("now get parent hash: %s, prefix: %s, get size: %u", 
+            common::Encode::HexEncode(parent_hash).c_str(),
+            common::Encode::HexEncode(pre_hash_key).c_str(),
+            view_block_map.size());
         for (auto iter = view_block_map.begin(); iter != view_block_map.end(); ++iter) {
             auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
             if (!view_block_ptr->ParseFromString(iter->second)) {
