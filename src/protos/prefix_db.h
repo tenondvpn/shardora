@@ -675,12 +675,13 @@ public:
         db_batch->Put(pre_hash_key, hash_key);
         auto* view_block = &pb_view_block;
         ZJC_DEBUG("success save view block, init load view block %u_%u_%lu, "
-            "%lu, hash: %s, phash: %s, prefix: %s",
+            "%lu, hash: %s, phash: %s, prefix: %s, hash key: %s",
             view_block->qc().network_id(), view_block->qc().pool_index(), 
             view_block->qc().view(), view_block->block_info().height(),
             common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
             common::Encode::HexEncode(view_block->parent_hash()).c_str(),
-            common::Encode::HexEncode(pre_hash_key).c_str());
+            common::Encode::HexEncode(pre_hash_key).c_str(),
+            common::Encode::HexEncode(hash_key).c_str());
     }
 
     void GetChildrenViewBlock(
@@ -698,9 +699,6 @@ public:
         for (auto iter = view_block_map.begin(); iter != view_block_map.end(); ++iter) {
             auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
             auto& view_block = *view_block_ptr;
-             std::string hash_key;
-            hash_key.append(kViewBlockHashKeyPrefix);
-            hash_key.append(iter->second);
             if (!GetViewBlockInfo(iter->second, view_block)) {
                 ZJC_DEBUG("invalid view block");
                 // assert(false);
@@ -717,13 +715,16 @@ public:
         std::string hash_key;
         hash_key.append(kViewBlockHashKeyPrefix);
         hash_key.append(view_block_hash);
+        ZJC_DEBUG("now get view block hash: %s", common::Encode::HexEncode(hash_key).c_str())
         std::string val;
         auto st = db_->Get(hash_key, &val);
         if (!st.ok()) {
+            assert(false);
             return false;
         }
 
         if (!view_block.ParseFromString(val)) {
+            assert(false);
             return false;
         }
 
