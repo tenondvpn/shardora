@@ -277,7 +277,8 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     pro_msg_wrap->view_block_ptr = std::make_shared<ViewBlock>(
         msg_ptr->header.hotstuff().pro_msg().view_item());
     pro_msg_wrap->view_block_ptr->set_debug(msg_ptr->header.debug());
-    ZJC_DEBUG("handle new propose message parent hash: %s, %u_%u_%lu, hash64: %lu, block timestamp: %lu, propose_debug: %s",
+    ZJC_DEBUG("handle new propose message parent hash: %s, %u_%u_%lu, "
+        "hash64: %lu, block timestamp: %lu, propose_debug: %s",
         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->parent_hash()).c_str(), 
         pro_msg_wrap->view_block_ptr->qc().network_id(),
         pro_msg_wrap->view_block_ptr->qc().pool_index(),
@@ -290,55 +291,6 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         HandleTC(pro_msg_wrap);
     }
     
-    // 执行预设好的 steps
-    // 一般来说，一旦某个节点状态落后，而新提案由于还没有生成 QC 无法通过同步获得，
-    // 因此它将再也无法参与投票（由于父块缺失，chain->Store 会失败），直到一次超时发生
-    // 为了避免这种情况，pipeline 会自动将失败的提案消息放入等待队列，在父块同步过来后立刻执行之前失败的提案，追上进度
-    // if (msg_ptr->is_leader) {
-    //     HandleProposeMsgStep_Directly(
-    //         pro_msg_wrap, 
-    //         msg_ptr->header.hotstuff().pro_msg().qc().view_block_hash());
-    // } else {
-        // handle_propose_pipeline_.Call(pro_msg_wrap);
-
-    // std::string key = std::to_string(
-    //     pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().leader_idx()) + "_" + 
-    //     std::to_string(pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view());
-    // if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_x() &&
-    //         pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_y()) {
-    //     std::string key = std::to_string(
-    //         pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().leader_idx()) + "_" + 
-    //         std::to_string(pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view());
-    //     auto iter = leader_view_with_propose_msgs_.find(key);
-    //     if (iter != leader_view_with_propose_msgs_.end()) {
-    //         if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view() > 
-    //                 iter->second->view_block_ptr->qc().view()) {
-    //             Status prev_s = HandleProposeMsgStep_Directly(
-    //                 iter->second, 
-    //                 pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view_block_hash());
-    //             if (prev_s != Status::kSuccess) {
-    //                 ZJC_WARN("failed handle prev message chain store: %s, hash64: %lu, block timestamp: %lu", 
-    //                     key.c_str(),
-    //                     iter->second->msg_ptr->header.hash64(),
-    //                     iter->second->view_block_ptr->block_info().timestamp());
-    //                 assert(false);
-    //             }
-    //         }                                                                                                                                                                                                                                              
-            
-    //         leader_view_with_propose_msgs_.erase(iter);
-    //     }
-    // }
-    
-    auto st = HandleProposeMessageByStep(pro_msg_wrap);
-    if (st != Status::kSuccess) {
-        ZJC_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
-            msg_ptr->header.hash64(), 
-            msg_ptr->header.debug().c_str());
-        // leader_view_with_propose_msgs_[key] = pro_msg_wrap;
-    }
-}
-
-Status Hotstuff::HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> pro_msg_wrap) {
     auto& view_item = *pro_msg_wrap->view_block_ptr;
     ZJC_DEBUG("HandleProposeMessageByStep called hash: %lu, "
         "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
@@ -346,12 +298,68 @@ Status Hotstuff::HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> p
         pro_msg_wrap->msg_ptr->header.debug().c_str());
     auto st = HandleProposeMsgStep_HasVote(pro_msg_wrap);
     if (st != Status::kSuccess) {
-        return st;
+        return;
     }
 
-    st = HandleProposeMsgStep_VerifyLeader(pro_msg_wrap);
+    auto propose_view = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view();
+    View handled_view = 0;
+    for (auto iter = leader_view_with_propose_msgs_.begin();
+            iter != leader_view_with_propose_msgs_.end();) {
+        if (iter->first > propose_view) {
+            return;
+        }
+
+        auto st = HandleProposeMessageByStep(iter->second);
+        if (st != Status::kSuccess) {
+            ZJC_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
+                msg_ptr->header.hash64(),
+                msg_ptr->header.debug().c_str());
+            break;
+        }
+
+        auto& rehandle_view_item = *pro_msg_wrap->view_block_ptr;
+        ZJC_DEBUG("rehandle propose message success HandleProposeMessageByStep called hash: %lu, "
+            "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
+            iter->second->msg_ptr->header.hash64(), last_vote_view_, rehandle_view_item.qc().view(),
+            iter->second->msg_ptr->header.debug().c_str());
+        iter = leader_view_with_propose_msgs_.erase(iter);
+    }
+
+    if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_x() &&
+            pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_y()) {
+        auto iter = leader_view_with_propose_msgs_.find(propose_view);
+        if (iter != leader_view_with_propose_msgs_.end()) {
+            if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view() > 
+                    iter->second->view_block_ptr->qc().view()) {
+                Status prev_s = HandleProposeMsgStep_Directly(
+                    iter->second,
+                    pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view_block_hash());
+                if (prev_s != Status::kSuccess) {
+                    ZJC_WARN("failed handle prev message chain store: %u, hash64: %lu, block timestamp: %lu",
+                        propose_view,
+                        iter->second->msg_ptr->header.hash64(),
+                        iter->second->view_block_ptr->block_info().timestamp());
+                    assert(false);
+                }
+            }                                                                                                                                                                                                                                              
+            
+            leader_view_with_propose_msgs_.erase(iter);
+        }
+    }
+    
+    auto st = HandleProposeMessageByStep(pro_msg_wrap);
     if (st != Status::kSuccess) {
-        return st;
+        ZJC_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
+            msg_ptr->header.hash64(),
+            msg_ptr->header.debug().c_str());
+        leader_view_with_propose_msgs_[propose_view] = pro_msg_wrap;
+    }
+}
+
+Status Hotstuff::HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> pro_msg_wrap) {
+    auto st = HandleProposeMsgStep_VerifyLeader(pro_msg_wrap);
+    if (st != Status::kSuccess) {
+        return;
     }
 
     st = HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
