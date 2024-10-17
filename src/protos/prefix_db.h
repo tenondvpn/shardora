@@ -715,7 +715,7 @@ public:
         std::string hash_key;
         hash_key.append(kViewBlockHashKeyPrefix);
         hash_key.append(view_block_hash);
-        ZJC_DEBUG("now get view block hash: %s", common::Encode::HexEncode(hash_key).c_str())
+        ZJC_DEBUG("now get view block hash: %s", common::Encode::HexEncode(hash_key).c_str());
         std::string val;
         auto st = db_->Get(hash_key, &val);
         if (!st.ok()) {
