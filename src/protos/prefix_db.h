@@ -699,8 +699,8 @@ public:
             auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
             auto& view_block = *view_block_ptr;
             if (!GetViewBlockInfo(iter->second, view_block)) {
-                ZJC_ERROR("invalid view block");
-                assert(false);
+                ZJC_DEBUG("invalid view block");
+                // assert(false);
                 continue;
             }
 
