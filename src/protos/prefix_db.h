@@ -669,11 +669,25 @@ public:
         hash_key.append(pb_view_block.qc().view_block_hash());
         db_batch->Put(hash_key, pb_view_block.SerializeAsString());
         std::string pre_hash_key;
-        pre_hash_key.append(kViewBlockParentHashKeyPrefix);
-        pre_hash_key.append(pb_view_block.parent_hash());
-        pre_hash_key.append(pb_view_block.qc().view_block_hash());
-        db_batch->Put(pre_hash_key, hash_key);
         auto* view_block = &pb_view_block;
+        if (pb_view_block.qc().view() > 0) {
+            if (pb_view_block.parent_hash().empty()) {
+                ZJC_FATAL("success save view block, init load view block %u_%u_%lu, "
+                    "%lu, hash: %s, phash: %s, prefix: %s, hash key: %s",
+                    view_block->qc().network_id(), view_block->qc().pool_index(), 
+                    view_block->qc().view(), view_block->block_info().height(),
+                    common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
+                    common::Encode::HexEncode(view_block->parent_hash()).c_str(),
+                    common::Encode::HexEncode(pre_hash_key).c_str(),
+                    common::Encode::HexEncode(hash_key).c_str());
+            }
+
+            pre_hash_key.append(kViewBlockParentHashKeyPrefix);
+            pre_hash_key.append(pb_view_block.parent_hash());
+            pre_hash_key.append(pb_view_block.qc().view_block_hash());
+            db_batch->Put(pre_hash_key, hash_key);
+        }
+        
         ZJC_DEBUG("success save view block, init load view block %u_%u_%lu, "
             "%lu, hash: %s, phash: %s, prefix: %s, hash key: %s",
             view_block->qc().network_id(), view_block->qc().pool_index(), 
