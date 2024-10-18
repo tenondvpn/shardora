@@ -28,6 +28,7 @@ void Hotstuff::Init() {
     }
 
     InitHandleProposeMsgPipeline();
+    LoadLatestProposeMessage();
 }
 
 void Hotstuff::LoadAllViewBlockWithLatestCommitedBlock(
@@ -103,6 +104,33 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
         }
     }
 
+    if (latest_leader_propose_message_ && 
+            latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= pacemaker_->CurView()) {
+        transport::TcpTransport::Instance()->SetMessageHash(latest_leader_propose_message_->header);
+        auto s = crypto()->SignMessage(latest_leader_propose_message_);
+        auto& header = latest_leader_propose_message_->header;
+        auto* hotstuff_msg = &latest_leader_propose_message_->header.hotstuff();
+        if (s != Status::kSuccess) {
+            ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
+                pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
+            return s;
+        }
+
+        latest_leader_propose_message_ = latest_leader_propose_message_;
+        network::Route::Instance()->Send(latest_leader_propose_message_);
+        ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+            "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
+            pool_idx_,
+            header.hotstuff().pool_index(),
+            hotstuff_msg->pro_msg().tx_propose().txs_size(),
+            hotstuff_msg->pro_msg().view_item().qc().view(),
+            common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
+            view_block_chain()->HighViewBlock()->qc().view(),
+            header.hash64(),
+            header.debug().c_str());
+        return;
+    }
+
     ZJC_DEBUG("1 now ontime called propose: %d", pool_idx_);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
@@ -157,7 +185,9 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
         return s;
     }
 
+    latest_leader_propose_message_ = msg_ptr;
     network::Route::Instance()->Send(msg_ptr);
+    SaveLatestProposeMessage();
     ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
         "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
         pool_idx_,
@@ -182,6 +212,21 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
     msg_ptr->is_leader = true;
     HandleProposeMsg(msg_ptr);
     return Status::kSuccess;
+}
+
+void Hotstuff::SaveLatestProposeMessage() {
+    prefix_db_->SaveLatestLeaderProposeMessage(latest_leader_propose_message_->header);
+}
+
+void Hotstuff::LoadLatestProposeMessage() {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    if (prefix_db_->GetLatestLeaderProposeMessage(
+            common::GlobalInfo::Instance()->network_id(), 
+            pool_idx_, 
+            &msg_ptr->header)) {
+        msg_ptr->is_leader = true;
+        latest_leader_propose_message_ = msg_ptr;
+    }
 }
 
 void Hotstuff::NewView(

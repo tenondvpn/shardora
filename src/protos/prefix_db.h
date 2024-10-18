@@ -20,6 +20,7 @@
 #include "protos/init.pb.h"
 #include "protos/sync.pb.h"
 #include "protos/timeblock.pb.h"
+#include "protos/transport.pb.h"
 #include "protos/tx_storage_key.h"
 #include "protos/ws.pb.h"
 #include "protos/view_block.pb.h"
@@ -87,6 +88,7 @@ static const std::string kLatestToTxBlock = "as\x01";
 static const std::string kLatestPoolStatisticTagPrefix = "at\x01";
 static const std::string kViewBlockHashKeyPrefix = "au\x01";
 static const std::string kViewBlockParentHashKeyPrefix = "av\x01";
+static const std::string kLatestLeaderProposeMessage = "aw\x01";
 
 class PrefixDb {
 public:
@@ -2039,6 +2041,39 @@ public:
         return true;
     }
 
+    void SaveLatestLeaderProposeMessage(const transport::protobuf::Header& header) {
+        std::string key;
+        key.append(kLatestLeaderProposeMessage);
+        uint32_t network_id = header.hotstuff().pro_msg().view_item().qc().network_id();
+        key.append((char*)&network_id, sizeof(network_id));
+        uint32_t pool_idx = header.hotstuff().pro_msg().view_item().qc().pool_index();
+        key.append((char*)&pool_idx, sizeof(pool_idx));
+        auto st = db_->Put(key, header.SerializeAsString());
+        if (!st.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+    }
+
+    bool GetLatestLeaderProposeMessage(
+            uint32_t network_id, 
+            uint32_t pool_idx, 
+            transport::protobuf::Header* header) {
+        std::string key;
+        key.append(kLatestLeaderProposeMessage);
+        key.append((char*)&network_id, sizeof(network_id));
+        key.append((char*)&pool_idx, sizeof(pool_idx));
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            return false;
+        }
+
+        if (!header->ParseFromString(val)) {
+            return false;
+        }
+
+        return true;
+    }
 
 private:
     static const uint32_t kSaveElectHeightCount = 4u;

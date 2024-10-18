@@ -285,12 +285,15 @@ private:
             pb_VoteMsg* pb_vote_msg,
             pb_NewViewMsg* pb_nv_msg,
             pb_HotstuffMessage* pb_hf_msg);
+    void ResendLatestProposeMessage()
     Status SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& hotstuff_msg, const MsgType msg_type);
     // 是否允许空交易
     bool IsEmptyBlockAllowed(const ViewBlock& v_block);
     Status StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_block, const std::shared_ptr<QC>& qc);
     // 获取该 Leader 要增加的 consensus stat succ num
     uint32_t GetPendingSuccNumOfLeader(const std::shared_ptr<ViewBlock>& v_block);
+    void SaveLatestProposeMessage();
+    void LoadLatestProposeMessage();
 
     static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 1000lu;
 
@@ -314,6 +317,7 @@ private:
     uint64_t recover_from_stuck_timeout_ = 0;
     bool has_user_tx_tag_ = false;
     std::map<View, std::shared_ptr<ProposeMsgWrapper>> leader_view_with_propose_msgs_;
+    std::shared_ptr<transport::TransportMessage> latest_leader_propose_message_;
 
 };
 
