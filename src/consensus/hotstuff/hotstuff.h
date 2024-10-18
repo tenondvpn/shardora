@@ -133,6 +133,7 @@ public:
             elect_item->consensus_stat(pool_idx_)->Commit(vblock);
         }
         
+        pacemaker_->NewQcView(vblock->qc().view());
         auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
         if (!latest_committed_block ||
                 latest_committed_block->qc().view() < vblock->qc().view()) {
