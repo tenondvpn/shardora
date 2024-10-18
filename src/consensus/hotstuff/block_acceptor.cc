@@ -74,7 +74,9 @@ Status BlockAcceptor::Accept(
             view_block.qc().network_id(),
             view_block.qc().pool_index(),
             view_block.qc().view());
-        assert(!prefix_db_->BlockExists(view_block.qc().view_block_hash()));
+        if (prefix_db_->BlockExists(view_block.qc().view_block_hash())) {
+            return Status::kAcceptorBlockInvalid;
+        }
     });
     if (propose_msg.txs().empty()) {
         ZJC_DEBUG("propose_msg.txs().empty() error!");
