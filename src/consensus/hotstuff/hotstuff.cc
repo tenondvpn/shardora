@@ -972,7 +972,7 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
             }
         }
             
-        if (!tc.has_view_block_hash()) {
+        if (tc.has_view_block_hash()) {
             auto& qc = tc;
             TryCommit(qc, test_index);
         }
