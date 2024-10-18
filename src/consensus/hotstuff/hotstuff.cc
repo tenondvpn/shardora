@@ -462,7 +462,7 @@ Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>
             pool_idx_, view_item.qc().view(),
             last_vote_view_, pro_msg_wrap->msg_ptr->header.hash64(),
             pacemaker()->CurView());
-        if (pacemaker()->CurView() < view_item.qc().view()) {
+        if (last_vote_view_ == view_item.qc().view()) {
             auto iter = voted_msgs_.find(view_item.qc().view());
             if (iter != voted_msgs_.end()) {
                 ZJC_DEBUG("pool: %d has voted: %lu, last_vote_view_: %u, "
