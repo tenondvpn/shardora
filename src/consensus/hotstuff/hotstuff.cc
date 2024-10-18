@@ -126,7 +126,7 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
         latest_leader_propose_message_ = latest_leader_propose_message_;
         network::Route::Instance()->Send(latest_leader_propose_message_);
         ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
-            "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
+            "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, msg view: %lu, cur view: %lu",
             pool_idx_,
             header.hotstuff().pool_index(),
             hotstuff_msg->pro_msg().tx_propose().txs_size(),
@@ -134,7 +134,9 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
             common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
             view_block_chain()->HighViewBlock()->qc().view(),
             header.hash64(),
-            header.debug().c_str());
+            header.debug().c_str(),
+            latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view(),
+            pacemaker_->CurView());
         return s;
     }
 
