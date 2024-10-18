@@ -102,6 +102,11 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
             assert(tc->network_id() == common::GlobalInfo::Instance()->network_id());
             latest_qc_item_ptr_ = tc;
         }
+
+        if (latest_leader_propose_message_ && 
+                latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() <= tc->view()) {
+            latest_leader_propose_message_ = nullptr;
+        }
     }
 
     if (latest_leader_propose_message_ && 
