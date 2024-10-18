@@ -106,6 +106,8 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
 
     if (latest_leader_propose_message_ && 
             latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= pacemaker_->CurView()) {
+        latest_leader_propose_message_->header.release_broadcast();
+        auto broadcast = latest_leader_propose_message_->header.mutable_broadcast();
         auto* hotstuff_msg = latest_leader_propose_message_->header.mutable_hotstuff();
         if (tc != nullptr) {
             auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
@@ -316,6 +318,9 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+     
+
+
     auto b = common::TimeUtils::TimestampMs();
     defer({
         auto e = common::TimeUtils::TimestampMs();
@@ -339,7 +344,8 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.hotstuff().pro_msg().has_tc()) {
         HandleTC(pro_msg_wrap);
     }
-    
+
+    HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
     auto& view_item = *pro_msg_wrap->view_block_ptr;
     ZJC_DEBUG("HandleProposeMessageByStep called hash: %lu, "
         "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
@@ -416,11 +422,6 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
 
 Status Hotstuff::HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> pro_msg_wrap) {
     auto st = HandleProposeMsgStep_VerifyLeader(pro_msg_wrap);
-    if (st != Status::kSuccess) {
-        return st;
-    }
-
-    st = HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
     if (st != Status::kSuccess) {
         return st;
     }
@@ -688,19 +689,9 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
         return Status::kError;
     }
 
-    StoreVerifiedViewBlockToDb(pro_msg_wrap->view_block_ptr);
     // 成功接入链中，标记交易占用
     acceptor()->MarkBlockTxsAsUsed(pro_msg_wrap->view_block_ptr->block_info());
     return Status::kSuccess;    
-}
-
-void Hotstuff::StoreVerifiedViewBlockToDb(const std::shared_ptr<ViewBlock>& v_block) {
-    auto db_bach = std::make_shared<db::DbWriteBatch>();
-    view_block_chain_->StoreToDb(v_block, 999999, db_bach);
-    auto st = db_->Put(*db_bach);
-    if (!st.ok()) {
-        ZJC_FATAL("write data failed!");
-    }
 }
 
 Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
@@ -777,7 +768,6 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
         return Status::kError;
     }
 
-    StoreVerifiedViewBlockToDb(pro_msg_wrap->view_block_ptr);
     // 成功接入链中，标记交易占用
     acceptor()->MarkBlockTxsAsUsed(pro_msg_wrap->view_block_ptr->block_info());
     return Status::kSuccess;
@@ -961,7 +951,6 @@ Status Hotstuff::StoreVerifiedViewBlock(
         pool_idx_,
         common::Encode::HexEncode(v_block->qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(v_block->parent_hash()).c_str());
-    StoreVerifiedViewBlockToDb(v_block);
     return view_block_chain()->Store(v_block, true, nullptr);
 }
 
@@ -1023,7 +1012,28 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
             
         if (tc.has_view_block_hash()) {
             auto& qc = tc;
-            TryCommit(qc, test_index);
+            pacemaker()->NewQcView(qc.view());
+            view_block_chain()->UpdateHighViewBlock(qc);
+            TryCommit(qc, 99999999lu);
+            if (latest_qc_item_ptr_ == nullptr ||
+                    qc.view() >= latest_qc_item_ptr_->view()) {
+                latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(qc);
+            }
+
+            #ifndef NDEBUG
+            auto msg_hash = GetQCMsgHash(qc);
+            auto* tc_ptr = &qc;
+            ZJC_DEBUG("HandleProposeMsgStep_VerifyQC success verify qc %u_%u_%lu, hash: %s, "
+                "view block hash: %s, sign x: %s called hash: %lu, propose_debug: %s",
+                tc_ptr->network_id(), 
+                tc_ptr->pool_index(), 
+                tc_ptr->view(), 
+                common::Encode::HexEncode(msg_hash).c_str(), 
+                common::Encode::HexEncode(tc_ptr->view_block_hash()).c_str(), 
+                common::Encode::HexEncode(tc_ptr->sign_x()).c_str(), 
+                msg_ptr->header.hash64(),
+                msg_ptr->header.debug().c_str());
+    #endif
         }
     }
 }

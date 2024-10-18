@@ -318,6 +318,12 @@ public:
         if (!view_block_ptr->qc().has_sign_x()) {
             view_block_ptr->mutable_qc()->set_sign_x(qc_item.sign_x());
             view_block_ptr->mutable_qc()->set_sign_y(qc_item.sign_y());
+            auto db_bach = std::make_shared<db::DbWriteBatch>();
+            StoreToDb(view_block_ptr, 999999, db_bach);
+            auto st = db_->Put(*db_bach);
+            if (!st.ok()) {
+                ZJC_FATAL("write data failed!");
+            }
         }
 
         if (high_view_block_ == nullptr ||
