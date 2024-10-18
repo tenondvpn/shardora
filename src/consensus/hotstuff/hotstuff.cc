@@ -191,8 +191,8 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
     }
 
     latest_leader_propose_message_ = msg_ptr;
-    network::Route::Instance()->Send(msg_ptr);
     SaveLatestProposeMessage();
+    network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
         "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
         pool_idx_,
