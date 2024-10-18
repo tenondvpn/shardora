@@ -308,7 +308,7 @@ private:
     SyncPoolFn sync_pool_fn_ = nullptr;
     Pipeline handle_propose_pipeline_;
     std::unordered_map<View, transport::MessagePtr> voted_msgs_;
-    uint64_t latest_propse_msg_tm_ms_ = 0;
+    uint64_t latest_propose_msg_tm_ms_ = 0;
     std::shared_ptr<view_block::protobuf::QcItem> latest_qc_item_ptr_;
     uint64_t propose_debug_index_ = 0;
     uint64_t recover_from_stuck_timeout_ = 0;

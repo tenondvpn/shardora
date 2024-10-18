@@ -44,6 +44,9 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
         txs_item->pool_index = pool_index;
         ZJC_DEBUG("success leader get txs coming thread: %d, pool index: %d, tx count: %d", 
             thread_id, pool_index, txs_item->txs.size());
+    } else {
+        ZJC_DEBUG("failed leader get txs coming thread: %d, pool index: %d, tx count: %d", 
+            thread_id, pool_index, 0);
     }
 
     return txs_item;

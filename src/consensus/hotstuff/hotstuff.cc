@@ -94,7 +94,7 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
         return Status::kError;
     }
 
-    latest_propse_msg_tm_ms_ = common::TimeUtils::TimestampMs();
+    latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
     if (tc != nullptr) {
         if (latest_qc_item_ptr_ == nullptr || tc->view() >= latest_qc_item_ptr_->view()) {
             assert(tc->pool_index() == pool_idx_);
@@ -254,7 +254,7 @@ void Hotstuff::NewView(
 }
 
 void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
-    latest_propse_msg_tm_ms_ = common::TimeUtils::TimestampMs();
+    latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("handle propose called hash: %lu, %u_%u_%lu, view block hash: %s, sign x: %s, propose_debug: %s", 
         msg_ptr->header.hash64(), 
         msg_ptr->header.hotstuff().pro_msg().view_item().qc().network_id(), 
@@ -325,27 +325,27 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         iter = leader_view_with_propose_msgs_.erase(iter);
     }
 
-    if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_x() &&
-            pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_y()) {
-        auto iter = leader_view_with_propose_msgs_.find(propose_view);
-        if (iter != leader_view_with_propose_msgs_.end()) {
-            if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view() > 
-                    iter->second->view_block_ptr->qc().view()) {
-                Status prev_s = HandleProposeMsgStep_Directly(
-                    iter->second,
-                    pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view_block_hash());
-                if (prev_s != Status::kSuccess) {
-                    ZJC_WARN("failed handle prev message chain store: %u, hash64: %lu, block timestamp: %lu",
-                        propose_view,
-                        iter->second->msg_ptr->header.hash64(),
-                        iter->second->view_block_ptr->block_info().timestamp());
-                    assert(false);
-                }
-            }                                                                                                                                                                                                                                              
+    // if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_x() &&
+    //         pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_y()) {
+    //     auto iter = leader_view_with_propose_msgs_.find(propose_view);
+    //     if (iter != leader_view_with_propose_msgs_.end()) {
+    //         if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view() > 
+    //                 iter->second->view_block_ptr->qc().view()) {
+    //             Status prev_s = HandleProposeMsgStep_Directly(
+    //                 iter->second,
+    //                 pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view_block_hash());
+    //             if (prev_s != Status::kSuccess) {
+    //                 ZJC_WARN("failed handle prev message chain store: %u, hash64: %lu, block timestamp: %lu",
+    //                     propose_view,
+    //                     iter->second->msg_ptr->header.hash64(),
+    //                     iter->second->view_block_ptr->block_info().timestamp());
+    //                 assert(false);
+    //             }
+    //         }                                                                                                                                                                                                                                              
             
-            leader_view_with_propose_msgs_.erase(iter);
-        }
-    }
+    //         leader_view_with_propose_msgs_.erase(iter);
+    //     }
+    // }
     
     auto st = HandleProposeMessageByStep(pro_msg_wrap);
     if (st != Status::kSuccess) {
@@ -353,6 +353,15 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
             msg_ptr->header.hash64(),
             msg_ptr->header.debug().c_str());
         leader_view_with_propose_msgs_[propose_view] = pro_msg_wrap;
+    } else {
+        for (auto iter = leader_view_with_propose_msgs_.begin();
+                iter != leader_view_with_propose_msgs_.end();) {
+            if (iter->first > propose_view) {
+                break;
+            }
+
+            iter = leader_view_with_propose_msgs_.erase(iter);
+        }
     }
 }
 
@@ -446,7 +455,9 @@ Status Hotstuff::HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWra
 
 Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
     // 3 Verify TC
-    ZJC_DEBUG("HandleTC called hash: %lu, propose_debug: %s", pro_msg_wrap->msg_ptr->header.hash64(), pro_msg_wrap->msg_ptr->header.debug().c_str());
+    ZJC_DEBUG("HandleTC called hash: %lu, propose_debug: %s", 
+        pro_msg_wrap->msg_ptr->header.hash64(), 
+        pro_msg_wrap->msg_ptr->header.debug().c_str());
     std::shared_ptr<TC> tc = nullptr;
     auto& pro_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
     if (pro_msg.has_tc() && !pro_msg.tc().has_view_block_hash()) {
@@ -522,7 +533,8 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
 
 Status Hotstuff::HandleProposeMsgStep_VerifyViewBlock(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
     // 4 Verify ViewBlock
-    ZJC_DEBUG("HandleProposeMsgStep_VerifyViewBlock called hash: %lu, propose_debug: %s", pro_msg_wrap->msg_ptr->header.hash64(), pro_msg_wrap->msg_ptr->header.debug().c_str());
+    ZJC_DEBUG("HandleProposeMsgStep_VerifyViewBlock called hash: %lu, propose_debug: %s",
+        pro_msg_wrap->msg_ptr->header.hash64(), pro_msg_wrap->msg_ptr->header.debug().c_str());
     auto* tc = &pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc();
     if (VerifyViewBlock(
             *pro_msg_wrap->view_block_ptr,
@@ -533,9 +545,10 @@ Status Hotstuff::HandleProposeMsgStep_VerifyViewBlock(std::shared_ptr<ProposeMsg
             common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
             pro_msg_wrap->msg_ptr->header.hash64());
         return Status::kError;
-    }    
+    }
     
-    ZJC_DEBUG("====1.1 pool: %d, verify view block success, view: %lu, hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
+    ZJC_DEBUG("====1.1 pool: %d, verify view block success, view: %lu, "
+        "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
         pool_idx_,
         pro_msg_wrap->view_block_ptr->qc().view(),
         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
@@ -547,7 +560,9 @@ Status Hotstuff::HandleProposeMsgStep_VerifyViewBlock(std::shared_ptr<ProposeMsg
 Status Hotstuff::HandleProposeMsgStep_Directly(
         std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap, 
         const std::string& expect_view_block_hash) {
-    ZJC_DEBUG("HandleProposeMsgStep_Directly called hash: %lu, propose_debug: %s", pro_msg_wrap->msg_ptr->header.hash64(), pro_msg_wrap->msg_ptr->header.debug().c_str());
+    ZJC_DEBUG("HandleProposeMsgStep_Directly called hash: %lu, propose_debug: %s",
+        pro_msg_wrap->msg_ptr->header.hash64(), 
+        pro_msg_wrap->msg_ptr->header.debug().c_str());
     // Verify ViewBlock.block and tx_propose, 验证tx_propose，填充Block tx相关字段
     auto& proto_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
     pro_msg_wrap->view_block_ptr->mutable_block_info()->clear_tx_list();
@@ -916,9 +931,10 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
     assert(msg_ptr->header.hotstuff().pool_index() == pool_idx_);
     auto& newview_msg = msg_ptr->header.hotstuff().newview_msg();
     if (newview_msg.has_tc()) {
-        ZJC_DEBUG("pool index: %u,  0 test_index: %lu", pool_idx_, test_index);
         auto tc_ptr = std::make_shared<view_block::protobuf::QcItem>(newview_msg.tc());
         auto& tc = *tc_ptr;
+        ZJC_DEBUG("pool index: %u,  0 test_index: %lu, %lu, %lu",
+            pool_idx_, test_index, tc.view() > pacemaker()->HighTC()->view());
         if (tc.view() > pacemaker()->HighTC()->view()) {
             if (!tc.has_view_block_hash()) {
                 auto tc_msg_hash = GetTCMsgHash(tc);
@@ -951,10 +967,14 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
                         qc.view());
                     pacemaker()->NewQcView(qc.view());
                     ZJC_DEBUG("pool index: %u,  5 test_index: %lu", pool_idx_, test_index);
-                    TryCommit(qc, test_index);
                     ZJC_DEBUG("pool index: %u,  6 test_index: %lu", pool_idx_, test_index);
                 }
             }
+        }
+            
+        if (!tc.has_view_block_hash()) {
+            auto& qc = tc;
+            TryCommit(qc, test_index);
         }
     }
 }
@@ -972,7 +992,7 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
         gids += common::Encode::HexEncode(pre_rst_timer_msg.txs(i).gid()) + " ";
     }
 
-    ZJC_DEBUG("reset timer get follower tx gids: %s", gids.c_str());
+    ZJC_DEBUG("pool: %u, reset timer get follower tx gids: %s", pool_idx_, gids.c_str());
 #endif
 
     if (pre_rst_timer_msg.txs_size() > 0) {
@@ -990,9 +1010,10 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
     }
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    if (now_tm_ms < latest_propse_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs) {
-        ZJC_DEBUG("reset timer failed, now_tm_ms < latest_propse_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs: %lu",
-            (latest_propse_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs - now_tm_ms));
+    if (now_tm_ms < latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs) {
+        ZJC_DEBUG("reset timer failed, now_tm_ms < latest_propose_msg_tm_ms_ + "
+            "kLatestPoposeSendTxToLeaderPeriodMs: %lu",
+            (latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs - now_tm_ms));
         return;
     }
 
@@ -1563,8 +1584,8 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     }
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    if (now_tm_ms < latest_propse_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs) {
-        // ZJC_DEBUG("pool: %u now_tm_ms < latest_propse_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs: %lu, %lu", pool_idx_, now_tm_ms, (latest_propse_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs));
+    if (now_tm_ms < latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs) {
+        // ZJC_DEBUG("pool: %u now_tm_ms < latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs: %lu, %lu", pool_idx_, now_tm_ms, (latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs));
         return;
     }
 
@@ -1609,7 +1630,6 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     auto& header = trans_msg->header;
     auto* hotstuff_msg = header.mutable_hotstuff();
     auto* pre_rst_timer_msg = hotstuff_msg->mutable_pre_reset_timer_msg();
-    
     auto elect_item = elect_info_->GetElectItemWithShardingId(
         common::GlobalInfo::Instance()->network_id());
     if (!elect_item || !elect_item->IsValid()) {
