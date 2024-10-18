@@ -68,13 +68,13 @@ Status BlockAcceptor::Accept(
     auto& view_block = *pro_msg_wrap->view_block_ptr;
     defer({
         view_block.mutable_qc()->set_view_block_hash(GetBlockHash(view_block));
-        assert(!prefix_db_->BlockExists(view_block.qc().view_block_hash()));
         ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
             common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
             common::Encode::HexEncode(view_block.parent_hash()).c_str(),
             view_block.qc().network_id(),
             view_block.qc().pool_index(),
             view_block.qc().view());
+        assert(!prefix_db_->BlockExists(view_block.qc().view_block_hash()));
     });
     if (propose_msg.txs().empty()) {
         ZJC_DEBUG("propose_msg.txs().empty() error!");
