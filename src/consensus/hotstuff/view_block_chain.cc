@@ -65,8 +65,13 @@ Status ViewBlockChain::Store(
     }
 #endif
 
-    ZJC_DEBUG("merge prev all balance store size: %u, propose_debug: %s",
-        balane_map_ptr ? balane_map_ptr->size() : 0, view_block->debug().c_str());
+    ZJC_DEBUG("merge prev all balance store size: %u, propose_debug: %s, "
+        "%u_%u_%lu, %lu, hash: %s, prehash: %s",
+        balane_map_ptr ? balane_map_ptr->size() : 0, view_block->debug().c_str(),
+        view_block->qc().network_id(), view_block->qc().pool_index(), 
+        view_block->qc().view(), view_block->block_info().height(),
+        common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
+        common::Encode::HexEncode(view_block->parent_hash()).c_str());
     auto block_info_ptr = GetViewBlockInfo(view_block, balane_map_ptr);
     auto& view_block_at_height_vec = view_blocks_at_height_[view_block->qc().view()];
     if (!view_block_at_height_vec.empty()) {
