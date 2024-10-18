@@ -19,6 +19,8 @@ void Hotstuff::Init() {
     // 从 db 中获取最后一个有 QC 的 ViewBlock
     Status s = GetLatestViewBlockFromDb(db_, pool_idx_, latest_view_block);
     if (s == Status::kSuccess) {
+        view_block_chain_->SetLatestLockedBlock(latest_view_block);
+        view_block_chain_->SetLatestCommittedBlock(latest_view_block);
         InitAddNewViewBlock(latest_view_block);
         LoadAllViewBlockWithLatestCommitedBlock(latest_view_block);
     } else {
@@ -54,8 +56,7 @@ void Hotstuff::InitAddNewViewBlock(std::shared_ptr<ViewBlock>& latest_view_block
         // 初始状态，使用 db 中最后一个 view_block 初始化视图链
         view_block_chain_->Store(latest_view_block, true, nullptr);
         view_block_chain_->UpdateHighViewBlock(latest_view_block->qc());
-        view_block_chain_->SetLatestLockedBlock(latest_view_block);
-        view_block_chain_->SetLatestCommittedBlock(latest_view_block);
+        StopVoting(latest_view_block->qc().view());
         // 开启第一个视图
         ZJC_DEBUG("success new set qc view: %lu, %u_%u_%lu, hash: %s",
             latest_view_block->qc().view(),
@@ -63,7 +64,6 @@ void Hotstuff::InitAddNewViewBlock(std::shared_ptr<ViewBlock>& latest_view_block
             latest_view_block->qc().pool_index(),
             latest_view_block->qc().view(),
             common::Encode::HexEncode(latest_view_block->qc().view_block_hash()).c_str());
-
         pacemaker_->NewQcView(latest_view_block->qc().view());
 }
 
@@ -179,7 +179,6 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
             tc->view());
     }
 
-    // last_vote_view_ = hotstuff_msg->pro_msg().view_item().qc().view() - 1;
     msg_ptr->is_leader = true;
     HandleProposeMsg(msg_ptr);
     return Status::kSuccess;

@@ -216,6 +216,16 @@ public:
             return Status::kInvalidArgument;
         }
 
+        if (!v_block->qc().has_sign_x()) {
+            ZJC_DEBUG("not has signature, pool: %u, StoreToDb 0, test_index: %lu, tx size: %u, %u_%u_%lu, hash: %s",
+                pool_index_, test_index, v_block->block_info().tx_list_size(),
+                v_block->qc().network_id(),
+                v_block->qc().pool_index(),
+                v_block->qc().view(),
+                common::Encode::HexEncode(v_block->qc().view_block_hash()).c_str());
+            return Status::kSuccess;
+        }
+
         if (prefix_db_->HasViewBlockInfo(v_block->qc().view_block_hash())) {
             ZJC_DEBUG("has in db, pool: %u, StoreToDb 0, test_index: %lu, tx size: %u, %u_%u_%lu, hash: %s",
                 pool_index_, test_index, v_block->block_info().tx_list_size(),
