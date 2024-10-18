@@ -66,18 +66,18 @@ Status BlockAcceptor::Accept(
 
     auto& propose_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tx_propose();
     auto& view_block = *pro_msg_wrap->view_block_ptr;
-    defer({
-        view_block.mutable_qc()->set_view_block_hash(GetBlockHash(view_block));
-        ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
-            common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
-            common::Encode::HexEncode(view_block.parent_hash()).c_str(),
-            view_block.qc().network_id(),
-            view_block.qc().pool_index(),
-            view_block.qc().view());
-        if (prefix_db_->BlockExists(view_block.qc().view_block_hash())) {
-            return Status::kAcceptorBlockInvalid;
-        }
-    });
+    // defer({
+    //     view_block.mutable_qc()->set_view_block_hash(GetBlockHash(view_block));
+    //     ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
+    //         common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
+    //         common::Encode::HexEncode(view_block.parent_hash()).c_str(),
+    //         view_block.qc().network_id(),
+    //         view_block.qc().pool_index(),
+    //         view_block.qc().view());
+    //     if (prefix_db_->BlockExists(view_block.qc().view_block_hash())) {
+    //         return Status::kAcceptorBlockInvalid;
+    //     }
+    // });
     if (propose_msg.txs().empty()) {
         ZJC_DEBUG("propose_msg.txs().empty() error!");
         return no_tx_allowed ? Status::kSuccess : Status::kAcceptorTxsEmpty;
@@ -118,6 +118,17 @@ Status BlockAcceptor::Accept(
         view_block.qc().pool_index(), 
         view_block.qc().view(), 
         view_block.block_info().height());
+    view_block.mutable_qc()->set_view_block_hash(GetBlockHash(view_block));
+    ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
+        common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
+        common::Encode::HexEncode(view_block.parent_hash()).c_str(),
+        view_block.qc().network_id(),
+        view_block.qc().pool_index(),
+        view_block.qc().view());
+    if (prefix_db_->BlockExists(view_block.qc().view_block_hash())) {
+        return Status::kAcceptorBlockInvalid;
+    }
+    
     return Status::kSuccess;
 }
 
