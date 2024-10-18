@@ -106,10 +106,15 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
 
     if (latest_leader_propose_message_ && 
             latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= pacemaker_->CurView()) {
+        auto* hotstuff_msg = latest_leader_propose_message_->header.mutable_hotstuff();
+        if (tc != nullptr) {
+            auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
+            *pb_pro_msg->mutable_tc() = *tc;
+        }
+
         transport::TcpTransport::Instance()->SetMessageHash(latest_leader_propose_message_->header);
         auto s = crypto()->SignMessage(latest_leader_propose_message_);
         auto& header = latest_leader_propose_message_->header;
-        auto* hotstuff_msg = &latest_leader_propose_message_->header.hotstuff();
         if (s != Status::kSuccess) {
             ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
                 pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
@@ -128,7 +133,7 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
             view_block_chain()->HighViewBlock()->qc().view(),
             header.hash64(),
             header.debug().c_str());
-        return;
+        return s;
     }
 
     ZJC_DEBUG("1 now ontime called propose: %d", pool_idx_);
