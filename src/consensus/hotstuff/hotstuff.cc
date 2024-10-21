@@ -1032,8 +1032,9 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
             TryCommit(qc, 99999999lu);
             if (latest_qc_item_ptr_ == nullptr ||
                     qc.view() >= latest_qc_item_ptr_->view()) {
-                assert(qc.has_sign_x() && !qc.sign_x().empty());
-                latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(qc);
+                if (qc.has_sign_x() && !qc.sign_x().empty()) {
+                    latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(qc);
+                }
             }
 
             #ifndef NDEBUG
