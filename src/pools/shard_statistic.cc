@@ -846,9 +846,9 @@ int ShardStatistic::StatisticWithHeights(
 
     auto net_id = common::GlobalInfo::Instance()->network_id();
     elect_statistic.set_sharding_id(net_id);
-    elect_statistic.set_statistic_height(piter->first);
+    elect_statistic.set_statistic_height(iter->first);
     auto *heights_info = elect_statistic.mutable_height_info();
-    heights_info->set_tm_height(piter->first);
+    heights_info->set_tm_height(iter->first);
     for (uint32_t tmp_pool_idx = 0; tmp_pool_idx < common::kInvalidPoolIndex; ++tmp_pool_idx) {
         heights_info->add_heights(iter->second[tmp_pool_idx].statistic_max_height);
     }
