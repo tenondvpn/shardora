@@ -1635,7 +1635,7 @@ Status Hotstuff::SendMsgToLeader(
 
 void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     if (!latest_qc_item_ptr_) {
-        ZJC_DEBUG("latest_qc_item_ptr_ null, pool: %u", pool_idx_);
+        // ZJC_DEBUG("latest_qc_item_ptr_ null, pool: %u", pool_idx_);
         return;
     }
 
@@ -1644,27 +1644,27 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     }
 
     if (!has_user_tx_tag_ && !has_system_tx) {
-        ZJC_DEBUG("!has_user_tx_tag_ && !has_system_tx, pool: %u", pool_idx_);
+        // ZJC_DEBUG("!has_user_tx_tag_ && !has_system_tx, pool: %u", pool_idx_);
         return;
     }
 
     if (leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32) {
-        ZJC_DEBUG("leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32, pool: %u", pool_idx_);
+        // ZJC_DEBUG("leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32, pool: %u", pool_idx_);
         return;
     }
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (now_tm_ms < latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs) {
-        ZJC_DEBUG("pool: %u now_tm_ms < latest_propose_msg_tm_ms_ + "
-            "kLatestPoposeSendTxToLeaderPeriodMs: %lu, %lu",
-            pool_idx_, now_tm_ms, 
-            (latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs));
+        // ZJC_DEBUG("pool: %u now_tm_ms < latest_propose_msg_tm_ms_ + "
+        //     "kLatestPoposeSendTxToLeaderPeriodMs: %lu, %lu",
+        //     pool_idx_, now_tm_ms, 
+        //     (latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs));
         return;
     }
 
     auto stuck_st = IsStuck();
     if (stuck_st != 0) {
-        ZJC_DEBUG("pool: %u stuck_st != 0: %d", pool_idx_, stuck_st);
+        // ZJC_DEBUG("pool: %u stuck_st != 0: %d", pool_idx_, stuck_st);
         return;
     }
 
@@ -1686,14 +1686,14 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     }
 
     if (!has_user_tx_tag_) {
-        ZJC_DEBUG("pool: %u not has_user_tx_tag_.", pool_idx_);
+        // ZJC_DEBUG("pool: %u not has_user_tx_tag_.", pool_idx_);
         return;
     }
 
     std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
     wrapper()->GetTxsIdempotently(txs);
     if (txs.empty()) {
-        ZJC_DEBUG("pool: %u txs.empty().", pool_idx_);
+        // ZJC_DEBUG("pool: %u txs.empty().", pool_idx_);
         return;
     }
     
