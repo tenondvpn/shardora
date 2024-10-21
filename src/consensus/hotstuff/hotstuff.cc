@@ -314,13 +314,16 @@ void Hotstuff::NewView(
 
 void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
-    ZJC_DEBUG("handle propose called hash: %lu, %u_%u_%lu, view block hash: %s, sign x: %s, propose_debug: %s", 
+    ZJC_DEBUG("handle propose called hash: %lu, %u_%u_%lu, "
+        "view block hash: %s, sign x: %s, propose_debug: %s", 
         msg_ptr->header.hash64(), 
         msg_ptr->header.hotstuff().pro_msg().view_item().qc().network_id(), 
         msg_ptr->header.hotstuff().pro_msg().view_item().qc().pool_index(),
         msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
-        common::Encode::HexEncode(msg_ptr->header.hotstuff().pro_msg().view_item().qc().view_block_hash()).c_str(),
-        common::Encode::HexEncode(msg_ptr->header.hotstuff().pro_msg().view_item().qc().sign_x()).c_str(),
+        common::Encode::HexEncode(
+        msg_ptr->header.hotstuff().pro_msg().view_item().qc().view_block_hash()).c_str(),
+        common::Encode::HexEncode(
+        msg_ptr->header.hotstuff().pro_msg().view_item().qc().sign_x()).c_str(),
         msg_ptr->header.debug().c_str());
     if (leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32) {
         return;
@@ -1652,7 +1655,10 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (now_tm_ms < latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs) {
-        ZJC_DEBUG("pool: %u now_tm_ms < latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs: %lu, %lu", pool_idx_, now_tm_ms, (latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs));
+        ZJC_DEBUG("pool: %u now_tm_ms < latest_propose_msg_tm_ms_ + "
+            "kLatestPoposeSendTxToLeaderPeriodMs: %lu, %lu",
+            pool_idx_, now_tm_ms, 
+            (latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs));
         return;
     }
 

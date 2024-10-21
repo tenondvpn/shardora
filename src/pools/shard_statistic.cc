@@ -74,7 +74,7 @@ int ShardStatistic::Init() {
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         pools_consensus_blocks_[i] = std::make_shared<PoolBlocksInfo>();
         pools_consensus_blocks_[i]->latest_consensus_height_ = statistic_info.pool_statisitcs(i).max_height() + 1;
-        for (uint64_t height = statistic_info.pool_statisitcs(i).max_height() + 1;; ++height) {
+        for (uint64_t height = statistic_info.pool_statisitcs(i).max_height();; ++height) {
             auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
             auto& view_block = *view_block_ptr;
             if (!prefix_db_->GetBlockWithHeight(
@@ -805,7 +805,8 @@ int ShardStatistic::StatisticWithHeights(
             statistic_info_ptr->id_pk_map.begin(), 
             statistic_info_ptr->id_pk_map.end());
     }
-
+// tx_count_debug_str: pool idx: 1, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 2, pool idx: 2, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 2, pool idx: 3, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 2, pool idx: 4, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 2, pool idx: 5, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 2, pool idx: 6, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 3, pool idx: 7, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 2, pool idx: 8, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 3, pool idx: 9, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 122, pool idx: 10, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 2, pool idx: 11, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 2, pool idx: 12, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 4, pool idx: 13, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 11, pool idx: 14, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 2, pool idx: 15, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 2, pool idx: 16, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 9, 
+// tx_count_debug_str: pool idx: 1, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 1, pool idx: 2, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 1, pool idx: 3, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 1, pool idx: 4, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 1, pool idx: 5, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 1, pool idx: 6, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 2, pool idx: 7, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 1, pool idx: 8, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 2, pool idx: 9, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 120, pool idx: 10, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 1, pool idx: 11, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 1, pool idx: 12, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 3, pool idx: 13, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 6, pool idx: 14, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 1, pool idx: 15, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 1, pool idx: 16, height: 1, id: 8c99304613266afcef9b0188701fa0ebdbf23999: 8, 
     // 为当前委员会的节点填充共识工作的奖励信息
     setElectStatistics(height_node_collect_info_map, now_elect_members, elect_statistic, is_root);
     addNewNode2JoinStatics(
