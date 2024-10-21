@@ -100,6 +100,7 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
         if (latest_qc_item_ptr_ == nullptr || tc->view() >= latest_qc_item_ptr_->view()) {
             assert(tc->pool_index() == pool_idx_);
             assert(tc->network_id() == common::GlobalInfo::Instance()->network_id());
+            assert(tc->has_sign_x() && !tc->sign_x().empty());
             latest_qc_item_ptr_ = tc;
         }
 
@@ -250,6 +251,7 @@ void Hotstuff::NewView(
     if (latest_qc_item_ptr_ == nullptr || tc->view() >= latest_qc_item_ptr_->view()) {
         assert(tc->pool_index() == pool_idx_);
         assert(tc->network_id() == common::GlobalInfo::Instance()->network_id());
+            assert(tc->has_sign_x() && !tc->sign_x().empty());
 
         latest_qc_item_ptr_ = tc;
     }
@@ -532,6 +534,7 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
         pacemaker()->NewTc(tc_ptr);
         if (latest_qc_item_ptr_ == nullptr ||
                 tc_ptr->view() >= latest_qc_item_ptr_->view()) {
+            assert(tc_ptr->has_sign_x() && !tc_ptr->sign_x().empty());
             latest_qc_item_ptr_ = tc_ptr;
         }
 #ifndef NDEBUG
@@ -554,7 +557,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
         pro_msg_wrap->msg_ptr->header.hash64(), 
         common::Encode::HexEncode(pro_msg.tc().view_block_hash()).c_str(),
         pro_msg_wrap->msg_ptr->header.debug().c_str());
-    if (pro_msg.has_tc() && pro_msg.tc().has_view_block_hash()) {
+    if (pro_msg.has_tc() && pro_msg.tc().has_view_block_hash() && pro_msg.tc().has_sign_x()) {
         if (VerifyQC(pro_msg.tc()) != Status::kSuccess) {
             ZJC_ERROR("pool: %d verify qc failed: %lu", pool_idx_, pro_msg.tc().view());
             assert(false);
@@ -571,6 +574,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
         TryCommit(pro_msg.tc(), 99999999lu);
         if (latest_qc_item_ptr_ == nullptr ||
                 pro_msg.tc().view() >= latest_qc_item_ptr_->view()) {
+            assert(pro_msg.tc().has_sign_x() && !pro_msg.tc().sign_x().empty());
             latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(pro_msg.tc());
         }
 #ifndef NDEBUG
@@ -1028,6 +1032,7 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
             TryCommit(qc, 99999999lu);
             if (latest_qc_item_ptr_ == nullptr ||
                     qc.view() >= latest_qc_item_ptr_->view()) {
+                assert(qc.has_sign_x() && !qc.sign_x().empty());
                 latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(qc);
             }
 
