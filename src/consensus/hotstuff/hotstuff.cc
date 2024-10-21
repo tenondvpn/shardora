@@ -251,9 +251,9 @@ void Hotstuff::NewView(
     if (latest_qc_item_ptr_ == nullptr || tc->view() >= latest_qc_item_ptr_->view()) {
         assert(tc->pool_index() == pool_idx_);
         assert(tc->network_id() == common::GlobalInfo::Instance()->network_id());
-            assert(tc->has_sign_x() && !tc->sign_x().empty());
-
-        latest_qc_item_ptr_ = tc;
+        if (tc->has_sign_x() && !tc->sign_x().empty()) {
+            latest_qc_item_ptr_ = tc;
+        }
     }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
