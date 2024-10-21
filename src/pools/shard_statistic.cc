@@ -241,6 +241,17 @@ void ShardStatistic::HandleStatistic(
     }
 
     auto pool_idx = view_block_ptr->qc().pool_index();
+    std::string statistic_pool_debug_str;
+    for (auto riter = statistic_pool_info_.rbegin();
+            riter != statistic_pool_info_.rend(); ++riter) {
+        statistic_pool_debug_str += "statistic height: " + std::to_string(riter->first);
+        for (auto pool_iter = riter->second.begin(); pool_iter != riter->second.end(); ++pool_iter) {
+            statistic_pool_debug_str += ", " + 
+                std::to_string(pool_iter->first) + ":" + 
+                std::to_string(pool_iter->second.statistic_max_height) + ",";
+        }
+    }
+
     auto pool_statistic_riter = statistic_pool_info_.rbegin();
     while (pool_statistic_riter != statistic_pool_info_.rend()) {
         auto pool_iter = pool_statistic_riter->second.find(pool_idx);
@@ -267,8 +278,10 @@ void ShardStatistic::HandleStatistic(
 
     auto pool_iter = pool_statistic_riter->second.find(pool_idx);
     if (pool_iter == pool_statistic_riter->second.end()) {
-        pool_statistic_riter->second[pool_idx] = StatisticInfoItem();
-        pool_iter = pool_statistic_riter->second.find(pool_idx);
+        assert(false);
+        return;
+        // pool_statistic_riter->second[pool_idx] = StatisticInfoItem();
+        // pool_iter = pool_statistic_riter->second.find(pool_idx);
     }
 
     auto& pool_statistic_info = pool_iter->second;
@@ -298,7 +311,8 @@ void ShardStatistic::HandleStatistic(
                     std::map<uint32_t, StatisticInfoItem> pool_map;
                     pool_map[pool_idx] = statistic_item;
                     statistic_pool_info_[statistic_height] = pool_map;
-                    ZJC_DEBUG("new success handle kPoolStatisticTag tx statistic_height: %lu, "
+                    ZJC_DEBUG(
+                        "new success handle kPoolStatisticTag tx statistic_height: %lu, "
                         "pool: %u, height: %lu, statistic_max_height: %lu, gid: %s", 
                         statistic_height, 
                         pool_idx, 
@@ -309,8 +323,9 @@ void ShardStatistic::HandleStatistic(
                     StatisticInfoItem statistic_item;
                     statistic_item.statistic_max_height = block.height() + 1;
                     exist_iter->second[pool_idx] = statistic_item;
-                    ZJC_DEBUG("exists success handle kPoolStatisticTag tx "
-                        "statistic_height: %lu, pool: %u, height: %lu, statistic_max_height: %lu, gid: %s", 
+                    ZJC_DEBUG(
+                        "exists success handle kPoolStatisticTag tx statistic_height: %lu, "
+                        "pool: %u, height: %lu, statistic_max_height: %lu, gid: %s", 
                         statistic_height, 
                         pool_idx, 
                         block.height(), 
@@ -367,8 +382,7 @@ void ShardStatistic::HandleStatistic(
                             continue;
                         }
 
-                        id_pk_map[tx.from()] = 
-                            tx.storages(storage_idx).value();
+                        id_pk_map[tx.from()] = tx.storages(storage_idx).value();
                     }
 
                     if (tx.storages(storage_idx).key() == 
@@ -498,11 +512,13 @@ void ShardStatistic::HandleStatistic(
         return;
     }
 
-    auto elect_height_iter = height_node_collect_info_map.find(view_block_ptr->qc().elect_height());
+    auto elect_height_iter = height_node_collect_info_map.find(
+        view_block_ptr->qc().elect_height());
     if (elect_height_iter == height_node_collect_info_map.end()) {
         height_node_collect_info_map[view_block_ptr->qc().elect_height()] = 
             std::unordered_map<std::string, StatisticMemberInfoItem>();
-        elect_height_iter = height_node_collect_info_map.find(view_block_ptr->qc().elect_height());
+        elect_height_iter = height_node_collect_info_map.find(
+            view_block_ptr->qc().elect_height());
     }
 
     auto& node_info_map = elect_height_iter->second;
@@ -527,14 +543,16 @@ void ShardStatistic::HandleStatistic(
     }
 
     ZJC_DEBUG("statistic height: %lu, success handle block pool: %u, height: %lu, "
-        "tm height: %lu, leader_id: %s, tx_count: %u, tx size: %u, debug_str: %s",
+        "tm height: %lu, leader_id: %s, tx_count: %u, tx size: %u, "
+        "debug_str: %s, statistic_pool_debug_str: %s",
         pool_statistic_riter->first,
         view_block_ptr->qc().pool_index(), block.height(), 
         block.timeblock_height(), 
         common::Encode::HexEncode(leader_id).c_str(),
         node_info.tx_count,
         block.tx_list_size(),
-        debug_str.c_str());
+        debug_str.c_str(),
+        statistic_pool_debug_str.c_str());
 
 }
 
