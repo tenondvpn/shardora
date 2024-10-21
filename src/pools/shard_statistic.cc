@@ -658,7 +658,7 @@ int ShardStatistic::StatisticWithHeights(
         return kPoolsError;
     }
 
-    auto exist_iter = statistic_height_map_.find(iter->first);
+    auto exist_iter = statistic_height_map_.find(piter->first);
     if (exist_iter != statistic_height_map_.end()) {
         elect_statistic = exist_iter->second;
         ZJC_DEBUG("success get exists statistic message "
@@ -707,7 +707,7 @@ int ShardStatistic::StatisticWithHeights(
 
     uint64_t all_gas_amount = 0;
     uint64_t root_all_gas_amount = 0;
-    auto pool_iter = iter->second.begin();
+    auto pool_iter = piter->second.begin();
     auto* statistic_info_ptr = &pool_iter->second;
     all_gas_amount += statistic_info_ptr->all_gas_amount;
     root_all_gas_amount += statistic_info_ptr->root_all_gas_amount;
@@ -718,7 +718,7 @@ int ShardStatistic::StatisticWithHeights(
     std::string debug_str;
     ++pool_iter;
     std::string tx_count_debug_str;
-    for (; pool_iter != iter->second.end(); ++pool_iter) {
+    for (; pool_iter != piter->second.end(); ++pool_iter) {
         tx_count_debug_str += "pool idx: " + std::to_string(pool_iter->first) + ", ";
         auto* statistic_info_ptr = &pool_iter->second;
         all_gas_amount += statistic_info_ptr->all_gas_amount;
@@ -850,7 +850,7 @@ int ShardStatistic::StatisticWithHeights(
     auto *heights_info = elect_statistic.mutable_height_info();
     heights_info->set_tm_height(piter->first);
     for (uint32_t tmp_pool_idx = 0; tmp_pool_idx < common::kInvalidPoolIndex; ++tmp_pool_idx) {
-        heights_info->add_heights(iter->second[tmp_pool_idx].statistic_max_height);
+        heights_info->add_heights(piter->second[tmp_pool_idx].statistic_max_height);
     }
 
     ZJC_DEBUG("success create statistic message prev_timeblock_height_: %lu, "
@@ -866,7 +866,7 @@ int ShardStatistic::StatisticWithHeights(
         debug_str.c_str(), 
         tx_count_debug_str.c_str());
     assert(piter->first > iter->first);
-    statistic_height_map_[iter->first] = elect_statistic;
+    statistic_height_map_[piter->first] = elect_statistic;
     auto eiter = statistic_pool_info_.find(iter->first);
     statistic_pool_info_.erase(eiter);
     return kPoolsSuccess;
