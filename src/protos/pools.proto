@@ -67,7 +67,7 @@ message StatisticTxItem {
 
 message InitPoolHeightItem {
     optional uint32 sharding_id = 1;
-    repeated uint64_t heights = 2;
+    repeated uint64 heights = 2;
     optional uint64 block_height = 3;
     optional uint64 tm_height = 4;
 }
