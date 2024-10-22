@@ -1025,7 +1025,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     InitShardGenesisAccount();
     uint64_t genesis_account_balance = 0llu;
     uint64_t all_balance = 0llu;
-    pools::protobuf::StatisticTxItem init_heights;
+    pools::protobuf::InitPoolHeightItem init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     std::unordered_map<uint32_t, hotstuff::HashStr> pool_prev_vb_hash_map;
     std::string prehashes[common::kImmutablePoolSize]; // 256
@@ -1212,8 +1212,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         }
 
         init_heights.add_heights(0);
-
-       
         // 保存 ViewBlock
         StoreViewBlockWithCommitQC(view_block_ptr, db_batch_ptr);
         db_->Put(db_batch);
@@ -1317,7 +1315,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     int res = GenerateRootSingleBlock(root_genesis_nodes, root_gens_init_block_file, &root_pool_height, &root_pool_view);
     if (res == kInitSuccess) {
         init_heights.add_heights(root_pool_height);
-        
         std::vector<GenisisNodeInfoPtr> all_cons_genesis_nodes;
         for (std::vector<GenisisNodeInfoPtr> nodes : cons_genesis_nodes_of_shards) {
             all_cons_genesis_nodes.insert(all_cons_genesis_nodes.end(), nodes.begin(), nodes.end());
@@ -1334,13 +1331,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             vb_latest_view,
             genesis_acount_balance_map);
         prefix_db_->SaveStatisticLatestHeihgts(network::kRootCongressNetworkId, init_heights);
-        std::string init_consensus_height;
-        for (int32_t i = 0; i < init_heights.heights_size(); ++i) {
-            init_consensus_height += std::to_string(init_heights.heights(i)) + " ";
-        }
-
-        ZJC_DEBUG("0 success change min elect statistic heights: %u, %s",
-            network::kRootCongressNetworkId, init_consensus_height.c_str());
     }
 
     fclose(root_gens_init_block_file);
@@ -1433,7 +1423,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
         uint32_t net_id,
-        pools::protobuf::StatisticTxItem& init_heights,
+        pools::protobuf::InitPoolHeightItem& init_heights,
         hotstuff::View* pool_latest_view,
         std::unordered_map<std::string, uint64_t> genesis_acount_balance_map) {
     std::set<std::string> valid_ids;
@@ -1626,7 +1616,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     pool_acc_map[common::kRootChainPoolIndex] = common::kRootPoolsAddress;
     
     uint64_t all_balance = 0llu;
-    pools::protobuf::StatisticTxItem init_heights;
+    pools::protobuf::InitPoolHeightItem init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     std::unordered_map<uint32_t, hotstuff::HashStr> pool_prev_vb_hash_map;
     // view 从 0 开始
@@ -1724,12 +1714,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         AddBlockItemToCache(view_block_ptr, db_batch);
         block_mgr_->GenesisNewBlock(view_block_ptr);
         block_mgr_->GenesisAddAllAccount(net_id, tenon_block_ptr, db_batch);
-
-
-        // if (net_id != network::kConsensusShardBeginNetworkId) {
-        //     all_balance = common::kGenesisFoundationMaxZjc;
-        // }
-        
         init_heights.add_heights(0);
         StoreViewBlockWithCommitQC(view_block_ptr, db_batch_ptr);
         db_->Put(db_batch);
@@ -1770,14 +1754,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             init_heights,
             vb_latest_view,
             genesis_acount_balance_map);
-    prefix_db_->SaveStatisticLatestHeihgts(net_id, init_heights);
-    std::string init_consensus_height;
-    for (int32_t i = 0; i < init_heights.heights_size(); ++i) {
-        init_consensus_height += std::to_string(init_heights.heights(i)) + " ";
-    }
-
-    ZJC_DEBUG("0 success change min elect statistic heights: %u, %s",
-        net_id, init_consensus_height.c_str());
     // 通过文件同步 RootSingleBlock
     // 包含 root 网络中的 root pool 账户、选举块和时间块
     return GenerateShardSingleBlock(net_id);

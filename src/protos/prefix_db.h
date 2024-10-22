@@ -1056,7 +1056,7 @@ public:
             uint32_t idx, uint32_t pos, const bls::protobuf::BlsVerifyValue& verify_val) {
         std::string key;
         key.reserve(64);
-        key.append(kPresetPolynomialPrefix);
+        key.append(kPresetVerifyValuePrefix);
         key.append((char*)&idx, sizeof(idx));
         key.append((char*)&pos, sizeof(pos));
         std::string val = verify_val.SerializeAsString();
@@ -1069,7 +1069,7 @@ public:
     bool ExistsPresetVerifyValue(uint32_t idx, uint32_t pos) {
         std::string key;
         key.reserve(64);
-        key.append(kPresetPolynomialPrefix);
+        key.append(kPresetVerifyValuePrefix);
         key.append((char*)&idx, sizeof(idx));
         key.append((char*)&pos, sizeof(pos));
         return db_->Exist(key);
@@ -1081,7 +1081,7 @@ public:
             bls::protobuf::BlsVerifyValue* verify_val) {
         std::string key;
         key.reserve(64);
-        key.append(kPresetPolynomialPrefix);
+        key.append(kPresetVerifyValuePrefix);
         key.append((char*)&idx, sizeof(idx));
         key.append((char*)&pos, sizeof(pos));
         std::string val;
@@ -1095,44 +1095,6 @@ public:
             return false;
         }
 
-        return true;
-    }
-
-    void SaveStatisticLatestHeihgts(
-            uint32_t sharding_id,
-            const pools::protobuf::StatisticTxItem& to_heights) {
-        std::string key;
-        key.reserve(64);
-        key.append(kPresetPolynomialPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        std::string val = to_heights.SerializeAsString();
-        auto st = db_->Put(key, val);
-        if (!st.ok()) {
-            ZJC_FATAL("write db failed!");
-        }
-
-        ZJC_DEBUG("success save latest statistic info: %s", ProtobufToJson(to_heights).c_str());
-    }
-
-    bool GetStatisticLatestHeihgts(
-            uint32_t sharding_id,
-            pools::protobuf::StatisticTxItem* to_heights) {
-        std::string key;
-        key.reserve(64);
-        key.append(kPresetPolynomialPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            ZJC_WARN("get data from db failed!");
-            return false;
-        }
-
-        if (!to_heights->ParseFromString(val)) {
-            return false;
-        }
-
-        ZJC_DEBUG("success get latest statistic info: %s", ProtobufToJson(*to_heights).c_str());
         return true;
     }
 

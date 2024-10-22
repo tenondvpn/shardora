@@ -55,22 +55,6 @@ int ShardStatistic::Init() {
         return kPoolsError;
     }
 
-    // latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>();
-    // auto& to_heights = *latest_statistic_item_;
-    // if (!prefix_db_->GetStatisticLatestHeihgts(
-    //         common::GlobalInfo::Instance()->network_id(), 
-    //         &to_heights)) {
-    //     assert(false);
-    //     return kPoolsError;
-    // }
-
-    // if (to_heights.heights_size() != common::kInvalidPoolIndex) {
-    //     ZJC_DEBUG("to heights size: %u not equal to: %u",
-    //         to_heights.heights_size(), common::kInvalidPoolIndex);
-    //     assert(false);
-    //     return kPoolsError;
-    // }
-
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         pools_consensus_blocks_[i] = std::make_shared<PoolBlocksInfo>();
         pools_consensus_blocks_[i]->latest_consensus_height_ =
