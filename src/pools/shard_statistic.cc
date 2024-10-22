@@ -632,7 +632,22 @@ int ShardStatistic::StatisticWithHeights(
     }
 
     if (piter == statistic_pool_info_.rend() || iter == statistic_pool_info_.rend()) {
-        ZJC_DEBUG("failed iter == statistic_pool_info_.end()");
+        std::string piter_debug_str;
+        for (auto test_iter = piter->second.begin(); test_iter != piter->second.end(); ++test_iter) {
+            piter_debug_str += std::to_string(test_iter->first) + ", ";
+        }
+
+        std::string iter_debug_str;
+        for (auto test_iter = iter->second.begin(); test_iter != iter->second.end(); ++test_iter) {
+            iter_debug_str += std::to_string(test_iter->first) + ", ";
+        }
+        
+        ZJC_DEBUG("failed iter == statistic_pool_info_.end() piter: %d, iter: %d, "
+            "piter_debug_str: %s, iter_debug_str: %s",
+            (piter == statistic_pool_info_.rend()), 
+            (iter == statistic_pool_info_.rend()),
+            piter_debug_str.c_str(),
+            iter_debug_str.c_str());
         return kPoolsError;
     }
 
