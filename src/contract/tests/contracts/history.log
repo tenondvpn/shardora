@@ -1,0 +1,1000 @@
+   85  ps -ef | grep s3_1
+   86  kill 51334
+   87  nohup ./zjchain -f 0 -g 0 s3_1 root &
+   88  ps -ef | grep s3_1
+   89  kill 51518
+   90  nohup ./zjchain -f 0 -g 0 s3_1 root &
+   91  ls
+   92  cd .
+   93  grep ", propose_debug: 3-9-383," ./log/zjchain.log
+   94  cd .
+   95  grep "pool index: 9, send to leader" ./log/zjchain.log
+   96  grep 037eaaafff7cb467f8dd887cd0a2005b2ce4697023732328e220b512d2375428 ./log/zjchain.log | grep commit
+   97  grep 3_9_585 ./log/zjchain.log
+   98  grep "success new block coming sharding id: 3_9_625," ./log/zjchain.log
+   99  grep "success new block coming sharding id: 3_9_" ./log/zjchain.log
+  100  grep "new block coming sharding id: 3_9_625, view:" ./log/zjchain.log
+  101  grep "new block coming sharding id: 3_9_626, view:" ./log/zjchain.log
+  102  grep "success new set qc view:.*3_9_" ./log/zjchain.log
+  103  .log 
+  104  grep "success new block coming sharding id: 3_9_" ./log/zjchain.log 
+  105  cd .
+  106  grep ", propose_debug: 3-9-383," ./log/zjchain.log
+  107  cd .
+  108  grep "pool index: 9, send to leader" ./log/zjchain.log
+  109  grep 037eaaafff7cb467f8dd887cd0a2005b2ce4697023732328e220b512d2375428 ./log/zjchain.log | grep commit
+  110  grep 3_9_585 ./log/zjchain.log
+  111  grep "success new block coming sharding id: 3_9_625," ./log/zjchain.log
+  112  grep "success new block coming sharding id: 3_9_" ./log/zjchain.log
+  113  grep "new block coming sharding id: 3_9_625, view:" ./log/zjchain.log
+  114  grep "new block coming sharding id: 3_9_626, view:" ./log/zjchain.log
+  115  grep "success new set qc view:.*3_9_" ./log/zjchain.log
+  116  ls
+  117  cd shardora
+  118  ls
+  119  grep ", propose_debug: 3-9-2," ./log/zjchain.log
+  120  grep ", propose_debug: 3-9-11, tx gids:" ./lo
+  121  grep ", propose_debug: 3-9-11, tx gids:" ./log/zjchain.log
+  122  git pull
+  123  sh deploy_genesis.sh Debug True
+  124  killall -9 zjchain
+  125  cd .
+  126  git pull
+  127  sh de
+  128  sh deploy_genesis.sh Debug True
+  129  killall -9 zjchain
+  130  cd .
+  131  git pull
+  132  sh deploy_genesis.sh Debug True
+  133  killall -9 zjchain
+  134  cd .
+  135  grep ", propose_debug: 3-9-49," ./log/zjchain.log
+  136  git pull
+  137  sh deploy_genesis.sh Debug True
+  138  killall -9 zjchain
+  139  git pull
+  140  sh deploy_genesis.sh Debug True
+  141  cd .
+  142  git pull
+  143  sh deploy_genesis.sh Debug True
+  144  killall -9 zjchain
+  145  git pull
+  146  sh deploy_genesis.sh Debug True
+  147  pstack 70150
+  148  killall -9 zjchain
+  149  git pull
+  150  sh deploy_genesis.sh Debug True
+  151  git pull
+  152  sh deploy_genesis.sh Debug True
+  153  git pull
+  154  sh deploy_genesis.sh Debug True
+  155  git pull
+  156  sh deploy_genesis.sh Debug True
+  157  cd .
+  158  df -hl
+  159  killall -9 zjchain
+  160  ls
+  161  cd .
+  162  grep ", propose_debug: 3-9-383," ./log/zjchain.log
+  163  cd .
+  164  grep "pool index: 9, send to leader" ./log/zjchain.log
+  165  grep 037eaaafff7cb467f8dd887cd0a2005b2ce4697023732328e220b512d2375428 ./log/zjchain.log | grep commit
+  166  grep 3_9_585 ./log/zjchain.log
+  167  grep "success new block coming sharding id: 3_9_625," ./log/zjchain.log
+  168  grep "success new block coming sharding id: 3_9_" ./log/zjchain.log
+  169  grep "new block coming sharding id: 3_9_625, view:" ./log/zjchain.log
+  170  grep "new block coming sharding id: 3_9_626, view:" ./log/zjchain.log
+  171  grep "success new set qc view:.*3_9_" ./log/zjchain.log
+  172  grep ", propose_debug: 3-9-2," ./log/zjchain.log
+  173  grep ", propose_debug: 3-9-11, tx gids:" ./lo
+  174  grep ", propose_debug: 3-9-11, tx gids:" ./log/zjchain.log
+  175  cd shardora/src/contract/tests/contracts/
+  176  sh run.sh 
+  177  cd .
+  178  grep "pool index: 9, send to leader" ./log/zjchain.log
+  179  grep 037eaaafff7cb467f8dd887cd0a2005b2ce4697023732328e220b512d2375428 ./log/zjchain.log | grep commit
+  180  grep 3_9_585 ./log/zjchain.log
+  181  grep "success new block coming sharding id: 3_9_625," ./log/zjchain.log
+  182  grep "success new block coming sharding id: 3_9_" ./log/zjchain.log
+  183  grep "new block coming sharding id: 3_9_625, view:" ./log/zjchain.log
+  184  grep "new block coming sharding id: 3_9_626, view:" ./log/zjchain.log
+  185  grep "success new set qc view:.*3_9_" ./log/zjchain.log
+  186  grep ", propose_debug: 3-9-2," ./log/zjchain.log
+  187  cd zjnodes/s3_1
+  188  grep ", propose_debug: 3-9-2," ./log/zjchain.log
+  189  grep ", propose_debug: 3-9-11, tx gids:" ./lo
+  190  grep ", propose_debug: 3-9-11, tx gids:" ./log/zjchain.log
+  191  cd .
+  192  ls
+  193  cd .
+  194  ls
+  195  gdb ./zjchain ./core.18038 
+  196  q
+  197  tail log/zjchain.log 
+  198  vim log/zjchain.log 
+  199  cd .
+  200  grep ", propose_debug: 3-9-49," ./log/zjchain.log
+  201  grep "success new block coming sharding id: 3_9_" ./log/zjchain.log 
+  202  cd .
+  203  grep 326a586002ef5de7f37e00321bb5bd58560a52d9b07eb87f5cc958531c8b1e22 ./log/zjchain.log | grep prefix_db
+  204  grep 326a586002ef5de7f37e00321bb5bd58560a52d9b07eb87f5cc958531c8b1e22 ./log/zjchain.log | grep prefix_db | grep 3_9
+  205  grep b115f176babb84ec4318db4bd039303e7fbe8bc4140903a55584420e7e615544 ./log/zjchain.log 
+  206  grep "init 0 0" ./log/zjchain.log 
+  207  ls
+  208  grep b115f176babb84ec4318db4bd039303e7fbe8bc4140903a55584420e7e615544 ./log/zjchain.log 
+  209  grep b115f176babb84ec4318db4bd039303e7fbe8bc4140903a55584420e7e615544 ./log/zjchain.log | grep prefix
+  210  grep LoadAllViewBlockWithLatestCommitedBlock ./log/zjchain.log 
+  211  vim log/zjchain.log 
+  212  cd .
+  213  grep "init load view block 3_9_" ./log/zjchain.log 
+  214  vim log/zjchain.log 
+  215  grep 617501b4c7ea2bcda86cf452ea201acb4c12c276d76285788d8144b9a9e9d7495f6af5 ./log 
+  216  cd .
+  217  ls
+  218  cd .
+  219  ls
+  220  vim log/zjchain.log 
+  221  grep "propose_debug: 3-9-383," ./log/zjchain.log 
+  222  tail log/zjchain.log 
+  223  cd .
+  224  grep ", propose_debug: 3-9-383," ./log/zjchain.log
+  225  vim log/zjchain.log 
+  226  grep "2024-10-17 15:07" ./log/zjchain.log | grep commit
+  227  grep HandlePreResetTimerMsg ./log/zjchain.log 
+  228  grep HandlePreResetTimerMsg ./log/zjchain.log > test2
+  229  vim test2
+  230  vim log/zjchain.log 
+  231  grep 037eaaafff7cb467f8dd887cd0a2005b2ce4697023732328e220b512d2375428 ./log/zjchain.log 
+  232  grep 037eaaafff7cb467f8dd887cd0a2005b2ce4697023732328e220b512d2375428 ./log/zjchain.log | grep commit
+  233  grep 037eaaafff7cb467f8dd887cd0a2005b2ce4697023732328e220b512d2375428 ./log/zjchain.log 
+  234  cd .
+  235  grep "pool index: 9, send to leader" ./log/zjchain.log
+  236  grep 037eaaafff7cb467f8dd887cd0a2005b2ce4697023732328e220b512d2375428 ./log/zjchain.log | grep commit
+  237  grep 3_9_585 ./log/zjchain.log 
+  238  grep 3_9_585 ./log/zjchain.log
+  239  cd ../s3_2
+  240  grep 3_9_585 ./log/zjchain.log
+  241  grep "success new block coming sharding id: 3_9_625," ./log/zjchain.log
+  242  grep "success new block coming sharding id: 3_9_" ./log/zjchain.log
+  243  grep "new block coming sharding id: 3_9_625, view:" ./log/zjchain.log
+  244  grep "new block coming sharding id: 3_9_626, view:" ./log/zjchain.log
+  245  vim log/zjchain.log 
+  246  grep "success new set qc view:.*3_9_" ./log/zjchain.log
+  247  cd zjnodes/s3_1
+  248  cd ../s3_2
+  249  grep "new block coming sharding id: 3_9_" ./log/zjchain.log
+  250  grep ", propose_debug: 3-9-382, " ./log/zjchain.log
+  251  grep "NEW BLOCK CommitInner coming pool: 9," ./log/zjchain.log
+  252  grep ", propose_debug: 3-9-383," ./log/zjchain.log
+  253  vim log/zjchain.log 
+  254  cd ../s3_1
+  255  grep "success new qc view:" ./log/zjchain.log 
+  256  grep "success new qc view:" ./log/zjchain.log | grep 3_0
+  257  grep "init 0 0" ./log/zjchain.log 
+  258  cd .
+  259  grep ", propose_debug: 3-9-512," ./log/
+  260  grep ", propose_debug: 3-9-512," ./log/zjchain.log 
+  261  cd zjnodes/s3_1
+  262  cd ../s3_3
+  263  grep "new block coming sharding id: 3_9_" ./log/zjchain.log
+  264  grep ", propose_debug: 3-9-382, " ./log/zjchain.log
+  265  grep "NEW BLOCK CommitInner coming pool: 9," ./log/zjchain.log
+  266  grep 3_9_202 ./log/zjchain.log 
+  267  grep ", propose_debug: 3-9-383," ./log/zjchain.log
+  268  cd ../s3_1
+  269  grep 3_0_7 ./log/
+  270  grep 3_0_7 ./log/zjchain.log 
+  271  vim log/zjchain.log 
+  272  grep "\[Propose\]" ./log/zjchain.log | grep "pool: 0"
+  273  grep "success new qc view:" ./log/zjchain.log 
+  274  grep "success new qc view:" ./log/zjchain.log | grep 3_0_
+  275  ls
+  276  cd zjnodes/s3_1
+  277  ls
+  278  cd ../s3_4
+  279  grep "new block coming sharding id: 3_9_" ./log/zjchain.log
+  280  grep ", propose_debug: 3-9-382, " ./log/zjchain.log
+  281  grep "NEW BLOCK CommitInner coming pool: 9," ./log/zjchain.log
+  282  grep ", propose_debug: 3-9-383," ./log/zjchain.log
+  283  cd ../s3_1
+  284  grep '\[Propose\]' ./log/zjchain.log 
+  285  grep '\[Propose\]' ./log/zjchain.log | grep "pool: 0"
+  286  cd "zjnodes/s3_1"
+  287  grep "success new tc view: " ./log/
+  288  grep "success new tc view: " ./log/zjchain.log 
+  289  grep "success new tc view: " ./log/zjchain.log | grep 3_0_
+  290  cd "zjnodes/s3_1"
+  291  grep "success new qc view: " ./log/zjchain.log | grep 3_0_
+  292  ls
+  293  cd zjnodes/
+  294  ls
+  295  cd s3_1
+  296  ls
+  297  grep "new block coming sharding id: 3_9_" ./log/zjchain.log
+  298  grep 3_9_657 ./log/zjchain.log 
+  299  grep ", propose_debug: 3-9-382, " ./log/zjchain.log
+  300  vim log/zjchain.log 
+  301  grep "NEW BLOCK CommitInner coming pool: 9" ./log/zjchain.log 
+  302  grep "NEW BLOCK CommitInner coming pool: 9," ./log/zjchain.log
+  303  grep ", propose_debug: 3-9-382, " ./log/zjchain.log
+  304  grep ", propose_debug: 3-9-383, " ./log/zjchain.log
+  305  grep ", propose_debug: 3-9-384, " ./log/zjchain.log
+  306  grep ", propose_debug: 3-9-383," ./log/zjchain.log
+  307  vim log/zjchain.log 
+  308  cd .
+  309  tail log/zjchain.log 
+  310  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  311  cd ..
+  312  find -name core*
+  313  cd s3_3
+  314  ls
+  315  gdb ./zjchain ./core.64473 
+  316  tail log/zjchain.log 
+  317  cd ../s3_1
+  318  tail log/zjchain.log 
+  319  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  320  ls
+  321  gdb ./zjchain ./core.73297 
+  322  tail log/zjchain.log 
+  323  vim log/zjchain.log 
+  324  tail log/zjchain.log 
+  325  grep ", 3_0_7, 7," ./log/zjchain.log 
+  326  vim log/zjchain.log 
+  327  grep "pool: 0, latest vb from db, vb view:" ./log/
+  328  grep "pool: 0, latest vb from db, vb view:" ./log/zjchain.log 
+  329  grep 30edf510ce2e04b38a22ff6a0113858c72ece550af381d03a56cbf2536826150 ./log/zjchain.log 
+  330  grep "init load view block 3_0_7, 7," ./log/zjchain.log 
+  331  grep LoadAllViewBlockWithLatestCommitedBlock ./log/zjchain.log | grep 3_0_7
+  332  grep "pool: 0, latest vb from db, vb view: 7" ./log/zjchain.log 
+  333  vim log/zjchain.log 
+  334  cd .
+  335  tail log/zjchain.log 
+  336  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  337  cd .
+  338  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  339  grep 3-9- ./log/zjchain.log 
+  340  grep "propose_debug: 3-9-" ./log/zjchain.log 
+  341  `C`C`C`C`C`C`C`C`C`C`C`C`C`C`C`C`CaCaCaCaCaCaCaCaCaCaCaCaCaCaCaCaCaCaCaCaCaC`C`C`C`C`C`C`C`C`C`C`C`C`C`C`C`C`C`C`C`C`C`C`C`C
+  342  cd .
+  343  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  344  grep 3-9- ./log/zjchain.log 
+  345  grep ", propose_debug: 3-9-214," ./log/zjchain.log 
+  346  grep "init 0 0" ./log/zjchain.log 
+  347  cd .
+  348  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  349  ls
+  350  grep 3-16- ./log/zjchain.log 
+  351  cd "zjnodes/s3_1"
+  352  cd ../s3_2
+  353  ls
+  354  grep ", propose_debug: 3-9-512," ./log/zjchain.log 
+  355  grep 14635184173262004709 ./log/zjchain.log 
+  356  grep 13472381998002886237 ./log/zjchain.log 
+  357  grep 4255996302800810434 ./log/zjchain.log 
+  358  cd ../s3_4
+  359  grep ", propose_debug: 3-9-214," ./log/zjchain.log
+  360  vim log/zjchain.log 
+  361  cd .
+  362  grep OnLocal ./log/zjchain.log | grep "pool: 16"
+  363  :q
+  364  cd .
+  365  grep 15623932588710518371 ./log/zjchain.log
+  366  cd .
+  367  grep ", propose_debug: 3-16-5," ./log/zjchain.log 
+  368  grep "success set view block hash: a9c2b3d8e81e19404a668629f1cdf4772c7db3487468d6ca5c9e06e9e31f4140" ./log/zjchain.log
+  369  grep 3_16_29 ./log/zjchain.log 
+  370  grep "new block coming sharding id: 3_9_" ./log/zjchain.log
+  371  grep ", propose_debug: 3-9-382, " ./log/zjchain.log
+  372  grep "NEW BLOCK CommitInner coming pool: 9," ./log/zjchain.log
+  373  grep ", propose_debug: 3-9-383," ./log/zjchain.log
+  374  cd shardora/src/contract/tests/contracts/
+  375  sh run.sh 
+  376  vim run.sh 
+  377  sh run.sh 
+  378  cd "zjnodes/s3_1"
+  379  grep "propose_debug: 3-9-" ./log/zjchain.log
+  380  vim log/zjchain.log 
+  381  grep 4255996302800810434 ./log/zjchain.log 
+  382  grep ", propose_debug: 3-9-512," ./log/zjchain.log 
+  383  vim log/zjchain.log 
+  384  cd ../s3_2
+  385  grep ", propose_debug: 3-9-214," ./log/zjchain.log
+  386  cd ../s3_1
+  387  ls
+  388  grep "3-16-" ./log/zjchain.log 
+  389  cd .
+  390  grep "3-16-" ./log/zjchain.log 
+  391  cd ../s3_2
+  392  grep OnLocal ./log/zjchain.log | grep "pool: 16"
+  393  :q
+  394  cd ../s3-1
+  395  cd ../s3_1
+  396  grep "3-16-" ./log/zjchain.log 
+  397  grep 15623932588710518371 ./log/zjchain.log 
+  398  cd .
+  399  grep 15623932588710518371 ./log/zjchain.log
+  400  cd .
+  401  grep a9c2b3d8e81e19404a668629f1cdf4772c7db3487468d6ca5c9e06e9e31f4140 ./log/zjchain.log 
+  402  grep "success set view block hash: a9c2b3d8e81e19404a668629f1cdf4772c7db3487468d6ca5c9e06e9e31f4140" ./log/zjchain.log 
+  403  cd ../s3_2
+  404  grep TryRecoverFromStuck ./log/zjchain.log 
+  405  cd "zjnodes/s3_1"
+  406  gep "3-16-
+  407  gep "3-16-" ./log/zjchain.log 
+  408  grep "3-16-" ./log/zjchain.log 
+  409  grep 1070196115611268807 ./log/zjchain.log 
+  410  grep OnRemote ./log/zjchain.log 
+  411  grep OnRemote ./log/zjchain.log | grep "pool: 16"
+  412  grep "init 0 0" ./log/zjchain.log 
+  413  cd .
+  414  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  415  grep "init 0 0" ./log/zjchain.log 
+  416  grep OnRemote ./log/zjchain.log | grep "pool: 16"
+  417  grep OnLocal ./log/zjchain.log 
+  418  grep OnLocal ./log/zjchain.log | grep "pool: 16"
+  419  :q
+  420  cd .
+  421  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  422  grep OnRemote ./log/zjchain.log | grep "pool: 16"
+  423  grep "init 0 0" ./log/zjchain.log 
+  424  cd .
+  425  grep 15623932588710518371 ./log/zjchain.log
+  426  cd .
+  427  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  428  cd .
+  429  cd "shardora"
+  430  cd 
+  431  cd zjnodes/s3_1
+  432  ps -ef | grep s3_1
+  433  kill 102773
+  434  nohup ./zjchain -f 0 -g 0 s3_1 root &
+  435  cd ..
+  436  find -name core*
+  437  cd .
+  438  find -name core*
+  439  cd s3-1
+  440  cd s3_1
+  441  gdb ./zjchain ./core.106981 
+  442  vim log/zjchain.log 
+  443  ps -ef | grep s3_1
+  444  kill 111687
+  445  cd .
+  446  ls
+  447  nohup ./zjchain -f 0 -g 0 s3_1 root &
+  448  ps -ef | grep s3_1
+  449  kill 122639
+  450  nohup ./zjchain -f 0 -g 0 s3_1 root &
+  451  cd .
+  452  ls
+  453  nohup ./zjchain -f 0 -g 0 s3_1 root &
+  454  ps -ef | grep s3_1
+  455  kill 123451
+  456  nohup ./zjchain -f 0 -g 0 s3_1 root &
+  457  ps -ef | grep s3_1
+  458  kill 124148
+  459  nohup ./zjchain -f 0 -g 0 s3_1 root &
+  460  ps -ef | grep s3_1
+  461  kill 124964
+  462  nohup ./zjchain -f 0 -g 0 s3_1 root &
+  463  ls
+  464  cd shardora
+  465  ls
+  466  grep "new block coming sharding id: 3_9_" ./log/zjchain.log
+  467  grep ", propose_debug: 3-9-382, " ./log/zjchain.log
+  468  grep "NEW BLOCK CommitInner coming pool: 9," ./log/zjchain.log
+  469  grep ", propose_debug: 3-9-383," ./log/zjchain.log
+  470  git pull
+  471  sh deploy_genesis.sh Debug True
+  472  git pull
+  473  sh deploy_genesis.sh Debug True
+  474  git pull
+  475  sh deploy_genesis.sh Debug True
+  476  killall -9 zjchain
+  477  git pull
+  478  sh deploy_genesis.sh Debug True
+  479  git pull
+  480  vim build.sh 
+  481  sh build.sh Debug
+  482  vim build.sh 
+  483  sh build.sh Debug
+  484  cp ./cbuild_Debug/zjchain /root/zjnodes/s3_1/
+  485  ps -ef | grep zjchain
+  486  cp ./cbuild_Debug/zjchain /root/zjnodes/s3_1/
+  487  git pull
+  488  sh deploy_genesis.sh Debug True
+  489  git pull
+  490  sh deploy_genesis.sh Debug True
+  491  git pull
+  492  sh deploy_genesis.sh Debug True
+  493  git pull
+  494  sh deploy_genesis.sh Debug True
+  495  git pull
+  496  sh deploy_genesis.sh Debug True
+  497  rm -rf cbuild_*
+  498  git pull
+  499  sh deploy_genesis.sh Debug True
+  500  killall -9 zjchain
+  501  git pull
+  502  sh deploy_genesis.sh Debug True
+  503  killall -9 zjchain
+  504  git pull
+  505  sh deploy_genesis.sh Debug True
+  506  killall -9 zjchain
+  507  git pull
+  508  sh deploy_genesis.sh Debug True
+  509  killall -9 zjchain
+  510  :q
+  511  git pull
+  512  sh deploy_genesis.sh Debug True
+  513  ps -ef | grep zjchain
+  514  killall -9 zjchain
+  515  cd .
+  516  grep 15623932588710518371 ./log/zjchain.log
+  517  git pull
+  518  sh deploy_genesis.sh Debug True
+  519  cd .
+  520  killall -9 zjchain
+  521  git pull
+  522  sh deploy_genesis.sh Debug True
+  523  killall -9 zjchain
+  524  git pull
+  525  sh deploy_genesis.sh Debug True
+  526  git pull
+  527  sh deploy_genesis.sh Debug True
+  528  killall -9 zjchain
+  529  git pull
+  530  sh deploy_genesis.sh Debug True
+  531  killall -9 zjchain
+  532  cd "zjnodes/s3_4"
+  533  cd ..
+  534  find -name core*
+  535  cd s3_3
+  536  ls
+  537  gdb ./zjchain ./core.77941 
+  538  q
+  539  tail log/zjchain.log 
+  540  grep a9c2b3d8e81e19404a668629f1cdf4772c7db3487468d6ca5c9e06e9e31f4140 ./log/zjchain.log 
+  541  ls
+  542  vim log/zjchain.log 
+  543  grep "success set view block hash: a9c2b3d8e81e19404a668629f1cdf4772c7db3487468d6ca5c9e06e9e31f4140" ./log/zjchain.log
+  544  cd "zjnodes/s3_1"
+  545  cd ../s3_2
+  546  cd .
+  547  grep 15623932588710518371 ./log/zjchain.log
+  548  cd .
+  549  cd ../s3_3
+  550  grep ", propose_debug: 3-16-5," ./log/
+  551  grep ", propose_debug: 3-16-5," ./log/zjchain.log 
+  552  cd .
+  553  ls
+  554  gdb ./zjchain ./core.102775 
+  555  cd "zjnodes/s3_1"
+  556  cd ../s3_2
+  557  grep "TryRecoverFromStuck" ./log/zjchain.log | grep "pool: 16"
+  558  grep "TryRecoverFromStuck" ./log/zjchain.log | grep "pool: 16" > test
+  559  vim test
+  560  grep "send prereset msg from:" ./log/zjchain.log | grep "pool: 16"
+  561  grep "send prereset msg from:" ./log/zjchain.log | grep "pool: 9"
+  562  ls
+  563  ls
+  564  cd zjnodes/
+  565  s
+  566  ls
+  567  cd s3_1
+  568  ls
+  569  cd ..
+  570  find -name core*
+  571  ls
+  572  cd s3_1
+  573  ls
+  574  grep 3-9- ./log/zjchain.log 
+  575  tail log/zjchain.log 
+  576  grep 3-16- ./log/zjchain.log 
+  577  tail log/zjchain.log 
+  578  grep ", propose_debug: 3-16-2, " ./log/zjchain.log 
+  579  grep "init 0 0" ./log/zjchain.log 
+  580  grep "TryRecoverFromStuck" ./log/zjchain.log 
+  581  grep "TryRecoverFromStuck" ./log/zjchain.log | grep "pool: 16"
+  582  grep "TryRecoverFromStuck" ./log/zjchain.log | grep "pool: 16" > test
+  583  vim test
+  584  grep "TryRecoverFromStuck" ./log/zjchain.log | grep "pool: 16" | grep -v "stuck_st != 0: 1"
+  585  tail log/zjchain.log 
+  586  grep 3-16 ./log/zjchain.log > test
+  587  vim test
+  588  grep "\[Propose\]" ./log/zjchain.log 
+  589  grep "\[Propose\]" ./log/zjchain.log | grep "pool: 16"
+  590  cd zjnodes/s3_1
+  591  grep "init 0 0" ./log/zjchain.log 
+  592  ls
+  593  ls
+  594  cd zjnodes/r1
+  595  ls
+  596  grep OnRemote ./log/zjchain.log 
+  597  tail log/zjchain.log 
+  598  tail log/zjchain.log | grep "pool: 16"
+  599  ls
+  600  grep OnRemote ./log/zjchain.log | grep "pool: 16"
+  601  tail log/zjchain.log 
+  602  vim test
+  603  cd "zjnodes/s3_1"
+  604  cd zjnodes/
+  605  grep ", propose_debug: 3-9-347," ./log/zjchain.log
+  606  grep ", propose_debug: 3-16-2," ./log/zjchain.log
+  607  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  608  grep "statistic height: 14" ./log/zjchain.log | grep "pool: 0,"
+  609  grep "statistic height: 14" ./log/zjchain.log | grep "pool: 1,"
+  610  grep "statistic height: 14, success handle block pool: 1," ./log/zjchain.log
+  611  grep "statistic height: 14, success handle block pool: 2," ./log/zjchain.log
+  612  grep "statistic height: 6, success handle block pool: 2," ./log/zjchain.log
+  613  grep "statistic height: 6, success handle block pool: 13," ./log/zjchain.log
+  614  grep "statistic height: 14, success handle block pool: 13," ./log/zjchain.log
+  615  grep "statistic height: 6, success handle block pool: 13," ./log/zjchain.log
+  616  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  617  cd s3_1
+  618  grep "pool: 13, get block height and statistic height:" ./log/zjchain.log 
+  619  vim log/zjchain.log 
+  620  cd .
+  621  ps -ef | grep zjchain
+  622  ps -ef | grep s3_1
+  623  kill 8960
+  624  nohup ./zjchain -f 0 -g 0 s3_1 root &
+  625  cd .
+  626  grep "statistic height: 6, success handle block pool: 10" ./log/zjchain.log 
+  627  ps -ef | grep s3_1
+  628  kill 56638
+  629  ps -ef | grep s3_1
+  630  nohup ./zjchain -f 0 -g 0 s3_1 root &
+  631  cd .
+  632  nohup ./zjchain -f 0 -g 0 s3_1 root &
+  633  ps -ef | grep s3_1
+  634  cd .
+  635  kill 58479
+  636  nohup ./zjchain -f 0 -g 0 s3_1 root &
+  637  ps -ef | grep s3_1
+  638  kill 59616
+  639  noh
+  640  nohup ./zjchain -f 0 -g 0 s3_1 root &
+  641  ps -ef | grep s3_1
+  642  kill 66850
+  643  nohup ./zjchain -f 0 -g 0 s3_1 root &
+  644  cd .
+  645  nohup ./zjchain -f 0 -g 0 s3_1 root &
+  646  ps -ef | grep s3_1
+  647  kill 67875
+  648  nohup ./zjchain -f 0 -g 0 s3_1 root &
+  649  ps -ef | grep s3_1
+  650  nohup ./zjchain -f 0 68702-g 0 s3_1 root &
+  651  kill 68702
+  652  nohup ./zjchain -f 0 68702-g 0 s3_1 root &
+  653  ps -ef | grep s3_1
+  654  nohup ./zjchain -f 0 687025891-g 0 s3_1 root &
+  655  cd .
+  656  nohup ./zjchain -f 0 687025891-g 0 s3_1 root &
+  657  ps -ef | grep s3_1
+  658  kill 5891
+  659  nohup ./zjchain -f 0 687025891-g 0 s3_1 root &
+  660  ps -ef | grep s3_1 | awk -F' ' '{print S2}'
+  661  ps -ef | grep s3_1
+  662  ps -ef | grep s3_1 | awk -F' ' '{print $2}'
+  663  ps -ef | grep s3_1 | awk -F' ' '{print $2}' | xargs kill -9
+  664  cd .
+  665  ls
+  666  gdb ./zjchain ./core.17683 
+  667  gdb ./zjchain ./core.17683 
+  668  cd .
+  669  ls
+  670  gdb ./zjchain ./core.23534 
+  671  grep ", propose_debug: 3-16-11, tx gids: 14e4f01f4ebbef2401ae71060ad9f86e2c979a42fe202e3ba2aca80af26b94b0" ./log/zjchain.log
+  672  cd "zjnodes/s3_3"
+  673  grep "success handle kPoolStatisticTag tx statistic_height: " ./log/zjchain.log 
+  674  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log 
+  675  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  676  grep ", propose_debug: 3-16-11, tx gids: 14e4f01f4ebbef2401ae71060ad9f86e2c979a42fe202e3ba2aca80af26b94b0" ./log/zjchain.log
+  677  cd "zjnodes/s3_1"
+  678  cd 
+  679  cd shardora/src/contract/tests/contracts/
+  680  ls
+  681  cp run.sh restart.sh
+  682  vim restart.sh 
+  683  cd 
+  684  cd shardora/src/contract/tests/contracts/
+  685  s
+  686  ls
+  687  sh restart.sh 
+  688  ls
+  689  vim restart.sh 
+  690  sh restart.sh 
+  691  vim restart.sh 
+  692  sh restart.sh 
+  693  vim restart.sh 
+  694  sh restart.sh 
+  695  vim restart.sh 
+  696  sh 
+  697  sh restart.sh 
+  698  vim restart.sh 
+  699  sh restart.sh 
+  700  grep ", propose_debug: 3-16-11, tx gids: 14e4f01f4ebbef2401ae71060ad9f86e2c979a42fe202e3ba2aca80af26b94b0" ./log/zjchain.log
+  701  cd "zjnodes/s3_3"
+  702  cd ../s3_4
+  703  ls
+  704  grep ", propose_debug: 3-9-347," ./log/zjchain.log
+  705  grep ", propose_debug: 3-16-2," ./log/zjchain.log
+  706  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  707  grep "statistic height: 14" ./log/zjchain.log | grep "pool: 0,"
+  708  grep "statistic height: 14" ./log/zjchain.log | grep "pool: 1,"
+  709  grep "statistic height: 14, success handle block pool: 1," ./log/zjchain.log
+  710  grep "statistic height: 14, success handle block pool: 2," ./log/zjchain.log
+  711  grep "statistic height: 6, success handle block pool: 2," ./log/zjchain.log
+  712  grep "statistic height: 6, success handle block pool: 13," ./log/zjchain.log
+  713  grep "statistic height: 14, success handle block pool: 13," ./log/zjchain.log
+  714  grep "statistic height: 6, success handle block pool: 13," ./log/zjchain.log
+  715  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  716  cd ../s3_2
+  717  cd .
+  718  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log 
+  719  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  720  cd .
+  721  cd .grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  722  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  723  grep "statistic height: 6, success handle block pool: 10" ./log/zjchain.log 
+  724  grep "statistic height: 1, success handle block pool: 10" ./log/zjchain.log 
+  725  cd .
+  726  grep ", propose_debug: 3-16-11, tx gids: 14e4f01f4ebbef2401ae71060ad9f86e2c979a42fe202e3ba2aca80af26b94b0" ./log/zjchain.log
+  727  ls
+  728  grep ", propose_debug: 3-9-347," ./log/zjchain.log
+  729  grep ", propose_debug: 3-16-2," ./log/zjchain.log
+  730  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  731  grep "statistic height: 14" ./log/zjchain.log | grep "pool: 0,"
+  732  grep "statistic height: 14" ./log/zjchain.log | grep "pool: 1,"
+  733  grep "statistic height: 14, success handle block pool: 1," ./log/zjchain.log
+  734  grep "statistic height: 14, success handle block pool: 2," ./log/zjchain.log
+  735  grep "statistic height: 6, success handle block pool: 2," ./log/zjchain.log
+  736  grep "statistic height: 6, success handle block pool: 13," ./log/zjchain.log
+  737  grep "statistic height: 14, success handle block pool: 13," ./log/zjchain.log
+  738  grep "statistic height: 6, success handle block pool: 13," ./log/zjchain.log
+  739  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  740  cd shardora
+  741  git pull
+  742  sh deploy_genesis.sh Debug True
+  743  killall -9 zjchain
+  744  git pull
+  745  sh deploy_genesis.sh Debug True
+  746  killall -9 zjchain
+  747  git pull
+  748  sh deploy_genesis.sh Debug True
+  749  killall -9 zjchain
+  750  git pull
+  751  sh deploy_genesis.sh Debug True
+  752  df -hl
+  753  git pull
+  754  sh deploy_genesis.sh Debug True
+  755  df -hl
+  756  git pull
+  757  sh deploy_genesis.sh Debug True
+  758  git pull
+  759  sh deploy_genesis.sh Debug True
+  760  killall -9 zjchain
+  761  sh deploy_genesis.sh Debug True
+  762  git pull
+  763  sh deploy_genesis.sh Debug True
+  764  killall -9 zjchain
+  765  grep ", propose_debug: 3-16-11, tx gids: 14e4f01f4ebbef2401ae71060ad9f86e2c979a42fe202e3ba2aca80af26b94b0" ./log/zjchain.log
+  766  cd "zjnodes/s3_1"
+  767  cd ../s3_2
+  768  ls
+  769  grep ", propose_debug: 3-9-347," ./log/zjchain.log
+  770  cd ../s3_1
+  771  ls
+  772  grep 3-16- ./log/zjchain.log 
+  773  cd ../s3_2
+  774  grep ", propose_debug: 3-16-2," ./log/zjchain.log
+  775  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  776  grep "statistic height: 14" ./log/zjchain.log | grep "pool: 0,"
+  777  grep "statistic height: 14" ./log/zjchain.log | grep "pool: 1,"
+  778  grep "statistic height: 14, success handle block pool: 1," ./log/zjchain.log
+  779  grep "statistic height: 14, success handle block pool: 2," ./log/zjchain.log
+  780  grep "statistic height: 6, success handle block pool: 2," ./log/zjchain.log
+  781  grep "statistic height: 6, success handle block pool: 13," ./log/zjchain.log
+  782  grep "statistic height: 14, success handle block pool: 13," ./log/zjchain.log
+  783  grep "statistic height: 6, success handle block pool: 13," ./log/zjchain.log
+  784  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  785  cd ../s3_3
+  786  cd .
+  787  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log 
+  788  grep "statistic height: 14, success handle block pool: 13," ./log/zjchain.log 
+  789  grep "statistic height: 9, success handle block pool: 13," ./log/zjchain.log 
+  790  grep "statistic height: 14, success handle block pool: 9," ./log/zjchain.log 
+  791  grep "statistic height: 14, success handle block pool: 5," ./log/zjchain.log 
+  792  grep "statistic height: 14, success handle block pool: 10," ./log/zjchain.log 
+  793  grep "statistic height: 6, success handle block pool: 10," ./log/zjchain.log 
+  794  grep ", success handle block pool: 10" ./log/zjchain.log 
+  795  grep "statistic height: 6, success handle block pool: 10" ./log/zjchain.log
+  796  cd .
+  797  grep "statistic height: 6, success handle block pool: 10" ./log/zjchain.log
+  798  grep SaveLatestPoolStatisticTag ./log/zjchain.log
+  799  grep ", success handle block pool: 10," ./log/zjchain.log 
+  800  grep "new success handle kPoolStatisticTag tx statistic_height:" ./log/zjchain.log 
+  801  grep "success handle kPoolStatisticTag tx statistic_height: 6," ./log/zjchain.log 
+  802  cd .
+  803  grep ", propose_debug: 3-16-11, tx gids: 14e4f01f4ebbef2401ae71060ad9f86e2c979a42fe202e3ba2aca80af26b94b0" ./log/zjchain.log
+  804  vim log/zjchain.log 
+  805  cd zjnodes/
+  806  ls
+  807  grep ", propose_debug: 3-9-347," ./log/zjchain.log
+  808  grep ", propose_debug: 3-16-2," ./log/zjchain.log
+  809  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  810  grep "statistic height: 14" ./log/zjchain.log | grep "pool: 0,"
+  811  grep "statistic height: 14" ./log/zjchain.log | grep "pool: 1,"
+  812  grep "statistic height: 14, success handle block pool: 1," ./log/zjchain.log
+  813  grep "statistic height: 14, success handle block pool: 2," ./log/zjchain.log
+  814  grep "statistic height: 6, success handle block pool: 2," ./log/zjchain.log
+  815  grep "statistic height: 6, success handle block pool: 13," ./log/zjchain.log
+  816  grep "statistic height: 14, success handle block pool: 13," ./log/zjchain.log
+  817  grep "statistic height: 6, success handle block pool: 13," ./log/zjchain.log
+  818  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  819  cd 
+  820  cd shardora/src/contract/tests/contracts/
+  821  sh run.sh 
+  822  cd zjnodes/
+  823  cd s3_1
+  824  ls
+  825  grep "3-16-" ./log/zjchain.log 
+  826  tail log/zjchain.log 
+  827  grep TryRecoverFromStuck ./log/zjchain.log > test
+  828  vim test
+  829  grep TryRecoverFromStuck ./log/zjchain.log | grep ", send prereset msg from:"
+  830  grep ", propose_debug: 3-9-347," ./log/zjchain.log
+  831  grep ee1971781910a92e6938821dd9980e1233e8a4cb9a9cad2743e9831c09397715 ./log/zjchain.log 
+  832  grep ", propose_debug: 3-16-2," ./log/zjchain.log
+  833  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  834  grep "statistic height: 14" ./log/zjchain.log | grep "pool: 0,"
+  835  grep "statistic height: 14" ./log/zjchain.log | grep "pool: 1,"
+  836  grep "statistic height: 14, success handle block pool: 1," ./log/zjchain.log
+  837  grep "statistic height: 14, success handle block pool: 2," ./log/zjchain.log
+  838  grep "statistic height: 6, success handle block pool: 2," ./log/zjchain.log
+  839  grep "statistic height: 6, success handle block pool: 13," ./log/zjchain.log
+  840  grep "statistic height: 14, success handle block pool: 13," ./log/zjchain.log
+  841  grep "statistic height: 6, success handle block pool: 13," ./log/zjchain.log
+  842  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  843  cd .
+  844  grep ", success handle block pool: 13" ./log/zjchain.log 
+  845  cd .
+  846  ls
+  847  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  848  cd .
+  849  grep ", success handle block pool: 13" ./log/zjchain.log 
+  850  grep "statistic height: 14, success handle block pool: 13," ./log/zjchain.log 
+  851  grep "statistic height: 14, success handle block pool: 10," ./log/zjchain.log
+  852  grep "statistic height: 6, success handle block pool: 10," ./log/zjchain.log
+  853  grep "init 0 0" ./log/zjchain.log 
+  854  grep GetLatestPoolStatisticTag ./log/zjchain.log 
+  855  grep SaveLatestPoolStatisticTag ./log/zjchain.log 
+  856  cd .
+  857  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  858  cd .
+  859  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  860  cd .
+  861  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  862  grep GetLatestPoolStatisticTag ./log/zjchain.log 
+  863  grep "init 0 0" ./log/zjchain.log 
+  864  grep "statistic height: 6, success handle block pool: 10" ./log/zjchain.log 
+  865  cd .
+  866  grep "init 0 0" ./log/zjchain.log 
+  867  cd .
+  868  grep GetLatestPoolStatisticTag ./log/zjchain.log 
+  869  grep SaveLatestPoolStatisticTag ./log/zjchain.log 
+  870  cd .
+  871  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  872  cd 
+  873  rm -rf zjnodes
+  874  cd zjnodes/s3_1
+  875  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  876  cd .
+  877  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  878  cd .
+  879  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  880  cd .
+  881  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  882  grep 3-16- ./log/zjchain.log 
+  883  cd .
+  884  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  885  cd .
+  886  ls
+  887  gdb ./zjchain ./core.113615 
+  888  cd .
+  889  tail -f log/zjchain.log | grep a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138
+  890  grep "3-16-" ./log/zjchain.log 
+  891  grep ", propose_debug: 3-16-11, tx gids: 14e4f01f4ebbef2401ae71060ad9f86e2c979a42fe202e3ba2aca80af26b94b0" ./log/zjchain.log
+  892  cd zjnodes/s3_2
+  893  cd ../s3_1
+  894  grep "handle propose called hash:" ./log/zjchain.log 
+  895  grep "handle propose called hash:" ./log/zjchain.log | grep 3_16
+  896  grep "\[Propose\]" ./log/zjchain.log 
+  897  grep ", propose_debug: 3-9-347," ./log/zjchain.log
+  898  grep "\[Propose\]" ./log/zjchain.log | grep 3_16
+  899  grep "\[Propose\]" ./log/zjchain.log | grep 3-16
+  900  tail log/zjchain.log 
+  901  grep TryRecoverFromStuck ./log/zjchain.log | grep "pool: 16"
+  902  grep TryRecoverFromStuck ./log/zjchain.log | grep "pool: 16" > test
+  903  vim test
+  904  grep TryRecoverFromStuck ./log/zjchain.log | grep "pool: 16" | grep -v "stuck_st != 0: 1"
+  905  grep ", propose_debug: 3-16-2," ./log/zjchain.log
+  906  grep fcb86c74a67854adaf9880000f36fba8012f407883512577438ac144ea71978d ./log/zjchain.log 
+  907  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  908  grep "statistic height: 14" ./log/zjchain.log 
+  909  grep "statistic height: 14" ./log/zjchain.log | grep "pool: 9," 
+  910  grep "statistic height: 14" ./log/zjchain.log | grep "pool: 0," 
+  911  grep "statistic height: 14" ./log/zjchain.log | grep "pool: 0,"
+  912  grep "statistic height: 14" ./log/zjchain.log | grep "pool: 1,"
+  913  grep "statistic height: 14, success handle block pool: 1," ./log/zjchain.log
+  914  grep "statistic height: 14, success handle block pool: 2," ./log/zjchain.log
+  915  grep "statistic height: 6, success handle block pool: 2," ./log/zjchain.log
+  916  grep "statistic height: 6, success handle block pool: 13," ./log/zjchain.log
+  917  grep "statistic height: 14, success handle block pool: 13," ./log/zjchain.log
+  918  grep "statistic height: 6, success handle block pool: 13," ./log/zjchain.log
+  919  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  920  grep "init 0 0" ./log/zjchain.log 
+  921  grep "success handle kPoolStatisticTag tx statistic_height:" ./log/zjchain.log 
+  922  success handle kPoolStatisticTag tx statistic_height:
+  923  grep GetLatestPoolStatisticTag ./log/zjchain.log 
+  924  cd .
+  925  tail -f log/zjchain.log | grep ", success handle block pool:"
+  926  grep " statistic height: 22, success handle block pool: 9," ./log/zjchain.log 
+  927  grep "3-16-" ./log/zjchain.log 
+  928  tail log/zjchain.log 
+  929  grep e2e1227e6f49649c7204e7f18236a9da0500a8a7c452a17526eb461bb9af18b2 ./log/zjchain.log 
+  930  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log 
+  931  cd .
+  932  grep "success handle kPoolStatisticTag tx statistic_height:" ./log/zjchain.log 
+  933  grep "init 0 0" ./log/zjchain.log 
+  934  cd .
+  935  grep "success handle kPoolStatisticTag tx statistic_height:" ./log/zjchain.log 
+  936  grep "init 0 0" ./log/zjchain.log 
+  937  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  938  grep "statistic height: 6, success handle block pool: 10" ./log/zjchain.log
+  939  grep "statistic height: 1, success handle block pool: 10" ./log/zjchain.log
+  940  grep "init 0 0" ./log/zjchain.log 
+  941  cd .
+  942  grep GetLatestPoolStatisticTag ./log/zjchain.log 
+  943  grep SaveLatestPoolStatisticTag ./log/zjchain.log 
+  944  tail -f log/zjchain.log | grep SaveLatestPoolStatisticTag
+  945  cd .
+  946  tail -f log/zjchain.log | grep SaveLatestPoolStatisticTag
+  947  cd .
+  948  tail -f log/zjchain.log | grep SaveLatestPoolStatisticTag
+  949  cd .
+  950  tail -f log/zjchain.log | grep SaveLatestPoolStatisticTag
+  951  cd .
+  952  tail -f log/zjchain.log | grep SaveLatestPoolStatisticTag
+  953  cd .
+  954  tail -f log/zjchain.log | grep SaveLatestPoolStatisticTag
+  955  cd zjnodes/s3_3
+  956  grep ", propose_debug: 3-9-347," ./log/zjchain.log
+  957  grep ", propose_debug: 3-16-2," ./log/zjchain.log
+  958  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  959  grep "statistic height: 14" ./log/zjchain.log | grep "pool: 0,"
+  960  grep "statistic height: 14" ./log/zjchain.log | grep "pool: 1,"
+  961  grep "statistic height: 14, success handle block pool: 1," ./log/zjchain.log
+  962  grep "statistic height: 14, success handle block pool: 2," ./log/zjchain.log
+  963  grep "statistic height: 6, success handle block pool: 2," ./log/zjchain.log
+  964  grep "statistic height: 6, success handle block pool: 13," ./log/zjchain.log
+  965  grep "statistic height: 14, success handle block pool: 13," ./log/zjchain.log
+  966  grep "statistic height: 6, success handle block pool: 13," ./log/zjchain.log
+  967  grep "success create statistic message prev_timeblock_height_:" ./log/zjchain.log
+  968  cd ../s3_1
+  969  grep "success handle kPoolStatisticTag tx statistic_height:" ./log/zjchain.log 
+  970  grep "success handle kPoolStatisticTag tx statistic_height:" ./log/zjchain.log | grep "pool: 13"
+  971  cd .
+  972  grep "success handle kPoolStatisticTag tx statistic_height:" ./log/zjchain.log | grep "pool: 13"
+  973  grep ", success handle block pool: 10" ./log/zjchain.log 
+  974  grep "statistic height: 6, success handle block pool: 10" ./log/zjchain.log
+  975  cd 
+  976  cd zjnodes/s3_1
+  977  grep "statistic height: 6, success handle block pool: 10" ./log/zjchain.log
+  978  grep ", success handle block pool: 10," ./log/zjchain.log 
+  979  cd .
+  980  tail -f log/zjchain.log | grep 'transfer to address new balance'
+  981  cd .
+  982  tail -f log/zjchain.log | grep 'transfer to address new balance'
+  983  cd .
+  984  tail -f log/zjchain.log | grep 'transfer to address new balance'
+  985  cd .
+  986  tail -f log/zjchain.log | grep 'transfer to address new balance'
+  987  cd .
+  988  tail -f log/zjchain.log | grep 'transfer to address new balance'
+  989  grep ", propose_debug: 3-16-11, tx gids: 14e4f01f4ebbef2401ae71060ad9f86e2c979a42fe202e3ba2aca80af26b94b0" ./log/zjchain.log
+  990  grep "success create statistic message prev_timeblock_height_: " ./log/zjchain.log
+  991  grep "statistic height: 6, success handle block pool: 1," ./log/zjchain.log
+  992  grep "statistic height: 6, success handle block pool: 0," ./log/zjchain.log
+  993  grep "statistic height: 6, success handle block pool: 1," ./log/zjchain.log
+  994  grep "statistic height: 6, success handle block pool: 2," ./log/zjchain.log
+  995  grep "statistic height: 6, success handle block pool: 3," ./log/zjchain.log
+  996  grep "statistic height: 6, success handle block pool: 4," ./log/zjchain.log
+  997  cd shardora/src/contract/tests/contracts/
+  998  ls
+  999  sh run.sh 
+ 1000  pwd
+ 1001  vim c2c.sol 
+ 1002  solc --bin ./c2c.sol 
+ 1003  vim c2c.js 
+ 1004  vim c2c.sol 
+ 1005  vim c2c.js 
+ 1006  node c2c.js 3
+ 1007  vim c2c.js 
+ 1008  node c2c.js 1
+ 1009  cat contract_address 
+ 1010  vim c2c.sol 
+ 1011  node c2c.js 3
+ 1012  vim c2c.sol 
+ 1013  vim c2c.js 
+ 1014  node c2c.js 2 ae7abc8000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002020ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5 1000
+ 1015  vim c2c.js 
+ 1016  ls
+ 1017  node c2c.js 3
+ 1018  node c2c.js 8
+ 1019  vim c2c.js 
+ 1020  vim c2c.sol 
+ 1021  rm -rf c2c.sol 
+ 1022  r
+ 1023  rz
+ 1024  solc --bin ./c2c.sol 
+ 1025  rm -rf c2c.sol 
+ 1026  rz
+ 1027  solc --bin ./c2c.sol 
+ 1028  rm -rf c2c.sol 
+ 1029  rz
+ 1030  solc --bin ./c2c.sol 
+ 1031  vim c2c.js 
+ 1032  node c2c.js 3
+ 1033  vim c2c.js 
+ 1034  node c2c.js 3
+ 1035  vim c2c.js 
+ 1036  node c2c.js 1
+ 1037  cat contract_address 
+ 1038  node c2c.js 1
+ 1039  cat contract_address 
+ 1040  node c2c.js 3
+ 1041  node c2c.js 2 28d0f5f20000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002020ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5 1
+ 1042  node c2c.js 4 1000000000
+ 1043  node c2c.js 2 28d0f5f20000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002020ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5 1
+ 1044  node c2c.js 4 1000000000000
+ 1045  node c2c.js 2 28d0f5f20000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002020ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5 1
+ 1046  ls
+ 1047  vim c2c.sol 
+ 1048  vim c2c.js 
+ 1049  node c2c.js 3
+ 1050  grep 28d0f5f2 ./c2c.js 
+ 1051  rm -rf c2c.sol 
+ 1052  rz
+ 1053  solc --bin ./c2c.sol 
+ 1054  rm -rf c2c.sol 
+ 1055  rz
+ 1056  solc
+ 1057  solc --bin ./c2c.sol 
+ 1058  rm -rf c2c.sol 
+ 1059  rz
+ 1060  solc --bin ./c2c.sol 
+ 1061  vim c2c.js 
+ 1062  node c2c.js 3
+ 1063  vim c2c.js 
+ 1064  node c2c.js 1
+ 1065  vim c2c.js 
+ 1066  node c2c.js 3
+ 1067  node c2c.js 2 d789c2d10000000000000000000000000000000000000000000000000000000000000001  100000
+ 1068  cat contract_address 
+ 1069  node c2c.js 4 1000000000000
+ 1070  node c2c.js 2 d789c2d10000000000000000000000000000000000000000000000000000000000000001  100000
+ 1071  grep d789c2d1 ./c2c.js 
+ 1072  rm -rf c2c.sol 
+ 1073  rz
+ 1074  solc --bin ./c2c.sol 
+ 1075  vim c2c.js 
+ 1076  node c2c.js 3
+ 1077  vim c2c.js 
+ 1078  node c2c.js 1
+ 1079  cat contract_address 
+ 1080  node c2c.js 4 1000000000000
+ 1081  node c2c.js 2 d789c2d10000000000000000000000000000000000000000000000000000000000000001  100000
+ 1082  history list
+ 1083  history 
+ 1084  history > history.log
