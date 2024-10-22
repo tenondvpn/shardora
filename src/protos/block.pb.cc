@@ -49,7 +49,7 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protob
 }  // namespace protobuf_protos_2fblock_2eproto
 namespace protobuf_protos_2fpools_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_ShardToTxItem;
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_StatisticTxItem;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_StatisticTxItem;
 }  // namespace protobuf_protos_2fpools_2eproto
 namespace shardora {
 namespace block {

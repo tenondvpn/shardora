@@ -717,153 +717,6 @@ class ShardToTxItem : public ::google::protobuf::Message /* @@protoc_insertion_p
 };
 // -------------------------------------------------------------------
 
-class StatisticTxItem : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.pools.protobuf.StatisticTxItem) */ {
- public:
-  StatisticTxItem();
-  virtual ~StatisticTxItem();
-
-  StatisticTxItem(const StatisticTxItem& from);
-
-  inline StatisticTxItem& operator=(const StatisticTxItem& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  #if LANG_CXX11
-  StatisticTxItem(StatisticTxItem&& from) noexcept
-    : StatisticTxItem() {
-    *this = ::std::move(from);
-  }
-
-  inline StatisticTxItem& operator=(StatisticTxItem&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-  #endif
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const StatisticTxItem& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const StatisticTxItem* internal_default_instance() {
-    return reinterpret_cast<const StatisticTxItem*>(
-               &_StatisticTxItem_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    3;
-
-  void Swap(StatisticTxItem* other);
-  friend void swap(StatisticTxItem& a, StatisticTxItem& b) {
-    a.Swap(&b);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline StatisticTxItem* New() const final {
-    return CreateMaybeMessage<StatisticTxItem>(NULL);
-  }
-
-  StatisticTxItem* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<StatisticTxItem>(arena);
-  }
-  void CopyFrom(const ::google::protobuf::Message& from) final;
-  void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const StatisticTxItem& from);
-  void MergeFrom(const StatisticTxItem& from);
-  void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input) final;
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const final;
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(StatisticTxItem* other);
-  private:
-  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return NULL;
-  }
-  inline void* MaybeArenaPtr() const {
-    return NULL;
-  }
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // repeated uint64 heights = 2;
-  int heights_size() const;
-  void clear_heights();
-  static const int kHeightsFieldNumber = 2;
-  ::google::protobuf::uint64 heights(int index) const;
-  void set_heights(int index, ::google::protobuf::uint64 value);
-  void add_heights(::google::protobuf::uint64 value);
-  const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
-      heights() const;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
-      mutable_heights();
-
-  // optional uint64 block_height = 3;
-  bool has_block_height() const;
-  void clear_block_height();
-  static const int kBlockHeightFieldNumber = 3;
-  ::google::protobuf::uint64 block_height() const;
-  void set_block_height(::google::protobuf::uint64 value);
-
-  // optional uint64 tm_height = 4;
-  bool has_tm_height() const;
-  void clear_tm_height();
-  static const int kTmHeightFieldNumber = 4;
-  ::google::protobuf::uint64 tm_height() const;
-  void set_tm_height(::google::protobuf::uint64 value);
-
-  // optional uint32 sharding_id = 1;
-  bool has_sharding_id() const;
-  void clear_sharding_id();
-  static const int kShardingIdFieldNumber = 1;
-  ::google::protobuf::uint32 sharding_id() const;
-  void set_sharding_id(::google::protobuf::uint32 value);
-
-  // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.StatisticTxItem)
- private:
-  void set_has_sharding_id();
-  void clear_has_sharding_id();
-  void set_has_block_height();
-  void clear_has_block_height();
-  void set_has_tm_height();
-  void clear_has_tm_height();
-
-  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::HasBits<1> _has_bits_;
-  mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > heights_;
-  ::google::protobuf::uint64 block_height_;
-  ::google::protobuf::uint64 tm_height_;
-  ::google::protobuf::uint32 sharding_id_;
-  friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
-};
-// -------------------------------------------------------------------
-
 class PoolStatisticTxItem : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.pools.protobuf.PoolStatisticTxItem) */ {
  public:
   PoolStatisticTxItem();
@@ -906,7 +759,7 @@ class PoolStatisticTxItem : public ::google::protobuf::Message /* @@protoc_inser
                &_PoolStatisticTxItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    3;
 
   void Swap(PoolStatisticTxItem* other);
   friend void swap(PoolStatisticTxItem& a, PoolStatisticTxItem& b) {
@@ -994,6 +847,153 @@ class PoolStatisticTxItem : public ::google::protobuf::Message /* @@protoc_inser
   ::google::protobuf::uint64 min_height_;
   ::google::protobuf::uint64 max_height_;
   ::google::protobuf::uint32 pool_index_;
+  friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
+class StatisticTxItem : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.pools.protobuf.StatisticTxItem) */ {
+ public:
+  StatisticTxItem();
+  virtual ~StatisticTxItem();
+
+  StatisticTxItem(const StatisticTxItem& from);
+
+  inline StatisticTxItem& operator=(const StatisticTxItem& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  StatisticTxItem(StatisticTxItem&& from) noexcept
+    : StatisticTxItem() {
+    *this = ::std::move(from);
+  }
+
+  inline StatisticTxItem& operator=(StatisticTxItem&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const StatisticTxItem& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const StatisticTxItem* internal_default_instance() {
+    return reinterpret_cast<const StatisticTxItem*>(
+               &_StatisticTxItem_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    4;
+
+  void Swap(StatisticTxItem* other);
+  friend void swap(StatisticTxItem& a, StatisticTxItem& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline StatisticTxItem* New() const final {
+    return CreateMaybeMessage<StatisticTxItem>(NULL);
+  }
+
+  StatisticTxItem* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<StatisticTxItem>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const StatisticTxItem& from);
+  void MergeFrom(const StatisticTxItem& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(StatisticTxItem* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated .shardora.pools.protobuf.PoolStatisticTxItem heights = 2;
+  int heights_size() const;
+  void clear_heights();
+  static const int kHeightsFieldNumber = 2;
+  ::shardora::pools::protobuf::PoolStatisticTxItem* mutable_heights(int index);
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::PoolStatisticTxItem >*
+      mutable_heights();
+  const ::shardora::pools::protobuf::PoolStatisticTxItem& heights(int index) const;
+  ::shardora::pools::protobuf::PoolStatisticTxItem* add_heights();
+  const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::PoolStatisticTxItem >&
+      heights() const;
+
+  // optional uint64 block_height = 3;
+  bool has_block_height() const;
+  void clear_block_height();
+  static const int kBlockHeightFieldNumber = 3;
+  ::google::protobuf::uint64 block_height() const;
+  void set_block_height(::google::protobuf::uint64 value);
+
+  // optional uint64 tm_height = 4;
+  bool has_tm_height() const;
+  void clear_tm_height();
+  static const int kTmHeightFieldNumber = 4;
+  ::google::protobuf::uint64 tm_height() const;
+  void set_tm_height(::google::protobuf::uint64 value);
+
+  // optional uint32 sharding_id = 1;
+  bool has_sharding_id() const;
+  void clear_sharding_id();
+  static const int kShardingIdFieldNumber = 1;
+  ::google::protobuf::uint32 sharding_id() const;
+  void set_sharding_id(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.StatisticTxItem)
+ private:
+  void set_has_sharding_id();
+  void clear_has_sharding_id();
+  void set_has_block_height();
+  void clear_has_block_height();
+  void set_has_tm_height();
+  void clear_has_tm_height();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::PoolStatisticTxItem > heights_;
+  ::google::protobuf::uint64 block_height_;
+  ::google::protobuf::uint64 tm_height_;
+  ::google::protobuf::uint32 sharding_id_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -3713,112 +3713,6 @@ inline void ShardToTxItem::set_block_height(::google::protobuf::uint64 value) {
 
 // -------------------------------------------------------------------
 
-// StatisticTxItem
-
-// optional uint32 sharding_id = 1;
-inline bool StatisticTxItem::has_sharding_id() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void StatisticTxItem::set_has_sharding_id() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void StatisticTxItem::clear_has_sharding_id() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void StatisticTxItem::clear_sharding_id() {
-  sharding_id_ = 0u;
-  clear_has_sharding_id();
-}
-inline ::google::protobuf::uint32 StatisticTxItem::sharding_id() const {
-  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.StatisticTxItem.sharding_id)
-  return sharding_id_;
-}
-inline void StatisticTxItem::set_sharding_id(::google::protobuf::uint32 value) {
-  set_has_sharding_id();
-  sharding_id_ = value;
-  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.StatisticTxItem.sharding_id)
-}
-
-// repeated uint64 heights = 2;
-inline int StatisticTxItem::heights_size() const {
-  return heights_.size();
-}
-inline void StatisticTxItem::clear_heights() {
-  heights_.Clear();
-}
-inline ::google::protobuf::uint64 StatisticTxItem::heights(int index) const {
-  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.StatisticTxItem.heights)
-  return heights_.Get(index);
-}
-inline void StatisticTxItem::set_heights(int index, ::google::protobuf::uint64 value) {
-  heights_.Set(index, value);
-  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.StatisticTxItem.heights)
-}
-inline void StatisticTxItem::add_heights(::google::protobuf::uint64 value) {
-  heights_.Add(value);
-  // @@protoc_insertion_point(field_add:shardora.pools.protobuf.StatisticTxItem.heights)
-}
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
-StatisticTxItem::heights() const {
-  // @@protoc_insertion_point(field_list:shardora.pools.protobuf.StatisticTxItem.heights)
-  return heights_;
-}
-inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
-StatisticTxItem::mutable_heights() {
-  // @@protoc_insertion_point(field_mutable_list:shardora.pools.protobuf.StatisticTxItem.heights)
-  return &heights_;
-}
-
-// optional uint64 block_height = 3;
-inline bool StatisticTxItem::has_block_height() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void StatisticTxItem::set_has_block_height() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void StatisticTxItem::clear_has_block_height() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void StatisticTxItem::clear_block_height() {
-  block_height_ = GOOGLE_ULONGLONG(0);
-  clear_has_block_height();
-}
-inline ::google::protobuf::uint64 StatisticTxItem::block_height() const {
-  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.StatisticTxItem.block_height)
-  return block_height_;
-}
-inline void StatisticTxItem::set_block_height(::google::protobuf::uint64 value) {
-  set_has_block_height();
-  block_height_ = value;
-  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.StatisticTxItem.block_height)
-}
-
-// optional uint64 tm_height = 4;
-inline bool StatisticTxItem::has_tm_height() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void StatisticTxItem::set_has_tm_height() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void StatisticTxItem::clear_has_tm_height() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void StatisticTxItem::clear_tm_height() {
-  tm_height_ = GOOGLE_ULONGLONG(0);
-  clear_has_tm_height();
-}
-inline ::google::protobuf::uint64 StatisticTxItem::tm_height() const {
-  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.StatisticTxItem.tm_height)
-  return tm_height_;
-}
-inline void StatisticTxItem::set_tm_height(::google::protobuf::uint64 value) {
-  set_has_tm_height();
-  tm_height_ = value;
-  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.StatisticTxItem.tm_height)
-}
-
-// -------------------------------------------------------------------
-
 // PoolStatisticTxItem
 
 // optional uint32 pool_index = 1;
@@ -3891,6 +3785,112 @@ inline void PoolStatisticTxItem::set_max_height(::google::protobuf::uint64 value
   set_has_max_height();
   max_height_ = value;
   // @@protoc_insertion_point(field_set:shardora.pools.protobuf.PoolStatisticTxItem.max_height)
+}
+
+// -------------------------------------------------------------------
+
+// StatisticTxItem
+
+// optional uint32 sharding_id = 1;
+inline bool StatisticTxItem::has_sharding_id() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void StatisticTxItem::set_has_sharding_id() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void StatisticTxItem::clear_has_sharding_id() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void StatisticTxItem::clear_sharding_id() {
+  sharding_id_ = 0u;
+  clear_has_sharding_id();
+}
+inline ::google::protobuf::uint32 StatisticTxItem::sharding_id() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.StatisticTxItem.sharding_id)
+  return sharding_id_;
+}
+inline void StatisticTxItem::set_sharding_id(::google::protobuf::uint32 value) {
+  set_has_sharding_id();
+  sharding_id_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.StatisticTxItem.sharding_id)
+}
+
+// repeated .shardora.pools.protobuf.PoolStatisticTxItem heights = 2;
+inline int StatisticTxItem::heights_size() const {
+  return heights_.size();
+}
+inline void StatisticTxItem::clear_heights() {
+  heights_.Clear();
+}
+inline ::shardora::pools::protobuf::PoolStatisticTxItem* StatisticTxItem::mutable_heights(int index) {
+  // @@protoc_insertion_point(field_mutable:shardora.pools.protobuf.StatisticTxItem.heights)
+  return heights_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::PoolStatisticTxItem >*
+StatisticTxItem::mutable_heights() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.pools.protobuf.StatisticTxItem.heights)
+  return &heights_;
+}
+inline const ::shardora::pools::protobuf::PoolStatisticTxItem& StatisticTxItem::heights(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.StatisticTxItem.heights)
+  return heights_.Get(index);
+}
+inline ::shardora::pools::protobuf::PoolStatisticTxItem* StatisticTxItem::add_heights() {
+  // @@protoc_insertion_point(field_add:shardora.pools.protobuf.StatisticTxItem.heights)
+  return heights_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::PoolStatisticTxItem >&
+StatisticTxItem::heights() const {
+  // @@protoc_insertion_point(field_list:shardora.pools.protobuf.StatisticTxItem.heights)
+  return heights_;
+}
+
+// optional uint64 block_height = 3;
+inline bool StatisticTxItem::has_block_height() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void StatisticTxItem::set_has_block_height() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void StatisticTxItem::clear_has_block_height() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void StatisticTxItem::clear_block_height() {
+  block_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_block_height();
+}
+inline ::google::protobuf::uint64 StatisticTxItem::block_height() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.StatisticTxItem.block_height)
+  return block_height_;
+}
+inline void StatisticTxItem::set_block_height(::google::protobuf::uint64 value) {
+  set_has_block_height();
+  block_height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.StatisticTxItem.block_height)
+}
+
+// optional uint64 tm_height = 4;
+inline bool StatisticTxItem::has_tm_height() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void StatisticTxItem::set_has_tm_height() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void StatisticTxItem::clear_has_tm_height() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void StatisticTxItem::clear_tm_height() {
+  tm_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_tm_height();
+}
+inline ::google::protobuf::uint64 StatisticTxItem::tm_height() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.StatisticTxItem.tm_height)
+  return tm_height_;
+}
+inline void StatisticTxItem::set_tm_height(::google::protobuf::uint64 value) {
+  set_has_tm_height();
+  tm_height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.StatisticTxItem.tm_height)
 }
 
 // -------------------------------------------------------------------
