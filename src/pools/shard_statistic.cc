@@ -204,9 +204,9 @@ void ShardStatistic::HandleStatisticBlock(
             //     tm_height_with_statistic_info_.erase(iter);
             // }
 
-            prefix_db_->SaveStatisticLatestHeihgts(
-                common::GlobalInfo::Instance()->network_id(),
-                heights);
+            // prefix_db_->SaveStatisticLatestHeihgts(
+            //     common::GlobalInfo::Instance()->network_id(),
+            //     heights);
             latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>(heights);
             break;
         }

@@ -172,7 +172,7 @@ void GenesisBlockInit::SaveGenisisPoolHeights(uint32_t shard_id) {
         auto statistic_info = pool_st_info.add_pool_statisitcs();
         statistic_info->set_pool_index(i);
         statistic_info->set_min_height(pools_mgr_->latest_height(i));
-        statistic_info->set_max_height(pools_mgr_->latest_height(i));
+        statistic_info->set_max_height(pools_mgr_->latest_height(i) + 1);
     }
 
     prefix_db_->SaveLatestPoolStatisticTag(shard_id, pool_st_info);
@@ -1339,7 +1339,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             init_heights,
             vb_latest_view,
             genesis_acount_balance_map);
-        prefix_db_->SaveStatisticLatestHeihgts(network::kRootCongressNetworkId, init_heights);
+        // prefix_db_->SaveStatisticLatestHeihgts(network::kRootCongressNetworkId, init_heights);
         std::string init_consensus_height;
         for (int32_t i = 0; i < init_heights.heights_size(); ++i) {
             init_consensus_height += std::to_string(init_heights.heights(i).min_height()) + " ";
@@ -1777,7 +1777,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             init_heights,
             vb_latest_view,
             genesis_acount_balance_map);
-    prefix_db_->SaveStatisticLatestHeihgts(net_id, init_heights);
+    // prefix_db_->SaveStatisticLatestHeihgts(net_id, init_heights);
     std::string init_consensus_height;
     for (int32_t i = 0; i < init_heights.heights_size(); ++i) {
         init_consensus_height += std::to_string(init_heights.heights(i).min_height()) + " ";
