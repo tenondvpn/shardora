@@ -73,7 +73,8 @@ int ShardStatistic::Init() {
 
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         pools_consensus_blocks_[i] = std::make_shared<PoolBlocksInfo>();
-        pools_consensus_blocks_[i]->latest_consensus_height_ = statistic_info.pool_statisitcs(i).max_height() + 1;
+        pools_consensus_blocks_[i]->latest_consensus_height_ =
+            statistic_info.pool_statisitcs(i).max_height() + 1;
         for (uint64_t height = statistic_info.pool_statisitcs(i).max_height();; ++height) {
             auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
             auto& view_block = *view_block_ptr;
@@ -852,7 +853,10 @@ int ShardStatistic::StatisticWithHeights(
     auto *heights_info = elect_statistic.mutable_height_info();
     heights_info->set_tm_height(piter->first);
     for (uint32_t tmp_pool_idx = 0; tmp_pool_idx < common::kInvalidPoolIndex; ++tmp_pool_idx) {
-        heights_info->add_heights(iter->second[tmp_pool_idx].statistic_max_height);
+        auto* height_item = heights_info->add_heights();
+        height_item->set_min_height(iter->second[tmp_pool_idx].statistic_min_height);
+        height_item->set_max_height(iter->second[tmp_pool_idx].statistic_max_height);
+        // heights_info->add_heights(iter->second[tmp_pool_idx].statistic_max_height);
     }
 
     ZJC_DEBUG("success create statistic message prev_timeblock_height_: %lu, "
