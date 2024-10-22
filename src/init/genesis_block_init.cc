@@ -1211,9 +1211,9 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             }
         }
 
-        init_heights.add_heights(0);
-
-       
+        auto* height_info = init_heights.add_heights();
+        height_info->set_min_height(0);
+        // init_heights.add_heights(0);
         // 保存 ViewBlock
         StoreViewBlockWithCommitQC(view_block_ptr, db_batch_ptr);
         db_->Put(db_batch);
@@ -1267,7 +1267,9 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     // 这也应该是 pool_index，其实就是选了 root network 的 pool 2 和 pool 3 ?
     pool_prev_hash_map[network::kRootCongressNetworkId] = prehashes[network::kRootCongressNetworkId];
     pool_prev_vb_hash_map[network::kRootCongressNetworkId] = vb_prehashes[network::kRootCongressNetworkId];
-    init_heights.set_heights(network::kRootCongressNetworkId, 2);
+    auto* height_item = init_heights.mutable_heights(network::kRootCongressNetworkId);
+    height_item->set_min_height(2);
+    // init_heights.set_heights(network::kRootCongressNetworkId, 2);
     init_heights.set_tm_height(0);
     // prehashes 不是 pool 当中前一个块的 hash 吗，为什么是 prehashes[network_id] 而不是 prehashes[pool_index]
     for (uint32_t i = 0; i < cons_genesis_nodes_of_shards.size(); i++) {
@@ -1303,7 +1305,9 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
 
         pool_prev_hash_map[net_id] = prehashes[net_id];
         pool_prev_vb_hash_map[net_id] = vb_prehashes[net_id];
-        init_heights.set_heights(net_id, 2);
+        auto* height_item = init_heights.mutable_heights(net_id);
+        height_item->set_min_height(2);
+        // init_heights.set_heights(net_id, 2);
     }
     
     if (all_balance != 0) {
@@ -1316,7 +1320,9 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     // pool256 中创建时间块 
     int res = GenerateRootSingleBlock(root_genesis_nodes, root_gens_init_block_file, &root_pool_height, &root_pool_view);
     if (res == kInitSuccess) {
-        init_heights.add_heights(root_pool_height);
+        auto* height_item = init_heights.add_heights();
+        height_item->set_min_height(root_pool_height);
+        // init_heights.add_heights(root_pool_height);
         
         std::vector<GenisisNodeInfoPtr> all_cons_genesis_nodes;
         for (std::vector<GenisisNodeInfoPtr> nodes : cons_genesis_nodes_of_shards) {
@@ -1336,7 +1342,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         prefix_db_->SaveStatisticLatestHeihgts(network::kRootCongressNetworkId, init_heights);
         std::string init_consensus_height;
         for (int32_t i = 0; i < init_heights.heights_size(); ++i) {
-            init_consensus_height += std::to_string(init_heights.heights(i)) + " ";
+            init_consensus_height += std::to_string(init_heights.heights(i).min_height()) + " ";
         }
 
         ZJC_DEBUG("0 success change min elect statistic heights: %u, %s",
@@ -1461,7 +1467,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
     // 统计每个 pool 的链长度
     std::map<uint32_t, uint64_t> pool_height;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
-        pool_height[i] = init_heights.heights(i);
+        pool_height[i] = init_heights.heights(i).min_height();
     }
 
     // 每个节点分配创世账户余额
@@ -1570,9 +1576,9 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             block_mgr_->GenesisAddAllAccount(net_id, tenon_block_ptr, db_batch);
         }
         
-        
-        init_heights.set_heights(pool_index, tenon_block->height());
-
+        auto* height_item = init_heights.mutable_heights(pool_index);
+        height_item->set_min_height(tenon_block->height());
+        // init_heights.set_heights(pool_index, tenon_block->height());
         StoreViewBlockWithCommitQC(view_block_ptr, db_batch_ptr);
         db_->Put(db_batch);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
@@ -1730,7 +1736,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         //     all_balance = common::kGenesisFoundationMaxZjc;
         // }
         
-        init_heights.add_heights(0);
+        auto* heights_item = init_heights.add_heights();
+        heights_item->set_min_height(0);
         StoreViewBlockWithCommitQC(view_block_ptr, db_batch_ptr);
         db_->Put(db_batch);
         
@@ -1773,7 +1780,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     prefix_db_->SaveStatisticLatestHeihgts(net_id, init_heights);
     std::string init_consensus_height;
     for (int32_t i = 0; i < init_heights.heights_size(); ++i) {
-        init_consensus_height += std::to_string(init_heights.heights(i)) + " ";
+        init_consensus_height += std::to_string(init_heights.heights(i).min_height()) + " ";
     }
 
     ZJC_DEBUG("0 success change min elect statistic heights: %u, %s",
