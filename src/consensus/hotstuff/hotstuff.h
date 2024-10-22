@@ -142,6 +142,13 @@ public:
 
         view_block_chain()->Store(vblock, true, nullptr);
         view_block_chain()->UpdateHighViewBlock(vblock->qc());
+        TryCommit(vblock->qc(), 99999999lu);
+        if (latest_qc_item_ptr_ == nullptr ||
+                vblock->qc().view() >= latest_qc_item_ptr_->view()) {
+            assert(vblock->qc().has_sign_x() && !vblock->qc().sign_x().empty());
+            latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(vblock->qc());
+        }
+
     }
 
     // 已经投票
