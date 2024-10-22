@@ -46,7 +46,7 @@ int ShardStatistic::Init() {
         auto& pool_map = statistic_pool_info_[statistic_info.height()];
         for (uint32_t i = 0; i < statistic_info.pool_statisitcs_size(); ++i) {
             StatisticInfoItem statistic_item;
-            statistic_item.statistic_max_height = statistic_info.pool_statisitcs(i).max_height() + 1;
+            statistic_item.statistic_min_height = statistic_info.pool_statisitcs(i).max_height() + 1;
             pool_map[i] = statistic_item;
         }
     } else {
@@ -861,7 +861,8 @@ int ShardStatistic::StatisticWithHeights(
     statistic_pool_info_.erase(eiter);
     return kPoolsSuccess;
 }
-
+{"statistics":[{"txCount":[293,0,0,0],"stokes":["0","0","0","0"],"electHeight":"1","areaPoint":[{"x":0,"y":0},{"x":0,"y":0},{"x":0,"y":0},{"x":0,"y":0}],"gasSum":["256000","0","0","0"],"credit":["0","0","0","0"],"consensusGap":["0","0","0","0"]}],"heightInfo":{"heights":[{"minHeight":"10","maxHeight":"13"},{"minHeight":"10","maxHeight":"13"},{"minHeight":"10","maxHeight":"13"},{"minHeight":"10","maxHeight":"13"},{"minHeight":"10","maxHeight":"13"},{"minHeight":"10","maxHeight":"13"},{"minHeight":"15","maxHeight":"18"},{"minHeight":"10","maxHeight":"13"},{"minHeight":"15","maxHeight":"18"},{"minHeight":"579","maxHeight":"834"},{"minHeight":"10","maxHeight":"13"},{"minHeight":"10","maxHeight":"13"},{"minHeight":"20","maxHeight":"27"},{"minHeight":"74","maxHeight":"97"},{"minHeight":"10","maxHeight":"13"},{"minHeight":"10","maxHeight":"13"},{"minHeight":"92","maxHeight":"128"}],"tmHeight":"22"},"shardingId":3,"gasAmount":"256000","statisticHeight":"22"}
+{"statistics":[{"txCount":[293,0,0,0],"stokes":["0","0","0","0"],"electHeight":"1","areaPoint":[{"x":0,"y":0},{"x":0,"y":0},{"x":0,"y":0},{"x":0,"y":0}],"gasSum":["256000","0","0","0"],"credit":["0","0","0","0"],"consensusGap":["0","0","0","0"]}],"heightInfo":{"heights":[{"minHeight":"0","maxHeight":"13"},{"minHeight":"0","maxHeight":"13"},{"minHeight":"0","maxHeight":"13"},{"minHeight":"0","maxHeight":"13"},{"minHeight":"0","maxHeight":"13"},{"minHeight":"0","maxHeight":"13"},{"minHeight":"0","maxHeight":"18"},{"minHeight":"0","maxHeight":"13"},{"minHeight":"0","maxHeight":"18"},{"minHeight":"0","maxHeight":"834"},{"minHeight":"0","maxHeight":"13"},{"minHeight":"0","maxHeight":"13"},{"minHeight":"0","maxHeight":"27"},{"minHeight":"0","maxHeight":"97"},{"minHeight":"0","maxHeight":"13"},{"minHeight":"0","maxHeight":"13"},{"minHeight":"0","maxHeight":"128"}],"tmHeight":"22"},"shardingId":3,"gasAmount":"256000","statisticHeight":"22"}
 void ShardStatistic::addHeightInfo2Statics(
         shardora::pools::protobuf::ElectStatistic &elect_statistic, 
         uint64_t max_tm_height) {
