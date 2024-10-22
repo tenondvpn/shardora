@@ -1194,8 +1194,8 @@ void BlockManager::HandleStatisticBlock(
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         auto statistic_info = pool_st_info.add_pool_statisitcs();
         statistic_info->set_pool_index(i);
-        statistic_info->set_min_height(elect_statistic.height_info().heights(i));
-        statistic_info->set_max_height(elect_statistic.height_info().heights(i));
+        statistic_info->set_min_height(elect_statistic.height_info().heights(i).min_height());
+        statistic_info->set_max_height(elect_statistic.height_info().heights(i).max_height());
     }
 
     prefix_db_->SaveLatestPoolStatisticTag(elect_statistic.sharding_id(), pool_st_info, db_batch);
