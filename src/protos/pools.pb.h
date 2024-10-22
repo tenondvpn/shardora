@@ -40,7 +40,7 @@ namespace protobuf_protos_2fpools_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[17];
+  static const ::google::protobuf::internal::ParseTable schema[18];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -65,6 +65,9 @@ extern CrossShardStatisticItemDefaultTypeInternal _CrossShardStatisticItem_defau
 class ElectStatistic;
 class ElectStatisticDefaultTypeInternal;
 extern ElectStatisticDefaultTypeInternal _ElectStatistic_default_instance_;
+class InitPoolHeightItem;
+class InitPoolHeightItemDefaultTypeInternal;
+extern InitPoolHeightItemDefaultTypeInternal _InitPoolHeightItem_default_instance_;
 class JoinElectNode;
 class JoinElectNodeDefaultTypeInternal;
 extern JoinElectNodeDefaultTypeInternal _JoinElectNode_default_instance_;
@@ -111,6 +114,7 @@ template<> ::shardora::pools::protobuf::AreaInfo* Arena::CreateMaybeMessage<::sh
 template<> ::shardora::pools::protobuf::CrossShardStatistic* Arena::CreateMaybeMessage<::shardora::pools::protobuf::CrossShardStatistic>(Arena*);
 template<> ::shardora::pools::protobuf::CrossShardStatisticItem* Arena::CreateMaybeMessage<::shardora::pools::protobuf::CrossShardStatisticItem>(Arena*);
 template<> ::shardora::pools::protobuf::ElectStatistic* Arena::CreateMaybeMessage<::shardora::pools::protobuf::ElectStatistic>(Arena*);
+template<> ::shardora::pools::protobuf::InitPoolHeightItem* Arena::CreateMaybeMessage<::shardora::pools::protobuf::InitPoolHeightItem>(Arena*);
 template<> ::shardora::pools::protobuf::JoinElectNode* Arena::CreateMaybeMessage<::shardora::pools::protobuf::JoinElectNode>(Arena*);
 template<> ::shardora::pools::protobuf::PoolLatestInfo* Arena::CreateMaybeMessage<::shardora::pools::protobuf::PoolLatestInfo>(Arena*);
 template<> ::shardora::pools::protobuf::PoolStatisticItem* Arena::CreateMaybeMessage<::shardora::pools::protobuf::PoolStatisticItem>(Arena*);
@@ -998,6 +1002,153 @@ class StatisticTxItem : public ::google::protobuf::Message /* @@protoc_insertion
 };
 // -------------------------------------------------------------------
 
+class InitPoolHeightItem : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.pools.protobuf.InitPoolHeightItem) */ {
+ public:
+  InitPoolHeightItem();
+  virtual ~InitPoolHeightItem();
+
+  InitPoolHeightItem(const InitPoolHeightItem& from);
+
+  inline InitPoolHeightItem& operator=(const InitPoolHeightItem& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  InitPoolHeightItem(InitPoolHeightItem&& from) noexcept
+    : InitPoolHeightItem() {
+    *this = ::std::move(from);
+  }
+
+  inline InitPoolHeightItem& operator=(InitPoolHeightItem&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const InitPoolHeightItem& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const InitPoolHeightItem* internal_default_instance() {
+    return reinterpret_cast<const InitPoolHeightItem*>(
+               &_InitPoolHeightItem_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    5;
+
+  void Swap(InitPoolHeightItem* other);
+  friend void swap(InitPoolHeightItem& a, InitPoolHeightItem& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline InitPoolHeightItem* New() const final {
+    return CreateMaybeMessage<InitPoolHeightItem>(NULL);
+  }
+
+  InitPoolHeightItem* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<InitPoolHeightItem>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const InitPoolHeightItem& from);
+  void MergeFrom(const InitPoolHeightItem& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(InitPoolHeightItem* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated uint64 heights = 2;
+  int heights_size() const;
+  void clear_heights();
+  static const int kHeightsFieldNumber = 2;
+  ::google::protobuf::uint64 heights(int index) const;
+  void set_heights(int index, ::google::protobuf::uint64 value);
+  void add_heights(::google::protobuf::uint64 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+      heights() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+      mutable_heights();
+
+  // optional uint64 block_height = 3;
+  bool has_block_height() const;
+  void clear_block_height();
+  static const int kBlockHeightFieldNumber = 3;
+  ::google::protobuf::uint64 block_height() const;
+  void set_block_height(::google::protobuf::uint64 value);
+
+  // optional uint64 tm_height = 4;
+  bool has_tm_height() const;
+  void clear_tm_height();
+  static const int kTmHeightFieldNumber = 4;
+  ::google::protobuf::uint64 tm_height() const;
+  void set_tm_height(::google::protobuf::uint64 value);
+
+  // optional uint32 sharding_id = 1;
+  bool has_sharding_id() const;
+  void clear_sharding_id();
+  static const int kShardingIdFieldNumber = 1;
+  ::google::protobuf::uint32 sharding_id() const;
+  void set_sharding_id(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.InitPoolHeightItem)
+ private:
+  void set_has_sharding_id();
+  void clear_has_sharding_id();
+  void set_has_block_height();
+  void clear_has_block_height();
+  void set_has_tm_height();
+  void clear_has_tm_height();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > heights_;
+  ::google::protobuf::uint64 block_height_;
+  ::google::protobuf::uint64 tm_height_;
+  ::google::protobuf::uint32 sharding_id_;
+  friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class PoolStatisticTxInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.pools.protobuf.PoolStatisticTxInfo) */ {
  public:
   PoolStatisticTxInfo();
@@ -1040,7 +1191,7 @@ class PoolStatisticTxInfo : public ::google::protobuf::Message /* @@protoc_inser
                &_PoolStatisticTxInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    6;
 
   void Swap(PoolStatisticTxInfo* other);
   friend void swap(PoolStatisticTxInfo& a, PoolStatisticTxInfo& b) {
@@ -1167,7 +1318,7 @@ class CrossShardStatisticItem : public ::google::protobuf::Message /* @@protoc_i
                &_CrossShardStatisticItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    7;
 
   void Swap(CrossShardStatisticItem* other);
   friend void swap(CrossShardStatisticItem& a, CrossShardStatisticItem& b) {
@@ -1311,7 +1462,7 @@ class CrossShardStatistic : public ::google::protobuf::Message /* @@protoc_inser
                &_CrossShardStatistic_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    8;
 
   void Swap(CrossShardStatistic* other);
   friend void swap(CrossShardStatistic& a, CrossShardStatistic& b) {
@@ -1456,7 +1607,7 @@ class ToTxMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
                &_ToTxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    9;
 
   void Swap(ToTxMessage* other);
   friend void swap(ToTxMessage& a, ToTxMessage& b) {
@@ -1629,7 +1780,7 @@ class AllToTxMessage : public ::google::protobuf::Message /* @@protoc_insertion_
                &_AllToTxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    10;
 
   void Swap(AllToTxMessage* other);
   friend void swap(AllToTxMessage& a, AllToTxMessage& b) {
@@ -1746,7 +1897,7 @@ class PoolLatestInfo : public ::google::protobuf::Message /* @@protoc_insertion_
                &_PoolLatestInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    11;
 
   void Swap(PoolLatestInfo* other);
   friend void swap(PoolLatestInfo& a, PoolLatestInfo& b) {
@@ -1898,7 +2049,7 @@ class AreaInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
                &_AreaInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    12;
 
   void Swap(AreaInfo* other);
   friend void swap(AreaInfo& a, AreaInfo& b) {
@@ -2022,7 +2173,7 @@ class PoolStatisticItem : public ::google::protobuf::Message /* @@protoc_inserti
                &_PoolStatisticItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    13;
 
   void Swap(PoolStatisticItem* other);
   friend void swap(PoolStatisticItem& a, PoolStatisticItem& b) {
@@ -2214,7 +2365,7 @@ class JoinElectNode : public ::google::protobuf::Message /* @@protoc_insertion_p
                &_JoinElectNode_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    14;
 
   void Swap(JoinElectNode* other);
   friend void swap(JoinElectNode& a, JoinElectNode& b) {
@@ -2401,7 +2552,7 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
                &_ElectStatistic_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    15;
 
   void Swap(ElectStatistic* other);
   friend void swap(ElectStatistic& a, ElectStatistic& b) {
@@ -2589,7 +2740,7 @@ class SyncPoolsMaxHeight : public ::google::protobuf::Message /* @@protoc_insert
                &_SyncPoolsMaxHeight_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    16;
 
   void Swap(SyncPoolsMaxHeight* other);
   friend void swap(SyncPoolsMaxHeight& a, SyncPoolsMaxHeight& b) {
@@ -2729,7 +2880,7 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
                &_TxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    16;
+    17;
 
   void Swap(TxMessage* other);
   friend void swap(TxMessage& a, TxMessage& b) {
@@ -3891,6 +4042,112 @@ inline void StatisticTxItem::set_tm_height(::google::protobuf::uint64 value) {
   set_has_tm_height();
   tm_height_ = value;
   // @@protoc_insertion_point(field_set:shardora.pools.protobuf.StatisticTxItem.tm_height)
+}
+
+// -------------------------------------------------------------------
+
+// InitPoolHeightItem
+
+// optional uint32 sharding_id = 1;
+inline bool InitPoolHeightItem::has_sharding_id() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void InitPoolHeightItem::set_has_sharding_id() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void InitPoolHeightItem::clear_has_sharding_id() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void InitPoolHeightItem::clear_sharding_id() {
+  sharding_id_ = 0u;
+  clear_has_sharding_id();
+}
+inline ::google::protobuf::uint32 InitPoolHeightItem::sharding_id() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.InitPoolHeightItem.sharding_id)
+  return sharding_id_;
+}
+inline void InitPoolHeightItem::set_sharding_id(::google::protobuf::uint32 value) {
+  set_has_sharding_id();
+  sharding_id_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.InitPoolHeightItem.sharding_id)
+}
+
+// repeated uint64 heights = 2;
+inline int InitPoolHeightItem::heights_size() const {
+  return heights_.size();
+}
+inline void InitPoolHeightItem::clear_heights() {
+  heights_.Clear();
+}
+inline ::google::protobuf::uint64 InitPoolHeightItem::heights(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.InitPoolHeightItem.heights)
+  return heights_.Get(index);
+}
+inline void InitPoolHeightItem::set_heights(int index, ::google::protobuf::uint64 value) {
+  heights_.Set(index, value);
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.InitPoolHeightItem.heights)
+}
+inline void InitPoolHeightItem::add_heights(::google::protobuf::uint64 value) {
+  heights_.Add(value);
+  // @@protoc_insertion_point(field_add:shardora.pools.protobuf.InitPoolHeightItem.heights)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+InitPoolHeightItem::heights() const {
+  // @@protoc_insertion_point(field_list:shardora.pools.protobuf.InitPoolHeightItem.heights)
+  return heights_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+InitPoolHeightItem::mutable_heights() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.pools.protobuf.InitPoolHeightItem.heights)
+  return &heights_;
+}
+
+// optional uint64 block_height = 3;
+inline bool InitPoolHeightItem::has_block_height() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void InitPoolHeightItem::set_has_block_height() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void InitPoolHeightItem::clear_has_block_height() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void InitPoolHeightItem::clear_block_height() {
+  block_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_block_height();
+}
+inline ::google::protobuf::uint64 InitPoolHeightItem::block_height() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.InitPoolHeightItem.block_height)
+  return block_height_;
+}
+inline void InitPoolHeightItem::set_block_height(::google::protobuf::uint64 value) {
+  set_has_block_height();
+  block_height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.InitPoolHeightItem.block_height)
+}
+
+// optional uint64 tm_height = 4;
+inline bool InitPoolHeightItem::has_tm_height() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void InitPoolHeightItem::set_has_tm_height() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void InitPoolHeightItem::clear_has_tm_height() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void InitPoolHeightItem::clear_tm_height() {
+  tm_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_tm_height();
+}
+inline ::google::protobuf::uint64 InitPoolHeightItem::tm_height() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.InitPoolHeightItem.tm_height)
+  return tm_height_;
+}
+inline void InitPoolHeightItem::set_tm_height(::google::protobuf::uint64 value) {
+  set_has_tm_height();
+  tm_height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.InitPoolHeightItem.tm_height)
 }
 
 // -------------------------------------------------------------------
@@ -6129,6 +6386,8 @@ inline void TxMessage::set_allocated_sign(::std::string* sign) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
