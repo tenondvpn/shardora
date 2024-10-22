@@ -223,11 +223,9 @@ public:
         }
 
         cross_block_mgr_->UpdateMaxHeight(view_block->qc().network_id(), block->height());
-        auto* block = &view_block->block_info();
         uint64_t height = block->height();
         assert(height >= 0);
         uint32_t sharding_id = view_block->qc().network_id();
-        uint32_t pool_index = view_block->qc().pool_index();
         const std::string& hash = view_block->qc().view_block_hash();
         pools::protobuf::PoolLatestInfo pool_info;
         pool_info.set_height(height);
