@@ -560,6 +560,10 @@ void BlockAcceptor::commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr
             queue_item_ptr->view_block_ptr,
             *queue_item_ptr->db_batch);
     block_mgr_->ConsensusAddBlock(queue_item_ptr);
+    if (!network::IsSameToLocalShard(queue_item_ptr->view_block_ptr->qc().network_id())) {
+        return;
+    }
+
     if (block->tx_list_size() > 0) {
         pools_mgr_->TxOver(queue_item_ptr->view_block_ptr->qc().pool_index(), block->tx_list());
         auto& txs = block->tx_list();

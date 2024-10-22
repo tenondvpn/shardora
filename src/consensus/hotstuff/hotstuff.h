@@ -125,8 +125,8 @@ public:
             vblock->qc().pool_index(),
             vblock->block_info().height());
         view_block_chain()->StoreToDb(vblock, 99999999lu, db_batch);
+        acceptor()->CommitSynced(queue_item_ptr);
         if (network::IsSameToLocalShard(vblock->qc().network_id())) {
-            acceptor()->CommitSynced(queue_item_ptr);
             auto elect_item = elect_info()->GetElectItem(
                     vblock->qc().network_id(),
                     vblock->qc().elect_height());
@@ -149,6 +149,8 @@ public:
                 assert(vblock->qc().has_sign_x() && !vblock->qc().sign_x().empty());
                 latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(vblock->qc());
             }
+        } else {
+            block_mgr_->ConsensusAddBlock(queue_item_ptr);
         }
     }
 
