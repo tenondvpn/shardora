@@ -38,7 +38,7 @@ void FilterBroadcast::Broadcasting(
             bloomfilter->insert((*iter)->id_hash);
         }
 
-//         ZJC_DEBUG("layer Broadcasting: %lu, size: %u", msg_ptr->header.hash64(), nodes.size());
+        ZJC_DEBUG("layer Broadcasting: %lu, size: %u", msg_ptr->header.hash64(), nodes.size());
         LayerSend(dht_ptr, msg_ptr, nodes);
     } else {
         auto nodes = GetRandomFilterNodes(dht_ptr, bloomfilter, message);
@@ -46,8 +46,8 @@ void FilterBroadcast::Broadcasting(
             bloomfilter->insert((*iter)->id_hash);
         }
 
-//         ZJC_DEBUG("random Broadcasting: %lu, size: %u",
-//             msg_ptr->header.hash64(), nodes.size());
+        ZJC_DEBUG("random Broadcasting: %lu, size: %u",
+            msg_ptr->header.hash64(), nodes.size());
         assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
         Send(dht_ptr, msg_ptr, nodes);
     }
