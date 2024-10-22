@@ -149,8 +149,6 @@ public:
                 assert(vblock->qc().has_sign_x() && !vblock->qc().sign_x().empty());
                 latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(vblock->qc());
             }
-        } else {
-            block_mgr_->ConsensusAddBlock(queue_item_ptr);
         }
     }
 
