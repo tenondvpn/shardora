@@ -125,30 +125,31 @@ public:
             vblock->qc().pool_index(),
             vblock->block_info().height());
         view_block_chain()->StoreToDb(vblock, 99999999lu, db_batch);
-        acceptor()->CommitSynced(queue_item_ptr);
-        auto elect_item = elect_info()->GetElectItem(
-                vblock->qc().network_id(),
-                vblock->qc().elect_height());
-        if (elect_item && elect_item->IsValid()) {
-            elect_item->consensus_stat(pool_idx_)->Commit(vblock);
-        }
-        
-        pacemaker_->NewQcView(vblock->qc().view());
-        auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
-        if (!latest_committed_block ||
-                latest_committed_block->qc().view() < vblock->qc().view()) {
-            view_block_chain()->SetLatestCommittedBlock(vblock);        
-        }
+        if (network::IsSameToLocalShard(vblock->qc().network_id())) {
+            acceptor()->CommitSynced(queue_item_ptr);
+            auto elect_item = elect_info()->GetElectItem(
+                    vblock->qc().network_id(),
+                    vblock->qc().elect_height());
+            if (elect_item && elect_item->IsValid()) {
+                elect_item->consensus_stat(pool_idx_)->Commit(vblock);
+            }
+            
+            pacemaker_->NewQcView(vblock->qc().view());
+            auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
+            if (!latest_committed_block ||
+                    latest_committed_block->qc().view() < vblock->qc().view()) {
+                view_block_chain()->SetLatestCommittedBlock(vblock);        
+            }
 
-        view_block_chain()->Store(vblock, true, nullptr);
-        view_block_chain()->UpdateHighViewBlock(vblock->qc());
-        TryCommit(vblock->qc(), 99999999lu);
-        if (latest_qc_item_ptr_ == nullptr ||
-                vblock->qc().view() >= latest_qc_item_ptr_->view()) {
-            assert(vblock->qc().has_sign_x() && !vblock->qc().sign_x().empty());
-            latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(vblock->qc());
+            view_block_chain()->Store(vblock, true, nullptr);
+            view_block_chain()->UpdateHighViewBlock(vblock->qc());
+            TryCommit(vblock->qc(), 99999999lu);
+            if (latest_qc_item_ptr_ == nullptr ||
+                    vblock->qc().view() >= latest_qc_item_ptr_->view()) {
+                assert(vblock->qc().has_sign_x() && !vblock->qc().sign_x().empty());
+                latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(vblock->qc());
+            }
         }
-
     }
 
     // 已经投票
