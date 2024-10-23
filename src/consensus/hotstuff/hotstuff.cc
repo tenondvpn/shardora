@@ -93,17 +93,20 @@ Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
     // 打包参与共识中的交易，如何保证幂等
     auto pre_v_block = view_block_chain()->HighViewBlock();
     if (!pre_v_block) {
+        ZJC_DEBUG("pool %u not has prev view block.", pool_idx_);
         return Status::kError;
     }
 
     auto dht_ptr = network::DhtManager::Instance()->GetDht(
         common::GlobalInfo::Instance()->network_id());
     if (!dht_ptr) {
+        ZJC_DEBUG("pool %u not has dht ptr.", pool_idx_);
         return Status::kError;
     }
 
     auto readobly_dht = dht_ptr->readonly_hash_sort_dht();
     if (readobly_dht->size() < 2) {
+        ZJC_DEBUG("pool %u not has dreadobly_dht->size() < 2", pool_idx_);
         return Status::kError;
     }
 
