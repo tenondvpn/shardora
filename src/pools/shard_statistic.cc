@@ -626,7 +626,6 @@ int ShardStatistic::StatisticWithHeights(
     auto iter = statistic_pool_info_.rbegin();
     auto piter = statistic_pool_info_.rend();
     while (iter != statistic_pool_info_.rend() && iter->first > latest_statisticed_height_) {
-        ZJC_DEBUG("invalid height: piter: %lu, iter: %lu, %lu", iter->first, latest_statisticed_height_);
         piter = iter;
         ++iter;
     }
@@ -665,8 +664,11 @@ int ShardStatistic::StatisticWithHeights(
     }
 
     for (uint32_t tmp_pool_idx = 0; tmp_pool_idx < common::kInvalidPoolIndex; ++tmp_pool_idx) {
-        if (iter->second[tmp_pool_idx].statistic_min_height <
+        if (iter->second[tmp_pool_idx].statistic_min_height >
                 iter->second[tmp_pool_idx].statistic_max_height) {
+            ZJC_DEBUG("pool min height: %lu, max height: %lu",
+                iter->second[tmp_pool_idx].statistic_min_height,
+                iter->second[tmp_pool_idx].statistic_max_height);
             return kPoolsError;
         }
     }
