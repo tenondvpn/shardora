@@ -1032,6 +1032,10 @@ void BlockManager::LoadLatestBlocks() {
             if (new_block_callback_ != nullptr) {
                 new_block_callback_(tmblock_ptr, db_batch);
             }
+
+            AddPoolStatisticTag(block.block_info().height());
+        } else {
+            ZJC_FATAL("load latest timeblock failed!");
         }
     }
 
@@ -1062,6 +1066,7 @@ void BlockManager::LoadLatestBlocks() {
                     new_block_callback_(elect_block_ptr, db_batch);
                 }
 
+                AddMiningToken(block.qc().view_block_hash(), elect_block);
                 ZJC_INFO("get block with height success: %u, %u, %lu",
                     network::kRootCongressNetworkId,
                     elect_block.shard_network_id() % common::kImmutablePoolSize,
@@ -1081,7 +1086,8 @@ void BlockManager::LoadLatestBlocks() {
         auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
         latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = latest_to_tx_block;
         latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
-        ZJC_DEBUG("success set latest to block ptr: %lu, tm: %lu", latest_to_tx_block->block_info().height(), latest_to_tx_block->block_info().timestamp());
+        ZJC_DEBUG("success set latest to block ptr: %lu, tm: %lu",
+            latest_to_tx_block->block_info().height(), latest_to_tx_block->block_info().timestamp());
     }
 
     db_->Put(db_batch);
