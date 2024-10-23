@@ -664,6 +664,13 @@ int ShardStatistic::StatisticWithHeights(
         return kPoolsError;
     }
 
+    for (uint32_t tmp_pool_idx = 0; tmp_pool_idx < common::kInvalidPoolIndex; ++tmp_pool_idx) {
+        if (iter->second[tmp_pool_idx].statistic_min_height <
+                iter->second[tmp_pool_idx].statistic_max_height) {
+            return kPoolsError;
+        }
+    }
+
     auto exist_iter = statistic_height_map_.find(iter->first);
     if (exist_iter != statistic_height_map_.end()) {
         elect_statistic = exist_iter->second;
@@ -859,7 +866,6 @@ int ShardStatistic::StatisticWithHeights(
         auto* height_item = heights_info->add_heights();
         height_item->set_min_height(iter->second[tmp_pool_idx].statistic_min_height);
         height_item->set_max_height(iter->second[tmp_pool_idx].statistic_max_height);
-        // heights_info->add_heights(iter->second[tmp_pool_idx].statistic_max_height);
     }
 
     ZJC_DEBUG("success create statistic message prev_timeblock_height_: %lu, "
