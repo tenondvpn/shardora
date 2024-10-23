@@ -90,6 +90,11 @@ public:
         uint32_t pool_idx,
         uint64_t height,
         uint32_t priority);
+    void AddSyncViewHeight(
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t height,
+        uint32_t priority);
     void Init(
             const std::shared_ptr<block::BlockManager>& block_mgr,
             const std::shared_ptr<consensus::HotstuffManager>& hotstuff_mgr,

@@ -39,6 +39,7 @@ HotstuffManager::HotstuffManager() {}
 HotstuffManager::~HotstuffManager() {}
 
 int HotstuffManager::Init(
+        std::shared_ptr<sync::KeyValueSync>& kv_sync,
         std::shared_ptr<contract::ContractManager>& contract_mgr,
         std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
         std::shared_ptr<vss::VssManager>& vss_mgr,
@@ -51,6 +52,7 @@ int HotstuffManager::Init(
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         std::shared_ptr<db::Db>& db,
         BlockCacheCallback new_block_cache_callback) {
+    kv_sync_ = kv_sync;
     contract_mgr_ = contract_mgr;
     gas_prepayment_ = gas_prepayment;
     vss_mgr_ = vss_mgr;
@@ -86,7 +88,7 @@ int HotstuffManager::Init(
                 pool_idx, pool_mgr, tm_block_mgr, block_mgr, elect_info_);
         
         pool_hotstuff_[pool_idx] = std::make_shared<Hotstuff>(
-                pool_idx, leader_rotation, chain,
+                kv_sync, pool_idx, leader_rotation, chain,
                 acceptor, wrapper, pacemaker, crypto, elect_info_, db_);
         pool_hotstuff_[pool_idx]->Init();
     }

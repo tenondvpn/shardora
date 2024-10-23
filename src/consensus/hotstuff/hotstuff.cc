@@ -1262,24 +1262,19 @@ Status Hotstuff::VerifyViewBlock(
         return Status::kError;
     }
 
-    // auto& qc = v_block.qc();
-    // // 验证 view 编号
-    // if (qc.view() + 1 != v_block->view && tc && tc->view() + 1 != v_block->view) {
-    //     ZJC_ERROR("block view is error.");
-    //     return Status::kError;
-    // }
-    
-    // // qc 指针和哈希指针一致
-    // if (qc->view_block_hash() != v_block->parent_hash) {
-    //     ZJC_ERROR("qc ref is different from hash ref");
-    //     return Status::kError;        
-    // }
-
     // hotstuff condition
     std::shared_ptr<ViewBlock> qc_view_block = view_block_chain->Get(v_block.parent_hash());
     if (!qc_view_block) {
-        ZJC_ERROR("get qc prev view block message is error: %s",
-            common::Encode::HexEncode(v_block.parent_hash()).c_str());
+        ZJC_ERROR("get qc prev view block message is error: %s, sync parent view: %u_%u_%lu",
+            common::Encode::HexEncode(v_block.parent_hash()).c_str(),
+            v_block.qc().network_id(), 
+            v_block.qc().pool_index(), 
+            v_block.qc().view() - 1);
+        kv_sync_->AddSyncViewHeight(
+            v_block.qc().network_id(), 
+            v_block.qc().pool_index(), 
+            v_block.qc().view() - 1,
+            0);
         return Status::kError;
     }
 

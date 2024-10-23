@@ -60,6 +60,19 @@ void KeyValueSync::AddSyncHeight(
         item->key.c_str(), item->priority);
 }
 
+void KeyValueSync::AddSyncViewHeight(
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t height,
+        uint32_t priority) {
+    assert(priority <= kSyncHighest);
+    auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority, kViewHeight);
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    item_queues_[thread_idx].push(item);
+    ZJC_INFO("block height add new sync item key: %s, priority: %u",
+        item->key.c_str(), item->priority);
+}
+
 void KeyValueSync::ConsensusTimerMessage() {
     auto now_tm_us = common::TimeUtils::TimestampUs();
     auto now_tm_ms = common::TimeUtils::TimestampMs();

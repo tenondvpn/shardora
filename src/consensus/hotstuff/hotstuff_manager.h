@@ -65,6 +65,7 @@ class WaitingTxsPools;
 class HotstuffManager : public Consensus {
 public:
     int Init(
+        std::shared_ptr<sync::KeyValueSync>& kv_sync,
         std::shared_ptr<contract::ContractManager>& contract_mgr,
         std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
         std::shared_ptr<vss::VssManager>& vss_mgr,
@@ -317,6 +318,7 @@ private:
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     uint64_t prev_handler_timer_tm_ms_ = 0;
     uint64_t first_timeblock_timestamp_ = 0;
+    std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(HotstuffManager);
 };

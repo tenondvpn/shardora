@@ -48,6 +48,7 @@ class Hotstuff {
 public:
     Hotstuff() = default;
     Hotstuff(
+            std::shared_ptr<sync::KeyValueSync>& kv_sync,
             const uint32_t& pool_idx,
             const std::shared_ptr<LeaderRotation>& lr,
             const std::shared_ptr<ViewBlockChain>& chain,
@@ -57,6 +58,7 @@ public:
             const std::shared_ptr<Crypto>& crypto,
             const std::shared_ptr<ElectInfo>& elect_info,
             std::shared_ptr<db::Db>& db) :
+        kv_sync_(kv_sync),
         pool_idx_(pool_idx),
         crypto_(crypto),
         pacemaker_(pm),
@@ -325,6 +327,7 @@ private:
     bool has_user_tx_tag_ = false;
     std::map<View, std::shared_ptr<ProposeMsgWrapper>> leader_view_with_propose_msgs_;
     std::shared_ptr<transport::TransportMessage> latest_leader_propose_message_;
+    std::shared_ptr<sync::KeyValueSync> kv_sync_;
 
 };
 

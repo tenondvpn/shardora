@@ -205,6 +205,7 @@ int NetworkInit::Init(int argc, char** argv) {
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
     auto consensus_init_res = hotstuff_mgr_->Init(
+        kv_sync_,
         contract_mgr_,
         gas_prepayment_,
         vss_mgr_,
