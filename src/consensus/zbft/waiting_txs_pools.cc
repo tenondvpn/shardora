@@ -225,15 +225,15 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(
     bool leader = !tx_hash.empty();
     pools::TxItemPtr tx_ptr = block_mgr_->GetToTx(pool_index, tx_hash);
     if (tx_ptr != nullptr) {
-        if (leader) {
-            auto now_tm = common::TimeUtils::TimestampUs();
-            if (tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm) {
-                ZJC_DEBUG("leader get to tx coming failed 1");
-                return nullptr;
-            }
+        // if (leader) {
+        //     auto now_tm = common::TimeUtils::TimestampUs();
+        //     if (tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm) {
+        //         ZJC_DEBUG("leader get to tx coming failed 1");
+        //         return nullptr;
+        //     }
 
-            tx_ptr->prev_consensus_tm_us = now_tm;
-        }
+        //     tx_ptr->prev_consensus_tm_us = now_tm;
+        // }
 
         auto txs_item = std::make_shared<WaitingTxsItem>();
         txs_item->pool_index = pool_index;
