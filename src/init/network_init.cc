@@ -1073,9 +1073,7 @@ void NetworkInit::AddBlockItemToCache(
         block->height(),
         block->tx_list_size(),
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
-    if (view_block->qc().network_id() == common::GlobalInfo::Instance()->network_id() ||
-            view_block->qc().network_id() + network::kConsensusWaitingShardOffset ==
-            common::GlobalInfo::Instance()->network_id()) {
+    if (network::IsSameToLocalShard(view_block->qc().network_id())) {
         pools_mgr_->UpdateLatestInfo(view_block, db_batch);
     } else {
         pools_mgr_->UpdateCrossLatestInfo(view_block, db_batch);

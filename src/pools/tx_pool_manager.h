@@ -218,10 +218,6 @@ public:
             db::DbWriteBatch& db_batch) {
         auto* block = &view_block->block_info();
         uint32_t pool_index = view_block->qc().pool_index();
-        if (pool_index != common::kImmutablePoolSize) {
-            return;
-        }
-
         cross_block_mgr_->UpdateMaxHeight(view_block->qc().network_id(), block->height());
         uint64_t height = block->height();
         assert(height >= 0);
