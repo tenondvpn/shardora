@@ -88,10 +88,22 @@ Status Hotstuff::Start() {
 }
 
 Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
+
     // TODO(HT): 打包的交易，超时后如何释放？
     // 打包参与共识中的交易，如何保证幂等
     auto pre_v_block = view_block_chain()->HighViewBlock();
     if (!pre_v_block) {
+        return Status::kError;
+    }
+
+    auto dht_ptr = network::DhtManager::Instance()->GetDht(
+        common::GlobalInfo::Instance()->network_id());
+    if (!dht_ptr) {
+        return Status::kError;
+    }
+
+    auto readobly_dht = dht_ptr->readonly_hash_sort_dht();
+    if (readobly_dht->size() < 2) {
         return Status::kError;
     }
 
