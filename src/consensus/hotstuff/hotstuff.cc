@@ -1647,10 +1647,10 @@ Status Hotstuff::SendMsgToLeader(
 }
 
 void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
-    if (!latest_qc_item_ptr_) {
-        ZJC_DEBUG("latest_qc_item_ptr_ null, pool: %u", pool_idx_);
-        return;
-    }
+    // if (!latest_qc_item_ptr_) {
+    //     ZJC_DEBUG("latest_qc_item_ptr_ null, pool: %u", pool_idx_);
+    //     return;
+    // }
 
     if (has_user_tx) {
         has_user_tx_tag_ = true;
@@ -1687,12 +1687,16 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
             auto local_idx = leader_rotation_->GetLocalMemberIdx();
             if (leader->index == local_idx) {
                 Propose(latest_qc_item_ptr_);
-                ZJC_DEBUG("leader do propose message: %d, pool index: %u, %u_%u_%lu", 
-                    local_idx,
-                    pool_idx_,
-                    latest_qc_item_ptr_->network_id(), 
-                    latest_qc_item_ptr_->pool_index(), 
-                    latest_qc_item_ptr_->view());
+                if (latest_qc_item_ptr_) {
+                    ZJC_DEBUG("leader do propose message: %d, pool index: %u, %u_%u_%lu", 
+                        local_idx,
+                        pool_idx_,
+                        latest_qc_item_ptr_->network_id(), 
+                        latest_qc_item_ptr_->pool_index(), 
+                        latest_qc_item_ptr_->view());
+                } else {
+                    ZJC_DEBUG("normal restart.");
+                }
                 return;
             }
         }
