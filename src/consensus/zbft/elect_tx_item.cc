@@ -178,7 +178,9 @@ int ElectTxItem::processElect(
 
         ZJC_DEBUG("LLLLL after CreateNewElect: count: %d ,%s", count, ids.c_str());
     }
-    ZJC_DEBUG("consensus elect tx success: %u", elect_statistic.sharding_id());
+    ZJC_DEBUG("consensus elect tx success: %u, proto: %s",
+        elect_statistic.sharding_id(), 
+        ProtobufToJson(elect_statistic).c_str());
     return kConsensusSuccess;
 }
 int ElectTxItem::getMaxElectHeightInfo(shardora::pools::protobuf::ElectStatistic &elect_statistic,
