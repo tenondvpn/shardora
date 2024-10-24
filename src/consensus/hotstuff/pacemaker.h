@@ -2,9 +2,13 @@
 
 #include <common/tick.h>
 #include <common/time_utils.h>
+#ifdef USE_AGG_BLS
 #include <consensus/hotstuff/agg_crypto.h>
-#include <functional>
+#else
 #include <consensus/hotstuff/crypto.h>
+#endif
+#include <functional>
+
 #include <consensus/hotstuff/leader_rotation.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_duration.h>

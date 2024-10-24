@@ -1,9 +1,12 @@
 #pragma once
 #include <common/flow_control.h>
+#ifdef USE_AGG_BLS
 #include <consensus/hotstuff/agg_crypto.h>
+#else
+#include <consensus/hotstuff/crypto.h>
+#endif
 #include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/block_wrapper.h>
-#include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/leader_rotation.h>
 #include <consensus/hotstuff/pacemaker.h>
