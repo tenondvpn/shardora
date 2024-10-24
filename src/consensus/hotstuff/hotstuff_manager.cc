@@ -199,7 +199,7 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::
         return s;
     }
 
-    ZJC_INFO("qc verify success, s: %d, blockview: %lu, "
+    ZJC_DEBUG("qc verify success, s: %d, blockview: %lu, "
             "qcview: %lu, %u_%u_%lu, block elect height: %lu, elect height: %u_%u_%lu",
             s, vblock.qc().view(), vblock.qc().view(),
             vblock.qc().network_id(),

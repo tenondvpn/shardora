@@ -105,10 +105,6 @@ uint32_t CrossPool::SyncMissingBlocks(uint64_t now_tm_ms) {
                 des_sharding_id_,
                 pool_index_,
                 invalid_heights[i]);
-            ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
-                des_sharding_id_,
-                pool_index_,
-                invalid_heights[i]);
             kv_sync_->AddSyncHeight(
                 des_sharding_id_,
                 pool_index_,
