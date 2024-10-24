@@ -22,7 +22,7 @@ protected:
     virtual ~TxItemBase() {}
 
     virtual int HandleTx(
-            const block::protobuf::Block& block,
+            const view_block::protobuf::ViewBlockItem& view_block,
             std::shared_ptr<db::DbWriteBatch>& db_batch,
             zjcvm::ZjchainHost& zjc_host,
             std::unordered_map<std::string, int64_t>& acc_balance_map,

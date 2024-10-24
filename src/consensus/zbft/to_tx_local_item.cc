@@ -7,7 +7,7 @@ namespace shardora {
 namespace consensus {
 
 int ToTxLocalItem::HandleTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
@@ -42,7 +42,7 @@ int ToTxLocalItem::HandleTx(
             }
         } else if (to_txs.tos(i).des().size() == security::kUnicastAddressLength * 2) { // to + from, for gas prepayment tx
             to_balance = gas_prepayment_->GetAddressPrepayment(
-                block.pool_index(),
+                view_block.qc().pool_index(),
                 to_txs.tos(i).des().substr(0, security::kUnicastAddressLength),
                 to_txs.tos(i).des().substr(security::kUnicastAddressLength, security::kUnicastAddressLength));
             ZJC_DEBUG("success add contract prepayment: %s, %lu",
@@ -62,9 +62,10 @@ int ToTxLocalItem::HandleTx(
         str_for_hash.append(to_txs.tos(i).des());
         str_for_hash.append((char*)&to_balance, sizeof(to_balance));
         acc_balance_map[to_txs.tos(i).des()] = to_balance;
-        ZJC_DEBUG("add local to: %s, balance: %lu",
+        ZJC_DEBUG("add local to: %s, balance: %lu, amount: %lu",
             common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
-            to_balance);
+            to_balance,
+            to_txs.tos(i).amount());
 
     }
 

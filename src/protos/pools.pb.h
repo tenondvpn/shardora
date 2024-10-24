@@ -41,7 +41,7 @@ namespace protobuf_protos_2fpools_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[16];
+  static const ::google::protobuf::internal::ParseTable schema[18];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -66,18 +66,24 @@ extern CrossShardStatisticItemDefaultTypeInternal _CrossShardStatisticItem_defau
 class ElectStatistic;
 class ElectStatisticDefaultTypeInternal;
 extern ElectStatisticDefaultTypeInternal _ElectStatistic_default_instance_;
+class InitPoolHeightItem;
+class InitPoolHeightItemDefaultTypeInternal;
+extern InitPoolHeightItemDefaultTypeInternal _InitPoolHeightItem_default_instance_;
 class JoinElectNode;
 class JoinElectNodeDefaultTypeInternal;
 extern JoinElectNodeDefaultTypeInternal _JoinElectNode_default_instance_;
-class NetsInfo;
-class NetsInfoDefaultTypeInternal;
-extern NetsInfoDefaultTypeInternal _NetsInfo_default_instance_;
 class PoolLatestInfo;
 class PoolLatestInfoDefaultTypeInternal;
 extern PoolLatestInfoDefaultTypeInternal _PoolLatestInfo_default_instance_;
 class PoolStatisticItem;
 class PoolStatisticItemDefaultTypeInternal;
 extern PoolStatisticItemDefaultTypeInternal _PoolStatisticItem_default_instance_;
+class PoolStatisticTxInfo;
+class PoolStatisticTxInfoDefaultTypeInternal;
+extern PoolStatisticTxInfoDefaultTypeInternal _PoolStatisticTxInfo_default_instance_;
+class PoolStatisticTxItem;
+class PoolStatisticTxItemDefaultTypeInternal;
+extern PoolStatisticTxItemDefaultTypeInternal _PoolStatisticTxItem_default_instance_;
 class ShardToTxItem;
 class ShardToTxItemDefaultTypeInternal;
 extern ShardToTxItemDefaultTypeInternal _ShardToTxItem_default_instance_;
@@ -109,10 +115,12 @@ template<> ::shardora::pools::protobuf::AreaInfo* Arena::CreateMaybeMessage<::sh
 template<> ::shardora::pools::protobuf::CrossShardStatistic* Arena::CreateMaybeMessage<::shardora::pools::protobuf::CrossShardStatistic>(Arena*);
 template<> ::shardora::pools::protobuf::CrossShardStatisticItem* Arena::CreateMaybeMessage<::shardora::pools::protobuf::CrossShardStatisticItem>(Arena*);
 template<> ::shardora::pools::protobuf::ElectStatistic* Arena::CreateMaybeMessage<::shardora::pools::protobuf::ElectStatistic>(Arena*);
+template<> ::shardora::pools::protobuf::InitPoolHeightItem* Arena::CreateMaybeMessage<::shardora::pools::protobuf::InitPoolHeightItem>(Arena*);
 template<> ::shardora::pools::protobuf::JoinElectNode* Arena::CreateMaybeMessage<::shardora::pools::protobuf::JoinElectNode>(Arena*);
-template<> ::shardora::pools::protobuf::NetsInfo* Arena::CreateMaybeMessage<::shardora::pools::protobuf::NetsInfo>(Arena*);
 template<> ::shardora::pools::protobuf::PoolLatestInfo* Arena::CreateMaybeMessage<::shardora::pools::protobuf::PoolLatestInfo>(Arena*);
 template<> ::shardora::pools::protobuf::PoolStatisticItem* Arena::CreateMaybeMessage<::shardora::pools::protobuf::PoolStatisticItem>(Arena*);
+template<> ::shardora::pools::protobuf::PoolStatisticTxInfo* Arena::CreateMaybeMessage<::shardora::pools::protobuf::PoolStatisticTxInfo>(Arena*);
+template<> ::shardora::pools::protobuf::PoolStatisticTxItem* Arena::CreateMaybeMessage<::shardora::pools::protobuf::PoolStatisticTxItem>(Arena*);
 template<> ::shardora::pools::protobuf::ShardToTxItem* Arena::CreateMaybeMessage<::shardora::pools::protobuf::ShardToTxItem>(Arena*);
 template<> ::shardora::pools::protobuf::StatisticTxItem* Arena::CreateMaybeMessage<::shardora::pools::protobuf::StatisticTxItem>(Arena*);
 template<> ::shardora::pools::protobuf::SyncPoolsMaxHeight* Arena::CreateMaybeMessage<::shardora::pools::protobuf::SyncPoolsMaxHeight>(Arena*);
@@ -143,11 +151,12 @@ enum StepType {
   kCross = 15,
   kRootCross = 16,
   kContractCreateByRootTo = 17,
-  kContractCreateByRootFrom = 18
+  kContractCreateByRootFrom = 18,
+  kPoolStatisticTag = 19
 };
 bool StepType_IsValid(int value);
 const StepType StepType_MIN = kNormalFrom;
-const StepType StepType_MAX = kContractCreateByRootFrom;
+const StepType StepType_MAX = kPoolStatisticTag;
 const int StepType_ARRAYSIZE = StepType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* StepType_descriptor();
@@ -713,6 +722,140 @@ class ShardToTxItem : public ::google::protobuf::Message /* @@protoc_insertion_p
 };
 // -------------------------------------------------------------------
 
+class PoolStatisticTxItem : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.pools.protobuf.PoolStatisticTxItem) */ {
+ public:
+  PoolStatisticTxItem();
+  virtual ~PoolStatisticTxItem();
+
+  PoolStatisticTxItem(const PoolStatisticTxItem& from);
+
+  inline PoolStatisticTxItem& operator=(const PoolStatisticTxItem& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  PoolStatisticTxItem(PoolStatisticTxItem&& from) noexcept
+    : PoolStatisticTxItem() {
+    *this = ::std::move(from);
+  }
+
+  inline PoolStatisticTxItem& operator=(PoolStatisticTxItem&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const PoolStatisticTxItem& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const PoolStatisticTxItem* internal_default_instance() {
+    return reinterpret_cast<const PoolStatisticTxItem*>(
+               &_PoolStatisticTxItem_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    3;
+
+  void Swap(PoolStatisticTxItem* other);
+  friend void swap(PoolStatisticTxItem& a, PoolStatisticTxItem& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline PoolStatisticTxItem* New() const final {
+    return CreateMaybeMessage<PoolStatisticTxItem>(NULL);
+  }
+
+  PoolStatisticTxItem* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<PoolStatisticTxItem>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const PoolStatisticTxItem& from);
+  void MergeFrom(const PoolStatisticTxItem& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(PoolStatisticTxItem* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional uint64 min_height = 2;
+  bool has_min_height() const;
+  void clear_min_height();
+  static const int kMinHeightFieldNumber = 2;
+  ::google::protobuf::uint64 min_height() const;
+  void set_min_height(::google::protobuf::uint64 value);
+
+  // optional uint64 max_height = 3;
+  bool has_max_height() const;
+  void clear_max_height();
+  static const int kMaxHeightFieldNumber = 3;
+  ::google::protobuf::uint64 max_height() const;
+  void set_max_height(::google::protobuf::uint64 value);
+
+  // optional uint32 pool_index = 1;
+  bool has_pool_index() const;
+  void clear_pool_index();
+  static const int kPoolIndexFieldNumber = 1;
+  ::google::protobuf::uint32 pool_index() const;
+  void set_pool_index(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.PoolStatisticTxItem)
+ private:
+  void set_has_pool_index();
+  void clear_has_pool_index();
+  void set_has_min_height();
+  void clear_has_min_height();
+  void set_has_max_height();
+  void clear_has_max_height();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::uint64 min_height_;
+  ::google::protobuf::uint64 max_height_;
+  ::google::protobuf::uint32 pool_index_;
+  friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class StatisticTxItem : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.pools.protobuf.StatisticTxItem) */ {
  public:
   StatisticTxItem();
@@ -755,7 +898,7 @@ class StatisticTxItem : public ::google::protobuf::Message /* @@protoc_insertion
                &_StatisticTxItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    3;
+    4;
 
   void Swap(StatisticTxItem* other);
   friend void swap(StatisticTxItem& a, StatisticTxItem& b) {
@@ -807,17 +950,17 @@ class StatisticTxItem : public ::google::protobuf::Message /* @@protoc_insertion
 
   // accessors -------------------------------------------------------
 
-  // repeated uint64 heights = 2;
+  // repeated .shardora.pools.protobuf.PoolStatisticTxItem heights = 2;
   int heights_size() const;
   void clear_heights();
   static const int kHeightsFieldNumber = 2;
-  ::google::protobuf::uint64 heights(int index) const;
-  void set_heights(int index, ::google::protobuf::uint64 value);
-  void add_heights(::google::protobuf::uint64 value);
-  const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
-      heights() const;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+  ::shardora::pools::protobuf::PoolStatisticTxItem* mutable_heights(int index);
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::PoolStatisticTxItem >*
       mutable_heights();
+  const ::shardora::pools::protobuf::PoolStatisticTxItem& heights(int index) const;
+  ::shardora::pools::protobuf::PoolStatisticTxItem* add_heights();
+  const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::PoolStatisticTxItem >&
+      heights() const;
 
   // optional uint64 block_height = 3;
   bool has_block_height() const;
@@ -852,10 +995,284 @@ class StatisticTxItem : public ::google::protobuf::Message /* @@protoc_insertion
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::PoolStatisticTxItem > heights_;
+  ::google::protobuf::uint64 block_height_;
+  ::google::protobuf::uint64 tm_height_;
+  ::google::protobuf::uint32 sharding_id_;
+  friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
+class InitPoolHeightItem : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.pools.protobuf.InitPoolHeightItem) */ {
+ public:
+  InitPoolHeightItem();
+  virtual ~InitPoolHeightItem();
+
+  InitPoolHeightItem(const InitPoolHeightItem& from);
+
+  inline InitPoolHeightItem& operator=(const InitPoolHeightItem& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  InitPoolHeightItem(InitPoolHeightItem&& from) noexcept
+    : InitPoolHeightItem() {
+    *this = ::std::move(from);
+  }
+
+  inline InitPoolHeightItem& operator=(InitPoolHeightItem&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const InitPoolHeightItem& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const InitPoolHeightItem* internal_default_instance() {
+    return reinterpret_cast<const InitPoolHeightItem*>(
+               &_InitPoolHeightItem_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    5;
+
+  void Swap(InitPoolHeightItem* other);
+  friend void swap(InitPoolHeightItem& a, InitPoolHeightItem& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline InitPoolHeightItem* New() const final {
+    return CreateMaybeMessage<InitPoolHeightItem>(NULL);
+  }
+
+  InitPoolHeightItem* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<InitPoolHeightItem>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const InitPoolHeightItem& from);
+  void MergeFrom(const InitPoolHeightItem& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(InitPoolHeightItem* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated uint64 heights = 2;
+  int heights_size() const;
+  void clear_heights();
+  static const int kHeightsFieldNumber = 2;
+  ::google::protobuf::uint64 heights(int index) const;
+  void set_heights(int index, ::google::protobuf::uint64 value);
+  void add_heights(::google::protobuf::uint64 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+      heights() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+      mutable_heights();
+
+  // optional uint64 block_height = 3;
+  bool has_block_height() const;
+  void clear_block_height();
+  static const int kBlockHeightFieldNumber = 3;
+  ::google::protobuf::uint64 block_height() const;
+  void set_block_height(::google::protobuf::uint64 value);
+
+  // optional uint64 tm_height = 4;
+  bool has_tm_height() const;
+  void clear_tm_height();
+  static const int kTmHeightFieldNumber = 4;
+  ::google::protobuf::uint64 tm_height() const;
+  void set_tm_height(::google::protobuf::uint64 value);
+
+  // optional uint32 sharding_id = 1;
+  bool has_sharding_id() const;
+  void clear_sharding_id();
+  static const int kShardingIdFieldNumber = 1;
+  ::google::protobuf::uint32 sharding_id() const;
+  void set_sharding_id(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.InitPoolHeightItem)
+ private:
+  void set_has_sharding_id();
+  void clear_has_sharding_id();
+  void set_has_block_height();
+  void clear_has_block_height();
+  void set_has_tm_height();
+  void clear_has_tm_height();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > heights_;
   ::google::protobuf::uint64 block_height_;
   ::google::protobuf::uint64 tm_height_;
   ::google::protobuf::uint32 sharding_id_;
+  friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
+class PoolStatisticTxInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.pools.protobuf.PoolStatisticTxInfo) */ {
+ public:
+  PoolStatisticTxInfo();
+  virtual ~PoolStatisticTxInfo();
+
+  PoolStatisticTxInfo(const PoolStatisticTxInfo& from);
+
+  inline PoolStatisticTxInfo& operator=(const PoolStatisticTxInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  PoolStatisticTxInfo(PoolStatisticTxInfo&& from) noexcept
+    : PoolStatisticTxInfo() {
+    *this = ::std::move(from);
+  }
+
+  inline PoolStatisticTxInfo& operator=(PoolStatisticTxInfo&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const PoolStatisticTxInfo& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const PoolStatisticTxInfo* internal_default_instance() {
+    return reinterpret_cast<const PoolStatisticTxInfo*>(
+               &_PoolStatisticTxInfo_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    6;
+
+  void Swap(PoolStatisticTxInfo* other);
+  friend void swap(PoolStatisticTxInfo& a, PoolStatisticTxInfo& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline PoolStatisticTxInfo* New() const final {
+    return CreateMaybeMessage<PoolStatisticTxInfo>(NULL);
+  }
+
+  PoolStatisticTxInfo* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<PoolStatisticTxInfo>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const PoolStatisticTxInfo& from);
+  void MergeFrom(const PoolStatisticTxInfo& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(PoolStatisticTxInfo* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated .shardora.pools.protobuf.PoolStatisticTxItem pool_statisitcs = 2;
+  int pool_statisitcs_size() const;
+  void clear_pool_statisitcs();
+  static const int kPoolStatisitcsFieldNumber = 2;
+  ::shardora::pools::protobuf::PoolStatisticTxItem* mutable_pool_statisitcs(int index);
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::PoolStatisticTxItem >*
+      mutable_pool_statisitcs();
+  const ::shardora::pools::protobuf::PoolStatisticTxItem& pool_statisitcs(int index) const;
+  ::shardora::pools::protobuf::PoolStatisticTxItem* add_pool_statisitcs();
+  const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::PoolStatisticTxItem >&
+      pool_statisitcs() const;
+
+  // optional uint64 height = 1;
+  bool has_height() const;
+  void clear_height();
+  static const int kHeightFieldNumber = 1;
+  ::google::protobuf::uint64 height() const;
+  void set_height(::google::protobuf::uint64 value);
+
+  // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.PoolStatisticTxInfo)
+ private:
+  void set_has_height();
+  void clear_has_height();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::PoolStatisticTxItem > pool_statisitcs_;
+  ::google::protobuf::uint64 height_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -902,7 +1319,7 @@ class CrossShardStatisticItem : public ::google::protobuf::Message /* @@protoc_i
                &_CrossShardStatisticItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    7;
 
   void Swap(CrossShardStatisticItem* other);
   friend void swap(CrossShardStatisticItem& a, CrossShardStatisticItem& b) {
@@ -1046,7 +1463,7 @@ class CrossShardStatistic : public ::google::protobuf::Message /* @@protoc_inser
                &_CrossShardStatistic_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    8;
 
   void Swap(CrossShardStatistic* other);
   friend void swap(CrossShardStatistic& a, CrossShardStatistic& b) {
@@ -1191,7 +1608,7 @@ class ToTxMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
                &_ToTxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    9;
 
   void Swap(ToTxMessage* other);
   friend void swap(ToTxMessage& a, ToTxMessage& b) {
@@ -1364,7 +1781,7 @@ class AllToTxMessage : public ::google::protobuf::Message /* @@protoc_insertion_
                &_AllToTxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    10;
 
   void Swap(AllToTxMessage* other);
   friend void swap(AllToTxMessage& a, AllToTxMessage& b) {
@@ -1481,7 +1898,7 @@ class PoolLatestInfo : public ::google::protobuf::Message /* @@protoc_insertion_
                &_PoolLatestInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    11;
 
   void Swap(PoolLatestInfo* other);
   friend void swap(PoolLatestInfo& a, PoolLatestInfo& b) {
@@ -1633,7 +2050,7 @@ class AreaInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
                &_AreaInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    12;
 
   void Swap(AreaInfo* other);
   friend void swap(AreaInfo& a, AreaInfo& b) {
@@ -1757,7 +2174,7 @@ class PoolStatisticItem : public ::google::protobuf::Message /* @@protoc_inserti
                &_PoolStatisticItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    13;
 
   void Swap(PoolStatisticItem* other);
   friend void swap(PoolStatisticItem& a, PoolStatisticItem& b) {
@@ -1949,7 +2366,7 @@ class JoinElectNode : public ::google::protobuf::Message /* @@protoc_insertion_p
                &_JoinElectNode_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    14;
 
   void Swap(JoinElectNode* other);
   friend void swap(JoinElectNode& a, JoinElectNode& b) {
@@ -2151,7 +2568,7 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
                &_ElectStatistic_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    15;
 
   void Swap(ElectStatistic* other);
   friend void swap(ElectStatistic& a, ElectStatistic& b) {
@@ -2258,19 +2675,19 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::uint64 gas_amount() const;
   void set_gas_amount(::google::protobuf::uint64 value);
 
+  // optional uint64 statistic_height = 7;
+  bool has_statistic_height() const;
+  void clear_statistic_height();
+  static const int kStatisticHeightFieldNumber = 7;
+  ::google::protobuf::uint64 statistic_height() const;
+  void set_statistic_height(::google::protobuf::uint64 value);
+
   // optional uint32 sharding_id = 4;
   bool has_sharding_id() const;
   void clear_sharding_id();
   static const int kShardingIdFieldNumber = 4;
   ::google::protobuf::uint32 sharding_id() const;
   void set_sharding_id(::google::protobuf::uint32 value);
-
-  // optional bool shard_perf_limit_reached = 7;
-  bool has_shard_perf_limit_reached() const;
-  void clear_shard_perf_limit_reached();
-  static const int kShardPerfLimitReachedFieldNumber = 7;
-  bool shard_perf_limit_reached() const;
-  void set_shard_perf_limit_reached(bool value);
 
   // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.ElectStatistic)
  private:
@@ -2280,8 +2697,8 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   void clear_has_sharding_id();
   void set_has_gas_amount();
   void clear_has_gas_amount();
-  void set_has_shard_perf_limit_reached();
-  void clear_has_shard_perf_limit_reached();
+  void set_has_statistic_height();
+  void clear_has_statistic_height();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -2291,132 +2708,8 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > lof_leaders_;
   ::shardora::pools::protobuf::StatisticTxItem* height_info_;
   ::google::protobuf::uint64 gas_amount_;
+  ::google::protobuf::uint64 statistic_height_;
   ::google::protobuf::uint32 sharding_id_;
-  bool shard_perf_limit_reached_;
-  friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
-};
-// -------------------------------------------------------------------
-
-class NetsInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.pools.protobuf.NetsInfo) */ {
- public:
-  NetsInfo();
-  virtual ~NetsInfo();
-
-  NetsInfo(const NetsInfo& from);
-
-  inline NetsInfo& operator=(const NetsInfo& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  #if LANG_CXX11
-  NetsInfo(NetsInfo&& from) noexcept
-    : NetsInfo() {
-    *this = ::std::move(from);
-  }
-
-  inline NetsInfo& operator=(NetsInfo&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-  #endif
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const NetsInfo& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const NetsInfo* internal_default_instance() {
-    return reinterpret_cast<const NetsInfo*>(
-               &_NetsInfo_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    13;
-
-  void Swap(NetsInfo* other);
-  friend void swap(NetsInfo& a, NetsInfo& b) {
-    a.Swap(&b);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline NetsInfo* New() const final {
-    return CreateMaybeMessage<NetsInfo>(NULL);
-  }
-
-  NetsInfo* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<NetsInfo>(arena);
-  }
-  void CopyFrom(const ::google::protobuf::Message& from) final;
-  void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const NetsInfo& from);
-  void MergeFrom(const NetsInfo& from);
-  void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input) final;
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const final;
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(NetsInfo* other);
-  private:
-  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return NULL;
-  }
-  inline void* MaybeArenaPtr() const {
-    return NULL;
-  }
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional uint32 preopened_network_id = 1;
-  bool has_preopened_network_id() const;
-  void clear_preopened_network_id();
-  static const int kPreopenedNetworkIdFieldNumber = 1;
-  ::google::protobuf::uint32 preopened_network_id() const;
-  void set_preopened_network_id(::google::protobuf::uint32 value);
-
-  // optional uint32 biggest_opened_network_id = 2;
-  bool has_biggest_opened_network_id() const;
-  void clear_biggest_opened_network_id();
-  static const int kBiggestOpenedNetworkIdFieldNumber = 2;
-  ::google::protobuf::uint32 biggest_opened_network_id() const;
-  void set_biggest_opened_network_id(::google::protobuf::uint32 value);
-
-  // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.NetsInfo)
- private:
-  void set_has_preopened_network_id();
-  void clear_has_preopened_network_id();
-  void set_has_biggest_opened_network_id();
-  void clear_has_biggest_opened_network_id();
-
-  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::HasBits<1> _has_bits_;
-  mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::uint32 preopened_network_id_;
-  ::google::protobuf::uint32 biggest_opened_network_id_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -2463,7 +2756,7 @@ class SyncPoolsMaxHeight : public ::google::protobuf::Message /* @@protoc_insert
                &_SyncPoolsMaxHeight_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    16;
 
   void Swap(SyncPoolsMaxHeight* other);
   friend void swap(SyncPoolsMaxHeight& a, SyncPoolsMaxHeight& b) {
@@ -2603,7 +2896,7 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
                &_TxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    17;
 
   void Swap(TxMessage* other);
   friend void swap(TxMessage& a, TxMessage& b) {
@@ -3587,6 +3880,82 @@ inline void ShardToTxItem::set_block_height(::google::protobuf::uint64 value) {
 
 // -------------------------------------------------------------------
 
+// PoolStatisticTxItem
+
+// optional uint32 pool_index = 1;
+inline bool PoolStatisticTxItem::has_pool_index() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void PoolStatisticTxItem::set_has_pool_index() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void PoolStatisticTxItem::clear_has_pool_index() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void PoolStatisticTxItem::clear_pool_index() {
+  pool_index_ = 0u;
+  clear_has_pool_index();
+}
+inline ::google::protobuf::uint32 PoolStatisticTxItem::pool_index() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.PoolStatisticTxItem.pool_index)
+  return pool_index_;
+}
+inline void PoolStatisticTxItem::set_pool_index(::google::protobuf::uint32 value) {
+  set_has_pool_index();
+  pool_index_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.PoolStatisticTxItem.pool_index)
+}
+
+// optional uint64 min_height = 2;
+inline bool PoolStatisticTxItem::has_min_height() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void PoolStatisticTxItem::set_has_min_height() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void PoolStatisticTxItem::clear_has_min_height() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void PoolStatisticTxItem::clear_min_height() {
+  min_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_min_height();
+}
+inline ::google::protobuf::uint64 PoolStatisticTxItem::min_height() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.PoolStatisticTxItem.min_height)
+  return min_height_;
+}
+inline void PoolStatisticTxItem::set_min_height(::google::protobuf::uint64 value) {
+  set_has_min_height();
+  min_height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.PoolStatisticTxItem.min_height)
+}
+
+// optional uint64 max_height = 3;
+inline bool PoolStatisticTxItem::has_max_height() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void PoolStatisticTxItem::set_has_max_height() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void PoolStatisticTxItem::clear_has_max_height() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void PoolStatisticTxItem::clear_max_height() {
+  max_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_max_height();
+}
+inline ::google::protobuf::uint64 PoolStatisticTxItem::max_height() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.PoolStatisticTxItem.max_height)
+  return max_height_;
+}
+inline void PoolStatisticTxItem::set_max_height(::google::protobuf::uint64 value) {
+  set_has_max_height();
+  max_height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.PoolStatisticTxItem.max_height)
+}
+
+// -------------------------------------------------------------------
+
 // StatisticTxItem
 
 // optional uint32 sharding_id = 1;
@@ -3613,34 +3982,34 @@ inline void StatisticTxItem::set_sharding_id(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:shardora.pools.protobuf.StatisticTxItem.sharding_id)
 }
 
-// repeated uint64 heights = 2;
+// repeated .shardora.pools.protobuf.PoolStatisticTxItem heights = 2;
 inline int StatisticTxItem::heights_size() const {
   return heights_.size();
 }
 inline void StatisticTxItem::clear_heights() {
   heights_.Clear();
 }
-inline ::google::protobuf::uint64 StatisticTxItem::heights(int index) const {
-  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.StatisticTxItem.heights)
-  return heights_.Get(index);
+inline ::shardora::pools::protobuf::PoolStatisticTxItem* StatisticTxItem::mutable_heights(int index) {
+  // @@protoc_insertion_point(field_mutable:shardora.pools.protobuf.StatisticTxItem.heights)
+  return heights_.Mutable(index);
 }
-inline void StatisticTxItem::set_heights(int index, ::google::protobuf::uint64 value) {
-  heights_.Set(index, value);
-  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.StatisticTxItem.heights)
-}
-inline void StatisticTxItem::add_heights(::google::protobuf::uint64 value) {
-  heights_.Add(value);
-  // @@protoc_insertion_point(field_add:shardora.pools.protobuf.StatisticTxItem.heights)
-}
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
-StatisticTxItem::heights() const {
-  // @@protoc_insertion_point(field_list:shardora.pools.protobuf.StatisticTxItem.heights)
-  return heights_;
-}
-inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+inline ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::PoolStatisticTxItem >*
 StatisticTxItem::mutable_heights() {
   // @@protoc_insertion_point(field_mutable_list:shardora.pools.protobuf.StatisticTxItem.heights)
   return &heights_;
+}
+inline const ::shardora::pools::protobuf::PoolStatisticTxItem& StatisticTxItem::heights(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.StatisticTxItem.heights)
+  return heights_.Get(index);
+}
+inline ::shardora::pools::protobuf::PoolStatisticTxItem* StatisticTxItem::add_heights() {
+  // @@protoc_insertion_point(field_add:shardora.pools.protobuf.StatisticTxItem.heights)
+  return heights_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::PoolStatisticTxItem >&
+StatisticTxItem::heights() const {
+  // @@protoc_insertion_point(field_list:shardora.pools.protobuf.StatisticTxItem.heights)
+  return heights_;
 }
 
 // optional uint64 block_height = 3;
@@ -3689,6 +4058,170 @@ inline void StatisticTxItem::set_tm_height(::google::protobuf::uint64 value) {
   set_has_tm_height();
   tm_height_ = value;
   // @@protoc_insertion_point(field_set:shardora.pools.protobuf.StatisticTxItem.tm_height)
+}
+
+// -------------------------------------------------------------------
+
+// InitPoolHeightItem
+
+// optional uint32 sharding_id = 1;
+inline bool InitPoolHeightItem::has_sharding_id() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void InitPoolHeightItem::set_has_sharding_id() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void InitPoolHeightItem::clear_has_sharding_id() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void InitPoolHeightItem::clear_sharding_id() {
+  sharding_id_ = 0u;
+  clear_has_sharding_id();
+}
+inline ::google::protobuf::uint32 InitPoolHeightItem::sharding_id() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.InitPoolHeightItem.sharding_id)
+  return sharding_id_;
+}
+inline void InitPoolHeightItem::set_sharding_id(::google::protobuf::uint32 value) {
+  set_has_sharding_id();
+  sharding_id_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.InitPoolHeightItem.sharding_id)
+}
+
+// repeated uint64 heights = 2;
+inline int InitPoolHeightItem::heights_size() const {
+  return heights_.size();
+}
+inline void InitPoolHeightItem::clear_heights() {
+  heights_.Clear();
+}
+inline ::google::protobuf::uint64 InitPoolHeightItem::heights(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.InitPoolHeightItem.heights)
+  return heights_.Get(index);
+}
+inline void InitPoolHeightItem::set_heights(int index, ::google::protobuf::uint64 value) {
+  heights_.Set(index, value);
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.InitPoolHeightItem.heights)
+}
+inline void InitPoolHeightItem::add_heights(::google::protobuf::uint64 value) {
+  heights_.Add(value);
+  // @@protoc_insertion_point(field_add:shardora.pools.protobuf.InitPoolHeightItem.heights)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+InitPoolHeightItem::heights() const {
+  // @@protoc_insertion_point(field_list:shardora.pools.protobuf.InitPoolHeightItem.heights)
+  return heights_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+InitPoolHeightItem::mutable_heights() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.pools.protobuf.InitPoolHeightItem.heights)
+  return &heights_;
+}
+
+// optional uint64 block_height = 3;
+inline bool InitPoolHeightItem::has_block_height() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void InitPoolHeightItem::set_has_block_height() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void InitPoolHeightItem::clear_has_block_height() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void InitPoolHeightItem::clear_block_height() {
+  block_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_block_height();
+}
+inline ::google::protobuf::uint64 InitPoolHeightItem::block_height() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.InitPoolHeightItem.block_height)
+  return block_height_;
+}
+inline void InitPoolHeightItem::set_block_height(::google::protobuf::uint64 value) {
+  set_has_block_height();
+  block_height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.InitPoolHeightItem.block_height)
+}
+
+// optional uint64 tm_height = 4;
+inline bool InitPoolHeightItem::has_tm_height() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void InitPoolHeightItem::set_has_tm_height() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void InitPoolHeightItem::clear_has_tm_height() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void InitPoolHeightItem::clear_tm_height() {
+  tm_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_tm_height();
+}
+inline ::google::protobuf::uint64 InitPoolHeightItem::tm_height() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.InitPoolHeightItem.tm_height)
+  return tm_height_;
+}
+inline void InitPoolHeightItem::set_tm_height(::google::protobuf::uint64 value) {
+  set_has_tm_height();
+  tm_height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.InitPoolHeightItem.tm_height)
+}
+
+// -------------------------------------------------------------------
+
+// PoolStatisticTxInfo
+
+// optional uint64 height = 1;
+inline bool PoolStatisticTxInfo::has_height() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void PoolStatisticTxInfo::set_has_height() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void PoolStatisticTxInfo::clear_has_height() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void PoolStatisticTxInfo::clear_height() {
+  height_ = GOOGLE_ULONGLONG(0);
+  clear_has_height();
+}
+inline ::google::protobuf::uint64 PoolStatisticTxInfo::height() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.PoolStatisticTxInfo.height)
+  return height_;
+}
+inline void PoolStatisticTxInfo::set_height(::google::protobuf::uint64 value) {
+  set_has_height();
+  height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.PoolStatisticTxInfo.height)
+}
+
+// repeated .shardora.pools.protobuf.PoolStatisticTxItem pool_statisitcs = 2;
+inline int PoolStatisticTxInfo::pool_statisitcs_size() const {
+  return pool_statisitcs_.size();
+}
+inline void PoolStatisticTxInfo::clear_pool_statisitcs() {
+  pool_statisitcs_.Clear();
+}
+inline ::shardora::pools::protobuf::PoolStatisticTxItem* PoolStatisticTxInfo::mutable_pool_statisitcs(int index) {
+  // @@protoc_insertion_point(field_mutable:shardora.pools.protobuf.PoolStatisticTxInfo.pool_statisitcs)
+  return pool_statisitcs_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::PoolStatisticTxItem >*
+PoolStatisticTxInfo::mutable_pool_statisitcs() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.pools.protobuf.PoolStatisticTxInfo.pool_statisitcs)
+  return &pool_statisitcs_;
+}
+inline const ::shardora::pools::protobuf::PoolStatisticTxItem& PoolStatisticTxInfo::pool_statisitcs(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.PoolStatisticTxInfo.pool_statisitcs)
+  return pool_statisitcs_.Get(index);
+}
+inline ::shardora::pools::protobuf::PoolStatisticTxItem* PoolStatisticTxInfo::add_pool_statisitcs() {
+  // @@protoc_insertion_point(field_add:shardora.pools.protobuf.PoolStatisticTxInfo.pool_statisitcs)
+  return pool_statisitcs_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::PoolStatisticTxItem >&
+PoolStatisticTxInfo::pool_statisitcs() const {
+  // @@protoc_insertion_point(field_list:shardora.pools.protobuf.PoolStatisticTxInfo.pool_statisitcs)
+  return pool_statisitcs_;
 }
 
 // -------------------------------------------------------------------
@@ -4989,13 +5522,13 @@ ElectStatistic::join_elect_nodes() const {
 
 // optional uint32 sharding_id = 4;
 inline bool ElectStatistic::has_sharding_id() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void ElectStatistic::set_has_sharding_id() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void ElectStatistic::clear_has_sharding_id() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void ElectStatistic::clear_sharding_id() {
   sharding_id_ = 0u;
@@ -5065,80 +5598,28 @@ ElectStatistic::mutable_lof_leaders() {
   return &lof_leaders_;
 }
 
-// optional bool shard_perf_limit_reached = 7;
-inline bool ElectStatistic::has_shard_perf_limit_reached() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+// optional uint64 statistic_height = 7;
+inline bool ElectStatistic::has_statistic_height() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void ElectStatistic::set_has_shard_perf_limit_reached() {
-  _has_bits_[0] |= 0x00000008u;
+inline void ElectStatistic::set_has_statistic_height() {
+  _has_bits_[0] |= 0x00000004u;
 }
-inline void ElectStatistic::clear_has_shard_perf_limit_reached() {
-  _has_bits_[0] &= ~0x00000008u;
+inline void ElectStatistic::clear_has_statistic_height() {
+  _has_bits_[0] &= ~0x00000004u;
 }
-inline void ElectStatistic::clear_shard_perf_limit_reached() {
-  shard_perf_limit_reached_ = false;
-  clear_has_shard_perf_limit_reached();
+inline void ElectStatistic::clear_statistic_height() {
+  statistic_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_statistic_height();
 }
-inline bool ElectStatistic::shard_perf_limit_reached() const {
-  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ElectStatistic.shard_perf_limit_reached)
-  return shard_perf_limit_reached_;
+inline ::google::protobuf::uint64 ElectStatistic::statistic_height() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ElectStatistic.statistic_height)
+  return statistic_height_;
 }
-inline void ElectStatistic::set_shard_perf_limit_reached(bool value) {
-  set_has_shard_perf_limit_reached();
-  shard_perf_limit_reached_ = value;
-  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ElectStatistic.shard_perf_limit_reached)
-}
-
-// -------------------------------------------------------------------
-
-// NetsInfo
-
-// optional uint32 preopened_network_id = 1;
-inline bool NetsInfo::has_preopened_network_id() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void NetsInfo::set_has_preopened_network_id() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void NetsInfo::clear_has_preopened_network_id() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void NetsInfo::clear_preopened_network_id() {
-  preopened_network_id_ = 0u;
-  clear_has_preopened_network_id();
-}
-inline ::google::protobuf::uint32 NetsInfo::preopened_network_id() const {
-  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.NetsInfo.preopened_network_id)
-  return preopened_network_id_;
-}
-inline void NetsInfo::set_preopened_network_id(::google::protobuf::uint32 value) {
-  set_has_preopened_network_id();
-  preopened_network_id_ = value;
-  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.NetsInfo.preopened_network_id)
-}
-
-// optional uint32 biggest_opened_network_id = 2;
-inline bool NetsInfo::has_biggest_opened_network_id() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void NetsInfo::set_has_biggest_opened_network_id() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void NetsInfo::clear_has_biggest_opened_network_id() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void NetsInfo::clear_biggest_opened_network_id() {
-  biggest_opened_network_id_ = 0u;
-  clear_has_biggest_opened_network_id();
-}
-inline ::google::protobuf::uint32 NetsInfo::biggest_opened_network_id() const {
-  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.NetsInfo.biggest_opened_network_id)
-  return biggest_opened_network_id_;
-}
-inline void NetsInfo::set_biggest_opened_network_id(::google::protobuf::uint32 value) {
-  set_has_biggest_opened_network_id();
-  biggest_opened_network_id_ = value;
-  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.NetsInfo.biggest_opened_network_id)
+inline void ElectStatistic::set_statistic_height(::google::protobuf::uint64 value) {
+  set_has_statistic_height();
+  statistic_height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ElectStatistic.statistic_height)
 }
 
 // -------------------------------------------------------------------
@@ -5975,6 +6456,10 @@ inline void TxMessage::set_allocated_sign(::std::string* sign) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

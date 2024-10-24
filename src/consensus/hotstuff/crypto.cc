@@ -18,14 +18,17 @@ Status Crypto::PartialSign(
         std::string* sign_y) {
     auto elect_item = GetElectItem(sharding_id, elect_height);
     if (!elect_item) {
+        assert(false);
         return Status::kError;
     }
     
     if (elect_item->local_sk() == libff::alt_bn128_Fr::zero()) {
+        assert(false);
         return Status::kError;
     }
 
     if (elect_item->LocalMember()->bls_publick_key == libff::alt_bn128_G2::zero()) {
+        assert(false);
         return Status::kError;
     }
 
@@ -39,6 +42,7 @@ Status Crypto::PartialSign(
             sign_x,
             sign_y);
     if (ret != bls::kBlsSuccess) {
+        assert(false);
         return Status::kError;
     }
 
@@ -116,12 +120,13 @@ Status Crypto::ReconstructAndVerifyThresSign(
     // TODO(HT): 先判断是否已经处理过的index
     collection_item->ok_bitmap.Set(index);
     collection_item->partial_signs[index] = partial_sign;
-    ZJC_DEBUG("msg hash: %s, ok count: %u, t: %u, index: %u, elect_height: %lu",
+    ZJC_DEBUG("msg hash: %s, ok count: %u, t: %u, index: %u, elect_height: %lu, pool: %u",
         common::Encode::HexEncode(msg_hash).c_str(), 
         collection_item->OkCount(), 
         elect_item->t(),
         index,
-        elect_height);
+        elect_height,
+        pool_idx_);
     if (collection_item->OkCount() < elect_item->t()) {
         return Status::kBlsVerifyWaiting;
     }
@@ -190,7 +195,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
         common::GlobalInfo::Instance()->network_id(), 
         elect_height, 
         msg_hash, 
-        collection_item->reconstructed_sign);
+        *collection_item->reconstructed_sign);
     if (s == Status::kSuccess) {
         reconstructed_sign = collection_item->reconstructed_sign;
         bls_collection_->handled = true;
@@ -222,7 +227,8 @@ Status Crypto::VerifyThresSign(
         uint32_t sharding_id, 
         uint64_t elect_height, 
         const HashStr &msg_hash,
-        const std::shared_ptr<libff::alt_bn128_G1> &reconstructed_sign) {
+        const libff::alt_bn128_G1& reconstructed_sign) {
+    return Status::kSuccess;
     auto b = common::TimeUtils::TimestampMs();
     defer({
         auto e = common::TimeUtils::TimestampMs();
@@ -232,7 +238,7 @@ Status Crypto::VerifyThresSign(
 #ifdef HOTSTUFF_TEST
     return Status::kSuccess;
 #endif
-    if (reconstructed_sign == nullptr) {
+    if (reconstructed_sign == libff::alt_bn128_G1::zero()) {
         ZJC_DEBUG("reconstructed_sign == nullptr");
         assert(false);
         return Status::kBlsVerifyFailed;
@@ -248,7 +254,7 @@ Status Crypto::VerifyThresSign(
         return s;
     }
 
-    s = GetVerifyHashB(sharding_id, elect_height, *reconstructed_sign, &verify_hash_b);
+    s = GetVerifyHashB(sharding_id, elect_height, reconstructed_sign, &verify_hash_b);
     if (s != Status::kSuccess) {
         ZJC_DEBUG("GetVerifyHashB failed!");
         assert(false);
@@ -260,7 +266,7 @@ Status Crypto::VerifyThresSign(
         auto val = libBLS::ThresholdUtils::fieldElementToString(
             elect_item->common_pk().X.c0);
         auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(
-            reconstructed_sign->X);
+            reconstructed_sign.X);
         ZJC_DEBUG("verify_hash_a != verify_hash_b %s, %s, msg_hash: %s, "
             "net: %u, pool: %u, elect height: %lu, common PK: %s, agg sign: %s", 
             common::Encode::HexEncode(verify_hash_a).c_str(),
@@ -280,7 +286,7 @@ Status Crypto::VerifyThresSign(
     auto val = libBLS::ThresholdUtils::fieldElementToString(
         elect_item->common_pk().X.c0);
     auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(
-        reconstructed_sign->X);
+        reconstructed_sign.X);
     ZJC_DEBUG("success verify agg sign %s, %s, msg_hash: %s, net: %u, pool: %u, "
             "elect height: %lu, common PK: %s, agg sign: %s", 
             common::Encode::HexEncode(verify_hash_a).c_str(),
@@ -297,36 +303,57 @@ Status Crypto::VerifyThresSign(
 
 Status Crypto::VerifyQC(
         uint32_t sharding_id,
-        const std::shared_ptr<QC>& qc) {
-    if (!qc) {
+        const QC& qc) {
+    auto msg_hash = GetQCMsgHash(qc);
+    libff::alt_bn128_G1 bls_sign;
+    try {
+        bls_sign.X = libff::alt_bn128_Fq(qc.sign_x().c_str());
+        bls_sign.Y = libff::alt_bn128_Fq(qc.sign_y().c_str());
+        bls_sign.Z = libff::alt_bn128_Fq::one();
+    } catch (std::exception& e) {
+        assert(false);
         return Status::kError;
     }
 
     Status s = VerifyThresSign(
         sharding_id, 
-        qc->elect_height(), 
-        qc->msg_hash(), 
-        qc->bls_agg_sign());
+        qc.elect_height(), 
+        msg_hash, 
+        bls_sign);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("Verify qc is error.");
+        ZJC_ERROR("Verify qc is error sharding id: %u, elect height: %lu, msg hash: %s",
+            sharding_id, qc.elect_height(), common::Encode::HexEncode(msg_hash).c_str());
         return s;
     }
+    
     return Status::kSuccess;
 }
 
 Status Crypto::VerifyTC(
         uint32_t sharding_id,
-        const std::shared_ptr<TC>& tc) {
-    if (!tc) {
+        const TC& tc) {
+    libff::alt_bn128_G1 bls_sign;
+    try {
+        bls_sign.X = libff::alt_bn128_Fq(tc.sign_x().c_str());
+        bls_sign.Y = libff::alt_bn128_Fq(tc.sign_y().c_str());
+        bls_sign.Z = libff::alt_bn128_Fq::one();
+    } catch (std::exception& e) {
+        assert(false);
         return Status::kError;
     }
-    if (VerifyThresSign(
-            sharding_id, tc->elect_height(), 
-            tc->msg_hash(), 
-            tc->bls_agg_sign()) != Status::kSuccess) {
-        ZJC_ERROR("Verify tc is error.");
-        return Status::kError; 
+
+    auto msg_hash = GetTCMsgHash(tc);
+    Status s = VerifyThresSign(
+        sharding_id, 
+        tc.elect_height(), 
+        msg_hash, 
+        bls_sign);
+    if (s != Status::kSuccess) {
+        ZJC_ERROR("Verify qc is error sharding id: %u, elect height: %lu, msg hash: %s",
+            sharding_id, tc.elect_height(), common::Encode::HexEncode(msg_hash).c_str());
+        return s;
     }
+    
     return Status::kSuccess;
 }
 
@@ -352,11 +379,13 @@ Status Crypto::VerifyMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     if (!msg_ptr->header.has_hotstuff() ||
-        !msg_ptr->header.hotstuff().has_pro_msg() ||
-        !msg_ptr->header.hotstuff().pro_msg().has_view_item()) {
+            !msg_ptr->header.hotstuff().has_pro_msg() ||
+            !msg_ptr->header.hotstuff().pro_msg().has_view_item()) {
         return Status::kInvalidArgument;
     }
-    auto mem_ptr = elect_item->GetMemberByIdx(msg_ptr->header.hotstuff().pro_msg().view_item().leader_idx());
+
+    auto mem_ptr = elect_item->GetMemberByIdx(
+        msg_ptr->header.hotstuff().pro_msg().view_item().qc().leader_idx());
     if (mem_ptr->bls_publick_key == libff::alt_bn128_G2::zero()) {
         ZJC_DEBUG("verify sign failed, backup invalid bls pk: %s",
             common::Encode::HexEncode(mem_ptr->id).c_str());

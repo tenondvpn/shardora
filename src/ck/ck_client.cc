@@ -25,8 +25,9 @@ ClickHouseClient::ClickHouseClient(
 
 ClickHouseClient::~ClickHouseClient() {}
 
-bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>& block_item) try {
+bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& view_block_item) try {
     std::string cmd;
+    auto* block_item = &view_block_item->block_info();
     const auto& tx_list = block_item->tx_list();
     clickhouse::Block trans;
     clickhouse::Block blocks;
@@ -117,93 +118,94 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
 
     std::string bitmap_str;
     std::string commit_bitmap_str;
-    block_shard_id->Append(block_item->network_id());
-    block_pool_index->Append(block_item->pool_index());
+    block_shard_id->Append(view_block_item->qc().network_id());
+    block_pool_index->Append(view_block_item->qc().pool_index());
     block_height->Append(block_item->height());
-    block_prehash->Append(common::Encode::HexEncode(block_item->prehash()));
-    block_hash->Append(common::Encode::HexEncode(block_item->hash()));
+    block_prehash->Append(common::Encode::HexEncode(view_block_item->parent_hash()));
+    block_hash->Append(common::Encode::HexEncode(view_block_item->qc().view_block_hash()));
     block_version->Append(block_item->version());
     block_vss->Append(block_item->consistency_random());
-    block_elect_height->Append(block_item->electblock_height());
+    block_elect_height->Append(view_block_item->qc().elect_height());
     block_bitmap->Append(common::Encode::HexEncode(bitmap_str));
     block_commit_bitmap->Append(common::Encode::HexEncode(commit_bitmap_str));
     block_timestamp->Append(block_item->timestamp());
     block_timeblock_height->Append(block_item->timeblock_height());
-    block_bls_agg_sign_x->Append(common::Encode::HexEncode(block_item->bls_agg_sign_x()));
-    block_bls_agg_sign_y->Append(common::Encode::HexEncode(block_item->bls_agg_sign_y()));
+    block_bls_agg_sign_x->Append(common::Encode::HexEncode(view_block_item->qc().sign_x()));
+    block_bls_agg_sign_y->Append(common::Encode::HexEncode(view_block_item->qc().sign_y()));
     block_date->Append(common::MicTimestampToDate(block_item->timestamp()));
     block_tx_size->Append(tx_list.size());
 
     for (int32_t i = 0; i < tx_list.size(); ++i) {
-        shard_id->Append(block_item->network_id());
-        pool_index->Append(block_item->pool_index());
+        auto& tx = tx_list[i];
+        shard_id->Append(view_block_item->qc().network_id());
+        pool_index->Append(view_block_item->qc().pool_index());
         height->Append(block_item->height());
-        prehash->Append(common::Encode::HexEncode(block_item->prehash()));
-        hash->Append(common::Encode::HexEncode(block_item->hash()));
+        prehash->Append(common::Encode::HexEncode(view_block_item->parent_hash()));
+        hash->Append(common::Encode::HexEncode(view_block_item->qc().view_block_hash()));
         version->Append(block_item->version());
         vss->Append(block_item->consistency_random());
-        elect_height->Append(block_item->electblock_height());
+        elect_height->Append(view_block_item->qc().elect_height());
         bitmap->Append(common::Encode::HexEncode(bitmap_str));
         commit_bitmap->Append(common::Encode::HexEncode(commit_bitmap_str));
         timestamp->Append(block_item->timestamp());
         timeblock_height->Append(block_item->timeblock_height());
-        bls_agg_sign_x->Append(common::Encode::HexEncode(block_item->bls_agg_sign_x()));
-        bls_agg_sign_y->Append(common::Encode::HexEncode(block_item->bls_agg_sign_y()));
+        bls_agg_sign_x->Append(common::Encode::HexEncode(view_block_item->qc().sign_x()));
+        bls_agg_sign_y->Append(common::Encode::HexEncode(view_block_item->qc().sign_y()));
         date->Append(common::MicTimestampToDate(block_item->timestamp()));
-        gid->Append(common::Encode::HexEncode(tx_list[i].gid()));
-        from->Append(common::Encode::HexEncode(tx_list[i].from()));
+        gid->Append(common::Encode::HexEncode(tx.gid()));
+        from->Append(common::Encode::HexEncode(tx.from()));
         from_pubkey->Append("");
         from_sign->Append("");
-        to->Append(common::Encode::HexEncode(tx_list[i].to()));
-        amount->Append(tx_list[i].amount());
-        if (block_item->network_id() == 2 && tx_list[i].step() == 5) {
+        to->Append(common::Encode::HexEncode(tx.to()));
+        amount->Append(tx.amount());
+        if (view_block_item->qc().network_id() == 2 && tx.step() == 5) {
             gas_limit->Append(0);
             gas_used->Append(0);
             gas_price->Append(0);
             type->Append(3);
         } else {
-            gas_limit->Append(tx_list[i].gas_limit());
-            gas_used->Append(tx_list[i].gas_used());
-            gas_price->Append(tx_list[i].gas_price());
-            type->Append(tx_list[i].step());
+            gas_limit->Append(tx.gas_limit());
+            gas_used->Append(tx.gas_used());
+            gas_price->Append(tx.gas_price());
+            type->Append(tx.step());
         }
-        balance->Append(tx_list[i].balance());
+        balance->Append(tx.balance());
         to_add->Append(false);
         attrs->Append("");
-        status->Append(tx_list[i].status());
-        tx_hash->Append(common::Encode::HexEncode(tx_list[i].gid()));
-        call_contract_step->Append(tx_list[i].step());
+        status->Append(tx.status());
+        tx_hash->Append(common::Encode::HexEncode(tx.gid()));
+        call_contract_step->Append(tx.step());
         storages->Append("");
         transfers->Append("");
-        if (tx_list[i].step() == pools::protobuf::kNormalTo) {
-            acc_account->Append(common::Encode::HexEncode(tx_list[i].to()));
-            acc_shard_id->Append(block_item->network_id());
-            acc_pool_index->Append(block_item->pool_index());
-            acc_balance->Append(tx_list[i].balance());
+        if (tx.step() == pools::protobuf::kNormalTo) {
+            acc_account->Append(common::Encode::HexEncode(tx.to()));
+            acc_shard_id->Append(view_block_item->qc().network_id());
+            acc_pool_index->Append(view_block_item->qc().pool_index());
+            acc_balance->Append(tx.balance());
         } else {
-            acc_account->Append(common::Encode::HexEncode(tx_list[i].from()));
-            acc_shard_id->Append(block_item->network_id());
-            acc_pool_index->Append(block_item->pool_index());
-            acc_balance->Append(tx_list[i].balance());
+            acc_account->Append(common::Encode::HexEncode(tx.from()));
+            acc_shard_id->Append(view_block_item->qc().network_id());
+            acc_pool_index->Append(view_block_item->qc().pool_index());
+            acc_balance->Append(tx.balance());
         }
 
-        for (int32_t j = 0; j < tx_list[i].storages_size(); ++j) {
-            attr_account->Append(common::Encode::HexEncode(tx_list[i].from()));
-            attr_tx_type->Append(tx_list[i].step());
-            attr_to->Append(common::Encode::HexEncode(tx_list[i].to()));
-            attr_shard_id->Append(block_item->network_id());
+        for (int32_t j = 0; j < tx.storages_size(); ++j) {
+            attr_account->Append(common::Encode::HexEncode(tx.from()));
+            attr_tx_type->Append(tx.step());
+            attr_to->Append(common::Encode::HexEncode(tx.to()));
+            attr_shard_id->Append(view_block_item->qc().network_id());
             std::string val;
-            attr_key->Append(common::Encode::HexEncode(tx_list[i].storages(j).key()));
-            attr_value->Append(common::Encode::HexEncode(tx_list[i].storages(j).value()));
+            attr_key->Append(common::Encode::HexEncode(tx.storages(j).key()));
+            attr_value->Append(common::Encode::HexEncode(tx.storages(j).value()));
             ZJC_DEBUG("hash to ck add key: %s, val: %s", 
-                tx_list[i].storages(j).key().c_str(), 
-                common::Encode::HexEncode(tx_list[i].storages(j).value()).c_str());
+                tx.storages(j).key().c_str(), 
+                common::Encode::HexEncode(tx.storages(j).value()).c_str());
         }
 
-        if (tx_list[i].step() == pools::protobuf::kContractExcute /*&& tx_list[i].to() == common::GlobalInfo::Instance()->c2c_to()*/) {
+        if (tx.step() == pools::protobuf::kContractExcute /*&& tx.to() == common::GlobalInfo::Instance()->c2c_to()*/) {
             nlohmann::json res;
             ZJC_DEBUG("now handle contract.");
-            bool ret = QueryContract(tx_list[i].from(), tx_list[i].to(), &res);
+            bool ret = QueryContract(tx.from(), tx.to(), &res);
             if (ret) {
                 for (auto iter = res.begin(); iter != res.end(); ++iter) {
                     auto item = *iter;
@@ -237,18 +239,17 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
                     memcpy(bytes32.bytes, amount.c_str(), 32);
                     uint64_t am = zjcvm::EvmcBytes32ToUint64(bytes32);
                     c2c_amount->Append(am);
-                    c2c_contract_addr->Append(common::Encode::HexEncode(tx_list[i].to()));
+                    c2c_contract_addr->Append(common::Encode::HexEncode(tx.to()));
                 }
             }
         }
 
-        while (tx_list[i].step() == pools::protobuf::kConsensusLocalTos) {
+        while (tx.step() == pools::protobuf::kConsensusLocalTos) {
             ZJC_DEBUG("now handle local to txs.");
             const std::string* to_txs_str = nullptr;
-            auto& tx = tx_list[i];
-            for (int32_t i = 0; i < tx.storages_size(); ++i) {
-                if (tx.storages(i).key() == protos::kConsensusLocalNormalTos) {
-                    to_txs_str = &tx.storages(i).value();
+            for (int32_t storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
+                if (tx.storages(storage_idx).key() == protos::kConsensusLocalNormalTos) {
+                    to_txs_str = &tx.storages(storage_idx).value();
                     break;
                 }
             }
@@ -265,67 +266,79 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
             }
 
             ZJC_DEBUG("now handle local to txs: %d", to_txs.tos_size());
-            for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
-                if (to_txs.tos(i).to().size() == security::kUnicastAddressLength * 2) {
-                    auto contract = to_txs.tos(i).to().substr(0, 20);
-                    auto user = to_txs.tos(i).to().substr(20, 20);
+            for (int32_t to_tx_idx = 0; to_tx_idx < to_txs.tos_size(); ++to_tx_idx) {
+                ZJC_DEBUG("0 now handle local to idx: %d", to_tx_idx);
+                if (to_txs.tos(to_tx_idx).to().size() == security::kUnicastAddressLength * 2) {
+                    auto contract = to_txs.tos(to_tx_idx).to().substr(0, 20);
+                    auto user = to_txs.tos(to_tx_idx).to().substr(20, 20);
                     prepay_contract->Append(common::Encode::HexEncode(contract));
                     prepay_user->Append(common::Encode::HexEncode(user));
                     prepay_height->Append(block_item->height());
-                    prepay_amount->Append(to_txs.tos(i).balance());
+                    prepay_amount->Append(to_txs.tos(to_tx_idx).balance());
                 }
 
-                if (to_txs.tos(i).to().size() != security::kUnicastAddressLength) {
+                if (to_txs.tos(to_tx_idx).to().size() != security::kUnicastAddressLength) {
                     //assert(false);
                     continue;
                 }
                 
-                ZJC_DEBUG("now handle local to txs: %s", common::Encode::HexEncode(to_txs.tos(i).to()).c_str());
-                shard_id->Append(block_item->network_id());
-                pool_index->Append(block_item->pool_index());
+                ZJC_DEBUG("1 now handle local to idx: %d", i);
+                ZJC_DEBUG("now handle local to txs: %s", common::Encode::HexEncode(to_txs.tos(to_tx_idx).to()).c_str());
+                shard_id->Append(view_block_item->qc().network_id());
+                pool_index->Append(view_block_item->qc().pool_index());
                 height->Append(block_item->height());
-                prehash->Append(common::Encode::HexEncode(block_item->prehash()));
-                hash->Append(common::Encode::HexEncode(block_item->hash()));
+                prehash->Append(common::Encode::HexEncode(view_block_item->parent_hash()));
+                hash->Append(common::Encode::HexEncode(view_block_item->qc().view_block_hash()));
                 version->Append(block_item->version());
+                ZJC_DEBUG("1 0 now handle local to idx: %d", i);
                 vss->Append(block_item->consistency_random());
-                elect_height->Append(block_item->electblock_height());
+                elect_height->Append(view_block_item->qc().elect_height());
                 bitmap->Append(common::Encode::HexEncode(bitmap_str));
                 commit_bitmap->Append(common::Encode::HexEncode(commit_bitmap_str));
                 timestamp->Append(block_item->timestamp());
                 timeblock_height->Append(block_item->timeblock_height());
-                bls_agg_sign_x->Append(common::Encode::HexEncode(block_item->bls_agg_sign_x()));
-                bls_agg_sign_y->Append(common::Encode::HexEncode(block_item->bls_agg_sign_y()));
+                ZJC_DEBUG("1 1 now handle local to idx: %d", i);
+                bls_agg_sign_x->Append(common::Encode::HexEncode(view_block_item->qc().sign_x()));
+                bls_agg_sign_y->Append(common::Encode::HexEncode(view_block_item->qc().sign_y()));
+                ZJC_DEBUG("1 2 now handle local to idx: %d", i);
                 date->Append(common::MicTimestampToDate(block_item->timestamp()));
-                gid->Append(common::Encode::HexEncode(tx_list[i].gid()));
+                ZJC_DEBUG("1 2 0 now handle local to idx: %d", i);
+                gid->Append(common::Encode::HexEncode(tx.gid()));
+                ZJC_DEBUG("1 2 1 now handle local to idx: %d", i);
                 from->Append("");
                 from_pubkey->Append("");
                 from_sign->Append("");
-                to->Append(common::Encode::HexEncode(to_txs.tos(i).to()));
+                ZJC_DEBUG("1 2 2 now handle local to idx: %d", i);
+                to->Append(common::Encode::HexEncode(to_txs.tos(to_tx_idx).to()));
+                ZJC_DEBUG("1 3 now handle local to idx: %d", i);
                 amount->Append(0);
                 gas_limit->Append(0);
                 gas_used->Append(0);
                 gas_price->Append(0);
-                type->Append(tx_list[i].step());
-                balance->Append(to_txs.tos(i).balance());
+                type->Append(tx.step());
+                balance->Append(to_txs.tos(to_tx_idx).balance());
+                ZJC_DEBUG("1 4 now handle local to idx: %d", i);
                 to_add->Append(true);
                 attrs->Append("");
-                status->Append(tx_list[i].status());
-                tx_hash->Append(common::Encode::HexEncode(tx_list[i].gid()));
-                call_contract_step->Append(tx_list[i].step());
+                status->Append(tx.status());
+                tx_hash->Append(common::Encode::HexEncode(tx.gid()));
+                call_contract_step->Append(tx.step());
                 storages->Append("");
                 transfers->Append("");
 
-                acc_account->Append(common::Encode::HexEncode(to_txs.tos(i).to()));
-                acc_shard_id->Append(block_item->network_id());
-                acc_pool_index->Append(block_item->pool_index());
-                acc_balance->Append(to_txs.tos(i).balance());
+                ZJC_DEBUG("2 now handle local to idx: %d", i);
+                acc_account->Append(common::Encode::HexEncode(to_txs.tos(to_tx_idx).to()));
+                acc_shard_id->Append(view_block_item->qc().network_id());
+                acc_pool_index->Append(view_block_item->qc().pool_index());
+                acc_balance->Append(to_txs.tos(to_tx_idx).balance());
+                ZJC_DEBUG("3 now handle local to idx: %d", i);
             }
 
             break;
         }
     }
 
-    ZJC_INFO("add new ck block block_shard_id: %d, block_height: %lu", block_item->network_id(), block_item->height());
+    ZJC_INFO("add new ck block block_shard_id: %d, block_height: %lu", view_block_item->qc().network_id(), block_item->height());
 
     blocks.AppendColumn("shard_id", block_shard_id);
     blocks.AppendColumn("pool_index", block_pool_index);

@@ -60,8 +60,7 @@ ElectManager::ElectManager(
     bls_mgr_ = bls_mgr;
 //     network::Route::Instance()->RegisterMessage(
 //         common::kElectMessage,
-//         std::bind(&ElectManager::HandleMessage, this, std::placeholders::_1));    
-
+//         std::bind(&ElectManager::HandleMessage, this, std::placeholders::_1));
     memset(latest_leader_count_, 0, sizeof(latest_leader_count_));
     memset(latest_member_count_, 0, sizeof(latest_member_count_));
     for (uint32_t i = 0; i < network::kConsensusShardEndNetworkId; ++i) {
@@ -142,6 +141,7 @@ common::MembersPtr ElectManager::OnNewElectBlock(
     bool elected = false;
     now_elected_ids_.clear();
     bool cons_elect_valid = ProcessPrevElectMembers(
+        height,
         elect_block,
         &elected,
         *prev_elect_block_ptr,
@@ -155,6 +155,7 @@ common::MembersPtr ElectManager::OnNewElectBlock(
 
     ElectedToConsensusShard(elect_block, elected);
     elect_block_mgr_.OnNewElectBlock(height, elect_block, db_batch);
+    // assert(members_ptr_[elect_block.shard_network_id()] != nullptr);
     return members_ptr_[elect_block.shard_network_id()];
 //     if (new_elect_cb_ != nullptr) {
 //         new_elect_cb_(
@@ -219,6 +220,7 @@ void ElectManager::ElectedToConsensusShard(
 }
 
 bool ElectManager::ProcessPrevElectMembers(
+        uint64_t height,
         protobuf::ElectBlock& elect_block,
         bool* elected,
         elect::protobuf::ElectBlock& prev_elect_block,
@@ -297,8 +299,11 @@ bool ElectManager::ProcessPrevElectMembers(
     auto common_pk = BLSPublicKey(std::make_shared<std::vector<std::string>>(pk_vec));
     bool local_node_is_super_leader = false;
     for (auto iter = shard_members_ptr->begin(); iter != shard_members_ptr->end(); ++iter) {
-        ELECT_WARN("DDDDDDDDDD elect height: %lu, network: %d,"
+        ELECT_WARN("DDDDDDDDDD now height: %lu, now elect height: %lu, "
+            "elect height: %lu, network: %d,"
             "leader: %s, pool_index_mod_num: %d, valid pk: %d",
+            height,
+            elect_block.elect_height(),
             elect_block.prev_members().prev_elect_height(),
             prev_elect_block.shard_network_id(),
             common::Encode::HexEncode((*iter)->id).c_str(),
@@ -388,11 +393,13 @@ void ElectManager::ProcessNewElectBlock(
         }
 
         now_elected_ids_.insert(id);
-        ELECT_WARN("FFFFFFFF ProcessNewElectBlock network: %d, elect height: %lu, "
+        ELECT_WARN("FFFFFFFF ProcessNewElectBlock network: %d, "
+            "elect height: %lu, pre elect height: %lu"
             "member leader: %s,, (*iter)->pool_index_mod_num: %d, "
             "local_waiting_node_member_index_: %d",
             elect_block.shard_network_id(),
             height,
+            elect_block.prev_members().prev_elect_height(),
             common::Encode::HexEncode(id).c_str(),
             in[i].pool_idx_mod_num(),
             local_waiting_node_member_index_);
@@ -497,6 +504,7 @@ common::MembersPtr ElectManager::GetNetworkMembersWithHeight(
         libff::alt_bn128_G2* common_pk,
         libff::alt_bn128_Fr* sec_key) {
     if (elect_height == 0) {
+        assert(false);
         return nullptr;
     }
     

@@ -108,13 +108,13 @@ std::shared_ptr<address::protobuf::AddressInfo> CreateAddressInfo(
 
 class FromTxItem : public pools::TxItem {
 public:
-    FromTxItem(
-        const transport::MessagePtr& msg) : pools::TxItem(msg) {}
+    FromTxItem(const transport::MessagePtr& msg) : pools::TxItem(msg) {}
+    
     virtual ~FromTxItem() {}
 
     virtual int HandleTx(
             uint8_t thread_idx,
-            const block::protobuf::Block& block,
+            const view_block::protobuf::ViewBlockItem& view_block,
             std::shared_ptr<db::DbWriteBatch>& db_batch,
             zjcvm::ZjchainHost& zjc_host,
             std::unordered_map<std::string, int64_t>& acc_balance_map,

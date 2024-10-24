@@ -1,7 +1,6 @@
 #pragma once
 
 #include <deque>
-#include <protos/view_block.pb.h>
 
 #include "block/block_utils.h"
 #include "ck/ck_client.h"
@@ -31,9 +30,6 @@ namespace pools{
 
 namespace block {
 
-typedef std::function<bool(
-        const view_block::protobuf::ViewBlockItem& pb_vblock)> ViewBlockVerifyFn;
-
 class AccountManager;
 class BlockManager {
 public:
@@ -48,14 +44,9 @@ public:
         std::shared_ptr<contract::ContractManager>& contract_mgr,
         const std::string& local_id,
         DbBlockCallback new_block_callback);
-
-    void SetVerifyViewBlockFn(ViewBlockVerifyFn fn) {
-        verify_view_block_fn_ = fn;
-    }
-    
     // just for genesis create new block
     void GenesisNewBlock(
-        const std::shared_ptr<block::protobuf::Block>& block_item);
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block_item);
     void OnTimeBlock(
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
@@ -65,7 +56,7 @@ public:
         uint32_t network_id,
         uint32_t pool_index,
         uint64_t height,
-        block::protobuf::Block& block_item);
+        view_block::protobuf::ViewBlockItem& block_item);
     void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members);
     pools::TxItemPtr GetStatisticTx(uint32_t pool_index, const std::string& tx_hash);
     pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);
@@ -83,7 +74,8 @@ public:
         db::DbWriteBatch& db_batch);
     bool ShouldStopConsensus();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
-    bool HasSingleTx(uint32_t pool_index);
+    bool HasSingleTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn);
+    std::string GetToTxGid();
 
     void SetMaxConsensusShardingId(uint32_t sharding_id) {
         max_consensus_sharding_id_ = sharding_id;
@@ -103,35 +95,32 @@ public:
 
 private:
     typedef std::map<uint64_t, std::shared_ptr<BlockTxsItem>, std::greater<uint64_t>> StatisticMap;
-    bool HasToTx(uint32_t pool_index);
-    bool HasStatisticTx(uint32_t pool_index);
-    bool HasElectTx(uint32_t pool_index);
+    bool HasToTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn);
+    bool HasStatisticTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn);
+    bool HasElectTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn);
     void HandleAllNewBlock();
-    bool UpdateBlockItemToCache(
-        std::shared_ptr<block::protobuf::Block>& block,
-        db::DbWriteBatch& db_batch);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& message);
     pools::TxItemPtr HandleToTxsMessage(
         const pools::protobuf::ShardToTxItem& msg_ptr);
     void HandleAllConsensusBlocks();
     void AddNewBlock(
-        const std::shared_ptr<block::protobuf::Block>& block_item,
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block_item,
         db::DbWriteBatch& db_batch);
     void HandleNormalToTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleStatisticTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleElectTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void ConsensusShardHandleRootCreateAddress(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx);
     void HandleLocalNormalToTx(
         const pools::protobuf::ToTxMessage& to_txs,
@@ -142,25 +131,23 @@ private:
     void createContractCreateByRootToTxs(
         std::vector<std::shared_ptr<localToTxInfo>> contract_create_tx_infos);
     void HandleJoinElectTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void AddMiningToken(
         const std::string& block_hash,
         const elect::protobuf::ElectBlock& elect_block);
-    void TryDynamicSharding(const elect::protobuf::ElectBlock& elect_block);
+    void AddPoolStatisticTag(uint64_t height);
     void RootHandleNormalToTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         pools::protobuf::ToTxMessage& to_txs,
         db::DbWriteBatch& db_batch);
     void HandleStatisticBlock(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         const pools::protobuf::ElectStatistic& elect_statistic,
         db::DbWriteBatch& db_batch);
     void CreateStatisticTx();
-    void AddWaitingCheckSignBlock(const std::shared_ptr<block::protobuf::Block>& block_ptr);
-    void CheckWaitingBlocks(uint32_t shard, uint64_t elect_height);
     void PopTxTicker();
 
     static const uint64_t kCreateToTxPeriodMs = 10000lu;
@@ -209,19 +196,14 @@ private:
     common::ThreadSafeQueue<std::shared_ptr<StatisticMap>> shard_statistics_map_ptr_queue_;
     std::shared_ptr<StatisticMap> got_latest_statistic_map_ptr_[2] = { nullptr };
     uint32_t valid_got_latest_statistic_map_ptr_index_ = 0;
-    common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> block_from_network_queue_[common::kMaxThreadCount];
-    common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> to_tx_msg_queue_;
-    common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> statistic_tx_msg_queue_;
-    std::map<uint32_t, std::map<uint64_t, std::queue<std::shared_ptr<block::protobuf::Block>>>> waiting_check_sign_blocks_;
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     uint64_t prev_create_statistic_tx_tm_us_ = 0;
     uint64_t prev_timer_ms_ = 0;
     common::Tick pop_tx_tick_;
-    std::shared_ptr<block::protobuf::Block> latest_to_block_ptr_[2] = { nullptr };
+    std::shared_ptr<view_block::protobuf::ViewBlockItem> latest_to_block_ptr_[2] = { nullptr };
     uint32_t latest_to_block_ptr_index_ = 0;
     std::map<std::string, pools::TxItemPtr> heights_str_map_;
     uint32_t leader_prev_get_to_tx_tm_ = 0;
-    ViewBlockVerifyFn verify_view_block_fn_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

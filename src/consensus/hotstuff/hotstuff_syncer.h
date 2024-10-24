@@ -34,7 +34,7 @@ struct ViewBlockItem {
 using OnRecvViewBlockFn = std::function<Status(
         const uint32_t& pool_idx,
         const std::shared_ptr<ViewBlockChain>& chain,
-        const std::shared_ptr<ViewBlock>& view_block)>;
+        const ViewBlock& view_block)>;
 
 // Sync ViewBlocks and HighQC and HighTC
 class HotstuffSyncer {
@@ -43,7 +43,8 @@ public:
     HotstuffSyncer(
             const std::shared_ptr<consensus::HotstuffManager>&,
             std::shared_ptr<db::Db>& db,
-            std::shared_ptr<sync::KeyValueSync>& kv_sync);
+            std::shared_ptr<sync::KeyValueSync>& kv_sync,
+            std::shared_ptr<block::AccountManager> account_mgr);
     HotstuffSyncer(const HotstuffSyncer&) = delete;
     HotstuffSyncer& operator=(const HotstuffSyncer&) = delete;
 
@@ -60,7 +61,7 @@ public:
             const uint32_t& pool_idx,
             std::shared_ptr<ViewBlockChain>& ori_chain,
             const std::shared_ptr<ViewBlockChain>& sync_chain,
-            const std::shared_ptr<QC>& high_commit_qc);
+            const ViewBlock& high_commit_qc);
 
     // 修改处理 view_block 的函数
     inline void SetOnRecvViewBlockFn(const OnRecvViewBlockFn& fn) {
@@ -117,11 +118,10 @@ private:
     Status processResponseChain(
             const uint32_t& pool_idx,
             const view_block::protobuf::ViewBlockSyncResponse& view_block_res);
-
     Status onRecViewBlock(
             const uint32_t& pool_idx,
             const std::shared_ptr<ViewBlockChain>& ori_chain,
-            const std::shared_ptr<ViewBlock>& view_block);
+            const ViewBlock& view_block);
     
     uint64_t timeout_ms_;
     common::ThreadSafeQueue<transport::MessagePtr> consume_queues_[common::kMaxThreadCount];
@@ -131,6 +131,7 @@ private:
     uint64_t last_timers_us_[common::kInvalidPoolIndex];
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     bool running_ = false;
+    std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
 };
 
 } // namespace consensus

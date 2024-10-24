@@ -24,22 +24,22 @@ BlockWrapper::~BlockWrapper(){};
 Status BlockWrapper::Wrap(
         const std::shared_ptr<ViewBlock>& prev_view_block,
         const uint32_t& leader_idx,
-        std::shared_ptr<block::protobuf::Block>& block,
-        std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose,
+        view_block::protobuf::ViewBlockItem* view_block,
+        hotstuff::protobuf::TxPropose* tx_propose,
         const bool& no_tx_allowed,
         std::shared_ptr<ViewBlockChain>& view_block_chain) {
-    auto& prev_block = prev_view_block->block;
+    auto* prev_block = &prev_view_block->block_info();
     if (!prev_block) {
         return Status::kInvalidArgument;
     }
-    block->set_pool_index(pool_idx_);
-    block->set_prehash(prev_block->hash());
+
+    auto* block = view_block->mutable_block_info();
     block->set_version(common::kTransactionVersion);
-    block->set_network_id(common::GlobalInfo::Instance()->network_id());
     block->set_consistency_random(0);
     block->set_height(prev_block->height()+1);
     ZJC_DEBUG("propose block net: %u, pool: %u, set height: %lu, pre height: %lu",
-        block->network_id(), block->pool_index(), block->height(), prev_block->height());
+        view_block->qc().network_id(), view_block->qc().pool_index(), 
+        block->height(), prev_block->height());
     if (block->height() <= 0) {
         return Status::kInvalidArgument;
     }
@@ -49,30 +49,40 @@ Status BlockWrapper::Wrap(
 
     // 打包交易
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
-    
-    ZJC_INFO("pool: %d, txs count, all: %lu, valid: %lu, leader: %lu",
-        pool_idx_, pools_mgr_->all_tx_size(pool_idx_), pools_mgr_->tx_size(pool_idx_), leader_idx);
-    
+    // ZJC_INFO("pool: %d, txs count, all: %lu, valid: %lu, leader: %lu",
+    //     pool_idx_, pools_mgr_->all_tx_size(pool_idx_), pools_mgr_->tx_size(pool_idx_), leader_idx);
     auto gid_valid_func = [&](const std::string& gid) -> bool {
-        return view_block_chain->CheckTxGidValid(gid, prev_view_block->hash);
+        return view_block_chain->CheckTxGidValid(gid, prev_view_block->qc().view_block_hash());
     };
 
     Status s = LeaderGetTxsIdempotently(txs_ptr, gid_valid_func);
     if (s != Status::kSuccess && !no_tx_allowed) {
         // 允许 3 个连续的空交易块
+        ZJC_DEBUG("leader get txs failed check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u",
+            s, pool_idx_, 
+            view_block->qc().network_id(), 
+            view_block->qc().pool_index(), 
+            view_block->qc().view(), 
+            (txs_ptr != nullptr ? txs_ptr->txs.size() : 0));
         return s;
     }
 
+    ZJC_DEBUG("leader get txs success check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u",
+        s, pool_idx_, 
+        view_block->qc().network_id(), 
+        view_block->qc().pool_index(), 
+        view_block->qc().view(), 
+        (txs_ptr != nullptr ? txs_ptr->txs.size() : 0));
+    view_block->set_parent_hash(prev_view_block->qc().view_block_hash());
     if (txs_ptr) {
-        ZJC_DEBUG("====3 pool: %d pop txs: %lu", pool_idx_, txs_ptr->txs.size());
         for (auto it = txs_ptr->txs.begin(); it != txs_ptr->txs.end(); it++) {
             auto* tx_info = tx_propose->add_txs();
             *tx_info = it->second->tx_info;
             assert(tx_info->gid().size() == 32);
             ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, "
                 "step: %d, to: %s, gid: %s, tx info: %s",
-                block->pool_index(),
-                common::Encode::HexEncode(block->prehash()).c_str(),
+                view_block->qc().pool_index(),
+                common::Encode::HexEncode(view_block->parent_hash()).c_str(),
                 block->height(),
                 tx_info->step(),
                 common::Encode::HexEncode(tx_info->to()).c_str(),
@@ -87,12 +97,18 @@ Status BlockWrapper::Wrap(
         return Status::kElectItemNotFound;
     }
     
-    block->set_electblock_height(elect_item->ElectHeight());
-    block->set_leader_index(leader_idx);
+    view_block->mutable_qc()->set_elect_height(elect_item->ElectHeight());
+    view_block->mutable_qc()->set_leader_idx(leader_idx);
     block->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
-    ZJC_DEBUG("success propose block net: %u, pool: %u, set height: %lu, pre height: %lu, elect height: %lu",
-        block->network_id(), block->pool_index(),
-        block->height(), prev_block->height(), elect_item->ElectHeight());
+    ZJC_DEBUG("====3 success propose block net: %u, pool: %u, set height: %lu, pre height: %lu, "
+        "elect height: %lu, hash: %s, parent hash: %s, %u_%u_%lu",
+        view_block->qc().network_id(), view_block->qc().pool_index(),
+        block->height(), prev_block->height(), elect_item->ElectHeight(),
+        common::Encode::HexEncode(GetQCMsgHash(view_block->qc())).c_str(),
+        common::Encode::HexEncode(view_block->parent_hash()).c_str(),
+        view_block->qc().network_id(),
+        view_block->qc().pool_index(),
+        view_block->qc().view());
     return Status::kSuccess;
 }
 
@@ -108,9 +124,10 @@ Status BlockWrapper::GetTxsIdempotently(std::vector<std::shared_ptr<pools::proto
     return Status::kSuccess;    
 }
 
-bool BlockWrapper::HasSingleTx() {
-    return txs_pools_->HasSingleTx(pool_idx_);
+bool BlockWrapper::HasSingleTx(pools::CheckGidValidFunction gid_valid_fn) {
+    return txs_pools_->HasSingleTx(pool_idx_, gid_valid_fn);
 }
         
 }
+
 }

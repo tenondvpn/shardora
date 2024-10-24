@@ -10,12 +10,7 @@
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <libbls/tools/utils.h>
-#include <network/network_status.h>
-#include <network/network_utils.h>
 #include <protos/pools.pb.h>
-#include <sync/sync_utils.h>
-#include <sys/socket.h>
-#include <transport/transport_utils.h>
 
 #include "bls/bls_utils.h"
 #include "bls/bls_manager.h"
@@ -44,6 +39,7 @@ HotstuffManager::HotstuffManager() {}
 HotstuffManager::~HotstuffManager() {}
 
 int HotstuffManager::Init(
+        std::shared_ptr<sync::KeyValueSync>& kv_sync,
         std::shared_ptr<contract::ContractManager>& contract_mgr,
         std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
         std::shared_ptr<vss::VssManager>& vss_mgr,
@@ -55,8 +51,8 @@ int HotstuffManager::Init(
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         std::shared_ptr<db::Db>& db,
-        BlockCacheCallback new_block_cache_callback,
-        NoElectItemCallback no_elect_item_callback) {
+        BlockCacheCallback new_block_cache_callback) {
+    kv_sync_ = kv_sync;
     contract_mgr_ = contract_mgr;
     gas_prepayment_ = gas_prepayment;
     vss_mgr_ = vss_mgr;
@@ -69,13 +65,10 @@ int HotstuffManager::Init(
     bls_mgr_ = bls_mgr;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-    no_elect_item_callback_ = no_elect_item_callback;
-
     elect_info_ = std::make_shared<ElectInfo>(security_ptr, elect_mgr_);
-    
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         auto crypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
-        auto chain = std::make_shared<ViewBlockChain>(pool_idx, db_);
+        auto chain = std::make_shared<ViewBlockChain>(pool_idx, db_, account_mgr_);
         auto leader_rotation = std::make_shared<LeaderRotation>(pool_idx, chain, elect_info_);
         auto pacemaker = std::make_shared<Pacemaker>(
                 pool_idx,
@@ -95,13 +88,12 @@ int HotstuffManager::Init(
                 pool_idx, pool_mgr, tm_block_mgr, block_mgr, elect_info_);
         
         pool_hotstuff_[pool_idx] = std::make_shared<Hotstuff>(
-                pool_idx, leader_rotation, chain,
+                kv_sync, pool_idx, leader_rotation, chain,
                 acceptor, wrapper, pacemaker, crypto, elect_info_, db_);
         pool_hotstuff_[pool_idx]->Init();
     }
 
     RegisterCreateTxCallbacks();
-
     network::Route::Instance()->RegisterMessage(common::kHotstuffMessage,
         std::bind(&HotstuffManager::HandleMessage, this, std::placeholders::_1));
     network::Route::Instance()->RegisterMessage(common::kHotstuffTimeoutMessage,
@@ -109,7 +101,6 @@ int HotstuffManager::Init(
     transport::Processor::Instance()->RegisterProcessor(
         common::kPacemakerTimerMessage,
         std::bind(&HotstuffManager::HandleTimerMessage, this, std::placeholders::_1));    
-
     return kConsensusSuccess;
 }
 
@@ -129,93 +120,95 @@ int HotstuffManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     return transport::kFirewallCheckSuccess;
 }
 
-int HotstuffManager::VerifySyncedViewBlock(view_block::protobuf::ViewBlockItem* pb_vblock) {
-    if (!pb_vblock->has_self_commit_qc_str()) {
-        return -1;
-    }
-    auto vblock = std::make_shared<hotstuff::ViewBlock>();
-    Status s = Proto2ViewBlock(*pb_vblock, vblock);
-    if (s != Status::kSuccess) {
-        ZJC_DEBUG("view block parsed failed: %lu", 
-            pb_vblock->view());                
+int HotstuffManager::VerifySyncedViewBlock(const view_block::protobuf::ViewBlockItem& pb_vblock) {
+    if (!pb_vblock.has_qc()) {
         return -1;
     }
 
-    auto commit_qc = std::make_shared<QC>(pb_vblock->self_commit_qc_str());
-    if (!commit_qc->valid()) {
-        return -1;
-    }
     // 由于验签很占资源，再检查一下数据库，避免重复同步
-    if (prefix_db_->HasViewBlockInfo(
-                vblock->block->network_id(),
-                vblock->block->pool_index(),
-                vblock->block->height())) {
-        ZJC_DEBUG("already stored, %lu_%lu_%lu",
-                vblock->block->network_id(),
-                vblock->block->pool_index(),
-                vblock->block->height());
-        return -1;
+    if (prefix_db_->HasViewBlockInfo(pb_vblock.qc().view_block_hash())) {
+        ZJC_DEBUG("already stored, %lu_%lu_%lu, hash: %s",
+            pb_vblock.qc().network_id(),
+            pb_vblock.qc().pool_index(),
+            pb_vblock.block_info().height(),
+            common::Encode::HexEncode(pb_vblock.qc().view_block_hash()).c_str());
+        return 0;
     }
     
-    s = VerifyViewBlockWithCommitQC(vblock, commit_qc);
+    auto s = VerifyViewBlockWithCommitQC(pb_vblock);
     if (s != Status::kSuccess) {
-        if (s == Status::kElectItemNotFound) {
-            if (no_elect_item_callback_) {
-                no_elect_item_callback_(
-                        network::kRootCongressNetworkId,
-                        commit_qc->network_id(),
-                        commit_qc->elect_height(),
-                        sync::kSyncHighest);
-            }
-            return 1;
-        }
-        return -1;
+        return s == Status::kElectItemNotFound ? 1 : -1;
     }
     return 0;
 }
 
 // 验证有 qc 的 view block
-Status HotstuffManager::VerifyViewBlockWithCommitQC(
-        const std::shared_ptr<ViewBlock>& vblock,
-        const std::shared_ptr<QC>& commit_qc) {
-    if (!vblock->Valid() || !commit_qc || !vblock->block) {
+Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::ViewBlockItem& vblock) {
+    if (!vblock.has_qc() || !vblock.has_block_info()) {
         ZJC_ERROR("vblock is not valid, blockview: %lu, qcview: %lu");
         return Status::kInvalidArgument;
     }
-    if (vblock->block->height() == 0) {
+
+    if (vblock.block_info().height() == 0) {
         return Status::kSuccess;
     }
 
-    if (vblock->hash != commit_qc->commit_view_block_hash()) {
-        ZJC_ERROR("hash is not same with qc, block: %s, commit_hash: %s",
-            common::Encode::HexEncode(vblock->hash).c_str(),
-            common::Encode::HexEncode(commit_qc->commit_view_block_hash()).c_str());
+    // if (view_block_hash != vblock.qc().view_block_hash()) {
+    //     ZJC_ERROR("hash is not same with qc, block: %s, commit_hash: %s",
+    //         common::Encode::HexEncode(view_block_hash).c_str(),
+    //         common::Encode::HexEncode(vblock.qc().view_block_hash()).c_str());
+    //     assert(false);
+    //     return Status::kInvalidArgument;
+    // }
+
+    libff::alt_bn128_G1 sign = libff::alt_bn128_G1::zero();
+    try {
+        if (vblock.qc().sign_x() != "") {
+            sign.X = libff::alt_bn128_Fq(vblock.qc().sign_x().c_str());
+        }
+        
+        if (vblock.qc().sign_y() != "") {
+            sign.Y = libff::alt_bn128_Fq(vblock.qc().sign_y().c_str());
+        }
+
+        if (vblock.qc().sign_z() != "") {
+            sign.Z = libff::alt_bn128_Fq(vblock.qc().sign_z().c_str());
+        }
+    } catch (...) {
         return Status::kInvalidArgument;
     }
 
-    // 如果是创始块，直接验证通过
-    if (vblock->block->electblock_height() == 1) {
-        return Status::kSuccess;
-    }
-    
-    auto hf = hotstuff(vblock->block->pool_index());
-    Status s = hf->crypto()->VerifyQC(vblock->block->network_id(), commit_qc);
+    auto view_block_hash = GetQCMsgHash(vblock.qc());
+    auto hf = hotstuff(vblock.qc().pool_index());
+    Status s = hf->crypto()->VerifyThresSign(
+        vblock.qc().network_id(), 
+        vblock.qc().elect_height(), 
+        view_block_hash, 
+        sign);
     if (s != Status::kSuccess) {
         ZJC_ERROR("qc verify failed, s: %d, blockview: %lu, "
-            "qcview: %lu, %u_%u_%lu, ",
-            s, vblock->view, commit_qc->view(),
-            vblock->block->network_id(),
-            vblock->block->pool_index(),
-            vblock->block->height());
+            "qcview: %lu, %u_%u_%lu, block elect height: %lu, elect height: %u_%u_%lu",
+            s, vblock.qc().view(), vblock.qc().view(),
+            vblock.qc().network_id(),
+            vblock.qc().pool_index(),
+            vblock.block_info().height(),
+            vblock.qc().elect_height(),
+            network::kRootCongressNetworkId,
+            vblock.qc().network_id(),
+            vblock.qc().elect_height());
         return s;
     }
 
-    ZJC_DEBUG("qc verify success, s: %d, blockview: %lu, "
-        "qcview: %lu, %u_%u_%lu, ",
-        s, vblock->view, commit_qc->view(),
-        vblock->block->network_id(),
-        vblock->block->pool_index(),
-        vblock->block->height());
+    ZJC_INFO("qc verify success, s: %d, blockview: %lu, "
+            "qcview: %lu, %u_%u_%lu, block elect height: %lu, elect height: %u_%u_%lu",
+            s, vblock.qc().view(), vblock.qc().view(),
+            vblock.qc().network_id(),
+            vblock.qc().pool_index(),
+            vblock.block_info().height(),
+            vblock.qc().elect_height(),
+            network::kRootCongressNetworkId,
+            vblock.qc().network_id(),
+            vblock.qc().elect_height());
     return Status::kSuccess;
 }
 
@@ -225,14 +218,6 @@ void HotstuffManager::OnNewElectBlock(uint64_t block_tm_ms, uint32_t sharding_id
 }
 
 void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    // 仅接受 Opened 分片的共识消息
-    if (!network::NetsInfo::Instance()->IsOpened(msg_ptr->header.src_sharding_id())) {
-        ZJC_WARN("wrong shard status: %d %d.",
-            msg_ptr->header.src_sharding_id(),
-            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id())->Status());
-        return;
-    }
-    
     auto& header = msg_ptr->header;
     if (header.has_hotstuff_timeout_proto() ||
         (header.has_hotstuff() && header.hotstuff().type() == VOTE) ||
@@ -279,21 +264,18 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             if (s != Status::kSuccess) {
                 return;
             }
-            hotstuff(hotstuff_msg.pool_index())->HandleProposeMsg(header);
+            hotstuff(hotstuff_msg.pool_index())->HandleProposeMsg(msg_ptr);
             break;
         }
         case VOTE:
-            hotstuff(hotstuff_msg.pool_index())->HandleVoteMsg(header);
+            hotstuff(hotstuff_msg.pool_index())->HandleVoteMsg(msg_ptr);
             break;
         case NEWVIEW: // 接收 tc 和 qc
-            hotstuff(hotstuff_msg.pool_index())->HandleNewViewMsg(header);
+            hotstuff(hotstuff_msg.pool_index())->HandleNewViewMsg(msg_ptr);
             break;
         case PRE_RESET_TIMER:
-            hotstuff(hotstuff_msg.pool_index())->HandlePreResetTimerMsg(header);
+            hotstuff(hotstuff_msg.pool_index())->HandlePreResetTimerMsg(msg_ptr);
             break;
-        case RESET_TIMER:
-            hotstuff(hotstuff_msg.pool_index())->HandleResetTimerMsg(header);
-            break;            
         default:
             ZJC_WARN("consensus message type is error.");
             break;
@@ -308,27 +290,34 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
-    if (!network::NetsInfo::Instance()->IsOpened(msg_ptr->header.src_sharding_id())) {
-        ZJC_WARN("wrong shard status: %d %d.",
-            msg_ptr->header.src_sharding_id(),
-            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id())->Status());
-        return;
-    }    
-    
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
             pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
-            pools_mgr_->PopTxs(pool_idx, false);
+            bool has_user_tx = false;
+            auto gid_valid_func = [&](const std::string& gid) -> bool {
+                auto latest_block = pool_hotstuff_[pool_idx]->view_block_chain()->HighViewBlock();
+                if (!latest_block) {
+                    return false;
+                }
+                
+                return pool_hotstuff_[pool_idx]->view_block_chain()->CheckTxGidValid(
+                    gid, 
+                    latest_block->qc().view_block_hash());
+            };
+
+            bool has_system_tx = block_wrapper(pool_idx)->HasSingleTx(gid_valid_func);
+            pools_mgr_->PopTxs(pool_idx, false, &has_user_tx, &has_system_tx);
             pools_mgr_->CheckTimeoutTx(pool_idx);
-            
-            hotstuff(pool_idx)->TryRecoverFromStuck();
+            hotstuff(pool_idx)->TryRecoverFromStuck(has_user_tx, has_system_tx);
         }
     }
 
     // 打印总 tps
     double tps = 0;
-    if (tps_fc_.Permitted()) {
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    if (now_tm_ms >= prev_handler_timer_tm_ms_ + 3000lu) {
+        prev_handler_timer_tm_ms_ = now_tm_ms;
         for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
             auto pool_tps = hotstuff(pool_idx)->acceptor()->Tps();
             if (prev_tps_[pool_idx] != pool_tps) {
@@ -380,6 +369,9 @@ void HotstuffManager::RegisterCreateTxCallbacks() {
     pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kRootCross,
         std::bind(&HotstuffManager::CreateRootCrossTx, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kPoolStatisticTag,
+        std::bind(&HotstuffManager::CreatePoolStatisticTagTx, this, std::placeholders::_1));
     block_mgr_->SetCreateToTxFunction(
         std::bind(&HotstuffManager::CreateToTx, this, std::placeholders::_1));
     block_mgr_->SetCreateStatisticTxFunction(

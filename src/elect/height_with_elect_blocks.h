@@ -116,6 +116,7 @@ public:
             libff::alt_bn128_G2* common_pk,
             libff::alt_bn128_Fr* local_sec_key) {
         if (height == 0) {
+            assert(false);
             return nullptr;
         }
         
@@ -145,6 +146,12 @@ public:
                         height, network_id);
                 }
 
+            ZJC_DEBUG("success get bls pk and secret key success.height: %lu, "
+                "network_id: %u, end net id: %u, offset: %u",
+                height, 
+                network_id, 
+                network::kConsensusShardEndNetworkId, 
+                network::kConsensusWaitingShardOffset);
                 return item_ptr->members_ptr;
             }
         }
@@ -179,6 +186,7 @@ public:
         auto shard_members = GetMembers(security, network_id, height);
         if (shard_members == nullptr) {
             ZJC_DEBUG("failed get members.");
+            assert(false);
             return nullptr;
         }
 
@@ -258,18 +266,19 @@ private:
             std::shared_ptr<security::Security>& security,
             uint32_t network_id,
             uint64_t height) {
-        block::protobuf::Block block;
+        view_block::protobuf::ViewBlockItem view_block;
         if (!prefix_db_->GetBlockWithHeight(
                 network::kRootCongressNetworkId,
                 network_id % common::kImmutablePoolSize,
                 height,
-                &block)) {
+                &view_block)) {
             ZJC_INFO("failed get block with height net: %u, pool: %u, height: %lu",
                 network::kRootCongressNetworkId, network_id, height);
             //             assert(false);
             return nullptr;
         }
 
+        auto& block = view_block.block_info();
         bool eb_valid = false;
         assert(block.tx_list_size() > 0);
         elect::protobuf::ElectBlock elect_block;

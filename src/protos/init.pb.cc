@@ -19,9 +19,6 @@
 #endif
 // @@protoc_insertion_point(includes)
 
-namespace protobuf_protos_2fblock_2eproto {
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_Block;
-}  // namespace protobuf_protos_2fblock_2eproto
 namespace protobuf_protos_2fbls_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_LocalPolynomial;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_JoinElectInfo;
@@ -31,6 +28,9 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2finit_2eproto ::google::protobu
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2finit_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_InvalidLeaderPools;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2finit_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_GetAddressInfoResponse;
 }  // namespace protobuf_protos_2finit_2eproto
+namespace protobuf_protos_2fview_5fblock_2eproto {
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fview_5fblock_2eproto ::google::protobuf::internal::SCCInfo<3> scc_info_ViewBlockItem;
+}  // namespace protobuf_protos_2fview_5fblock_2eproto
 namespace shardora {
 namespace init {
 namespace protobuf {
@@ -90,7 +90,7 @@ static void InitDefaultsGetAddressInfoResponse() {
 
 ::google::protobuf::internal::SCCInfo<1> scc_info_GetAddressInfoResponse =
     {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsGetAddressInfoResponse}, {
-      &protobuf_protos_2fblock_2eproto::scc_info_Block.base,}};
+      &protobuf_protos_2fview_5fblock_2eproto::scc_info_ViewBlockItem.base,}};
 
 static void InitDefaultsInvalidLeaderPools() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -162,7 +162,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::init::protobuf::GetAddressInfoResponse, block_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::init::protobuf::GetAddressInfoResponse, view_block_),
   0,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::init::protobuf::InvalidLeaderPools, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::init::protobuf::InvalidLeaderPools, _internal_metadata_),
@@ -252,32 +252,32 @@ void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
       "\n\021protos/init.proto\022\026shardora.init.proto"
-      "buf\032\020protos/bls.proto\032\022protos/block.prot"
-      "o\"#\n\025GetAddressInfoRequest\022\n\n\002id\030\001 \001(\014\"G"
-      "\n\026GetAddressInfoResponse\022-\n\005block\030\001 \001(\0132"
-      "\036.shardora.block.protobuf.Block\"\205\001\n\022Inva"
-      "lidLeaderPools\022\r\n\005pools\030\001 \003(\005\022\024\n\014elect_h"
-      "eight\030\002 \001(\004\022\024\n\014member_index\030\003 \001(\r\022\017\n\007mod"
-      "_num\030\004 \001(\005\022\022\n\nleader_idx\030\005 \001(\r\022\017\n\007versio"
-      "n\030\006 \001(\r\"\357\001\n\022GenesisInitBlsInfo\022\016\n\006height"
-      "\030\001 \001(\004\022\020\n\010shard_id\030\002 \001(\r\022\n\n\002id\030\003 \001(\014\022\024\n\014"
-      "bls_enc_data\030\004 \001(\014\022\020\n\010bls_hash\030\005 \001(\014\0227\n\t"
-      "join_info\030\006 \001(\0132$.shardora.bls.protobuf."
-      "JoinElectInfo\022:\n\nlocal_poly\030\007 \001(\0132&.shar"
-      "dora.bls.protobuf.LocalPolynomial\022\016\n\006pri"
-      "key\030\010 \001(\014\"\313\001\n\013InitMessage\022\?\n\010addr_req\030\001 "
-      "\001(\0132-.shardora.init.protobuf.GetAddressI"
-      "nfoRequest\022@\n\010addr_res\030\002 \001(\0132..shardora."
-      "init.protobuf.GetAddressInfoResponse\0229\n\005"
-      "pools\030\003 \001(\0132*.shardora.init.protobuf.Inv"
-      "alidLeaderPools"
+      "buf\032\020protos/bls.proto\032\027protos/view_block"
+      ".proto\"#\n\025GetAddressInfoRequest\022\n\n\002id\030\001 "
+      "\001(\014\"Y\n\026GetAddressInfoResponse\022\?\n\nview_bl"
+      "ock\030\001 \001(\0132+.shardora.view_block.protobuf"
+      ".ViewBlockItem\"\205\001\n\022InvalidLeaderPools\022\r\n"
+      "\005pools\030\001 \003(\005\022\024\n\014elect_height\030\002 \001(\004\022\024\n\014me"
+      "mber_index\030\003 \001(\r\022\017\n\007mod_num\030\004 \001(\005\022\022\n\nlea"
+      "der_idx\030\005 \001(\r\022\017\n\007version\030\006 \001(\r\"\357\001\n\022Genes"
+      "isInitBlsInfo\022\016\n\006height\030\001 \001(\004\022\020\n\010shard_i"
+      "d\030\002 \001(\r\022\n\n\002id\030\003 \001(\014\022\024\n\014bls_enc_data\030\004 \001("
+      "\014\022\020\n\010bls_hash\030\005 \001(\014\0227\n\tjoin_info\030\006 \001(\0132$"
+      ".shardora.bls.protobuf.JoinElectInfo\022:\n\n"
+      "local_poly\030\007 \001(\0132&.shardora.bls.protobuf"
+      ".LocalPolynomial\022\016\n\006prikey\030\010 \001(\014\"\313\001\n\013Ini"
+      "tMessage\022\?\n\010addr_req\030\001 \001(\0132-.shardora.in"
+      "it.protobuf.GetAddressInfoRequest\022@\n\010add"
+      "r_res\030\002 \001(\0132..shardora.init.protobuf.Get"
+      "AddressInfoResponse\0229\n\005pools\030\003 \001(\0132*.sha"
+      "rdora.init.protobuf.InvalidLeaderPools"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 775);
+      descriptor, 798);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/init.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
-  ::protobuf_protos_2fblock_2eproto::AddDescriptors();
+  ::protobuf_protos_2fview_5fblock_2eproto::AddDescriptors();
 }
 
 void AddDescriptors() {
@@ -536,15 +536,15 @@ void GetAddressInfoRequest::InternalSwap(GetAddressInfoRequest* other) {
 // ===================================================================
 
 void GetAddressInfoResponse::InitAsDefaultInstance() {
-  ::shardora::init::protobuf::_GetAddressInfoResponse_default_instance_._instance.get_mutable()->block_ = const_cast< ::shardora::block::protobuf::Block*>(
-      ::shardora::block::protobuf::Block::internal_default_instance());
+  ::shardora::init::protobuf::_GetAddressInfoResponse_default_instance_._instance.get_mutable()->view_block_ = const_cast< ::shardora::view_block::protobuf::ViewBlockItem*>(
+      ::shardora::view_block::protobuf::ViewBlockItem::internal_default_instance());
 }
-void GetAddressInfoResponse::clear_block() {
-  if (block_ != NULL) block_->Clear();
-  clear_has_block();
+void GetAddressInfoResponse::clear_view_block() {
+  if (view_block_ != NULL) view_block_->Clear();
+  clear_has_view_block();
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int GetAddressInfoResponse::kBlockFieldNumber;
+const int GetAddressInfoResponse::kViewBlockFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 GetAddressInfoResponse::GetAddressInfoResponse()
@@ -559,16 +559,16 @@ GetAddressInfoResponse::GetAddressInfoResponse(const GetAddressInfoResponse& fro
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  if (from.has_block()) {
-    block_ = new ::shardora::block::protobuf::Block(*from.block_);
+  if (from.has_view_block()) {
+    view_block_ = new ::shardora::view_block::protobuf::ViewBlockItem(*from.view_block_);
   } else {
-    block_ = NULL;
+    view_block_ = NULL;
   }
   // @@protoc_insertion_point(copy_constructor:shardora.init.protobuf.GetAddressInfoResponse)
 }
 
 void GetAddressInfoResponse::SharedCtor() {
-  block_ = NULL;
+  view_block_ = NULL;
 }
 
 GetAddressInfoResponse::~GetAddressInfoResponse() {
@@ -577,7 +577,7 @@ GetAddressInfoResponse::~GetAddressInfoResponse() {
 }
 
 void GetAddressInfoResponse::SharedDtor() {
-  if (this != internal_default_instance()) delete block_;
+  if (this != internal_default_instance()) delete view_block_;
 }
 
 void GetAddressInfoResponse::SetCachedSize(int size) const {
@@ -602,8 +602,8 @@ void GetAddressInfoResponse::Clear() {
 
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    GOOGLE_DCHECK(block_ != NULL);
-    block_->Clear();
+    GOOGLE_DCHECK(view_block_ != NULL);
+    view_block_->Clear();
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -619,12 +619,12 @@ bool GetAddressInfoResponse::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional .shardora.block.protobuf.Block block = 1;
+      // optional .shardora.view_block.protobuf.ViewBlockItem view_block = 1;
       case 1: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_block()));
+               input, mutable_view_block()));
         } else {
           goto handle_unusual;
         }
@@ -658,10 +658,10 @@ void GetAddressInfoResponse::SerializeWithCachedSizes(
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  // optional .shardora.block.protobuf.Block block = 1;
+  // optional .shardora.view_block.protobuf.ViewBlockItem view_block = 1;
   if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      1, this->_internal_block(), output);
+      1, this->_internal_view_block(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -679,11 +679,11 @@ void GetAddressInfoResponse::SerializeWithCachedSizes(
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  // optional .shardora.block.protobuf.Block block = 1;
+  // optional .shardora.view_block.protobuf.ViewBlockItem view_block = 1;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        1, this->_internal_block(), deterministic, target);
+        1, this->_internal_view_block(), deterministic, target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -703,11 +703,11 @@ size_t GetAddressInfoResponse::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  // optional .shardora.block.protobuf.Block block = 1;
-  if (has_block()) {
+  // optional .shardora.view_block.protobuf.ViewBlockItem view_block = 1;
+  if (has_view_block()) {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::MessageSize(
-        *block_);
+        *view_block_);
   }
 
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
@@ -737,8 +737,8 @@ void GetAddressInfoResponse::MergeFrom(const GetAddressInfoResponse& from) {
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (from.has_block()) {
-    mutable_block()->::shardora::block::protobuf::Block::MergeFrom(from.block());
+  if (from.has_view_block()) {
+    mutable_view_block()->::shardora::view_block::protobuf::ViewBlockItem::MergeFrom(from.view_block());
   }
 }
 
@@ -766,7 +766,7 @@ void GetAddressInfoResponse::Swap(GetAddressInfoResponse* other) {
 }
 void GetAddressInfoResponse::InternalSwap(GetAddressInfoResponse* other) {
   using std::swap;
-  swap(block_, other->block_);
+  swap(view_block_, other->view_block_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }

@@ -1,5 +1,5 @@
 #pragma once
-#include <common/flow_control.h>
+
 #include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/block_wrapper.h>
 #include <consensus/hotstuff/crypto.h>
@@ -31,7 +31,6 @@ enum MsgType {
   VOTE,
   NEWVIEW,
   PRE_RESET_TIMER,
-  RESET_TIMER,
 };
 
 typedef hotstuff::protobuf::ProposeMsg  pb_ProposeMsg;
@@ -49,6 +48,7 @@ class Hotstuff {
 public:
     Hotstuff() = default;
     Hotstuff(
+            std::shared_ptr<sync::KeyValueSync>& kv_sync,
             const uint32_t& pool_idx,
             const std::shared_ptr<LeaderRotation>& lr,
             const std::shared_ptr<ViewBlockChain>& chain,
@@ -58,6 +58,7 @@ public:
             const std::shared_ptr<Crypto>& crypto,
             const std::shared_ptr<ElectInfo>& elect_info,
             std::shared_ptr<db::Db>& db) :
+        kv_sync_(kv_sync),
         pool_idx_(pool_idx),
         crypto_(crypto),
         pacemaker_(pm),
@@ -69,13 +70,17 @@ public:
         db_(db) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
         pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1));
-        pacemaker_->SetNewViewFn(std::bind(&Hotstuff::NewView, this, std::placeholders::_1));
+        pacemaker_->SetNewViewFn(std::bind(&Hotstuff::NewView, this, std::placeholders::_1, std::placeholders::_2));
         pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));        
 
     }
     ~Hotstuff() {};
 
     void Init();
+    
+    std::shared_ptr<ViewBlock> GetViewBlock(uint64_t view) {
+        return view_block_chain_->Get(view);
+    }
 
     void SetSyncPoolFn(SyncPoolFn sync_fn) {
         sync_pool_fn_ = sync_fn;
@@ -83,15 +88,14 @@ public:
     
     Status Start();
     
-    void HandleProposeMsg(const transport::protobuf::Header& header);
-    void HandleNewViewMsg(const transport::protobuf::Header& header);
-    void HandlePreResetTimerMsg(const transport::protobuf::Header& header);
-    void HandleResetTimerMsg(const transport::protobuf::Header& header);
-    void HandleVoteMsg(const transport::protobuf::Header& header);
-    void NewView(const std::shared_ptr<SyncInfo>& sync_info);
-    Status Propose(const std::shared_ptr<SyncInfo>& sync_info);
-    Status ResetReplicaTimers();
-    Status TryCommit(const std::shared_ptr<QC> commit_qc, uint64_t t_idx = 9999999lu);
+    void HandleProposeMsg(const transport::MessagePtr& msg_ptr);
+    void HandleNewViewMsg(const transport::MessagePtr& msg_ptr);
+    void HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr);
+    void HandleVoteMsg(const transport::MessagePtr& msg_ptr);
+    void NewView(std::shared_ptr<tnet::TcpInterface> conn, std::shared_ptr<view_block::protobuf::QcItem> qc);
+    Status Propose(std::shared_ptr<view_block::protobuf::QcItem> tc);
+    Status TryCommit(const QC& commit_qc, uint64_t t_idx = 9999999lu);
+    Status HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> propose_msg_wrap);
     // 消费等待队列中的 ProposeMsg
     int TryWaitingProposeMsgs() {
         int succ = handle_propose_pipeline_.CallWaitingProposeMsgs();
@@ -102,32 +106,53 @@ public:
     void StopVoting(const View& view) {
         if (last_vote_view_ < view) {
             last_vote_view_ = view;
+            ZJC_DEBUG("pool: %u, set last vote view: %lu", pool_idx_, view);
         }
     }
 
     void HandleSyncedViewBlock(
-            const std::shared_ptr<ViewBlock>& vblock,
-            const std::shared_ptr<QC>& self_commit_qc) {
+            std::shared_ptr<view_block::protobuf::ViewBlockItem>& vblock) {
+        if (view_block_chain_->Has(vblock->qc().view_block_hash())) {
+            return;
+        }
+
+        if (prefix_db_->BlockExists(vblock->qc().view_block_hash())) {
+            return;
+        }
+        
         auto db_batch = std::make_shared<db::DbWriteBatch>();
-        auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(vblock->block, db_batch);
+        auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(vblock, db_batch);
         ZJC_DEBUG("now handle synced view block %u_%u_%lu",
-            vblock->block->network_id(),
-            vblock->block->pool_index(),
-            vblock->block->height());
-        view_block_chain()->StoreToDb(vblock, self_commit_qc, 99999999lu, db_batch);
+            vblock->qc().network_id(),
+            vblock->qc().pool_index(),
+            vblock->block_info().height());
+        view_block_chain()->StoreToDb(vblock, 99999999lu, db_batch);
         acceptor()->CommitSynced(queue_item_ptr);
-        auto elect_item = elect_info()->GetElectItem(
-                vblock->block->network_id(),
-                vblock->ElectHeight());
-        if (elect_item && elect_item->IsValid()) {
-            elect_item->consensus_stat(pool_idx_)->Commit(vblock);
+        if (network::IsSameToLocalShard(vblock->qc().network_id())) {
+            auto elect_item = elect_info()->GetElectItem(
+                    vblock->qc().network_id(),
+                    vblock->qc().elect_height());
+            if (elect_item && elect_item->IsValid()) {
+                elect_item->consensus_stat(pool_idx_)->Commit(vblock);
+            }
+            
+            pacemaker_->NewQcView(vblock->qc().view());
+            auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
+            if (!latest_committed_block ||
+                    latest_committed_block->qc().view() < vblock->qc().view()) {
+                view_block_chain()->SetLatestCommittedBlock(vblock);        
+            }
+
+            view_block_chain()->Store(vblock, true, nullptr);
+            view_block_chain()->UpdateHighViewBlock(vblock->qc());
+            TryCommit(vblock->qc(), 99999999lu);
+            if (latest_qc_item_ptr_ == nullptr ||
+                    vblock->qc().view() >= latest_qc_item_ptr_->view()) {
+                if (vblock->qc().has_sign_x() && !vblock->qc().sign_x().empty()) {
+                    latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(vblock->qc());
+                }
+            }
         }
-        
-        auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
-        if (!latest_committed_block || latest_committed_block->view < vblock->view) {
-            view_block_chain()->SetLatestCommittedBlock(vblock);        
-        }
-        
     }
 
     // 已经投票
@@ -163,41 +188,126 @@ public:
         return elect_info_;
     }
 
-    int IsStuck() const {
+    int IsStuck() {
+        auto now_tm_us = common::TimeUtils::TimestampUs();
         // 超时时间必须大于阈值
-        if (pacemaker()->DurationUs() < STUCK_PACEMAKER_DURATION_MIN_US) {
+        if (recover_from_stuck_timeout_ >= now_tm_us) {
             return 1;
         }
+
+        recover_from_stuck_timeout_ = now_tm_us + STUCK_PACEMAKER_DURATION_MIN_US;
+        return 0;
         // highqc 之前连续三个块都是空交易，则认为 stuck
-        auto v_block1 = std::make_shared<ViewBlock>();
-        Status s = view_block_chain()->Get(pacemaker()->HighQC()->view_block_hash(), v_block1);
-        if (s != Status::kSuccess || v_block1->block->tx_list_size() > 0) {
-            return 2;
-        }
-        auto v_block2 = view_block_chain()->QCRef(v_block1);
-        if (!v_block2 || v_block2->block->tx_list_size() > 0) {
-            return 3;
-        }
-        auto v_block3 = view_block_chain()->QCRef(v_block2);
-        if (!v_block3 || v_block3->block->tx_list_size() > 0) {
-            return 4;
-        }
-        return 0;   
+        // auto v_block1 = view_block_chain()->HighViewBlock();
+        // if (!v_block1) {
+        //     return 0;
+        // }
+
+        // if (v_block1->block_info().tx_list_size() > 0) {
+        //     return 2;
+        // }
+
+        // auto v_block2 = view_block_chain()->ParentBlock(*v_block1);
+        // if (!v_block2) {
+        //     return 0;
+        // }
+
+        // if (v_block2->block_info().tx_list_size() > 0) {
+        //     return 3;
+        // }
+
+        // auto v_block3 = view_block_chain()->ParentBlock(*v_block2);
+        // if (v_block3 && v_block3->block_info().tx_list_size() > 0) {
+        //     return 4;
+        // }
+
+        // return 0;   
     }
 
-    void TryRecoverFromStuck();
+    void TryRecoverFromStuck(bool has_new_tx, bool has_system_tx);
 
-    std::shared_ptr<QC> GetQcOf(const std::shared_ptr<ViewBlock>& v_block) {
-        auto qc = view_block_chain()->GetQcOf(v_block);
-        if (!qc) {
-            if (pacemaker()->HighQC()->view_block_hash() == v_block->hash) {
-                view_block_chain()->SetQcOf(v_block, pacemaker()->HighQC());
-                return pacemaker()->HighQC();
-            }
-        }
-        return qc;
-    }
 private:
+    void LoadAllViewBlockWithLatestCommitedBlock(std::shared_ptr<ViewBlock>& view_block);
+    void InitAddNewViewBlock(std::shared_ptr<ViewBlock>& view_block);
+    void InitHandleProposeMsgPipeline() {
+        // 仅 VerifyLeader 和 ChainStore 出错后允许重试
+        // 因为一旦节点状态落后，父块缺失，ChainStore 会一直失败，导致无法追上进度
+        // 而对于 Leader，理论上是可以通过 QC 同步追上进度的，但 Propose&Vote 要比同步 QC 快很多，因此也会一直失败
+        // 因此，要在同步完成之后，给新提案重新 VerifyLeader 和 ChainStore 的机会 
+        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_HasVote, this, std::placeholders::_1));
+        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyLeader, this, std::placeholders::_1));
+        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyQC, this, std::placeholders::_1));
+        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyViewBlock, this, std::placeholders::_1));
+        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_TxAccept, this, std::placeholders::_1));
+        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_ChainStore, this, std::placeholders::_1));
+        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_Vote, this, std::placeholders::_1));
+        handle_propose_pipeline_.SetCondition(std::bind(&Hotstuff::HandleProposeMsgCondition, this, std::placeholders::_1));
+        handle_propose_pipeline_.UseRetry(true); // 开启断点重试
+        handle_propose_pipeline_.set_derectly_call_accept_and_store_fn(
+            std::bind(&Hotstuff::HandleProposeMsgStep_Directly, this, std::placeholders::_1, std::placeholders::_2));
+    }
+
+    Status HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
+    Status HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
+    Status HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
+    Status HandleProposeMsgStep_VerifyViewBlock(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
+    Status HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
+    Status HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
+    Status HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
+    Status HandleProposeMsgStep_Directly(
+        std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap, 
+        const std::string& expect_view_block_hash);
+
+    bool HandleProposeMsgCondition(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
+        // 仅新 v_block 才能允许执行
+        return pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().view_item().qc().view() > view_block_chain()->GetMaxHeight();
+    }
+
+    Status HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
+    Status Commit(
+            const std::shared_ptr<ViewBlock>& v_block,
+            const QC& commit_qc,
+            uint64_t test_index);
+    std::shared_ptr<ViewBlock> CheckCommit(const QC& qc);
+    void CommitInner(
+        const std::shared_ptr<ViewBlock>& v_block,
+        uint64_t test_index,
+        std::shared_ptr<block::BlockToDbItem>&);
+    Status VerifyVoteMsg(
+            const hotstuff::protobuf::VoteMsg& vote_msg);
+    Status VerifyLeader(const uint32_t& leader_idx);
+    Status VerifyQC(const QC& qc);
+    Status VerifyTC(const TC& tc);
+    Status VerifyViewBlock(
+            const ViewBlock& v_block, 
+            const std::shared_ptr<ViewBlockChain>& view_block_chain,
+            const TC* tc,
+            const uint32_t& elect_height);    
+    Status ConstructProposeMsg(hotstuff::protobuf::ProposeMsg* pro_msg);
+    Status ConstructVoteMsg(
+            hotstuff::protobuf::VoteMsg* vote_msg,
+            uint64_t elect_height, 
+            const std::shared_ptr<ViewBlock>& v_block);    
+    Status ConstructViewBlock( 
+            ViewBlock* view_block,
+            hotstuff::protobuf::TxPropose* tx_propose);
+    Status ConstructHotstuffMsg(
+            const MsgType msg_type, 
+            pb_ProposeMsg* pb_pro_msg, 
+            pb_VoteMsg* pb_vote_msg,
+            pb_NewViewMsg* pb_nv_msg,
+            pb_HotstuffMessage* pb_hf_msg);
+    Status SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& hotstuff_msg, const MsgType msg_type);
+    // 是否允许空交易
+    bool IsEmptyBlockAllowed(const ViewBlock& v_block);
+    Status StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_block, const std::shared_ptr<QC>& qc);
+    // 获取该 Leader 要增加的 consensus stat succ num
+    uint32_t GetPendingSuccNumOfLeader(const std::shared_ptr<ViewBlock>& v_block);
+    void SaveLatestProposeMessage();
+    void LoadLatestProposeMessage();
+
+    static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 1000lu;
+
     uint32_t pool_idx_;
     std::shared_ptr<Crypto> crypto_;
     std::shared_ptr<Pacemaker> pacemaker_;
@@ -208,85 +318,19 @@ private:
     std::shared_ptr<ElectInfo> elect_info_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    View last_vote_view_;
-    common::FlowControl recover_from_struct_fc_{1};
-    common::FlowControl reset_timer_fc_{1};
+    View last_vote_view_ = 0;
     SyncPoolFn sync_pool_fn_ = nullptr;
-    uint64_t timer_delay_us_ = common::TimeUtils::TimestampUs() + 10000000lu;
     Pipeline handle_propose_pipeline_;
+    std::unordered_map<View, transport::MessagePtr> voted_msgs_;
+    uint64_t latest_propose_msg_tm_ms_ = 0;
+    std::shared_ptr<view_block::protobuf::QcItem> latest_qc_item_ptr_;
+    uint64_t propose_debug_index_ = 0;
+    uint64_t recover_from_stuck_timeout_ = 0;
+    bool has_user_tx_tag_ = false;
+    std::map<View, std::shared_ptr<ProposeMsgWrapper>> leader_view_with_propose_msgs_;
+    std::shared_ptr<transport::TransportMessage> latest_leader_propose_message_;
+    std::shared_ptr<sync::KeyValueSync> kv_sync_;
 
-    void InitHandleProposeMsgPipeline() {
-        // 仅 VerifyLeader 和 ChainStore 出错后允许重试
-        // 因为一旦节点状态落后，父块缺失，ChainStore 会一直失败，导致无法追上进度
-        // 而对于 Leader，理论上是可以通过 QC 同步追上进度的，但 Propose&Vote 要比同步 QC 快很多，因此也会一直失败
-        // 因此，要在同步完成之后，给新提案重新 VerifyLeader 和 ChainStore 的机会 
-        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_HasVote, this, std::placeholders::_1));
-        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyLeader, this, std::placeholders::_1));
-        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyTC, this, std::placeholders::_1));                        
-        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyQC, this, std::placeholders::_1));
-        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyViewBlock, this, std::placeholders::_1));
-        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_TxAccept, this, std::placeholders::_1));
-        handle_propose_pipeline_.AddRetryStep(std::bind(&Hotstuff::HandleProposeMsgStep_ChainStore, this, std::placeholders::_1), 2);
-        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_Vote, this, std::placeholders::_1));
-        handle_propose_pipeline_.SetCondition(std::bind(&Hotstuff::HandleProposeMsgCondition, this, std::placeholders::_1));
-        handle_propose_pipeline_.UseRetry(true); // 开启断点重试
-    }
-
-    Status HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
-    Status HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
-    Status HandleProposeMsgStep_VerifyTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
-    Status HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
-    Status HandleProposeMsgStep_VerifyViewBlock(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
-    Status HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
-    Status HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
-    Status HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
-    bool HandleProposeMsgCondition(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
-        // 仅新 v_block 才能允许执行
-        return pro_msg_wrap->v_block->view > view_block_chain()->GetMaxHeight();
-    }
-
-    Status Commit(
-            const std::shared_ptr<ViewBlock>& v_block,
-            const std::shared_ptr<QC> commit_qc,
-            uint64_t test_index);
-    std::shared_ptr<ViewBlock> CheckCommit(const std::shared_ptr<QC>& qc);    
-    void CommitInner(
-        const std::shared_ptr<ViewBlock>& v_block,
-        uint64_t test_index,
-        std::shared_ptr<block::BlockToDbItem>&,
-        const std::shared_ptr<QC>& commit_qc);
-    Status VerifyVoteMsg(
-            const hotstuff::protobuf::VoteMsg& vote_msg);
-    Status VerifyLeader(const uint32_t& leader_idx);
-    Status VerifyQC(const std::shared_ptr<QC>& qc);
-    Status VerifyTC(const std::shared_ptr<TC>& tc);
-    Status VerifyViewBlock(
-            const std::shared_ptr<ViewBlock>& v_block, 
-            const std::shared_ptr<ViewBlockChain>& view_block_chain,
-            const std::shared_ptr<TC>& tc,
-            const uint32_t& elect_height);    
-    Status ConstructProposeMsg(
-            const std::shared_ptr<SyncInfo>& sync_info,
-            hotstuff::protobuf::ProposeMsg* pro_msg);
-    Status ConstructVoteMsg(
-            hotstuff::protobuf::VoteMsg* vote_msg,
-            uint64_t elect_height, 
-            const std::shared_ptr<ViewBlock>& v_block);    
-    Status ConstructViewBlock( 
-            std::shared_ptr<ViewBlock>& view_block,
-            std::shared_ptr<hotstuff::protobuf::TxPropose>& tx_propose);
-    Status ConstructHotstuffMsg(
-            const MsgType msg_type, 
-            pb_ProposeMsg* pb_pro_msg, 
-            pb_VoteMsg* pb_vote_msg,
-            pb_NewViewMsg* pb_nv_msg,
-            pb_HotstuffMessage* pb_hf_msg);
-    Status SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& hotstuff_msg, const MsgType msg_type);
-    // 是否允许空交易
-    bool IsEmptyBlockAllowed(const std::shared_ptr<ViewBlock>& v_block);
-    Status StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_block, const std::shared_ptr<QC>& qc);
-    // 获取该 Leader 要增加的 consensus stat succ num
-    uint32_t GetPendingSuccNumOfLeader(const std::shared_ptr<ViewBlock>& v_block);
 };
 
 } // namespace consensus

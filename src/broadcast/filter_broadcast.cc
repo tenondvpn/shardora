@@ -23,34 +23,34 @@ void FilterBroadcast::Broadcasting(
 //     assert(!dht_ptr->readonly_hash_sort_dht()->empty());
     auto& message = msg_ptr->header;
     if (message.broadcast().hop_limit() <= message.hop_count()) {
-//         BROAD_INFO("message.broadcast().hop_limit() <= message.hop_count()[%d, %d].",
-//             message.broadcast().hop_limit(), message.hop_count());
+        BROAD_DEBUG("message.broadcast().hop_limit() <= message.hop_count()[%d, %d] hash: %lu",
+            message.broadcast().hop_limit(), message.hop_count(), message.hash64());
         return;
     }
 
     assert(message.broadcast().bloomfilter_size() < 64);
     auto bloomfilter = GetBloomfilter(message);
     bloomfilter->insert(dht_ptr->local_node()->id_hash);
-    if (message.broadcast().has_hop_to_layer() &&
-            message.hop_count() >= message.broadcast().hop_to_layer()) {
-        auto nodes = GetlayerNodes(dht_ptr, bloomfilter, message);
-        for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
-            bloomfilter->insert((*iter)->id_hash);
-        }
+    // if (message.broadcast().has_hop_to_layer() &&
+    //         message.hop_count() >= message.broadcast().hop_to_layer()) {
+    //     auto nodes = GetlayerNodes(dht_ptr, bloomfilter, message);
+    //     for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
+    //         bloomfilter->insert((*iter)->id_hash);
+    //     }
 
-//         ZJC_DEBUG("layer Broadcasting: %lu, size: %u", msg_ptr->header.hash64(), nodes.size());
-        LayerSend(dht_ptr, msg_ptr, nodes);
-    } else {
+    //     ZJC_DEBUG("layer Broadcasting: %lu, size: %u", msg_ptr->header.hash64(), nodes.size());
+    //     LayerSend(dht_ptr, msg_ptr, nodes);
+    // } else {
         auto nodes = GetRandomFilterNodes(dht_ptr, bloomfilter, message);
         for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
             bloomfilter->insert((*iter)->id_hash);
         }
 
-//         ZJC_DEBUG("random Broadcasting: %lu, size: %u",
-//             msg_ptr->header.hash64(), nodes.size());
+        ZJC_DEBUG("random Broadcasting: %lu, size: %u",
+            msg_ptr->header.hash64(), nodes.size());
         assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
         Send(dht_ptr, msg_ptr, nodes);
-    }
+    // }
 }
 
 std::shared_ptr<std::unordered_set<uint64_t>> FilterBroadcast::GetBloomfilter(

@@ -1032,10 +1032,10 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
 
   // accessors -------------------------------------------------------
 
-  // repeated .shardora.block.protobuf.BlockTx tx_list = 10;
+  // repeated .shardora.block.protobuf.BlockTx tx_list = 5;
   int tx_list_size() const;
   void clear_tx_list();
-  static const int kTxListFieldNumber = 10;
+  static const int kTxListFieldNumber = 5;
   ::shardora::block::protobuf::BlockTx* mutable_tx_list(int index);
   ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::BlockTx >*
       mutable_tx_list();
@@ -1044,10 +1044,10 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   const ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::BlockTx >&
       tx_list() const;
 
-  // repeated bytes change_leader_invalid_hashs = 15;
+  // repeated bytes change_leader_invalid_hashs = 7;
   int change_leader_invalid_hashs_size() const;
   void clear_change_leader_invalid_hashs();
-  static const int kChangeLeaderInvalidHashsFieldNumber = 15;
+  static const int kChangeLeaderInvalidHashsFieldNumber = 7;
   const ::std::string& change_leader_invalid_hashs(int index) const;
   ::std::string* mutable_change_leader_invalid_hashs(int index);
   void set_change_leader_invalid_hashs(int index, const ::std::string& value);
@@ -1066,214 +1066,64 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   const ::google::protobuf::RepeatedPtrField< ::std::string>& change_leader_invalid_hashs() const;
   ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_change_leader_invalid_hashs();
 
-  // optional bytes prehash = 3;
-  bool has_prehash() const;
-  void clear_prehash();
-  static const int kPrehashFieldNumber = 3;
-  const ::std::string& prehash() const;
-  void set_prehash(const ::std::string& value);
-  #if LANG_CXX11
-  void set_prehash(::std::string&& value);
-  #endif
-  void set_prehash(const char* value);
-  void set_prehash(const void* value, size_t size);
-  ::std::string* mutable_prehash();
-  ::std::string* release_prehash();
-  void set_allocated_prehash(::std::string* prehash);
-
-  // optional bytes hash = 4;
-  bool has_hash() const;
-  void clear_hash();
-  static const int kHashFieldNumber = 4;
-  const ::std::string& hash() const;
-  void set_hash(const ::std::string& value);
-  #if LANG_CXX11
-  void set_hash(::std::string&& value);
-  #endif
-  void set_hash(const char* value);
-  void set_hash(const void* value, size_t size);
-  ::std::string* mutable_hash();
-  ::std::string* release_hash();
-  void set_allocated_hash(::std::string* hash);
-
-  // optional bytes bls_agg_sign_x = 12;
-  bool has_bls_agg_sign_x() const;
-  void clear_bls_agg_sign_x();
-  static const int kBlsAggSignXFieldNumber = 12;
-  const ::std::string& bls_agg_sign_x() const;
-  void set_bls_agg_sign_x(const ::std::string& value);
-  #if LANG_CXX11
-  void set_bls_agg_sign_x(::std::string&& value);
-  #endif
-  void set_bls_agg_sign_x(const char* value);
-  void set_bls_agg_sign_x(const void* value, size_t size);
-  ::std::string* mutable_bls_agg_sign_x();
-  ::std::string* release_bls_agg_sign_x();
-  void set_allocated_bls_agg_sign_x(::std::string* bls_agg_sign_x);
-
-  // optional bytes bls_agg_sign_y = 13;
-  bool has_bls_agg_sign_y() const;
-  void clear_bls_agg_sign_y();
-  static const int kBlsAggSignYFieldNumber = 13;
-  const ::std::string& bls_agg_sign_y() const;
-  void set_bls_agg_sign_y(const ::std::string& value);
-  #if LANG_CXX11
-  void set_bls_agg_sign_y(::std::string&& value);
-  #endif
-  void set_bls_agg_sign_y(const char* value);
-  void set_bls_agg_sign_y(const void* value, size_t size);
-  ::std::string* mutable_bls_agg_sign_y();
-  ::std::string* release_bls_agg_sign_y();
-  void set_allocated_bls_agg_sign_y(::std::string* bls_agg_sign_y);
-
-  // optional bytes leader_ip = 17;
-  bool has_leader_ip() const;
-  void clear_leader_ip();
-  static const int kLeaderIpFieldNumber = 17;
-  const ::std::string& leader_ip() const;
-  void set_leader_ip(const ::std::string& value);
-  #if LANG_CXX11
-  void set_leader_ip(::std::string&& value);
-  #endif
-  void set_leader_ip(const char* value);
-  void set_leader_ip(const void* value, size_t size);
-  ::std::string* mutable_leader_ip();
-  ::std::string* release_leader_ip();
-  void set_allocated_leader_ip(::std::string* leader_ip);
-
-  // optional uint32 network_id = 1;
-  bool has_network_id() const;
-  void clear_network_id();
-  static const int kNetworkIdFieldNumber = 1;
-  ::google::protobuf::uint32 network_id() const;
-  void set_network_id(::google::protobuf::uint32 value);
-
-  // optional uint32 pool_index = 2;
-  bool has_pool_index() const;
-  void clear_pool_index();
-  static const int kPoolIndexFieldNumber = 2;
-  ::google::protobuf::uint32 pool_index() const;
-  void set_pool_index(::google::protobuf::uint32 value);
-
-  // optional uint64 height = 6;
+  // optional uint64 height = 2;
   bool has_height() const;
   void clear_height();
-  static const int kHeightFieldNumber = 6;
+  static const int kHeightFieldNumber = 2;
   ::google::protobuf::uint64 height() const;
   void set_height(::google::protobuf::uint64 value);
 
-  // optional uint64 consistency_random = 7;
+  // optional uint64 consistency_random = 3;
   bool has_consistency_random() const;
   void clear_consistency_random();
-  static const int kConsistencyRandomFieldNumber = 7;
+  static const int kConsistencyRandomFieldNumber = 3;
   ::google::protobuf::uint64 consistency_random() const;
   void set_consistency_random(::google::protobuf::uint64 value);
 
-  // optional uint64 electblock_height = 8;
-  bool has_electblock_height() const;
-  void clear_electblock_height();
-  static const int kElectblockHeightFieldNumber = 8;
-  ::google::protobuf::uint64 electblock_height() const;
-  void set_electblock_height(::google::protobuf::uint64 value);
-
-  // optional uint64 timeblock_height = 9;
+  // optional uint64 timeblock_height = 4;
   bool has_timeblock_height() const;
   void clear_timeblock_height();
-  static const int kTimeblockHeightFieldNumber = 9;
+  static const int kTimeblockHeightFieldNumber = 4;
   ::google::protobuf::uint64 timeblock_height() const;
   void set_timeblock_height(::google::protobuf::uint64 value);
 
-  // optional uint32 version = 5;
-  bool has_version() const;
-  void clear_version();
-  static const int kVersionFieldNumber = 5;
-  ::google::protobuf::uint32 version() const;
-  void set_version(::google::protobuf::uint32 value);
-
-  // optional bool is_commited_block = 16 [default = false];
-  bool has_is_commited_block() const;
-  void clear_is_commited_block();
-  static const int kIsCommitedBlockFieldNumber = 16;
-  bool is_commited_block() const;
-  void set_is_commited_block(bool value);
-
-  // optional uint64 timestamp = 11;
+  // optional uint64 timestamp = 6;
   bool has_timestamp() const;
   void clear_timestamp();
-  static const int kTimestampFieldNumber = 11;
+  static const int kTimestampFieldNumber = 6;
   ::google::protobuf::uint64 timestamp() const;
   void set_timestamp(::google::protobuf::uint64 value);
 
-  // optional uint64 leader_index = 14;
-  bool has_leader_index() const;
-  void clear_leader_index();
-  static const int kLeaderIndexFieldNumber = 14;
-  ::google::protobuf::uint64 leader_index() const;
-  void set_leader_index(::google::protobuf::uint64 value);
-
-  // optional uint32 leader_port = 18;
-  bool has_leader_port() const;
-  void clear_leader_port();
-  static const int kLeaderPortFieldNumber = 18;
-  ::google::protobuf::uint32 leader_port() const;
-  void set_leader_port(::google::protobuf::uint32 value);
+  // optional uint32 version = 1;
+  bool has_version() const;
+  void clear_version();
+  static const int kVersionFieldNumber = 1;
+  ::google::protobuf::uint32 version() const;
+  void set_version(::google::protobuf::uint32 value);
 
   // @@protoc_insertion_point(class_scope:shardora.block.protobuf.Block)
  private:
-  void set_has_network_id();
-  void clear_has_network_id();
-  void set_has_pool_index();
-  void clear_has_pool_index();
-  void set_has_prehash();
-  void clear_has_prehash();
-  void set_has_hash();
-  void clear_has_hash();
   void set_has_version();
   void clear_has_version();
   void set_has_height();
   void clear_has_height();
   void set_has_consistency_random();
   void clear_has_consistency_random();
-  void set_has_electblock_height();
-  void clear_has_electblock_height();
   void set_has_timeblock_height();
   void clear_has_timeblock_height();
   void set_has_timestamp();
   void clear_has_timestamp();
-  void set_has_bls_agg_sign_x();
-  void clear_has_bls_agg_sign_x();
-  void set_has_bls_agg_sign_y();
-  void clear_has_bls_agg_sign_y();
-  void set_has_leader_index();
-  void clear_has_leader_index();
-  void set_has_is_commited_block();
-  void clear_has_is_commited_block();
-  void set_has_leader_ip();
-  void clear_has_leader_ip();
-  void set_has_leader_port();
-  void clear_has_leader_port();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::BlockTx > tx_list_;
   ::google::protobuf::RepeatedPtrField< ::std::string> change_leader_invalid_hashs_;
-  ::google::protobuf::internal::ArenaStringPtr prehash_;
-  ::google::protobuf::internal::ArenaStringPtr hash_;
-  ::google::protobuf::internal::ArenaStringPtr bls_agg_sign_x_;
-  ::google::protobuf::internal::ArenaStringPtr bls_agg_sign_y_;
-  ::google::protobuf::internal::ArenaStringPtr leader_ip_;
-  ::google::protobuf::uint32 network_id_;
-  ::google::protobuf::uint32 pool_index_;
   ::google::protobuf::uint64 height_;
   ::google::protobuf::uint64 consistency_random_;
-  ::google::protobuf::uint64 electblock_height_;
   ::google::protobuf::uint64 timeblock_height_;
-  ::google::protobuf::uint32 version_;
-  bool is_commited_block_;
   ::google::protobuf::uint64 timestamp_;
-  ::google::protobuf::uint64 leader_index_;
-  ::google::protobuf::uint32 leader_port_;
+  ::google::protobuf::uint32 version_;
   friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -6353,195 +6203,15 @@ BlockTx::events() const {
 
 // Block
 
-// optional uint32 network_id = 1;
-inline bool Block::has_network_id() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
-}
-inline void Block::set_has_network_id() {
-  _has_bits_[0] |= 0x00000020u;
-}
-inline void Block::clear_has_network_id() {
-  _has_bits_[0] &= ~0x00000020u;
-}
-inline void Block::clear_network_id() {
-  network_id_ = 0u;
-  clear_has_network_id();
-}
-inline ::google::protobuf::uint32 Block::network_id() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.Block.network_id)
-  return network_id_;
-}
-inline void Block::set_network_id(::google::protobuf::uint32 value) {
-  set_has_network_id();
-  network_id_ = value;
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.Block.network_id)
-}
-
-// optional uint32 pool_index = 2;
-inline bool Block::has_pool_index() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
-}
-inline void Block::set_has_pool_index() {
-  _has_bits_[0] |= 0x00000040u;
-}
-inline void Block::clear_has_pool_index() {
-  _has_bits_[0] &= ~0x00000040u;
-}
-inline void Block::clear_pool_index() {
-  pool_index_ = 0u;
-  clear_has_pool_index();
-}
-inline ::google::protobuf::uint32 Block::pool_index() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.Block.pool_index)
-  return pool_index_;
-}
-inline void Block::set_pool_index(::google::protobuf::uint32 value) {
-  set_has_pool_index();
-  pool_index_ = value;
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.Block.pool_index)
-}
-
-// optional bytes prehash = 3;
-inline bool Block::has_prehash() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void Block::set_has_prehash() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void Block::clear_has_prehash() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void Block::clear_prehash() {
-  prehash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_prehash();
-}
-inline const ::std::string& Block::prehash() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.Block.prehash)
-  return prehash_.GetNoArena();
-}
-inline void Block::set_prehash(const ::std::string& value) {
-  set_has_prehash();
-  prehash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.Block.prehash)
-}
-#if LANG_CXX11
-inline void Block::set_prehash(::std::string&& value) {
-  set_has_prehash();
-  prehash_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:shardora.block.protobuf.Block.prehash)
-}
-#endif
-inline void Block::set_prehash(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_prehash();
-  prehash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:shardora.block.protobuf.Block.prehash)
-}
-inline void Block::set_prehash(const void* value, size_t size) {
-  set_has_prehash();
-  prehash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:shardora.block.protobuf.Block.prehash)
-}
-inline ::std::string* Block::mutable_prehash() {
-  set_has_prehash();
-  // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.Block.prehash)
-  return prehash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* Block::release_prehash() {
-  // @@protoc_insertion_point(field_release:shardora.block.protobuf.Block.prehash)
-  if (!has_prehash()) {
-    return NULL;
-  }
-  clear_has_prehash();
-  return prehash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void Block::set_allocated_prehash(::std::string* prehash) {
-  if (prehash != NULL) {
-    set_has_prehash();
-  } else {
-    clear_has_prehash();
-  }
-  prehash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), prehash);
-  // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.Block.prehash)
-}
-
-// optional bytes hash = 4;
-inline bool Block::has_hash() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void Block::set_has_hash() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void Block::clear_has_hash() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void Block::clear_hash() {
-  hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_hash();
-}
-inline const ::std::string& Block::hash() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.Block.hash)
-  return hash_.GetNoArena();
-}
-inline void Block::set_hash(const ::std::string& value) {
-  set_has_hash();
-  hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.Block.hash)
-}
-#if LANG_CXX11
-inline void Block::set_hash(::std::string&& value) {
-  set_has_hash();
-  hash_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:shardora.block.protobuf.Block.hash)
-}
-#endif
-inline void Block::set_hash(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_hash();
-  hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:shardora.block.protobuf.Block.hash)
-}
-inline void Block::set_hash(const void* value, size_t size) {
-  set_has_hash();
-  hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:shardora.block.protobuf.Block.hash)
-}
-inline ::std::string* Block::mutable_hash() {
-  set_has_hash();
-  // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.Block.hash)
-  return hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* Block::release_hash() {
-  // @@protoc_insertion_point(field_release:shardora.block.protobuf.Block.hash)
-  if (!has_hash()) {
-    return NULL;
-  }
-  clear_has_hash();
-  return hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void Block::set_allocated_hash(::std::string* hash) {
-  if (hash != NULL) {
-    set_has_hash();
-  } else {
-    clear_has_hash();
-  }
-  hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), hash);
-  // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.Block.hash)
-}
-
-// optional uint32 version = 5;
+// optional uint32 version = 1;
 inline bool Block::has_version() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void Block::set_has_version() {
-  _has_bits_[0] |= 0x00000800u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void Block::clear_has_version() {
-  _has_bits_[0] &= ~0x00000800u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void Block::clear_version() {
   version_ = 0u;
@@ -6557,15 +6227,15 @@ inline void Block::set_version(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:shardora.block.protobuf.Block.version)
 }
 
-// optional uint64 height = 6;
+// optional uint64 height = 2;
 inline bool Block::has_height() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000001u) != 0;
 }
 inline void Block::set_has_height() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000001u;
 }
 inline void Block::clear_has_height() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void Block::clear_height() {
   height_ = GOOGLE_ULONGLONG(0);
@@ -6581,15 +6251,15 @@ inline void Block::set_height(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:shardora.block.protobuf.Block.height)
 }
 
-// optional uint64 consistency_random = 7;
+// optional uint64 consistency_random = 3;
 inline bool Block::has_consistency_random() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void Block::set_has_consistency_random() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void Block::clear_has_consistency_random() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void Block::clear_consistency_random() {
   consistency_random_ = GOOGLE_ULONGLONG(0);
@@ -6605,39 +6275,15 @@ inline void Block::set_consistency_random(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:shardora.block.protobuf.Block.consistency_random)
 }
 
-// optional uint64 electblock_height = 8;
-inline bool Block::has_electblock_height() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
-}
-inline void Block::set_has_electblock_height() {
-  _has_bits_[0] |= 0x00000200u;
-}
-inline void Block::clear_has_electblock_height() {
-  _has_bits_[0] &= ~0x00000200u;
-}
-inline void Block::clear_electblock_height() {
-  electblock_height_ = GOOGLE_ULONGLONG(0);
-  clear_has_electblock_height();
-}
-inline ::google::protobuf::uint64 Block::electblock_height() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.Block.electblock_height)
-  return electblock_height_;
-}
-inline void Block::set_electblock_height(::google::protobuf::uint64 value) {
-  set_has_electblock_height();
-  electblock_height_ = value;
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.Block.electblock_height)
-}
-
-// optional uint64 timeblock_height = 9;
+// optional uint64 timeblock_height = 4;
 inline bool Block::has_timeblock_height() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void Block::set_has_timeblock_height() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void Block::clear_has_timeblock_height() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void Block::clear_timeblock_height() {
   timeblock_height_ = GOOGLE_ULONGLONG(0);
@@ -6653,7 +6299,7 @@ inline void Block::set_timeblock_height(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:shardora.block.protobuf.Block.timeblock_height)
 }
 
-// repeated .shardora.block.protobuf.BlockTx tx_list = 10;
+// repeated .shardora.block.protobuf.BlockTx tx_list = 5;
 inline int Block::tx_list_size() const {
   return tx_list_.size();
 }
@@ -6683,15 +6329,15 @@ Block::tx_list() const {
   return tx_list_;
 }
 
-// optional uint64 timestamp = 11;
+// optional uint64 timestamp = 6;
 inline bool Block::has_timestamp() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void Block::set_has_timestamp() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void Block::clear_has_timestamp() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void Block::clear_timestamp() {
   timestamp_ = GOOGLE_ULONGLONG(0);
@@ -6707,163 +6353,7 @@ inline void Block::set_timestamp(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:shardora.block.protobuf.Block.timestamp)
 }
 
-// optional bytes bls_agg_sign_x = 12;
-inline bool Block::has_bls_agg_sign_x() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void Block::set_has_bls_agg_sign_x() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void Block::clear_has_bls_agg_sign_x() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void Block::clear_bls_agg_sign_x() {
-  bls_agg_sign_x_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_bls_agg_sign_x();
-}
-inline const ::std::string& Block::bls_agg_sign_x() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.Block.bls_agg_sign_x)
-  return bls_agg_sign_x_.GetNoArena();
-}
-inline void Block::set_bls_agg_sign_x(const ::std::string& value) {
-  set_has_bls_agg_sign_x();
-  bls_agg_sign_x_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.Block.bls_agg_sign_x)
-}
-#if LANG_CXX11
-inline void Block::set_bls_agg_sign_x(::std::string&& value) {
-  set_has_bls_agg_sign_x();
-  bls_agg_sign_x_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:shardora.block.protobuf.Block.bls_agg_sign_x)
-}
-#endif
-inline void Block::set_bls_agg_sign_x(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_bls_agg_sign_x();
-  bls_agg_sign_x_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:shardora.block.protobuf.Block.bls_agg_sign_x)
-}
-inline void Block::set_bls_agg_sign_x(const void* value, size_t size) {
-  set_has_bls_agg_sign_x();
-  bls_agg_sign_x_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:shardora.block.protobuf.Block.bls_agg_sign_x)
-}
-inline ::std::string* Block::mutable_bls_agg_sign_x() {
-  set_has_bls_agg_sign_x();
-  // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.Block.bls_agg_sign_x)
-  return bls_agg_sign_x_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* Block::release_bls_agg_sign_x() {
-  // @@protoc_insertion_point(field_release:shardora.block.protobuf.Block.bls_agg_sign_x)
-  if (!has_bls_agg_sign_x()) {
-    return NULL;
-  }
-  clear_has_bls_agg_sign_x();
-  return bls_agg_sign_x_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void Block::set_allocated_bls_agg_sign_x(::std::string* bls_agg_sign_x) {
-  if (bls_agg_sign_x != NULL) {
-    set_has_bls_agg_sign_x();
-  } else {
-    clear_has_bls_agg_sign_x();
-  }
-  bls_agg_sign_x_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), bls_agg_sign_x);
-  // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.Block.bls_agg_sign_x)
-}
-
-// optional bytes bls_agg_sign_y = 13;
-inline bool Block::has_bls_agg_sign_y() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void Block::set_has_bls_agg_sign_y() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void Block::clear_has_bls_agg_sign_y() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void Block::clear_bls_agg_sign_y() {
-  bls_agg_sign_y_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_bls_agg_sign_y();
-}
-inline const ::std::string& Block::bls_agg_sign_y() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.Block.bls_agg_sign_y)
-  return bls_agg_sign_y_.GetNoArena();
-}
-inline void Block::set_bls_agg_sign_y(const ::std::string& value) {
-  set_has_bls_agg_sign_y();
-  bls_agg_sign_y_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.Block.bls_agg_sign_y)
-}
-#if LANG_CXX11
-inline void Block::set_bls_agg_sign_y(::std::string&& value) {
-  set_has_bls_agg_sign_y();
-  bls_agg_sign_y_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:shardora.block.protobuf.Block.bls_agg_sign_y)
-}
-#endif
-inline void Block::set_bls_agg_sign_y(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_bls_agg_sign_y();
-  bls_agg_sign_y_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:shardora.block.protobuf.Block.bls_agg_sign_y)
-}
-inline void Block::set_bls_agg_sign_y(const void* value, size_t size) {
-  set_has_bls_agg_sign_y();
-  bls_agg_sign_y_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:shardora.block.protobuf.Block.bls_agg_sign_y)
-}
-inline ::std::string* Block::mutable_bls_agg_sign_y() {
-  set_has_bls_agg_sign_y();
-  // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.Block.bls_agg_sign_y)
-  return bls_agg_sign_y_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* Block::release_bls_agg_sign_y() {
-  // @@protoc_insertion_point(field_release:shardora.block.protobuf.Block.bls_agg_sign_y)
-  if (!has_bls_agg_sign_y()) {
-    return NULL;
-  }
-  clear_has_bls_agg_sign_y();
-  return bls_agg_sign_y_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void Block::set_allocated_bls_agg_sign_y(::std::string* bls_agg_sign_y) {
-  if (bls_agg_sign_y != NULL) {
-    set_has_bls_agg_sign_y();
-  } else {
-    clear_has_bls_agg_sign_y();
-  }
-  bls_agg_sign_y_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), bls_agg_sign_y);
-  // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.Block.bls_agg_sign_y)
-}
-
-// optional uint64 leader_index = 14;
-inline bool Block::has_leader_index() const {
-  return (_has_bits_[0] & 0x00004000u) != 0;
-}
-inline void Block::set_has_leader_index() {
-  _has_bits_[0] |= 0x00004000u;
-}
-inline void Block::clear_has_leader_index() {
-  _has_bits_[0] &= ~0x00004000u;
-}
-inline void Block::clear_leader_index() {
-  leader_index_ = GOOGLE_ULONGLONG(0);
-  clear_has_leader_index();
-}
-inline ::google::protobuf::uint64 Block::leader_index() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.Block.leader_index)
-  return leader_index_;
-}
-inline void Block::set_leader_index(::google::protobuf::uint64 value) {
-  set_has_leader_index();
-  leader_index_ = value;
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.Block.leader_index)
-}
-
-// repeated bytes change_leader_invalid_hashs = 15;
+// repeated bytes change_leader_invalid_hashs = 7;
 inline int Block::change_leader_invalid_hashs_size() const {
   return change_leader_invalid_hashs_.size();
 }
@@ -6930,120 +6420,6 @@ inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 Block::mutable_change_leader_invalid_hashs() {
   // @@protoc_insertion_point(field_mutable_list:shardora.block.protobuf.Block.change_leader_invalid_hashs)
   return &change_leader_invalid_hashs_;
-}
-
-// optional bool is_commited_block = 16 [default = false];
-inline bool Block::has_is_commited_block() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
-}
-inline void Block::set_has_is_commited_block() {
-  _has_bits_[0] |= 0x00001000u;
-}
-inline void Block::clear_has_is_commited_block() {
-  _has_bits_[0] &= ~0x00001000u;
-}
-inline void Block::clear_is_commited_block() {
-  is_commited_block_ = false;
-  clear_has_is_commited_block();
-}
-inline bool Block::is_commited_block() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.Block.is_commited_block)
-  return is_commited_block_;
-}
-inline void Block::set_is_commited_block(bool value) {
-  set_has_is_commited_block();
-  is_commited_block_ = value;
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.Block.is_commited_block)
-}
-
-// optional bytes leader_ip = 17;
-inline bool Block::has_leader_ip() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void Block::set_has_leader_ip() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void Block::clear_has_leader_ip() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void Block::clear_leader_ip() {
-  leader_ip_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_leader_ip();
-}
-inline const ::std::string& Block::leader_ip() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.Block.leader_ip)
-  return leader_ip_.GetNoArena();
-}
-inline void Block::set_leader_ip(const ::std::string& value) {
-  set_has_leader_ip();
-  leader_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.Block.leader_ip)
-}
-#if LANG_CXX11
-inline void Block::set_leader_ip(::std::string&& value) {
-  set_has_leader_ip();
-  leader_ip_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:shardora.block.protobuf.Block.leader_ip)
-}
-#endif
-inline void Block::set_leader_ip(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_leader_ip();
-  leader_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:shardora.block.protobuf.Block.leader_ip)
-}
-inline void Block::set_leader_ip(const void* value, size_t size) {
-  set_has_leader_ip();
-  leader_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:shardora.block.protobuf.Block.leader_ip)
-}
-inline ::std::string* Block::mutable_leader_ip() {
-  set_has_leader_ip();
-  // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.Block.leader_ip)
-  return leader_ip_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* Block::release_leader_ip() {
-  // @@protoc_insertion_point(field_release:shardora.block.protobuf.Block.leader_ip)
-  if (!has_leader_ip()) {
-    return NULL;
-  }
-  clear_has_leader_ip();
-  return leader_ip_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void Block::set_allocated_leader_ip(::std::string* leader_ip) {
-  if (leader_ip != NULL) {
-    set_has_leader_ip();
-  } else {
-    clear_has_leader_ip();
-  }
-  leader_ip_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), leader_ip);
-  // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.Block.leader_ip)
-}
-
-// optional uint32 leader_port = 18;
-inline bool Block::has_leader_port() const {
-  return (_has_bits_[0] & 0x00008000u) != 0;
-}
-inline void Block::set_has_leader_port() {
-  _has_bits_[0] |= 0x00008000u;
-}
-inline void Block::clear_has_leader_port() {
-  _has_bits_[0] &= ~0x00008000u;
-}
-inline void Block::clear_leader_port() {
-  leader_port_ = 0u;
-  clear_has_leader_port();
-}
-inline ::google::protobuf::uint32 Block::leader_port() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.Block.leader_port)
-  return leader_port_;
-}
-inline void Block::set_leader_port(::google::protobuf::uint32 value) {
-  set_has_leader_port();
-  leader_port_ = value;
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.Block.leader_port)
 }
 
 // -------------------------------------------------------------------

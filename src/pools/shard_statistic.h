@@ -2,8 +2,9 @@
 
 #include <unordered_map>
 #include <atomic>
-#include <random>
+#include <queue>
 #include <memory>
+#include <random>
 
 #include "common/bitmap.h"
 #include "common/lof.h"
@@ -37,13 +38,12 @@ public:
     }
 
     ~ShardStatistic() {}
-    void Init(const std::vector<uint64_t>& latest_heights);
-    uint64_t getStoke(uint32_t shard_id, std::string contractId, std::string temp_addr, uint64_t elect_height);
+    int Init();
     void OnNewElectBlock(
         uint32_t sharding_id,
         uint64_t prepare_elect_height,
         uint64_t elect_height);
-    void OnNewBlock(const std::shared_ptr<block::protobuf::Block>& block);
+    void OnNewBlock(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block);
     void OnTimeBlock(
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
@@ -54,10 +54,9 @@ public:
 
 
   private:
-    uint64_t getStoke(uint32_t shard_id, std::string addr) {
-        return 11;
-    };
-    void addHeightInfo2Statics(shardora::pools::protobuf::ElectStatistic &elect_statistic, uint64_t max_tm_height);
+    void addHeightInfo2Statics(
+        shardora::pools::protobuf::ElectStatistic &elect_statistic, 
+        uint64_t max_tm_height);
 
 
     void addPrepareMembers2JoinStastics(
@@ -70,7 +69,7 @@ public:
         std::map<uint64_t, std::unordered_map<std::string, uint64_t>> &join_elect_stoke_map, 
         std::map<uint64_t, std::unordered_map<std::string, uint32_t>> &join_elect_shard_map, 
         std::unordered_set<std::string> &added_id_set, 
-        std::unordered_map<std::string, std::string> &id_pk_map,
+        std::unordered_map<std::string, std::string> &id_pk_map, 
         std::unordered_map<std::string, elect::protobuf::BlsPublicKey*> &id_agg_bls_pk_map,
         shardora::pools::protobuf::ElectStatistic &elect_statistic);
 
@@ -84,16 +83,11 @@ public:
     void HandleStatisticBlock(
         const block::protobuf::Block &block,
         const block::protobuf::BlockTx &tx);
-    void HandleStatistic(const std::shared_ptr<block::protobuf::Block> &block_ptr);
-    std::string getLeaderIdFromBlock(shardora::block::protobuf::Block &block);
+    void HandleStatistic(const std::shared_ptr<view_block::protobuf::ViewBlockItem> &block_ptr);
+    std::string getLeaderIdFromBlock(const view_block::protobuf::ViewBlockItem &block);
     bool LoadAndStatisticBlock(uint32_t poll_index, uint64_t height);
     bool CheckAllBlockStatisticed(uint32_t local_net_id);
     void cleanUpBlocks(PoolBlocksInfo& pool_blocks_info);
-    bool checkBlockValid(shardora::block::protobuf::Block &block);
-
-    bool IsShardReachPerformanceLimit(
-            std::shared_ptr<StatisticInfoItem>& statistic_info_ptr,
-            const block::protobuf::Block& block);
 
     static const uint32_t kLofRation = 5;
     static const uint32_t kLofMaxNodes = 8;
@@ -117,9 +111,12 @@ public:
     common::Tick tick_to_statistic_;
     std::unordered_map<std::string, std::shared_ptr<AccoutPoceInfoItem>> accout_poce_info_map_;
     uint64_t least_elect_height_for_statistic_=0;
-    std::unordered_map<uint64_t, std::shared_ptr<StatisticInfoItem>> tm_height_with_statistic_info_;
-    common::Bitmap shard_pref_bitmap_{(common::kPreopenShardMaxBlockWindowSize/64+1)*64}; // bit 窗口，保存了最近多个 block 是否达到 shard 性能处理上限
-    
+    std::shared_ptr<pools::protobuf::StatisticTxItem> latest_statistic_item_ = nullptr;
+
+    std::map<uint64_t, std::map<uint32_t, StatisticInfoItem>> statistic_pool_info_;
+    uint64_t latest_statisticed_height_ = 0;
+    std::map<uint64_t, pools::protobuf::ElectStatistic> statistic_height_map_;
+
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };
 

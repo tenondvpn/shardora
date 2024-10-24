@@ -3,7 +3,6 @@
 #include "network/network_utils.h"
 #include "protos/tx_storage_key.h"
 #include "vss/vss_manager.h"
-#include <network/network_status.h>
 
 namespace shardora {
 
@@ -21,13 +20,13 @@ RootToTxItem::RootToTxItem(
         vss_mgr_(vss_mgr) {
     if (max_sharding_id_ < network::kConsensusShardBeginNetworkId) {
         max_sharding_id_ = network::kConsensusShardBeginNetworkId;
-    }    
+    }
 }
 
 RootToTxItem::~RootToTxItem() {}
 
 int RootToTxItem::HandleTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
@@ -62,11 +61,9 @@ int RootToTxItem::HandleTx(
             }
         }
 
-        std::mt19937_64 g2(block.height() ^ vss_mgr_->EpochRandom());
+        std::mt19937_64 g2(view_block.block_info().height() ^ vss_mgr_->EpochRandom());
         if (sharding_id == 0) {
-            des_info[0] = (g2() % (
-                        network::NetsInfo::Instance()->BiggestOpenedNetId() -
-                        network::kConsensusShardBeginNetworkId + 1)) +
+            des_info[0] = (g2() % (max_sharding_id_ - network::kConsensusShardBeginNetworkId + 1)) +
                 network::kConsensusShardBeginNetworkId;
             // pool index just binding with address
             des_info[1] = common::GetAddressPoolIndex(block_tx.to());

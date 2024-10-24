@@ -5,7 +5,7 @@ namespace shardora {
 namespace consensus {
 
 int FromTxItem::HandleTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
@@ -16,6 +16,7 @@ int FromTxItem::HandleTx(
     uint64_t to_balance = 0;
     auto& from = address_info->addr();
     int balance_status = GetTempAccountBalance(from, acc_balance_map, &from_balance);
+    auto src_banalce = from_balance;
     if (balance_status != kConsensusSuccess) {
         block_tx.set_status(balance_status);
         // will never happen
@@ -75,11 +76,19 @@ int FromTxItem::HandleTx(
     acc_balance_map[from] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
-//     ZJC_DEBUG("handle tx success: %s, %lu, %lu, status: %d",
-//         common::Encode::HexEncode(block_tx.gid()).c_str(),
-//         block_tx.balance(),
-//         block_tx.gas_used(),
-//         block_tx.status());
+    ZJC_DEBUG("handle tx success: %s, %lu, %lu, status: %d, from: %s, to: %s, amount: %lu, src_banalce: %lu, %u_%u_%lu, height: %lu",
+        common::Encode::HexEncode(block_tx.gid()).c_str(),
+        block_tx.balance(),
+        block_tx.gas_used(),
+        block_tx.status(),
+        common::Encode::HexEncode(block_tx.from()).c_str(),
+        common::Encode::HexEncode(block_tx.to()).c_str(),
+        block_tx.amount(),
+        src_banalce,
+        view_block.qc().network_id(),
+        view_block.qc().pool_index(),
+        view_block.qc().view(),
+        view_block.block_info().height());
     return kConsensusSuccess;
 }
 

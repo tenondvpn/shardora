@@ -1,8 +1,6 @@
 #pragma once
 
-#include <libff/algebra/curves/alt_bn128/alt_bn128_g2.hpp>
 #include <memory>
-#include <protos/elect.pb.h>
 #include <unordered_map>
 
 #include <libbls/bls/BLSPrivateKey.h>
@@ -17,6 +15,7 @@
 #include "common/limit_heap.h"
 #include "common/node_members.h"
 #include "common/utils.h"
+#include "protos/elect.pb.h"
 
 #define BLS_DEBUG(fmt, ...) ZJC_DEBUG("[bls]" fmt, ## __VA_ARGS__)
 #define BLS_INFO(fmt, ...) ZJC_INFO("[bls]" fmt, ## __VA_ARGS__)
@@ -83,7 +82,8 @@ static inline bool IsValidBigInt(const std::string& big_int) {
     return true;
 }
 
-static std::shared_ptr<elect::protobuf::BlsPublicKey> BlsPublicKey2Proto(const libff::alt_bn128_G2& bls_pk) {
+static std::shared_ptr<elect::protobuf::BlsPublicKey> BlsPublicKey2Proto(
+        const libff::alt_bn128_G2& bls_pk) {
     auto bls_pk_proto = std::make_shared<elect::protobuf::BlsPublicKey>();
     auto bls_pk_strs = BLSPublicKey(bls_pk).toString();
     if (bls_pk_strs->size() >= 4) {
@@ -96,7 +96,8 @@ static std::shared_ptr<elect::protobuf::BlsPublicKey> BlsPublicKey2Proto(const l
     return nullptr;
 }
 
-static std::shared_ptr<libff::alt_bn128_G2> Proto2BlsPublicKey(const elect::protobuf::BlsPublicKey& bls_pk_proto) {
+static std::shared_ptr<libff::alt_bn128_G2> Proto2BlsPublicKey(
+        const elect::protobuf::BlsPublicKey& bls_pk_proto) {
     auto pk_str_vec = std::vector<std::string>{
         bls_pk_proto.x_c0(),
         bls_pk_proto.x_c1(),

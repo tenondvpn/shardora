@@ -18,9 +18,6 @@ public:
         std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<timeblock::TimeBlockManager>& timeblock_mgr);
     ~WaitingTxsPools();
-    void TxOver(std::shared_ptr<Zbft>& zbft_ptr) {}
-    void TxRecover(std::shared_ptr<Zbft>& zbft_ptr);
-
     uint64_t latest_height(uint32_t pool_index) const {
         return pool_mgr_->latest_height(pool_index);
     }
@@ -39,7 +36,6 @@ public:
         return pool_mgr_->GetHeightInvalidChangeLeaderHashs(pool_index, height, hashs);
     }
 
-    std::shared_ptr<WaitingTxsItem> LeaderGetValidTxs(uint32_t pool_index);
     std::shared_ptr<WaitingTxsItem> LeaderGetValidTxsIdempotently(
         uint32_t pool_index, 
         pools::CheckGidValidFunction gid_vlid_func);
@@ -51,10 +47,13 @@ public:
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
         std::vector<uint8_t>* invalid_txs);
-    bool HasSingleTx(uint32_t pool_index);
+    bool HasSingleTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn);
+    std::string GetToTxGid();
 
 private:
-    std::shared_ptr<WaitingTxsItem> GetSingleTx(uint32_t pool_index);
+    std::shared_ptr<WaitingTxsItem> GetSingleTx(
+        uint32_t pool_index, 
+        pools::CheckGidValidFunction gid_vlid_func);
 
     WaitingTxs wtxs[common::kInvalidPoolIndex];
     std::shared_ptr<pools::TxPoolManager> pool_mgr_ = nullptr;

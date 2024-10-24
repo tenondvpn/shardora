@@ -20,15 +20,15 @@ message HotstuffMessage {
 }
 
 message NewViewMsg {
-    optional bytes tc_str = 1;
-    optional bytes qc_str = 2;
+    optional view_block.protobuf.QcItem tc = 1;
+    optional view_block.protobuf.ViewBlockItem qc_view = 2;
     optional uint64 elect_height = 3;
 }
 
 message ProposeMsg {
     optional uint64 elect_height = 1;
     optional view_block.protobuf.ViewBlockItem  view_item = 2;
-    optional bytes tc_str = 3;
+    optional view_block.protobuf.QcItem tc = 3;
     optional TxPropose tx_propose = 4;
 }
 
@@ -40,8 +40,7 @@ message VoteMsg {
     optional bytes sign_x = 5;
     optional bytes sign_y = 6;
     repeated pools.protobuf.TxMessage txs = 7; // 仅打包普通交易信息，作为同步
-    optional bytes commit_view_block_hash = 8;
-    optional uint32 leader_idx = 9;
+    optional uint32 leader_idx = 8;
 }
 
 message PreResetTimerMsg {

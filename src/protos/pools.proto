@@ -22,6 +22,7 @@ enum StepType {
     kRootCross = 16;  // root避免跨分片块缺失的交易
     kContractCreateByRootTo = 17; // ContractCreate 交易的 Local 部分
     kContractCreateByRootFrom = 18;  // ContractCreate 交易的 from 部分
+    kPoolStatisticTag = 19;  // 此轮交易池统计结束标记块
 }
 
 message ToTxHeights {
@@ -52,11 +53,29 @@ message ShardToTxItem {
     optional uint64 block_height = 3;
 }
 
+message PoolStatisticTxItem {
+    optional uint32 pool_index = 1;
+    optional uint64 min_height = 2;
+    optional uint64 max_height = 3;
+}
+
 message StatisticTxItem {
+    optional uint32 sharding_id = 1;
+    repeated PoolStatisticTxItem heights = 2;
+    optional uint64 block_height = 3;
+    optional uint64 tm_height = 4;
+}
+
+message InitPoolHeightItem {
     optional uint32 sharding_id = 1;
     repeated uint64 heights = 2;
     optional uint64 block_height = 3;
     optional uint64 tm_height = 4;
+}
+
+message PoolStatisticTxInfo {
+    optional uint64 height = 1;
+    repeated PoolStatisticTxItem pool_statisitcs = 2;
 }
 
 message CrossShardStatisticItem {
@@ -106,7 +125,6 @@ message PoolStatisticItem {
     repeated uint64 consensus_gap = 7;
 }
 
-
 message JoinElectNode {
     optional bytes pubkey = 1;
     optional uint64 stoke = 2;
@@ -125,13 +143,7 @@ message ElectStatistic {
     optional uint32 sharding_id = 4;
     optional uint64 gas_amount = 5;
     repeated uint32 lof_leaders = 6;
-    optional bool shard_perf_limit_reached = 7;
-    // optional NetsInfo nets_info = 9;
-}
-
-message NetsInfo {
-    optional uint32 preopened_network_id = 1;
-    optional uint32 biggest_opened_network_id = 2;
+    optional uint64 statistic_height = 7;
 }
 
 message SyncPoolsMaxHeight {

@@ -44,7 +44,7 @@ public:
             storage->set_value(all_to_txs.to_tx_arr(i).SerializeAsString());
             ZJC_DEBUG("success add normal to %s, val: %s", 
                 protos::kNormalToShards.c_str(), 
-                common::Encode::HexEncode(storage->value()).c_str());
+                ProtobufToJson(all_to_txs.to_tx_arr(i)).c_str());
             assert(!storage->value().empty());
         }
         

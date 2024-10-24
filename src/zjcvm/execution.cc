@@ -83,7 +83,6 @@ bool Execution::StorageKeyWarm(
 }
 
 void Execution::NewBlockWithTx(
-        const std::shared_ptr<block::protobuf::Block>& block_item,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     if (tx.step() != pools::protobuf::kContractCreate &&
@@ -234,9 +233,9 @@ int Execution::execute(
             bytes_code.size());
         if (out_res->status_code != EVMC_SUCCESS) {
             const auto gas_used = msg.gas - out_res->gas_left;
-            ZJC_ERROR("out_res->status_code != EVMC_SUCCESS.nResult: %d, "
+            ZJC_ERROR("out_res->status_code != EVMC_SUCCESS.nResult: %d, EVMC_SUCCESS: %d, "
                 "gas_used: %lu, gas limit: %lu, codes: %s, from: %s, to: %s",
-                out_res->status_code, gas_used, create_gas,
+                out_res->status_code, EVMC_SUCCESS, gas_used, create_gas,
                 common::Encode::HexEncode(bytes_code).c_str(),
                 common::Encode::HexEncode(from_address).c_str(),
                 common::Encode::HexEncode(to_address).c_str());

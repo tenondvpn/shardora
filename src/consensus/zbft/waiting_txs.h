@@ -20,10 +20,6 @@ public:
         pools_mgr_ = pools_mgr;
     }
 
-    std::shared_ptr<WaitingTxsItem> LeaderGetValidTxs() {
-        return LeaderGetTxs();
-    }
-
     std::shared_ptr<WaitingTxsItem> LeaderGetValidTxsIdempotently(pools::CheckGidValidFunction gid_vlid_func) {
         return LeaderGetTxsIdempotently(gid_vlid_func);
     }

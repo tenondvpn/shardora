@@ -1,12 +1,16 @@
 #pragma once
-#include "consensus/consensus.h"
-#include "elect_info.h"
-#include "crypto.h"
-#include "pacemaker.h"
-#include "block_acceptor.h"
-#include "block_wrapper.h"
+#include <unordered_map>
 
-#include <bls/agg_bls.h>
+#include "block/account_manager.h"
+#include "block/block_manager.h"
+#include "bls/agg_bls.h"
+#include "bls/bls_manager.h"
+#include "consensus/consensus.h"
+#include "consensus/hotstuff/elect_info.h"
+#include "consensus/hotstuff/crypto.h"
+#include "consensus/hotstuff/pacemaker.h"
+#include "consensus/hotstuff/block_acceptor.h"
+#include "consensus/hotstuff/block_wrapper.h"
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/leader_rotation.h>
 #include <consensus/hotstuff/types.h>
@@ -21,17 +25,13 @@
 #include <consensus/zbft/elect_tx_item.h>
 #include <consensus/zbft/from_tx_item.h>
 #include <consensus/zbft/join_elect_tx_item.h>
+#include <consensus/zbft/pool_statistic_tag.h>
 #include <consensus/zbft/root_cross_tx_item.h>
 #include <consensus/zbft/root_to_tx_item.h>
 #include <consensus/zbft/statistic_tx_item.h>
 #include <consensus/zbft/time_block_tx.h>
 #include <consensus/zbft/to_tx_item.h>
 #include <consensus/zbft/to_tx_local_item.h>
-#include <protos/view_block.pb.h>
-#include <unordered_map>
-#include "block/account_manager.h"
-#include "block/block_manager.h"
-#include "bls/bls_manager.h"
 #include "common/utils.h"
 #include "common/tick.h"
 #include "common/limit_hash_map.h"
@@ -42,6 +42,7 @@
 #include "protos/elect.pb.h"
 #include "protos/prefix_db.h"
 #include "protos/transport.pb.h"
+#include <protos/view_block.pb.h>
 #include "security/security.h"
 #include "timeblock/time_block_manager.h"
 #include "transport/transport_utils.h"
@@ -65,6 +66,7 @@ class WaitingTxsPools;
 class HotstuffManager : public Consensus {
 public:
     int Init(
+        std::shared_ptr<sync::KeyValueSync>& kv_sync,
         std::shared_ptr<contract::ContractManager>& contract_mgr,
         std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
         std::shared_ptr<vss::VssManager>& vss_mgr,
@@ -76,8 +78,7 @@ public:
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         std::shared_ptr<db::Db>& db,
-        BlockCacheCallback new_block_cache_callback,
-        NoElectItemCallback no_elect_item_callback);
+        BlockCacheCallback new_block_cache_callback);
     void OnNewElectBlock(
         uint64_t block_tm_ms,
         uint32_t sharding_id,
@@ -92,6 +93,10 @@ public:
     Status Start();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
+    std::shared_ptr<ViewBlock> GetViewBlock(uint32_t pool_index, uint64_t view) {
+        return pool_hotstuff_[pool_index]->GetViewBlock(view);
+    }
+
     void SetSyncPoolFn(SyncPoolFn sync_fn) {
         for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
             pacemaker(pool_idx)->SetSyncPoolFn(sync_fn);
@@ -99,7 +104,7 @@ public:
         }        
     }
 
-    int VerifySyncedViewBlock(view_block::protobuf::ViewBlockItem* pb_vblock);    
+    int VerifySyncedViewBlock(const view_block::protobuf::ViewBlockItem& pb_vblock);    
 
     inline std::shared_ptr<Hotstuff> hotstuff(uint32_t pool_idx) const {
         auto it = pool_hotstuff_.find(pool_idx);
@@ -153,35 +158,12 @@ public:
         return hf->wrapper();   
     }
 
-    bool VerifyPbViewBlockWithCommitQC(const view_block::protobuf::ViewBlockItem& pb_vblock) {
-        auto vblock_with_proof = std::make_shared<ViewBlockWithCommitQC>();
-        if (!vblock_with_proof->FromProto(pb_vblock)) {
-            return false;
-        }
-        Status s = VerifyViewBlockWithCommitQC(vblock_with_proof->vblock(), vblock_with_proof->commit_qc());
-        if (s != Status::kSuccess) {
-            if (s == Status::kElectItemNotFound && no_elect_item_callback_) {
-                no_elect_item_callback_(
-                        network::kRootCongressNetworkId,
-                        vblock_with_proof->commit_qc()->network_id(),
-                        vblock_with_proof->commit_qc()->elect_height(),
-                        sync::kSyncHighest);
-            }
-            return false;
-        }
-
-        return true;
-    }
-
 private:
-    Status VerifyViewBlockWithCommitQC(
-            const std::shared_ptr<ViewBlock>& vblock,
-            const std::shared_ptr<QC>& commit_qc);
-    
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void HandleTimerMessage(const transport::MessagePtr& msg_ptr);
     void RegisterCreateTxCallbacks();
-    
+    Status VerifyViewBlockWithCommitQC(const view_block::protobuf::ViewBlockItem& pb_vblock);
+
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(
                 msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
@@ -249,6 +231,7 @@ private:
         if (keypair == nullptr || !keypair->IsValid()) {
             return nullptr;
         }
+
         return std::make_shared<JoinElectTxItem>(
                 msg_ptr->header.tx_proto(), 
                 account_mgr_, 
@@ -316,6 +299,11 @@ private:
                 msg_ptr->address_info);
     }
 
+    pools::TxItemPtr CreatePoolStatisticTagTx(const transport::MessagePtr& msg_ptr) {
+        return std::make_shared<PoolStatisticTag>(
+                msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
+    }
+
     static const uint64_t kHandleTimerPeriodMs = 3000lu;
 
     std::unordered_map<uint32_t, std::shared_ptr<Hotstuff>> pool_hotstuff_;
@@ -328,7 +316,6 @@ private:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
-    common::FlowControl tps_fc_{3};
     double prev_tps_[common::kInvalidPoolIndex];
     
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
@@ -337,10 +324,9 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
-    BlockCacheCallback new_block_cache_callback_ = nullptr;
-    NoElectItemCallback no_elect_item_callback_ = nullptr;
     uint64_t prev_handler_timer_tm_ms_ = 0;
     uint64_t first_timeblock_timestamp_ = 0;
+    std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(HotstuffManager);
 };

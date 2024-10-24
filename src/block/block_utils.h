@@ -20,6 +20,7 @@
 #include "network/network_utils.h"
 #include "pools/tx_utils.h"
 #include "protos/block.pb.h"
+#include "protos/view_block.pb.h"
 
 #define BLOCK_DEBUG(fmt, ...) ZJC_DEBUG("[block]" fmt, ## __VA_ARGS__)
 #define BLOCK_INFO(fmt, ...) ZJC_INFO("[block]" fmt, ## __VA_ARGS__)
@@ -69,11 +70,12 @@ struct BlockTxsItem {
 };
 
 typedef std::shared_ptr<block::protobuf::Block> BlockPtr;
+typedef std::shared_ptr<view_block::protobuf::ViewBlockItem> ViewBlockPtr;
 
 struct BlockToDbItem {
-    BlockToDbItem(BlockPtr& bptr, const std::shared_ptr<db::DbWriteBatch>& batch)
-        : block_ptr(bptr), db_batch(batch) {}
-    BlockPtr block_ptr;
+    BlockToDbItem(ViewBlockPtr& bptr, const std::shared_ptr<db::DbWriteBatch>& batch)
+        : view_block_ptr(bptr), db_batch(batch) {}
+    ViewBlockPtr view_block_ptr;
     std::shared_ptr<db::DbWriteBatch> db_batch;
 };
 
@@ -131,10 +133,8 @@ inline bool isContractCreateToTxMessageItem(const pools::protobuf::ToTxMessageIt
 typedef std::shared_ptr<BlockToDbItem> BlockToDbItemPtr;
 
 typedef std::function<bool(
-    const std::shared_ptr<block::protobuf::Block>& block,
+    const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
     db::DbWriteBatch& db_batch)> DbBlockCallback;
-typedef std::function<bool(
-    const block::protobuf::Block& block)> BlockAggValidCallback;
 
 }  // namespace block
 

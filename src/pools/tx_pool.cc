@@ -176,6 +176,10 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     oldest_timestamp_ = prio_map_.begin()->second->time_valid;
 #endif
     timeout_txs_.push(tx_ptr->tx_info.gid());
+    ZJC_DEBUG("pool: %d, success add tx step: %d, gid: %s", 
+        pool_index_, 
+        tx_ptr->tx_info.step(),
+        common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
     return kPoolsSuccess;
 }
 
@@ -224,13 +228,19 @@ void TxPool::GetTxIdempotently(
         uint32_t count, 
         std::unordered_map<std::string, std::string>& kvs,
         pools::CheckGidValidFunction gid_vlid_func) {
+    ZJC_DEBUG("now get tx universal_prio_map_ size: %u, prio_map_: %u, consensus_tx_map_: %u",
+        universal_prio_map_.size(),
+        prio_map_.size(),
+        consensus_tx_map_.size());
     GetTxIdempotently(universal_prio_map_, res_map, count, kvs, gid_vlid_func);
     if (!res_map.empty()) {
+        ZJC_DEBUG("success get universal_prio_map_ size: %d", res_map.size());
         return;
     }
 
     GetTxIdempotently(prio_map_, res_map, count, kvs, gid_vlid_func);
     GetTxIdempotently(consensus_tx_map_, res_map, count, kvs, gid_vlid_func);    
+    ZJC_DEBUG("success get tx size: %d", res_map.size());
 }
 
 void TxPool::GetTx(
@@ -259,12 +269,14 @@ void TxPool::GetTxIdempotently(
     auto iter = src_prio_map.begin();
     while (iter != src_prio_map.end() && res_map.size() < count) {
         if (gid_vlid_func != nullptr && !gid_vlid_func(iter->second->tx_info.gid())) {
+            ZJC_DEBUG("gid invalid: %s", common::Encode::HexEncode(iter->second->tx_info.gid()).c_str());
             ++iter;
             continue;
         }
 
         res_map[iter->second->unique_tx_hash] = iter->second;
         assert(!iter->second->unique_tx_hash.empty());
+        ZJC_DEBUG("gid valid: %s", common::Encode::HexEncode(iter->second->tx_info.gid()).c_str());
         ++iter;
     }    
 }
@@ -448,7 +460,7 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
             uint64_t p50 = common::GetNthElement(latencys_us_, 0.5);
             latencys_us_.clear();
         
-            ZJC_INFO("tx latency p50: %llu", p50);
+            ZJC_DEBUG("tx latency p50: %llu", p50);
         }
 #endif
     }

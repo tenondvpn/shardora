@@ -41,6 +41,7 @@ contract C2CSellOrder {
     address public owner;
     uint256 public minPlegementValue;
     uint256 public minExchangeValue;
+    uint256 test_data;
     mapping(address => SellOrder) public orders;
     mapping(address => bool) public valid_managers;
     address[] all_sellers;
@@ -56,6 +57,12 @@ contract C2CSellOrder {
         minPlegementValue = minPlegement;
         minExchangeValue = minAmount;
         owner = msg.sender;
+    }
+
+    function TestContract(uint256 receivable) public payable {
+        emit NewSelloutValue(1);
+        test_data = receivable;
+        emit NewSelloutValue(2);
     }
 
     function SetManager(address[] memory managers) public {
@@ -190,7 +197,6 @@ contract C2CSellOrder {
 
         orders[seller] = order;
         emit NewSelloutValue(9);
-
     }
 
     function SellerRelease() public payable {

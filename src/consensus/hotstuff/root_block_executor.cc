@@ -1,4 +1,5 @@
 #include <consensus/hotstuff/block_executor.h>
+#include "consensus/hotstuff/hotstuff_utils.h"
 #include <zjcvm/zjcvm_utils.h>
 
 namespace shardora {
@@ -6,24 +7,25 @@ namespace hotstuff {
 
 Status RootBlockExecutor::DoTransactionAndCreateTxBlock(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
-        std::shared_ptr<block::protobuf::Block>& block) {
+        view_block::protobuf::ViewBlockItem* view_block,
+        BalanceMap& balance_map) {
     if (txs_ptr->txs.size() == 1) {
         auto& tx = *txs_ptr->txs.begin()->second;
         switch (tx.tx_info.step()) {
         case pools::protobuf::kConsensusRootElectShard:
-            RootCreateElectConsensusShardBlock(txs_ptr, block);
+            RootCreateElectConsensusShardBlock(txs_ptr, view_block, balance_map);
             break;
         case pools::protobuf::kConsensusRootTimeBlock:
         case pools::protobuf::kStatistic:
         case pools::protobuf::kCross:
-            RootDefaultTx(txs_ptr, block);
+            RootDefaultTx(txs_ptr, view_block, balance_map);
             break;
         default:
-            RootCreateAccountAddressBlock(txs_ptr, block);
+            RootCreateAccountAddressBlock(txs_ptr, view_block, balance_map);
             break;
         }
     } else {
-        RootCreateAccountAddressBlock(txs_ptr, block);
+        RootCreateAccountAddressBlock(txs_ptr, view_block, balance_map);
     }
     
     return Status::kSuccess;
@@ -31,19 +33,23 @@ Status RootBlockExecutor::DoTransactionAndCreateTxBlock(
 
 void RootBlockExecutor::RootDefaultTx(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
-        std::shared_ptr<block::protobuf::Block>& block) {
+        view_block::protobuf::ViewBlockItem* view_block,
+        BalanceMap& balance_map) {
+    auto* block = view_block->mutable_block_info();
     auto tx_list = block->mutable_tx_list();
     auto& tx = *tx_list->Add();
     auto iter = txs_ptr->txs.begin();
+    balance_map[tx.to()] = 0;
     iter->second->TxToBlockTx(iter->second->tx_info, db_batch_, &tx);
 }
 
 void RootBlockExecutor::RootCreateAccountAddressBlock(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
-        std::shared_ptr<block::protobuf::Block>& block) {
+        view_block::protobuf::ViewBlockItem* view_block,
+        BalanceMap& acc_balance_map) {
+    auto* block = view_block->mutable_block_info();
     auto tx_list = block->mutable_tx_list();
     auto& tx_map = txs_ptr->txs;
-    std::unordered_map<std::string, int64_t> acc_balance_map;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto& tx = *tx_list->Add();
         auto& src_tx = iter->second->tx_info;
@@ -60,7 +66,7 @@ void RootBlockExecutor::RootCreateAccountAddressBlock(
         }
 
         int do_tx_res = iter->second->HandleTx(
-            *block,
+            *view_block,
             db_batch_,
             zjc_host,
             acc_balance_map,
@@ -76,7 +82,8 @@ void RootBlockExecutor::RootCreateAccountAddressBlock(
 
 void RootBlockExecutor::RootCreateElectConsensusShardBlock(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
-        std::shared_ptr<block::protobuf::Block>& block) {
+        view_block::protobuf::ViewBlockItem* view_block,
+        BalanceMap& acc_balance_map) {
     auto& tx_map = txs_ptr->txs;
     if (tx_map.size() != 1) {
         return;
@@ -88,12 +95,12 @@ void RootBlockExecutor::RootCreateElectConsensusShardBlock(
         return;
     }
 
+    auto* block = view_block->mutable_block_info();
     auto tx_list = block->mutable_tx_list();
     auto& tx = *tx_list->Add();
     iter->second->TxToBlockTx(iter->second->tx_info, db_batch_, &tx);
-    std::unordered_map<std::string, int64_t> acc_balance_map;
     int do_tx_res = iter->second->HandleTx(
-        *block,
+        *view_block,
         db_batch_,
         zjc_host,
         acc_balance_map,
@@ -104,8 +111,6 @@ void RootBlockExecutor::RootCreateElectConsensusShardBlock(
         ZJC_WARN("consensus elect tx failed!");
         return;
     }
-
-    ZJC_DEBUG("elect use elect height: %lu, now elect height: %lu", block->electblock_height(), block->height());
 }
 
 }

@@ -1,17 +1,16 @@
 #include "consensus/zbft/join_elect_tx_item.h"
-#include <bls/bls_utils.h>
-#include <protos/tx_storage_key.h>
 
 namespace shardora {
 
 namespace consensus {
 
 int JoinElectTxItem::HandleTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
+    auto& block = view_block.block_info();
     uint64_t gas_used = 0;
     // gas just consume by from
     uint64_t from_balance = 0;
@@ -106,7 +105,6 @@ int JoinElectTxItem::HandleTx(
         auto pk_storage = block_tx.add_storages();
         pk_storage->set_key(protos::kNodePublicKey);
         pk_storage->set_value(from_pk_);
-
         auto agg_bls_pk_proto = bls::BlsPublicKey2Proto(from_agg_bls_pk_);
         if (agg_bls_pk_proto) {
             pk_storage->set_key(protos::kAggBlsPublicKey);
@@ -119,14 +117,15 @@ int JoinElectTxItem::HandleTx(
     block_tx.set_gas_used(gas_used);
     ZJC_DEBUG("status: %d, success join elect: %s, pool: %u, height: %lu, des shard: %d",
         block_tx.status(), common::Encode::HexEncode(from).c_str(),
-        block.pool_index(),
+        view_block.qc().pool_index(),
         block.height(),
         join_info.shard_id());
 #ifndef NDEBUG
     for (uint32_t i = 0; i < block_tx.storages_size(); ++i) {
-        ZJC_DEBUG("status: %d, success join elect: %s, pool: %u, height: %lu, des shard: %d, key: %s, value size: %d",
+        ZJC_DEBUG("status: %d, success join elect: %s, pool: %u, height: %lu, "
+            "des shard: %d, key: %s, value size: %d",
             block_tx.status(), common::Encode::HexEncode(from).c_str(),
-            block.pool_index(),
+            view_block.qc().pool_index(),
             block.height(),
             join_info.shard_id(),
             block_tx.storages(i).key().c_str(),

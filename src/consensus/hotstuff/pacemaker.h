@@ -15,10 +15,12 @@ namespace shardora {
 
 namespace hotstuff {
 
-using NewProposalFn = std::function<Status(const std::shared_ptr<SyncInfo> &sync_info)>;
+using NewProposalFn = std::function<Status(std::shared_ptr<view_block::protobuf::QcItem> tc)>;
 using StopVotingFn = std::function<void(const View &view)>;
 using SyncPoolFn = std::function<void(const uint32_t &, const int32_t&)>;
-using NewViewFn = std::function<void(const std::shared_ptr<SyncInfo> &sync_info)>;
+using NewViewFn = std::function<void(
+    const std::shared_ptr<tnet::TcpInterface> conn, 
+    std::shared_ptr<view_block::protobuf::QcItem> tc)>;
 
 class Pacemaker {
 public:
@@ -54,12 +56,9 @@ public:
     // 收到超时消息
     void OnRemoteTimeout(const transport::MessagePtr& msg_ptr);
     // 视图切换
-    Status AdvanceView(const std::shared_ptr<SyncInfo>& sync_info);
+    void NewTc(const std::shared_ptr<view_block::protobuf::QcItem>& tc);
+    void NewQcView(uint64_t qc_view);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
-
-    inline std::shared_ptr<QC> HighQC() const {
-        return high_qc_;
-    }
 
     inline std::shared_ptr<TC> HighTC() const {
         return high_tc_;
@@ -74,6 +73,7 @@ public:
         duration_ = dur;
         
         StopTimeoutTimer();
+        ZJC_DEBUG("local time set start duration is reset view duration called start timeout: %lu", pool_idx_);
         StartTimeoutTimer();
     }
 
@@ -82,23 +82,30 @@ public:
     }
 
 private:
-    void UpdateHighQC(const std::shared_ptr<QC>& qc);
-    void UpdateHighTC(const std::shared_ptr<TC>& tc);
     void SendTimeout(const std::shared_ptr<transport::TransportMessage>& msg_ptr);
 
     inline void StartTimeoutTimer() {
         last_time_us_ = common::TimeUtils::TimestampUs();
         duration_us_ = duration_->Duration();
-        ZJC_INFO("pool: %d duration is %lu ms", pool_idx_, duration_us_/1000);
+        ZJC_DEBUG("pool: %d local time set start duration is %lu ms", pool_idx_, duration_us_/1000);
     }
 
     inline void StopTimeoutTimer() {
         last_time_us_ = 0;
         duration_us_ = 0;
+        ZJC_DEBUG("pool: %d local time set stop timer called!", pool_idx_);
     }
 
     inline bool IsTimeout() {
-        return (last_time_us_ != 0 && common::TimeUtils::TimestampUs() - last_time_us_ > duration_us_);
+        // duration_us_ = 0;
+        bool timeout = (last_time_us_ != 0 && 
+            (common::TimeUtils::TimestampUs() - last_time_us_) > (duration_us_ + 10000000lu));
+        // ZJC_DEBUG("pool: %u, local time last_time_us_: %lu, duration_us_: %lu, now time: %lu, dec: %lu, timeout: %d",
+        //     pool_idx_, last_time_us_, duration_us_, 
+        //     common::TimeUtils::TimestampUs(), 
+        //     (common::TimeUtils::TimestampUs() - last_time_us_),
+        //     timeout);
+        return timeout;
     }
 
     inline std::shared_ptr<ElectItem> elect_item(uint32_t sharding_id, uint64_t elect_height) {
@@ -107,9 +114,8 @@ private:
     
 
     uint32_t pool_idx_;
-    std::shared_ptr<QC> high_qc_ = nullptr;
     std::shared_ptr<TC> high_tc_ = nullptr;
-    View cur_view_;
+    View cur_view_ = 0llu;
     std::shared_ptr<Crypto> crypto_;
     std::shared_ptr<LeaderRotation> leader_rotation_ = nullptr;
     std::shared_ptr<ViewDuration> duration_;
