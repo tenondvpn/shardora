@@ -204,7 +204,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
 
         if (tx.step() == pools::protobuf::kContractExcute /*&& tx.to() == common::GlobalInfo::Instance()->c2c_to()*/) {
             nlohmann::json res;
-            ZJC_DEBUG("now handle contract.");
+            ZJC_DEBUG("now handle contract: %s", ProtobufToJson(tx).c_str());
             bool ret = QueryContract(tx.from(), tx.to(), &res);
             if (ret) {
                 for (auto iter = res.begin(); iter != res.end(); ++iter) {
