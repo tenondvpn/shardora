@@ -1,9 +1,9 @@
 for ((i=10000000;i<=99999999;i++));
 do
     echo $i
-    ps -ef | grep s3_1 | awk -F' ' '{print $2}' | xargs kill -9
+    ps -ef | grep s3_2 | awk -F' ' '{print $2}' | xargs kill -9
     sleep 3
-    cd /root/zjnodes/s3_1 && nohup ./zjchain -f 0 -g 0 s3_1 root &
+    cd /root/zjnodes/s3_2 && nohup ./zjchain -f 0 -g 0 s3_2 root &
     sleep_time=`expr $RANDOM % 160 + 10`
     echo "sleep time: $sleep_time"
     sleep $sleep_time
