@@ -275,6 +275,7 @@ void ShardStatistic::HandleStatistic(
     auto& join_elect_shard_map = statistic_info_ptr->join_elect_shard_map;
     auto& height_node_collect_info_map = statistic_info_ptr->height_node_collect_info_map;
     auto& id_pk_map = statistic_info_ptr->id_pk_map;
+    auto& id_agg_bls_pk_map = statistic_info_ptr->id_agg_bls_pk_map;
     uint64_t block_gas = 0;
     auto callback = [&](const block::protobuf::Block& block) {
         for (int32_t i = 0; i < block.tx_list_size(); ++i) {
@@ -372,8 +373,22 @@ void ShardStatistic::HandleStatistic(
                         id_pk_map[tx.from()] = tx.storages(storage_idx).value();
                     }
 
-                    if (tx.storages(storage_idx).key() == 
-                            protos::kJoinElectVerifyG2) {
+                    if (block.tx_list(i).storages(storage_idx).key() == protos::kAggBlsPublicKey) {
+                        auto tmp_id = secptr_->GetAddress(
+                            block.tx_list(i).storages(storage_idx).value());
+                        if (tmp_id != block.tx_list(i).from()) {
+                            assert(false);
+                            continue;
+                        }
+
+                        auto agg_bls_pk_proto_str = block.tx_list(i).storages(storage_idx).value();
+                        auto agg_bls_pk_proto = std::make_shared<elect::protobuf::BlsPublicKey>();
+                        if (agg_bls_pk_proto->ParseFromString(agg_bls_pk_proto_str)) {
+                            id_agg_bls_pk_map[block.tx_list(i).from()] = agg_bls_pk_proto.get();
+                        }
+                    }
+
+                    if (tx.storages(storage_idx).key() == protos::kJoinElectVerifyG2) {
                         bls::protobuf::JoinElectInfo join_info;
                         if (!join_info.ParseFromString(
                                 tx.storages(storage_idx).value())) {
@@ -730,6 +745,7 @@ int ShardStatistic::StatisticWithHeights(
     auto join_elect_shard_map = statistic_info_ptr->join_elect_shard_map;
     auto height_node_collect_info_map = statistic_info_ptr->height_node_collect_info_map;
     auto id_pk_map = statistic_info_ptr->id_pk_map;
+    auto& id_agg_bls_pk_map = statistic_info_ptr->id_agg_bls_pk_map;
     std::string debug_str;
     ++pool_iter;
     std::string tx_count_debug_str;
@@ -847,6 +863,7 @@ int ShardStatistic::StatisticWithHeights(
         join_elect_shard_map,
         added_id_set,
         id_pk_map,
+        id_agg_bls_pk_map,
         elect_statistic);
     addPrepareMembers2JoinStastics(
         prepare_members,
@@ -949,6 +966,7 @@ void ShardStatistic::addNewNode2JoinStatics(
         std::map<uint64_t, std::unordered_map<std::string, uint32_t>> &join_elect_shard_map,
         std::unordered_set<std::string> &added_id_set,
         std::unordered_map<std::string, std::string> &id_pk_map,
+        std::unordered_map<std::string, elect::protobuf::BlsPublicKey*> &id_agg_bls_pk_map,
         shardora::pools::protobuf::ElectStatistic &elect_statistic) {
 #ifndef NDEBUG
     for (auto iter = join_elect_stoke_map.begin(); iter != join_elect_stoke_map.end(); ++iter) {
@@ -997,11 +1015,18 @@ void ShardStatistic::addNewNode2JoinStatics(
     }
 
     for (uint32_t i = 0; i < elect_nodes.size() && i < kWaitingElectNodesMaxCount; ++i) {
-        std::string pubkey = elect_nodes[i];
+        std::string node_id = elect_nodes[i];
+        std::string pubkey;
         elect::protobuf::BlsPublicKey* agg_bls_pk;
-        if (pubkey.size() == security::kUnicastAddressLength) {
-            auto iter = id_pk_map.find(pubkey);
+        if (node_id.size() == security::kUnicastAddressLength) {
+            auto iter = id_pk_map.find(node_id);
             if (iter == id_pk_map.end()) {
+                assert(false);
+                continue;
+            }
+
+            auto iter2 = id_agg_bls_pk_map.find(node_id);
+            if (iter2 == id_agg_bls_pk_map.end()) {
                 assert(false);
                 continue;
             }
