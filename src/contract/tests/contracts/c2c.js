@@ -377,13 +377,29 @@ function InitC2cEnv() {
     console.log(account3.address);
 }
 
+init_private_key();
+const args = process.argv.slice(2)
 if (args[0] == 99990) {
     InitC2cEnv();
 }
 
 
-init_private_key();
-const args = process.argv.slice(2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 if (args[0] == 0) {
     do_transaction(args[1], args[2], 100000, 1);
 }
