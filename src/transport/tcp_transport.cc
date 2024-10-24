@@ -263,7 +263,7 @@ int TcpTransport::Send(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     output_queues_[thread_idx].push(output_item);
     output_con_.notify_one();
-    ZJC_DEBUG("success add sent out message hash64: %lu", message.hash64());
+    // ZJC_DEBUG("success add sent out message hash64: %lu", message.hash64());
     return kTransportSuccess;
 }
 
@@ -327,15 +327,15 @@ void TcpTransport::Output() {
                         continue;
                     }
 
-                    TRANSPORT_DEBUG("send to tcp connection success[%s][%d][hash64: %llu] res: %d, tcp_conn: %lu",
-                        item_ptr->des_ip.c_str(), item_ptr->port, item_ptr->hash64, res, tcp_conn.get());
+                    // TRANSPORT_DEBUG("send to tcp connection success[%s][%d][hash64: %llu] res: %d, tcp_conn: %lu",
+                    //     item_ptr->des_ip.c_str(), item_ptr->port, item_ptr->hash64, res, tcp_conn.get());
                     break;
                 }
 
-                if (item_ptr->msg.size() > 100000) {
-                    ZJC_DEBUG("send message %s:%u, hash64: %lu, size: %u",
-                        item_ptr->des_ip.c_str(), item_ptr->port, item_ptr->hash64, item_ptr->msg.size());
-                }
+                // if (item_ptr->msg.size() > 100000) {
+                //     ZJC_DEBUG("send message %s:%u, hash64: %lu, size: %u",
+                //         item_ptr->des_ip.c_str(), item_ptr->port, item_ptr->hash64, item_ptr->msg.size());
+                // }
             }
         }
 

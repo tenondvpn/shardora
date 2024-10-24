@@ -1965,7 +1965,7 @@ public:
             ZJC_FATAL("write db failed!");
         }
         
-        ZJC_DEBUG("success SaveLatestPoolStatisticTag network: %u, message: %s",
+        ZJC_INFO("success SaveLatestPoolStatisticTag network: %u, message: %s",
             network_id, ProtobufToJson(statistic_info).c_str());
     }
 
@@ -1978,7 +1978,7 @@ public:
         key.append(kLatestPoolStatisticTagPrefix);
         key.append((char*)&network_id, sizeof(network_id));
         db_batch.Put(key, statistic_info.SerializeAsString());
-        ZJC_DEBUG("success SaveLatestPoolStatisticTag network: %u, message: %s",
+        ZJC_INFO("success SaveLatestPoolStatisticTag network: %u, message: %s",
             network_id, ProtobufToJson(statistic_info).c_str());
     }
 
@@ -1999,7 +1999,7 @@ public:
             return false;
         }
 
-        ZJC_DEBUG("success GetLatestPoolStatisticTag network: %u, message: %s",
+        ZJC_INFO("success GetLatestPoolStatisticTag network: %u, message: %s",
             network_id, ProtobufToJson(*statistic_info).c_str());
         return true;
     }

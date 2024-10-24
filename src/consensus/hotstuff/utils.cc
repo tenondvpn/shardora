@@ -29,21 +29,21 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
         message.append(tx_info.storages(i).key());
         message.append(tx_info.storages(i).value());
-        ZJC_DEBUG("add tx key: %s, %s",
-            tx_info.storages(i).key().c_str(),
-            common::Encode::HexEncode(tx_info.storages(i).key()).c_str());
+        // ZJC_DEBUG("add tx key: %s, %s",
+        //     tx_info.storages(i).key().c_str(),
+        //     common::Encode::HexEncode(tx_info.storages(i).key()).c_str());
     }
 
-    ZJC_DEBUG("gid: %s, from: %s, to: %s, amount: %lu, gas_limit: %lu, "
-        "gas_price: %lu, step: %u, gas_used: %lu, status: %lu, block tx hash: %s, message: %s",
-        common::Encode::HexEncode(tx_info.gid()).c_str(),
-        common::Encode::HexEncode(tx_info.from()).c_str(),
-        common::Encode::HexEncode(tx_info.to()).c_str(),
-        amount, gas_limit, gas_price, step,
-        gas_used,
-        status,
-        common::Encode::HexEncode(common::Hash::keccak256(message)).c_str(),
-        common::Encode::HexEncode(message).c_str());
+    // ZJC_DEBUG("gid: %s, from: %s, to: %s, amount: %lu, gas_limit: %lu, "
+    //     "gas_price: %lu, step: %u, gas_used: %lu, status: %lu, block tx hash: %s, message: %s",
+    //     common::Encode::HexEncode(tx_info.gid()).c_str(),
+    //     common::Encode::HexEncode(tx_info.from()).c_str(),
+    //     common::Encode::HexEncode(tx_info.to()).c_str(),
+    //     amount, gas_limit, gas_price, step,
+    //     gas_used,
+    //     status,
+    //     common::Encode::HexEncode(common::Hash::keccak256(message)).c_str(),
+    //     common::Encode::HexEncode(message).c_str());
 
     return common::Hash::keccak256(message);
 }
@@ -56,14 +56,14 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
         msg.append(GetTxMessageHash(block.tx_list(i)));
     }
 
-    ZJC_DEBUG("get block hash txs message: %s, vss_random: %lu, height: %lu, "
-        "tm height: %lu, tm: %lu, invalid hash size: %u",
-        common::Encode::HexEncode(msg).c_str(), 
-        block.consistency_random(), 
-        block.height(), 
-        block.timeblock_height(), 
-        block.timestamp(), 
-        block.change_leader_invalid_hashs_size());
+    // ZJC_DEBUG("get block hash txs message: %s, vss_random: %lu, height: %lu, "
+    //     "tm height: %lu, tm: %lu, invalid hash size: %u",
+    //     common::Encode::HexEncode(msg).c_str(), 
+    //     block.consistency_random(), 
+    //     block.height(), 
+    //     block.timeblock_height(), 
+    //     block.timestamp(), 
+    //     block.change_leader_invalid_hashs_size());
     uint32_t sharding_id = view_block.qc().network_id();
     msg.append((char*)&sharding_id, sizeof(sharding_id));
     uint32_t pool_index = view_block.qc().pool_index();
