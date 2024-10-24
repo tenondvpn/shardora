@@ -15,6 +15,7 @@
 #include "common/limit_heap.h"
 #include "common/node_members.h"
 #include "common/utils.h"
+#include "protos/elect.pb.h"
 
 #define BLS_DEBUG(fmt, ...) ZJC_DEBUG("[bls]" fmt, ## __VA_ARGS__)
 #define BLS_INFO(fmt, ...) ZJC_INFO("[bls]" fmt, ## __VA_ARGS__)
