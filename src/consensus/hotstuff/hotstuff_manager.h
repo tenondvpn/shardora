@@ -1,11 +1,16 @@
 #pragma once
-#include "consensus/consensus.h"
-#include "elect_info.h"
-#include "crypto.h"
-#include "pacemaker.h"
-#include "block_acceptor.h"
-#include "block_wrapper.h"
+#include <unordered_map>
 
+#include "block/account_manager.h"
+#include "block/block_manager.h"
+#include "bls/agg_bls.h"
+#include "bls/bls_manager.h"
+#include "consensus/consensus.h"
+#include "consensus/hotstuff/elect_info.h"
+#include "consensus/hotstuff/crypto.h"
+#include "consensus/hotstuff/pacemaker.h"
+#include "consensus/hotstuff/block_acceptor.h"
+#include "consensus/hotstuff/block_wrapper.h"
 #include <consensus/hotstuff/hotstuff.h>
 #include <consensus/hotstuff/leader_rotation.h>
 #include <consensus/hotstuff/types.h>
@@ -27,11 +32,6 @@
 #include <consensus/zbft/time_block_tx.h>
 #include <consensus/zbft/to_tx_item.h>
 #include <consensus/zbft/to_tx_local_item.h>
-#include <protos/view_block.pb.h>
-#include <unordered_map>
-#include "block/account_manager.h"
-#include "block/block_manager.h"
-#include "bls/bls_manager.h"
 #include "common/utils.h"
 #include "common/tick.h"
 #include "common/limit_hash_map.h"
@@ -42,6 +42,7 @@
 #include "protos/elect.pb.h"
 #include "protos/prefix_db.h"
 #include "protos/transport.pb.h"
+#include <protos/view_block.pb.h>
 #include "security/security.h"
 #include "timeblock/time_block_manager.h"
 #include "transport/transport_utils.h"
@@ -225,6 +226,12 @@ private:
     }
 
     pools::TxItemPtr CreateJoinElectTx(const transport::MessagePtr& msg_ptr) {
+        auto agg_bls = bls::AggBls();
+        auto keypair = agg_bls.GetKeyPair(security_ptr_, prefix_db_);
+        if (keypair == nullptr || !keypair->IsValid()) {
+            return nullptr;
+        }
+
         return std::make_shared<JoinElectTxItem>(
                 msg_ptr->header.tx_proto(), 
                 account_mgr_, 
@@ -232,7 +239,8 @@ private:
                 prefix_db_, 
                 elect_mgr_, 
                 msg_ptr->address_info,
-                msg_ptr->header.tx_proto().pubkey());
+                msg_ptr->header.tx_proto().pubkey(),
+                keypair->pk());
     }
 
     pools::TxItemPtr CreateCrossTx(const transport::MessagePtr& msg_ptr) {

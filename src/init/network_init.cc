@@ -1003,6 +1003,8 @@ void NetworkInit::GetNetworkNodesFromConf(const YAML::Node& genesis_config,
             if (genesis_config["root"]) {
             auto root_config = genesis_config["root"];
             if (root_config["sks"]) {
+                uint32_t n = root_config["sk"].size();
+                uint32_t t = common::GetSignerCount(n);
                 for (uint32_t i = 0; i < root_config["sks"].size(); i++) {
                     std::string sk = root_config["sks"][i].as<std::string>();
                     auto node_ptr = std::make_shared<GenisisNodeInfo>();
@@ -1011,6 +1013,7 @@ void NetworkInit::GetNetworkNodesFromConf(const YAML::Node& genesis_config,
                     secptr->SetPrivateKey(node_ptr->prikey);
                     node_ptr->pubkey = secptr->GetPublicKey();
                     node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
+                    node_ptr->agg_bls_pk = bls::AggBls().GenerateKeyPair(t, n, secptr, prefix_db_)->pk();
                     root_genesis_nodes.push_back(node_ptr);                    
                 }
             }
@@ -1025,7 +1028,8 @@ void NetworkInit::GetNetworkNodesFromConf(const YAML::Node& genesis_config,
                 auto shard_config = genesis_config["shards"][net_i];
                 std::vector<GenisisNodeInfoPtr> cons_genesis_nodes;
                 uint32_t net_id = shard_config["net_id"].as<uint32_t>();
-                
+                uint32_t n = shard_config["sks"].size();
+                uint32_t t = common::GetSignerCount(n);
                 for (uint32_t i = 0; i < shard_config["sks"].size(); i++) {        
                     std::string sk = shard_config["sks"][i].as<std::string>();
                     auto node_ptr = std::make_shared<GenisisNodeInfo>();
@@ -1034,6 +1038,7 @@ void NetworkInit::GetNetworkNodesFromConf(const YAML::Node& genesis_config,
                     secptr->SetPrivateKey(node_ptr->prikey);
                     node_ptr->pubkey = secptr->GetPublicKey();
                     node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
+                    node_ptr->agg_bls_pk = bls::AggBls().GenerateKeyPair(t, n, secptr, prefix_db_)->pk();
                     cons_genesis_nodes.push_back(node_ptr);        
                 }
                 

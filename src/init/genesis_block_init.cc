@@ -643,6 +643,12 @@ int GenesisBlockInit::CreateElectBlock(
     for (auto iter = genesis_nodes.begin(); iter != genesis_nodes.end(); ++iter, ++node_idx) {
         auto in = ec_block.add_in();
         in->set_pubkey((*iter)->pubkey);
+                // xufeisofly
+        auto agg_bls_pk_proto = bls::BlsPublicKey2Proto((*iter)->agg_bls_pk);
+        if (agg_bls_pk_proto) {
+            in->mutable_agg_bls_pk()->CopyFrom(*agg_bls_pk_proto);
+        }
+
         in->set_pool_idx_mod_num(node_idx < expect_leader_count ? node_idx : -1);
     }
 

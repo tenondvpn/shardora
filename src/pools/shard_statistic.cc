@@ -916,6 +916,12 @@ void ShardStatistic::addPrepareMembers2JoinStastics(
             join_elect_node->set_consensus_gap(0);
             join_elect_node->set_credit(0);
             join_elect_node->set_pubkey((*prepare_members)[i]->pubkey);
+            // agg bls pk
+            auto agg_bls_pk_proto = bls::BlsPublicKey2Proto((*prepare_members)[i]->agg_bls_pk);
+            if (agg_bls_pk_proto) {
+                join_elect_node->mutable_agg_bls_pk()->CopyFrom(*agg_bls_pk_proto);
+            }
+
             join_elect_node->set_elect_pos(0);
             join_elect_node->set_stoke(stoke);
             join_elect_node->set_shard(shard);
@@ -992,6 +998,7 @@ void ShardStatistic::addNewNode2JoinStatics(
 
     for (uint32_t i = 0; i < elect_nodes.size() && i < kWaitingElectNodesMaxCount; ++i) {
         std::string pubkey = elect_nodes[i];
+        elect::protobuf::BlsPublicKey* agg_bls_pk;
         if (pubkey.size() == security::kUnicastAddressLength) {
             auto iter = id_pk_map.find(pubkey);
             if (iter == id_pk_map.end()) {
@@ -1000,6 +1007,7 @@ void ShardStatistic::addNewNode2JoinStatics(
             }
 
             pubkey = iter->second;
+            agg_bls_pk = iter2->second;
         }
 
         auto shard_iter = r_siter->second.find(elect_nodes[i]);
@@ -1010,6 +1018,7 @@ void ShardStatistic::addNewNode2JoinStatics(
         join_elect_node->set_consensus_gap(0);
         join_elect_node->set_credit(0);
         join_elect_node->set_pubkey(pubkey);
+        join_elect_node->mutable_agg_bls_pk()->CopyFrom(*agg_bls_pk);
         join_elect_node->set_stoke(stoke);
         join_elect_node->set_shard(shard_id);
         join_elect_node->set_elect_pos(0);

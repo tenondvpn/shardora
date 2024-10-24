@@ -1,6 +1,8 @@
+#include "consensus/hotstuff/block_acceptor.h"
+
+#include "bls/agg_bls.h"
 #include <common/utils.h>
 #include <consensus/consensus_utils.h>
-#include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/block_executor.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
@@ -374,14 +376,23 @@ Status BlockAcceptor::addTxsToPool(
         }
         case pools::protobuf::kJoinElect:
         {
+            auto agg_bls = bls::AggBls();
+            auto keypair = agg_bls.GetKeyPair(security_ptr_, prefix_db_);
+            if (keypair == nullptr || !keypair->IsValid()) {
+                auto elect_item = elect_info_->GetElectItemWithShardingId(
+                    common::GlobalInfo::Instance()->network_id());
+                keypair = agg_bls.GenerateKeyPair(elect_item->t(), elect_item->n(), security_ptr_, prefix_db_);
+            }
+
             tx_ptr = std::make_shared<consensus::JoinElectTxItem>(
-            *tx, 
-            account_mgr_, 
-            security_ptr_, 
-            prefix_db_, 
-            elect_mgr_, 
-            address_info,
-            (*tx).pubkey());
+                *tx, 
+                account_mgr_, 
+                security_ptr_, 
+                prefix_db_, 
+                elect_mgr_, 
+                address_info,
+                (*tx).pubkey(),
+                keypair->pk());
             ZJC_DEBUG("add tx now get join elect tx: %u", pool_idx());
             break;
         }
