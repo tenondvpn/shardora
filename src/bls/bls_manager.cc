@@ -98,7 +98,7 @@ void BlsManager::OnNewElectBlock(
             in[i].pubkey(),
             i,
             in[i].pool_idx_mod_num(),
-            agg_bls_pk));
+            *agg_bls_pk));
     }
 
     elect_item->members = members;
