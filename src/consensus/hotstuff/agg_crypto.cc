@@ -40,8 +40,7 @@ Status AggCrypto::VerifyAndAggregateSig(
 
     // old vote
     if (bls_collection_ && bls_collection_->view > view) {
-        ZJC_DEBUG("bls_collection_ && bls_collection_->view > view: %lu, %lu, "
-            "index: %u, pool_idx_: %d", 
+        ZJC_DEBUG("bls_collection_ && bls_collection_->view > view: %lu, %lu, index: %u, pool_idx_: %d", 
             bls_collection_->view, view, index, pool_idx_);
         return Status::kInvalidArgument;
     }
@@ -49,8 +48,7 @@ Status AggCrypto::VerifyAndAggregateSig(
     if (!bls_collection_ || bls_collection_->view < view) {
         bls_collection_ = std::make_shared<BlsCollection>();
         bls_collection_->view = view; 
-        ZJC_DEBUG("set bls_collection_ && bls_collection_->view > view: %lu, %lu, "
-            "index: %u, pool_idx_: %d", 
+        ZJC_DEBUG("set bls_collection_ && bls_collection_->view > view: %lu, %lu, index: %u, pool_idx_: %d", 
             bls_collection_->view, view, index, pool_idx_);
     }
 
@@ -104,19 +102,19 @@ Status AggCrypto::VerifyAndAggregateSig(
 }
 
 Status AggCrypto::VerifyQC(uint32_t sharding_id, const std::shared_ptr<QC>& qc) {
-    if (!qc || !qc->agg_bls_agg_sign()) {
-        return Status::kError;
-    }
+    // if (!qc || !qc->agg_bls_agg_sign()) {
+    //     return Status::kError;
+    // }
 
-    return Verify(*qc->agg_bls_agg_sign(), qc->msg_hash(), sharding_id, qc->elect_height());
+    // return Verify(*qc->agg_bls_agg_sign(), qc->msg_hash(), sharding_id, qc->elect_height());
 }
 
 Status AggCrypto::VerifyTC(uint32_t sharding_id, const std::shared_ptr<TC>& tc) {
-    if (!tc || !tc->agg_bls_agg_sign()) {
-        return Status::kError;
-    }
+    // if (!tc || !tc->agg_bls_agg_sign()) {
+    //     return Status::kError;
+    // }
 
-    return Verify(*tc->agg_bls_agg_sign(), tc->msg_hash(), sharding_id, tc->elect_height());
+    // return Verify(*tc->agg_bls_agg_sign(), tc->msg_hash(), sharding_id, tc->elect_height());
 }
 
 std::shared_ptr<AggregateQC> AggCrypto::CreateAggregateQC(
@@ -154,35 +152,35 @@ Status AggCrypto::SignMessage(transport::MessagePtr& msg_ptr) {
 }
 
 Status AggCrypto::VerifyMessage(const transport::MessagePtr& msg_ptr) {
-    if (!msg_ptr->header.has_sign()) {
-        return Status::kError;
-    }
+    // if (!msg_ptr->header.has_sign()) {
+    //     return Status::kError;
+    // }
 
-    auto elect_item = elect_info_->GetElectItemWithShardingId(common::GlobalInfo::Instance()->network_id());
-    if (!elect_item) {
-        return Status::kError;
-    }
+    // auto elect_item = elect_info_->GetElectItemWithShardingId(common::GlobalInfo::Instance()->network_id());
+    // if (!elect_item) {
+    //     return Status::kError;
+    // }
 
-    if (!msg_ptr->header.has_hotstuff() ||
-        !msg_ptr->header.hotstuff().has_pro_msg() ||
-        !msg_ptr->header.hotstuff().pro_msg().has_view_item()) {
-        return Status::kInvalidArgument;
-    }
-    auto mem_ptr = elect_item->GetMemberByIdx(msg_ptr->header.hotstuff().pro_msg().view_item().leader_idx());
-    if (mem_ptr->bls_publick_key == libff::alt_bn128_G2::zero()) {
-        ZJC_DEBUG("verify sign failed, backup invalid bls pk: %s",
-            common::Encode::HexEncode(mem_ptr->id).c_str());
-        return Status::kError;
-    }
+    // if (!msg_ptr->header.has_hotstuff() ||
+    //     !msg_ptr->header.hotstuff().has_pro_msg() ||
+    //     !msg_ptr->header.hotstuff().pro_msg().has_view_item()) {
+    //     return Status::kInvalidArgument;
+    // }
+    // auto mem_ptr = elect_item->GetMemberByIdx(msg_ptr->header.hotstuff().pro_msg().view_item().leader_idx());
+    // if (mem_ptr->bls_publick_key == libff::alt_bn128_G2::zero()) {
+    //     ZJC_DEBUG("verify sign failed, backup invalid bls pk: %s",
+    //         common::Encode::HexEncode(mem_ptr->id).c_str());
+    //     return Status::kError;
+    // }
 
-    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
-    if (security() && security()->Verify(
-            msg_hash,
-            mem_ptr->pubkey,
-            msg_ptr->header.sign()) != security::kSecuritySuccess) {
-        ZJC_DEBUG("verify leader sign failed: %s", common::Encode::HexEncode(mem_ptr->id).c_str());
-        return Status::kError;
-    }
+    // auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
+    // if (security() && security()->Verify(
+    //         msg_hash,
+    //         mem_ptr->pubkey,
+    //         msg_ptr->header.sign()) != security::kSecuritySuccess) {
+    //     ZJC_DEBUG("verify leader sign failed: %s", common::Encode::HexEncode(mem_ptr->id).c_str());
+    //     return Status::kError;
+    // }
 
     return Status::kSuccess;
 }
