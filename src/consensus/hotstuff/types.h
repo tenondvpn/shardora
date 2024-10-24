@@ -67,6 +67,8 @@ struct AggregateSignature {
     libff::alt_bn128_G1 sig_;
     std::unordered_set<uint32_t> participants_; // member indexes who submit signatures
 
+    AggregateSignature() : sig_(libff::alt_bn128_G1::zero()) {}
+    
     AggregateSignature(
             const libff::alt_bn128_G1& sig,
             const std::unordered_set<uint32_t>& parts) : sig_(sig), participants_(parts) {}
