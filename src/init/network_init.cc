@@ -1086,9 +1086,9 @@ void NetworkInit::AddBlockItemToCache(
     // one block must be one consensus pool
     const auto& tx_list = block->tx_list();
     for (int32_t i = 0; i < tx_list.size(); ++i) {
-        if (tx_list[i].status() != consensus::kConsensusSuccess) {
-            continue;
-        }
+        // if (tx_list[i].status() != consensus::kConsensusSuccess) {
+        //     continue;
+        // }
 
         switch (tx_list[i].step()) {
         case pools::protobuf::kNormalFrom:
