@@ -26,6 +26,7 @@ using SyncPoolFn = std::function<void(const uint32_t &, const int32_t&)>;
 using NewViewFn = std::function<void(
     const std::shared_ptr<tnet::TcpInterface> conn, 
     std::shared_ptr<view_block::protobuf::QcItem> tc)>;
+using GetHighQCFn = std::function<QC()>;
 
 class Pacemaker {
 public:
@@ -37,7 +38,8 @@ public:
             const std::shared_ptr<Crypto>& crypto,
 #endif
             std::shared_ptr<LeaderRotation>& leader_rotation,
-            const std::shared_ptr<ViewDuration>& duration);
+            const std::shared_ptr<ViewDuration>& duration,
+            GetHighQCFn get_high_qc_fn);
     ~Pacemaker();
 
     Pacemaker(const Pacemaker&) = delete;
@@ -124,6 +126,7 @@ private:
 
     uint32_t pool_idx_;
     std::shared_ptr<TC> high_tc_ = nullptr;
+    GetHighQCFn get_high_qc_fn_ = nullptr;
     View cur_view_ = 0llu;
 
 #ifdef USE_AGG_BLS

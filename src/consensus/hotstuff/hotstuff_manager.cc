@@ -79,7 +79,8 @@ int HotstuffManager::Init(
                         ViewDurationSampleSize,
                         ViewDurationStartTimeoutMs,
                         ViewDurationMaxTimeoutMs,
-                        ViewDurationMultiplier));
+                        ViewDurationMultiplier),
+                std::bind(&ViewBlockChain::HighQC, chain));
         auto acceptor = std::make_shared<BlockAcceptor>(
                 pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
                 contract_mgr, db, gas_prepayment, pool_mgr, block_mgr,

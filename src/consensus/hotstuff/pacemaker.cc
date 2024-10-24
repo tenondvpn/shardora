@@ -24,8 +24,9 @@ Pacemaker::Pacemaker(
         const std::shared_ptr<Crypto>& c,
 #endif
         std::shared_ptr<LeaderRotation>& lr,
-        const std::shared_ptr<ViewDuration>& d) :
-    pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d) {
+        const std::shared_ptr<ViewDuration>& d,
+        GetHighQCFn get_high_qc_fn) :
+    pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d), get_high_qc_fn_(get_high_qc_fn) {
     high_tc_ = std::make_shared<QC>();
     auto& qc_item = *high_tc_;
     qc_item.set_network_id(common::GlobalInfo::Instance()->network_id());

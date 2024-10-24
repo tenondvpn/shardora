@@ -309,6 +309,10 @@ public:
         return high_view_block_;
     }
 
+    inline QC HighQC() const {
+        return high_view_block_->qc();
+    }
+
     void UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item) {
         auto view_block_ptr = Get(qc_item.view_block_hash());
         if (!view_block_ptr) {
