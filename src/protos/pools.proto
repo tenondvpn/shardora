@@ -1,6 +1,7 @@
 syntax = "proto2";
 
 import "protos/bls.proto";
+import "protos/elect.proto";
 package shardora.pools.protobuf;
 
 enum StepType {
