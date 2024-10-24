@@ -221,12 +221,12 @@ int ContractCall::HandleTx(
         } while (0);
     }
 
-    // if (block_tx.status() == kConsensusSuccess) {
-        from_balance = tmp_from_balance;
+    from_balance = tmp_from_balance;
+    if (block_tx.status() == kConsensusSuccess) {
         if (acc_balance_map[block_tx.to()] != -1) {
             acc_balance_map[block_tx.to()] = block_tx.amount();
         }
-    // }
+    }
 
     if (block_tx.contract_input().size() < protos::kContractBytesStartCode.size()) {
         if (from_balance > 0) {
