@@ -262,7 +262,8 @@ int Execution::execute(
     }
 
     *out_res = evm_.execute(host, rev, msg, exec_code_data, exec_code_size);
-    ZJC_DEBUG("execute res: %d", out_res->status_code);
+    ZJC_DEBUG("execute res: %d, gas_limit: %lu gas_left: %lu, gas_refund: %lu",
+        out_res->status_code, gas, out_res->gas_left, out_res->gas_refund);
     return kZjcvmSuccess;
 }
 
