@@ -1,5 +1,4 @@
 #pragma once
-#include <common/flow_control.h>
 #ifdef USE_AGG_BLS
 #include <consensus/hotstuff/agg_crypto.h>
 #else
