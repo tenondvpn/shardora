@@ -12,7 +12,7 @@ namespace hotstuff {
 
 class AggCrypto {
 public:
-    struct BlsCollectionItem {
+    struct AggBlsCollectionItem {
         HashStr msg_hash;
         common::Bitmap ok_bitmap{ common::kEachShardMaxNodeCount };
         AggregateSignature partial_sigs[common::kEachShardMaxNodeCount];
@@ -25,14 +25,14 @@ public:
 
     struct BlsCollection {
         View view;
-        std::unordered_map<HashStr, std::shared_ptr<BlsCollectionItem>> msg_collection_map;
+        std::unordered_map<HashStr, std::shared_ptr<AggBlsCollectionItem>> msg_collection_map;
         bool handled;
 
-        std::shared_ptr<BlsCollectionItem> GetItem(const HashStr& msg_hash) {
-            std::shared_ptr<BlsCollectionItem> collection_item = nullptr;
+        std::shared_ptr<AggBlsCollectionItem> GetItem(const HashStr& msg_hash) {
+            std::shared_ptr<AggBlsCollectionItem> collection_item = nullptr;
             auto it = msg_collection_map.find(msg_hash);
             if (it == msg_collection_map.end()) {
-                collection_item = std::make_shared<BlsCollectionItem>();
+                collection_item = std::make_shared<AggBlsCollectionItem>();
                 collection_item->msg_hash = msg_hash;
                 msg_collection_map[msg_hash] = collection_item; 
             } else {
