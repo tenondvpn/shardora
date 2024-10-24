@@ -85,6 +85,6 @@ message TimeoutMessage {
     optional uint32 leader_idx = 8;
     // fast hotstuff
     optional bytes view_sig_str = 9;
-    optional bytes high_qc_str = 10;
-    optional bytes high_qc_sig_str = 11;
+    optional QcItem high_qc = 10;
+    optional AggregateSig high_qc_sig = 11;
 }

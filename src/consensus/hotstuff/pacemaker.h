@@ -79,6 +79,10 @@ public:
         return cur_view_;
     }
 
+    inline QC HighQC() const {
+        return get_high_qc_fn_();
+    }
+
     // 重置超时实例
     void ResetViewDuration(const std::shared_ptr<ViewDuration>& dur) {
         duration_ = dur;

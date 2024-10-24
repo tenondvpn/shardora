@@ -94,16 +94,7 @@ struct AggregateSignature {
     }
 
     std::string Serialize() const {
-        auto agg_sig_proto = view_block::protobuf::AggregateSig();
-
-        agg_sig_proto.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(sig_.X));
-        agg_sig_proto.set_sign_y(libBLS::ThresholdUtils::fieldElementToString(sig_.Y));
-        agg_sig_proto.set_sign_z(libBLS::ThresholdUtils::fieldElementToString(sig_.Z));
-
-        for (auto par : participants_) {
-            agg_sig_proto.add_participants(par);
-        }
-        
+        auto agg_sig_proto = DumpToProto();        
         return agg_sig_proto.SerializeAsString();
     }
     
@@ -114,6 +105,10 @@ struct AggregateSignature {
             return false;
         }
 
+        return LoadFromProto(agg_sig_proto);
+    }
+
+    bool LoadFromProto(const view_block::protobuf::AggregateSig& agg_sig_proto) {
         sig_ = libff::alt_bn128_G1::zero();
         try {
             if (agg_sig_proto.sign_x() != "") {
@@ -132,7 +127,21 @@ struct AggregateSignature {
         for (auto par : agg_sig_proto.participants()) {
             participants_.insert(par);
         }
-        return true;
+        return true;        
+    }
+
+    view_block::protobuf::AggregateSig DumpToProto() const {
+        auto agg_sig_proto = view_block::protobuf::AggregateSig();
+
+        agg_sig_proto.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(sig_.X));
+        agg_sig_proto.set_sign_y(libBLS::ThresholdUtils::fieldElementToString(sig_.Y));
+        agg_sig_proto.set_sign_z(libBLS::ThresholdUtils::fieldElementToString(sig_.Z));
+
+        for (auto par : participants_) {
+            agg_sig_proto.add_participants(par);
+        }
+        
+        return agg_sig_proto;        
     }
 };
 
