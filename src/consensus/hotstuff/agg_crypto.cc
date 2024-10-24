@@ -40,16 +40,12 @@ Status AggCrypto::VerifyAndAggregateSig(
 
     // old vote
     if (bls_collection_ && bls_collection_->view > view) {
-        ZJC_DEBUG("bls_collection_ && bls_collection_->view > view: %lu, %lu, index: %u, pool_idx_: %d", 
-            bls_collection_->view, view, index, pool_idx_);
         return Status::kInvalidArgument;
     }
         
     if (!bls_collection_ || bls_collection_->view < view) {
         bls_collection_ = std::make_shared<BlsCollection>();
-        bls_collection_->view = view; 
-        ZJC_DEBUG("set bls_collection_ && bls_collection_->view > view: %lu, %lu, index: %u, pool_idx_: %d", 
-            bls_collection_->view, view, index, pool_idx_);
+        bls_collection_->view = view;
     }
 
     if (bls_collection_->handled) {
