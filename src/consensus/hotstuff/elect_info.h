@@ -27,7 +27,7 @@ public:
             uint32_t sharding_id,
             uint64_t elect_height,
             const common::MembersPtr& members,
-            const libff::alt_bn128_G2& common_pk,
+            const libff::alt_bn128_G2& common_pk, // useless for aggbls
             const libff::alt_bn128_Fr& sk) :
         members_(members), local_member_(nullptr), elect_height_(0), security_ptr_(security) {
         for (uint32_t i = 0; i < members->size(); i++) {

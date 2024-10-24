@@ -48,6 +48,11 @@ class MemberConsensusStatDefaultTypeInternal {
   ::google::protobuf::internal::ExplicitlyConstructed<MemberConsensusStat>
       _instance;
 } _MemberConsensusStat_default_instance_;
+class AggregateSigDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<AggregateSig>
+      _instance;
+} _AggregateSig_default_instance_;
 class ViewBlockSyncRequestDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<ViewBlockSyncRequest>
@@ -121,6 +126,20 @@ static void InitDefaultsMemberConsensusStat() {
 
 ::google::protobuf::internal::SCCInfo<0> scc_info_MemberConsensusStat =
     {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsMemberConsensusStat}, {}};
+
+static void InitDefaultsAggregateSig() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::shardora::view_block::protobuf::_AggregateSig_default_instance_;
+    new (ptr) ::shardora::view_block::protobuf::AggregateSig();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::shardora::view_block::protobuf::AggregateSig::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<0> scc_info_AggregateSig =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsAggregateSig}, {}};
 
 static void InitDefaultsViewBlockSyncRequest() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -202,6 +221,7 @@ void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_QcItem.base);
   ::google::protobuf::internal::InitSCC(&scc_info_ViewBlockItem.base);
   ::google::protobuf::internal::InitSCC(&scc_info_MemberConsensusStat.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_AggregateSig.base);
   ::google::protobuf::internal::InitSCC(&scc_info_ViewBlockSyncRequest.base);
   ::google::protobuf::internal::InitSCC(&scc_info_ViewBlockSyncResponse.base);
   ::google::protobuf::internal::InitSCC(&scc_info_SingleViewBlockSyncRequest.base);
@@ -209,7 +229,7 @@ void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_TimeoutMessage.base);
 }
 
-::google::protobuf::Metadata file_level_metadata[8];
+::google::protobuf::Metadata file_level_metadata[9];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::QcItem, _has_bits_),
@@ -259,6 +279,19 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::MemberConsensusStat, fail_num_),
   0,
   1,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::AggregateSig, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::AggregateSig, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::AggregateSig, sign_x_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::AggregateSig, sign_y_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::AggregateSig, sign_z_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::AggregateSig, participants_),
+  0,
+  1,
+  2,
+  ~0u,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockSyncRequest, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::ViewBlockSyncRequest, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -340,30 +373,38 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, elect_height_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, pool_idx_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, leader_idx_),
-  4,
-  3,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, view_sig_str_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, high_qc_str_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::view_block::protobuf::TimeoutMessage, high_qc_sig_str_),
+  7,
+  6,
   0,
   1,
   2,
-  6,
+  9,
+  8,
+  10,
+  3,
+  4,
   5,
-  7,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 14, sizeof(::shardora::view_block::protobuf::QcItem)},
   { 23, 33, sizeof(::shardora::view_block::protobuf::ViewBlockItem)},
   { 38, 45, sizeof(::shardora::view_block::protobuf::MemberConsensusStat)},
-  { 47, 60, sizeof(::shardora::view_block::protobuf::ViewBlockSyncRequest)},
-  { 68, 80, sizeof(::shardora::view_block::protobuf::ViewBlockSyncResponse)},
-  { 87, 95, sizeof(::shardora::view_block::protobuf::SingleViewBlockSyncRequest)},
-  { 98, 109, sizeof(::shardora::view_block::protobuf::ViewBlockSyncMessage)},
-  { 115, 128, sizeof(::shardora::view_block::protobuf::TimeoutMessage)},
+  { 47, 56, sizeof(::shardora::view_block::protobuf::AggregateSig)},
+  { 60, 73, sizeof(::shardora::view_block::protobuf::ViewBlockSyncRequest)},
+  { 81, 93, sizeof(::shardora::view_block::protobuf::ViewBlockSyncResponse)},
+  { 100, 108, sizeof(::shardora::view_block::protobuf::SingleViewBlockSyncRequest)},
+  { 111, 122, sizeof(::shardora::view_block::protobuf::ViewBlockSyncMessage)},
+  { 128, 144, sizeof(::shardora::view_block::protobuf::TimeoutMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::view_block::protobuf::_QcItem_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::view_block::protobuf::_ViewBlockItem_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::view_block::protobuf::_MemberConsensusStat_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::view_block::protobuf::_AggregateSig_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::view_block::protobuf::_ViewBlockSyncRequest_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::view_block::protobuf::_ViewBlockSyncResponse_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::view_block::protobuf::_SingleViewBlockSyncRequest_default_instance_),
@@ -386,7 +427,7 @@ void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 8);
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 9);
 }
 
 void AddDescriptorsImpl() {
@@ -405,40 +446,43 @@ void AddDescriptorsImpl() {
       "leader_consen_stat\030\004 \001(\01321.shardora.view"
       "_block.protobuf.MemberConsensusStat\022\r\n\005d"
       "ebug\030\005 \001(\014\"9\n\023MemberConsensusStat\022\020\n\010suc"
-      "c_num\030\001 \001(\r\022\020\n\010fail_num\030\002 \001(\r\"\374\001\n\024ViewBl"
-      "ockSyncRequest\022\022\n\nnetwork_id\030\001 \001(\r\022\020\n\010po"
-      "ol_idx\030\002 \001(\r\022\031\n\021view_block_hashes\030\003 \003(\014\022"
-      "\024\n\014high_qc_view\030\004 \001(\004\022\024\n\014high_tc_view\030\005 "
-      "\001(\004\022\020\n\010max_view\030\006 \001(\004\022#\n\033latest_committe"
-      "d_block_hash\030\007 \001(\014\022@\n\013view_blocks\030\010 \003(\0132"
-      "+.shardora.view_block.protobuf.ViewBlock"
-      "Item\"\342\002\n\025ViewBlockSyncResponse\022\022\n\nnetwor"
-      "k_id\030\001 \001(\r\022\020\n\010pool_idx\030\002 \001(\r\022E\n\020view_blo"
-      "ck_items\030\003 \003(\0132+.shardora.view_block.pro"
-      "tobuf.ViewBlockItem\022D\n\017high_view_block\030\004"
-      " \001(\0132+.shardora.view_block.protobuf.View"
-      "BlockItem\0225\n\007high_tc\030\005 \001(\0132$.shardora.vi"
-      "ew_block.protobuf.QcItem\022\022\n\nquery_hash\030\006"
-      " \001(\014\022K\n\026latest_committed_block\030\007 \001(\0132+.s"
-      "hardora.view_block.protobuf.ViewBlockIte"
-      "m\"V\n\032SingleViewBlockSyncRequest\022\022\n\nnetwo"
-      "rk_id\030\001 \001(\r\022\020\n\010pool_idx\030\002 \001(\r\022\022\n\nquery_h"
-      "ash\030\003 \001(\014\"\267\002\n\024ViewBlockSyncMessage\022J\n\016vi"
-      "ew_block_req\030\001 \001(\01322.shardora.view_block"
-      ".protobuf.ViewBlockSyncRequest\022K\n\016view_b"
-      "lock_res\030\002 \001(\01323.shardora.view_block.pro"
-      "tobuf.ViewBlockSyncResponse\022L\n\nsingle_re"
-      "q\030\003 \001(\01328.shardora.view_block.protobuf.S"
-      "ingleViewBlockSyncRequest\022\026\n\016create_time"
-      "_us\030\004 \001(\r\022\016\n\006src_ip\030\005 \001(\014\022\020\n\010src_port\030\006 "
-      "\001(\r\"\240\001\n\016TimeoutMessage\022\021\n\tmember_id\030\001 \001("
-      "\r\022\014\n\004view\030\002 \001(\004\022\016\n\006sign_x\030\003 \001(\014\022\016\n\006sign_"
-      "y\030\004 \001(\014\022\021\n\tview_hash\030\005 \001(\014\022\024\n\014elect_heig"
-      "ht\030\006 \001(\004\022\020\n\010pool_idx\030\007 \001(\r\022\022\n\nleader_idx"
-      "\030\010 \001(\r"
+      "c_num\030\001 \001(\r\022\020\n\010fail_num\030\002 \001(\r\"T\n\014Aggrega"
+      "teSig\022\016\n\006sign_x\030\001 \001(\014\022\016\n\006sign_y\030\002 \001(\014\022\016\n"
+      "\006sign_z\030\003 \001(\014\022\024\n\014participants\030\004 \003(\r\"\374\001\n\024"
+      "ViewBlockSyncRequest\022\022\n\nnetwork_id\030\001 \001(\r"
+      "\022\020\n\010pool_idx\030\002 \001(\r\022\031\n\021view_block_hashes\030"
+      "\003 \003(\014\022\024\n\014high_qc_view\030\004 \001(\004\022\024\n\014high_tc_v"
+      "iew\030\005 \001(\004\022\020\n\010max_view\030\006 \001(\004\022#\n\033latest_co"
+      "mmitted_block_hash\030\007 \001(\014\022@\n\013view_blocks\030"
+      "\010 \003(\0132+.shardora.view_block.protobuf.Vie"
+      "wBlockItem\"\342\002\n\025ViewBlockSyncResponse\022\022\n\n"
+      "network_id\030\001 \001(\r\022\020\n\010pool_idx\030\002 \001(\r\022E\n\020vi"
+      "ew_block_items\030\003 \003(\0132+.shardora.view_blo"
+      "ck.protobuf.ViewBlockItem\022D\n\017high_view_b"
+      "lock\030\004 \001(\0132+.shardora.view_block.protobu"
+      "f.ViewBlockItem\0225\n\007high_tc\030\005 \001(\0132$.shard"
+      "ora.view_block.protobuf.QcItem\022\022\n\nquery_"
+      "hash\030\006 \001(\014\022K\n\026latest_committed_block\030\007 \001"
+      "(\0132+.shardora.view_block.protobuf.ViewBl"
+      "ockItem\"V\n\032SingleViewBlockSyncRequest\022\022\n"
+      "\nnetwork_id\030\001 \001(\r\022\020\n\010pool_idx\030\002 \001(\r\022\022\n\nq"
+      "uery_hash\030\003 \001(\014\"\267\002\n\024ViewBlockSyncMessage"
+      "\022J\n\016view_block_req\030\001 \001(\01322.shardora.view"
+      "_block.protobuf.ViewBlockSyncRequest\022K\n\016"
+      "view_block_res\030\002 \001(\01323.shardora.view_blo"
+      "ck.protobuf.ViewBlockSyncResponse\022L\n\nsin"
+      "gle_req\030\003 \001(\01328.shardora.view_block.prot"
+      "obuf.SingleViewBlockSyncRequest\022\026\n\016creat"
+      "e_time_us\030\004 \001(\r\022\016\n\006src_ip\030\005 \001(\014\022\020\n\010src_p"
+      "ort\030\006 \001(\r\"\344\001\n\016TimeoutMessage\022\021\n\tmember_i"
+      "d\030\001 \001(\r\022\014\n\004view\030\002 \001(\004\022\016\n\006sign_x\030\003 \001(\014\022\016\n"
+      "\006sign_y\030\004 \001(\014\022\021\n\tview_hash\030\005 \001(\014\022\024\n\014elec"
+      "t_height\030\006 \001(\004\022\020\n\010pool_idx\030\007 \001(\r\022\022\n\nlead"
+      "er_idx\030\010 \001(\r\022\024\n\014view_sig_str\030\t \001(\014\022\023\n\013hi"
+      "gh_qc_str\030\n \001(\014\022\027\n\017high_qc_sig_str\030\013 \001(\014"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1726);
+      descriptor, 1880);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/view_block.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fblock_2eproto::AddDescriptors();
@@ -1762,6 +1806,390 @@ void MemberConsensusStat::InternalSwap(MemberConsensusStat* other) {
 }
 
 ::google::protobuf::Metadata MemberConsensusStat::GetMetadata() const {
+  protobuf_protos_2fview_5fblock_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fview_5fblock_2eproto::file_level_metadata[kIndexInFileMessages];
+}
+
+
+// ===================================================================
+
+void AggregateSig::InitAsDefaultInstance() {
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int AggregateSig::kSignXFieldNumber;
+const int AggregateSig::kSignYFieldNumber;
+const int AggregateSig::kSignZFieldNumber;
+const int AggregateSig::kParticipantsFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+AggregateSig::AggregateSig()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2fview_5fblock_2eproto::scc_info_AggregateSig.base);
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:shardora.view_block.protobuf.AggregateSig)
+}
+AggregateSig::AggregateSig(const AggregateSig& from)
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
+      _has_bits_(from._has_bits_),
+      participants_(from.participants_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  sign_x_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_sign_x()) {
+    sign_x_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sign_x_);
+  }
+  sign_y_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_sign_y()) {
+    sign_y_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sign_y_);
+  }
+  sign_z_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_sign_z()) {
+    sign_z_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sign_z_);
+  }
+  // @@protoc_insertion_point(copy_constructor:shardora.view_block.protobuf.AggregateSig)
+}
+
+void AggregateSig::SharedCtor() {
+  sign_x_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  sign_y_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  sign_z_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+
+AggregateSig::~AggregateSig() {
+  // @@protoc_insertion_point(destructor:shardora.view_block.protobuf.AggregateSig)
+  SharedDtor();
+}
+
+void AggregateSig::SharedDtor() {
+  sign_x_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  sign_y_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  sign_z_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+
+void AggregateSig::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ::google::protobuf::Descriptor* AggregateSig::descriptor() {
+  ::protobuf_protos_2fview_5fblock_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fview_5fblock_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const AggregateSig& AggregateSig::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2fview_5fblock_2eproto::scc_info_AggregateSig.base);
+  return *internal_default_instance();
+}
+
+
+void AggregateSig::Clear() {
+// @@protoc_insertion_point(message_clear_start:shardora.view_block.protobuf.AggregateSig)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  participants_.Clear();
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 7u) {
+    if (cached_has_bits & 0x00000001u) {
+      sign_x_.ClearNonDefaultToEmptyNoArena();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      sign_y_.ClearNonDefaultToEmptyNoArena();
+    }
+    if (cached_has_bits & 0x00000004u) {
+      sign_z_.ClearNonDefaultToEmptyNoArena();
+    }
+  }
+  _has_bits_.Clear();
+  _internal_metadata_.Clear();
+}
+
+bool AggregateSig::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:shardora.view_block.protobuf.AggregateSig)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional bytes sign_x = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_sign_x()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bytes sign_y = 2;
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_sign_y()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bytes sign_z = 3;
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_sign_z()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // repeated uint32 participants = 4;
+      case 4: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(32u /* 32 & 0xFF */)) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 1, 32u, input, this->mutable_participants())));
+        } else if (
+            static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(34u /* 34 & 0xFF */)) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, this->mutable_participants())));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:shardora.view_block.protobuf.AggregateSig)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:shardora.view_block.protobuf.AggregateSig)
+  return false;
+#undef DO_
+}
+
+void AggregateSig::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:shardora.view_block.protobuf.AggregateSig)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional bytes sign_x = 1;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      1, this->sign_x(), output);
+  }
+
+  // optional bytes sign_y = 2;
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      2, this->sign_y(), output);
+  }
+
+  // optional bytes sign_z = 3;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      3, this->sign_z(), output);
+  }
+
+  // repeated uint32 participants = 4;
+  for (int i = 0, n = this->participants_size(); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(
+      4, this->participants(i), output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:shardora.view_block.protobuf.AggregateSig)
+}
+
+::google::protobuf::uint8* AggregateSig::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.view_block.protobuf.AggregateSig)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional bytes sign_x = 1;
+  if (cached_has_bits & 0x00000001u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        1, this->sign_x(), target);
+  }
+
+  // optional bytes sign_y = 2;
+  if (cached_has_bits & 0x00000002u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        2, this->sign_y(), target);
+  }
+
+  // optional bytes sign_z = 3;
+  if (cached_has_bits & 0x00000004u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        3, this->sign_z(), target);
+  }
+
+  // repeated uint32 participants = 4;
+  target = ::google::protobuf::internal::WireFormatLite::
+    WriteUInt32ToArray(4, this->participants_, target);
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.view_block.protobuf.AggregateSig)
+  return target;
+}
+
+size_t AggregateSig::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:shardora.view_block.protobuf.AggregateSig)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  // repeated uint32 participants = 4;
+  {
+    size_t data_size = ::google::protobuf::internal::WireFormatLite::
+      UInt32Size(this->participants_);
+    total_size += 1 *
+                  ::google::protobuf::internal::FromIntSize(this->participants_size());
+    total_size += data_size;
+  }
+
+  if (_has_bits_[0 / 32] & 7u) {
+    // optional bytes sign_x = 1;
+    if (has_sign_x()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->sign_x());
+    }
+
+    // optional bytes sign_y = 2;
+    if (has_sign_y()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->sign_y());
+    }
+
+    // optional bytes sign_z = 3;
+    if (has_sign_z()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->sign_z());
+    }
+
+  }
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void AggregateSig::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.view_block.protobuf.AggregateSig)
+  GOOGLE_DCHECK_NE(&from, this);
+  const AggregateSig* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const AggregateSig>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.view_block.protobuf.AggregateSig)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.view_block.protobuf.AggregateSig)
+    MergeFrom(*source);
+  }
+}
+
+void AggregateSig::MergeFrom(const AggregateSig& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.view_block.protobuf.AggregateSig)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  participants_.MergeFrom(from.participants_);
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 7u) {
+    if (cached_has_bits & 0x00000001u) {
+      set_has_sign_x();
+      sign_x_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sign_x_);
+    }
+    if (cached_has_bits & 0x00000002u) {
+      set_has_sign_y();
+      sign_y_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sign_y_);
+    }
+    if (cached_has_bits & 0x00000004u) {
+      set_has_sign_z();
+      sign_z_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sign_z_);
+    }
+  }
+}
+
+void AggregateSig::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.view_block.protobuf.AggregateSig)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void AggregateSig::CopyFrom(const AggregateSig& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.view_block.protobuf.AggregateSig)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool AggregateSig::IsInitialized() const {
+  return true;
+}
+
+void AggregateSig::Swap(AggregateSig* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void AggregateSig::InternalSwap(AggregateSig* other) {
+  using std::swap;
+  participants_.InternalSwap(&other->participants_);
+  sign_x_.Swap(&other->sign_x_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  sign_y_.Swap(&other->sign_y_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  sign_z_.Swap(&other->sign_z_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
+::google::protobuf::Metadata AggregateSig::GetMetadata() const {
   protobuf_protos_2fview_5fblock_2eproto::protobuf_AssignDescriptorsOnce();
   return ::protobuf_protos_2fview_5fblock_2eproto::file_level_metadata[kIndexInFileMessages];
 }
@@ -3621,6 +4049,9 @@ const int TimeoutMessage::kViewHashFieldNumber;
 const int TimeoutMessage::kElectHeightFieldNumber;
 const int TimeoutMessage::kPoolIdxFieldNumber;
 const int TimeoutMessage::kLeaderIdxFieldNumber;
+const int TimeoutMessage::kViewSigStrFieldNumber;
+const int TimeoutMessage::kHighQcStrFieldNumber;
+const int TimeoutMessage::kHighQcSigStrFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 TimeoutMessage::TimeoutMessage()
@@ -3647,6 +4078,18 @@ TimeoutMessage::TimeoutMessage(const TimeoutMessage& from)
   if (from.has_view_hash()) {
     view_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.view_hash_);
   }
+  view_sig_str_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_view_sig_str()) {
+    view_sig_str_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.view_sig_str_);
+  }
+  high_qc_str_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_high_qc_str()) {
+    high_qc_str_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.high_qc_str_);
+  }
+  high_qc_sig_str_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_high_qc_sig_str()) {
+    high_qc_sig_str_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.high_qc_sig_str_);
+  }
   ::memcpy(&view_, &from.view_,
     static_cast<size_t>(reinterpret_cast<char*>(&leader_idx_) -
     reinterpret_cast<char*>(&view_)) + sizeof(leader_idx_));
@@ -3657,6 +4100,9 @@ void TimeoutMessage::SharedCtor() {
   sign_x_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   sign_y_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   view_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  view_sig_str_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  high_qc_str_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  high_qc_sig_str_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&view_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&leader_idx_) -
       reinterpret_cast<char*>(&view_)) + sizeof(leader_idx_));
@@ -3671,6 +4117,9 @@ void TimeoutMessage::SharedDtor() {
   sign_x_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   sign_y_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   view_hash_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  view_sig_str_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  high_qc_str_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  high_qc_sig_str_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void TimeoutMessage::SetCachedSize(int size) const {
@@ -3694,7 +4143,7 @@ void TimeoutMessage::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 7u) {
+  if (cached_has_bits & 63u) {
     if (cached_has_bits & 0x00000001u) {
       sign_x_.ClearNonDefaultToEmptyNoArena();
     }
@@ -3704,11 +4153,25 @@ void TimeoutMessage::Clear() {
     if (cached_has_bits & 0x00000004u) {
       view_hash_.ClearNonDefaultToEmptyNoArena();
     }
+    if (cached_has_bits & 0x00000008u) {
+      view_sig_str_.ClearNonDefaultToEmptyNoArena();
+    }
+    if (cached_has_bits & 0x00000010u) {
+      high_qc_str_.ClearNonDefaultToEmptyNoArena();
+    }
+    if (cached_has_bits & 0x00000020u) {
+      high_qc_sig_str_.ClearNonDefaultToEmptyNoArena();
+    }
   }
-  if (cached_has_bits & 248u) {
+  if (cached_has_bits & 192u) {
     ::memset(&view_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&member_id_) -
+        reinterpret_cast<char*>(&view_)) + sizeof(member_id_));
+  }
+  if (cached_has_bits & 1792u) {
+    ::memset(&pool_idx_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&leader_idx_) -
-        reinterpret_cast<char*>(&view_)) + sizeof(leader_idx_));
+        reinterpret_cast<char*>(&pool_idx_)) + sizeof(leader_idx_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -3830,6 +4293,42 @@ bool TimeoutMessage::MergePartialFromCodedStream(
         break;
       }
 
+      // optional bytes view_sig_str = 9;
+      case 9: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(74u /* 74 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_view_sig_str()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bytes high_qc_str = 10;
+      case 10: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(82u /* 82 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_high_qc_str()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bytes high_qc_sig_str = 11;
+      case 11: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(90u /* 90 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_high_qc_sig_str()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -3858,12 +4357,12 @@ void TimeoutMessage::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 member_id = 1;
-  if (cached_has_bits & 0x00000010u) {
+  if (cached_has_bits & 0x00000080u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->member_id(), output);
   }
 
   // optional uint64 view = 2;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000040u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->view(), output);
   }
 
@@ -3886,18 +4385,36 @@ void TimeoutMessage::SerializeWithCachedSizes(
   }
 
   // optional uint64 elect_height = 6;
-  if (cached_has_bits & 0x00000040u) {
+  if (cached_has_bits & 0x00000200u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(6, this->elect_height(), output);
   }
 
   // optional uint32 pool_idx = 7;
-  if (cached_has_bits & 0x00000020u) {
+  if (cached_has_bits & 0x00000100u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(7, this->pool_idx(), output);
   }
 
   // optional uint32 leader_idx = 8;
-  if (cached_has_bits & 0x00000080u) {
+  if (cached_has_bits & 0x00000400u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(8, this->leader_idx(), output);
+  }
+
+  // optional bytes view_sig_str = 9;
+  if (cached_has_bits & 0x00000008u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      9, this->view_sig_str(), output);
+  }
+
+  // optional bytes high_qc_str = 10;
+  if (cached_has_bits & 0x00000010u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      10, this->high_qc_str(), output);
+  }
+
+  // optional bytes high_qc_sig_str = 11;
+  if (cached_has_bits & 0x00000020u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      11, this->high_qc_sig_str(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3916,12 +4433,12 @@ void TimeoutMessage::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 member_id = 1;
-  if (cached_has_bits & 0x00000010u) {
+  if (cached_has_bits & 0x00000080u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->member_id(), target);
   }
 
   // optional uint64 view = 2;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000040u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->view(), target);
   }
 
@@ -3947,18 +4464,39 @@ void TimeoutMessage::SerializeWithCachedSizes(
   }
 
   // optional uint64 elect_height = 6;
-  if (cached_has_bits & 0x00000040u) {
+  if (cached_has_bits & 0x00000200u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(6, this->elect_height(), target);
   }
 
   // optional uint32 pool_idx = 7;
-  if (cached_has_bits & 0x00000020u) {
+  if (cached_has_bits & 0x00000100u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(7, this->pool_idx(), target);
   }
 
   // optional uint32 leader_idx = 8;
-  if (cached_has_bits & 0x00000080u) {
+  if (cached_has_bits & 0x00000400u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(8, this->leader_idx(), target);
+  }
+
+  // optional bytes view_sig_str = 9;
+  if (cached_has_bits & 0x00000008u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        9, this->view_sig_str(), target);
+  }
+
+  // optional bytes high_qc_str = 10;
+  if (cached_has_bits & 0x00000010u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        10, this->high_qc_str(), target);
+  }
+
+  // optional bytes high_qc_sig_str = 11;
+  if (cached_has_bits & 0x00000020u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        11, this->high_qc_sig_str(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -4000,6 +4538,27 @@ size_t TimeoutMessage::ByteSizeLong() const {
           this->view_hash());
     }
 
+    // optional bytes view_sig_str = 9;
+    if (has_view_sig_str()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->view_sig_str());
+    }
+
+    // optional bytes high_qc_str = 10;
+    if (has_high_qc_str()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->high_qc_str());
+    }
+
+    // optional bytes high_qc_sig_str = 11;
+    if (has_high_qc_sig_str()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->high_qc_sig_str());
+    }
+
     // optional uint64 view = 2;
     if (has_view()) {
       total_size += 1 +
@@ -4014,6 +4573,8 @@ size_t TimeoutMessage::ByteSizeLong() const {
           this->member_id());
     }
 
+  }
+  if (_has_bits_[8 / 32] & 1792u) {
     // optional uint32 pool_idx = 7;
     if (has_pool_idx()) {
       total_size += 1 +
@@ -4078,18 +4639,33 @@ void TimeoutMessage::MergeFrom(const TimeoutMessage& from) {
       view_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.view_hash_);
     }
     if (cached_has_bits & 0x00000008u) {
-      view_ = from.view_;
+      set_has_view_sig_str();
+      view_sig_str_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.view_sig_str_);
     }
     if (cached_has_bits & 0x00000010u) {
-      member_id_ = from.member_id_;
+      set_has_high_qc_str();
+      high_qc_str_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.high_qc_str_);
     }
     if (cached_has_bits & 0x00000020u) {
-      pool_idx_ = from.pool_idx_;
+      set_has_high_qc_sig_str();
+      high_qc_sig_str_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.high_qc_sig_str_);
     }
     if (cached_has_bits & 0x00000040u) {
-      elect_height_ = from.elect_height_;
+      view_ = from.view_;
     }
     if (cached_has_bits & 0x00000080u) {
+      member_id_ = from.member_id_;
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
+  if (cached_has_bits & 1792u) {
+    if (cached_has_bits & 0x00000100u) {
+      pool_idx_ = from.pool_idx_;
+    }
+    if (cached_has_bits & 0x00000200u) {
+      elect_height_ = from.elect_height_;
+    }
+    if (cached_has_bits & 0x00000400u) {
       leader_idx_ = from.leader_idx_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -4126,6 +4702,12 @@ void TimeoutMessage::InternalSwap(TimeoutMessage* other) {
     GetArenaNoVirtual());
   view_hash_.Swap(&other->view_hash_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
+  view_sig_str_.Swap(&other->view_sig_str_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  high_qc_str_.Swap(&other->high_qc_str_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  high_qc_sig_str_.Swap(&other->high_qc_sig_str_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
   swap(view_, other->view_);
   swap(member_id_, other->member_id_);
   swap(pool_idx_, other->pool_idx_);
@@ -4155,6 +4737,9 @@ template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::view_block::protobuf::
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::view_block::protobuf::MemberConsensusStat* Arena::CreateMaybeMessage< ::shardora::view_block::protobuf::MemberConsensusStat >(Arena* arena) {
   return Arena::CreateInternal< ::shardora::view_block::protobuf::MemberConsensusStat >(arena);
+}
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::view_block::protobuf::AggregateSig* Arena::CreateMaybeMessage< ::shardora::view_block::protobuf::AggregateSig >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::view_block::protobuf::AggregateSig >(arena);
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::view_block::protobuf::ViewBlockSyncRequest* Arena::CreateMaybeMessage< ::shardora::view_block::protobuf::ViewBlockSyncRequest >(Arena* arena) {
   return Arena::CreateInternal< ::shardora::view_block::protobuf::ViewBlockSyncRequest >(arena);

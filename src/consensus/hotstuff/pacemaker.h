@@ -2,6 +2,7 @@
 
 #include <common/tick.h>
 #include <common/time_utils.h>
+#include <consensus/hotstuff/agg_crypto.h>
 #include <functional>
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/leader_rotation.h>
@@ -26,7 +27,11 @@ class Pacemaker {
 public:
     Pacemaker(
             const uint32_t& pool_idx,
+#ifdef USE_AGG_BLS
+            const std::shared_ptr<AggCrypto>& crypto,
+#else
             const std::shared_ptr<Crypto>& crypto,
+#endif
             std::shared_ptr<LeaderRotation>& leader_rotation,
             const std::shared_ptr<ViewDuration>& duration);
     ~Pacemaker();
@@ -116,7 +121,12 @@ private:
     uint32_t pool_idx_;
     std::shared_ptr<TC> high_tc_ = nullptr;
     View cur_view_ = 0llu;
+
+#ifdef USE_AGG_BLS
+    std::shared_ptr<AggCrypto> crypto_;
+#else
     std::shared_ptr<Crypto> crypto_;
+#endif
     std::shared_ptr<LeaderRotation> leader_rotation_ = nullptr;
     std::shared_ptr<ViewDuration> duration_;
     NewProposalFn new_proposal_fn_ = nullptr;
@@ -126,6 +136,11 @@ private:
     uint64_t last_time_us_ = 0;
     uint64_t duration_us_ = 0;
     std::shared_ptr<transport::TransportMessage> last_timeout_ = nullptr;
+#ifdef USE_AGG_BLS
+    std::unordered_map<uint32_t, std::shared_ptr<QC>> high_qcs_; // 统计 high_qcs
+    std::vector<AggregateSignature*> high_qc_sigs_;
+    View high_qcs_view_ = BeforeGenesisView;
+#endif
 };
 
 } // namespace consensus

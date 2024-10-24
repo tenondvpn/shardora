@@ -28,6 +28,14 @@ message MemberConsensusStat {
     optional uint32 fail_num = 2;
 }
 
+// TODO only for serialization temperarly
+message AggregateSig {
+    optional bytes sign_x = 1;
+    optional bytes sign_y = 2;
+    optional bytes sign_z = 3;
+    repeated uint32 participants = 4;
+}
+
 message ViewBlockSyncRequest {
     optional uint32 network_id = 1;
     optional uint32 pool_idx = 2;
@@ -67,10 +75,15 @@ message ViewBlockSyncMessage {
 message TimeoutMessage {
     optional uint32 member_id = 1;
     optional uint64 view = 2;
+    // view sig, only for classic hotstuff
     optional bytes sign_x = 3;
     optional bytes sign_y = 4;
     optional bytes view_hash = 5;
     optional uint64 elect_height = 6;
     optional uint32 pool_idx = 7;
     optional uint32 leader_idx = 8;
+    // fast hotstuff
+    optional bytes view_sig_str = 9;
+    optional bytes high_qc_str = 10;
+    optional bytes high_qc_sig_str = 11;
 }

@@ -18,7 +18,11 @@ namespace hotstuff {
 
 Pacemaker::Pacemaker(
         const uint32_t& pool_idx,
+#ifdef USE_AGG_BLS
+        const std::shared_ptr<AggCrypto>& c,
+#else
         const std::shared_ptr<Crypto>& c,
+#endif
         std::shared_ptr<LeaderRotation>& lr,
         const std::shared_ptr<ViewDuration>& d) :
     pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d) {
@@ -122,9 +126,24 @@ void Pacemaker::OnLocalTimeout() {
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
-    
+
+#ifdef USE_AGG_BLS
+    AggregateSignature* partial_sig;
+    if (crypto_->PartialSign(
+            common::GlobalInfo::Instance()->network_id(),
+            elect_item->ElectHeight(),
+            tc_ptr->msg_hash(),
+            partial_sig) != Status::kSuccess) {
+        ZJC_ERROR("sign message failed: %u, elect height: %lu, hash: %s",
+            common::GlobalInfo::Instance()->network_id(),
+            elect_item->ElectHeight(),
+            common::Encode::HexEncode(tc_ptr->msg_hash()).c_str());
+        return;        
+    }
+#else
     std::string bls_sign_x;
     std::string bls_sign_y;
+
     // 使用最新的 elect_height 签名
     if (crypto_->PartialSign(
             common::GlobalInfo::Instance()->network_id(),
@@ -138,9 +157,29 @@ void Pacemaker::OnLocalTimeout() {
             common::Encode::HexEncode(tc_msg_hash).c_str());
         return;
     }
+
+#endif
     
     view_block::protobuf::TimeoutMessage& timeout_msg = *msg.mutable_hotstuff_timeout_proto();
-    timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());    
+    timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());
+#ifdef USE_AGG_BLS
+    timeout_msg.set_view_sig_str(partial_sig->Serialize());
+    // 对本节点的 high qc 签名
+    AggregateSignature* high_qc_sig;
+    if (crypto_->PartialSign(
+            common::GlobalInfo::Instance()->network_id(),
+            elect_item->ElectHeight(),
+            HighQC()->msg_hash(),
+            high_qc_sig) != Status::kSuccess) {
+        ZJC_ERROR("sign high qc failed: %u, elect height: %lu, hash: %s",
+            common::GlobalInfo::Instance()->network_id(),
+            elect_item->ElectHeight(),
+            common::Encode::HexEncode(HighQC()->msg_hash()).c_str());
+        return;
+    }
+    timeout_msg.set_high_qc_str(HighQC()->Serialize());
+    timeout_msg.set_high_qc_sig_str(high_qc_sig->Serialize());
+#else
     timeout_msg.set_sign_x(bls_sign_x);
     timeout_msg.set_sign_y(bls_sign_y);
     timeout_msg.set_view_hash(tc_msg_hash);
@@ -164,7 +203,22 @@ void Pacemaker::OnLocalTimeout() {
         timeout_msg.member_id(),
         leader_rotation_->MemberSize(common::GlobalInfo::Instance()->network_id()),
         bls_sign_x.c_str(),
-        bls_sign_y.c_str());
+        bls_sign_y.c_str());    
+#endif
+    timeout_msg.set_view_hash(tc_ptr->msg_hash());
+    timeout_msg.set_view(CurView());
+    timeout_msg.set_elect_height(elect_item->ElectHeight());
+    timeout_msg.set_pool_idx(pool_idx_); // 用于分配线程
+    timeout_msg.set_leader_idx(0);
+    
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    msg.set_type(common::kHotstuffTimeoutMessage);
+    last_timeout_ = msg_ptr;
+    // 停止对当前 view 的投票
+    if (stop_voting_fn_) {
+        stop_voting_fn_(CurView());
+    }
+
     SendTimeout(msg_ptr);
 }
 
@@ -243,7 +297,90 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         new_view_fn_(msg_ptr->conn, high_tc_);
         return;
     }
+
+#ifdef USE_AGG_BLS
+    // 统计 high_qc，用于生成 AggQC
+    if (timeout_proto.view() < high_qcs_view_) {
+        return;
+    }
+
+    if (timeout_proto.view() > high_qcs_view_) {
+        high_qcs_.clear();
+        high_qc_sigs_.clear();
+        high_qcs_view_ = timeout_proto.view();
+    }
     
+    auto high_qc_of_node = std::make_shared<QC>();
+    if (!high_qc_of_node->Unserialize(timeout_proto.high_qc_str())) {
+        return;
+    }
+    AggregateSignature* high_qc_sig_of_node;
+    if (!high_qc_sig_of_node->Unserialize(timeout_proto.high_qc_sig_str())) {
+        return;
+    }
+    
+    high_qcs_.insert(std::make_pair(timeout_proto.member_id(), high_qc_of_node));
+    high_qc_sigs_.push_back(high_qc_sig_of_node);
+    
+    // 生成 TC
+    AggregateSignature* partial_sig;
+    if (!partial_sig->Unserialize(timeout_proto.view_sig_str())) {
+        return;
+    }
+    
+    AggregateSignature* agg_sig;
+    Status s = crypto_->VerifyAndAggregateSig(
+            timeout_proto.elect_height(),
+            timeout_proto.view(),
+            timeout_proto.view_hash(),
+            *partial_sig,
+            *agg_sig);
+    ZJC_DEBUG("====4.0 pool: %d, view: %d, member: %d, status: %d, hash64: %lu", 
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), s,
+        msg_ptr->header.hash64());    
+    if (s != Status::kSuccess || !agg_sig->IsValid()) {
+        return;
+    }
+    
+    auto tc = std::make_shared<TC>(
+        common::GlobalInfo::Instance()->network_id(),
+        pool_idx_,
+        agg_sig,
+        timeout_proto.view(),
+        timeout_proto.elect_height(),
+        timeout_proto.leader_idx());
+
+    auto agg_qc = crypto_->CreateAggregateQC(
+            common::GlobalInfo::Instance()->network_id(),
+            timeout_proto.elect_height(),
+            timeout_proto.view(),
+            high_qcs_,
+            high_qc_sigs_);
+    if (!agg_qc || !agg_qc->IsValid()) {
+        return;
+    }
+
+    AdvanceView(new_sync_info()->WithTC(tc)->WithAggQC(agg_qc));
+
+    // NewView msg broadcast
+    // TC 在 Propose 之前单独同步，不然假设 Propose 卡死，Replicas 就会一直卡死在这个视图
+    // 广播 TC 的同时也应该广播 HighQC，防止只有 Leader 拥有该 HighQC，这会出现如下情况：
+    // 假如 Leader 是 1<-2，但 HighQC 是 3，即将打包 4
+    // 但由于 3 不存在需要从其他节点处同步，但又由于 HighQC3 只有 Leader 拥有，其他节点无法同步 3 给 Leader，造成卡死
+    // 即 Leader 有 QC 无块，Replicas 有块无 QC
+    auto propose_st = Status::kError;
+    // New Propose
+    if (new_proposal_fn_) {
+        ZJC_DEBUG("now ontime called propose: %d", pool_idx_);
+        propose_st = new_proposal_fn_(new_sync_info()->WithQC(HighQC())->WithTC(HighTC())->WithAggQC(agg_qc));
+    }
+
+    if (propose_st != Status::kSuccess && new_view_fn_) {
+        ZJC_DEBUG("====4.2 pool: %d, broadcast tc, view: %d, member: %d, view: %d",
+            pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view());
+        new_view_fn_(new_sync_info()->WithTC(HighTC())->WithQC(HighQC())->WithAggQC(agg_qc));
+    }    
+#else
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
     Status s = crypto_->ReconstructAndVerifyThresSign(
         timeout_proto.elect_height(),
@@ -264,6 +401,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         return;
     }
     
+
     auto new_tc = std::make_shared<view_block::protobuf::QcItem>();
     auto& tc = *new_tc;
     CreateTc(
@@ -304,6 +442,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         tc.view(), CurView(), high_tc_->view());
     if (propose_st != Status::kSuccess && new_view_fn_) {
         ZJC_DEBUG("====4.2 pool: %d, broadcast tc, view: %d, member: %d, view: %d",
+
             pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc.view());
         new_view_fn_(nullptr, new_tc);
     }
@@ -320,4 +459,3 @@ int Pacemaker::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 } // namespace consensus
 
 } // namespace shardora
-
