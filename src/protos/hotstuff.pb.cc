@@ -31,7 +31,7 @@ namespace protobuf_protos_2fpools_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_TxMessage;
 }  // namespace protobuf_protos_2fpools_2eproto
 namespace protobuf_protos_2fview_5fblock_2eproto {
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fview_5fblock_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_QcItem;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fview_5fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_QcItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fview_5fblock_2eproto ::google::protobuf::internal::SCCInfo<3> scc_info_ViewBlockItem;
 }  // namespace protobuf_protos_2fview_5fblock_2eproto
 namespace shardora {

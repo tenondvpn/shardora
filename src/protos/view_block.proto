@@ -13,6 +13,7 @@ message QcItem {
     optional uint32 leader_idx = 7;
     optional uint32 network_id = 8;
     optional uint32 pool_index = 9;
+    optional AggregateSig agg_sig = 10;
 }
 
 message ViewBlockItem {
