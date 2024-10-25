@@ -441,7 +441,12 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
     ck_client.Insert(kClickhouseAccountKvTableName, account_attrs);
     ck_client.Insert(kClickhouseC2cTableName, c2cs);
     ck_client.Insert(kClickhousePrepaymentTableName, prepay);
+    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseTransTableName + " FINAL");
+    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseBlockTableName + " FINAL");
+    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountTableName + " FINAL");
+    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountKvTableName + " FINAL");
     ck_client.Execute(std::string("optimize TABLE ") + kClickhouseC2cTableName + " FINAL");
+    ck_client.Execute(std::string("optimize TABLE ") + kClickhousePrepaymentTableName + " FINAL");
     return true;
 } catch (std::exception& e) {
     ZJC_ERROR("add new block failed[%s]", e.what());
