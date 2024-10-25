@@ -2,8 +2,13 @@
 
 #include <common/tick.h>
 #include <common/time_utils.h>
-#include <functional>
+#ifdef USE_AGG_BLS
+#include <consensus/hotstuff/agg_crypto.h>
+#else
 #include <consensus/hotstuff/crypto.h>
+#endif
+#include <functional>
+
 #include <consensus/hotstuff/leader_rotation.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_duration.h>
@@ -21,14 +26,20 @@ using SyncPoolFn = std::function<void(const uint32_t &, const int32_t&)>;
 using NewViewFn = std::function<void(
     const std::shared_ptr<tnet::TcpInterface> conn, 
     std::shared_ptr<view_block::protobuf::QcItem> tc)>;
+using GetHighQCFn = std::function<QC()>;
 
 class Pacemaker {
 public:
     Pacemaker(
             const uint32_t& pool_idx,
+#ifdef USE_AGG_BLS
+            const std::shared_ptr<AggCrypto>& crypto,
+#else
             const std::shared_ptr<Crypto>& crypto,
+#endif
             std::shared_ptr<LeaderRotation>& leader_rotation,
-            const std::shared_ptr<ViewDuration>& duration);
+            const std::shared_ptr<ViewDuration>& duration,
+            GetHighQCFn get_high_qc_fn);
     ~Pacemaker();
 
     Pacemaker(const Pacemaker&) = delete;
@@ -66,6 +77,10 @@ public:
 
     inline View CurView() const {
         return cur_view_;
+    }
+
+    inline QC HighQC() const {
+        return get_high_qc_fn_();
     }
 
     // 重置超时实例
@@ -115,8 +130,14 @@ private:
 
     uint32_t pool_idx_;
     std::shared_ptr<TC> high_tc_ = nullptr;
+    GetHighQCFn get_high_qc_fn_ = nullptr;
     View cur_view_ = 0llu;
+
+#ifdef USE_AGG_BLS
+    std::shared_ptr<AggCrypto> crypto_;
+#else
     std::shared_ptr<Crypto> crypto_;
+#endif
     std::shared_ptr<LeaderRotation> leader_rotation_ = nullptr;
     std::shared_ptr<ViewDuration> duration_;
     NewProposalFn new_proposal_fn_ = nullptr;
@@ -126,6 +147,11 @@ private:
     uint64_t last_time_us_ = 0;
     uint64_t duration_us_ = 0;
     std::shared_ptr<transport::TransportMessage> last_timeout_ = nullptr;
+#ifdef USE_AGG_BLS
+    std::unordered_map<uint32_t, std::shared_ptr<QC>> high_qcs_; // 统计 high_qcs
+    std::vector<AggregateSignature*> high_qc_sigs_;
+    View high_qcs_view_ = BeforeGenesisView;
+#endif
 };
 
 } // namespace consensus

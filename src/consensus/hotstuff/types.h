@@ -33,6 +33,7 @@ static const double ViewDurationStartTimeoutMs = 300;
 static const double ViewDurationMaxTimeoutMs = 60000;
 static const double ViewDurationMultiplier = 1.3; // 选过大会造成卡住的成本很高，一旦卡住则恢复时间很长（如 leader 不一致），过小会导致没有交易时 CPU 长时间降不下来
 
+
 enum class Status : int {
   kSuccess = 0,
   kError = 1,
@@ -59,7 +60,91 @@ enum WaitingBlockType {
 
 HashStr GetQCMsgHash(const view_block::protobuf::QcItem& qc_item);
 HashStr GetTCMsgHash(const view_block::protobuf::QcItem& tc_item);
-// HashStr GetViewBlockHash(const view_block::protobuf::ViewBlockItem& view_block_item);
+// HashStr GetViewBlockHash(const view_block::protobuf::ViewBlockItem&
+// view_block_item);
+
+struct AggregateSignature {
+    libff::alt_bn128_G1 sig_;
+    std::unordered_set<uint32_t> participants_; // member indexes who submit signatures
+
+    AggregateSignature() : sig_(libff::alt_bn128_G1::zero()) {}
+    
+    AggregateSignature(
+            const libff::alt_bn128_G1& sig,
+            const std::unordered_set<uint32_t>& parts) : sig_(sig), participants_(parts) {}
+
+    inline std::unordered_set<uint32_t> participants() const {
+        return participants_;
+    }
+
+    inline libff::alt_bn128_G1 signature() const {
+        return sig_;
+    }
+
+    void set_signature(libff::alt_bn128_G1 g1_sig) {
+        sig_ = g1_sig;
+    }
+
+    void add_participant(uint32_t member_idx) {
+        participants_.insert(member_idx);
+    }
+
+    inline bool IsValid() const {
+        return !sig_.is_zero() && participants_.size() > 0;
+    }
+
+    std::string Serialize() const {
+        auto agg_sig_proto = DumpToProto();        
+        return agg_sig_proto.SerializeAsString();
+    }
+    
+    bool Unserialize(const std::string& str) {
+        auto agg_sig_proto = view_block::protobuf::AggregateSig();
+        bool ok = agg_sig_proto.ParseFromString(str);
+        if (!ok) {
+            return false;
+        }
+
+        return LoadFromProto(agg_sig_proto);
+    }
+
+    bool LoadFromProto(const view_block::protobuf::AggregateSig& agg_sig_proto) {
+        sig_ = libff::alt_bn128_G1::zero();
+        try {
+            if (agg_sig_proto.sign_x() != "") {
+                sig_.X = libff::alt_bn128_Fq(agg_sig_proto.sign_x().c_str());
+            }
+            if (agg_sig_proto.sign_y() != "") {
+                sig_.Y = libff::alt_bn128_Fq(agg_sig_proto.sign_y().c_str());
+            }
+            if (agg_sig_proto.sign_z() != "") {
+                sig_.Z = libff::alt_bn128_Fq(agg_sig_proto.sign_z().c_str());
+            }            
+        } catch (...) {
+            return false;
+        }
+
+        for (auto par : agg_sig_proto.participants()) {
+            participants_.insert(par);
+        }
+        return true;        
+    }
+
+    view_block::protobuf::AggregateSig DumpToProto() const {
+        auto agg_sig_proto = view_block::protobuf::AggregateSig();
+
+        agg_sig_proto.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(sig_.X));
+        agg_sig_proto.set_sign_y(libBLS::ThresholdUtils::fieldElementToString(sig_.Y));
+        agg_sig_proto.set_sign_z(libBLS::ThresholdUtils::fieldElementToString(sig_.Z));
+
+        for (auto par : participants_) {
+            agg_sig_proto.add_participants(par);
+        }
+        
+        return agg_sig_proto;        
+    }
+};
+
 
 // 本 elect height 中共识情况统计
 struct MemberConsensusStat {
@@ -98,9 +183,40 @@ inline static void CreateTc(
     tc->set_leader_idx(leader_idx);
 }
 
+// For Fast HotStuff
+struct AggregateQC {
+    std::unordered_map<uint32_t, std::shared_ptr<QC>> qcs_;
+    std::shared_ptr<AggregateSignature> sig_;
+    View view_;
+
+    AggregateQC(
+            const std::unordered_map<uint32_t, std::shared_ptr<QC>>& qcs,
+            const std::shared_ptr<AggregateSignature>& sig,
+            View view) :
+        qcs_(qcs), sig_(sig), view_(view) {}
+
+    inline std::unordered_map<uint32_t, std::shared_ptr<QC>> QCs() const {
+        return qcs_;
+    }
+
+    inline std::shared_ptr<AggregateSignature> Sig() const {
+        return sig_;
+    }
+
+    inline View GetView() const {
+        return view_;
+    }
+
+    inline bool IsValid() const {
+        return sig_->IsValid() && sig_->participants().size() == qcs_.size();  
+    }
+};
+
 struct SyncInfo : public std::enable_shared_from_this<SyncInfo> {
     std::shared_ptr<QC> qc;
     std::shared_ptr<TC> tc;
+    std::shared_ptr<AggregateQC> agg_qc;
+    
     SyncInfo() : qc(nullptr), tc(nullptr) {};
 
     std::shared_ptr<SyncInfo> WithQC(const std::shared_ptr<QC>& q) {
@@ -112,6 +228,11 @@ struct SyncInfo : public std::enable_shared_from_this<SyncInfo> {
         tc = t;
         return shared_from_this();
     }
+
+    std::shared_ptr<SyncInfo> WithAggQC(const std::shared_ptr<AggregateQC>& a) {
+        agg_qc = a;
+        return shared_from_this();
+    }    
 };
 
 std::shared_ptr<SyncInfo> new_sync_info();

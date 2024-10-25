@@ -134,6 +134,7 @@ message JoinElectNode {
     optional uint64 credit =6;
     optional uint64 consensus_gap = 7;
     optional elect.protobuf.BlsPublicKey agg_bls_pk = 8;
+    optional elect.protobuf.BlsPopProof agg_bls_pk_proof = 9;
 }
 
 message ElectStatistic {

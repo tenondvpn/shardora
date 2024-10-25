@@ -17,23 +17,34 @@ std::shared_ptr<AggBls::KeyPair> AggBls::GenerateKeyPair(
     auto keypair = libBLS::Bls(t, n).KeyGeneration();
     agg_bls_sk_ = keypair.first;
     prefix_db->SaveAggBlsPrikey(security, keypair.first);
-    return std::make_shared<AggBls::KeyPair>(keypair.first, keypair.second);
+    
+    return std::make_shared<AggBls::KeyPair>(
+            keypair.first,
+            keypair.second,
+            popProve());
 }
 
 std::shared_ptr<AggBls::KeyPair> AggBls::GetKeyPair(
         std::shared_ptr<security::Security>& security,
         const std::shared_ptr<protos::PrefixDb>& prefix_db) {
     if (agg_bls_sk_ != libff::alt_bn128_Fr::zero()) {
-        return std::make_shared<AggBls::KeyPair>(agg_bls_sk_, GetPublicKey(agg_bls_sk_));
+        return std::make_shared<AggBls::KeyPair>(
+                agg_bls_sk_,
+                GetPublicKey(agg_bls_sk_),
+                popProve());
     }
 
     auto bls_prikey = libff::alt_bn128_Fr::zero();
     auto ok = prefix_db->GetAggBlsPrikey(security, &bls_prikey);
     if (ok && bls_prikey != libff::alt_bn128_Fr::zero()) {
-        return std::make_shared<AggBls::KeyPair>(bls_prikey, GetPublicKey(bls_prikey));
+        agg_bls_sk_ = bls_prikey;
+        return std::make_shared<AggBls::KeyPair>(bls_prikey, GetPublicKey(bls_prikey), popProve());
     }
 
-    return std::make_shared<AggBls::KeyPair>(libff::alt_bn128_Fr::zero(), libff::alt_bn128_G2::zero());
+    return std::make_shared<AggBls::KeyPair>(
+            libff::alt_bn128_Fr::zero(),
+            libff::alt_bn128_G2::zero(),
+            libff::alt_bn128_G1::zero());
 }
 
 void AggBls::Sign(
@@ -82,7 +93,6 @@ bool AggBls::AggregateVerify(
             agg_pk);
 }
 
-
 bool AggBls::FastAggregateVerify(
         uint32_t t, uint32_t n,
         const std::vector<libff::alt_bn128_G2>& pks,
@@ -102,7 +112,16 @@ bool AggBls::CoreVerify(
 libff::alt_bn128_G2 AggBls::AggregatePk(const std::vector<libff::alt_bn128_G2>& pks) {
     return std::accumulate(pks.begin(), pks.end(), libff::alt_bn128_G2::zero());
 }
-        
+
+libff::alt_bn128_G1 AggBls::popProve() {
+    return libBLS::Bls::PopProve(agg_bls_sk_);
+}
+
+bool AggBls::popVerify(
+        const libff::alt_bn128_G2& public_key,
+        const libff::alt_bn128_G1& proof) {
+    return libBLS::Bls::PopVerify(public_key, proof);
+}
 
 }
 

@@ -3,6 +3,7 @@
 #include "common/fts_tree.h"
 #include "elect_tx_item.h"
 #include "protos/get_proto_hash.h"
+#include <bls/bls_utils.h>
 #include <google/protobuf/util/json_util.h>
 
 namespace shardora {
@@ -457,6 +458,9 @@ void ElectTxItem::GetIndexNodes(
         // xufeisofly 新增节点的 bls_agg_pk
         auto agg_bls_pk_proto = elect_statistic.join_elect_nodes(i).agg_bls_pk();
         node_info->agg_bls_pk = *bls::Proto2BlsPublicKey(agg_bls_pk_proto);
+        auto proof_proto = elect_statistic.join_elect_nodes(i).agg_bls_pk_proof();
+        node_info->agg_bls_pk_proof = *bls::Proto2BlsPopProof(proof_proto);
+        
         node_info->index = index;
         node_info->consensus_gap = elect_statistic.join_elect_nodes(i).consensus_gap(); 
         elect_nodes_to_choose->push_back(node_info);
@@ -617,6 +621,11 @@ int ElectTxItem::CreateNewElect(
             if (agg_bls_pk_proto) {
                 in->mutable_agg_bls_pk()->CopyFrom(*agg_bls_pk_proto);
             }
+            auto proof_proto = bls::BlsPopProof2Proto((*elect_members_)[i]->agg_bls_pk_proof);
+            if (proof_proto) {
+                in->mutable_agg_bls_pk_proof()->CopyFrom(*proof_proto);
+            }
+            
             in->set_pool_idx_mod_num(-1);
             in->set_mining_amount(0);
         } else {
@@ -626,6 +635,11 @@ int ElectTxItem::CreateNewElect(
             if (agg_bls_pk_proto) {
                 in->mutable_agg_bls_pk()->CopyFrom(*agg_bls_pk_proto);
             }
+            auto proof_proto = bls::BlsPopProof2Proto(elect_nodes[i]->agg_bls_pk_proof);
+            if (proof_proto) {
+                in->mutable_agg_bls_pk_proof()->CopyFrom(*proof_proto);
+            }
+            
             in->set_pool_idx_mod_num(elect_nodes[i]->leader_mod_index);
             in->set_mining_amount(elect_nodes[i]->mining_token);
             in->set_fts_value(elect_nodes[i]->fts_value);
@@ -745,6 +759,7 @@ int ElectTxItem::CheckWeedout(
         // 此处增加上一轮已有节点的 bls_agg_pk
         node_info->pubkey = (*members)[member_idx]->pubkey;
         node_info->agg_bls_pk = (*members)[member_idx]->agg_bls_pk;
+        node_info->agg_bls_pk_proof = (*members)[member_idx]->agg_bls_pk_proof;
         node_info->pubkey = (*members)[member_idx]->pubkey;
         node_info->consensus_gap = statistic_item.consensus_gap(member_idx); 
 

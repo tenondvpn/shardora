@@ -71,6 +71,7 @@ public:
         std::unordered_set<std::string> &added_id_set, 
         std::unordered_map<std::string, std::string> &id_pk_map, 
         std::unordered_map<std::string, elect::protobuf::BlsPublicKey*> &id_agg_bls_pk_map,
+        std::unordered_map<std::string, elect::protobuf::BlsPopProof*> &id_agg_bls_pk_proof_map,
         shardora::pools::protobuf::ElectStatistic &elect_statistic);
 
     void setElectStatistics(

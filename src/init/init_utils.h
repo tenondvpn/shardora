@@ -66,6 +66,7 @@ struct GenisisNodeInfo {
     std::vector<libff::alt_bn128_G2> verification;
     std::string g2_val;
     libff::alt_bn128_G2 agg_bls_pk;
+    libff::alt_bn128_G1 agg_bls_pk_proof;
 };
 
 typedef std::shared_ptr<GenisisNodeInfo> GenisisNodeInfoPtr;

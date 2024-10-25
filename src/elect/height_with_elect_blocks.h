@@ -316,13 +316,15 @@ private:
         for (int32_t i = 0; i < in.size(); ++i) {
             auto id = security->GetAddress(in[i].pubkey());
             auto agg_bls_pk = bls::Proto2BlsPublicKey(in[i].agg_bls_pk());
+            auto agg_bls_pk_proof = bls::Proto2BlsPopProof(in[i].agg_bls_pk_proof());
             shard_members_ptr->push_back(std::make_shared<common::BftMember>(
                 elect_block.shard_network_id(),
                 id,
                 in[i].pubkey(),
                 member_index++,
                 in[i].pool_idx_mod_num(),
-                *agg_bls_pk));
+                *agg_bls_pk,
+                *agg_bls_pk_proof));
         }
 
         return shard_members_ptr;
