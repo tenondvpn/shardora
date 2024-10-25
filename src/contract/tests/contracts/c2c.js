@@ -618,7 +618,7 @@ async function CreateNewSeller() {
                     }
                 }
 
-                console.log(`get new prepayment error: ${stderr} count: ${stdout}`);
+                console.log(`${cmd} get new prepayment error: ${stderr} count: ${stdout}`);
             } catch (error) {
                 console.log(error);
             }

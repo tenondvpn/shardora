@@ -204,8 +204,8 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
 
         if (tx.step() == pools::protobuf::kContractExcute /*&& tx.to() == common::GlobalInfo::Instance()->c2c_to()*/) {
             {
-                auto contract = tx.from();
-                auto user = tx.to();
+                auto contract = tx.to();
+                auto user = tx.from();
                 prepay_contract->Append(common::Encode::HexEncode(contract));
                 prepay_user->Append(common::Encode::HexEncode(user));
                 prepay_height->Append(block_item->height());
