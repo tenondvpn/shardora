@@ -208,6 +208,7 @@ function new_contract(from_str_prikey, contract_bytes) {
     var kechash = keccak256(from_str_prikey + gid + contract_bytes).toString('hex')
     var self_contract_address = kechash.slice(kechash.length - 40, kechash.length)
     var data = param_contract(
+        from_str_prikey,
         6,
         gid,
         self_contract_address,
