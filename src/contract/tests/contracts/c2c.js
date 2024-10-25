@@ -99,10 +99,15 @@ function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_pri
     prepay_buf.writeUInt32LE(big, 4)
     prepay_buf.writeUInt32LE(low, 0)
 
-    var message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
-        amount_buf, gas_limit_buf, gas_price_buf, step_buf, Buffer.from(contract_bytes, 'hex'), Buffer.from(input, 'hex'), prepay_buf]);
+    var message_buf = Buffer.concat([
+        Buffer.from(gid, 'hex'), 
+        Buffer.from(frompk, 'hex'), 
+        Buffer.from(to, 'hex'),
+        amount_buf, gas_limit_buf, gas_price_buf, step_buf, 
+        Buffer.from(contract_bytes, 'hex'), 
+        Buffer.from(input, 'hex'), 
+        prepay_buf]);
     var kechash = keccak256(message_buf)
-
     var digest = Secp256k1.uint256(kechash, 16)
     const sig = Secp256k1.ecsign(from_private_key, digest)
     const sigR = Secp256k1.uint256(sig.r, 16)
