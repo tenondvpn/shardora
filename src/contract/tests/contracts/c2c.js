@@ -9,11 +9,6 @@ var http = require('http');
 var fs = require('fs');
 const util = require('util')
 
-var self_private_key = null;
-var self_public_key = null;
-var local_count_shard_id = 3;
-var contract_address = null;
-
 function str_to_hex(str) {
     var arr1 = [];
     for (var n = 0; n < str.length; n++) {
@@ -27,22 +22,6 @@ function hexToBytes(hex) {
     for (var bytes = [], c = 0; c < hex.length; c += 2)
         bytes.push(parseInt(hex.substr(c, 2), 16));
     return bytes;
-}
-
-function init_private_key() {
-    //const privateKeyBuf = Secp256k1.uint256("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 16) // e252d01a37b85e2007ed3cc13797aa92496204a4
-    //const privateKeyBuf = Secp256k1.uint256("10ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 16) // b5f4bf70ae9afb2649e47488d8cd1574eef2c693 
-    const privateKeyBuf = Secp256k1.uint256("863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 16) // e10fe8543f02ca7739803df692b8122cd200c9d7 
-    //const privateKeyBuf = Secp256k1.uint256("d5a4758b94d34da11f818efbbc7b6739949aa7cb249c9403022b4ed54fa7b0a8", 16)
-    self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
-    self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
-    var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
-    var address = keccak256(pk_bytes).toString('hex')
-    address = address.slice(address.length - 40, address.length)
-    console.log("self_account_id: " + address.toString('hex'));
-    self_account_id = address;
-    contract_address = fs.readFileSync('contract_address', 'utf-8');
-    console.log("contract_address: " + contract_address);
 }
 
 function PostCode(data) {
@@ -83,9 +62,12 @@ function GetValidHexString(uint256_bytes) {
     return str_res;
 }
 
-function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract_bytes, input, prepay) {
+function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_price, contract_bytes, input, prepay) {
+    const privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
+    var from_private_key = Secp256k1.uint256(privateKeyBuf, 16)
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
-    var frompk = '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16);
+    var from_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(from_private_key)
+    var frompk = '04' + from_public_key.x.toString(16) + from_public_key.y.toString(16);
     const MAX_UINT32 = 0xFFFFFFFF;
     var amount_buf = new Buffer(8);
     var big = ~~(amount / MAX_UINT32)
@@ -122,11 +104,11 @@ function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract
     var kechash = keccak256(message_buf)
 
     var digest = Secp256k1.uint256(kechash, 16)
-    const sig = Secp256k1.ecsign(self_private_key, digest)
+    const sig = Secp256k1.ecsign(from_private_key, digest)
     const sigR = Secp256k1.uint256(sig.r, 16)
     const sigS = Secp256k1.uint256(sig.s, 16)
-    const pubX = Secp256k1.uint256(self_public_key.x, 16)
-    const pubY = Secp256k1.uint256(self_public_key.y, 16)
+    const pubX = Secp256k1.uint256(from_public_key.x, 16)
+    const pubY = Secp256k1.uint256(from_public_key.y, 16)
     const isValidSig = Secp256k1.ecverify(pubX, pubY, sigR, sigS, digest)
     console.log("digest: " + digest)
     console.log("sigr: " + sigR.toString(16))
@@ -138,7 +120,7 @@ function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract
 
     return {
         'gid': gid,
-        'pubkey': '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16),
+        'pubkey': '04' + from_public_key.x.toString(16) + from_public_key.y.toString(16),
         'to': to,
         'amount': amount,
         'gas_limit': gas_limit,
@@ -156,9 +138,12 @@ function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract
     }
 }
 
-function create_tx(to, amount, gas_limit, gas_price, prepay, tx_type) {
+function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type) {
+    const privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
+    var from_private_key = Secp256k1.uint256(privateKeyBuf, 16)
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
-    var frompk = '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16);
+    var from_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(from_private_key)
+    var frompk = '04' + from_public_key.x.toString(16) + from_public_key.y.toString(16);
     const MAX_UINT32 = 0xFFFFFFFF;
     var amount_buf = new Buffer(8);
     var big = ~~(amount / MAX_UINT32)
@@ -192,14 +177,14 @@ function create_tx(to, amount, gas_limit, gas_price, prepay, tx_type) {
         amount_buf, gas_limit_buf, gas_price_buf, step_buf, prepay_buf]);
     var kechash = keccak256(message_buf)
     var digest = Secp256k1.uint256(kechash, 16)
-    const sig = Secp256k1.ecsign(self_private_key, digest)
+    const sig = Secp256k1.ecsign(from_private_key, digest)
     const sigR = Secp256k1.uint256(sig.r, 16)
     const sigS = Secp256k1.uint256(sig.s, 16)
-    const pubX = Secp256k1.uint256(self_public_key.x, 16)
-    const pubY = Secp256k1.uint256(self_public_key.y, 16)
+    const pubX = Secp256k1.uint256(from_public_key.x, 16)
+    const pubY = Secp256k1.uint256(from_public_key.y, 16)
     return {
         'gid': gid,
-        'pubkey': '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16),
+        'pubkey': '04' + from_public_key.x.toString(16) + from_public_key.y.toString(16),
         'to': to,
         'amount': amount,
         'gas_limit': gas_limit,
@@ -213,9 +198,9 @@ function create_tx(to, amount, gas_limit, gas_price, prepay, tx_type) {
     }
 }
 
-function new_contract(contract_bytes) {
+function new_contract(from_str_prikey, contract_bytes) {
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
-    var kechash = keccak256(self_account_id + gid + contract_bytes).toString('hex')
+    var kechash = keccak256(from_str_prikey + gid + contract_bytes).toString('hex')
     var self_contract_address = kechash.slice(kechash.length - 40, kechash.length)
     var data = param_contract(
         6,
@@ -239,11 +224,12 @@ function new_contract(contract_bytes) {
     return self_contract_address;
 }
 
-function call_contract(input, amount) {
+function call_contract(str_prikey, input, amount) {
     contract_address = fs.readFileSync('contract_address', 'utf-8');
     console.log("contract_address: " + contract_address);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var data = param_contract(
+        str_prikey,
         8,
         gid,
         contract_address,
@@ -256,63 +242,9 @@ function call_contract(input, amount) {
     PostCode(data);
 }
 
-function do_transaction(to_addr, amount, gas_limit, gas_price) {
-    var data = create_tx(to_addr, amount, gas_limit, gas_price, 0, 0);
+function do_transaction(str_prikey, to_addr, amount, gas_limit, gas_price) {
+    var data = create_tx(str_prikey, to_addr, amount, gas_limit, gas_price, 0, 0);
     PostCode(data);
-}
-
-function CreatePhr() {
-    console.log("test smart contract signature: ");
-    var account1 = web3.eth.accounts.privateKeyToAccount('0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5');
-    console.log("account1 :");
-    console.log(account1.address);
-    var account2 = web3.eth.accounts.privateKeyToAccount('0x748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05');
-    console.log("account2 :");
-    console.log(account2.address);
-    var account3 = web3.eth.accounts.privateKeyToAccount('0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5');
-    console.log("account3 :");
-    console.log(account3.address);
-
-    var cons_codes = web3.eth.abi.encodeParameters(['address[]', 'uint256', 'uint256'],
-        [[account1.address,
-        account2.address,
-            account3.address], 10000000000, 100000000]);
-    console.log("cons_codes: " + cons_codes.substring(2));
-
-    {
-        var func = web3.eth.abi.encodeFunctionSignature('NewSellOrder(bytes,uint256)');
-        var funcParam = web3.eth.abi.encodeParameters(['bytes', 'uint256'], ['0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5', 1]);
-        console.log("NewSellOrder func: " + func.substring(2) + funcParam.substring(2));
-    }
-    
-    {
-        var func = web3.eth.abi.encodeFunctionSignature('Confirm(address,uint256)');
-        var funcParam = web3.eth.abi.encodeParameters(['address', 'uint256'], [account1.address, 1000000000]);
-        console.log("Confirm func: " + func.substring(2) + funcParam.substring(2));
-    }
-
-    {
-        var func = web3.eth.abi.encodeFunctionSignature('GetOrdersJson()');
-        console.log("GetOrdersJson func: " + func.substring(2));
-    }
-
-    {
-        var func = web3.eth.abi.encodeFunctionSignature('SellerRelease()');
-        console.log("SellerRelease func: " + func.substring(2));
-    }
-
-    {
-        var func = web3.eth.abi.encodeFunctionSignature('ManagerRelease(address)');
-        var funcParam = web3.eth.abi.encodeParameters(['address'], [account1.address]);
-        console.log("Confirm func: " + func.substring(2) + funcParam.substring(2));
-    }
-   
-    {
-        var func = web3.eth.abi.encodeFunctionSignature('TestContract(uint256)');
-        var funcParam = web3.eth.abi.encodeParameters(['uint256'], [1]);
-        console.log("TestContract func: " + func.substring(2) + funcParam.substring(2));
-    }
-
 }
 
 function QueryPostCode(path, data) {
@@ -341,75 +273,36 @@ function QueryPostCode(path, data) {
     post_req.end();
 }
 
-function QueryContract(input) {
+function QueryContract(str_prikey, input) {
+    const privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
+    var self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
+    var self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
+    var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
+    var address = keccak256(pk_bytes).toString('hex')
+    var address = address.slice(address.length - 40, address.length)
     var contract_address = fs.readFileSync('contract_address', 'utf-8');
     var data = {
         "input": input,
         'address': contract_address,
-        'from': self_account_id,
+        'from': address,
     };
 
     QueryPostCode('/query_contract', data);
 }
 
-function Prepayment(prepay) {
+function Prepayment(str_prikey, prepay) {
     var contract_address = fs.readFileSync('contract_address', 'utf-8');
-    var data = create_tx(contract_address, 0, 100000, 1, prepay, 7);
+    var data = create_tx(str_prikey, contract_address, 0, 100000, 1, prepay, 7);
     PostCode(data);
 }
 
 async function SetManagerPrepayment(contract_address) {
     // 为管理账户设置prepayment
-    {
-        const privateKeyBuf = Secp256k1.uint256(
-            "20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 16)
-        self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
-        self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
-        var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
-        var address = keccak256(pk_bytes).toString('hex')
-        address = address.slice(address.length - 40, address.length)
-        console.log("self_account_id: " + address.toString('hex'));
-        self_account_id = address;
-        Prepayment(1000000000000);
-    }
-
-    {
-        const privateKeyBuf = Secp256k1.uint256(
-            "748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05", 16)
-        self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
-        self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
-        var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
-        var address = keccak256(pk_bytes).toString('hex')
-        address = address.slice(address.length - 40, address.length)
-        console.log("self_account_id: " + address.toString('hex'));
-        self_account_id = address;
-        Prepayment(1000000000000);
-    }
-
-    {
-        const privateKeyBuf = Secp256k1.uint256(
-            "b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5", 16)
-        self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
-        self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
-        var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
-        var address = keccak256(pk_bytes).toString('hex')
-        address = address.slice(address.length - 40, address.length)
-        console.log("self_account_id: " + address.toString('hex'));
-        self_account_id = address;
-        Prepayment(1000000000000);
-    }
-
+    Prepayment("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 1000000000000);
+    Prepayment("748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05", 1000000000000);
+    Prepayment("b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5", 1000000000000);
     for (var i = 10; i < 30; ++i) {
-        const privateKeyBuf = Secp256k1.uint256(
-            'b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString(), 16)
-        self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
-        self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
-        var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
-        var address = keccak256(pk_bytes).toString('hex')
-        address = address.slice(address.length - 40, address.length)
-        console.log("self_account_id: " + address.toString('hex'));
-        self_account_id = address;
-        Prepayment(1000000000000);
+        Prepayment('b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString(), 1000000000000);
     }
 
     var account1 = web3.eth.accounts.privateKeyToAccount(
@@ -475,25 +368,13 @@ function InitC2cEnv() {
                 '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5');
             console.log("account3 :");
             console.log(account3.address.toString('hex').toLowerCase().substring(2));
-
-            var seller_accounts = new Set();
             for (var i = 10; i < 30; ++i) {
-                const privateKeyBuf = Secp256k1.uint256("863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 16)
-                self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
-                self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
-                var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
-                var address = keccak256(pk_bytes).toString('hex')
-                address = address.slice(address.length - 40, address.length)
-                console.log("self_account_id: " + address.toString('hex'));
-                self_account_id = address; 
-
                 // 卖家账户设置
                 var account4 = web3.eth.accounts.privateKeyToAccount(
                     '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString());
-                console.log(`account ${i}: 0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1${i.toString()}`);
-                console.log(account4.address);
-                do_transaction(account4.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
-                seller_accounts.add(account4.address.toString('hex').toLowerCase().substring(2));
+                do_transaction(
+                    "863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 
+                    account4.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
             }
            
             var cons_codes = web3.eth.abi.encodeParameters(['address[]', 'uint256', 'uint256'],
@@ -503,20 +384,20 @@ function InitC2cEnv() {
             console.log("cons_codes: " + cons_codes.substring(2));
             // 转账到管理账户，创建合约
             {
-                const privateKeyBuf = Secp256k1.uint256("863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 16)
-                self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
-                self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
-                var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
-                var address = keccak256(pk_bytes).toString('hex')
-                address = address.slice(address.length - 40, address.length)
-                console.log("self_account_id: " + address.toString('hex'));
-                self_account_id = address; 
-                
-                do_transaction(account1.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
-                do_transaction(account2.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
-                do_transaction(account3.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
+                do_transaction(
+                    "863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 
+                    account1.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
+                do_transaction(
+                    "863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 
+                    account2.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
+                do_transaction(
+                    "863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 
+                    account3.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
                 var contract_address = new_contract(out_lines[3] + cons_codes.substring(2));
-                var contract_cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q "SELECT to FROM zjc_ck_account_key_value_table where type = 6 and key in('5f5f6b437265617465436f6e74726163744279746573436f6465', '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
+                var contract_cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q 
+                    "SELECT to FROM zjc_ck_account_key_value_table where type = 6 and key in
+                    ('5f5f6b437265617465436f6e74726163744279746573436f6465', 
+                        '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
                 var try_times = 0;
                 const execPromise = util.promisify(exec);
                 while (try_times < 30) {
@@ -542,7 +423,8 @@ function InitC2cEnv() {
                     return;
                 }
 
-                var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q "select id, balance from zjc_ck_account_table where id in 
+                var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q 
+                    "select id, balance from zjc_ck_account_table where id in 
                     ('${account1.address.toString('hex').toLowerCase().substring(2)}', 
                     '${account2.address.toString('hex').toLowerCase().substring(2)}', 
                     '${account3.address.toString('hex').toLowerCase().substring(2)}', 
@@ -592,25 +474,15 @@ function InitC2cEnv() {
       });
 }
 
-async function CreateNewSeller() {
+async function CreateNewSeller(str_prikey) {
     const { exec } = require('child_process');
     const execPromise = util.promisify(exec);
-
-    {
-        const privateKeyBuf = Secp256k1.uint256("b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e0", 16)
-        self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
-        self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
-        var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
-        var address = keccak256(pk_bytes).toString('hex')
-        address = address.slice(address.length - 40, address.length)
-        console.log("self_account_id: " + address.toString('hex'));
-        self_account_id = address;
-    }
-
     var old_prepayment = 0;
     {
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q "select prepayment from zjc_ck_prepayment_table where contract='${contract_address}' and user='${self_account_id}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q 
+            "select prepayment from zjc_ck_prepayment_table where 
+            contract='${contract_address}' and user='${self_account_id}' order by height desc limit 1;"`;
         // 检查合约是否创建成功
         var try_times = 0;
         while (try_times < 30) {
@@ -641,14 +513,20 @@ async function CreateNewSeller() {
     var sell_amount = 10000000000;
     {
         var func = web3.eth.abi.encodeFunctionSignature('NewSellOrder(bytes,uint256)');
-        var funcParam = web3.eth.abi.encodeParameters(['bytes', 'uint256'], ['0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5', 1]);
+        var funcParam = web3.eth.abi.encodeParameters(
+            ['bytes', 'uint256'], 
+            ['0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5', 1]);
         console.log("NewSellOrder func: " + func.substring(2) + funcParam.substring(2));
-        call_contract(func.substring(2) + funcParam.substring(2), sell_amount);
+        call_contract(
+            str_prikey,
+            func.substring(2) + funcParam.substring(2), sell_amount);
     }
 
     {
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q "select prepayment from zjc_ck_prepayment_table where contract='${contract_address}' and user='${self_account_id}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q 
+            "select prepayment from zjc_ck_prepayment_table where 
+            contract='${contract_address}' and user='${self_account_id}' order by height desc limit 1;"`;
         // 检查合约是否创建成功
         var try_times = 0;
         while (try_times < 30) {
@@ -683,7 +561,7 @@ async function CreateNewSeller() {
         }
     }
 
-    QueryContract("cdfd45bb");
+    QueryContract(str_prikey, "cdfd45bb");
 }
 
 const args = process.argv.slice(2)
@@ -694,23 +572,15 @@ if (args[0] == 0) {
 
 // 创建卖单
 if (args[0] == 1) {
-    CreateNewSeller();
+    CreateNewSeller("b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e0");
     return;
 }
 
 // 测试合约查询
 if (args[0] == 8) {
-    {
-        const privateKeyBuf = Secp256k1.uint256("b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e0", 16)
-        self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
-        self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
-        var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
-        var address = keccak256(pk_bytes).toString('hex')
-        address = address.slice(address.length - 40, address.length)
-        console.log("self_account_id: " + address.toString('hex'));
-        self_account_id = address;
-    }
-    QueryContract("cdfd45bb");
+    QueryContract(
+        "b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e0", 
+        "cdfd45bb");
 }
 
 
