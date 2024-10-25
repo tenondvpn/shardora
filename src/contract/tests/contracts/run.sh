@@ -1,7 +1,7 @@
 for ((i=10000000;i<=99999999;i++));
 do
     echo b5f4bf70ae9afb2649e47488d8cd1574$i
-    node c2c.js 0 a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138 10000
+    node run.js 0 a0793c84fb3133c0df1b9a6d5b4bbfe5e7545138 10000
     #node c2c.js 0 b5f4bf70ae9afb2649e47488d8cd1574$i 190000
     sleep 0.1
 done
