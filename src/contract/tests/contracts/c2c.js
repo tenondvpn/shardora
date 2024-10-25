@@ -494,16 +494,17 @@ function InitC2cEnv() {
 }
 
 async function CreateNewSeller(str_prikey) {
+    var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
+    var self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
+    var self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
+    var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
+    var address = keccak256(pk_bytes).toString('hex')
+    var address = address.slice(address.length - 40, address.length)
+
     const { exec } = require('child_process');
     const execPromise = util.promisify(exec);
     var old_prepayment = 0;
     {
-        var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
-        var self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
-        var self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
-        var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
-        var address = keccak256(pk_bytes).toString('hex')
-        var address = address.slice(address.length - 40, address.length)
     
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
         var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
@@ -547,7 +548,7 @@ async function CreateNewSeller(str_prikey) {
 
     {
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${self_account_id}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         while (try_times < 30) {
             try {
