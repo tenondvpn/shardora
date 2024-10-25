@@ -374,6 +374,7 @@ function InitC2cEnv() {
         var out_lines = stdout.split('\n');
         console.log(`solc bin codes: ${out_lines[3]}`);
         {
+            // 三个管理员账户
             var account1 = web3.eth.accounts.privateKeyToAccount(
                 '0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5');
             console.log("account1 :");
@@ -485,6 +486,7 @@ function InitC2cEnv() {
                     return;
                 }
 
+                // 预设值合约调用币，并等待成功
                 SetManagerPrepayment(contract_address);
             }
         }
@@ -496,9 +498,15 @@ async function CreateNewSeller(str_prikey) {
     const execPromise = util.promisify(exec);
     var old_prepayment = 0;
     {
+        var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
+        var self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
+        var self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
+        var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
+        var address = keccak256(pk_bytes).toString('hex')
+        var address = address.slice(address.length - 40, address.length)
+    
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${self_account_id}' order by height desc limit 1;"`;
-        // 检查合约是否创建成功
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         while (try_times < 30) {
             try {
@@ -540,7 +548,6 @@ async function CreateNewSeller(str_prikey) {
     {
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
         var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${self_account_id}' order by height desc limit 1;"`;
-        // 检查合约是否创建成功
         var try_times = 0;
         while (try_times < 30) {
             try {
