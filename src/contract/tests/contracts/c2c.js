@@ -592,7 +592,9 @@ if (args[0] == 0) {
 
 // 创建卖单
 if (args[0] == 1) {
-    CreateNewSeller("b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d129");
+    for (var i = 10; i < 30; ++i) {
+        CreateNewSeller("b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1" + i.toString());
+    }
     return;
 }
 
