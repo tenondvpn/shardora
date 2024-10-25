@@ -317,6 +317,7 @@ async function SetManagerPrepayment(contract_address) {
     check_accounts_str += "'" + account1.address.toString('hex').toLowerCase().substring(2) + "',"; 
     check_accounts_str += "'" + account2.address.toString('hex').toLowerCase().substring(2) + "',"; 
     check_accounts_str += "'" + account3.address.toString('hex').toLowerCase().substring(2) + "',"; 
+    var check_count = 3;
     for (var i = 10; i < 30; ++i) {
         Prepayment('b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString(), 1000000000000);
         var account4 = web3.eth.accounts.privateKeyToAccount(
@@ -326,6 +327,8 @@ async function SetManagerPrepayment(contract_address) {
         } else {
             check_accounts_str += "'" + account4.address.toString('hex').toLowerCase().substring(2) + "',"; 
         }
+
+        ++check_count;
     }
 
     var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q "select count(distinct(user)) from zjc_ck_prepayment_table where contract='${contract_address}' and user in (${check_accounts_str});"`;
@@ -336,7 +339,7 @@ async function SetManagerPrepayment(contract_address) {
     while (try_times < 30) {
         try {
             const {stdout, stderr} = await execPromise(cmd);
-            if (stdout.trim() == "4") {
+            if (stdout.trim() == check_count.toString()) {
                 console.error(`contract prepayment success: ${stdout}`);
                 break;
             }
@@ -463,7 +466,7 @@ function InitC2cEnv() {
                             }
                         }
 
-                        if (dictionary.size == check_count) {
+                        if (dictionary.size == check_count.toString()) {
                             console.log(`transfer to manager address success error: ${stderr} count: ${stdout}`);
                             break;
                         }
