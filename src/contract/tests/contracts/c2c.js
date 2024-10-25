@@ -481,7 +481,7 @@ function InitC2cEnv() {
                 // 卖家账户设置
                 var account4 = web3.eth.accounts.privateKeyToAccount(
                     '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString());
-                console.log(`account ${i}:`);
+                console.log(`account ${i}: 0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1 ${i.toString()}`);
                 console.log(account4.address);
                 do_transaction(account4.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
                 seller_accounts.add(account4.address.toString('hex').toLowerCase().substring(2));
