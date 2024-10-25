@@ -471,11 +471,18 @@ function InitC2cEnv() {
                 '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5');
             console.log("account3 :");
             console.log(account3.address.toString('hex').toLowerCase().substring(2));
-            // 卖家账户设置
-            var account4 = web3.eth.accounts.privateKeyToAccount(
-                '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e0');
-            console.log("account4 :");
-            console.log(account4.address);
+
+            var seller_accounts = new Set();
+            for (var i = 10; i < 30; ++i) {
+                // 卖家账户设置
+                var account4 = web3.eth.accounts.privateKeyToAccount(
+                    '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + str(i));
+                console.log(`account ${i}:`);
+                console.log(account4.address);
+                do_transaction(account4.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
+                seller_accounts.add(account4.address.toString('hex').toLowerCase().substring(2));
+            }
+           
             var cons_codes = web3.eth.abi.encodeParameters(['address[]', 'uint256', 'uint256'],
                 [[account1.address,
                 account2.address,
@@ -490,12 +497,11 @@ function InitC2cEnv() {
                 var address = keccak256(pk_bytes).toString('hex')
                 address = address.slice(address.length - 40, address.length)
                 console.log("self_account_id: " + address.toString('hex'));
-                self_account_id = address;
+                self_account_id = address; 
                 
                 do_transaction(account1.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
                 do_transaction(account2.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
                 do_transaction(account3.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
-                do_transaction(account4.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
                 var contract_address = new_contract(out_lines[3] + cons_codes.substring(2));
                 var contract_cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q "SELECT to FROM zjc_ck_account_key_value_table where type = 6 and key in('5f5f6b437265617465436f6e74726163744279746573436f6465', '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
                 var try_times = 0;
