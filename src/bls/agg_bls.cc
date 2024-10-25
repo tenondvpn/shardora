@@ -117,7 +117,7 @@ libff::alt_bn128_G1 AggBls::popProve() {
     return libBLS::Bls::PopProve(agg_bls_sk_);
 }
 
-bool AggBls::popVerify(
+bool AggBls::PopVerify(
         const libff::alt_bn128_G2& public_key,
         const libff::alt_bn128_G1& proof) {
     return libBLS::Bls::PopVerify(public_key, proof);
