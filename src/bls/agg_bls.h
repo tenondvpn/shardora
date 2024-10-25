@@ -92,13 +92,14 @@ public:
 
     static libff::alt_bn128_G2 AggregatePk(const std::vector<libff::alt_bn128_G2>& pks);
 
+    bool PopVerify(
+        const libff::alt_bn128_G2& public_key,
+        const libff::alt_bn128_G1& proof);    
+
 private:
     libff::alt_bn128_Fr agg_bls_sk_;
 
     libff::alt_bn128_G1 popProve();
-    bool popVerify(
-        const libff::alt_bn128_G2& public_key,
-        const libff::alt_bn128_G1& proof);
 };
 
 }

@@ -117,6 +117,7 @@ private:
             uint32_t member_idx = *sig.participants().begin();
             auto agg_bls_pk = elect_item->agg_bls_pk(member_idx);
             if (!agg_bls_pk) {
+                // 没有找到公钥或 POP 验证失败
                 return Status::kError;
             }
             auto verified = bls::AggBls().CoreVerify(
