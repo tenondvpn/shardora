@@ -59,7 +59,8 @@ public:
         std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap, 
         bool no_tx_allowed,
         bool directly_user_leader_txs,
-        BalanceMap& balance_map) = 0;
+        BalanceMap& balance_map,
+        zjcvm::ZjchainHost& zjc_host) = 0;
     // Accept a block and txs in it from sync msg.
     virtual Status AcceptSync(const view_block::protobuf::ViewBlockItem& block) = 0;
     // Commit a block
@@ -100,7 +101,8 @@ public:
         std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap, 
         bool no_tx_allowed,
         bool directly_user_leader_txs,
-        BalanceMap& balance_map) override;
+        BalanceMap& balance_map,
+        zjcvm::ZjchainHost& zjc_host) override;
     // Accept a synced block.
     Status AcceptSync(const view_block::protobuf::ViewBlockItem& block) override;
     // Commit a block and execute its txs.
@@ -138,7 +140,8 @@ private:
     Status DoTransactions(
         const std::shared_ptr<consensus::WaitingTxsItem>&,
         view_block::protobuf::ViewBlockItem*,
-        BalanceMap& balance_map);
+        BalanceMap& balance_map,
+        zjcvm::ZjchainHost& zjc_host);
     Status GetAndAddTxsLocally(
         std::shared_ptr<ViewBlockChain>& view_block_chain,
         const std::string& parent_hash,
@@ -174,7 +177,6 @@ private:
 
     uint32_t pool_idx_;
     std::shared_ptr<consensus::WaitingTxsPools> tx_pools_ = nullptr;
-    zjcvm::ZjchainHost zjc_host;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_= nullptr;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;

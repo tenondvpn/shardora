@@ -648,12 +648,14 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
     pro_msg_wrap->view_block_ptr->mutable_block_info()->clear_tx_list();
     auto balance_map_ptr = std::make_shared<BalanceMap>();
     auto& balance_map = *balance_map_ptr;
+    zjcvm::ZjchainHost zjc_host;
     if (acceptor()->Accept(
             view_block_chain_, 
             pro_msg_wrap, 
             true, 
             true, 
-            balance_map) != Status::kSuccess) {
+            balance_map,
+            zjc_host) != Status::kSuccess) {
         ZJC_WARN("====1.1.2 Accept pool: %d, verify view block failed, "
             "view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
             pool_idx_,
@@ -730,12 +732,14 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
     auto& proto_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
     pro_msg_wrap->acc_balance_map_ptr = std::make_shared<BalanceMap>();
     auto& balance_map = *pro_msg_wrap->acc_balance_map_ptr;
+    zjcvm::ZjchainHost zjc_host;
     if (acceptor()->Accept(
             view_block_chain_, 
             pro_msg_wrap, 
             true, 
             false, 
-            balance_map) != Status::kSuccess) {
+            balance_map,
+            zjc_host) != Status::kSuccess) {
         ZJC_WARN("====1.1.2 Accept pool: %d, verify view block failed, "
             "view: %lu, hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
             pool_idx_,

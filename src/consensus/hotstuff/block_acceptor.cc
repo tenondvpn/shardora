@@ -59,7 +59,8 @@ Status BlockAcceptor::Accept(
         std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap, 
         bool no_tx_allowed,
         bool directly_user_leader_txs,
-        BalanceMap& balance_map) {
+        BalanceMap& balance_map,
+        zjcvm::ZjchainHost& zjc_host) {
     auto b = common::TimeUtils::TimestampMs();
     defer({
             auto e = common::TimeUtils::TimestampMs();
@@ -126,7 +127,7 @@ Status BlockAcceptor::Accept(
     }
     
     // 3. Do txs and create block_tx
-    s = DoTransactions(txs_ptr, &view_block, balance_map);
+    s = DoTransactions(txs_ptr, &view_block, balance_map, zjc_host);
     if (s != Status::kSuccess) {
         ZJC_DEBUG("DoTransactions error!");
         return s;
@@ -512,9 +513,10 @@ void BlockAcceptor::MarkBlockTxsAsUsed(const block::protobuf::Block& block) {
 Status BlockAcceptor::DoTransactions(
         const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
-        BalanceMap& balance_map) {
+        BalanceMap& balance_map,
+        zjcvm::ZjchainHost& zjc_host) {
     Status s = BlockExecutorFactory().Create(security_ptr_)->DoTransactionAndCreateTxBlock(
-            txs_ptr, view_block, balance_map);
+            txs_ptr, view_block, balance_map, zjc_host);
     if (s != Status::kSuccess) {
         return s;
     }

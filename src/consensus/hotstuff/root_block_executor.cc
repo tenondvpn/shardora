@@ -8,12 +8,13 @@ namespace hotstuff {
 Status RootBlockExecutor::DoTransactionAndCreateTxBlock(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
-        BalanceMap& balance_map) {
+        BalanceMap& balance_map,
+        zjcvm::ZjchainHost& zjc_host) {
     if (txs_ptr->txs.size() == 1) {
         auto& tx = *txs_ptr->txs.begin()->second;
         switch (tx.tx_info.step()) {
         case pools::protobuf::kConsensusRootElectShard:
-            RootCreateElectConsensusShardBlock(txs_ptr, view_block, balance_map);
+            RootCreateElectConsensusShardBlock(txs_ptr, view_block, balance_map, zjc_host);
             break;
         case pools::protobuf::kConsensusRootTimeBlock:
         case pools::protobuf::kStatistic:
@@ -21,11 +22,11 @@ Status RootBlockExecutor::DoTransactionAndCreateTxBlock(
             RootDefaultTx(txs_ptr, view_block, balance_map);
             break;
         default:
-            RootCreateAccountAddressBlock(txs_ptr, view_block, balance_map);
+            RootCreateAccountAddressBlock(txs_ptr, view_block, balance_map, zjc_host);
             break;
         }
     } else {
-        RootCreateAccountAddressBlock(txs_ptr, view_block, balance_map);
+        RootCreateAccountAddressBlock(txs_ptr, view_block, balance_map, zjc_host);
     }
     
     return Status::kSuccess;
@@ -46,7 +47,8 @@ void RootBlockExecutor::RootDefaultTx(
 void RootBlockExecutor::RootCreateAccountAddressBlock(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
-        BalanceMap& acc_balance_map) {
+        BalanceMap& acc_balance_map,
+        zjcvm::ZjchainHost& zjc_host) {
     auto* block = view_block->mutable_block_info();
     auto tx_list = block->mutable_tx_list();
     auto& tx_map = txs_ptr->txs;
@@ -83,7 +85,8 @@ void RootBlockExecutor::RootCreateAccountAddressBlock(
 void RootBlockExecutor::RootCreateElectConsensusShardBlock(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
-        BalanceMap& acc_balance_map) {
+        BalanceMap& acc_balance_map,
+        zjcvm::ZjchainHost& zjc_host) {
     auto& tx_map = txs_ptr->txs;
     if (tx_map.size() != 1) {
         return;

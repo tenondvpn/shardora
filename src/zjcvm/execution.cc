@@ -122,7 +122,7 @@ evmc::bytes32 Execution::GetStorage(
         prefix_db_->GetTemporaryKv(str_key, &val);
     } else {
        if (prefix_db_->GetTemporaryKv(str_key, &val)) {
-                storage_map_[thread_idx].Insert(str_key, val);
+            storage_map_[thread_idx].Insert(str_key, val);
        } 
         // if (!storage_map_[thread_idx].Get(str_key, &val)) {
         //     // get from db and add to memory cache
