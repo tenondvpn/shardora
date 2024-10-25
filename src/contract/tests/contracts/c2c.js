@@ -307,19 +307,28 @@ async function SetManagerPrepayment(contract_address) {
     Prepayment("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 1000000000000);
     Prepayment("748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05", 1000000000000);
     Prepayment("b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5", 1000000000000);
-    for (var i = 10; i < 30; ++i) {
-        Prepayment('b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString(), 1000000000000);
-    }
-
     var account1 = web3.eth.accounts.privateKeyToAccount(
         '0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5');
     var account2 = web3.eth.accounts.privateKeyToAccount(
         '0x748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05');
     var account3 = web3.eth.accounts.privateKeyToAccount(
         '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5');
-    var account4 = web3.eth.accounts.privateKeyToAccount(
-        '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d129');
-    var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q "select count(distinct(user)) from zjc_ck_prepayment_table where contract='${contract_address}' and user in ('${account1.address.toString('hex').toLowerCase().substring(2)}', '${account2.address.toString('hex').toLowerCase().substring(2)}', '${account3.address.toString('hex').toLowerCase().substring(2)}', '${account4.address.toString('hex').toLowerCase().substring(2)}');"`;
+    var check_accounts_str = "";
+    check_accounts_str += "'" + account1.address.toString('hex').toLowerCase().substring(2) + "',"; 
+    check_accounts_str += "'" + account2.address.toString('hex').toLowerCase().substring(2) + "',"; 
+    check_accounts_str += "'" + account3.address.toString('hex').toLowerCase().substring(2) + "',"; 
+    for (var i = 10; i < 30; ++i) {
+        Prepayment('b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString(), 1000000000000);
+        var account4 = web3.eth.accounts.privateKeyToAccount(
+            '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString());
+        if (i == 29) {
+            check_accounts_str += "'" + account4.address.toString('hex').toLowerCase().substring(2) + "'"; 
+        } else {
+            check_accounts_str += "'" + account4.address.toString('hex').toLowerCase().substring(2) + "',"; 
+        }
+    }
+
+    var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q "select count(distinct(user)) from zjc_ck_prepayment_table where contract='${contract_address}' and user in (${check_accounts_str});"`;
     const { exec } = require('child_process');
     const execPromise = util.promisify(exec);
     // 检查合约是否创建成功
