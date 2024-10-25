@@ -1015,12 +1015,16 @@ void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg
     if (msg_ptr->address_info->balance() <
             tx_msg.amount() + tx_msg.contract_prepayment() +
             consensus::kCallContractDefaultUseGas * tx_msg.gas_price()) {
-        ZJC_DEBUG("address balance invalid: %lu, transfer amount: %lu, "
-            "prepayment: %lu, default call contract gas: %lu",
+        ZJC_DEBUG("address %s balance invalid: %lu, transfer amount: %lu, "
+            "prepayment: %lu, default call contract gas: %lu, from: %s, to: %s",
+            common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
             msg_ptr->address_info->balance(),
             tx_msg.amount(),
             tx_msg.contract_prepayment(),
-            consensus::kCallContractDefaultUseGas);
+            consensus::kCallContractDefaultUseGas,
+            common::Encode::HexEncode(security_->GetAddress(
+            msg_ptr->header.tx_proto().pubkey())).c_str(),
+            common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
         return;
     }
 

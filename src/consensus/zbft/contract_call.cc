@@ -34,6 +34,7 @@ int ContractCall::HandleTx(
     ZJC_DEBUG("contract called now.");
     uint64_t from_balance = 0;
     GetTempPerpaymentBalance(view_block, block_tx, acc_balance_map, &from_balance);
+    uint64_t test_from_balance = from_balance;
     if (from_balance <= kCallContractDefaultUseGas * block_tx.gas_price()) {
         block_tx.set_status(kConsensusOutOfGas);
         assert(false);
@@ -241,10 +242,11 @@ int ContractCall::HandleTx(
     acc_balance_map["pre_" + block_tx.from()] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
-    ZJC_DEBUG("contract called %s, user: %s, prepament: %lu, "
+    ZJC_DEBUG("contract called %s, user: %s, test_from_balance: %lu, prepament: %lu, "
         "gas used: %lu, gas_price: %lu, status: %d, step: %d",
         common::Encode::HexEncode(block_tx.to()).c_str(),
         common::Encode::HexEncode(block_tx.from()).c_str(),
+        test_from_balance,
         from_balance,
         gas_used,
         block_tx.gas_price(),

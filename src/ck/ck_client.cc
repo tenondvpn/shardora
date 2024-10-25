@@ -199,12 +199,21 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
             attr_value->Append(common::Encode::HexEncode(tx.storages(j).value()));
             ZJC_DEBUG("hash to ck add key: %s, val: %s", 
                 tx.storages(j).key().c_str(), 
-                common::Encode::HexEncode(tx.storages(j).value()).c_str());
+                "common::Encode::HexEncode(tx.storages(j).value()).c_str()");
         }
 
         if (tx.step() == pools::protobuf::kContractExcute /*&& tx.to() == common::GlobalInfo::Instance()->c2c_to()*/) {
+            {
+                auto contract = tx.to();
+                auto user = tx.from();
+                prepay_contract->Append(common::Encode::HexEncode(contract));
+                prepay_user->Append(common::Encode::HexEncode(user));
+                prepay_height->Append(block_item->height());
+                prepay_amount->Append(tx.balance());
+            }
+            
             nlohmann::json res;
-            ZJC_DEBUG("now handle contract.");
+            ZJC_DEBUG("now handle contract: %s", ProtobufToJson(tx).c_str());
             bool ret = QueryContract(tx.from(), tx.to(), &res);
             if (ret) {
                 for (auto iter = res.begin(); iter != res.end(); ++iter) {
@@ -432,7 +441,12 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
     ck_client.Insert(kClickhouseAccountKvTableName, account_attrs);
     ck_client.Insert(kClickhouseC2cTableName, c2cs);
     ck_client.Insert(kClickhousePrepaymentTableName, prepay);
+    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseTransTableName + " FINAL");
+    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseBlockTableName + " FINAL");
+    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountTableName + " FINAL");
+    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountKvTableName + " FINAL");
     ck_client.Execute(std::string("optimize TABLE ") + kClickhouseC2cTableName + " FINAL");
+    ck_client.Execute(std::string("optimize TABLE ") + kClickhousePrepaymentTableName + " FINAL");
     return true;
 } catch (std::exception& e) {
     ZJC_ERROR("add new block failed[%s]", e.what());
