@@ -674,6 +674,7 @@ if (args[0] == 0) {
 // 创建卖单
 if (args[0] == 1) {
     CreateNewSeller();
+    QueryContract("cdfd45bb");
     return;
 }
 
