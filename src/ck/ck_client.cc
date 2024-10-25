@@ -203,6 +203,15 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
         }
 
         if (tx.step() == pools::protobuf::kContractExcute /*&& tx.to() == common::GlobalInfo::Instance()->c2c_to()*/) {
+            {
+                auto contract = tx.from();
+                auto user = tx.to();
+                prepay_contract->Append(common::Encode::HexEncode(contract));
+                prepay_user->Append(common::Encode::HexEncode(user));
+                prepay_height->Append(block_item->height());
+                prepay_amount->Append(tx.balance());
+            }
+            
             nlohmann::json res;
             ZJC_DEBUG("now handle contract: %s", ProtobufToJson(tx).c_str());
             bool ret = QueryContract(tx.from(), tx.to(), &res);
