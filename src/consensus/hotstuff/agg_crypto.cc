@@ -153,6 +153,36 @@ std::shared_ptr<AggregateQC> AggCrypto::CreateAggregateQC(
             view);
 }
 
+Status AggCrypto::VerifyAggregateQC(
+        uint32_t sharding_id,
+        uint64_t elect_height,
+        const std::shared_ptr<AggregateQC>& agg_qc,
+        std::shared_ptr<QC> high_qc) {
+    auto elect_item = GetElectItem(sharding_id, elect_height);
+    if (!elect_item) {
+        return Status::kError;
+    }
+    
+    std::unordered_map<uint32_t, HashStr> msg_hashes;
+    auto qc_map = agg_qc->QCs();
+    for (auto iter = qc_map.begin(); iter != qc_map.end(); iter++) {
+        auto member_idx = iter->first;
+        auto qc = iter->second;
+
+        if (high_qc->view() < qc->view()) {
+            high_qc = qc;
+        }
+
+        msg_hashes[member_idx] = GetQCMsgHash(*qc);
+    }
+
+    if (agg_qc->Sig()->participants().size() < elect_item->t()) {
+        return Status::kError;
+    }
+
+    return BatchVerify(*agg_qc->Sig(), msg_hashes);
+}
+
 Status AggCrypto::SignMessage(transport::MessagePtr& msg_ptr) {
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
     std::string sign;

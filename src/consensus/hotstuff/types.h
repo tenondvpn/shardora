@@ -65,6 +65,7 @@ HashStr GetTCMsgHash(const view_block::protobuf::QcItem& tc_item);
 
 struct AggregateSignature {
     libff::alt_bn128_G1 sig_;
+    // 因为要使用聚合签名，需要聚合公钥，因此必须知道参与者都有谁
     std::unordered_set<uint32_t> participants_; // member indexes who submit signatures
 
     AggregateSignature() : sig_(libff::alt_bn128_G1::zero()) {}

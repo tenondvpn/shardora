@@ -68,6 +68,7 @@ public:
     void OnRemoteTimeout(const transport::MessagePtr& msg_ptr);
     // 视图切换
     void NewTc(const std::shared_ptr<view_block::protobuf::QcItem>& tc);
+    void NewAggQc(const std::shared_ptr<AggregateQC>& agg_qc);
     void NewQcView(uint64_t qc_view);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 

@@ -69,6 +69,12 @@ void Pacemaker::NewTc(const std::shared_ptr<view_block::protobuf::QcItem>& tc) {
     StartTimeoutTimer();
 }
 
+void Pacemaker::NewAggQc(const std::shared_ptr<AggregateQC>& agg_qc) {
+    if (agg_qc && agg_qc->IsValid()) {
+        
+    }
+}
+
 void Pacemaker::NewQcView(uint64_t qc_view) {
     if (cur_view_ < qc_view + 1) {
         cur_view_ = qc_view + 1;
@@ -301,67 +307,65 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     }
 
 #ifdef USE_AGG_BLS
-    // // 统计 high_qc，用于生成 AggQC
-    // if (timeout_proto.view() < high_qcs_view_) {
-    //     return;
-    // }
+    // 统计 high_qc，用于生成 AggQC
+    if (timeout_proto.view() < high_qcs_view_) {
+        return;
+    }
 
-    // if (timeout_proto.view() > high_qcs_view_) {
-    //     high_qcs_.clear();
-    //     high_qc_sigs_.clear();
-    //     high_qcs_view_ = timeout_proto.view();
-    // }
+    if (timeout_proto.view() > high_qcs_view_) {
+        high_qcs_.clear();
+        high_qc_sigs_.clear();
+        high_qcs_view_ = timeout_proto.view();
+    }
     
-    // auto high_qc_of_node = std::make_shared<QC>();
-    // if (!high_qc_of_node->Unserialize(timeout_proto.high_qc_str())) {
-    //     return;
-    // }
-    // AggregateSignature* high_qc_sig_of_node;
-    // if (!high_qc_sig_of_node->Unserialize(timeout_proto.high_qc_sig_str())) {
-    //     return;
-    // }
+    auto high_qc_of_node = std::make_shared<QC>(timeout_proto.high_qc());
+    AggregateSignature* high_qc_sig_of_node;
+    if (!high_qc_sig_of_node->LoadFromProto(timeout_proto.high_qc_sig())) {
+        return;
+    }
     
-    // high_qcs_.insert(std::make_pair(timeout_proto.member_id(), high_qc_of_node));
-    // high_qc_sigs_.push_back(high_qc_sig_of_node);
+    high_qcs_.insert(std::make_pair(timeout_proto.member_id(), high_qc_of_node));
+    high_qc_sigs_.push_back(high_qc_sig_of_node);
     
-    // // 生成 TC
-    // AggregateSignature* partial_sig;
-    // if (!partial_sig->Unserialize(timeout_proto.view_sig_str())) {
-    //     return;
-    // }
+    // 生成 TC
+    AggregateSignature* partial_sig;
+    if (!partial_sig->Unserialize(timeout_proto.view_sig_str())) {
+        return;
+    }
     
-    // AggregateSignature* agg_sig;
-    // Status s = crypto_->VerifyAndAggregateSig(
-    //         timeout_proto.elect_height(),
-    //         timeout_proto.view(),
-    //         timeout_proto.view_hash(),
-    //         *partial_sig,
-    //         *agg_sig);
-    // ZJC_DEBUG("====4.0 pool: %d, view: %d, member: %d, status: %d, hash64: %lu", 
-    //     pool_idx_, timeout_proto.view(), timeout_proto.member_id(), s,
-    //     msg_ptr->header.hash64());    
-    // if (s != Status::kSuccess || !agg_sig->IsValid()) {
-    //     return;
-    // }
+    AggregateSignature* agg_sig;
+    Status s = crypto_->VerifyAndAggregateSig(
+            timeout_proto.elect_height(),
+            timeout_proto.view(),
+            timeout_proto.view_hash(),
+            *partial_sig,
+            *agg_sig);
+    ZJC_DEBUG("====4.0 pool: %d, view: %d, member: %d, status: %d, hash64: %lu", 
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), s,
+        msg_ptr->header.hash64());    
+    if (s != Status::kSuccess || !agg_sig->IsValid()) {
+        return;
+    }
     
-    // auto tc = std::make_shared<TC>(
-    //     common::GlobalInfo::Instance()->network_id(),
-    //     pool_idx_,
-    //     agg_sig,
-    //     timeout_proto.view(),
-    //     timeout_proto.elect_height(),
-    //     timeout_proto.leader_idx());
+    auto tc = std::make_shared<TC>(
+        common::GlobalInfo::Instance()->network_id(),
+        pool_idx_,
+        agg_sig,
+        timeout_proto.view(),
+        timeout_proto.elect_height(),
+        timeout_proto.leader_idx());
 
-    // auto agg_qc = crypto_->CreateAggregateQC(
-    //         common::GlobalInfo::Instance()->network_id(),
-    //         timeout_proto.elect_height(),
-    //         timeout_proto.view(),
-    //         high_qcs_,
-    //         high_qc_sigs_);
-    // if (!agg_qc || !agg_qc->IsValid()) {
-    //     return;
-    // }
+    auto agg_qc = crypto_->CreateAggregateQC(
+            common::GlobalInfo::Instance()->network_id(),
+            timeout_proto.elect_height(),
+            timeout_proto.view(),
+            high_qcs_,
+            high_qc_sigs_);
+    if (!agg_qc || !agg_qc->IsValid()) {
+        return;
+    }
 
+    NewTc(tc);
     // AdvanceView(new_sync_info()->WithTC(tc)->WithAggQC(agg_qc));
 
     // // NewView msg broadcast

@@ -74,7 +74,12 @@ public:
             View view,
             const std::unordered_map<uint32_t, std::shared_ptr<QC>>& high_qcs,
             const std::vector<AggregateSignature*>& high_qc_sigs);
-
+    Status VerifyAggregateQC(
+            uint32_t sharding_id,
+            uint64_t elect_height,
+            const std::shared_ptr<AggregateQC>& agg_qc,
+            std::shared_ptr<QC> high_qc);
+    
     Status SignMessage(transport::MessagePtr& msg_ptr);
     Status VerifyMessage(const transport::MessagePtr& msg_ptr);
 
