@@ -518,7 +518,7 @@ async function CreateNewSeller(str_prikey) {
                     break;
                 }
 
-                console.log(`get old prepayment error: ${stderr} count: ${stdout}`);
+                console.log(`${cmd} get old prepayment error: ${stderr} count: ${stdout}`);
             } catch (error) {
                 console.log(error);
             }
