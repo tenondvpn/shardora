@@ -455,17 +455,21 @@ function InitC2cEnv() {
         var out_lines = stdout.split('\n');
         console.log(`solc bin codes: ${out_lines[3]}`);
         {
-            var account1 = web3.eth.accounts.privateKeyToAccount('0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5');
+            var account1 = web3.eth.accounts.privateKeyToAccount(
+                '0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5');
             console.log("account1 :");
             console.log(account1.address.toString('hex').toLowerCase().substring(2));
-            var account2 = web3.eth.accounts.privateKeyToAccount('0x748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05');
+            var account2 = web3.eth.accounts.privateKeyToAccount(
+                '0x748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05');
             console.log("account2 :");
             console.log(account2.address.toString('hex').toLowerCase().substring(2));
-            var account3 = web3.eth.accounts.privateKeyToAccount('0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5');
+            var account3 = web3.eth.accounts.privateKeyToAccount(
+                '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5');
             console.log("account3 :");
             console.log(account3.address.toString('hex').toLowerCase().substring(2));
             // 卖家账户设置
-            var account4 = web3.eth.accounts.privateKeyToAccount('0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e0');
+            var account4 = web3.eth.accounts.privateKeyToAccount(
+                '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e0');
             console.log("account4 :");
             console.log(account4.address);
             var cons_codes = web3.eth.abi.encodeParameters(['address[]', 'uint256', 'uint256'],
