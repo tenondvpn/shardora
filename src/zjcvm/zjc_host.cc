@@ -321,6 +321,18 @@ int ZjchainHost::SaveKeyValue(
         common::Encode::HexEncode(id).c_str(),
         common::Encode::HexEncode(key).c_str(),
         common::Encode::HexEncode(val).c_str());
+    return SaveKeyValue(addr, key, val);
+}
+
+int ZjchainHost::SaveKeyValue(
+        const evmc::address& addr,
+        const std::string& key,
+        const std::string& val) {
+    ZJC_DEBUG("called 13");
+    CONTRACT_DEBUG("zjcvm set storage called, id: %s, key: %s, value: %s",
+        common::Encode::HexEncode(std::string((char*)addr.bytes, sizeof(addr.bytes))).c_str(),
+        common::Encode::HexEncode(key).c_str(),
+        common::Encode::HexEncode(val).c_str());
     auto it = accounts_.find(addr);
     if (it == accounts_.end()) {
         accounts_[addr] = MockedAccount();

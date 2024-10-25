@@ -648,7 +648,10 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
     pro_msg_wrap->view_block_ptr->mutable_block_info()->clear_tx_list();
     auto balance_map_ptr = std::make_shared<BalanceMap>();
     auto& balance_map = *balance_map_ptr;
-    zjcvm::ZjchainHost zjc_host;
+    auto zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
+    zjcvm::ZjchainHost prev_zjc_host;
+    zjcvm::ZjchainHost& zjc_host = *zjc_host_ptr;
+    zjc_host.prev_zjc_host_ = &prev_zjc_host;
     if (acceptor()->Accept(
             view_block_chain_, 
             pro_msg_wrap, 
@@ -697,7 +700,7 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
         return Status::kNotExpectHash;
     }
 
-    Status s = view_block_chain()->Store(pro_msg_wrap->view_block_ptr, true, balance_map_ptr);
+    Status s = view_block_chain()->Store(pro_msg_wrap->view_block_ptr, true, balance_map_ptr, zjc_host_ptr);
     ZJC_DEBUG("pool: %d, add view block hash: %s, status: %d, view: %u_%u_%lu, tx size: %u",
         pool_idx_, 
         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
@@ -732,7 +735,9 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
     auto& proto_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
     pro_msg_wrap->acc_balance_map_ptr = std::make_shared<BalanceMap>();
     auto& balance_map = *pro_msg_wrap->acc_balance_map_ptr;
-    zjcvm::ZjchainHost zjc_host;
+    pro_msg_wrap->zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
+    zjcvm::ZjchainHost prev_zjc_host;
+    zjcvm::ZjchainHost& zjc_host = *pro_msg_wrap->zjc_host_ptr;
     if (acceptor()->Accept(
             view_block_chain_, 
             pro_msg_wrap, 
@@ -776,7 +781,8 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
     Status s = view_block_chain()->Store(
         pro_msg_wrap->view_block_ptr, 
         false, 
-        pro_msg_wrap->acc_balance_map_ptr);
+        pro_msg_wrap->acc_balance_map_ptr,
+        pro_msg_wrap->zjc_host_ptr);
     ZJC_DEBUG("pool: %d, add view block hash: %s, status: %d, view: %u_%u_%lu, tx size: %u, propose_debug: %s",
         pool_idx_, 
         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),

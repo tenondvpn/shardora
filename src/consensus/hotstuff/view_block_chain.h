@@ -8,6 +8,7 @@
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/hotstuff_utils.h>
 #include <protos/prefix_db.h>
+#include "zjcvm/zjc_host.h"
 
 namespace shardora {
 
@@ -44,6 +45,7 @@ public:
         std::shared_ptr<QC> qc;
         std::unordered_set<std::string> added_txs;
         BalanceMapPtr acc_balance_map_ptr;
+        std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr;
 
         ViewBlockInfo() : 
             view_block(nullptr), 
@@ -61,7 +63,8 @@ public:
     Status Store(
         const std::shared_ptr<ViewBlock>& view_block, 
         bool directly_store, 
-        BalanceMapPtr balane_map_ptr);
+        BalanceMapPtr balane_map_ptr,
+        std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr);
     // Get Block by hash value, fetch from neighbor nodes if necessary
     std::shared_ptr<ViewBlock> Get(const HashStr& hash);
     std::shared_ptr<ViewBlock> Get(View view) {
@@ -86,6 +89,41 @@ public:
     Status GetAllVerified(std::vector<std::shared_ptr<ViewBlock>>&);
 
     Status GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>&);
+
+    void MergeAllPrevStorageMap(
+            const std::string& parent_hash, 
+            zjcvm::ZjchainHost& zjc_host) {
+        std::string phash = parent_hash;
+        uint32_t count = 0;
+        while (true) {
+            if (phash.empty()) {
+                break;
+            }
+
+            auto it = view_blocks_info_.find(phash);
+            if (it == view_blocks_info_.end()) {
+                break;
+            }
+
+            if (it->second->zjc_host_ptr) {
+                auto& accounts_storage_map = it->second->zjc_host_ptr->accounts_storage();
+                auto& now_acconts_map = zjc_host.accounts_storage();
+                for (auto iter = accounts_storage_map.begin(); iter != accounts_storage_map.end(); ++iter) {
+                    auto& storage_map = iter->second.storage;
+                    for (auto siter = storage_map.begin(); siter != storage_map.end(); ++siter) {
+                        zjc_host.set_storage(iter->first, siter->first, siter->second.value);
+                    }
+
+                    auto& str_storage_map = iter->second.str_storage;
+                    for (auto siter = str_storage_map.begin(); siter != str_storage_map.end(); ++siter) {
+                        zjc_host.SaveKeyValue(iter->first, siter->first, siter->second.str_val);
+                    }
+                }
+            }
+            
+            phash = it->second->view_block->parent_hash();
+        }
+    }
 
     void MergeAllPrevBalanceMap(
             const std::string& parent_hash, 
@@ -383,7 +421,8 @@ private:
 
     std::shared_ptr<ViewBlockInfo> GetViewBlockInfo(
             const std::shared_ptr<ViewBlock>& view_block, 
-            BalanceMapPtr acc_balance_map_ptr) {
+            BalanceMapPtr acc_balance_map_ptr,
+            std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr) {
         auto view_block_info_ptr = std::make_shared<ViewBlockInfo>();
         ZJC_DEBUG("add new view block %s, leader: %d",
             common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view());
@@ -393,6 +432,7 @@ private:
 
         view_block_info_ptr->view_block = view_block;
         view_block_info_ptr->acc_balance_map_ptr = acc_balance_map_ptr;
+        view_block_info_ptr->zjc_host_ptr = zjc_host_ptr;
         return view_block_info_ptr;
     }
 

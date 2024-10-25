@@ -135,7 +135,8 @@ private:
         const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
         bool directly_user_leader_txs,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-        BalanceMap& now_balance_map);
+        BalanceMap& now_balance_map,
+        zjcvm::ZjchainHost& zjc_host);
     bool IsBlockValid(const view_block::protobuf::ViewBlockItem&);
     Status DoTransactions(
         const std::shared_ptr<consensus::WaitingTxsItem>&,

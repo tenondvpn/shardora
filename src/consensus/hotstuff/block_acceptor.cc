@@ -191,12 +191,14 @@ Status BlockAcceptor::addTxsToPool(
         const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
         bool directly_user_leader_txs,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-        BalanceMap& now_balance_map) {
+        BalanceMap& now_balance_map,
+        zjcvm::ZjchainHost& zjc_host) {
     if (txs.size() == 0) {
         return Status::kAcceptorTxsEmpty;
     }
     
     BalanceMap prevs_balance_map;
+    view_block_chain->MergeAllPrevStorageMap(parent_hash, zjc_host);
     view_block_chain->MergeAllPrevBalanceMap(parent_hash, prevs_balance_map);
     ZJC_DEBUG("merge prev all balance size: %u", prevs_balance_map.size());
     std::map<std::string, pools::TxItemPtr> txs_map;

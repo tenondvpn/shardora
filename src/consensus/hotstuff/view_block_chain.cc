@@ -25,7 +25,8 @@ ViewBlockChain::~ViewBlockChain(){}
 Status ViewBlockChain::Store(
         const std::shared_ptr<ViewBlock>& view_block, 
         bool directly_store, 
-        BalanceMapPtr balane_map_ptr) {
+        BalanceMapPtr balane_map_ptr,
+        std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr) {
     if (!network::IsSameToLocalShard(view_block->qc().network_id())) {
         return Status::kSuccess;
     }
@@ -72,7 +73,7 @@ Status ViewBlockChain::Store(
         view_block->qc().view(), view_block->block_info().height(),
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(view_block->parent_hash()).c_str());
-    auto block_info_ptr = GetViewBlockInfo(view_block, balane_map_ptr);
+    auto block_info_ptr = GetViewBlockInfo(view_block, balane_map_ptr, zjc_host_ptr);
     auto& view_block_at_height_vec = view_blocks_at_height_[view_block->qc().view()];
     if (!view_block_at_height_vec.empty()) {
         for (auto iter = view_block_at_height_vec.begin(); iter != view_block_at_height_vec.end();) {

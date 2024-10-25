@@ -105,7 +105,11 @@ public:
     // tmp item
     void AddTmpAccountBalance(const std::string& address, uint64_t balance);
     int SaveKeyValue(const std::string& id, const std::string& key, const std::string& val);
+    int SaveKeyValue(const evmc::address& addr, const std::string& key, const std::string& val);
     int GetKeyValue(const std::string& id, const std::string& key, std::string* val);
+    const std::map<evmc::address, MockedAccount>& accounts_storage() const {
+        return accounts_;
+    }
 
     std::map<evmc::address, MockedAccount> accounts_;
     evmc_tx_context tx_context_ = {};
@@ -122,6 +126,7 @@ public:
     std::string create_bytes_code_;
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
+    zjcvm::ZjchainHost* prev_zjc_host_ = nullptr;
 
 };
 
