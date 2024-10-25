@@ -564,6 +564,7 @@ void BlockManager::createConsensusLocalToTxs(
     ZJC_DEBUG("to_tx_map size: %lu", to_tx_map.size());
     // 一个 pool 生成一个 Consensuslocaltos
     for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {
+#ifndef NDEBUG
         // 48 ? des = to(20) + from(20)  = 40, 40 + pool(4) + amount(8) = 52
         for (int32_t i = 0; i < iter->second.tos_size(); ++i) {
             uint32_t pool_idx = iter->second.tos(i).pool_index();
@@ -571,7 +572,7 @@ void BlockManager::createConsensusLocalToTxs(
             ZJC_DEBUG("ammount success add local transfer to %s, %lu",
                 common::Encode::HexEncode(iter->second.tos(i).des()).c_str(), amount);
         }
-
+#endif
         // 由于是异步的，因此需要持久化 kv 来传递数据，但是 to 需要填充以分配交易池
         // pool index 是指定好的，而不是 shard 分配的，所以需要将 to 设置为 pool addr
         auto val = iter->second.SerializeAsString();
@@ -586,7 +587,7 @@ void BlockManager::createConsensusLocalToTxs(
         tx->set_pubkey("");
         tx->set_to(msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kConsensusLocalTos);
-        auto gid = common::Hash::keccak256(to_tx.gid());
+        auto gid = common::Hash::keccak256(to_tx.gid() + msg_ptr->address_info->addr());
         tx->set_gas_limit(0);
         tx->set_amount(0); // 具体 amount 在 kv 中
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
