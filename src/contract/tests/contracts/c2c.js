@@ -538,7 +538,7 @@ function InitC2cEnv() {
                         var dictionary = new Set();
                         console.log(`transfer to manager address split_lines.length: ${split_lines.length}`);
                         if (split_lines.length >= 4) {
-                            for (var line_idx = 0; line_idx < 4; ++line_idx) {
+                            for (var line_idx = 0; line_idx < split_lines.length; ++line_idx) {
                                 var item_split = split_lines[line_idx].split("\t");
                                 var new_balance = parseInt(item_split[1].trim(), 10);
                                 if (new_balance >= 1100000000000) {
@@ -676,7 +676,6 @@ if (args[0] == 1) {
     CreateNewSeller();
     return;
 }
-
 
 
 
