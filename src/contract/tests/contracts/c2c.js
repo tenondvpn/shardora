@@ -361,7 +361,8 @@ function Prepayment(prepay) {
 async function SetManagerPrepayment(contract_address) {
     // 为管理账户设置prepayment
     {
-        const privateKeyBuf = Secp256k1.uint256("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 16)
+        const privateKeyBuf = Secp256k1.uint256(
+            "20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 16)
         self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
         self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
         var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
@@ -373,7 +374,8 @@ async function SetManagerPrepayment(contract_address) {
     }
 
     {
-        const privateKeyBuf = Secp256k1.uint256("748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05", 16)
+        const privateKeyBuf = Secp256k1.uint256(
+            "748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05", 16)
         self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
         self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
         var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
@@ -385,7 +387,8 @@ async function SetManagerPrepayment(contract_address) {
     }
 
     {
-        const privateKeyBuf = Secp256k1.uint256("b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5", 16)
+        const privateKeyBuf = Secp256k1.uint256(
+            "b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5", 16)
         self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
         self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
         var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
@@ -397,7 +400,8 @@ async function SetManagerPrepayment(contract_address) {
     }
 
     for (var i = 10; i < 30; ++i) {
-        const privateKeyBuf = Secp256k1.uint256('b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + str(i), 16)
+        const privateKeyBuf = Secp256k1.uint256(
+            'b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString(), 16)
         self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
         self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
         var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
@@ -476,7 +480,7 @@ function InitC2cEnv() {
             for (var i = 10; i < 30; ++i) {
                 // 卖家账户设置
                 var account4 = web3.eth.accounts.privateKeyToAccount(
-                    '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + str(i));
+                    '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString());
                 console.log(`account ${i}:`);
                 console.log(account4.address);
                 do_transaction(account4.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
