@@ -199,7 +199,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
             attr_value->Append(common::Encode::HexEncode(tx.storages(j).value()));
             ZJC_DEBUG("hash to ck add key: %s, val: %s", 
                 tx.storages(j).key().c_str(), 
-                common::Encode::HexEncode(tx.storages(j).value()).c_str());
+                "common::Encode::HexEncode(tx.storages(j).value()).c_str()");
         }
 
         if (tx.step() == pools::protobuf::kContractExcute /*&& tx.to() == common::GlobalInfo::Instance()->c2c_to()*/) {

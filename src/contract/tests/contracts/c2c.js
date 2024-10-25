@@ -612,8 +612,13 @@ async function CreateNewSeller() {
                 const {stdout, stderr} = await execPromise(cmd);
                 if (stdout.trim() != "") {
                     var new_prepayment = parseInt(stdout, 10)
-                    if (new_prepayment - old_prepayment >= sell_amount) {
-                        console.error(`get new prepayment success: ${stdout}`);
+                    if (old_prepayment - new_prepayment >= sell_amount) {
+                        console.error(`get new prepayment success: ${stdout.trim()}, sell_amount: ${sell_amount}`);
+                        break;
+                    }
+
+                    if (old_prepayment > new_prepayment) {
+                        console.error(`get new prepayment failed: ${stdout.trim()}, sell_amount: ${sell_amount}`);
                         break;
                     }
                 }

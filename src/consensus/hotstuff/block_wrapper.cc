@@ -87,7 +87,7 @@ Status BlockWrapper::Wrap(
                 tx_info->step(),
                 common::Encode::HexEncode(tx_info->to()).c_str(),
                 common::Encode::HexEncode(tx_info->gid()).c_str(),
-                ProtobufToJson(*tx_info).c_str());
+                "ProtobufToJson(*tx_info).c_str()");
         }
         tx_propose->set_tx_type(txs_ptr->tx_type);
     }
