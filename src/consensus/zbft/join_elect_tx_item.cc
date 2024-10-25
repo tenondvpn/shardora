@@ -1,4 +1,6 @@
 #include "consensus/zbft/join_elect_tx_item.h"
+#include <bls/bls_utils.h>
+#include <protos/tx_storage_key.h>
 
 namespace shardora {
 
@@ -109,6 +111,11 @@ int JoinElectTxItem::HandleTx(
         if (agg_bls_pk_proto) {
             pk_storage->set_key(protos::kAggBlsPublicKey);
             pk_storage->set_value(agg_bls_pk_proto->SerializeAsString());
+        }
+        auto proof_proto = bls::BlsPopProof2Proto(from_agg_bls_pk_proof_);
+        if (proof_proto) {
+            pk_storage->set_key(protos::kAggBlsPopProof);
+            pk_storage->set_value(proof_proto->SerializeAsString());
         }
     }
 

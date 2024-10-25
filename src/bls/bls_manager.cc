@@ -1,5 +1,6 @@
 #include "bls/bls_manager.h"
 
+#include <bls/bls_utils.h>
 #include <dkg/dkg.h>
 #include <libbls/bls/BLSPrivateKey.h>
 #include <libbls/bls/BLSPrivateKeyShare.h>
@@ -92,13 +93,15 @@ void BlsManager::OnNewElectBlock(
     for (int32_t i = 0; i < in.size(); ++i) {
         auto id = security_->GetAddress(in[i].pubkey());
         auto agg_bls_pk = bls::Proto2BlsPublicKey(in[i].agg_bls_pk());
+        auto agg_bls_pk_proof = bls::Proto2BlsPopProof(in[i].agg_bls_pk_proof());
         members->push_back(std::make_shared<common::BftMember>(
             elect_block->shard_network_id(),
             id,
             in[i].pubkey(),
             i,
             in[i].pool_idx_mod_num(),
-            *agg_bls_pk));
+            *agg_bls_pk,
+            *agg_bls_pk_proof));
     }
 
     elect_item->members = members;

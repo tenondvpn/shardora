@@ -25,6 +25,7 @@ struct ElectNodeInfo {
     uint64_t mining_token;
     uint64_t consensus_gap;
     libff::alt_bn128_G2 agg_bls_pk; // agg bls 公钥
+    libff::alt_bn128_G1 agg_bls_pk_proof; // agg bls pk 的 pop proof
 };
 
 typedef std::shared_ptr<ElectNodeInfo> NodeDetailPtr;

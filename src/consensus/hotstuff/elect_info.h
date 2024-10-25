@@ -40,6 +40,7 @@ public:
             }
             
             member_aggbls_pk_map_[(*members)[i]->index] = (*members)[i]->agg_bls_pk;
+            member_aggbls_pk_proof_map_[(*members)[i]->index] = (*members)[i]->agg_bls_pk_proof;
         }
 
         elect_height_ = elect_height;
@@ -114,6 +115,13 @@ public:
         }
         return nullptr;
     }
+
+    libff::alt_bn128_G1* agg_bls_pk_proof(uint32_t member_idx) {
+        if (member_aggbls_pk_proof_map_.find(member_idx) != member_aggbls_pk_proof_map_.end()) {
+            return &member_aggbls_pk_proof_map_[member_idx];
+        }
+        return nullptr;
+    }
     
 private:
     void SetMemberCount(uint32_t mem_cnt) {
@@ -131,6 +139,7 @@ private:
     uint32_t bls_t_{0};
     uint32_t bls_n_{0};
     std::unordered_map<uint32_t, libff::alt_bn128_G2> member_aggbls_pk_map_;
+    std::unordered_map<uint32_t, libff::alt_bn128_G1> member_aggbls_pk_proof_map_;
     
     std::unordered_map<uint32_t, std::shared_ptr<ConsensusStat>> pool_consen_stat_map_; 
 };

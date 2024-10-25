@@ -38,7 +38,7 @@ namespace protobuf_protos_2felect_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[14];
+  static const ::google::protobuf::internal::ParseTable schema[15];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -48,6 +48,9 @@ void AddDescriptors();
 namespace shardora {
 namespace elect {
 namespace protobuf {
+class BlsPopProof;
+class BlsPopProofDefaultTypeInternal;
+extern BlsPopProofDefaultTypeInternal _BlsPopProof_default_instance_;
 class BlsPublicKey;
 class BlsPublicKeyDefaultTypeInternal;
 extern BlsPublicKeyDefaultTypeInternal _BlsPublicKey_default_instance_;
@@ -95,6 +98,7 @@ extern memberDefaultTypeInternal _member_default_instance_;
 }  // namespace shardora
 namespace google {
 namespace protobuf {
+template<> ::shardora::elect::protobuf::BlsPopProof* Arena::CreateMaybeMessage<::shardora::elect::protobuf::BlsPopProof>(Arena*);
 template<> ::shardora::elect::protobuf::BlsPublicKey* Arena::CreateMaybeMessage<::shardora::elect::protobuf::BlsPublicKey>(Arena*);
 template<> ::shardora::elect::protobuf::ElectBlock* Arena::CreateMaybeMessage<::shardora::elect::protobuf::ElectBlock>(Arena*);
 template<> ::shardora::elect::protobuf::ElectMessage* Arena::CreateMaybeMessage<::shardora::elect::protobuf::ElectMessage>(Arena*);
@@ -515,6 +519,164 @@ class BlsPublicKey : public ::google::protobuf::Message /* @@protoc_insertion_po
 };
 // -------------------------------------------------------------------
 
+class BlsPopProof : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.elect.protobuf.BlsPopProof) */ {
+ public:
+  BlsPopProof();
+  virtual ~BlsPopProof();
+
+  BlsPopProof(const BlsPopProof& from);
+
+  inline BlsPopProof& operator=(const BlsPopProof& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  BlsPopProof(BlsPopProof&& from) noexcept
+    : BlsPopProof() {
+    *this = ::std::move(from);
+  }
+
+  inline BlsPopProof& operator=(BlsPopProof&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const BlsPopProof& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const BlsPopProof* internal_default_instance() {
+    return reinterpret_cast<const BlsPopProof*>(
+               &_BlsPopProof_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    2;
+
+  void Swap(BlsPopProof* other);
+  friend void swap(BlsPopProof& a, BlsPopProof& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline BlsPopProof* New() const final {
+    return CreateMaybeMessage<BlsPopProof>(NULL);
+  }
+
+  BlsPopProof* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<BlsPopProof>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const BlsPopProof& from);
+  void MergeFrom(const BlsPopProof& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(BlsPopProof* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional bytes sign_x = 1;
+  bool has_sign_x() const;
+  void clear_sign_x();
+  static const int kSignXFieldNumber = 1;
+  const ::std::string& sign_x() const;
+  void set_sign_x(const ::std::string& value);
+  #if LANG_CXX11
+  void set_sign_x(::std::string&& value);
+  #endif
+  void set_sign_x(const char* value);
+  void set_sign_x(const void* value, size_t size);
+  ::std::string* mutable_sign_x();
+  ::std::string* release_sign_x();
+  void set_allocated_sign_x(::std::string* sign_x);
+
+  // optional bytes sign_y = 2;
+  bool has_sign_y() const;
+  void clear_sign_y();
+  static const int kSignYFieldNumber = 2;
+  const ::std::string& sign_y() const;
+  void set_sign_y(const ::std::string& value);
+  #if LANG_CXX11
+  void set_sign_y(::std::string&& value);
+  #endif
+  void set_sign_y(const char* value);
+  void set_sign_y(const void* value, size_t size);
+  ::std::string* mutable_sign_y();
+  ::std::string* release_sign_y();
+  void set_allocated_sign_y(::std::string* sign_y);
+
+  // optional bytes sign_z = 3;
+  bool has_sign_z() const;
+  void clear_sign_z();
+  static const int kSignZFieldNumber = 3;
+  const ::std::string& sign_z() const;
+  void set_sign_z(const ::std::string& value);
+  #if LANG_CXX11
+  void set_sign_z(::std::string&& value);
+  #endif
+  void set_sign_z(const char* value);
+  void set_sign_z(const void* value, size_t size);
+  ::std::string* mutable_sign_z();
+  ::std::string* release_sign_z();
+  void set_allocated_sign_z(::std::string* sign_z);
+
+  // @@protoc_insertion_point(class_scope:shardora.elect.protobuf.BlsPopProof)
+ private:
+  void set_has_sign_x();
+  void clear_has_sign_x();
+  void set_has_sign_y();
+  void clear_has_sign_y();
+  void set_has_sign_z();
+  void clear_has_sign_z();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::internal::ArenaStringPtr sign_x_;
+  ::google::protobuf::internal::ArenaStringPtr sign_y_;
+  ::google::protobuf::internal::ArenaStringPtr sign_z_;
+  friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class PrevMemberInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.elect.protobuf.PrevMemberInfo) */ {
  public:
   PrevMemberInfo();
@@ -557,7 +719,7 @@ class PrevMemberInfo : public ::google::protobuf::Message /* @@protoc_insertion_
                &_PrevMemberInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    2;
+    3;
 
   void Swap(PrevMemberInfo* other);
   friend void swap(PrevMemberInfo& a, PrevMemberInfo& b) {
@@ -743,7 +905,7 @@ class PrevMembers : public ::google::protobuf::Message /* @@protoc_insertion_poi
                &_PrevMembers_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    3;
+    4;
 
   void Swap(PrevMembers* other);
   friend void swap(PrevMembers& a, PrevMembers& b) {
@@ -885,7 +1047,7 @@ class member : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
                &_member_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    5;
 
   void Swap(member* other);
   friend void swap(member& a, member& b) {
@@ -964,6 +1126,18 @@ class member : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::shardora::elect::protobuf::BlsPublicKey* mutable_agg_bls_pk();
   void set_allocated_agg_bls_pk(::shardora::elect::protobuf::BlsPublicKey* agg_bls_pk);
 
+  // optional .shardora.elect.protobuf.BlsPopProof agg_bls_pk_proof = 7;
+  bool has_agg_bls_pk_proof() const;
+  void clear_agg_bls_pk_proof();
+  static const int kAggBlsPkProofFieldNumber = 7;
+  private:
+  const ::shardora::elect::protobuf::BlsPopProof& _internal_agg_bls_pk_proof() const;
+  public:
+  const ::shardora::elect::protobuf::BlsPopProof& agg_bls_pk_proof() const;
+  ::shardora::elect::protobuf::BlsPopProof* release_agg_bls_pk_proof();
+  ::shardora::elect::protobuf::BlsPopProof* mutable_agg_bls_pk_proof();
+  void set_allocated_agg_bls_pk_proof(::shardora::elect::protobuf::BlsPopProof* agg_bls_pk_proof);
+
   // optional uint64 mining_amount = 3;
   bool has_mining_amount() const;
   void clear_mining_amount();
@@ -1006,12 +1180,15 @@ class member : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   void clear_has_consensus_gap();
   void set_has_agg_bls_pk();
   void clear_has_agg_bls_pk();
+  void set_has_agg_bls_pk_proof();
+  void clear_has_agg_bls_pk_proof();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr pubkey_;
   ::shardora::elect::protobuf::BlsPublicKey* agg_bls_pk_;
+  ::shardora::elect::protobuf::BlsPopProof* agg_bls_pk_proof_;
   ::google::protobuf::uint64 mining_amount_;
   ::google::protobuf::uint64 fts_value_;
   ::google::protobuf::uint64 consensus_gap_;
@@ -1062,7 +1239,7 @@ class ElectBlock : public ::google::protobuf::Message /* @@protoc_insertion_poin
                &_ElectBlock_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    6;
 
   void Swap(ElectBlock* other);
   friend void swap(ElectBlock& a, ElectBlock& b) {
@@ -1234,7 +1411,7 @@ class WaitingNodesMessage : public ::google::protobuf::Message /* @@protoc_inser
                &_WaitingNodesMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    7;
 
   void Swap(WaitingNodesMessage* other);
   friend void swap(WaitingNodesMessage& a, WaitingNodesMessage& b) {
@@ -1379,7 +1556,7 @@ class WaitingNodeHeartbeat : public ::google::protobuf::Message /* @@protoc_inse
                &_WaitingNodeHeartbeat_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    8;
 
   void Swap(WaitingNodeHeartbeat* other);
   friend void swap(WaitingNodeHeartbeat& a, WaitingNodeHeartbeat& b) {
@@ -1531,7 +1708,7 @@ class LeaderRotationMessage : public ::google::protobuf::Message /* @@protoc_ins
                &_LeaderRotationMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    9;
 
   void Swap(LeaderRotationMessage* other);
   friend void swap(LeaderRotationMessage& a, LeaderRotationMessage& b) {
@@ -1663,7 +1840,7 @@ class SyncNodeStokeItem : public ::google::protobuf::Message /* @@protoc_inserti
                &_SyncNodeStokeItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    10;
 
   void Swap(SyncNodeStokeItem* other);
   friend void swap(SyncNodeStokeItem& a, SyncNodeStokeItem& b) {
@@ -1795,7 +1972,7 @@ class SyncNodeStokeRequest : public ::google::protobuf::Message /* @@protoc_inse
                &_SyncNodeStokeRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    11;
 
   void Swap(SyncNodeStokeRequest* other);
   friend void swap(SyncNodeStokeRequest& a, SyncNodeStokeRequest& b) {
@@ -1922,7 +2099,7 @@ class SyncNodeStokeResItem : public ::google::protobuf::Message /* @@protoc_inse
                &_SyncNodeStokeResItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    12;
 
   void Swap(SyncNodeStokeResItem* other);
   friend void swap(SyncNodeStokeResItem& a, SyncNodeStokeResItem& b) {
@@ -2054,7 +2231,7 @@ class SyncNodeStokeResponse : public ::google::protobuf::Message /* @@protoc_ins
                &_SyncNodeStokeResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    13;
 
   void Swap(SyncNodeStokeResponse* other);
   friend void swap(SyncNodeStokeResponse& a, SyncNodeStokeResponse& b) {
@@ -2181,7 +2358,7 @@ class ElectMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_ElectMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    14;
 
   void Swap(ElectMessage* other);
   friend void swap(ElectMessage& a, ElectMessage& b) {
@@ -3093,6 +3270,208 @@ inline void BlsPublicKey::set_allocated_y_c1(::std::string* y_c1) {
 
 // -------------------------------------------------------------------
 
+// BlsPopProof
+
+// optional bytes sign_x = 1;
+inline bool BlsPopProof::has_sign_x() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void BlsPopProof::set_has_sign_x() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void BlsPopProof::clear_has_sign_x() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void BlsPopProof::clear_sign_x() {
+  sign_x_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_sign_x();
+}
+inline const ::std::string& BlsPopProof::sign_x() const {
+  // @@protoc_insertion_point(field_get:shardora.elect.protobuf.BlsPopProof.sign_x)
+  return sign_x_.GetNoArena();
+}
+inline void BlsPopProof::set_sign_x(const ::std::string& value) {
+  set_has_sign_x();
+  sign_x_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.elect.protobuf.BlsPopProof.sign_x)
+}
+#if LANG_CXX11
+inline void BlsPopProof::set_sign_x(::std::string&& value) {
+  set_has_sign_x();
+  sign_x_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.elect.protobuf.BlsPopProof.sign_x)
+}
+#endif
+inline void BlsPopProof::set_sign_x(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_sign_x();
+  sign_x_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.elect.protobuf.BlsPopProof.sign_x)
+}
+inline void BlsPopProof::set_sign_x(const void* value, size_t size) {
+  set_has_sign_x();
+  sign_x_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.elect.protobuf.BlsPopProof.sign_x)
+}
+inline ::std::string* BlsPopProof::mutable_sign_x() {
+  set_has_sign_x();
+  // @@protoc_insertion_point(field_mutable:shardora.elect.protobuf.BlsPopProof.sign_x)
+  return sign_x_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* BlsPopProof::release_sign_x() {
+  // @@protoc_insertion_point(field_release:shardora.elect.protobuf.BlsPopProof.sign_x)
+  if (!has_sign_x()) {
+    return NULL;
+  }
+  clear_has_sign_x();
+  return sign_x_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void BlsPopProof::set_allocated_sign_x(::std::string* sign_x) {
+  if (sign_x != NULL) {
+    set_has_sign_x();
+  } else {
+    clear_has_sign_x();
+  }
+  sign_x_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), sign_x);
+  // @@protoc_insertion_point(field_set_allocated:shardora.elect.protobuf.BlsPopProof.sign_x)
+}
+
+// optional bytes sign_y = 2;
+inline bool BlsPopProof::has_sign_y() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void BlsPopProof::set_has_sign_y() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void BlsPopProof::clear_has_sign_y() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void BlsPopProof::clear_sign_y() {
+  sign_y_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_sign_y();
+}
+inline const ::std::string& BlsPopProof::sign_y() const {
+  // @@protoc_insertion_point(field_get:shardora.elect.protobuf.BlsPopProof.sign_y)
+  return sign_y_.GetNoArena();
+}
+inline void BlsPopProof::set_sign_y(const ::std::string& value) {
+  set_has_sign_y();
+  sign_y_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.elect.protobuf.BlsPopProof.sign_y)
+}
+#if LANG_CXX11
+inline void BlsPopProof::set_sign_y(::std::string&& value) {
+  set_has_sign_y();
+  sign_y_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.elect.protobuf.BlsPopProof.sign_y)
+}
+#endif
+inline void BlsPopProof::set_sign_y(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_sign_y();
+  sign_y_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.elect.protobuf.BlsPopProof.sign_y)
+}
+inline void BlsPopProof::set_sign_y(const void* value, size_t size) {
+  set_has_sign_y();
+  sign_y_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.elect.protobuf.BlsPopProof.sign_y)
+}
+inline ::std::string* BlsPopProof::mutable_sign_y() {
+  set_has_sign_y();
+  // @@protoc_insertion_point(field_mutable:shardora.elect.protobuf.BlsPopProof.sign_y)
+  return sign_y_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* BlsPopProof::release_sign_y() {
+  // @@protoc_insertion_point(field_release:shardora.elect.protobuf.BlsPopProof.sign_y)
+  if (!has_sign_y()) {
+    return NULL;
+  }
+  clear_has_sign_y();
+  return sign_y_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void BlsPopProof::set_allocated_sign_y(::std::string* sign_y) {
+  if (sign_y != NULL) {
+    set_has_sign_y();
+  } else {
+    clear_has_sign_y();
+  }
+  sign_y_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), sign_y);
+  // @@protoc_insertion_point(field_set_allocated:shardora.elect.protobuf.BlsPopProof.sign_y)
+}
+
+// optional bytes sign_z = 3;
+inline bool BlsPopProof::has_sign_z() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void BlsPopProof::set_has_sign_z() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void BlsPopProof::clear_has_sign_z() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void BlsPopProof::clear_sign_z() {
+  sign_z_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_sign_z();
+}
+inline const ::std::string& BlsPopProof::sign_z() const {
+  // @@protoc_insertion_point(field_get:shardora.elect.protobuf.BlsPopProof.sign_z)
+  return sign_z_.GetNoArena();
+}
+inline void BlsPopProof::set_sign_z(const ::std::string& value) {
+  set_has_sign_z();
+  sign_z_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.elect.protobuf.BlsPopProof.sign_z)
+}
+#if LANG_CXX11
+inline void BlsPopProof::set_sign_z(::std::string&& value) {
+  set_has_sign_z();
+  sign_z_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.elect.protobuf.BlsPopProof.sign_z)
+}
+#endif
+inline void BlsPopProof::set_sign_z(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_sign_z();
+  sign_z_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.elect.protobuf.BlsPopProof.sign_z)
+}
+inline void BlsPopProof::set_sign_z(const void* value, size_t size) {
+  set_has_sign_z();
+  sign_z_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.elect.protobuf.BlsPopProof.sign_z)
+}
+inline ::std::string* BlsPopProof::mutable_sign_z() {
+  set_has_sign_z();
+  // @@protoc_insertion_point(field_mutable:shardora.elect.protobuf.BlsPopProof.sign_z)
+  return sign_z_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* BlsPopProof::release_sign_z() {
+  // @@protoc_insertion_point(field_release:shardora.elect.protobuf.BlsPopProof.sign_z)
+  if (!has_sign_z()) {
+    return NULL;
+  }
+  clear_has_sign_z();
+  return sign_z_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void BlsPopProof::set_allocated_sign_z(::std::string* sign_z) {
+  if (sign_z != NULL) {
+    set_has_sign_z();
+  } else {
+    clear_has_sign_z();
+  }
+  sign_z_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), sign_z);
+  // @@protoc_insertion_point(field_set_allocated:shardora.elect.protobuf.BlsPopProof.sign_z)
+}
+
+// -------------------------------------------------------------------
+
 // PrevMemberInfo
 
 // optional bytes x_c0 = 1;
@@ -3571,13 +3950,13 @@ inline void member::set_allocated_pubkey(::std::string* pubkey) {
 
 // optional int32 pool_idx_mod_num = 2;
 inline bool member::has_pool_idx_mod_num() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void member::set_has_pool_idx_mod_num() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void member::clear_has_pool_idx_mod_num() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void member::clear_pool_idx_mod_num() {
   pool_idx_mod_num_ = 0;
@@ -3595,13 +3974,13 @@ inline void member::set_pool_idx_mod_num(::google::protobuf::int32 value) {
 
 // optional uint64 mining_amount = 3;
 inline bool member::has_mining_amount() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void member::set_has_mining_amount() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void member::clear_has_mining_amount() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void member::clear_mining_amount() {
   mining_amount_ = GOOGLE_ULONGLONG(0);
@@ -3619,13 +3998,13 @@ inline void member::set_mining_amount(::google::protobuf::uint64 value) {
 
 // optional uint64 fts_value = 4;
 inline bool member::has_fts_value() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void member::set_has_fts_value() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void member::clear_has_fts_value() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void member::clear_fts_value() {
   fts_value_ = GOOGLE_ULONGLONG(0);
@@ -3643,13 +4022,13 @@ inline void member::set_fts_value(::google::protobuf::uint64 value) {
 
 // optional uint64 consensus_gap = 5;
 inline bool member::has_consensus_gap() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void member::set_has_consensus_gap() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void member::clear_has_consensus_gap() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void member::clear_consensus_gap() {
   consensus_gap_ = GOOGLE_ULONGLONG(0);
@@ -3721,6 +4100,64 @@ inline void member::set_allocated_agg_bls_pk(::shardora::elect::protobuf::BlsPub
   }
   agg_bls_pk_ = agg_bls_pk;
   // @@protoc_insertion_point(field_set_allocated:shardora.elect.protobuf.member.agg_bls_pk)
+}
+
+// optional .shardora.elect.protobuf.BlsPopProof agg_bls_pk_proof = 7;
+inline bool member::has_agg_bls_pk_proof() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void member::set_has_agg_bls_pk_proof() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void member::clear_has_agg_bls_pk_proof() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void member::clear_agg_bls_pk_proof() {
+  if (agg_bls_pk_proof_ != NULL) agg_bls_pk_proof_->Clear();
+  clear_has_agg_bls_pk_proof();
+}
+inline const ::shardora::elect::protobuf::BlsPopProof& member::_internal_agg_bls_pk_proof() const {
+  return *agg_bls_pk_proof_;
+}
+inline const ::shardora::elect::protobuf::BlsPopProof& member::agg_bls_pk_proof() const {
+  const ::shardora::elect::protobuf::BlsPopProof* p = agg_bls_pk_proof_;
+  // @@protoc_insertion_point(field_get:shardora.elect.protobuf.member.agg_bls_pk_proof)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::elect::protobuf::BlsPopProof*>(
+      &::shardora::elect::protobuf::_BlsPopProof_default_instance_);
+}
+inline ::shardora::elect::protobuf::BlsPopProof* member::release_agg_bls_pk_proof() {
+  // @@protoc_insertion_point(field_release:shardora.elect.protobuf.member.agg_bls_pk_proof)
+  clear_has_agg_bls_pk_proof();
+  ::shardora::elect::protobuf::BlsPopProof* temp = agg_bls_pk_proof_;
+  agg_bls_pk_proof_ = NULL;
+  return temp;
+}
+inline ::shardora::elect::protobuf::BlsPopProof* member::mutable_agg_bls_pk_proof() {
+  set_has_agg_bls_pk_proof();
+  if (agg_bls_pk_proof_ == NULL) {
+    auto* p = CreateMaybeMessage<::shardora::elect::protobuf::BlsPopProof>(GetArenaNoVirtual());
+    agg_bls_pk_proof_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:shardora.elect.protobuf.member.agg_bls_pk_proof)
+  return agg_bls_pk_proof_;
+}
+inline void member::set_allocated_agg_bls_pk_proof(::shardora::elect::protobuf::BlsPopProof* agg_bls_pk_proof) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete agg_bls_pk_proof_;
+  }
+  if (agg_bls_pk_proof) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      agg_bls_pk_proof = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, agg_bls_pk_proof, submessage_arena);
+    }
+    set_has_agg_bls_pk_proof();
+  } else {
+    clear_has_agg_bls_pk_proof();
+  }
+  agg_bls_pk_proof_ = agg_bls_pk_proof;
+  // @@protoc_insertion_point(field_set_allocated:shardora.elect.protobuf.member.agg_bls_pk_proof)
 }
 
 // -------------------------------------------------------------------
@@ -5144,6 +5581,8 @@ inline void ElectMessage::set_allocated_sync_stoke_res(::shardora::elect::protob
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

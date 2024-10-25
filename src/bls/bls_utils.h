@@ -108,6 +108,35 @@ static std::shared_ptr<libff::alt_bn128_G2> Proto2BlsPublicKey(
     return bls_pk.getPublicKey();
 }
 
+static std::shared_ptr<elect::protobuf::BlsPopProof> BlsPopProof2Proto(
+        const libff::alt_bn128_G1 &proof) {
+    auto proof_proto = std::make_shared<elect::protobuf::BlsPopProof>();
+    proof_proto->set_sign_x(libBLS::ThresholdUtils::fieldElementToString(proof.X));
+    proof_proto->set_sign_y(libBLS::ThresholdUtils::fieldElementToString(proof.Y));
+    proof_proto->set_sign_z(libBLS::ThresholdUtils::fieldElementToString(proof.Z));
+    return proof_proto;
+}
+
+static std::shared_ptr<libff::alt_bn128_G1> Proto2BlsPopProof(
+        const elect::protobuf::BlsPopProof& proof_proto) {
+    auto proof = std::make_shared<libff::alt_bn128_G1>();
+
+    try {
+        if (proof_proto.sign_x() != "") {
+            proof->X = libff::alt_bn128_Fq(proof_proto.sign_x().c_str());
+        }
+        if (proof_proto.sign_y() != "") {
+            proof->Y = libff::alt_bn128_Fq(proof_proto.sign_y().c_str());
+        }
+        if (proof_proto.sign_z() != "") {
+            proof->Z = libff::alt_bn128_Fq(proof_proto.sign_z().c_str());
+        }        
+    } catch (...) {
+        return nullptr;
+    }
+    return proof;
+}
+
 }  // namespace bls
 
 }  // namespace shardora

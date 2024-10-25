@@ -392,7 +392,8 @@ Status BlockAcceptor::addTxsToPool(
                 elect_mgr_, 
                 address_info,
                 (*tx).pubkey(),
-                keypair->pk());
+                keypair->pk(),
+                keypair->proof());
             ZJC_DEBUG("add tx now get join elect tx: %u", pool_idx());
             break;
         }

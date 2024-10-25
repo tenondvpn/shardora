@@ -11,7 +11,10 @@
 #include "zjcvm/execution.h"
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
+#include <bls/bls_utils.h>
 #include <elect/elect_pledge.h>
+#include <protos/elect.pb.h>
+#include <protos/tx_storage_key.h>
 // #include <iostream>
 // #include "shard_statistic.h"
 
@@ -276,6 +279,7 @@ void ShardStatistic::HandleStatistic(
     auto& height_node_collect_info_map = statistic_info_ptr->height_node_collect_info_map;
     auto& id_pk_map = statistic_info_ptr->id_pk_map;
     auto& id_agg_bls_pk_map = statistic_info_ptr->id_agg_bls_pk_map;
+    auto& id_agg_bls_pk_proof_map = statistic_info_ptr->id_agg_bls_pk_proof_map;
     uint64_t block_gas = 0;
     auto callback = [&](const block::protobuf::Block& block) {
         for (int32_t i = 0; i < block.tx_list_size(); ++i) {
@@ -374,19 +378,20 @@ void ShardStatistic::HandleStatistic(
                     }
 
                     if (block.tx_list(i).storages(storage_idx).key() == protos::kAggBlsPublicKey) {
-                        auto tmp_id = secptr_->GetAddress(
-                            block.tx_list(i).storages(storage_idx).value());
-                        if (tmp_id != block.tx_list(i).from()) {
-                            assert(false);
-                            continue;
-                        }
-
                         auto agg_bls_pk_proto_str = block.tx_list(i).storages(storage_idx).value();
                         auto agg_bls_pk_proto = std::make_shared<elect::protobuf::BlsPublicKey>();
                         if (agg_bls_pk_proto->ParseFromString(agg_bls_pk_proto_str)) {
                             id_agg_bls_pk_map[block.tx_list(i).from()] = agg_bls_pk_proto.get();
                         }
                     }
+
+                    if (block.tx_list(i).storages(storage_idx).key() == protos::kAggBlsPopProof) {
+                        auto proof_proto_str = block.tx_list(i).storages(storage_idx).value();
+                        auto proof_proto = std::make_shared<elect::protobuf::BlsPopProof>();
+                        if (proof_proto->ParseFromString(proof_proto_str)) {
+                            id_agg_bls_pk_proof_map[block.tx_list(i).from()] = proof_proto.get();
+                        }
+                    }                    
 
                     if (tx.storages(storage_idx).key() == protos::kJoinElectVerifyG2) {
                         bls::protobuf::JoinElectInfo join_info;
@@ -746,6 +751,7 @@ int ShardStatistic::StatisticWithHeights(
     auto height_node_collect_info_map = statistic_info_ptr->height_node_collect_info_map;
     auto id_pk_map = statistic_info_ptr->id_pk_map;
     auto& id_agg_bls_pk_map = statistic_info_ptr->id_agg_bls_pk_map;
+    auto& id_agg_bls_pk_proof_map = statistic_info_ptr->id_agg_bls_pk_proof_map;
     std::string debug_str;
     ++pool_iter;
     std::string tx_count_debug_str;
@@ -864,6 +870,7 @@ int ShardStatistic::StatisticWithHeights(
         added_id_set,
         id_pk_map,
         id_agg_bls_pk_map,
+        id_agg_bls_pk_proof_map,
         elect_statistic);
     addPrepareMembers2JoinStastics(
         prepare_members,
@@ -938,6 +945,10 @@ void ShardStatistic::addPrepareMembers2JoinStastics(
             if (agg_bls_pk_proto) {
                 join_elect_node->mutable_agg_bls_pk()->CopyFrom(*agg_bls_pk_proto);
             }
+            auto proof_proto = bls::BlsPopProof2Proto((*prepare_members)[i]->agg_bls_pk_proof);
+            if (proof_proto) {
+                join_elect_node->mutable_agg_bls_pk_proof()->CopyFrom(*proof_proto);
+            }            
 
             join_elect_node->set_elect_pos(0);
             join_elect_node->set_stoke(stoke);
@@ -967,6 +978,7 @@ void ShardStatistic::addNewNode2JoinStatics(
         std::unordered_set<std::string> &added_id_set,
         std::unordered_map<std::string, std::string> &id_pk_map,
         std::unordered_map<std::string, elect::protobuf::BlsPublicKey*> &id_agg_bls_pk_map,
+        std::unordered_map<std::string, elect::protobuf::BlsPopProof*> &id_agg_bls_pk_proof_map,
         shardora::pools::protobuf::ElectStatistic &elect_statistic) {
 #ifndef NDEBUG
     for (auto iter = join_elect_stoke_map.begin(); iter != join_elect_stoke_map.end(); ++iter) {
@@ -1018,6 +1030,7 @@ void ShardStatistic::addNewNode2JoinStatics(
         std::string node_id = elect_nodes[i];
         std::string pubkey;
         elect::protobuf::BlsPublicKey* agg_bls_pk;
+        elect::protobuf::BlsPopProof* agg_bls_pk_proof;
         if (node_id.size() == security::kUnicastAddressLength) {
             auto iter = id_pk_map.find(node_id);
             if (iter == id_pk_map.end()) {
@@ -1031,8 +1044,15 @@ void ShardStatistic::addNewNode2JoinStatics(
                 continue;
             }
 
+            auto iter3 = id_agg_bls_pk_proof_map.find(node_id);
+            if (iter3 == id_agg_bls_pk_proof_map.end()) {
+                assert(false);
+                continue;
+            }            
+
             pubkey = iter->second;
             agg_bls_pk = iter2->second;
+            agg_bls_pk_proof = iter3->second; 
         }
 
         auto shard_iter = r_siter->second.find(elect_nodes[i]);
@@ -1044,6 +1064,7 @@ void ShardStatistic::addNewNode2JoinStatics(
         join_elect_node->set_credit(0);
         join_elect_node->set_pubkey(pubkey);
         join_elect_node->mutable_agg_bls_pk()->CopyFrom(*agg_bls_pk);
+        join_elect_node->mutable_agg_bls_pk_proof()->CopyFrom(*agg_bls_pk_proof);
         join_elect_node->set_stoke(stoke);
         join_elect_node->set_shard(shard_id);
         join_elect_node->set_elect_pos(0);

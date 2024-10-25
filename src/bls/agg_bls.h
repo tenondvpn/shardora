@@ -17,8 +17,11 @@ public:
     struct KeyPair {
         libff::alt_bn128_Fr sk_;
         libff::alt_bn128_G2 pk_;
+        libff::alt_bn128_G1 proof_;
 
-        KeyPair(const libff::alt_bn128_Fr& sk, const libff::alt_bn128_G2& pk) : sk_(sk), pk_(pk) {}
+        KeyPair(const libff::alt_bn128_Fr& sk,
+            const libff::alt_bn128_G2& pk,
+            const libff::alt_bn128_G1& proof) : sk_(sk), pk_(pk), proof_(proof) {}
 
         inline bool IsValid() const {
             return !sk_.is_zero() && !pk_.is_zero() && GetPublicKey(sk_) == pk_; 
@@ -30,7 +33,11 @@ public:
 
         inline libff::alt_bn128_G2 pk() {
             return pk_;
-        } 
+        }
+
+        inline libff::alt_bn128_G1 proof() {
+            return proof_;
+        }
     };
     
     AggBls() {
@@ -87,6 +94,11 @@ public:
 
 private:
     libff::alt_bn128_Fr agg_bls_sk_;
+
+    libff::alt_bn128_G1 popProve();
+    bool popVerify(
+        const libff::alt_bn128_G2& public_key,
+        const libff::alt_bn128_G1& proof);
 };
 
 }

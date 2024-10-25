@@ -1012,7 +1012,9 @@ void NetworkInit::GetNetworkNodesFromConf(
                 secptr->SetPrivateKey(node_ptr->prikey);
                 node_ptr->pubkey = secptr->GetPublicKey();
                 node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
-                node_ptr->agg_bls_pk = bls::AggBls().GenerateKeyPair(t, n, secptr, prefix_db_)->pk();
+                auto keypair = bls::AggBls().GenerateKeyPair(t, n, secptr, prefix_db_);
+                node_ptr->agg_bls_pk = keypair->pk();
+                node_ptr->agg_bls_pk_proof = keypair->proof();
                 root_genesis_nodes.push_back(node_ptr);                    
             }
         }
@@ -1037,7 +1039,9 @@ void NetworkInit::GetNetworkNodesFromConf(
                 secptr->SetPrivateKey(node_ptr->prikey);
                 node_ptr->pubkey = secptr->GetPublicKey();
                 node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
-                node_ptr->agg_bls_pk = bls::AggBls().GenerateKeyPair(t, n, secptr, prefix_db_)->pk();
+                auto keypair = bls::AggBls().GenerateKeyPair(t, n, secptr, prefix_db_);
+                node_ptr->agg_bls_pk = keypair->pk();
+                node_ptr->agg_bls_pk_proof = keypair->proof();
                 cons_genesis_nodes.push_back(node_ptr);        
             }
             
