@@ -63,7 +63,7 @@ function GetValidHexString(uint256_bytes) {
 }
 
 function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_price, contract_bytes, input, prepay) {
-    const privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
+    var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
     var from_private_key = Secp256k1.uint256(privateKeyBuf, 16)
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var from_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(from_private_key)
@@ -109,12 +109,12 @@ function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_pri
         prepay_buf]);
     var kechash = keccak256(message_buf)
     var digest = Secp256k1.uint256(kechash, 16)
-    const sig = Secp256k1.ecsign(from_private_key, digest)
-    const sigR = Secp256k1.uint256(sig.r, 16)
-    const sigS = Secp256k1.uint256(sig.s, 16)
-    const pubX = Secp256k1.uint256(from_public_key.x, 16)
-    const pubY = Secp256k1.uint256(from_public_key.y, 16)
-    const isValidSig = Secp256k1.ecverify(pubX, pubY, sigR, sigS, digest)
+    var sig = Secp256k1.ecsign(from_private_key, digest)
+    var sigR = Secp256k1.uint256(sig.r, 16)
+    var sigS = Secp256k1.uint256(sig.s, 16)
+    var pubX = Secp256k1.uint256(from_public_key.x, 16)
+    var pubY = Secp256k1.uint256(from_public_key.y, 16)
+    var isValidSig = Secp256k1.ecverify(pubX, pubY, sigR, sigS, digest)
     console.log("digest: " + digest)
     console.log("sigr: " + sigR.toString(16))
     console.log("sigs: " + sigS.toString(16))
@@ -144,7 +144,7 @@ function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_pri
 }
 
 function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type) {
-    const privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
+    var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
     var from_private_key = Secp256k1.uint256(privateKeyBuf, 16)
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var from_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(from_private_key)
@@ -182,11 +182,11 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
         amount_buf, gas_limit_buf, gas_price_buf, step_buf, prepay_buf]);
     var kechash = keccak256(message_buf)
     var digest = Secp256k1.uint256(kechash, 16)
-    const sig = Secp256k1.ecsign(from_private_key, digest)
-    const sigR = Secp256k1.uint256(sig.r, 16)
-    const sigS = Secp256k1.uint256(sig.s, 16)
-    const pubX = Secp256k1.uint256(from_public_key.x, 16)
-    const pubY = Secp256k1.uint256(from_public_key.y, 16)
+    var sig = Secp256k1.ecsign(from_private_key, digest)
+    var sigR = Secp256k1.uint256(sig.r, 16)
+    var sigS = Secp256k1.uint256(sig.s, 16)
+    var pubX = Secp256k1.uint256(from_public_key.x, 16)
+    var pubY = Secp256k1.uint256(from_public_key.y, 16)
     return {
         'gid': gid,
         'pubkey': '04' + from_public_key.x.toString(16) + from_public_key.y.toString(16),
@@ -219,7 +219,7 @@ function new_contract(from_str_prikey, contract_bytes) {
         0);
     PostCode(data);
 
-    const opt = { flag: 'w', }
+    var opt = { flag: 'w', }
     fs.writeFile('contract_address', self_contract_address, opt, (err) => {
         if (err) {
             console.error(err)
@@ -279,7 +279,7 @@ function QueryPostCode(path, data) {
 }
 
 function QueryContract(str_prikey, input) {
-    const privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
+    var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
     var self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
     var self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
     var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
@@ -398,7 +398,9 @@ function InitC2cEnv() {
                 do_transaction(
                     "863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 
                     account3.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
-                var contract_address = new_contract(out_lines[3] + cons_codes.substring(2));
+                var contract_address = new_contract(
+                    "863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 
+                    out_lines[3] + cons_codes.substring(2));
                 var contract_cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q 
                     "SELECT to FROM zjc_ck_account_key_value_table where type = 6 and key in
                     ('5f5f6b437265617465436f6e74726163744279746573436f6465', 
