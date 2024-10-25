@@ -478,10 +478,19 @@ function InitC2cEnv() {
 
             var seller_accounts = new Set();
             for (var i = 10; i < 30; ++i) {
+                const privateKeyBuf = Secp256k1.uint256("863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 16)
+                self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
+                self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
+                var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
+                var address = keccak256(pk_bytes).toString('hex')
+                address = address.slice(address.length - 40, address.length)
+                console.log("self_account_id: " + address.toString('hex'));
+                self_account_id = address; 
+
                 // 卖家账户设置
                 var account4 = web3.eth.accounts.privateKeyToAccount(
                     '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString());
-                console.log(`account ${i}: 0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1 ${i.toString()}`);
+                console.log(`account ${i}: 0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1${i.toString()}`);
                 console.log(account4.address);
                 do_transaction(account4.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
                 seller_accounts.add(account4.address.toString('hex').toLowerCase().substring(2));
