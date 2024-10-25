@@ -217,9 +217,9 @@ void Pacemaker::OnLocalTimeout() {
     msg.set_type(common::kHotstuffTimeoutMessage);
     last_timeout_ = msg_ptr;
     // 停止对当前 view 的投票
-    if (stop_voting_fn_) {
-        stop_voting_fn_(CurView());
-    }
+    // if (stop_voting_fn_) {
+    //     stop_voting_fn_(CurView());
+    // }
 
     SendTimeout(msg_ptr);
 }
