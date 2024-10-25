@@ -383,7 +383,7 @@ function InitC2cEnv() {
                 do_transaction(
                     "863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 
                     account4.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
-                append_address += "," + account4.address.toString('hex').toLowerCase().substring(2);
+                append_address += ",'" + account4.address.toString('hex').toLowerCase().substring(2) + "'";
                 ++check_count;
             }
            
