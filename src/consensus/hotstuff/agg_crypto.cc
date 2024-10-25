@@ -103,7 +103,7 @@ Status AggCrypto::VerifyQC(uint32_t sharding_id, const std::shared_ptr<QC>& qc) 
         return Status::kError;
     }    
     auto agg_sig = std::make_shared<AggregateSignature>();
-    if (agg_sig->Unserialize(qc->agg_sig().SerializeAsString())) {
+    if (agg_sig->LoadFromProto(qc->agg_sig())) {
         return Status::kError;
     }
     if (!agg_sig->IsValid()) {
@@ -119,7 +119,7 @@ Status AggCrypto::VerifyTC(uint32_t sharding_id, const std::shared_ptr<TC>& tc) 
         return Status::kError;
     }    
     auto agg_sig = std::make_shared<AggregateSignature>();
-    if (agg_sig->Unserialize(tc->agg_sig().SerializeAsString())) {
+    if (agg_sig->LoadFromProto(tc->agg_sig())) {
         return Status::kError;
     }
     if (!agg_sig->IsValid()) {
