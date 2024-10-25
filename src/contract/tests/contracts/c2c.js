@@ -396,8 +396,8 @@ async function SetManagerPrepayment(contract_address) {
         Prepayment(1000000000000);
     }
 
-    {
-        const privateKeyBuf = Secp256k1.uint256("b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e0", 16)
+    for (var i = 10; i < 30; ++i) {
+        const privateKeyBuf = Secp256k1.uint256('b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + str(i), 16)
         self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
         self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
         var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
@@ -415,7 +415,7 @@ async function SetManagerPrepayment(contract_address) {
     var account3 = web3.eth.accounts.privateKeyToAccount(
         '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5');
     var account4 = web3.eth.accounts.privateKeyToAccount(
-        '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e0');
+        '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d129');
     var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q "select count(distinct(user)) from zjc_ck_prepayment_table where contract='${contract_address}' and user in ('${account1.address.toString('hex').toLowerCase().substring(2)}', '${account2.address.toString('hex').toLowerCase().substring(2)}', '${account3.address.toString('hex').toLowerCase().substring(2)}', '${account4.address.toString('hex').toLowerCase().substring(2)}');"`;
     const { exec } = require('child_process');
     const execPromise = util.promisify(exec);
