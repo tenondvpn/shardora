@@ -106,18 +106,9 @@ public:
             }
 
             if (it->second->zjc_host_ptr) {
-                auto& accounts_storage_map = it->second->zjc_host_ptr->accounts_storage();
-                auto& now_acconts_map = zjc_host.accounts_storage();
-                for (auto iter = accounts_storage_map.begin(); iter != accounts_storage_map.end(); ++iter) {
-                    auto& storage_map = iter->second.storage;
-                    for (auto siter = storage_map.begin(); siter != storage_map.end(); ++siter) {
-                        zjc_host.set_storage(iter->first, siter->first, siter->second.value);
-                    }
-
-                    auto& str_storage_map = iter->second.str_storage;
-                    for (auto siter = str_storage_map.begin(); siter != str_storage_map.end(); ++siter) {
-                        zjc_host.SaveKeyValue(iter->first, siter->first, siter->second.str_val);
-                    }
+                auto& prev_storages_map = it->second->zjc_host_ptr->prev_storages_map();
+                for (auto iter = prev_storages_map.begin(); iter != prev_storages_map.end(); ++iter) {
+                    zjc_host.SavePrevStorages(iter->first, iter->second);
                 }
             }
             
@@ -469,6 +460,7 @@ private:
             }
 
             auto balane_map_ptr = std::make_shared<BalanceMap>();
+            auto zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
             for (uint32_t i = 0; i < latest_committed_block_->block_info().tx_list_size(); ++i) {
                 auto& tx = latest_committed_block_->block_info().tx_list(i);
                 if (tx.balance() == 0) {
@@ -477,9 +469,9 @@ private:
 
                 auto& addr = account_mgr_->GetTxValidAddress(tx);
                 (*balane_map_ptr)[addr] = tx.balance();
+                
             }
 
-            auto zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
             // TODO: fix storage map            
             auto block_info_ptr = GetViewBlockInfo(latest_committed_block_, balane_map_ptr, zjc_host_ptr);
             view_blocks_info_[parent_hash] = block_info_ptr;

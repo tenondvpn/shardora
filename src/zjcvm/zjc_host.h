@@ -107,8 +107,12 @@ public:
     int SaveKeyValue(const std::string& id, const std::string& key, const std::string& val);
     int SaveKeyValue(const evmc::address& addr, const std::string& key, const std::string& val);
     int GetKeyValue(const std::string& id, const std::string& key, std::string* val);
-    const std::map<evmc::address, MockedAccount>& accounts_storage() const {
-        return accounts_;
+    void SavePrevStorages(const std::string& key, const std::string& val) {
+        prev_storages_map_[key] = val;
+    }
+    
+    const std::unordered_map<std::string, std::string>& prev_storages_map() const {
+        return prev_storages_map_;
     }
 
     std::map<evmc::address, MockedAccount> accounts_;
@@ -127,6 +131,7 @@ public:
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
     zjcvm::ZjchainHost* prev_zjc_host_ = nullptr;
+    std::unordered_map<std::string, std::string> prev_storages_map_;
 
 };
 
