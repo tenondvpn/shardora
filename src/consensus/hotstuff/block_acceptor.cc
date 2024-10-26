@@ -120,7 +120,8 @@ Status BlockAcceptor::Accept(
         propose_msg, 
         directly_user_leader_txs, 
         txs_ptr, 
-        balance_map);
+        balance_map,
+        zjc_host);
     if (s != Status::kSuccess) {
         ZJC_DEBUG("GetAndAddTxsLocally error!");
         return s;
