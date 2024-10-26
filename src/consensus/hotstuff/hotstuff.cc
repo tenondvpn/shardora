@@ -1350,9 +1350,11 @@ void Hotstuff::CommitInner(
     }
 
     if (!latest_committed_block && v_block->qc().view() == GenesisView) {
-        ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, vb view: %lu, %u_%u_%lu, propose_debug: %s",
+        ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, "
+            "vb view: %lu, %u_%u_%lu, propose_debug: %s",
             pool_idx_, 0, v_block->qc().view(),
-            v_block->qc().network_id(), v_block->qc().pool_index(), block_info.height(), v_block->debug().c_str());
+            v_block->qc().network_id(), v_block->qc().pool_index(), 
+            block_info.height(), v_block->debug().c_str());
         return;
     }
 

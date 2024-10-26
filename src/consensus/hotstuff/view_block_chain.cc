@@ -492,7 +492,6 @@ std::string ViewBlockChain::String() const {
         }
     }
 
-    assert(view_blocks.size() < 5);
     std::sort(
             view_blocks.begin(), 
             view_blocks.end(), 
@@ -505,6 +504,8 @@ std::string ViewBlockChain::String() const {
         ret += "," + std::to_string(vb->qc().view());
     }
 
+    ZJC_DEBUG("get chain pool: %u, views: %s", pool_index_, ret.c_str());
+    assert(view_blocks.size() < 5);
     return ret;
 }
 
