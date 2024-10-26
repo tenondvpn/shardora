@@ -478,8 +478,10 @@ private:
                 auto& addr = account_mgr_->GetTxValidAddress(tx);
                 (*balane_map_ptr)[addr] = tx.balance();
             }
-            
-            auto block_info_ptr = GetViewBlockInfo(latest_committed_block_, balane_map_ptr);
+
+            auto zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
+            // TODO: fix storage map            
+            auto block_info_ptr = GetViewBlockInfo(latest_committed_block_, balane_map_ptr, zjc_host_ptr);
             view_blocks_info_[parent_hash] = block_info_ptr;
         }
 
