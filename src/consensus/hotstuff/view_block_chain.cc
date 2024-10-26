@@ -487,7 +487,11 @@ std::string ViewBlockChain::String() const {
         }
     }
 
-    std::sort(view_blocks.begin(), view_blocks.end(), [](const std::shared_ptr<ViewBlock>& a, const std::shared_ptr<ViewBlock>& b) {
+    assert(view_blocks.size() < 5);
+    std::sort(
+            view_blocks.begin(), 
+            view_blocks.end(), 
+            [](const std::shared_ptr<ViewBlock>& a, const std::shared_ptr<ViewBlock>& b) {
         return a->qc().view() < b->qc().view();
     });
 
