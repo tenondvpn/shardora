@@ -55,7 +55,8 @@ void Hotstuff::InitAddNewViewBlock(std::shared_ptr<ViewBlock>& latest_view_block
             pool_idx_, 
             latest_view_block->qc().view());
         // 初始状态，使用 db 中最后一个 view_block 初始化视图链
-        view_block_chain_->Store(latest_view_block, true, nullptr);
+        // TODO: check valid
+        view_block_chain_->Store(latest_view_block, true, nullptr, nullptr);
         view_block_chain_->UpdateHighViewBlock(latest_view_block->qc());
         StopVoting(latest_view_block->qc().view());
         // 开启第一个视图
@@ -991,7 +992,8 @@ Status Hotstuff::StoreVerifiedViewBlock(
         pool_idx_,
         common::Encode::HexEncode(v_block->qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(v_block->parent_hash()).c_str());
-    return view_block_chain()->Store(v_block, true, nullptr);
+    // TODO: check valid
+    return view_block_chain()->Store(v_block, true, nullptr, nullptr);
 }
 
 void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {

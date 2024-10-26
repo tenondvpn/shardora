@@ -181,8 +181,10 @@ void BlockAcceptor::CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_it
 Status BlockAcceptor::AddTxs(const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) {
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
     std::shared_ptr<ViewBlockChain> chain = nullptr;
+    // TODO: check valid
     BalanceMap now_balance_map;
-    return addTxsToPool(chain, "", txs, false, txs_ptr, now_balance_map);
+    zjcvm::ZjchainHost zjc_host;
+    return addTxsToPool(chain, "", txs, false, txs_ptr, now_balance_map, zjc_host);
 };
 
 Status BlockAcceptor::addTxsToPool(
@@ -445,14 +447,16 @@ Status BlockAcceptor::GetAndAddTxsLocally(
         const hotstuff::protobuf::TxPropose& tx_propose,
         bool directly_user_leader_txs,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-        BalanceMap& balance_map) {
+        BalanceMap& balance_map,
+        zjcvm::ZjchainHost& zjc_host) {
     auto add_txs_status = addTxsToPool(
         view_block_chain, 
         parent_hash, 
         tx_propose.txs(), 
         directly_user_leader_txs, 
         txs_ptr,
-        balance_map);
+        balance_map,
+        zjc_host);
     if (add_txs_status != Status::kSuccess) {
         ZJC_ERROR("invalid consensus, add_txs_status failed: %d.", add_txs_status);
         return add_txs_status;

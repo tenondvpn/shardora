@@ -149,7 +149,8 @@ private:
         const hotstuff::protobuf::TxPropose& block_info,
         bool directly_user_leader_txs,
         std::shared_ptr<consensus::WaitingTxsItem>&,
-        BalanceMap& balance_map);
+        BalanceMap& balance_map,
+        zjcvm::ZjchainHost& zjc_host);
     void commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr);
 
     void CalculateTps(uint64_t tx_list_size) {
