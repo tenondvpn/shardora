@@ -296,13 +296,19 @@ Status ViewBlockChain::PruneTo(
         bool include_history) {
     std::shared_ptr<ViewBlock> current = Get(target_hash);
     if (!current) {
+        ZJC_DEBUG("failed prune view block: %s", common::Encode::HexEncode(target_hash).c_str());
+        assert(false);
         return Status::kError;
     }
 
+    ZJC_DEBUG("now prune view block %u_%u_%lu", 
+        current->qc().network_id(), current->qc().pool_index(), current->qc().view());
     auto target_block = current;
     
     auto target_height = current->qc().view();
     if (prune_height_ >= target_height) {
+        ZJC_DEBUG("prune_height_ >= target_height now prune view block %u_%u_%lu", 
+            current->qc().network_id(), current->qc().pool_index(), current->qc().view());
         return Status::kSuccess;
     }
     
@@ -316,11 +322,13 @@ Status ViewBlockChain::PruneTo(
             hashes_of_branch.insert(current->qc().view_block_hash());
             continue;
         }
+        assert(false);
         return Status::kError;
     }
     
     auto start_blocks = view_blocks_at_height_[prune_height_];
     if (start_blocks.empty()) {
+        assert(false);
         return Status::kError;
     }
     
@@ -334,7 +342,8 @@ Status ViewBlockChain::PruneTo(
     }
 
     start_block_ = target_block;
-
+    ZJC_DEBUG("success now prune view block %u_%u_%lu", 
+        current->qc().network_id(), current->qc().pool_index(), current->qc().view());
     return Status::kSuccess;
 }
 

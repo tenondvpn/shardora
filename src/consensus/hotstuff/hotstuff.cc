@@ -1201,7 +1201,8 @@ Status Hotstuff::Commit(
     auto b = common::TimeUtils::TimestampMs();
     defer({
             auto e = common::TimeUtils::TimestampMs();
-            ZJC_DEBUG("pool: %d Commit duration: %lu ms, test_index: %lu, propose_debug: %s", pool_idx_, e-b, test_index, v_block->debug().c_str());
+            ZJC_DEBUG("pool: %d Commit duration: %lu ms, test_index: %lu, "
+                "propose_debug: %s", pool_idx_, e-b, test_index, v_block->debug().c_str());
         });
 
     auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
