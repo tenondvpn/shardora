@@ -48,6 +48,11 @@ Status ViewBlockChain::Store(
 
             auto& addr = account_mgr_->GetTxValidAddress(tx);
             (*balane_map_ptr)[addr] = tx.balance();
+            for (auto s_idx = 0; s_idx < tx.storages_size(); ++s_idx) {
+                zjc_host_ptr->SavePrevStorages(
+                    tx.storages(i).key(), 
+                    tx.storages(i).value());
+            }
         }
     }
 

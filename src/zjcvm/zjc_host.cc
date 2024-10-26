@@ -39,6 +39,22 @@ evmc::bytes32 ZjchainHost::get_storage(
         }
     }
 
+    auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
+        std::string((char*)key.bytes, sizeof(key.bytes));
+    auto prev_iter = prev_storages_map_.find(str_key);
+    if (prev_iter != prev_storages_map_.end()) {
+        evmc::bytes32 tmp_val{};
+        uint32_t offset = 0;
+        uint32_t length = sizeof(tmp_val.bytes);
+        if (prev_iter->second.size() < sizeof(tmp_val.bytes)) {
+            offset = sizeof(tmp_val.bytes) - prev_iter->second.size();
+            length = prev_iter->second.size();
+        }
+
+        memcpy(tmp_val.bytes + offset, prev_iter->second.c_str(), length);
+        return tmp_val;
+    }
+
     return Execution::Instance()->GetStorage(addr, key);
 }
 
@@ -345,6 +361,13 @@ int ZjchainHost::SaveKeyValue(
 }
 
 int ZjchainHost::GetKeyValue(const std::string& id, const std::string& key_str, std::string* val) {
+    auto str_key = id + key_str;
+    auto prev_iter = prev_storages_map_.find(str_key);
+    if (prev_iter != prev_storages_map_.end()) {
+        *val = prev_iter->second;
+        return kZjcvmSuccess;
+    }
+
     ZJC_DEBUG("called 14");
     auto addr = evmc::address{};
     memcpy(addr.bytes, id.c_str(), id.size());

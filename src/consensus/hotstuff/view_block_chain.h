@@ -469,7 +469,11 @@ private:
 
                 auto& addr = account_mgr_->GetTxValidAddress(tx);
                 (*balane_map_ptr)[addr] = tx.balance();
-                
+                for (auto storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
+                    zjc_host_ptr->SavePrevStorages(
+                        tx.storages(storage_idx).key(), 
+                        tx.storages(storage_idx).value());
+                }
             }
 
             // TODO: fix storage map            
