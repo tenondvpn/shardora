@@ -11,6 +11,7 @@
 #include <protos/prefix_db.h>
 #include <protos/transport.pb.h>
 #include "transport/transport_utils.h"
+#include "zjcvm/zjc_host.h"
 
 namespace shardora {
 
