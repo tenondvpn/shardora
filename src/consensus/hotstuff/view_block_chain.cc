@@ -301,10 +301,12 @@ Status ViewBlockChain::PruneTo(
         return Status::kError;
     }
 
-    ZJC_DEBUG("now prune view block %u_%u_%lu", 
-        current->qc().network_id(), current->qc().pool_index(), current->qc().view());
+    ZJC_DEBUG("now prune view block %u_%u_%lu, prune_height_: %lu", 
+        current->qc().network_id(), 
+        current->qc().pool_index(), 
+        current->qc().view(), 
+        prune_height_);
     auto target_block = current;
-    
     auto target_height = current->qc().view();
     if (prune_height_ >= target_height) {
         ZJC_DEBUG("prune_height_ >= target_height now prune view block %u_%u_%lu", 
@@ -314,7 +316,6 @@ Status ViewBlockChain::PruneTo(
     
     std::unordered_set<HashStr> hashes_of_branch;
     hashes_of_branch.insert(current->qc().view_block_hash());
-    
     Status s = Status::kSuccess;
     while (s == Status::kSuccess && current->qc().view() > prune_height_) {
         current = Get(current->parent_hash());
