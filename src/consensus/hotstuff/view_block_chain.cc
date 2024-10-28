@@ -433,7 +433,7 @@ Status ViewBlockChain::GetChildren(const HashStr& hash, std::vector<std::shared_
 }
 
 Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_block) {
-    ZJC_DEBUG("del view block: %s view: %lu, hash: %s",
+    ZJC_DEBUG("del view block: %s view: %lu, hash: %s, %u_%u_%lu, height: %lu",
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), 
         view_block->qc().view(),
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
@@ -471,7 +471,7 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
             view_block->qc().network_id(), 
             view_block->qc().pool_index(), 
             view_block->qc().view(), 
-            view_block->block_info().height(),
+            view_block->has_block_info() ? view_block->block_info().height() : -1,
             common::Encode::HexEncode(hash).c_str(),
             String().c_str());
         view_blocks_info_.erase(hash);
