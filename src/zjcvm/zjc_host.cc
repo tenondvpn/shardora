@@ -52,6 +52,9 @@ evmc::bytes32 ZjchainHost::get_storage(
         }
 
         memcpy(tmp_val.bytes + offset, prev_iter->second.c_str(), length);
+        ZJC_DEBUG("success get prev storage key: %s, value: %s",
+            common::Encode::HexEncode(str_key).c_str(),
+            common::Encode::HexEncode( prev_iter->second).c_str());
         return tmp_val;
     }
 
