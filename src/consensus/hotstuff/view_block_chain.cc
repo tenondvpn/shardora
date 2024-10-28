@@ -40,18 +40,8 @@ Status ViewBlockChain::Store(
 
     if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) && balane_map_ptr == nullptr) {
         balane_map_ptr = std::make_shared<BalanceMap>();
-        zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
         for (uint32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
             auto& tx = view_block->block_info().tx_list(i);
-            ZJC_DEBUG("store success prev storage key tx step: %d", tx.step());
-            for (auto s_idx = 0; s_idx < tx.storages_size(); ++s_idx) {
-                zjc_host_ptr->SavePrevStorages(
-                    tx.storages(s_idx).key(), 
-                    tx.storages(s_idx).value());
-                ZJC_DEBUG("store success prev storage key: %s",
-                    common::Encode::HexEncode(tx.storages(s_idx).key()).c_str());
-            }
-
             if (tx.balance() == 0) {
                 continue;
             }
@@ -62,10 +52,11 @@ Status ViewBlockChain::Store(
         }
     }
 
-    if (network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
+    if (!zjc_host_ptr) {
         zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
         for (uint32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
             auto& tx = view_block->block_info().tx_list(i);
+            ZJC_DEBUG("store success prev storage key tx step: %d", tx.step());
             for (auto s_idx = 0; s_idx < tx.storages_size(); ++s_idx) {
                 zjc_host_ptr->SavePrevStorages(
                     tx.storages(s_idx).key(), 
@@ -89,6 +80,12 @@ Status ViewBlockChain::Store(
                 iter->second,
                 view_block->debug().c_str());
         }
+    }
+
+    auto& zjc_host_prev_storages = zjc_host_ptr->prev_storages_map();
+    for (auto iter = zjc_host_prev_storages.begin(); iter != zjc_host_prev_storages.end(); ++iter) {
+        ZJC_DEBUG("success add prev storage key: %s",
+            common::Encode::HexEncode(iter->first).c_str());
     }
 #endif
 
