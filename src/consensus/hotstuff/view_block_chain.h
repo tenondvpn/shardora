@@ -463,17 +463,19 @@ private:
             auto zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
             for (uint32_t i = 0; i < latest_committed_block_->block_info().tx_list_size(); ++i) {
                 auto& tx = latest_committed_block_->block_info().tx_list(i);
+                for (auto storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
+                    zjc_host_ptr->SavePrevStorages(
+                        tx.storages(storage_idx).key(), 
+                        tx.storages(storage_idx).value());
+                }
+                
                 if (tx.balance() == 0) {
                     continue;
                 }
 
                 auto& addr = account_mgr_->GetTxValidAddress(tx);
                 (*balane_map_ptr)[addr] = tx.balance();
-                for (auto storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
-                    zjc_host_ptr->SavePrevStorages(
-                        tx.storages(storage_idx).key(), 
-                        tx.storages(storage_idx).value());
-                }
+                
             }
 
             // TODO: fix storage map            
