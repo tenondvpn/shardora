@@ -43,6 +43,7 @@ Status ViewBlockChain::Store(
         zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
         for (uint32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
             auto& tx = view_block->block_info().tx_list(i);
+            ZJC_DEBUG("store success prev storage key tx step: %d", tx.step());
             for (auto s_idx = 0; s_idx < tx.storages_size(); ++s_idx) {
                 zjc_host_ptr->SavePrevStorages(
                     tx.storages(s_idx).key(), 
