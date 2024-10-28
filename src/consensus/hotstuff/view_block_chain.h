@@ -110,7 +110,7 @@ public:
                 for (auto iter = prev_storages_map.begin(); iter != prev_storages_map.end(); ++iter) {
                     zjc_host.SavePrevStorages(iter->first, iter->second);
                     ZJC_DEBUG("merge success prev storage key: %s",
-                        common::Encode::HexEncode(tx.storages(storage_idx).key()).c_str());
+                        common::Encode::HexEncode(iter->first).c_str());
 
                 }
             }
