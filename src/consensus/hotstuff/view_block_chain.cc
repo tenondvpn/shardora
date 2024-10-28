@@ -64,7 +64,8 @@ Status ViewBlockChain::Store(
             for (auto s_idx = 0; s_idx < tx.storages_size(); ++s_idx) {
                 zjc_host_ptr->SavePrevStorages(
                     tx.storages(s_idx).key(), 
-                    tx.storages(s_idx).value());
+                    tx.storages(s_idx).value(),
+                    true);
                 if (tx.storages(s_idx).key().size() > 40)
                 ZJC_DEBUG("store success prev storage key: %s, value: %s",
                     common::Encode::HexEncode(tx.storages(s_idx).key()).c_str(),
@@ -91,11 +92,12 @@ Status ViewBlockChain::Store(
     auto& zjc_host_prev_storages = zjc_host_ptr->prev_storages_map();
     for (auto iter = zjc_host_prev_storages.begin(); iter != zjc_host_prev_storages.end(); ++iter) {
         if (iter->first.size() > 40)
-        ZJC_DEBUG("step: %d, hash: %s, success add prev storage key: %s, value: %s",
+        ZJC_DEBUG("step: %d, hash: %s, success add prev storage key: %s, value: %s, propose_debug: %s",
             view_block->block_info().tx_list_size() > 0 ? view_block->block_info().tx_list(0).step() : -1,
             common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
             common::Encode::HexEncode(iter->first).c_str(),
-            common::Encode::HexEncode(iter->second).c_str());
+            common::Encode::HexEncode(iter->second).c_str(),
+            view_block->debug().c_str());
     }
 #endif
 

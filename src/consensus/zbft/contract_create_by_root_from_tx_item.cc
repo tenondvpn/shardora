@@ -81,7 +81,7 @@ int ContractCreateByRootFromTxItem::HandleTx(
 		auto storage = block_tx.add_storages();
 		storage->set_key(protos::kCreateContractBytesCode);
 		storage->set_value(block_tx.contract_code());
-        zjc_host.SavePrevStorages(protos::kCreateContractBytesCode, block_tx.contract_code());
+        zjc_host.SavePrevStorages(protos::kCreateContractBytesCode, block_tx.contract_code(), true);
 	}
 
     acc_balance_map[from] = from_balance;

@@ -109,7 +109,7 @@ public:
             if (it->second->zjc_host_ptr) {
                 auto& prev_storages_map = it->second->zjc_host_ptr->prev_storages_map();
                 for (auto iter = prev_storages_map.begin(); iter != prev_storages_map.end(); ++iter) {
-                    zjc_host.SavePrevStorages(iter->first, iter->second);
+                    zjc_host.SavePrevStorages(iter->first, iter->second, false);
                     if (iter->first.size() > 40)
                     ZJC_DEBUG("%s, merge success prev storage key: %s, value: %s",
                         common::Encode::HexEncode(phash).c_str(), 

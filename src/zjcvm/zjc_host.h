@@ -110,7 +110,13 @@ public:
     int SaveKeyValue(const std::string& id, const std::string& key, const std::string& val);
     int SaveKeyValue(const evmc::address& addr, const std::string& key, const std::string& val);
     int GetKeyValue(const std::string& id, const std::string& key, std::string* val);
-    void SavePrevStorages(const std::string& key, const std::string& val) {
+    void SavePrevStorages(const std::string& key, const std::string& val, bool cover) {
+        if (!cover) {
+            auto iter = prev_storages_map_.find(key);
+            if (iter != prev_storages_map_.end()) {
+                return;
+            }
+        }
         if (key.size() > 40)
         ZJC_DEBUG("success add prev storage key: %s, value: %s",
             common::Encode::HexEncode(key).c_str(), 
