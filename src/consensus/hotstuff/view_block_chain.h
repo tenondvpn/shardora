@@ -519,7 +519,8 @@ private:
 
             debug_view_block = pview_block;
         }
-        ZJC_DEBUG("success add view block: %s", debug_str.c_str());
+        ZJC_DEBUG("success add view block: %s, string: %s",
+            debug_str.c_str(), String().c_str());
 #endif
         view_blocks_info_[parent_hash]->children.push_back(view_block);
     }
