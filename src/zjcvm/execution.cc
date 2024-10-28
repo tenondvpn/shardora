@@ -132,7 +132,10 @@ evmc::bytes32 Execution::GetStorage(
         // }
     }
 
-    ZJC_DEBUG("get storage: %s, %s", common::Encode::HexEncode(str_key).c_str(), common::Encode::HexEncode(val).c_str());
+    ZJC_DEBUG("get storage: %s, %s, valid: %d",
+        common::Encode::HexEncode(str_key).c_str(), 
+        common::Encode::HexEncode(val).c_str(),
+        !val.empty());
     if (val.empty()) {
         return evmc::bytes32{};
     }
