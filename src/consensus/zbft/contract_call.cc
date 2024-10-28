@@ -215,6 +215,8 @@ int ContractCall::HandleTx(
                     block_tx.status());
                 auto destruct_kv = block_tx.add_storages();
                 destruct_kv->set_key(protos::kContractDestruct);
+                ZJC_DEBUG("2 save storage to block tx prev storage key: %s",
+                    common::Encode::HexEncode(protos::kContractDestruct).c_str());
                 acc_balance_map[block_tx.to()] = -1;
             }
 
@@ -278,6 +280,8 @@ int ContractCall::SaveContractCreateInfo(
             kv->set_value(std::string(
                 (char*)storage_iter->second.value.bytes,
                 sizeof(storage_iter->second.value.bytes)));
+            ZJC_DEBUG("0 save storage to block tx prev storage key: %s",
+                common::Encode::HexEncode(str_key).c_str());
             gas_more += (sizeof(account_iter->first.bytes) +
                 sizeof(storage_iter->first.bytes) +
                 sizeof(storage_iter->second.value.bytes)) *
@@ -298,6 +302,8 @@ int ContractCall::SaveContractCreateInfo(
                 sizeof(account_iter->first.bytes)) + storage_iter->first;
             kv->set_key(str_key);
             kv->set_value(storage_iter->second.str_val);
+            ZJC_DEBUG("1 save storage to block tx prev storage key: %s",
+                common::Encode::HexEncode(str_key).c_str());
             gas_more += (sizeof(account_iter->first.bytes) +
                 storage_iter->first.size() +
                 storage_iter->second.str_val.size()) *
