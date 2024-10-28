@@ -48,9 +48,10 @@ public:
             const std::string& key,
             const std::string& val,
             db::DbWriteBatch& db_batch);
-    evmc::bytes32 GetStorage(
+    bool GetStorage(
             const evmc::address& addr,
-            const evmc::bytes32& key);
+            const evmc::bytes32& key,
+            evmc::bytes32* res_val);
     bool GetStorage(
             const evmc::address& addr,
             const std::string& key,

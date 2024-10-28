@@ -110,9 +110,10 @@ void Execution::UpdateStorage(
     ZJC_DEBUG("update storage: %s, %s", common::Encode::HexEncode(key).c_str(), common::Encode::HexEncode(val).c_str());
 }
 
-evmc::bytes32 Execution::GetStorage(
+bool Execution::GetStorage(
         const evmc::address& addr,
-        const evmc::bytes32& key) {
+        const evmc::bytes32& key,
+        evmc::bytes32* res_val) {
     auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
         std::string((char*)key.bytes, sizeof(key.bytes));
     std::string val;
@@ -137,19 +138,18 @@ evmc::bytes32 Execution::GetStorage(
         common::Encode::HexEncode(val).c_str(),
         !val.empty());
     if (val.empty()) {
-        return evmc::bytes32{};
+        return false;
     }
 
-    evmc::bytes32 tmp_val{};
     uint32_t offset = 0;
-    uint32_t length = sizeof(tmp_val.bytes);
-    if (val.size() < sizeof(tmp_val.bytes)) {
-        offset = sizeof(tmp_val.bytes) - val.size();
+    uint32_t length = sizeof(res_val->bytes);
+    if (val.size() < sizeof(res_val->bytes)) {
+        offset = sizeof(res_val->bytes) - val.size();
         length = val.size();
     }
 
-    memcpy(tmp_val.bytes + offset, val.c_str(), length);
-    return tmp_val;
+    memcpy(res_val->bytes + offset, val.c_str(), length);
+    return true;
 }
 
 bool Execution::GetStorage(

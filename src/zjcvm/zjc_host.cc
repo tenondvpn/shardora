@@ -58,15 +58,13 @@ evmc::bytes32 ZjchainHost::get_storage(
         return tmp_val;
     }
 
-#ifndef NDEBUG
-    auto res_bytes = Execution::Instance()->GetStorage(addr, key);
+    evmc::bytes32 tmp_val{};
+    auto res_bytes = Execution::Instance()->GetStorage(addr, key, &tmp_val);
     if (!res_bytes) {
         ZJC_DEBUG("failed get prev storage key: %s", common::Encode::HexEncode(str_key).c_str());
     }
 
-    return res_bytes;
-#endif
-    return Execution::Instance()->GetStorage(addr, key);
+    return tmp_val;
 }
 
 evmc_storage_status ZjchainHost::set_storage(
