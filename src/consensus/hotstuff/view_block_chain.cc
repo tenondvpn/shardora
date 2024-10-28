@@ -31,6 +31,10 @@ Status ViewBlockChain::Store(
         return Status::kSuccess;
     }
     
+    if (view_block->qc().view() <= prune_height_) {
+        return Status::kSuccess;
+    }
+    
     if (Has(view_block->qc().view_block_hash())) {
         ZJC_ERROR("view block already stored, hash: %s, view: %lu, propose_debug: %s",
             common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view(),
