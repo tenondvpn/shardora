@@ -100,6 +100,7 @@ Status ViewBlockChain::Store(
         common::Encode::HexEncode(view_block->parent_hash()).c_str());
     auto block_info_ptr = GetViewBlockInfo(view_block, balane_map_ptr, zjc_host_ptr);
     auto& view_block_at_height_vec = view_blocks_at_height_[view_block->qc().view()];
+    std::vector<std::shared_ptr<ViewBlock>> remove_blocks;
     if (!view_block_at_height_vec.empty()) {
         for (auto iter = view_block_at_height_vec.begin(); iter != view_block_at_height_vec.end();) {
             if ((*iter)->qc().has_sign_x()) {
@@ -134,10 +135,14 @@ Status ViewBlockChain::Store(
                     view_block->qc().view(),
                     view_block->block_info().height(),
                     common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
-                DeleteViewBlock(*iter);
+                remove_blocks.push_back(*iter);
                 iter = view_block_at_height_vec.erase(iter);
             }
         }
+    }
+
+    for (auto iter = remove_blocks.begin(); iter != remove_blocks.end(); ++iter) {
+        DeleteViewBlock(*iter);
     }
 
     if (!start_block_) {
