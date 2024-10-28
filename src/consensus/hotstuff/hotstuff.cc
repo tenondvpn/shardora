@@ -374,7 +374,6 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         HandleTC(pro_msg_wrap);
     }
 
-    HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
     auto& view_item = *pro_msg_wrap->view_block_ptr;
     ZJC_DEBUG("HandleProposeMessageByStep called hash: %lu, "
         "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
@@ -382,6 +381,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         pro_msg_wrap->msg_ptr->header.debug().c_str());
     auto st = HandleProposeMsgStep_HasVote(pro_msg_wrap);
     if (st != Status::kSuccess) {
+        HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
         return;
     }
 
@@ -390,9 +390,15 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     for (auto iter = leader_view_with_propose_msgs_.begin();
             iter != leader_view_with_propose_msgs_.end();) {
         if (iter->first > propose_view) {
+            assert(false);
             return;
         }
 
+        auto& rehandle_view_item = *pro_msg_wrap->view_block_ptr;
+        ZJC_DEBUG("rehandle propose message begin HandleProposeMessageByStep called hash: %lu, "
+            "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
+            iter->second->msg_ptr->header.hash64(), last_vote_view_, rehandle_view_item.qc().view(),
+            iter->second->msg_ptr->header.debug().c_str());
         auto st = HandleProposeMessageByStep(iter->second);
         if (st != Status::kSuccess) {
             ZJC_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
@@ -401,7 +407,6 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
             break;
         }
 
-        auto& rehandle_view_item = *pro_msg_wrap->view_block_ptr;
         ZJC_DEBUG("rehandle propose message success HandleProposeMessageByStep called hash: %lu, "
             "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
             iter->second->msg_ptr->header.hash64(), last_vote_view_, rehandle_view_item.qc().view(),
@@ -431,6 +436,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     //     }
     // }
     
+    HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
     st = HandleProposeMessageByStep(pro_msg_wrap);
     if (st != Status::kSuccess) {
         ZJC_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
@@ -1152,7 +1158,9 @@ Status Hotstuff::TryCommit(const QC& commit_qc, uint64_t test_index) {
 std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(const QC& qc) {
     auto v_block1 = view_block_chain()->Get(qc.view_block_hash());
     if (!v_block1) {
-        ZJC_WARN("Failed get v block 1: %s", common::Encode::HexEncode(qc.view_block_hash()).c_str());
+        ZJC_WARN("Failed get v block 1: %s, %u_%u_%lu",
+            common::Encode::HexEncode(qc.view_block_hash()).c_str(),
+            qc.network_id(), qc.pool_index(), qc.view());
         // assert(false);
         return nullptr;
     }
