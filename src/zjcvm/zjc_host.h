@@ -10,6 +10,7 @@
 #include <evmc/evmc.hpp>
 
 #include "common/encode.h"
+#include "common/log.h"
 
 namespace shardora {
 
