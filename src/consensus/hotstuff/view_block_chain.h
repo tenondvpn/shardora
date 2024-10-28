@@ -553,7 +553,7 @@ private:
     Status DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_block);
     
     std::shared_ptr<ViewBlock> high_view_block_ = nullptr;
-    View prune_height_;
+    View prune_height_ = 0;
     std::shared_ptr<ViewBlock> start_block_;
     std::unordered_map<View, std::vector<std::shared_ptr<ViewBlock>>> view_blocks_at_height_; // 一般一个 view 只有一个块
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> view_blocks_info_;
