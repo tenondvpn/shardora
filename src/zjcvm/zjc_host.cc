@@ -56,10 +56,17 @@ evmc::bytes32 ZjchainHost::get_storage(
             common::Encode::HexEncode(str_key).c_str(),
             common::Encode::HexEncode(prev_iter->second).c_str());
         return tmp_val;
-    } else {
+    }
+
+#ifndef NDEBUG
+    auto res_bytes = Execution::Instance()->GetStorage(addr, key);
+    evmc::bytes32 tmp_val{};
+    if (res_bytes == tmp_val) {
         ZJC_DEBUG("failed get prev storage key: %s", common::Encode::HexEncode(str_key).c_str());
     }
 
+    return res_bytes;
+#endif
     return Execution::Instance()->GetStorage(addr, key);
 }
 

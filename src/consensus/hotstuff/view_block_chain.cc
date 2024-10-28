@@ -84,7 +84,8 @@ Status ViewBlockChain::Store(
 
     auto& zjc_host_prev_storages = zjc_host_ptr->prev_storages_map();
     for (auto iter = zjc_host_prev_storages.begin(); iter != zjc_host_prev_storages.end(); ++iter) {
-        ZJC_DEBUG("%s, success add prev storage key: %s",
+        ZJC_DEBUG("step: %d, hash: %s, success add prev storage key: %s",
+            view_block->block_info().tx_list_size() > 0 ? view_block->block_info().tx_list(0).step() : -1,
             common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
             common::Encode::HexEncode(iter->first).c_str());
     }
