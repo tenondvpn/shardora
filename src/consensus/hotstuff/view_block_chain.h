@@ -109,6 +109,9 @@ public:
                 auto& prev_storages_map = it->second->zjc_host_ptr->prev_storages_map();
                 for (auto iter = prev_storages_map.begin(); iter != prev_storages_map.end(); ++iter) {
                     zjc_host.SavePrevStorages(iter->first, iter->second);
+                    ZJC_DEBUG("merge success prev storage key: %s",
+                        common::Encode::HexEncode(tx.storages(storage_idx).key()).c_str());
+
                 }
             }
             
@@ -460,24 +463,26 @@ private:
                 return;
             }
 
-            auto balane_map_ptr = std::make_shared<BalanceMap>();
-            auto zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
-            for (uint32_t i = 0; i < latest_committed_block_->block_info().tx_list_size(); ++i) {
-                auto& tx = latest_committed_block_->block_info().tx_list(i);
-                for (auto storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
-                    zjc_host_ptr->SavePrevStorages(
-                        tx.storages(storage_idx).key(), 
-                        tx.storages(storage_idx).value());
-                }
+            auto balane_map_ptr = nullptr;//std::make_shared<BalanceMap>();
+            auto zjc_host_ptr = nullptr;//std::make_shared<zjcvm::ZjchainHost>();
+            // for (uint32_t i = 0; i < latest_committed_block_->block_info().tx_list_size(); ++i) {
+            //     auto& tx = latest_committed_block_->block_info().tx_list(i);
+            //     for (auto storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
+            //         zjc_host_ptr->SavePrevStorages(
+            //             tx.storages(storage_idx).key(), 
+            //             tx.storages(storage_idx).value());
+            //         ZJC_DEBUG("store success prev storage key: %s",
+            //             common::Encode::HexEncode(tx.storages(storage_idx).key()).c_str());
+            //     }
 
-                if (tx.balance() == 0) {
-                    continue;
-                }
+            //     if (tx.balance() == 0) {
+            //         continue;
+            //     }
 
-                auto& addr = account_mgr_->GetTxValidAddress(tx);
-                (*balane_map_ptr)[addr] = tx.balance();
+            //     auto& addr = account_mgr_->GetTxValidAddress(tx);
+            //     (*balane_map_ptr)[addr] = tx.balance();
                 
-            }
+            // }
 
             // TODO: fix storage map            
             auto block_info_ptr = GetViewBlockInfo(latest_committed_block_, balane_map_ptr, zjc_host_ptr);

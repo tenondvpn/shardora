@@ -47,6 +47,8 @@ Status ViewBlockChain::Store(
                 zjc_host_ptr->SavePrevStorages(
                     tx.storages(s_idx).key(), 
                     tx.storages(s_idx).value());
+                ZJC_DEBUG("store success prev storage key: %s",
+                    common::Encode::HexEncode(tx.storages(s_idx).key()).c_str());
             }
 
             if (tx.balance() == 0) {
@@ -67,6 +69,9 @@ Status ViewBlockChain::Store(
                 zjc_host_ptr->SavePrevStorages(
                     tx.storages(s_idx).key(), 
                     tx.storages(s_idx).value());
+                ZJC_DEBUG("store success prev storage key: %s",
+                    common::Encode::HexEncode(tx.storages(s_idx).key()).c_str());
+
             }
         }
     }
