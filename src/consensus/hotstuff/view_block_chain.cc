@@ -421,8 +421,12 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
         auto it = view_blocks_info_.find(view_block->parent_hash());
         if (it != view_blocks_info_.end() && !it->second->children.empty()) {
             auto& child_blocks = it->second->children;
-            child_blocks.erase(std::remove_if(child_blocks.begin(), child_blocks.end(),
-                    [&hash](const std::shared_ptr<ViewBlock>& item) { return item->qc().view_block_hash() == hash; }),
+            child_blocks.erase(
+                std::remove_if(
+                    child_blocks.begin(), child_blocks.end(),
+                    [&hash](const std::shared_ptr<ViewBlock>& item) {
+                        return item->qc().view_block_hash() == hash; 
+                    }),
                 child_blocks.end());            
         }
 
@@ -435,12 +439,13 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
         }
 
         view_blocks_info_.erase(hash);
-        ZJC_DEBUG("delete view block %u_%u_%lu, height: %lu, %s", 
+        ZJC_DEBUG("delete view block %u_%u_%lu, height: %lu, %s, strings: %s", 
             view_block->qc().network_id(), 
             view_block->qc().pool_index(), 
             view_block->qc().view(), 
             view_block->block_info().height(),
-            common::Encode::HexEncode(hash).c_str());
+            common::Encode::HexEncode(hash).c_str(),
+            String().c_str());
     } catch (std::exception& e) {
         ZJC_ERROR("del view block error %s", e.what());
         if (!original_child_blocks.empty()) {
@@ -448,7 +453,6 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
         }
 
         view_blocks_at_height_[view_block->qc().view()] = original_blocks_at_height;
-        throw;
     }
     
     return Status::kSuccess;    

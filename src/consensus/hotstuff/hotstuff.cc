@@ -347,9 +347,6 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-     
-
-
     auto b = common::TimeUtils::TimestampMs();
     defer({
         auto e = common::TimeUtils::TimestampMs();
@@ -391,7 +388,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
             iter != leader_view_with_propose_msgs_.end();) {
         if (iter->first > propose_view) {
             assert(false);
-            return;
+            break;
         }
 
         auto& rehandle_view_item = *pro_msg_wrap->view_block_ptr;
@@ -413,28 +410,6 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
             iter->second->msg_ptr->header.debug().c_str());
         iter = leader_view_with_propose_msgs_.erase(iter);
     }
-
-    // if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_x() &&
-    //         pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_y()) {
-    //     auto iter = leader_view_with_propose_msgs_.find(propose_view);
-    //     if (iter != leader_view_with_propose_msgs_.end()) {
-    //         if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view() > 
-    //                 iter->second->view_block_ptr->qc().view()) {
-    //             Status prev_s = HandleProposeMsgStep_Directly(
-    //                 iter->second,
-    //                 pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view_block_hash());
-    //             if (prev_s != Status::kSuccess) {
-    //                 ZJC_WARN("failed handle prev message chain store: %u, hash64: %lu, block timestamp: %lu",
-    //                     propose_view,
-    //                     iter->second->msg_ptr->header.hash64(),
-    //                     iter->second->view_block_ptr->block_info().timestamp());
-    //                 assert(false);
-    //             }
-    //         }                                                                                                                                                                                                                                              
-            
-    //         leader_view_with_propose_msgs_.erase(iter);
-    //     }
-    // }
     
     HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
     st = HandleProposeMessageByStep(pro_msg_wrap);
