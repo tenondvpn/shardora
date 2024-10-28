@@ -115,6 +115,21 @@ Status ViewBlockChain::Store(
                 assert(false);
                 ++iter;
             } else {
+                ZJC_DEBUG("remove invalid view has much more view block: %lu, "
+                    "count: %u, %u_%u_%lu, %lu hash: %s, , %u_%u_%lu, %lu new block hash: %s", 
+                    view_block->qc().view(),
+                    view_block_at_height_vec.size(),
+                    (*iter)->qc().network_id(),
+                    (*iter)->qc().pool_index(),
+                    (*iter)->qc().view(),
+                    (*iter)->block_info().height(),
+                    common::Encode::HexEncode((*iter)->qc().view_block_hash()).c_str(),
+                    view_block->qc().network_id(),
+                    view_block->qc().pool_index(),
+                    view_block->qc().view(),
+                    view_block->block_info().height(),
+                    common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
+                DeleteViewBlock(*iter);
                 iter = view_block_at_height_vec.erase(iter);
             }
         }
@@ -467,6 +482,7 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
         }
 
         view_blocks_at_height_[view_block->qc().view()] = original_blocks_at_height;
+        assert(false);
     }
     
     return Status::kSuccess;    
