@@ -150,7 +150,8 @@ public:
                 view_block_chain()->SetLatestCommittedBlock(vblock);        
             }
 
-            view_block_chain()->Store(vblock, true, nullptr);
+            // TODO: fix balance map and storage map
+            view_block_chain()->Store(vblock, true, nullptr, nullptr);
             view_block_chain()->UpdateHighViewBlock(vblock->qc());
             TryCommit(vblock->qc(), 99999999lu);
             if (latest_qc_item_ptr_ == nullptr ||

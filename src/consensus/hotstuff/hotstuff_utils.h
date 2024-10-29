@@ -11,6 +11,7 @@
 #include <protos/prefix_db.h>
 #include <protos/transport.pb.h>
 #include "transport/transport_utils.h"
+#include "zjcvm/zjc_host.h"
 
 namespace shardora {
 
@@ -25,6 +26,7 @@ struct ProposeMsgWrapper {
     transport::MessagePtr msg_ptr;
     std::shared_ptr<ViewBlock> view_block_ptr;
     BalanceMapPtr acc_balance_map_ptr;
+    std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr;
     Breakpoint breakpoint; // 断点位置
     int tried_times;
 

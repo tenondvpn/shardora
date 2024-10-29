@@ -59,7 +59,8 @@ Status BlockAcceptor::Accept(
         std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap, 
         bool no_tx_allowed,
         bool directly_user_leader_txs,
-        BalanceMap& balance_map) {
+        BalanceMap& balance_map,
+        zjcvm::ZjchainHost& zjc_host) {
     auto b = common::TimeUtils::TimestampMs();
     defer({
             auto e = common::TimeUtils::TimestampMs();
@@ -119,14 +120,15 @@ Status BlockAcceptor::Accept(
         propose_msg, 
         directly_user_leader_txs, 
         txs_ptr, 
-        balance_map);
+        balance_map,
+        zjc_host);
     if (s != Status::kSuccess) {
         ZJC_DEBUG("GetAndAddTxsLocally error!");
         return s;
     }
     
     // 3. Do txs and create block_tx
-    s = DoTransactions(txs_ptr, &view_block, balance_map);
+    s = DoTransactions(txs_ptr, &view_block, balance_map, zjc_host);
     if (s != Status::kSuccess) {
         ZJC_DEBUG("DoTransactions error!");
         return s;
@@ -180,8 +182,10 @@ void BlockAcceptor::CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_it
 Status BlockAcceptor::AddTxs(const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) {
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
     std::shared_ptr<ViewBlockChain> chain = nullptr;
+    // TODO: check valid
     BalanceMap now_balance_map;
-    return addTxsToPool(chain, "", txs, false, txs_ptr, now_balance_map);
+    zjcvm::ZjchainHost zjc_host;
+    return addTxsToPool(chain, "", txs, false, txs_ptr, now_balance_map, zjc_host);
 };
 
 Status BlockAcceptor::addTxsToPool(
@@ -190,12 +194,14 @@ Status BlockAcceptor::addTxsToPool(
         const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
         bool directly_user_leader_txs,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-        BalanceMap& now_balance_map) {
+        BalanceMap& now_balance_map,
+        zjcvm::ZjchainHost& zjc_host) {
     if (txs.size() == 0) {
         return Status::kAcceptorTxsEmpty;
     }
     
     BalanceMap prevs_balance_map;
+    view_block_chain->MergeAllPrevStorageMap(parent_hash, zjc_host);
     view_block_chain->MergeAllPrevBalanceMap(parent_hash, prevs_balance_map);
     ZJC_DEBUG("merge prev all balance size: %u", prevs_balance_map.size());
     std::map<std::string, pools::TxItemPtr> txs_map;
@@ -442,14 +448,16 @@ Status BlockAcceptor::GetAndAddTxsLocally(
         const hotstuff::protobuf::TxPropose& tx_propose,
         bool directly_user_leader_txs,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-        BalanceMap& balance_map) {
+        BalanceMap& balance_map,
+        zjcvm::ZjchainHost& zjc_host) {
     auto add_txs_status = addTxsToPool(
         view_block_chain, 
         parent_hash, 
         tx_propose.txs(), 
         directly_user_leader_txs, 
         txs_ptr,
-        balance_map);
+        balance_map,
+        zjc_host);
     if (add_txs_status != Status::kSuccess) {
         ZJC_ERROR("invalid consensus, add_txs_status failed: %d.", add_txs_status);
         return add_txs_status;
@@ -512,9 +520,10 @@ void BlockAcceptor::MarkBlockTxsAsUsed(const block::protobuf::Block& block) {
 Status BlockAcceptor::DoTransactions(
         const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
-        BalanceMap& balance_map) {
+        BalanceMap& balance_map,
+        zjcvm::ZjchainHost& zjc_host) {
     Status s = BlockExecutorFactory().Create(security_ptr_)->DoTransactionAndCreateTxBlock(
-            txs_ptr, view_block, balance_map);
+            txs_ptr, view_block, balance_map, zjc_host);
     if (s != Status::kSuccess) {
         return s;
     }

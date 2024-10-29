@@ -9,6 +9,9 @@
 
 #include <evmc/evmc.hpp>
 
+#include "common/encode.h"
+#include "common/log.h"
+
 namespace shardora {
 
 namespace contract {
@@ -105,7 +108,25 @@ public:
     // tmp item
     void AddTmpAccountBalance(const std::string& address, uint64_t balance);
     int SaveKeyValue(const std::string& id, const std::string& key, const std::string& val);
+    int SaveKeyValue(const evmc::address& addr, const std::string& key, const std::string& val);
     int GetKeyValue(const std::string& id, const std::string& key, std::string* val);
+    void SavePrevStorages(const std::string& key, const std::string& val, bool cover) {
+        if (!cover) {
+            auto iter = prev_storages_map_.find(key);
+            if (iter != prev_storages_map_.end()) {
+                return;
+            }
+        }
+        if (key.size() > 40)
+        ZJC_DEBUG("success add prev storage key: %s, value: %s",
+            common::Encode::HexEncode(key).c_str(), 
+            common::Encode::HexEncode(val).c_str());
+        prev_storages_map_[key] = val;
+    }
+    
+    const std::unordered_map<std::string, std::string>& prev_storages_map() const {
+        return prev_storages_map_;
+    }
 
     std::map<evmc::address, MockedAccount> accounts_;
     evmc_tx_context tx_context_ = {};
@@ -122,6 +143,8 @@ public:
     std::string create_bytes_code_;
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
+    zjcvm::ZjchainHost* prev_zjc_host_ = nullptr;
+    std::unordered_map<std::string, std::string> prev_storages_map_;
 
 };
 

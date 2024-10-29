@@ -20,7 +20,8 @@ public:
     virtual Status DoTransactionAndCreateTxBlock(
             const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
             view_block::protobuf::ViewBlockItem* view_block,
-            BalanceMap& balance_map) = 0;
+            BalanceMap& balance_map,
+            zjcvm::ZjchainHost& zjc_host) = 0;
 };
 
 class ShardBlockExecutor : public IBlockExecutor {
@@ -37,9 +38,9 @@ public:
     Status DoTransactionAndCreateTxBlock(
             const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
             view_block::protobuf::ViewBlockItem* view_block,
-            BalanceMap& balance_map);
+            BalanceMap& balance_map,
+            zjcvm::ZjchainHost& zjc_host);
 private:
-    zjcvm::ZjchainHost zjc_host;
     std::shared_ptr<db::DbWriteBatch> db_batch_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;    
 };
@@ -58,9 +59,9 @@ public:
     Status DoTransactionAndCreateTxBlock(
             const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
             view_block::protobuf::ViewBlockItem* view_block,
-            BalanceMap& balance_map);
+            BalanceMap& balance_map,
+            zjcvm::ZjchainHost& zjc_host);
 private:
-    zjcvm::ZjchainHost zjc_host;
     std::shared_ptr<db::DbWriteBatch> db_batch_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
 
@@ -71,11 +72,13 @@ private:
     void RootCreateAccountAddressBlock(
             const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
             view_block::protobuf::ViewBlockItem* view_block,
-            BalanceMap& balance_map);
+            BalanceMap& balance_map,
+            zjcvm::ZjchainHost& zjc_host);
     void RootCreateElectConsensusShardBlock(
             const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
             view_block::protobuf::ViewBlockItem* view_block,
-            BalanceMap& balance_map);        
+            BalanceMap& balance_map,
+            zjcvm::ZjchainHost& zjc_host);        
 };
 
 class BlockExecutorFactory {

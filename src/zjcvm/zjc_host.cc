@@ -39,7 +39,32 @@ evmc::bytes32 ZjchainHost::get_storage(
         }
     }
 
-    return Execution::Instance()->GetStorage(addr, key);
+    auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
+        std::string((char*)key.bytes, sizeof(key.bytes));
+    auto prev_iter = prev_storages_map_.find(str_key);
+    if (prev_iter != prev_storages_map_.end()) {
+        evmc::bytes32 tmp_val{};
+        uint32_t offset = 0;
+        uint32_t length = sizeof(tmp_val.bytes);
+        if (prev_iter->second.size() < sizeof(tmp_val.bytes)) {
+            offset = sizeof(tmp_val.bytes) - prev_iter->second.size();
+            length = prev_iter->second.size();
+        }
+
+        memcpy(tmp_val.bytes + offset, prev_iter->second.c_str(), length);
+        ZJC_DEBUG("success get prev storage key: %s, value: %s",
+            common::Encode::HexEncode(str_key).c_str(),
+            common::Encode::HexEncode(prev_iter->second).c_str());
+        return tmp_val;
+    }
+
+    evmc::bytes32 tmp_val{};
+    auto res_bytes = Execution::Instance()->GetStorage(addr, key, &tmp_val);
+    if (!res_bytes) {
+        ZJC_DEBUG("failed get prev storage key: %s", common::Encode::HexEncode(str_key).c_str());
+    }
+
+    return tmp_val;
 }
 
 evmc_storage_status ZjchainHost::set_storage(
@@ -321,6 +346,18 @@ int ZjchainHost::SaveKeyValue(
         common::Encode::HexEncode(id).c_str(),
         common::Encode::HexEncode(key).c_str(),
         common::Encode::HexEncode(val).c_str());
+    return SaveKeyValue(addr, key, val);
+}
+
+int ZjchainHost::SaveKeyValue(
+        const evmc::address& addr,
+        const std::string& key,
+        const std::string& val) {
+    ZJC_DEBUG("called 13");
+    CONTRACT_DEBUG("zjcvm set storage called, id: %s, key: %s, value: %s",
+        common::Encode::HexEncode(std::string((char*)addr.bytes, sizeof(addr.bytes))).c_str(),
+        common::Encode::HexEncode(key).c_str(),
+        common::Encode::HexEncode(val).c_str());
     auto it = accounts_.find(addr);
     if (it == accounts_.end()) {
         accounts_[addr] = MockedAccount();
@@ -333,6 +370,13 @@ int ZjchainHost::SaveKeyValue(
 }
 
 int ZjchainHost::GetKeyValue(const std::string& id, const std::string& key_str, std::string* val) {
+    auto str_key = id + key_str;
+    auto prev_iter = prev_storages_map_.find(str_key);
+    if (prev_iter != prev_storages_map_.end()) {
+        *val = prev_iter->second;
+        return kZjcvmSuccess;
+    }
+
     ZJC_DEBUG("called 14");
     auto addr = evmc::address{};
     memcpy(addr.bytes, id.c_str(), id.size());

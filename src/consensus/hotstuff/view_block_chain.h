@@ -8,6 +8,7 @@
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/hotstuff_utils.h>
 #include <protos/prefix_db.h>
+#include "zjcvm/zjc_host.h"
 
 namespace shardora {
 
@@ -44,6 +45,7 @@ public:
         std::shared_ptr<QC> qc;
         std::unordered_set<std::string> added_txs;
         BalanceMapPtr acc_balance_map_ptr;
+        std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr;
 
         ViewBlockInfo() : 
             view_block(nullptr), 
@@ -61,7 +63,8 @@ public:
     Status Store(
         const std::shared_ptr<ViewBlock>& view_block, 
         bool directly_store, 
-        BalanceMapPtr balane_map_ptr);
+        BalanceMapPtr balane_map_ptr,
+        std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr);
     // Get Block by hash value, fetch from neighbor nodes if necessary
     std::shared_ptr<ViewBlock> Get(const HashStr& hash);
     std::shared_ptr<ViewBlock> Get(View view) {
@@ -86,6 +89,38 @@ public:
     Status GetAllVerified(std::vector<std::shared_ptr<ViewBlock>>&);
 
     Status GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>&);
+
+    void MergeAllPrevStorageMap(
+            const std::string& parent_hash, 
+            zjcvm::ZjchainHost& zjc_host) {
+        std::string phash = parent_hash;
+        uint32_t count = 0;
+        while (true) {
+            if (phash.empty()) {
+                break;
+            }
+
+            ZJC_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
+            auto it = view_blocks_info_.find(phash);
+            if (it == view_blocks_info_.end()) {
+                break;
+            }
+
+            if (it->second->zjc_host_ptr) {
+                auto& prev_storages_map = it->second->zjc_host_ptr->prev_storages_map();
+                for (auto iter = prev_storages_map.begin(); iter != prev_storages_map.end(); ++iter) {
+                    zjc_host.SavePrevStorages(iter->first, iter->second, false);
+                    if (iter->first.size() > 40)
+                    ZJC_DEBUG("%s, merge success prev storage key: %s, value: %s",
+                        common::Encode::HexEncode(phash).c_str(), 
+                        common::Encode::HexEncode(iter->first).c_str(),
+                        common::Encode::HexEncode(iter->second).c_str());
+                }
+            }
+            
+            phash = it->second->view_block->parent_hash();
+        }
+    }
 
     void MergeAllPrevBalanceMap(
             const std::string& parent_hash, 
@@ -371,19 +406,27 @@ private:
         }
 
         view_blocks_info_[view_block_info->view_block->qc().view_block_hash()] = view_block_info;
-        ZJC_DEBUG("success add view block: %s, %u_%u_%lu, view: %lu, parent hash: %s, tx size: %u",
+        ZJC_DEBUG("success add view block: %s, %u_%u_%lu, view: %lu, parent hash: %s, tx size: %u, strings: %s",
             common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
             view_block_info->view_block->qc().network_id(),
             view_block_info->view_block->qc().pool_index(),
             view_block_info->view_block->block_info().height(),
             view_block_info->view_block->qc().view(),
             common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str(),
-            view_block_info->view_block->block_info().tx_list_size());
+            view_block_info->view_block->block_info().tx_list_size(),
+            String().c_str());
+
+        auto& zjc_host_prev_storages = view_block_info->zjc_host_ptr->prev_storages_map();
+        for (auto iter = zjc_host_prev_storages.begin(); iter != zjc_host_prev_storages.end(); ++iter) {
+            ZJC_DEBUG("success add prev storage key: %s",
+                common::Encode::HexEncode(iter->first).c_str());
+        }
     }
 
     std::shared_ptr<ViewBlockInfo> GetViewBlockInfo(
             const std::shared_ptr<ViewBlock>& view_block, 
-            BalanceMapPtr acc_balance_map_ptr) {
+            BalanceMapPtr acc_balance_map_ptr,
+            std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr) {
         auto view_block_info_ptr = std::make_shared<ViewBlockInfo>();
         ZJC_DEBUG("add new view block %s, leader: %d",
             common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view());
@@ -393,6 +436,7 @@ private:
 
         view_block_info_ptr->view_block = view_block;
         view_block_info_ptr->acc_balance_map_ptr = acc_balance_map_ptr;
+        view_block_info_ptr->zjc_host_ptr = zjc_host_ptr;
         return view_block_info_ptr;
     }
 
@@ -428,18 +472,29 @@ private:
                 return;
             }
 
-            auto balane_map_ptr = std::make_shared<BalanceMap>();
-            for (uint32_t i = 0; i < latest_committed_block_->block_info().tx_list_size(); ++i) {
-                auto& tx = latest_committed_block_->block_info().tx_list(i);
-                if (tx.balance() == 0) {
-                    continue;
-                }
+            auto balane_map_ptr = nullptr;//std::make_shared<BalanceMap>();
+            auto zjc_host_ptr = nullptr;//std::make_shared<zjcvm::ZjchainHost>();
+            // for (uint32_t i = 0; i < latest_committed_block_->block_info().tx_list_size(); ++i) {
+            //     auto& tx = latest_committed_block_->block_info().tx_list(i);
+            //     for (auto storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
+            //         zjc_host_ptr->SavePrevStorages(
+            //             tx.storages(storage_idx).key(), 
+            //             tx.storages(storage_idx).value());
+            //         ZJC_DEBUG("store success prev storage key: %s",
+            //             common::Encode::HexEncode(tx.storages(storage_idx).key()).c_str());
+            //     }
 
-                auto& addr = account_mgr_->GetTxValidAddress(tx);
-                (*balane_map_ptr)[addr] = tx.balance();
-            }
-            
-            auto block_info_ptr = GetViewBlockInfo(latest_committed_block_, balane_map_ptr);
+            //     if (tx.balance() == 0) {
+            //         continue;
+            //     }
+
+            //     auto& addr = account_mgr_->GetTxValidAddress(tx);
+            //     (*balane_map_ptr)[addr] = tx.balance();
+                
+            // }
+
+            // TODO: fix storage map            
+            auto block_info_ptr = GetViewBlockInfo(latest_committed_block_, balane_map_ptr, zjc_host_ptr);
             view_blocks_info_[parent_hash] = block_info_ptr;
         }
 
@@ -481,7 +536,8 @@ private:
 
             debug_view_block = pview_block;
         }
-        ZJC_DEBUG("success add view block: %s", debug_str.c_str());
+        ZJC_DEBUG("success add view block: %s, strings: %s",
+            debug_str.c_str(), String().c_str());
 #endif
         view_blocks_info_[parent_hash]->children.push_back(view_block);
     }
@@ -497,7 +553,7 @@ private:
     Status DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_block);
     
     std::shared_ptr<ViewBlock> high_view_block_ = nullptr;
-    View prune_height_;
+    View prune_height_ = 0;
     std::shared_ptr<ViewBlock> start_block_;
     std::unordered_map<View, std::vector<std::shared_ptr<ViewBlock>>> view_blocks_at_height_; // 一般一个 view 只有一个块
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> view_blocks_info_;

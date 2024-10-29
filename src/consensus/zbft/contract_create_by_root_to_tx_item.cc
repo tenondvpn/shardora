@@ -241,6 +241,7 @@ int ContractCreateByRootToTxItem::SaveContractCreateInfo(
     auto storage = block_tx.add_storages();
     storage->set_key(protos::kCreateContractBytesCode);
     storage->set_value(zjc_host.create_bytes_code_);
+    zjc_host.SavePrevStorages(protos::kCreateContractBytesCode, zjc_host.create_bytes_code_, true);
     for (auto account_iter = zjc_host.accounts_.begin();
             account_iter != zjc_host.accounts_.end(); ++account_iter) {
         for (auto storage_iter = account_iter->second.storage.begin();
@@ -257,6 +258,7 @@ int ContractCreateByRootToTxItem::SaveContractCreateInfo(
             kv->set_value(std::string(
                 (char*)storage_iter->second.value.bytes,
                 sizeof(storage_iter->second.value.bytes)));
+            zjc_host.SavePrevStorages(str_key, kv->value(), true);
             gas_more += (sizeof(account_iter->first.bytes) +
                 sizeof(storage_iter->first.bytes) +
                 sizeof(storage_iter->second.value.bytes)) *
@@ -276,6 +278,7 @@ int ContractCreateByRootToTxItem::SaveContractCreateInfo(
                 sizeof(account_iter->first.bytes)) + storage_iter->first;
             kv->set_key(str_key);
             kv->set_value(storage_iter->second.str_val);
+            zjc_host.SavePrevStorages(str_key, kv->value(), true);
             gas_more += (sizeof(account_iter->first.bytes) +
                 storage_iter->first.size() +
                 storage_iter->second.str_val.size()) *

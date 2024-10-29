@@ -55,7 +55,8 @@ void Hotstuff::InitAddNewViewBlock(std::shared_ptr<ViewBlock>& latest_view_block
             pool_idx_, 
             latest_view_block->qc().view());
         // 初始状态，使用 db 中最后一个 view_block 初始化视图链
-        view_block_chain_->Store(latest_view_block, true, nullptr);
+        // TODO: check valid
+        view_block_chain_->Store(latest_view_block, true, nullptr, nullptr);
         view_block_chain_->UpdateHighViewBlock(latest_view_block->qc());
         StopVoting(latest_view_block->qc().view());
         // 开启第一个视图
@@ -346,9 +347,6 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-     
-
-
     auto b = common::TimeUtils::TimestampMs();
     defer({
         auto e = common::TimeUtils::TimestampMs();
@@ -373,7 +371,6 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         HandleTC(pro_msg_wrap);
     }
 
-    HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
     auto& view_item = *pro_msg_wrap->view_block_ptr;
     ZJC_DEBUG("HandleProposeMessageByStep called hash: %lu, "
         "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
@@ -381,6 +378,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         pro_msg_wrap->msg_ptr->header.debug().c_str());
     auto st = HandleProposeMsgStep_HasVote(pro_msg_wrap);
     if (st != Status::kSuccess) {
+        HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
         return;
     }
 
@@ -389,9 +387,15 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     for (auto iter = leader_view_with_propose_msgs_.begin();
             iter != leader_view_with_propose_msgs_.end();) {
         if (iter->first > propose_view) {
-            return;
+            assert(false);
+            break;
         }
 
+        auto& rehandle_view_item = *pro_msg_wrap->view_block_ptr;
+        ZJC_DEBUG("rehandle propose message begin HandleProposeMessageByStep called hash: %lu, "
+            "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
+            iter->second->msg_ptr->header.hash64(), last_vote_view_, rehandle_view_item.qc().view(),
+            iter->second->msg_ptr->header.debug().c_str());
         auto st = HandleProposeMessageByStep(iter->second);
         if (st != Status::kSuccess) {
             ZJC_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
@@ -400,36 +404,14 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
             break;
         }
 
-        auto& rehandle_view_item = *pro_msg_wrap->view_block_ptr;
         ZJC_DEBUG("rehandle propose message success HandleProposeMessageByStep called hash: %lu, "
             "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
             iter->second->msg_ptr->header.hash64(), last_vote_view_, rehandle_view_item.qc().view(),
             iter->second->msg_ptr->header.debug().c_str());
         iter = leader_view_with_propose_msgs_.erase(iter);
     }
-
-    // if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_x() &&
-    //         pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_y()) {
-    //     auto iter = leader_view_with_propose_msgs_.find(propose_view);
-    //     if (iter != leader_view_with_propose_msgs_.end()) {
-    //         if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view() > 
-    //                 iter->second->view_block_ptr->qc().view()) {
-    //             Status prev_s = HandleProposeMsgStep_Directly(
-    //                 iter->second,
-    //                 pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view_block_hash());
-    //             if (prev_s != Status::kSuccess) {
-    //                 ZJC_WARN("failed handle prev message chain store: %u, hash64: %lu, block timestamp: %lu",
-    //                     propose_view,
-    //                     iter->second->msg_ptr->header.hash64(),
-    //                     iter->second->view_block_ptr->block_info().timestamp());
-    //                 assert(false);
-    //             }
-    //         }                                                                                                                                                                                                                                              
-            
-    //         leader_view_with_propose_msgs_.erase(iter);
-    //     }
-    // }
     
+    HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
     st = HandleProposeMessageByStep(pro_msg_wrap);
     if (st != Status::kSuccess) {
         ZJC_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
@@ -648,12 +630,17 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
     pro_msg_wrap->view_block_ptr->mutable_block_info()->clear_tx_list();
     auto balance_map_ptr = std::make_shared<BalanceMap>();
     auto& balance_map = *balance_map_ptr;
+    auto zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
+    zjcvm::ZjchainHost prev_zjc_host;
+    zjcvm::ZjchainHost& zjc_host = *zjc_host_ptr;
+    zjc_host.prev_zjc_host_ = &prev_zjc_host;
     if (acceptor()->Accept(
             view_block_chain_, 
             pro_msg_wrap, 
             true, 
             true, 
-            balance_map) != Status::kSuccess) {
+            balance_map,
+            zjc_host) != Status::kSuccess) {
         ZJC_WARN("====1.1.2 Accept pool: %d, verify view block failed, "
             "view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
             pool_idx_,
@@ -695,7 +682,7 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
         return Status::kNotExpectHash;
     }
 
-    Status s = view_block_chain()->Store(pro_msg_wrap->view_block_ptr, true, balance_map_ptr);
+    Status s = view_block_chain()->Store(pro_msg_wrap->view_block_ptr, true, balance_map_ptr, zjc_host_ptr);
     ZJC_DEBUG("pool: %d, add view block hash: %s, status: %d, view: %u_%u_%lu, tx size: %u",
         pool_idx_, 
         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
@@ -730,12 +717,16 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
     auto& proto_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
     pro_msg_wrap->acc_balance_map_ptr = std::make_shared<BalanceMap>();
     auto& balance_map = *pro_msg_wrap->acc_balance_map_ptr;
+    pro_msg_wrap->zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
+    zjcvm::ZjchainHost prev_zjc_host;
+    zjcvm::ZjchainHost& zjc_host = *pro_msg_wrap->zjc_host_ptr;
     if (acceptor()->Accept(
             view_block_chain_, 
             pro_msg_wrap, 
             true, 
             false, 
-            balance_map) != Status::kSuccess) {
+            balance_map,
+            zjc_host) != Status::kSuccess) {
         ZJC_WARN("====1.1.2 Accept pool: %d, verify view block failed, "
             "view: %lu, hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
             pool_idx_,
@@ -772,7 +763,8 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
     Status s = view_block_chain()->Store(
         pro_msg_wrap->view_block_ptr, 
         false, 
-        pro_msg_wrap->acc_balance_map_ptr);
+        pro_msg_wrap->acc_balance_map_ptr,
+        pro_msg_wrap->zjc_host_ptr);
     ZJC_DEBUG("pool: %d, add view block hash: %s, status: %d, view: %u_%u_%lu, tx size: %u, propose_debug: %s",
         pool_idx_, 
         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
@@ -981,7 +973,8 @@ Status Hotstuff::StoreVerifiedViewBlock(
         pool_idx_,
         common::Encode::HexEncode(v_block->qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(v_block->parent_hash()).c_str());
-    return view_block_chain()->Store(v_block, true, nullptr);
+    // TODO: check valid
+    return view_block_chain()->Store(v_block, true, nullptr, nullptr);
 }
 
 void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
@@ -1140,7 +1133,9 @@ Status Hotstuff::TryCommit(const QC& commit_qc, uint64_t test_index) {
 std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(const QC& qc) {
     auto v_block1 = view_block_chain()->Get(qc.view_block_hash());
     if (!v_block1) {
-        ZJC_WARN("Failed get v block 1: %s", common::Encode::HexEncode(qc.view_block_hash()).c_str());
+        ZJC_WARN("Failed get v block 1: %s, %u_%u_%lu",
+            common::Encode::HexEncode(qc.view_block_hash()).c_str(),
+            qc.network_id(), qc.pool_index(), qc.view());
         // assert(false);
         return nullptr;
     }
@@ -1189,7 +1184,8 @@ Status Hotstuff::Commit(
     auto b = common::TimeUtils::TimestampMs();
     defer({
             auto e = common::TimeUtils::TimestampMs();
-            ZJC_DEBUG("pool: %d Commit duration: %lu ms, test_index: %lu, propose_debug: %s", pool_idx_, e-b, test_index, v_block->debug().c_str());
+            ZJC_DEBUG("pool: %d Commit duration: %lu ms, test_index: %lu, "
+                "propose_debug: %s", pool_idx_, e-b, test_index, v_block->debug().c_str());
         });
 
     auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
@@ -1338,9 +1334,11 @@ void Hotstuff::CommitInner(
     }
 
     if (!latest_committed_block && v_block->qc().view() == GenesisView) {
-        ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, vb view: %lu, %u_%u_%lu, propose_debug: %s",
+        ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, "
+            "vb view: %lu, %u_%u_%lu, propose_debug: %s",
             pool_idx_, 0, v_block->qc().view(),
-            v_block->qc().network_id(), v_block->qc().pool_index(), block_info.height(), v_block->debug().c_str());
+            v_block->qc().network_id(), v_block->qc().pool_index(), 
+            block_info.height(), v_block->debug().c_str());
         return;
     }
 

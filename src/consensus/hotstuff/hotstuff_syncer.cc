@@ -654,8 +654,8 @@ Status HotstuffSyncer::processResponseChain(
     while (!min_heap.empty()) {
         auto view_block = min_heap.top();
         min_heap.pop();
-
-        tmp_chain->Store(view_block, true, nullptr);
+        // TODO: check valid
+        tmp_chain->Store(view_block, true, nullptr, nullptr);
     }
     
     ZJC_INFO("Sync blocks to chain, pool_idx: %d, view_blocks: %d, syncchain: %s, orichain: %s",
@@ -763,7 +763,8 @@ Status HotstuffSyncer::onRecViewBlock(
     }    
 
     // 4. 保存 view_block
-    s = hotstuff->view_block_chain()->Store(view_block_ptr, true, nullptr);
+    // TODO: check valid
+    s = hotstuff->view_block_chain()->Store(view_block_ptr, true, nullptr, nullptr);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d store view block failed, hash: %s, view: %lu, cur chain: %s", pool_idx,
             common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(), 
