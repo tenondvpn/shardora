@@ -117,15 +117,21 @@ contract C2CSellOrder {
         require(!orders[msg.sender].sellerReleased);
         require(!orders[msg.sender].reported);
         emit NewSelloutValue(orders[msg.sender].pledgeAmount);
+        emit NewSelloutValue(amount);
 
         require(orders[msg.sender].pledgeAmount >= amount);
+        emit NewSelloutValue(1);
         SellOrder memory order = orders[msg.sender];
         order.pledgeAmount -= amount;
         order.height = block.number;
         order.buyer = buyer;
         order.amount = amount;
+        emit NewSelloutValue(2);
         payable(buyer).transfer(amount);
+        emit NewSelloutValue(3);
         if (order.pledgeAmount < minExchangeValue) {
+            emit NewSelloutValue(4);
+            emit NewSelloutValue(minExchangeValue);
             if (order.pledgeAmount > 0) {
                 payable(msg.sender).transfer(order.pledgeAmount);
             }
@@ -141,15 +147,19 @@ contract C2CSellOrder {
 
             delete orders[msg.sender];
         } else {
+            emit NewSelloutValue(5);
             orders[msg.sender] = order;
         }
 
+        emit NewSelloutValue(6);
         emit NewSelloutValue(order.pledgeAmount);
     }
 
     function ManagerReleaseForce(address seller) public payable {
+        emit NewSelloutValue(12);
         require(orders[seller].exists);
         require(valid_managers[msg.sender]);
+        emit NewSelloutValue(13);
         SellOrder memory order = orders[seller];
         require(order.addr == seller);
         require(order.managerReleased);
@@ -161,7 +171,9 @@ contract C2CSellOrder {
             }
         }
 
+        emit NewSelloutValue(14);
         delete orders[seller];
+        emit NewSelloutValue(15);
     }
 
     function ManagerRelease(address seller) public payable {
@@ -200,6 +212,7 @@ contract C2CSellOrder {
     }
 
     function SellerRelease() public payable {
+        emit NewSelloutValue(10);
         require(orders[msg.sender].exists);
         SellOrder memory order = orders[msg.sender];
         order.sellerReleased = true;
@@ -217,6 +230,7 @@ contract C2CSellOrder {
         } else {
             orders[msg.sender] = order;
         }
+        emit NewSelloutValue(11);
     }
 
     function Report(address seller) public {

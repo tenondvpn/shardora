@@ -8,6 +8,8 @@ var querystring = require('querystring');
 var http = require('http');
 var fs = require('fs');
 const util = require('util')
+const kTestSellerCount = 11;  // real: kTestSellerCount - 10
+const kTestBuyerCount = 11;  // real: kTestBuyerCount - 10
 
 function str_to_hex(str) {
     var arr1 = [];
@@ -318,7 +320,7 @@ async function SetManagerPrepayment(contract_address) {
     check_accounts_str += "'" + account2.address.toString('hex').toLowerCase().substring(2) + "',"; 
     check_accounts_str += "'" + account3.address.toString('hex').toLowerCase().substring(2) + "',"; 
     var check_count = 3;
-    for (var i = 10; i < 30; ++i) {
+    for (var i = 10; i < kTestSellerCount; ++i) {
         Prepayment('b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString(), 1000000000000);
         var account4 = web3.eth.accounts.privateKeyToAccount(
             '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString());
@@ -389,7 +391,7 @@ function InitC2cEnv() {
             console.log(account3.address.toString('hex').toLowerCase().substring(2));
             var append_address = "";
             var check_count = 3;
-            for (var i = 10; i < 30; ++i) {
+            for (var i = 10; i < kTestSellerCount; ++i) {
                 // 卖家账户设置
                 var account4 = web3.eth.accounts.privateKeyToAccount(
                     '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString());
@@ -585,19 +587,429 @@ async function CreateNewSeller(str_prikey) {
     QueryContract(str_prikey, "cdfd45bb");
 }
 
+async function ConfirmToBuyer(str_prikey, to, amount) {
+    var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
+    var self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
+    var self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
+    var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
+    var address = keccak256(pk_bytes).toString('hex')
+    var address = address.slice(address.length - 40, address.length)
+
+    const { exec } = require('child_process');
+    const execPromise = util.promisify(exec);
+    var old_prepayment = 0;
+    {
+    
+        var contract_address = fs.readFileSync('contract_address', 'utf-8');
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var try_times = 0;
+        while (try_times < 30) {
+            try {
+            // wait for exec to complete
+                const {stdout, stderr} = await execPromise(cmd);
+                if (stdout.trim() != "") {
+                    console.error(`get old prepayment success: ${stdout}`);
+                    old_prepayment = parseInt(stdout, 10)
+                    break;
+                }
+
+                console.log(`${cmd} get old prepayment error: ${stderr} count: ${stdout}`);
+            } catch (error) {
+                console.log(error);
+            }
+
+            ++try_times;
+            await sleep(2000);
+        }
+
+        if (try_times >= 30) {
+            console.error(`get old prepayment failed!`);
+            return;
+        }
+    }
+
+    {
+        var func = web3.eth.abi.encodeFunctionSignature('Confirm(address,uint256)');
+        var funcParam = web3.eth.abi.encodeParameters(
+            ['address', 'uint256'], 
+            ['0x' + to, amount]);
+        console.log("Confirm func: " + func.substring(2) + funcParam.substring(2));
+        call_contract(
+            str_prikey,
+            func.substring(2) + funcParam.substring(2), 0);
+    }
+
+    {
+        var contract_address = fs.readFileSync('contract_address', 'utf-8');
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var try_times = 0;
+        while (try_times < 30) {
+            try {
+            // wait for exec to complete
+                const {stdout, stderr} = await execPromise(cmd);
+                if (stdout.trim() != "") {
+                    var new_prepayment = parseInt(stdout, 10)
+                    if (old_prepayment - new_prepayment >= amount) {
+                        console.error(`get new prepayment success: ${stdout.trim()}, amount: ${amount}`);
+                        break;
+                    }
+
+                    if (old_prepayment > new_prepayment) {
+                        console.error(`get new prepayment failed: ${stdout.trim()}, amount: ${amount}`);
+                        break;
+                    }
+                }
+
+                console.log(`${cmd} get new prepayment error: ${stderr} count: ${stdout}`);
+            } catch (error) {
+                console.log(error);
+            }
+
+            ++try_times;
+            await sleep(2000);
+        }
+
+        if (try_times >= 30) {
+            console.error(`get new prepayment failed!`);
+            return;
+        }
+    }
+
+    QueryContract(str_prikey, "cdfd45bb");
+}
+
+async function SellerRelease(str_prikey) {
+    var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
+    var self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
+    var self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
+    var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
+    var address = keccak256(pk_bytes).toString('hex')
+    var address = address.slice(address.length - 40, address.length)
+
+    const { exec } = require('child_process');
+    const execPromise = util.promisify(exec);
+    var old_prepayment = 0;
+    {
+    
+        var contract_address = fs.readFileSync('contract_address', 'utf-8');
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var try_times = 0;
+        while (try_times < 30) {
+            try {
+            // wait for exec to complete
+                const {stdout, stderr} = await execPromise(cmd);
+                if (stdout.trim() != "") {
+                    console.error(`get old prepayment success: ${stdout}`);
+                    old_prepayment = parseInt(stdout, 10)
+                    break;
+                }
+
+                console.log(`${cmd} get old prepayment error: ${stderr} count: ${stdout}`);
+            } catch (error) {
+                console.log(error);
+            }
+
+            ++try_times;
+            await sleep(2000);
+        }
+
+        if (try_times >= 30) {
+            console.error(`get old prepayment failed!`);
+            return;
+        }
+    }
+
+    {
+        var func = web3.eth.abi.encodeFunctionSignature('SellerRelease()');
+        console.log("Confirm func: " + func.substring(2));
+        call_contract(
+            str_prikey,
+            func.substring(2), 0);
+    }
+
+    {
+        var contract_address = fs.readFileSync('contract_address', 'utf-8');
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var try_times = 0;
+        var amount = 0;
+        while (try_times < 30) {
+            try {
+            // wait for exec to complete
+                const {stdout, stderr} = await execPromise(cmd);
+                if (stdout.trim() != "") {
+                    var new_prepayment = parseInt(stdout, 10)
+                    if (old_prepayment - new_prepayment >= amount) {
+                        console.error(`get new prepayment success: ${stdout.trim()}, amount: ${amount}`);
+                        break;
+                    }
+
+                    if (old_prepayment > new_prepayment) {
+                        console.error(`get new prepayment failed: ${stdout.trim()}, amount: ${amount}`);
+                        break;
+                    }
+                }
+
+                console.log(`${cmd} get new prepayment error: ${stderr} count: ${stdout}`);
+            } catch (error) {
+                console.log(error);
+            }
+
+            ++try_times;
+            await sleep(2000);
+        }
+
+        if (try_times >= 30) {
+            console.error(`get new prepayment failed!`);
+            return;
+        }
+    }
+
+    QueryContract(str_prikey, "cdfd45bb");
+}
+
+async function ManagerRelease(str_prikey, cancel_seller) {
+    var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
+    var self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
+    var self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
+    var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
+    var address = keccak256(pk_bytes).toString('hex')
+    var address = address.slice(address.length - 40, address.length)
+
+    const { exec } = require('child_process');
+    const execPromise = util.promisify(exec);
+    var old_prepayment = 0;
+    {
+    
+        var contract_address = fs.readFileSync('contract_address', 'utf-8');
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var try_times = 0;
+        while (try_times < 30) {
+            try {
+            // wait for exec to complete
+                const {stdout, stderr} = await execPromise(cmd);
+                if (stdout.trim() != "") {
+                    console.error(`get old prepayment success: ${stdout}`);
+                    old_prepayment = parseInt(stdout, 10)
+                    break;
+                }
+
+                console.log(`${cmd} get old prepayment error: ${stderr} count: ${stdout}`);
+            } catch (error) {
+                console.log(error);
+            }
+
+            ++try_times;
+            await sleep(2000);
+        }
+
+        if (try_times >= 30) {
+            console.error(`get old prepayment failed!`);
+            return;
+        }
+    }
+
+    {
+        var func = web3.eth.abi.encodeFunctionSignature('ManagerRelease(address)');
+        var funcParam = web3.eth.abi.encodeParameters(
+            ['address'], 
+            ['0x' + cancel_seller]);
+        console.log("ManagerRelease func: " + func.substring(2) + funcParam.substring(2));
+        call_contract(
+            str_prikey,
+            func.substring(2) + funcParam.substring(2), 0);
+    }
+
+    {
+        var contract_address = fs.readFileSync('contract_address', 'utf-8');
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var try_times = 0;
+        var amount = 0;
+        while (try_times < 30) {
+            try {
+            // wait for exec to complete
+                const {stdout, stderr} = await execPromise(cmd);
+                if (stdout.trim() != "") {
+                    var new_prepayment = parseInt(stdout, 10)
+                    if (old_prepayment - new_prepayment >= amount) {
+                        console.error(`get new prepayment success: ${stdout.trim()}, amount: ${amount}`);
+                        break;
+                    }
+
+                    if (old_prepayment > new_prepayment) {
+                        console.error(`get new prepayment failed: ${stdout.trim()}, amount: ${amount}`);
+                        break;
+                    }
+                }
+
+                console.log(`${cmd} get new prepayment error: ${stderr} count: ${stdout}`);
+            } catch (error) {
+                console.log(error);
+            }
+
+            ++try_times;
+            await sleep(2000);
+        }
+
+        if (try_times >= 30) {
+            console.error(`get new prepayment failed!`);
+            return;
+        }
+    }
+
+    QueryContract(str_prikey, "cdfd45bb");
+}
+
+
+async function ManagerReleaseForce(str_prikey, cancel_seller) {
+    var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
+    var self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
+    var self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
+    var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
+    var address = keccak256(pk_bytes).toString('hex')
+    var address = address.slice(address.length - 40, address.length)
+
+    const { exec } = require('child_process');
+    const execPromise = util.promisify(exec);
+    var old_prepayment = 0;
+    {
+    
+        var contract_address = fs.readFileSync('contract_address', 'utf-8');
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var try_times = 0;
+        while (try_times < 30) {
+            try {
+            // wait for exec to complete
+                const {stdout, stderr} = await execPromise(cmd);
+                if (stdout.trim() != "") {
+                    console.error(`get old prepayment success: ${stdout}`);
+                    old_prepayment = parseInt(stdout, 10)
+                    break;
+                }
+
+                console.log(`${cmd} get old prepayment error: ${stderr} count: ${stdout}`);
+            } catch (error) {
+                console.log(error);
+            }
+
+            ++try_times;
+            await sleep(2000);
+        }
+
+        if (try_times >= 30) {
+            console.error(`get old prepayment failed!`);
+            return;
+        }
+    }
+
+    {
+        var func = web3.eth.abi.encodeFunctionSignature('ManagerReleaseForce(address)');
+        var funcParam = web3.eth.abi.encodeParameters(
+            ['address'], 
+            ['0x' + cancel_seller]);
+        console.log("ManagerReleaseForce func: " + func.substring(2) + funcParam.substring(2));
+        call_contract(
+            str_prikey,
+            func.substring(2) + funcParam.substring(2), 0);
+    }
+
+    {
+        var contract_address = fs.readFileSync('contract_address', 'utf-8');
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var try_times = 0;
+        var amount = 0;
+        while (try_times < 30) {
+            try {
+            // wait for exec to complete
+                const {stdout, stderr} = await execPromise(cmd);
+                if (stdout.trim() != "") {
+                    var new_prepayment = parseInt(stdout, 10)
+                    if (old_prepayment - new_prepayment >= amount) {
+                        console.error(`get new prepayment success: ${stdout.trim()}, amount: ${amount}`);
+                        break;
+                    }
+
+                    if (old_prepayment > new_prepayment) {
+                        console.error(`get new prepayment failed: ${stdout.trim()}, amount: ${amount}`);
+                        break;
+                    }
+                }
+
+                console.log(`${cmd} get new prepayment error: ${stderr} count: ${stdout}`);
+            } catch (error) {
+                console.log(error);
+            }
+
+            ++try_times;
+            await sleep(2000);
+        }
+
+        if (try_times >= 30) {
+            console.error(`get new prepayment failed!`);
+            return;
+        }
+    }
+
+    QueryContract(str_prikey, "cdfd45bb");
+}
+
 const args = process.argv.slice(2)
 if (args[0] == 0) {
     InitC2cEnv();
-    return;
 }
 
 // 创建卖单
 if (args[0] == 1) {
-    for (var i = 10; i < 30; ++i) {
+    for (var i = 10; i < kTestSellerCount; ++i) {
         CreateNewSeller("b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1" + i.toString());
     }
-    return;
 }
+
+// 收到法币转账后确认转币到买家账户地址
+if (args[0] == 2) {
+    for (var i = 10; i < kTestBuyerCount; ++i) {
+        var privateKeyBuf = Secp256k1.uint256("a546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1" + i.toString(), 16)
+        var self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
+        var self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
+        var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
+        var address = keccak256(pk_bytes).toString('hex')
+        var address = address.slice(address.length - 40, address.length)
+        ConfirmToBuyer("b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d110", address, 1000000000);
+    }
+}
+
+// 取消订单
+if (args[0] == 3) {
+    // 卖家取消订单
+    for (var i = 10; i < kTestSellerCount; ++i) {
+        SellerRelease("b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1" + i.toString());
+    }
+
+    // 管理员取消订单
+    for (var i = 10; i < kTestBuyerCount; ++i) {
+        var privateKeyBuf = Secp256k1.uint256("b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1" + i.toString(), 16)
+        var self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
+        var self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
+        var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
+        var address = keccak256(pk_bytes).toString('hex')
+        var address = address.slice(address.length - 40, address.length)
+        ManagerRelease("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", address);
+    }
+}
+
+// 管理员强制取消订单
+if (args[0] == 4) {
+    for (var i = 10; i < kTestBuyerCount; ++i) {
+        var privateKeyBuf = Secp256k1.uint256("b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1" + i.toString(), 16)
+        var self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
+        var self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
+        var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
+        var address = keccak256(pk_bytes).toString('hex')
+        var address = address.slice(address.length - 40, address.length)
+        ManagerRelease("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", address);
+        ManagerReleaseForce("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", address);
+    }
+}
+
 
 // 测试合约查询
 if (args[0] == 8) {
