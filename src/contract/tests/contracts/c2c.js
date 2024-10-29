@@ -8,6 +8,7 @@ var querystring = require('querystring');
 var http = require('http');
 var fs = require('fs');
 const util = require('util')
+const kTestSellerCount = 11;
 
 function str_to_hex(str) {
     var arr1 = [];
@@ -318,7 +319,7 @@ async function SetManagerPrepayment(contract_address) {
     check_accounts_str += "'" + account2.address.toString('hex').toLowerCase().substring(2) + "',"; 
     check_accounts_str += "'" + account3.address.toString('hex').toLowerCase().substring(2) + "',"; 
     var check_count = 3;
-    for (var i = 10; i < 30; ++i) {
+    for (var i = 10; i < kTestSellerCount; ++i) {
         Prepayment('b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString(), 1000000000000);
         var account4 = web3.eth.accounts.privateKeyToAccount(
             '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString());
@@ -389,7 +390,7 @@ function InitC2cEnv() {
             console.log(account3.address.toString('hex').toLowerCase().substring(2));
             var append_address = "";
             var check_count = 3;
-            for (var i = 10; i < 30; ++i) {
+            for (var i = 10; i < kTestSellerCount; ++i) {
                 // 卖家账户设置
                 var account4 = web3.eth.accounts.privateKeyToAccount(
                     '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString());
@@ -593,7 +594,7 @@ if (args[0] == 0) {
 
 // 创建卖单
 if (args[0] == 1) {
-    for (var i = 10; i < 30; ++i) {
+    for (var i = 10; i < kTestSellerCount; ++i) {
         CreateNewSeller("b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1" + i.toString());
     }
     return;
