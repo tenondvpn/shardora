@@ -30,7 +30,7 @@ public:
             const common::MembersPtr& members,
             const libff::alt_bn128_G2& common_pk, // useless for aggbls
             const libff::alt_bn128_Fr& sk) :
-        members_(members), local_member_(nullptr), elect_height_(0), security_ptr_(security) {
+            members_(members), local_member_(nullptr), elect_height_(0), security_ptr_(security) {
         for (uint32_t i = 0; i < members->size(); i++) {
             if ((*members)[i]->id == security_ptr_->GetAddress()) {
                 local_member_ = (*members)[i];
@@ -48,15 +48,13 @@ public:
                 member_aggbls_pk_map_[(*members)[i]->index] = agg_bls_pk;
             }
             member_aggbls_pk_proof_map_[(*members)[i]->index] = agg_bls_pk_proof;
-        }
 #endif
+        }
 
         elect_height_ = elect_height;
         common_pk_ = common_pk;
         local_sk_ = sk;
-
         SetMemberCount(members->size());
-
         for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
             pool_consen_stat_map_[pool_idx] = std::make_shared<ConsensusStat>(pool_idx, members);
         }
