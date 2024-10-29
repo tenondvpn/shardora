@@ -731,6 +731,7 @@ async function SellerRelease(str_prikey) {
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
         var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
+        var amount = 0;
         while (try_times < 30) {
             try {
             // wait for exec to complete
@@ -822,6 +823,7 @@ async function ManagerRelease(str_prikey, cancel_seller) {
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
         var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
+        var amount = 0;
         while (try_times < 30) {
             try {
             // wait for exec to complete
