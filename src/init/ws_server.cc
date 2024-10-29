@@ -20,6 +20,7 @@ int WsServer::Init(
         std::shared_ptr<protos::PrefixDb> prefix_db, 
         std::shared_ptr<security::Security> security,
         transport::MultiThreadHandler* net_handler) {
+    c2c_contract_addr_ = "48e1eab96c9e759daa3aff82b40e77cd615a41d1";
     prefix_db_ = prefix_db;
     security_ = security;
     net_handler_ = net_handler;
