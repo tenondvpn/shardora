@@ -156,8 +156,10 @@ contract C2CSellOrder {
     }
 
     function ManagerReleaseForce(address seller) public payable {
+        emit NewSelloutValue(12);
         require(orders[seller].exists);
         require(valid_managers[msg.sender]);
+        emit NewSelloutValue(13);
         SellOrder memory order = orders[seller];
         require(order.addr == seller);
         require(order.managerReleased);
@@ -169,7 +171,9 @@ contract C2CSellOrder {
             }
         }
 
+        emit NewSelloutValue(14);
         delete orders[seller];
+        emit NewSelloutValue(15);
     }
 
     function ManagerRelease(address seller) public payable {
@@ -208,6 +212,7 @@ contract C2CSellOrder {
     }
 
     function SellerRelease() public payable {
+        emit NewSelloutValue(10);
         require(orders[msg.sender].exists);
         SellOrder memory order = orders[msg.sender];
         order.sellerReleased = true;
@@ -225,6 +230,7 @@ contract C2CSellOrder {
         } else {
             orders[msg.sender] = order;
         }
+        emit NewSelloutValue(11);
     }
 
     function Report(address seller) public {
