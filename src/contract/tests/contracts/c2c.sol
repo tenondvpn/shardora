@@ -126,10 +126,11 @@ contract C2CSellOrder {
         order.height = block.number;
         order.buyer = buyer;
         order.amount = amount;
-        payable(buyer).transfer(amount);
         emit NewSelloutValue(2);
+        payable(buyer).transfer(amount);
+        emit NewSelloutValue(3);
         if (order.pledgeAmount < minExchangeValue) {
-            emit NewSelloutValue(3);
+            emit NewSelloutValue(4);
             emit NewSelloutValue(minExchangeValue);
             if (order.pledgeAmount > 0) {
                 payable(msg.sender).transfer(order.pledgeAmount);
@@ -146,11 +147,11 @@ contract C2CSellOrder {
 
             delete orders[msg.sender];
         } else {
-            emit NewSelloutValue(4);
+            emit NewSelloutValue(5);
             orders[msg.sender] = order;
         }
 
-        emit NewSelloutValue(5);
+        emit NewSelloutValue(6);
         emit NewSelloutValue(order.pledgeAmount);
     }
 
