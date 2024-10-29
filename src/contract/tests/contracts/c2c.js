@@ -208,7 +208,7 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
 function new_contract(from_str_prikey, contract_bytes) {
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var kechash = keccak256(from_str_prikey + gid + contract_bytes).toString('hex')
-    var self_contract_address = kechash.slice(kechash.length - 40, kechash.length)
+    var self_contract_address = "48e1eab96c9e759daa3aff82b40e77cd615a41d1";// kechash.slice(kechash.length - 40, kechash.length)
     var data = param_contract(
         from_str_prikey,
         6,
@@ -507,7 +507,6 @@ async function CreateNewSeller(str_prikey) {
     const execPromise = util.promisify(exec);
     var old_prepayment = 0;
     {
-    
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
         var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
@@ -858,7 +857,6 @@ async function ManagerRelease(str_prikey, cancel_seller) {
 
     QueryContract(str_prikey, "cdfd45bb");
 }
-
 
 async function ManagerReleaseForce(str_prikey, cancel_seller) {
     var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
