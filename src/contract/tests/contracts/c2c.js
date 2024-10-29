@@ -1005,6 +1005,7 @@ if (args[0] == 4) {
         var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
         var address = keccak256(pk_bytes).toString('hex')
         var address = address.slice(address.length - 40, address.length)
+        ManagerRelease("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", address);
         ManagerReleaseForce("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", address);
     }
 }
