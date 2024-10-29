@@ -117,15 +117,20 @@ contract C2CSellOrder {
         require(!orders[msg.sender].sellerReleased);
         require(!orders[msg.sender].reported);
         emit NewSelloutValue(orders[msg.sender].pledgeAmount);
+        emit NewSelloutValue(amount);
 
         require(orders[msg.sender].pledgeAmount >= amount);
+        emit NewSelloutValue(1);
         SellOrder memory order = orders[msg.sender];
         order.pledgeAmount -= amount;
         order.height = block.number;
         order.buyer = buyer;
         order.amount = amount;
         payable(buyer).transfer(amount);
+        emit NewSelloutValue(2);
         if (order.pledgeAmount < minExchangeValue) {
+            emit NewSelloutValue(3);
+            emit NewSelloutValue(minExchangeValue);
             if (order.pledgeAmount > 0) {
                 payable(msg.sender).transfer(order.pledgeAmount);
             }
@@ -141,9 +146,11 @@ contract C2CSellOrder {
 
             delete orders[msg.sender];
         } else {
+            emit NewSelloutValue(4);
             orders[msg.sender] = order;
         }
 
+        emit NewSelloutValue(5);
         emit NewSelloutValue(order.pledgeAmount);
     }
 
