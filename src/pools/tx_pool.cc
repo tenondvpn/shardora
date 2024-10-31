@@ -11,6 +11,23 @@
 #include "pools/tx_pool_manager.h"
 #include "pools/tx_utils.h"
 
+#ifndef NDEBUG
+#define CheckThreadIdValid() { \
+    static uint64_t count = 0; \
+    static std::thread::id init_thread_id = std::this_thread::get_id(); \
+    auto now_thread_id = std::this_thread::get_id(); \
+    if (init_thread_id != now_thread_id) { ++count; }\
+    ZJC_DEBUG("now handle thread id: %u, old: %u, count: %d", now_thread_id, init_thread_id, count); \
+    if (count > 3) { \
+        assert(init_thread_id == now_thread_id); \
+    } else { \
+        init_thread_id = now_thread_id; \
+    } \
+}
+#else
+#define CheckThreadIdValid()
+#endif
+
 namespace shardora {
 
 namespace pools {
