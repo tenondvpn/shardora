@@ -824,10 +824,10 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
 
   // accessors -------------------------------------------------------
 
-  // repeated .shardora.pools.protobuf.TxMessage txs = 7;
+  // repeated .shardora.pools.protobuf.TxMessage txs = 8;
   int txs_size() const;
   void clear_txs();
-  static const int kTxsFieldNumber = 7;
+  static const int kTxsFieldNumber = 8;
   ::shardora::pools::protobuf::TxMessage* mutable_txs(int index);
   ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxMessage >*
       mutable_txs();
@@ -881,6 +881,18 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::std::string* release_sign_y();
   void set_allocated_sign_y(::std::string* sign_y);
 
+  // optional .shardora.view_block.protobuf.AggregateSig partial_sig = 7;
+  bool has_partial_sig() const;
+  void clear_partial_sig();
+  static const int kPartialSigFieldNumber = 7;
+  private:
+  const ::shardora::view_block::protobuf::AggregateSig& _internal_partial_sig() const;
+  public:
+  const ::shardora::view_block::protobuf::AggregateSig& partial_sig() const;
+  ::shardora::view_block::protobuf::AggregateSig* release_partial_sig();
+  ::shardora::view_block::protobuf::AggregateSig* mutable_partial_sig();
+  void set_allocated_partial_sig(::shardora::view_block::protobuf::AggregateSig* partial_sig);
+
   // optional uint64 view = 3;
   bool has_view() const;
   void clear_view();
@@ -902,10 +914,10 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::uint32 replica_idx() const;
   void set_replica_idx(::google::protobuf::uint32 value);
 
-  // optional uint32 leader_idx = 8;
+  // optional uint32 leader_idx = 9;
   bool has_leader_idx() const;
   void clear_leader_idx();
-  static const int kLeaderIdxFieldNumber = 8;
+  static const int kLeaderIdxFieldNumber = 9;
   ::google::protobuf::uint32 leader_idx() const;
   void set_leader_idx(::google::protobuf::uint32 value);
 
@@ -923,6 +935,8 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   void clear_has_sign_x();
   void set_has_sign_y();
   void clear_has_sign_y();
+  void set_has_partial_sig();
+  void clear_has_partial_sig();
   void set_has_leader_idx();
   void clear_has_leader_idx();
 
@@ -933,6 +947,7 @@ class VoteMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::internal::ArenaStringPtr view_block_hash_;
   ::google::protobuf::internal::ArenaStringPtr sign_x_;
   ::google::protobuf::internal::ArenaStringPtr sign_y_;
+  ::shardora::view_block::protobuf::AggregateSig* partial_sig_;
   ::google::protobuf::uint64 view_;
   ::google::protobuf::uint64 elect_height_;
   ::google::protobuf::uint32 replica_idx_;
@@ -1955,13 +1970,13 @@ inline void ProposeMsg::set_allocated_tx_propose(::shardora::hotstuff::protobuf:
 
 // optional uint32 replica_idx = 1;
 inline bool VoteMsg::has_replica_idx() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void VoteMsg::set_has_replica_idx() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void VoteMsg::clear_has_replica_idx() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void VoteMsg::clear_replica_idx() {
   replica_idx_ = 0u;
@@ -2045,13 +2060,13 @@ inline void VoteMsg::set_allocated_view_block_hash(::std::string* view_block_has
 
 // optional uint64 view = 3;
 inline bool VoteMsg::has_view() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void VoteMsg::set_has_view() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void VoteMsg::clear_has_view() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void VoteMsg::clear_view() {
   view_ = GOOGLE_ULONGLONG(0);
@@ -2069,13 +2084,13 @@ inline void VoteMsg::set_view(::google::protobuf::uint64 value) {
 
 // optional uint64 elect_height = 4;
 inline bool VoteMsg::has_elect_height() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void VoteMsg::set_has_elect_height() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void VoteMsg::clear_has_elect_height() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void VoteMsg::clear_elect_height() {
   elect_height_ = GOOGLE_ULONGLONG(0);
@@ -2223,7 +2238,61 @@ inline void VoteMsg::set_allocated_sign_y(::std::string* sign_y) {
   // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.VoteMsg.sign_y)
 }
 
-// repeated .shardora.pools.protobuf.TxMessage txs = 7;
+// optional .shardora.view_block.protobuf.AggregateSig partial_sig = 7;
+inline bool VoteMsg::has_partial_sig() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void VoteMsg::set_has_partial_sig() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void VoteMsg::clear_has_partial_sig() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline const ::shardora::view_block::protobuf::AggregateSig& VoteMsg::_internal_partial_sig() const {
+  return *partial_sig_;
+}
+inline const ::shardora::view_block::protobuf::AggregateSig& VoteMsg::partial_sig() const {
+  const ::shardora::view_block::protobuf::AggregateSig* p = partial_sig_;
+  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.VoteMsg.partial_sig)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::view_block::protobuf::AggregateSig*>(
+      &::shardora::view_block::protobuf::_AggregateSig_default_instance_);
+}
+inline ::shardora::view_block::protobuf::AggregateSig* VoteMsg::release_partial_sig() {
+  // @@protoc_insertion_point(field_release:shardora.hotstuff.protobuf.VoteMsg.partial_sig)
+  clear_has_partial_sig();
+  ::shardora::view_block::protobuf::AggregateSig* temp = partial_sig_;
+  partial_sig_ = NULL;
+  return temp;
+}
+inline ::shardora::view_block::protobuf::AggregateSig* VoteMsg::mutable_partial_sig() {
+  set_has_partial_sig();
+  if (partial_sig_ == NULL) {
+    auto* p = CreateMaybeMessage<::shardora::view_block::protobuf::AggregateSig>(GetArenaNoVirtual());
+    partial_sig_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:shardora.hotstuff.protobuf.VoteMsg.partial_sig)
+  return partial_sig_;
+}
+inline void VoteMsg::set_allocated_partial_sig(::shardora::view_block::protobuf::AggregateSig* partial_sig) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete reinterpret_cast< ::google::protobuf::MessageLite*>(partial_sig_);
+  }
+  if (partial_sig) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      partial_sig = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, partial_sig, submessage_arena);
+    }
+    set_has_partial_sig();
+  } else {
+    clear_has_partial_sig();
+  }
+  partial_sig_ = partial_sig;
+  // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.VoteMsg.partial_sig)
+}
+
+// repeated .shardora.pools.protobuf.TxMessage txs = 8;
 inline int VoteMsg::txs_size() const {
   return txs_.size();
 }
@@ -2250,15 +2319,15 @@ VoteMsg::txs() const {
   return txs_;
 }
 
-// optional uint32 leader_idx = 8;
+// optional uint32 leader_idx = 9;
 inline bool VoteMsg::has_leader_idx() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void VoteMsg::set_has_leader_idx() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void VoteMsg::clear_has_leader_idx() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void VoteMsg::clear_leader_idx() {
   leader_idx_ = 0u;

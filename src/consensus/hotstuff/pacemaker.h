@@ -2,6 +2,7 @@
 
 #include <common/tick.h>
 #include <common/time_utils.h>
+#include <protos/view_block.pb.h>
 #ifdef USE_AGG_BLS
 #include <consensus/hotstuff/agg_crypto.h>
 #else
@@ -20,13 +21,17 @@ namespace shardora {
 
 namespace hotstuff {
 
-using NewProposalFn = std::function<Status(std::shared_ptr<view_block::protobuf::QcItem> tc)>;
+using NewProposalFn = std::function<Status(
+        std::shared_ptr<TC> tc,
+        std::shared_ptr<AggregateQC> agg_qc)>;
 using StopVotingFn = std::function<void(const View &view)>;
 using SyncPoolFn = std::function<void(const uint32_t &, const int32_t&)>;
 using NewViewFn = std::function<void(
     const std::shared_ptr<tnet::TcpInterface> conn, 
-    std::shared_ptr<view_block::protobuf::QcItem> tc)>;
+    std::shared_ptr<TC> tc,
+    std::shared_ptr<AggregateQC> agg_qc)>;
 using GetHighQCFn = std::function<QC()>;
+using UpdateHighQCFn = std::function<void(const QC&)>;
 
 class Pacemaker {
 public:
@@ -39,7 +44,8 @@ public:
 #endif
             std::shared_ptr<LeaderRotation>& leader_rotation,
             const std::shared_ptr<ViewDuration>& duration,
-            GetHighQCFn get_high_qc_fn);
+            GetHighQCFn get_high_qc_fn,
+            UpdateHighQCFn update_high_qc_fn);
     ~Pacemaker();
 
     Pacemaker(const Pacemaker&) = delete;
@@ -67,7 +73,8 @@ public:
     // 收到超时消息
     void OnRemoteTimeout(const transport::MessagePtr& msg_ptr);
     // 视图切换
-    void NewTc(const std::shared_ptr<view_block::protobuf::QcItem>& tc);
+    void NewTc(const std::shared_ptr<TC>& tc);
+    void NewAggQc(const std::shared_ptr<AggregateQC>& agg_qc);
     void NewQcView(uint64_t qc_view);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
@@ -81,6 +88,10 @@ public:
 
     inline QC HighQC() const {
         return get_high_qc_fn_();
+    }
+
+    void UpdateHighQC(const QC& qc) {
+        update_high_qc_fn_(qc);
     }
 
     // 重置超时实例
@@ -131,6 +142,7 @@ private:
     uint32_t pool_idx_;
     std::shared_ptr<TC> high_tc_ = nullptr;
     GetHighQCFn get_high_qc_fn_ = nullptr;
+    UpdateHighQCFn update_high_qc_fn_ = nullptr;
     View cur_view_ = 0llu;
 
 #ifdef USE_AGG_BLS

@@ -636,7 +636,6 @@ Status HotstuffSyncer::processResponseChain(
                     view_block->qc()) != Status::kSuccess) {
             continue;
         }
-        
         // 记录同步链中最高的 Qc，用于 commit
         if (!high_commit_view_block || high_commit_view_block->qc().view() < it->qc().view()) {
             high_commit_view_block = &(*it);
