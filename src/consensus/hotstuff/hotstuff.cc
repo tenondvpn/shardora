@@ -1158,7 +1158,7 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    Propose(latest_qc_item_ptr_);
+    Propose(latest_qc_item_ptr_, nullptr);
     ZJC_DEBUG("reset timer success!");
 }
 
@@ -1293,10 +1293,17 @@ Status Hotstuff::VerifyQC(const QC& qc) {
     }
 
     if (qc.view() > view_block_chain()->HighViewBlock()->qc().view()) {
+#ifdef USE_AGG_BLS
+        if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), std::make_shared<QC>(qc)) != Status::kSuccess) {
+            return Status::kError; 
+        }        
+#else        
         if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
             return Status::kError; 
         }
-    }    
+#endif        
+    }
+
     return Status::kSuccess;
 }
 
@@ -1307,11 +1314,17 @@ Status Hotstuff::VerifyTC(const TC& tc) {
     }
 
     if (tc.view() > pacemaker()->HighTC()->view()) {
+#ifdef USE_AGG_BLS
+        if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), std::make_shared<TC>(tc)) != Status::kSuccess) {
+            ZJC_ERROR("VerifyTC error.");
+            return Status::kError;
+        }        
+#else
         if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
             ZJC_ERROR("VerifyTC error.");
             return Status::kError;
         }
-
+#endif
         auto tc_ptr = std::make_shared<view_block::protobuf::QcItem>(tc);
         pacemaker()->NewTc(tc_ptr);
     }
