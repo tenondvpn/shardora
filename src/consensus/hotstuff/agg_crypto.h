@@ -97,13 +97,7 @@ public:
 
     inline std::shared_ptr<security::Security> security() const {
         return bls_mgr_->security();
-    }    
-    
-private:
-    uint32_t pool_idx_;
-    std::shared_ptr<ElectInfo> elect_info_ = nullptr;
-    std::shared_ptr<bls::IBlsManager> bls_mgr_ = nullptr;
-    std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
+    }
 
     // Verify verifies the given quorum signature against the message.
     Status Verify(
@@ -152,7 +146,13 @@ private:
                 msg_hash,
                 sig.signature());
         return verified ? Status::kSuccess : Status::kBlsVerifyFailed; 
-    }
+    }    
+    
+private:
+    uint32_t pool_idx_;
+    std::shared_ptr<ElectInfo> elect_info_ = nullptr;
+    std::shared_ptr<bls::IBlsManager> bls_mgr_ = nullptr;
+    std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
     // BatchVerify verifies the given quorum signature against the batch of messages.
     Status BatchVerify(const AggregateSignature& sig, const std::unordered_map<uint32_t, HashStr> msg_hash_map);
 
