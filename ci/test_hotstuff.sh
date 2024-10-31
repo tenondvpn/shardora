@@ -8,7 +8,7 @@ nohup ./hotstuff 2>&1 &
 echo "[TESTING] Please wait 30s..."
 sleep 30
 
-last_line=$(grep "pool: 63, tps" /root/zjnodes/s3_4/log/zjchain.log | tail -n 1)
+last_line=$(grep "pool: 15, tps" /root/zjnodes/s3_4/log/zjchain.log | tail -n 1)
 tps_value=$(echo "$last_line" | grep -oP 'tps: \K[0-9]+\.[0-9]+')
 
 if (( $(echo "$tps_value > 500" | bc -l) )); then
