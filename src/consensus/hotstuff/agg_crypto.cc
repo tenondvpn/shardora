@@ -155,10 +155,9 @@ std::shared_ptr<AggregateQC> AggCrypto::CreateAggregateQC(
 
 Status AggCrypto::VerifyAggregateQC(
         uint32_t sharding_id,
-        uint64_t elect_height,
         const std::shared_ptr<AggregateQC>& agg_qc,
-        std::shared_ptr<QC> high_qc) {
-    auto elect_item = GetElectItem(sharding_id, elect_height);
+        std::shared_ptr<QC> high_qc) {   
+    auto elect_item = GetLatestElectItem(sharding_id);
     if (!elect_item) {
         return Status::kError;
     }

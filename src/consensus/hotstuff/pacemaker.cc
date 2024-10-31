@@ -71,7 +71,19 @@ void Pacemaker::NewTc(const std::shared_ptr<view_block::protobuf::QcItem>& tc) {
 
 void Pacemaker::NewAggQc(const std::shared_ptr<AggregateQC>& agg_qc) {
     if (agg_qc && agg_qc->IsValid()) {
-        
+        auto high_qc = std::make_shared<QC>();
+        Status s = crypto_->VerifyAggregateQC(
+                common::GlobalInfo::Instance()->network_id(),
+                agg_qc,
+                high_qc);
+        if (s != Status::kSuccess) {
+            ZJC_ERROR("new agg qc failed, pool: %d, s: %d, view: %lu", pool_idx_, s, agg_qc->GetView());
+            return;
+        }
+
+        // update high_qc
+        UpdateHighQC(*high_qc);
+        NewQcView(high_qc->view());
     }
 }
 
@@ -302,7 +314,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         ZJC_DEBUG("====4.5 over 0 pool: %d, view: %d, curview: %lu, member: %d, hash64: %lu", 
             pool_idx_, timeout_proto.view(), CurView(), timeout_proto.member_id(),
             msg_ptr->header.hash64());
-        new_view_fn_(msg_ptr->conn, high_tc_);
+        new_view_fn_(msg_ptr->conn, high_tc_, nullptr);
         return;
     }
 
@@ -346,14 +358,17 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     if (s != Status::kSuccess || !agg_sig->IsValid()) {
         return;
     }
-    
-    auto tc = std::make_shared<TC>(
+
+    auto new_tc = std::make_shared<TC>();
+    auto& tc = *new_tc;
+    CreateTc(
         common::GlobalInfo::Instance()->network_id(),
         pool_idx_,
-        agg_sig,
         timeout_proto.view(),
         timeout_proto.elect_height(),
-        timeout_proto.leader_idx());
+        timeout_proto.leader_idx(),
+        &tc);
+    tc.mutable_agg_sig()->CopyFrom(agg_sig->DumpToProto());    
 
     auto agg_qc = crypto_->CreateAggregateQC(
             common::GlobalInfo::Instance()->network_id(),
@@ -365,27 +380,29 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    NewTc(tc);
+    // view change
+    NewTc(new_tc);
+    NewAggQc(agg_qc);
     // AdvanceView(new_sync_info()->WithTC(tc)->WithAggQC(agg_qc));
 
-    // // NewView msg broadcast
-    // // TC 在 Propose 之前单独同步，不然假设 Propose 卡死，Replicas 就会一直卡死在这个视图
-    // // 广播 TC 的同时也应该广播 HighQC，防止只有 Leader 拥有该 HighQC，这会出现如下情况：
-    // // 假如 Leader 是 1<-2，但 HighQC 是 3，即将打包 4
-    // // 但由于 3 不存在需要从其他节点处同步，但又由于 HighQC3 只有 Leader 拥有，其他节点无法同步 3 给 Leader，造成卡死
-    // // 即 Leader 有 QC 无块，Replicas 有块无 QC
-    // auto propose_st = Status::kError;
-    // // New Propose
-    // if (new_proposal_fn_) {
-    //     ZJC_DEBUG("now ontime called propose: %d", pool_idx_);
-    //     propose_st = new_proposal_fn_(new_sync_info()->WithQC(HighQC())->WithTC(HighTC())->WithAggQC(agg_qc));
-    // }
+    // NewView msg broadcast
+    // TC 在 Propose 之前单独同步，不然假设 Propose 卡死，Replicas 就会一直卡死在这个视图
+    // 广播 TC 的同时也应该广播 HighQC，防止只有 Leader 拥有该 HighQC，这会出现如下情况：
+    // 假如 Leader 是 1<-2，但 HighQC 是 3，即将打包 4
+    // 但由于 3 不存在需要从其他节点处同步，但又由于 HighQC3 只有 Leader 拥有，其他节点无法同步 3 给 Leader，造成卡死
+    // 即 Leader 有 QC 无块，Replicas 有块无 QC
+    auto propose_st = Status::kError;
+    // New Propose
+    if (new_proposal_fn_) {
+        ZJC_DEBUG("now ontime called propose: %d", pool_idx_);
+        propose_st = new_proposal_fn_(new_tc, agg_qc);
+    }
 
-    // if (propose_st != Status::kSuccess && new_view_fn_) {
-    //     ZJC_DEBUG("====4.2 pool: %d, broadcast tc, view: %d, member: %d, view: %d",
-    //         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc->view());
-    //     new_view_fn_(new_sync_info()->WithTC(HighTC())->WithQC(HighQC())->WithAggQC(agg_qc));
-    // }    
+    if (propose_st != Status::kSuccess && new_view_fn_) {
+        ZJC_DEBUG("====4.2 pool: %d, broadcast tc, view: %d, member: %d, view: %d",
+            pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc.view());
+        new_view_fn_(nullptr, new_tc, agg_qc);
+    }    
 #else
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
     Status s = crypto_->ReconstructAndVerifyThresSign(
@@ -439,7 +456,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     // New Propose
     if (new_proposal_fn_) {
         ZJC_DEBUG("now ontime called propose: %d", pool_idx_);
-        propose_st = new_proposal_fn_(new_tc);
+        propose_st = new_proposal_fn_(new_tc, nullptr);
     }
 
     ZJC_DEBUG("====4.1.1 pool: %d, create tc, view: %lu, member: %d, "
@@ -450,7 +467,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         ZJC_DEBUG("====4.2 pool: %d, broadcast tc, view: %d, member: %d, view: %d",
 
             pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc.view());
-        new_view_fn_(nullptr, new_tc);
+        new_view_fn_(nullptr, new_tc, nullptr);
     }
 
     ZJC_DEBUG("====4.5 over 2 pool: %d, view: %d, member: %d, hash64: %lu", 

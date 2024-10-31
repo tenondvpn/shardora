@@ -4,16 +4,16 @@ import "protos/block.proto";
 package shardora.view_block.protobuf;
 
 message QcItem {
-    optional bytes sign_x = 1;
-    optional bytes sign_y = 2;
-    optional bytes sign_z = 3;
+    optional bytes sign_x = 1; // for thres sig
+    optional bytes sign_y = 2; // for thres sig
+    optional bytes sign_z = 3; // for thres sig
     optional uint64 view = 4;
     optional bytes view_block_hash = 5;
     optional uint64 elect_height = 6;
     optional uint32 leader_idx = 7;
     optional uint32 network_id = 8;
     optional uint32 pool_index = 9;
-    optional AggregateSig agg_sig = 10;
+    optional AggregateSig agg_sig = 10; // for agg sig
 }
 
 message ViewBlockItem {

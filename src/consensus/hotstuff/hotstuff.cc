@@ -83,12 +83,14 @@ Status Hotstuff::Start() {
         ZJC_ERROR("Get Leader is error.");
     } else if (leader->index == local_member->index) {
         ZJC_INFO("ViewBlock start propose");
-        Propose(nullptr);
+        Propose(nullptr, nullptr);
     }
     return Status::kSuccess;
 }
 
-Status Hotstuff::Propose(std::shared_ptr<view_block::protobuf::QcItem> tc) {
+Status Hotstuff::Propose(
+        std::shared_ptr<TC> tc,
+        std::shared_ptr<AggregateQC> agg_qc) {
 
     // TODO(HT): 打包的交易，超时后如何释放？
     // 打包参与共识中的交易，如何保证幂等
@@ -263,7 +265,8 @@ void Hotstuff::LoadLatestProposeMessage() {
 
 void Hotstuff::NewView(
         std::shared_ptr<tnet::TcpInterface> conn,
-        std::shared_ptr<view_block::protobuf::QcItem> tc) {
+        std::shared_ptr<TC> tc,
+        std::shared_ptr<AggregateQC> qc) {
     if (latest_qc_item_ptr_ == nullptr || tc->view() >= latest_qc_item_ptr_->view()) {
         assert(tc->pool_index() == pool_idx_);
         assert(tc->network_id() == common::GlobalInfo::Instance()->network_id());

@@ -76,7 +76,6 @@ public:
             const std::vector<AggregateSignature*>& high_qc_sigs);
     Status VerifyAggregateQC(
             uint32_t sharding_id,
-            uint64_t elect_height,
             const std::shared_ptr<AggregateQC>& agg_qc,
             std::shared_ptr<QC> high_qc);
     
