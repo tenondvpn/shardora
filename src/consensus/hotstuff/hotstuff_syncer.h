@@ -1,5 +1,9 @@
 #pragma once
+#ifdef USE_AGG_BLS
+#include <consensus/hotstuff/agg_crypto.h>
+#else
 #include <consensus/hotstuff/crypto.h>
+#endif
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/hotstuff_manager.h>
 #include <consensus/hotstuff/pacemaker.h>
@@ -80,11 +84,17 @@ private:
     inline std::shared_ptr<Pacemaker> pacemaker(uint32_t pool_idx) const {
         return hotstuff_mgr_->pacemaker(pool_idx);
     }
-    
+
+#ifdef USE_AGG_BLS
+    inline std::shared_ptr<AggCrypto> crypto(uint32_t pool_idx) const {
+        return hotstuff_mgr_->crypto(pool_idx);
+    }    
+#else
     inline std::shared_ptr<Crypto> crypto(uint32_t pool_idx) const {
         return hotstuff_mgr_->crypto(pool_idx);
     }
-
+#endif
+    
     inline uint64_t SyncTimerCycleUs(uint32_t pool_idx) const {
         // return pacemaker(pool_idx)->DurationUs();
         return kSyncTimerCycleUs;

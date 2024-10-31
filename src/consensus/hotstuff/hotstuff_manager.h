@@ -7,7 +7,11 @@
 #include "bls/bls_manager.h"
 #include "consensus/consensus.h"
 #include "consensus/hotstuff/elect_info.h"
+#ifdef USE_AGG_BLS
+#include "consensus/hotstuff/agg_crypto.h"
+#else
 #include "consensus/hotstuff/crypto.h"
+#endif
 #include "consensus/hotstuff/pacemaker.h"
 #include "consensus/hotstuff/block_acceptor.h"
 #include "consensus/hotstuff/block_wrapper.h"
@@ -138,6 +142,15 @@ public:
         return hf->acceptor();
     }
 
+#ifdef USE_AGG_BLS
+    inline std::shared_ptr<AggCrypto> crypto(uint32_t pool_idx) const {
+        auto hf = hotstuff(pool_idx);
+        if (!hf) {
+            return nullptr;
+        }
+        return hf->crypto();        
+    }    
+#else
     inline std::shared_ptr<Crypto> crypto(uint32_t pool_idx) const {
         auto hf = hotstuff(pool_idx);
         if (!hf) {
@@ -145,7 +158,8 @@ public:
         }
         return hf->crypto();        
     }
-
+#endif
+    
     inline std::shared_ptr<ElectInfo> elect_info() const {
         return elect_info_;
     }
