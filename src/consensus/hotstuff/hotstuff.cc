@@ -898,6 +898,58 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     // 生成聚合签名，创建qc
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();
+
+#ifdef USE_AGG_BLS
+    auto qc_item_ptr = std::make_shared<QC>();
+    QC& qc_item = *qc_item_ptr;
+    qc_item.set_network_id(common::GlobalInfo::Instance()->network_id());
+    qc_item.set_pool_index(pool_idx_);
+    qc_item.set_view(vote_msg.view());
+    qc_item.set_view_block_hash(vote_msg.view_block_hash());
+    assert(!prefix_db_->BlockExists(qc_item.view_block_hash()));
+    qc_item.set_elect_height(elect_height);
+    qc_item.set_leader_idx(vote_msg.leader_idx());
+    auto qc_hash = GetQCMsgHash(qc_item);
+
+    AggregateSignature* partial_sig;
+    if (!partial_sig->LoadFromProto(vote_msg.partial_sig())) {
+        return;
+    }    
+
+    AggregateSignature* agg_sig;
+    Status ret = crypto()->VerifyAndAggregateSig(
+            elect_height,
+            vote_msg.view(),
+            qc_hash,
+            *partial_sig,
+            *agg_sig);
+    if (ret != Status::kSuccess) {
+        if (ret == Status::kBlsVerifyWaiting) {
+            ZJC_DEBUG("kBlsWaiting pool: %d, view: %lu, hash64: %lu",
+                pool_idx_, vote_msg.view(), msg_ptr->header.hash64());
+            return;
+        }
+
+        return;
+    }
+
+    ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d, view: %lu, qc_hash: %s, hash64: %lu, propose_debug: %s, replica: %lu, ",
+        pool_idx_,
+        common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
+        agg_sig->IsValid(),
+        vote_msg.view(),
+        common::Encode::HexEncode(qc_hash).c_str(),
+        msg_ptr->header.hash64(),
+        msg_ptr->header.debug().c_str(),
+        vote_msg.replica_idx());
+    qc_item.mutable_agg_sig()->CopyFrom(agg_sig->DumpToProto());
+    // 切换视图
+    ZJC_DEBUG("success new set qc view: %lu, %u_%u_%lu",
+        qc_item.view(),
+        qc_item.network_id(),
+        qc_item.pool_index(),
+        qc_item.view());    
+#else
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
     auto qc_item_ptr = std::make_shared<QC>();
     QC& qc_item = *qc_item_ptr;
@@ -944,14 +996,16 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         qc_item.network_id(),
         qc_item.pool_index(),
         qc_item.view());
+#endif
+    
     view_block_chain()->UpdateHighViewBlock(qc_item);
     pacemaker()->NewQcView(qc_item.view());
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率:q高很多
     ZJC_DEBUG("NewView propose newview called pool: %u, qc_view: %lu, tc_view: %lu, propose_debug: %s",
         pool_idx_, view_block_chain()->HighViewBlock()->qc().view(), pacemaker()->HighTC()->view(), msg_ptr->header.debug().c_str());
-    auto s = Propose(qc_item_ptr);
+    auto s = Propose(qc_item_ptr, nullptr);
     if (s != Status::kSuccess) {
-        NewView(nullptr, qc_item_ptr);
+        NewView(nullptr, qc_item_ptr, nullptr);
     }
 }
 
@@ -1450,6 +1504,19 @@ Status Hotstuff::ConstructVoteMsg(
     qc_item.set_elect_height(elect_height);
     qc_item.set_leader_idx(v_block->qc().leader_idx());
     auto qc_hash = GetQCMsgHash(qc_item);
+#ifdef USE_AGG_BLS
+    auto partial_sig = std::make_shared<AggregateSignature>();
+    if (crypto()->PartialSign(
+                common::GlobalInfo::Instance()->network_id(),
+                elect_height,
+                qc_hash,
+                partial_sig.get()) != Status::kSuccess) {
+        ZJC_ERROR("Sign message is error.");
+        return Status::kError;
+    }
+
+    vote_msg->mutable_partial_sig()->CopyFrom(partial_sig->DumpToProto());
+#else
     std::string sign_x, sign_y;
     if (crypto()->PartialSign(
                 common::GlobalInfo::Instance()->network_id(),
@@ -1463,6 +1530,7 @@ Status Hotstuff::ConstructVoteMsg(
 
     vote_msg->set_sign_x(sign_x);
     vote_msg->set_sign_y(sign_y);
+#endif    
     std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
     wrapper()->GetTxsIdempotently(txs);
     for (size_t i = 0; i < txs.size(); i++) {
@@ -1692,7 +1760,7 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
         if (leader) {
             auto local_idx = leader_rotation_->GetLocalMemberIdx();
             if (leader->index == local_idx) {
-                Propose(latest_qc_item_ptr_);
+                Propose(latest_qc_item_ptr_, nullptr);
                 if (latest_qc_item_ptr_) {
                     ZJC_DEBUG("leader do propose message: %d, pool index: %u, %u_%u_%lu", 
                         local_idx,
