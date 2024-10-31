@@ -240,6 +240,7 @@ int WsServer::GetAllC2cs() {
         std::string cmd = "select seller, buyer, amount, receivable, all, now, mchecked, schecked, reported, orderId, height from zjc_ck_c2c_table where contract='" + 
             c2c_contract_addr() + "' and height > " + std::to_string(max_c2c_height_) +  " order by height asc limit 1000;";
         uint32_t all_transactions = 0;
+        ZJC_INFO("run cmd: %s, get count: %d", cmd.c_str(), 0);
         try {
             clickhouse::Client ck_client0(clickhouse::ClientOptions().
                 SetHost(common::GlobalInfo::Instance()->ck_host()).

@@ -66,7 +66,7 @@ void TxPool::InitHeightTree() {
 }
 
 uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
-    if (height_tree_ptr_ == nullptr) {
+    if (!height_tree_ptr_) {
         return 0;
     }
 
@@ -128,6 +128,7 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
 //     common::AutoSpinLock auto_lock(mutex_);
+    common::CheckThreadIdValid();
     if (removed_gid_.find(tx_ptr->tx_info.gid()) != removed_gid_.end()) {
 #ifndef ENABLE_HOTSTUFF        
         // assert(false);
@@ -187,6 +188,7 @@ void TxPool::GetTx(
         const std::map<std::string, pools::TxItemPtr>& invalid_txs, 
         transport::protobuf::Header& header,
         uint32_t count) {
+    common::CheckThreadIdValid();
     std::vector<TxItemPtr> recover_txs;
     zbft::protobuf::TxBft* txbft = header.mutable_zbft()->mutable_tx_bft();
     auto iter = prio_map_.begin();
@@ -212,6 +214,7 @@ void TxPool::GetTx(
         std::map<std::string, TxItemPtr>& res_map, 
         uint32_t count, 
         std::unordered_map<std::string, std::string>& kvs) {
+    common::CheckThreadIdValid();
     ZJC_DEBUG("leader get tx universal_prio_map_: %u, prio_map_: %u, consensus_tx_map_: %u", 
         universal_prio_map_.size(), prio_map_.size(), consensus_tx_map_.size());
     GetTx(universal_prio_map_, res_map, count, kvs);
@@ -228,6 +231,7 @@ void TxPool::GetTxIdempotently(
         uint32_t count, 
         std::unordered_map<std::string, std::string>& kvs,
         pools::CheckGidValidFunction gid_vlid_func) {
+    common::CheckThreadIdValid();
     ZJC_DEBUG("now get tx universal_prio_map_ size: %u, prio_map_: %u, consensus_tx_map_: %u",
         universal_prio_map_.size(),
         prio_map_.size(),
@@ -284,6 +288,7 @@ void TxPool::GetTxIdempotently(
 void TxPool::GetTxByIds(
         const std::vector<std::string>& gids,
         std::map<std::string, TxItemPtr>& res_map) {
+    common::CheckThreadIdValid();
     for (const auto& gid : gids) {
         auto it = gid_map_.find(gid);
         if (it == gid_map_.end()) {
@@ -442,6 +447,7 @@ void TxPool::RemoveTx(const std::string& gid) {
 }
 
 void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
+    common::CheckThreadIdValid();
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         auto& gid = tx_list[i].gid(); 
         RemoveTx(gid);
@@ -560,7 +566,7 @@ void TxPool::InitLatestInfo() {
 }
 
 void TxPool::UpdateSyncedHeight() {
-    if (height_tree_ptr_ == nullptr) {
+    if (!height_tree_ptr_) {
         return;
     }
 
@@ -643,14 +649,15 @@ uint64_t TxPool::UpdateLatestInfo(
         const std::string& hash,
         const std::string& prehash,
         const uint64_t timestamp) {
-    if (height_tree_ptr_ == nullptr) {
+    common::CheckThreadIdValid();
+    if (!height_tree_ptr_) {
         InitHeightTree();
     }
 
-    if (height_tree_ptr_ != nullptr) {
-        height_tree_ptr_->Set(height);
+    if (height_tree_ptr_) {
         ZJC_DEBUG("success set height, net: %u, pool: %u, height: %lu",
             common::GlobalInfo::Instance()->network_id(), pool_index_, height);
+        height_tree_ptr_->Set(height);
     }
 
     if (latest_height_ == common::kInvalidUint64 || latest_height_ < height) {

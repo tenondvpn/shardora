@@ -375,6 +375,18 @@ bool Retry(Func func, int maxAttempts, std::chrono::milliseconds delay, Args... 
     return false;
 }
 
+static inline void CheckThreadIdValid() {
+#ifndef NDEBUG
+    static uint64_t count = 0;
+    ++count;
+    if (count > 3) {
+        static std::thread::id init_thread_id = std::this_thread::get_id();
+        auto now_thread_id = std::this_thread::get_id();
+        assert(init_thread_id == now_thread_id);
+    }
+#endif
+}
+
 }  // namespace common
 
 }  // namespace shardora
