@@ -71,6 +71,7 @@ void Pacemaker::NewTc(const std::shared_ptr<view_block::protobuf::QcItem>& tc) {
 }
 
 void Pacemaker::NewAggQc(const std::shared_ptr<AggregateQC>& agg_qc) {
+#ifdef USE_AGG_BLS 
     if (agg_qc && agg_qc->IsValid()) {
         auto high_qc = std::make_shared<QC>();
         Status s = crypto_->VerifyAggregateQC(
@@ -86,6 +87,7 @@ void Pacemaker::NewAggQc(const std::shared_ptr<AggregateQC>& agg_qc) {
         UpdateHighQC(*high_qc);
         NewQcView(high_qc->view());
     }
+#endif
 }
 
 void Pacemaker::NewQcView(uint64_t qc_view) {
