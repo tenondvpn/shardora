@@ -382,6 +382,7 @@ static inline void CheckThreadIdValid() {
     if (count > 3) {
         static std::thread::id init_thread_id = std::this_thread::get_id();
         auto now_thread_id = std::this_thread::get_id();
+        ZJC_DEBUG("now handle thread id: %u, old: %u", now_thread_id, init_thread_id);
         assert(init_thread_id == now_thread_id);
     }
 #endif
