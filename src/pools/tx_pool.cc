@@ -13,15 +13,13 @@
 
 #ifndef NDEBUG
 #define CheckThreadIdValid() { \
-    static uint64_t count = 0; \
-    static std::thread::id init_thread_id = std::this_thread::get_id(); \
     auto now_thread_id = std::this_thread::get_id(); \
-    if (init_thread_id != now_thread_id) { ++count; }\
-    ZJC_DEBUG("now handle thread id: %u, old: %u, count: %d", now_thread_id, init_thread_id, count); \
+    if (local_thread_id_ != now_thread_id) { ++local_thread_id_count_; }\
+    ZJC_DEBUG("now handle thread id: %u, old: %u, count: %d", now_thread_id, local_thread_id_, local_thread_id_count_); \
     if (count > 3) { \
-        assert(init_thread_id == now_thread_id); \
+        assert(local_thread_id_ == now_thread_id); \
     } else { \
-        init_thread_id = now_thread_id; \
+        local_thread_id_ = now_thread_id; \
     } \
 }
 #else

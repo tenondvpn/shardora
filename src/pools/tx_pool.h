@@ -219,6 +219,8 @@ private:
     TxPoolManager* pools_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ = nullptr;
     uint64_t prev_check_tx_timeout_tm_ = 0;
+    std::thread::id local_thread_id_;
+    uint64_t local_thread_id_count_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };
