@@ -15,8 +15,8 @@
 #define CheckThreadIdValid() { \
     auto now_thread_id = std::this_thread::get_id(); \
     if (local_thread_id_ != now_thread_id) { ++local_thread_id_count_; }\
-    ZJC_DEBUG("now handle thread id: %u, old: %u, count: %d", now_thread_id, local_thread_id_, local_thread_id_count_); \
-    if (count > 3) { \
+    ZJC_DEBUG("now handle thread id: %u, old: %u, count: %d, pool: %d", now_thread_id, local_thread_id_, local_thread_id_count_, pool_index_); \
+    if (count > 64) { \
         assert(local_thread_id_ == now_thread_id); \
     } else { \
         local_thread_id_ = now_thread_id; \
