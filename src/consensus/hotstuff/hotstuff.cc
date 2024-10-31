@@ -1057,7 +1057,7 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
             if (!tc.has_view_block_hash()) {
                 auto tc_msg_hash = GetTCMsgHash(tc);
                 ZJC_DEBUG("newview now verify tc hash: %s, pool index: %u", 
-                    common::Encode::HexEncode(tc_msg_hash).c_str(), pool_idx_);
+                    common::Encode::HexEncode(tc_msg_hash).c_str(), pool_idx_);                
                 if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
                     ZJC_ERROR("VerifyTC error.");
                     return;
@@ -1292,16 +1292,10 @@ Status Hotstuff::VerifyQC(const QC& qc) {
         return Status::kError;
     }
 
-    if (qc.view() > view_block_chain()->HighViewBlock()->qc().view()) {
-#ifdef USE_AGG_BLS
-        if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), std::make_shared<QC>(qc)) != Status::kSuccess) {
-            return Status::kError; 
-        }        
-#else        
+    if (qc.view() > view_block_chain()->HighViewBlock()->qc().view()) {        
         if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
             return Status::kError; 
         }
-#endif        
     }
 
     return Status::kSuccess;
@@ -1314,17 +1308,10 @@ Status Hotstuff::VerifyTC(const TC& tc) {
     }
 
     if (tc.view() > pacemaker()->HighTC()->view()) {
-#ifdef USE_AGG_BLS
-        if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), std::make_shared<TC>(tc)) != Status::kSuccess) {
-            ZJC_ERROR("VerifyTC error.");
-            return Status::kError;
-        }        
-#else
         if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
             ZJC_ERROR("VerifyTC error.");
             return Status::kError;
         }
-#endif
         auto tc_ptr = std::make_shared<view_block::protobuf::QcItem>(tc);
         pacemaker()->NewTc(tc_ptr);
     }

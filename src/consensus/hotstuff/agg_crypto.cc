@@ -98,36 +98,30 @@ Status AggCrypto::VerifyAndAggregateSig(
     return Status::kSuccess;
 }
 
-Status AggCrypto::VerifyQC(uint32_t sharding_id, const std::shared_ptr<QC>& qc) {
-    if (!qc) {
-        return Status::kError;
-    }    
+Status AggCrypto::VerifyQC(uint32_t sharding_id, const QC& qc) {    
     auto agg_sig = std::make_shared<AggregateSignature>();
-    if (agg_sig->LoadFromProto(qc->agg_sig())) {
+    if (agg_sig->LoadFromProto(qc.agg_sig())) {
         return Status::kError;
     }
     if (!agg_sig->IsValid()) {
         return Status::kError;
     }
 
-    auto qc_msg_hash = GetQCMsgHash(*qc);
-    return Verify(*agg_sig, qc_msg_hash, sharding_id, qc->elect_height());
+    auto qc_msg_hash = GetQCMsgHash(qc);
+    return Verify(*agg_sig, qc_msg_hash, sharding_id, qc.elect_height());
 }
 
-Status AggCrypto::VerifyTC(uint32_t sharding_id, const std::shared_ptr<TC>& tc) {
-    if (!tc) {
-        return Status::kError;
-    }    
+Status AggCrypto::VerifyTC(uint32_t sharding_id, const TC& tc) {    
     auto agg_sig = std::make_shared<AggregateSignature>();
-    if (agg_sig->LoadFromProto(tc->agg_sig())) {
+    if (agg_sig->LoadFromProto(tc.agg_sig())) {
         return Status::kError;
     }
     if (!agg_sig->IsValid()) {
         return Status::kError;
     }
 
-    auto tc_msg_hash = GetTCMsgHash(*tc);
-    return Verify(*agg_sig, tc_msg_hash, sharding_id, tc->elect_height());
+    auto tc_msg_hash = GetTCMsgHash(tc);
+    return Verify(*agg_sig, tc_msg_hash, sharding_id, tc.elect_height());
 }
 
 std::shared_ptr<AggregateQC> AggCrypto::CreateAggregateQC(

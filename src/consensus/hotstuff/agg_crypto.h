@@ -66,8 +66,8 @@ public:
             const AggregateSignature& partial_sig,
             AggregateSignature& agg_sig);
 
-    Status VerifyQC(uint32_t sharding_id, const std::shared_ptr<QC>& qc);
-    Status VerifyTC(uint32_t sharding_id, const std::shared_ptr<TC>& tc);
+    Status VerifyQC(uint32_t sharding_id, const QC& qc);
+    Status VerifyTC(uint32_t sharding_id, const TC& tc);
     std::shared_ptr<AggregateQC> CreateAggregateQC(
             uint32_t sharding_id,
             uint64_t elect_height,

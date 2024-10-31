@@ -630,21 +630,12 @@ Status HotstuffSyncer::processResponseChain(
         }
 
         // 如果本地有该 view_block_qc 对应的 view_block，则不用验证 qc 了并且跳过该块，节省 CPU
-#ifdef USE_AGG_BLS
-        if (!chain->Has(view_block_hash) && 
-                crypto(pool_idx)->VerifyQC(
-                    common::GlobalInfo::Instance()->network_id(), 
-                    std::make_shared<QC>(view_block->qc())) != Status::kSuccess) {
-            continue;
-        }        
-#else
         if (!chain->Has(view_block_hash) && 
                 crypto(pool_idx)->VerifyQC(
                     common::GlobalInfo::Instance()->network_id(), 
                     view_block->qc()) != Status::kSuccess) {
             continue;
         }
-#endif        
         // 记录同步链中最高的 Qc，用于 commit
         if (!high_commit_view_block || high_commit_view_block->qc().view() < it->qc().view()) {
             high_commit_view_block = &(*it);
