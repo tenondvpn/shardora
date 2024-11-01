@@ -2,6 +2,7 @@
 #include <bls/bls.h>
 #include <bls/bls_utils.h>
 #include <common/bitmap.h>
+#include <common/encode.h>
 #include <common/global_info.h>
 #include <common/hash.h>
 #include <tools/utils.h>
@@ -31,8 +32,9 @@ void AggBls::Sign(
         const std::string &str_hash,
         libff::alt_bn128_G1* signature) {
     // NOTICE: 此处不能使用 Thresholdutils::HashtoG1
-    libff::alt_bn128_G1 g1_hash = libBLS::Bls::Hashing(str_hash);
-    *signature = libBLS::Bls::Signing(g1_hash, sec_key);
+    auto hex_str = common::Encode::HexEncode(str_hash);
+    // libff::alt_bn128_G1 g1_hash = libBLS::Bls::Hashing(str_hash);
+    *signature = libBLS::Bls::CoreSignAggregated(hex_str, sec_key);
 }
     
 void AggBls::Aggregate(
@@ -43,16 +45,25 @@ void AggBls::Aggregate(
 }
 
 bool AggBls::AggregateVerify(
-        // uint32_t t, uint32_t n,
         const std::vector<libff::alt_bn128_G2>& pks,
         const std::vector<std::string>& str_hashes,
         const libff::alt_bn128_G1& signature) {
-    std::vector<std::shared_ptr<std::array<uint8_t, 32>>> hash_byte_arr;
+    std::vector<std::shared_ptr<std::array<uint8_t, 32>>> hash_bytes_arrs;
     auto agg_pk = AggregatePk(pks);
-    return aggregatedVerification(
-            str_hashes,
-            std::vector<libff::alt_bn128_G1>{signature},
-            agg_pk);
+    for (const auto& str_hash : str_hashes) {
+        auto hash_bytes_arr = std::make_shared< std::array< uint8_t, 32 > >();
+        auto hex_str = common::Encode::HexEncode(str_hash);
+        uint64_t bin_len;
+        if ( !libBLS::ThresholdUtils::hex2carray( hex_str.c_str(), &bin_len, hash_bytes_arr->data() ) ) {
+            throw std::runtime_error( "Invalid hash" );
+        }        
+        hash_bytes_arrs.push_back(hash_bytes_arr);
+    }
+    return libBLS::Bls::AggregatedVerification(hash_bytes_arrs, std::vector<libff::alt_bn128_G1>{signature}, agg_pk);
+    // return aggregatedVerification(
+    //         str_hashes,
+    //         std::vector<libff::alt_bn128_G1>{signature},
+    //         agg_pk);
 }
 
 bool AggBls::FastAggregateVerify(
@@ -60,14 +71,17 @@ bool AggBls::FastAggregateVerify(
         const std::vector<libff::alt_bn128_G2>& pks,
         const std::string& str_hash,
         const libff::alt_bn128_G1& signature) {
-    return fastAggregateVerify(pks, str_hash, signature);
+    // return fastAggregateVerify(pks, str_hash, signature);
+    return libBLS::Bls::FastAggregateVerify(pks, common::Encode::HexEncode(str_hash), signature);
 }
 
 bool AggBls::CoreVerify(
         const libff::alt_bn128_G2& pk,
         const std::string& str_hash,
         const libff::alt_bn128_G1& signature) {
-    return coreVerify(pk, str_hash, signature);     
+    // return coreVerify(pk, str_hash, signature);
+    return libBLS::Bls::CoreVerify(pk, common::Encode::HexEncode(str_hash), signature);
+    
 }
 
 libff::alt_bn128_G2 AggBls::AggregatePk(const std::vector<libff::alt_bn128_G2>& pks) {
