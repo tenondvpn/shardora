@@ -59,10 +59,13 @@ public:
             return common::kCommonSuccess;
         }
 
-        auto keypair = GenerateKeyPair(security, prefix_db);
+        auto keypair = GenerateKeyPair();
+        prefix_db->SaveAggBlsPrikey(security, keypair->sk());
         agg_bls_sk_ = keypair->sk();
         return common::kCommonSuccess;
     }
+
+    static std::shared_ptr<KeyPair> GenerateKeyPair();    
     
     std::shared_ptr<KeyPair> GetKeyPair();
 
@@ -118,12 +121,7 @@ private:
     AggBls() {
         agg_bls_sk_ = libff::alt_bn128_Fr::zero();        
     }
-    ~AggBls() {}
-
-    static std::shared_ptr<KeyPair> GenerateKeyPair(
-            // uint32_t t, uint32_t n,
-            std::shared_ptr<security::Security>& security,
-            const std::shared_ptr<protos::PrefixDb>& prefix_db);    
+    ~AggBls() {}    
 };
 
 }

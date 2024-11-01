@@ -15,7 +15,6 @@ std::shared_ptr<AggBls::KeyPair> AggBls::GenerateKeyPair(
         std::shared_ptr<security::Security>& security,
         const std::shared_ptr<protos::PrefixDb>& prefix_db) {
     auto keypair = libBLS::Bls::KeyGeneration();
-    prefix_db->SaveAggBlsPrikey(security, keypair.first);
     return std::make_shared<AggBls::KeyPair>(
             keypair.first,
             keypair.second,
