@@ -800,9 +800,11 @@ int WsServer::CreateTransactionWithAttr(
             tmp_sign_v,
             common::Encode::HexEncode(tx_info.pubkey()).c_str());
         return 1;
+
     }
 
-    msg.set_sign(sign);
+    new_tx->set_sign(sign);
+    // msg.set_sign(sign);
     return 0;
 }
 
