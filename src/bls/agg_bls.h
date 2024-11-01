@@ -127,6 +127,8 @@ private:
     }
     ~AggBls() {}
 
+    // 源库函数有 bug
+    // libBLS::bls 中的 CoreVerify 使用了 ThresholdUtils::HashtoG1 做哈希导致报错
     static bool coreVerify(
             const libff::alt_bn128_G2& public_key,
             const std::string& message,

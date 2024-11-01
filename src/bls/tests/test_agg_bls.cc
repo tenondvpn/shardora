@@ -27,10 +27,9 @@ TEST_F(TestAggBls, SignAndVerify) {
     ASSERT_TRUE(kp->IsValid());
 
     std::string str_hash = common::Hash::keccak256("origin message"); 
-    libff::alt_bn128_G1 g1_sig = libff::alt_bn128_G1::one();
-    ASSERT_TRUE(g1_sig == libff::alt_bn128_G1::one());
+    libff::alt_bn128_G1 g1_sig = libff::alt_bn128_G1::zero();
+    ASSERT_TRUE(g1_sig == libff::alt_bn128_G1::zero());
     bls::AggBls::Sign(kp->sk(), str_hash, &g1_sig);
-    ASSERT_TRUE(g1_sig != libff::alt_bn128_G1::one());
     ASSERT_TRUE(g1_sig != libff::alt_bn128_G1::zero());
 
     bool ok = bls::AggBls::CoreVerify(kp->pk(), str_hash, g1_sig);
