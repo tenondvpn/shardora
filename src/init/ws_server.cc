@@ -753,7 +753,7 @@ int WsServer::CreateTransactionWithAttr(
     msg.set_des_dht_key(std::string(dht_key.dht_key, sizeof(dht_key.dht_key)));
     msg.set_type(7);
     transport::TcpTransport::Instance()->SetMessageHash(msg);
-    auto* broadcast = msg.mutable_broadcast();
+    // auto* broadcast = msg.mutable_broadcast();
     auto new_tx = msg.mutable_tx_proto();
     new_tx->set_gid(tx_info.gid());
     new_tx->set_pubkey(tx_info.pubkey());
