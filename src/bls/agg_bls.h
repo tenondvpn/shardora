@@ -53,6 +53,8 @@ public:
     int Init(
             std::shared_ptr<protos::PrefixDb>& prefix_db,
             std::shared_ptr<security::Security>& security) {
+        libBLS::ThresholdUtils::initCurve();
+        
         prefix_db_ = prefix_db;
         security_ = security;
 

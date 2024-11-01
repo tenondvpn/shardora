@@ -106,7 +106,6 @@ int NetworkInit::Init(int argc, char** argv) {
 
 #ifdef USE_AGG_BLS    
     // Init agg bls
-    libff::alt_bn128_pp::init_public_params();
     if (bls::AggBls::Instance()->Init(prefix_db_, security_) != common::kCommonSuccess) {
         return kInitError;
     }

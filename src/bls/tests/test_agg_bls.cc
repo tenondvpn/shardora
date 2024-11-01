@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
+#include <libff/algebra/curves/alt_bn128/alt_bn128_init.hpp>
+#include <tools/utils.h>
 #include "bls/agg_bls.h"
 #define private public
 
@@ -12,7 +14,7 @@ namespace test {
 class TestAggBls : public testing::Test {
 protected:
     static void SetUpTestCase() {
-        libff::alt_bn128_pp::init_public_params();
+        libBLS::ThresholdUtils::initCurve();
     }
     static void TearDownTestCase() {}
 
