@@ -85,7 +85,7 @@ void WsServer::BroadcastTxInfo() {
 void WsServer::GetAllTxs() {
     uint32_t got_count = 0;
     do {
-        std::string cmd = "select  \"from\", to, amount, balance, height, to_add, timestamp, status, type from zjc_ck_transaction_table where shard_id = 3 and type != 8 and balance > 0 and balance < 10000000000000 and timestamp > " + std::to_string(latest_timestamp_) + " limit 1000;";
+        std::string cmd = "select  \"from\", to, amount, balance, height, to_add, timestamp, status, type from zjc_ck_transaction_table where shard_id = 3 and type != 8 and balance > 0 and timestamp > " + std::to_string(latest_timestamp_) + " limit 1000;";
         uint32_t all_transactions = 0;
         try {
             clickhouse::Client ck_client0(clickhouse::ClientOptions().
@@ -133,7 +133,7 @@ void WsServer::GetAllTxs() {
 }
 
 void WsServer::GetTxs(ws::protobuf::WsMessage& ws_tx_res) {
-    std::string cmd = "select  \"from\", to, amount, balance, height, to_add, timestamp, status, type from zjc_ck_transaction_table where shard_id = 3 and type != 8 and balance > 0 and balance < 10000000000000 and timestamp > " + std::to_string(latest_timestamp_) + " limit 1000;";
+    std::string cmd = "select  \"from\", to, amount, balance, height, to_add, timestamp, status, type from zjc_ck_transaction_table where shard_id = 3 and type != 8 and balance > 0 and timestamp > " + std::to_string(latest_timestamp_) + " limit 1000;";
     uint32_t all_transactions = 0;
     try {
         clickhouse::Client ck_client0(clickhouse::ClientOptions().
