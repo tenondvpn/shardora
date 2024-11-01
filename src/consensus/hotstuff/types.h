@@ -96,21 +96,6 @@ struct AggregateSignature {
         return !sig_.is_zero() && participants_.size() > 0;
     }
 
-    // std::string Serialize() const {
-    //     auto agg_sig_proto = DumpToProto();        
-    //     return agg_sig_proto.SerializeAsString();
-    // }
-    
-    // bool Unserialize(const std::string& str) {
-    //     auto agg_sig_proto = view_block::protobuf::AggregateSig();
-    //     bool ok = agg_sig_proto.ParseFromString(str);
-    //     if (!ok) {
-    //         return false;
-    //     }
-
-    //     return LoadFromProto(agg_sig_proto);
-    // }
-
     bool LoadFromProto(const view_block::protobuf::AggregateSig& agg_sig_proto) {
         sig_ = libff::alt_bn128_G1::zero();
         try {
