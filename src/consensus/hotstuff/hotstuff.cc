@@ -935,13 +935,13 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d, view: %lu, qc_hash: %s, hash64: %lu, propose_debug: %s, replica: %lu, ",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
-        agg_sig->IsValid(),
+        agg_sig.IsValid(),
         vote_msg.view(),
         common::Encode::HexEncode(qc_hash).c_str(),
         msg_ptr->header.hash64(),
         msg_ptr->header.debug().c_str(),
         vote_msg.replica_idx());
-    qc_item.mutable_agg_sig()->CopyFrom(agg_sig->DumpToProto());
+    qc_item.mutable_agg_sig()->CopyFrom(agg_sig.DumpToProto());
     // 切换视图
     ZJC_DEBUG("success new set qc view: %lu, %u_%u_%lu",
         qc_item.view(),
