@@ -10,10 +10,7 @@ namespace shardora {
 
 namespace bls {
 
-std::shared_ptr<AggBls::KeyPair> AggBls::GenerateKeyPair(
-        // uint32_t t, uint32_t n,
-        std::shared_ptr<security::Security>& security,
-        const std::shared_ptr<protos::PrefixDb>& prefix_db) {
+std::shared_ptr<AggBls::KeyPair> AggBls::GenerateKeyPair() {
     auto keypair = libBLS::Bls::KeyGeneration();
     return std::make_shared<AggBls::KeyPair>(
             keypair.first,
