@@ -81,21 +81,7 @@ Status AggCrypto::VerifyAndAggregateSig(
     for (auto partial_sig : collection_item->partial_sigs) {
         partial_sigs.push_back(&partial_sig);
     }
-    s = AggregateSigs(elect_item, partial_sigs, &agg_sig);
-    if (s != Status::kSuccess) {
-        return s;
-    } 
-
-    // Aggregate partial signatures
-    std::vector<libff::alt_bn128_G1> partial_g1_sigs;
-    for (auto partial_sig : collection_item->partial_sigs) {
-        partial_g1_sigs.push_back(partial_sig.signature());
-    }
-
-    libff::alt_bn128_G1* agg_g1_sig;
-    bls::AggBls().Aggregate(partial_g1_sigs, agg_g1_sig);
-    
-    return Status::kSuccess;
+    return AggregateSigs(partial_sigs, &agg_sig);
 }
 
 Status AggCrypto::VerifyQC(uint32_t sharding_id, const QC& qc) {    

@@ -911,18 +911,17 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     qc_item.set_leader_idx(vote_msg.leader_idx());
     auto qc_hash = GetQCMsgHash(qc_item);
 
-    AggregateSignature* partial_sig;
-    if (!partial_sig->LoadFromProto(vote_msg.partial_sig())) {
+    AggregateSignature partial_sig, agg_sig;
+    if (!partial_sig.LoadFromProto(vote_msg.partial_sig())) {
         return;
-    }    
-
-    AggregateSignature* agg_sig;
+    }
+    
     Status ret = crypto()->VerifyAndAggregateSig(
             elect_height,
             vote_msg.view(),
             qc_hash,
-            *partial_sig,
-            *agg_sig);
+            partial_sig,
+            agg_sig);
     if (ret != Status::kSuccess) {
         if (ret == Status::kBlsVerifyWaiting) {
             ZJC_DEBUG("kBlsWaiting pool: %d, view: %lu, hash64: %lu",

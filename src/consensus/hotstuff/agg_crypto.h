@@ -159,7 +159,6 @@ private:
     Status BatchVerify(const AggregateSignature& sig, const std::unordered_map<uint32_t, HashStr> msg_hash_map);
 
     Status AggregateSigs(
-            const std::shared_ptr<ElectItem>& elect_item,
             const std::vector<AggregateSignature*>& sigs,
             AggregateSignature* agg_sig) {
         std::vector<libff::alt_bn128_G1> g1_sigs;
