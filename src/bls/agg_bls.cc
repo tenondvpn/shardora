@@ -15,15 +15,14 @@ std::shared_ptr<AggBls::KeyPair> AggBls::GenerateKeyPair(
         std::shared_ptr<security::Security>& security,
         const std::shared_ptr<protos::PrefixDb>& prefix_db) {
     auto keypair = libBLS::Bls::KeyGeneration();
+    prefix_db->SaveAggBlsPrikey(security, keypair.first);
     return std::make_shared<AggBls::KeyPair>(
             keypair.first,
             keypair.second,
             PopProve(keypair.first));
 }
 
-std::shared_ptr<AggBls::KeyPair> AggBls::GetKeyPair(
-        std::shared_ptr<security::Security>& security,
-        const std::shared_ptr<protos::PrefixDb>& prefix_db) {    
+std::shared_ptr<AggBls::KeyPair> AggBls::GetKeyPair() {    
     return std::make_shared<AggBls::KeyPair>(
             agg_bls_sk_,
             GetPublicKey(agg_bls_sk_),

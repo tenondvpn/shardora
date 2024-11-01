@@ -121,7 +121,7 @@ public:
                 // 不在本次共识池或 POP 验证失败都会导致 elect_item 找不到 pk
                 return Status::kError;
             }
-            auto verified = bls::AggBls().CoreVerify(
+            auto verified = bls::AggBls::CoreVerify(
                     // elect_item->t(),
                     // elect_item->n(),
                     *agg_bls_pk,
@@ -143,7 +143,7 @@ public:
             return Status::kError;
         }
 
-        auto verified = bls::AggBls().FastAggregateVerify(
+        auto verified = bls::AggBls::FastAggregateVerify(
                 pks,
                 msg_hash,
                 sig.signature());
@@ -173,7 +173,7 @@ private:
         }
 
         libff::alt_bn128_G1* agg_g1_sig;
-        bls::AggBls().Aggregate(g1_sigs, agg_g1_sig);
+        bls::AggBls::Aggregate(g1_sigs, agg_g1_sig);
         agg_sig->set_signature(*agg_g1_sig);
 
         return Status::kSuccess;

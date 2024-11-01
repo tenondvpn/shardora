@@ -60,29 +60,11 @@ public:
         }
 
         auto keypair = GenerateKeyPair(security, prefix_db);
-        if (keypair->sk() == libff::alt_bn128_Fr::zero()) {
-            return common::kCommonError;
-        }
         agg_bls_sk_ = keypair->sk();
-        StoreSK(security, prefix_db, keypair->sk());
         return common::kCommonSuccess;
     }
     
-    static std::shared_ptr<KeyPair> GenerateKeyPair(
-            // uint32_t t, uint32_t n,
-            std::shared_ptr<security::Security>& security,
-            const std::shared_ptr<protos::PrefixDb>& prefix_db);
-
-    static void StoreSK(
-            std::shared_ptr<security::Security>& security,
-            const std::shared_ptr<protos::PrefixDb>& prefix_db,
-            const libff::alt_bn128_Fr& sk) {
-        prefix_db->SaveAggBlsPrikey(security, sk);
-    }
-    
-    std::shared_ptr<KeyPair> GetKeyPair(
-            std::shared_ptr<security::Security>& security,
-            const std::shared_ptr<protos::PrefixDb>& prefix_db);
+    std::shared_ptr<KeyPair> GetKeyPair();
 
     static libff::alt_bn128_G2 GetPublicKey(const libff::alt_bn128_Fr& sk) {
         return sk * libff::alt_bn128_G2::one();
@@ -136,7 +118,12 @@ private:
     AggBls() {
         agg_bls_sk_ = libff::alt_bn128_Fr::zero();        
     }
-    ~AggBls() {}    
+    ~AggBls() {}
+
+    static std::shared_ptr<KeyPair> GenerateKeyPair(
+            // uint32_t t, uint32_t n,
+            std::shared_ptr<security::Security>& security,
+            const std::shared_ptr<protos::PrefixDb>& prefix_db);    
 };
 
 }

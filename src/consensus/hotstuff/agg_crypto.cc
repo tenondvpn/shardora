@@ -17,7 +17,7 @@ Status AggCrypto::PartialSign(
         return Status::kError;
     }
     
-    bls::AggBls().Sign(
+    bls::AggBls::Sign(
             // elect_item->t(),
             // elect_item->n(),
             elect_item->local_sk(),

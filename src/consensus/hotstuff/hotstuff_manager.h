@@ -240,8 +240,7 @@ private:
     }
 
     pools::TxItemPtr CreateJoinElectTx(const transport::MessagePtr& msg_ptr) {
-        auto agg_bls = bls::AggBls();
-        auto keypair = agg_bls.GetKeyPair(security_ptr_, prefix_db_);
+        auto keypair = bls::AggBls::Instance()->GetKeyPair();
         if (keypair == nullptr || !keypair->IsValid()) {
             return nullptr;
         }
