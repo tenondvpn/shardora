@@ -15,36 +15,19 @@ std::shared_ptr<AggBls::KeyPair> AggBls::GenerateKeyPair(
         std::shared_ptr<security::Security>& security,
         const std::shared_ptr<protos::PrefixDb>& prefix_db) {
     auto keypair = libBLS::Bls::KeyGeneration();
-    agg_bls_sk_ = keypair.first;
-    prefix_db->SaveAggBlsPrikey(security, keypair.first);
-    
     return std::make_shared<AggBls::KeyPair>(
             keypair.first,
             keypair.second,
-            popProve());
+            PopProve(keypair.first));
 }
 
 std::shared_ptr<AggBls::KeyPair> AggBls::GetKeyPair(
         std::shared_ptr<security::Security>& security,
-        const std::shared_ptr<protos::PrefixDb>& prefix_db) {
-    if (agg_bls_sk_ != libff::alt_bn128_Fr::zero()) {
-        return std::make_shared<AggBls::KeyPair>(
-                agg_bls_sk_,
-                GetPublicKey(agg_bls_sk_),
-                popProve());
-    }
-
-    auto bls_prikey = libff::alt_bn128_Fr::zero();
-    auto ok = prefix_db->GetAggBlsPrikey(security, &bls_prikey);
-    if (ok && bls_prikey != libff::alt_bn128_Fr::zero()) {
-        agg_bls_sk_ = bls_prikey;
-        return std::make_shared<AggBls::KeyPair>(bls_prikey, GetPublicKey(bls_prikey), popProve());
-    }
-
+        const std::shared_ptr<protos::PrefixDb>& prefix_db) {    
     return std::make_shared<AggBls::KeyPair>(
-            libff::alt_bn128_Fr::zero(),
-            libff::alt_bn128_G2::zero(),
-            libff::alt_bn128_G1::zero());
+            agg_bls_sk_,
+            GetPublicKey(agg_bls_sk_),
+            PopProve(agg_bls_sk_));
 }
 
 void AggBls::Sign(
@@ -112,8 +95,8 @@ libff::alt_bn128_G2 AggBls::AggregatePk(const std::vector<libff::alt_bn128_G2>& 
     return std::accumulate(pks.begin(), pks.end(), libff::alt_bn128_G2::zero());
 }
 
-libff::alt_bn128_G1 AggBls::popProve() {
-    return libBLS::Bls::PopProve(agg_bls_sk_);
+libff::alt_bn128_G1 AggBls::PopProve(const libff::alt_bn128_Fr& sk) {
+    return libBLS::Bls::PopProve(sk);
 }
 
 bool AggBls::PopVerify(

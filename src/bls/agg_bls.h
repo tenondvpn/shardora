@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/bitmap.h>
+#include <common/utils.h>
 #include <db/db.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g2.hpp>
@@ -39,16 +40,46 @@ public:
             return proof_;
         }
     };
-    
-    AggBls() {
-        agg_bls_sk_ = libff::alt_bn128_Fr::zero();
+
+    static AggBls* Instance() {
+        static AggBls ins;
+        return &ins;
     }
-    ~AggBls() {}
+
+    int Init(
+            std::shared_ptr<protos::PrefixDb>& prefix_db,
+            std::shared_ptr<security::Security>& security) {
+        prefix_db_ = prefix_db;
+        security_ = security;
+
+        auto bls_prikey = libff::alt_bn128_Fr::zero();
+        auto ok = prefix_db->GetAggBlsPrikey(security, &bls_prikey);
+        if (ok && bls_prikey != libff::alt_bn128_Fr::zero()) {
+            agg_bls_sk_ = bls_prikey;
+            return common::kCommonSuccess;
+        }
+
+        auto keypair = GenerateKeyPair(security, prefix_db);
+        if (keypair->sk() == libff::alt_bn128_Fr::zero()) {
+            return common::kCommonError;
+        }
+        agg_bls_sk_ = keypair->sk();
+        StoreSK(security, prefix_db, keypair->sk());
+        return common::kCommonSuccess;
+    }
     
-    std::shared_ptr<KeyPair> GenerateKeyPair(
+    static std::shared_ptr<KeyPair> GenerateKeyPair(
             // uint32_t t, uint32_t n,
             std::shared_ptr<security::Security>& security,
             const std::shared_ptr<protos::PrefixDb>& prefix_db);
+
+    static void StoreSK(
+            std::shared_ptr<security::Security>& security,
+            const std::shared_ptr<protos::PrefixDb>& prefix_db,
+            const libff::alt_bn128_Fr& sk) {
+        prefix_db->SaveAggBlsPrikey(security, sk);
+    }
+    
     std::shared_ptr<KeyPair> GetKeyPair(
             std::shared_ptr<security::Security>& security,
             const std::shared_ptr<protos::PrefixDb>& prefix_db);
@@ -92,14 +123,20 @@ public:
 
     static libff::alt_bn128_G2 AggregatePk(const std::vector<libff::alt_bn128_G2>& pks);
 
-    bool PopVerify(
+    static bool PopVerify(
         const libff::alt_bn128_G2& public_key,
         const libff::alt_bn128_G1& proof);    
 
+    static libff::alt_bn128_G1 PopProve(const libff::alt_bn128_Fr& sk);
 private:
     libff::alt_bn128_Fr agg_bls_sk_;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    std::shared_ptr<security::Security> security_ = nullptr;
 
-    libff::alt_bn128_G1 popProve();
+    AggBls() {
+        agg_bls_sk_ = libff::alt_bn128_Fr::zero();        
+    }
+    ~AggBls() {}    
 };
 
 }

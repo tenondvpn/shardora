@@ -44,7 +44,7 @@ public:
             auto agg_bls_pk = (*members)[i]->agg_bls_pk;
             auto agg_bls_pk_proof = (*members)[i]->agg_bls_pk_proof;            
             // 检查 agg bls 的 Proof of Posession，确保公钥不是假的，规避密钥消除攻击
-            if (bls::AggBls().PopVerify(agg_bls_pk, agg_bls_pk_proof)) {
+            if (bls::AggBls::PopVerify(agg_bls_pk, agg_bls_pk_proof)) {
                 member_aggbls_pk_map_[(*members)[i]->index] = agg_bls_pk;
             }
             member_aggbls_pk_proof_map_[(*members)[i]->index] = agg_bls_pk_proof;
