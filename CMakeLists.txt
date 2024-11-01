@@ -236,4 +236,3 @@ add_subdirectory(${SRC_DIR}/consensus/hotstuff/tests hotstuff_test)
 add_subdirectory(${SRC_DIR}/ck/tests ck_test)
 add_subdirectory(${SRC_DIR}/vss/tests vss_test)
 add_subdirectory(${SRC_DIR}/sync/tests sync_test)
-
