@@ -141,15 +141,15 @@ std::shared_ptr<AggregateQC> AggCrypto::CreateAggregateQC(
         return nullptr;
     }
     
-    AggregateSignature* agg_high_qc_sig;
-    Status s = AggregateSigs(high_qc_sigs, agg_high_qc_sig);
+    AggregateSignature agg_high_qc_sig;
+    Status s = AggregateSigs(high_qc_sigs, &agg_high_qc_sig);
     if (s != Status::kSuccess) {
         return nullptr;
     }
 
     return std::make_shared<AggregateQC>(
             high_qcs,
-            std::make_shared<AggregateSignature>(*agg_high_qc_sig),
+            std::make_shared<AggregateSignature>(agg_high_qc_sig),
             view);
 }
 
