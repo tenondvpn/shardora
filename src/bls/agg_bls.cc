@@ -38,13 +38,9 @@ void AggBls::Sign(
 void AggBls::Aggregate(
         // uint32_t t, uint32_t n,
         const std::vector<libff::alt_bn128_G1>& sigs,
-        libff::alt_bn128_G1* signature) try {
+        libff::alt_bn128_G1* signature) {
     *signature = libBLS::Bls::Aggregate(sigs);
-} catch (std::exception& e) {
-    BLS_ERROR("agg bls aggregate message failed: %s", e.what());
-    *signature = libff::alt_bn128_G1::zero();
 }
-
 
 bool AggBls::AggregateVerify(
         // uint32_t t, uint32_t n,

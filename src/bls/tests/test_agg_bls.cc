@@ -43,6 +43,34 @@ TEST_F(TestAggBls, PopProveAndPopVerify) {
     ASSERT_TRUE(bls::AggBls::PopVerify(kp->pk(), kp->proof()));
 }
 
+TEST_F(TestAggBls, FastAggregateVerify) {
+    std::vector<bls::AggBls::KeyPair> kps;
+    std::vector<libff::alt_bn128_G2> pks;
+    uint32_t n = 5;
+
+    for (uint32_t i = 0; i < n; i++) {
+        auto kp = bls::AggBls::GenerateKeyPair();
+        ASSERT_TRUE(kp->IsValid());
+        kps.push_back(*kp);
+        pks.push_back(kp->pk());
+    }
+
+    std::string str_hash = common::Hash::keccak256("origin message");
+    std::vector<libff::alt_bn128_G1> g1_sigs;
+    for (const auto& kp : kps) {
+        libff::alt_bn128_G1 g1_sig = libff::alt_bn128_G1::zero();
+        bls::AggBls::Sign(kp.sk_, str_hash, &g1_sig);
+        ASSERT_TRUE(g1_sig != libff::alt_bn128_G1::zero());
+        g1_sigs.push_back(g1_sig);
+    }
+
+    libff::alt_bn128_G1 g1_sig_agg = libff::alt_bn128_G1::zero();
+    bls::AggBls::Aggregate(g1_sigs, &g1_sig_agg);
+
+    bool ok = bls::AggBls::FastAggregateVerify(pks, str_hash, g1_sig_agg);
+    ASSERT_TRUE(ok);
+}
+
 } // namespace test
 
 } // namespace bls
