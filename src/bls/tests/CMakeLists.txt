@@ -7,4 +7,4 @@ add_executable(bls_test ${bls_test_src})
 
 add_dependencies(bls_test bls)
 find_package(OpenSSL REQUIRED)
-target_link_libraries(bls_test PRIVATE bls gtest gtest_main gmock gmock_main pthread dl OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(bls_test PRIVATE bls network gtest gtest_main gmock gmock_main pthread dl OpenSSL::SSL OpenSSL::Crypto)

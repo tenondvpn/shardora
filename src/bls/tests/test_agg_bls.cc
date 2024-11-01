@@ -28,7 +28,10 @@ TEST_F(TestAggBls, SignAndVerify) {
     ASSERT_TRUE(ok);
 }
 
-TEST_F(TestAggBls, AggregateAndVerify) {}
+TEST_F(TestAggBls, PopProveAndPopVerify) {
+    auto kp = bls::AggBls::GenerateKeyPair();
+    ASSERT_TRUE(bls::AggBls::PopVerify(kp->pk(), kp->proof()));
+}
 
 } // namespace test
 
