@@ -10,6 +10,8 @@ namespace shardora {
 
 namespace hotstuff {
 
+// AggCrypto is hotstuff crypto module supported by bls aggregation signature
+// It works when USE_AGG_BLS is defined
 class AggCrypto {
 public:
     struct BlsCollectionItem {

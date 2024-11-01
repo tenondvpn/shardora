@@ -63,6 +63,7 @@ HashStr GetTCMsgHash(const view_block::protobuf::QcItem& tc_item);
 // HashStr GetViewBlockHash(const view_block::protobuf::ViewBlockItem&
 // view_block_item);
 
+// Both aggregated and unaggregated signatures share the same structure
 struct AggregateSignature {
     libff::alt_bn128_G1 sig_;
     // 因为要使用聚合签名，需要聚合公钥，因此必须知道参与者都有谁
@@ -91,23 +92,24 @@ struct AggregateSignature {
     }
 
     inline bool IsValid() const {
+        // minimum participants size is 1
         return !sig_.is_zero() && participants_.size() > 0;
     }
 
-    std::string Serialize() const {
-        auto agg_sig_proto = DumpToProto();        
-        return agg_sig_proto.SerializeAsString();
-    }
+    // std::string Serialize() const {
+    //     auto agg_sig_proto = DumpToProto();        
+    //     return agg_sig_proto.SerializeAsString();
+    // }
     
-    bool Unserialize(const std::string& str) {
-        auto agg_sig_proto = view_block::protobuf::AggregateSig();
-        bool ok = agg_sig_proto.ParseFromString(str);
-        if (!ok) {
-            return false;
-        }
+    // bool Unserialize(const std::string& str) {
+    //     auto agg_sig_proto = view_block::protobuf::AggregateSig();
+    //     bool ok = agg_sig_proto.ParseFromString(str);
+    //     if (!ok) {
+    //         return false;
+    //     }
 
-        return LoadFromProto(agg_sig_proto);
-    }
+    //     return LoadFromProto(agg_sig_proto);
+    // }
 
     bool LoadFromProto(const view_block::protobuf::AggregateSig& agg_sig_proto) {
         sig_ = libff::alt_bn128_G1::zero();
