@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
 #include "bls/agg_bls.h"
 #define private public
 
@@ -10,19 +11,27 @@ namespace test {
 
 class TestAggBls : public testing::Test {
 protected:
-    static void SetUpTestCase() {}
+    static void SetUpTestCase() {
+        libff::alt_bn128_pp::init_public_params();
+    }
     static void TearDownTestCase() {}
 
-    void SetUp() {}
+    void SetUp() {
+        
+    }
     void TearDown() {}
 };
 
 TEST_F(TestAggBls, SignAndVerify) {
     auto kp = bls::AggBls::GenerateKeyPair();
+    ASSERT_TRUE(kp->IsValid());
 
     std::string str_hash = common::Hash::keccak256("origin message"); 
-    libff::alt_bn128_G1 g1_sig;
+    libff::alt_bn128_G1 g1_sig = libff::alt_bn128_G1::one();
+    ASSERT_TRUE(g1_sig == libff::alt_bn128_G1::one());
     bls::AggBls::Sign(kp->sk(), str_hash, &g1_sig);
+    ASSERT_TRUE(g1_sig != libff::alt_bn128_G1::one());
+    ASSERT_TRUE(g1_sig != libff::alt_bn128_G1::zero());
 
     bool ok = bls::AggBls::CoreVerify(kp->pk(), str_hash, g1_sig);
     ASSERT_TRUE(ok);

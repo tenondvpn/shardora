@@ -1,5 +1,6 @@
 #pragma once
 
+#include <bls/bls.h>
 #include <common/bitmap.h>
 #include <common/utils.h>
 #include <db/db.h>
@@ -25,7 +26,10 @@ public:
             const libff::alt_bn128_G1& proof) : sk_(sk), pk_(pk), proof_(proof) {}
 
         inline bool IsValid() const {
-            return !sk_.is_zero() && !pk_.is_zero() && GetPublicKey(sk_) == pk_; 
+            return !sk_.is_zero() &&
+                sk_ != libff::alt_bn128_Fr::one() &&
+                !pk_.is_zero() &&
+                GetPublicKey(sk_) == pk_; 
         }
 
         inline libff::alt_bn128_Fr sk() {
@@ -121,7 +125,22 @@ private:
     AggBls() {
         agg_bls_sk_ = libff::alt_bn128_Fr::zero();        
     }
-    ~AggBls() {}    
+    ~AggBls() {}
+
+    static bool coreVerify(
+            const libff::alt_bn128_G2& public_key,
+            const std::string& message,
+            const libff::alt_bn128_G1& signature ) {
+        if ( !libBLS::ThresholdUtils::ValidateKey(public_key) || !libBLS::ThresholdUtils::ValidateKey(signature) ) {
+            throw libBLS::ThresholdUtils::IsNotWellFormed( "Either signature or public key is malicious" );
+        }
+
+        // libff::alt_bn128_G1 hash = libBLS::ThresholdUtils::HashtoG1(message);
+        libff::alt_bn128_G1 hash = libBLS::Bls::Hashing(message);
+
+        return libff::alt_bn128_ate_reduced_pairing( hash, public_key ) ==
+            libff::alt_bn128_ate_reduced_pairing( signature, libff::alt_bn128_G2::one() );
+    }    
 };
 
 }
