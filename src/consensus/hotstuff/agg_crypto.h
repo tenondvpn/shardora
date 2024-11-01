@@ -1,6 +1,7 @@
 #pragma once
 #include <bls/agg_bls.h>
 #include <common/bitmap.h>
+#include <common/log.h>
 #include <common/utils.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/types.h>
@@ -156,7 +157,43 @@ private:
     std::shared_ptr<bls::IBlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
     // BatchVerify verifies the given quorum signature against the batch of messages.
-    Status BatchVerify(const AggregateSignature& sig, const std::unordered_map<uint32_t, HashStr> msg_hash_map);
+    Status BatchVerify(
+            uint32_t sharding_id,
+            uint64_t elect_height,
+            const AggregateSignature& sig,
+            const std::unordered_map<uint32_t, HashStr> msg_hash_map) {
+        if (sig.participants().size() != msg_hash_map.size()) {
+            return Status::kError;
+        }
+
+        auto elect_item = GetElectItem(sharding_id, elect_height);
+        if (!elect_item) {
+            return Status::kError;
+        }
+
+        std::vector<libff::alt_bn128_G2> pks;
+        std::vector<std::string> str_hashes;
+        for (auto iter = msg_hash_map.begin(); iter != msg_hash_map.end(); iter++) {
+            auto member_idx = iter->first;
+            auto str_hash = iter->second;
+            auto pk = elect_item->agg_bls_pk(member_idx);
+            if (!pk) {
+                ZJC_ERROR("pool: %d, batch verify failed, pk not found, member_idx: %d",
+                    pool_idx_, member_idx);
+                return Status::kError;
+            }
+            pks.push_back(*pk);
+            str_hashes.push_back(str_hash);
+        }
+        
+        if (msg_hash_map.size() == 1) {
+            bool ok = bls::AggBls::Instance()->CoreVerify(pks[0], str_hashes[0], sig.signature());
+            return ok ? Status::kSuccess : Status::kError;
+        }
+
+        bool ok = bls::AggBls::Instance()->AggregateVerify(pks, str_hashes, sig.signature());
+        return ok ? Status::kSuccess : Status::kError;
+    }
 
     Status AggregateSigs(
             const std::vector<AggregateSignature*>& sigs,

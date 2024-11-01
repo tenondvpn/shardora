@@ -156,8 +156,13 @@ std::shared_ptr<AggregateQC> AggCrypto::CreateAggregateQC(
 Status AggCrypto::VerifyAggregateQC(
         uint32_t sharding_id,
         const std::shared_ptr<AggregateQC>& agg_qc,
-        std::shared_ptr<QC> high_qc) {   
-    auto elect_item = GetLatestElectItem(sharding_id);
+        std::shared_ptr<QC> high_qc) {
+    if (agg_qc->QCs().size() == 0) {
+        return Status::kError;
+    }
+    // TODO 默认取 agg_qc 中第一个 qc 对应的 elect_item
+    auto elect_height = agg_qc->QCs()[0]->elect_height();
+    auto elect_item = GetElectItem(sharding_id, elect_height);
     if (!elect_item) {
         return Status::kError;
     }
@@ -179,7 +184,7 @@ Status AggCrypto::VerifyAggregateQC(
         return Status::kError;
     }
 
-    return BatchVerify(*agg_qc->Sig(), msg_hashes);
+    return BatchVerify(sharding_id, elect_height, *agg_qc->Sig(), msg_hashes);
 }
 
 Status AggCrypto::SignMessage(transport::MessagePtr& msg_ptr) {
