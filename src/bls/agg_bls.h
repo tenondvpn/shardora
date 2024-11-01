@@ -152,6 +152,42 @@ private:
             std::accumulate( public_keys.begin(), public_keys.end(), libff::alt_bn128_G2::zero() );
 
         return coreVerify( sum, message, signature );
+    }
+
+    static bool aggregatedVerification(
+            std::vector<std::string> msgs,
+            const std::vector< libff::alt_bn128_G1 > sign,
+            const libff::alt_bn128_G2 public_key ) {
+        for ( auto& sig : sign ) {
+            if ( !sig.is_well_formed() ) {
+                throw libBLS::ThresholdUtils::IsNotWellFormed(
+                        "Error, signature does not lie on the alt_bn128 curve" );
+            }
+            if ( libff::alt_bn128_modulus_r * sig != libff::alt_bn128_G1::zero() ) {
+                throw libBLS::ThresholdUtils::IsNotWellFormed( "Error, signature is not member of G1" );
+            }
+        }
+
+        if ( !public_key.is_well_formed() ) {
+            throw libBLS::ThresholdUtils::IsNotWellFormed( "Error, public key is invalid" );
+        }
+
+        if ( !libBLS::ThresholdUtils::ValidateKey( public_key ) ) {
+            throw libBLS::ThresholdUtils::IsNotWellFormed( "Error, public key is not member of G2" );
+        }
+
+        libff::alt_bn128_G1 aggregated_hash = libff::alt_bn128_G1::zero();
+        for (auto& msg : msgs ) {
+            aggregated_hash = aggregated_hash + libBLS::Bls::Hashing(msg);
+        }
+
+        libff::alt_bn128_G1 aggregated_sig = libff::alt_bn128_G1::zero();
+        for ( libff::alt_bn128_G1 sig : sign ) {
+            aggregated_sig = aggregated_sig + sig;
+        }
+
+        return ( libff::alt_bn128_ate_reduced_pairing( aggregated_sig, libff::alt_bn128_G2::one() ) ==
+            libff::alt_bn128_ate_reduced_pairing( aggregated_hash, public_key ) );        
     }    
 };
 

@@ -48,13 +48,9 @@ bool AggBls::AggregateVerify(
         const std::vector<std::string>& str_hashes,
         const libff::alt_bn128_G1& signature) {
     std::vector<std::shared_ptr<std::array<uint8_t, 32>>> hash_byte_arr;
-    for (const auto& str_hash : str_hashes) {
-        auto h = common::HashValue(str_hash);
-        hash_byte_arr.push_back(std::make_shared<std::array<uint8_t, 32>>(h.data));
-    }
     auto agg_pk = AggregatePk(pks);
-    return libBLS::Bls::AggregatedVerification(
-            hash_byte_arr,
+    return aggregatedVerification(
+            str_hashes,
             std::vector<libff::alt_bn128_G1>{signature},
             agg_pk);
 }
