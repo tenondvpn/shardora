@@ -107,6 +107,16 @@ Status AggCrypto::VerifyQC(uint32_t sharding_id, const QC& qc) {
         return Status::kError;
     }
 
+    // Check if QC participants length is enougth
+    auto elect_item = elect_info_->GetElectItem(sharding_id, qc.elect_height());
+    if (!elect_item) {
+        return Status::kError;
+    }
+
+    if (agg_sig->participants().size() < elect_item->t()) {
+        return Status::kError;
+    }
+
     auto qc_msg_hash = GetQCMsgHash(qc);
     return Verify(*agg_sig, qc_msg_hash, sharding_id, qc.elect_height());
 }
@@ -119,6 +129,16 @@ Status AggCrypto::VerifyTC(uint32_t sharding_id, const TC& tc) {
     if (!agg_sig->IsValid()) {
         return Status::kError;
     }
+
+    // Check if QC participants length is enougth
+    auto elect_item = elect_info_->GetElectItem(sharding_id, tc.elect_height());
+    if (!elect_item) {
+        return Status::kError;
+    }
+
+    if (agg_sig->participants().size() < elect_item->t()) {
+        return Status::kError;
+    }    
 
     auto tc_msg_hash = GetTCMsgHash(tc);
     return Verify(*agg_sig, tc_msg_hash, sharding_id, tc.elect_height());
