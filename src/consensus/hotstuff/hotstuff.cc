@@ -1287,11 +1287,17 @@ Status Hotstuff::Commit(
 
 Status Hotstuff::VerifyQC(const QC& qc) {
     // 验证 qc
+#ifdef USE_AGG_BLS
+    if (!qc.has_agg_sig()) {
+        assert(false);
+        return Status::kError;
+    }
+#else
     if (!qc.has_sign_x() || !qc.has_sign_y()) {
         assert(false);
         return Status::kError;
     }
-
+#endif
     if (qc.view() > view_block_chain()->HighViewBlock()->qc().view()) {        
         if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
             return Status::kError; 
@@ -1302,10 +1308,17 @@ Status Hotstuff::VerifyQC(const QC& qc) {
 }
 
 Status Hotstuff::VerifyTC(const TC& tc) {
-    if (!tc.has_sign_x() || !tc.has_sign_y()) {
+#ifdef USE_AGG_BLS    
+    if (!tc.has_agg_sig()) {
         assert(false);
         return Status::kError;
     }
+#else
+    if (!tc.has_sign_x() || !tc.has_sign_y()) {
+        assert(false);
+        return Status::kError;
+    }    
+#endif
 
     if (tc.view() > pacemaker()->HighTC()->view()) {
         if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
@@ -1505,17 +1518,17 @@ Status Hotstuff::ConstructVoteMsg(
     qc_item.set_leader_idx(v_block->qc().leader_idx());
     auto qc_hash = GetQCMsgHash(qc_item);
 #ifdef USE_AGG_BLS
-    auto partial_sig = std::make_shared<AggregateSignature>();
+    AggregateSignature partial_sig;
     if (crypto()->PartialSign(
                 common::GlobalInfo::Instance()->network_id(),
                 elect_height,
                 qc_hash,
-                partial_sig.get()) != Status::kSuccess) {
+                &partial_sig) != Status::kSuccess) {
         ZJC_ERROR("Sign message is error.");
         return Status::kError;
     }
 
-    vote_msg->mutable_partial_sig()->CopyFrom(partial_sig->DumpToProto());
+    vote_msg->mutable_partial_sig()->CopyFrom(partial_sig.DumpToProto());
 #else
     std::string sign_x, sign_y;
     if (crypto()->PartialSign(
