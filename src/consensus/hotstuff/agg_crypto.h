@@ -101,7 +101,7 @@ public:
         return bls_mgr_->security();
     }
 
-    // Verify verifies the given quorum signature against the message.
+    // Verify verifies a sig of agg bls against the message.
     Status Verify(
             const AggregateSignature& sig,
             const HashStr& msg_hash,
@@ -113,22 +113,24 @@ public:
         }
         
         auto n = sig.participants().size();
+        // non aggregated sig
         if (n == 1) {
             uint32_t member_idx = *sig.participants().begin();
             auto agg_bls_pk = elect_item->agg_bls_pk(member_idx);
             if (!agg_bls_pk) {
-                // 没有找到公钥或 POP 验证失败
+                // 不在本次共识池或 POP 验证失败都会导致 elect_item 找不到 pk
                 return Status::kError;
             }
             auto verified = bls::AggBls().CoreVerify(
-                    elect_item->t(),
-                    elect_item->n(),
+                    // elect_item->t(),
+                    // elect_item->n(),
                     *agg_bls_pk,
                     msg_hash,
                     sig.signature());
             return verified ? Status::kSuccess : Status::kBlsVerifyFailed;
         }
 
+        // aggregated sig
         std::vector<libff::alt_bn128_G2> pks;
         for (uint32_t member_idx : sig.participants()) {
             auto agg_bls_pk = elect_item->agg_bls_pk(member_idx);
@@ -142,8 +144,6 @@ public:
         }
 
         auto verified = bls::AggBls().FastAggregateVerify(
-                elect_item->t(),
-                elect_item->n(),
                 pks,
                 msg_hash,
                 sig.signature());
@@ -174,7 +174,7 @@ private:
         }
 
         libff::alt_bn128_G1* agg_g1_sig;
-        bls::AggBls().Aggregate(elect_item->t(), elect_item->n(), g1_sigs, agg_g1_sig);
+        bls::AggBls().Aggregate(g1_sigs, agg_g1_sig);
         agg_sig->set_signature(*agg_g1_sig);
 
         return Status::kSuccess;

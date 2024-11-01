@@ -18,8 +18,8 @@ Status AggCrypto::PartialSign(
     }
     
     bls::AggBls().Sign(
-            elect_item->t(),
-            elect_item->n(),
+            // elect_item->t(),
+            // elect_item->n(),
             elect_item->local_sk(),
             msg_hash,
             &partial_sig->sig_);
@@ -93,7 +93,7 @@ Status AggCrypto::VerifyAndAggregateSig(
     }
 
     libff::alt_bn128_G1* agg_g1_sig;
-    bls::AggBls().Aggregate(elect_item->t(), elect_item->n(), partial_g1_sigs, agg_g1_sig);
+    bls::AggBls().Aggregate(partial_g1_sigs, agg_g1_sig);
     
     return Status::kSuccess;
 }

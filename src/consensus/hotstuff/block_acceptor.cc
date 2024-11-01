@@ -387,7 +387,7 @@ Status BlockAcceptor::addTxsToPool(
             if (keypair == nullptr || !keypair->IsValid()) {
                 auto elect_item = elect_info_->GetElectItemWithShardingId(
                     common::GlobalInfo::Instance()->network_id());
-                keypair = agg_bls.GenerateKeyPair(elect_item->t(), elect_item->n(), security_ptr_, prefix_db_);
+                keypair = agg_bls.GenerateKeyPair(security_ptr_, prefix_db_);
             }
 
             tx_ptr = std::make_shared<consensus::JoinElectTxItem>(
