@@ -144,6 +144,14 @@ private:
 
         return libff::alt_bn128_ate_reduced_pairing( hash, public_key ) ==
             libff::alt_bn128_ate_reduced_pairing( signature, libff::alt_bn128_G2::one() );
+    }
+
+    static bool fastAggregateVerify( const std::vector< libff::alt_bn128_G2 >& public_keys,
+        const std::string& message, const libff::alt_bn128_G1& signature ) {
+        libff::alt_bn128_G2 sum =
+            std::accumulate( public_keys.begin(), public_keys.end(), libff::alt_bn128_G2::zero() );
+
+        return coreVerify( sum, message, signature );
     }    
 };
 

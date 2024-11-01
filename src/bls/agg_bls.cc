@@ -64,7 +64,7 @@ bool AggBls::FastAggregateVerify(
         const std::vector<libff::alt_bn128_G2>& pks,
         const std::string& str_hash,
         const libff::alt_bn128_G1& signature) {
-    return libBLS::Bls::FastAggregateVerify(pks, str_hash, signature);
+    return fastAggregateVerify(pks, str_hash, signature);
 }
 
 bool AggBls::CoreVerify(
