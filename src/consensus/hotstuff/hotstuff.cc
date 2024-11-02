@@ -1190,6 +1190,8 @@ Status Hotstuff::Commit(
 
     auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
     if (latest_committed_block && latest_committed_block->qc().view() >= v_block->qc().view()) {
+        ZJC_DEBUG("commit failed latest view: %lu, noew view: %lu", 
+            latest_committed_block->qc().view(), v_block->qc().view());
         return Status::kSuccess;
     }
     
