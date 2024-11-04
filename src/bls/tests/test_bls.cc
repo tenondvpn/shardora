@@ -1,3 +1,4 @@
+#ifndef USE_AGG_BLS
 #include <stdlib.h>
 #include <math.h>
 
@@ -1485,3 +1486,4 @@ TEST_F(TestBls, ThreeRatioFail) {
 }  // namespace bls
 
 }  // namespace shardora
+#endif

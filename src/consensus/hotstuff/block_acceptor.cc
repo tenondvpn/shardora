@@ -382,14 +382,7 @@ Status BlockAcceptor::addTxsToPool(
         }
         case pools::protobuf::kJoinElect:
         {
-            auto agg_bls = bls::AggBls();
-            auto keypair = agg_bls.GetKeyPair(security_ptr_, prefix_db_);
-            if (keypair == nullptr || !keypair->IsValid()) {
-                auto elect_item = elect_info_->GetElectItemWithShardingId(
-                    common::GlobalInfo::Instance()->network_id());
-                keypair = agg_bls.GenerateKeyPair(elect_item->t(), elect_item->n(), security_ptr_, prefix_db_);
-            }
-
+            auto keypair = bls::AggBls::Instance()->GetKeyPair();
             tx_ptr = std::make_shared<consensus::JoinElectTxItem>(
                 *tx, 
                 account_mgr_, 

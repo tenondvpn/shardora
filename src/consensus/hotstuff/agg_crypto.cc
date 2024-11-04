@@ -17,9 +17,9 @@ Status AggCrypto::PartialSign(
         return Status::kError;
     }
     
-    bls::AggBls().Sign(
-            elect_item->t(),
-            elect_item->n(),
+    bls::AggBls::Sign(
+            // elect_item->t(),
+            // elect_item->n(),
             elect_item->local_sk(),
             msg_hash,
             &partial_sig->sig_);
@@ -81,21 +81,7 @@ Status AggCrypto::VerifyAndAggregateSig(
     for (auto partial_sig : collection_item->partial_sigs) {
         partial_sigs.push_back(&partial_sig);
     }
-    s = AggregateSigs(elect_item, partial_sigs, &agg_sig);
-    if (s != Status::kSuccess) {
-        return s;
-    } 
-
-    // Aggregate partial signatures
-    std::vector<libff::alt_bn128_G1> partial_g1_sigs;
-    for (auto partial_sig : collection_item->partial_sigs) {
-        partial_g1_sigs.push_back(partial_sig.signature());
-    }
-
-    libff::alt_bn128_G1* agg_g1_sig;
-    bls::AggBls().Aggregate(elect_item->t(), elect_item->n(), partial_g1_sigs, agg_g1_sig);
-    
-    return Status::kSuccess;
+    return AggregateSigs(partial_sigs, &agg_sig);
 }
 
 Status AggCrypto::VerifyQC(uint32_t sharding_id, const QC& qc) {    
@@ -104,6 +90,16 @@ Status AggCrypto::VerifyQC(uint32_t sharding_id, const QC& qc) {
         return Status::kError;
     }
     if (!agg_sig->IsValid()) {
+        return Status::kError;
+    }
+
+    // Check if QC participants length is enougth
+    auto elect_item = elect_info_->GetElectItem(sharding_id, qc.elect_height());
+    if (!elect_item) {
+        return Status::kError;
+    }
+
+    if (agg_sig->participants().size() < elect_item->t()) {
         return Status::kError;
     }
 
@@ -120,6 +116,16 @@ Status AggCrypto::VerifyTC(uint32_t sharding_id, const TC& tc) {
         return Status::kError;
     }
 
+    // Check if QC participants length is enougth
+    auto elect_item = elect_info_->GetElectItem(sharding_id, tc.elect_height());
+    if (!elect_item) {
+        return Status::kError;
+    }
+
+    if (agg_sig->participants().size() < elect_item->t()) {
+        return Status::kError;
+    }    
+
     auto tc_msg_hash = GetTCMsgHash(tc);
     return Verify(*agg_sig, tc_msg_hash, sharding_id, tc.elect_height());
 }
@@ -135,23 +141,28 @@ std::shared_ptr<AggregateQC> AggCrypto::CreateAggregateQC(
         return nullptr;
     }
     
-    AggregateSignature* agg_high_qc_sig;
-    Status s = AggregateSigs(elect_item, high_qc_sigs, agg_high_qc_sig);
+    AggregateSignature agg_high_qc_sig;
+    Status s = AggregateSigs(high_qc_sigs, &agg_high_qc_sig);
     if (s != Status::kSuccess) {
         return nullptr;
     }
 
     return std::make_shared<AggregateQC>(
             high_qcs,
-            std::make_shared<AggregateSignature>(*agg_high_qc_sig),
+            std::make_shared<AggregateSignature>(agg_high_qc_sig),
             view);
 }
 
 Status AggCrypto::VerifyAggregateQC(
         uint32_t sharding_id,
         const std::shared_ptr<AggregateQC>& agg_qc,
-        std::shared_ptr<QC> high_qc) {   
-    auto elect_item = GetLatestElectItem(sharding_id);
+        std::shared_ptr<QC> high_qc) {
+    if (agg_qc->QCs().size() == 0) {
+        return Status::kError;
+    }
+    // TODO 默认取 agg_qc 中第一个 qc 对应的 elect_item
+    auto elect_height = agg_qc->QCs()[0]->elect_height();
+    auto elect_item = GetElectItem(sharding_id, elect_height);
     if (!elect_item) {
         return Status::kError;
     }
@@ -173,7 +184,7 @@ Status AggCrypto::VerifyAggregateQC(
         return Status::kError;
     }
 
-    return BatchVerify(*agg_qc->Sig(), msg_hashes);
+    return BatchVerify(sharding_id, elect_height, *agg_qc->Sig(), msg_hashes);
 }
 
 Status AggCrypto::SignMessage(transport::MessagePtr& msg_ptr) {

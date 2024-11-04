@@ -1,4 +1,5 @@
 #include "init/network_init.h"
+#include <bls/agg_bls.h>
 #include <common/encode.h>
 #include <common/log.h>
 #include <common/utils.h>
@@ -102,6 +103,13 @@ int NetworkInit::Init(int argc, char** argv) {
         INIT_ERROR("parse params failed!");
         return kInitError;
     }
+
+#ifdef USE_AGG_BLS    
+    // Init agg bls
+    if (bls::AggBls::Instance()->Init(prefix_db_, security_) != common::kCommonSuccess) {
+        return kInitError;
+    }
+#endif
 
     std::string net_name;
     int genesis_check = GenesisCmd(parser_arg, net_name);
@@ -1012,7 +1020,7 @@ void NetworkInit::GetNetworkNodesFromConf(
                 secptr->SetPrivateKey(node_ptr->prikey);
                 node_ptr->pubkey = secptr->GetPublicKey();
                 node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
-                auto keypair = bls::AggBls().GenerateKeyPair(t, n, secptr, prefix_db_);
+                auto keypair = bls::AggBls::Instance()->GetKeyPair();
                 node_ptr->agg_bls_pk = keypair->pk();
                 node_ptr->agg_bls_pk_proof = keypair->proof();
                 root_genesis_nodes.push_back(node_ptr);                    
@@ -1039,7 +1047,7 @@ void NetworkInit::GetNetworkNodesFromConf(
                 secptr->SetPrivateKey(node_ptr->prikey);
                 node_ptr->pubkey = secptr->GetPublicKey();
                 node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
-                auto keypair = bls::AggBls().GenerateKeyPair(t, n, secptr, prefix_db_);
+                auto keypair = bls::AggBls::Instance()->GetKeyPair();
                 node_ptr->agg_bls_pk = keypair->pk();
                 node_ptr->agg_bls_pk_proof = keypair->proof();
                 cons_genesis_nodes.push_back(node_ptr);        

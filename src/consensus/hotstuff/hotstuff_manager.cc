@@ -168,8 +168,8 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::
     //     return Status::kInvalidArgument;
     // }
 #ifdef USE_AGG_BLS
-    AggregateSignature* agg_sig;
-    if (!agg_sig->LoadFromProto(vblock.qc().agg_sig())) {
+    AggregateSignature agg_sig;
+    if (!agg_sig.LoadFromProto(vblock.qc().agg_sig())) {
         return Status::kError;
     }
 
@@ -177,7 +177,7 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::
     auto hf = hotstuff(vblock.qc().pool_index());
     
     Status s = hf->crypto()->Verify(
-            *agg_sig,
+            agg_sig,
             view_block_hash,
             vblock.qc().network_id(), 
             vblock.qc().elect_height());

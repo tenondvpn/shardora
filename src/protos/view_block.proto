@@ -83,8 +83,8 @@ message TimeoutMessage {
     optional uint64 elect_height = 6;
     optional uint32 pool_idx = 7;
     optional uint32 leader_idx = 8;
-    // fast hotstuff
-    optional bytes view_sig_str = 9;
+    // for agg sig
+    optional AggregateSig view_sig = 9;
     optional QcItem high_qc = 10;
     optional AggregateSig high_qc_sig = 11;
 }

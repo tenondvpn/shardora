@@ -44,10 +44,10 @@ public:
             auto agg_bls_pk = (*members)[i]->agg_bls_pk;
             auto agg_bls_pk_proof = (*members)[i]->agg_bls_pk_proof;            
             // 检查 agg bls 的 Proof of Posession，确保公钥不是假的，规避密钥消除攻击
-            if (bls::AggBls().PopVerify(agg_bls_pk, agg_bls_pk_proof)) {
-                member_aggbls_pk_map_[(*members)[i]->index] = agg_bls_pk;
+            if (bls::AggBls::PopVerify(agg_bls_pk, agg_bls_pk_proof)) {
+                member_aggbls_pk_map_[(*members)[i]->index] = std::make_shared<libff::alt_bn128_G2>(agg_bls_pk);
             }
-            member_aggbls_pk_proof_map_[(*members)[i]->index] = agg_bls_pk_proof;
+            member_aggbls_pk_proof_map_[(*members)[i]->index] = std::make_shared<libff::alt_bn128_G1>(agg_bls_pk_proof);
 #endif
         }
 
@@ -115,16 +115,16 @@ public:
         return pool_consen_stat_map_[pool_idx];
     }
 
-    libff::alt_bn128_G2* agg_bls_pk(uint32_t member_idx) {
+    std::shared_ptr<libff::alt_bn128_G2> agg_bls_pk(uint32_t member_idx) {
         if (member_aggbls_pk_map_.find(member_idx) != member_aggbls_pk_map_.end()) {
-            return &member_aggbls_pk_map_[member_idx];
+            return member_aggbls_pk_map_[member_idx];
         }
         return nullptr;
     }
 
-    libff::alt_bn128_G1* agg_bls_pk_proof(uint32_t member_idx) {
+    std::shared_ptr<libff::alt_bn128_G1> agg_bls_pk_proof(uint32_t member_idx) {
         if (member_aggbls_pk_proof_map_.find(member_idx) != member_aggbls_pk_proof_map_.end()) {
-            return &member_aggbls_pk_proof_map_[member_idx];
+            return member_aggbls_pk_proof_map_[member_idx];
         }
         return nullptr;
     }
@@ -144,8 +144,8 @@ private:
     bool bls_valid_{false};
     uint32_t bls_t_{0};
     uint32_t bls_n_{0};
-    std::unordered_map<uint32_t, libff::alt_bn128_G2> member_aggbls_pk_map_;
-    std::unordered_map<uint32_t, libff::alt_bn128_G1> member_aggbls_pk_proof_map_;
+    std::unordered_map<uint32_t, std::shared_ptr<libff::alt_bn128_G2>> member_aggbls_pk_map_;
+    std::unordered_map<uint32_t, std::shared_ptr<libff::alt_bn128_G1>> member_aggbls_pk_proof_map_;
     
     std::unordered_map<uint32_t, std::shared_ptr<ConsensusStat>> pool_consen_stat_map_; 
 };

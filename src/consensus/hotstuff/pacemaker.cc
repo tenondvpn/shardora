@@ -150,12 +150,12 @@ void Pacemaker::OnLocalTimeout() {
     auto& msg = msg_ptr->header;
 
 #ifdef USE_AGG_BLS
-    AggregateSignature* partial_sig;
+    AggregateSignature partial_sig;
     if (crypto_->PartialSign(
             common::GlobalInfo::Instance()->network_id(),
             elect_item->ElectHeight(),
             tc_msg_hash,
-            partial_sig) != Status::kSuccess) {
+            &partial_sig) != Status::kSuccess) {
         ZJC_ERROR("sign message failed: %u, elect height: %lu, hash: %s",
             common::GlobalInfo::Instance()->network_id(),
             elect_item->ElectHeight(),
@@ -185,15 +185,15 @@ void Pacemaker::OnLocalTimeout() {
     view_block::protobuf::TimeoutMessage& timeout_msg = *msg.mutable_hotstuff_timeout_proto();
     timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());
 #ifdef USE_AGG_BLS
-    timeout_msg.set_view_sig_str(partial_sig->Serialize());
+    timeout_msg.mutable_view_sig()->CopyFrom(partial_sig.DumpToProto());
     // 对本节点的 high qc 签名
-    AggregateSignature* high_qc_sig;
+    AggregateSignature high_qc_sig;
     auto high_qc_msg_hash = GetQCMsgHash(HighQC()); 
     if (crypto_->PartialSign(
             common::GlobalInfo::Instance()->network_id(),
             elect_item->ElectHeight(),
             high_qc_msg_hash,
-            high_qc_sig) != Status::kSuccess) {
+            &high_qc_sig) != Status::kSuccess) {
         ZJC_ERROR("sign high qc failed: %u, elect height: %lu, hash: %s",
             common::GlobalInfo::Instance()->network_id(),
             elect_item->ElectHeight(),
@@ -201,7 +201,7 @@ void Pacemaker::OnLocalTimeout() {
         return;
     }
     timeout_msg.mutable_high_qc()->CopyFrom(HighQC());
-    timeout_msg.mutable_high_qc_sig()->CopyFrom(high_qc_sig->DumpToProto());
+    timeout_msg.mutable_high_qc_sig()->CopyFrom(high_qc_sig.DumpToProto());
 #else
     timeout_msg.set_sign_x(bls_sign_x);
     timeout_msg.set_sign_y(bls_sign_y);
@@ -343,22 +343,22 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     high_qc_sigs_.push_back(high_qc_sig_of_node);
     
     // 生成 TC
-    AggregateSignature* partial_sig;
-    if (!partial_sig->Unserialize(timeout_proto.view_sig_str())) {
+    AggregateSignature partial_sig;
+    if (!partial_sig.LoadFromProto(timeout_proto.view_sig())) {
         return;
     }
     
-    AggregateSignature* agg_sig;
+    AggregateSignature agg_sig;
     Status s = crypto_->VerifyAndAggregateSig(
             timeout_proto.elect_height(),
             timeout_proto.view(),
             timeout_proto.view_hash(),
-            *partial_sig,
-            *agg_sig);
+            partial_sig,
+            agg_sig);
     ZJC_DEBUG("====4.0 pool: %d, view: %d, member: %d, status: %d, hash64: %lu", 
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), s,
         msg_ptr->header.hash64());    
-    if (s != Status::kSuccess || !agg_sig->IsValid()) {
+    if (s != Status::kSuccess || !agg_sig.IsValid()) {
         return;
     }
 
@@ -371,7 +371,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         timeout_proto.elect_height(),
         timeout_proto.leader_idx(),
         &tc);
-    tc.mutable_agg_sig()->CopyFrom(agg_sig->DumpToProto());    
+    tc.mutable_agg_sig()->CopyFrom(agg_sig.DumpToProto());    
 
     auto agg_qc = crypto_->CreateAggregateQC(
             common::GlobalInfo::Instance()->network_id(),
