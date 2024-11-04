@@ -27,7 +27,6 @@ std::shared_ptr<AggBls::KeyPair> AggBls::GetKeyPair() {
 }
 
 void AggBls::Sign(
-        // uint32_t t, uint32_t n,
         const libff::alt_bn128_Fr &sec_key,
         const std::string &str_hash,
         libff::alt_bn128_G1* signature) {
@@ -47,30 +46,14 @@ bool AggBls::AggregateVerify(
         const std::vector<libff::alt_bn128_G2>& pks,
         const std::vector<std::string>& str_hashes,
         const libff::alt_bn128_G1& agg_sig) {
-    // std::vector<std::shared_ptr<std::array<uint8_t, 32>>> hash_bytes_arrs;
-
-    // for (uint32_t i = 0; i < str_hashes.size(); i++) {
-    //     auto str_hash = str_hashes[i];
-        
-    //     auto hash_bytes_arr = std::make_shared<std::array<uint8_t, 32>>();
-    //     auto hex_str = common::Encode::HexEncode(str_hash);
-    //     uint64_t bin_len;
-    //     if ( !libBLS::ThresholdUtils::hex2carray(hex_str.c_str(), &bin_len, hash_bytes_arr->data())) {
-    //         throw std::runtime_error("Invalid hash");
-    //     }        
-    //     hash_bytes_arrs.push_back(hash_bytes_arr);
-    // }
-    // return libBLS::Bls::AggregatedVerification(hash_bytes_arrs, std::vector<libff::alt_bn128_G1>{signature}, agg_pk);
     return aggregatedVerification(str_hashes, agg_sig, pks);
 }
 
 // Fastaggregateverify 使用公钥聚合，快速验证 e(P, Q) = e(G, S)
 bool AggBls::FastAggregateVerify(
-        // uint32_t t, uint32_t n,
         const std::vector<libff::alt_bn128_G2>& pks,
         const std::string& str_hash,
         const libff::alt_bn128_G1& signature) {
-    // return fastAggregateVerify(pks, str_hash, signature);
     return libBLS::Bls::FastAggregateVerify(pks, common::Encode::HexEncode(str_hash), signature);
 }
 
