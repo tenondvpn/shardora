@@ -42,28 +42,29 @@ void AggBls::Aggregate(
     *signature = libBLS::Bls::Aggregate(sigs);
 }
 
+// Aggregateverify 不同的消息，没办法聚合公钥，比较慢，验证 e(P1, Q1)e(P2, Q2)... = e(G, S)
 bool AggBls::AggregateVerify(
         const std::vector<libff::alt_bn128_G2>& pks,
         const std::vector<std::string>& str_hashes,
-        const libff::alt_bn128_G1& signature) {
-    std::vector<std::shared_ptr<std::array<uint8_t, 32>>> hash_bytes_arrs;
+        const libff::alt_bn128_G1& agg_sig) {
+    // std::vector<std::shared_ptr<std::array<uint8_t, 32>>> hash_bytes_arrs;
 
-    for (uint32_t i = 0; i < str_hashes.size(); i++) {
-        auto str_hash = str_hashes[i];
+    // for (uint32_t i = 0; i < str_hashes.size(); i++) {
+    //     auto str_hash = str_hashes[i];
         
-        auto hash_bytes_arr = std::make_shared<std::array<uint8_t, 32>>();
-        auto hex_str = common::Encode::HexEncode(str_hash);
-        uint64_t bin_len;
-        if ( !libBLS::ThresholdUtils::hex2carray(hex_str.c_str(), &bin_len, hash_bytes_arr->data())) {
-            throw std::runtime_error("Invalid hash");
-        }        
-        hash_bytes_arrs.push_back(hash_bytes_arr);
-    }
-
-    auto agg_pk = std::accumulate(pks.begin(), pks.end(), libff::alt_bn128_G2::zero());
-    return libBLS::Bls::AggregatedVerification(hash_bytes_arrs, std::vector<libff::alt_bn128_G1>{signature}, agg_pk);
+    //     auto hash_bytes_arr = std::make_shared<std::array<uint8_t, 32>>();
+    //     auto hex_str = common::Encode::HexEncode(str_hash);
+    //     uint64_t bin_len;
+    //     if ( !libBLS::ThresholdUtils::hex2carray(hex_str.c_str(), &bin_len, hash_bytes_arr->data())) {
+    //         throw std::runtime_error("Invalid hash");
+    //     }        
+    //     hash_bytes_arrs.push_back(hash_bytes_arr);
+    // }
+    // return libBLS::Bls::AggregatedVerification(hash_bytes_arrs, std::vector<libff::alt_bn128_G1>{signature}, agg_pk);
+    return aggregatedVerification(str_hashes, agg_sig, pks);
 }
 
+// Fastaggregateverify 使用公钥聚合，快速验证 e(P, Q) = e(G, S)
 bool AggBls::FastAggregateVerify(
         // uint32_t t, uint32_t n,
         const std::vector<libff::alt_bn128_G2>& pks,
