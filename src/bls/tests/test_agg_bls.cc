@@ -81,6 +81,8 @@ TEST_F(TestAggBls, AggregateVerify) {
         ASSERT_TRUE(kp->IsValid());
         kps.push_back(*kp);
     }
+
+    ASSERT_TRUE(kps[0].pk() != kps[1].pk());
     
     std::vector<libff::alt_bn128_G1> g1_sigs;
     std::vector<std::string> str_hashes;
