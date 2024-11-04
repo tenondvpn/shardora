@@ -104,12 +104,10 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
-#ifdef USE_AGG_BLS    
     // Init agg bls
     if (bls::AggBls::Instance()->Init(prefix_db_, security_) != common::kCommonSuccess) {
         return kInitError;
     }
-#endif
 
     std::string net_name;
     int genesis_check = GenesisCmd(parser_arg, net_name);
