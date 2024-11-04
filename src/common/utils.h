@@ -375,6 +375,23 @@ bool Retry(Func func, int maxAttempts, std::chrono::milliseconds delay, Args... 
     return false;
 }
 
+#ifndef NDEBUG
+#define CheckThreadIdValid() { \
+    static uint64_t count = 0; \
+    ++count; \
+    static std::thread::id init_thread_id = std::this_thread::get_id(); \
+    auto now_thread_id = std::this_thread::get_id(); \
+    ZJC_DEBUG("now handle thread id: %u, old: %u, count: %d", now_thread_id, init_thread_id, count); \
+    if (count > 3) { \
+        assert(init_thread_id == now_thread_id); \
+    } else { \
+        init_thread_id = now_thread_id; \
+    } \
+}
+#else
+#define CheckThreadIdValid()
+#endif
+
 }  // namespace common
 
 }  // namespace shardora

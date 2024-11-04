@@ -20,6 +20,7 @@ int WsServer::Init(
         std::shared_ptr<protos::PrefixDb> prefix_db, 
         std::shared_ptr<security::Security> security,
         transport::MultiThreadHandler* net_handler) {
+    c2c_contract_addr_ = "48e1eab96c9e759daa3aff82b40e77cd615a41d1";
     prefix_db_ = prefix_db;
     security_ = security;
     net_handler_ = net_handler;
@@ -84,7 +85,7 @@ void WsServer::BroadcastTxInfo() {
 void WsServer::GetAllTxs() {
     uint32_t got_count = 0;
     do {
-        std::string cmd = "select  \"from\", to, amount, balance, height, to_add, timestamp, status, type from zjc_ck_transaction_table where shard_id = 3 and type != 8 and balance > 0 and balance < 10000000000000 and timestamp > " + std::to_string(latest_timestamp_) + " limit 1000;";
+        std::string cmd = "select  \"from\", to, amount, balance, height, to_add, timestamp, status, type from zjc_ck_transaction_table where shard_id = 3 and type != 8 and balance > 0 and timestamp > " + std::to_string(latest_timestamp_) + " limit 1000;";
         uint32_t all_transactions = 0;
         try {
             clickhouse::Client ck_client0(clickhouse::ClientOptions().
@@ -132,7 +133,7 @@ void WsServer::GetAllTxs() {
 }
 
 void WsServer::GetTxs(ws::protobuf::WsMessage& ws_tx_res) {
-    std::string cmd = "select  \"from\", to, amount, balance, height, to_add, timestamp, status, type from zjc_ck_transaction_table where shard_id = 3 and type != 8 and balance > 0 and balance < 10000000000000 and timestamp > " + std::to_string(latest_timestamp_) + " limit 1000;";
+    std::string cmd = "select  \"from\", to, amount, balance, height, to_add, timestamp, status, type from zjc_ck_transaction_table where shard_id = 3 and type != 8 and balance > 0 and timestamp > " + std::to_string(latest_timestamp_) + " limit 1000;";
     uint32_t all_transactions = 0;
     try {
         clickhouse::Client ck_client0(clickhouse::ClientOptions().
@@ -239,6 +240,7 @@ int WsServer::GetAllC2cs() {
         std::string cmd = "select seller, buyer, amount, receivable, all, now, mchecked, schecked, reported, orderId, height from zjc_ck_c2c_table where contract='" + 
             c2c_contract_addr() + "' and height > " + std::to_string(max_c2c_height_) +  " order by height asc limit 1000;";
         uint32_t all_transactions = 0;
+        ZJC_INFO("run cmd: %s, get count: %d", cmd.c_str(), 0);
         try {
             clickhouse::Client ck_client0(clickhouse::ClientOptions().
                 SetHost(common::GlobalInfo::Instance()->ck_host()).
@@ -383,7 +385,8 @@ void WsServer::CheckC2cStatus(ws::protobuf::WsMessage& ws_tx_res) {
     for (auto iter = sell_map.begin(); iter != sell_map.end(); ++iter) {
         auto old_status = iter->second->status();
         ZJC_DEBUG("get sell status %s %d update tm: %lu, peariod: %lu, now tm: %lu", 
-            common::Encode::HexEncode(iter->first).c_str(), old_status, iter->second->timestamp(), c2c_timeout_ms(), now_tm);
+            common::Encode::HexEncode(iter->first).c_str(), old_status, 
+            iter->second->timestamp(), c2c_timeout_ms(), now_tm);
         if (old_status == ws::protobuf::kSellCreated) {
             continue;
         }
@@ -751,7 +754,7 @@ int WsServer::CreateTransactionWithAttr(
     msg.set_des_dht_key(std::string(dht_key.dht_key, sizeof(dht_key.dht_key)));
     msg.set_type(7);
     transport::TcpTransport::Instance()->SetMessageHash(msg);
-    auto* broadcast = msg.mutable_broadcast();
+    // auto* broadcast = msg.mutable_broadcast();
     auto new_tx = msg.mutable_tx_proto();
     new_tx->set_gid(tx_info.gid());
     new_tx->set_pubkey(tx_info.pubkey());
@@ -798,9 +801,11 @@ int WsServer::CreateTransactionWithAttr(
             tmp_sign_v,
             common::Encode::HexEncode(tx_info.pubkey()).c_str());
         return 1;
+
     }
 
-    msg.set_sign(sign);
+    new_tx->set_sign(sign);
+    // msg.set_sign(sign);
     return 0;
 }
 
@@ -1462,7 +1467,8 @@ void WsServer::Transaction(websocketpp::connection_hdl hdl, const std::string& e
         }
 
         transport::TcpTransport::Instance()->Send(item[0], port, chain_msg);
-        ZJC_DEBUG("success send chain message: %s:%d", item[0], port);
+        ZJC_DEBUG("success send chain message: %s:%d, gid: %s, hash64: %lu",
+            item[0], port, common::Encode::HexEncode(tx.gid()).c_str(), chain_msg.hash64());
     }
 
     C2cResponse(hdl, c2c_msg.msg_id(), 0, "ok");
