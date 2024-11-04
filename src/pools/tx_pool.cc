@@ -11,21 +11,6 @@
 #include "pools/tx_pool_manager.h"
 #include "pools/tx_utils.h"
 
-#ifndef NDEBUG
-#define CheckThreadIdValid() { \
-    auto now_thread_id = std::this_thread::get_id(); \
-    if (local_thread_id_ != now_thread_id) { ++local_thread_id_count_; }\
-    ZJC_DEBUG("now handle thread id: %u, old: %u, count: %d, pool: %d", now_thread_id, local_thread_id_, local_thread_id_count_, pool_index_); \
-    if (local_thread_id_count_ > 64) { \
-        assert(local_thread_id_ == now_thread_id); \
-    } else { \
-        local_thread_id_ = now_thread_id; \
-    } \
-}
-#else
-#define CheckThreadIdValid()
-#endif
-
 namespace shardora {
 
 namespace pools {
@@ -51,6 +36,7 @@ void TxPool::Init(
 }
 
 void TxPool::InitHeightTree() {
+    CheckThreadIdValid();
     if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
         return;
     }

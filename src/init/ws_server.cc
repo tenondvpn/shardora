@@ -385,7 +385,8 @@ void WsServer::CheckC2cStatus(ws::protobuf::WsMessage& ws_tx_res) {
     for (auto iter = sell_map.begin(); iter != sell_map.end(); ++iter) {
         auto old_status = iter->second->status();
         ZJC_DEBUG("get sell status %s %d update tm: %lu, peariod: %lu, now tm: %lu", 
-            common::Encode::HexEncode(iter->first).c_str(), old_status, iter->second->timestamp(), c2c_timeout_ms(), now_tm);
+            common::Encode::HexEncode(iter->first).c_str(), old_status, 
+            iter->second->timestamp(), c2c_timeout_ms(), now_tm);
         if (old_status == ws::protobuf::kSellCreated) {
             continue;
         }
