@@ -150,7 +150,7 @@ private:
 
             auto hash_g1 = libBLS::ThresholdUtils::HashtoG1(common::Encode::HexEncode(str_hashes[i]));
             aggregated_hash = aggregated_hash + hash_g1;
-            right = right * libff::alt_bn128_ate_reduced_pairing(hash_g1, pk); 
+            right = right * libff::alt_bn128_ate_reduced_pairing(hash_g1, pks[i]); 
         }
 
         return right == libff::alt_bn128_ate_reduced_pairing(agg_sig, libff::alt_bn128_G2::one());

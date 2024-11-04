@@ -95,6 +95,7 @@ TEST_F(TestAggBls, AggregateVerify) {
         
         g1_sigs.push_back(g1_sig);
         str_hashes.push_back(str_hash);
+        pks.push_back(kp.pk());
     }
 
     libff::alt_bn128_G1 g1_sig_agg = libff::alt_bn128_G1::zero();
