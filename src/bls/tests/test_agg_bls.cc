@@ -80,7 +80,6 @@ TEST_F(TestAggBls, AggregateVerify) {
         auto kp = bls::AggBls::GenerateKeyPair();
         ASSERT_TRUE(kp->IsValid());
         kps.push_back(*kp);
-        pks.push_back(kp->pk());
     }
     
     std::vector<libff::alt_bn128_G1> g1_sigs;
@@ -91,12 +90,14 @@ TEST_F(TestAggBls, AggregateVerify) {
         libff::alt_bn128_G1 g1_sig = libff::alt_bn128_G1::zero();
         bls::AggBls::Sign(kp.sk_, str_hash, &g1_sig);
         ASSERT_TRUE(g1_sig != libff::alt_bn128_G1::zero());
+        
         g1_sigs.push_back(g1_sig);
         str_hashes.push_back(str_hash);
     }
 
     libff::alt_bn128_G1 g1_sig_agg = libff::alt_bn128_G1::zero();
     bls::AggBls::Aggregate(g1_sigs, &g1_sig_agg);
+    ASSERT_TRUE(g1_sig_agg != libff::alt_bn128_G1::zero());
 
     bool ok = bls::AggBls::AggregateVerify(pks, str_hashes, g1_sig_agg);
     ASSERT_TRUE(ok);

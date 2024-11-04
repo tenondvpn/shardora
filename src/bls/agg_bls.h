@@ -112,8 +112,6 @@ public:
             const std::string& str_hash,
             const libff::alt_bn128_G1& signature);
 
-    static libff::alt_bn128_G2 AggregatePk(const std::vector<libff::alt_bn128_G2>& pks);
-
     static bool PopVerify(
         const libff::alt_bn128_G2& public_key,
         const libff::alt_bn128_G1& proof);    
@@ -127,68 +125,7 @@ private:
     AggBls() {
         agg_bls_sk_ = libff::alt_bn128_Fr::zero();        
     }
-    ~AggBls() {}
-
-    // 源库函数有 bug
-    // libBLS::bls 中的 CoreVerify 使用了 ThresholdUtils::HashtoG1 做哈希导致报错
-    static bool coreVerify(
-            const libff::alt_bn128_G2& public_key,
-            const std::string& message,
-            const libff::alt_bn128_G1& signature ) {
-        if ( !libBLS::ThresholdUtils::ValidateKey(public_key) || !libBLS::ThresholdUtils::ValidateKey(signature) ) {
-            throw libBLS::ThresholdUtils::IsNotWellFormed( "Either signature or public key is malicious" );
-        }
-
-        // libff::alt_bn128_G1 hash = libBLS::ThresholdUtils::HashtoG1(message);
-        libff::alt_bn128_G1 hash = libBLS::Bls::Hashing(message);
-
-        return libff::alt_bn128_ate_reduced_pairing( hash, public_key ) ==
-            libff::alt_bn128_ate_reduced_pairing( signature, libff::alt_bn128_G2::one() );
-    }
-
-    static bool fastAggregateVerify( const std::vector< libff::alt_bn128_G2 >& public_keys,
-        const std::string& message, const libff::alt_bn128_G1& signature ) {
-        libff::alt_bn128_G2 sum =
-            std::accumulate( public_keys.begin(), public_keys.end(), libff::alt_bn128_G2::zero() );
-
-        return coreVerify( sum, message, signature );
-    }
-
-    static bool aggregatedVerification(
-            std::vector<std::string> msgs,
-            const std::vector< libff::alt_bn128_G1 > sign,
-            const libff::alt_bn128_G2 public_key ) {
-        for ( auto& sig : sign ) {
-            if ( !sig.is_well_formed() ) {
-                throw libBLS::ThresholdUtils::IsNotWellFormed(
-                        "Error, signature does not lie on the alt_bn128 curve" );
-            }
-            if ( libff::alt_bn128_modulus_r * sig != libff::alt_bn128_G1::zero() ) {
-                throw libBLS::ThresholdUtils::IsNotWellFormed( "Error, signature is not member of G1" );
-            }
-        }
-
-        if ( !public_key.is_well_formed() ) {
-            throw libBLS::ThresholdUtils::IsNotWellFormed( "Error, public key is invalid" );
-        }
-
-        if ( !libBLS::ThresholdUtils::ValidateKey( public_key ) ) {
-            throw libBLS::ThresholdUtils::IsNotWellFormed( "Error, public key is not member of G2" );
-        }
-
-        libff::alt_bn128_G1 aggregated_hash = libff::alt_bn128_G1::zero();
-        for (auto& msg : msgs ) {
-            aggregated_hash = aggregated_hash + libBLS::Bls::Hashing(msg);
-        }
-
-        libff::alt_bn128_G1 aggregated_sig = libff::alt_bn128_G1::zero();
-        for ( libff::alt_bn128_G1 sig : sign ) {
-            aggregated_sig = aggregated_sig + sig;
-        }
-
-        return ( libff::alt_bn128_ate_reduced_pairing( aggregated_sig, libff::alt_bn128_G2::one() ) ==
-            libff::alt_bn128_ate_reduced_pairing( aggregated_hash, public_key ) );        
-    }    
+    ~AggBls() {}   
 };
 
 }
