@@ -36,7 +36,7 @@ function init_private_key() {
     //const privateKeyBuf = Secp256k1.uint256("fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971", 16)
     //manager
     //const privateKeyBuf = Secp256k1.uint256("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 16)
-    const privateKeyBuf = Secp256k1.uint256("9f5acebfa8f32ad4ce046aaa9aaa93406fcc0c91f66543098ac99d64beee7508", 16)
+    const privateKeyBuf = Secp256k1.uint256("863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 16)
     self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
     self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
     var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))

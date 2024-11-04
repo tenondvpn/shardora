@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 /**
  * @title NMFT: A Copyright-Preserving Data Trading Protocol
@@ -18,11 +18,11 @@ pragma solidity ^0.8.0;
  * For more details, please refer to the original research paper.
  */
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import "./openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "./openzeppelin/contracts/access/Ownable.sol";
+import "./openzeppelin/contracts/utils/Counters.sol";
+import "./openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "./openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 contract NMFT is ERC721URIStorage, Ownable, ReentrancyGuard {
     using Counters for Counters.Counter;
