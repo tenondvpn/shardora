@@ -744,12 +744,14 @@ bool ClickHouseClient::CreateBlsElectInfoTable() {
     std::string create_cmd = std::string("CREATE TABLE if not exists ") + kClickhouseBlsElectInfo + " ( "
         "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
         "`elect_height` UInt64 COMMENT '' CODEC(T64, LZ4), "
+        "`shard_id` UInt32 COMMENT '' CODEC(T64, LZ4), "
         "`member_idx` UInt32 COMMENT '' CODEC(T64, LZ4), "
         "`contribution_map` String COMMENT  '' CODEC(LZ4),"
         "`local_sk` String COMMENT  '' CODEC(LZ4),"
         "`common_pk` String COMMENT  '' CODEC(LZ4)"
         ") "
         "ENGINE = ReplacingMergeTree "
+        "PARTITION BY(shard_id) "
         "ORDER BY(elect_height, member_idx) "
         "SETTINGS index_granularity = 8192;";
     clickhouse::Client ck_client(clickhouse::ClientOptions().
@@ -764,12 +766,14 @@ bool ClickHouseClient::CreateBlsElectInfoTable() {
 bool ClickHouseClient::InsertBlsElectInfo(const BlsElectInfo& info) {
     auto elect_height = std::make_shared<clickhouse::ColumnUInt64>();
     auto member_idx = std::make_shared<clickhouse::ColumnUInt32>();
+    auto shard_id = std::make_shared<clickhouse::ColumnUInt32>();
     auto contribution_map = std::make_shared<clickhouse::ColumnString>();
     auto local_sk = std::make_shared<clickhouse::ColumnString>();
     auto common_pk = std::make_shared<clickhouse::ColumnString>();
 
     elect_height->Append(info.elect_height);
     member_idx->Append(info.member_idx);
+    shard_id->Append(info.shard_id);
     contribution_map->Append(info.contribution_map);
     local_sk->Append(info.local_sk);
     common_pk->Append(info.common_pk);
@@ -777,6 +781,7 @@ bool ClickHouseClient::InsertBlsElectInfo(const BlsElectInfo& info) {
     clickhouse::Block item;
     item.AppendColumn("elect_height", elect_height);
     item.AppendColumn("member_idx", member_idx);
+    item.AppendColumn("shard_id", shard_id);
     item.AppendColumn("contribution_map", contribution_map);
     item.AppendColumn("local_sk", local_sk);
     item.AppendColumn("common_pk", common_pk);
