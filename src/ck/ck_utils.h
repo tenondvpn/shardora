@@ -18,6 +18,7 @@ static const std::string kClickhousePoolStatisticTableName = "zjc_ck_pool_statis
 static const std::string kClickhouseC2cTableName = "zjc_ck_c2c_table";
 static const std::string kClickhousePrepaymentTableName = "zjc_ck_prepayment_table";
 static const std::string kClickhouseBlsElectInfo = "bls_elect_info";
+static const std::string kClickhouseBlsBlockInfo = "bls_block_info";
 
 struct BlsElectInfo {
     uint64_t elect_height;
@@ -25,6 +26,16 @@ struct BlsElectInfo {
     uint32_t shard_id;
     std::string contribution_map;
     std::string local_sk;
+    std::string common_pk;
+};
+
+struct BlsBlockInfo {
+    uint64_t elect_height;
+    uint64_t height;
+    uint32_t shard_id;
+    uint32_t leader_idx;
+    std::string partial_sign_map;
+    std::string reconstructed_sign;
     std::string common_pk;
 };
 

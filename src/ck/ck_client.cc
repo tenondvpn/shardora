@@ -791,6 +791,64 @@ bool ClickHouseClient::InsertBlsElectInfo(const BlsElectInfo& info) {
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
+    ck_client.Insert(kClickhouseBlsElectInfo, item);
+}
+
+bool ClickHouseClient::CreateBlsBlockInfoTable() {
+    std::string create_cmd = std::string("CREATE TABLE if not exists ") + kClickhouseBlsBlockInfo + " ( "
+        "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
+        "`elect_height` UInt64 COMMENT '' CODEC(T64, LZ4), "
+        "`height` UInt64 COMMENT '' CODEC(T64, LZ4), "
+        "`shard_id` UInt32 COMMENT '' CODEC(T64, LZ4), "
+        "`leader_idx` UInt32 COMMENT '' CODEC(T64, LZ4), "
+        "`partial_sign_map` String COMMENT  '' CODEC(LZ4),"
+        "`reconstructed_sign` String COMMENT  '' CODEC(LZ4),"
+        "`common_pk` String COMMENT  '' CODEC(LZ4)"
+        ") "
+        "ENGINE = ReplacingMergeTree "
+        "PARTITION BY(shard_id) "
+        "ORDER BY(elect_height, height) "
+        "SETTINGS index_granularity = 8192;";
+    clickhouse::Client ck_client(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
+    ck_client.Execute(create_cmd);
+    return true;
+}
+
+bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) {
+    auto elect_height = std::make_shared<clickhouse::ColumnUInt64>();
+    auto height = std::make_shared<clickhouse::ColumnUInt64>();
+    auto shard_id = std::make_shared<clickhouse::ColumnUInt32>();
+    auto leader_idx = std::make_shared<clickhouse::ColumnUInt32>();
+    auto partial_sign_map = std::make_shared<clickhouse::ColumnString>();
+    auto reconstructed_sign = std::make_shared<clickhouse::ColumnString>();
+    auto common_pk = std::make_shared<clickhouse::ColumnString>();
+
+    elect_height->Append(info.elect_height);
+    height->Append(info.height);
+    shard_id->Append(info.shard_id);
+    leader_idx->Append(info.leader_idx);
+    partial_sign_map->Append(info.partial_sign_map);
+    reconstructed_sign->Append(info.reconstructed_sign);
+    common_pk->Append(info.common_pk);
+    
+    clickhouse::Block item;
+    item.AppendColumn("elect_height", elect_height);
+    item.AppendColumn("height", height);
+    item.AppendColumn("shard_id", shard_id);
+    item.AppendColumn("leader_idx", leader_idx);
+    item.AppendColumn("partial_sign_map", partial_sign_map);
+    item.AppendColumn("reconstructed_sign", reconstructed_sign);
+    item.AppendColumn("common_pk", common_pk);
+    
+    clickhouse::Client ck_client(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client.Insert(kClickhouseBlsElectInfo, item);    
 }
 
@@ -805,6 +863,7 @@ bool ClickHouseClient::CreateTable(bool statistic, std::shared_ptr<db::Db> db_pt
     CreateC2cTable();
     CreatePrepaymentTable();
     CreateBlsElectInfoTable();
+    CreateBlsBlockInfoTable();
     if (statistic) {
         statistic_tick_.CutOff(5000000l, std::bind(&ClickHouseClient::TickStatistic, this));
     }
