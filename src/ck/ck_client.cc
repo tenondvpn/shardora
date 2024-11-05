@@ -792,6 +792,7 @@ bool ClickHouseClient::InsertBlsElectInfo(const BlsElectInfo& info) {
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client.Insert(kClickhouseBlsElectInfo, item);
+    return true;
 }
 
 bool ClickHouseClient::CreateBlsBlockInfoTable() {
@@ -849,7 +850,8 @@ bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) {
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
-    ck_client.Insert(kClickhouseBlsBlockInfo, item);    
+    ck_client.Insert(kClickhouseBlsBlockInfo, item);
+    return true;
 }
 
 bool ClickHouseClient::CreateTable(bool statistic, std::shared_ptr<db::Db> db_ptr) try {
