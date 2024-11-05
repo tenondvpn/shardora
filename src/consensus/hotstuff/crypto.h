@@ -126,6 +126,9 @@ public:
         auto partial_signs = bls_collection_item(msg_hash)->partial_signs;
         for (uint32_t i = 0; i < elect_item->n(); i++) {
             auto sign = partial_signs[i];
+            if (!sign) {
+                continue;
+            }
             ret += serializedSign(*sign);
         }
 

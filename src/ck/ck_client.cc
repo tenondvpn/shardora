@@ -807,7 +807,7 @@ bool ClickHouseClient::CreateBlsBlockInfoTable() {
         ") "
         "ENGINE = ReplacingMergeTree "
         "PARTITION BY(shard_id) "
-        "ORDER BY(elect_height, height) "
+        "ORDER BY(elect_height, view) "
         "SETTINGS index_granularity = 8192;";
     clickhouse::Client ck_client(clickhouse::ClientOptions().
         SetHost(common::GlobalInfo::Instance()->ck_host()).
