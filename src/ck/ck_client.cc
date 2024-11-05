@@ -1,5 +1,6 @@
 #include "ck/ck_client.h"
 
+#include <ck/ck_utils.h>
 #include <google/protobuf/util/json_util.h>
 #include <json/json.hpp>
 
@@ -739,6 +740,54 @@ bool ClickHouseClient::CreatePrepaymentTable() {
     return true;
 }
 
+bool ClickHouseClient::CreateBlsElectInfoTable() {
+    std::string create_cmd = std::string("CREATE TABLE if not exists ") + kClickhouseBlsElectInfo + " ( "
+        "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
+        "`elect_height` UInt64 COMMENT '' CODEC(T64, LZ4), "
+        "`member_idx` UInt32 COMMENT '' CODEC(T64, LZ4), "
+        "`contribution_map` String COMMENT  '' CODEC(LZ4),"
+        "`local_sk` String COMMENT  '' CODEC(LZ4),"
+        "`common_pk` String COMMENT  '' CODEC(LZ4)"
+        ") "
+        "ENGINE = ReplacingMergeTree "
+        "ORDER BY(elect_height, member_idx) "
+        "SETTINGS index_granularity = 8192;";
+    clickhouse::Client ck_client(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
+    ck_client.Execute(create_cmd);
+    return true;    
+}
+
+bool ClickHouseClient::InsertBlsElectInfo(const BlsElectInfo& info) {
+    auto elect_height = std::make_shared<clickhouse::ColumnUInt64>();
+    auto member_idx = std::make_shared<clickhouse::ColumnUInt32>();
+    auto contribution_map = std::make_shared<clickhouse::ColumnString>();
+    auto local_sk = std::make_shared<clickhouse::ColumnString>();
+    auto common_pk = std::make_shared<clickhouse::ColumnString>();
+
+    elect_height->Append(info.elect_height);
+    member_idx->Append(info.member_idx);
+    contribution_map->Append(info.contribution_map);
+    local_sk->Append(info.local_sk);
+    common_pk->Append(info.common_pk);
+    
+    clickhouse::Block item;
+    item.AppendColumn("elect_height", elect_height);
+    item.AppendColumn("member_idx", member_idx);
+    item.AppendColumn("contribution_map", contribution_map);
+    item.AppendColumn("local_sk", local_sk);
+    item.AppendColumn("common_pk", common_pk);
+    
+    clickhouse::Client ck_client(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
+    ck_client.Insert(kClickhouseBlsElectInfo, item);    
+}
 
 bool ClickHouseClient::CreateTable(bool statistic, std::shared_ptr<db::Db> db_ptr) try {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_ptr);
@@ -750,6 +799,7 @@ bool ClickHouseClient::CreateTable(bool statistic, std::shared_ptr<db::Db> db_pt
     CreatePrivateKeyTable();
     CreateC2cTable();
     CreatePrepaymentTable();
+    CreateBlsElectInfoTable();
     if (statistic) {
         statistic_tick_.CutOff(5000000l, std::bind(&ClickHouseClient::TickStatistic, this));
     }

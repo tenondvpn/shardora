@@ -17,6 +17,15 @@ static const std::string kClickhouseShardStatisticTableName = "zjc_ck_shard_stat
 static const std::string kClickhousePoolStatisticTableName = "zjc_ck_pool_statistic_table";
 static const std::string kClickhouseC2cTableName = "zjc_ck_c2c_table";
 static const std::string kClickhousePrepaymentTableName = "zjc_ck_prepayment_table";
+static const std::string kClickhouseBlsElectInfo = "bls_elect_info";
+
+struct BlsElectInfo {
+    uint64_t elect_height;
+    uint32_t member_idx;
+    std::string contribution_map;
+    std::string local_sk;
+    std::string common_pk;
+};
 
 };  // namespace ck
 

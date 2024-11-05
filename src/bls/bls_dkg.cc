@@ -1,5 +1,6 @@
 #include "bls/bls_dkg.h"
 
+#include <ck/ck_utils.h>
 #include <vector>
 #include <fstream>
 
@@ -42,6 +43,7 @@ void BlsDkg::Init(
     common_public_key_ = common_public_key;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+    ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "", db, nullptr);
 }
 
 void BlsDkg::Destroy() {
@@ -152,7 +154,7 @@ void BlsDkg::PopBlsMessage() {
             break;
         }
 
-        // HandleBlsMessage(msg_ptr);
+        HandleBlsMessage(msg_ptr);
     }
 }
 
@@ -275,6 +277,7 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
+    // xufeisofly 保存多项式承诺
     prefix_db_->AddBlsVerifyG2((*members_)[bls_msg.index()]->id, bls_msg.verify_brd());
     ZJC_DEBUG("save verify g2 success local: %d, %lu, %u, %u, %s, %s",
         local_member_index_, elect_hegiht_, bls_msg.index(), 0,
@@ -469,6 +472,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
         min_aggree_member_count_);
     // swap
+    // xufeisofly sec_key 是对应节点的私钥分量
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, bls_msg.index(), sec_key);
     valid_swapkey_set_.insert(bls_msg.index());
@@ -863,6 +867,7 @@ void BlsDkg::FinishBroadcast() try {
     }
 
     libBLS::Dkg dkg(min_aggree_member_count_, member_count_);
+    // xufeisofly 秘钥轮换后产生的本地私钥和公钥
     local_sec_key_ = dkg.SecretKeyShareCreate(valid_seck_keys);
     local_publick_key_ = dkg.GetPublicKeyFromSecretKey(local_sec_key_);
     DumpLocalPrivateKey();
@@ -883,6 +888,7 @@ void BlsDkg::DumpLocalPrivateKey() {
         return;
     }
 
+    // xufeisofly 保存加密后的私钥
     prefix_db_->SaveBlsPrikey(
         elect_hegiht_,
         common::GlobalInfo::Instance()->network_id(),
@@ -950,6 +956,15 @@ void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {
         bls_mgr_->HandleMessage(msg_ptr);
     }
 #endif
+    
+    // store to ck
+    ck::BlsElectInfo info;
+    info.elect_height = elect_hegiht_;
+    info.member_idx = local_member_index_;
+    info.contribution_map = BlsDkg::serializeSkContribution(local_src_secret_key_contribution_);
+    info.local_sk = BlsDkg::serializeLocalSk(local_sec_key_);
+    info.common_pk = BlsDkg::serializeCommonPk(common_public_key_);
+    ck_client_->InsertBlsElectInfo(info);
 }
 
 void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
