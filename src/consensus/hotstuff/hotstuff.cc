@@ -1,3 +1,4 @@
+#include <bls/bls_dkg.h>
 #include <common/encode.h>
 #include <common/log.h>
 #include <common/defer.h>
@@ -989,7 +990,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         info.shard_id = common::GlobalInfo::Instance()->network_id();
         info.leader_idx = vote_msg.leader_idx();
         info.partial_sign_map = crypto()->serializedPartialSigns(elect_height, qc_hash);
-        info.reconstructed_sign = crypto()->serializedSign(*reconstructed_sign);        
+        info.reconstructed_sign = crypto()->serializedSign(*reconstructed_sign);
         ck_client_->InsertBlsBlockInfo(info);
     }
 

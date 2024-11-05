@@ -78,6 +78,23 @@ public:
 
     void TimerMessage();
 
+    static std::string serializeCommonPk(const libff::alt_bn128_G2& common_pk) {
+        auto x = libBLS::ThresholdUtils::fieldElementToString(common_pk.X);
+        auto y = libBLS::ThresholdUtils::fieldElementToString(common_pk.Y);
+        return "("+x+","+y+")";
+        // auto pk = std::make_shared<bls::protobuf::BlsPublicKey>();
+
+        // pk->set_x_c0(
+        //         libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0));
+        // pk->set_x_c1(
+        //         libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c1));
+        // pk->set_y_c0(
+        //         libBLS::ThresholdUtils::fieldElementToString(common_pk.Y.c0));
+        // pk->set_y_c1(
+        //         libBLS::ThresholdUtils::fieldElementToString(common_pk.Y.c1));
+
+        // return pk->SerializeAsString();
+    }    
 private:
     void HandleVerifyBroadcast(const transport::MessagePtr& header);
     void HandleSwapSecKey(const transport::MessagePtr& header);
@@ -199,24 +216,6 @@ private:
 
     static std::string serializeLocalSk(const libff::alt_bn128_Fr& local_sk) {
         return libBLS::ThresholdUtils::fieldElementToString(local_sk);
-    }
-
-    static std::string serializeCommonPk(const libff::alt_bn128_G2& common_pk) {
-        auto x = libBLS::ThresholdUtils::fieldElementToString(common_pk.X);
-        auto y = libBLS::ThresholdUtils::fieldElementToString(common_pk.Y);
-        return "("+x+","+y+")";
-        // auto pk = std::make_shared<bls::protobuf::BlsPublicKey>();
-
-        // pk->set_x_c0(
-        //         libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0));
-        // pk->set_x_c1(
-        //         libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c1));
-        // pk->set_y_c0(
-        //         libBLS::ThresholdUtils::fieldElementToString(common_pk.Y.c0));
-        // pk->set_y_c1(
-        //         libBLS::ThresholdUtils::fieldElementToString(common_pk.Y.c1));
-
-        // return pk->SerializeAsString();
     }
 };
 
