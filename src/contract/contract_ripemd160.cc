@@ -21,23 +21,23 @@ int Ripemd160::call(
         uint64_t gas,
         const std::string& origin_address,
         evmc_result* res) {
-//     CONTRACT_ERROR("abe contract called decode: %s, src: %s",
-//         common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
-//     if (param.data.empty()) {
-//         return kContractError;
-//     }
-// 
-//     if (param.data.substr(0, 3) == "add") {
-//         return AddParams(param, gas, origin_address, res);
-//     }
-// 
-//     if (param.data.substr(0, 5) == "check") {
-//         return CheckDecrytParamsValid(param, gas, origin_address, res);
-//     }
-// 
-//     if (param.data.substr(0, 7) == "decrypt") {
-//         return Decrypt(param, gas, origin_address, res);
-//     }
+    CONTRACT_ERROR("abe contract called decode: %s, src: %s",
+        common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
+    if (param.data.empty()) {
+        return kContractError;
+    }
+
+    if (param.data.substr(0, 3) == "add") {
+        return AddParams(param, gas, origin_address, res);
+    }
+
+    if (param.data.substr(0, 5) == "check") {
+        return CheckDecrytParamsValid(param, gas, origin_address, res);
+    }
+
+    if (param.data.substr(0, 7) == "decrypt") {
+        return Decrypt(param, gas, origin_address, res);
+    }
 
     int64_t gas_used = ComputeGasUsed(600, 120, param.data.size());
     if (res->gas_left < gas_used) {
