@@ -963,6 +963,7 @@ void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {
     ck::BlsElectInfo info;
     info.elect_height = elect_hegiht_;
     info.member_idx = local_member_index_;
+    info.shard_id = common::GlobalInfo::Instance()->network_id();
     info.contribution_map = BlsDkg::serializeSkContribution(local_src_secret_key_contribution_);
     info.local_sk = BlsDkg::serializeLocalSk(local_sec_key_);
     info.common_pk = BlsDkg::serializeCommonPk(common_public_key_);
