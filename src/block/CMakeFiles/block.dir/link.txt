@@ -1,0 +1,2 @@
+/usr/bin/ar qc libblock.a CMakeFiles/block.dir/account_manager.cc.o CMakeFiles/block.dir/block_manager.cc.o CMakeFiles/block.dir/block_utils.cc.o
+/usr/bin/ranlib libblock.a

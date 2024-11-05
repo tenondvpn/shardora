@@ -1,0 +1,2 @@
+/usr/bin/ar qc libinit.a CMakeFiles/init.dir/command.cc.o CMakeFiles/init.dir/genesis_block_init.cc.o CMakeFiles/init.dir/http_handler.cc.o CMakeFiles/init.dir/network_init.cc.o CMakeFiles/init.dir/ws_server.cc.o
+/usr/bin/ranlib libinit.a

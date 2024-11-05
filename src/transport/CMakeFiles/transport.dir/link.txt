@@ -1,0 +1,2 @@
+/usr/bin/ar qc libtransport.a CMakeFiles/transport.dir/msg_decoder.cc.o CMakeFiles/transport.dir/multi_thread.cc.o CMakeFiles/transport.dir/processor.cc.o CMakeFiles/transport.dir/tcp_transport.cc.o
+/usr/bin/ranlib libtransport.a

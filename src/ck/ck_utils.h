@@ -31,7 +31,7 @@ struct BlsElectInfo {
 
 struct BlsBlockInfo {
     uint64_t elect_height;
-    uint64_t height;
+    uint64_t view;
     uint32_t shard_id;
     uint32_t leader_idx;
     std::string partial_sign_map;

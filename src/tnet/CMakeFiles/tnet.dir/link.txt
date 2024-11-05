@@ -1,0 +1,2 @@
+/usr/bin/ar qc libtnet.a CMakeFiles/tnet.dir/tcp_acceptor.cc.o CMakeFiles/tnet.dir/tcp_connection.cc.o CMakeFiles/tnet.dir/tnet_transport.cc.o CMakeFiles/tnet.dir/event/epoll_manager.cc.o CMakeFiles/tnet.dir/event/event_loop.cc.o CMakeFiles/tnet.dir/socket/listen_socket.cc.o CMakeFiles/tnet.dir/socket/socket.cc.o CMakeFiles/tnet.dir/utils/cmd_packet.cc.o
+/usr/bin/ranlib libtnet.a

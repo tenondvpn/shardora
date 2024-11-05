@@ -1,0 +1,2 @@
+/usr/bin/ar qc libzjcvm.a CMakeFiles/zjcvm.dir/execution.cc.o CMakeFiles/zjcvm.dir/zjc_host.cc.o
+/usr/bin/ranlib libzjcvm.a

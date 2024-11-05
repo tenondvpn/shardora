@@ -1,0 +1,2 @@
+/usr/bin/ar qc libpools.a CMakeFiles/pools.dir/cross_pool.cc.o CMakeFiles/pools.dir/height_tree_level.cc.o CMakeFiles/pools.dir/leaf_height_tree.cc.o CMakeFiles/pools.dir/root_cross_pool.cc.o CMakeFiles/pools.dir/shard_statistic.cc.o CMakeFiles/pools.dir/to_txs_pools.cc.o CMakeFiles/pools.dir/tx_pool.cc.o CMakeFiles/pools.dir/tx_pool_manager.cc.o
+/usr/bin/ranlib libpools.a

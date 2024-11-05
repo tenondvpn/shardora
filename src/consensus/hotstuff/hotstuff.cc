@@ -29,6 +29,9 @@ void Hotstuff::Init() {
 
     InitHandleProposeMsgPipeline();
     LoadLatestProposeMessage();
+    if (common::GlobalInfo::Instance()->for_ck_server()) {
+        ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "", db_, nullptr);
+    }    
 }
 
 void Hotstuff::LoadAllViewBlockWithLatestCommitedBlock(
@@ -976,6 +979,18 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         }
 
         return;
+    }
+
+    // store to ck
+    if (ck_client_) {
+        ck::BlsBlockInfo info;
+        info.elect_height = elect_height;
+        info.view = vote_msg.view();
+        info.shard_id = common::GlobalInfo::Instance()->network_id();
+        info.leader_idx = vote_msg.leader_idx();
+        info.partial_sign_map = crypto()->serializedPartialSigns(elect_height, qc_hash);
+        info.reconstructed_sign = crypto()->serializedSign(*reconstructed_sign);        
+        ck_client_->InsertBlsBlockInfo(info);
     }
 
     ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d, view: %lu, qc_hash: %s, hash64: %lu, propose_debug: %s, replica: %lu, ",

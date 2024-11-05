@@ -798,7 +798,7 @@ bool ClickHouseClient::CreateBlsBlockInfoTable() {
     std::string create_cmd = std::string("CREATE TABLE if not exists ") + kClickhouseBlsBlockInfo + " ( "
         "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
         "`elect_height` UInt64 COMMENT '' CODEC(T64, LZ4), "
-        "`height` UInt64 COMMENT '' CODEC(T64, LZ4), "
+        "`view` UInt64 COMMENT '' CODEC(T64, LZ4), "
         "`shard_id` UInt32 COMMENT '' CODEC(T64, LZ4), "
         "`leader_idx` UInt32 COMMENT '' CODEC(T64, LZ4), "
         "`partial_sign_map` String COMMENT  '' CODEC(LZ4),"
@@ -820,7 +820,7 @@ bool ClickHouseClient::CreateBlsBlockInfoTable() {
 
 bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) {
     auto elect_height = std::make_shared<clickhouse::ColumnUInt64>();
-    auto height = std::make_shared<clickhouse::ColumnUInt64>();
+    auto view = std::make_shared<clickhouse::ColumnUInt64>();
     auto shard_id = std::make_shared<clickhouse::ColumnUInt32>();
     auto leader_idx = std::make_shared<clickhouse::ColumnUInt32>();
     auto partial_sign_map = std::make_shared<clickhouse::ColumnString>();
@@ -828,7 +828,7 @@ bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) {
     auto common_pk = std::make_shared<clickhouse::ColumnString>();
 
     elect_height->Append(info.elect_height);
-    height->Append(info.height);
+    view->Append(info.view);
     shard_id->Append(info.shard_id);
     leader_idx->Append(info.leader_idx);
     partial_sign_map->Append(info.partial_sign_map);
@@ -837,7 +837,7 @@ bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) {
     
     clickhouse::Block item;
     item.AppendColumn("elect_height", elect_height);
-    item.AppendColumn("height", height);
+    item.AppendColumn("view", view);
     item.AppendColumn("shard_id", shard_id);
     item.AppendColumn("leader_idx", leader_idx);
     item.AppendColumn("partial_sign_map", partial_sign_map);

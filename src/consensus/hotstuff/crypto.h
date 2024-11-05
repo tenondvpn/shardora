@@ -7,6 +7,7 @@
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g2.hpp>
 #include <security/security.h>
 #include <consensus/hotstuff/elect_info.h>
+#include <tools/utils.h>
 #include <transport/transport_utils.h>
 
 namespace shardora {
@@ -52,7 +53,7 @@ public:
             const std::shared_ptr<ElectInfo>& elect_info,
             const std::shared_ptr<bls::IBlsManager>& bls_mgr) :
             pool_idx_(pool_idx), elect_info_(elect_info), bls_mgr_(bls_mgr) {
-        LoadInitGenesisCommonPk();
+        LoadInitGenesisCommonPk();        
     };
 
     ~Crypto() {};
@@ -115,6 +116,31 @@ public:
         const HashStr& msg_hash,
         const libff::alt_bn128_G1& reconstructed_sign);
 
+    std::string serializedPartialSigns(uint64_t elect_height, const HashStr& msg_hash) {
+        std::string ret = "";
+        auto elect_item = GetElectItem(common::GlobalInfo::Instance()->network_id(), elect_height);
+        if (!elect_item) {
+            return ret;
+        }        
+        
+        auto partial_signs = bls_collection_item(msg_hash)->partial_signs;
+        for (uint32_t i = 0; i < elect_item->n(); i++) {
+            auto sign = partial_signs[i];
+            ret += serializedSign(*sign);
+        }
+
+        return ret;
+    }
+
+    std::string serializedSign(const libff::alt_bn128_G1& sign) {
+        auto x = libBLS::ThresholdUtils::fieldElementToString(sign.X);
+        auto y = libBLS::ThresholdUtils::fieldElementToString(sign.Y);
+        return "("+x+","+y+")";
+    }
+    
+    std::shared_ptr<BlsCollectionItem> bls_collection_item(const HashStr& msg_hash) {
+        return bls_collection_->GetItem(msg_hash);
+    }
 private:
     
     void GetG1Hash(const HashStr& msg_hash, libff::alt_bn128_G1* g1_hash) {
