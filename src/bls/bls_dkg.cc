@@ -967,7 +967,9 @@ void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {
     info.contribution_map = BlsDkg::serializeSkContribution(local_src_secret_key_contribution_);
     info.local_sk = BlsDkg::serializeLocalSk(local_sec_key_);
     info.common_pk = BlsDkg::serializeCommonPk(common_public_key_);
-    ck_client_->InsertBlsElectInfo(info);
+    if (ck_client_) {
+        ck_client_->InsertBlsElectInfo(info);
+    }
 }
 
 void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
