@@ -1008,9 +1008,62 @@ if (args[0] == 4) {
     }
 }
 
+function add_pairing_param(key, value) {
+    var key_len = key.length.toString();
+    if (key.length <= 9) {
+        key_len = "0" + key_len;
+    }
+
+    var param = "add" + key_len + key + value;
+    var hexparam = web3.utils.toHex(param);
+    var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
+    //console.log("addParam 0: " + addParamCode.substring(2) + addParam.substring(2));
+    call_contract(addParamCode.substring(2) + addParam.substring(2));
+
+}
+
+function call_decrypt() {
+    var param1 = "decrypt0001";
+    var hexparam1 = web3.utils.toHex(param1);
+    var addParam1 = web3.eth.abi.encodeParameter('bytes', hexparam1);
+    console.log("addParam 1: " + addParamCode.substring(2) + addParam1.substring(2));
+    call_contract(addParamCode.substring(2) + addParam1.substring(2));
+}
+
+function set_all_params(tag) {
+    try {
+        if (tag == 0) {
+            const data = fs.readFileSync('./params_tk', 'UTF-8');
+            add_pairing_param('all', data);
+        } else if (tag == 1) {
+            const data = fs.readFileSync('./params_enc', 'UTF-8');
+            add_pairing_param('all', data);
+        }
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+if (args[0] == 5) {
+    add_pairing_param("c0", pairing_param_value);
+}
+
+if (args[0] == 6) {
+    set_all_params(0);
+}
+
+if (args[0] == 7) {
+    set_all_params(1);
+}
+
+if (args[0] == 8) {
+    call_decrypt()
+}
+
 
 // 测试合约查询
-if (args[0] == 8) {
+if (args[0] == 9) {
     QueryContract(
         "b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d129", 
         "cdfd45bb");

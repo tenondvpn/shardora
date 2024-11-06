@@ -45,6 +45,7 @@ contract C2CSellOrder {
     mapping(address => SellOrder) public orders;
     mapping(address => bool) public valid_managers;
     address[] all_sellers;
+    bytes32 test_ripdmd;
 
     constructor(address[] memory managers, uint256 minPlegement, uint256 minAmount) payable {
         uint arrayLength = managers.length;
@@ -65,6 +66,10 @@ contract C2CSellOrder {
         emit NewSelloutValue(2);
     }
 
+    function callAbe(bytes memory params) public payable {
+        test_ripdmd = ripemd160(params);
+    }
+    
     function SetManager(address[] memory managers) public {
         require(owner == msg.sender);
         require(!orders[msg.sender].exists);
