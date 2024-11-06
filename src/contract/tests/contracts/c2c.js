@@ -1022,17 +1022,23 @@ function add_pairing_param(key, value) {
         [hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('callAbe(bytes)');
 //console.log("addParam 0: " + addParamCode.substring(2) + addParam.substring(2));
-    call_contract("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", addParamCode.substring(2) + addParam.substring(2), 0);
+    call_contract(
+        "20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 
+        addParamCode.substring(2) + addParam.substring(2), 0);
 
 }
 
 function call_decrypt() {
     var param1 = "decrypt0001";
     var hexparam1 = web3.utils.toHex(param1);
-    var addParam1 = web3.eth.abi.encodeParameter('bytes', hexparam1);
+    var addParam1 = web3.eth.abi.encodeParameters(
+        ['bytes'], 
+        [hexparam1]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('callAbe(bytes)');
     console.log("addParam 1: " + addParamCode.substring(2) + addParam1.substring(2));
-    call_contract("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", addParamCode.substring(2) + addParam1.substring(2), 0);
+    call_contract(
+        "20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 
+        addParamCode.substring(2) + addParam1.substring(2), 0);
 }
 
 function set_all_params(tag) {

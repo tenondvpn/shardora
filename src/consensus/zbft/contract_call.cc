@@ -273,11 +273,6 @@ int ContractCall::SaveContractCreateInfo(
             account_iter->second.storage.size());
         for (auto storage_iter = account_iter->second.storage.begin();
                 storage_iter != account_iter->second.storage.end(); ++storage_iter) {
-//             prefix_db_->SaveAddressStorage(
-//                 account_iter->first,
-//                 storage_iter->first,
-//                 storage_iter->second.value,
-//                 *db_batch);
             auto kv = block_tx.add_storages();
             auto str_key = std::string((char*)account_iter->first.bytes, sizeof(account_iter->first.bytes)) +
                 std::string((char*)storage_iter->first.bytes, sizeof(storage_iter->first.bytes));
@@ -298,11 +293,6 @@ int ContractCall::SaveContractCreateInfo(
 
         for (auto storage_iter = account_iter->second.str_storage.begin();
                 storage_iter != account_iter->second.str_storage.end(); ++storage_iter) {
-//             prefix_db_->SaveAddressStringStorage(
-//                 account_iter->first,
-//                 storage_iter->first,
-//                 storage_iter->second.str_val,
-//                 *db_batch);
             auto kv = block_tx.add_storages();
             auto str_key = std::string(
                 (char*)account_iter->first.bytes,
