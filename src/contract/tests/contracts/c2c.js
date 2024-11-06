@@ -1016,7 +1016,10 @@ function add_pairing_param(key, value) {
 
     var param = "add" + key_len + key + value;
     var hexparam = web3.utils.toHex(param);
-    var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
+    // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
+    var addParam = web3.eth.abi.encodeParameters(
+        ['bytes'], 
+        ['0x' + hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('callAbe(bytes)');
 //console.log("addParam 0: " + addParamCode.substring(2) + addParam.substring(2));
     call_contract(addParamCode.substring(2) + addParam.substring(2));
