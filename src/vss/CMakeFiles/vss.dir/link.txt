@@ -1,0 +1,2 @@
+/usr/bin/ar qc libvss.a CMakeFiles/vss.dir/vss_manager.cc.o
+/usr/bin/ranlib libvss.a

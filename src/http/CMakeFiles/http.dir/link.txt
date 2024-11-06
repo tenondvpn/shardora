@@ -1,0 +1,2 @@
+/usr/bin/ar qc libhttp.a CMakeFiles/http.dir/http_client.cc.o CMakeFiles/http.dir/http_server.cc.o
+/usr/bin/ranlib libhttp.a

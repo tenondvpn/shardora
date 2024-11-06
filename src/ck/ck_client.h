@@ -26,7 +26,8 @@ public:
     ~ClickHouseClient();
     bool CreateTable(bool statistic, std::shared_ptr<db::Db> db_ptr);
     bool AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& block_item);
-
+    bool InsertBlsElectInfo(const BlsElectInfo& info);
+    bool InsertBlsBlockInfo(const BlsBlockInfo& info);
 private:
     bool CreateTransactionTable();
     bool CreateBlockTable();
@@ -36,6 +37,8 @@ private:
     bool CreatePrivateKeyTable();
     bool CreateC2cTable();
     bool CreatePrepaymentTable();
+    bool CreateBlsElectInfoTable();
+    bool CreateBlsBlockInfoTable();
     void Statistic();
     void TickStatistic();
     bool QueryContract(const std::string& from, const std::string& contract_addr, nlohmann::json* res);

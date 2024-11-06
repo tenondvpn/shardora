@@ -1,0 +1,2 @@
+/usr/bin/ar qc libelect.a CMakeFiles/elect.dir/elect_manager.cc.o CMakeFiles/elect.dir/elect_pledge.cc.o CMakeFiles/elect.dir/elect_proto.cc.o CMakeFiles/elect.dir/elect_utils.cc.o
+/usr/bin/ranlib libelect.a

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libnetwork.a CMakeFiles/network.dir/bootstrap.cc.o CMakeFiles/network.dir/dht_manager.cc.o CMakeFiles/network.dir/network_proto.cc.o CMakeFiles/network.dir/route.cc.o CMakeFiles/network.dir/universal.cc.o CMakeFiles/network.dir/universal_manager.cc.o
+/usr/bin/ranlib libnetwork.a

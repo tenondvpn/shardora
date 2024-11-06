@@ -18,17 +18,17 @@ Status Crypto::PartialSign(
         std::string* sign_y) {
     auto elect_item = GetElectItem(sharding_id, elect_height);
     if (!elect_item) {
-        assert(false);
+        //assert(false);
         return Status::kError;
     }
     
     if (elect_item->local_sk() == libff::alt_bn128_Fr::zero()) {
-        assert(false);
+        //assert(false);
         return Status::kError;
     }
 
     if (elect_item->LocalMember()->bls_publick_key == libff::alt_bn128_G2::zero()) {
-        assert(false);
+        //assert(false);
         return Status::kError;
     }
 

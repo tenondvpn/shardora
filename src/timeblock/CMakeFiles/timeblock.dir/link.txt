@@ -1,0 +1,2 @@
+/usr/bin/ar qc libtimeblock.a CMakeFiles/timeblock.dir/time_block_manager.cc.o
+/usr/bin/ranlib libtimeblock.a

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libbls.a CMakeFiles/bls.dir/agg_bls.cc.o CMakeFiles/bls.dir/bls_dkg.cc.o CMakeFiles/bls.dir/bls_manager.cc.o CMakeFiles/bls.dir/bls_sign.cc.o
+/usr/bin/ranlib libbls.a

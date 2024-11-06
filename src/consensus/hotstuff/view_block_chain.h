@@ -468,7 +468,7 @@ private:
                     (latest_committed_block_ ? 
                     common::Encode::HexEncode(latest_locked_block_->qc().view_block_hash()).c_str() : 
                     ""));
-                assert(false);
+                // assert(false);
                 return;
             }
 

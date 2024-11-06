@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsync.a CMakeFiles/sync.dir/key_value_sync.cc.o
+/usr/bin/ranlib libsync.a

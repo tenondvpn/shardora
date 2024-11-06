@@ -1,0 +1,2 @@
+/usr/bin/ar qc libbig_num.a CMakeFiles/big_num.dir/libsnark.cc.o CMakeFiles/big_num.dir/snark.cc.o
+/usr/bin/ranlib libbig_num.a

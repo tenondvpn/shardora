@@ -1,0 +1,2 @@
+/usr/bin/ar qc libck.a CMakeFiles/ck.dir/ck_client.cc.o
+/usr/bin/ranlib libck.a
