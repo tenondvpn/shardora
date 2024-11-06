@@ -140,7 +140,7 @@ def gen_zjnodes(server_conf: dict, zjnodes_folder):
                 'net_id': node['net'],
                 'prikey': sk,
                 'show_cmd': 0,
-                'for_ck': False
+                'for_ck': True
             },
             'tx_block': {
                 'network_id': node['net']
