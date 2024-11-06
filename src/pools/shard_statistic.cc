@@ -880,7 +880,7 @@ bool ShardStatistic::IsShardReachPerformanceLimit(
         const block::protobuf::Block& block) {
     auto condition_fn = [](const block::protobuf::Block& block) -> bool {
         // 通过判断 block 当中的 tx size 来贡献 shard 当前的 tps 压力
-        if (block.tx_list_size() > 10) {
+        if (block.tx_list_size() > common::kSingleBlockMaxTransactions * 0.9) {
             return true;
         }
         return false;
