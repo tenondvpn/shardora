@@ -636,7 +636,6 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
     auto zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
     zjcvm::ZjchainHost prev_zjc_host;
     zjcvm::ZjchainHost& zjc_host = *zjc_host_ptr;
-    zjc_host.prev_zjc_host_ = &prev_zjc_host;
     if (acceptor()->Accept(
             view_block_chain_, 
             pro_msg_wrap, 
