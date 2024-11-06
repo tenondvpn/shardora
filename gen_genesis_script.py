@@ -140,7 +140,7 @@ def gen_zjnodes(server_conf: dict, zjnodes_folder):
                 'net_id': node['net'],
                 'prikey': sk,
                 'show_cmd': 0,
-                'for_ck': False
+                'for_ck': True
             },
             'tx_block': {
                 'network_id': node['net']
@@ -283,6 +283,8 @@ clickhouse-client -q "drop table zjc_ck_account_table"
 clickhouse-client -q "drop table zjc_ck_block_table"
 clickhouse-client -q "drop table zjc_ck_statistic_table"
 clickhouse-client -q "drop table zjc_ck_transaction_table"
+clickhouse-client -q "drop table bls_elect_info"
+clickhouse-client -q "drop table bls_block_info"
 """
 
     with open(file_path, 'w') as f:
