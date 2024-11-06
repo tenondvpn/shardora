@@ -8,6 +8,7 @@
 #include <security/security.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <transport/transport_utils.h>
+#include <tools/utils.h>
 
 namespace shardora {
 
@@ -108,6 +109,35 @@ public:
     inline std::shared_ptr<security::Security> security() const {
         return bls_mgr_->security();
     }
+
+    std::string serializedPartialSigns(uint64_t elect_height, const HashStr& msg_hash) {
+        std::string ret = "";
+        auto elect_item = GetElectItem(common::GlobalInfo::Instance()->network_id(), elect_height);
+        if (!elect_item) {
+            return ret;
+        }        
+
+        auto partial_signs = bls_collection_item(msg_hash)->partial_signs;
+        for (uint32_t i = 0; i < elect_item->n(); i++) {
+            auto sign = partial_signs[i];
+            if (!sign) {
+                continue;
+            }
+            ret += serializedSign(*sign);
+        }
+
+        return ret;
+    }
+
+    std::string serializedSign(const libff::alt_bn128_G1& sign) {
+        auto x = libBLS::ThresholdUtils::fieldElementToString(sign.X);
+        auto y = libBLS::ThresholdUtils::fieldElementToString(sign.Y);
+        return "("+x+","+y+")";
+    }
+
+    std::shared_ptr<BlsCollectionItem> bls_collection_item(const HashStr& msg_hash) {
+        return bls_collection_->GetItem(msg_hash);
+    }    
     
 private:
     Status VerifyThresSign(

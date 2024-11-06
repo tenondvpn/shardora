@@ -214,6 +214,7 @@ private:
     SyncPoolFn sync_pool_fn_ = nullptr;
     uint64_t timer_delay_us_ = common::TimeUtils::TimestampUs() + 10000000lu;
     Pipeline handle_propose_pipeline_;
+    std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
 
     void InitHandleProposeMsgPipeline() {
         // 仅 VerifyLeader 和 ChainStore 出错后允许重试
