@@ -34,6 +34,7 @@ struct BlsBlockInfo {
     uint64_t view;
     uint32_t shard_id;
     uint32_t leader_idx;
+    std::string msg_hash;
     std::string partial_sign_map;
     std::string reconstructed_sign;
     std::string common_pk;

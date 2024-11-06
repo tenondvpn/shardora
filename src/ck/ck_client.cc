@@ -775,6 +775,7 @@ bool ClickHouseClient::CreateBlsBlockInfoTable() {
         "`view` UInt64 COMMENT '' CODEC(T64, LZ4), "
         "`shard_id` UInt32 COMMENT '' CODEC(T64, LZ4), "
         "`leader_idx` UInt32 COMMENT '' CODEC(T64, LZ4), "
+        "`msg_hash` String COMMENT  '' CODEC(LZ4),"
         "`partial_sign_map` String COMMENT  '' CODEC(LZ4),"
         "`reconstructed_sign` String COMMENT  '' CODEC(LZ4),"
         "`common_pk` String COMMENT  '' CODEC(LZ4)"
@@ -797,6 +798,7 @@ bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) {
     auto view = std::make_shared<clickhouse::ColumnUInt64>();
     auto shard_id = std::make_shared<clickhouse::ColumnUInt32>();
     auto leader_idx = std::make_shared<clickhouse::ColumnUInt32>();
+    auto msg_hash = std::make_shared<clickhouse::ColumnString>();
     auto partial_sign_map = std::make_shared<clickhouse::ColumnString>();
     auto reconstructed_sign = std::make_shared<clickhouse::ColumnString>();
     auto common_pk = std::make_shared<clickhouse::ColumnString>();
@@ -805,6 +807,7 @@ bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) {
     view->Append(info.view);
     shard_id->Append(info.shard_id);
     leader_idx->Append(info.leader_idx);
+    msg_hash->Append(info.msg_hash);
     partial_sign_map->Append(info.partial_sign_map);
     reconstructed_sign->Append(info.reconstructed_sign);
     common_pk->Append(info.common_pk);
@@ -814,6 +817,7 @@ bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) {
     item.AppendColumn("view", view);
     item.AppendColumn("shard_id", shard_id);
     item.AppendColumn("leader_idx", leader_idx);
+    item.AppendColumn("msg_hash", msg_hash);
     item.AppendColumn("partial_sign_map", partial_sign_map);
     item.AppendColumn("reconstructed_sign", reconstructed_sign);
     item.AppendColumn("common_pk", common_pk);

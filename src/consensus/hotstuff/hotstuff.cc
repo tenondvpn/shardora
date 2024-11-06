@@ -1,3 +1,4 @@
+#include <bls/bls_dkg.h>
 #include <common/encode.h>
 #include <common/log.h>
 #include <common/defer.h>
@@ -484,8 +485,10 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
             info.view = vote_msg.view();
             info.shard_id = common::GlobalInfo::Instance()->network_id();
             info.leader_idx = elect_item->LocalMember()->index;
+            info.msg_hash = common::Encode::HexEncode(qc_ptr->msg_hash());
             info.partial_sign_map = crypto()->serializedPartialSigns(elect_height, qc_ptr->msg_hash());
             info.reconstructed_sign = crypto()->serializedSign(*reconstructed_sign);
+            info.common_pk = bls::BlsDkg::serializeCommonPk(elect_item->common_pk());
             ck_client_->InsertBlsBlockInfo(info);
         }        
     }    
