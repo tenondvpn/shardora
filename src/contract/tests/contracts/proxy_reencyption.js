@@ -532,21 +532,6 @@ function call_decrypt() {
         addParamCode.substring(2) + addParam1.substring(2), 0);
 }
 
-function set_all_params(tag) {
-    try {
-        if (tag == 0) {
-            const data = fs.readFileSync('./params_tk', 'UTF-8');
-            add_pairing_param('all', data);
-        } else if (tag == 1) {
-            const data = fs.readFileSync('./params_enc', 'UTF-8');
-            add_pairing_param('all', data);
-        }
-
-    } catch (err) {
-        console.error(err);
-    }
-}
-
 function run_all() {
     add_pairing_param("CreatPath", "CreatPath");
     add_pairing_param("RKGen", "RKGen");

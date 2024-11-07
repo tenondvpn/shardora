@@ -7,6 +7,8 @@
 #include <limits>
 #include <memory>
 
+#include "common/log.h"
+
 #ifndef LONG_MIN
 #define LONG_MIN (std::numeric_limits<long>::min)()  // NOLINT
 #endif
@@ -154,10 +156,12 @@ template<typename T>
 T SignedCheckCastValue(const std::string& str) {
     auto val = LongLong(str.c_str());
     if (val < (std::numeric_limits<T>::min)()) {
+        ZJC_DEBUG("value bound error[type min]: %lu, %s", val, str.c_str());
         throw ConvertException("value bound error[type min]");
     }
 
     if (val > (std::numeric_limits<T>::max)()) {
+        ZJC_DEBUG("value bound error[type max]: %lu, %s", val, str.c_str());
         throw ConvertException("value bound error[type max]");
     }
     return static_cast<T>(val);
