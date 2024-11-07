@@ -305,7 +305,7 @@ function add_pairing_param(key, value) {
     var addParam = web3.eth.abi.encodeParameters(
         ['bytes'], 
         [hexparam]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('callAbe(bytes)');
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('call_prxoy_reenc(bytes)');
 //console.log("addParam 0: " + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 
@@ -319,7 +319,7 @@ function call_decrypt() {
     var addParam1 = web3.eth.abi.encodeParameters(
         ['bytes'], 
         [hexparam1]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('callAbe(bytes)');
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('call_prxoy_reenc(bytes)');
     console.log("addParam 1: " + addParamCode.substring(2) + addParam1.substring(2));
     call_contract(
         "20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 
