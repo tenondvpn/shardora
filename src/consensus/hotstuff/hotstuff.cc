@@ -1219,17 +1219,14 @@ std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(const QC& qc) {
     }
 
     ZJC_DEBUG("success get v block 3 propose_debug: %s", v_block3->debug().c_str());
-    if (v_block1->parent_hash() == v_block2->qc().view_block_hash() &&
-            v_block2->parent_hash() == v_block3->qc().view_block_hash()) {
-        return v_block3;
-    }
-    
-    ZJC_DEBUG("Failed get v block hash invalid: %s, %s, %s, %s",
+    assert(v_block1->parent_hash() == v_block2->qc().view_block_hash() &&
+            v_block2->parent_hash() == v_block3->qc().view_block_hash());
+    ZJC_DEBUG("success get v block hash: %s, %s, %s, %s",
         common::Encode::HexEncode(v_block1->parent_hash()).c_str(),
         common::Encode::HexEncode(v_block2->qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(v_block2->parent_hash()).c_str(),
         common::Encode::HexEncode(v_block3->qc().view_block_hash()).c_str());
-    return nullptr;
+    return v_block3;
 }
 
 Status Hotstuff::Commit(
