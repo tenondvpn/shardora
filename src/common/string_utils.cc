@@ -22,6 +22,16 @@ static long long LongLong(const char* s) {  // NOLINT
         ZJC_DEBUG("ZJC_ERROR: not end of str., %s", s);
         throw ConvertException("ZJC_ERROR: not end of str.");
     }
+
+    while (*s != '\0') {
+        if (*s == '0') {
+            ++s;
+            continue;
+        }
+
+        break;
+    }
+    
     errno = 0;
     char* end_ptr;
     long long res = strtoll(s, &end_ptr, 0);  // NOLINT
