@@ -8,11 +8,11 @@ pragma solidity >=0.7.0 <0.9.0;
 //    and the manager can release it according to the situation
 
 contract ProxyReencryption {
-    bytes test_ripdmd_;
-    bytes enc_init_param_;
+    bytes32 test_ripdmd_;
+    bytes32 enc_init_param_;
 
     constructor(bytes memory enc_init_param) {
-        enc_init_param_ = enc_init_param;
+        enc_init_param_ = ripemd160(enc_init_param);;\
     }
 
     function call_prxoy_reenc(bytes memory params) public {
