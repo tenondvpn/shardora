@@ -24,12 +24,11 @@ static long long LongLong(const char* s) {  // NOLINT
     }
 
     while (*s != '\0' && *(s + 1) != '\0') {
-        if (*s == '0') {
-            ++s;
-            continue;
+        if (*s != '0') {
+            break;
         }
-
-        break;
+           
+        ++s;
     }
 
     errno = 0;
