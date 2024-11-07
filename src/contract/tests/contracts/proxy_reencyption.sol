@@ -12,7 +12,7 @@ contract ProxyReencryption {
     bytes32 enc_init_param_;
 
     constructor(bytes memory enc_init_param) {
-        enc_init_param_ = enc_init_param
+        enc_init_param_ = enc_init_param;
     }
 
     function call_prxoy_reenc(bytes memory params) public {
