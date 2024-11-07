@@ -484,6 +484,7 @@ void Hotstuff::HandleVoteMsg(const transport::protobuf::Header& header) {
             info.elect_height = elect_height;
             info.view = vote_msg.view();
             info.shard_id = common::GlobalInfo::Instance()->network_id();
+            info.pool_idx = pool_idx_;
             info.leader_idx = elect_item->LocalMember()->index;
             info.msg_hash = common::Encode::HexEncode(qc_ptr->msg_hash());
             info.partial_sign_map = crypto()->serializedPartialSigns(elect_height, qc_ptr->msg_hash());
