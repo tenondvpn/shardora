@@ -11,10 +11,10 @@ namespace shardora {
 
 namespace contract {
 
-class PbcParing : public ContractInterface {
+class ContractReEncryption : public ContractInterface {
 public:
-    PbcParing(const std::string& create_address, const std::string& pairing_param);
-    virtual ~PbcParing();
+    ContractReEncryption(const std::string& create_address, const std::string& pairing_param);
+    virtual ~ContractReEncryption();
     virtual int call(
         const CallParameters& param,
         uint64_t gas,
@@ -96,7 +96,7 @@ public:
 
     std::shared_ptr<db::Db> db_ = nullptr;
 
-    DISALLOW_COPY_AND_ASSIGN(PbcParing);
+    DISALLOW_COPY_AND_ASSIGN(ContractReEncryption);
 };
 
 }  // namespace contract

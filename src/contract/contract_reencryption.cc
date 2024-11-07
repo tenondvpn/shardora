@@ -1,4 +1,4 @@
-#include "contract/contract_pairing.h"
+#include "contract/contract_reencryption.h"
 
 #include "common/time_utils.h"
 
@@ -6,12 +6,12 @@ namespace shardora {
 
 namespace contract {
 
-PbcParing::PbcParing(const std::string& create_address, const std::string& pairing_param)
+ContractReEncryption::ContractReEncryption(const std::string& create_address, const std::string& pairing_param)
         : ContractInterface(create_address), pairing_(pairing_param) {}
 
-PbcParing::~PbcParing() {}
+ContractReEncryption::~ContractReEncryption() {}
 
-int PbcParing::call(
+int ContractReEncryption::call(
         const CallParameters& param,
         uint64_t gas,
         const std::string& origin_address,
@@ -28,7 +28,7 @@ int PbcParing::call(
     return kContractSuccess;
 }
 
-void PbcParing::SaveData() {
+void ContractReEncryption::SaveData() {
     auto btime = common::TimeUtils::TimestampMs();
     SetupParams();
     KeyGen();
@@ -62,7 +62,7 @@ void PbcParing::SaveData() {
     CONTRACT_DEBUG("call use time: %d ms", etime - btime);
 }
 
-void PbcParing::DecryptData() {
+void ContractReEncryption::DecryptData() {
     std::string o_str;
     if (db_->Get("abe_o", &o_str).ok()) {
         CONTRACT_ERROR("get data o failed!");
@@ -130,7 +130,7 @@ void PbcParing::DecryptData() {
     Decrypt();
 }
 
-int PbcParing::SetupParams() {
+int ContractReEncryption::SetupParams() {
     g_ = G1(pairing_, false);
     alpha_ = Zr(pairing_, true);
     a_ = Zr(pairing_, true);
@@ -144,7 +144,7 @@ int PbcParing::SetupParams() {
     return kContractSuccess;
 }
 
-int PbcParing::KeyGen() {
+int ContractReEncryption::KeyGen() {
     msk_ = GPP<G1>(pairing_, g_) ^ alpha_;
     s_ = Zr(pairing_, true);
     auto powg = GPP<G1>(pairing_, g_) ^ (a_ * s_);
@@ -158,7 +158,7 @@ int PbcParing::KeyGen() {
     return kContractSuccess;
 }
 
-int PbcParing::GenTk() {
+int ContractReEncryption::GenTk() {
     o_ = Zr(pairing_, true);
     R1_ = GPP<G1>(pairing_, R_) ^ o_.inverse();
     L1_ = GPP<G1>(pairing_, L_) ^ o_.inverse();
@@ -170,7 +170,7 @@ int PbcParing::GenTk() {
     return kContractSuccess;
 }
 
-int PbcParing::Encrypt() {
+int ContractReEncryption::Encrypt() {
     k_ = GT(pairing_, true);
     r_ = Zr(pairing_, true);
     for (int32_t i = 0; i < count_; ++i) {
@@ -195,13 +195,13 @@ int PbcParing::Encrypt() {
     return kContractSuccess;
 }
 
-int PbcParing::Decrypt() {
+int ContractReEncryption::Decrypt() {
     auto tmp_gt = GPP<GT>(pairing_, t_) ^ o_;
     decrypt_k_ = C_ * tmp_gt.inverse();
     return kContractSuccess;
 }
 
-int PbcParing::TransformAll() {
+int ContractReEncryption::TransformAll() {
     GT total;
     for (int32_t i = 0; i < count_; ++i) {
         auto exp_w = Zr(pairing_, true);
@@ -222,7 +222,7 @@ int PbcParing::TransformAll() {
     return kContractSuccess;
 }
 
-int PbcParing::Transform() {
+int ContractReEncryption::Transform() {
 //     GT total;
 //     for (int32_t i = 0; i < 1; ++i) {
     int32_t i = 0;
