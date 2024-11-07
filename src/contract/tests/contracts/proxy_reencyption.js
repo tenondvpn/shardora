@@ -403,7 +403,7 @@ function InitC2cEnv(key, value) {
                     key_len = "0" + key_len;
                 }
     
-                var param = "add" + key_len + key + value;
+                var param = "readd" + key_len + key + value;
                 var hexparam = web3.utils.toHex(param);
                 // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
                 cons_codes = web3.eth.abi.encodeParameters(
@@ -499,13 +499,13 @@ function InitC2cEnv(key, value) {
       });
 }
 
-function add_pairing_param(key, value) {
+function add_pairing_param(prev, key, value) {
     var key_len = key.length.toString();
     if (key.length <= 9) {
         key_len = "0" + key_len;
     }
 
-    var param = "add" + key_len + key + value;
+    var param = prev + key_len + key + value;
     var hexparam = web3.utils.toHex(param);
     // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
     var addParam = web3.eth.abi.encodeParameters(
@@ -533,12 +533,12 @@ function call_decrypt() {
 }
 
 function run_all() {
-    add_pairing_param("CreatPath", "CreatPath");
-    add_pairing_param("RKGen", "RKGen");
-    add_pairing_param("Upd", "Upd");
-    add_pairing_param("Enc", "Enc");
-    add_pairing_param("ReEnc", "ReEnc");
-    add_pairing_param("Dec", "Dec");
+    add_pairing_param("readd", "CreatPath", "CreatPath");
+    add_pairing_param("readd", "RKGen", "RKGen");
+    add_pairing_param("readd", "Upd", "Upd");
+    add_pairing_param("readd", "Enc", "Enc");
+    add_pairing_param("readd", "ReEnc", "ReEnc");
+    add_pairing_param("readd", "Dec", "Dec");
 }
 
 const args = process.argv.slice(2)
@@ -550,32 +550,32 @@ if (args[0] == 0) {
 
 // CreatPath(i)：由用户i选择多个被委托者。按选择顺序生成一个路径（列表），其中存放被委托者的公钥。
 if (args[0] == 1) {
-    add_pairing_param("CreatPath", "CreatPath");
+    add_pairing_param("readd", "CreatPath", "CreatPath");
 }
 
 // RKGen：重加密密钥生成，需要用到pbc库
 if (args[0] == 2) {
-    add_pairing_param("RKGen", "RKGen");
+    add_pairing_param("readd", "RKGen", "RKGen");
 }
 
 // Upd：token更新算法，需要用到pbc库
 if (args[0] == 3) {
-    add_pairing_param("Upd", "Upd");
+    add_pairing_param("readd", "Upd", "Upd");
 }
 
 // Enc：加密，需要用到pbc库
 if (args[0] == 4) {
-    add_pairing_param("Enc", "Enc");
+    add_pairing_param("readd", "Enc", "Enc");
 }
 
 // ReEnc：重加密，需要用到pbc库 (这一步包含一个分布式随机数生成协议，即多个代理协商出一个统一的随机数)
 if (args[0] == 5) {
-    add_pairing_param("ReEnc", "ReEnc");
+    add_pairing_param("readd", "ReEnc", "ReEnc");
 }
 
 // Dec：解密，需要用到pbc库
 if (args[0] == 6) {
-    add_pairing_param("Dec", "Dec");
+    add_pairing_param("readd", "Dec", "Dec");
 }
 
 if (args[0] == 7) {

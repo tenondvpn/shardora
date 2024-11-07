@@ -39,6 +39,10 @@ int Ripemd160::call(
         return Decrypt(param, gas, origin_address, res);
     }
 
+    if (param.data.substr(0, 5) == "readd") {
+        return AddReEncryptionParam(param, gas, origin_address, res);
+    }
+
     int64_t gas_used = ComputeGasUsed(600, 120, param.data.size());
     if (res->gas_left < gas_used) {
         return kContractError;
@@ -63,6 +67,53 @@ int Ripemd160::CheckDecrytParamsValid(
         const std::string& origin_address,
         evmc_result* res) {
 
+    return kContractSuccess;
+}
+
+int Ripemd160::AddReEncryptionParam(
+        const CallParameters& param,
+        uint64_t gas,
+        const std::string& origin_address,
+        evmc_result* res) {
+    if (res->gas_left <= 2300) {
+        CONTRACT_ERROR("re encryption gas failed: %d", res->gas_left);
+        return kContractError;
+    }
+
+    uint32_t key_len = 0;
+    if (!common::StringUtil::ToUint32(param.data.substr(3, 2), &key_len) || key_len <= 0) {
+        CONTRACT_ERROR("re encryption convert key len failed: %s!", param.data.substr(3, 2).c_str());
+        return kContractError;
+    }
+
+    auto key = "reenc_" + param.data.substr(5, key_len);
+    auto val_start = 5 + key_len;
+    if (val_start >= param.data.size()) {
+        CONTRACT_ERROR("re encryption val_start error: %d, %d!", val_start, param.data.size());
+        return kContractError;
+    }
+
+    std::string val = param.data.substr(val_start, param.data.size() - val_start);
+    int64_t gas_used = ComputeGasUsed(0, 5000, key.size() + (val.size() / 2));
+    if (res->gas_left < gas_used) {
+        res->gas_left = 0;
+        CONTRACT_ERROR("re encryption gas failed: res->gas_left: %d < gas_used: %d",
+            res->gas_left, gas_used);
+        return kContractError;
+    }
+
+    if (key == "reenc_all") {
+        AddAllParams("reenc_", param, val);
+    } else {
+        param.zjc_host->SaveKeyValue(param.from, key, val);
+    }
+
+    res->output_data = new uint8_t[32];
+    memset((void*)res->output_data, 0, 32);
+    res->output_size = 32;
+    res->gas_left -= gas_used;
+    CONTRACT_ERROR("re encryption save key value success, gas: %lu, %s: %s",
+        gas_used, key.c_str(), val.c_str());
     return kContractSuccess;
 }
 
@@ -99,7 +150,7 @@ int Ripemd160::AddParams(
     }
 
     if (key == "abe_all") {
-        AddAllParams(param, val);
+        AddAllParams("abe_", param, val);
     } else {
         param.zjc_host->SaveKeyValue(param.from, key, val);
     }
@@ -113,7 +164,10 @@ int Ripemd160::AddParams(
     return kContractSuccess;
 }
 
-void Ripemd160::AddAllParams(const CallParameters& param, const std::string& val) {
+void Ripemd160::AddAllParams(
+        const std::string& prev, 
+        const CallParameters& param, 
+        const std::string& val) {
     common::Split<1024> lines(val.c_str(), '\n', val.size());
     for (uint32_t i = 0; i < lines.Count(); ++i) {
         common::Split<> items(lines[i], ':', lines.SubLen(i));
@@ -121,7 +175,7 @@ void Ripemd160::AddAllParams(const CallParameters& param, const std::string& val
             continue;
         }
 
-        std::string key = std::string("abe_") + items[0];
+        std::string key = prev + items[0];
         param.zjc_host->SaveKeyValue(
             param.from,
             key,
