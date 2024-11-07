@@ -10,6 +10,7 @@ var fs = require('fs');
 const util = require('util')
 const kTestSellerCount = 11;  // real: kTestSellerCount - 10
 const kTestBuyerCount = 11;  // real: kTestBuyerCount - 10
+const contract_address = "48e1eab96c9e759daa3aff82b40e77cd615a41d2";
 
 function str_to_hex(str) {
     var arr1 = [];
@@ -208,12 +209,11 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
 function new_contract(from_str_prikey, contract_bytes) {
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var kechash = keccak256(from_str_prikey + gid + contract_bytes).toString('hex')
-    var self_contract_address = "48e1eab96c9e759daa3aff82b40e77cd615a41d1";// kechash.slice(kechash.length - 40, kechash.length)
     var data = param_contract(
         from_str_prikey,
         6,
         gid,
-        self_contract_address,
+        contract_address,
         0,
         10000000,
         1,
@@ -221,19 +221,10 @@ function new_contract(from_str_prikey, contract_bytes) {
         "",
         0);
     PostCode(data);
-
-    var opt = { flag: 'w', }
-    fs.writeFile('contract_address', self_contract_address, opt, (err) => {
-        if (err) {
-            console.error(err)
-        }
-    })
-
-    return self_contract_address;
+    return contract_address;
 }
 
 function call_contract(str_prikey, input, amount) {
-    contract_address = fs.readFileSync('contract_address', 'utf-8');
     console.log("contract_address: " + contract_address);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var data = param_contract(
@@ -288,7 +279,6 @@ function QueryContract(str_prikey, input) {
     var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
     var address = keccak256(pk_bytes).toString('hex')
     var address = address.slice(address.length - 40, address.length)
-    var contract_address = fs.readFileSync('contract_address', 'utf-8');
     var data = {
         "input": input,
         'address': contract_address,
@@ -299,7 +289,6 @@ function QueryContract(str_prikey, input) {
 }
 
 function Prepayment(str_prikey, prepay) {
-    var contract_address = fs.readFileSync('contract_address', 'utf-8');
     var data = create_tx(str_prikey, contract_address, 0, 100000, 1, prepay, 7);
     PostCode(data);
 }
@@ -354,7 +343,6 @@ function set_all_params(tag) {
 
 
 function Prepayment(str_prikey, prepay) {
-    var contract_address = fs.readFileSync('contract_address', 'utf-8');
     var data = create_tx(str_prikey, contract_address, 0, 100000, 1, prepay, 7);
     PostCode(data);
 }
@@ -483,7 +471,7 @@ function InitC2cEnv(key, value) {
                 do_transaction(
                     "863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 
                     account3.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
-                var contract_address = new_contract(
+                new_contract(
                     "863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 
                     out_lines[3] + cons_codes.substring(2));
                 var contract_cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "SELECT to FROM zjc_ck_account_key_value_table where type = 6 and key in ('5f5f6b437265617465436f6e74726163744279746573436f6465',  '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
@@ -581,7 +569,6 @@ if (args[0] == 3) {
 if (args[0] == 4) {
     call_decrypt()
 }
-
 
 // 测试合约查询
 if (args[0] == 9) {
