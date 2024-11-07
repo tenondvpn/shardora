@@ -16,7 +16,7 @@ contract ProxyReencryption {
     }
 
     function call_prxoy_reenc(bytes memory params) public {
-        test_ripdmd = ripemd160(params);
+        test_ripdmd_ = ripemd160(params);
     }
 
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
