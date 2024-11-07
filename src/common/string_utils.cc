@@ -19,6 +19,7 @@ namespace common {
 
 static long long LongLong(const char* s) {  // NOLINT
     if (!s) {
+        ZJC_DEBUG("ZJC_ERROR: not end of str., %s", s);
         throw ConvertException("ZJC_ERROR: not end of str.");
     }
     errno = 0;
@@ -27,16 +28,20 @@ static long long LongLong(const char* s) {  // NOLINT
     switch (errno) {
     case 0:
         if (end_ptr == s || *end_ptr != '\0') {
+            ZJC_DEBUG("ZJC_ERROR: not end of str., %s", s);
             throw ConvertException("ZJC_ERROR: not end of str.");
         }
         return res;
     case ERANGE:
         if (res == LONG_MIN) {
+            ZJC_DEBUG("ZJC_ERROR: invalid num., %s", s);
             throw ConvertException("ZJC_ERROR: invalid num.");
         } else {
+            ZJC_DEBUG("ZJC_ERROR: invalid num., %s", s);
             throw ConvertException("ZJC_ERROR: invalid num.");
         }
     default:
+        ZJC_DEBUG("ZJC_ERROR: invalid num., %s", s);
         throw ConvertException("ZJC_ERROR: invalid num.");
     }
 }
