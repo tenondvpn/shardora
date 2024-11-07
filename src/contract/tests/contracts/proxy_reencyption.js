@@ -293,55 +293,6 @@ function Prepayment(str_prikey, prepay) {
     PostCode(data);
 }
 
-function add_pairing_param(key, value) {
-    var key_len = key.length.toString();
-    if (key.length <= 9) {
-        key_len = "0" + key_len;
-    }
-
-    var param = "add" + key_len + key + value;
-    var hexparam = web3.utils.toHex(param);
-    // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
-    var addParam = web3.eth.abi.encodeParameters(
-        ['bytes'], 
-        [hexparam]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('call_prxoy_reenc(bytes)');
-//console.log("addParam 0: " + addParamCode.substring(2) + addParam.substring(2));
-    call_contract(
-        "20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 
-        addParamCode.substring(2) + addParam.substring(2), 0);
-
-}
-
-function call_decrypt() {
-    var param1 = "decrypt0001";
-    var hexparam1 = web3.utils.toHex(param1);
-    var addParam1 = web3.eth.abi.encodeParameters(
-        ['bytes'], 
-        [hexparam1]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('call_prxoy_reenc(bytes)');
-    console.log("addParam 1: " + addParamCode.substring(2) + addParam1.substring(2));
-    call_contract(
-        "20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 
-        addParamCode.substring(2) + addParam1.substring(2), 0);
-}
-
-function set_all_params(tag) {
-    try {
-        if (tag == 0) {
-            const data = fs.readFileSync('./params_tk', 'UTF-8');
-            add_pairing_param('all', data);
-        } else if (tag == 1) {
-            const data = fs.readFileSync('./params_enc', 'UTF-8');
-            add_pairing_param('all', data);
-        }
-
-    } catch (err) {
-        console.error(err);
-    }
-}
-
-
 function Prepayment(str_prikey, prepay) {
     var data = create_tx(str_prikey, contract_address, 0, 100000, 1, prepay, 7);
     PostCode(data);
@@ -548,26 +499,106 @@ function InitC2cEnv(key, value) {
       });
 }
 
+function add_pairing_param(key, value) {
+    var key_len = key.length.toString();
+    if (key.length <= 9) {
+        key_len = "0" + key_len;
+    }
+
+    var param = "add" + key_len + key + value;
+    var hexparam = web3.utils.toHex(param);
+    // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
+    var addParam = web3.eth.abi.encodeParameters(
+        ['bytes'], 
+        [hexparam]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('call_proxy_reenc(bytes)');
+//console.log("addParam 0: " + addParamCode.substring(2) + addParam.substring(2));
+    call_contract(
+        "20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 
+        addParamCode.substring(2) + addParam.substring(2), 0);
+
+}
+
+function call_decrypt() {
+    var param1 = "decrypt0001";
+    var hexparam1 = web3.utils.toHex(param1);
+    var addParam1 = web3.eth.abi.encodeParameters(
+        ['bytes'], 
+        [hexparam1]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('call_proxy_reenc(bytes)');
+    console.log("addParam 1: " + addParamCode.substring(2) + addParam1.substring(2));
+    call_contract(
+        "20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 
+        addParamCode.substring(2) + addParam1.substring(2), 0);
+}
+
+function set_all_params(tag) {
+    try {
+        if (tag == 0) {
+            const data = fs.readFileSync('./params_tk', 'UTF-8');
+            add_pairing_param('all', data);
+        } else if (tag == 1) {
+            const data = fs.readFileSync('./params_enc', 'UTF-8');
+            add_pairing_param('all', data);
+        }
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+function run_all() {
+    add_pairing_param("CreatPath", "CreatPath");
+    add_pairing_param("RKGen", "RKGen");
+    add_pairing_param("Upd", "Upd");
+    add_pairing_param("Enc", "Enc");
+    add_pairing_param("ReEnc", "ReEnc");
+    add_pairing_param("Dec", "Dec");
+}
+
 const args = process.argv.slice(2)
+// SetUp：初始化算法，需要用到pbc库
 if (args[0] == 0) {
-    InitC2cEnv("key", "value");
-}
-
-if (args[0] == 1) {
     var pairing_param_value = "type a\nq 8780710799663312522437781984754049815806883199414208211028653399266475630880222957078625179422662221423155858769582317459277713367317481324925129998224791\nh 12016012264891146079388821366740534204802954401251311822919615131047207289359704531102844802183906537786776\nr 730750818665451621361119245571504901405976559617\nexp2 159\nexp1 107\nsign1 1\nsign0 1";
-    add_pairing_param("c0", pairing_param_value);
+    InitC2cEnv("c0", pairing_param_value);
 }
 
+// CreatPath(i)：由用户i选择多个被委托者。按选择顺序生成一个路径（列表），其中存放被委托者的公钥。
+if (args[0] == 1) {
+    add_pairing_param("CreatPath", "CreatPath");
+}
+
+// RKGen：重加密密钥生成，需要用到pbc库
 if (args[0] == 2) {
-    set_all_params(0);
+    add_pairing_param("RKGen", "RKGen");
 }
 
+// Upd：token更新算法，需要用到pbc库
 if (args[0] == 3) {
-    set_all_params(1);
+    add_pairing_param("Upd", "Upd");
 }
 
+// Enc：加密，需要用到pbc库
 if (args[0] == 4) {
+    add_pairing_param("Enc", "Enc");
+}
+
+// ReEnc：重加密，需要用到pbc库 (这一步包含一个分布式随机数生成协议，即多个代理协商出一个统一的随机数)
+if (args[0] == 5) {
+    add_pairing_param("ReEnc", "ReEnc");
+}
+
+// Dec：解密，需要用到pbc库
+if (args[0] == 6) {
+    add_pairing_param("Dec", "Dec");
+}
+
+if (args[0] == 7) {
     call_decrypt()
+}
+
+if (args[0] == 8) {
+    run_all()
 }
 
 // 测试合约查询

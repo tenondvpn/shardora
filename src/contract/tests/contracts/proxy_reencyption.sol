@@ -11,11 +11,42 @@ contract ProxyReencryption {
     bytes32 test_ripdmd_;
     bytes32 enc_init_param_;
 
+    # SetUp：初始化算法，需要用到pbc库
     constructor(bytes memory enc_init_param) {
         enc_init_param_ = ripemd160(enc_init_param);
     }
 
-    function call_prxoy_reenc(bytes memory params) public {
+    function call_proxy_reenc(bytes memory params) public {
+        test_ripdmd_ = ripemd160(params);
+    }
+
+    # CreatPath(i)：由用户i选择多个被委托者。按选择顺序生成一个路径（列表），其中存放被委托者的公钥。
+    function CreatPath(bytes memory params) public {
+        test_ripdmd_ = ripemd160(params);
+    }
+
+    # RKGen：重加密密钥生成，需要用到pbc库
+    function PKGen(bytes memory params) public {
+        test_ripdmd_ = ripemd160(params);
+    }
+
+    # Upd：token更新算法，需要用到pbc库
+    function Upd(bytes memory params) public {
+        test_ripdmd_ = ripemd160(params);
+    }
+
+    # Enc：加密，需要用到pbc库
+    function Enc(bytes memory params) public {
+        test_ripdmd_ = ripemd160(params);
+    }
+
+    # ReEnc：重加密，需要用到pbc库 (这一步包含一个分布式随机数生成协议，即多个代理协商出一个统一的随机数)
+    function ReEnc(bytes memory params) public {
+        test_ripdmd_ = ripemd160(params);
+    }
+
+    # Dec：解密，需要用到pbc库
+    function Dec(bytes memory params) public {
         test_ripdmd_ = ripemd160(params);
     }
 
