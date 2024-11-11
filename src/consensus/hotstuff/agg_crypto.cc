@@ -16,11 +16,13 @@ Status AggCrypto::PartialSign(
     if (!elect_item) {
         return Status::kError;
     }
+    libff::alt_bn128_G1 g1_sig;
     
     bls::AggBls::Sign(
             elect_item->local_sk(),
             msg_hash,
-            &partial_sig->sig_);
+            &g1_sig);
+    partial_sig->set_signature(g1_sig);
     partial_sig->add_participant(elect_item->LocalMember()->index);
     
     return Status::kSuccess;
