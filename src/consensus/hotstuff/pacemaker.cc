@@ -334,7 +334,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     }
     
     auto high_qc_of_node = std::make_shared<QC>(timeout_proto.high_qc());
-    AggregateSignature* high_qc_sig_of_node;
+    auto high_qc_sig_of_node = std::make_shared<AggregateSignature>();
     if (!high_qc_sig_of_node->LoadFromProto(timeout_proto.high_qc_sig())) {
         return;
     }

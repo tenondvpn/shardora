@@ -76,7 +76,7 @@ public:
             uint64_t elect_height,
             View view,
             const std::unordered_map<uint32_t, std::shared_ptr<QC>>& high_qcs,
-            const std::vector<AggregateSignature*>& high_qc_sigs);
+            const std::vector<std::shared_ptr<AggregateSignature>>& high_qc_sigs);
     Status VerifyAggregateQC(
             uint32_t sharding_id,
             const std::shared_ptr<AggregateQC>& agg_qc,
@@ -196,10 +196,10 @@ private:
     }
 
     Status AggregateSigs(
-            const std::vector<AggregateSignature*>& sigs,
+            const std::vector<std::shared_ptr<AggregateSignature>>& sigs,
             AggregateSignature* agg_sig) {
         std::vector<libff::alt_bn128_G1> g1_sigs;
-        for (const auto sig : sigs) {
+        for (const auto& sig : sigs) {
             if (!sig->IsValid()) {
                 continue;
             }
@@ -209,9 +209,9 @@ private:
             }
         }
 
-        libff::alt_bn128_G1* agg_g1_sig;
-        bls::AggBls::Aggregate(g1_sigs, agg_g1_sig);
-        agg_sig->set_signature(*agg_g1_sig);
+        libff::alt_bn128_G1 agg_g1_sig;
+        bls::AggBls::Aggregate(g1_sigs, &agg_g1_sig);
+        agg_sig->set_signature(agg_g1_sig);
 
         return Status::kSuccess;
     }

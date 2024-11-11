@@ -133,7 +133,7 @@ std::shared_ptr<AggregateQC> AggCrypto::CreateAggregateQC(
         uint64_t elect_height,        
         View view,
         const std::unordered_map<uint32_t, std::shared_ptr<QC>>& high_qcs,
-        const std::vector<AggregateSignature*>& high_qc_sigs) {
+        const std::vector<std::shared_ptr<AggregateSignature>>& high_qc_sigs) {
     auto elect_item = GetElectItem(sharding_id, elect_height);
     if (!elect_item) {
         return nullptr;
