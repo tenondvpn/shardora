@@ -1530,6 +1530,8 @@ Status Hotstuff::ConstructVoteMsg(
     }
 
     vote_msg->mutable_partial_sig()->CopyFrom(partial_sig.DumpToProto());
+    auto sig_x_str = libBLS::ThresholdUtils::fieldElementToString(partial_sig.signature().X);
+    ZJC_DEBUG("partial sign, sig.x is %s, msg_hash: %s", sig_x_str.c_str(), common::Encode::HexEncode(qc_hash).c_str());
 #else
     std::string sign_x, sign_y;
     if (crypto()->PartialSign(

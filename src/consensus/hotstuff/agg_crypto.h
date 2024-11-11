@@ -1,10 +1,12 @@
 #pragma once
 #include <bls/agg_bls.h>
 #include <common/bitmap.h>
+#include <common/encode.h>
 #include <common/log.h>
 #include <common/utils.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/types.h>
+#include <tools/utils.h>
 #include <transport/transport_utils.h>
 
 namespace shardora {
@@ -131,7 +133,8 @@ public:
             if (verified) {
                 return Status::kSuccess;
             }
-            assert(false);
+            auto sig_x_str = libBLS::ThresholdUtils::fieldElementToString(sig.signature().X);
+            ZJC_DEBUG("agg sig verify failed, sig.x is %s, msg_hash: %s", sig_x_str.c_str(), common::Encode::HexEncode(msg_hash).c_str());
             return Status::kBlsVerifyFailed;
         }
 
