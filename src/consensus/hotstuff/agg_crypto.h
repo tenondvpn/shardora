@@ -110,6 +110,7 @@ public:
             uint64_t elect_height) {
         auto elect_item = GetElectItem(sharding_id, elect_height);
         if (!elect_item) {
+            assert(false);
             return Status::kError;
         }
         
@@ -120,15 +121,18 @@ public:
             auto agg_bls_pk = elect_item->agg_bls_pk(member_idx);
             if (!agg_bls_pk) {
                 // 不在本次共识池或 POP 验证失败都会导致 elect_item 找不到 pk
+                assert(false);
                 return Status::kError;
             }
             auto verified = bls::AggBls::CoreVerify(
-                    // elect_item->t(),
-                    // elect_item->n(),
                     *agg_bls_pk,
                     msg_hash,
                     sig.signature());
-            return verified ? Status::kSuccess : Status::kBlsVerifyFailed;
+            if (verified) {
+                return Status::kSuccess;
+            }
+            assert(false);
+            return Status::kBlsVerifyFailed;
         }
 
         // aggregated sig
