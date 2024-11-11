@@ -18,8 +18,6 @@ Status AggCrypto::PartialSign(
     }
     
     bls::AggBls::Sign(
-            // elect_item->t(),
-            // elect_item->n(),
             elect_item->local_sk(),
             msg_hash,
             &partial_sig->sig_);
