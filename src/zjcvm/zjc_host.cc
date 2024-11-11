@@ -365,6 +365,17 @@ int ZjchainHost::SaveKeyValue(
 }
 
 int ZjchainHost::GetKeyValue(const std::string& id, const std::string& key_str, std::string* val) {
+    auto addr = evmc::address{};
+    memcpy(addr.bytes, id.c_str(), id.size());
+    auto it = accounts_.find(addr);
+    if (it != accounts_.end()) {
+        auto siter = it->second.str_storage.find(key_str);
+        if (siter != it->second.str_storage.end()) {
+            *val = siter->second.str_val;
+            return kZjcvmSuccess;
+        }
+    }
+
     auto str_key = id + key_str;
     auto prev_iter = prev_storages_map_.find(str_key);
     if (prev_iter != prev_storages_map_.end()) {
@@ -373,8 +384,6 @@ int ZjchainHost::GetKeyValue(const std::string& id, const std::string& key_str, 
     }
 
     ZJC_DEBUG("called 14");
-    auto addr = evmc::address{};
-    memcpy(addr.bytes, id.c_str(), id.size());
     if (!Execution::Instance()->GetStorage(addr, key_str, val)) {
         return kZjcvmError;
     }

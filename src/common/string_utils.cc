@@ -7,6 +7,8 @@
 #include <limits>
 #include <memory>
 
+#include "common/log.h"
+
 #ifndef LONG_MIN
 #define LONG_MIN (std::numeric_limits<long>::min)()  // NOLINT
 #endif
@@ -17,24 +19,38 @@ namespace common {
 
 static long long LongLong(const char* s) {  // NOLINT
     if (!s) {
+        ZJC_DEBUG("ZJC_ERROR: not end of str., %s", s);
         throw ConvertException("ZJC_ERROR: not end of str.");
     }
+
+    while (*s != '\0' && *(s + 1) != '\0') {
+        if (*s != '0') {
+            break;
+        }
+           
+        ++s;
+    }
+
     errno = 0;
     char* end_ptr;
     long long res = strtoll(s, &end_ptr, 0);  // NOLINT
     switch (errno) {
     case 0:
         if (end_ptr == s || *end_ptr != '\0') {
+            ZJC_DEBUG("ZJC_ERROR: not end of str., %s", s);
             throw ConvertException("ZJC_ERROR: not end of str.");
         }
         return res;
     case ERANGE:
         if (res == LONG_MIN) {
+            ZJC_DEBUG("ZJC_ERROR: invalid num., %s", s);
             throw ConvertException("ZJC_ERROR: invalid num.");
         } else {
+            ZJC_DEBUG("ZJC_ERROR: invalid num., %s", s);
             throw ConvertException("ZJC_ERROR: invalid num.");
         }
     default:
+        ZJC_DEBUG("ZJC_ERROR: invalid num., %s", s);
         throw ConvertException("ZJC_ERROR: invalid num.");
     }
 }
@@ -154,10 +170,12 @@ template<typename T>
 T SignedCheckCastValue(const std::string& str) {
     auto val = LongLong(str.c_str());
     if (val < (std::numeric_limits<T>::min)()) {
+        ZJC_DEBUG("value bound error[type min]: %lu, %s", val, str.c_str());
         throw ConvertException("value bound error[type min]");
     }
 
     if (val > (std::numeric_limits<T>::max)()) {
+        ZJC_DEBUG("value bound error[type max]: %lu, %s", val, str.c_str());
         throw ConvertException("value bound error[type max]");
     }
     return static_cast<T>(val);
