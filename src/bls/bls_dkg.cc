@@ -155,7 +155,7 @@ void BlsDkg::PopBlsMessage() {
             break;
         }
 
-        // HandleBlsMessage(msg_ptr);
+        HandleBlsMessage(msg_ptr);
     }
 }
 
