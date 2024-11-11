@@ -249,6 +249,7 @@ public:
 private:
     void LoadAllViewBlockWithLatestCommitedBlock(std::shared_ptr<ViewBlock>& view_block);
     void InitAddNewViewBlock(std::shared_ptr<ViewBlock>& view_block);
+
     void InitHandleProposeMsgPipeline() {
         // 仅 VerifyLeader 和 ChainStore 出错后允许重试
         // 因为一旦节点状态落后，父块缺失，ChainStore 会一直失败，导致无法追上进度
@@ -354,7 +355,7 @@ private:
     std::map<View, std::shared_ptr<ProposeMsgWrapper>> leader_view_with_propose_msgs_;
     std::shared_ptr<transport::TransportMessage> latest_leader_propose_message_;
     std::shared_ptr<sync::KeyValueSync> kv_sync_;
-
+    std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
 };
 
 } // namespace consensus

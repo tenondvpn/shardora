@@ -12,6 +12,7 @@
 #include <libbls/bls/BLSPublicKeyShare.h>
 #include <libbls/tools/utils.h>
 #include <dkg/dkg.h>
+#include <ck/ck_client.h>
 
 #include "bls/bls_utils.h"
 #include "common/bitmap.h"
@@ -76,6 +77,21 @@ public:
     void Destroy();
 
     void TimerMessage();
+
+    static std::string serializeCommonPk(const libff::alt_bn128_G2& common_pk) {
+        auto pk = std::make_shared<bls::protobuf::BlsPublicKey>();
+
+        pk->set_x_c0(
+                libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0));
+        pk->set_x_c1(
+                libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c1));
+        pk->set_y_c0(
+                libBLS::ThresholdUtils::fieldElementToString(common_pk.Y.c0));
+        pk->set_y_c1(
+                libBLS::ThresholdUtils::fieldElementToString(common_pk.Y.c1));
+
+        return pk->SerializeAsString();
+    }        
 
 private:
     void HandleVerifyBroadcast(const transport::MessagePtr& header);
@@ -178,6 +194,7 @@ private:
     bool has_finished_ = false;
     std::vector<libff::alt_bn128_G2> for_common_pk_g2s_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> bls_msg_queue_;
+    std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
 
 #ifdef ZJC_UNITTEST
     transport::MessagePtr ver_brd_msg_;
@@ -185,6 +202,19 @@ private:
     std::vector<libff::alt_bn128_G2> g2_vec_;
 #endif
     DISALLOW_COPY_AND_ASSIGN(BlsDkg);
+
+    static std::string serializeSkContribution(std::vector<libff::alt_bn128_Fr> contributions) {
+        std::string ret = "";
+        for (uint32_t i = 0; i < contributions.size(); i++) {
+            auto contri_str = libBLS::ThresholdUtils::fieldElementToString(contributions[i]);
+            ret += contri_str + ",";
+        }
+        return ret;
+    }
+
+    static std::string serializeLocalSk(const libff::alt_bn128_Fr& local_sk) {
+        return libBLS::ThresholdUtils::fieldElementToString(local_sk);
+    }    
 };
 
 };  // namespace bls
