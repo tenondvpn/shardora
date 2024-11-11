@@ -75,9 +75,9 @@ Status AggCrypto::VerifyAndAggregateSig(
         return Status::kBlsVerifyWaiting;
     }
 
-    std::vector<AggregateSignature*> partial_sigs;
+    std::vector<std::shared_ptr<AggregateSignature>> partial_sigs;
     for (auto partial_sig : collection_item->partial_sigs) {
-        partial_sigs.push_back(&partial_sig);
+        partial_sigs.push_back(std::make_shared<AggregateSignature>(partial_sig));
     }
     return AggregateSigs(partial_sigs, &agg_sig);
 }
