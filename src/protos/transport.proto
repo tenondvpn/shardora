@@ -60,12 +60,44 @@ message Header {
     optional block.protobuf.ElectBlockMessage elect_block = 24;
     optional init.protobuf.InitMessage init_proto = 25;
     optional pools.protobuf.SyncPoolsMaxHeight sync_heights = 26;
-    optional block.protobuf.Block block = 27; // Deprecated! use view_block instead
-    optional view_block.protobuf.ViewBlockItem view_block = 28;
+    optional block.protobuf.Block block = 27;
     optional uint32 from_public_port = 29;
     optional c2c.protobuf.C2cMessage c2c = 30;
     optional bytes pubkey = 31;
     optional view_block.protobuf.ViewBlockSyncMessage view_block_proto = 32;
     optional view_block.protobuf.TimeoutMessage hotstuff_timeout_proto = 33;
     optional hotstuff.protobuf.HotstuffMessage hotstuff = 34;
+}
+
+message OldHeader {
+    optional int32 src_sharding_id = 1;
+    optional bytes des_dht_key = 2;
+    optional uint32 hop_count = 3 [default=0];
+    optional bytes debug = 4;
+    optional uint64 hash64 = 5;
+    optional uint32 type = 6;
+    optional BroadcastParam broadcast = 7;
+    optional bytes sign = 8;
+    optional int32 version = 9 [default=0];
+    optional network.protobuf.NetworkMessage network_proto = 10;
+    optional dht.protobuf.DhtMessage dht_proto = 11;
+    optional bls.protobuf.BlsMessage bls_proto = 12;
+    optional pools.protobuf.TxMessage tx_proto = 13;
+    optional contract.protobuf.ContractMessage contract_proto = 14;
+    optional elect.protobuf.ElectMessage elect_proto = 15;
+    optional zbft.protobuf.ZbftMessage zbft = 16;
+    optional block.protobuf.BlockMessage block_proto = 17;
+    optional pools.protobuf.ToTxHeights to_tx_heights = 18;
+    optional sync.protobuf.SyncInfo sync = 19;
+    optional sync.protobuf.SyncMessage sync_proto = 20;
+    optional vss.protobuf.VssMessage vss_proto = 21;
+    optional block.protobuf.CrossShardingTosMessage cross_tos = 22;
+    optional block.protobuf.CrossShardingStatisticMessage cross_statistic = 23;
+    optional block.protobuf.ElectBlockMessage elect_block = 24;
+    optional init.protobuf.InitMessage init_proto = 25;
+    optional pools.protobuf.SyncPoolsMaxHeight sync_heights = 26;
+    optional block.protobuf.Block block = 27;
+    repeated pools.protobuf.ShardToTxItem invalid_bfts = 28;
+    optional uint32 from_public_port = 29;
+    optional c2c.protobuf.C2cMessage c2c = 30;
 }

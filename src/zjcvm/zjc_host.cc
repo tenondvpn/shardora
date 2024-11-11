@@ -39,7 +39,32 @@ evmc::bytes32 ZjchainHost::get_storage(
         }
     }
 
-    return Execution::Instance()->GetStorage(addr, key);
+    auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
+        std::string((char*)key.bytes, sizeof(key.bytes));
+    auto prev_iter = prev_storages_map_.find(str_key);
+    if (prev_iter != prev_storages_map_.end()) {
+        evmc::bytes32 tmp_val{};
+        uint32_t offset = 0;
+        uint32_t length = sizeof(tmp_val.bytes);
+        if (prev_iter->second.size() < sizeof(tmp_val.bytes)) {
+            offset = sizeof(tmp_val.bytes) - prev_iter->second.size();
+            length = prev_iter->second.size();
+        }
+
+        memcpy(tmp_val.bytes + offset, prev_iter->second.c_str(), length);
+        ZJC_DEBUG("success get prev storage key: %s, value: %s",
+            common::Encode::HexEncode(str_key).c_str(),
+            common::Encode::HexEncode(prev_iter->second).c_str());
+        return tmp_val;
+    }
+
+    evmc::bytes32 tmp_val{};
+    auto res_bytes = Execution::Instance()->GetStorage(addr, key, &tmp_val);
+    if (!res_bytes) {
+        ZJC_DEBUG("failed get prev storage key: %s", common::Encode::HexEncode(str_key).c_str());
+    }
+
+    return tmp_val;
 }
 
 evmc_storage_status ZjchainHost::set_storage(
@@ -205,33 +230,27 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
     } else {
         std::string id = std::string((char*)msg.code_address.bytes, sizeof(msg.code_address.bytes));
         auto acc_info = acc_mgr_->GetAccountInfo(id);
-        if (acc_info == nullptr) {
-            evmc_res.status_code = EVMC_REVERT;
-            ZJC_WARN("get call bytes code failed: %s, field: %s",
-                common::Encode::HexEncode(id).c_str(),
-                protos::kFieldBytesCode.c_str());
-            return evmc_res;
-        }
-
-        if (!acc_info->bytes_code().empty()) {
-            ZJC_DEBUG("get call bytes code success: %s, field: %s",
-                common::Encode::HexEncode(id).c_str(),
-                protos::kFieldBytesCode.c_str());
-            ++depth_;
-            int res_status = zjcvm::Execution::Instance()->execute(
-                acc_info->bytes_code(),
-                params.data,
-                params.from,
-                params.to,
-                origin_address_,
-                params.apparent_value,
-                params.gas,
-                depth_,
-                zjcvm::kJustCall,
-                *this,
-                &evmc_res);
-            if (res_status != consensus::kConsensusSuccess || evmc_res.status_code != EVMC_SUCCESS) {
-                return evmc_res;
+        if (acc_info != nullptr) {
+            if (!acc_info->bytes_code().empty()) {
+                ZJC_DEBUG("get call bytes code success: %s, field: %s",
+                    common::Encode::HexEncode(id).c_str(),
+                    protos::kFieldBytesCode.c_str());
+                ++depth_;
+                int res_status = zjcvm::Execution::Instance()->execute(
+                    acc_info->bytes_code(),
+                    params.data,
+                    params.from,
+                    params.to,
+                    origin_address_,
+                    params.apparent_value,
+                    params.gas,
+                    depth_,
+                    zjcvm::kJustCall,
+                    *this,
+                    &evmc_res);
+                if (res_status != consensus::kConsensusSuccess || evmc_res.status_code != EVMC_SUCCESS) {
+                    return evmc_res;
+                }
             }
         }
     }
@@ -257,6 +276,7 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
                 }
             }
 
+            evmc_res.status_code = EVMC_SUCCESS;
             ZJC_DEBUG("contract transfer from: %s, to: %s, from_balance: %lu, amount: %lu",
                 common::Encode::HexEncode(from_str).c_str(),
                 common::Encode::HexEncode(dest_str).c_str(),
@@ -321,6 +341,18 @@ int ZjchainHost::SaveKeyValue(
         common::Encode::HexEncode(id).c_str(),
         common::Encode::HexEncode(key).c_str(),
         common::Encode::HexEncode(val).c_str());
+    return SaveKeyValue(addr, key, val);
+}
+
+int ZjchainHost::SaveKeyValue(
+        const evmc::address& addr,
+        const std::string& key,
+        const std::string& val) {
+    ZJC_DEBUG("called 13");
+    CONTRACT_DEBUG("zjcvm set storage called, id: %s, key: %s, value: %s",
+        common::Encode::HexEncode(std::string((char*)addr.bytes, sizeof(addr.bytes))).c_str(),
+        common::Encode::HexEncode(key).c_str(),
+        common::Encode::HexEncode(val).c_str());
     auto it = accounts_.find(addr);
     if (it == accounts_.end()) {
         accounts_[addr] = MockedAccount();
@@ -333,9 +365,25 @@ int ZjchainHost::SaveKeyValue(
 }
 
 int ZjchainHost::GetKeyValue(const std::string& id, const std::string& key_str, std::string* val) {
-    ZJC_DEBUG("called 14");
     auto addr = evmc::address{};
     memcpy(addr.bytes, id.c_str(), id.size());
+    auto it = accounts_.find(addr);
+    if (it != accounts_.end()) {
+        auto siter = it->second.str_storage.find(key_str);
+        if (siter != it->second.str_storage.end()) {
+            *val = siter->second.str_val;
+            return kZjcvmSuccess;
+        }
+    }
+
+    auto str_key = id + key_str;
+    auto prev_iter = prev_storages_map_.find(str_key);
+    if (prev_iter != prev_storages_map_.end()) {
+        *val = prev_iter->second;
+        return kZjcvmSuccess;
+    }
+
+    ZJC_DEBUG("called 14");
     if (!Execution::Instance()->GetStorage(addr, key_str, val)) {
         return kZjcvmError;
     }

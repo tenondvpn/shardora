@@ -1,3 +1,11 @@
+src/contract/tests/contracts/c2c/solidity*.pptx
+src/contract/tests/contracts/*.md
+src/contract/tests/contracts/*.txt
+src/contract/tests/contracts/c2c/*.txt
+src/contract/tests/contracts/c2c/*.docx
+src/contract/tests/contracts/c2c/*.md
+src/contract/tests/contracts/c2c/solidity*.txt
+src/contract/tests/contracts/ElectPlegde
 third_party/libBLS_n
 third_party/libBLS/deps
 cbuild_Debug

@@ -1,5 +1,6 @@
 #include "bls/bls_manager.h"
 
+#include <bls/bls_utils.h>
 #include <dkg/dkg.h>
 #include <libbls/bls/BLSPrivateKey.h>
 #include <libbls/bls/BLSPrivateKeyShare.h>
@@ -8,9 +9,9 @@
 #include <libbls/tools/utils.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
 #include <libff/common/profiling.hpp>
-#include <network/network_status.h>
 
 #include "bls/bls_sign.h"
+#include "bls/agg_bls.h"
 #include "common/global_info.h"
 #include "network/dht_manager.h"
 #include "network/network_utils.h"
@@ -91,12 +92,16 @@ void BlsManager::OnNewElectBlock(
     auto& in = elect_block->in();
     for (int32_t i = 0; i < in.size(); ++i) {
         auto id = security_->GetAddress(in[i].pubkey());
+        auto agg_bls_pk = bls::Proto2BlsPublicKey(in[i].agg_bls_pk());
+        auto agg_bls_pk_proof = bls::Proto2BlsPopProof(in[i].agg_bls_pk_proof());
         members->push_back(std::make_shared<common::BftMember>(
             elect_block->shard_network_id(),
             id,
             in[i].pubkey(),
             i,
-            in[i].pool_idx_mod_num()));
+            in[i].pool_idx_mod_num(),
+            *agg_bls_pk,
+            *agg_bls_pk_proof));
     }
 
     elect_item->members = members;
@@ -409,13 +414,6 @@ int BlsManager::GetVerifyHash(
 }
 
 void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    if (network::NetsInfo::Instance()->IsClosed(msg_ptr->header.src_sharding_id())) {
-        ZJC_WARN("wrong shard status: %d %d.",
-            msg_ptr->header.src_sharding_id(),
-            network::NetsInfo::Instance()->net_info(msg_ptr->header.src_sharding_id())->Status());
-        return;
-    }
-    
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
     if (bls_msg.has_finish_req()) {
@@ -637,7 +635,7 @@ void BlsManager::CheckAggSignValid(
             finish_item->all_common_public_keys[member_idx] = libff::alt_bn128_G2::zero();
             BLS_ERROR("invalid bls item index: %d", member_idx);
         } else {
-            BLS_ERROR("valid bls item index: %d", member_idx);
+            BLS_DEBUG("valid bls item index: %d", member_idx);
         }
 
         return;
@@ -858,7 +856,7 @@ bool BlsManager::VerifyAggSignValid(
             return false;
         }
 
-        ZJC_ERROR("verify agg sign success t: %d, n: %d, hash: %s, g1 hash: %s, agg sign: %s, %s, %s!",
+        ZJC_DEBUG("verify agg sign success t: %d, n: %d, hash: %s, g1 hash: %s, agg sign: %s, %s, %s!",
             t, n,
             common::Encode::HexEncode(finish_item->max_finish_hash).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),

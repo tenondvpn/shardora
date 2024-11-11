@@ -29,50 +29,55 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
         message.append(tx_info.storages(i).key());
         message.append(tx_info.storages(i).value());
-        ZJC_DEBUG("add tx key: %s, %s",
-            tx_info.storages(i).key().c_str(),
-            common::Encode::HexEncode(tx_info.storages(i).key()).c_str());
+        // ZJC_DEBUG("add tx key: %s, %s",
+        //     tx_info.storages(i).key().c_str(),
+        //     common::Encode::HexEncode(tx_info.storages(i).key()).c_str());
     }
 
-    // for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
-    //     ZJC_DEBUG("amount: %lu, gas_limit: %lu, gas_price: %lu, step: %u, key: %s, %s, val: %s, block tx hash: %s, message: %s",
-    //         amount, gas_limit, gas_price, step,
-    //         common::Encode::HexEncode(tx_info.storages(i).key()).c_str(),
-    //         tx_info.storages(i).key().c_str(),
-    //         common::Encode::HexEncode(tx_info.storages(i).value()).c_str(),
-    //         common::Encode::HexEncode(common::Hash::keccak256(message)).c_str(),
-    //         common::Encode::HexEncode(message).c_str());
-    // }
+    // ZJC_DEBUG("gid: %s, from: %s, to: %s, amount: %lu, gas_limit: %lu, "
+    //     "gas_price: %lu, step: %u, gas_used: %lu, status: %lu, block tx hash: %s, message: %s",
+    //     common::Encode::HexEncode(tx_info.gid()).c_str(),
+    //     common::Encode::HexEncode(tx_info.from()).c_str(),
+    //     common::Encode::HexEncode(tx_info.to()).c_str(),
+    //     amount, gas_limit, gas_price, step,
+    //     gas_used,
+    //     status,
+    //     common::Encode::HexEncode(common::Hash::keccak256(message)).c_str(),
+    //     common::Encode::HexEncode(message).c_str());
 
     return common::Hash::keccak256(message);
 }
 
-std::string GetBlockHash(const block::protobuf::Block& block) {
+std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) {
     std::string msg;
+    auto& block = view_block.block_info();
     msg.reserve(block.tx_list_size() * 32 + 256);
     for (int32_t i = 0; i < block.tx_list_size(); i++) {
         msg.append(GetTxMessageHash(block.tx_list(i)));
     }
 
-    msg.append(block.prehash());
-    uint32_t pool_idx = block.pool_index();
-    msg.append((char*)&pool_idx, sizeof(pool_idx));
-    uint32_t sharding_id = block.network_id();
+    // ZJC_DEBUG("get block hash txs message: %s, vss_random: %lu, height: %lu, "
+    //     "tm height: %lu, tm: %lu, invalid hash size: %u",
+    //     common::Encode::HexEncode(msg).c_str(), 
+    //     block.consistency_random(), 
+    //     block.height(), 
+    //     block.timeblock_height(), 
+    //     block.timestamp(), 
+    //     block.change_leader_invalid_hashs_size());
+    uint32_t sharding_id = view_block.qc().network_id();
     msg.append((char*)&sharding_id, sizeof(sharding_id));
+    uint32_t pool_index = view_block.qc().pool_index();
+    msg.append((char*)&pool_index, sizeof(pool_index));
+    msg.append(view_block.parent_hash());
     uint64_t vss_random = block.consistency_random();
     msg.append((char*)&vss_random, sizeof(vss_random));
     uint64_t height = block.height();
     msg.append((char*)&height, sizeof(height));
     uint64_t timeblock_height = block.timeblock_height();
     msg.append((char*)&timeblock_height, sizeof(timeblock_height));
-    uint64_t elect_height = block.electblock_height();
-    msg.append((char*)&elect_height, sizeof(elect_height));
     uint64_t timestamp = block.timestamp();
     msg.append((char*)&timestamp, sizeof(timestamp));  
-    uint32_t leader_idx = block.leader_index();
-    msg.append((char*)&leader_idx, sizeof(leader_idx));
     // msg.append(block.leader_ip());
-    uint32_t leader_port = block.leader_port();
     // msg.append((char*)&leader_port, sizeof(leader_port));
     if (block.change_leader_invalid_hashs_size() > 0) {
         for (int32_t i = 0; i < block.change_leader_invalid_hashs_size(); ++i) {
@@ -80,32 +85,7 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
         }
     }
 
-    auto tmp_hash = common::Hash::keccak256(msg);
-    bool is_commited_block = block.is_commited_block();
-#ifndef ENABLE_HOTSTUFF
-    if (is_commited_block) {
-        tmp_hash.append((char*)&is_commited_block, sizeof(is_commited_block));
-        tmp_hash = common::Hash::keccak256(tmp_hash);
-    }
-#endif
-    ZJC_DEBUG("block.prehash(): %s, height: %lu,pool_idx: %u, sharding_id: %u, vss_random: %lu, "
-        "timeblock_height: %lu, elect_height: %lu, leader_idx: %u, get block hash: %s, tmp_hash: %s, msg: %s, "
-        "is_commited_block: %d, leader_ip: %s, leader_port: %u",
-        common::Encode::HexEncode(block.prehash()).c_str(),
-        height,
-        pool_idx,
-        sharding_id,
-        vss_random,
-        timeblock_height,
-        elect_height,
-        leader_idx,
-        common::Encode::HexEncode(common::Hash::keccak256(msg)).c_str(),
-        common::Encode::HexEncode(tmp_hash).c_str(),
-        common::Encode::HexEncode(msg).c_str(),
-        is_commited_block,
-        block.leader_ip().c_str(),
-        leader_port);
-    return tmp_hash;
+    return common::Hash::keccak256(msg);
 }
 
 } // namespace consensus

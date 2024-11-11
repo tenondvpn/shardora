@@ -14,8 +14,8 @@ namespace vss {
 
 VssManager::VssManager() {}
 
-void VssManager::OnTimeBlock(const std::shared_ptr<block::protobuf::Block>& block) {
-    epoch_random_ = common::Hash::Hash64(block->bls_agg_sign_x() + block->bls_agg_sign_y());
+void VssManager::OnTimeBlock(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block) {
+    epoch_random_ = common::Hash::Hash64(block->qc().sign_x() + block->qc().sign_y());
 }
 
 }  // namespace vss

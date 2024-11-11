@@ -8,15 +8,12 @@
 #include "network/route.h"
 #include "pools/tx_utils.h"
 #include "protos/transport.pb.h"
+#include "transport/tcp_transport.h"
 #include "zjcvm/execution.h"
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
-#include "rapidjson/prettywriter.h"
 
 #include <google/protobuf/util/json_util.h>
-#include <network/network_status.h>
-#include <network/network_utils.h>
-#include <rapidjson/stringbuffer.h>
 
 namespace shardora {
 
@@ -149,12 +146,13 @@ static int CreateTransactionWithAttr(
     if (http_handler->security_ptr()->Verify(
             tx_hash, from_pk, sign) != security::kSecuritySuccess) {
         ZJC_DEBUG("verify signature failed tx_hash: %s, "
-            "sign_r: %s, sign_s: %s, sign_v: %d, pk: %s",
+            "sign_r: %s, sign_s: %s, sign_v: %d, pk: %s, hash64: %lu",
             common::Encode::HexEncode(tx_hash).c_str(),
             common::Encode::HexEncode(sign_r).c_str(),
             common::Encode::HexEncode(sign_s).c_str(),
             sign_v,
-            common::Encode::HexEncode(from_pk).c_str());
+            common::Encode::HexEncode(from_pk).c_str(),
+            msg.hash64());
         return kSignatureInvalid;
     }
 
@@ -291,6 +289,12 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
         return;
     }
     
+    transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header);
+    ZJC_DEBUG("http handler success get http server thread index: %d, address: %s, hash64: %lu", 
+        thread_index, 
+        common::Encode::HexEncode(
+            http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk))).c_str(),
+        msg_ptr->header.hash64());
     http_handler->net_handler()->NewHttpServer(msg_ptr);
     std::string res = std::string("ok");
     evbuffer_add(req->buffer_out, res.c_str(), res.size());
@@ -454,35 +458,6 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
     return;
 }
 
-static void QueryNetsInfo(evhtp_request_t* req, void* data) {
-    ZJC_DEBUG("query nets info.");
-    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
-    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
-    auto header3 = evhtp_header_new(
-        "Access-Control-Allow-Headers",
-        "x-requested-with,content-type", 0, 0);
-    evhtp_headers_add_header(req->headers_out, header1);
-    evhtp_headers_add_header(req->headers_out, header2);
-    evhtp_headers_add_header(req->headers_out, header3);
-
-    
-    rapidjson::StringBuffer buf;
-    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buf);
-    
-    writer.StartObject();
-    writer.Key("biggest_net_id");
-    writer.Int(network::kConsensusShardEndNetworkId-1);
-    writer.Key("biggest_opened_net_id");
-    writer.Int(network::NetsInfo::Instance()->BiggestOpenedNetId());
-    writer.Key("preopened_net_id");
-    writer.Int(network::NetsInfo::Instance()->PreopenedNetworkId());    
-    writer.EndObject();
-
-    evbuffer_add(req->buffer_out, buf.GetString(), buf.GetSize());
-    evhtp_send_reply(req, EVHTP_RES_OK);
-    return;
-}
-
 static void QueryInit(evhtp_request_t* req, void* data) {
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     std::string res = "ok";
@@ -511,7 +486,6 @@ void HttpHandler::Init(
     http_server.AddCallback("/transaction", HttpTransaction);
     http_server.AddCallback("/query_contract", QueryContract);
     http_server.AddCallback("/query_account", QueryAccount);
-    http_server.AddCallback("/query_netsinfo", QueryNetsInfo);
     http_server.AddCallback("/query_init", QueryInit);
 }
 

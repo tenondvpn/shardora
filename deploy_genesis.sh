@@ -28,14 +28,12 @@ done
 (
 
 for n in r1 r2 r3; do
-    cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/${n}/db &
+    cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/${n}/db
 done
-wait
 
 for n in s3_1 s3_2 s3_3 s3_4; do
-    cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/${n}/db &
+    cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/${n}/db
 done
-wait
 ) &
 wait
 

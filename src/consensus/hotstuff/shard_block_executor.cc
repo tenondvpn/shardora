@@ -1,4 +1,5 @@
 #include <consensus/hotstuff/block_executor.h>
+#include "consensus/hotstuff/hotstuff_utils.h"
 #include <zjcvm/zjcvm_utils.h>
 
 namespace shardora {
@@ -6,17 +7,19 @@ namespace hotstuff {
 
 Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
-        std::shared_ptr<block::protobuf::Block>& block) {
+        view_block::protobuf::ViewBlockItem* view_block,
+        BalanceMap& acc_balance_map,
+        zjcvm::ZjchainHost& zjc_host) {
     // 执行交易
-    auto tx_list = block->mutable_tx_list();
+    auto& block = *view_block->mutable_block_info();
+    auto tx_list = block.mutable_tx_list();
     auto& tx_map = txs_ptr->txs;
     tx_list->Reserve(tx_map.size());
-    std::unordered_map<std::string, int64_t> acc_balance_map;
     zjc_host.tx_context_.tx_origin = evmc::address{};
     zjc_host.tx_context_.block_coinbase = evmc::address{};
-    zjc_host.tx_context_.block_number = block->height();
-    zjc_host.tx_context_.block_timestamp = block->timestamp() / 1000;
-    uint64_t chain_id = (((uint64_t)block->network_id()) << 32 | (uint64_t)block->pool_index());
+    zjc_host.tx_context_.block_number = block.height();
+    zjc_host.tx_context_.block_timestamp = block.timestamp() / 1000;
+    uint64_t chain_id = (((uint64_t)view_block->qc().network_id()) << 32 | (uint64_t)view_block->qc().pool_index());
     zjcvm::Uint64ToEvmcBytes32(
         zjc_host.tx_context_.chain_id,
         chain_id);
@@ -27,6 +30,13 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
         int res = iter->second->TxToBlockTx(tx_info, db_batch_, &block_tx);
         if (res != consensus::kConsensusSuccess) {
             tx_list->RemoveLast();
+            ZJC_WARN("handle tx failed: %u_%u_%lu, tx step: %d, gid: %s, res: %d",
+                view_block->qc().network_id(), 
+                view_block->qc().pool_index(), 
+                view_block->qc().view(), 
+                block_tx.step(), 
+                common::Encode::HexEncode(block_tx.gid()).c_str(),
+                res);
             continue;
         }
 
@@ -39,13 +49,20 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
 
         block_tx.set_status(consensus::kConsensusSuccess);
         int do_tx_res = iter->second->HandleTx(
-            *block,
+            *view_block,
             db_batch_,
             zjc_host,
             acc_balance_map,
             block_tx);
         if (do_tx_res != consensus::kConsensusSuccess) {
             tx_list->RemoveLast();
+            ZJC_WARN("handle tx failed: %u_%u_%lu, tx step: %d, gid: %s, do_tx_res: %d",
+                view_block->qc().network_id(), 
+                view_block->qc().pool_index(), 
+                view_block->qc().view(), 
+                block_tx.step(), 
+                common::Encode::HexEncode(block_tx.gid()).c_str(),
+                do_tx_res);
             continue;
         }
 
@@ -60,6 +77,12 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
         }
 
         zjc_host.recorded_logs_.clear();
+        ZJC_WARN("handle tx success: %u_%u_%lu, tx step: %d, gid: %s",
+            view_block->qc().network_id(), 
+            view_block->qc().pool_index(), 
+            view_block->qc().view(), 
+            block_tx.step(), 
+            common::Encode::HexEncode(block_tx.gid()).c_str());
     }
     
     return Status::kSuccess;    

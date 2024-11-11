@@ -9,7 +9,7 @@ namespace shardora {
 namespace hotstuff {
 
 std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info);
-std::string GetBlockHash(const block::protobuf::Block &block);
+std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block);
 
 } // namespace consensus
 

@@ -1,6 +1,5 @@
 #include "transport/multi_thread.h"
 
-#include <common/log.h>
 #include <functional>
 
 #include "common/utils.h"
@@ -41,8 +40,10 @@ void ThreadHandler::HandleMessage() {
     static const uint32_t kMaxHandleMessageCount = 16u;
     uint8_t thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     uint8_t maping_thread_idx = common::GlobalInfo::Instance()->SetConsensusRealThreadIdx(thread_idx);
-    ZJC_DEBUG("thread handler thread index coming thread_idx: %d, maping_thread_idx: %d, message_handler_thread_count: %d", 
-        thread_idx, maping_thread_idx, common::GlobalInfo::Instance()->message_handler_thread_count());
+    ZJC_DEBUG("thread handler thread index coming thread_idx: %d, "
+        "maping_thread_idx: %d, message_handler_thread_count: %d", 
+        thread_idx, maping_thread_idx, 
+        common::GlobalInfo::Instance()->message_handler_thread_count());
     msg_handler_->ThreadWaitNotify();
     while (!destroy_) {
         if (!common::GlobalInfo::Instance()->main_inited_success()) {
@@ -328,7 +329,8 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
 
     threads_message_queues_[thread_index][priority].push(msg_ptr);
     wait_con_[thread_index % all_thread_count_].notify_one();
-    ZJC_DEBUG("queue size message push success: %lu, queue_idx: %d, priority: %d, thread queue size: %u, net: %u, type: %d",
+    ZJC_DEBUG("queue size message push success: %lu, queue_idx: %d, "
+        "priority: %d, thread queue size: %u, net: %u, type: %d",
         msg_ptr->header.hash64(), thread_index, priority,
         threads_message_queues_[thread_index][priority].size(),
         common::GlobalInfo::Instance()->network_id(),
@@ -514,11 +516,11 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool htt
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     for (uint32_t pri = kTransportPrioritySystem; pri < kTransportPriorityMaxCount; ++pri) {
         MessagePtr msg_obj;
-        threads_message_queues_[thread_idx][pri].pop(&msg_obj);        
+        threads_message_queues_[thread_idx][pri].pop(&msg_obj);
         if (msg_obj == nullptr) {
             continue;
         }
-        
+
         if (msg_obj->handle_timeout < now_tm_ms) {
             ZJC_DEBUG("remove handle timeout invalid message hash: %lu", msg_obj->header.hash64());
             continue;
@@ -526,7 +528,6 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool htt
 
         ZJC_DEBUG("pop valid message hash: %lu, size: %u, thread: %u",
             msg_obj->header.hash64(), threads_message_queues_[thread_idx][pri].size(), thread_idx);
-
         return msg_obj;
     }
 
@@ -535,10 +536,14 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool htt
         MessagePtr msg_obj;
         http_server_message_queue_.pop(&msg_obj);
         if (msg_obj != nullptr) {
-            ZJC_DEBUG("get msg http transaction success %s, %s", 
+            ZJC_DEBUG("get msg http transaction success %s, %s, hash64: %lu, step: %d, gid: %s, type: %d", 
                 common::Encode::HexEncode(
                 security_->GetAddress(msg_obj->header.tx_proto().pubkey())).c_str(),
-                common::Encode::HexEncode(msg_obj->header.tx_proto().to()).c_str());
+                common::Encode::HexEncode(msg_obj->header.tx_proto().to()).c_str(),
+                msg_obj->header.hash64(),
+                msg_obj->header.tx_proto().step(),
+                common::Encode::HexEncode(msg_obj->header.tx_proto().gid()).c_str(),
+                msg_obj->header.type());
         }
         return msg_obj;
     }

@@ -277,7 +277,7 @@ private:
     int32_t tcp_server_thread_count_ = 4;
     std::string ip_db_path_;
     std::unordered_map<uint64_t, uint16_t> thread_with_index_;
-    uint8_t message_handler_thread_count_ = 4;
+    uint8_t message_handler_thread_count_ = 8;
     bool for_ck_server_ = false;
     std::string ck_host_ = "127.0.0.1";
     uint16_t ck_port_ = 9000;
@@ -297,7 +297,7 @@ private:
     volatile bool global_stoped_ = false;
     volatile bool main_inited_success_ = false;
     uint32_t pools_each_thread_max_messages_ = 2048u;
-    uint32_t each_tx_pool_max_txs_ = 20480u;    
+    uint32_t each_tx_pool_max_txs_ = 20480u;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };

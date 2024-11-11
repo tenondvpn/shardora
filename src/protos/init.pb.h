@@ -31,7 +31,7 @@
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include <google/protobuf/unknown_field_set.h>
 #include "protos/bls.pb.h"
-#include "protos/block.pb.h"
+#include "protos/view_block.pb.h"
 // @@protoc_insertion_point(includes)
 #define PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2finit_2eproto 
 
@@ -299,27 +299,27 @@ class GetAddressInfoResponse : public ::google::protobuf::Message /* @@protoc_in
 
   // accessors -------------------------------------------------------
 
-  // optional .shardora.block.protobuf.Block block = 1;
-  bool has_block() const;
-  void clear_block();
-  static const int kBlockFieldNumber = 1;
+  // optional .shardora.view_block.protobuf.ViewBlockItem view_block = 1;
+  bool has_view_block() const;
+  void clear_view_block();
+  static const int kViewBlockFieldNumber = 1;
   private:
-  const ::shardora::block::protobuf::Block& _internal_block() const;
+  const ::shardora::view_block::protobuf::ViewBlockItem& _internal_view_block() const;
   public:
-  const ::shardora::block::protobuf::Block& block() const;
-  ::shardora::block::protobuf::Block* release_block();
-  ::shardora::block::protobuf::Block* mutable_block();
-  void set_allocated_block(::shardora::block::protobuf::Block* block);
+  const ::shardora::view_block::protobuf::ViewBlockItem& view_block() const;
+  ::shardora::view_block::protobuf::ViewBlockItem* release_view_block();
+  ::shardora::view_block::protobuf::ViewBlockItem* mutable_view_block();
+  void set_allocated_view_block(::shardora::view_block::protobuf::ViewBlockItem* view_block);
 
   // @@protoc_insertion_point(class_scope:shardora.init.protobuf.GetAddressInfoResponse)
  private:
-  void set_has_block();
-  void clear_has_block();
+  void set_has_view_block();
+  void clear_has_view_block();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::shardora::block::protobuf::Block* block_;
+  ::shardora::view_block::protobuf::ViewBlockItem* view_block_;
   friend struct ::protobuf_protos_2finit_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -945,58 +945,58 @@ inline void GetAddressInfoRequest::set_allocated_id(::std::string* id) {
 
 // GetAddressInfoResponse
 
-// optional .shardora.block.protobuf.Block block = 1;
-inline bool GetAddressInfoResponse::has_block() const {
+// optional .shardora.view_block.protobuf.ViewBlockItem view_block = 1;
+inline bool GetAddressInfoResponse::has_view_block() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void GetAddressInfoResponse::set_has_block() {
+inline void GetAddressInfoResponse::set_has_view_block() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void GetAddressInfoResponse::clear_has_block() {
+inline void GetAddressInfoResponse::clear_has_view_block() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline const ::shardora::block::protobuf::Block& GetAddressInfoResponse::_internal_block() const {
-  return *block_;
+inline const ::shardora::view_block::protobuf::ViewBlockItem& GetAddressInfoResponse::_internal_view_block() const {
+  return *view_block_;
 }
-inline const ::shardora::block::protobuf::Block& GetAddressInfoResponse::block() const {
-  const ::shardora::block::protobuf::Block* p = block_;
-  // @@protoc_insertion_point(field_get:shardora.init.protobuf.GetAddressInfoResponse.block)
-  return p != NULL ? *p : *reinterpret_cast<const ::shardora::block::protobuf::Block*>(
-      &::shardora::block::protobuf::_Block_default_instance_);
+inline const ::shardora::view_block::protobuf::ViewBlockItem& GetAddressInfoResponse::view_block() const {
+  const ::shardora::view_block::protobuf::ViewBlockItem* p = view_block_;
+  // @@protoc_insertion_point(field_get:shardora.init.protobuf.GetAddressInfoResponse.view_block)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::view_block::protobuf::ViewBlockItem*>(
+      &::shardora::view_block::protobuf::_ViewBlockItem_default_instance_);
 }
-inline ::shardora::block::protobuf::Block* GetAddressInfoResponse::release_block() {
-  // @@protoc_insertion_point(field_release:shardora.init.protobuf.GetAddressInfoResponse.block)
-  clear_has_block();
-  ::shardora::block::protobuf::Block* temp = block_;
-  block_ = NULL;
+inline ::shardora::view_block::protobuf::ViewBlockItem* GetAddressInfoResponse::release_view_block() {
+  // @@protoc_insertion_point(field_release:shardora.init.protobuf.GetAddressInfoResponse.view_block)
+  clear_has_view_block();
+  ::shardora::view_block::protobuf::ViewBlockItem* temp = view_block_;
+  view_block_ = NULL;
   return temp;
 }
-inline ::shardora::block::protobuf::Block* GetAddressInfoResponse::mutable_block() {
-  set_has_block();
-  if (block_ == NULL) {
-    auto* p = CreateMaybeMessage<::shardora::block::protobuf::Block>(GetArenaNoVirtual());
-    block_ = p;
+inline ::shardora::view_block::protobuf::ViewBlockItem* GetAddressInfoResponse::mutable_view_block() {
+  set_has_view_block();
+  if (view_block_ == NULL) {
+    auto* p = CreateMaybeMessage<::shardora::view_block::protobuf::ViewBlockItem>(GetArenaNoVirtual());
+    view_block_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:shardora.init.protobuf.GetAddressInfoResponse.block)
-  return block_;
+  // @@protoc_insertion_point(field_mutable:shardora.init.protobuf.GetAddressInfoResponse.view_block)
+  return view_block_;
 }
-inline void GetAddressInfoResponse::set_allocated_block(::shardora::block::protobuf::Block* block) {
+inline void GetAddressInfoResponse::set_allocated_view_block(::shardora::view_block::protobuf::ViewBlockItem* view_block) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
-    delete reinterpret_cast< ::google::protobuf::MessageLite*>(block_);
+    delete reinterpret_cast< ::google::protobuf::MessageLite*>(view_block_);
   }
-  if (block) {
+  if (view_block) {
     ::google::protobuf::Arena* submessage_arena = NULL;
     if (message_arena != submessage_arena) {
-      block = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, block, submessage_arena);
+      view_block = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, view_block, submessage_arena);
     }
-    set_has_block();
+    set_has_view_block();
   } else {
-    clear_has_block();
+    clear_has_view_block();
   }
-  block_ = block;
-  // @@protoc_insertion_point(field_set_allocated:shardora.init.protobuf.GetAddressInfoResponse.block)
+  view_block_ = view_block;
+  // @@protoc_insertion_point(field_set_allocated:shardora.init.protobuf.GetAddressInfoResponse.view_block)
 }
 
 // -------------------------------------------------------------------

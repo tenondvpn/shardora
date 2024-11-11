@@ -90,7 +90,6 @@ int TcpTransport::Init(
 int TcpTransport::Start(bool hold) {
     transport_->Dispatch();
     if (!transport_->Start()) {
-        TRANSPORT_ERROR("start tcp transport failed"); 
         return kTransportError;
     }
 
@@ -175,7 +174,7 @@ bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tne
 
     conn->SetPeerIp(from_ip);
     conn->SetPeerPort(from_port);
-    ZJC_DEBUG("message coming: %s:%d", from_ip.c_str(), from_port);
+    // ZJC_DEBUG("message coming: %s:%d", from_ip.c_str(), from_port);
     msg_ptr->conn = conn;
     msg_handler_->HandleMessage(msg_ptr);
     if (!conn->is_client() && added_conns_.Push(conn)) {
@@ -263,16 +262,8 @@ int TcpTransport::Send(
     // assert(output_item->msg.size() < 1000000u);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     output_queues_[thread_idx].push(output_item);
-    // ZJC_INFO("get output_queues_ size %d, %d", thread_idx, output_queues_[thread_idx].size());
-// #ifndef NDEBUG
-//     static std::atomic<uint32_t> max_count = 0;
-//     if (output_queues_[thread_idx].size() > max_count) {
-//         max_count = output_queues_[thread_idx].size();
-//         ZJC_DEBUG("get output_queues_ size %d, %d", thread_idx, output_queues_[thread_idx].size());
-//     }
-// #endif
-
     output_con_.notify_one();
+    // ZJC_DEBUG("success add sent out message hash64: %lu", message.hash64());
     return kTransportSuccess;
 }
 
@@ -307,7 +298,7 @@ void TcpTransport::Output() {
             std::string key = conn->PeerIp() + ":" + std::to_string(conn->PeerPort());
             from_conn_map_[key] = conn;
         }
-        
+
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             while (true) {
                 std::shared_ptr<ClientItem> item_ptr = nullptr;
@@ -315,7 +306,7 @@ void TcpTransport::Output() {
                 if (item_ptr == nullptr) {
                     break;
                 }
-                
+
                 int32_t try_times = 0;
                 while (try_times++ < 3) {
                     auto tcp_conn = GetConnection(item_ptr->des_ip, item_ptr->port);
@@ -324,7 +315,7 @@ void TcpTransport::Output() {
                             item_ptr->des_ip.c_str(), item_ptr->port, 0);
                         continue;
                     }
-                    
+
                     int res = tcp_conn->Send(item_ptr->hash64, item_ptr->msg);
                     if (res != 0) {
                         TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu] res: %d",
@@ -336,13 +327,15 @@ void TcpTransport::Output() {
                         continue;
                     }
 
+                    // TRANSPORT_DEBUG("send to tcp connection success[%s][%d][hash64: %llu] res: %d, tcp_conn: %lu",
+                    //     item_ptr->des_ip.c_str(), item_ptr->port, item_ptr->hash64, res, tcp_conn.get());
                     break;
                 }
 
-                if (item_ptr->msg.size() > 100000) {
-                    ZJC_INFO("send message %s:%u, hash64: %lu, size: %u",
-                        item_ptr->des_ip.c_str(), item_ptr->port, item_ptr->hash64, item_ptr->msg.size());
-                }
+                // if (item_ptr->msg.size() > 100000) {
+                //     ZJC_DEBUG("send message %s:%u, hash64: %lu, size: %u",
+                //         item_ptr->des_ip.c_str(), item_ptr->port, item_ptr->hash64, item_ptr->msg.size());
+                // }
             }
         }
 
@@ -459,6 +452,40 @@ std::string TcpTransport::GetHeaderHashForSign(const transport::protobuf::Header
     msg_for_hash.append(std::string((char*)&version, sizeof(version)));
     protos::GetProtoHash(message, &msg_for_hash);
     return common::Hash::keccak256(msg_for_hash);
+}
+
+void TcpTransport::SetMessageHash(
+        const transport::protobuf::OldHeader& message) {
+    auto tmpHeader = const_cast<transport::protobuf::OldHeader*>(&message);
+    std::string hash_str;
+    hash_str.reserve(1024);
+    hash_str.append(msg_random_);
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    hash_str.append((char*)&thread_idx, sizeof(thread_idx));
+    auto msg_count = ++thread_msg_count_[thread_idx];
+    hash_str.append((char*)&msg_count, sizeof(msg_count));
+    tmpHeader->set_hash64(common::Hash::Hash64(hash_str));
+    ZJC_DEBUG("3 send message hash64: %lu", message.hash64());
+}
+
+int TcpTransport::Send(
+        const std::string& des_ip,
+        uint16_t des_port,
+        const transport::protobuf::OldHeader& message) {
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    assert(thread_idx < common::kMaxThreadCount);
+    auto tmpHeader = const_cast<transport::protobuf::OldHeader*>(&message);
+    tmpHeader->set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
+    assert(message.has_hash64() && message.hash64() != 0);
+    ZJC_DEBUG("1 send message hash64: %lu", message.hash64());
+    auto output_item = std::make_shared<ClientItem>();
+    output_item->des_ip = des_ip;
+    output_item->port = des_port;
+    output_item->hash64 = message.hash64();
+    output_item->msg = message.SerializeAsString();
+    output_queues_[thread_idx].push(output_item);
+    output_con_.notify_one();
+    return kTransportSuccess;
 }
 
 }  // namespace transport

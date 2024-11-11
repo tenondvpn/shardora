@@ -9,8 +9,11 @@
 #include "common/tick.h"
 // #ifdef ENABLE_HOTSTUFF
 #include "consensus/hotstuff/hotstuff_manager.h"
+#include <consensus/hotstuff/crypto.h>
+#include <consensus/hotstuff/elect_info.h>
+#include <consensus/hotstuff/pacemaker.h>
+#include <consensus/hotstuff/hotstuff_syncer.h>
 // #else
-#include "consensus/zbft/bft_manager.h"
 #include "consensus/zbft/contract_gas_prepayment.h"
 // #endif
 #include "contract/contract_manager.h"
@@ -20,6 +23,7 @@
 #include "init/command.h"
 #include "init/http_handler.h"
 #include "init/init_utils.h"
+#include "init/ws_server.h"
 #include "pools/shard_statistic.h"
 #include "pools/tx_pool_manager.h"
 #include "protos/elect.pb.h"
@@ -28,10 +32,6 @@
 #include "timeblock/time_block_manager.h"
 #include "transport/multi_thread.h"
 #include "vss/vss_manager.h"
-#include <consensus/hotstuff/crypto.h>
-#include <consensus/hotstuff/elect_info.h>
-#include <consensus/hotstuff/pacemaker.h>
-#include <consensus/hotstuff/hotstuff_syncer.h>
 #include <yaml-cpp/node/node.h>
 
 // #define ENABLE_HOTSTUFF 1
@@ -60,21 +60,20 @@ private:
     void AddCmds();
     void GetNetworkNodesFromConf(const YAML::Node&, std::vector<GenisisNodeInfoPtr>&, std::vector<GenisisNodeInfoPtrVector>&);
     void AddBlockItemToCache(
-        std::shared_ptr<block::protobuf::Block>& block,
+        std::shared_ptr<view_block::protobuf::ViewBlockItem>& block,
         db::DbWriteBatch& db_batch);
     void InitLocalNetworkId();
     bool DbNewBlockCallback(
-        const std::shared_ptr<block::protobuf::Block>& block,
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block,
         db::DbWriteBatch& db_batch);
     void HandleTimeBlock(
-        const std::shared_ptr<block::protobuf::Block>& block,
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleElectionBlock(
-        const std::shared_ptr<block::protobuf::Block>& block,
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
-    void SendJoinElectTransaction();
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void HandleAddrReq(const transport::MessagePtr& msg_ptr);
     void HandleAddrRes(const transport::MessagePtr& msg_ptr);
@@ -85,6 +84,7 @@ private:
         int32_t mod_num);
     void RegisterFirewallCheck();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
+    int InitWsServer();
 
     static const uint32_t kInvalidPoolFactor = 50u;  // 50%
     static const uint32_t kMinValodPoolCount = 4u;  // 64 must finish all
@@ -102,12 +102,8 @@ private:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
-#ifdef ENABLE_HOTSTUFF
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
     std::shared_ptr<hotstuff::HotstuffSyncer> hotstuff_syncer_ = nullptr;
-#else
-    std::shared_ptr<consensus::BftManager> bft_mgr_ = nullptr;
-#endif
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
@@ -118,12 +114,13 @@ private:
     common::Tick init_tick_;
     common::Tick join_elect_tick_;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    uint32_t des_sharding_id_ = common::kInvalidUint32; // 节点的目标 shard
+    uint32_t des_sharding_id_ = common::kInvalidUint32;
     uint32_t invalid_pools_[common::kInvalidPoolIndex] = { 0 };
     uint64_t latest_elect_height_ = 0;
     std::shared_ptr<LeaderRotationInfo> rotation_leaders_ = nullptr;
     // 是否还需要发送一次 JoinElect
     bool another_join_elect_msg_needed_ = false;
+    WsServer ws_server_;
 
     DISALLOW_COPY_AND_ASSIGN(NetworkInit);
 };

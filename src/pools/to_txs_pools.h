@@ -6,6 +6,7 @@
 #include "common/unique_map.h"
 #include "protos/address.pb.h"
 #include "protos/prefix_db.h"
+#include "protos/view_block.pb.h"
 #include "pools/tx_utils.h"
 
 namespace shardora {
@@ -26,7 +27,9 @@ public:
         std::shared_ptr<pools::TxPoolManager>& pools_mgr,
         std::shared_ptr<block::AccountManager>& acc_mgr);
     ~ToTxsPools();
-    void NewBlock(const std::shared_ptr<block::protobuf::Block>& block, db::DbWriteBatch& db_batch);
+    void NewBlock(
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr, 
+        db::DbWriteBatch& db_batch);
     int CreateToTxWithHeights(
         uint32_t sharding_id,
         uint64_t elect_height,
@@ -37,32 +40,32 @@ public:
 
 private:
     void HandleNormalToTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx_info);
     void LoadLatestHeights();
     void HandleNormalFrom(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx);
     void HandleCreateContractUserCall(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx);
     void HandleCreateContractByRootFrom(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx);
     void HandleContractGasPrepayment(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx);
     void HandleRootCreateAddress(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx);
     void HandleContractExecute(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx);
     void HandleJoinElect(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx);
     void AddTxToMap(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const std::string& to,
         pools::protobuf::StepType type,
         uint64_t amount,
@@ -81,7 +84,7 @@ private:
         uint64_t max_height);
     void HandleCrossShard(
         bool is_root,
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         std::unordered_map<uint32_t, std::unordered_set<CrossItem, CrossItemRecordHash>>& cross_map);
 
@@ -117,7 +120,7 @@ private:
     std::string local_id_;
     uint64_t pool_consensus_heihgts_[common::kInvalidPoolIndex] = { 0 };
     uint64_t pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };
-    std::unordered_map<uint64_t, std::shared_ptr<block::protobuf::Block>> added_heights_[common::kInvalidPoolIndex];
+    std::unordered_map<uint64_t, std::shared_ptr<view_block::protobuf::ViewBlockItem>> added_heights_[common::kInvalidPoolIndex];
     std::unordered_set<uint64_t> valided_heights_[common::kInvalidPoolIndex];
     uint64_t erased_max_heights_[common::kInvalidPoolIndex] = { 0llu };
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;

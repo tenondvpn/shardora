@@ -3,13 +3,8 @@
 #include "common/fts_tree.h"
 #include "elect_tx_item.h"
 #include "protos/get_proto_hash.h"
-#include <common/log.h>
-#include <common/utils.h>
+#include <bls/bls_utils.h>
 #include <google/protobuf/util/json_util.h>
-#include <network/network_status.h>
-#include <network/network_utils.h>
-#include <protos/elect.pb.h>
-#include "common/defer.h"
 
 namespace shardora {
 
@@ -26,7 +21,7 @@ inline bool ElectNodeBalanceDiffCompare(
 }
 
 int ElectTxItem::HandleTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
@@ -58,7 +53,7 @@ int ElectTxItem::HandleTx(
                     ZJC_DEBUG("LLLLL elect_statistic:%s", json_str.c_str() );
                 }
             }
-            return processElect(elect_statistic, block, db_batch, block_tx);
+            return processElect(elect_statistic, view_block, db_batch, block_tx);
         }
     }
 
@@ -68,9 +63,10 @@ int ElectTxItem::HandleTx(
 
 int ElectTxItem::processElect(
         shardora::pools::protobuf::ElectStatistic &elect_statistic,
-        const shardora::block::protobuf::Block &block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         std::shared_ptr<shardora::db::DbWriteBatch> &db_batch,
         shardora::block::protobuf::BlockTx &block_tx) {
+    auto& block = view_block.block_info();
     const pools::protobuf::PoolStatisticItem *statistic = nullptr;
     shardora::common::MembersPtr members = nullptr;
     int retVal = getMaxElectHeightInfo(elect_statistic, statistic, members);
@@ -183,7 +179,9 @@ int ElectTxItem::processElect(
 
         ZJC_DEBUG("LLLLL after CreateNewElect: count: %d ,%s", count, ids.c_str());
     }
-    ZJC_DEBUG("consensus elect tx success: %u", elect_statistic.sharding_id());
+    ZJC_DEBUG("consensus elect tx success: %u, proto: %s",
+        elect_statistic.sharding_id(), 
+        ProtobufToJson(elect_statistic).c_str());
     return kConsensusSuccess;
 }
 int ElectTxItem::getMaxElectHeightInfo(shardora::pools::protobuf::ElectStatistic &elect_statistic,
@@ -457,6 +455,12 @@ void ElectTxItem::GetIndexNodes(
         node_info->tx_count = min_tx_count;
         node_info->credit = elect_statistic.join_elect_nodes(i).credit();
         node_info->pubkey = elect_statistic.join_elect_nodes(i).pubkey();
+        // xufeisofly 新增节点的 bls_agg_pk
+        auto agg_bls_pk_proto = elect_statistic.join_elect_nodes(i).agg_bls_pk();
+        node_info->agg_bls_pk = *bls::Proto2BlsPublicKey(agg_bls_pk_proto);
+        auto proof_proto = elect_statistic.join_elect_nodes(i).agg_bls_pk_proof();
+        node_info->agg_bls_pk_proof = *bls::Proto2BlsPopProof(proof_proto);
+        
         node_info->index = index;
         node_info->consensus_gap = elect_statistic.join_elect_nodes(i).consensus_gap(); 
         elect_nodes_to_choose->push_back(node_info);
@@ -544,12 +548,12 @@ void ElectTxItem::MiningToken(
 void ElectTxItem::SetPrevElectInfo(
     const elect::protobuf::ElectBlock &elect_block,
     block::protobuf::BlockTx &block_tx) {
-    block::protobuf::Block block_item;
+    view_block::protobuf::ViewBlockItem view_block_item;
     auto res = prefix_db_->GetBlockWithHeight(
         network::kRootCongressNetworkId,
         elect_block.shard_network_id() % common::kImmutablePoolSize,
         elect_block.prev_members().prev_elect_height(),
-        &block_item);
+        &view_block_item);
     if (!res) {
         ELECT_ERROR("get prev block error[%d][%d][%lu].",
                     network::kRootCongressNetworkId,
@@ -558,6 +562,7 @@ void ElectTxItem::SetPrevElectInfo(
         return;
     }
 
+    auto& block_item = view_block_item.block_info();
     if (block_item.tx_list_size() != 1) {
         ELECT_ERROR("not has tx list size.");
         assert(false);
@@ -611,11 +616,30 @@ int ElectTxItem::CreateNewElect(
 
             auto in = elect_block.add_in();
             in->set_pubkey((*elect_members_)[i]->pubkey);
+            // xufeisofly
+            auto agg_bls_pk_proto = bls::BlsPublicKey2Proto((*elect_members_)[i]->agg_bls_pk);
+            if (agg_bls_pk_proto) {
+                in->mutable_agg_bls_pk()->CopyFrom(*agg_bls_pk_proto);
+            }
+            auto proof_proto = bls::BlsPopProof2Proto((*elect_members_)[i]->agg_bls_pk_proof);
+            if (proof_proto) {
+                in->mutable_agg_bls_pk_proof()->CopyFrom(*proof_proto);
+            }
+            
             in->set_pool_idx_mod_num(-1);
             in->set_mining_amount(0);
         } else {
             auto in = elect_block.add_in();
             in->set_pubkey(elect_nodes[i]->pubkey);
+            auto agg_bls_pk_proto = bls::BlsPublicKey2Proto(elect_nodes[i]->agg_bls_pk);
+            if (agg_bls_pk_proto) {
+                in->mutable_agg_bls_pk()->CopyFrom(*agg_bls_pk_proto);
+            }
+            auto proof_proto = bls::BlsPopProof2Proto(elect_nodes[i]->agg_bls_pk_proof);
+            if (proof_proto) {
+                in->mutable_agg_bls_pk_proof()->CopyFrom(*proof_proto);
+            }
+            
             in->set_pool_idx_mod_num(elect_nodes[i]->leader_mod_index);
             in->set_mining_amount(elect_nodes[i]->mining_token);
             in->set_fts_value(elect_nodes[i]->fts_value);
@@ -626,12 +650,6 @@ int ElectTxItem::CreateNewElect(
     elect_block.set_shard_network_id(elect_statistic.sharding_id());
     elect_block.set_elect_height(block.height());
     elect_block.set_all_gas_amount(elect_statistic.gas_amount());
-    // 动态扩容信息
-    auto& dynamic_sharding_info = *elect_block.mutable_dynamic_sharding_info();
-    bool ok = GetDynamicShardingInfo(elect_statistic, &dynamic_sharding_info);
-
-    ZJC_DEBUG("dynamic sharding info, s: %d, act: %d", dynamic_sharding_info.network_id(), dynamic_sharding_info.action());
-    
     if (bls_mgr_->AddBlsConsensusInfo(elect_block) != bls::kBlsSuccess) {
         ZJC_WARN("add prev elect bls consensus info failed sharding id: %u",
                  elect_statistic.sharding_id());
@@ -738,6 +756,10 @@ int ElectTxItem::CheckWeedout(
         node_info->stoke = statistic_item.stokes(member_idx);
         node_info->credit = statistic_item.credit(member_idx);
         node_info->index = member_idx;
+        // 此处增加上一轮已有节点的 bls_agg_pk
+        node_info->pubkey = (*members)[member_idx]->pubkey;
+        node_info->agg_bls_pk = (*members)[member_idx]->agg_bls_pk;
+        node_info->agg_bls_pk_proof = (*members)[member_idx]->agg_bls_pk_proof;
         node_info->pubkey = (*members)[member_idx]->pubkey;
         node_info->consensus_gap = statistic_item.consensus_gap(member_idx); 
 
@@ -1093,56 +1115,6 @@ void ElectTxItem::SmoothFtsValue(
     }
 
     ZJC_DEBUG("fts value final: %s", fts_val_str.c_str());
-}
-
-bool ElectTxItem::GetDynamicShardingInfo(
-        const pools::protobuf::ElectStatistic &elect_statistic,
-        elect::protobuf::DynamicShardingInfo* dynamic_sharding_info) {
-    auto shard_id = elect_statistic.sharding_id();
-    ZJC_DEBUG("all sharding info, s: %d, biggest open net: %d, all opened: %d, perfreached: %d, preopened: %d",
-        shard_id,
-        network::NetsInfo::Instance()->BiggestOpenedNetId(),
-        network::NetsInfo::Instance()->AllOpened(),
-        elect_statistic.shard_perf_limit_reached(),
-        network::NetsInfo::Instance()->PreopenedNetworkId());
-
-    // 仅使用 BiggestOpenedNetId 选举块进行扩容
-    if (shard_id != network::NetsInfo::Instance()->BiggestOpenedNetId()) {
-        return false;
-    }
-    
-    // 尝试 Preopen 一个新的分片
-    if (!network::NetsInfo::Instance()->HasPreopenedNetwork()) {
-        // 所有分片都已经 Open
-        if (network::NetsInfo::Instance()->AllOpened()) {
-            return false;
-        }
-        // shard_id 还未达到吞吐量上限
-        if (!elect_statistic.shard_perf_limit_reached()) {
-            return false;
-        }
-        // 尝试 Preopen 下一个分片
-        dynamic_sharding_info->set_network_id(network::NetsInfo::Instance()->BiggestOpenedNetId()+1);
-        dynamic_sharding_info->set_action(uint32_t(network::ShardStatus::kPreopened));
-    } else {
-        // 尝试 Open 当前处于 Preopen 的分片
-        auto open_shard_id = network::NetsInfo::Instance()->PreopenedNetworkId();
-        auto shard_member_count = elect_mgr_->GetMemberCount(open_shard_id);
-        // 当 preopen 分片中节点数量超过阈值时，才会 open 该分片，但 root 不会将账户分配到一个 preopen 分片，
-        // 那么如何为 preopen 分片增加节点数量？有两种方案：
-        // 1. 准备的创始节点数量一开始就满足要求，那么经过一个 epoch 后 preopen 的分片自动开启。
-        // 2. To 账户创建时支持指定分片
-        // 由于让用户 0 成本指定分片有点反直觉，目前使用第一种方案，即保证创始节点数量永远满足要求
-        if (shard_member_count < common::kOpenShardMemberCountMinThres) {
-            return false;
-        }
-
-        dynamic_sharding_info->set_network_id(open_shard_id);
-        dynamic_sharding_info->set_action(uint32_t(network::ShardStatus::kOpened));
-    }
-
-    // 尝试 open
-    return true;
 }
 
 }; // namespace consensus

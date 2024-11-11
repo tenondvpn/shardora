@@ -41,9 +41,11 @@ contract C2CSellOrder {
     address public owner;
     uint256 public minPlegementValue;
     uint256 public minExchangeValue;
+    uint256 test_data;
     mapping(address => SellOrder) public orders;
     mapping(address => bool) public valid_managers;
     address[] all_sellers;
+    bytes32 test_ripdmd;
 
     constructor(address[] memory managers, uint256 minPlegement, uint256 minAmount) payable {
         uint arrayLength = managers.length;
@@ -58,6 +60,16 @@ contract C2CSellOrder {
         owner = msg.sender;
     }
 
+    function TestContract(uint256 receivable) public payable {
+        emit NewSelloutValue(1);
+        test_data = receivable;
+        emit NewSelloutValue(2);
+    }
+
+    function callAbe(bytes memory params) public payable {
+        test_ripdmd = ripemd160(params);
+    }
+    
     function SetManager(address[] memory managers) public {
         require(owner == msg.sender);
         require(!orders[msg.sender].exists);
@@ -110,15 +122,21 @@ contract C2CSellOrder {
         require(!orders[msg.sender].sellerReleased);
         require(!orders[msg.sender].reported);
         emit NewSelloutValue(orders[msg.sender].pledgeAmount);
+        emit NewSelloutValue(amount);
 
         require(orders[msg.sender].pledgeAmount >= amount);
+        emit NewSelloutValue(1);
         SellOrder memory order = orders[msg.sender];
         order.pledgeAmount -= amount;
         order.height = block.number;
         order.buyer = buyer;
         order.amount = amount;
+        emit NewSelloutValue(2);
         payable(buyer).transfer(amount);
+        emit NewSelloutValue(3);
         if (order.pledgeAmount < minExchangeValue) {
+            emit NewSelloutValue(4);
+            emit NewSelloutValue(minExchangeValue);
             if (order.pledgeAmount > 0) {
                 payable(msg.sender).transfer(order.pledgeAmount);
             }
@@ -134,15 +152,19 @@ contract C2CSellOrder {
 
             delete orders[msg.sender];
         } else {
+            emit NewSelloutValue(5);
             orders[msg.sender] = order;
         }
 
+        emit NewSelloutValue(6);
         emit NewSelloutValue(order.pledgeAmount);
     }
 
     function ManagerReleaseForce(address seller) public payable {
+        emit NewSelloutValue(12);
         require(orders[seller].exists);
         require(valid_managers[msg.sender]);
+        emit NewSelloutValue(13);
         SellOrder memory order = orders[seller];
         require(order.addr == seller);
         require(order.managerReleased);
@@ -154,7 +176,9 @@ contract C2CSellOrder {
             }
         }
 
+        emit NewSelloutValue(14);
         delete orders[seller];
+        emit NewSelloutValue(15);
     }
 
     function ManagerRelease(address seller) public payable {
@@ -190,10 +214,10 @@ contract C2CSellOrder {
 
         orders[seller] = order;
         emit NewSelloutValue(9);
-
     }
 
     function SellerRelease() public payable {
+        emit NewSelloutValue(10);
         require(orders[msg.sender].exists);
         SellOrder memory order = orders[msg.sender];
         order.sellerReleased = true;
@@ -211,6 +235,7 @@ contract C2CSellOrder {
         } else {
             orders[msg.sender] = order;
         }
+        emit NewSelloutValue(11);
     }
 
     function Report(address seller) public {

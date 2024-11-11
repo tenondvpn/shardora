@@ -53,6 +53,13 @@ public:
     std::string GetHeaderHashForSign(const transport::protobuf::Header& message);
     void SetMessageHash(const transport::protobuf::Header& message);
 
+    // remove later
+    void SetMessageHash(const transport::protobuf::OldHeader& message);
+    int Send(
+        const std::string& ip,
+        uint16_t port,
+        const transport::protobuf::OldHeader& message);
+
 private:
     TcpTransport();
     ~TcpTransport();

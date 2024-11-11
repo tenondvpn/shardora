@@ -54,7 +54,11 @@ public:
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
     void TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs);
-    void PopTxs(uint32_t pool_index, bool pop_all);
+    void PopTxs(
+        uint32_t pool_index, 
+        bool pop_all, 
+        bool* has_user_tx, 
+        bool* has_system_tx);
     void InitCrossPools();
     void BftCheckInvalidGids(uint32_t pool_index, std::vector<std::shared_ptr<InvalidGidItem>>& items);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
@@ -92,23 +96,24 @@ public:
     }    
 
     void OnNewCrossBlock(
-            const std::shared_ptr<block::protobuf::Block>& block_item) {
+            const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block) {
+        auto* block_item = &view_block->block_info();
         ZJC_DEBUG("new cross block coming net: %u, pool: %u, height: %lu",
-            block_item->network_id(), block_item->pool_index(), block_item->height());
-        if (block_item->network_id() == network::kRootCongressNetworkId) {
-            root_cross_pools_[block_item->pool_index()].UpdateLatestInfo(block_item->height());
+            view_block->qc().network_id(), view_block->qc().pool_index(), block_item->height());
+        if (view_block->qc().network_id() == network::kRootCongressNetworkId) {
+            root_cross_pools_[view_block->qc().pool_index()].UpdateLatestInfo(block_item->height());
             ZJC_DEBUG("root cross succcess update cross block latest info net: %u, pool: %u, height: %lu",
-                block_item->network_id(), block_item->pool_index(), block_item->height());
+                view_block->qc().network_id(), view_block->qc().pool_index(), block_item->height());
             return;
         }
 
-        if (block_item->pool_index() != common::kRootChainPoolIndex) {
+        if (view_block->qc().pool_index() != common::kRootChainPoolIndex) {
             return;
         }
 
-        cross_pools_[block_item->network_id()].UpdateLatestInfo(block_item->height());
+        cross_pools_[view_block->qc().network_id()].UpdateLatestInfo(block_item->height());
         ZJC_DEBUG("succcess update cross block latest info net: %u, pool: %u, height: %lu",
-            block_item->network_id(), block_item->pool_index(), block_item->height());
+            view_block->qc().network_id(), view_block->qc().pool_index(), block_item->height());
     }
 
     void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, const common::MembersPtr& members) {
@@ -179,13 +184,14 @@ public:
 
     // UpdateLatestInfo 当某个 pool 出块后，更新此 shard 的 pool_mgr 状态
     void UpdateLatestInfo(
-            std::shared_ptr<block::protobuf::Block>& block,
+            std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
             db::DbWriteBatch& db_batch) {
+        auto* block = &view_block->block_info();
         uint64_t height = block->height();
         assert(height >= 0);
-        uint32_t sharding_id = block->network_id();
-        uint32_t pool_index = block->pool_index();
-        const std::string hash = block->hash();
+        uint32_t sharding_id = view_block->qc().network_id();
+        uint32_t pool_index = view_block->qc().pool_index();
+        const std::string& hash = view_block->qc().view_block_hash();
         ZJC_DEBUG("sharding_id: %u, pool index: %u, update height: %lu", sharding_id, pool_index, height);
         if (pool_index >= common::kInvalidPoolIndex) {
             return;
@@ -201,20 +207,27 @@ public:
         pool_info.set_hash(hash);
         pool_info.set_timestamp(block->timestamp());
         // 更新对应 pool 的最新状态，主要是高度信息和哈希值
-        uint64_t synced_height = tx_pool_[pool_index].UpdateLatestInfo(height, hash, block->prehash(),block->timestamp());
+        uint64_t synced_height = tx_pool_[pool_index].UpdateLatestInfo(
+            height, hash, view_block->parent_hash(), block->timestamp());
         pool_info.set_synced_height(synced_height);
         prefix_db_->SaveLatestPoolInfo(sharding_id, pool_index, pool_info, db_batch);
     }
 
     void UpdateCrossLatestInfo(
-            std::shared_ptr<block::protobuf::Block>& block,
+            std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
             db::DbWriteBatch& db_batch) {
-        uint32_t pool_index = block->pool_index();
-        if (pool_index != common::kImmutablePoolSize) {
-            return;
-        }
-
-        cross_block_mgr_->UpdateMaxHeight(block->network_id(), block->height());
+        auto* block = &view_block->block_info();
+        uint32_t pool_index = view_block->qc().pool_index();
+        cross_block_mgr_->UpdateMaxHeight(view_block->qc().network_id(), block->height());
+        uint64_t height = block->height();
+        assert(height >= 0);
+        uint32_t sharding_id = view_block->qc().network_id();
+        const std::string& hash = view_block->qc().view_block_hash();
+        pools::protobuf::PoolLatestInfo pool_info;
+        pool_info.set_height(height);
+        pool_info.set_hash(hash);
+        pool_info.set_timestamp(block->timestamp());
+        prefix_db_->SaveLatestPoolInfo(sharding_id, pool_index, pool_info, db_batch);
     }
 
     void CheckTimeoutTx(uint32_t pool_index) {

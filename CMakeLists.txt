@@ -107,6 +107,7 @@ add_definitions(
 	-DENABLE_HOTSTUFF
 	#-DDISABLE_GENESIS_BLS_VERIFY
 	#-DTEST_NO_CROSS
+	#-DUSE_AGG_BLS
 )
 
 add_compile_options(-fPIC)
@@ -235,4 +236,3 @@ add_subdirectory(${SRC_DIR}/consensus/hotstuff/tests hotstuff_test)
 add_subdirectory(${SRC_DIR}/ck/tests ck_test)
 add_subdirectory(${SRC_DIR}/vss/tests vss_test)
 add_subdirectory(${SRC_DIR}/sync/tests sync_test)
-

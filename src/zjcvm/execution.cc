@@ -83,7 +83,6 @@ bool Execution::StorageKeyWarm(
 }
 
 void Execution::NewBlockWithTx(
-        const std::shared_ptr<block::protobuf::Block>& block_item,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     if (tx.step() != pools::protobuf::kContractCreate &&
@@ -111,9 +110,10 @@ void Execution::UpdateStorage(
     ZJC_DEBUG("update storage: %s, %s", common::Encode::HexEncode(key).c_str(), common::Encode::HexEncode(val).c_str());
 }
 
-evmc::bytes32 Execution::GetStorage(
+bool Execution::GetStorage(
         const evmc::address& addr,
-        const evmc::bytes32& key) {
+        const evmc::bytes32& key,
+        evmc::bytes32* res_val) {
     auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
         std::string((char*)key.bytes, sizeof(key.bytes));
     std::string val;
@@ -123,7 +123,7 @@ evmc::bytes32 Execution::GetStorage(
         prefix_db_->GetTemporaryKv(str_key, &val);
     } else {
        if (prefix_db_->GetTemporaryKv(str_key, &val)) {
-                storage_map_[thread_idx].Insert(str_key, val);
+            storage_map_[thread_idx].Insert(str_key, val);
        } 
         // if (!storage_map_[thread_idx].Get(str_key, &val)) {
         //     // get from db and add to memory cache
@@ -133,21 +133,23 @@ evmc::bytes32 Execution::GetStorage(
         // }
     }
 
-    ZJC_DEBUG("get storage: %s, %s", common::Encode::HexEncode(str_key).c_str(), common::Encode::HexEncode(val).c_str());
+    ZJC_DEBUG("get storage: %s, %s, valid: %d",
+        common::Encode::HexEncode(str_key).c_str(), 
+        common::Encode::HexEncode(val).c_str(),
+        !val.empty());
     if (val.empty()) {
-        return evmc::bytes32{};
+        return false;
     }
 
-    evmc::bytes32 tmp_val{};
     uint32_t offset = 0;
-    uint32_t length = sizeof(tmp_val.bytes);
-    if (val.size() < sizeof(tmp_val.bytes)) {
-        offset = sizeof(tmp_val.bytes) - val.size();
+    uint32_t length = sizeof(res_val->bytes);
+    if (val.size() < sizeof(res_val->bytes)) {
+        offset = sizeof(res_val->bytes) - val.size();
         length = val.size();
     }
 
-    memcpy(tmp_val.bytes + offset, val.c_str(), length);
-    return tmp_val;
+    memcpy(res_val->bytes + offset, val.c_str(), length);
+    return true;
 }
 
 bool Execution::GetStorage(
@@ -234,17 +236,17 @@ int Execution::execute(
             bytes_code.size());
         if (out_res->status_code != EVMC_SUCCESS) {
             const auto gas_used = msg.gas - out_res->gas_left;
-            ZJC_ERROR("out_res->status_code != EVMC_SUCCESS.nResult: %d, "
+            ZJC_ERROR("out_res->status_code != EVMC_SUCCESS.nResult: %d, EVMC_SUCCESS: %d, "
                 "gas_used: %lu, gas limit: %lu, codes: %s, from: %s, to: %s",
-                out_res->status_code, gas_used, create_gas,
-                common::Encode::HexEncode(bytes_code).c_str(),
+                out_res->status_code, EVMC_SUCCESS, gas_used, create_gas,
+                "common::Encode::HexEncode(bytes_code).c_str()",
                 common::Encode::HexEncode(from_address).c_str(),
                 common::Encode::HexEncode(to_address).c_str());
             return kZjcvmSuccess;
         } else {
             const auto gas_used = msg.gas - out_res->gas_left;
             ZJC_DEBUG("out_res->status_code != EVMC_SUCCESS.nResult: %d, gas_used: %lu, gas limit: %lu, codes: %s",
-                out_res->status_code, gas_used, create_gas, common::Encode::HexEncode(bytes_code).c_str());
+                out_res->status_code, gas_used, create_gas, "common::Encode::HexEncode(bytes_code).c_str()");
         }
 
         host.create_bytes_code_ = std::string((char*)out_res->output_data, out_res->output_size);
@@ -263,7 +265,8 @@ int Execution::execute(
     }
 
     *out_res = evm_.execute(host, rev, msg, exec_code_data, exec_code_size);
-    ZJC_DEBUG("execute res: %d", out_res->status_code);
+    ZJC_DEBUG("execute res: %d, gas_limit: %lu gas_left: %lu, gas_refund: %lu",
+        out_res->status_code, gas, out_res->gas_left, out_res->gas_refund);
     return kZjcvmSuccess;
 }
 

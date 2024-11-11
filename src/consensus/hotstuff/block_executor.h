@@ -1,5 +1,6 @@
 #pragma once
 #include <common/global_info.h>
+#include "consensus/hotstuff/hotstuff_utils.h"
 #include <consensus/hotstuff/types.h>
 #include <consensus/zbft/waiting_txs.h>
 #include <network/network_utils.h>
@@ -18,7 +19,9 @@ public:
     // 执行交易并将结果放入 Block
     virtual Status DoTransactionAndCreateTxBlock(
             const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-            std::shared_ptr<block::protobuf::Block>& block) = 0;
+            view_block::protobuf::ViewBlockItem* view_block,
+            BalanceMap& balance_map,
+            zjcvm::ZjchainHost& zjc_host) = 0;
 };
 
 class ShardBlockExecutor : public IBlockExecutor {
@@ -34,9 +37,10 @@ public:
 
     Status DoTransactionAndCreateTxBlock(
             const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-            std::shared_ptr<block::protobuf::Block>& block);
+            view_block::protobuf::ViewBlockItem* view_block,
+            BalanceMap& balance_map,
+            zjcvm::ZjchainHost& zjc_host);
 private:
-    zjcvm::ZjchainHost zjc_host;
     std::shared_ptr<db::DbWriteBatch> db_batch_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;    
 };
@@ -54,21 +58,27 @@ public:
 
     Status DoTransactionAndCreateTxBlock(
             const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-            std::shared_ptr<block::protobuf::Block>& block);
+            view_block::protobuf::ViewBlockItem* view_block,
+            BalanceMap& balance_map,
+            zjcvm::ZjchainHost& zjc_host);
 private:
-    zjcvm::ZjchainHost zjc_host;
     std::shared_ptr<db::DbWriteBatch> db_batch_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
 
     void RootDefaultTx(
             const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
-            std::shared_ptr<block::protobuf::Block>& block);
+            view_block::protobuf::ViewBlockItem* view_block,
+            BalanceMap& balance_map);
     void RootCreateAccountAddressBlock(
             const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
-            std::shared_ptr<block::protobuf::Block>& block);
+            view_block::protobuf::ViewBlockItem* view_block,
+            BalanceMap& balance_map,
+            zjcvm::ZjchainHost& zjc_host);
     void RootCreateElectConsensusShardBlock(
             const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
-            std::shared_ptr<block::protobuf::Block>& block);        
+            view_block::protobuf::ViewBlockItem* view_block,
+            BalanceMap& balance_map,
+            zjcvm::ZjchainHost& zjc_host);        
 };
 
 class BlockExecutorFactory {

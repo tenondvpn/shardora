@@ -8,7 +8,6 @@
 #include "network/universal_manager.h"
 #include "network/network_utils.h"
 #include "transport/processor.h"
-#include <network/network_status.h>
 
 namespace shardora {
 
@@ -196,6 +195,7 @@ void Route::Broadcasting() {
                     break;
                 }
             
+                msg_ptr->header.mutable_broadcast()->set_hop_to_layer(1);
                 Broadcast(msg_ptr);
                 if (!has_data) {
                     has_data = true;
@@ -211,13 +211,6 @@ void Route::Broadcasting() {
 }
 
 void Route::HandleDhtMessage(const transport::MessagePtr& header_ptr) {
-    if (network::NetsInfo::Instance()->IsClosed(header_ptr->header.src_sharding_id())) {
-        ZJC_WARN("wrong shard status: %d %d.",
-            header_ptr->header.src_sharding_id(),
-            network::NetsInfo::Instance()->net_info(header_ptr->header.src_sharding_id())->Status());
-        return;
-    }    
-    
     auto& header = header_ptr->header;
     auto dht = GetDht(header.des_dht_key());
     if (!dht) {
@@ -261,6 +254,7 @@ Route::~Route() {
 void Route::Broadcast(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     if (!header.has_broadcast() || !header.has_des_dht_key()) {
+        ZJC_WARN("broadcast error: %lu", header.hash64());
         return;
     }
 
@@ -268,6 +262,7 @@ void Route::Broadcast(const transport::MessagePtr& msg_ptr) {
     auto des_dht = GetDht(header.des_dht_key());
     if (!des_dht) {
         RouteByUniversal(msg_ptr);
+        ZJC_WARN("broadcast by universal error: %lu", header.hash64());
         return;
     }
 
@@ -287,6 +282,7 @@ void Route::Broadcast(const transport::MessagePtr& msg_ptr) {
     }
 
     assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
+    ZJC_DEBUG("broadcast success: %lu", header.hash64());
     broadcast_->Broadcasting(des_dht, msg_ptr);
 }
 

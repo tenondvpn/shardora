@@ -1,6 +1,7 @@
 #pragma once
 
 #include <deque>
+#include <protos/elect.pb.h>
 
 #include "common/encode.h"
 #include "common/hash.h"
@@ -66,7 +67,7 @@ public:
     }
 
     virtual int HandleTx(
-        const block::protobuf::Block& block,
+        const view_block::protobuf::ViewBlockItem& view_block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
@@ -141,10 +142,12 @@ struct ElectItem {
 };
 
 struct StatisticMemberInfoItem {
+    StatisticMemberInfoItem() : tx_count(0), member_index(0), leader_index(0), gas_sum(0), max_height(0) {}
     uint32_t tx_count = 0;
     uint32_t member_index = 0;
     uint32_t leader_index = 0;
     uint64_t gas_sum = 0;
+    uint64_t max_height = 0;
 };
 
 struct AccoutPoceInfoItem {
@@ -179,14 +182,13 @@ struct HeightStatisticInfo {
 
 struct PoolBlocksInfo {
     PoolBlocksInfo() : latest_consensus_height_(0) {}
-    std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> blocks;
+    std::map<uint64_t, std::shared_ptr<view_block::protobuf::ViewBlockItem>> blocks;
     uint64_t latest_consensus_height_;
 };
 
-struct RootStatisticItem {
-    uint32_t history_tx_count;
-    uint32_t tmp_tx_count;
-    uint32_t epoch_tx_count;
+struct PoolStatisticItem {
+    uint64_t min_height;
+    uint64_t max_height;
 };
 
 struct CrossShardItem {
@@ -251,15 +253,22 @@ struct CrossItemRecordHash {
 };
 
 struct StatisticInfoItem {
-    StatisticInfoItem() : all_gas_amount(0), root_all_gas_amount(0), statistic_max_height(0), shard_perf_limit_reached(false) {}
+    StatisticInfoItem() 
+        : all_gas_amount(0), 
+        root_all_gas_amount(0), 
+        statistic_min_height(0), 
+        statistic_max_height(0) {}
+
     uint64_t all_gas_amount;
     uint64_t root_all_gas_amount;
     std::map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
     std::map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
     std::map<uint64_t, std::unordered_map<std::string, StatisticMemberInfoItem>> height_node_collect_info_map;
     std::unordered_map<std::string, std::string> id_pk_map;
+    std::unordered_map<std::string, elect::protobuf::BlsPublicKey*> id_agg_bls_pk_map;
+    std::unordered_map<std::string, elect::protobuf::BlsPopProof*> id_agg_bls_pk_proof_map;
+    uint64_t statistic_min_height;
     uint64_t statistic_max_height;
-    bool shard_perf_limit_reached; // 达到 shard 性能上限
 };
 
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {
@@ -367,6 +376,32 @@ static inline bool IsUserTransaction(uint32_t step) {
 
     return true;   
 }
+
+static inline bool IsTxUseFromAddress(uint32_t step) {
+    switch (step) {
+        case pools::protobuf::kNormalTo:
+        case pools::protobuf::kRootCreateAddress:
+        case pools::protobuf::kContractCreateByRootTo:
+        case pools::protobuf::kConsensusLocalTos:
+        case pools::protobuf::kConsensusRootElectShard:
+        case pools::protobuf::kConsensusRootTimeBlock:
+        case pools::protobuf::kConsensusCreateGenesisAcount:
+        case pools::protobuf::kContractExcute:
+        case pools::protobuf::kStatistic:
+        case pools::protobuf::kContractCreate:
+            return false;
+        case pools::protobuf::kJoinElect:
+        case pools::protobuf::kNormalFrom:
+        case pools::protobuf::kContractCreateByRootFrom:
+        case pools::protobuf::kContractGasPrepayment:
+        case pools::protobuf::kPoolStatisticTag:
+            return true;
+        default:
+            assert(false);
+            return false;
+    }
+}
+
 
 };  // namespace pools
 

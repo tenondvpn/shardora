@@ -78,7 +78,7 @@ static const uint64_t kHandledTimeoutMs = 10000lu;
 static const uint64_t kMessagePeriodUs = 1500000lu;
 
 struct TransportMessage {
-    TransportMessage() : conn(nullptr), retry(false), handled(false) {
+    TransportMessage() : conn(nullptr), retry(false), handled(false), is_leader(false) {
         timeout = common::TimeUtils::TimestampUs() + kConsensusMessageTimeoutUs;
         handle_timeout = common::kInvalidUint64;
         prev_timestamp = common::TimeUtils::TimestampUs() + kMessagePeriodUs;
@@ -97,6 +97,7 @@ struct TransportMessage {
     uint64_t timeout;
     uint64_t prev_timestamp;
     bool handled;
+    bool is_leader;
 };
 
 typedef std::shared_ptr<TransportMessage> MessagePtr;
