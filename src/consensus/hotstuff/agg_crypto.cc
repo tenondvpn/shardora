@@ -34,6 +34,7 @@ Status AggCrypto::VerifyAndAggregateSig(
         AggregateSignature& agg_sig) {
     auto s = Verify(partial_sig, msg_hash, common::GlobalInfo::Instance()->network_id(), elect_height);
     if (s != Status::kSuccess) {
+        assert(false);
         return s;
     }
 
@@ -59,10 +60,12 @@ Status AggCrypto::VerifyAndAggregateSig(
 
     auto elect_item = GetElectItem(common::GlobalInfo::Instance()->network_id(), elect_height);
     if (!elect_item) {
+        assert(false);
         return Status::kError;
     }
 
     if (!partial_sig.IsValid()) {
+        assert(false);
         return Status::kError;
     }
     uint32_t member_idx = *partial_sig.participants().begin();

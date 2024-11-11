@@ -359,6 +359,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), s,
         msg_ptr->header.hash64());    
     if (s != Status::kSuccess || !agg_sig.IsValid()) {
+        assert(false);
         return;
     }
 
