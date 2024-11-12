@@ -59,8 +59,7 @@ public:
         elect_height_ = elect_height;
         common_pk_ = common_pk;
 #ifdef USE_AGG_BLS
-        auto kp = bls::AggBls::Instance()->GetKeyPair();
-        local_sk_ = kp->sk();
+        local_sk_ = bls::AggBls::Instance()->agg_sk();
 #else
         local_sk_ = sk;
 #endif

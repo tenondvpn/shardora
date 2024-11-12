@@ -76,6 +76,10 @@ public:
     
     std::shared_ptr<KeyPair> GetKeyPair();
 
+    inline libff::alt_bn128_Fr agg_sk() {
+        return agg_bls_sk_;
+    }
+
     static libff::alt_bn128_G2 GetPublicKey(const libff::alt_bn128_Fr& sk) {
         return sk * libff::alt_bn128_G2::one();
     }
