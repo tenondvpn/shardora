@@ -67,13 +67,21 @@ public:
                     members_ptr,
                     height);
                 new_item->common_bls_publick_key = common_pk;
+#ifdef USE_AGG_BLS
+                libff::alt_bn128_Fr agg_sk;
+                if (prefix_db_->GetAggBlsPrikey(security_ptr_, &agg_sk)) {
+                    new_item->local_sec_key = agg_sk;
+                } else {
+                    new_item->local_sec_key = libff::alt_bn128_Fr::zero();
+                }
+#else
                 std::string bls_prikey;
                 if (prefix_db_->GetBlsPrikey(security_ptr_, height, network_id, &bls_prikey)) {
                     new_item->local_sec_key = libff::alt_bn128_Fr(bls_prikey.c_str());
                 } else {
                     new_item->local_sec_key = libff::alt_bn128_Fr::zero();
                 }
-
+#endif
                 ZJC_DEBUG("0 save bls pk and secret key success.height: %lu, network_id: %u, %d, %d",
                     height, network_id,
                     (new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()),
@@ -96,13 +104,21 @@ public:
             members_ptr,
             height);
         new_item->common_bls_publick_key = common_pk;
+#ifdef USE_AGG_BLS
+        libff::alt_bn128_Fr agg_sk;
+        if (prefix_db_->GetAggBlsPrikey(security_ptr_, &agg_sk)) {
+            new_item->local_sec_key = agg_sk;
+        } else {
+            new_item->local_sec_key = libff::alt_bn128_Fr::zero();
+        }
+#else
         std::string bls_prikey;
         if (prefix_db_->GetBlsPrikey(security_ptr_, height, network_id, &bls_prikey)) {
             new_item->local_sec_key = libff::alt_bn128_Fr(bls_prikey.c_str());
         } else {
             new_item->local_sec_key = libff::alt_bn128_Fr::zero();
         }
-
+#endif
         members_ptrs_[network_id][min_index] = new_item;
         ZJC_DEBUG("1 save bls pk and secret key success.height: %lu, network_id: %u",
             height, network_id);
