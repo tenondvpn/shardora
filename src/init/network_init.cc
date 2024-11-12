@@ -104,17 +104,17 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
-    // Init agg bls
-    if (bls::AggBls::Instance()->Init(prefix_db_, security_) != common::kCommonSuccess) {
-        return kInitError;
-    }
-
     std::string net_name;
     int genesis_check = GenesisCmd(parser_arg, net_name);
     if (genesis_check != -1) {
         std::cout << net_name << " genesis cmd over, exit." << std::endl;
         return genesis_check;
     }
+
+    // Init agg bls
+    if (bls::AggBls::Instance()->Init(prefix_db_, security_) != common::kCommonSuccess) {
+        return kInitError;
+    }    
 
     uint32_t ws_server = 0;
     conf_.Get("zjchain", "ws_server", ws_server);
@@ -1016,6 +1016,9 @@ void NetworkInit::GetNetworkNodesFromConf(
                 node_ptr->prikey = common::Encode::HexDecode(sk);
                 std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
                 secptr->SetPrivateKey(node_ptr->prikey);
+
+                bls::AggBls::Instance()->Init(prefix_db_, secptr);
+                
                 node_ptr->pubkey = secptr->GetPublicKey();
                 node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
                 auto keypair = bls::AggBls::Instance()->GetKeyPair();
@@ -1043,6 +1046,9 @@ void NetworkInit::GetNetworkNodesFromConf(
                 node_ptr->prikey = common::Encode::HexDecode(sk);
                 std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
                 secptr->SetPrivateKey(node_ptr->prikey);
+
+                bls::AggBls::Instance()->Init(prefix_db_, secptr);
+                
                 node_ptr->pubkey = secptr->GetPublicKey();
                 node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
                 auto keypair = bls::AggBls::Instance()->GetKeyPair();
