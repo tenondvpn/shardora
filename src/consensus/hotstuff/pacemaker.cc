@@ -201,6 +201,7 @@ void Pacemaker::OnLocalTimeout() {
         return;
     }
 
+    // xufeisofly debug
     Status s = crypto_->Verify(partial_sig, high_qc_msg_hash, common::GlobalInfo::Instance()->network_id(), elect_item->ElectHeight());
     if (s != Status::kSuccess) {
         assert(false);

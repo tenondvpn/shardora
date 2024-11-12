@@ -126,6 +126,17 @@ public:
                 assert(false);
                 return Status::kError;
             }
+
+            // xufeisofly debug
+            if (member_idx == elect_item->LocalMember()->index) {
+                auto left = libBLS::ThresholdUtils::G2ToString(*agg_bls_pk);
+                auto right = libBLS::ThresholdUtils::G2ToString(bls::AggBls::Instance()->agg_pk()); 
+                if (left[0] != right[0]) {
+                    ZJC_DEBUG("left is %s, right is %s", left[0].c_str(), right[0].c_str());
+                    assert(false);
+                }
+            }
+            
             auto verified = bls::AggBls::CoreVerify(
                     *agg_bls_pk,
                     msg_hash,

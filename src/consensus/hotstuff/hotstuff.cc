@@ -1536,6 +1536,7 @@ Status Hotstuff::ConstructVoteMsg(
     auto sk_str = libBLS::ThresholdUtils::fieldElementToString(bls::AggBls::Instance()->agg_sk());
     ZJC_DEBUG("partial sign, sig.x is %s, msg_hash: %s, sk: %s", sig_x_str.c_str(), common::Encode::HexEncode(qc_hash).c_str(), sk_str.c_str());
 
+    // xufeisofly debug
     Status s = crypto()->Verify(partial_sig, qc_hash, common::GlobalInfo::Instance()->network_id(), elect_height);
     if (s != Status::kSuccess) {
         assert(false);
