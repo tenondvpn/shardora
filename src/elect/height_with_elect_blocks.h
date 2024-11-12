@@ -177,10 +177,17 @@ public:
         auto iter = height_with_members_[network_id].find(height);
         if (iter != height_with_members_[network_id].end()) {
             if (iter->second->local_sec_key == libff::alt_bn128_Fr::zero()) {
+#ifdef USE_AGG_BLS
+                libff::alt_bn128_Fr agg_sk;
+                if (prefix_db_->GetAggBlsPrikey(security_ptr_, &agg_sk)) {
+                    iter->second->local_sec_key = agg_sk;
+                }
+#else
                 std::string bls_prikey;
                 if (prefix_db_->GetBlsPrikey(security_ptr_, height, network_id, &bls_prikey)) {
                     iter->second->local_sec_key = libff::alt_bn128_Fr(bls_prikey.c_str());
                 }
+#endif
             }
 
             if (iter->second->common_bls_publick_key == libff::alt_bn128_G2::zero()) {
@@ -219,11 +226,17 @@ public:
         }
 
         height_with_members_[network_id][height] = new_item;
+#ifdef USE_AGG_BLS
+        libff::alt_bn128_Fr agg_sk;
+        if (prefix_db_->GetAggBlsPrikey(security_ptr_, &agg_sk)) {
+            new_item->local_sec_key = agg_sk;
+        }
+#else
         std::string bls_prikey;
         if (prefix_db_->GetBlsPrikey(security_ptr_, height, network_id, &bls_prikey)) {
             new_item->local_sec_key = libff::alt_bn128_Fr(bls_prikey.c_str());
         }
-
+#endif
         if (common_pk != nullptr) {
             *common_pk = new_item->common_bls_publick_key;
         }
