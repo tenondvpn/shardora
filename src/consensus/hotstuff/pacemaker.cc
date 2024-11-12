@@ -200,6 +200,12 @@ void Pacemaker::OnLocalTimeout() {
             common::Encode::HexEncode(high_qc_msg_hash).c_str());
         return;
     }
+
+    Status s = crypto_->Verify(partial_sig, high_qc_msg_hash, common::GlobalInfo::Instance()->network_id(), elect_item->ElectHeight());
+    if (s != Status::kSuccess) {
+        assert(false);
+    }    
+    
     timeout_msg.mutable_high_qc()->CopyFrom(HighQC());
     timeout_msg.mutable_high_qc_sig()->CopyFrom(high_qc_sig.DumpToProto());
 #else
