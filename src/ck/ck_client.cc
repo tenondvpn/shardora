@@ -855,12 +855,12 @@ bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) {
     item.AppendColumn("reconstructed_sign", reconstructed_sign);
     item.AppendColumn("common_pk", common_pk);
 
-    clickhouse::Client ck_client(clickhouse::ClientOptions().
-        SetHost(common::GlobalInfo::Instance()->ck_host()).
-        SetPort(common::GlobalInfo::Instance()->ck_port()).
-        SetUser(common::GlobalInfo::Instance()->ck_user()).
-        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
-    ck_client.Insert(kClickhouseBlsBlockInfo, item);
+    // clickhouse::Client ck_client(clickhouse::ClientOptions().
+    //     SetHost(common::GlobalInfo::Instance()->ck_host()).
+    //     SetPort(common::GlobalInfo::Instance()->ck_port()).
+    //     SetUser(common::GlobalInfo::Instance()->ck_user()).
+    //     SetPassword(common::GlobalInfo::Instance()->ck_pass()));
+    // ck_client.Insert(kClickhouseBlsBlockInfo, item);
     return true;
 }
 
