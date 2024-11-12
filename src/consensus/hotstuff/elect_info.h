@@ -53,12 +53,17 @@ public:
                     sharding_id);
             }
             member_aggbls_pk_proof_map_[(*members)[i]->index] = std::make_shared<libff::alt_bn128_G1>(agg_bls_pk_proof);
-        }        
+        }
 #endif
         
         elect_height_ = elect_height;
         common_pk_ = common_pk;
+#ifdef USE_AGG_BLS
+        auto kp = bls::AggBls::Instance()->GetKeyPair();
+        local_sk_ = kp->sk();
+#else
         local_sk_ = sk;
+#endif
         SetMemberCount(members->size());
         for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
             pool_consen_stat_map_[pool_idx] = std::make_shared<ConsensusStat>(pool_idx, members);
