@@ -23,7 +23,9 @@ public:
             const pools::protobuf::TxMessage& tx_info,
             std::shared_ptr<db::DbWriteBatch>& db_batch,
             block::protobuf::BlockTx* block_tx) {
-        ZJC_DEBUG("to tx consensus coming: %s", "common::Encode::HexEncode(tx_info.value()).c_str()");
+        ZJC_DEBUG("to tx consensus coming: %s, gid: %s", 
+            "common::Encode::HexEncode(tx_info.value()).c_str()", 
+            common::Encode::HexEncode(tx_info.gid()).c_str());
         DefaultTxItem(tx_info, block_tx);
         // change
         if (tx_info.key().empty() ||
