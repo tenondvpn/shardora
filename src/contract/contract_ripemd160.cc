@@ -3,6 +3,7 @@
 #include "common/hash.h"
 #include "common/split.h"
 #include "common/string_utils.h"
+#include "contract/contract_ars.h"
 #include "contract/contract_pairing.h"
 #include "contract/contract_reencryption.h"
 #include "pbc/pbc.h"
@@ -58,6 +59,19 @@ int Ripemd160::call(
         return kContractSuccess;
     }
 
+    if (param.data.substr(0, 4) == "tars") {
+        TestArs();
+        res->output_data = new uint8_t[32];
+        memset((void*)res->output_data, 0, 32);
+        res->output_size = 32;
+        memcpy(res->create_address.bytes,
+            create_address_.c_str(),
+            sizeof(res->create_address.bytes));
+        res->gas_left -= 1000;
+        ZJC_DEBUG("TestProxyReEncryption: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str());
+        return kContractSuccess;
+    }
+
     int64_t gas_used = ComputeGasUsed(600, 120, param.data.size());
     if (res->gas_left < gas_used) {
         return kContractError;
@@ -74,6 +88,98 @@ int Ripemd160::call(
     res->gas_left -= gas_used;
     ZJC_DEBUG("ripemd160: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str());
     return kContractSuccess;
+}
+
+void TestArs() {
+    ContractArs ars;
+    // 设置环的大小和签名者数量
+    const int ring_size = 3;
+    const int signer_count = 2;
+
+    // 创建环中的公钥和私钥对
+    std::vector<element_t> private_keys(ring_size);
+    std::vector<element_t> public_keys(ring_size);
+
+    // 初始化公私钥对
+    for (int i = 0; i < ring_size; ++i)
+    {
+        element_init_Zr(private_keys[i], ars.get_pairing()); // 私钥初始化为 Zr 群中的元素
+        element_init_G2(public_keys[i], ars.get_pairing());  // 公钥初始化为 G2 群中的元素
+        ars.KeyGen(private_keys[i], public_keys[i]);
+    }
+
+    // 选择签名人（假设是第 0, 1 位成员）
+    std::vector<int> signers = {0, 1};
+    std::vector<std::string> messages = {"01", "10"};
+
+    // 为每位签名者生成单个签名
+    std::vector<element_t> delta_primes(signer_count);
+    std::vector<element_t> y_primes(signer_count);
+    std::vector<std::vector<element_s>> pi_proofs(signer_count);
+
+    std::vector<element_t *> ring;
+    for (auto &pub_key : public_keys)
+    {
+        ring.push_back(&pub_key); // 将公钥指针添加到 ring 中
+    }
+
+    for (int i = 0; i < signer_count; ++i)
+    {
+        int signer_idx = signers[i];
+        element_init_G1(delta_primes[i], ars.get_pairing());
+        element_init_G2(y_primes[i], ars.get_pairing());
+
+        ars.SingleSign(messages[i], private_keys[signer_idx], public_keys[signer_idx],
+                       ring, delta_primes[i], y_primes[i], pi_proofs[i]);
+
+        // 打印单个签名的生成内容
+        std::cout << "Signer " << signer_idx << " signature details:" << std::endl;
+        element_printf("delta_prime: %B\n", delta_primes[i]);
+        element_printf("y_prime: %B\n", y_primes[i]);
+
+        // 假设 pi_proofs 是一个 element_s 类型的向量
+        std::cout << "pi_proof: ";
+        for (const auto &proof : pi_proofs[i])
+        {
+            element_printf("%B\n ", &proof);
+        }
+        std::cout << std::endl;
+    }
+
+    // 聚合签名生成
+    element_t agg_signature;
+    element_init_G1(agg_signature, ars.get_pairing());
+    ars.AggreSign(messages, y_primes, delta_primes, pi_proofs, ring, agg_signature);
+
+    // 用于检验错误输入所生成的结果
+    // std::vector<std::string> messages1 = {"010", "101"};
+    //  element_t agg_signature1;
+    //  element_init_G1(agg_signature1, ars.get_pairing());
+    //  element_random(agg_signature1);
+
+    // 聚合签名验证
+    bool is_aggregate_valid = ars.AggreVerify(messages, agg_signature, y_primes);
+    if (is_aggregate_valid)
+    {
+        ZJC_DEBUG("Aggregate signature verification passed!");
+    }
+    else
+    {
+        ZJC_DEBUG("Aggregate signature verification failed!");
+    }
+
+    // 清理资源
+    for (int i = 0; i < ring_size; ++i)
+    {
+        element_clear(private_keys[i]);
+        element_clear(public_keys[i]);
+    }
+    for (int i = 0; i < signer_count; ++i)
+    {
+        element_clear(delta_primes[i]);
+        element_clear(y_primes[i]);
+    }
+    element_clear(agg_signature);
 }
 
 int Ripemd160::CheckDecrytParamsValid(
