@@ -257,6 +257,179 @@ int ContractReEncryption::Transform() {
     return kContractSuccess;
 }
 
+int ContractReEncryption::TestProxyReEncryption() {
+    std::string param = ("type a\n"
+        "q 8780710799663312522437781984754049815806883199414208211028653399266475630880222957078625179422662221423155858769582317459277713367317481324925129998224791\n"
+        "h 12016012264891146079388821366740534204802954401251311822919615131047207289359704531102844802183906537786776\n"
+        "r 730750818665451621361119245571504901405976559617\n"
+        "exp2 159\n"
+        "exp1 107\n"
+        "sign1 1\n"
+        "sign0 1\n");
+    Pairing e(param.c_str(), param.size());
+    G1 g(e,false);
+    G1 g1(e,false);
+
+    //密钥生成，这里生成10个用户。
+    //下标为0的用户0作为加密者，其余用户(1~9)为接受者。
+    int nu = 10;
+    vector<Zr> sk;
+    vector<G1> pk;
+    for(int i = 0;i<nu;i++){
+        Zr x(e,true);
+        pk.push_back(g^x);
+        sk.push_back(x);
+    }
+
+    //重加密密钥生成，假设代理总数为np，门限为t。
+    //即只有不少于t个代理参与重加密，才能正确解密。
+    int np=10,t=4;
+    vector<Zr> proxyId,coefficientsF,coefficientsH,fid,hid;
+    //proxyId表示每个代理的id
+    for(int i = 0;i<np;i++){
+        proxyId.push_back(Zr(e,true));
+    }
+    //选择两个t-1阶多项式
+    coefficientsF.push_back(sk[0].inverse(true));
+    coefficientsH.push_back(Zr(e,(long)1));
+    for (int i = 0; i < t-1; i++){
+        coefficientsF.push_back(Zr(e,true));
+        coefficientsH.push_back(Zr(e,true));
+    }
+    //计算每个f(Id)和h(Id)
+    for(int i = 0;i<np;i++){
+        Zr resultf(e),resulth(e); //resultf = 0
+        Zr temp(e,(long int)1);
+        for (int j = 0; j < t; j++){
+            resultf+=coefficientsF[j]*temp;
+            resulth+=coefficientsH[j]*temp;
+            temp*=proxyId[i];
+        }
+        fid.push_back(resultf);
+        hid.push_back(resulth);
+    }
+    //选择随机数X作为对称密钥
+    vector<GT> X(nu);
+    vector<G1> Hx(nu);
+    for (int i = 1; i < nu; i++){
+        X[i] = GT(e,false);
+        Hx[i] = G1(e,X[1].getElement(),X[1].getElementSize());
+    }
+    //计算重加密密钥 rk=(rk1,rk2,rk3)
+    //其中rk1=rk[nu][np],rk[i]表示重加密给用户i的所有重加密密钥，rk[i]的每一项在实际场景中应分发给代理
+    vector<vector<G1>> rk1(nu);
+    vector<G1> rk2(nu);
+    vector<GT> rk3(nu);
+
+    for(int i = 1; i < nu;i++){
+        Zr r(e,true);
+        rk2[i]=(g^r);
+        rk3[i]=(X[i]*e(g1,pk[i]^r));
+        vector<G1> tmp;
+        if(i==1){
+            for(int j= 0;j<np;j++){
+                tmp.push_back((Hx[i]^hid[j])*(g1^fid[j]));
+            }
+        }
+        else{
+            for(int j= 0;j<np;j++){
+                tmp.push_back((Hx[i]/Hx[i-1])^hid[j]);
+            }
+        }
+        rk1[i]=(tmp);
+    }
+    
+    //用户0使用自己的公钥pk0加密消息m
+    //c=(c1,c2,c3,c4,c5,c6),每项又包含np个，用于分发给np个代理
+    vector<G1> c1,c3,c5;
+    vector<GT> c2,c4,c6;
+    GT m(e,false);
+    m.dump(stdout,"加密消息为");
+    Zr r(e,true),z(e,true);
+    for(int i = 0;i<np;i++){
+        c1.push_back(g^r);
+        c2.push_back((m*(e(g1,pk[0])^r))^hid[i]);
+        c3.push_back(g^z);
+        c4.push_back(e(g1,pk[0])^(r*hid[i]));
+        c5.push_back(G1(e,false));
+        c6.push_back(GT(e,false));
+    }
+
+
+    //初始密文的解密如下(为了方便，选前t个碎片解密)
+    vector<Zr> lag;
+    for(int i = 0;i<t;i++){
+        Zr result(e,(long)1);
+        //拉格朗日差值
+        for(int j=0;j<t;j++){
+            if(proxyId[j]==proxyId[i]){
+                continue;
+            }
+            result*=(proxyId[j]/(proxyId[j]-proxyId[i]));
+        }
+        lag.push_back(result);
+    }
+
+    GT tempc2(c2[0]^lag[0]);
+    for(int i = 1;i<t;i++){
+        tempc2*=(c2[i]^lag[i]);
+    }
+    GT result1(tempc2/e(c1[0],g1^sk[0]));
+    result1.dump(stdout,"初始密文解密结果为");
+    if(m==result1){
+        ZJC_DEBUG("init encryption data success: %d", 0);
+    }else{
+        ZJC_DEBUG("init encryption data failed: %d", 0);
+    }
+
+    //重加密（随即t个代理执行，这里为了方便就取前t个）
+    //reenc-c=(rc1,rc2,rc3,rc4,rc5,rc6)
+    //其中每一项 rc的第一个下标表示接收者编号，第二个下标表示分发给的代理编号
+    //注意到，不论是初始密文还是重加密密文，都可进行重加密操作。
+    vector<vector<G1>> rc1,rc3,rc5;
+    vector<vector<GT>> rc2,rc4,rc6;
+    //有nu-1个接受者，则需重加密nu-1次
+    for(int i = 1;i<nu;i++){
+        //在实际应用中，这里的两个随机数需要使用分布式随机数（密钥）协商算法。
+        //例如每个代理都向其他代理发送w1i和w2i，每个代理接收后都做累加得到w1和w2。
+        Zr w1(e,true),w2(e,true);
+        vector<G1> tmp1,tmp3,tmp5;
+        vector<GT> tmp2,tmp4,tmp6;
+        for(int j= 0;j<t;j++){
+            tmp1.push_back(c1[j]*(c3[j]^w1));
+            tmp3.push_back(c3[j]^w2);
+            tmp2.push_back(c2[j]*(c4[j]^w1)*e(tmp1[j],rk1[i][j]));
+            tmp4.push_back(c4[j]*e(c3[j],rk1[i][j]));
+            tmp5.push_back(rk2[i]);
+            tmp6.push_back(rk3[i]);
+        }
+        rc1.push_back(tmp1);
+        rc2.push_back(tmp2);
+        rc3.push_back(tmp3);
+        rc4.push_back(tmp4);
+        rc5.push_back(tmp5);
+        rc6.push_back(tmp6);
+    }
+    
+
+    //重加密密文的解密如下(为了方便，选前t个碎片解密)
+    for(int i = 1;i<nu;i++){
+        GT Xi = rc6[i-1][0]/e(g1^sk[i],rc5[i-1][0]);
+        GT tempc2(rc2[i-1][0]^lag[0]);
+        for(int j=0;j<t;j++){
+            tempc2*=(rc2[i-1][j]^lag[j]);
+        }
+
+        GT result2=tempc2/e(rc1[i-1][0],G1(e,Xi.getElement(),Xi.getElementSize()));
+        if(m==result2){
+            ZJC_DEBUG("t member decrypt success: %d", i);
+        }else{
+            ZJC_DEBUG("t member decrypt failed: %d", i);
+        }
+    }
+}
+
+
 }  // namespace contract
 
 }  // namespace shardora

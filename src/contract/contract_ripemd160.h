@@ -48,6 +48,7 @@ private:
         uint64_t gas,
         const std::string& origin_address,
         evmc_result* res);
+    void TestArs();
 
     uint64_t gas_cast_{ 3000llu };
 
