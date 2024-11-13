@@ -310,8 +310,9 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
     }
 
     ++batch_count_;
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
     ZJC_INFO("add new ck block %u_%u_%lu, batch_count_: %u", view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height(), batch_count_);
-    if (batch_count_ >= kBatchCountToCk) {
+    if (batch_count_ >= kBatchCountToCk || (pre_time_out_ + 10000 < now_tm_ms)) {
         clickhouse::Block trans;
         clickhouse::Block blocks;
         clickhouse::Block accounts;
@@ -412,6 +413,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         ck_client.Insert(kClickhouseC2cTableName, c2cs);
         ck_client.Insert(kClickhousePrepaymentTableName, prepay);
         batch_count_ = 0;
+        pre_time_out_ = now_tm_ms;
         ResetColumns();
     }
 

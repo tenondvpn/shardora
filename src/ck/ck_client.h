@@ -141,6 +141,7 @@ private:
     std::shared_ptr<clickhouse::ColumnUInt64> prepay_height;
 
     uint32_t batch_count_ = 0;
+    int64_t pre_time_out_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(ClickHouseClient);
 };
