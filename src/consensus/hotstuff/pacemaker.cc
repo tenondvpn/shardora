@@ -161,7 +161,7 @@ void Pacemaker::OnLocalTimeout() {
             elect_item->ElectHeight(),
             common::Encode::HexEncode(tc_msg_hash).c_str());
         return;        
-    }
+    }    
 #else
     std::string bls_sign_x;
     std::string bls_sign_y;
@@ -199,12 +199,6 @@ void Pacemaker::OnLocalTimeout() {
             elect_item->ElectHeight(),
             common::Encode::HexEncode(high_qc_msg_hash).c_str());
         return;
-    }
-
-    // xufeisofly debug
-    Status s = crypto_->Verify(partial_sig, high_qc_msg_hash, common::GlobalInfo::Instance()->network_id(), elect_item->ElectHeight());
-    if (s != Status::kSuccess) {
-        assert(false);
     }    
     
     timeout_msg.mutable_high_qc()->CopyFrom(HighQC());

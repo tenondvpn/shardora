@@ -1028,7 +1028,6 @@ void NetworkInit::GetNetworkNodesFromConf(
                 
                 auto keypair = bls::AggBls::Instance()->GetKeyPair();
                 node_ptr->agg_bls_pk = keypair->pk();
-                ZJC_DEBUG("====5.0 genesis agg pk: %s", libBLS::ThresholdUtils::G2ToString(node_ptr->agg_bls_pk)[0].c_str());
                 node_ptr->agg_bls_pk_proof = keypair->proof();
                 root_genesis_nodes.push_back(node_ptr);                    
             }
@@ -1052,15 +1051,14 @@ void NetworkInit::GetNetworkNodesFromConf(
                 node_ptr->prikey = common::Encode::HexDecode(sk);
                 std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
                 secptr->SetPrivateKey(node_ptr->prikey);
-
-                InitAggBlsForGenesis(node_ptr->id, secptr, prefix_db);
                 
                 node_ptr->pubkey = secptr->GetPublicKey();
                 node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
+                
+                InitAggBlsForGenesis(node_ptr->id, secptr, prefix_db);
                 auto keypair = bls::AggBls::Instance()->GetKeyPair();
                 node_ptr->agg_bls_pk = keypair->pk();
                 node_ptr->agg_bls_pk_proof = keypair->proof();
-                ZJC_DEBUG("====5.0 genesis agg pk: %s", libBLS::ThresholdUtils::G2ToString(node_ptr->agg_bls_pk)[0].c_str());
                 cons_genesis_nodes.push_back(node_ptr);        
             }
             

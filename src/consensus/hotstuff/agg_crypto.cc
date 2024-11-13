@@ -1,8 +1,11 @@
 #include <bls/agg_bls.h>
+#include <common/encode.h>
 #include <common/global_info.h>
+#include <common/log.h>
 #include <consensus/hotstuff/agg_crypto.h>
 #include <consensus/hotstuff/types.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
+#include <tools/utils.h>
 
 namespace shardora {
 namespace hotstuff {
@@ -22,6 +25,12 @@ Status AggCrypto::PartialSign(
             elect_item->local_sk(),
             msg_hash,
             &g1_sig);
+
+    ZJC_DEBUG("partial sign sk: %s, real sk: %s, msg_hash: %s, sig: %s",
+        libBLS::ThresholdUtils::fieldElementToString(elect_item->local_sk()).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(bls::AggBls::Instance()->agg_sk()).c_str(),
+        common::Encode::HexEncode(msg_hash).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_sig.X).c_str());
     partial_sig->set_signature(g1_sig);
     partial_sig->add_participant(elect_item->LocalMember()->index);
     
