@@ -347,7 +347,7 @@ void ClickHouseClient::FlushToCkWithData() {
     if (batch_count_ <= 0) {
         return;
     }
-    
+
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (batch_count_ >= kBatchCountToCk || (pre_time_out_ + 10000 < now_tm_ms)) {
         clickhouse::Block trans;
@@ -449,6 +449,7 @@ void ClickHouseClient::FlushToCkWithData() {
         ck_client.Insert(kClickhouseAccountKvTableName, account_attrs);
         ck_client.Insert(kClickhouseC2cTableName, c2cs);
         ck_client.Insert(kClickhousePrepaymentTableName, prepay);
+        ZJC_DEBUG("success flush to db: %u", batch_count_);
         batch_count_ = 0;
         pre_time_out_ = now_tm_ms;
         ResetColumns();
