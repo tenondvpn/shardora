@@ -380,11 +380,10 @@ int ContractReEncryption::TestProxyReEncryption() {
     }
     GT result1(tempc2/e(c1[0],g1^sk[0]));
     result1.dump(stdout,"初始密文解密结果为");
-    cout<<"是否成功解密？"<<endl;
     if(m==result1){
-        cout<<"Success!"<<endl;
+        ZJC_DEBUG("init encryption data success: %d", 0);
     }else{
-        cout<<"Fail"<<endl;
+        ZJC_DEBUG("init encryption data failed: %d", 0);
     }
 
     //重加密（随即t个代理执行，这里为了方便就取前t个）
@@ -424,12 +423,12 @@ int ContractReEncryption::TestProxyReEncryption() {
         for(int j=0;j<t;j++){
             tempc2*=(rc2[i-1][j]^lag[j]);
         }
+
         GT result2=tempc2/e(rc1[i-1][0],G1(e,Xi.getElement(),Xi.getElementSize()));
-        cout<<"用户"<<i<<"的解密结果为";
         if(m==result1){
-            cout<<"Success!"<<endl;
+            ZJC_DEBUG("t member decrypt success: %d", i);
         }else{
-            cout<<"Fail"<<endl;
+            ZJC_DEBUG("t member decrypt failed: %d", i);
         }
     }
 }
