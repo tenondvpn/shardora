@@ -421,7 +421,7 @@ int ContractReEncryption::TestProxyReEncryption() {
         }
 
         GT result2=tempc2/e(rc1[i-1][0],G1(e,Xi.getElement(),Xi.getElementSize()));
-        if(m==result1){
+        if(m==result2){
             ZJC_DEBUG("t member decrypt success: %d", i);
         }else{
             ZJC_DEBUG("t member decrypt failed: %d", i);
