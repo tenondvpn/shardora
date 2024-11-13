@@ -475,14 +475,14 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
     ck_client.Insert(kClickhouseAccountKvTableName, account_attrs);
     ck_client.Insert(kClickhouseC2cTableName, c2cs);
     ck_client.Insert(kClickhousePrepaymentTableName, prepay);
-    ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
-    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseTransTableName + " FINAL");
-    ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
-    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseBlockTableName + " FINAL");
-    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountTableName + " FINAL");
-    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountKvTableName + " FINAL");
-    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseC2cTableName + " FINAL");
-    ck_client.Execute(std::string("optimize TABLE ") + kClickhousePrepaymentTableName + " FINAL");
+    // ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseTransTableName + " FINAL");
+    // ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseBlockTableName + " FINAL");
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountTableName + " FINAL");
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountKvTableName + " FINAL");
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseC2cTableName + " FINAL");
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhousePrepaymentTableName + " FINAL");
     ZJC_INFO("success add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
     return true;
 } catch (std::exception& e) {
