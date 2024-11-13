@@ -90,7 +90,7 @@ int Ripemd160::call(
     return kContractSuccess;
 }
 
-void TestArs() {
+void Ripemd160::CTestArs() {
     ContractArs ars;
     // 设置环的大小和签名者数量
     const int ring_size = 3;
