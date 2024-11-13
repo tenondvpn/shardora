@@ -500,8 +500,6 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseC2cTableName + " FINAL");
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhousePrepaymentTableName + " FINAL");
 #ifndef NDEBUG
-    auto* block_item = &view_block_item->block_info();
-    const auto& tx_list = block_item->tx_list();
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         ZJC_DEBUG("ck success new block coming sharding id: %u_%d_%lu, "
             "tx size: %u, hash: %s, elect height: %lu, "
