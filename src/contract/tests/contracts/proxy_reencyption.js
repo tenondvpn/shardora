@@ -600,8 +600,13 @@ if (args[0] == 8) {
     run_all()
 }
 
-// 测试合约查询
+// 测试重加密整个流程
 if (args[0] == 9) {
+    add_pairing_param("tproe", "tproe", "tproe");
+}
+
+// 测试合约查询
+if (args[0] == 10) {
     QueryContract(
         "b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d129", 
         "cdfd45bb");
