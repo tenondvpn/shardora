@@ -42,7 +42,7 @@ void ToTxsPools::NewBlock(
     if (view_block_ptr->qc().network_id() != common::GlobalInfo::Instance()->network_id() &&
             view_block_ptr->qc().network_id() + network::kConsensusWaitingShardOffset !=
             common::GlobalInfo::Instance()->network_id()) {
-        ZJC_DEBUG("network invalid!");
+        ZJC_DEBUG("network invalid: %d, local: %d", view_block_ptr->qc().network_id(), common::GlobalInfo::Instance()->network_id());
         return;
     }
 

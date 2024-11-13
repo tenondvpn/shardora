@@ -689,7 +689,7 @@ void BlockManager::AddNewBlock(
     auto* block_item = &view_block_item->block_info();
     // TODO: check all block saved success
     ZJC_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
-        "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu",
+        "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu, step: %d, status: %d",
         view_block_item->qc().network_id(),
         view_block_item->qc().pool_index(),
         block_item->height(),
@@ -700,7 +700,9 @@ void BlockManager::AddNewBlock(
         common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(view_block_item->parent_hash()).c_str(),
         view_block_item->qc().elect_height(),
-        block_item->timeblock_height());
+        block_item->timeblock_height(),
+        (view_block_item->block_info().tx_list_size() > 0 ? view_block_item->block_info().tx_list(0).step() : -1),
+        (view_block_item->block_info().tx_list_size() > 0 ? view_block_item->block_info().tx_list(0).status() : -1));
     assert(view_block_item->qc().elect_height() >= 1);
     // block 两条信息持久化
     if (!prefix_db_->SaveBlock(*view_block_item, db_batch)) {
@@ -1263,9 +1265,9 @@ void BlockManager::HandleStatisticBlock(
 pools::TxItemPtr BlockManager::GetToTx(
         uint32_t pool_index, 
         const std::string& heights_str) {
-    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-        return nullptr;
-    }
+    // if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+    //     return nullptr;
+    // }
 
     if (pool_index != common::kImmutablePoolSize) {
         return nullptr;

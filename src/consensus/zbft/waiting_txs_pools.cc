@@ -222,7 +222,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(
         return nullptr;
     }
 
-    bool leader = !tx_hash.empty();
+    bool leader = tx_hash.empty();
     pools::TxItemPtr tx_ptr = block_mgr_->GetToTx(pool_index, tx_hash);
     if (tx_ptr != nullptr) {
         auto txs_item = std::make_shared<WaitingTxsItem>();
