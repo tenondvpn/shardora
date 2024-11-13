@@ -160,7 +160,8 @@ public:
             view_block_chain()->Store(vblock, true, nullptr, nullptr);
             if (latest_qc_item_ptr_ == nullptr ||
                     vblock->qc().view() >= latest_qc_item_ptr_->view()) {
-                if (vblock->qc().has_sign_x() && !vblock->qc().sign_x().empty()) {
+
+                if (IsQcTcValid(vblock->qc())) {
                     latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(vblock->qc());
                 }
             }

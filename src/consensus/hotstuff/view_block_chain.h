@@ -251,7 +251,8 @@ public:
             return Status::kInvalidArgument;
         }
 
-        if (!v_block->qc().has_sign_x()) {
+
+        if (!IsQcTcValid(v_block->qc())) {            
             ZJC_DEBUG("not has signature, pool: %u, StoreToDb 0, test_index: %lu, tx size: %u, %u_%u_%lu, hash: %s",
                 pool_index_, test_index, v_block->block_info().tx_list_size(),
                 v_block->qc().network_id(),
@@ -354,7 +355,8 @@ public:
             return;
         }
 
-        if (!view_block_ptr->qc().has_sign_x()) {
+
+        if (!IsQcTcValid(view_block_ptr->qc())) {
             view_block_ptr->mutable_qc()->set_sign_x(qc_item.sign_x());
             view_block_ptr->mutable_qc()->set_sign_y(qc_item.sign_y());
             auto db_bach = std::make_shared<db::DbWriteBatch>();

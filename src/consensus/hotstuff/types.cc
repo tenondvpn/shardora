@@ -35,6 +35,14 @@ HashStr GetTCMsgHash(const view_block::protobuf::QcItem& tc_item) {
     return GetQCMsgHash(tc_item);
 }
 
+bool IsQcTcValid(const view_block::protobuf::QcItem& qc_item) {
+#ifdef USE_AGG_BLS
+    return qc_item.has_agg_sig();
+#else
+    return qc_item.has_sign_x();
+#endif
+}
+
 
 // void QC::Serialize(std::string* res) {
 //     proto_qc_->set_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign_->X));

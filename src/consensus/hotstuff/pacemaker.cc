@@ -51,7 +51,7 @@ void Pacemaker::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
 
 void Pacemaker::NewTc(const std::shared_ptr<view_block::protobuf::QcItem>& tc) {
     StopTimeoutTimer();
-    if (tc->has_sign_x() && tc->has_sign_y()) {
+    if (IsQcTcValid(*tc)) {
         if (cur_view_ < tc->view() + 1) {
             cur_view_ = tc->view() + 1;
             ZJC_DEBUG("success new tc view: %lu, %u_%u_%lu, pool index: %u",
@@ -161,7 +161,7 @@ void Pacemaker::OnLocalTimeout() {
             elect_item->ElectHeight(),
             common::Encode::HexEncode(tc_msg_hash).c_str());
         return;        
-    }
+    }    
 #else
     std::string bls_sign_x;
     std::string bls_sign_y;
@@ -188,6 +188,7 @@ void Pacemaker::OnLocalTimeout() {
     timeout_msg.mutable_view_sig()->CopyFrom(partial_sig.DumpToProto());
     // 对本节点的 high qc 签名
     AggregateSignature high_qc_sig;
+#ifdef ENABLE_FAST_HOTSTUFF    
     auto high_qc_msg_hash = GetQCMsgHash(HighQC()); 
     if (crypto_->PartialSign(
             common::GlobalInfo::Instance()->network_id(),
@@ -200,6 +201,8 @@ void Pacemaker::OnLocalTimeout() {
             common::Encode::HexEncode(high_qc_msg_hash).c_str());
         return;
     }
+#endif    
+    
     timeout_msg.mutable_high_qc()->CopyFrom(HighQC());
     timeout_msg.mutable_high_qc_sig()->CopyFrom(high_qc_sig.DumpToProto());
 #else
@@ -334,7 +337,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     }
     
     auto high_qc_of_node = std::make_shared<QC>(timeout_proto.high_qc());
-    AggregateSignature* high_qc_sig_of_node;
+    auto high_qc_sig_of_node = std::make_shared<AggregateSignature>();
     if (!high_qc_sig_of_node->LoadFromProto(timeout_proto.high_qc_sig())) {
         return;
     }
@@ -373,7 +376,9 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         &tc);
     tc.mutable_agg_sig()->CopyFrom(agg_sig.DumpToProto());    
 
-    auto agg_qc = crypto_->CreateAggregateQC(
+    std::shared_ptr<AggregateQC> agg_qc = nullptr;
+#ifdef ENABLE_FAST_HOTSTUFF    
+    agg_qc = crypto_->CreateAggregateQC(
             common::GlobalInfo::Instance()->network_id(),
             timeout_proto.elect_height(),
             timeout_proto.view(),
@@ -382,7 +387,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     if (!agg_qc || !agg_qc->IsValid()) {
         return;
     }
-
+#endif
     // view change
     NewTc(new_tc);
     NewAggQc(agg_qc);

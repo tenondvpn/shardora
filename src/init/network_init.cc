@@ -13,8 +13,10 @@
 #include <consensus/hotstuff/hotstuff_syncer.h>
 #include <consensus/consensus_utils.h>
 #include <functional>
+#include <libff/algebra/curves/alt_bn128/alt_bn128_init.hpp>
 #include <memory>
 #include <protos/pools.pb.h>
+#include <tools/utils.h>
 
 #include "block/block_manager.h"
 #include "common/global_info.h"
@@ -47,6 +49,7 @@
 #include "transport/transport_utils.h"
 #include "zjcvm/execution.h"
 #include "yaml-cpp/yaml.h"
+#include "common/defer.h"
 
 namespace shardora {
 
@@ -104,17 +107,17 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
-    // Init agg bls
-    if (bls::AggBls::Instance()->Init(prefix_db_, security_) != common::kCommonSuccess) {
-        return kInitError;
-    }
-
     std::string net_name;
     int genesis_check = GenesisCmd(parser_arg, net_name);
     if (genesis_check != -1) {
         std::cout << net_name << " genesis cmd over, exit." << std::endl;
         return genesis_check;
     }
+
+    // Init agg bls
+    if (bls::AggBls::Instance()->Init(prefix_db_, security_) != common::kCommonSuccess) {
+        return kInitError;
+    }    
 
     uint32_t ws_server = 0;
     conf_.Get("zjchain", "ws_server", ws_server);
@@ -939,7 +942,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
         std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
 
-        GetNetworkNodesFromConf(genesis_config, root_genesis_nodes, cons_genesis_nodes_of_shards);
+        GetNetworkNodesFromConf(genesis_config, root_genesis_nodes, cons_genesis_nodes_of_shards, db);
 
         if (genesis_block.CreateGenesisBlocks(
                 GenisisNetworkType::RootNetwork,
@@ -984,8 +987,8 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
 
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
         std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
-
-        GetNetworkNodesFromConf(genesis_config, root_genesis_nodes, cons_genesis_nodes_of_shards);
+        
+        GetNetworkNodesFromConf(genesis_config, root_genesis_nodes, cons_genesis_nodes_of_shards, db);
 
         if (genesis_block.CreateGenesisBlocks(
                 GenisisNetworkType::ShardNetwork,
@@ -1004,7 +1007,9 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
 void NetworkInit::GetNetworkNodesFromConf(
         const YAML::Node& genesis_config,
         std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
-        std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards) {
+        std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
+        const std::shared_ptr<db::Db>& db) {
+    auto prefix_db = std::make_shared<protos::PrefixDb>(db);
     if (genesis_config["root"]) {
         auto root_config = genesis_config["root"];
         if (root_config["sks"]) {
@@ -1018,6 +1023,9 @@ void NetworkInit::GetNetworkNodesFromConf(
                 secptr->SetPrivateKey(node_ptr->prikey);
                 node_ptr->pubkey = secptr->GetPublicKey();
                 node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
+
+                InitAggBlsForGenesis(node_ptr->id, secptr, prefix_db);
+                
                 auto keypair = bls::AggBls::Instance()->GetKeyPair();
                 node_ptr->agg_bls_pk = keypair->pk();
                 node_ptr->agg_bls_pk_proof = keypair->proof();
@@ -1043,8 +1051,11 @@ void NetworkInit::GetNetworkNodesFromConf(
                 node_ptr->prikey = common::Encode::HexDecode(sk);
                 std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
                 secptr->SetPrivateKey(node_ptr->prikey);
+                
                 node_ptr->pubkey = secptr->GetPublicKey();
                 node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
+                
+                InitAggBlsForGenesis(node_ptr->id, secptr, prefix_db);
                 auto keypair = bls::AggBls::Instance()->GetKeyPair();
                 node_ptr->agg_bls_pk = keypair->pk();
                 node_ptr->agg_bls_pk_proof = keypair->proof();
@@ -1054,6 +1065,55 @@ void NetworkInit::GetNetworkNodesFromConf(
             cons_genesis_nodes_of_shards[net_id-network::kConsensusShardBeginNetworkId] = cons_genesis_nodes;
         }
     }
+}
+
+void NetworkInit::InitAggBlsForGenesis(const std::string& node_id, std::shared_ptr<security::Security>& secptr, std::shared_ptr<protos::PrefixDb>& prefix_db) {
+    libff::alt_bn128_Fr agg_bls_sk = libff::alt_bn128_Fr::zero();
+    GetAggBlsSkFromFile(node_id, &agg_bls_sk);
+    if (agg_bls_sk == libff::alt_bn128_Fr::zero()) {
+        bls::AggBls::Instance()->Init(prefix_db, secptr);
+        WriteAggBlsSkToFile(node_id, bls::AggBls::Instance()->agg_sk());
+    } else {
+        bls::AggBls::Instance()->InitBySk(agg_bls_sk, prefix_db, secptr);
+    }
+    return;
+}
+
+void NetworkInit::GetAggBlsSkFromFile(const std::string& node_id, libff::alt_bn128_Fr* agg_bls_sk) {
+    std::string file = std::string("./agg_bls_sk_") + common::Encode::HexEncode(node_id);
+    FILE* fd = fopen(file.c_str(), "r");
+    if (fd != nullptr) {
+        defer(fclose(fd));
+        
+        fseek(fd, 0, SEEK_END);
+        long file_size = ftell(fd);
+        fseek(fd, 0, SEEK_SET);
+
+        if (file_size <= 0) {
+            return;
+        }
+
+        char* data = new char[file_size+1];
+        defer(delete[] data);
+        
+        if (fgets(data, file_size+1, fd) == nullptr) {
+            return;
+        }
+
+        std::string tmp_data(data, strlen(data)-1);
+        *agg_bls_sk = libff::alt_bn128_Fr(tmp_data.c_str());
+    }
+    return;
+}
+
+void NetworkInit::WriteAggBlsSkToFile(const std::string& node_id, const libff::alt_bn128_Fr& agg_bls_sk) {
+    std::string file = std::string("./agg_bls_sk_") + common::Encode::HexEncode(node_id);
+    FILE* fd = fopen(file.c_str(), "w");
+    defer(fclose(fd));
+    
+    std::string val = libBLS::ThresholdUtils::fieldElementToString(agg_bls_sk) + "\n";
+    fputs(val.c_str(), fd);
+    return;
 }
 
 void NetworkInit::AddBlockItemToCache(

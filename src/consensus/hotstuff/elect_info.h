@@ -39,21 +39,31 @@ public:
                 }
                 break;
             }
-
+        }
 #ifdef USE_AGG_BLS
+        for (uint32_t i = 0; i < members->size(); i++) {
             auto agg_bls_pk = (*members)[i]->agg_bls_pk;
             auto agg_bls_pk_proof = (*members)[i]->agg_bls_pk_proof;            
             // 检查 agg bls 的 Proof of Posession，确保公钥不是假的，规避密钥消除攻击
             if (bls::AggBls::PopVerify(agg_bls_pk, agg_bls_pk_proof)) {
                 member_aggbls_pk_map_[(*members)[i]->index] = std::make_shared<libff::alt_bn128_G2>(agg_bls_pk);
+                ZJC_INFO("pop verify succ, member: %lu, elect_height: %lu, shard: %d, pk: %s",
+                    (*members)[i]->index,
+                    elect_height,
+                    sharding_id,
+                    libBLS::ThresholdUtils::G2ToString(agg_bls_pk)[0].c_str());
             }
             member_aggbls_pk_proof_map_[(*members)[i]->index] = std::make_shared<libff::alt_bn128_G1>(agg_bls_pk_proof);
-#endif
         }
-
+#endif
+        
         elect_height_ = elect_height;
         common_pk_ = common_pk;
+#ifdef USE_AGG_BLS
+        local_sk_ = bls::AggBls::Instance()->agg_sk();
+#else
         local_sk_ = sk;
+#endif
         SetMemberCount(members->size());
         for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
             pool_consen_stat_map_[pool_idx] = std::make_shared<ConsensusStat>(pool_idx, members);
@@ -119,6 +129,8 @@ public:
         if (member_aggbls_pk_map_.find(member_idx) != member_aggbls_pk_map_.end()) {
             return member_aggbls_pk_map_[member_idx];
         }
+        ZJC_ERROR("cannot find agg pk, member: %lu, elect: %lu, right: %d", member_idx, elect_height_, member_aggbls_pk_map_[member_idx] != nullptr);
+        assert(false);
         return nullptr;
     }
 

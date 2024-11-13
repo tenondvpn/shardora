@@ -59,7 +59,8 @@ enum WaitingBlockType {
 };
 
 HashStr GetQCMsgHash(const view_block::protobuf::QcItem& qc_item);
-HashStr GetTCMsgHash(const view_block::protobuf::QcItem& tc_item);
+HashStr GetTCMsgHash(const view_block::protobuf::QcItem &tc_item);
+bool IsQcTcValid(const view_block::protobuf::QcItem& qc_item);
 // HashStr GetViewBlockHash(const view_block::protobuf::ViewBlockItem&
 // view_block_item);
 
@@ -98,6 +99,7 @@ struct AggregateSignature {
 
     bool LoadFromProto(const view_block::protobuf::AggregateSig& agg_sig_proto) {
         sig_ = libff::alt_bn128_G1::zero();
+        participants_.clear();
         try {
             if (agg_sig_proto.sign_x() != "") {
                 sig_.X = libff::alt_bn128_Fq(agg_sig_proto.sign_x().c_str());
@@ -107,14 +109,19 @@ struct AggregateSignature {
             }
             if (agg_sig_proto.sign_z() != "") {
                 sig_.Z = libff::alt_bn128_Fq(agg_sig_proto.sign_z().c_str());
-            }            
+            }
+        } catch (const std::exception& e) {   
+            ZJC_ERROR("load from proto failed, err: %s", e.what());
+            return false;
         } catch (...) {
+            ZJC_ERROR("load from proto failed, unknown err");
             return false;
         }
 
-        for (auto par : agg_sig_proto.participants()) {
+        for (const auto& par : agg_sig_proto.participants()) {
             participants_.insert(par);
         }
+        
         return true;        
     }
 
@@ -125,7 +132,7 @@ struct AggregateSignature {
         agg_sig_proto.set_sign_y(libBLS::ThresholdUtils::fieldElementToString(sig_.Y));
         agg_sig_proto.set_sign_z(libBLS::ThresholdUtils::fieldElementToString(sig_.Z));
 
-        for (auto par : participants_) {
+        for (const auto& par : participants_) {
             agg_sig_proto.add_participants(par);
         }
         

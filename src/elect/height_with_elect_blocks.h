@@ -1,5 +1,6 @@
 #pragma once
 
+#include <bls/agg_bls.h>
 #include <mutex>
 #include <unordered_map>
 #include <memory>
@@ -73,7 +74,6 @@ public:
                 } else {
                     new_item->local_sec_key = libff::alt_bn128_Fr::zero();
                 }
-
                 ZJC_DEBUG("0 save bls pk and secret key success.height: %lu, network_id: %u, %d, %d",
                     height, network_id,
                     (new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()),
@@ -96,6 +96,7 @@ public:
             members_ptr,
             height);
         new_item->common_bls_publick_key = common_pk;
+
         std::string bls_prikey;
         if (prefix_db_->GetBlsPrikey(security_ptr_, height, network_id, &bls_prikey)) {
             new_item->local_sec_key = libff::alt_bn128_Fr(bls_prikey.c_str());
@@ -284,7 +285,7 @@ private:
         elect::protobuf::ElectBlock elect_block;
         for (int32_t tx_idx = 0; tx_idx < block.tx_list_size(); ++tx_idx) {
             ZJC_DEBUG("get tx step %d, %d, network_id: %u",
-                tx_idx, block.tx_list(tx_idx).step(), network_id);
+                tx_idx, block.tx_list(tx_idx).step(), network_id); 
             if (block.tx_list(tx_idx).step() != pools::protobuf::kConsensusRootElectShard) {
                 continue;
             }

@@ -32,6 +32,8 @@
 #include "timeblock/time_block_manager.h"
 #include "transport/multi_thread.h"
 #include "vss/vss_manager.h"
+#include <libff/algebra/curves/alt_bn128/alt_bn128_init.hpp>
+#include <protos/prefix_db.h>
 #include <yaml-cpp/node/node.h>
 
 // #define ENABLE_HOTSTUFF 1
@@ -58,7 +60,10 @@ private:
     int CheckJoinWaitingPool();
     int GenesisCmd(common::ParserArgs& parser_arg, std::string& net_name);
     void AddCmds();
-    void GetNetworkNodesFromConf(const YAML::Node&, std::vector<GenisisNodeInfoPtr>&, std::vector<GenisisNodeInfoPtrVector>&);
+    void GetNetworkNodesFromConf(const YAML::Node&, std::vector<GenisisNodeInfoPtr>&, std::vector<GenisisNodeInfoPtrVector>&, const std::shared_ptr<db::Db>&);
+    void InitAggBlsForGenesis(const std::string& node_id, std::shared_ptr<security::Security>& security_ptr, std::shared_ptr<protos::PrefixDb>&);
+    void GetAggBlsSkFromFile(const std::string& node_id, libff::alt_bn128_Fr* agg_bls_sk);
+    void WriteAggBlsSkToFile(const std::string& node_id, const libff::alt_bn128_Fr& agg_bls_sk);
     void AddBlockItemToCache(
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& block,
         db::DbWriteBatch& db_batch);

@@ -1,10 +1,12 @@
 #pragma once
 #include <bls/agg_bls.h>
 #include <common/bitmap.h>
+#include <common/encode.h>
 #include <common/log.h>
 #include <common/utils.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/types.h>
+#include <tools/utils.h>
 #include <transport/transport_utils.h>
 
 namespace shardora {
@@ -76,7 +78,7 @@ public:
             uint64_t elect_height,
             View view,
             const std::unordered_map<uint32_t, std::shared_ptr<QC>>& high_qcs,
-            const std::vector<AggregateSignature*>& high_qc_sigs);
+            const std::vector<std::shared_ptr<AggregateSignature>>& high_qc_sigs);
     Status VerifyAggregateQC(
             uint32_t sharding_id,
             const std::shared_ptr<AggregateQC>& agg_qc,
@@ -110,6 +112,7 @@ public:
             uint64_t elect_height) {
         auto elect_item = GetElectItem(sharding_id, elect_height);
         if (!elect_item) {
+            assert(false);
             return Status::kError;
         }
         
@@ -120,15 +123,20 @@ public:
             auto agg_bls_pk = elect_item->agg_bls_pk(member_idx);
             if (!agg_bls_pk) {
                 // 不在本次共识池或 POP 验证失败都会导致 elect_item 找不到 pk
+                assert(false);
                 return Status::kError;
             }
+            
             auto verified = bls::AggBls::CoreVerify(
-                    // elect_item->t(),
-                    // elect_item->n(),
                     *agg_bls_pk,
                     msg_hash,
                     sig.signature());
-            return verified ? Status::kSuccess : Status::kBlsVerifyFailed;
+            if (verified) {
+                return Status::kSuccess;
+            }
+            auto sig_x_str = libBLS::ThresholdUtils::fieldElementToString(sig.signature().X);
+            ZJC_DEBUG("agg sig verify failed, sig.x is %s, msg_hash: %s, member: %d", sig_x_str.c_str(), common::Encode::HexEncode(msg_hash).c_str(), member_idx);
+            return Status::kBlsVerifyFailed;
         }
 
         // aggregated sig
@@ -196,10 +204,10 @@ private:
     }
 
     Status AggregateSigs(
-            const std::vector<AggregateSignature*>& sigs,
+            const std::vector<std::shared_ptr<AggregateSignature>>& sigs,
             AggregateSignature* agg_sig) {
         std::vector<libff::alt_bn128_G1> g1_sigs;
-        for (const auto sig : sigs) {
+        for (const auto& sig : sigs) {
             if (!sig->IsValid()) {
                 continue;
             }
@@ -209,9 +217,9 @@ private:
             }
         }
 
-        libff::alt_bn128_G1* agg_g1_sig;
-        bls::AggBls::Aggregate(g1_sigs, agg_g1_sig);
-        agg_sig->set_signature(*agg_g1_sig);
+        libff::alt_bn128_G1 agg_g1_sig;
+        bls::AggBls::Aggregate(g1_sigs, &agg_g1_sig);
+        agg_sig->set_signature(agg_g1_sig);
 
         return Status::kSuccess;
     }

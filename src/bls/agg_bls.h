@@ -72,9 +72,35 @@ public:
         return common::kCommonSuccess;
     }
 
+    int InitBySk(
+            const libff::alt_bn128_Fr& sk,
+            std::shared_ptr<protos::PrefixDb>& prefix_db,
+            std::shared_ptr<security::Security>& security) {
+        libBLS::ThresholdUtils::initCurve();
+        
+        prefix_db_ = prefix_db;
+        security_ = security;
+        
+        if (sk != libff::alt_bn128_Fr::zero()) {
+            agg_bls_sk_ = sk;
+            prefix_db->SaveAggBlsPrikey(security, sk);
+            return common::kCommonSuccess;
+        }
+        
+        return common::kCommonError;        
+    }
+
     static std::shared_ptr<KeyPair> GenerateKeyPair();    
     
     std::shared_ptr<KeyPair> GetKeyPair();
+
+    inline libff::alt_bn128_Fr agg_sk() {
+        return agg_bls_sk_;
+    }
+
+    inline libff::alt_bn128_G2 agg_pk() {
+        return GetPublicKey(agg_bls_sk_);
+    }
 
     static libff::alt_bn128_G2 GetPublicKey(const libff::alt_bn128_Fr& sk) {
         return sk * libff::alt_bn128_G2::one();
