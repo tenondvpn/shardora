@@ -148,6 +148,16 @@ void BlockManager::HandleAllConsensusBlocks() {
                     db_item_ptr->view_block_ptr->qc().elect_height(),
                     block_ptr->timeblock_height());
             AddNewBlock(db_item_ptr->view_block_ptr, *db_item_ptr->db_batch);
+            ZJC_DEBUG("over from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
+                    "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
+                    db_item_ptr->view_block_ptr->qc().network_id(),
+                    db_item_ptr->view_block_ptr->qc().pool_index(),
+                    block_ptr->height(),
+                    block_ptr->tx_list_size(),
+                    common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
+                    db_item_ptr->view_block_ptr->qc().elect_height(),
+                    block_ptr->timeblock_height());
+
         }
     }
 }
@@ -817,7 +827,10 @@ void BlockManager::AddNewBlock(
         block_item->timeblock_height());
     if (ck_client_ != nullptr) {
         ck_client_->AddNewBlock(view_block_item);
-        ZJC_DEBUG("add to ck.");
+        ZJC_DEBUG("add to ck success: %u_%d_%lu",
+            view_block_item->qc().network_id(),
+            view_block_item->qc().pool_index(),
+            block_item->height());
     }
 }
 
