@@ -416,7 +416,7 @@ int ContractReEncryption::TestProxyReEncryption() {
     for(int i = 1;i<nu;i++){
         GT Xi = rc6[i-1][0]/e(g1^sk[i],rc5[i-1][0]);
         GT tempc2(rc2[i-1][0]^lag[0]);
-        for(int j=0;j<t;j++){
+        for(int j=1;j<t;j++){
             tempc2*=(rc2[i-1][j]^lag[j]);
         }
 
