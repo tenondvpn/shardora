@@ -257,19 +257,18 @@ int ContractReEncryption::Transform() {
     return kContractSuccess;
 }
 
-
 int ContractReEncryption::TestProxyReEncryption() {
-    //系统初始化，生成曲线。
-    char param[1024];
-    FILE* file = fopen("../param/a.param", "r");
-    size_t count = fread(param, 1, 1024, file);
-    fclose(file);
-    if (!count) pbc_die("input error");
-    Pairing e(param, count);
+    std::string param = ("type a\n"
+        "q 8780710799663312522437781984754049815806883199414208211028653399266475630880222957078625179422662221423155858769582317459277713367317481324925129998224791\n"
+        "h 12016012264891146079388821366740534204802954401251311822919615131047207289359704531102844802183906537786776\n"
+        "r 730750818665451621361119245571504901405976559617\n"
+        "exp2 159\n"
+        "exp1 107\n"
+        "sign1 1\n"
+        "sign0 1\n");
+    Pairing e(param.c_str(), param.size());
     G1 g(e,false);
     G1 g1(e,false);
-
-
 
     //密钥生成，这里生成10个用户。
     //下标为0的用户0作为加密者，其余用户(1~9)为接受者。
@@ -281,9 +280,6 @@ int ContractReEncryption::TestProxyReEncryption() {
         pk.push_back(g^x);
         sk.push_back(x);
     }
-
-    //代理路径生成，表示用户收到密文的顺序。
-    vector<G1> path = pk;
 
     //重加密密钥生成，假设代理总数为np，门限为t。
     //即只有不少于t个代理参与重加密，才能正确解密。
@@ -352,8 +348,8 @@ int ContractReEncryption::TestProxyReEncryption() {
     Zr r(e,true),z(e,true);
     for(int i = 0;i<np;i++){
         c1.push_back(g^r);
-        c3.push_back(g^z);
         c2.push_back((m*(e(g1,pk[0])^r))^hid[i]);
+        c3.push_back(g^z);
         c4.push_back(e(g1,pk[0])^(r*hid[i]));
         c5.push_back(G1(e,false));
         c6.push_back(GT(e,false));
