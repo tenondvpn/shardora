@@ -939,7 +939,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
         std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
 
-        GetNetworkNodesFromConf(genesis_config, root_genesis_nodes, cons_genesis_nodes_of_shards);
+        GetNetworkNodesFromConf(genesis_config, root_genesis_nodes, cons_genesis_nodes_of_shards, db);
 
         if (genesis_block.CreateGenesisBlocks(
                 GenisisNetworkType::RootNetwork,
@@ -984,8 +984,8 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
 
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
         std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
-
-        GetNetworkNodesFromConf(genesis_config, root_genesis_nodes, cons_genesis_nodes_of_shards);
+        
+        GetNetworkNodesFromConf(genesis_config, root_genesis_nodes, cons_genesis_nodes_of_shards, db);
 
         if (genesis_block.CreateGenesisBlocks(
                 GenisisNetworkType::ShardNetwork,
@@ -1004,7 +1004,9 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
 void NetworkInit::GetNetworkNodesFromConf(
         const YAML::Node& genesis_config,
         std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
-        std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards) {
+        std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
+        const std::shared_ptr<db::Db>& db) {
+    auto prefix_db = std::make_shared<protos::PrefixDb>(db);
     if (genesis_config["root"]) {
         auto root_config = genesis_config["root"];
         if (root_config["sks"]) {
@@ -1016,8 +1018,8 @@ void NetworkInit::GetNetworkNodesFromConf(
                 node_ptr->prikey = common::Encode::HexDecode(sk);
                 std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
                 secptr->SetPrivateKey(node_ptr->prikey);
-
-                bls::AggBls::Instance()->Init(prefix_db_, secptr);
+                
+                bls::AggBls::Instance()->Init(prefix_db, secptr);
                 
                 node_ptr->pubkey = secptr->GetPublicKey();
                 node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
@@ -1047,7 +1049,7 @@ void NetworkInit::GetNetworkNodesFromConf(
                 std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
                 secptr->SetPrivateKey(node_ptr->prikey);
 
-                bls::AggBls::Instance()->Init(prefix_db_, secptr);
+                bls::AggBls::Instance()->Init(prefix_db, secptr);
                 
                 node_ptr->pubkey = secptr->GetPublicKey();
                 node_ptr->id = secptr->GetAddress(node_ptr->pubkey);

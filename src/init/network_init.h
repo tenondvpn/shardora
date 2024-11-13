@@ -58,7 +58,7 @@ private:
     int CheckJoinWaitingPool();
     int GenesisCmd(common::ParserArgs& parser_arg, std::string& net_name);
     void AddCmds();
-    void GetNetworkNodesFromConf(const YAML::Node&, std::vector<GenisisNodeInfoPtr>&, std::vector<GenisisNodeInfoPtrVector>&);
+    void GetNetworkNodesFromConf(const YAML::Node&, std::vector<GenisisNodeInfoPtr>&, std::vector<GenisisNodeInfoPtrVector>&, const std::shared_ptr<db::Db>&);
     void AddBlockItemToCache(
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& block,
         db::DbWriteBatch& db_batch);
