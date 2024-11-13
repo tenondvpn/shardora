@@ -354,7 +354,7 @@ async function SetManagerPrepayment(contract_address) {
                 break;
             }
 
-            console.log(`contract prepayment failed error: ${stderr} count: ${stdout}`);
+            console.log(`${cmd} contract prepayment failed error: ${stderr} count: ${stdout}`);
         } catch (error) {
             console.log(error);
         }
@@ -475,7 +475,7 @@ function InitC2cEnv(key, value) {
                         const {stdout, stderr} = await execPromise(cmd);
                         var split_lines = stdout.trim().split('\n');
                         var dictionary = new Set();
-                        console.log(`transfer to manager address split_lines.length: ${stdout}`);
+                        console.log(`${cmd} transfer to manager address split_lines.length: ${stdout}`);
                         if (split_lines.length >= check_count) {
                             for (var line_idx = 0; line_idx < split_lines.length; ++line_idx) {
                                 var item_split = split_lines[line_idx].split("\t");
