@@ -21,6 +21,7 @@ ClickHouseClient::ClickHouseClient(
         std::shared_ptr<db::Db> db_ptr,
         std::shared_ptr<contract::ContractManager> contract_mgr) : contract_mgr_(contract_mgr) {
     CreateTable(true, db_ptr);
+    ResetColumns();
     flush_to_ck_thread_ = std::make_shared<std::thread>(
         std::bind(&ClickHouseClient::FlushToCk, this));
 
