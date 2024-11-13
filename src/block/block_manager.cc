@@ -1282,9 +1282,9 @@ void BlockManager::HandleStatisticBlock(
 pools::TxItemPtr BlockManager::GetToTx(
         uint32_t pool_index, 
         const std::string& heights_str) {
-    // if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-    //     return nullptr;
-    // }
+    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+        return nullptr;
+    }
 
     if (pool_index != common::kImmutablePoolSize) {
         return nullptr;
