@@ -13,7 +13,7 @@ namespace contract {
 
 class ContractReEncryption : public ContractInterface {
 public:
-    ContractReEncryption() {}
+    ContractReEncryption() : ContractInterface("") {}
     ContractReEncryption(const std::string& create_address, const std::string& pairing_param);
     virtual ~ContractReEncryption();
     virtual int call(
