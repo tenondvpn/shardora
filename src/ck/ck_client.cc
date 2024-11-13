@@ -70,6 +70,7 @@ void ClickHouseClient::FlushToCk() {
             }
         }
 
+        FlushToCkWithData();
         std::unique_lock<std::mutex> lock(wait_mutex_);
         wait_con_.wait_for(lock, std::chrono::milliseconds(100));
     }   
@@ -311,8 +312,43 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
     }
 
     ++batch_count_;
+    // ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseTransTableName + " FINAL");
+    // ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseBlockTableName + " FINAL");
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountTableName + " FINAL");
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountKvTableName + " FINAL");
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseC2cTableName + " FINAL");
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhousePrepaymentTableName + " FINAL");
+#ifndef NDEBUG
+    for (int32_t i = 0; i < tx_list.size(); ++i) {
+        ZJC_DEBUG("ck success new block coming sharding id: %u_%d_%lu, "
+            "tx size: %u, hash: %s, elect height: %lu, "
+            "tm height: %lu, gid: %s, status: %d, step: %d",
+            view_block_item->qc().network_id(),
+            view_block_item->qc().pool_index(),
+            block_item->height(),
+            block_item->tx_list_size(),
+            common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
+            view_block_item->qc().elect_height(),
+            block_item->timeblock_height(),
+            common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+            tx_list[i].status(),
+            tx_list[i].step());
+    }
+#endif
+    return true;
+} catch (std::exception& e) {
+    ZJC_ERROR("add new block failed[%s]", e.what());
+    return false;
+}
+
+void ClickHouseClient::FlushToCkWithData() {
+    if (batch_count_ <= 0) {
+        return;
+    }
+    
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    ZJC_INFO("add new ck block %u_%u_%lu, batch_count_: %u", view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height(), batch_count_);
     if (batch_count_ >= kBatchCountToCk || (pre_time_out_ + 10000 < now_tm_ms)) {
         clickhouse::Block trans;
         clickhouse::Block blocks;
@@ -417,37 +453,8 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         pre_time_out_ = now_tm_ms;
         ResetColumns();
     }
-
-    // ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
-    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseTransTableName + " FINAL");
-    // ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
-    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseBlockTableName + " FINAL");
-    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountTableName + " FINAL");
-    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountKvTableName + " FINAL");
-    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseC2cTableName + " FINAL");
-    // ck_client.Execute(std::string("optimize TABLE ") + kClickhousePrepaymentTableName + " FINAL");
-#ifndef NDEBUG
-    for (int32_t i = 0; i < tx_list.size(); ++i) {
-        ZJC_DEBUG("ck success new block coming sharding id: %u_%d_%lu, "
-            "tx size: %u, hash: %s, elect height: %lu, "
-            "tm height: %lu, gid: %s, status: %d, step: %d",
-            view_block_item->qc().network_id(),
-            view_block_item->qc().pool_index(),
-            block_item->height(),
-            block_item->tx_list_size(),
-            common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
-            view_block_item->qc().elect_height(),
-            block_item->timeblock_height(),
-            common::Encode::HexEncode(tx_list[i].gid()).c_str(),
-            tx_list[i].status(),
-            tx_list[i].step());
-    }
-#endif
-    return true;
-} catch (std::exception& e) {
-    ZJC_ERROR("add new block failed[%s]", e.what());
-    return false;
 }
+
 
 bool ClickHouseClient::QueryContract(const std::string& from, const std::string& contract_addr, nlohmann::json* res) {
     zjcvm::ZjchainHost zjc_host;

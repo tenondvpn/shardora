@@ -46,6 +46,7 @@ private:
     bool QueryContract(const std::string& from, const std::string& contract_addr, nlohmann::json* res);
     bool HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& block_item);
     void FlushToCk();
+    void FlushToCkWithData();
     void ResetColumns();
 
     static const uint32_t kBatchCountToCk = 1000;
