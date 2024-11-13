@@ -12,6 +12,21 @@ const kTestSellerCount = 11;  // real: kTestSellerCount - 10
 const kTestBuyerCount = 11;  // real: kTestBuyerCount - 10
 const contract_address = "48e1eab96c9e759daa3aff82b40e77cd615a41d4";
 
+{
+    const newLog = function () {
+      console.info(new Date().toLocaleString());
+      arguments.callee.oLog.apply(this, arguments);
+    };
+    const newError = function () {
+      console.info(new Date().toLocaleString());
+      arguments.callee.oError.apply(this, arguments);
+    };
+    newLog.oLog = console.log;
+    newError.oError = console.error;
+    console.log = newLog;
+    console.error = newError;
+}
+  
 function str_to_hex(str) {
     var arr1 = [];
     for (var n = 0; n < str.length; n++) {
@@ -461,7 +476,7 @@ function InitC2cEnv(key, value) {
                         const {stdout, stderr} = await execPromise(cmd);
                         var split_lines = stdout.trim().split('\n');
                         var dictionary = new Set();
-                        console.log(`transfer to manager address split_lines.length: ${split_lines.length}`);
+                        console.log(`transfer to manager address split_lines.length: ${stdout}`);
                         if (split_lines.length >= check_count) {
                             for (var line_idx = 0; line_idx < split_lines.length; ++line_idx) {
                                 var item_split = split_lines[line_idx].split("\t");
