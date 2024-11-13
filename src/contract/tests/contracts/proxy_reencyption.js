@@ -133,9 +133,7 @@ function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_pri
     var pubX = Secp256k1.uint256(from_public_key.x, 16)
     var pubY = Secp256k1.uint256(from_public_key.y, 16)
     var isValidSig = Secp256k1.ecverify(pubX, pubY, sigR, sigS, digest)
-    console.log("digest: " + digest)
-    console.log("sigr: " + sigR.toString(16))
-    console.log("sigs: " + sigS.toString(16))
+    console.log("gid: " + gid.toString(16))
     if (!isValidSig) {
         console.log('signature transaction failed.')
         return;
