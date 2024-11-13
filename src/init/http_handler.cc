@@ -80,9 +80,10 @@ static int CreateTransactionWithAttr(
         return kAccountNotExists;
     }
 
-    ZJC_DEBUG("from: %s, to: %s",
+    ZJC_DEBUG("from: %s, to: %s, gid: %s",
         common::Encode::HexEncode(from).c_str(),
-        common::Encode::HexEncode(to).c_str());
+        common::Encode::HexEncode(to).c_str(),
+        common::Encode::HexEncode(gid).c_str());
     dht::DhtKeyManager dht_key(des_net_id);
     msg.set_src_sharding_id(des_net_id);
     msg.set_des_dht_key(dht_key.StrKey());
