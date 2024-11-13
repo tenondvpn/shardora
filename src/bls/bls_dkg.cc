@@ -42,6 +42,9 @@ void BlsDkg::Init(
     common_public_key_ = common_public_key;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+    if (common::GlobalInfo::Instance()->for_ck_server()) {
+        ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "", db, nullptr);
+    }    
 }
 
 void BlsDkg::Destroy() {
@@ -152,7 +155,7 @@ void BlsDkg::PopBlsMessage() {
             break;
         }
 
-        // HandleBlsMessage(msg_ptr);
+        HandleBlsMessage(msg_ptr);
     }
 }
 
@@ -950,6 +953,18 @@ void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {
         bls_mgr_->HandleMessage(msg_ptr);
     }
 #endif
+    
+    // store to ck
+    ck::BlsElectInfo info;
+    info.elect_height = elect_hegiht_;
+    info.member_idx = local_member_index_;
+    info.shard_id = common::GlobalInfo::Instance()->network_id();
+    info.contribution_map = BlsDkg::serializeSkContribution(local_src_secret_key_contribution_);
+    info.local_sk = BlsDkg::serializeLocalSk(local_sec_key_);
+    info.common_pk = BlsDkg::serializeCommonPk(common_public_key_);
+    if (ck_client_) {
+        ck_client_->InsertBlsElectInfo(info);
+    }    
 }
 
 void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
