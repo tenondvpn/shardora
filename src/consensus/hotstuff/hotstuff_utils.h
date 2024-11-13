@@ -78,12 +78,8 @@ public:
 
     Status Call(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
         pro_msg_wrap->tried_times++;
-#ifdef USE_AGG_BLS
-        if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_agg_sig()) {
-#else
-        if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_x() &&
-                pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().has_sign_y()) {
-#endif            
+
+        if (IsQcTcValid(pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc())) {            
             std::string key = std::to_string(
                 pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().leader_idx()) + "_" + 
                 std::to_string(pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view());

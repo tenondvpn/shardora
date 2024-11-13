@@ -98,7 +98,7 @@ Status AggCrypto::VerifyAndAggregateSig(
 
 Status AggCrypto::VerifyQC(uint32_t sharding_id, const QC& qc) {    
     auto agg_sig = std::make_shared<AggregateSignature>();
-    if (agg_sig->LoadFromProto(qc.agg_sig())) {
+    if (!agg_sig->LoadFromProto(qc.agg_sig())) {
         return Status::kError;
     }
     if (!agg_sig->IsValid()) {
@@ -121,7 +121,7 @@ Status AggCrypto::VerifyQC(uint32_t sharding_id, const QC& qc) {
 
 Status AggCrypto::VerifyTC(uint32_t sharding_id, const TC& tc) {    
     auto agg_sig = std::make_shared<AggregateSignature>();
-    if (agg_sig->LoadFromProto(tc.agg_sig())) {
+    if (!agg_sig->LoadFromProto(tc.agg_sig())) {
         return Status::kError;
     }
     if (!agg_sig->IsValid()) {

@@ -120,11 +120,7 @@ Status Hotstuff::Propose(
         if (latest_qc_item_ptr_ == nullptr || tc->view() >= latest_qc_item_ptr_->view()) {
             assert(tc->pool_index() == pool_idx_);
             assert(tc->network_id() == common::GlobalInfo::Instance()->network_id());
-#ifdef USE_AGG_BLS
-            assert(tc->has_agg_sig());
-#else
-            assert(tc->has_sign_x() && !tc->sign_x().empty());
-#endif
+            assert(IsQcTcValid(*tc));
             latest_qc_item_ptr_ = tc;
         }
 
@@ -238,8 +234,8 @@ Status Hotstuff::Propose(
         view_block_chain()->HighViewBlock()->qc().view(),
         header.hash64(),
         header.debug().c_str());
-#ifndef USE_AGG_BLS    
-    if (tc != nullptr && tc->has_sign_x()) {
+
+    if (tc != nullptr && IsQcTcValid(*tc)) {
         ZJC_DEBUG("new prev qc coming: %s, %u_%u_%lu, parent hash: %s, tx size: %u, view: %lu",
             common::Encode::HexEncode(tc->view_block_hash()).c_str(), 
             tc->network_id(), 
@@ -249,7 +245,7 @@ Status Hotstuff::Propose(
             pb_pro_msg->tx_propose().txs_size(),
             tc->view());
     }
-#endif
+
     msg_ptr->is_leader = true;
     HandleProposeMsg(msg_ptr);
     return Status::kSuccess;
@@ -277,11 +273,8 @@ void Hotstuff::NewView(
     if (latest_qc_item_ptr_ == nullptr || tc->view() >= latest_qc_item_ptr_->view()) {
         assert(tc->pool_index() == pool_idx_);
         assert(tc->network_id() == common::GlobalInfo::Instance()->network_id());
-#ifdef USE_AGG_BLS
-        if (tc->has_agg_sig()) {
-#else
-        if (tc->has_sign_x() && !tc->sign_x().empty()) {
-#endif
+
+        if (IsQcTcValid(*tc)) {
             latest_qc_item_ptr_ = tc;
         }
     }
@@ -545,11 +538,7 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
         pacemaker()->NewTc(tc_ptr);
         if (latest_qc_item_ptr_ == nullptr ||
                 tc_ptr->view() >= latest_qc_item_ptr_->view()) {
-#ifdef USE_AGG_BLS
-            assert(tc_ptr->has_agg_sig());
-#else
-            assert(tc_ptr->has_sign_x() && !tc_ptr->sign_x().empty());
-#endif
+            assert(IsQcTcValid(*tc_ptr));
             latest_qc_item_ptr_ = tc_ptr;
         }
 #ifndef NDEBUG
@@ -572,11 +561,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
         pro_msg_wrap->msg_ptr->header.hash64(), 
         common::Encode::HexEncode(pro_msg.tc().view_block_hash()).c_str(),
         pro_msg_wrap->msg_ptr->header.debug().c_str());
-#ifdef USE_AGG_BLS
-    if (pro_msg.has_tc() && pro_msg.tc().has_view_block_hash() && pro_msg.tc().has_agg_sig()) {
-#else
-    if (pro_msg.has_tc() && pro_msg.tc().has_view_block_hash() && pro_msg.tc().has_sign_x()) {
-#endif
+    if (pro_msg.has_tc() && pro_msg.tc().has_view_block_hash() && IsQcTcValid(pro_msg.tc())) {
         if (VerifyQC(pro_msg.tc()) != Status::kSuccess) {
             ZJC_ERROR("pool: %d verify qc failed: %lu", pool_idx_, pro_msg.tc().view());
             assert(false);
@@ -593,7 +578,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
         TryCommit(pro_msg.tc(), 99999999lu);
         if (latest_qc_item_ptr_ == nullptr ||
                 pro_msg.tc().view() >= latest_qc_item_ptr_->view()) {
-            // assert(pro_msg.tc().has_sign_x() && !pro_msg.tc().sign_x().empty());
+            assert(IsQcTcValid(pro_msg.tc()));
             latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(pro_msg.tc());
         }
 #ifndef NDEBUG
@@ -1115,11 +1100,7 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
             TryCommit(qc, 99999999lu);
             if (latest_qc_item_ptr_ == nullptr ||
                     qc.view() >= latest_qc_item_ptr_->view()) {
-#ifdef USE_AGG_BLS
-                if (qc.has_agg_sig()) {
-#else
-                if (qc.has_sign_x() && !qc.sign_x().empty()) {
-#endif
+                if (IsQcTcValid(qc)) {
                     latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(qc);
                 }
             }
@@ -1311,17 +1292,11 @@ Status Hotstuff::Commit(
 
 Status Hotstuff::VerifyQC(const QC& qc) {
     // 验证 qc
-#ifdef USE_AGG_BLS
-    if (!qc.has_agg_sig()) {
+    if (!IsQcTcValid(qc)) {
         assert(false);
         return Status::kError;
     }
-#else
-    if (!qc.has_sign_x() || !qc.has_sign_y()) {
-        assert(false);
-        return Status::kError;
-    }
-#endif
+
     if (qc.view() > view_block_chain()->HighViewBlock()->qc().view()) {        
         if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
             return Status::kError; 
@@ -1332,17 +1307,10 @@ Status Hotstuff::VerifyQC(const QC& qc) {
 }
 
 Status Hotstuff::VerifyTC(const TC& tc) {
-#ifdef USE_AGG_BLS    
-    if (!tc.has_agg_sig()) {
+    if (!IsQcTcValid(tc)) {
         assert(false);
         return Status::kError;
     }
-#else
-    if (!tc.has_sign_x() || !tc.has_sign_y()) {
-        assert(false);
-        return Status::kError;
-    }    
-#endif
 
     if (tc.view() > pacemaker()->HighTC()->view()) {
         if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {

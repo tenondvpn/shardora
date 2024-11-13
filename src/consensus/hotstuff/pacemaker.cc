@@ -51,11 +51,7 @@ void Pacemaker::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
 
 void Pacemaker::NewTc(const std::shared_ptr<view_block::protobuf::QcItem>& tc) {
     StopTimeoutTimer();
-#ifdef USE_AGG_BLS
-    if (tc->has_agg_sig()) {
-#else
-    if (tc->has_sign_x() && tc->has_sign_y()) {
-#endif
+    if (IsQcTcValid(*tc)) {
         if (cur_view_ < tc->view() + 1) {
             cur_view_ = tc->view() + 1;
             ZJC_DEBUG("success new tc view: %lu, %u_%u_%lu, pool index: %u",
@@ -192,6 +188,7 @@ void Pacemaker::OnLocalTimeout() {
     timeout_msg.mutable_view_sig()->CopyFrom(partial_sig.DumpToProto());
     // 对本节点的 high qc 签名
     AggregateSignature high_qc_sig;
+#ifdef ENABLE_FAST_HOTSTUFF    
     auto high_qc_msg_hash = GetQCMsgHash(HighQC()); 
     if (crypto_->PartialSign(
             common::GlobalInfo::Instance()->network_id(),
@@ -203,7 +200,8 @@ void Pacemaker::OnLocalTimeout() {
             elect_item->ElectHeight(),
             common::Encode::HexEncode(high_qc_msg_hash).c_str());
         return;
-    }    
+    }
+#endif    
     
     timeout_msg.mutable_high_qc()->CopyFrom(HighQC());
     timeout_msg.mutable_high_qc_sig()->CopyFrom(high_qc_sig.DumpToProto());
@@ -364,7 +362,6 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(), s,
         msg_ptr->header.hash64());    
     if (s != Status::kSuccess || !agg_sig.IsValid()) {
-        assert(false);
         return;
     }
 
@@ -379,7 +376,9 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         &tc);
     tc.mutable_agg_sig()->CopyFrom(agg_sig.DumpToProto());    
 
-    auto agg_qc = crypto_->CreateAggregateQC(
+    std::shared_ptr<AggregateQC> agg_qc = nullptr;
+#ifdef ENABLE_FAST_HOTSTUFF    
+    agg_qc = crypto_->CreateAggregateQC(
             common::GlobalInfo::Instance()->network_id(),
             timeout_proto.elect_height(),
             timeout_proto.view(),
@@ -388,7 +387,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     if (!agg_qc || !agg_qc->IsValid()) {
         return;
     }
-
+#endif
     // view change
     NewTc(new_tc);
     NewAggQc(agg_qc);
