@@ -826,6 +826,10 @@ void BlockManager::AddNewBlock(
         view_block_item->qc().elect_height(),
         block_item->timeblock_height());
     if (ck_client_ != nullptr) {
+        ZJC_DEBUG("now add to ck: %u_%d_%lu",
+            view_block_item->qc().network_id(),
+            view_block_item->qc().pool_index(),
+            block_item->height());
         ck_client_->AddNewBlock(view_block_item);
         ZJC_DEBUG("add to ck success: %u_%d_%lu",
             view_block_item->qc().network_id(),
