@@ -34,6 +34,25 @@ ClickHouseClient::~ClickHouseClient() {
 bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& view_block_item) {
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     block_queues_[thread_idx].push(view_block_item);
+#ifndef NDEBUG
+    auto* block_item = &view_block_item->block_info();
+    const auto& tx_list = block_item->tx_list();
+    for (int32_t i = 0; i < tx_list.size(); ++i) {
+        ZJC_DEBUG("ck new block coming sharding id: %u_%d_%lu, "
+            "tx size: %u, hash: %s, elect height: %lu, "
+            "tm height: %lu, gid: %s, status: %d, step: %d",
+            view_block_item->qc().network_id(),
+            view_block_item->qc().pool_index(),
+            block_item->height(),
+            block_item->tx_list_size(),
+            common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
+            view_block_item->qc().elect_height(),
+            block_item->timeblock_height(),
+            common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+            tx_list[i].status(),
+            tx_list[i].step());
+    }
+#endif
     wait_con_.notify_one();
 }
 
@@ -461,15 +480,12 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
     prepay.AppendColumn("height", prepay_height);
 
     uint32_t idx = 0;
-    ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
     clickhouse::Client ck_client(clickhouse::ClientOptions().
         SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
-    ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
     ck_client.Insert(kClickhouseTransTableName, trans);
-    ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
     ck_client.Insert(kClickhouseBlockTableName, blocks);
     ck_client.Insert(kClickhouseAccountTableName, accounts);
     ck_client.Insert(kClickhouseAccountKvTableName, account_attrs);
@@ -483,7 +499,25 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountKvTableName + " FINAL");
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseC2cTableName + " FINAL");
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhousePrepaymentTableName + " FINAL");
-    ZJC_INFO("%u, success add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
+#ifndef NDEBUG
+    auto* block_item = &view_block_item->block_info();
+    const auto& tx_list = block_item->tx_list();
+    for (int32_t i = 0; i < tx_list.size(); ++i) {
+        ZJC_DEBUG("ck success new block coming sharding id: %u_%d_%lu, "
+            "tx size: %u, hash: %s, elect height: %lu, "
+            "tm height: %lu, gid: %s, status: %d, step: %d",
+            view_block_item->qc().network_id(),
+            view_block_item->qc().pool_index(),
+            block_item->height(),
+            block_item->tx_list_size(),
+            common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
+            view_block_item->qc().elect_height(),
+            block_item->timeblock_height(),
+            common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+            tx_list[i].status(),
+            tx_list[i].step());
+    }
+#endif
     return true;
 } catch (std::exception& e) {
     ZJC_ERROR("add new block failed[%s]", e.what());
