@@ -21,11 +21,41 @@ ClickHouseClient::ClickHouseClient(
         std::shared_ptr<db::Db> db_ptr,
         std::shared_ptr<contract::ContractManager> contract_mgr) : contract_mgr_(contract_mgr) {
     CreateTable(true, db_ptr);
+    flush_to_ck_thread_ = std::make_shared<std::thread>(
+        std::bind(&ClickHouseClient::FlushToCk, this));
+
 }
 
-ClickHouseClient::~ClickHouseClient() {}
+ClickHouseClient::~ClickHouseClient() {
+    stop_ = true;
+    flush_to_ck_thread_->join();
+}
 
-bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& view_block_item) try {
+bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& view_block_item) {
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    block_queues_[thread_idx].push(view_block_item);
+    wait_con_.notify_one();
+}
+
+void ClickHouseClient::FlushToCk() {
+    while (!stop_) {
+        for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+            std::shared_ptr<hotstuff::ViewBlock> view_block_ptr;
+            while (block_queues_[i].pop(&view_block_ptr)) {
+                if (!view_block_ptr) {
+                    break;
+                }
+
+                HandleNewBlock(view_block_ptr);
+            }
+        }
+
+        std::unique_lock<std::mutex> lock(wait_mutex_);
+        wait_con_.wait_for(lock, std::chrono::milliseconds(100));
+    }   
+}
+
+bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& view_block_item) try {
     std::string cmd;
     auto* block_item = &view_block_item->block_info();
     const auto& tx_list = block_item->tx_list();
