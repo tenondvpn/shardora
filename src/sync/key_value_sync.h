@@ -96,10 +96,10 @@ public:
         uint64_t height,
         uint32_t priority);
     void Init(
-            const std::shared_ptr<block::BlockManager>& block_mgr,
-            const std::shared_ptr<consensus::HotstuffManager>& hotstuff_mgr,
-            const std::shared_ptr<db::Db>& db,
-            ViewBlockSyncedCallback view_block_synced_callback);
+        const std::shared_ptr<block::BlockManager>& block_mgr,
+        const std::shared_ptr<consensus::HotstuffManager>& hotstuff_mgr,
+        const std::shared_ptr<db::Db>& db,
+        ViewBlockSyncedCallback view_block_synced_callback);
     void HandleMessage(const transport::MessagePtr& msg);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 

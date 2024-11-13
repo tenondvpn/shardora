@@ -1,5 +1,5 @@
 #include <bls/agg_bls.h>
-#include <common/encode.h>
+#include <bls/bls_dkg.h>#include <common/encode.h>
 #include <common/log.h>
 #include <common/defer.h>
 #include <common/time_utils.h>
@@ -30,6 +30,11 @@ void Hotstuff::Init() {
     }
 
     InitHandleProposeMsgPipeline();
+
+    if (common::GlobalInfo::Instance()->for_ck_server()) {
+        ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "", db_, nullptr);
+    }        
+
     LoadLatestProposeMessage();
 }
 
@@ -111,7 +116,7 @@ Status Hotstuff::Propose(
 
     auto readobly_dht = dht_ptr->readonly_hash_sort_dht();
     if (readobly_dht->size() < 2) {
-        ZJC_DEBUG("pool %u not has dreadobly_dht->size() < 2", pool_idx_);
+        ZJC_DEBUG("pool %u not has readobly_dht->size() < 2", pool_idx_);
         return Status::kError;
     }
 
@@ -640,7 +645,6 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
     auto zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
     zjcvm::ZjchainHost prev_zjc_host;
     zjcvm::ZjchainHost& zjc_host = *zjc_host_ptr;
-    zjc_host.prev_zjc_host_ = &prev_zjc_host;
     if (acceptor()->Accept(
             view_block_chain_, 
             pro_msg_wrap, 
@@ -934,7 +938,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         }
 
         return;
-    }
+    }    
 
     ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d, view: %lu, qc_hash: %s, hash64: %lu, propose_debug: %s, replica: %lu, ",
         pool_idx_,
@@ -999,6 +1003,26 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         qc_item.network_id(),
         qc_item.pool_index(),
         qc_item.view());
+
+    // store to ck
+    if (ck_client_) {
+        auto elect_item = elect_info()->GetElectItemWithShardingId(
+                common::GlobalInfo::Instance()->network_id());
+        if (elect_item) {
+            ck::BlsBlockInfo info;
+            info.elect_height = elect_height;
+            info.view = vote_msg.view();
+            info.shard_id = common::GlobalInfo::Instance()->network_id();
+            info.pool_idx = pool_idx_;
+            info.leader_idx = elect_item->LocalMember()->index;
+            info.msg_hash = common::Encode::HexEncode(qc_hash);
+            info.partial_sign_map = crypto()->serializedPartialSigns(elect_height, qc_hash);
+            info.reconstructed_sign = crypto()->serializedSign(*reconstructed_sign);
+            info.common_pk = bls::BlsDkg::serializeCommonPk(elect_item->common_pk());
+            ck_client_->InsertBlsBlockInfo(info);
+        }        
+    }    
+    
 #endif
     
     view_block_chain()->UpdateHighViewBlock(qc_item);
@@ -1224,17 +1248,14 @@ std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(const QC& qc) {
     }
 
     ZJC_DEBUG("success get v block 3 propose_debug: %s", v_block3->debug().c_str());
-    if (v_block1->parent_hash() == v_block2->qc().view_block_hash() &&
-            v_block2->parent_hash() == v_block3->qc().view_block_hash()) {
-        return v_block3;
-    }
-    
-    ZJC_DEBUG("Failed get v block hash invalid: %s, %s, %s, %s",
+    assert(v_block1->parent_hash() == v_block2->qc().view_block_hash() &&
+            v_block2->parent_hash() == v_block3->qc().view_block_hash());
+    ZJC_DEBUG("success get v block hash: %s, %s, %s, %s",
         common::Encode::HexEncode(v_block1->parent_hash()).c_str(),
         common::Encode::HexEncode(v_block2->qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(v_block2->parent_hash()).c_str(),
         common::Encode::HexEncode(v_block3->qc().view_block_hash()).c_str());
-    return nullptr;
+    return v_block3;
 }
 
 Status Hotstuff::Commit(

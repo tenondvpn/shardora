@@ -1,4 +1,5 @@
 #include "ck/ck_client.h"
+#include <ck/ck_utils.h>
 
 #include <google/protobuf/util/json_util.h>
 #include <json/json.hpp>
@@ -21,101 +22,65 @@ ClickHouseClient::ClickHouseClient(
         std::shared_ptr<db::Db> db_ptr,
         std::shared_ptr<contract::ContractManager> contract_mgr) : contract_mgr_(contract_mgr) {
     CreateTable(true, db_ptr);
+    ResetColumns();
+    flush_to_ck_thread_ = std::make_shared<std::thread>(
+        std::bind(&ClickHouseClient::FlushToCk, this));
+
 }
 
-ClickHouseClient::~ClickHouseClient() {}
+ClickHouseClient::~ClickHouseClient() {
+    stop_ = true;
+    flush_to_ck_thread_->join();
+}
 
-bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& view_block_item) try {
+bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& view_block_item) {
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    block_queues_[thread_idx].push(view_block_item);
+#ifndef NDEBUG
+    auto* block_item = &view_block_item->block_info();
+    const auto& tx_list = block_item->tx_list();
+    for (int32_t i = 0; i < tx_list.size(); ++i) {
+        ZJC_DEBUG("ck new block coming sharding id: %u_%d_%lu, "
+            "tx size: %u, hash: %s, elect height: %lu, "
+            "tm height: %lu, gid: %s, status: %d, step: %d",
+            view_block_item->qc().network_id(),
+            view_block_item->qc().pool_index(),
+            block_item->height(),
+            block_item->tx_list_size(),
+            common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
+            view_block_item->qc().elect_height(),
+            block_item->timeblock_height(),
+            common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+            tx_list[i].status(),
+            tx_list[i].step());
+    }
+#endif
+    wait_con_.notify_one();
+}
+
+void ClickHouseClient::FlushToCk() {
+    while (!stop_) {
+        for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+            std::shared_ptr<hotstuff::ViewBlock> view_block_ptr;
+            while (block_queues_[i].pop(&view_block_ptr)) {
+                if (!view_block_ptr) {
+                    break;
+                }
+
+                HandleNewBlock(view_block_ptr);
+            }
+        }
+
+        FlushToCkWithData();
+        std::unique_lock<std::mutex> lock(wait_mutex_);
+        wait_con_.wait_for(lock, std::chrono::milliseconds(100));
+    }   
+}
+
+bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& view_block_item) try {
     std::string cmd;
     auto* block_item = &view_block_item->block_info();
     const auto& tx_list = block_item->tx_list();
-    clickhouse::Block trans;
-    clickhouse::Block blocks;
-    clickhouse::Block accounts;
-    clickhouse::Block account_attrs;
-    clickhouse::Block c2cs;
-    clickhouse::Block prepay;
-    auto shard_id = std::make_shared<clickhouse::ColumnUInt32>();
-    auto pool_index = std::make_shared<clickhouse::ColumnUInt32>();
-    auto height = std::make_shared<clickhouse::ColumnUInt64>();
-    auto prehash = std::make_shared<clickhouse::ColumnString>();
-    auto hash = std::make_shared<clickhouse::ColumnString>();
-    auto version = std::make_shared<clickhouse::ColumnUInt32>();
-    auto vss = std::make_shared<clickhouse::ColumnUInt64>();
-    auto elect_height = std::make_shared<clickhouse::ColumnUInt64>();
-    auto bitmap = std::make_shared<clickhouse::ColumnString>();
-    auto timestamp = std::make_shared<clickhouse::ColumnUInt64>();
-    auto timeblock_height = std::make_shared<clickhouse::ColumnUInt64>();
-    auto bls_agg_sign_x = std::make_shared<clickhouse::ColumnString>();
-    auto bls_agg_sign_y = std::make_shared<clickhouse::ColumnString>();
-    auto commit_bitmap = std::make_shared<clickhouse::ColumnString>();
-    auto gid = std::make_shared<clickhouse::ColumnString>();
-    auto from = std::make_shared<clickhouse::ColumnString>();
-    auto from_pubkey = std::make_shared<clickhouse::ColumnString>();
-    auto from_sign = std::make_shared<clickhouse::ColumnString>();
-    auto to = std::make_shared<clickhouse::ColumnString>();
-    auto amount = std::make_shared<clickhouse::ColumnUInt64>();
-    auto gas_limit = std::make_shared<clickhouse::ColumnUInt64>();
-    auto gas_used = std::make_shared<clickhouse::ColumnUInt64>();
-    auto gas_price = std::make_shared<clickhouse::ColumnUInt64>();
-    auto balance = std::make_shared<clickhouse::ColumnUInt64>();
-    auto to_add = std::make_shared<clickhouse::ColumnUInt32>();
-    auto type = std::make_shared<clickhouse::ColumnUInt32>();
-    auto attrs = std::make_shared<clickhouse::ColumnString>();
-    auto status = std::make_shared<clickhouse::ColumnUInt32>();
-    auto tx_hash = std::make_shared<clickhouse::ColumnString>();
-    auto call_contract_step = std::make_shared<clickhouse::ColumnUInt32>();
-    auto storages = std::make_shared<clickhouse::ColumnString>();
-    auto transfers = std::make_shared<clickhouse::ColumnString>();
-    auto date = std::make_shared<clickhouse::ColumnUInt32>();
-
-    auto block_shard_id = std::make_shared<clickhouse::ColumnUInt32>();
-    auto block_pool_index = std::make_shared<clickhouse::ColumnUInt32>();
-    auto block_height = std::make_shared<clickhouse::ColumnUInt64>();
-    auto block_prehash = std::make_shared<clickhouse::ColumnString>();
-    auto block_hash = std::make_shared<clickhouse::ColumnString>();
-    auto block_version = std::make_shared<clickhouse::ColumnUInt32>();
-    auto block_vss = std::make_shared<clickhouse::ColumnUInt64>();
-    auto block_elect_height = std::make_shared<clickhouse::ColumnUInt64>();
-    auto block_bitmap = std::make_shared<clickhouse::ColumnString>();
-    auto block_timestamp = std::make_shared<clickhouse::ColumnUInt64>();
-    auto block_timeblock_height = std::make_shared<clickhouse::ColumnUInt64>();
-    auto block_bls_agg_sign_x = std::make_shared<clickhouse::ColumnString>();
-    auto block_bls_agg_sign_y = std::make_shared<clickhouse::ColumnString>();
-    auto block_commit_bitmap = std::make_shared<clickhouse::ColumnString>();
-    auto block_tx_size = std::make_shared<clickhouse::ColumnUInt32>();
-    auto block_date = std::make_shared<clickhouse::ColumnUInt32>();
-
-    auto acc_account = std::make_shared<clickhouse::ColumnString>();
-    auto acc_shard_id = std::make_shared<clickhouse::ColumnUInt32>();
-    auto acc_pool_index = std::make_shared<clickhouse::ColumnUInt32>();
-    auto acc_balance = std::make_shared<clickhouse::ColumnUInt64>();
-
-    auto attr_account = std::make_shared<clickhouse::ColumnString>();
-    auto attr_to = std::make_shared<clickhouse::ColumnString>();
-    auto attr_shard_id = std::make_shared<clickhouse::ColumnUInt32>();
-    auto attr_tx_type = std::make_shared<clickhouse::ColumnUInt32>();
-    auto attr_key = std::make_shared<clickhouse::ColumnString>();
-    auto attr_value = std::make_shared<clickhouse::ColumnString>();
-
-    auto c2c_r = std::make_shared<clickhouse::ColumnString>();
-    auto c2c_seller = std::make_shared<clickhouse::ColumnString>();
-    auto c2c_all = std::make_shared<clickhouse::ColumnUInt64>();
-    auto c2c_now = std::make_shared<clickhouse::ColumnUInt64>();
-    auto c2c_mc = std::make_shared<clickhouse::ColumnUInt32>();
-    auto c2c_sc = std::make_shared<clickhouse::ColumnUInt32>();
-    auto c2c_report = std::make_shared<clickhouse::ColumnUInt32>();
-    auto c2c_order_id = std::make_shared<clickhouse::ColumnUInt64>();
-    auto c2c_height = std::make_shared<clickhouse::ColumnUInt64>();
-    auto c2c_buyer = std::make_shared<clickhouse::ColumnString>();
-    auto c2c_amount = std::make_shared<clickhouse::ColumnUInt64>();
-    auto c2c_contract_addr = std::make_shared<clickhouse::ColumnString>();
-
-    auto prepay_contract = std::make_shared<clickhouse::ColumnString>();
-    auto prepay_user = std::make_shared<clickhouse::ColumnString>();
-    auto prepay_amount = std::make_shared<clickhouse::ColumnUInt64>();
-    auto prepay_height = std::make_shared<clickhouse::ColumnUInt64>();
-
     std::string bitmap_str;
     std::string commit_bitmap_str;
     block_shard_id->Append(view_block_item->qc().network_id());
@@ -240,8 +205,8 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
                     memcpy(bytes32.bytes, order.c_str(), 32);
                     uint64_t o = zjcvm::EvmcBytes32ToUint64(bytes32);
                     c2c_order_id->Append(o);
-                    auto height = common::Encode::HexDecode(item["h"].get<std::string>());
-                    memcpy(bytes32.bytes, height.c_str(), 32);
+                    auto tmp_height = common::Encode::HexDecode(item["h"].get<std::string>());
+                    memcpy(bytes32.bytes, tmp_height.c_str(), 32);
                     uint64_t h = zjcvm::EvmcBytes32ToUint64(bytes32);
                     c2c_height->Append(h);
                     auto amount = common::Encode::HexDecode(item["bm"].get<std::string>());
@@ -347,111 +312,151 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
         }
     }
 
-    ZJC_INFO("add new ck block block_shard_id: %d, block_height: %lu", view_block_item->qc().network_id(), block_item->height());
-
-    blocks.AppendColumn("shard_id", block_shard_id);
-    blocks.AppendColumn("pool_index", block_pool_index);
-    blocks.AppendColumn("height", block_height);
-    blocks.AppendColumn("prehash", block_prehash);
-    blocks.AppendColumn("hash", block_hash);
-    blocks.AppendColumn("version", block_version);
-    blocks.AppendColumn("vss", block_vss);
-    blocks.AppendColumn("elect_height", block_elect_height);
-    blocks.AppendColumn("bitmap", block_bitmap);
-    blocks.AppendColumn("timestamp", block_timestamp);
-    blocks.AppendColumn("timeblock_height", block_timeblock_height);
-    blocks.AppendColumn("bls_agg_sign_x", block_bls_agg_sign_x);
-    blocks.AppendColumn("bls_agg_sign_y", block_bls_agg_sign_y);
-    blocks.AppendColumn("commit_bitmap", block_commit_bitmap);
-    blocks.AppendColumn("date", block_date);
-    blocks.AppendColumn("tx_size", block_tx_size);
-
-    trans.AppendColumn("shard_id", shard_id);
-    trans.AppendColumn("pool_index", pool_index);
-    trans.AppendColumn("height", height);
-    trans.AppendColumn("prehash", prehash);
-    trans.AppendColumn("hash", hash);
-    trans.AppendColumn("version", version);
-    trans.AppendColumn("vss", vss);
-    trans.AppendColumn("elect_height", elect_height);
-    trans.AppendColumn("bitmap", bitmap);
-    trans.AppendColumn("timestamp", timestamp);
-    trans.AppendColumn("timeblock_height", timeblock_height);
-    trans.AppendColumn("bls_agg_sign_x", bls_agg_sign_x);
-    trans.AppendColumn("bls_agg_sign_y", bls_agg_sign_y);
-    trans.AppendColumn("commit_bitmap", commit_bitmap);
-    trans.AppendColumn("gid", gid);
-    trans.AppendColumn("from", from);
-    trans.AppendColumn("from_pubkey", from_pubkey);
-    trans.AppendColumn("from_sign", from_sign);
-    trans.AppendColumn("to", to);
-    trans.AppendColumn("amount", amount);
-    trans.AppendColumn("gas_limit", gas_limit);
-    trans.AppendColumn("gas_used", gas_used);
-    trans.AppendColumn("gas_price", gas_price);
-    trans.AppendColumn("balance", balance);
-    trans.AppendColumn("to_add", to_add);
-    trans.AppendColumn("type", type);
-    trans.AppendColumn("attrs", attrs);
-    trans.AppendColumn("status", status);
-    trans.AppendColumn("tx_hash", tx_hash);
-    trans.AppendColumn("call_contract_step", call_contract_step);
-    trans.AppendColumn("storages", storages);
-    trans.AppendColumn("transfers", transfers);
-    trans.AppendColumn("date", date);
-
-    accounts.AppendColumn("id", acc_account);
-    accounts.AppendColumn("shard_id", acc_shard_id);
-    accounts.AppendColumn("pool_index", acc_pool_index);
-    accounts.AppendColumn("balance", acc_balance);
-
-    account_attrs.AppendColumn("from", attr_account);
-    account_attrs.AppendColumn("shard_id", attr_shard_id);
-    account_attrs.AppendColumn("key", attr_key);
-    account_attrs.AppendColumn("value", attr_value);
-    account_attrs.AppendColumn("to", attr_to);
-    account_attrs.AppendColumn("type", attr_tx_type);
-
-    c2cs.AppendColumn("seller", c2c_seller);
-    c2cs.AppendColumn("all", c2c_all);
-    c2cs.AppendColumn("now", c2c_now);
-    c2cs.AppendColumn("receivable", c2c_r);
-    c2cs.AppendColumn("mchecked", c2c_mc);
-    c2cs.AppendColumn("schecked", c2c_sc);
-    c2cs.AppendColumn("reported", c2c_report);
-    c2cs.AppendColumn("orderId", c2c_order_id);
-    c2cs.AppendColumn("height", c2c_height);
-    c2cs.AppendColumn("buyer", c2c_buyer);
-    c2cs.AppendColumn("amount", c2c_amount);
-    c2cs.AppendColumn("contract", c2c_contract_addr);
-
-    prepay.AppendColumn("contract", prepay_contract);
-    prepay.AppendColumn("user", prepay_user);
-    prepay.AppendColumn("prepayment", prepay_amount);
-    prepay.AppendColumn("height", prepay_height);
-
-    clickhouse::Client ck_client(clickhouse::ClientOptions().
-        SetHost(common::GlobalInfo::Instance()->ck_host()).
-        SetPort(common::GlobalInfo::Instance()->ck_port()).
-        SetUser(common::GlobalInfo::Instance()->ck_user()).
-        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
-    ck_client.Insert(kClickhouseTransTableName, trans);
-    ck_client.Insert(kClickhouseBlockTableName, blocks);
-    ck_client.Insert(kClickhouseAccountTableName, accounts);
-    ck_client.Insert(kClickhouseAccountKvTableName, account_attrs);
-    ck_client.Insert(kClickhouseC2cTableName, c2cs);
-    ck_client.Insert(kClickhousePrepaymentTableName, prepay);
-    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseTransTableName + " FINAL");
-    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseBlockTableName + " FINAL");
-    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountTableName + " FINAL");
-    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountKvTableName + " FINAL");
-    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseC2cTableName + " FINAL");
-    ck_client.Execute(std::string("optimize TABLE ") + kClickhousePrepaymentTableName + " FINAL");
+    ++batch_count_;
+    // ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseTransTableName + " FINAL");
+    // ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseBlockTableName + " FINAL");
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountTableName + " FINAL");
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountKvTableName + " FINAL");
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseC2cTableName + " FINAL");
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhousePrepaymentTableName + " FINAL");
+#ifndef NDEBUG
+    for (int32_t i = 0; i < tx_list.size(); ++i) {
+        ZJC_DEBUG("ck success new block coming sharding id: %u_%d_%lu, "
+            "tx size: %u, hash: %s, elect height: %lu, "
+            "tm height: %lu, gid: %s, status: %d, step: %d",
+            view_block_item->qc().network_id(),
+            view_block_item->qc().pool_index(),
+            block_item->height(),
+            block_item->tx_list_size(),
+            common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
+            view_block_item->qc().elect_height(),
+            block_item->timeblock_height(),
+            common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+            tx_list[i].status(),
+            tx_list[i].step());
+    }
+#endif
     return true;
 } catch (std::exception& e) {
     ZJC_ERROR("add new block failed[%s]", e.what());
     return false;
 }
+
+void ClickHouseClient::FlushToCkWithData() {
+    if (batch_count_ <= 0) {
+        return;
+    }
+
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    if (batch_count_ >= kBatchCountToCk || (pre_time_out_ + 10000 < now_tm_ms)) {
+        clickhouse::Block trans;
+        clickhouse::Block blocks;
+        clickhouse::Block accounts;
+        clickhouse::Block account_attrs;
+        clickhouse::Block c2cs;
+        clickhouse::Block prepay;
+        blocks.AppendColumn("shard_id", block_shard_id);
+        blocks.AppendColumn("pool_index", block_pool_index);
+        blocks.AppendColumn("height", block_height);
+        blocks.AppendColumn("prehash", block_prehash);
+        blocks.AppendColumn("hash", block_hash);
+        blocks.AppendColumn("version", block_version);
+        blocks.AppendColumn("vss", block_vss);
+        blocks.AppendColumn("elect_height", block_elect_height);
+        blocks.AppendColumn("bitmap", block_bitmap);
+        blocks.AppendColumn("timestamp", block_timestamp);
+        blocks.AppendColumn("timeblock_height", block_timeblock_height);
+        blocks.AppendColumn("bls_agg_sign_x", block_bls_agg_sign_x);
+        blocks.AppendColumn("bls_agg_sign_y", block_bls_agg_sign_y);
+        blocks.AppendColumn("commit_bitmap", block_commit_bitmap);
+        blocks.AppendColumn("date", block_date);
+        blocks.AppendColumn("tx_size", block_tx_size);
+
+        trans.AppendColumn("shard_id", shard_id);
+        trans.AppendColumn("pool_index", pool_index);
+        trans.AppendColumn("height", height);
+        trans.AppendColumn("prehash", prehash);
+        trans.AppendColumn("hash", hash);
+        trans.AppendColumn("version", version);
+        trans.AppendColumn("vss", vss);
+        trans.AppendColumn("elect_height", elect_height);
+        trans.AppendColumn("bitmap", bitmap);
+        trans.AppendColumn("timestamp", timestamp);
+        trans.AppendColumn("timeblock_height", timeblock_height);
+        trans.AppendColumn("bls_agg_sign_x", bls_agg_sign_x);
+        trans.AppendColumn("bls_agg_sign_y", bls_agg_sign_y);
+        trans.AppendColumn("commit_bitmap", commit_bitmap);
+        trans.AppendColumn("gid", gid);
+        trans.AppendColumn("from", from);
+        trans.AppendColumn("from_pubkey", from_pubkey);
+        trans.AppendColumn("from_sign", from_sign);
+        trans.AppendColumn("to", to);
+        trans.AppendColumn("amount", amount);
+        trans.AppendColumn("gas_limit", gas_limit);
+        trans.AppendColumn("gas_used", gas_used);
+        trans.AppendColumn("gas_price", gas_price);
+        trans.AppendColumn("balance", balance);
+        trans.AppendColumn("to_add", to_add);
+        trans.AppendColumn("type", type);
+        trans.AppendColumn("attrs", attrs);
+        trans.AppendColumn("status", status);
+        trans.AppendColumn("tx_hash", tx_hash);
+        trans.AppendColumn("call_contract_step", call_contract_step);
+        trans.AppendColumn("storages", storages);
+        trans.AppendColumn("transfers", transfers);
+        trans.AppendColumn("date", date);
+
+        accounts.AppendColumn("id", acc_account);
+        accounts.AppendColumn("shard_id", acc_shard_id);
+        accounts.AppendColumn("pool_index", acc_pool_index);
+        accounts.AppendColumn("balance", acc_balance);
+
+        account_attrs.AppendColumn("from", attr_account);
+        account_attrs.AppendColumn("shard_id", attr_shard_id);
+        account_attrs.AppendColumn("key", attr_key);
+        account_attrs.AppendColumn("value", attr_value);
+        account_attrs.AppendColumn("to", attr_to);
+        account_attrs.AppendColumn("type", attr_tx_type);
+
+        c2cs.AppendColumn("seller", c2c_seller);
+        c2cs.AppendColumn("all", c2c_all);
+        c2cs.AppendColumn("now", c2c_now);
+        c2cs.AppendColumn("receivable", c2c_r);
+        c2cs.AppendColumn("mchecked", c2c_mc);
+        c2cs.AppendColumn("schecked", c2c_sc);
+        c2cs.AppendColumn("reported", c2c_report);
+        c2cs.AppendColumn("orderId", c2c_order_id);
+        c2cs.AppendColumn("height", c2c_height);
+        c2cs.AppendColumn("buyer", c2c_buyer);
+        c2cs.AppendColumn("amount", c2c_amount);
+        c2cs.AppendColumn("contract", c2c_contract_addr);
+
+        prepay.AppendColumn("contract", prepay_contract);
+        prepay.AppendColumn("user", prepay_user);
+        prepay.AppendColumn("prepayment", prepay_amount);
+        prepay.AppendColumn("height", prepay_height);
+
+        uint32_t idx = 0;
+        clickhouse::Client ck_client(clickhouse::ClientOptions().
+            SetHost(common::GlobalInfo::Instance()->ck_host()).
+            SetPort(common::GlobalInfo::Instance()->ck_port()).
+            SetUser(common::GlobalInfo::Instance()->ck_user()).
+            SetPassword(common::GlobalInfo::Instance()->ck_pass()));
+        ck_client.Insert(kClickhouseTransTableName, trans);
+        ck_client.Insert(kClickhouseBlockTableName, blocks);
+        ck_client.Insert(kClickhouseAccountTableName, accounts);
+        ck_client.Insert(kClickhouseAccountKvTableName, account_attrs);
+        ck_client.Insert(kClickhouseC2cTableName, c2cs);
+        ck_client.Insert(kClickhousePrepaymentTableName, prepay);
+        ZJC_DEBUG("success flush to db: %u", batch_count_);
+        batch_count_ = 0;
+        pre_time_out_ = now_tm_ms;
+        ResetColumns();
+    }
+}
+
 
 bool ClickHouseClient::QueryContract(const std::string& from, const std::string& contract_addr, nlohmann::json* res) {
     zjcvm::ZjchainHost zjc_host;
@@ -552,7 +557,7 @@ bool ClickHouseClient::CreateTransactionTable() {
         "PARTITION BY(shard_id, date) "
         "ORDER BY(pool_index,height,type,from,to) "
         "SETTINGS index_granularity = 8192;";
-    printf("create table now [%s][%u][%s][%s]\n",
+    ZJC_DEBUG("create table now [%s][%u][%s][%s]\n",
         common::GlobalInfo::Instance()->ck_host().c_str(),
         common::GlobalInfo::Instance()->ck_port(),
         common::GlobalInfo::Instance()->ck_user().c_str(),
@@ -739,6 +744,212 @@ bool ClickHouseClient::CreatePrepaymentTable() {
     return true;
 }
 
+void ClickHouseClient::ResetColumns() {
+    shard_id = std::make_shared<clickhouse::ColumnUInt32>();
+    pool_index = std::make_shared<clickhouse::ColumnUInt32>();
+    height = std::make_shared<clickhouse::ColumnUInt64>();
+    prehash = std::make_shared<clickhouse::ColumnString>();
+    hash = std::make_shared<clickhouse::ColumnString>();
+    version = std::make_shared<clickhouse::ColumnUInt32>();
+    vss = std::make_shared<clickhouse::ColumnUInt64>();
+    elect_height = std::make_shared<clickhouse::ColumnUInt64>();
+    bitmap = std::make_shared<clickhouse::ColumnString>();
+    timestamp = std::make_shared<clickhouse::ColumnUInt64>();
+    timeblock_height = std::make_shared<clickhouse::ColumnUInt64>();
+    bls_agg_sign_x = std::make_shared<clickhouse::ColumnString>();
+    bls_agg_sign_y = std::make_shared<clickhouse::ColumnString>();
+    commit_bitmap = std::make_shared<clickhouse::ColumnString>();
+    gid = std::make_shared<clickhouse::ColumnString>();
+    from = std::make_shared<clickhouse::ColumnString>();
+    from_pubkey = std::make_shared<clickhouse::ColumnString>();
+    from_sign = std::make_shared<clickhouse::ColumnString>();
+    to = std::make_shared<clickhouse::ColumnString>();
+    amount = std::make_shared<clickhouse::ColumnUInt64>();
+    gas_limit = std::make_shared<clickhouse::ColumnUInt64>();
+    gas_used = std::make_shared<clickhouse::ColumnUInt64>();
+    gas_price = std::make_shared<clickhouse::ColumnUInt64>();
+    balance = std::make_shared<clickhouse::ColumnUInt64>();
+    to_add = std::make_shared<clickhouse::ColumnUInt32>();
+    type = std::make_shared<clickhouse::ColumnUInt32>();
+    attrs = std::make_shared<clickhouse::ColumnString>();
+    status = std::make_shared<clickhouse::ColumnUInt32>();
+    tx_hash = std::make_shared<clickhouse::ColumnString>();
+    call_contract_step = std::make_shared<clickhouse::ColumnUInt32>();
+    storages = std::make_shared<clickhouse::ColumnString>();
+    transfers = std::make_shared<clickhouse::ColumnString>();
+    date = std::make_shared<clickhouse::ColumnUInt32>();
+
+    block_shard_id = std::make_shared<clickhouse::ColumnUInt32>();
+    block_pool_index = std::make_shared<clickhouse::ColumnUInt32>();
+    block_height = std::make_shared<clickhouse::ColumnUInt64>();
+    block_prehash = std::make_shared<clickhouse::ColumnString>();
+    block_hash = std::make_shared<clickhouse::ColumnString>();
+    block_version = std::make_shared<clickhouse::ColumnUInt32>();
+    block_vss = std::make_shared<clickhouse::ColumnUInt64>();
+    block_elect_height = std::make_shared<clickhouse::ColumnUInt64>();
+    block_bitmap = std::make_shared<clickhouse::ColumnString>();
+    block_timestamp = std::make_shared<clickhouse::ColumnUInt64>();
+    block_timeblock_height = std::make_shared<clickhouse::ColumnUInt64>();
+    block_bls_agg_sign_x = std::make_shared<clickhouse::ColumnString>();
+    block_bls_agg_sign_y = std::make_shared<clickhouse::ColumnString>();
+    block_commit_bitmap = std::make_shared<clickhouse::ColumnString>();
+    block_tx_size = std::make_shared<clickhouse::ColumnUInt32>();
+    block_date = std::make_shared<clickhouse::ColumnUInt32>();
+
+    acc_account = std::make_shared<clickhouse::ColumnString>();
+    acc_shard_id = std::make_shared<clickhouse::ColumnUInt32>();
+    acc_pool_index = std::make_shared<clickhouse::ColumnUInt32>();
+    acc_balance = std::make_shared<clickhouse::ColumnUInt64>();
+
+    attr_account = std::make_shared<clickhouse::ColumnString>();
+    attr_to = std::make_shared<clickhouse::ColumnString>();
+    attr_shard_id = std::make_shared<clickhouse::ColumnUInt32>();
+    attr_tx_type = std::make_shared<clickhouse::ColumnUInt32>();
+    attr_key = std::make_shared<clickhouse::ColumnString>();
+    attr_value = std::make_shared<clickhouse::ColumnString>();
+
+    c2c_r = std::make_shared<clickhouse::ColumnString>();
+    c2c_seller = std::make_shared<clickhouse::ColumnString>();
+    c2c_all = std::make_shared<clickhouse::ColumnUInt64>();
+    c2c_now = std::make_shared<clickhouse::ColumnUInt64>();
+    c2c_mc = std::make_shared<clickhouse::ColumnUInt32>();
+    c2c_sc = std::make_shared<clickhouse::ColumnUInt32>();
+    c2c_report = std::make_shared<clickhouse::ColumnUInt32>();
+    c2c_order_id = std::make_shared<clickhouse::ColumnUInt64>();
+    c2c_height = std::make_shared<clickhouse::ColumnUInt64>();
+    c2c_buyer = std::make_shared<clickhouse::ColumnString>();
+    c2c_amount = std::make_shared<clickhouse::ColumnUInt64>();
+    c2c_contract_addr = std::make_shared<clickhouse::ColumnString>();
+
+    prepay_contract = std::make_shared<clickhouse::ColumnString>();
+    prepay_user = std::make_shared<clickhouse::ColumnString>();
+    prepay_amount = std::make_shared<clickhouse::ColumnUInt64>();
+    prepay_height = std::make_shared<clickhouse::ColumnUInt64>();
+}
+
+bool ClickHouseClient::CreateBlsElectInfoTable() {
+    std::string create_cmd = std::string("CREATE TABLE if not exists ") + kClickhouseBlsElectInfo + " ( "
+        "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
+        "`elect_height` UInt64 COMMENT '' CODEC(T64, LZ4), "
+        "`shard_id` UInt32 COMMENT '' CODEC(T64, LZ4), "
+        "`member_idx` UInt32 COMMENT '' CODEC(T64, LZ4), "
+        "`contribution_map` String COMMENT  '' CODEC(LZ4),"
+        "`local_sk` String COMMENT  '' CODEC(LZ4),"
+        "`common_pk` String COMMENT  '' CODEC(LZ4),"
+        "`update` DateTime DEFAULT now() COMMENT 'update' "
+        ") "
+        "ENGINE = ReplacingMergeTree "
+        "PARTITION BY(shard_id) "
+        "ORDER BY(elect_height, member_idx) "
+        "SETTINGS index_granularity = 8192;";
+    clickhouse::Client ck_client(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
+    ck_client.Execute(create_cmd);
+    return true;    
+}
+
+bool ClickHouseClient::InsertBlsElectInfo(const BlsElectInfo& info) {
+    auto elect_height = std::make_shared<clickhouse::ColumnUInt64>();
+    auto member_idx = std::make_shared<clickhouse::ColumnUInt32>();
+    auto shard_id = std::make_shared<clickhouse::ColumnUInt32>();
+    auto contribution_map = std::make_shared<clickhouse::ColumnString>();
+    auto local_sk = std::make_shared<clickhouse::ColumnString>();
+    auto common_pk = std::make_shared<clickhouse::ColumnString>();
+
+    elect_height->Append(info.elect_height);
+    member_idx->Append(info.member_idx);
+    shard_id->Append(info.shard_id);
+    contribution_map->Append(info.contribution_map);
+    local_sk->Append(info.local_sk);
+    common_pk->Append(info.common_pk);
+
+    clickhouse::Block item;
+    item.AppendColumn("elect_height", elect_height);
+    item.AppendColumn("member_idx", member_idx);
+    item.AppendColumn("shard_id", shard_id);
+    item.AppendColumn("contribution_map", contribution_map);
+    item.AppendColumn("local_sk", local_sk);
+    item.AppendColumn("common_pk", common_pk);
+
+    clickhouse::Client ck_client(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
+    ck_client.Insert(kClickhouseBlsElectInfo, item);
+    return true;
+}
+
+bool ClickHouseClient::CreateBlsBlockInfoTable() {
+    std::string create_cmd = std::string("CREATE TABLE if not exists ") + kClickhouseBlsBlockInfo + " ( "
+        "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
+        "`elect_height` UInt64 COMMENT '' CODEC(T64, LZ4), "
+        "`view` UInt64 COMMENT '' CODEC(T64, LZ4), "
+        "`shard_id` UInt32 COMMENT '' CODEC(T64, LZ4), "
+        "`pool_idx` UInt32 COMMENT '' CODEC(T64, LZ4), "
+        "`leader_idx` UInt32 COMMENT '' CODEC(T64, LZ4), "
+        "`msg_hash` String COMMENT  '' CODEC(LZ4),"
+        "`partial_sign_map` String COMMENT  '' CODEC(LZ4),"
+        "`reconstructed_sign` String COMMENT  '' CODEC(LZ4),"
+        "`common_pk` String COMMENT  '' CODEC(LZ4),"
+        "`update` DateTime DEFAULT now() COMMENT 'update' "
+        ") "
+        "ENGINE = ReplacingMergeTree "
+        "PARTITION BY(shard_id) "
+        "ORDER BY(elect_height, view) "
+        "SETTINGS index_granularity = 8192;";
+    clickhouse::Client ck_client(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
+    ck_client.Execute(create_cmd);
+    return true;
+}
+
+bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) {
+    auto elect_height = std::make_shared<clickhouse::ColumnUInt64>();
+    auto view = std::make_shared<clickhouse::ColumnUInt64>();
+    auto shard_id = std::make_shared<clickhouse::ColumnUInt32>();
+    auto pool_idx = std::make_shared<clickhouse::ColumnUInt32>();
+    auto leader_idx = std::make_shared<clickhouse::ColumnUInt32>();
+    auto msg_hash = std::make_shared<clickhouse::ColumnString>();
+    auto partial_sign_map = std::make_shared<clickhouse::ColumnString>();
+    auto reconstructed_sign = std::make_shared<clickhouse::ColumnString>();
+    auto common_pk = std::make_shared<clickhouse::ColumnString>();
+
+    elect_height->Append(info.elect_height);
+    view->Append(info.view);
+    shard_id->Append(info.shard_id);
+    pool_idx->Append(info.pool_idx);
+    leader_idx->Append(info.leader_idx);
+    msg_hash->Append(info.msg_hash);
+    partial_sign_map->Append(info.partial_sign_map);
+    reconstructed_sign->Append(info.reconstructed_sign);
+    common_pk->Append(info.common_pk);
+
+    clickhouse::Block item;
+    item.AppendColumn("elect_height", elect_height);
+    item.AppendColumn("view", view);
+    item.AppendColumn("shard_id", shard_id);
+    item.AppendColumn("pool_idx", pool_idx);
+    item.AppendColumn("leader_idx", leader_idx);
+    item.AppendColumn("msg_hash", msg_hash);
+    item.AppendColumn("partial_sign_map", partial_sign_map);
+    item.AppendColumn("reconstructed_sign", reconstructed_sign);
+    item.AppendColumn("common_pk", common_pk);
+
+    clickhouse::Client ck_client(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
+    ck_client.Insert(kClickhouseBlsBlockInfo, item);
+    return true;
+}
 
 bool ClickHouseClient::CreateTable(bool statistic, std::shared_ptr<db::Db> db_ptr) try {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_ptr);
@@ -750,6 +961,8 @@ bool ClickHouseClient::CreateTable(bool statistic, std::shared_ptr<db::Db> db_pt
     CreatePrivateKeyTable();
     CreateC2cTable();
     CreatePrepaymentTable();
+    CreateBlsElectInfoTable();
+    CreateBlsBlockInfoTable();    
     if (statistic) {
         statistic_tick_.CutOff(5000000l, std::bind(&ClickHouseClient::TickStatistic, this));
     }

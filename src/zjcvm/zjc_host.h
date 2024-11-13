@@ -143,7 +143,6 @@ public:
     std::string create_bytes_code_;
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
-    zjcvm::ZjchainHost* prev_zjc_host_ = nullptr;
     std::unordered_map<std::string, std::string> prev_storages_map_;
 
 };

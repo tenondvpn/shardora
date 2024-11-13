@@ -40,8 +40,14 @@ private:
         std::string* val,
         evmc_result* res);
     void AddAllParams(
+        const std::string& prev,
         const CallParameters& param,
         const std::string& val);
+    int AddReEncryptionParam(
+        const CallParameters& param,
+        uint64_t gas,
+        const std::string& origin_address,
+        evmc_result* res);
 
     uint64_t gas_cast_{ 3000llu };
 
