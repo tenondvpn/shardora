@@ -115,7 +115,7 @@ Status Hotstuff::Propose(
 
     auto readobly_dht = dht_ptr->readonly_hash_sort_dht();
     if (readobly_dht->size() < 2) {
-        ZJC_DEBUG("pool %u not has dreadobly_dht->size() < 2", pool_idx_);
+        ZJC_DEBUG("pool %u not has readobly_dht->size() < 2", pool_idx_);
         return Status::kError;
     }
 

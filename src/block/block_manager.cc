@@ -148,6 +148,16 @@ void BlockManager::HandleAllConsensusBlocks() {
                     db_item_ptr->view_block_ptr->qc().elect_height(),
                     block_ptr->timeblock_height());
             AddNewBlock(db_item_ptr->view_block_ptr, *db_item_ptr->db_batch);
+            ZJC_DEBUG("over from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
+                    "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
+                    db_item_ptr->view_block_ptr->qc().network_id(),
+                    db_item_ptr->view_block_ptr->qc().pool_index(),
+                    block_ptr->height(),
+                    block_ptr->tx_list_size(),
+                    common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
+                    db_item_ptr->view_block_ptr->qc().elect_height(),
+                    block_ptr->timeblock_height());
+
         }
     }
 }
@@ -689,7 +699,7 @@ void BlockManager::AddNewBlock(
     auto* block_item = &view_block_item->block_info();
     // TODO: check all block saved success
     ZJC_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
-        "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu",
+        "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu, step: %d, status: %d",
         view_block_item->qc().network_id(),
         view_block_item->qc().pool_index(),
         block_item->height(),
@@ -700,7 +710,9 @@ void BlockManager::AddNewBlock(
         common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(view_block_item->parent_hash()).c_str(),
         view_block_item->qc().elect_height(),
-        block_item->timeblock_height());
+        block_item->timeblock_height(),
+        (view_block_item->block_info().tx_list_size() > 0 ? view_block_item->block_info().tx_list(0).step() : -1),
+        (view_block_item->block_info().tx_list_size() > 0 ? view_block_item->block_info().tx_list(0).status() : -1));
     assert(view_block_item->qc().elect_height() >= 1);
     // block 两条信息持久化
     if (!prefix_db_->SaveBlock(*view_block_item, db_batch)) {
@@ -814,8 +826,15 @@ void BlockManager::AddNewBlock(
         view_block_item->qc().elect_height(),
         block_item->timeblock_height());
     if (ck_client_ != nullptr) {
+        ZJC_DEBUG("now add to ck: %u_%d_%lu",
+            view_block_item->qc().network_id(),
+            view_block_item->qc().pool_index(),
+            block_item->height());
         ck_client_->AddNewBlock(view_block_item);
-        ZJC_DEBUG("add to ck.");
+        ZJC_DEBUG("add to ck success: %u_%d_%lu",
+            view_block_item->qc().network_id(),
+            view_block_item->qc().pool_index(),
+            block_item->height());
     }
 }
 

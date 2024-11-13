@@ -12,6 +12,21 @@ const kTestSellerCount = 11;  // real: kTestSellerCount - 10
 const kTestBuyerCount = 11;  // real: kTestBuyerCount - 10
 const contract_address = "48e1eab96c9e759daa3aff82b40e77cd615a41d4";
 
+{
+    const newLog = function () {
+      console.info(new Date().toLocaleString());
+      arguments.callee.oLog.apply(this, arguments);
+    };
+    const newError = function () {
+      console.info(new Date().toLocaleString());
+      arguments.callee.oError.apply(this, arguments);
+    };
+    newLog.oLog = console.log;
+    newError.oError = console.error;
+    console.log = newLog;
+    console.error = newError;
+}
+  
 function str_to_hex(str) {
     var arr1 = [];
     for (var n = 0; n < str.length; n++) {
@@ -118,9 +133,7 @@ function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_pri
     var pubX = Secp256k1.uint256(from_public_key.x, 16)
     var pubY = Secp256k1.uint256(from_public_key.y, 16)
     var isValidSig = Secp256k1.ecverify(pubX, pubY, sigR, sigS, digest)
-    console.log("digest: " + digest)
-    console.log("sigr: " + sigR.toString(16))
-    console.log("sigs: " + sigS.toString(16))
+    console.log("gid: " + gid.toString(16))
     if (!isValidSig) {
         console.log('signature transaction failed.')
         return;
@@ -190,6 +203,7 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
     var sigS = Secp256k1.uint256(sig.s, 16)
     var pubX = Secp256k1.uint256(from_public_key.x, 16)
     var pubY = Secp256k1.uint256(from_public_key.y, 16)
+    console.log("gid: " + gid.toString(16))
     return {
         'gid': gid,
         'pubkey': '04' + from_public_key.x.toString(16) + from_public_key.y.toString(16),
@@ -340,7 +354,7 @@ async function SetManagerPrepayment(contract_address) {
                 break;
             }
 
-            console.log(`contract prepayment failed error: ${stderr} count: ${stdout}`);
+            console.log(`${cmd} contract prepayment failed error: ${stderr} count: ${stdout}`);
         } catch (error) {
             console.log(error);
         }
@@ -461,7 +475,7 @@ function InitC2cEnv(key, value) {
                         const {stdout, stderr} = await execPromise(cmd);
                         var split_lines = stdout.trim().split('\n');
                         var dictionary = new Set();
-                        console.log(`transfer to manager address split_lines.length: ${split_lines.length}`);
+                        console.log(`${cmd} transfer to manager address split_lines.length: ${stdout}`);
                         if (split_lines.length >= check_count) {
                             for (var line_idx = 0; line_idx < split_lines.length; ++line_idx) {
                                 var item_split = split_lines[line_idx].split("\t");
