@@ -96,7 +96,7 @@ void ThreadHandler::HandleMessage() {
                     t.c_str(),
                     msg_ptr->header.hash64());                
             }
-            // ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
+            ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
         }
 
         auto btime = common::TimeUtils::TimestampUs();
