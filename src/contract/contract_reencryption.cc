@@ -261,7 +261,7 @@ int ContractReEncryption::Transform() {
 int ContractReEncryption::TestProxyReEncryption() {
     //系统初始化，生成曲线。
     char param[1024];
-    FILE* file = fopen("param/a.param", "r");
+    FILE* file = fopen("../param/a.param", "r");
     size_t count = fread(param, 1, 1024, file);
     fclose(file);
     if (!count) pbc_die("input error");
