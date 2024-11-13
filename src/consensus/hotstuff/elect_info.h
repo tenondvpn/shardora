@@ -47,10 +47,11 @@ public:
             // 检查 agg bls 的 Proof of Posession，确保公钥不是假的，规避密钥消除攻击
             if (bls::AggBls::PopVerify(agg_bls_pk, agg_bls_pk_proof)) {
                 member_aggbls_pk_map_[(*members)[i]->index] = std::make_shared<libff::alt_bn128_G2>(agg_bls_pk);
-                ZJC_INFO("pop verify succ, member: %lu, elect_height: %lu, shard: %d",
+                ZJC_INFO("pop verify succ, member: %lu, elect_height: %lu, shard: %d, pk: %s",
                     (*members)[i]->index,
                     elect_height,
-                    sharding_id);
+                    sharding_id,
+                    libBLS::ThresholdUtils::G2ToString(agg_bls_pk)[0].c_str());
             }
             member_aggbls_pk_proof_map_[(*members)[i]->index] = std::make_shared<libff::alt_bn128_G1>(agg_bls_pk_proof);
         }
