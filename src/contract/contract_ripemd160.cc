@@ -4,6 +4,7 @@
 #include "common/split.h"
 #include "common/string_utils.h"
 #include "contract/contract_pairing.h"
+#include "contract/contract_reencryption.h"
 #include "pbc/pbc.h"
 #include "zjcvm/zjc_host.h"
 
@@ -41,6 +42,20 @@ int Ripemd160::call(
 
     if (param.data.substr(0, 5) == "readd") {
         return AddReEncryptionParam(param, gas, origin_address, res);
+    }
+
+    if (param.data.substr(0, 5) == "tproe") {
+        ContractReEncryption proxy_reenc;
+        proxy_reenc.TestProxyReEncryption();
+        res->output_data = new uint8_t[32];
+        memset((void*)res->output_data, 0, 32);
+        res->output_size = 32;
+        memcpy(res->create_address.bytes,
+            create_address_.c_str(),
+            sizeof(res->create_address.bytes));
+        res->gas_left -= 1000;
+        ZJC_DEBUG("TestProxyReEncryption: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str());
+        return kContractSuccess;
     }
 
     int64_t gas_used = ComputeGasUsed(600, 120, param.data.size());
