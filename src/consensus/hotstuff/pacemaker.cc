@@ -51,7 +51,11 @@ void Pacemaker::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
 
 void Pacemaker::NewTc(const std::shared_ptr<view_block::protobuf::QcItem>& tc) {
     StopTimeoutTimer();
+#ifdef USE_AGG_BLS
+    if (tc->has_agg_sig()) {
+#else
     if (tc->has_sign_x() && tc->has_sign_y()) {
+#endif
         if (cur_view_ < tc->view() + 1) {
             cur_view_ = tc->view() + 1;
             ZJC_DEBUG("success new tc view: %lu, %u_%u_%lu, pool index: %u",
