@@ -404,7 +404,7 @@ function InitC2cEnv(key, value) {
                 var account4 = web3.eth.accounts.privateKeyToAccount(
                     '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString());
                 do_transaction(
-                    "863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 
+                    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
                     account4.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
                 append_address += ",'" + account4.address.toString('hex').toLowerCase().substring(2) + "'";
                 ++check_count;
@@ -428,16 +428,16 @@ function InitC2cEnv(key, value) {
             // 转账到管理账户，创建合约
             {
                 do_transaction(
-                    "863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 
+                    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
                     account1.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
                 do_transaction(
-                    "863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 
+                    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
                     account2.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
                 do_transaction(
-                    "863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 
+                    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
                     account3.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
                 new_contract(
-                    "863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 
+                    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
                     out_lines[3] + cons_codes.substring(2));
                 var contract_cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "SELECT to FROM zjc_ck_account_key_value_table where type = 6 and key in ('5f5f6b437265617465436f6e74726163744279746573436f6465',  '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
                 var try_times = 0;
