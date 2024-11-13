@@ -430,18 +430,23 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
     prepay.AppendColumn("prepayment", prepay_amount);
     prepay.AppendColumn("height", prepay_height);
 
+    ZJC_INFO("0 success add new ck block block_shard_id: %d, block_height: %lu", view_block_item->qc().network_id(), block_item->height());
     clickhouse::Client ck_client(clickhouse::ClientOptions().
         SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
+    ZJC_INFO("1 success add new ck block block_shard_id: %d, block_height: %lu", view_block_item->qc().network_id(), block_item->height());
     ck_client.Insert(kClickhouseTransTableName, trans);
+    ZJC_INFO("2 success add new ck block block_shard_id: %d, block_height: %lu", view_block_item->qc().network_id(), block_item->height());
     ck_client.Insert(kClickhouseBlockTableName, blocks);
     ck_client.Insert(kClickhouseAccountTableName, accounts);
     ck_client.Insert(kClickhouseAccountKvTableName, account_attrs);
     ck_client.Insert(kClickhouseC2cTableName, c2cs);
     ck_client.Insert(kClickhousePrepaymentTableName, prepay);
+    ZJC_INFO("3 success add new ck block block_shard_id: %d, block_height: %lu", view_block_item->qc().network_id(), block_item->height());
     ck_client.Execute(std::string("optimize TABLE ") + kClickhouseTransTableName + " FINAL");
+    ZJC_INFO("4 success add new ck block block_shard_id: %d, block_height: %lu", view_block_item->qc().network_id(), block_item->height());
     ck_client.Execute(std::string("optimize TABLE ") + kClickhouseBlockTableName + " FINAL");
     ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountTableName + " FINAL");
     ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountKvTableName + " FINAL");
