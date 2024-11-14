@@ -343,15 +343,44 @@ int ContractReEncryption::EncryptUserMessage(
     std::string test_data = "hello world!";
     GT m(e,test_data.c_str(), test_data.size());
     m.dump(stdout,"加密消息为");
-    Zr r(e,true),z(e,true);
+    std::string r_str = common::Encode::HexDecode("7edf5dac8f63ebaed688f823053e817e51c185d6");
+    std::string z_str = common::Encode::HexDecode("1254472274e6a59840bb23e709072735d7267340");
+    Zr r(e, r_str.c_str(), r_str.size());
+    Zr z(e, z_str.c_str(), z_str.size());
+    std::vector<std::string> c5_vec{
+        common::Encode::HexDecode("16934ce2fb381892590c313d7a9d75e1aca16d889706c9278db00c697828a27a6981409518ce175c2309f3cbba1d07b3a5e58d556230d842e72ab88b6f5ed97d00"),
+        common::Encode::HexDecode("6fbbdd170409a40783a06062accd62ad602f6a8abda55c89100d4f0c124009c2b538fbd3a62ba0e21956ccf3d23a35cb48c29d6b109bae0069d48fac4dc2dc0501"),
+        common::Encode::HexDecode("6c20d5cbbe4a4d72d80e727bfaaa6f83ad9e46c69d5396c35efe8eb23ab3c6e491992eb3e7eba490d88f24f071415b4d00cdfc5ac8d2044d65e7441ae959b4ad00"),
+        common::Encode::HexDecode("59361ab2ea18e2bc42398cca5a7db3c1a2cfa13c14dc3c756c44ec047a6a2624c3213cada3f1b6e5761175094d3441b48dc9c09b711c9d6da7e6389426b078c700"),
+        common::Encode::HexDecode("469bcb60011c4d533297ad40f947a89d0a0d3c322d97b5693aa8568521335898f88dbfca643d0bed07944c0513a52f93726092c31f46fb668a768736b3e1d67500"),
+        common::Encode::HexDecode("5db8787b0bc74e44947ca93b143b8392166dca98dac567572c775cbe670c43c40258a6be2f4a6bde238cd106fe81a2aaf0b640ef0adee148ca7a0ef6901440f600"),
+        common::Encode::HexDecode("60d652211f7ea105d9a78399b3f7633b0e92d8618616de6d3ae9ae2d8ef103c3b0e2c6f5d5ffa0e8f3389e37068f00c17def358cb7fe892ba0ea3e577539ee2301"),
+        common::Encode::HexDecode("3d1d9f8555a37f4318147c68201c7d9ff7d8ba385e3742d97fd01b3e4f956e9685ff88f177d6599793c771a18c3017712bd2b2f2a3a5fb0479f1bb18d951f84400"),
+        common::Encode::HexDecode("6162e3ded7ac71edcf7311a7b60cbe84bce7bd80af1c1b8631ad86bfc75c325c8784c68d895b583b8244371b4bc155fbe8e7e739d1d76e88c207143d213358ac01"),
+        common::Encode::HexDecode("0004aed5ee12588cf789a947bedf0a26807bd8663bac5eb34929c71decf89cabdd34ec2e0c2ed46421174ca8ad2bd7acd1340054cc3d261226ca99ee1a13cde800")
+    };
+
+    std::vector<std::string> c6_vec{
+        common::Encode::HexDecode("3f61b3ad7719b11df4df758f7787f93862f7f7df9fa75decaccbea4bdad8e784346e95ceb9f0e693d84589035bff738577e352203a90dec7e84c9cf7898af7442c0b759623a9cbc3988e92827782756d70fec1bb62905c658ef417d696012ac995f78749a915593380098834a855410ec5ae5d8fcf9e810f03655acf0617e741"),
+        common::Encode::HexDecode("7bdb26bc3a311ddb1796daa21e8b41e4443999f99918dae428e792f4281dcaf9c6c821919438a78d3a9095b5f77a49e9d7513762e0cbeb7451bea22b4e6e7fb0928b1824fd6ce1d42fa27d9660a4ccb12342cd7b86be44146a463526c64e6620cd1d4298d294da259aafc9a31f5c1aedcb01ec7aea59d34ecea403841e5d3fe6"),
+        common::Encode::HexDecode("6aa5b8882b182ad41a164a6004c0a977bc2eb98dbf0f23809bf2f5d571c73f6ae3997af193596f1efb96a2306802f96098742bc720fb21ed8a78d7599a2c10c533b85fb75965ecafaf120a757482a2ecc0ad2bcc6b73765e0913c11c8fd0a4536600968ddd31e61f17d5322602e766670bd4d78f5756b0ccd755bce2768ec713"),
+        common::Encode::HexDecode("5664eaa9d5f0c4b2261217a9f9de6cca34ce1a06c784583b7d5b107a753b230e7d414499ff091513762cb5b80d493afdf35d304a7c8d02ad285a7cd1f86e4cec6d88723626f03fd5999d9eb15d16c8b4d29cf1fe074c97fc0162ca292fc81d88cd5a33aefec8ec4eee6290ab278aec289d7e2898a2cb67c316f121cedca4283e"),
+        common::Encode::HexDecode("90535bcd82d07d30b27e40db9886d3f8d8e899749ef9584d979fbd581089f97c439887780ff4c007b67f146f48b8c8e76a9cd1385b34c90ea14aba96b53307676424def3da81ba854ed8b024769525e72663a652ba76c24cbdf1fe98c37656aa6b382adcf615e1525cc0ad1a6a01e2112567c2c406ed78e92dbae3698d4ed19c"),
+        common::Encode::HexDecode("01921c688cae6c7b3998a68a4445db37131d8d24a77b2246a560a63b9e5e0b5635167e6e08ba369c4f12552c012855c45a937ca0648e0b4b8a52aba0724570b32110933cb783e510c28a5cf7255ffe110545bd29b47ca6e2223fc2b35ff30628ba2ff37a46450be2de17741de40434fb72b534343a8372f50cd3aa44a0bf808e"),
+        common::Encode::HexDecode("48a4b3dbe42ab27c9648ad5dc6841c6337345441607ef1cf53378540dd6597c224b4eb74aa8d9341b72d08cbcd84e1d2987dd982fa4f609e4caa45221cfc0f1d8f52acebc4e47696a163b77f8ce8834739dcecaa7f507d30ef7ec8c8a01775bd4190c47c36dad61993a59de5eeab824965aceca1cc8fa6b82cad01c2fdc5b76d"),
+        common::Encode::HexDecode("09eb0288527d8bbd506fa0b348218c689187b98dacca8c991236d4141827156ecd0fdf7ee29c947e64645aa59c226649295bdfcf774263e12a73386c00d24d581f7dc042619791ba5a9c001767d7addf72e8629c4aa086339cf1334c1999807229b8477764792c9c0f77cad8cb154c700caa84162efa8bfc1d5d6fa39d604bee"),
+        common::Encode::HexDecode("1a4237a61b43aec10f5e31bc3a18144ffe8d360edc83d2750e1945b3c697498eca2452a2c4b632d4078af12baf6d0ff94ba7e1584932ba38f67ff709a7a692d961b9d6b1d5559d990437b61c553cc968eea5339fd9dde8768e86bea347ec86b2144a2ae2eeb58b97b4060b8389233f38474f58fb0e6e5ee3f9fc55b005b281c3"),
+        common::Encode::HexDecode("7a4862984defcf29a65b2e4aa09603be99995f04ce6c9daf0a3c8d645fce348daa25d3d315cde539f23305207ea249b2edd0db1dc7f0bd301f7ab7e44d80b8b58df2a0f9f311960681eceded415682dd7d809e8120083d6308e9469414a45e5962571f9e1b8fc33a0274a38bf649fe2d42801cac32f14ba256b25ae2ca49a9ba")
+    };
+
     ZJC_DEBUG("re encryption create key r: %s, z: %s", common::Encode::HexEncode(r.toString()).c_str(), common::Encode::HexEncode(z.toString()).c_str());
     for(int i = 0;i<np;i++){
         auto tmp_c1 = g^r;
         auto tmp_c2 = g^z;
         auto tmp_c3 = (m*(e(g1,pk[0])^r))^hid[i];
         auto tmp_c4 = e(g1,pk[0])^(z*hid[i]);
-        auto tmp_c5 = G1(e,false);
-        auto tmp_c6 = GT(e,false);
+        auto tmp_c5 = G1(e, c5_vec[i].c_str(), c5_vec[i].size());
+        auto tmp_c6 = GT(e, c6_vec[i].c_str(), c6_vec[i].size());
         ZJC_DEBUG("re encryption create key i: %d, c5: %s, c6: %s", i, common::Encode::HexEncode(tmp_c5.toString(true)).c_str(), common::Encode::HexEncode(tmp_c6.toString()).c_str());
         c1.push_back(tmp_c1);
         c3.push_back(tmp_c2);
