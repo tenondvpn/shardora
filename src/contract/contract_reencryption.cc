@@ -432,6 +432,42 @@ int ContractReEncryption::ReEncryptUserMessage(const std::string& key, const std
                 common::Encode::HexEncode(tmp5[tmp_idx].toString(true)).c_str(), 
                 common::Encode::HexEncode(tmp6[tmp_idx].toString()).c_str());
         }
+
+        for (int32_t tmp_idx = 0; tmp_idx < tmp1.size(); ++tmp_idx) {
+            ZJC_DEBUG("create member reenc data: %d, %d, tmp1: %s", 
+                i, tmp_idx, 
+                common::Encode::HexEncode(tmp1[tmp_idx].toString(true)).c_str());
+        }
+
+        for (int32_t tmp_idx = 0; tmp_idx < tmp2.size(); ++tmp_idx) {
+            ZJC_DEBUG("create member reenc data: %d, %d, tmp2: %s", 
+                i, tmp_idx, 
+                common::Encode::HexEncode(tmp2[tmp_idx].toString()).c_str());
+        }
+
+        for (int32_t tmp_idx = 0; tmp_idx < tmp3.size(); ++tmp_idx) {
+            ZJC_DEBUG("create member reenc data: %d, %d, tmp3: %s", 
+                i, tmp_idx, 
+                common::Encode::HexEncode(tmp3[tmp_idx].toString(true)).c_str());
+        }
+
+        for (int32_t tmp_idx = 0; tmp_idx < tmp4.size(); ++tmp_idx) {
+            ZJC_DEBUG("create member reenc data: %d, %d, tmp4: %s", 
+                i, tmp_idx, 
+                common::Encode::HexEncode(tmp4[tmp_idx].toString()).c_str());
+        }
+
+        for (int32_t tmp_idx = 0; tmp_idx < tmp5.size(); ++tmp_idx) {
+            ZJC_DEBUG("create member reenc data: %d, %d, tmp5: %s", 
+                i, tmp_idx, 
+                common::Encode::HexEncode(tmp5[tmp_idx].toString(true)).c_str());
+        }
+
+        for (int32_t tmp_idx = 0; tmp_idx < tmp6.size(); ++tmp_idx) {
+            ZJC_DEBUG("create member reenc data: %d, %d, tmp6: %s", 
+                i, tmp_idx, 
+                common::Encode::HexEncode(tmp6[tmp_idx].toString()).c_str());
+        }
     }
 
     return kContractSuccess;
