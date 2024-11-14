@@ -281,6 +281,9 @@ int ContractReEncryption::TestProxyReEncryption() {
         sk.push_back(x);
     }
 
+    //代理路径生成，表示用户收到密文的顺序。
+    vector<G1> path = pk;
+
     //重加密密钥生成，假设代理总数为np，门限为t。
     //即只有不少于t个代理参与重加密，才能正确解密。
     int np=10,t=4;
@@ -313,18 +316,18 @@ int ContractReEncryption::TestProxyReEncryption() {
     vector<G1> Hx(nu);
     for (int i = 1; i < nu; i++){
         X[i] = GT(e,false);
-        Hx[i] = G1(e,X[1].getElement(),X[1].getElementSize());
+        Hx[i] = G1(e,X[i].toString().c_str(),X[i].getElementSize());//GT到G1的哈希
     }
     //计算重加密密钥 rk=(rk1,rk2,rk3)
     //其中rk1=rk[nu][np],rk[i]表示重加密给用户i的所有重加密密钥，rk[i]的每一项在实际场景中应分发给代理
-    vector<vector<G1>> rk1(nu);
-    vector<G1> rk2(nu);
-    vector<GT> rk3(nu);
+    vector<vector<G1>> rk1;
+    vector<G1> rk2;
+    vector<GT> rk3;
 
     for(int i = 1; i < nu;i++){
         Zr r(e,true);
-        rk2[i]=(g^r);
-        rk3[i]=(X[i]*e(g1,pk[i]^r));
+        rk2.push_back(g^r);
+        rk3.push_back(X[i]*e(g1,pk[i]^r));
         vector<G1> tmp;
         if(i==1){
             for(int j= 0;j<np;j++){
@@ -336,7 +339,7 @@ int ContractReEncryption::TestProxyReEncryption() {
                 tmp.push_back((Hx[i]/Hx[i-1])^hid[j]);
             }
         }
-        rk1[i]=(tmp);
+        rk1.push_back(tmp);
     }
     
     //用户0使用自己的公钥pk0加密消息m
@@ -348,9 +351,9 @@ int ContractReEncryption::TestProxyReEncryption() {
     Zr r(e,true),z(e,true);
     for(int i = 0;i<np;i++){
         c1.push_back(g^r);
-        c2.push_back((m*(e(g1,pk[0])^r))^hid[i]);
         c3.push_back(g^z);
-        c4.push_back(e(g1,pk[0])^(r*hid[i]));
+        c2.push_back((m*(e(g1,pk[0])^r))^hid[i]);
+        c4.push_back(e(g1,pk[0])^(z*hid[i]));
         c5.push_back(G1(e,false));
         c6.push_back(GT(e,false));
     }
@@ -376,18 +379,26 @@ int ContractReEncryption::TestProxyReEncryption() {
     }
     GT result1(tempc2/e(c1[0],g1^sk[0]));
     result1.dump(stdout,"初始密文解密结果为");
+    cout<<"是否成功解密？"<<endl;
     if(m==result1){
-        ZJC_DEBUG("init encryption data success: %d", 0);
+        cout<<"Success!"<<endl;
     }else{
-        ZJC_DEBUG("init encryption data failed: %d", 0);
+        cout<<"Fail"<<endl;
     }
 
     //重加密（随即t个代理执行，这里为了方便就取前t个）
+    //注意到，不论是初始密文还是重加密密文，都可进行重加密操作。
     //reenc-c=(rc1,rc2,rc3,rc4,rc5,rc6)
     //其中每一项 rc的第一个下标表示接收者编号，第二个下标表示分发给的代理编号
-    //注意到，不论是初始密文还是重加密密文，都可进行重加密操作。
+    //rc[nu][t],rc[i]表示用户i的重加密密文，rc[i][k]表示代理k发送给用户i的密文
     vector<vector<G1>> rc1,rc3,rc5;
     vector<vector<GT>> rc2,rc4,rc6;
+    rc1.push_back(c1);
+    rc2.push_back(c2);
+    rc3.push_back(c3);
+    rc4.push_back(c4);
+    rc5.push_back(c5);
+    rc6.push_back(c6);
     //有nu-1个接受者，则需重加密nu-1次
     for(int i = 1;i<nu;i++){
         //在实际应用中，这里的两个随机数需要使用分布式随机数（密钥）协商算法。
@@ -396,13 +407,13 @@ int ContractReEncryption::TestProxyReEncryption() {
         vector<G1> tmp1,tmp3,tmp5;
         vector<GT> tmp2,tmp4,tmp6;
         for(int j= 0;j<t;j++){
-            tmp1.push_back(c1[j]*(c3[j]^w1));
-            tmp3.push_back(c3[j]^w2);
-            tmp2.push_back(c2[j]*(c4[j]^w1)*e(tmp1[j],rk1[i][j]));
-            tmp4.push_back(c4[j]*e(c3[j],rk1[i][j]));
-            tmp5.push_back(rk2[i]);
-            tmp6.push_back(rk3[i]);
+            tmp1.push_back(rc1[i-1][j]*(rc3[i-1][j]^w1));
+            tmp3.push_back(rc3[i-1][j]^w2);
+            tmp2.push_back(rc2[i-1][j]*(rc4[i-1][j]^w1)*e(tmp1.back(),rk1[i-1][j]));
+            tmp4.push_back((rc4[i-1][j]*e(rc3[i-1][j],rk1[i-1][j]))^w2);
         }
+        tmp5.push_back(rk2[i-1]);
+        tmp6.push_back(rk3[i-1]);
         rc1.push_back(tmp1);
         rc2.push_back(tmp2);
         rc3.push_back(tmp3);
@@ -412,19 +423,18 @@ int ContractReEncryption::TestProxyReEncryption() {
     }
     
 
-    //重加密密文的解密如下(为了方便，选前t个碎片解密)
+    // 重加密密文的解密如下(为了方便，选前t个碎片解密)
     for(int i = 1;i<nu;i++){
-        GT Xi = rc6[i-1][0]/e(g1^sk[i],rc5[i-1][0]);
-        GT tempc2(rc2[i-1][0]^lag[0]);
-        for(int j=0;j<t;j++){
-            tempc2*=(rc2[i-1][j]^lag[j]);
+        GT Xi = rc6[i][0]/e(g1^sk[i],rc5[i][0]);
+        GT tempc2(rc2[i][0]^lag[0]);
+        for(int j=1;j<t;j++){
+            tempc2*=(rc2[i][j]^lag[j]);
         }
-
-        GT result2=tempc2/e(rc1[i-1][0],G1(e,Xi.getElement(),Xi.getElementSize()));
+        GT result2=tempc2/e(rc1[i][0],G1(e,Xi.toString().c_str(),Xi.getElementSize()));
         if(m==result2){
-            ZJC_DEBUG("t member decrypt success: %d", i);
+            ZJC_DEBUG("user %d success.", i);
         }else{
-            ZJC_DEBUG("t member decrypt failed: %d", i);
+            ZJC_DEBUG("user %d failed.", i);
         }
     }
 }
