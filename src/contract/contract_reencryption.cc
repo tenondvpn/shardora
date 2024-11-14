@@ -450,7 +450,6 @@ int ContractReEncryption::ReEncryptUserMessage(
             tmp_c1_str = val;
         }
 
-        std::string tmp_c2_str;
         {
             auto key = std::string("create_enc_user_msg_c2_") + std::to_string(i);
             std::string val;
