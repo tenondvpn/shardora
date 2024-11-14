@@ -652,7 +652,6 @@ int ContractReEncryption::ReEncryptUserMessage(
 
     //密钥生成，这里生成10个用户。
     //下标为0的用户0作为加密者，其余用户(1~9)为接受者。
-    int nu = 10;
     vector<Zr> sk;
     vector<G1> pk;
     for(int i = 0;i<nu;i++){
@@ -692,7 +691,7 @@ int ContractReEncryption::ReEncryptUserMessage(
 
         lag.push_back(Zr(e, val.c_str(), val.size()));
     }
-    
+
     // 重加密密文的解密如下(为了方便，选前t个碎片解密)
     for(int i = 1; i<nu; i++){
         GT Xi = rc6[i][0] / e(g1 ^ sk[i], rc5[i][0]);
