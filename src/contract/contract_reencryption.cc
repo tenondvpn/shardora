@@ -791,7 +791,7 @@ int ContractReEncryption::Decryption(
             return kContractError;
         }
 
-        Zr x(e, val.c_str(), val.size());
+        Zr x(e, (const unsigned char*)val.c_str(), val.size(), 0);
         sk.push_back(x);
     }
 
@@ -812,7 +812,7 @@ int ContractReEncryption::Decryption(
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
                 return kContractError;
             }
-            c1.push_back(G1(e, val.c_str(), val.size()));
+            c1.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
         }
 
         {
@@ -822,7 +822,7 @@ int ContractReEncryption::Decryption(
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
                 return kContractError;
             }
-            c2.push_back(GT(e, val.c_str(), val.size()));
+            c2.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
         }
 
         {
@@ -832,7 +832,7 @@ int ContractReEncryption::Decryption(
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
                 return kContractError;
             }
-            c3.push_back(G1(e, val.c_str(), val.size()));
+            c3.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
         }
 
         {
@@ -842,7 +842,7 @@ int ContractReEncryption::Decryption(
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
                 return kContractError;
             }
-            c4.push_back(GT(e, val.c_str(), val.size()));
+            c4.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
         }
 
         {
@@ -852,7 +852,7 @@ int ContractReEncryption::Decryption(
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
                 return kContractError;
             }
-            c5.push_back(G1(e, val.c_str(), val.size()));
+            c5.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
         }
 
         {
@@ -862,7 +862,7 @@ int ContractReEncryption::Decryption(
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
                 return kContractError;
             }
-            c6.push_back(GT(e, val.c_str(), val.size()));
+            c6.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
         }
     }
 
@@ -884,7 +884,7 @@ int ContractReEncryption::Decryption(
                 return kContractError;
             }
 
-            tmp1.push_back(G1(e, val.c_str(), val.size()));
+            tmp1.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
         }
 
         vector<GT> tmp2;
@@ -896,7 +896,7 @@ int ContractReEncryption::Decryption(
                 return kContractError;
             }
 
-            tmp2.push_back(GT(e, val.c_str(), val.size()));
+            tmp2.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
         }
 
         vector<G1> tmp3;
@@ -908,7 +908,7 @@ int ContractReEncryption::Decryption(
                 return kContractError;
             }
 
-            tmp3.push_back(G1(e, val.c_str(), val.size()));
+            tmp3.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
         }
 
         vector<GT> tmp4;
@@ -920,7 +920,7 @@ int ContractReEncryption::Decryption(
                 return kContractError;
             }
 
-            tmp4.push_back(GT(e, val.c_str(), val.size()));
+            tmp4.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
         }
 
         vector<G1> tmp5;
@@ -932,7 +932,7 @@ int ContractReEncryption::Decryption(
                 return kContractError;
             }
 
-            tmp5.push_back(G1(e, val.c_str(), val.size()));
+            tmp5.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
         }
 
         vector<GT> tmp6;
@@ -944,7 +944,7 @@ int ContractReEncryption::Decryption(
                 return kContractError;
             }
 
-            tmp6.push_back(GT(e, val.c_str(), val.size()));
+            tmp6.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
         }
 
         rc1.push_back(tmp1);
@@ -964,7 +964,7 @@ int ContractReEncryption::Decryption(
             return kContractError;
         }
 
-        lag.push_back(Zr(e, val.c_str(), val.size()));
+        lag.push_back(Zr(e, (const unsigned char*)val.c_str(), val.size(), 0));
     }
 
     // 重加密密文的解密如下(为了方便，选前t个碎片解密)
