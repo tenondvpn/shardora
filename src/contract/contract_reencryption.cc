@@ -687,7 +687,7 @@ int ContractReEncryption::Decryption(
     //有nu-1个接受者，则需重加密nu-1次
     for(int i = 1;i<nu;i++){
         vector<G1> tmp1;
-        for (int32_t tmp_idx = 0; ; ++tmp_idx) {
+        for (int32_t tmp_idx = 0; tmp_idx < t; ++tmp_idx) {
             auto key = std::string("create_reenc_user_msg_rc1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
@@ -699,7 +699,7 @@ int ContractReEncryption::Decryption(
         }
 
         vector<GT> tmp2;
-        for (int32_t tmp_idx = 0; ; ++tmp_idx) {
+        for (int32_t tmp_idx = 0; tmp_idx < t; ++tmp_idx) {
             auto key = std::string("create_reenc_user_msg_rc2_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
@@ -711,7 +711,7 @@ int ContractReEncryption::Decryption(
         }
 
         vector<G1> tmp3;
-        for (int32_t tmp_idx = 0; ; ++tmp_idx) {
+        for (int32_t tmp_idx = 0; tmp_idx < t; ++tmp_idx) {
             auto key = std::string("create_reenc_user_msg_rc3_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
@@ -723,7 +723,7 @@ int ContractReEncryption::Decryption(
         }
 
         vector<GT> tmp4;
-        for (int32_t tmp_idx = 0; ; ++tmp_idx) {
+        for (int32_t tmp_idx = 0; tmp_idx < t; ++tmp_idx) {
             auto key = std::string("create_reenc_user_msg_rc4_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
@@ -735,7 +735,7 @@ int ContractReEncryption::Decryption(
         }
 
         vector<G1> tmp5;
-        for (int32_t tmp_idx = 0; ; ++tmp_idx) {
+        for (int32_t tmp_idx = 0; tmp_idx < 1; ++tmp_idx) {
             auto key = std::string("create_reenc_user_msg_rc5_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
@@ -747,7 +747,7 @@ int ContractReEncryption::Decryption(
         }
 
         vector<GT> tmp6;
-        for (int32_t tmp_idx = 0; ; ++tmp_idx) {
+        for (int32_t tmp_idx = 0; tmp_idx < 1; ++tmp_idx) {
             auto key = std::string("create_reenc_user_msg_rc6_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
