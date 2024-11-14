@@ -26,8 +26,10 @@ int ContractReEncryption::CreatePrivateAndPublicKeys(
         const std::string& key, 
         const std::string& value) {
     auto& e = *pairing_ptr_;
-    G1 g(e,false);
-    G1 g1(e,false);
+    std::string g_str(common::Encode::HexDecode("92d2c563c4dd82a51ab97ac85b17055e06e222671ab21290c6126be096475699c766bee1fcae94e6baaa9c6694b9a03ca0205d044878c8996fec96bef10df61001"));
+    G1 g(e, g_str.c_str(), g_str.size());
+    std::string g1_str(common::Encode::HexDecode("7c8ae882453932ed180735e6eef3c983c93e0501dcfe6a1230fbfea4ac95f4c22795fe5a8137549d1a1b7427519b189431e794e365be5910fcd8e1c91bbc67fa00"));
+    G1 g1(e, g1_str.c_str(), g1_str.size());
     ZJC_DEBUG("create member g and g1 g: %s, g1: %s",
         common::Encode::HexEncode(g.toString(true)).c_str(),
         common::Encode::HexEncode(g1.toString(true)).c_str());
