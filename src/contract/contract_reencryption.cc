@@ -151,6 +151,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
     for (int i = 1; i < nu; i++){
         X[i] = GT(e,false);
         Hx[i] = G1(e,X[i].toString().c_str(),X[i].getElementSize());//GT到G1的哈希
+        ZJC_DEBUG("create member hid: %d, Xi: %s", i, common::Encode::HexEncode(X[i].toString()).c_str());
     }
 
     //计算重加密密钥 rk=(rk1,rk2,rk3)
@@ -160,6 +161,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
     vector<GT> rk3;
     for(int i = 1; i < nu;i++){
         Zr r(e,true);
+        ZJC_DEBUG("create member hid: %d, RKi: %s", i, common::Encode::HexEncode(r.toString()).c_str());
         auto tmp_rk2 = g^r;
         rk2.push_back(tmp_rk2);
         ZJC_DEBUG("create member rk2: %d, rk2: %s", i, common::Encode::HexEncode(tmp_rk2.toString(true)).c_str());
