@@ -344,6 +344,7 @@ int ContractReEncryption::EncryptUserMessage(
     GT m(e,test_data.c_str(), test_data.size());
     m.dump(stdout,"加密消息为");
     Zr r(e,true),z(e,true);
+    ZJC_DEBUG("re encryption create key r: %s, z: %s", common::Encode::HexEncode(r.toString()).c_str(), common::Encode::HexEncode(z.toString()).c_str());
     for(int i = 0;i<np;i++){
         auto tmp_c1 = g^r;
         auto tmp_c2 = g^z;
@@ -351,6 +352,7 @@ int ContractReEncryption::EncryptUserMessage(
         auto tmp_c4 = e(g1,pk[0])^(z*hid[i]);
         auto tmp_c5 = G1(e,false);
         auto tmp_c6 = GT(e,false);
+        ZJC_DEBUG("re encryption create key i: %d, c5: %s, c6: %s", i, common::Encode::HexEncode(tmp_c5.toString(true)).c_str(), common::Encode::HexEncode(tmp_c6.toString()).c_str());
         c1.push_back(tmp_c1);
         c3.push_back(tmp_c2);
         c2.push_back(tmp_c3);
