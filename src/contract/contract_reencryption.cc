@@ -594,47 +594,60 @@ int ContractReEncryption::ReEncryptUserMessage(
         }
         tmp5.push_back(rk2[i-1]);
         tmp6.push_back(rk3[i-1]);
-        rc1.push_back(tmp1);
-        rc2.push_back(tmp2);
-        rc3.push_back(tmp3);
-        rc4.push_back(tmp4);
-        rc5.push_back(tmp5);
-        rc6.push_back(tmp6);
         for (int32_t tmp_idx = 0; tmp_idx < tmp1.size(); ++tmp_idx) {
             ZJC_DEBUG("create member reenc data: %d, %d, tmp1: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp1[tmp_idx].toString(true)).c_str());
+            auto key = std::string("create_reenc_user_msg_rc1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp1[tmp_idx].toString(true));
         }
 
         for (int32_t tmp_idx = 0; tmp_idx < tmp2.size(); ++tmp_idx) {
             ZJC_DEBUG("create member reenc data: %d, %d, tmp2: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp2[tmp_idx].toString()).c_str());
+            auto key = std::string("create_reenc_user_msg_rc2_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp2[tmp_idx].toString());
         }
 
         for (int32_t tmp_idx = 0; tmp_idx < tmp3.size(); ++tmp_idx) {
             ZJC_DEBUG("create member reenc data: %d, %d, tmp3: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp3[tmp_idx].toString(true)).c_str());
+            auto key = std::string("create_reenc_user_msg_rc3_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp3[tmp_idx].toString(true));
         }
 
         for (int32_t tmp_idx = 0; tmp_idx < tmp4.size(); ++tmp_idx) {
             ZJC_DEBUG("create member reenc data: %d, %d, tmp4: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp4[tmp_idx].toString()).c_str());
+            auto key = std::string("create_reenc_user_msg_rc4_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp4[tmp_idx].toString());
         }
 
         for (int32_t tmp_idx = 0; tmp_idx < tmp5.size(); ++tmp_idx) {
             ZJC_DEBUG("create member reenc data: %d, %d, tmp5: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp5[tmp_idx].toString(true)).c_str());
+            auto key = std::string("create_reenc_user_msg_rc5_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp5[tmp_idx].toString(true));
         }
 
         for (int32_t tmp_idx = 0; tmp_idx < tmp6.size(); ++tmp_idx) {
             ZJC_DEBUG("create member reenc data: %d, %d, tmp6: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp6[tmp_idx].toString()).c_str());
+            auto key = std::string("create_reenc_user_msg_rc6_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp6[tmp_idx].toString());
         }
+
+        rc1.push_back(tmp1);
+        rc2.push_back(tmp2);
+        rc3.push_back(tmp3);
+        rc4.push_back(tmp4);
+        rc5.push_back(tmp5);
+        rc6.push_back(tmp6);
     }
 
     return kContractSuccess;
