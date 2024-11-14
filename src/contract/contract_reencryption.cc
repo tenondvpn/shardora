@@ -85,7 +85,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
             return kContractError;
         }
 
-        G1 tmp_pk(e, val.c_str(), val.size());
+        G1 tmp_pk(e, (const unsigned char*)val.c_str(), val.size(), true, 0);
         pk.push_back(tmp_pk);
     }
 
@@ -198,7 +198,7 @@ int ContractReEncryption::EncryptUserMessage(
             return kContractError;
         }
 
-        G1 tmp_pk(e, val.c_str(), val.size(), true, 0);
+        G1 tmp_pk(e, (const unsigned char*)val.c_str(), val.size(), true, 0);
         pk.push_back(tmp_pk);
 
         ZJC_DEBUG("init member private and public key: %d, sk: %s, pk: %s",
@@ -355,7 +355,7 @@ int ContractReEncryption::ReEncryptUserMessage(
             return kContractError;
         }
 
-        G1 tmp_pk(e, val.c_str(), val.size());
+        G1 tmp_pk(e, (const unsigned char*)val.c_str(), val.size(), true, 0);
         pk.push_back(tmp_pk);
     }
 
@@ -567,7 +567,7 @@ int ContractReEncryption::Decryption(
             return kContractError;
         }
 
-        G1 tmp_pk(e, val.c_str(), val.size());
+        G1 tmp_pk(e, (const unsigned char*)val.c_str(), val.size(), true, 0);
         pk.push_back(tmp_pk);
     }
 
