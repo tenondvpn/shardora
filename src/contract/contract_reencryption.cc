@@ -446,7 +446,7 @@ int ContractReEncryption::ReEncryptUserMessage(
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
                 return kContractError;
             }
-            c1.push_back(G1(e, val.c_str(), val.size()));
+            c1.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
             tmp_c1_str = val;
         }
 
@@ -457,7 +457,7 @@ int ContractReEncryption::ReEncryptUserMessage(
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
                 return kContractError;
             }
-            c2.push_back(GT(e, val.c_str(), val.size()));
+            c2.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
             tmp_c2_str = val;
         }
 
@@ -468,7 +468,7 @@ int ContractReEncryption::ReEncryptUserMessage(
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
                 return kContractError;
             }
-            c3.push_back(G1(e, val.c_str(), val.size()));
+            c3.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
             tmp_c3_str = val;
         }
 
@@ -479,7 +479,7 @@ int ContractReEncryption::ReEncryptUserMessage(
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
                 return kContractError;
             }
-            c4.push_back(GT(e, val.c_str(), val.size()));
+            c4.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
             tmp_c4_str = val;
         }
 
@@ -490,7 +490,7 @@ int ContractReEncryption::ReEncryptUserMessage(
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
                 return kContractError;
             }
-            c5.push_back(G1(e, val.c_str(), val.size()));
+            c5.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
             tmp_c5_str = val;
         }
 
@@ -501,7 +501,7 @@ int ContractReEncryption::ReEncryptUserMessage(
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
                 return kContractError;
             }
-            c6.push_back(GT(e, val.c_str(), val.size()));
+            c6.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
             tmp_c6_str = val;
         }
 
@@ -534,7 +534,7 @@ int ContractReEncryption::ReEncryptUserMessage(
             return kContractError;
         }
 
-        rk2.push_back(G1(e, rk2_val.c_str(), rk2_val.size()));
+        rk2.push_back(G1(e, (const unsigned char*)rk2_val.c_str(), rk2_val.size(), true, 0));
         auto rk3_key = std::string("create_renc_key_rk3_") + std::to_string(i);
         std::string rk3_val;
         if (param.zjc_host->GetKeyValue(param.from, rk3_key, &rk3_val) != 0) {
@@ -542,7 +542,7 @@ int ContractReEncryption::ReEncryptUserMessage(
             return kContractError;
         }
 
-        rk3.push_back(GT(e, rk3_val.c_str(), rk3_val.size()));
+        rk3.push_back(GT(e, (const unsigned char*)rk3_val.c_str(), rk3_val.size(), 0));
         vector<G1> tmp;
         for(int j= 0; j<np; j++) {
             auto key = std::string("create_renc_key_rk1_") + std::to_string(i) + "_" + std::to_string(j);
@@ -552,7 +552,7 @@ int ContractReEncryption::ReEncryptUserMessage(
                 return kContractError;
             }
 
-            tmp.push_back(G1(e, rk1_val.c_str(), rk1_val.size()));
+            tmp.push_back(G1(e, (const unsigned char*)rk1_val.c_str(), rk1_val.size(), true, 0));
         }
         
         rk1.push_back(tmp);
@@ -689,7 +689,7 @@ int ContractReEncryption::ReEncryptUserMessage(
             return kContractError;
         }
 
-        Zr x(e, val.c_str(), val.size());
+        Zr x(e, (const unsigned char*)val.c_str(), val.size(), 0);
         sk.push_back(x);
         auto public_key = std::string("init_pubkey_") + std::to_string(i);
         if (param.zjc_host->GetKeyValue(param.from, public_key, &val) != 0) {
@@ -728,7 +728,7 @@ int ContractReEncryption::ReEncryptUserMessage(
             return kContractError;
         }
 
-        proxyId.push_back(Zr(e,val.c_str(), val.size()));
+        proxyId.push_back(Zr(e, (const unsigned char*)val.c_str(), val.size(), 0));
     }
 
     vector<Zr> lag;
