@@ -92,7 +92,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
     //重加密密钥生成，假设代理总数为np，门限为t。
     //即只有不少于t个代理参与重加密，才能正确解密。
     auto line_split = common::Split<>(value.c_str(), '\n');
-    if (line_split.Count() < 3) {
+    if (line_split.Count() < 5) {
         return kContractError;
     }
 
@@ -148,8 +148,10 @@ int ContractReEncryption::CreateReEncryptionKeys(
     //选择随机数X作为对称密钥
     vector<GT> X(nu);
     vector<G1> Hx(nu);
+    auto x_splits = common::Split<>(line_split[3], ',');
     for (int i = 1; i < nu; i++){
-        X[i] = GT(e,false);
+        auto x_str = common::Encode::HexDecode(x_splits[i - 1]);
+        X[i] = GT(e, x_str.c_str(), x_str.size());
         Hx[i] = G1(e,X[i].toString().c_str(),X[i].getElementSize());//GT到G1的哈希
         ZJC_DEBUG("create member hid: %d, Xi: %s", i, common::Encode::HexEncode(X[i].toString()).c_str());
     }
@@ -159,20 +161,22 @@ int ContractReEncryption::CreateReEncryptionKeys(
     vector<vector<G1>> rk1;
     vector<G1> rk2;
     vector<GT> rk3;
+    auto rk_splits = common::Split<>(line_split[4], ',');
     for(int i = 1; i < nu;i++){
-        Zr r(e,true);
+        auto rk_str = common::Encode::HexDecode(rk_splits[i - 1]);
+        Zr r(e, rk_str.c_str(), rk_str.size());
         ZJC_DEBUG("create member hid: %d, RKi: %s", i, common::Encode::HexEncode(r.toString()).c_str());
         auto tmp_rk2 = g^r;
         rk2.push_back(tmp_rk2);
         ZJC_DEBUG("create member rk2: %d, rk2: %s", i, common::Encode::HexEncode(tmp_rk2.toString(true)).c_str());
         auto rk2_key = std::string("create_renc_key_rk2_") + std::to_string(i);
-        // param.zjc_host->SaveKeyValue(param.from, rk2_key, tmp_rk2.toString(true));
+        param.zjc_host->SaveKeyValue(param.from, rk2_key, tmp_rk2.toString(true));
 
         auto tmp_rk3 = X[i]*e(g1,pk[i]^r);
         rk3.push_back(tmp_rk3);
         ZJC_DEBUG("create member rk3: %d, rk3: %s", i, common::Encode::HexEncode(tmp_rk3.toString()).c_str());
         auto rk3_key = std::string("create_renc_key_rk3_") + std::to_string(i);
-        // param.zjc_host->SaveKeyValue(param.from, rk3_key, tmp_rk3.toString());
+        param.zjc_host->SaveKeyValue(param.from, rk3_key, tmp_rk3.toString());
         vector<G1> tmp;
         if(i==1){
             for(int j= 0;j<np;j++){
@@ -189,7 +193,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
             ZJC_DEBUG("create member rk1: %d, %d, rk1: %s",
             i, tmp_idx, common::Encode::HexEncode(tmp[tmp_idx].toString(true)).c_str());
             auto key = std::string("create_renc_key_rk1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
-            // param.zjc_host->SaveKeyValue(param.from, key, tmp[tmp_idx].toString(true));
+            param.zjc_host->SaveKeyValue(param.from, key, tmp[tmp_idx].toString(true));
         }
 
         rk1.push_back(tmp);
