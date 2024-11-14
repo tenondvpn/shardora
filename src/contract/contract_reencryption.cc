@@ -131,7 +131,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
     vector<GT> X(nu);
     vector<G1> Hx(nu);
     for (int i = 1; i < nu; i++){
-        X[i] = GT(e,true);
+        X[i] = GT(e,false);
         Hx[i] = G1(e,X[i].toString().c_str(),X[i].getElementSize());//GT到G1的哈希
     }
 
@@ -248,7 +248,7 @@ int ContractReEncryption::EncryptUserMessage(
     vector<GT> X(nu);
     vector<G1> Hx(nu);
     for (int i = 1; i < nu; i++){
-        X[i] = GT(e,true);
+        X[i] = GT(e,false);
         Hx[i] = G1(e,X[i].toString().c_str(),X[i].getElementSize());//GT到G1的哈希
     }
     //计算重加密密钥 rk=(rk1,rk2,rk3)
@@ -288,8 +288,8 @@ int ContractReEncryption::EncryptUserMessage(
         auto tmp_c2 = g^z;
         auto tmp_c3 = (m*(e(g1,pk[0])^r))^hid[i];
         auto tmp_c4 = e(g1,pk[0])^(z*hid[i]);
-        auto tmp_c5 = G1(e,true);
-        auto tmp_c6 = GT(e,true);
+        auto tmp_c5 = G1(e,false);
+        auto tmp_c6 = GT(e,false);
         c1.push_back(tmp_c1);
         c3.push_back(tmp_c2);
         c2.push_back(tmp_c3);
@@ -401,7 +401,7 @@ int ContractReEncryption::ReEncryptUserMessage(
     vector<GT> X(nu);
     vector<G1> Hx(nu);
     for (int i = 1; i < nu; i++){
-        X[i] = GT(e,true);
+        X[i] = GT(e,false);
         Hx[i] = G1(e,X[i].toString().c_str(),X[i].getElementSize());//GT到G1的哈希
     }
     //计算重加密密钥 rk=(rk1,rk2,rk3)
@@ -441,8 +441,8 @@ int ContractReEncryption::ReEncryptUserMessage(
         c3.push_back(g^z);
         c2.push_back((m*(e(g1,pk[0])^r))^hid[i]);
         c4.push_back(e(g1,pk[0])^(z*hid[i]));
-        c5.push_back(G1(e,true));
-        c6.push_back(GT(e,true));
+        c5.push_back(G1(e,false));
+        c6.push_back(GT(e,false));
     }
 
     //初始密文的解密如下(为了方便，选前t个碎片解密)
@@ -613,7 +613,7 @@ int ContractReEncryption::Decryption(
     vector<GT> X(nu);
     vector<G1> Hx(nu);
     for (int i = 1; i < nu; i++){
-        X[i] = GT(e,true);
+        X[i] = GT(e,false);
         Hx[i] = G1(e,X[i].toString().c_str(),X[i].getElementSize());//GT到G1的哈希
     }
     //计算重加密密钥 rk=(rk1,rk2,rk3)
@@ -653,8 +653,8 @@ int ContractReEncryption::Decryption(
         c3.push_back(g^z);
         c2.push_back((m*(e(g1,pk[0])^r))^hid[i]);
         c4.push_back(e(g1,pk[0])^(z*hid[i]));
-        c5.push_back(G1(e,true));
-        c6.push_back(GT(e,true));
+        c5.push_back(G1(e,false));
+        c6.push_back(GT(e,false));
     }
 
     //初始密文的解密如下(为了方便，选前t个碎片解密)
