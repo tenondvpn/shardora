@@ -35,7 +35,8 @@ int ContractReEncryption::CreatePrivateAndPublicKeys(const std::string& key, con
         auto tmp_pk = g^x;
         pk.push_back(tmp_pk);
         ZJC_DEBUG("create member private and public key: %d, sk: %s, pk: %s",
-            i, x.toString().c_str(), tmp_pk.toString(true).c_str());
+            i, common::Encode::HexEncode(x.toString()).c_str(),
+            common::Encode::HexEncode(tmp_pk.toString(true)).c_str());
     }
 
     return kContractSuccess;
@@ -66,7 +67,7 @@ int ContractReEncryption::CreateReEncryptionKeys(const std::string& key, const s
         auto tmp_proxy_id = Zr(e,true);
         proxyId.push_back(tmp_proxy_id);
         ZJC_DEBUG("create member proxy id: %d, proxy_id: %s",
-            i, tmp_proxy_id.toString().c_str());
+            i, common::Encode::HexEncode(tmp_proxy_id.toString()).c_str());
     }
 
     //选择两个t-1阶多项式
@@ -88,7 +89,7 @@ int ContractReEncryption::CreateReEncryptionKeys(const std::string& key, const s
 
         fid.push_back(resultf);
         hid.push_back(resulth);
-        ZJC_DEBUG("create member hid: %d, hid: %s", i, resulth.toString().c_str());
+        ZJC_DEBUG("create member hid: %d, hid: %s", i, common::Encode::HexEncode(resulth.toString()).c_str());
     }
 
     //选择随机数X作为对称密钥
@@ -108,10 +109,10 @@ int ContractReEncryption::CreateReEncryptionKeys(const std::string& key, const s
         Zr r(e,true);
         auto tmp_rk2 = g^r;
         rk2.push_back(tmp_rk2);
-        ZJC_DEBUG("create member rk2: %d, rk2: %s", i, tmp_rk2.toString(true).c_str());
+        ZJC_DEBUG("create member rk2: %d, rk2: %s", i, common::Encode::HexEncode(tmp_rk2.toString(true)).c_str());
         auto tmp_rk3 = X[i]*e(g1,pk[i]^r);
         rk3.push_back(tmp_rk3);
-        ZJC_DEBUG("create member rk3: %d, rk3: %s", i, tmp_rk3.toString().c_str());
+        ZJC_DEBUG("create member rk3: %d, rk3: %s", i, common::Encode::HexEncode(tmp_rk3.toString()).c_str());
         vector<G1> tmp;
         if(i==1){
             for(int j= 0;j<np;j++){
@@ -126,7 +127,7 @@ int ContractReEncryption::CreateReEncryptionKeys(const std::string& key, const s
 
         for (int32_t tmp_idx = 0; tmp_idx < tmp.size(); ++tmp_idx) {
             ZJC_DEBUG("create member rk1: %d, %d, rk1: %s",
-                i, tmp_idx, tmp[tmp_idx].toString(true).c_str());
+                i, tmp_idx, common::Encode::HexEncode(tmp[tmp_idx].toString(true)).c_str());
         }
 
         rk1.push_back(tmp);
@@ -231,12 +232,12 @@ int ContractReEncryption::EncryptUserMessage(const std::string& key, const std::
         c5.push_back(tmp_c5);
         c6.push_back(tmp_c6);
         ZJC_DEBUG("create member %d c1: %s, c2: %s, c3: %s, c4: %s, c5: %s, c6: %s",
-                i, tmp_c1.toString(true).c_str(),
-                tmp_c2.toString(true).c_str(),
-                tmp_c3.toString().c_str(),
-                tmp_c4.toString().c_str(),
-                tmp_c5.toString(true).c_str(),
-                tmp_c6.toString().c_str());
+                i, common::Encode::HexEncode(tmp_c1.toString(true)).c_str(),
+                common::Encode::HexEncode(tmp_c2.toString(true)).c_str(),
+                common::Encode::HexEncode(tmp_c3.toString()).c_str(),
+                common::Encode::HexEncode(tmp_c4.toString()).c_str(),
+                common::Encode::HexEncode(tmp_c5.toString(true)).c_str(),
+                common::Encode::HexEncode(tmp_c6.toString()).c_str());
     }
 
     //初始密文的解密如下(为了方便，选前t个碎片解密)
@@ -251,7 +252,7 @@ int ContractReEncryption::EncryptUserMessage(const std::string& key, const std::
             result*=(proxyId[j]/(proxyId[j]-proxyId[i]));
         }
         lag.push_back(result);
-        ZJC_DEBUG("create member lag: %d, lag: %s", i, result.toString().c_str());
+        ZJC_DEBUG("create member lag: %d, lag: %s", i, common::Encode::HexEncode(result.toString()).c_str());
     }
 
     GT tempc2(c2[0]^lag[0]);
@@ -261,9 +262,9 @@ int ContractReEncryption::EncryptUserMessage(const std::string& key, const std::
 
     GT result1(tempc2/e(c1[0],g1^sk[0]));
     if(m==result1){
-        ZJC_DEBUG("user encryption success: %s", result1.toString().c_str());
+        ZJC_DEBUG("user encryption success: %s", common::Encode::HexEncode(result1.toString()).c_str());
     }else{
-        ZJC_DEBUG("user encryption failed: %s, %s", m.toString().c_str(), result1.toString().c_str());
+        ZJC_DEBUG("user encryption failed: %s, %s", common::Encode::HexEncode(m.toString()).c_str(), common::Encode::HexEncode(result1.toString()).c_str());
     }
 
     return kContractSuccess;
@@ -424,12 +425,12 @@ int ContractReEncryption::ReEncryptUserMessage(const std::string& key, const std
         for (int32_t tmp_idx = 0; tmp_idx < tmp1.size(); ++tmp_idx) {
             ZJC_DEBUG("create member reenc data: %d, %d, rc1: %s, rc2: %s, rc3: %s, rc4: %s, rc5: %s, rc6: %s", 
                 i, tmp_idx, 
-                tmp1[tmp_idx].toString(true).c_str(), 
-                tmp2[tmp_idx].toString().c_str(), 
-                tmp3[tmp_idx].toString(true).c_str(), 
-                tmp4[tmp_idx].toString().c_str(), 
-                tmp5[tmp_idx].toString(true).c_str(), 
-                tmp6[tmp_idx].toString().c_str());
+                common::Encode::HexEncode(tmp1[tmp_idx].toString(true)).c_str(), 
+                common::Encode::HexEncode(tmp2[tmp_idx].toString()).c_str(), 
+                common::Encode::HexEncode(tmp3[tmp_idx].toString(true)).c_str(), 
+                common::Encode::HexEncode(tmp4[tmp_idx].toString()).c_str(), 
+                common::Encode::HexEncode(tmp5[tmp_idx].toString(true)).c_str(), 
+                common::Encode::HexEncode(tmp6[tmp_idx].toString()).c_str());
         }
     }
 
