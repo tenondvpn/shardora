@@ -1,5 +1,6 @@
 #include "contract/contract_reencryption.h"
 
+#include "common/split.h"
 #include "common/time_utils.h"
 #include "zjcvm/zjc_host.h"
 
@@ -30,11 +31,13 @@ int ContractReEncryption::CreatePrivateAndPublicKeys(
 
     //密钥生成，这里生成10个用户。
     //下标为0的用户0作为加密者，其余用户(1~9)为接受者。
-    int nu = 10;
     vector<Zr> sk;
     vector<G1> pk;
+    auto sk_splits = common::Split<>(value.c_str(), ',');
+    int nu = sk_splits.Count();
     for(int i = 0;i<nu;i++){
-        Zr x(e,true);
+        auto sk_str = common::Encode::HexDecode(sk_splits[i]);
+        Zr x(e, sk_splits[i], sk_splits.SubLen(i));
         sk.push_back(x);
         auto tmp_pk = g^x;
         pk.push_back(tmp_pk);

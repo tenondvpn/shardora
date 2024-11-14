@@ -564,7 +564,7 @@ if (args[0] == 0) {
 
 // CreatPath(i)：由用户i选择多个被委托者。按选择顺序生成一个路径（列表），其中存放被委托者的公钥。
 if (args[0] == 1) {
-    add_pairing_param("tpinit", "tpinit", "tpinit");
+    add_pairing_param("tpinit", "tpinit", "29eb86b7292ce572e46c6bdf8d8639dc6918991b,5b88d2cc46b94f199d12ff3c050c2db337871051,792e703d820ee43e5014803297208e7a774ceaa5,713b6605d93f07badf314cafe941ba2c4c6ad4bc,52a888b6437f8ebde99ec8929ff3f0f1fa533ad5,01a9a0ad9d65bcf47bb3326da7fd2aef8c18ea88,55c6b8dd50c1430969022788787d972848158c46,19b65ddc3cafa7942e5ac54394f09f1990ca2ac7,19d981de4f615ab95e61553421c358b96e997a2c,7bdc787d0aaddf760eab83de971028712123f1ca");
 }
 
 // RKGen：重加密密钥生成，需要用到pbc库
