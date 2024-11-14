@@ -351,7 +351,7 @@ int ContractReEncryption::EncryptUserMessage(
         c4.push_back(tmp_c4);
         c5.push_back(tmp_c5);
         c6.push_back(tmp_c6);
-        ZJC_DEBUG("create member %d c1: %s, c2: %s, c3: %s, c4: %s, c5: %s, c6: %s",
+        ZJC_DEBUG("c-6 create member %d c1: %s, c2: %s, c3: %s, c4: %s, c5: %s, c6: %s",
                 i, common::Encode::HexEncode(tmp_c1.toString(true)).c_str(),
                 common::Encode::HexEncode(tmp_c2.toString()).c_str(),
                 common::Encode::HexEncode(tmp_c3.toString(true)).c_str(),
@@ -492,6 +492,14 @@ int ContractReEncryption::ReEncryptUserMessage(
             }
             c6.push_back(GT(e, val.c_str(), val.size()));
         }
+
+        ZJC_DEBUG("1 c-6 create member %d c1: %s, c2: %s, c3: %s, c4: %s, c5: %s, c6: %s",
+                i, common::Encode::HexEncode(c1[i].toString(true)).c_str(),
+                common::Encode::HexEncode(c2[i].toString()).c_str(),
+                common::Encode::HexEncode(c3[i].toString(true)).c_str(),
+                common::Encode::HexEncode(c4[i].toString()).c_str(),
+                common::Encode::HexEncode(c5[i].toString(true)).c_str(),
+                common::Encode::HexEncode(c6[i].toString()).c_str());
     }
 
     //初始密文的解密如下(为了方便，选前t个碎片解密)
