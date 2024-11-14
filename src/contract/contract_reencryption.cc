@@ -91,7 +91,12 @@ int ContractReEncryption::CreateReEncryptionKeys(
 
     //重加密密钥生成，假设代理总数为np，门限为t。
     //即只有不少于t个代理参与重加密，才能正确解密。
-    auto sk_splits = common::Split<>(value.c_str(), ',');
+    auto line_split = common::Split<>(value.c_str(), '\n');
+    if (line_split.Count() < 3) {
+        return kContractError;
+    }
+
+    auto sk_splits = common::Split<>(line_split[0], ',');
     int np = sk_splits.Count();
     int t=4;
     vector<Zr> proxyId,coefficientsF,coefficientsH,fid,hid;
@@ -110,9 +115,15 @@ int ContractReEncryption::CreateReEncryptionKeys(
     coefficientsF.push_back(sk[0].inverse(true));
     coefficientsH.push_back(Zr(e,(long)1));
     for (int i = 0; i < t-1; i++){
-        coefficientsF.push_back(Zr(e,true));
-        coefficientsH.push_back(Zr(e,true));
+        auto tmp_f = Zr(e,true);
+        auto tmp_h = Zr(e,true);
+        coefficientsF.push_back(tmp_f);
+        coefficientsH.push_back(tmp_h);
+        ZJC_DEBUG("create member private and public key: %d, f: %s, h: %s",
+            i, common::Encode::HexEncode(tmp_f.toString()).c_str(),
+            common::Encode::HexEncode(tmp_h.toString()).c_str());
     }
+    
     //计算每个f(Id)和h(Id)
     for(int i = 0;i<np;i++){
         Zr resultf(e),resulth(e); //resultf = 0

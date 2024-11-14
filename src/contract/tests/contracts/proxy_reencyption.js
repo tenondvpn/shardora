@@ -569,7 +569,17 @@ if (args[0] == 1) {
 
 // RKGen：重加密密钥生成，需要用到pbc库
 if (args[0] == 2) {
-    add_pairing_param("tprenk", "tprenk", "468a50340bc016c5161df8a40dd7890a84132750,204be12c7d5a77f4cecca96aeb1aadd0dc11e829,4d84890349d26fa23fb94ee32d16a4a522025072,4855a79cbcfc3d54cd99d504872beee01c8f9096,543cf9eec69613a4a01c28ebe64e50fbe234b57f,026047a338ee52e99f611bd02e9e5b12ecb83b74,35c95955d7bca26ccea47b3bf1aacc5936b53c5a,5e1694b4226bd0e1b75b71a249d6126c87d14a9e,48d9915add7e5bf58e5ad8adef850fb899c3d6ea,166ab66ee71d78d357c2c69697267c30fb820c65");
+    add_pairing_param("tprenk", "tprenk", 
+        (`"468a50340bc016c5161df8a40dd7890a84132750,"
+        "204be12c7d5a77f4cecca96aeb1aadd0dc11e829,"
+        "4d84890349d26fa23fb94ee32d16a4a522025072,"
+        "4855a79cbcfc3d54cd99d504872beee01c8f9096,"
+        "543cf9eec69613a4a01c28ebe64e50fbe234b57f,"
+        "026047a338ee52e99f611bd02e9e5b12ecb83b74,"
+        "35c95955d7bca26ccea47b3bf1aacc5936b53c5a,"
+        "5e1694b4226bd0e1b75b71a249d6126c87d14a9e,"
+        "48d9915add7e5bf58e5ad8adef850fb899c3d6ea,"
+        "166ab66ee71d78d357c2c69697267c30fb820c65\na\nb"`));
 }
 
 // Upd：token更新算法，需要用到pbc库
