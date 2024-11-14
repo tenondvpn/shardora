@@ -241,11 +241,8 @@ int ContractReEncryption::EncryptUserMessage(
             common::Encode::HexEncode(tmp_pk.toString(true)).c_str());
     }
 
-    //重加密密钥生成，假设代理总数为np，门限为t。
-    //即只有不少于t个代理参与重加密，才能正确解密。
     int np=10,t=4;
     vector<Zr> proxyId, hid;
-    //proxyId表示每个代理的id
     for(int i = 0;i<np;i++){
         auto key = std::string("create_renc_key_proxyid_") + std::to_string(i);
         std::string val;
@@ -256,23 +253,7 @@ int ContractReEncryption::EncryptUserMessage(
 
         proxyId.push_back(Zr(e,val.c_str(), val.size()));
     }
-    //选择两个t-1阶多项式
-    // coefficientsF.push_back(sk[0].inverse(true));
-    // coefficientsH.push_back(Zr(e,(long)1));
-    // for (int i = 0; i < t-1; i++){
-    //     coefficientsF.push_back(Zr(e,true));
-    //     coefficientsH.push_back(Zr(e,true));
-    // }
-    //计算每个f(Id)和h(Id)
     for(int i = 0;i<np;i++){
-        // Zr resultf(e),resulth(e); //resultf = 0
-        // Zr temp(e,(long int)1);
-        // for (int j = 0; j < t; j++){
-        //     resultf+=coefficientsF[j]*temp;
-        //     resulth+=coefficientsH[j]*temp;
-        //     temp*=proxyId[i];
-        // }
-        // fid.push_back(resultf);
         auto key = std::string("create_renc_key_hid_") + std::to_string(i);
         std::string val;
         if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
@@ -281,19 +262,10 @@ int ContractReEncryption::EncryptUserMessage(
         }
         hid.push_back(Zr(e, val.c_str(), val.size()));
     }
-    //选择随机数X作为对称密钥
-    // vector<GT> X(nu);
-    // vector<G1> Hx(nu);
-    // for (int i = 1; i < nu; i++){
-    //     X[i] = GT(e,false);
-    //     Hx[i] = G1(e,X[i].toString().c_str(),X[i].getElementSize());//GT到G1的哈希
-    // }
-    //计算重加密密钥 rk=(rk1,rk2,rk3)
-    //其中rk1=rk[nu][np],rk[i]表示重加密给用户i的所有重加密密钥，rk[i]的每一项在实际场景中应分发给代理
+
     vector<vector<G1>> rk1;
     vector<G1> rk2;
     vector<GT> rk3;
-
     for(int i = 1; i < nu;i++){
         Zr r(e,true);
         auto rk2_key = std::string("create_renc_key_rk2_") + std::to_string(i);
@@ -342,7 +314,6 @@ int ContractReEncryption::EncryptUserMessage(
     vector<GT> c2,c4,c6;
     std::string test_data = "hello world!";
     GT m(e,test_data.c_str(), test_data.size());
-    m.dump(stdout,"加密消息为");
     std::string r_str = common::Encode::HexDecode("7edf5dac8f63ebaed688f823053e817e51c185d6");
     std::string z_str = common::Encode::HexDecode("1254472274e6a59840bb23e709072735d7267340");
     Zr r(e, r_str.c_str(), r_str.size());
@@ -683,20 +654,15 @@ int ContractReEncryption::ReEncryptUserMessage(
     return kContractSuccess;
 }
 
-
 int ContractReEncryption::Decryption(
         const CallParameters& param, 
         const std::string& key, 
         const std::string& value) {
     auto& e = *pairing_ptr_;
-    std::string g_str(common::Encode::HexDecode("92d2c563c4dd82a51ab97ac85b17055e06e222671ab21290c6126be096475699c766bee1fcae94e6baaa9c6694b9a03ca0205d044878c8996fec96bef10df61001"));
-    G1 g(e, g_str.c_str(), g_str.size());
-    std::string g1_str(common::Encode::HexDecode("7c8ae882453932ed180735e6eef3c983c93e0501dcfe6a1230fbfea4ac95f4c22795fe5a8137549d1a1b7427519b189431e794e365be5910fcd8e1c91bbc67fa00"));
-    G1 g1(e, g1_str.c_str(), g1_str.size());
-
     //密钥生成，这里生成10个用户。
     //下标为0的用户0作为加密者，其余用户(1~9)为接受者。
     int nu = 10;
+    int t = 4;
     vector<Zr> sk;
     vector<G1> pk;
     for(int i = 0;i<nu;i++){
@@ -709,152 +675,108 @@ int ContractReEncryption::Decryption(
 
         Zr x(e, val.c_str(), val.size());
         sk.push_back(x);
-        auto public_key = std::string("init_pubkey_") + std::to_string(i);
-        if (param.zjc_host->GetKeyValue(param.from, public_key, &val) != 0) {
-            CONTRACT_ERROR("get key value failed: %s", key.c_str());
-            return kContractError;
-        }
-
-        G1 tmp_pk(e, (const unsigned char*)val.c_str(), val.size(), true, 0);
-        pk.push_back(tmp_pk);
     }
 
-    //重加密密钥生成，假设代理总数为np，门限为t。
-    //即只有不少于t个代理参与重加密，才能正确解密。
-    int np=10,t=4;
-    vector<Zr> proxyId,coefficientsF,coefficientsH,fid,hid;
-    //proxyId表示每个代理的id
-    for(int i = 0;i<np;i++){
-        proxyId.push_back(Zr(e,true));
-    }
-    //选择两个t-1阶多项式
-    coefficientsF.push_back(sk[0].inverse(true));
-    coefficientsH.push_back(Zr(e,(long)1));
-    for (int i = 0; i < t-1; i++){
-        coefficientsF.push_back(Zr(e,true));
-        coefficientsH.push_back(Zr(e,true));
-    }
-    //计算每个f(Id)和h(Id)
-    for(int i = 0;i<np;i++){
-        Zr resultf(e),resulth(e); //resultf = 0
-        Zr temp(e,(long int)1);
-        for (int j = 0; j < t; j++){
-            resultf+=coefficientsF[j]*temp;
-            resulth+=coefficientsH[j]*temp;
-            temp*=proxyId[i];
-        }
-        fid.push_back(resultf);
-        hid.push_back(resulth);
-    }
-    //选择随机数X作为对称密钥
-    vector<GT> X(nu);
-    vector<G1> Hx(nu);
-    for (int i = 1; i < nu; i++){
-        X[i] = GT(e,false);
-        Hx[i] = G1(e,X[i].toString().c_str(),X[i].getElementSize());//GT到G1的哈希
-    }
-    //计算重加密密钥 rk=(rk1,rk2,rk3)
-    //其中rk1=rk[nu][np],rk[i]表示重加密给用户i的所有重加密密钥，rk[i]的每一项在实际场景中应分发给代理
-    vector<vector<G1>> rk1;
-    vector<G1> rk2;
-    vector<GT> rk3;
-
-    for(int i = 1; i < nu;i++){
-        Zr r(e,true);
-        rk2.push_back(g^r);
-        rk3.push_back(X[i]*e(g1,pk[i]^r));
-        vector<G1> tmp;
-        if(i==1){
-            for(int j= 0;j<np;j++){
-                tmp.push_back((Hx[i]^hid[j])*(g1^fid[j]));
-            }
-        }
-        else{
-            for(int j= 0;j<np;j++){
-                tmp.push_back((Hx[i]/Hx[i-1])^hid[j]);
-            }
-        }
-        rk1.push_back(tmp);
-    }
-    
-    //用户0使用自己的公钥pk0加密消息m
-    //c=(c1,c2,c3,c4,c5,c6),每项又包含np个，用于分发给np个代理
-    vector<G1> c1,c3,c5;
-    vector<GT> c2,c4,c6;
     std::string test_data = "hello world!";
     GT m(e,test_data.c_str(), test_data.size());
-    m.dump(stdout,"加密消息为");
-    Zr r(e,true),z(e,true);
-    for(int i = 0;i<np;i++){
-        c1.push_back(g^r);
-        c3.push_back(g^z);
-        c2.push_back((m*(e(g1,pk[0])^r))^hid[i]);
-        c4.push_back(e(g1,pk[0])^(z*hid[i]));
-        c5.push_back(G1(e,false));
-        c6.push_back(GT(e,false));
-    }
+    std::string g1_str(common::Encode::HexDecode("7c8ae882453932ed180735e6eef3c983c93e0501dcfe6a1230fbfea4ac95f4c22795fe5a8137549d1a1b7427519b189431e794e365be5910fcd8e1c91bbc67fa00"));
+    G1 g1(e, g1_str.c_str(), g1_str.size());
 
-    //初始密文的解密如下(为了方便，选前t个碎片解密)
-    vector<Zr> lag;
-    for(int i = 0;i<t;i++){
-        Zr result(e,(long)1);
-        //拉格朗日差值
-        for(int j=0;j<t;j++){
-            if(proxyId[j]==proxyId[i]){
-                continue;
-            }
-            result*=(proxyId[j]/(proxyId[j]-proxyId[i]));
-        }
-        lag.push_back(result);
-    }
-
-    GT tempc2(c2[0]^lag[0]);
-    for(int i = 1;i<t;i++){
-        tempc2*=(c2[i]^lag[i]);
-    }
-    GT result1(tempc2/e(c1[0],g1^sk[0]));
-    result1.dump(stdout,"初始密文解密结果为");
-    cout<<"是否成功解密？"<<endl;
-    if(m==result1){
-        cout<<"Success!"<<endl;
-    }else{
-        cout<<"Fail"<<endl;
-    }
-
-    //重加密（随即t个代理执行，这里为了方便就取前t个）
-    //注意到，不论是初始密文还是重加密密文，都可进行重加密操作。
-    //reenc-c=(rc1,rc2,rc3,rc4,rc5,rc6)
-    //其中每一项 rc的第一个下标表示接收者编号，第二个下标表示分发给的代理编号
-    //rc[nu][t],rc[i]表示用户i的重加密密文，rc[i][k]表示代理k发送给用户i的密文
     vector<vector<G1>> rc1,rc3,rc5;
     vector<vector<GT>> rc2,rc4,rc6;
-    rc1.push_back(c1);
-    rc2.push_back(c2);
-    rc3.push_back(c3);
-    rc4.push_back(c4);
-    rc5.push_back(c5);
-    rc6.push_back(c6);
     //有nu-1个接受者，则需重加密nu-1次
     for(int i = 1;i<nu;i++){
-        //在实际应用中，这里的两个随机数需要使用分布式随机数（密钥）协商算法。
-        //例如每个代理都向其他代理发送w1i和w2i，每个代理接收后都做累加得到w1和w2。
-        Zr w1(e,true),w2(e,true);
-        vector<G1> tmp1,tmp3,tmp5;
-        vector<GT> tmp2,tmp4,tmp6;
-        for(int j= 0;j<t;j++){
-            tmp1.push_back(rc1[i-1][j]*(rc3[i-1][j]^w1));
-            tmp3.push_back(rc3[i-1][j]^w2);
-            tmp2.push_back(rc2[i-1][j]*(rc4[i-1][j]^w1)*e(tmp1.back(),rk1[i-1][j]));
-            tmp4.push_back((rc4[i-1][j]*e(rc3[i-1][j],rk1[i-1][j]))^w2);
+        vector<G1> tmp1;
+        for (int32_t tmp_idx = 0; ; ++tmp_idx) {
+            auto key = std::string("create_reenc_user_msg_rc1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            std::string val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+
+            tmp1.push_back(G1(e, val.c_str(), val.size()));
         }
-        tmp5.push_back(rk2[i-1]);
-        tmp6.push_back(rk3[i-1]);
+
+        vector<GT> tmp2;
+        for (int32_t tmp_idx = 0; ; ++tmp_idx) {
+            auto key = std::string("create_reenc_user_msg_rc2_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            std::string val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+
+            tmp2.push_back(GT(e, val.c_str(), val.size()));
+        }
+
+        vector<G1> tmp3;
+        for (int32_t tmp_idx = 0; ; ++tmp_idx) {
+            auto key = std::string("create_reenc_user_msg_rc3_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            std::string val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+
+            tmp3.push_back(G1(e, val.c_str(), val.size()));
+        }
+
+        vector<GT> tmp4;
+        for (int32_t tmp_idx = 0; ; ++tmp_idx) {
+            auto key = std::string("create_reenc_user_msg_rc4_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            std::string val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+
+            tmp4.push_back(GT(e, val.c_str(), val.size()));
+        }
+
+        vector<G1> tmp5;
+        for (int32_t tmp_idx = 0; ; ++tmp_idx) {
+            auto key = std::string("create_reenc_user_msg_rc5_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            std::string val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+
+            tmp5.push_back(G1(e, val.c_str(), val.size()));
+        }
+
+        vector<GT> tmp6;
+        for (int32_t tmp_idx = 0; ; ++tmp_idx) {
+            auto key = std::string("create_reenc_user_msg_rc6_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            std::string val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+
+            tmp6.push_back(GT(e, val.c_str(), val.size()));
+        }
+
+
         rc1.push_back(tmp1);
         rc2.push_back(tmp2);
         rc3.push_back(tmp3);
         rc4.push_back(tmp4);
         rc5.push_back(tmp5);
         rc6.push_back(tmp6);
+    }
+
+    vector<Zr> lag;
+    for(int i = 0;i<t;i++){
+        auto key = std::string("create_enc_user_msg_lag_") + std::to_string(i);
+        std::string val;
+        if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", key.c_str());
+            return kContractError;
+        }
+
+        lag.push_back(Zr(e, val.c_str(), val.size()));
     }
 
     // 重加密密文的解密如下(为了方便，选前t个碎片解密)
