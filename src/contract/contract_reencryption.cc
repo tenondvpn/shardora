@@ -680,16 +680,46 @@ int ContractReEncryption::ReEncryptUserMessage(
 
     std::string test_data = "hello world!";
     GT m(e, test_data.c_str(), test_data.size());
-    vector<Zr> lag;
-    for (int i = 0; i < t; i++) {
-        auto key = std::string("create_enc_user_msg_lag_") + std::to_string(i);
+    // vector<Zr> lag;
+    // for (int i = 0; i < t; i++) {
+    //     auto key = std::string("create_enc_user_msg_lag_") + std::to_string(i);
+    //     std::string val;
+    //     if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+    //         CONTRACT_ERROR("get key value failed: %s", key.c_str());
+    //         return kContractError;
+    //     }
+
+    //     lag.push_back(Zr(e, val.c_str(), val.size()));
+    // }
+
+    vector<Zr> proxyId;
+    for(int i = 0;i<np;i++){
+        auto key = std::string("create_renc_key_proxyid_") + std::to_string(i);
         std::string val;
         if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", key.c_str());
             return kContractError;
         }
 
-        lag.push_back(Zr(e, val.c_str(), val.size()));
+        proxyId.push_back(Zr(e,val.c_str(), val.size()));
+    }
+
+    vector<Zr> lag;
+    for (int i = 0; i < t; i++) {
+        Zr result(e, (long)1);
+        // 拉格朗日差值
+        for (int j = 0; j < t; j++) {
+            if (proxyId[j] == proxyId[i]) {
+                continue;
+            }
+
+            result *= (proxyId[j] / (proxyId[j] - proxyId[i]));
+        }
+
+        lag.push_back(result);
+        ZJC_DEBUG("create member lag: %d, lag: %s", i, common::Encode::HexEncode(result.toString()).c_str());
+        auto key = std::string("create_enc_user_msg_lag_") + std::to_string(i);
+        param.zjc_host->SaveKeyValue(param.from, key, result.toString());
     }
 
     // 重加密密文的解密如下(为了方便，选前t个碎片解密)
@@ -702,9 +732,12 @@ int ContractReEncryption::ReEncryptUserMessage(
 
         GT result2 = tempc2 / e(rc1[i][0], G1(e, Xi.toString().c_str(), Xi.getElementSize()));
         if (m == result2) {
-            ZJC_DEBUG("user %d success.", i);
+            ZJC_DEBUG("user %d success %s", i, common::Encode::HexEncode(m.toString()).c_str());
         } else {
-            ZJC_DEBUG("user %d failed.", i);
+            ZJC_DEBUG("user %d failed %s, %s",
+                i, 
+                common::Encode::HexEncode(m.toString()).c_str(), 
+                common::Encode::HexEncode(result2.toString()).c_str());
         }
     }
 
