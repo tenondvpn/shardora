@@ -433,6 +433,12 @@ int ContractReEncryption::ReEncryptUserMessage(
     vector<G1> c1,c3,c5;
     vector<GT> c2,c4,c6;
     for (int i = 0; i < np; i++) {
+        std::string tmp_c1_str;
+        std::string tmp_c2_str;
+        std::string tmp_c3_str;
+        std::string tmp_c4_str;
+        std::string tmp_c5_str;
+        std::string tmp_c6_str;
         {
             auto key = std::string("create_enc_user_msg_c1_") + std::to_string(i);
             std::string val;
@@ -441,8 +447,10 @@ int ContractReEncryption::ReEncryptUserMessage(
                 return kContractError;
             }
             c1.push_back(G1(e, val.c_str(), val.size()));
+            tmp_c1_str = val;
         }
 
+        std::string tmp_c2_str;
         {
             auto key = std::string("create_enc_user_msg_c2_") + std::to_string(i);
             std::string val;
@@ -451,6 +459,7 @@ int ContractReEncryption::ReEncryptUserMessage(
                 return kContractError;
             }
             c2.push_back(GT(e, val.c_str(), val.size()));
+            tmp_c2_str = val;
         }
 
         {
@@ -461,6 +470,7 @@ int ContractReEncryption::ReEncryptUserMessage(
                 return kContractError;
             }
             c3.push_back(G1(e, val.c_str(), val.size()));
+            tmp_c3_str = val;
         }
 
         {
@@ -471,6 +481,7 @@ int ContractReEncryption::ReEncryptUserMessage(
                 return kContractError;
             }
             c4.push_back(GT(e, val.c_str(), val.size()));
+            tmp_c4_str = val;
         }
 
         {
@@ -481,6 +492,7 @@ int ContractReEncryption::ReEncryptUserMessage(
                 return kContractError;
             }
             c5.push_back(G1(e, val.c_str(), val.size()));
+            tmp_c5_str = val;
         }
 
         {
@@ -491,6 +503,7 @@ int ContractReEncryption::ReEncryptUserMessage(
                 return kContractError;
             }
             c6.push_back(GT(e, val.c_str(), val.size()));
+            tmp_c6_str = val;
         }
 
         ZJC_DEBUG("1 c-6 create member %d c1: %s, c2: %s, c3: %s, c4: %s, c5: %s, c6: %s",
@@ -500,6 +513,13 @@ int ContractReEncryption::ReEncryptUserMessage(
                 common::Encode::HexEncode(c4[i].toString()).c_str(),
                 common::Encode::HexEncode(c5[i].toString(true)).c_str(),
                 common::Encode::HexEncode(c6[i].toString()).c_str());
+        ZJC_DEBUG("2 c-6 create member %d c1: %s, c2: %s, c3: %s, c4: %s, c5: %s, c6: %s",
+                i, common::Encode::HexEncode(tmp_c1_str).c_str(),
+                common::Encode::HexEncode(tmp_c2_str).c_str(),
+                common::Encode::HexEncode(tmp_c3_str).c_str(),
+                common::Encode::HexEncode(tmp_c4_str).c_str(),
+                common::Encode::HexEncode(tmp_c5_str).c_str(),
+                common::Encode::HexEncode(tmp_c6_str).c_str());
     }
 
     //初始密文的解密如下(为了方便，选前t个碎片解密)
