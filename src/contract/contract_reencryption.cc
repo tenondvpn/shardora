@@ -579,11 +579,37 @@ int ContractReEncryption::ReEncryptUserMessage(
     rc4.push_back(c4);
     rc5.push_back(c5);
     rc6.push_back(c6);
+
+    std::vector<std::string> w1_vec{
+        common::Encode::HexDecode("3651a4e5df2ccf01bb0008470e79f92e4c5e1219"),
+        common::Encode::HexDecode("00dfecbab5d98af34f15be229bd52ebf97875208"),
+        common::Encode::HexDecode("21e5f65d090bc5f32c835065c46fdf5cee048c8e"),
+        common::Encode::HexDecode("00c86d7360197a0612e382bccb221e713d109481"),
+        common::Encode::HexDecode("1d9aba1b1d19c3a53c1797d027ad77c7f17baee9"),
+        common::Encode::HexDecode("64fdc762c07514950719fdef69b541c1eeef02de"),
+        common::Encode::HexDecode("07e450d8711937038584d5c57a6ffc38813c1c4f"),
+        common::Encode::HexDecode("7b7abbb83682ad432966d5f65f14b029163cf94f"),
+        common::Encode::HexDecode("199155e313a39f146ad2c243ec67c9f9cf194099")
+    };
+
+    std::vector<std::string> w2_vec{
+        common::Encode::HexDecode("19c9bb04c356e61bde2f0f5a4c68d81892cfe095"),
+        common::Encode::HexDecode("52a9607972e60997400b657df89af985e24d2958"),
+        common::Encode::HexDecode("3f282e3d475f1e6827db14c1fd1f3e8de86e8cb5"),
+        common::Encode::HexDecode("20cb8c80f0ee6d575e4801c2a47d022024144eb9"),
+        common::Encode::HexDecode("72a51b01deb6ba7bbfd23a21fc24e4e6f4f0a13f"),
+        common::Encode::HexDecode("0a515ba36acb63cb962d7a88d5f96c8fd2f3a3f7"),
+        common::Encode::HexDecode("4b0e9455da7b02ca61802012dea1a085272a2d2e"),
+        common::Encode::HexDecode("66f4f3ec8d91492c6579718478fc1c5721982456"),
+        common::Encode::HexDecode("6c5fe12238ad420ff91da801360ae1e6e07cde11")
+    };
+
     //有nu-1个接受者，则需重加密nu-1次
     for(int i = 1;i<nu;i++){
         //在实际应用中，这里的两个随机数需要使用分布式随机数（密钥）协商算法。
         //例如每个代理都向其他代理发送w1i和w2i，每个代理接收后都做累加得到w1和w2。
-        Zr w1(e,true),w2(e,true);
+        Zr w1(e, w1_vec[i - 1].c_str(), w1_vec[i - 1].size());
+        Zr w2(e, w2_vec[i - 1].c_str(), w2_vec[i - 1].size());
         ZJC_DEBUG("encrypt data i: %d, w1: %s, w2: %s",
             i, 
             common::Encode::HexEncode(w1.toString()).c_str(), 
