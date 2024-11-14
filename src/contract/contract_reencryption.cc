@@ -99,6 +99,8 @@ int ContractReEncryption::CreateReEncryptionKeys(
         proxyId.push_back(tmp_proxy_id);
         ZJC_DEBUG("create member proxy id: %d, proxy_id: %s",
             i, common::Encode::HexEncode(tmp_proxy_id.toString()).c_str());
+        auto key = std::string("create_renc_key_proxyid_") + std::to_string(i);
+        param.zjc_host->SaveKeyValue(param.from, key, tmp_proxy_id.toString());
     }
 
     //选择两个t-1阶多项式
@@ -121,13 +123,15 @@ int ContractReEncryption::CreateReEncryptionKeys(
         fid.push_back(resultf);
         hid.push_back(resulth);
         ZJC_DEBUG("create member hid: %d, hid: %s", i, common::Encode::HexEncode(resulth.toString()).c_str());
+        auto key = std::string("create_renc_key_hid_") + std::to_string(i);
+        param.zjc_host->SaveKeyValue(param.from, key, resulth.toString());
     }
 
     //选择随机数X作为对称密钥
     vector<GT> X(nu);
     vector<G1> Hx(nu);
     for (int i = 1; i < nu; i++){
-        X[i] = GT(e,false);
+        X[i] = GT(e,true);
         Hx[i] = G1(e,X[i].toString().c_str(),X[i].getElementSize());//GT到G1的哈希
     }
 
@@ -141,9 +145,14 @@ int ContractReEncryption::CreateReEncryptionKeys(
         auto tmp_rk2 = g^r;
         rk2.push_back(tmp_rk2);
         ZJC_DEBUG("create member rk2: %d, rk2: %s", i, common::Encode::HexEncode(tmp_rk2.toString(true)).c_str());
+        auto rk2_key = std::string("create_renc_key_rk2_") + std::to_string(i);
+        param.zjc_host->SaveKeyValue(param.from, rk2_key, tmp_rk2.toString(true));
+
         auto tmp_rk3 = X[i]*e(g1,pk[i]^r);
         rk3.push_back(tmp_rk3);
         ZJC_DEBUG("create member rk3: %d, rk3: %s", i, common::Encode::HexEncode(tmp_rk3.toString()).c_str());
+        auto rk3_key = std::string("create_renc_key_rk3_") + std::to_string(i);
+        param.zjc_host->SaveKeyValue(param.from, rk3_key, tmp_rk3.toString());
         vector<G1> tmp;
         if(i==1){
             for(int j= 0;j<np;j++){
@@ -158,7 +167,9 @@ int ContractReEncryption::CreateReEncryptionKeys(
 
         for (int32_t tmp_idx = 0; tmp_idx < tmp.size(); ++tmp_idx) {
             ZJC_DEBUG("create member rk1: %d, %d, rk1: %s",
-                i, tmp_idx, common::Encode::HexEncode(tmp[tmp_idx].toString(true)).c_str());
+            i, tmp_idx, common::Encode::HexEncode(tmp[tmp_idx].toString(true)).c_str());
+            auto key = std::string("create_renc_key_rk1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp[tmp_idx].toString(true));
         }
 
         rk1.push_back(tmp);
@@ -237,7 +248,7 @@ int ContractReEncryption::EncryptUserMessage(
     vector<GT> X(nu);
     vector<G1> Hx(nu);
     for (int i = 1; i < nu; i++){
-        X[i] = GT(e,false);
+        X[i] = GT(e,true);
         Hx[i] = G1(e,X[i].toString().c_str(),X[i].getElementSize());//GT到G1的哈希
     }
     //计算重加密密钥 rk=(rk1,rk2,rk3)
@@ -277,8 +288,8 @@ int ContractReEncryption::EncryptUserMessage(
         auto tmp_c2 = g^z;
         auto tmp_c3 = (m*(e(g1,pk[0])^r))^hid[i];
         auto tmp_c4 = e(g1,pk[0])^(z*hid[i]);
-        auto tmp_c5 = G1(e,false);
-        auto tmp_c6 = GT(e,false);
+        auto tmp_c5 = G1(e,true);
+        auto tmp_c6 = GT(e,true);
         c1.push_back(tmp_c1);
         c3.push_back(tmp_c2);
         c2.push_back(tmp_c3);
@@ -390,7 +401,7 @@ int ContractReEncryption::ReEncryptUserMessage(
     vector<GT> X(nu);
     vector<G1> Hx(nu);
     for (int i = 1; i < nu; i++){
-        X[i] = GT(e,false);
+        X[i] = GT(e,true);
         Hx[i] = G1(e,X[i].toString().c_str(),X[i].getElementSize());//GT到G1的哈希
     }
     //计算重加密密钥 rk=(rk1,rk2,rk3)
@@ -430,8 +441,8 @@ int ContractReEncryption::ReEncryptUserMessage(
         c3.push_back(g^z);
         c2.push_back((m*(e(g1,pk[0])^r))^hid[i]);
         c4.push_back(e(g1,pk[0])^(z*hid[i]));
-        c5.push_back(G1(e,false));
-        c6.push_back(GT(e,false));
+        c5.push_back(G1(e,true));
+        c6.push_back(GT(e,true));
     }
 
     //初始密文的解密如下(为了方便，选前t个碎片解密)
@@ -602,7 +613,7 @@ int ContractReEncryption::Decryption(
     vector<GT> X(nu);
     vector<G1> Hx(nu);
     for (int i = 1; i < nu; i++){
-        X[i] = GT(e,false);
+        X[i] = GT(e,true);
         Hx[i] = G1(e,X[i].toString().c_str(),X[i].getElementSize());//GT到G1的哈希
     }
     //计算重加密密钥 rk=(rk1,rk2,rk3)
@@ -642,8 +653,8 @@ int ContractReEncryption::Decryption(
         c3.push_back(g^z);
         c2.push_back((m*(e(g1,pk[0])^r))^hid[i]);
         c4.push_back(e(g1,pk[0])^(z*hid[i]));
-        c5.push_back(G1(e,false));
-        c6.push_back(GT(e,false));
+        c5.push_back(G1(e,true));
+        c6.push_back(GT(e,true));
     }
 
     //初始密文的解密如下(为了方便，选前t个碎片解密)
