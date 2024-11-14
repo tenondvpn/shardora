@@ -28,7 +28,9 @@ int ContractReEncryption::CreatePrivateAndPublicKeys(
     auto& e = *pairing_ptr_;
     G1 g(e,false);
     G1 g1(e,false);
-
+    ZJC_DEBUG("create member g and g1 g: %s, g1: %s",
+        common::Encode::HexEncode(g.toString(true)).c_str(),
+        common::Encode::HexEncode(g1.toString(true)).c_str());
     //密钥生成，这里生成10个用户。
     //下标为0的用户0作为加密者，其余用户(1~9)为接受者。
     vector<Zr> sk;
