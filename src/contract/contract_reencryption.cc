@@ -662,6 +662,7 @@ int ContractReEncryption::Decryption(
     //密钥生成，这里生成10个用户。
     //下标为0的用户0作为加密者，其余用户(1~9)为接受者。
     int nu = 10;
+    int np = 10;
     int t = 4;
     vector<Zr> sk;
     vector<G1> pk;
@@ -684,6 +685,77 @@ int ContractReEncryption::Decryption(
 
     vector<vector<G1>> rc1,rc3,rc5;
     vector<vector<GT>> rc2,rc4,rc6;
+    vector<G1> c1,c3,c5;
+    vector<GT> c2,c4,c6;
+    for(int i = 0;i<np;i++){
+        {
+            auto key = std::string("create_enc_user_msg_c1_") + std::to_string(i);
+            std::string val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+            c1.push_back(G1(e, val.c_str(), val.size()));
+        }
+
+        {
+            auto key = std::string("create_enc_user_msg_c2_") + std::to_string(i);
+            std::string val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+            c2.push_back(GT(e, val.c_str(), val.size()));
+        }
+
+        {
+            auto key = std::string("create_enc_user_msg_c3_") + std::to_string(i);
+            std::string val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+            c3.push_back(G1(e, val.c_str(), val.size()));
+        }
+
+        {
+            auto key = std::string("create_enc_user_msg_c4_") + std::to_string(i);
+            std::string val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+            c4.push_back(GT(e, val.c_str(), val.size()));
+        }
+
+        {
+            auto key = std::string("create_enc_user_msg_c5_") + std::to_string(i);
+            std::string val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+            c5.push_back(G1(e, val.c_str(), val.size()));
+        }
+
+        {
+            auto key = std::string("create_enc_user_msg_c6_") + std::to_string(i);
+            std::string val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+            c6.push_back(GT(e, val.c_str(), val.size()));
+        }
+    }
+
+    rc1.push_back(c1);
+    rc2.push_back(c2);
+    rc3.push_back(c3);
+    rc4.push_back(c4);
+    rc5.push_back(c5);
+    rc6.push_back(c6);
+
     //有nu-1个接受者，则需重加密nu-1次
     for(int i = 1;i<nu;i++){
         vector<G1> tmp1;
@@ -793,6 +865,7 @@ int ContractReEncryption::Decryption(
             ZJC_DEBUG("user %d failed.", i);
         }
     }
+    return kContractSuccess;
 }
 
 }  // namespace contract
