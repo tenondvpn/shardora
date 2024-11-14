@@ -346,7 +346,8 @@ int ContractReEncryption::TestProxyReEncryption() {
     //c=(c1,c2,c3,c4,c5,c6),每项又包含np个，用于分发给np个代理
     vector<G1> c1,c3,c5;
     vector<GT> c2,c4,c6;
-    GT m(e,false);
+    std::string test_data = "hello world!";
+    GT m(e,test_data.c_str(), test_data.size());
     m.dump(stdout,"加密消息为");
     Zr r(e,true),z(e,true);
     for(int i = 0;i<np;i++){
