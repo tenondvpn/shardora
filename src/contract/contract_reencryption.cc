@@ -244,37 +244,50 @@ int ContractReEncryption::EncryptUserMessage(
     //重加密密钥生成，假设代理总数为np，门限为t。
     //即只有不少于t个代理参与重加密，才能正确解密。
     int np=10,t=4;
-    vector<Zr> proxyId,coefficientsF,coefficientsH,fid,hid;
+    vector<Zr> proxyId, hid;
     //proxyId表示每个代理的id
     for(int i = 0;i<np;i++){
-        proxyId.push_back(Zr(e,true));
+        auto key = std::string("create_renc_key_proxyid_") + std::to_string(i);
+        std::string val;
+        if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", key.c_str());
+            return kContractError;
+        }
+
+        proxyId.push_back(Zr(e,val.c_str(), val.size()));
     }
     //选择两个t-1阶多项式
-    coefficientsF.push_back(sk[0].inverse(true));
-    coefficientsH.push_back(Zr(e,(long)1));
-    for (int i = 0; i < t-1; i++){
-        coefficientsF.push_back(Zr(e,true));
-        coefficientsH.push_back(Zr(e,true));
-    }
+    // coefficientsF.push_back(sk[0].inverse(true));
+    // coefficientsH.push_back(Zr(e,(long)1));
+    // for (int i = 0; i < t-1; i++){
+    //     coefficientsF.push_back(Zr(e,true));
+    //     coefficientsH.push_back(Zr(e,true));
+    // }
     //计算每个f(Id)和h(Id)
     for(int i = 0;i<np;i++){
-        Zr resultf(e),resulth(e); //resultf = 0
-        Zr temp(e,(long int)1);
-        for (int j = 0; j < t; j++){
-            resultf+=coefficientsF[j]*temp;
-            resulth+=coefficientsH[j]*temp;
-            temp*=proxyId[i];
+        // Zr resultf(e),resulth(e); //resultf = 0
+        // Zr temp(e,(long int)1);
+        // for (int j = 0; j < t; j++){
+        //     resultf+=coefficientsF[j]*temp;
+        //     resulth+=coefficientsH[j]*temp;
+        //     temp*=proxyId[i];
+        // }
+        // fid.push_back(resultf);
+        auto key = std::string("create_renc_key_hid_") + std::to_string(i);
+        std::string val;
+        if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", key.c_str());
+            return kContractError;
         }
-        fid.push_back(resultf);
-        hid.push_back(resulth);
+        hid.push_back(Zr(e, val.c_str(), val.size()));
     }
     //选择随机数X作为对称密钥
-    vector<GT> X(nu);
-    vector<G1> Hx(nu);
-    for (int i = 1; i < nu; i++){
-        X[i] = GT(e,false);
-        Hx[i] = G1(e,X[i].toString().c_str(),X[i].getElementSize());//GT到G1的哈希
-    }
+    // vector<GT> X(nu);
+    // vector<G1> Hx(nu);
+    // for (int i = 1; i < nu; i++){
+    //     X[i] = GT(e,false);
+    //     Hx[i] = G1(e,X[i].toString().c_str(),X[i].getElementSize());//GT到G1的哈希
+    // }
     //计算重加密密钥 rk=(rk1,rk2,rk3)
     //其中rk1=rk[nu][np],rk[i]表示重加密给用户i的所有重加密密钥，rk[i]的每一项在实际场景中应分发给代理
     vector<vector<G1>> rk1;
@@ -283,19 +296,43 @@ int ContractReEncryption::EncryptUserMessage(
 
     for(int i = 1; i < nu;i++){
         Zr r(e,true);
-        rk2.push_back(g^r);
-        rk3.push_back(X[i]*e(g1,pk[i]^r));
+        auto rk2_key = std::string("create_renc_key_rk2_") + std::to_string(i);
+        std::string rk2_val;
+        if (param.zjc_host->GetKeyValue(param.from, rk2_key, &rk2_val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", rk2_key.c_str());
+            return kContractError;
+        }
+
+        rk2.push_back(G1(e, rk2_val.c_str(), rk2_val.size()));
+        auto rk3_key = std::string("create_renc_key_rk3_") + std::to_string(i);
+        std::string rk3_val;
+        if (param.zjc_host->GetKeyValue(param.from, rk3_key, &rk3_val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", rk3_key.c_str());
+            return kContractError;
+        }
+
+        rk3.push_back(GT(e, rk3_val.c_str(), rk3_val.size()));
         vector<G1> tmp;
-        if(i==1){
-            for(int j= 0;j<np;j++){
-                tmp.push_back((Hx[i]^hid[j])*(g1^fid[j]));
+        for(int j= 0; j<np; j++) {
+            auto key = std::string("create_renc_key_rk1_") + std::to_string(i) + "_" + std::to_string(j);
+            std::string rk1_val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &rk1_val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
             }
+
+            tmp.push_back(G1(e, rk1_val.c_str(), rk1_val.size()));
         }
-        else{
-            for(int j= 0;j<np;j++){
-                tmp.push_back((Hx[i]/Hx[i-1])^hid[j]);
-            }
-        }
+        // if(i==1){
+        //     for(int j= 0;j<np;j++){
+        //         tmp.push_back((Hx[i]^hid[j])*(g1^fid[j]));
+        //     }
+        // }
+        // else{
+        //     for(int j= 0;j<np;j++){
+        //         tmp.push_back((Hx[i]/Hx[i-1])^hid[j]);
+        //     }
+        // }
         rk1.push_back(tmp);
     }
     
