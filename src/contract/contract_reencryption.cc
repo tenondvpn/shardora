@@ -395,6 +395,35 @@ int ContractReEncryption::EncryptUserMessage(
                 common::Encode::HexEncode(tmp_c4.toString()).c_str(),
                 common::Encode::HexEncode(tmp_c5.toString(true)).c_str(),
                 common::Encode::HexEncode(tmp_c6.toString()).c_str());
+        {
+            auto key = std::string("create_enc_user_msg_c1_") + std::to_string(i);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp_c1.toString(true));
+        }
+
+        {
+            auto key = std::string("create_enc_user_msg_c2_") + std::to_string(i);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp_c2.toString(true));
+        }
+
+        {
+            auto key = std::string("create_enc_user_msg_c3_") + std::to_string(i);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp_c3.toString());
+        }
+
+        {
+            auto key = std::string("create_enc_user_msg_c4_") + std::to_string(i);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp_c4.toString());
+        }
+
+        {
+            auto key = std::string("create_enc_user_msg_c5_") + std::to_string(i);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp_c5.toString(true));
+        }
+
+        {
+            auto key = std::string("create_enc_user_msg_c6_") + std::to_string(i);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp_c6.toString());
+        }
     }
 
     //初始密文的解密如下(为了方便，选前t个碎片解密)
@@ -410,6 +439,8 @@ int ContractReEncryption::EncryptUserMessage(
         }
         lag.push_back(result);
         ZJC_DEBUG("create member lag: %d, lag: %s", i, common::Encode::HexEncode(result.toString()).c_str());
+        auto key = std::string("create_enc_user_msg_lag_") + std::to_string(i);
+        param.zjc_host->SaveKeyValue(param.from, key, result.toString());
     }
 
     GT tempc2(c2[0]^lag[0]);
