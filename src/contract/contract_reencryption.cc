@@ -423,17 +423,6 @@ int ContractReEncryption::ReEncryptUserMessage(const std::string& key, const std
         rc5.push_back(tmp5);
         rc6.push_back(tmp6);
         for (int32_t tmp_idx = 0; tmp_idx < tmp1.size(); ++tmp_idx) {
-            ZJC_DEBUG("create member reenc data: %d, %d, rc1: %s, rc2: %s, rc3: %s, rc4: %s, rc5: %s, rc6: %s", 
-                i, tmp_idx, 
-                common::Encode::HexEncode(tmp1[tmp_idx].toString(true)).c_str(), 
-                common::Encode::HexEncode(tmp2[tmp_idx].toString()).c_str(), 
-                common::Encode::HexEncode(tmp3[tmp_idx].toString(true)).c_str(), 
-                common::Encode::HexEncode(tmp4[tmp_idx].toString()).c_str(), 
-                common::Encode::HexEncode(tmp5[tmp_idx].toString(true)).c_str(), 
-                common::Encode::HexEncode(tmp6[tmp_idx].toString()).c_str());
-        }
-
-        for (int32_t tmp_idx = 0; tmp_idx < tmp1.size(); ++tmp_idx) {
             ZJC_DEBUG("create member reenc data: %d, %d, tmp1: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp1[tmp_idx].toString(true)).c_str());
