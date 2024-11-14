@@ -564,49 +564,31 @@ if (args[0] == 0) {
 
 // CreatPath(i)：由用户i选择多个被委托者。按选择顺序生成一个路径（列表），其中存放被委托者的公钥。
 if (args[0] == 1) {
-    add_pairing_param("readd", "CreatPath", "CreatPath");
+    add_pairing_param("tpinit", "tpinit", "tpinit");
 }
 
 // RKGen：重加密密钥生成，需要用到pbc库
 if (args[0] == 2) {
-    add_pairing_param("readd", "RKGen", "RKGen");
+    add_pairing_param("tprenk", "tprenk", "tprenk");
 }
 
 // Upd：token更新算法，需要用到pbc库
 if (args[0] == 3) {
-    add_pairing_param("readd", "Upd", "Upd");
+    add_pairing_param("tpencu", "tpencu", "tpencu");
 }
 
 // Enc：加密，需要用到pbc库
 if (args[0] == 4) {
-    add_pairing_param("readd", "Enc", "Enc");
+    add_pairing_param("tprenc", "tprenc", "tprenc");
 }
 
 // ReEnc：重加密，需要用到pbc库 (这一步包含一个分布式随机数生成协议，即多个代理协商出一个统一的随机数)
 if (args[0] == 5) {
-    add_pairing_param("readd", "ReEnc", "ReEnc");
+    add_pairing_param("tprdec", "tprdec", "tprdec");
 }
 
-// Dec：解密，需要用到pbc库
+// 测试聚合环签名整个流程
 if (args[0] == 6) {
-    add_pairing_param("readd", "Dec", "Dec");
-}
-
-if (args[0] == 7) {
-    call_decrypt()
-}
-
-if (args[0] == 8) {
-    run_all()
-}
-
-// 测试重加密整个流程
-if (args[0] == 9) {
-    add_pairing_param("tproe", "tproe", "tproe");
-}
-
-// 测试重加密整个流程
-if (args[0] == 10) {
     add_pairing_param("tars", "tars", "tars");
 }
 

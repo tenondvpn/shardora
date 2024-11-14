@@ -13,90 +13,32 @@ namespace contract {
 
 class ContractReEncryption : public ContractInterface {
 public:
-    ContractReEncryption() : ContractInterface("") {}
-    ContractReEncryption(const std::string& create_address, const std::string& pairing_param);
+    ContractReEncryption() : ContractInterface("") {
+        std::string param = ("type a\n"
+        "q 8780710799663312522437781984754049815806883199414208211028653399266475630880222957078625179422662221423155858769582317459277713367317481324925129998224791\n"
+        "h 12016012264891146079388821366740534204802954401251311822919615131047207289359704531102844802183906537786776\n"
+        "r 730750818665451621361119245571504901405976559617\n"
+        "exp2 159\n"
+        "exp1 107\n"
+        "sign1 1\n"
+        "sign0 1\n");
+        pairing_ptr_ = std::make_shared<Pairing>(param.c_str(), param.size());
+    }
+
     virtual ~ContractReEncryption();
     virtual int call(
         const CallParameters& param,
         uint64_t gas,
         const std::string& origin_address,
         evmc_result* res);
-    void SetCount(int32_t count) {
-        count_ = count;
-    }
+    int CreatePrivateAndPublicKeys(const std::string& key, const std::string& value);
+    int CreateReEncryptionKeys(const std::string& key, const std::string& value);
+    int EncryptUserMessage(const std::string& key, const std::string& value);
+    int ReEncryptUserMessage(const std::string& key, const std::string& value);
+    int Decryption(const std::string& key, const std::string& value);
 
-    void SaveData();
-    void DecryptData();
-
-    void TestEnc() {
-        SetupParams();
-        KeyGen();
-        GenTk();
-        Encrypt();
-    }
-
-    void TestDec() {
-        Transform();
-    }
-
-// private:
-    int SetupParams();
-    int KeyGen();
-    int GenTk();
-    int Encrypt();
-    int Decrypt();
-    int Transform();
-    int TransformAll();
-    int TestProxyReEncryption();
-
-    uint64_t gas_cast_{ 3000llu };
-
-    int32_t count_{ 20 };
-
-    // setup params
-    G1 g_;
-    Zr alpha_;
-    Zr a_;
-    G1 g1_;
-    GT gt_;
-    std::vector<G1> init_zrs_;
-
-    // keygen
-    G1 msk_;
-    Zr s_;
-    G1 R_;
-    G1 L_;
-    std::vector<G1> Rx_;
-
-    // gen tk
-    Zr o_;
-    G1 R1_;
-    G1 L1_;
-    std::vector<G1> Rx1_;
-
-    // encrypt
-    GT k_;
-    Zr r_;
-    std::vector<Zr> tlist_;
-    std::vector<Zr> llist_;
-    GT C_;
-    G1 C1_;
-    std::vector<G1> clist_;
-    std::vector<G1> dlist_;
-
-    // transform
-    std::vector<GT> trans_list_;
-    std::vector<Zr> wlist_;
-    GT t_;
-
-    // decrypt
-    GT decrypt_k_;
-
-    Pairing pairing_;
-
-    uint64_t used_times_[16] = { 0 };
-
-    std::shared_ptr<db::Db> db_ = nullptr;
+private:
+    std::shared_ptr<Pairing> pairing_ptr_;
 
     DISALLOW_COPY_AND_ASSIGN(ContractReEncryption);
 };

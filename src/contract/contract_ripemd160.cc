@@ -18,6 +18,18 @@ Ripemd160::Ripemd160(const std::string& create_address)
 
 Ripemd160::~Ripemd160() {}
 
+#define DEFAULT_CALL_RESULT() { \
+    res->output_data = new uint8_t[32]; \
+    memset((void*)res->output_data, 0, 32); \
+    res->output_size = 32; \
+    memcpy(res->create_address.bytes, \
+        create_address_.c_str(), \
+        sizeof(res->create_address.bytes)); \
+    res->gas_left -= 1000; \
+    ZJC_DEBUG("TestProxyReEncryption: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str()); \
+    return kContractSuccess; \
+}
+
 int Ripemd160::call(
         const CallParameters& param,
         uint64_t gas,
@@ -45,31 +57,41 @@ int Ripemd160::call(
         return AddReEncryptionParam(param, gas, origin_address, res);
     }
 
-    if (param.data.substr(0, 5) == "tproe") {
+    // proxy reencryption
+    if (param.data.substr(0, 6) == "tpinit") {
         ContractReEncryption proxy_reenc;
-        proxy_reenc.TestProxyReEncryption();
-        res->output_data = new uint8_t[32];
-        memset((void*)res->output_data, 0, 32);
-        res->output_size = 32;
-        memcpy(res->create_address.bytes,
-            create_address_.c_str(),
-            sizeof(res->create_address.bytes));
-        res->gas_left -= 1000;
-        ZJC_DEBUG("TestProxyReEncryption: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str());
-        return kContractSuccess;
+        proxy_reenc.CreatePrivateAndPublicKeys("", "");
+        DEFAULT_CALL_RESULT();
     }
 
+    if (param.data.substr(0, 6) == "tprenk") {
+        ContractReEncryption proxy_reenc;
+        proxy_reenc.CreateReEncryptionKeys("", "");
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "tpencu") {
+        ContractReEncryption proxy_reenc;
+        proxy_reenc.EncryptUserMessage("", "");
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "tprenc") {
+        ContractReEncryption proxy_reenc;
+        proxy_reenc.ReEncryptUserMessage("", "");
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "tprdec") {
+        ContractReEncryption proxy_reenc;
+        proxy_reenc.Decryption("", "");
+        DEFAULT_CALL_RESULT();
+    }
+
+    // ars
     if (param.data.substr(0, 4) == "tars") {
         TestArs();
-        res->output_data = new uint8_t[32];
-        memset((void*)res->output_data, 0, 32);
-        res->output_size = 32;
-        memcpy(res->create_address.bytes,
-            create_address_.c_str(),
-            sizeof(res->create_address.bytes));
-        res->gas_left -= 1000;
-        ZJC_DEBUG("TestProxyReEncryption: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str());
-        return kContractSuccess;
+        DEFAULT_CALL_RESULT();
     }
 
     int64_t gas_used = ComputeGasUsed(600, 120, param.data.size());
