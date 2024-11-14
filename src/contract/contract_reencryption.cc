@@ -253,6 +253,7 @@ int ContractReEncryption::EncryptUserMessage(
 
         proxyId.push_back(Zr(e,val.c_str(), val.size()));
     }
+
     for(int i = 0;i<np;i++){
         auto key = std::string("create_renc_key_hid_") + std::to_string(i);
         std::string val;
@@ -295,16 +296,7 @@ int ContractReEncryption::EncryptUserMessage(
 
             tmp.push_back(G1(e, rk1_val.c_str(), rk1_val.size()));
         }
-        // if(i==1){
-        //     for(int j= 0;j<np;j++){
-        //         tmp.push_back((Hx[i]^hid[j])*(g1^fid[j]));
-        //     }
-        // }
-        // else{
-        //     for(int j= 0;j<np;j++){
-        //         tmp.push_back((Hx[i]/Hx[i-1])^hid[j]);
-        //     }
-        // }
+
         rk1.push_back(tmp);
     }
     
@@ -313,7 +305,7 @@ int ContractReEncryption::EncryptUserMessage(
     vector<G1> c1,c3,c5;
     vector<GT> c2,c4,c6;
     std::string test_data = "hello world!";
-    GT m(e,test_data.c_str(), test_data.size());
+    GT m(e, test_data.c_str(), test_data.size());
     std::string r_str = common::Encode::HexDecode("7edf5dac8f63ebaed688f823053e817e51c185d6");
     std::string z_str = common::Encode::HexDecode("1254472274e6a59840bb23e709072735d7267340");
     Zr r(e, r_str.c_str(), r_str.size());
@@ -345,7 +337,7 @@ int ContractReEncryption::EncryptUserMessage(
     };
 
     ZJC_DEBUG("re encryption create key r: %s, z: %s", common::Encode::HexEncode(r.toString()).c_str(), common::Encode::HexEncode(z.toString()).c_str());
-    for(int i = 0;i<np;i++){
+    for (int i = 0; i < np; i++) {
         auto tmp_c1 = g^r;
         auto tmp_c2 = (m*(e(g1,pk[0])^r))^hid[i];
         auto tmp_c3 = g^z;
@@ -399,30 +391,32 @@ int ContractReEncryption::EncryptUserMessage(
 
     //初始密文的解密如下(为了方便，选前t个碎片解密)
     vector<Zr> lag;
-    for(int i = 0;i<t;i++){
-        Zr result(e,(long)1);
-        //拉格朗日差值
-        for(int j=0;j<t;j++){
-            if(proxyId[j]==proxyId[i]){
+    for (int i = 0; i < t; i++) {
+        Zr result(e, (long)1);
+        // 拉格朗日差值
+        for (int j = 0; j < t; j++) {
+            if (proxyId[j] == proxyId[i]) {
                 continue;
             }
-            result*=(proxyId[j]/(proxyId[j]-proxyId[i]));
+
+            result *= (proxyId[j] / (proxyId[j] - proxyId[i]));
         }
+
         lag.push_back(result);
         ZJC_DEBUG("create member lag: %d, lag: %s", i, common::Encode::HexEncode(result.toString()).c_str());
         auto key = std::string("create_enc_user_msg_lag_") + std::to_string(i);
         param.zjc_host->SaveKeyValue(param.from, key, result.toString());
     }
 
-    GT tempc2(c2[0]^lag[0]);
-    for(int i = 1;i<t;i++){
-        tempc2*=(c2[i]^lag[i]);
+    GT tempc2(c2[0] ^ lag[0]);
+    for (int i = 1; i < t; i++) {
+        tempc2 *= (c2[i] ^ lag[i]);
     }
 
-    GT result1(tempc2/e(c1[0],g1^sk[0]));
-    if(m==result1){
+    GT result1(tempc2 / e(c1[0], g1 ^ sk[0]));
+    if (m == result1) {
         ZJC_DEBUG("user encryption success: %s", common::Encode::HexEncode(result1.toString()).c_str());
-    }else{
+    } else {
         ZJC_DEBUG("user encryption failed: %s, %s", common::Encode::HexEncode(m.toString()).c_str(), common::Encode::HexEncode(result1.toString()).c_str());
     }
 
@@ -438,7 +432,7 @@ int ContractReEncryption::ReEncryptUserMessage(
     int np=10,t=4;
     vector<G1> c1,c3,c5;
     vector<GT> c2,c4,c6;
-    for(int i = 0;i<np;i++){
+    for (int i = 0; i < np; i++) {
         {
             auto key = std::string("create_enc_user_msg_c1_") + std::to_string(i);
             std::string val;
@@ -651,6 +645,70 @@ int ContractReEncryption::ReEncryptUserMessage(
         rc6.push_back(tmp6);
     }
 
+    std::string g_str(common::Encode::HexDecode("92d2c563c4dd82a51ab97ac85b17055e06e222671ab21290c6126be096475699c766bee1fcae94e6baaa9c6694b9a03ca0205d044878c8996fec96bef10df61001"));
+    G1 g(e, g_str.c_str(), g_str.size());
+    std::string g1_str(common::Encode::HexDecode("7c8ae882453932ed180735e6eef3c983c93e0501dcfe6a1230fbfea4ac95f4c22795fe5a8137549d1a1b7427519b189431e794e365be5910fcd8e1c91bbc67fa00"));
+    G1 g1(e, g1_str.c_str(), g1_str.size());
+
+    //密钥生成，这里生成10个用户。
+    //下标为0的用户0作为加密者，其余用户(1~9)为接受者。
+    int nu = 10;
+    vector<Zr> sk;
+    vector<G1> pk;
+    for(int i = 0;i<nu;i++){
+        auto private_key = std::string("init_prikey_") + std::to_string(i);
+        std::string val;
+        if (param.zjc_host->GetKeyValue(param.from, private_key, &val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", key.c_str());
+            return kContractError;
+        }
+
+        Zr x(e, val.c_str(), val.size());
+        sk.push_back(x);
+        auto public_key = std::string("init_pubkey_") + std::to_string(i);
+        if (param.zjc_host->GetKeyValue(param.from, public_key, &val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", key.c_str());
+            return kContractError;
+        }
+
+        G1 tmp_pk(e, (const unsigned char*)val.c_str(), val.size(), true, 0);
+        pk.push_back(tmp_pk);
+
+        ZJC_DEBUG("init member private and public key: %d, sk: %s, pk: %s",
+            i, common::Encode::HexEncode(x.toString()).c_str(),
+            common::Encode::HexEncode(tmp_pk.toString(true)).c_str());
+    }
+
+    std::string test_data = "hello world!";
+    GT m(e, test_data.c_str(), test_data.size());
+    vector<Zr> lag;
+    for (int i = 0; i < t; i++) {
+        auto key = std::string("create_enc_user_msg_lag_") + std::to_string(i);
+        std::string val;
+        if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", key.c_str());
+            return kContractError;
+        }
+
+        lag.push_back(Zr(e, val.c_str(), val.size()));
+    }
+    
+    // 重加密密文的解密如下(为了方便，选前t个碎片解密)
+    for(int i = 1; i<nu; i++){
+        GT Xi = rc6[i][0] / e(g1 ^ sk[i], rc5[i][0]);
+        GT tempc2(rc2[i][0] ^ lag[0]);
+        for (int j = 1; j < t; j++) {
+            tempc2 *= (rc2[i][j] ^ lag[j]);
+        }
+
+        GT result2 = tempc2 / e(rc1[i][0], G1(e, Xi.toString().c_str(), Xi.getElementSize()));
+        if (m == result2) {
+            ZJC_DEBUG("user %d success.", i);
+        } else {
+            ZJC_DEBUG("user %d failed.", i);
+        }
+    }
+
     return kContractSuccess;
 }
 
@@ -679,7 +737,7 @@ int ContractReEncryption::Decryption(
     }
 
     std::string test_data = "hello world!";
-    GT m(e,test_data.c_str(), test_data.size());
+    GT m(e, test_data.c_str(), test_data.size());
     std::string g1_str(common::Encode::HexDecode("7c8ae882453932ed180735e6eef3c983c93e0501dcfe6a1230fbfea4ac95f4c22795fe5a8137549d1a1b7427519b189431e794e365be5910fcd8e1c91bbc67fa00"));
     G1 g1(e, g1_str.c_str(), g1_str.size());
 
@@ -757,7 +815,7 @@ int ContractReEncryption::Decryption(
     rc6.push_back(c6);
 
     //有nu-1个接受者，则需重加密nu-1次
-    for(int i = 1;i<nu;i++){
+    for (int i = 1; i < nu; i++) {
         vector<G1> tmp1;
         for (int32_t tmp_idx = 0; tmp_idx < t; ++tmp_idx) {
             auto key = std::string("create_reenc_user_msg_rc1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -830,7 +888,6 @@ int ContractReEncryption::Decryption(
             tmp6.push_back(GT(e, val.c_str(), val.size()));
         }
 
-
         rc1.push_back(tmp1);
         rc2.push_back(tmp2);
         rc3.push_back(tmp3);
@@ -840,7 +897,7 @@ int ContractReEncryption::Decryption(
     }
 
     vector<Zr> lag;
-    for(int i = 0;i<t;i++){
+    for (int i = 0; i < t; i++) {
         auto key = std::string("create_enc_user_msg_lag_") + std::to_string(i);
         std::string val;
         if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
@@ -852,16 +909,17 @@ int ContractReEncryption::Decryption(
     }
 
     // 重加密密文的解密如下(为了方便，选前t个碎片解密)
-    for(int i = 1;i<nu;i++){
-        GT Xi = rc6[i][0]/e(g1^sk[i],rc5[i][0]);
-        GT tempc2(rc2[i][0]^lag[0]);
-        for(int j=1;j<t;j++){
-            tempc2*=(rc2[i][j]^lag[j]);
+    for(int i = 1; i<nu; i++){
+        GT Xi = rc6[i][0] / e(g1 ^ sk[i], rc5[i][0]);
+        GT tempc2(rc2[i][0] ^ lag[0]);
+        for (int j = 1; j < t; j++) {
+            tempc2 *= (rc2[i][j] ^ lag[j]);
         }
-        GT result2=tempc2/e(rc1[i][0],G1(e,Xi.toString().c_str(),Xi.getElementSize()));
-        if(m==result2){
+
+        GT result2 = tempc2 / e(rc1[i][0], G1(e, Xi.toString().c_str(), Xi.getElementSize()));
+        if (m == result2) {
             ZJC_DEBUG("user %d success.", i);
-        }else{
+        } else {
             ZJC_DEBUG("user %d failed.", i);
         }
     }
