@@ -200,6 +200,10 @@ int ContractReEncryption::EncryptUserMessage(
 
         G1 tmp_pk(e, val.c_str(), val.size());
         pk.push_back(tmp_pk);
+
+        ZJC_DEBUG("init member private and public key: %d, sk: %s, pk: %s",
+            i, common::Encode::HexEncode(x.toString()).c_str(),
+            common::Encode::HexEncode(tmp_pk.toString(true)).c_str());
     }
 
     //重加密密钥生成，假设代理总数为np，门限为t。
