@@ -584,6 +584,10 @@ int ContractReEncryption::ReEncryptUserMessage(
         //在实际应用中，这里的两个随机数需要使用分布式随机数（密钥）协商算法。
         //例如每个代理都向其他代理发送w1i和w2i，每个代理接收后都做累加得到w1和w2。
         Zr w1(e,true),w2(e,true);
+        ZJC_DEBUG("encrypt data i: %d, w1: %s, w2: %s",
+            i, 
+            common::Encode::HexEncode(w1.toString()).c_str(), 
+            common::Encode::HexEncode(w2.toString()).c_str());
         vector<G1> tmp1,tmp3,tmp5;
         vector<GT> tmp2,tmp4,tmp6;
         for(int j= 0;j<t;j++){
