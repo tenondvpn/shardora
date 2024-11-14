@@ -60,31 +60,31 @@ int Ripemd160::call(
     // proxy reencryption
     if (param.data.substr(0, 6) == "tpinit") {
         ContractReEncryption proxy_reenc;
-        proxy_reenc.CreatePrivateAndPublicKeys("", "");
+        proxy_reenc.CreatePrivateAndPublicKeys(param, "", "");
         DEFAULT_CALL_RESULT();
     }
 
     if (param.data.substr(0, 6) == "tprenk") {
         ContractReEncryption proxy_reenc;
-        proxy_reenc.CreateReEncryptionKeys("", "");
+        proxy_reenc.CreateReEncryptionKeys(param, "", "");
         DEFAULT_CALL_RESULT();
     }
 
     if (param.data.substr(0, 6) == "tpencu") {
         ContractReEncryption proxy_reenc;
-        proxy_reenc.EncryptUserMessage("", "");
+        proxy_reenc.EncryptUserMessage(param, "", "");
         DEFAULT_CALL_RESULT();
     }
 
     if (param.data.substr(0, 6) == "tprenc") {
         ContractReEncryption proxy_reenc;
-        proxy_reenc.ReEncryptUserMessage("", "");
+        proxy_reenc.ReEncryptUserMessage(param, "", "");
         DEFAULT_CALL_RESULT();
     }
 
     if (param.data.substr(0, 6) == "tprdec") {
         ContractReEncryption proxy_reenc;
-        proxy_reenc.Decryption("", "");
+        proxy_reenc.Decryption(param, "", "");
         DEFAULT_CALL_RESULT();
     }
 

@@ -1,6 +1,7 @@
 #include "contract/contract_reencryption.h"
 
 #include "common/time_utils.h"
+#include "zjcvm/zjc_host.h"
 
 namespace shardora {
 
@@ -19,7 +20,10 @@ int ContractReEncryption::call(
     return kContractSuccess;
 }
 
-int ContractReEncryption::CreatePrivateAndPublicKeys(const std::string& key, const std::string& value) {
+int ContractReEncryption::CreatePrivateAndPublicKeys(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
     auto& e = *pairing_ptr_;
     G1 g(e,false);
     G1 g1(e,false);
@@ -37,12 +41,19 @@ int ContractReEncryption::CreatePrivateAndPublicKeys(const std::string& key, con
         ZJC_DEBUG("create member private and public key: %d, sk: %s, pk: %s",
             i, common::Encode::HexEncode(x.toString()).c_str(),
             common::Encode::HexEncode(tmp_pk.toString(true)).c_str());
+        auto private_key = std::string("init_prikey_") + std::to_string(i);
+        param.zjc_host->SaveKeyValue(param.from, private_key, x.toString());
+        auto public_key = std::string("init_pubkey_") + std::to_string(i);
+        param.zjc_host->SaveKeyValue(param.from, public_key, tmp_pk.toString(true));
     }
 
     return kContractSuccess;
 }
 
-int ContractReEncryption::CreateReEncryptionKeys(const std::string& key, const std::string& value) {
+int ContractReEncryption::CreateReEncryptionKeys(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
     auto& e = *pairing_ptr_;
     G1 g(e,false);
     G1 g1(e,false);
@@ -53,9 +64,23 @@ int ContractReEncryption::CreateReEncryptionKeys(const std::string& key, const s
     vector<Zr> sk;
     vector<G1> pk;
     for(int i = 0;i<nu;i++){
-        Zr x(e,true);
-        pk.push_back(g^x);
+        auto private_key = std::string("init_prikey_") + std::to_string(i);
+        std::string val;
+        if (param.zjc_host->GetKeyValue(param.from, private_key, &val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", key.c_str());
+            return kContractError;
+        }
+
+        Zr x(e, val.c_str(), val.size());
         sk.push_back(x);
+        auto public_key = std::string("init_pubkey_") + std::to_string(i);
+        if (param.zjc_host->GetKeyValue(param.from, public_key, &val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", key.c_str());
+            return kContractError;
+        }
+
+        G1 tmp_pk(e, val.c_str(), val.size());
+        pk.push_back(tmp_pk);
     }
 
     //重加密密钥生成，假设代理总数为np，门限为t。
@@ -136,7 +161,10 @@ int ContractReEncryption::CreateReEncryptionKeys(const std::string& key, const s
     return kContractSuccess;
 }
 
-int ContractReEncryption::EncryptUserMessage(const std::string& key, const std::string& value) {
+int ContractReEncryption::EncryptUserMessage(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
     auto& e = *pairing_ptr_;
     G1 g(e,false);
     G1 g1(e,false);
@@ -147,9 +175,23 @@ int ContractReEncryption::EncryptUserMessage(const std::string& key, const std::
     vector<Zr> sk;
     vector<G1> pk;
     for(int i = 0;i<nu;i++){
-        Zr x(e,true);
-        pk.push_back(g^x);
+        auto private_key = std::string("init_prikey_") + std::to_string(i);
+        std::string val;
+        if (param.zjc_host->GetKeyValue(param.from, private_key, &val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", key.c_str());
+            return kContractError;
+        }
+
+        Zr x(e, val.c_str(), val.size());
         sk.push_back(x);
+        auto public_key = std::string("init_pubkey_") + std::to_string(i);
+        if (param.zjc_host->GetKeyValue(param.from, public_key, &val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", key.c_str());
+            return kContractError;
+        }
+
+        G1 tmp_pk(e, val.c_str(), val.size());
+        pk.push_back(tmp_pk);
     }
 
     //重加密密钥生成，假设代理总数为np，门限为t。
@@ -270,7 +312,10 @@ int ContractReEncryption::EncryptUserMessage(const std::string& key, const std::
     return kContractSuccess;
 }
 
-int ContractReEncryption::ReEncryptUserMessage(const std::string& key, const std::string& value) {
+int ContractReEncryption::ReEncryptUserMessage(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
     auto& e = *pairing_ptr_;
     G1 g(e,false);
     G1 g1(e,false);
@@ -281,9 +326,23 @@ int ContractReEncryption::ReEncryptUserMessage(const std::string& key, const std
     vector<Zr> sk;
     vector<G1> pk;
     for(int i = 0;i<nu;i++){
-        Zr x(e,true);
-        pk.push_back(g^x);
+        auto private_key = std::string("init_prikey_") + std::to_string(i);
+        std::string val;
+        if (param.zjc_host->GetKeyValue(param.from, private_key, &val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", key.c_str());
+            return kContractError;
+        }
+
+        Zr x(e, val.c_str(), val.size());
         sk.push_back(x);
+        auto public_key = std::string("init_pubkey_") + std::to_string(i);
+        if (param.zjc_host->GetKeyValue(param.from, public_key, &val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", key.c_str());
+            return kContractError;
+        }
+
+        G1 tmp_pk(e, val.c_str(), val.size());
+        pk.push_back(tmp_pk);
     }
 
     //重加密密钥生成，假设代理总数为np，门限为t。
@@ -463,7 +522,10 @@ int ContractReEncryption::ReEncryptUserMessage(const std::string& key, const std
 }
 
 
-int ContractReEncryption::Decryption(const std::string& key, const std::string& value) {
+int ContractReEncryption::Decryption(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
     auto& e = *pairing_ptr_;
     G1 g(e,false);
     G1 g1(e,false);
@@ -474,9 +536,23 @@ int ContractReEncryption::Decryption(const std::string& key, const std::string& 
     vector<Zr> sk;
     vector<G1> pk;
     for(int i = 0;i<nu;i++){
-        Zr x(e,true);
-        pk.push_back(g^x);
+        auto private_key = std::string("init_prikey_") + std::to_string(i);
+        std::string val;
+        if (param.zjc_host->GetKeyValue(param.from, private_key, &val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", key.c_str());
+            return kContractError;
+        }
+
+        Zr x(e, val.c_str(), val.size());
         sk.push_back(x);
+        auto public_key = std::string("init_pubkey_") + std::to_string(i);
+        if (param.zjc_host->GetKeyValue(param.from, public_key, &val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", key.c_str());
+            return kContractError;
+        }
+
+        G1 tmp_pk(e, val.c_str(), val.size());
+        pk.push_back(tmp_pk);
     }
 
     //重加密密钥生成，假设代理总数为np，门限为t。

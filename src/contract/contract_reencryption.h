@@ -31,11 +31,23 @@ public:
         uint64_t gas,
         const std::string& origin_address,
         evmc_result* res);
-    int CreatePrivateAndPublicKeys(const std::string& key, const std::string& value);
-    int CreateReEncryptionKeys(const std::string& key, const std::string& value);
-    int EncryptUserMessage(const std::string& key, const std::string& value);
-    int ReEncryptUserMessage(const std::string& key, const std::string& value);
-    int Decryption(const std::string& key, const std::string& value);
+    int CreatePrivateAndPublicKeys(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value);
+    int CreateReEncryptionKeys(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value);
+    int EncryptUserMessage(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value);
+    int ReEncryptUserMessage(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value);
+    int Decryption(const CallParameters& param, const std::string& key, const std::string& value);
 
 private:
     std::shared_ptr<Pairing> pairing_ptr_;
