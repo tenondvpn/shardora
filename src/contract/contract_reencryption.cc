@@ -91,11 +91,14 @@ int ContractReEncryption::CreateReEncryptionKeys(
 
     //重加密密钥生成，假设代理总数为np，门限为t。
     //即只有不少于t个代理参与重加密，才能正确解密。
-    int np=10,t=4;
+    auto sk_splits = common::Split<>(value.c_str(), ',');
+    int np = sk_splits.Count();
+    int t=4;
     vector<Zr> proxyId,coefficientsF,coefficientsH,fid,hid;
     //proxyId表示每个代理的id
     for(int i = 0;i<np;i++){
-        auto tmp_proxy_id = Zr(e,true);
+        auto tmp_pid_str = common::Encode::HexDecode(sk_splits[i]);
+        auto tmp_proxy_id = Zr(e, tmp_pid_str.c_str(), tmp_pid_str.size());
         proxyId.push_back(tmp_proxy_id);
         ZJC_DEBUG("create member proxy id: %d, proxy_id: %s",
             i, common::Encode::HexEncode(tmp_proxy_id.toString()).c_str());
