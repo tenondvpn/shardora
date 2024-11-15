@@ -46,7 +46,7 @@ void ContractArs::KeyGen(element_t &x_i, element_t &y_i) {
     element_init_Zr(x_i, pairing);
     element_init_G2(y_i, pairing);
     element_random(x_i);
-    unsigned char bytes_data[2048] = {0};
+    unsigned char bytes_data[204800] = {0};
     auto len = element_to_bytes_compressed(bytes_data, x_i);
     std::string x_i_str((char*)bytes_data, len);
     element_pow_zn(y_i, H, x_i);
