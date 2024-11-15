@@ -180,10 +180,10 @@ int Ripemd160::CreateArsKeys(
         std::string x_i_str((char*)bytes_data, len);
         len = element_to_bytes_compressed(bytes_data, public_keys[i]);
         std::string y_i_str((char*)bytes_data, len);
-        auto key = std::string("ars_create_user_private_key_") + std::to_string(i);
-        param.zjc_host->SaveKeyValue(param.from, key, x_i_str);
-        key = std::string("ars_create_user_public_key_") + std::to_string(i);
-        param.zjc_host->SaveKeyValue(param.from, key, y_i_str);
+        auto tmp_key = std::string("ars_create_user_private_key_") + std::to_string(i);
+        param.zjc_host->SaveKeyValue(param.from, tmp_key, x_i_str);
+        tmp_key = std::string("ars_create_user_public_key_") + std::to_string(i);
+        param.zjc_host->SaveKeyValue(param.from, tmp_key, y_i_str);
     }
 
     return kContractSuccess;
@@ -237,7 +237,7 @@ int Ripemd160::SingleSign(
     element_from_bytes(private_key, (unsigned char*)common::Encode::HexDecode(splits[2]).c_str());
     std::vector<element_t> pi_proof;
     ars.SingleSign(splits[1], private_key, ring[signer_idx], ring, delta_prime, y_prime, pi_proof);
-    auto key = std::string("ars_create_single_sign_") + std::to_string(signer_idx);
+    auto tmp_key = std::string("ars_create_single_sign_") + std::to_string(signer_idx);
     std::string val = std::string(splits[1]) + ",";
     unsigned char data[20480] = {0};
     {
@@ -251,7 +251,7 @@ int Ripemd160::SingleSign(
     }
 
     for (auto &proof : pi_proof) {
-        auto len = element_to_bytes_compressed(data, &proof);
+        auto len = element_to_bytes_compressed(data, proof);
         val += common::Encode::HexEncode(std::string((char*)data, len)) + ",";
     }
 
@@ -275,10 +275,10 @@ int Ripemd160::AggSignAndVerify(
     GetRing(param, ars, ring);
     std::vector<std::vector<element_t>> pi_proofs;
     for (auto i = 0; i < ars.signer_count(); ++i) {
-        auto key = std::string("ars_create_single_sign_") + std::to_string(i);
+        auto tmp_key = std::string("ars_create_single_sign_") + std::to_string(i);
         std::string val;
-        if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
-            CONTRACT_ERROR("get key value failed: %s", key.c_str());
+        if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", tmp_key.c_str());
             return kContractError;
         }
 
@@ -294,27 +294,26 @@ int Ripemd160::AggSignAndVerify(
         element_init_G2(y_prime, ars.get_pairing());
         element_from_bytes_compressed(delta_prime, (unsigned char*)common::Encode::HexDecode(items[1]).c_str());
         element_from_bytes_compressed(y_prime, (unsigned char*)common::Encode::HexDecode(items[2]).c_str());
-        std::vector<element_t> tmp_pi_proof;
+        std::vector<element_t> tmp_pi_proof(items.Count() - 3);
         for (uint32_t i = 3; i < items.Count(); ++i) {
             if (items.SubLen(i) <= 0) {
                 break;
             }
 
-            element_t proof;
+            element_t& proof = tmp_pi_proof[i - 3];
             element_init_G1(proof, ars.get_pairing());
             element_from_bytes_compressed(proof, (unsigned char*)common::Encode::HexDecode(items[i]).c_str());
-            tmp_pi_proof.push_back(proof);
         }
 
         pi_proofs.push_back(tmp_pi_proof);
     }
 
     ars.AggreSign(messages, y_primes, delta_primes, pi_proofs, ring, agg_signature);
-    auto key = std::string("ars_create_agg_sign");
+    auto tmp_key = std::string("ars_create_agg_sign");
     unsigned char data[20480] = {0};
     auto len = element_to_bytes_compressed(data, agg_signature);
     auto val = common::Encode::HexEncode(std::string((char*)data, len)) + ",";
-    param.zjc_host->SaveKeyValue(param.from, key, val);
+    param.zjc_host->SaveKeyValue(param.from, tmp_key, val);
     ZJC_DEBUG("agg sign success: %s", val.c_str());
 
      // 聚合签名验证
