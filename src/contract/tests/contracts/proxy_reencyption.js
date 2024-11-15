@@ -314,33 +314,12 @@ function Prepayment(str_prikey, prepay) {
 
 async function SetManagerPrepayment(contract_address) {
     // 为管理账户设置prepayment
-    Prepayment("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 1000000000000);
-    Prepayment("748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05", 1000000000000);
-    Prepayment("b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5", 1000000000000);
+    Prepayment("cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 1000000000000);
     var account1 = web3.eth.accounts.privateKeyToAccount(
         '0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5');
-    var account2 = web3.eth.accounts.privateKeyToAccount(
-        '0x748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05');
-    var account3 = web3.eth.accounts.privateKeyToAccount(
-        '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5');
     var check_accounts_str = "";
-    check_accounts_str += "'" + account1.address.toString('hex').toLowerCase().substring(2) + "',"; 
-    check_accounts_str += "'" + account2.address.toString('hex').toLowerCase().substring(2) + "',"; 
-    check_accounts_str += "'" + account3.address.toString('hex').toLowerCase().substring(2) + "',"; 
-    var check_count = 3;
-    for (var i = 10; i < kTestSellerCount; ++i) {
-        Prepayment('b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString(), 1000000000000);
-        var account4 = web3.eth.accounts.privateKeyToAccount(
-            '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString());
-        if (i == 29) {
-            check_accounts_str += "'" + account4.address.toString('hex').toLowerCase().substring(2) + "'"; 
-        } else {
-            check_accounts_str += "'" + account4.address.toString('hex').toLowerCase().substring(2) + "',"; 
-        }
-
-        ++check_count;
-    }
-
+    check_accounts_str += "'" + account1.address.toString('hex').toLowerCase().substring(2) + "'"; 
+    var check_count = 1;
     var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q "select count(distinct(user)) from zjc_ck_prepayment_table where contract='${contract_address}' and user in (${check_accounts_str});"`;
     const { exec } = require('child_process');
     const execPromise = util.promisify(exec);
@@ -384,32 +363,6 @@ function InitC2cEnv(key, value) {
         var out_lines = stdout.split('\n');
         console.log(`solc bin codes: ${out_lines[3]}`);
         {
-            // 三个管理员账户
-            var account1 = web3.eth.accounts.privateKeyToAccount(
-                '0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5');
-            console.log("account1 :");
-            console.log(account1.address.toString('hex').toLowerCase().substring(2));
-            var account2 = web3.eth.accounts.privateKeyToAccount(
-                '0x748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05');
-            console.log("account2 :");
-            console.log(account2.address.toString('hex').toLowerCase().substring(2));
-            var account3 = web3.eth.accounts.privateKeyToAccount(
-                '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5');
-            console.log("account3 :");
-            console.log(account3.address.toString('hex').toLowerCase().substring(2));
-            var append_address = "";
-            var check_count = 3;
-            for (var i = 10; i < kTestSellerCount; ++i) {
-                // 卖家账户设置
-                var account4 = web3.eth.accounts.privateKeyToAccount(
-                    '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString());
-                do_transaction(
-                    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-                    account4.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
-                append_address += ",'" + account4.address.toString('hex').toLowerCase().substring(2) + "'";
-                ++check_count;
-            }
-
             var cons_codes = "";
             {
                 var key_len = key.length.toString();
@@ -427,15 +380,6 @@ function InitC2cEnv(key, value) {
             }
             // 转账到管理账户，创建合约
             {
-                do_transaction(
-                    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-                    account1.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
-                do_transaction(
-                    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-                    account2.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
-                do_transaction(
-                    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-                    account3.address.toString('hex').toLowerCase().substring(2), 1100000000000, 100000, 1);
                 new_contract(
                     "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
                     out_lines[3] + cons_codes.substring(2));
@@ -453,46 +397,6 @@ function InitC2cEnv(key, value) {
                         }
                             
                         console.log(`create contract failed ${stderr}`);
-                    } catch (error) {
-                        console.log(error);
-                    }
-
-                    ++try_times;
-                    await sleep(2000);
-                }
-
-                if (try_times >= 30) {
-                    console.error(`create contract address failed!`);
-                    return;
-                }
-
-                // 检查转账成功
-                var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select id, balance from zjc_ck_account_table where id in  ('${account1.address.toString('hex').toLowerCase().substring(2)}',  '${account2.address.toString('hex').toLowerCase().substring(2)}',  '${account3.address.toString('hex').toLowerCase().substring(2)}',  '${account4.address.toString('hex').toLowerCase().substring(2)}' ${append_address});"`;
-                var try_times = 0;
-                while (try_times < 30) {
-                    try {
-                    // wait for exec to complete
-                        const {stdout, stderr} = await execPromise(cmd);
-                        var split_lines = stdout.trim().split('\n');
-                        var dictionary = new Set();
-                        console.log(`${cmd} transfer to manager address split_lines.length: ${stdout}`);
-                        if (split_lines.length >= check_count) {
-                            for (var line_idx = 0; line_idx < split_lines.length; ++line_idx) {
-                                var item_split = split_lines[line_idx].split("\t");
-                                var new_balance = parseInt(item_split[1].trim(), 10);
-                                if (new_balance >= 1100000000000) {
-                                    dictionary.add(item_split[0].trim());
-                                    console.log(`transfer to manager address new_balance: ${new_balance} dictionary size ${dictionary.size}`);
-                                }
-                            }
-                        }
-
-                        if (dictionary.size == check_count.toString()) {
-                            console.log(`transfer to manager address success error: ${stderr} count: ${stdout}`);
-                            break;
-                        }
-
-                        console.log(`transfer to manager address failed error: ${stderr} count: ${stdout}`);
                     } catch (error) {
                         console.log(error);
                     }
