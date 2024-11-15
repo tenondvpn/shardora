@@ -35,7 +35,6 @@ ContractArs::ContractArs() : ContractInterface("") {
     element_init_G2(H, pairing);
     std::string h_data = common::Encode::HexDecode("1315ceed286082860059d3c62b035a35108f5dbce795fa4439f41231601559d591184774040438c8ff6704f4f09794738252d3774fe530a2205beb9ece6df3bc01");
     element_from_bytes_compressed(H, (unsigned char*)h_data.c_str());
-
     q = pairing_length_in_bytes_x_only_G1(pairing);
     char data[10240] = {0};
     element_snprintf(data, sizeof(data), "G: %B, H: %B, bytes g: %s, h: %s", G, H, common::Encode::HexEncode(g_data).c_str(), common::Encode::HexEncode(h_data).c_str());
@@ -46,16 +45,17 @@ ContractArs::ContractArs() : ContractInterface("") {
 void ContractArs::KeyGen(element_t &x_i, element_t &y_i) {
     element_init_Zr(x_i, pairing);
     element_init_G2(y_i, pairing);
-
     element_random(x_i);
-    element_printf("H (generator of G2): %B\n", H);
-    element_printf("Private key x_i: %B\n", x_i);
+    unsigned char bytes_data[2048] = {0};
+    auto len = element_to_bytes_compressed(bytes_data, x_i);
+    std::string x_i_str((char*)bytes_data, len);
     element_pow_zn(y_i, H, x_i);
-
+    len = element_to_bytes_compressed(bytes_data, y_i);
+    std::string y_i_str((char*)bytes_data, len);
     // 调试输出密钥对
-    std::cout << "Generated key pair:" << std::endl;
-    element_printf("Private key x_i: %B\n", x_i);
-    element_printf("Public key y_i: %B\n", y_i);
+    char data[10240] = {0};
+    element_snprintf(data, sizeof(data), "x: %s, y: %s", common::Encode::HexEncode(x_i_str).c_str(), common::Encode::HexEncode(y_i_str).c_str());
+    ZJC_DEBUG("KeyGen ars: %s", data);
 }
 
 // 将一个 element_t 类型的群元素转换为字符串格式
