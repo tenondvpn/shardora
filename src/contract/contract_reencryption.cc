@@ -305,7 +305,7 @@ int ContractReEncryption::EncryptUserMessage(
     vector<G1> c1,c3,c5;
     vector<GT> c2,c4,c6;
     std::string test_data = "hello world!";
-    GT m(e, (const unsigned char*)test_data.c_str(), test_data.size(), 1);
+    GT m(e, (const unsigned char*)test_data.c_str(), test_data.size(), 0);
     ZJC_DEBUG("get m data: %s, %s, %s", 
         test_data.c_str(), 
         common::Encode::HexEncode(m.toString()).c_str(), 
@@ -679,8 +679,6 @@ int ContractReEncryption::Decryption(
         sk.push_back(x);
     }
 
-    std::string test_data = "hello world!";
-    GT m(e, (const unsigned char*)test_data.c_str(), test_data.size(), 1);
     std::string g1_str(common::Encode::HexDecode("7c8ae882453932ed180735e6eef3c983c93e0501dcfe6a1230fbfea4ac95f4c22795fe5a8137549d1a1b7427519b189431e794e365be5910fcd8e1c91bbc67fa00"));
     G1 g1(e, g1_str.c_str(), g1_str.size());
 
@@ -851,6 +849,8 @@ int ContractReEncryption::Decryption(
         lag.push_back(Zr(e, (const unsigned char*)val.c_str(), val.size(), 0));
     }
 
+    std::string test_data = "hello world!";
+    GT m(e, (const unsigned char*)test_data.c_str(), test_data.size(), 0);
     // 重加密密文的解密如下(为了方便，选前t个碎片解密)
     for(int i = 1; i<nu; i++){
         GT Xi = rc6[i][0] / e(g1 ^ sk[i], rc5[i][0]);
