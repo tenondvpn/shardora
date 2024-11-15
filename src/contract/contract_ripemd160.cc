@@ -273,7 +273,8 @@ int Ripemd160::AggSignAndVerify(
     std::vector<element_t> y_primes;
     std::vector<element_t> ring(ars.ring_size());
     GetRing(param, ars, ring);
-    std::vector<std::vector<element_t>> pi_proofs = {ars.signer_count(), std::vector<element_t>{4}};
+    std::vector<element_t> tmp_pool(4);
+    std::vector<std::vector<element_t>> pi_proofs(ars.signer_count(), tmp_pool);
     for (auto i = 0; i < ars.signer_count(); ++i) {
         auto tmp_key = std::string("ars_create_single_sign_") + std::to_string(i);
         std::string val;
