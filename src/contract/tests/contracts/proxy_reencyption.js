@@ -476,7 +476,15 @@ if (args[0] == 6) {
 
 // 测试聚合环签名整个流程
 if (args[0] == 7) {
-    add_pairing_param("tars", "tars", "tars");
+    add_pairing_param("tarscr", "tarscr", "27e5ab858583f1d19ef272856859658246cd388f,1a31f75df2fba7607ae8566646a553451a1b8c14,5bc3423d99bcc823769fe36f3281739e3d022290");
+}
+
+if (args[0] == 8) {
+    add_pairing_param("tarscr", "tarscr", "27e5ab858583f1d19ef272856859658246cd388f,1a31f75df2fba7607ae8566646a553451a1b8c14,5bc3423d99bcc823769fe36f3281739e3d022290");
+}
+
+if (args[0] == 9) {
+    add_pairing_param("tarscr", "tarscr", "27e5ab858583f1d19ef272856859658246cd388f,1a31f75df2fba7607ae8566646a553451a1b8c14,5bc3423d99bcc823769fe36f3281739e3d022290");
 }
 
 // 测试合约查询

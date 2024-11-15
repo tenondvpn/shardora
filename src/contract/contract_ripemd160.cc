@@ -118,8 +118,27 @@ int Ripemd160::call(
     }
 
     // ars
+    if (param.data.substr(0, 6) == "tarscr") {
+        GET_KEY_VALUE_FROM_PARAM();
+        CreateArsKeys(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "tarsps") {
+        GET_KEY_VALUE_FROM_PARAM();
+        SingleSign(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "tarsas") {
+        GET_KEY_VALUE_FROM_PARAM();
+        AggSignAndVerify(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
     if (param.data.substr(0, 4) == "tars") {
-        TestArs();
+        GET_KEY_VALUE_FROM_PARAM();
+        TestArs(param, key, val);
         DEFAULT_CALL_RESULT();
     }
 
@@ -141,19 +160,192 @@ int Ripemd160::call(
     return kContractSuccess;
 }
 
-void Ripemd160::TestArs() {
+int Ripemd160::CreateArsKeys(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
+    ContractArs ars;
+    // 创建环中的公钥和私钥对
+    std::vector<element_t> private_keys(ars.ring_size());
+    std::vector<element_t> public_keys(ars.ring_size());
+    // 初始化公私钥对
+    auto keys_splits = common::Split<>(value.c_str(), ',');
+    if (keys_splits.Count() != ars.ring_size()) {
+        return kContractError;
+    }
+
+    for (int i = 0; i < ars.ring_size(); ++i) {
+        ars.KeyGen(keys_splits[i], private_keys[i], public_keys[i]);
+        unsigned char bytes_data[10240] = {0};
+        auto len = element_to_bytes(bytes_data, private_keys[i]);
+        std::string x_i_str((char*)bytes_data, len);
+        len = element_to_bytes_compressed(bytes_data, public_keys[i]);
+        std::string y_i_str((char*)bytes_data, len);
+        auto key = std::string("ars_create_user_private_key_") + std::to_string(i);
+        param.zjc_host->SaveKeyValue(param.from, key, x_i_str);
+        key = std::string("ars_create_user_public_key_") + std::to_string(i);
+        param.zjc_host->SaveKeyValue(param.from, key, y_i_str);
+    }
+
+    return kContractSuccess;
+}
+
+void Ripemd160::GetRing(
+        const CallParameters& param, 
+        ContractArs& ars, 
+        std::vector<element_t>& ring) {
+    for (auto i = 0; i < ars.ring_size(); ++i) {
+        auto key = std::string("ars_create_user_public_key_") + std::to_string(i);
+        std::string val;
+        if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", key.c_str());
+            return;
+        }
+
+        element_t pk;
+        element_init_G2(pk, ars.get_pairing());  // 公钥初始化为 G2 群中的元素
+        element_from_bytes_compressed(pk, (unsigned char*)val.c_str());
+        ring.push_back(pk);
+    }
+}
+
+int Ripemd160::SingleSign(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
     ContractArs ars;
     // 设置环的大小和签名者数量
-    const int ring_size = 3;
-    const int signer_count = 2;
+    std::vector<element_t> ring;
+    GetRing(param, ars, ring);
+    auto splits = common::Split<>(value.c_str(), ',');
+    if (splits.Count() < 3) {
+        return kContractError;
+    }
+
+    int signer_idx = 0;
+    if (!common::StringUtil::ToInt32(splits[0], &signer_idx)) {
+        return kContractError;
+    }
+
+    if (signer_idx < 0 || signer_idx >= ars.signer_count()) {
+        return kContractError;
+    }
+
+    element_t delta_prime;
+    element_t y_prime;
+    element_init_G1(delta_prime, ars.get_pairing());
+    element_init_G2(y_prime, ars.get_pairing());
+    element_t private_key;
+    element_init_Zr(private_key, ars.get_pairing());
+    element_from_bytes(private_key, (unsigned char*)common::Encode::HexDecode(splits[2]).c_str());
+    std::vector<element_s> pi_proof;
+    ars.SingleSign(splits[1], private_key, ring[signer_idx], ring, delta_prime, y_prime, pi_proof);
+    auto key = "ars_create_single_sign_" + std::to_string(signer_idx);
+    std::string val = std::string(splits[1]) + ",";
+    unsigned char data[20480] = {0};
+    {
+        auto len = element_to_bytes_compressed(data, delta_prime);
+        val += common::Encode::HexEncode(std::string((char*)data, len)) + ",";
+    }
+
+    {
+        auto len = element_to_bytes_compressed(data, y_prime);
+        val += common::Encode::HexEncode(std::string((char*)data, len)) + ",";
+    }
+
+    for (auto &proof : pi_proof) {
+        auto len = element_to_bytes_compressed(data, &proof);
+        val += common::Encode::HexEncode(std::string((char*)data, len)) + ",";
+    }
+
+    param.zjc_host->SaveKeyValue(param.from, key, val);
+    ZJC_DEBUG("single sign success: %d, %s", signer_idx, val.c_str());
+    return kContractSuccess;
+}
+
+int Ripemd160::AggSignAndVerify(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
+        // 聚合签名生成
+    ContractArs ars;
+    element_t agg_signature;
+    element_init_G1(agg_signature, ars.get_pairing());
+    std::vector<std::string> messages;
+    std::vector<element_t> delta_primes;
+    std::vector<element_t> y_primes;
+    std::vector<element_t> ring;
+    GetRing(param, ars, ring);
+    std::vector<std::vector<element_t>> pi_proofs;
+    for (auto i = 0; i < ars.signer_count(); ++i) {
+        auto key = "ars_create_single_sign_" + std::to_string(i);
+        std::string val;
+        if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", key.c_str());
+            return kContractError;
+        }
+
+        auto items = common::Split<1024>(val.c_str(), ',');
+        if (items.Count() < 4) {
+            return kContractError;
+        }
+
+        messages.push_back(items[0]);
+        element_t delta_prime;
+        element_t y_prime;
+        element_init_G1(delta_prime, ars.get_pairing());
+        element_init_G2(y_prime, ars.get_pairing());
+        element_from_bytes_compressed(delta_prime, (unsigned char*)common::Encode::HexDecode(items[1]).c_str());
+        element_from_bytes_compressed(y_prime, (unsigned char*)common::Encode::HexDecode(items[2]).c_str());
+        std::vector<element_t> tmp_pi_proof;
+        for (uint32_t i = 3; i < items.Count(); ++i) {
+            if (items.SubLen(i) <= 0) {
+                break;
+            }
+
+            element_t proof;
+            element_init_G1(proof, ars.get_pairing());
+            element_from_bytes_compressed(proof, (unsigned char*)common::Encode::HexDecode(items[i]).c_str());
+            tmp_pi_proof.push_back(proof);
+        }
+
+        pi_proofs.push_back(tmp_pi_proof);
+    }
+
+    ars.AggreSign(messages, y_primes, delta_primes, pi_proofs, ring, agg_signature);
+    auto key = "ars_create_agg_sign";
+    unsigned char data[20480] = {0};
+    auto len = element_to_bytes_compressed(data, agg_signature);
+    auto val = common::Encode::HexEncode(std::string((char*)data, len)) + ",";
+    param.zjc_host->SaveKeyValue(param.from, key, val);
+    ZJC_DEBUG("agg sign success: %s", val.c_str());
+
+     // 聚合签名验证
+    bool is_aggregate_valid = ars.AggreVerify(messages, agg_signature, y_primes);
+    if (is_aggregate_valid) {
+        ZJC_DEBUG("Aggregate signature verification passed!");
+    } else {
+        ZJC_DEBUG("Aggregate signature verification failed!");
+    }
+
+    return kContractSuccess;
+}
+
+void Ripemd160::TestArs(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
+    ContractArs ars;
+    // 设置环的大小和签名者数量
+    const int ring_size = ars.ring_size();
+    const int signer_count = ars.signer_count();
 
     // 创建环中的公钥和私钥对
     std::vector<element_t> private_keys(ring_size);
     std::vector<element_t> public_keys(ring_size);
 
     // 初始化公私钥对
-    for (int i = 0; i < ring_size; ++i)
-    {
+    for (int i = 0; i < ring_size; ++i) {
         element_init_Zr(private_keys[i], ars.get_pairing()); // 私钥初始化为 Zr 群中的元素
         element_init_G2(public_keys[i], ars.get_pairing());  // 公钥初始化为 G2 群中的元素
         ars.KeyGen(private_keys[i], public_keys[i]);
@@ -166,12 +358,12 @@ void Ripemd160::TestArs() {
     // 为每位签名者生成单个签名
     std::vector<element_t> delta_primes(signer_count);
     std::vector<element_t> y_primes(signer_count);
-    std::vector<std::vector<element_s>> pi_proofs(signer_count);
+    std::vector<std::vector<element_t>> pi_proofs(signer_count);
 
-    std::vector<element_t *> ring;
+    std::vector<element_t> ring;
     for (auto &pub_key : public_keys)
     {
-        ring.push_back(&pub_key); // 将公钥指针添加到 ring 中
+        ring.push_back(pub_key); // 将公钥指针添加到 ring 中
     }
 
     for (int i = 0; i < signer_count; ++i)
@@ -179,7 +371,6 @@ void Ripemd160::TestArs() {
         int signer_idx = signers[i];
         element_init_G1(delta_primes[i], ars.get_pairing());
         element_init_G2(y_primes[i], ars.get_pairing());
-
         ars.SingleSign(messages[i], private_keys[signer_idx], public_keys[signer_idx],
                        ring, delta_primes[i], y_primes[i], pi_proofs[i]);
 

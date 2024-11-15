@@ -43,6 +43,8 @@ ContractArs::ContractArs() : ContractInterface("") {
 
 // 密钥生成
 void ContractArs::KeyGen(element_t &x_i, element_t &y_i) {
+    element_init_Zr(x_i, get_pairing());
+    element_init_G2(y_i, get_pairing());
     element_random(x_i);
     unsigned char bytes_data[204800] = {0};
     auto len = element_to_bytes(bytes_data, x_i);
@@ -54,6 +56,11 @@ void ContractArs::KeyGen(element_t &x_i, element_t &y_i) {
     char data[10240] = {0};
     element_snprintf(data, sizeof(data), "x: %s, y: %s", common::Encode::HexEncode(x_i_str).c_str(), common::Encode::HexEncode(y_i_str).c_str());
     ZJC_DEBUG("KeyGen ars: %s", data);
+}
+
+void ContractArs::KeyGen(const std::string& val, element_t &x_i, element_t &y_i) {
+    element_from_bytes(x_i, (unsigned char*)common::Encode::HexDecode(val).c_str());
+    element_pow_zn(y_i, H, x_i);
 }
 
 // 将一个 element_t 类型的群元素转换为字符串格式
@@ -71,8 +78,8 @@ std::string ContractArs::element_to_string(element_t &element) {
 // 单签名生成
 void ContractArs::SingleSign(
         const std::string &message, element_t &x_i, element_t &y_i,
-        const std::vector<element_t *> &ring, element_t &delta_prime_i,
-        element_t &y_prime_i, std::vector<element_s> &pi_i) {
+        std::vector<element_t> &ring, element_t &delta_prime_i,
+        element_t &y_prime_i, std::vector<element_t> &pi_i) {
     element_t delta_i, H_m, r_i;
     element_init_G1(delta_i, pairing);
     element_init_G1(H_m, pairing);
@@ -109,8 +116,8 @@ void ContractArs::SingleSign(
 
     // 构建哈希输入，包括 t1, t2, y_prime_i, 以及整个环 ring
     std::string hash_input = element_to_string(t1) + element_to_string(t2) + element_to_string(y_prime_i);
-    for (const auto &y : ring) {
-        hash_input += element_to_string(*y); // 将所有 y_i 依次加入 hash_input 中
+    for (auto &y : ring) {
+        hash_input += element_to_string(y); // 将所有 y_i 依次加入 hash_input 中
     }
 
     // 将 hash_input 哈希到 G1 群中得到挑战值 c
@@ -123,10 +130,10 @@ void ContractArs::SingleSign(
     element_add(s2, s2, r_prime);
 
     pi_i.clear();
-    pi_i.push_back(*t1);
-    pi_i.push_back(*t2);
-    pi_i.push_back(*s1);
-    pi_i.push_back(*s2);
+    pi_i.push_back(t1);
+    pi_i.push_back(t2);
+    pi_i.push_back(s1);
+    pi_i.push_back(s2);
 
     // 调试输出签名生成的值
     std::cout << "SingleSign generated signature for message \"" << message << "\":" << std::endl;
@@ -141,8 +148,8 @@ void ContractArs::SingleSign(
 // 聚合签名生成
 void ContractArs::AggreSign(
         const std::vector<std::string> &messages, std::vector<element_t> &y_primes,
-        std::vector<element_t> &delta_primes, std::vector<std::vector<element_s>> &pi_i,
-        const std::vector<element_t *> &ring, element_t &agg_signature) {
+        std::vector<element_t> &delta_primes, std::vector<std::vector<element_t>> &pi_i,
+        std::vector<element_t> &ring, element_t &agg_signature) {
     element_t product;
     element_init_G1(product, pairing);
     element_set1(product);
@@ -172,8 +179,8 @@ void ContractArs::AggreSign(
         element_clear(lhs);
         element_clear(rhs);
         bool proof_valid = false;
-        for (const auto &y : ring) {
-            if (VerifyProof(pi_i[i], y_primes[i], delta_primes[i], messages[i], ring, *y)) {
+        for (auto &y : ring) {
+            if (VerifyProof(pi_i[i], y_primes[i], delta_primes[i], messages[i], ring, y)) {
                 proof_valid = true;
                 break;
             }
@@ -237,9 +244,9 @@ bool ContractArs::AggreVerify(
 
 // Sigma 证明验证
 bool ContractArs::VerifyProof(
-        std::vector<element_s> &pi, element_t &y_prime,
+        std::vector<element_t> &pi, element_t &y_prime,
         element_t &delta_prime, const std::string &message,
-        const std::vector<element_t *> &ring, element_t &y_i) {
+        std::vector<element_t> &ring, element_t &y_i) {
     element_t c, t1, t2, s1, s2, H_m;
     element_init_G1(c, pairing);
     element_init_G1(t1, pairing);
@@ -250,10 +257,10 @@ bool ContractArs::VerifyProof(
 
     hash_to_group(H_m, message);
 
-    element_set(t1, &pi[0]);
-    element_set(t2, &pi[1]);
-    element_set(s1, &pi[2]);
-    element_set(s2, &pi[3]);
+    element_set(t1, &pi[0][0]);
+    element_set(t2, &pi[1][0]);
+    element_set(s1, &pi[2][0]);
+    element_set(s2, &pi[3][0]);
 
     std::cout << "Verifying proof for message \"" << message << "\":" << std::endl;
     element_printf("t1: %B\n", t1);
@@ -262,8 +269,8 @@ bool ContractArs::VerifyProof(
     element_printf("s2: %B\n", s2);
 
     std::string hash_input = element_to_string(t1) + element_to_string(t2) + element_to_string(y_prime);
-    for (const auto &y : ring) {
-        hash_input += element_to_string(*y);
+    for (auto &y : ring) {
+        hash_input += element_to_string(y);
     }
 
     hash_to_group(c, hash_input);
