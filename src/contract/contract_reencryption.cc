@@ -205,7 +205,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
 int ContractReEncryption::EncryptUserMessage(
         const CallParameters& param, 
         const std::string& key, 
-        const std::string& value) {
+        const std::string& value) try {
     auto& e = *pairing_ptr_;
     std::string g_str(common::Encode::HexDecode("92d2c563c4dd82a51ab97ac85b17055e06e222671ab21290c6126be096475699c766bee1fcae94e6baaa9c6694b9a03ca0205d044878c8996fec96bef10df61001"));
     G1 g(e, g_str.c_str(), g_str.size());
@@ -425,6 +425,9 @@ int ContractReEncryption::EncryptUserMessage(
     }
 
     return kContractSuccess;
+} catch(std::exception& e) {
+    ZJC_DEBUG("user encryption data catch error: %s", e.what());
+    return kContractError;
 }
 
 int ContractReEncryption::ReEncryptUserMessage(
