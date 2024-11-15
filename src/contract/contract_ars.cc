@@ -59,6 +59,8 @@ void ContractArs::KeyGen(element_t &x_i, element_t &y_i) {
 }
 
 void ContractArs::KeyGen(const std::string& val, element_t &x_i, element_t &y_i) {
+    element_init_Zr(x_i, get_pairing());
+    element_init_G2(y_i, get_pairing());
     element_from_bytes(x_i, (unsigned char*)common::Encode::HexDecode(val).c_str());
     element_pow_zn(y_i, H, x_i);
 }
