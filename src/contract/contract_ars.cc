@@ -90,7 +90,8 @@ void ContractArs::SingleSign(
     hash_to_group(H_m, message);
     element_pow_zn(delta_i, H_m, x_i);
 
-    element_random(r_i);
+    // element_random(r_i);
+    element_from_bytes(r_i, (unsigned char*)common::Encode::HexDecode("7faed6fbe44a625672dd468fec897c34c2882182").c_str());
     element_init_G1(delta_prime_i, pairing);
     element_pow_zn(delta_prime_i, H_m, r_i);
     element_add(delta_prime_i, delta_i, delta_prime_i);
@@ -115,8 +116,10 @@ void ContractArs::SingleSign(
     element_init_Zr(s1, pairing);
     element_init_Zr(s2, pairing);
 
-    element_random(x_prime);
-    element_random(r_prime);
+    element_from_bytes(x_prime, (unsigned char*)common::Encode::HexDecode("416919a47fc7c03966e3beda17c1207ff2553205").c_str());
+    element_from_bytes(x_prime, (unsigned char*)common::Encode::HexDecode("298167e6bc5a9fb07e5de7e3e9eb1b8ae438d4ee").c_str());
+    // element_random(x_prime);
+    // element_random(r_prime);
     element_pow_zn(t1, H, x_prime);
     element_pow_zn(t2, H, r_prime);
 
