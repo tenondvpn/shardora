@@ -301,7 +301,12 @@ int Ripemd160::AggSignAndVerify(
             }
 
             element_t& proof = (*tmp_pi_proof)[i - 3];
-            element_init_G1(proof, ars.get_pairing());
+            if (i < 5) {
+                element_init_G1(proof, ars.get_pairing());
+            } else {
+                element_init_Zr(proof, ars.get_pairing());
+            }
+            
             element_from_bytes(proof, (unsigned char*)common::Encode::HexDecode(items[i]).c_str());
         }
 
