@@ -251,7 +251,7 @@ int Ripemd160::SingleSign(
     }
 
     for (auto &proof : pi_proof) {
-        auto len = element_to_bytes_compressed(data, proof);
+        auto len = element_to_bytes(data, proof);
         val += common::Encode::HexEncode(std::string((char*)data, len)) + ",";
     }
 
@@ -303,7 +303,7 @@ int Ripemd160::AggSignAndVerify(
 
             element_t& proof = (*tmp_pi_proof)[i - 3];
             element_init_G1(proof, ars.get_pairing());
-            element_from_bytes_compressed(proof, (unsigned char*)common::Encode::HexDecode(items[i]).c_str());
+            element_from_bytes(proof, (unsigned char*)common::Encode::HexDecode(items[i]).c_str());
         }
 
         pi_proofs.push_back(tmp_pi_proof);
