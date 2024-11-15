@@ -344,7 +344,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
     return false;
 }
 
-void ClickHouseClient::FlushToCkWithData() {
+void ClickHouseClient::FlushToCkWithData() try {
     if (batch_count_ <= 0) {
         return;
     }
@@ -455,8 +455,9 @@ void ClickHouseClient::FlushToCkWithData() {
         pre_time_out_ = now_tm_ms;
         ResetColumns();
     }
+} catch (std::exception& e) {
+    ZJC_ERROR("add new block failed[%s]", e.what());
 }
-
 
 bool ClickHouseClient::QueryContract(const std::string& from, const std::string& contract_addr, nlohmann::json* res) {
     zjcvm::ZjchainHost zjc_host;
@@ -851,7 +852,7 @@ bool ClickHouseClient::CreateBlsElectInfoTable() {
     return true;    
 }
 
-bool ClickHouseClient::InsertBlsElectInfo(const BlsElectInfo& info) {
+bool ClickHouseClient::InsertBlsElectInfo(const BlsElectInfo& info) try {
     auto elect_height = std::make_shared<clickhouse::ColumnUInt64>();
     auto member_idx = std::make_shared<clickhouse::ColumnUInt32>();
     auto shard_id = std::make_shared<clickhouse::ColumnUInt32>();
@@ -881,6 +882,8 @@ bool ClickHouseClient::InsertBlsElectInfo(const BlsElectInfo& info) {
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client.Insert(kClickhouseBlsElectInfo, item);
     return true;
+} catch (std::exception& e) {
+    ZJC_ERROR("add new block failed[%s]", e.what());
 }
 
 bool ClickHouseClient::CreateBlsBlockInfoTable() {

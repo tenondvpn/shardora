@@ -30,6 +30,23 @@ Ripemd160::~Ripemd160() {}
     return kContractSuccess; \
 }
 
+#define GET_KEY_VALUE_FROM_PARAM() \
+    uint32_t key_len = 0; \
+    if (!common::StringUtil::ToUint32(param.data.substr(6, 2), &key_len) || key_len <= 0) { \
+        CONTRACT_ERROR("abe convert key len failed: %s!", param.data.substr(3, 2).c_str()); \
+        return kContractError; \
+    } \
+      \
+    auto key = param.data.substr(8, key_len); \
+    auto val_start = 8 + key_len; \
+    if (val_start >= param.data.size()) { \
+        CONTRACT_ERROR("abe val_start error: %d, %d!", val_start, param.data.size()); \
+        return kContractError; \
+    } \
+      \
+    std::string val = param.data.substr(val_start, param.data.size() - val_start);
+
+
 int Ripemd160::call(
         const CallParameters& param,
         uint64_t gas,
@@ -59,100 +76,35 @@ int Ripemd160::call(
 
     // proxy reencryption
     if (param.data.substr(0, 6) == "tpinit") {
-        uint32_t key_len = 0;
-        if (!common::StringUtil::ToUint32(param.data.substr(6, 2), &key_len) || key_len <= 0) {
-            CONTRACT_ERROR("abe convert key len failed: %s!", param.data.substr(3, 2).c_str());
-            return kContractError;
-        }
-
-        auto key = param.data.substr(8, key_len);
-        auto val_start = 8 + key_len;
-        if (val_start >= param.data.size()) {
-            CONTRACT_ERROR("abe val_start error: %d, %d!", val_start, param.data.size());
-            return kContractError;
-        }
-
-        std::string val = param.data.substr(val_start, param.data.size() - val_start);
+        GET_KEY_VALUE_FROM_PARAM();
         ContractReEncryption proxy_reenc;
         proxy_reenc.CreatePrivateAndPublicKeys(param, key, val);
         DEFAULT_CALL_RESULT();
     }
 
     if (param.data.substr(0, 6) == "tprenk") {
-        uint32_t key_len = 0;
-        if (!common::StringUtil::ToUint32(param.data.substr(6, 2), &key_len) || key_len <= 0) {
-            CONTRACT_ERROR("abe convert key len failed: %s!", param.data.substr(3, 2).c_str());
-            return kContractError;
-        }
-
-        auto key = param.data.substr(8, key_len);
-        auto val_start = 8 + key_len;
-        if (val_start >= param.data.size()) {
-            CONTRACT_ERROR("abe val_start error: %d, %d!", val_start, param.data.size());
-            return kContractError;
-        }
-
-        std::string val = param.data.substr(val_start, param.data.size() - val_start);
+        GET_KEY_VALUE_FROM_PARAM();
         ContractReEncryption proxy_reenc;
         proxy_reenc.CreateReEncryptionKeys(param, key, val);
         DEFAULT_CALL_RESULT();
     }
 
     if (param.data.substr(0, 6) == "tpencu") {
-        uint32_t key_len = 0;
-        if (!common::StringUtil::ToUint32(param.data.substr(6, 2), &key_len) || key_len <= 0) {
-            CONTRACT_ERROR("abe convert key len failed: %s!", param.data.substr(3, 2).c_str());
-            return kContractError;
-        }
-
-        auto key = param.data.substr(8, key_len);
-        auto val_start = 8 + key_len;
-        if (val_start >= param.data.size()) {
-            CONTRACT_ERROR("abe val_start error: %d, %d!", val_start, param.data.size());
-            return kContractError;
-        }
-
-        std::string val = param.data.substr(val_start, param.data.size() - val_start);
+        GET_KEY_VALUE_FROM_PARAM();
         ContractReEncryption proxy_reenc;
         proxy_reenc.EncryptUserMessage(param, key, val);
         DEFAULT_CALL_RESULT();
     }
 
     if (param.data.substr(0, 6) == "tprenc") {
-        uint32_t key_len = 0;
-        if (!common::StringUtil::ToUint32(param.data.substr(6, 2), &key_len) || key_len <= 0) {
-            CONTRACT_ERROR("abe convert key len failed: %s!", param.data.substr(3, 2).c_str());
-            return kContractError;
-        }
-
-        auto key = param.data.substr(8, key_len);
-        auto val_start = 8 + key_len;
-        if (val_start >= param.data.size()) {
-            CONTRACT_ERROR("abe val_start error: %d, %d!", val_start, param.data.size());
-            return kContractError;
-        }
-
-        std::string val = param.data.substr(val_start, param.data.size() - val_start);
+        GET_KEY_VALUE_FROM_PARAM();
         ContractReEncryption proxy_reenc;
         proxy_reenc.ReEncryptUserMessage(param, key, val);
         DEFAULT_CALL_RESULT();
     }
 
     if (param.data.substr(0, 6) == "tprdec") {
-        uint32_t key_len = 0;
-        if (!common::StringUtil::ToUint32(param.data.substr(6, 2), &key_len) || key_len <= 0) {
-            CONTRACT_ERROR("abe convert key len failed: %s!", param.data.substr(3, 2).c_str());
-            return kContractError;
-        }
-
-        auto key = param.data.substr(8, key_len);
-        auto val_start = 8 + key_len;
-        if (val_start >= param.data.size()) {
-            CONTRACT_ERROR("abe val_start error: %d, %d!", val_start, param.data.size());
-            return kContractError;
-        }
-
-        std::string val = param.data.substr(val_start, param.data.size() - val_start);
+        GET_KEY_VALUE_FROM_PARAM();
         ContractReEncryption proxy_reenc;
         proxy_reenc.Decryption(param, key, val);
         DEFAULT_CALL_RESULT();
