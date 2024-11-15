@@ -30,15 +30,10 @@ ContractArs::ContractArs() : ContractInterface("") {
         "sign0 1");
     pairing_init_set_buf(pairing, param.c_str(), param.size());
     element_init_G1(G, pairing);
-    element_random(G); // 使用随机生成的非单位元生成元
-    unsigned char bytes_data[2048];
-    auto len = element_to_bytes_compressed(bytes_data, G);
-    std::string g_data = std::string((const char*)bytes_data, len);
+    std::string g_data = common::Encode::HexDecode("4bab33724807f26e4251d3b0e60ade879fbea03697f0b89275f65e5f31700c252ecd14228e7905f1eec853977dfb369275fcc75af97bf520c54e57d1a70ed85500");
     element_from_bytes_compressed(G, (unsigned char*)g_data.c_str());
     element_init_G2(H, pairing);
-    element_random(H); // 使用随机生成的非单位元生成元
-    len = element_to_bytes_compressed(bytes_data, H);
-    std::string h_data = std::string((const char*)bytes_data, len);
+    std::string h_data = common::Encode::HexDecode("1315ceed286082860059d3c62b035a35108f5dbce795fa4439f41231601559d591184774040438c8ff6704f4f09794738252d3774fe530a2205beb9ece6df3bc01");
     element_from_bytes_compressed(H, (unsigned char*)h_data.c_str());
 
     q = pairing_length_in_bytes_x_only_G1(pairing);
