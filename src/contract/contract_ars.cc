@@ -31,11 +31,14 @@ ContractArs::ContractArs() : ContractInterface("") {
     pairing_init_set_buf(pairing, param.c_str(), param.size());
     element_init_G1(G, pairing);
     element_random(G); // 使用随机生成的非单位元生成元
+    unsigned char bytes_data[10240];
+    element_to_bytes_compressed(bytes_data, G);
+    element_from_bytes(G, bytes_data);
     element_init_G2(H, pairing);
     element_random(H); // 使用随机生成的非单位元生成元
     q = pairing_length_in_bytes_x_only_G1(pairing);
     char data[10240] = {0};
-    element_snprintf(data, sizeof(data), "G: %B, H: %B", G, H);
+    element_snprintf(data, sizeof(data), "G: %B, H: %B, bytes: %s", G, H, bytes_data);
     ZJC_DEBUG("init paring ars: %s", data);
 }
 
