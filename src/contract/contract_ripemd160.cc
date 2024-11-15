@@ -356,12 +356,7 @@ void Ripemd160::TestArs(
     std::vector<element_t> y_primes(signer_count);
     std::vector<std::vector<element_t>> pi_proofs(signer_count);
 
-    std::vector<element_t> ring;
-    for (auto &pub_key : public_keys)
-    {
-        ring.push_back(pub_key); // 将公钥指针添加到 ring 中
-    }
-
+    auto& ring = public_keys;
     for (int i = 0; i < signer_count; ++i)
     {
         int signer_idx = signers[i];
