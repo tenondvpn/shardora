@@ -117,7 +117,7 @@ void ContractArs::SingleSign(
     element_init_Zr(s2, pairing);
 
     element_from_bytes(x_prime, (unsigned char*)common::Encode::HexDecode("416919a47fc7c03966e3beda17c1207ff2553205").c_str());
-    element_from_bytes(x_prime, (unsigned char*)common::Encode::HexDecode("298167e6bc5a9fb07e5de7e3e9eb1b8ae438d4ee").c_str());
+    element_from_bytes(r_prime, (unsigned char*)common::Encode::HexDecode("298167e6bc5a9fb07e5de7e3e9eb1b8ae438d4ee").c_str());
     // element_random(x_prime);
     // element_random(r_prime);
     element_pow_zn(t1, H, x_prime);

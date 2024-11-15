@@ -77,7 +77,7 @@ void ClickHouseClient::FlushToCk() {
     }   
 }
 
-bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& view_block_item) try {
+bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& view_block_item)  {
     std::string cmd;
     auto* block_item = &view_block_item->block_info();
     const auto& tx_list = block_item->tx_list();
@@ -178,7 +178,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
             }
             
             nlohmann::json res;
-            ZJC_DEBUG("now handle contract: %s", ProtobufToJson(tx).c_str());
+            // ZJC_DEBUG("now handle contract: %s", ProtobufToJson(tx).c_str());
             bool ret = QueryContract(tx.from(), tx.to(), &res);
             if (ret) {
                 for (auto iter = res.begin(); iter != res.end(); ++iter) {
@@ -339,10 +339,11 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
     }
 #endif
     return true;
-} catch (std::exception& e) {
-    ZJC_ERROR("add new block failed[%s]", e.what());
-    return false;
 }
+// catch (std::exception& e) {
+//     ZJC_ERROR("add new block failed[%s]", e.what());
+//     return false;
+// }
 
 void ClickHouseClient::FlushToCkWithData() try {
     if (batch_count_ <= 0) {
