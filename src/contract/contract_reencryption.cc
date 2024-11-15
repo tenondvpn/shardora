@@ -305,7 +305,11 @@ int ContractReEncryption::EncryptUserMessage(
     vector<G1> c1,c3,c5;
     vector<GT> c2,c4,c6;
     std::string test_data = "hello world!";
-    GT m(e, test_data.c_str(), test_data.size());
+    GT m(e, (const unsigned char*)test_data.c_str(), test_data.size(), 1);
+    ZJC_DEBUG("get m data: %s, %s, %s", 
+        test_data.c_str(), 
+        common::Encode::HexEncode(m.toString()).c_str(), 
+        (const char*)m.getElement()->data);
     std::string r_str = common::Encode::HexDecode("7edf5dac8f63ebaed688f823053e817e51c185d6");
     std::string z_str = common::Encode::HexDecode("1254472274e6a59840bb23e709072735d7267340");
     Zr r(e, r_str.c_str(), r_str.size());
@@ -673,7 +677,7 @@ int ContractReEncryption::Decryption(
     }
 
     std::string test_data = "hello world!";
-    GT m(e, test_data.c_str(), test_data.size());
+    GT m(e, (const unsigned char*)test_data.c_str(), test_data.size(), 1);
     std::string g1_str(common::Encode::HexDecode("7c8ae882453932ed180735e6eef3c983c93e0501dcfe6a1230fbfea4ac95f4c22795fe5a8137549d1a1b7427519b189431e794e365be5910fcd8e1c91bbc67fa00"));
     G1 g1(e, g1_str.c_str(), g1_str.size());
 
