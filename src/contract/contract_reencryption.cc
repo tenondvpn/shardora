@@ -854,7 +854,7 @@ int ContractReEncryption::Decryption(
 
         GT result2 = tempc2 / e(rc1[i][0], G1(e, Xi.toString().c_str(), Xi.getElementSize()));
         if (m == result2) {
-            ZJC_DEBUG("user %d success.", i);
+            ZJC_DEBUG("user %d success data: %s, res2 data: %s", i, (const char*)m.getElement()->data, (const char*)result2.getElement()->data);
         } else {
             ZJC_DEBUG("user %d failed.", i);
         }
