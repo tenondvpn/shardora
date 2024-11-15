@@ -432,31 +432,9 @@ function add_pairing_param(prev, key, value) {
     var addParamCode = web3.eth.abi.encodeFunctionSignature('call_proxy_reenc(bytes)');
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
-        "20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 
+        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
 
-}
-
-function call_decrypt() {
-    var param1 = "decrypt0001";
-    var hexparam1 = web3.utils.toHex(param1);
-    var addParam1 = web3.eth.abi.encodeParameters(
-        ['bytes'], 
-        [hexparam1]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('call_proxy_reenc(bytes)');
-    console.log("decrypt0001 1: " + addParamCode.substring(2) + addParam1.substring(2));
-    call_contract(
-        "20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 
-        addParamCode.substring(2) + addParam1.substring(2), 0);
-}
-
-function run_all() {
-    add_pairing_param("readd", "CreatPath", "CreatPath");
-    add_pairing_param("readd", "RKGen", "RKGen");
-    add_pairing_param("readd", "Upd", "Upd");
-    add_pairing_param("readd", "Enc", "Enc");
-    add_pairing_param("readd", "ReEnc", "ReEnc");
-    add_pairing_param("readd", "Dec", "Dec");
 }
 
 const args = process.argv.slice(2)
