@@ -136,8 +136,7 @@ int Ripemd160::call(
     }
 
     if (param.data.substr(0, 4) == "tars") {
-        GET_KEY_VALUE_FROM_PARAM();
-        TestArs(param, key, val);
+        TestArs(param, "", "");
         DEFAULT_CALL_RESULT();
     }
 
