@@ -135,13 +135,22 @@ void ContractArs::SingleSign(
     element_pow_zn(s2, c, r_i);
     element_add(s2, s2, r_prime);
     // 调试输出签名生成的值
-    std::cout << "SingleSign generated signature for message \"" << message << "\":" << std::endl;
-    element_printf("delta_prime_i: %B\n", delta_prime_i);
-    element_printf("y_prime_i: %B\n", y_prime_i);
-    element_printf("t1: %B\n", t1);
-    element_printf("t2: %B\n", t2);
-    element_printf("s1: %B\n", s1);
-    element_printf("s2: %B\n", s2);
+    char data[10240];
+    unsigned char tmp_data[1024];
+    auto len = element_to_bytes(tmp_data, r_i);
+    std::string r_i_str((char*)tmp_data, len);
+    len = element_to_bytes(tmp_data, x_prime);
+    std::string x_prime_str((char*)tmp_data, len);
+    len = element_to_bytes(tmp_data, r_prime);
+    std::string r_prime_str((char*)tmp_data, len);
+    element_snprintf(data, sizeof(data), "delta_prime_i: %B, y_prime_i: %B, t1: %B, t2: %B, s1: %B, s2: %B, r_i: %s, x_prime: %s, r_prime: %s",
+        delta_prime_i,
+        y_prime_i,
+        t1, t2, s1, s2,
+        common::Encode::HexEncode(r_i_str).c_str(),
+        common::Encode::HexEncode(x_prime_str).c_str(),
+        common::Encode::HexEncode(r_prime_str).c_str());
+    ZJC_DEBUG("single sign message: %s", data);
 }
 
 // 聚合签名生成

@@ -215,15 +215,18 @@ int Ripemd160::SingleSign(
     GetRing(param, ars, ring);
     auto splits = common::Split<>(value.c_str(), ',');
     if (splits.Count() < 3) {
+        assert(false);
         return kContractError;
     }
 
     int signer_idx = 0;
     if (!common::StringUtil::ToInt32(splits[0], &signer_idx)) {
+        assert(false);
         return kContractError;
     }
 
     if (signer_idx < 0 || signer_idx >= ars.signer_count()) {
+        assert(false);
         return kContractError;
     }
 
@@ -254,7 +257,7 @@ int Ripemd160::SingleSign(
         val += common::Encode::HexEncode(std::string((char*)data, len)) + ",";
     }
 
-    param.zjc_host->SaveKeyValue(param.from, key, val);
+    // param.zjc_host->SaveKeyValue(param.from, tmp_key, val);
     ZJC_DEBUG("single sign success: %d, %s", signer_idx, val.c_str());
     return kContractSuccess;
 }
@@ -306,7 +309,7 @@ int Ripemd160::AggSignAndVerify(
             } else {
                 element_init_Zr(proof, ars.get_pairing());
             }
-            
+
             element_from_bytes(proof, (unsigned char*)common::Encode::HexDecode(items[i]).c_str());
         }
 
