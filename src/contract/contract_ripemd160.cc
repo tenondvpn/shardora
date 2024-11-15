@@ -273,7 +273,7 @@ int Ripemd160::AggSignAndVerify(
     std::vector<element_t> y_primes;
     std::vector<element_t> ring(ars.ring_size());
     GetRing(param, ars, ring);
-    std::vector<std::vector<element_t>> pi_proofs;
+    std::vector<std::vector<element_t>> pi_proofs = {ars.signer_count(), std::vector<element_t>{4}};
     for (auto i = 0; i < ars.signer_count(); ++i) {
         auto tmp_key = std::string("ars_create_single_sign_") + std::to_string(i);
         std::string val;
@@ -294,7 +294,7 @@ int Ripemd160::AggSignAndVerify(
         element_init_G2(y_prime, ars.get_pairing());
         element_from_bytes_compressed(delta_prime, (unsigned char*)common::Encode::HexDecode(items[1]).c_str());
         element_from_bytes_compressed(y_prime, (unsigned char*)common::Encode::HexDecode(items[2]).c_str());
-        std::vector<element_t> tmp_pi_proof(items.Count() - 3);
+        std::vector<element_t>& tmp_pi_proof = pi_proofs[i];
         for (uint32_t i = 3; i < items.Count(); ++i) {
             if (items.SubLen(i) <= 0) {
                 break;
@@ -304,8 +304,6 @@ int Ripemd160::AggSignAndVerify(
             element_init_G1(proof, ars.get_pairing());
             element_from_bytes_compressed(proof, (unsigned char*)common::Encode::HexDecode(items[i]).c_str());
         }
-
-        pi_proofs.push_back(tmp_pi_proof);
     }
 
     ars.AggreSign(messages, y_primes, delta_primes, pi_proofs, ring, agg_signature);
