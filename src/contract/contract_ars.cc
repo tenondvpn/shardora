@@ -145,7 +145,7 @@ void ContractArs::SingleSign(
 // 聚合签名生成
 void ContractArs::AggreSign(
         const std::vector<std::string> &messages, std::vector<element_t> &y_primes,
-        std::vector<element_t> &delta_primes, std::vector<std::vector<element_t>> &pi_i,
+        std::vector<element_t> &delta_primes, std::vector<std::vector<element_t>*> &pi_i,
         std::vector<element_t> &ring, element_t &agg_signature) {
     element_t product;
     element_init_G1(product, pairing);
@@ -177,7 +177,7 @@ void ContractArs::AggreSign(
         element_clear(rhs);
         bool proof_valid = false;
         for (auto &y : ring) {
-            if (VerifyProof(pi_i[i], y_primes[i], delta_primes[i], messages[i], ring, y)) {
+            if (VerifyProof(*pi_i[i], y_primes[i], delta_primes[i], messages[i], ring, y)) {
                 proof_valid = true;
                 break;
             }

@@ -40,7 +40,7 @@ public:
                     element_t &y_prime_i, std::vector<element_t> &pi_i);
     // 聚合签名生成
     void AggreSign(const std::vector<std::string> &messages, std::vector<element_t> &y_primes,
-                   std::vector<element_t> &delta_primes, std::vector<std::vector<element_t>> &pi_i,
+                   std::vector<element_t> &delta_primes, std::vector<std::vector<element_t>*> &pi_i,
                    std::vector<element_t> &ring, element_t &agg_signature);
     // 聚合签名验证
     bool AggreVerify(const std::vector<std::string> &messages, element_t &agg_signature,

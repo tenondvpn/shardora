@@ -274,7 +274,7 @@ int Ripemd160::AggSignAndVerify(
     std::vector<element_t> ring(ars.ring_size());
     GetRing(param, ars, ring);
     std::vector<element_t> tmp_pool(4);
-    std::vector<std::vector<element_t>> pi_proofs(ars.signer_count(), tmp_pool);
+    std::vector<std::vector<element_t>*> pi_proofs;
     for (auto i = 0; i < ars.signer_count(); ++i) {
         auto tmp_key = std::string("ars_create_single_sign_") + std::to_string(i);
         std::string val;
@@ -295,16 +295,18 @@ int Ripemd160::AggSignAndVerify(
         element_init_G2(y_prime, ars.get_pairing());
         element_from_bytes_compressed(delta_prime, (unsigned char*)common::Encode::HexDecode(items[1]).c_str());
         element_from_bytes_compressed(y_prime, (unsigned char*)common::Encode::HexDecode(items[2]).c_str());
-        std::vector<element_t>& tmp_pi_proof = pi_proofs[i];
+        std::vector<element_t>* tmp_pi_proof = new std::vector<element_t>(4);
         for (uint32_t i = 3; i < items.Count(); ++i) {
             if (items.SubLen(i) <= 0) {
                 break;
             }
 
-            element_t& proof = tmp_pi_proof[i - 3];
+            element_t& proof = (*tmp_pi_proof)[i - 3];
             element_init_G1(proof, ars.get_pairing());
             element_from_bytes_compressed(proof, (unsigned char*)common::Encode::HexDecode(items[i]).c_str());
         }
+
+        pi_proofs.push_back(tmp_pi_proof);
     }
 
     ars.AggreSign(messages, y_primes, delta_primes, pi_proofs, ring, agg_signature);
@@ -353,16 +355,17 @@ void Ripemd160::TestArs(
     // 为每位签名者生成单个签名
     std::vector<element_t> delta_primes(signer_count);
     std::vector<element_t> y_primes(signer_count);
-    std::vector<std::vector<element_t>> pi_proofs(signer_count);
+    std::vector<std::vector<element_t>*> pi_proofs;
 
     auto& ring = public_keys;
     for (int i = 0; i < signer_count; ++i)
     {
+        pi_proofs.push_back(new std::vector<element_t>(4));
         int signer_idx = signers[i];
         element_init_G1(delta_primes[i], ars.get_pairing());
         element_init_G2(y_primes[i], ars.get_pairing());
         ars.SingleSign(messages[i], private_keys[signer_idx], public_keys[signer_idx],
-                       ring, delta_primes[i], y_primes[i], pi_proofs[i]);
+                       ring, delta_primes[i], y_primes[i], *pi_proofs[i]);
 
         // 打印单个签名的生成内容
         std::cout << "Signer " << signer_idx << " signature details:" << std::endl;
@@ -371,7 +374,7 @@ void Ripemd160::TestArs(
 
         // 假设 pi_proofs 是一个 element_s 类型的向量
         std::cout << "pi_proof: ";
-        for (const auto &proof : pi_proofs[i])
+        for (const auto &proof : *pi_proofs[i])
         {
             element_printf("%B\n ", &proof);
         }
