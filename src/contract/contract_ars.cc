@@ -34,9 +34,9 @@ ContractArs::ContractArs() : ContractInterface("") {
     element_init_G2(H, pairing);
     element_random(H); // 使用随机生成的非单位元生成元
     q = pairing_length_in_bytes_x_only_G1(pairing);
-    std::cout << "ContractArs initialized with parameter q = " << q << std::endl;
-    element_printf("G (generator of G1): %B\n", G);
-    element_printf("H (generator of G2): %B\n", H);
+    char data[10240] = {0};
+    element_snprintf(data, sizeof(data), "G: %B, H: %B", G, H);
+    ZJC_DEBUG("init paring ars: %s", data);
 }
 
 // 密钥生成
@@ -307,7 +307,6 @@ bool ContractArs::VerifyProof(
 pairing_t& ContractArs::get_pairing() {
     return pairing;
 }
-
 
 // 私有哈希函数，将消息哈希为群元素
 void ContractArs::hash_to_group(element_t &result, const std::string &message) {
