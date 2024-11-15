@@ -178,8 +178,8 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
             }
             
             nlohmann::json res;
-            // ZJC_DEBUG("now handle contract: %s", ProtobufToJson(tx).c_str());
-            bool ret = QueryContract(tx.from(), tx.to(), &res);
+            ZJC_DEBUG("now handle contract: %s", ProtobufToJson(tx).c_str());
+            bool ret = false;//QueryContract(tx.from(), tx.to(), &res);
             if (ret) {
                 for (auto iter = res.begin(); iter != res.end(); ++iter) {
                     auto item = *iter;
