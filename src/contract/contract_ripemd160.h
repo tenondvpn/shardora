@@ -1,5 +1,6 @@
 #pragma once
 
+#include "contract/contract_ars.h"
 #include "contract/contract_interface.h"
 #include "common/tick.h"
 

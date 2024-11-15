@@ -3,7 +3,6 @@
 #include "common/hash.h"
 #include "common/split.h"
 #include "common/string_utils.h"
-#include "contract/contract_ars.h"
 #include "contract/contract_pairing.h"
 #include "contract/contract_reencryption.h"
 #include "pbc/pbc.h"
