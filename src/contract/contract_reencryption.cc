@@ -810,8 +810,8 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
 
     //有nu-1个接受者，则需重加密nu-1次
     for(int i = 1;i<nu;i++) {
-        if (i != member_idx) {
-            continue;
+        if (i > member_idx) {
+            break;
         }
         
         //在实际应用中，这里的两个随机数需要使用分布式随机数（密钥）协商算法。
