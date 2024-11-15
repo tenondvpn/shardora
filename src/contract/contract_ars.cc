@@ -98,10 +98,7 @@ void ContractArs::SingleSign(
 
     element_init_G2(y_prime_i, pairing);
     element_pow_zn(y_prime_i, H, r_i);
-    element_printf("y_prime_i: %B\n", y_prime_i);
-    element_printf("y_i: %B\n", y_i);
     element_add(y_prime_i, y_i, y_prime_i);
-    element_printf("y_prime_i: %B\n", y_prime_i);
 
     auto& t1 = pi_i[0];
     auto& t2 = pi_i[1];
