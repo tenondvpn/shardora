@@ -235,7 +235,7 @@ int Ripemd160::SingleSign(
     element_t private_key;
     element_init_Zr(private_key, ars.get_pairing());
     element_from_bytes(private_key, (unsigned char*)common::Encode::HexDecode(splits[2]).c_str());
-    std::vector<element_t> pi_proof;
+    std::vector<element_t> pi_proof(ars.ring_size());
     ars.SingleSign(splits[1], private_key, ring[signer_idx], ring, delta_prime, y_prime, pi_proof);
     auto tmp_key = std::string("ars_create_single_sign_") + std::to_string(signer_idx);
     std::string val = std::string(splits[1]) + ",";
