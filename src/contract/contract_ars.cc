@@ -100,7 +100,11 @@ void ContractArs::SingleSign(
     element_add(y_prime_i, y_i, y_prime_i);
     element_printf("y_prime_i: %B\n", y_prime_i);
 
-    element_t x_prime, r_prime, t1, t2, c, s1, s2;
+    auto& t1 = pi_i[0];
+    auto& t2 = pi_i[1];
+    auto& s1= pi_i[2];
+    auto& s2= pi_i[3];
+    element_t x_prime, r_prime, c;
     element_init_Zr(x_prime, pairing);
     element_init_Zr(r_prime, pairing);
     element_init_G1(t1, pairing);
@@ -128,13 +132,6 @@ void ContractArs::SingleSign(
 
     element_pow_zn(s2, c, r_i);
     element_add(s2, s2, r_prime);
-
-    pi_i.clear();
-    pi_i.push_back(t1);
-    pi_i.push_back(t2);
-    pi_i.push_back(s1);
-    pi_i.push_back(s2);
-
     // 调试输出签名生成的值
     std::cout << "SingleSign generated signature for message \"" << message << "\":" << std::endl;
     element_printf("delta_prime_i: %B\n", delta_prime_i);
