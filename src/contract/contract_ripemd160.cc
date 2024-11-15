@@ -201,10 +201,8 @@ void Ripemd160::GetRing(
             return;
         }
 
-        element_t pk;
-        element_init_G2(pk, ars.get_pairing());  // 公钥初始化为 G2 群中的元素
-        element_from_bytes_compressed(pk, (unsigned char*)val.c_str());
-        ring.push_back(pk);
+        element_init_G2(ring[i], ars.get_pairing());  // 公钥初始化为 G2 群中的元素
+        element_from_bytes_compressed(ring[i], (unsigned char*)val.c_str());
     }
 }
 
@@ -214,7 +212,7 @@ int Ripemd160::SingleSign(
         const std::string& value) {
     ContractArs ars;
     // 设置环的大小和签名者数量
-    std::vector<element_t> ring;
+    std::vector<element_t> ring(ars.ring_size());
     GetRing(param, ars, ring);
     auto splits = common::Split<>(value.c_str(), ',');
     if (splits.Count() < 3) {
@@ -237,9 +235,9 @@ int Ripemd160::SingleSign(
     element_t private_key;
     element_init_Zr(private_key, ars.get_pairing());
     element_from_bytes(private_key, (unsigned char*)common::Encode::HexDecode(splits[2]).c_str());
-    std::vector<element_s> pi_proof;
+    std::vector<element_t> pi_proof;
     ars.SingleSign(splits[1], private_key, ring[signer_idx], ring, delta_prime, y_prime, pi_proof);
-    auto key = "ars_create_single_sign_" + std::to_string(signer_idx);
+    auto key = std::string("ars_create_single_sign_") + std::to_string(signer_idx);
     std::string val = std::string(splits[1]) + ",";
     unsigned char data[20480] = {0};
     {
@@ -273,11 +271,11 @@ int Ripemd160::AggSignAndVerify(
     std::vector<std::string> messages;
     std::vector<element_t> delta_primes;
     std::vector<element_t> y_primes;
-    std::vector<element_t> ring;
+    std::vector<element_t> ring(ars.ring_size());
     GetRing(param, ars, ring);
     std::vector<std::vector<element_t>> pi_proofs;
     for (auto i = 0; i < ars.signer_count(); ++i) {
-        auto key = "ars_create_single_sign_" + std::to_string(i);
+        auto key = std::string("ars_create_single_sign_") + std::to_string(i);
         std::string val;
         if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -312,7 +310,7 @@ int Ripemd160::AggSignAndVerify(
     }
 
     ars.AggreSign(messages, y_primes, delta_primes, pi_proofs, ring, agg_signature);
-    auto key = "ars_create_agg_sign";
+    auto key = std::string("ars_create_agg_sign");
     unsigned char data[20480] = {0};
     auto len = element_to_bytes_compressed(data, agg_signature);
     auto val = common::Encode::HexEncode(std::string((char*)data, len)) + ",";
