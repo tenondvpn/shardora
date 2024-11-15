@@ -577,18 +577,23 @@ if (args[0] == 3) {
     add_pairing_param("tpencu", "tpencu", "tpencu");
 }
 
-// Enc：加密，需要用到pbc库
+// ReEnc：重加密，需要用到pbc库 (这一步包含一个分布式随机数生成协议，即多个代理协商出一个统一的随机数)
 if (args[0] == 4) {
     add_pairing_param("tprenc", "tprenc", "tprenc");
 }
 
 // ReEnc：重加密，需要用到pbc库 (这一步包含一个分布式随机数生成协议，即多个代理协商出一个统一的随机数)
 if (args[0] == 5) {
+    add_pairing_param("mprenc", "mprenc", args[1]);
+}
+
+// dec
+if (args[0] == 6) {
     add_pairing_param("tprdec", "tprdec", "tprdec");
 }
 
 // 测试聚合环签名整个流程
-if (args[0] == 6) {
+if (args[0] == 7) {
     add_pairing_param("tars", "tars", "tars");
 }
 

@@ -1,6 +1,7 @@
 #include "contract/contract_reencryption.h"
 
 #include "common/split.h"
+#include "common/string_utils.h"
 #include "common/time_utils.h"
 #include "zjcvm/zjc_host.h"
 
@@ -500,7 +501,6 @@ int ContractReEncryption::ReEncryptUserMessage(
             c6.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
         }
     }
-
     //初始密文的解密如下(为了方便，选前t个碎片解密)
     vector<vector<G1>> rk1;
     vector<G1> rk2;
@@ -537,7 +537,6 @@ int ContractReEncryption::ReEncryptUserMessage(
         
         rk1.push_back(tmp);
     }
-
     //重加密（随即t个代理执行，这里为了方便就取前t个）
     //注意到，不论是初始密文还是重加密密文，都可进行重加密操作。
     //reenc-c=(rc1,rc2,rc3,rc4,rc5,rc6)
@@ -551,7 +550,6 @@ int ContractReEncryption::ReEncryptUserMessage(
     rc4.push_back(c4);
     rc5.push_back(c5);
     rc6.push_back(c6);
-
     std::vector<std::string> w1_vec{
         common::Encode::HexDecode("3651a4e5df2ccf01bb0008470e79f92e4c5e1219"),
         common::Encode::HexDecode("00dfecbab5d98af34f15be229bd52ebf97875208"),
@@ -596,6 +594,12 @@ int ContractReEncryption::ReEncryptUserMessage(
         }
         tmp5.push_back(rk2[i-1]);
         tmp6.push_back(rk3[i-1]);
+        rc1.push_back(tmp1);
+        rc2.push_back(tmp2);
+        rc3.push_back(tmp3);
+        rc4.push_back(tmp4);
+        rc5.push_back(tmp5);
+        rc6.push_back(tmp6);
         for (int32_t tmp_idx = 0; tmp_idx < tmp1.size(); ++tmp_idx) {
             ZJC_DEBUG("create member reenc data: %d, %d, tmp1: %s", 
                 i, tmp_idx, 
@@ -643,13 +647,244 @@ int ContractReEncryption::ReEncryptUserMessage(
             auto key = std::string("create_reenc_user_msg_rc6_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             param.zjc_host->SaveKeyValue(param.from, key, tmp6[tmp_idx].toString());
         }
+    }
 
+    return kContractSuccess;
+}
+
+int ContractReEncryption::ReEncryptUserMessageWithMember(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
+    int32_t member_idx = -1;
+    if (!common::StringUtil::ToInt32(value, &member_idx)) {
+        ZJC_DEBUG("member index failed!");
+        return kContractError;
+    }
+
+    auto& e = *pairing_ptr_;
+    int nu = 10;
+    int np=10,t=4;
+    if (member_idx < 1 || member_idx >= nu) {
+        return kContractError;
+    }
+
+    vector<G1> c1,c3,c5;
+    vector<GT> c2,c4,c6;
+    for (int i = 0; i < np; i++) {
+        {
+            auto key = std::string("create_enc_user_msg_c1_") + std::to_string(i);
+            std::string val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+            c1.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
+        }
+
+        {
+            auto key = std::string("create_enc_user_msg_c2_") + std::to_string(i);
+            std::string val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+            c2.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
+        }
+
+        {
+            auto key = std::string("create_enc_user_msg_c3_") + std::to_string(i);
+            std::string val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+            c3.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
+        }
+
+        {
+            auto key = std::string("create_enc_user_msg_c4_") + std::to_string(i);
+            std::string val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+            c4.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
+        }
+
+        {
+            auto key = std::string("create_enc_user_msg_c5_") + std::to_string(i);
+            std::string val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+            c5.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
+        }
+
+        {
+            auto key = std::string("create_enc_user_msg_c6_") + std::to_string(i);
+            std::string val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+            c6.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
+        }
+    }
+    //初始密文的解密如下(为了方便，选前t个碎片解密)
+    vector<vector<G1>> rk1;
+    vector<G1> rk2;
+    vector<GT> rk3;
+    for(int i = 1; i < nu;i++){
+        if (i != member_idx) {
+            continue;
+        }
+
+        auto rk2_key = std::string("create_renc_key_rk2_") + std::to_string(i);
+        std::string rk2_val;
+        if (param.zjc_host->GetKeyValue(param.from, rk2_key, &rk2_val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", rk2_key.c_str());
+            return kContractError;
+        }
+
+        rk2.push_back(G1(e, (const unsigned char*)rk2_val.c_str(), rk2_val.size(), true, 0));
+        auto rk3_key = std::string("create_renc_key_rk3_") + std::to_string(i);
+        std::string rk3_val;
+        if (param.zjc_host->GetKeyValue(param.from, rk3_key, &rk3_val) != 0) {
+            CONTRACT_ERROR("get key value failed: %s", rk3_key.c_str());
+            return kContractError;
+        }
+
+        rk3.push_back(GT(e, (const unsigned char*)rk3_val.c_str(), rk3_val.size(), 0));
+        vector<G1> tmp;
+        for(int j= 0; j<np; j++) {
+            auto key = std::string("create_renc_key_rk1_") + std::to_string(i) + "_" + std::to_string(j);
+            std::string rk1_val;
+            if (param.zjc_host->GetKeyValue(param.from, key, &rk1_val) != 0) {
+                CONTRACT_ERROR("get key value failed: %s", key.c_str());
+                return kContractError;
+            }
+
+            tmp.push_back(G1(e, (const unsigned char*)rk1_val.c_str(), rk1_val.size(), true, 0));
+        }
+        
+        rk1.push_back(tmp);
+    }
+    //重加密（随即t个代理执行，这里为了方便就取前t个）
+    //注意到，不论是初始密文还是重加密密文，都可进行重加密操作。
+    //reenc-c=(rc1,rc2,rc3,rc4,rc5,rc6)
+    //其中每一项 rc的第一个下标表示接收者编号，第二个下标表示分发给的代理编号
+    //rc[nu][t],rc[i]表示用户i的重加密密文，rc[i][k]表示代理k发送给用户i的密文
+    vector<vector<G1>> rc1,rc3,rc5;
+    vector<vector<GT>> rc2,rc4,rc6;
+    rc1.push_back(c1);
+    rc2.push_back(c2);
+    rc3.push_back(c3);
+    rc4.push_back(c4);
+    rc5.push_back(c5);
+    rc6.push_back(c6);
+    std::vector<std::string> w1_vec{
+        common::Encode::HexDecode("3651a4e5df2ccf01bb0008470e79f92e4c5e1219"),
+        common::Encode::HexDecode("00dfecbab5d98af34f15be229bd52ebf97875208"),
+        common::Encode::HexDecode("21e5f65d090bc5f32c835065c46fdf5cee048c8e"),
+        common::Encode::HexDecode("00c86d7360197a0612e382bccb221e713d109481"),
+        common::Encode::HexDecode("1d9aba1b1d19c3a53c1797d027ad77c7f17baee9"),
+        common::Encode::HexDecode("64fdc762c07514950719fdef69b541c1eeef02de"),
+        common::Encode::HexDecode("07e450d8711937038584d5c57a6ffc38813c1c4f"),
+        common::Encode::HexDecode("7b7abbb83682ad432966d5f65f14b029163cf94f"),
+        common::Encode::HexDecode("199155e313a39f146ad2c243ec67c9f9cf194099")
+    };
+
+    std::vector<std::string> w2_vec{
+        common::Encode::HexDecode("19c9bb04c356e61bde2f0f5a4c68d81892cfe095"),
+        common::Encode::HexDecode("52a9607972e60997400b657df89af985e24d2958"),
+        common::Encode::HexDecode("3f282e3d475f1e6827db14c1fd1f3e8de86e8cb5"),
+        common::Encode::HexDecode("20cb8c80f0ee6d575e4801c2a47d022024144eb9"),
+        common::Encode::HexDecode("72a51b01deb6ba7bbfd23a21fc24e4e6f4f0a13f"),
+        common::Encode::HexDecode("0a515ba36acb63cb962d7a88d5f96c8fd2f3a3f7"),
+        common::Encode::HexDecode("4b0e9455da7b02ca61802012dea1a085272a2d2e"),
+        common::Encode::HexDecode("66f4f3ec8d91492c6579718478fc1c5721982456"),
+        common::Encode::HexDecode("6c5fe12238ad420ff91da801360ae1e6e07cde11")
+    };
+
+    //有nu-1个接受者，则需重加密nu-1次
+    for(int i = 1;i<nu;i++) {
+        if (i != member_idx) {
+            continue;
+        }
+        
+        //在实际应用中，这里的两个随机数需要使用分布式随机数（密钥）协商算法。
+        //例如每个代理都向其他代理发送w1i和w2i，每个代理接收后都做累加得到w1和w2。
+        Zr w1(e, w1_vec[i - 1].c_str(), w1_vec[i - 1].size());
+        Zr w2(e, w2_vec[i - 1].c_str(), w2_vec[i - 1].size());
+        ZJC_DEBUG("encrypt data i: %d, w1: %s, w2: %s",
+            i, 
+            common::Encode::HexEncode(w1.toString()).c_str(), 
+            common::Encode::HexEncode(w2.toString()).c_str());
+        vector<G1> tmp1,tmp3,tmp5;
+        vector<GT> tmp2,tmp4,tmp6;
+        for(int j= 0;j<t;j++){
+            tmp1.push_back(rc1[i-1][j]*(rc3[i-1][j]^w1));
+            tmp3.push_back(rc3[i-1][j]^w2);
+            tmp2.push_back(rc2[i-1][j]*(rc4[i-1][j]^w1)*e(tmp1.back(),rk1[0][j]));
+            tmp4.push_back((rc4[i-1][j]*e(rc3[i-1][j],rk1[0][j]))^w2);
+        }
+        tmp5.push_back(rk2[0]);
+        tmp6.push_back(rk3[0]);
         rc1.push_back(tmp1);
         rc2.push_back(tmp2);
         rc3.push_back(tmp3);
         rc4.push_back(tmp4);
         rc5.push_back(tmp5);
         rc6.push_back(tmp6);
+        for (int32_t tmp_idx = 0; tmp_idx < tmp1.size(); ++tmp_idx) {
+            ZJC_DEBUG("create member reenc data: %d, %d, tmp1: %s", 
+                i, tmp_idx, 
+                common::Encode::HexEncode(tmp1[tmp_idx].toString(true)).c_str());
+            auto key = std::string("create_reenc_user_msg_rc1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp1[tmp_idx].toString(true));
+        }
+
+        for (int32_t tmp_idx = 0; tmp_idx < tmp2.size(); ++tmp_idx) {
+            ZJC_DEBUG("create member reenc data: %d, %d, tmp2: %s", 
+                i, tmp_idx, 
+                common::Encode::HexEncode(tmp2[tmp_idx].toString()).c_str());
+            auto key = std::string("create_reenc_user_msg_rc2_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp2[tmp_idx].toString());
+        }
+
+        for (int32_t tmp_idx = 0; tmp_idx < tmp3.size(); ++tmp_idx) {
+            ZJC_DEBUG("create member reenc data: %d, %d, tmp3: %s", 
+                i, tmp_idx, 
+                common::Encode::HexEncode(tmp3[tmp_idx].toString(true)).c_str());
+            auto key = std::string("create_reenc_user_msg_rc3_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp3[tmp_idx].toString(true));
+        }
+
+        for (int32_t tmp_idx = 0; tmp_idx < tmp4.size(); ++tmp_idx) {
+            ZJC_DEBUG("create member reenc data: %d, %d, tmp4: %s", 
+                i, tmp_idx, 
+                common::Encode::HexEncode(tmp4[tmp_idx].toString()).c_str());
+            auto key = std::string("create_reenc_user_msg_rc4_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp4[tmp_idx].toString());
+        }
+
+        for (int32_t tmp_idx = 0; tmp_idx < tmp5.size(); ++tmp_idx) {
+            ZJC_DEBUG("create member reenc data: %d, %d, tmp5: %s", 
+                i, tmp_idx, 
+                common::Encode::HexEncode(tmp5[tmp_idx].toString(true)).c_str());
+            auto key = std::string("create_reenc_user_msg_rc5_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp5[tmp_idx].toString(true));
+        }
+
+        for (int32_t tmp_idx = 0; tmp_idx < tmp6.size(); ++tmp_idx) {
+            ZJC_DEBUG("create member reenc data: %d, %d, tmp6: %s", 
+                i, tmp_idx, 
+                common::Encode::HexEncode(tmp6[tmp_idx].toString()).c_str());
+            auto key = std::string("create_reenc_user_msg_rc6_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            param.zjc_host->SaveKeyValue(param.from, key, tmp6[tmp_idx].toString());
+        }
     }
 
     return kContractSuccess;

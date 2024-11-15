@@ -47,6 +47,10 @@ public:
         const CallParameters& param, 
         const std::string& key, 
         const std::string& value);
+    int ReEncryptUserMessageWithMember(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value);
     int Decryption(const CallParameters& param, const std::string& key, const std::string& value);
 
 private:

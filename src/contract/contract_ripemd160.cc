@@ -103,6 +103,13 @@ int Ripemd160::call(
         DEFAULT_CALL_RESULT();
     }
 
+    if (param.data.substr(0, 6) == "mprenc") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractReEncryption proxy_reenc;
+        proxy_reenc.ReEncryptUserMessageWithMember(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
     if (param.data.substr(0, 6) == "tprdec") {
         GET_KEY_VALUE_FROM_PARAM();
         ContractReEncryption proxy_reenc;
