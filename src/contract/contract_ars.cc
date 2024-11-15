@@ -37,9 +37,13 @@ ContractArs::ContractArs() : ContractInterface("") {
     element_from_bytes_compressed(G, (unsigned char*)g_data.c_str());
     element_init_G2(H, pairing);
     element_random(H); // 使用随机生成的非单位元生成元
+    len = element_to_bytes_compressed(bytes_data, H);
+    std::string h_data = std::string((const char*)bytes_data, len);
+    element_from_bytes_compressed(H, (unsigned char*)h_data.c_str());
+
     q = pairing_length_in_bytes_x_only_G1(pairing);
     char data[10240] = {0};
-    element_snprintf(data, sizeof(data), "G: %B, H: %B, bytes: %s", G, H, common::Encode::HexEncode(g_data).c_str());
+    element_snprintf(data, sizeof(data), "G: %B, H: %B, bytes g: %s, h: %s", G, H, common::Encode::HexEncode(g_data).c_str(), common::Encode::HexEncode(h_data).c_str());
     ZJC_DEBUG("init paring ars: %s", data);
 }
 
