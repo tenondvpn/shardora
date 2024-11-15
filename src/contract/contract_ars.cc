@@ -138,7 +138,6 @@ void ContractArs::SingleSign(
     element_pow_zn(s2, c, r_i);
     element_add(s2, s2, r_prime);
     // 调试输出签名生成的值
-    char data[10240];
     unsigned char tmp_data[1024];
     auto len = element_to_bytes(tmp_data, r_i);
     std::string r_i_str((char*)tmp_data, len);
@@ -146,6 +145,7 @@ void ContractArs::SingleSign(
     std::string x_prime_str((char*)tmp_data, len);
     len = element_to_bytes(tmp_data, r_prime);
     std::string r_prime_str((char*)tmp_data, len);
+    char data[10240];
     element_snprintf(data, sizeof(data), "delta_prime_i: %B, y_prime_i: %B, t1: %B, t2: %B, s1: %B, s2: %B, r_i: %s, x_prime: %s, r_prime: %s",
         delta_prime_i,
         y_prime_i,

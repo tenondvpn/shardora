@@ -238,27 +238,27 @@ int Ripemd160::SingleSign(
     element_init_Zr(private_key, ars.get_pairing());
     element_from_bytes(private_key, (unsigned char*)common::Encode::HexDecode(splits[2]).c_str());
     std::vector<element_t> pi_proof(ars.ring_size());
-    ars.SingleSign(splits[1], private_key, ring[signer_idx], ring, delta_prime, y_prime, pi_proof);
-    auto tmp_key = std::string("ars_create_single_sign_") + std::to_string(signer_idx);
-    std::string val = std::string(splits[1]) + ",";
-    unsigned char data[20480] = {0};
-    {
-        auto len = element_to_bytes_compressed(data, delta_prime);
-        val += common::Encode::HexEncode(std::string((char*)data, len)) + ",";
-    }
+    // ars.SingleSign(splits[1], private_key, ring[signer_idx], ring, delta_prime, y_prime, pi_proof);
+    // auto tmp_key = std::string("ars_create_single_sign_") + std::to_string(signer_idx);
+    // std::string val = std::string(splits[1]) + ",";
+    // unsigned char data[20480] = {0};
+    // {
+    //     auto len = element_to_bytes_compressed(data, delta_prime);
+    //     val += common::Encode::HexEncode(std::string((char*)data, len)) + ",";
+    // }
 
-    {
-        auto len = element_to_bytes_compressed(data, y_prime);
-        val += common::Encode::HexEncode(std::string((char*)data, len)) + ",";
-    }
+    // {
+    //     auto len = element_to_bytes_compressed(data, y_prime);
+    //     val += common::Encode::HexEncode(std::string((char*)data, len)) + ",";
+    // }
 
-    for (auto &proof : pi_proof) {
-        auto len = element_to_bytes(data, proof);
-        val += common::Encode::HexEncode(std::string((char*)data, len)) + ",";
-    }
+    // for (auto &proof : pi_proof) {
+    //     auto len = element_to_bytes(data, proof);
+    //     val += common::Encode::HexEncode(std::string((char*)data, len)) + ",";
+    // }
 
     // param.zjc_host->SaveKeyValue(param.from, tmp_key, val);
-    ZJC_DEBUG("single sign success: %d, %s", signer_idx, val.c_str());
+    // ZJC_DEBUG("single sign success: %d, %s", signer_idx, val.c_str());
     return kContractSuccess;
 }
 
