@@ -305,7 +305,7 @@ int ContractReEncryption::EncryptUserMessage(
     vector<G1> c1,c3,c5;
     vector<GT> c2,c4,c6;
     std::string test_data = "hello world!";
-    GT m(e, (const unsigned char*)test_data.c_str(), test_data.size(), 0);
+    GT m(e, test_data.c_str(), test_data.size());
     ZJC_DEBUG("get m data: %s, %s, %s", 
         test_data.c_str(), 
         common::Encode::HexEncode(m.toString()).c_str(), 
@@ -850,7 +850,7 @@ int ContractReEncryption::Decryption(
     }
 
     std::string test_data = "hello world!";
-    GT m(e, (const unsigned char*)test_data.c_str(), test_data.size(), 0);
+    GT m(e, test_data.c_str(), test_data.size());
     // 重加密密文的解密如下(为了方便，选前t个碎片解密)
     for(int i = 1; i<nu; i++){
         GT Xi = rc6[i][0] / e(g1 ^ sk[i], rc5[i][0]);
