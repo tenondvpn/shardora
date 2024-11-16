@@ -143,13 +143,15 @@ void ContractArs::SingleSign(
     len = element_to_bytes(tmp_data, r_prime);
     std::string r_prime_str((char*)tmp_data, len);
     char data[10240];
-    element_snprintf(data, sizeof(data), "delta_prime_i: %B, y_prime_i: %B, t1: %B, t2: %B, s1: %B, s2: %B, r_i: %s, x_prime: %s, r_prime: %s",
+    element_snprintf(data, sizeof(data), 
+        "delta_prime_i: %B, y_prime_i: %B, t1: %B, t2: %B, s1: %B, s2: %B, r_i: %s, x_prime: %s, r_prime: %s, yi: %B",
         delta_prime_i,
         y_prime_i,
         t1, t2, s1, s2,
         common::Encode::HexEncode(r_i_str).c_str(),
         common::Encode::HexEncode(x_prime_str).c_str(),
-        common::Encode::HexEncode(r_prime_str).c_str());
+        common::Encode::HexEncode(r_prime_str).c_str(),
+        y_i);
     ZJC_DEBUG("single sign message: %s", data);
 }
 
