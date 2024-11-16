@@ -271,8 +271,8 @@ int Ripemd160::AggSignAndVerify(
     element_t agg_signature;
     element_init_G1(agg_signature, ars.get_pairing());
     std::vector<std::string> messages;
-    std::vector<element_t> delta_primes;
-    std::vector<element_t> y_primes;
+    std::vector<element_t> delta_primes(ars.signer_count());
+    std::vector<element_t> y_primes(ars.signer_count());
     std::vector<element_t> ring(ars.ring_size());
     GetRing(param, ars, ring);
     std::vector<element_t> tmp_pool(4);
@@ -291,8 +291,8 @@ int Ripemd160::AggSignAndVerify(
         }
 
         messages.push_back(items[0]);
-        element_t delta_prime;
-        element_t y_prime;
+        element_t& delta_prime = delta_primes[i];
+        element_t& y_prime = y_primes[i];
         element_init_G1(delta_prime, ars.get_pairing());
         element_init_G2(y_prime, ars.get_pairing());
         element_from_bytes_compressed(delta_prime, (unsigned char*)common::Encode::HexDecode(items[1]).c_str());
