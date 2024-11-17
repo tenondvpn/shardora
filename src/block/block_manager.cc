@@ -813,7 +813,7 @@ void BlockManager::AddNewBlock(
 
     auto st = db_->Put(db_batch);
     if (!st.ok()) {
-        ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
+        ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
     }
 
     ZJC_DEBUG("success new block coming sharding id: %u_%d_%lu, "

@@ -363,7 +363,7 @@ public:
             StoreToDb(view_block_ptr, 999999, db_bach);
             auto st = db_->Put(*db_bach);
             if (!st.ok()) {
-                ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
+                ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
             }
         }
 
