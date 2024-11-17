@@ -1812,8 +1812,8 @@ public:
         *all_bw = bw;
         item.set_bandwidth(*all_bw);
         item.set_timestamp(day);
-        auto pst = db_->Put(key, item.SerializeAsString());
-        if (!pst.ok()) {
+        st = db_->Put(key, item.SerializeAsString());
+        if (!st.ok()) {
             ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
 
@@ -1827,8 +1827,8 @@ public:
         key.reserve(128);
         key.append(kC2cSelloutPrefix);
         key.append(id);
-        auto pst = db_->Put(key, sell_info.SerializeAsString());
-        if (!pst.ok()) {
+        auto st = db_->Put(key, sell_info.SerializeAsString());
+        if (!st.ok()) {
             ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
     }
@@ -1873,8 +1873,8 @@ public:
         key.reserve(128);
         key.append(kC2cSellorderPrefix);
         key.append(id);
-        auto pst = db_->Put(key, sell_info.SerializeAsString());
-        if (!pst.ok()) {
+        auto st = db_->Put(key, sell_info.SerializeAsString());
+        if (!st.ok()) {
             ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
     }
@@ -1960,8 +1960,8 @@ public:
         key.reserve(64);
         key.append(kLatestPoolStatisticTagPrefix);
         key.append((char*)&network_id, sizeof(network_id));
-        auto pst = db_->Put(key, statistic_info.SerializeAsString());
-        if (!pst.ok()) {
+        auto st = db_->Put(key, statistic_info.SerializeAsString());
+        if (!st.ok()) {
             ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
         
