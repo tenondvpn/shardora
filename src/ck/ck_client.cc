@@ -914,7 +914,7 @@ bool ClickHouseClient::CreateBlsBlockInfoTable() {
     return true;
 }
 
-bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) {
+bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) try {
     auto elect_height = std::make_shared<clickhouse::ColumnUInt64>();
     auto view = std::make_shared<clickhouse::ColumnUInt64>();
     auto shard_id = std::make_shared<clickhouse::ColumnUInt32>();
@@ -953,6 +953,10 @@ bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) {
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client.Insert(kClickhouseBlsBlockInfo, item);
     return true;
+} catch (std::exception& e) {
+    ZJC_ERROR("add new block failed[%s]", e.what());
+    printf("add new block failed[%s]", e.what());
+    return false;
 }
 
 bool ClickHouseClient::CreateTable(bool statistic, std::shared_ptr<db::Db> db_ptr) try {
