@@ -185,6 +185,7 @@ int Ripemd160::CreateArsKeys(
         param.zjc_host->SaveKeyValue(param.from, tmp_key, y_i_str);
     }
 
+    ZJC_DEBUG("init sign success");
     return kContractSuccess;
 }
 
