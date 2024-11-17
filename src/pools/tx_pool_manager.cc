@@ -174,7 +174,7 @@ void TxPoolManager::FlushHeightTree() {
 
 //     ZJC_DEBUG("success call FlushHeightTree");
     if (!db_->Put(db_batch).ok()) {
-        ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+        ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
     }
 }
 

@@ -126,7 +126,7 @@ public:
     void AddAddressInfo(const std::string& addr, const std::string& val) {
         auto st = db_->Put(kAddressPrefix + addr, val);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
@@ -196,7 +196,7 @@ public:
         key.append((char*)&peer_idx, sizeof(peer_idx));
         auto st = db_->Put(key, seckey);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
@@ -523,7 +523,7 @@ public:
         key.append(hash);
         auto st = db_->Put(key, val);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
@@ -553,7 +553,7 @@ public:
         key.append((char*)&sharding_id, sizeof(sharding_id));
         auto st = db_->Put(key, heights.SerializeAsString());
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
@@ -592,7 +592,7 @@ public:
         std::string key = kTemporaryKeyPrefix + tmp_key;
         auto st = db_->Put(key, val);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
@@ -809,7 +809,7 @@ public:
 
         auto st = db_->Put(db_batch);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
@@ -870,7 +870,7 @@ public:
         std::string val = verfy_req.SerializeAsString();
         auto st = db_->Put(key, val);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
@@ -914,7 +914,7 @@ public:
         key.append(node_addr);
         auto st = db_->Put(key, bls_prikey);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
         
         ZJC_DEBUG("save bls success: %lu, %u, %s", elect_height,
@@ -978,7 +978,7 @@ public:
         std::string val = verfiy_value.SerializeAsString();
         auto st = db_->Put(key, val);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
@@ -1033,7 +1033,7 @@ public:
         std::string val = bls_polynomial.SerializeAsString();
         auto st = db_->Put(key, val);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
@@ -1063,7 +1063,7 @@ public:
         std::string val = verify_val.SerializeAsString();
         auto st = db_->Put(key, val);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
@@ -1240,7 +1240,7 @@ public:
         key.append(id);
         auto st = db_->Put(key, pubkey);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
@@ -1269,7 +1269,7 @@ public:
         std::string val(data, sizeof(data));
         auto st = db_->Put(key, val);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
@@ -1350,7 +1350,7 @@ public:
 
         auto st = db_->Put(key, enc_data);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
@@ -1455,7 +1455,7 @@ public:
         std::string val = verfy_final_vals.SerializeAsString();
         auto st = db_->Put(key, val);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
@@ -1554,7 +1554,7 @@ public:
         std::string val(data, sizeof(data));
         auto st = db_->Put(key, val);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
@@ -1675,7 +1675,7 @@ public:
 
         auto st = db_->Put(key, val);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
 
         ZJC_DEBUG("save height invalid hashs success: %u, %u, %lu, %s",
@@ -1752,7 +1752,7 @@ public:
 
         auto st = db_->Put(key, val);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
 
         ZJC_DEBUG("save height invalid hashs success: %u, %u, %lu, %s",
@@ -1814,7 +1814,7 @@ public:
         item.set_timestamp(day);
         auto pst = db_->Put(key, item.SerializeAsString());
         if (!pst.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
 
         return true;
@@ -1829,7 +1829,7 @@ public:
         key.append(id);
         auto pst = db_->Put(key, sell_info.SerializeAsString());
         if (!pst.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
@@ -1875,7 +1875,7 @@ public:
         key.append(id);
         auto pst = db_->Put(key, sell_info.SerializeAsString());
         if (!pst.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
@@ -1962,7 +1962,7 @@ public:
         key.append((char*)&network_id, sizeof(network_id));
         auto pst = db_->Put(key, statistic_info.SerializeAsString());
         if (!pst.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
         
         ZJC_INFO("success SaveLatestPoolStatisticTag network: %u, message: %s",
@@ -2013,7 +2013,7 @@ public:
         key.append((char*)&pool_idx, sizeof(pool_idx));
         auto st = db_->Put(key, header.SerializeAsString());
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
@@ -2058,7 +2058,7 @@ public:
         
         auto st = db_->Put(key, enc_data);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.getState());
+            ZJC_FATAL("write block to db failed: %d, status: %s", st.code(), st.ToString());
         }
     }
 
