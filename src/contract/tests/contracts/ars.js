@@ -437,7 +437,7 @@ function add_pairing_param(prev, key, value) {
 
 }
 
-function CreateNewArs(prev, key, value) {
+function CreateNewArs(prev, key, value, id) {
     var key_len = key.length.toString();
     if (key.length <= 9) {
         key_len = "0" + key_len;
@@ -456,6 +456,44 @@ function CreateNewArs(prev, key, value) {
         addParamCode.substring(2) + addParam.substring(2), 0);
 }
 
+function SingleSign(prev, key, value, id) {
+    var key_len = key.length.toString();
+    if (key.length <= 9) {
+        key_len = "0" + key_len;
+    }
+
+    var param = prev + key_len + key + value;
+    var hexparam = web3.utils.toHex(param);
+    // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
+    var addParam = web3.eth.abi.encodeParameters(
+        ['bytes32', 'bytes'], 
+        ['0x' + id, hexparam]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('SingleSign(bytes32,bytes)');
+    console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+    call_contract(
+        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        addParamCode.substring(2) + addParam.substring(2), 0);
+}
+
+function AggSign(prev, key, value, id) {
+    var key_len = key.length.toString();
+    if (key.length <= 9) {
+        key_len = "0" + key_len;
+    }
+
+    var param = prev + key_len + key + value;
+    var hexparam = web3.utils.toHex(param);
+    // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
+    var addParam = web3.eth.abi.encodeParameters(
+        ['bytes32', 'bytes'], 
+        ['0x' + id, hexparam]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('AggSign(bytes32,bytes)');
+    console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+    call_contract(
+        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        addParamCode.substring(2) + addParam.substring(2), 0);
+}
+
 const args = process.argv.slice(2)
 // SetUp：初始化算法，需要用到pbc库
 if (args[0] == 0) {
@@ -464,21 +502,21 @@ if (args[0] == 0) {
 }
 
 // 测试聚合环签名整个流程
+var id = 'cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848';
 if (args[0] == 1) {
-    var id = 'cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848';
     CreateNewArs("tarscr", "tarscr", "27e5ab858583f1d19ef272856859658246cd388f,1a31f75df2fba7607ae8566646a553451a1b8c14,5bc3423d99bcc823769fe36f3281739e3d022290-2," + id);
 }
 
 if (args[0] == 2) {
-    add_pairing_param("tarsps", "tarsps", args[1]);
+    SingleSign("tarsps", "tarsps", args[1] + "-" + id, id);
 }
 
 if (args[0] == 3) {
-    add_pairing_param("tarsas", "tarsas", "tarsas");
+    AggSign("tarsas", "tarsas", id);
 }
 
 if (args[0] == 4) {
-    add_pairing_param("tars", "tars", "tars");
+    add_pairing_param("tars", "tars", id, id);
 }
 
 // 测试合约查询

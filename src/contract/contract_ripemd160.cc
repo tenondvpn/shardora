@@ -204,6 +204,9 @@ int Ripemd160::CreateArsKeys(
         element_clear(public_keys[i]);
     }
 
+    auto key = std::string("ars_create_") + id;
+    auto val = common::StringUtil::Format("%u,%u", ars.ring_size(), ars.signer_count());
+    param.zjc_host->SaveKeyValue(param.from, key, val);
     ZJC_DEBUG("init sign success: %s, from: %s, ring size: %d, signer_count: %d",
         ex_splits[1], 
         common::Encode::HexEncode(param.from).c_str(), 
@@ -233,11 +236,37 @@ int Ripemd160::SingleSign(
         const CallParameters& param, 
         const std::string& key, 
         const std::string& value) {
+    auto line_splits = common::Split<>(value.c_str(), '-');
+    if (line_splits.Count() < 3) {
+        return kContractError;
+    }
+
+    auto id = common::Encode::HexDecode(line_splits[1]);
+    auto key = std::string("ars_create_") + id;
+    std::string val;
+    if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+        CONTRACT_ERROR("get key value failed: %s", key.c_str());
+        return kContractError;
+    }
+
+    auto ring_and_signer_count_splits = common::Split<>(val.c_str(), ',');
+    int32_t ring_size = 0;
+    if (!common::StringUtil::ToInt32(ring_and_signer_count_splits[0], &ring_size)) {
+        return kContractError;
+    }
+
+    int32_t signer_count = 0;
+    if (!common::StringUtil::ToInt32(ring_and_signer_count_splits[1], &signer_count)) {
+        return kContractError;
+    }
+
     ContractArs ars;
+    ars.set_ring_size(ring_size);
+    ars.set_signer_count(signer_count);
     // 设置环的大小和签名者数量
     std::vector<element_t> ring(ars.ring_size());
     GetRing(param, ars, ring);
-    auto splits = common::Split<>(value.c_str(), ',');
+    auto splits = common::Split<>(line_splits[0], ',');
     if (splits.Count() < 3) {
         assert(false);
         return kContractError;
@@ -295,7 +324,28 @@ int Ripemd160::AggSignAndVerify(
         const std::string& key, 
         const std::string& value) {
         // 聚合签名生成
+    auto id = common::Encode::HexDecode(value);
+    auto key = std::string("ars_create_") + id;
+    std::string val;
+    if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+        CONTRACT_ERROR("get key value failed: %s", key.c_str());
+        return kContractError;
+    }
+
+    auto ring_and_signer_count_splits = common::Split<>(val.c_str(), ',');
+    int32_t ring_size = 0;
+    if (!common::StringUtil::ToInt32(ring_and_signer_count_splits[0], &ring_size)) {
+        return kContractError;
+    }
+
+    int32_t signer_count = 0;
+    if (!common::StringUtil::ToInt32(ring_and_signer_count_splits[1], &signer_count)) {
+        return kContractError;
+    }
+
     ContractArs ars;
+    ars.set_ring_size(ring_size);
+    ars.set_signer_count(signer_count);
     element_t agg_signature;
     element_init_G1(agg_signature, ars.get_pairing());
     std::vector<std::string> messages;
