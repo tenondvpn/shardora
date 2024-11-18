@@ -34,10 +34,10 @@ contract Ars {
     }
 
     function CreateNewArs(uint ring_size, uint signer_count, bytes32 id, bytes memory params) public {
-        emit NewSelloutLength(0);
+        emit DebugEvent(0);
 
         require(!ars_map[id].exists);
-        emit NewSelloutLength(1);
+        emit DebugEvent(1);
         bytes32 res = ripemd160(params);
         ars_map[id] = ArsInfo({
             ring_size: ring_size,
@@ -46,23 +46,23 @@ contract Ars {
             res_info: res,
             exists: true
         });
-        emit NewSelloutLength(2);
+        emit DebugEvent(2);
     }
 
     function SingleSign(bytes32 id, bytes memory params) public {
-        emit NewSelloutLength(3);
+        emit DebugEvent(3);
         require(ars_map[id].exists);
-        emit NewSelloutLength(4);
+        emit DebugEvent(4);
         bytes32 res = ripemd160(params);
-        emit NewSelloutLength(5);
+        emit DebugEvent(5);
     }
 
     function AggSign(bytes32 id, bytes memory params) public {
-        emit NewSelloutLength(6);
+        emit DebugEvent(6);
         require(ars_map[id].exists);
-        emit NewSelloutLength(7);
+        emit DebugEvent(7);
         bytes32 res = ripemd160(params);
-        emit NewSelloutLength(8);
+        emit DebugEvent(8);
     }
 
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
