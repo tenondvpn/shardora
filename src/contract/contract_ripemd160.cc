@@ -292,8 +292,8 @@ int Ripemd160::SingleSign(
     element_from_bytes(private_key, (unsigned char*)common::Encode::HexDecode(splits[2]).c_str());
     std::vector<element_t> pi_proof(4);
     ars.SingleSign(splits[1], private_key, ring[signer_idx], ring, delta_prime, y_prime, pi_proof);
-    auto tmp_key = std::string("ars_create_single_sign_") + std::to_string(signer_idx);
-    std::string val = std::string(splits[1]) + ",";
+    tmp_key = std::string("ars_create_single_sign_") + std::to_string(signer_idx);
+    val = std::string(splits[1]) + ",";
     unsigned char data[20480] = {0};
     {
         auto len = element_to_bytes_compressed(data, delta_prime);
