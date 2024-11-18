@@ -237,7 +237,7 @@ int Ripemd160::SingleSign(
         const std::string& key, 
         const std::string& value) {
     auto line_splits = common::Split<>(value.c_str(), '-');
-    if (line_splits.Count() < 3) {
+    if (line_splits.Count() < 2) {
         return kContractError;
     }
 
