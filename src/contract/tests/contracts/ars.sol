@@ -18,6 +18,10 @@ contract Ars {
         bool exists;
     }
 
+    event DebugEvent(
+       uint256 value
+    );
+
     mapping(bytes32 => ArsInfo) public ars_map;
 
     // SetUp：初始化算法，需要用到pbc库
@@ -30,7 +34,10 @@ contract Ars {
     }
 
     function CreateNewArs(uint ring_size, uint signer_count, bytes32 id, bytes memory params) public {
+        emit NewSelloutLength(0);
+
         require(!ars_map[id].exists);
+        emit NewSelloutLength(1);
         bytes32 res = ripemd160(params);
         ars_map[id] = ArsInfo({
             ring_size: ring_size,
@@ -39,16 +46,23 @@ contract Ars {
             res_info: res,
             exists: true
         });
+        emit NewSelloutLength(2);
     }
 
     function SingleSign(bytes32 id, bytes memory params) public {
+        emit NewSelloutLength(3);
         require(ars_map[id].exists);
+        emit NewSelloutLength(4);
         bytes32 res = ripemd160(params);
+        emit NewSelloutLength(5);
     }
 
     function AggSign(bytes32 id, bytes memory params) public {
+        emit NewSelloutLength(6);
         require(ars_map[id].exists);
+        emit NewSelloutLength(7);
         bytes32 res = ripemd160(params);
+        emit NewSelloutLength(8);
     }
 
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
