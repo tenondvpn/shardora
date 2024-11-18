@@ -354,7 +354,7 @@ function sleep(ms) {
 
 function InitC2cEnv(key, value) {
     const { exec } = require('child_process');
-    exec('solc --bin ./proxy_reencyption.sol', async (error, stdout, stderr) => {
+    exec('solc --bin ./ars.sol', async (error, stdout, stderr) => {
         if (error) {
           console.error(`exec error: ${error}`);
           return;
