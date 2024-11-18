@@ -114,7 +114,7 @@ Status ViewBlockChain::Store(
         std::vector<std::shared_ptr<ViewBlock>> remove_blocks;
         if (!view_block_at_height_vec.empty()) {
             for (auto iter = view_block_at_height_vec.begin(); iter != view_block_at_height_vec.end();) {
-                if (IsQcTcValid((*iter)->qc())) {                    
+                if (IsQcTcValid((*iter)->qc()) && (*iter)->qc().view_block_hash() != view_block->qc().view_block_hash()) {                    
                     ZJC_DEBUG("invalid view has much more view block: %lu, "
                         "count: %u, %u_%u_%lu, %lu hash: %s, sign x: %s, %u_%u_%lu, %lu new block hash: %s", 
                         view_block->qc().view(),
