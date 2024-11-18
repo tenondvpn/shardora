@@ -204,9 +204,9 @@ int Ripemd160::CreateArsKeys(
         element_clear(public_keys[i]);
     }
 
-    auto key = std::string("ars_create_") + id;
+    auto tmp_key = std::string("ars_create_") + id;
     auto val = common::StringUtil::Format("%u,%u", ars.ring_size(), ars.signer_count());
-    param.zjc_host->SaveKeyValue(param.from, key, val);
+    param.zjc_host->SaveKeyValue(param.from, tmp_key, val);
     ZJC_DEBUG("init sign success: %s, from: %s, ring size: %d, signer_count: %d",
         ex_splits[1], 
         common::Encode::HexEncode(param.from).c_str(), 
@@ -242,10 +242,10 @@ int Ripemd160::SingleSign(
     }
 
     auto id = common::Encode::HexDecode(line_splits[1]);
-    auto key = std::string("ars_create_") + id;
+    auto tmp_key = std::string("ars_create_") + id;
     std::string val;
-    if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
-        CONTRACT_ERROR("get key value failed: %s", key.c_str());
+    if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+        CONTRACT_ERROR("get key value failed: %s", tmp_key.c_str());
         return kContractError;
     }
 
@@ -325,10 +325,10 @@ int Ripemd160::AggSignAndVerify(
         const std::string& value) {
         // 聚合签名生成
     auto id = common::Encode::HexDecode(value);
-    auto key = std::string("ars_create_") + id;
+    auto tmp_key = std::string("ars_create_") + id;
     std::string val;
-    if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
-        CONTRACT_ERROR("get key value failed: %s", key.c_str());
+    if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+        CONTRACT_ERROR("get key value failed: %s", tmp_key.c_str());
         return kContractError;
     }
 
