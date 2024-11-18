@@ -163,15 +163,32 @@ int Ripemd160::CreateArsKeys(
         const std::string& key, 
         const std::string& value) {
     ContractArs ars;
-    // 创建环中的公钥和私钥对
-    std::vector<element_t> private_keys(ars.ring_size());
-    std::vector<element_t> public_keys(ars.ring_size());
     // 初始化公私钥对
-    auto keys_splits = common::Split<>(value.c_str(), ',');
-    if (keys_splits.Count() != ars.ring_size()) {
+    auto line_splits = common::Split<>(value.c_str(), '-');
+    if (line_splits.Count() < 3) {
         return kContractError;
     }
 
+    auto keys_splits = common::Split<>(line_splits[0], ',');
+    ars.set_ring_size(keys_splits.Count());
+    auto ex_splits = common::Split<>(line_splits[1], ',');
+    if (ex_splits.Count() < 2) {
+        return kContractError;
+    }
+
+    auto signer_count = 0;
+    if (!common::StringUtil::ToInt32(ex_splits[0], &signer_count)) {
+        return kContractError;
+    }
+
+    if (signer_count <= 0 || signer_count >= ars.ring_size()) {
+        return kContractError;
+    }
+
+    auto id = common::Encode::HexDecode(ex_splits[1]);
+    // 创建环中的公钥和私钥对
+    std::vector<element_t> private_keys(ars.ring_size());
+    std::vector<element_t> public_keys(ars.ring_size());
     for (int i = 0; i < ars.ring_size(); ++i) {
         ars.KeyGen(keys_splits[i], private_keys[i], public_keys[i]);
         unsigned char bytes_data[10240] = {0};
@@ -179,15 +196,19 @@ int Ripemd160::CreateArsKeys(
         std::string x_i_str((char*)bytes_data, len);
         len = element_to_bytes_compressed(bytes_data, public_keys[i]);
         std::string y_i_str((char*)bytes_data, len);
-        auto tmp_key = std::string("ars_create_user_private_key_") + std::to_string(i);
+        auto tmp_key = id + std::string("ars_create_user_private_key_") + std::to_string(i);
         param.zjc_host->SaveKeyValue(param.from, tmp_key, x_i_str);
-        tmp_key = std::string("ars_create_user_public_key_") + std::to_string(i);
+        tmp_key = id + std::string("ars_create_user_public_key_") + std::to_string(i);
         param.zjc_host->SaveKeyValue(param.from, tmp_key, y_i_str);
         element_clear(private_keys[i]);
         element_clear(public_keys[i]);
     }
 
-    ZJC_DEBUG("init sign success");
+    ZJC_DEBUG("init sign success: %s, from: %s, ring size: %d, signer_count: %d",
+        ex_splits[1], 
+        common::Encode::HexEncode(param.from).c_str(), 
+        ars.ring_size(), 
+        ars.signer_count());
     return kContractSuccess;
 }
 

@@ -56,6 +56,14 @@ public:
 
     int signer_count() const {
         return signer_count_;
+    }
+
+    void set_ring_size(int ring_size) {
+        ring_size_ = ring_size;
+    }
+
+    void set_signer_count(int signer_count) {
+        signer_count_ = signer_count;
     } 
 
 private:
