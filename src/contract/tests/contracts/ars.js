@@ -504,7 +504,7 @@ if (args[0] == 0) {
 // 测试聚合环签名整个流程
 var id = 'cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848';
 if (args[0] == 1) {
-    CreateNewArs("tarscr", "tarscr", "27e5ab858583f1d19ef272856859658246cd388f,1a31f75df2fba7607ae8566646a553451a1b8c14,5bc3423d99bcc823769fe36f3281739e3d022290-2," + id);
+    CreateNewArs("tarscr", "tarscr", "27e5ab858583f1d19ef272856859658246cd388f,1a31f75df2fba7607ae8566646a553451a1b8c14,5bc3423d99bcc823769fe36f3281739e3d022290-2," + id, id);
 }
 
 if (args[0] == 2) {
