@@ -165,7 +165,7 @@ int Ripemd160::CreateArsKeys(
     ContractArs ars;
     // 初始化公私钥对
     auto line_splits = common::Split<>(value.c_str(), '-');
-    if (line_splits.Count() < 3) {
+    if (line_splits.Count() < 2) {
         return kContractError;
     }
 
