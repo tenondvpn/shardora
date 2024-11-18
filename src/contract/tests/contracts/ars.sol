@@ -32,7 +32,7 @@ contract Ars {
     function CreateNewArs(uint ring_size, uint signer_count, bytes32 id, bytes memory params) public {
         require(!ars_map[id].exists);
         bytes32 res = ripemd160(params);
-        orders[id] = ArsInfo({
+        ars_map[id] = ArsInfo({
             ring_size: ring_size,
             signer_count: signer_count,
             id: id,
