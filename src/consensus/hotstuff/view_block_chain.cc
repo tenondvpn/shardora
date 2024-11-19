@@ -482,7 +482,8 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
         return Status::kError;
     }
 
-    auto& blocks = view_blocks_at_height_[view];
+    auto& blocks = view_iter->second;
+    assert(!blocks.empty());
     auto it = view_blocks_info_.find(view_block->parent_hash());
     if (it != view_blocks_info_.end() && !it->second->children.empty()) {
         auto& child_blocks = it->second->children;
