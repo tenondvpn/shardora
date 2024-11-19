@@ -89,9 +89,11 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
     ZJC_DEBUG("get block hash: %s, sharding_id: %u, pool_index: %u, "
         "parent_hash: %s, vss_random: %lu, height: %lu, "
         "timeblock_height: %lu, timestamp: %lu, msg: %s",
+        common::Encode::HexEncode(hash).c_str(),
         sharding_id, pool_index, 
         common::Encode::HexEncode(view_block.parent_hash()).c_str(), 
-        vss_random, height, timeblock_height, timestamp);
+        vss_random, height, timeblock_height, timestamp,
+        common::Encode::HexEncode(msg).c_str());
     return hash;
 }
 
