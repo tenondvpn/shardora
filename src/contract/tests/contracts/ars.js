@@ -329,7 +329,7 @@ async function SetManagerPrepayment(contract_address) {
         try {
             const {stdout, stderr} = await execPromise(cmd);
             if (stdout.trim() == check_count.toString()) {
-                console.error(`contract prepayment success: ${stdout}`);
+                console.error(`${cmd} contract prepayment success: ${stdout}`);
                 break;
             }
 
