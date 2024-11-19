@@ -476,15 +476,13 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
 
     auto& hash = view_block->qc().view_block_hash();
     auto view = view_block->qc().view();
+    auto view_iter = view_blocks_at_height_.find(view);
+    if (view_iter == view_blocks_at_height_.end()) {
+        assert(false);
+        return Status::kError;
+    }
+
     auto& blocks = view_blocks_at_height_[view];
-    ZJC_DEBUG("now delete view block %u_%u_%lu, height: %lu, %s, strings: %s, now view size: %u", 
-        view_block->qc().network_id(), 
-        view_block->qc().pool_index(), 
-        view_block->qc().view(), 
-        view_block->has_block_info() ? view_block->block_info().height() : -1,
-        common::Encode::HexEncode(hash).c_str(),
-        String().c_str(),
-        blocks.size());
     auto it = view_blocks_info_.find(view_block->parent_hash());
     if (it != view_blocks_info_.end() && !it->second->children.empty()) {
         auto& child_blocks = it->second->children;
@@ -568,7 +566,6 @@ void ViewBlockChain::Print() const { PrintBlock(start_block_); }
 
 std::string ViewBlockChain::String() const {
     std::vector<std::shared_ptr<ViewBlock>> view_blocks;
-
     for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
         if (it->second->view_block) {
             view_blocks.push_back(it->second->view_block);
