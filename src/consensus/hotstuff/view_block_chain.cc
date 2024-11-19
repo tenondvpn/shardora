@@ -511,6 +511,7 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
         view_blocks_at_height_.erase(view);
     }
 
+    view_blocks_info_.erase(hash);
     ZJC_DEBUG("success delete view block %u_%u_%lu, height: %lu, %s, strings: %s, now view size: %u", 
         view_block->qc().network_id(), 
         view_block->qc().pool_index(), 
@@ -519,7 +520,6 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
         common::Encode::HexEncode(hash).c_str(),
         String().c_str(),
         blocks.size());
-    view_blocks_info_.erase(hash);
     return Status::kSuccess;    
 }
 
