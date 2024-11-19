@@ -175,6 +175,11 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
                 prepay_user->Append(common::Encode::HexEncode(user));
                 prepay_height->Append(block_item->height());
                 prepay_amount->Append(tx.balance());
+                ZJC_DEBUG("success add prepayment contract: %s, address: %s, gid: %s, balance: %lu",
+                    common::Encode::HexEncode(contract).c_str(), 
+                    common::Encode::HexEncode(user).c_str(), 
+                    common::Encode::HexEncode(tx.gid()).c_str(), 
+                    tx.balance());
             }
             
             nlohmann::json res;
@@ -249,6 +254,11 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
                     prepay_user->Append(common::Encode::HexEncode(user));
                     prepay_height->Append(block_item->height());
                     prepay_amount->Append(to_txs.tos(to_tx_idx).balance());
+                    ZJC_DEBUG("success add prepayment contract: %s, address: %s, gid: %s, balance: %lu",
+                        common::Encode::HexEncode(contract).c_str(), 
+                        common::Encode::HexEncode(user).c_str(), 
+                        common::Encode::HexEncode(tx.gid()).c_str(), 
+                        to_txs.tos(to_tx_idx).balance());
                 }
 
                 if (to_txs.tos(to_tx_idx).to().size() != security::kUnicastAddressLength) {
