@@ -513,7 +513,7 @@ if (args[0] == 2) {
 }
 
 if (args[0] == 3) {
-    AggSign("tarsas", "tarsas", id);
+    AggSign("tarsas", "tarsas", id, id);
 }
 
 if (args[0] == 4) {
