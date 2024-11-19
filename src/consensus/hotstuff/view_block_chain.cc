@@ -474,59 +474,55 @@ Status ViewBlockChain::DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_bl
         original_child_blocks = view_blocks_info_[view_block->parent_hash()]->children;
     }
 
-    auto original_blocks_at_height = view_blocks_at_height_[view_block->qc().view()];
     auto& hash = view_block->qc().view_block_hash();
     auto view = view_block->qc().view();
-    try {
-        auto it = view_blocks_info_.find(view_block->parent_hash());
-        if (it != view_blocks_info_.end() && !it->second->children.empty()) {
-            auto& child_blocks = it->second->children;
-            child_blocks.erase(
-                std::remove_if(
-                    child_blocks.begin(), child_blocks.end(),
-                    [&hash](const std::shared_ptr<ViewBlock>& item) {
-                        return item->qc().view_block_hash() == hash; 
-                    }),
-                child_blocks.end());            
-        }
-
-        auto& blocks = view_blocks_at_height_[view];
-        blocks.erase(std::remove_if(blocks.begin(), blocks.end(),
-            [&](const std::shared_ptr<ViewBlock>& item) {
-                ZJC_DEBUG("success delete view block %u_%u_%lu, height: %lu, %s, strings: %s, now view size: %u", 
-                    view_block->qc().network_id(), 
-                    view_block->qc().pool_index(), 
-                    view_block->qc().view(), 
-                    view_block->has_block_info() ? view_block->block_info().height() : -1,
-                    common::Encode::HexEncode(hash).c_str(),
-                    String().c_str(),
-                    blocks.size());
-                return item->qc().view_block_hash() == hash; 
-            }),
-            blocks.end());
-        if (blocks.size() == 0) {
-            view_blocks_at_height_.erase(view);
-        }
-
-        ZJC_DEBUG("delete view block %u_%u_%lu, height: %lu, %s, strings: %s, now view size: %u", 
-            view_block->qc().network_id(), 
-            view_block->qc().pool_index(), 
-            view_block->qc().view(), 
-            view_block->has_block_info() ? view_block->block_info().height() : -1,
-            common::Encode::HexEncode(hash).c_str(),
-            String().c_str(),
-            blocks.size());
-        view_blocks_info_.erase(hash);
-    } catch (std::exception& e) {
-        ZJC_ERROR("del view block error %s", e.what());
-        if (!original_child_blocks.empty()) {
-            view_blocks_info_[view_block->parent_hash()]->children = original_child_blocks;
-        }
-
-        view_blocks_at_height_[view_block->qc().view()] = original_blocks_at_height;
-        assert(false);
+    auto& blocks = view_blocks_at_height_[view];
+    ZJC_DEBUG("now delete view block %u_%u_%lu, height: %lu, %s, strings: %s, now view size: %u", 
+        view_block->qc().network_id(), 
+        view_block->qc().pool_index(), 
+        view_block->qc().view(), 
+        view_block->has_block_info() ? view_block->block_info().height() : -1,
+        common::Encode::HexEncode(hash).c_str(),
+        String().c_str(),
+        blocks.size());
+    auto it = view_blocks_info_.find(view_block->parent_hash());
+    if (it != view_blocks_info_.end() && !it->second->children.empty()) {
+        auto& child_blocks = it->second->children;
+        child_blocks.erase(
+            std::remove_if(
+                child_blocks.begin(), child_blocks.end(),
+                [&hash](const std::shared_ptr<ViewBlock>& item) {
+                    return item->qc().view_block_hash() == hash; 
+                }),
+            child_blocks.end());            
     }
-    
+
+    blocks.erase(std::remove_if(blocks.begin(), blocks.end(),
+        [&](const std::shared_ptr<ViewBlock>& item) {
+            ZJC_DEBUG("check success delete view block %u_%u_%lu, height: %lu, %s, strings: %s, now view size: %u", 
+                view_block->qc().network_id(), 
+                view_block->qc().pool_index(), 
+                view_block->qc().view(), 
+                view_block->has_block_info() ? view_block->block_info().height() : -1,
+                common::Encode::HexEncode(hash).c_str(),
+                String().c_str(),
+                blocks.size());
+            return item->qc().view_block_hash() == hash; 
+        }),
+        blocks.end());
+    if (blocks.size() == 0) {
+        view_blocks_at_height_.erase(view);
+    }
+
+    ZJC_DEBUG("success delete view block %u_%u_%lu, height: %lu, %s, strings: %s, now view size: %u", 
+        view_block->qc().network_id(), 
+        view_block->qc().pool_index(), 
+        view_block->qc().view(), 
+        view_block->has_block_info() ? view_block->block_info().height() : -1,
+        common::Encode::HexEncode(hash).c_str(),
+        String().c_str(),
+        blocks.size());
+    view_blocks_info_.erase(hash);
     return Status::kSuccess;    
 }
 
