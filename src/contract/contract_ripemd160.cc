@@ -366,7 +366,8 @@ int Ripemd160::AggSignAndVerify(
     
     std::vector<std::vector<element_t>*> pi_proofs;
     int ret = kContractSuccess;
-    for (auto i = 0; i < ars.signer_count(); ++i) {
+    int32_t valid_idx = 0;
+    for (auto i = 0; i < ars.signer_count(); ++i, ++valid_idx) {
         auto tmp_key = std::string("ars_create_single_sign_") + std::to_string(i);
         std::string val;
         if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
@@ -422,11 +423,11 @@ int Ripemd160::AggSignAndVerify(
         } else {
             ZJC_DEBUG("Aggregate signature verification failed!");
         }
-    }
 
-    element_clear(agg_signature);
+        element_clear(agg_signature);
+    }
     
-    for (uint32_t i = 0; i < ars.signer_count(); ++i) {
+    for (uint32_t i = 0; i < valid_idx; ++i) {
         element_clear(delta_primes[i]);
         element_clear(y_primes[i]);
         auto& item = pi_proofs[i];
