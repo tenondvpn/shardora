@@ -312,7 +312,9 @@ int Ripemd160::SingleSign(
     }
 
     param.zjc_host->SaveKeyValue(param.from, tmp_key, val);
-    ZJC_DEBUG("single sign success: %d, %s, from: %s, key: %s", signer_idx, val.c_str(), common::Encode::HexEncode(param.from).c_str(), tmp_key.c_str());
+    ZJC_DEBUG("single sign success: %d, %s, from: %s, key: %s",
+        signer_idx, val.c_str(), 
+        common::Encode::HexEncode(param.from).c_str(), tmp_key.c_str());
     element_clear(delta_prime);
     element_clear(y_prime);
     element_clear(private_key);
