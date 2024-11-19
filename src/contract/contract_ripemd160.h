@@ -59,7 +59,8 @@ private:
         const CallParameters& param, 
         const std::string& key, 
         const std::string& value);
-    void GetRing(
+    int GetRing(
+        const std::string& id,
         const CallParameters& param, 
         ContractArs& ars, 
         std::vector<element_t>& ring);
