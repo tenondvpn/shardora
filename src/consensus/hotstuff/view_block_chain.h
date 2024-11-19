@@ -497,6 +497,58 @@ private:
 
             // TODO: fix storage map            
             auto block_info_ptr = GetViewBlockInfo(latest_committed_block_, balane_map_ptr, zjc_host_ptr);
+            if (view_blocks_at_height_.find(view_block->qc().view()) != view_blocks_at_height_.end()) {
+                auto& view_block_at_height_vec = view_blocks_at_height_[view_block->qc().view()];
+                std::vector<std::shared_ptr<ViewBlock>> remove_blocks;
+                if (!view_block_at_height_vec.empty()) {
+                    for (auto iter = view_block_at_height_vec.begin(); iter != view_block_at_height_vec.end();) {
+                        if (IsQcTcValid((*iter)->qc())) {                    
+                            ZJC_DEBUG("invalid view has much more view block: %lu, "
+                                "count: %u, %u_%u_%lu, %lu hash: %s, sign x: %s, %u_%u_%lu, %lu new block hash: %s", 
+                                view_block->qc().view(),
+                                view_block_at_height_vec.size(),
+                                (*iter)->qc().network_id(),
+                                (*iter)->qc().pool_index(),
+                                (*iter)->qc().view(),
+                                (*iter)->block_info().height(),
+                                common::Encode::HexEncode((*iter)->qc().view_block_hash()).c_str(),
+                                common::Encode::HexEncode((*iter)->qc().sign_x()).c_str(),
+                                view_block->qc().network_id(),
+                                view_block->qc().pool_index(),
+                                view_block->qc().view(),
+                                view_block->block_info().height(),
+                                common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
+                            assert(false);
+                            ++iter;
+                        } else {
+                            ZJC_DEBUG("remove invalid view has much more view block: %lu, "
+                                "count: %u, %u_%u_%lu, %lu hash: %s, , %u_%u_%lu, %lu new block hash: %s", 
+                                view_block->qc().view(),
+                                view_block_at_height_vec.size(),
+                                (*iter)->qc().network_id(),
+                                (*iter)->qc().pool_index(),
+                                (*iter)->qc().view(),
+                                (*iter)->block_info().height(),
+                                common::Encode::HexEncode((*iter)->qc().view_block_hash()).c_str(),
+                                view_block->qc().network_id(),
+                                view_block->qc().pool_index(),
+                                view_block->qc().view(),
+                                view_block->block_info().height(),
+                                common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
+                            remove_blocks.push_back(*iter);
+                            iter = view_block_at_height_vec.erase(iter);
+                        }
+                    }
+                }
+
+                for (auto iter = remove_blocks.begin(); iter != remove_blocks.end(); ++iter) {
+                    DeleteViewBlock(*iter);
+                }
+            } else {
+                view_blocks_at_height_[view_block->qc().view()] = std::vector<block::ViewBlockPtr>();
+            }
+
+            view_blocks_at_height_[view_block->qc().view()].push_back(block_info_ptr->view_block);
             view_blocks_info_[parent_hash] = block_info_ptr;
         }
 
