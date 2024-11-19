@@ -1255,8 +1255,11 @@ std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(const QC& qc) {
         common::Encode::HexEncode(v_block2->parent_hash()).c_str(),
         common::Encode::HexEncode(v_block3->qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(qc.view_block_hash()).c_str());
-    assert(v_block1->parent_hash() == v_block2->qc().view_block_hash() &&
-        v_block2->parent_hash() == v_block3->qc().view_block_hash());
+    if (v_block1->parent_hash() != v_block2->qc().view_block_hash() ||
+            v_block2->parent_hash() != v_block3->qc().view_block_hash()) {
+        assert(false);
+        return nullptr;
+    }
     return v_block3;
 }
 
