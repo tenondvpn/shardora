@@ -113,7 +113,7 @@ Status ViewBlockChain::Store(
         auto& view_block_at_height_vec = view_blocks_at_height_[view_block->qc().view()];
         std::vector<std::shared_ptr<ViewBlock>> remove_blocks;
         if (!view_block_at_height_vec.empty()) {
-            for (auto iter = view_block_at_height_vec.begin(); iter != view_block_at_height_vec.end();) {
+            for (auto iter = view_block_at_height_vec.begin(); iter != view_block_at_height_vec.end(); ++iter) {
                 if (IsQcTcValid((*iter)->qc())) {                    
                     ZJC_DEBUG("invalid view has much more view block: %lu, "
                         "count: %u, %u_%u_%lu, %lu hash: %s, sign x: %s, %u_%u_%lu, %lu new block hash: %s", 
@@ -131,7 +131,6 @@ Status ViewBlockChain::Store(
                         view_block->block_info().height(),
                         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
                     assert(false);
-                    ++iter;
                 } else {
                     ZJC_DEBUG("remove invalid view has much more view block: %lu, "
                         "count: %u, %u_%u_%lu, %lu hash: %s, , %u_%u_%lu, %lu new block hash: %s", 
@@ -148,7 +147,6 @@ Status ViewBlockChain::Store(
                         view_block->block_info().height(),
                         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
                     remove_blocks.push_back(*iter);
-                    iter = view_block_at_height_vec.erase(iter);
                 }
             }
         }
