@@ -1299,12 +1299,30 @@ Status Hotstuff::Commit(
     view_block_chain()->SetLatestCommittedBlock(v_block);
     // 剪枝
     std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
+    ZJC_DEBUG("success commit view block %u_%u_%lu, height: %lu, now chain: %s",
+        v_block->qc().network_id(), 
+        v_block->qc().pool_index(), 
+        v_block->qc().view(), 
+        v_block->block_info().height(),
+        view_block_chain()->String().c_str());
     auto s = view_block_chain()->PruneTo(v_block->qc().view_block_hash(), forked_blockes, true);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, prune failed s: %d, vb view: &lu", pool_idx_, s, v_block->qc().view());
+        ZJC_DEBUG("PruneTo failed, success commit view block %u_%u_%lu, height: %lu, now chain: %s",
+            v_block->qc().network_id(), 
+            v_block->qc().pool_index(), 
+            v_block->qc().view(), 
+            v_block->block_info().height(),
+            view_block_chain()->String().c_str());
         return s;
     }
 
+    ZJC_DEBUG("PruneTo success, success commit view block %u_%u_%lu, height: %lu, now chain: %s",
+        v_block->qc().network_id(), 
+        v_block->qc().pool_index(), 
+        v_block->qc().view(), 
+        v_block->block_info().height(),
+        view_block_chain()->String().c_str());
     // 归还分支交易
     for (const auto& forked_block : forked_blockes) {
         s = acceptor()->Return(forked_block);
