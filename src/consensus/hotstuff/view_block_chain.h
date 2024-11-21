@@ -67,6 +67,7 @@ public:
         std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr);
     // Get Block by hash value, fetch from neighbor nodes if necessary
     std::shared_ptr<ViewBlock> Get(const HashStr& hash);
+    std::shared_ptr<ViewBlock> Get(uint64_t view);
 
     // If has block
     bool Has(const HashStr& hash);

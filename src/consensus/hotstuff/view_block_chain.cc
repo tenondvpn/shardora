@@ -179,6 +179,17 @@ std::shared_ptr<ViewBlock> ViewBlockChain::Get(const HashStr &hash) {
     return nullptr;    
 }
 
+std::shared_ptr<ViewBlock> ViewBlockChain::Get(uint64_t view) {
+    for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end(); ++iter) {
+        if (iter->second->view_block->qc().view() == view) {
+            return iter->second->view_block;
+        }
+    }
+
+    return nullptr;
+}
+
+
 bool ViewBlockChain::Has(const HashStr& hash) {
     auto it = view_blocks_info_.find(hash);
     if (it != view_blocks_info_.end() && it->second->view_block != nullptr) {
