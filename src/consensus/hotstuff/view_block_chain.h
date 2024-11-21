@@ -68,6 +68,13 @@ public:
     // Get Block by hash value, fetch from neighbor nodes if necessary
     std::shared_ptr<ViewBlock> Get(const HashStr& hash);
     std::shared_ptr<ViewBlock> Get(uint64_t view);
+    uint64_t GetMaxHeight() {
+        if (latest_committed_block_->has_block_info()) {
+            return latest_committed_block_->block_info().height();
+        }
+
+        return 0;
+    }
 
     // If has block
     bool Has(const HashStr& hash);
