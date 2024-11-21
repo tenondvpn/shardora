@@ -522,14 +522,7 @@ private:
     }
 
     // prune the branch starting from view_block
-    Status PruneFromBlockToTargetHash(
-        const std::shared_ptr<ViewBlock>& view_block, 
-        const std::unordered_set<HashStr>& hashes_of_branch, 
-        std::vector<std::shared_ptr<ViewBlock>>& forked_blocks, 
-        const HashStr& target_hash);
-    Status PruneHistoryTo(const std::shared_ptr<ViewBlock>&);
     Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
-    Status DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_block);
     
     std::shared_ptr<ViewBlock> high_view_block_ = nullptr;
     View prune_height_ = 0;
