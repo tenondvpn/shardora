@@ -67,14 +67,6 @@ public:
         std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr);
     // Get Block by hash value, fetch from neighbor nodes if necessary
     std::shared_ptr<ViewBlock> Get(const HashStr& hash);
-    std::shared_ptr<ViewBlock> Get(View view) {
-        if (view_blocks_at_height_[view].empty()) {
-            return nullptr;
-        }
-
-        assert(view_blocks_at_height_[view].size() == 1);
-        return view_blocks_at_height_[view][0];
-    }
 
     // If has block
     bool Has(const HashStr& hash);
@@ -289,32 +281,9 @@ public:
     
     // If a chain is valid
     bool IsValid();
-
-    View GetMinHeight() const {
-        View min = std::numeric_limits<View>::max();
-        for (auto it = view_blocks_at_height_.begin(); it != view_blocks_at_height_.end(); it++) {
-            if (it->first < min) {
-                min = it->first;
-            }
-        }
-        return min;
-    }    
-
-    View GetMaxHeight() const {
-        View max = 0;
-        for (auto it = view_blocks_at_height_.begin(); it != view_blocks_at_height_.end(); it++) {
-            if (it->first > max) {
-                max = it->first;
-            }
-        }
-        return max;
-    }
-
     inline void Clear() {
         view_blocks_info_.clear();
-        view_blocks_at_height_.clear();
         prune_height_ = View(1);
-
         // latest_committed_block_ = nullptr;
         // latest_locked_block_ = nullptr;
         start_block_ = nullptr;        
@@ -496,56 +465,6 @@ private:
 
             // TODO: fix storage map            
             auto block_info_ptr = GetViewBlockInfo(latest_committed_block_, balane_map_ptr, zjc_host_ptr);
-            if (view_blocks_at_height_.find(view_block->qc().view()) != view_blocks_at_height_.end()) {
-                auto& view_block_at_height_vec = view_blocks_at_height_[view_block->qc().view()];
-                std::vector<std::shared_ptr<ViewBlock>> remove_blocks;
-                if (!view_block_at_height_vec.empty()) {
-                    for (auto iter = view_block_at_height_vec.begin(); iter != view_block_at_height_vec.end(); ++iter) {
-                        if (IsQcTcValid((*iter)->qc())) {                    
-                            ZJC_DEBUG("invalid view has much more view block: %lu, "
-                                "count: %u, %u_%u_%lu, %lu hash: %s, sign x: %s, %u_%u_%lu, %lu new block hash: %s", 
-                                view_block->qc().view(),
-                                view_block_at_height_vec.size(),
-                                (*iter)->qc().network_id(),
-                                (*iter)->qc().pool_index(),
-                                (*iter)->qc().view(),
-                                (*iter)->block_info().height(),
-                                common::Encode::HexEncode((*iter)->qc().view_block_hash()).c_str(),
-                                common::Encode::HexEncode((*iter)->qc().sign_x()).c_str(),
-                                view_block->qc().network_id(),
-                                view_block->qc().pool_index(),
-                                view_block->qc().view(),
-                                view_block->block_info().height(),
-                                common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
-                            assert(false);
-                        } else {
-                            ZJC_DEBUG("remove invalid view has much more view block: %lu, "
-                                "count: %u, %u_%u_%lu, %lu hash: %s, , %u_%u_%lu, %lu new block hash: %s", 
-                                view_block->qc().view(),
-                                view_block_at_height_vec.size(),
-                                (*iter)->qc().network_id(),
-                                (*iter)->qc().pool_index(),
-                                (*iter)->qc().view(),
-                                (*iter)->block_info().height(),
-                                common::Encode::HexEncode((*iter)->qc().view_block_hash()).c_str(),
-                                view_block->qc().network_id(),
-                                view_block->qc().pool_index(),
-                                view_block->qc().view(),
-                                view_block->block_info().height(),
-                                common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
-                            remove_blocks.push_back(*iter);
-                        }
-                    }
-                }
-
-                for (auto iter = remove_blocks.begin(); iter != remove_blocks.end(); ++iter) {
-                    DeleteViewBlock(*iter);
-                }
-            } else {
-                view_blocks_at_height_[view_block->qc().view()] = std::vector<block::ViewBlockPtr>();
-            }
-
-            view_blocks_at_height_[view_block->qc().view()].push_back(block_info_ptr->view_block);
             view_blocks_info_[parent_hash] = block_info_ptr;
             assert(block_info_ptr->view_block->qc().view_block_hash() == parent_hash);
         }
@@ -607,7 +526,6 @@ private:
     std::shared_ptr<ViewBlock> high_view_block_ = nullptr;
     View prune_height_ = 0;
     std::shared_ptr<ViewBlock> start_block_;
-    std::unordered_map<View, std::vector<std::shared_ptr<ViewBlock>>> view_blocks_at_height_; // 一般一个 view 只有一个块
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> view_blocks_info_;
     std::shared_ptr<ViewBlock> latest_committed_block_; // 最新 committed block
     std::shared_ptr<ViewBlock> latest_locked_block_; // locked_block_;
