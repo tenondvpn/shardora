@@ -311,7 +311,7 @@ Status ViewBlockChain::GetChildren(const HashStr& hash, std::vector<std::shared_
     }
 
     children = it->second->children;
-    return Status::kSuccess;    
+    return Status::kSuccess;
 }
 
 bool ViewBlockChain::IsValid() {
