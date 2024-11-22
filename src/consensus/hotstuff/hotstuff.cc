@@ -169,6 +169,7 @@ Status Hotstuff::Propose(
             header.debug().c_str(),
             latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view(),
             pacemaker_->CurView());
+        assert(false);
         HandleProposeMsg(latest_leader_propose_message_);
         return s;
     }
@@ -344,6 +345,7 @@ void Hotstuff::NewView(
 }
 
 void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
+    assert(msg_ptr->header.hotstuff().pro_msg().view_item().qc().view_block_hash().empty());
     latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("handle propose called hash: %lu, %u_%u_%lu, "
         "view block hash: %s, sign x: %s, propose_debug: %s", 
