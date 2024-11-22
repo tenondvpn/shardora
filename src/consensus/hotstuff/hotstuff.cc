@@ -972,6 +972,11 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     qc_item.set_pool_index(pool_idx_);
     qc_item.set_view(vote_msg.view());
     qc_item.set_view_block_hash(vote_msg.view_block_hash());
+    ZJC_DEBUG("success set view block hash: %s, %u_%u_%lu",
+        common::Encode::HexEncode(qc_item.view_block_hash()).c_str(),
+        qc_item.network_id(),
+        qc_item.pool_index(),
+        qc_item.view());
     assert(!prefix_db_->BlockExists(qc_item.view_block_hash()));
     qc_item.set_elect_height(elect_height);
     qc_item.set_leader_idx(vote_msg.leader_idx());
@@ -1547,6 +1552,7 @@ Status Hotstuff::ConstructVoteMsg(
     uint32_t replica_idx = elect_item->LocalMember()->index;
     vote_msg->set_replica_idx(replica_idx);
     vote_msg->set_view_block_hash(v_block->qc().view_block_hash());
+
     assert(!prefix_db_->BlockExists(v_block->qc().view_block_hash()));
     vote_msg->set_view(v_block->qc().view());
     vote_msg->set_elect_height(elect_height);
@@ -1556,6 +1562,11 @@ Status Hotstuff::ConstructVoteMsg(
     qc_item.set_pool_index(pool_idx_);
     qc_item.set_view(v_block->qc().view());
     qc_item.set_view_block_hash(v_block->qc().view_block_hash());
+    ZJC_DEBUG("success set view block hash: %s, %u_%u_%lu",
+        common::Encode::HexEncode(qc_item.view_block_hash()).c_str(),
+        qc_item.network_id(),
+        qc_item.pool_index(),
+        qc_item.view());
     assert(!prefix_db_->BlockExists(v_block->qc().view_block_hash()));
     qc_item.set_elect_height(elect_height);
     qc_item.set_leader_idx(v_block->qc().leader_idx());
