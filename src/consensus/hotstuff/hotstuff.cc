@@ -370,12 +370,13 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     pro_msg_wrap->view_block_ptr = std::make_shared<ViewBlock>(
         msg_ptr->header.hotstuff().pro_msg().view_item());
     pro_msg_wrap->view_block_ptr->set_debug(msg_ptr->header.debug());
-    ZJC_DEBUG("handle new propose message parent hash: %s, %u_%u_%lu, "
+    ZJC_DEBUG("handle new propose message parent hash: %s, %u_%u_%lu, view hash: %s, "
         "hash64: %lu, block timestamp: %lu, propose_debug: %s",
         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->parent_hash()).c_str(), 
         pro_msg_wrap->view_block_ptr->qc().network_id(),
         pro_msg_wrap->view_block_ptr->qc().pool_index(),
         pro_msg_wrap->view_block_ptr->qc().view(),
+        common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
         msg_ptr->header.hash64(),
         pro_msg_wrap->view_block_ptr->block_info().timestamp(),
         msg_ptr->header.debug().c_str());
@@ -724,7 +725,11 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
 }
 
 Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
-    ZJC_DEBUG("HandleProposeMsgStep_TxAccept called hash: %lu, propose_debug: %s", pro_msg_wrap->msg_ptr->header.hash64(), pro_msg_wrap->msg_ptr->header.debug().c_str());
+    ZJC_DEBUG("HandleProposeMsgStep_TxAccept called hash: %lu, view hash: %s, "
+        "propose_debug: %s", 
+        pro_msg_wrap->msg_ptr->header.hash64(), 
+        common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
+        pro_msg_wrap->msg_ptr->header.debug().c_str());
     // Verify ViewBlock.block and tx_propose, 验证tx_propose，填充Block tx相关字段
     auto& proto_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
     pro_msg_wrap->acc_balance_map_ptr = std::make_shared<BalanceMap>();
