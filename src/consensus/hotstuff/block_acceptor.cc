@@ -80,7 +80,8 @@ Status BlockAcceptor::Accept(
                 view_block.qc().view(), 
                 view_block.block_info().height(),
                 common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str());
-            assert(!view_block.qc().view_block_hash().empty());
+            assert(view_block.qc().view_block_hash().empty());
+            view_block.mutable_qc()->set_view_block_hash(GetBlockHash(view_block));
             ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
                 common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
                 common::Encode::HexEncode(view_block.parent_hash()).c_str(),
@@ -95,7 +96,7 @@ Status BlockAcceptor::Accept(
                 return Status::kAcceptorBlockInvalid;
             }
         }
-        
+
         ZJC_DEBUG("propose_msg.txs().empty() error!");
         return no_tx_allowed ? Status::kSuccess : Status::kAcceptorTxsEmpty;
     }
