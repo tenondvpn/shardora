@@ -71,29 +71,31 @@ Status BlockAcceptor::Accept(
     auto& view_block = *pro_msg_wrap->view_block_ptr;
     if (propose_msg.txs().empty()) {
         if (no_tx_allowed) {
-            auto new_view_hash = GetBlockHash(view_block);
             ZJC_DEBUG("success do transaction tx size: %u, add: %u, %u_%u_%lu, "
-                "height: %lu, new_view_hash: %s, old view hash: %s", 
+                "height: %lu, view hash: %s", 
                 0, 
                 view_block.block_info().tx_list_size(), 
                 view_block.qc().network_id(), 
                 view_block.qc().pool_index(), 
                 view_block.qc().view(), 
                 view_block.block_info().height(),
-                common::Encode::HexEncode(new_view_hash).c_str(),
                 common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str());
-            assert(view_block.qc().view_block_hash().empty());
-            view_block.mutable_qc()->set_view_block_hash(new_view_hash);
+            assert(!view_block.qc().view_block_hash().empty());
             ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
                 common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
                 common::Encode::HexEncode(view_block.parent_hash()).c_str(),
                 view_block.qc().network_id(),
                 view_block.qc().pool_index(),
                 view_block.qc().view());
+            if (view_block_chain->Has(view_block.qc().view_block_hash())) {
+                return Status::kAcceptorBlockInvalid;
+            }
+
             if (prefix_db_->BlockExists(view_block.qc().view_block_hash())) {
                 return Status::kAcceptorBlockInvalid;
             }
         }
+        
         ZJC_DEBUG("propose_msg.txs().empty() error!");
         return no_tx_allowed ? Status::kSuccess : Status::kAcceptorTxsEmpty;
     }
