@@ -461,6 +461,7 @@ void ClickHouseClient::FlushToCkWithData() try {
         ck_client.Insert(kClickhouseAccountKvTableName, account_attrs);
         ck_client.Insert(kClickhouseC2cTableName, c2cs);
         ck_client.Insert(kClickhousePrepaymentTableName, prepay);
+        HandleBlsMessage();
         ZJC_DEBUG("success flush to db: %u", batch_count_);
         batch_count_ = 0;
         pre_time_out_ = now_tm_ms;
@@ -864,34 +865,7 @@ bool ClickHouseClient::CreateBlsElectInfoTable() {
 }
 
 bool ClickHouseClient::InsertBlsElectInfo(const BlsElectInfo& info) try {
-    auto elect_height = std::make_shared<clickhouse::ColumnUInt64>();
-    auto member_idx = std::make_shared<clickhouse::ColumnUInt32>();
-    auto shard_id = std::make_shared<clickhouse::ColumnUInt32>();
-    auto contribution_map = std::make_shared<clickhouse::ColumnString>();
-    auto local_sk = std::make_shared<clickhouse::ColumnString>();
-    auto common_pk = std::make_shared<clickhouse::ColumnString>();
-
-    elect_height->Append(info.elect_height);
-    member_idx->Append(info.member_idx);
-    shard_id->Append(info.shard_id);
-    contribution_map->Append(info.contribution_map);
-    local_sk->Append(info.local_sk);
-    common_pk->Append(info.common_pk);
-
-    clickhouse::Block item;
-    item.AppendColumn("elect_height", elect_height);
-    item.AppendColumn("member_idx", member_idx);
-    item.AppendColumn("shard_id", shard_id);
-    item.AppendColumn("contribution_map", contribution_map);
-    item.AppendColumn("local_sk", local_sk);
-    item.AppendColumn("common_pk", common_pk);
-
-    clickhouse::Client ck_client(clickhouse::ClientOptions().
-        SetHost(common::GlobalInfo::Instance()->ck_host()).
-        SetPort(common::GlobalInfo::Instance()->ck_port()).
-        SetUser(common::GlobalInfo::Instance()->ck_user()).
-        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
-    ck_client.Insert(kClickhouseBlsElectInfo, item);
+    bls_elect_queue_.push(std::make_shared<BlsElectInfo>(info));
     return true;
 } catch (std::exception& e) {
     ZJC_ERROR("add new block failed[%s]", e.what());
@@ -924,7 +898,19 @@ bool ClickHouseClient::CreateBlsBlockInfoTable() {
     return true;
 }
 
-bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) try {
+void ClickHouseClient::HandleBlsMessage() {
+    std::shared_ptr<BlsBlockInfo> bls_block;
+    while (bls_block_queue_.pop(&bls_block)) {
+        HandleBlsBlockMessage(*bls_block);
+    }
+
+    std::shared_ptr<BlsElectInfo> elect_block;
+    while (bls_elect_queue_.pop(&elect_block)) {
+        HandleBlsElectMessage(*elect_block);
+    }
+}
+
+void ClickHouseClient::HandleBlsBlockMessage(const BlsBlockInfo& info) {
     auto elect_height = std::make_shared<clickhouse::ColumnUInt64>();
     auto view = std::make_shared<clickhouse::ColumnUInt64>();
     auto shard_id = std::make_shared<clickhouse::ColumnUInt32>();
@@ -962,6 +948,41 @@ bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) try {
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client.Insert(kClickhouseBlsBlockInfo, item);
+}
+
+void ClickHouseClient::HandleBlsElectMessage(const BlsElectInfo& info) {
+    auto elect_height = std::make_shared<clickhouse::ColumnUInt64>();
+    auto member_idx = std::make_shared<clickhouse::ColumnUInt32>();
+    auto shard_id = std::make_shared<clickhouse::ColumnUInt32>();
+    auto contribution_map = std::make_shared<clickhouse::ColumnString>();
+    auto local_sk = std::make_shared<clickhouse::ColumnString>();
+    auto common_pk = std::make_shared<clickhouse::ColumnString>();
+
+    elect_height->Append(info.elect_height);
+    member_idx->Append(info.member_idx);
+    shard_id->Append(info.shard_id);
+    contribution_map->Append(info.contribution_map);
+    local_sk->Append(info.local_sk);
+    common_pk->Append(info.common_pk);
+
+    clickhouse::Block item;
+    item.AppendColumn("elect_height", elect_height);
+    item.AppendColumn("member_idx", member_idx);
+    item.AppendColumn("shard_id", shard_id);
+    item.AppendColumn("contribution_map", contribution_map);
+    item.AppendColumn("local_sk", local_sk);
+    item.AppendColumn("common_pk", common_pk);
+
+    clickhouse::Client ck_client(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
+    ck_client.Insert(kClickhouseBlsElectInfo, item);
+}
+
+bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) try {
+    bls_block_queue_.push(std::make_shared<BlsBlockInfo>(info));
     return true;
 } catch (std::exception& e) {
     ZJC_ERROR("add new block failed[%s]", e.what());

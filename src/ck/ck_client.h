@@ -52,6 +52,9 @@ private:
     void FlushToCk();
     void FlushToCkWithData();
     void ResetColumns();
+    void HandleBlsMessage();
+    void HandleBlsBlockMessage(const BlsBlockInfo& info);
+    void HandleBlsElectMessage(const BlsElectInfo& info);
 
     static const uint32_t kBatchCountToCk = 1000;
 
@@ -144,6 +147,9 @@ private:
     std::shared_ptr<clickhouse::ColumnString> prepay_user;
     std::shared_ptr<clickhouse::ColumnUInt64> prepay_amount;
     std::shared_ptr<clickhouse::ColumnUInt64> prepay_height;
+
+    common::ThreadSafeQueue<std::shared_ptr<BlsElectInfo>> bls_elect_queue_;
+    common::ThreadSafeQueue<std::shared_ptr<BlsBlockInfo>> bls_block_queue_;
 
     uint32_t batch_count_ = 0;
     int64_t pre_time_out_ = 0;
