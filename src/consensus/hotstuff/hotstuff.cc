@@ -175,6 +175,7 @@ Status Hotstuff::Propose(
 
     ZJC_DEBUG("1 now ontime called propose: %d", pool_idx_);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     auto& header = msg_ptr->header;
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     header.set_type(common::kHotstuffMessage);
@@ -188,6 +189,7 @@ Status Hotstuff::Propose(
         return s;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
@@ -203,6 +205,7 @@ Status Hotstuff::Propose(
         auto broadcast = header.mutable_broadcast();
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
 #ifndef NDEBUG
     std::string propose_debug_str = common::StringUtil::Format(
         "%u-%u-%lu", 
@@ -230,6 +233,7 @@ Status Hotstuff::Propose(
     latest_leader_propose_message_ = msg_ptr;
     SaveLatestProposeMessage();
     network::Route::Instance()->Send(msg_ptr);
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
         "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
         pool_idx_,
@@ -254,6 +258,7 @@ Status Hotstuff::Propose(
 
     msg_ptr->is_leader = true;
     HandleProposeMsg(msg_ptr);
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     return Status::kSuccess;
 }
 
@@ -344,6 +349,7 @@ void Hotstuff::NewView(
 }
 
 void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     assert(msg_ptr->header.hotstuff().pro_msg().view_item().qc().view_block_hash().empty());
     latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("handle propose called hash: %lu, %u_%u_%lu, "
@@ -386,6 +392,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         HandleTC(pro_msg_wrap);
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     auto& view_item = *pro_msg_wrap->view_block_ptr;
     ZJC_DEBUG("HandleProposeMessageByStep called hash: %lu, "
         "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
@@ -397,6 +404,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     auto propose_view = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view();
     View handled_view = 0;
     for (auto iter = leader_view_with_propose_msgs_.begin();
@@ -426,7 +434,9 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         iter = leader_view_with_propose_msgs_.erase(iter);
     }
     
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     st = HandleProposeMessageByStep(pro_msg_wrap);
     if (st != Status::kSuccess) {
         ZJC_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
@@ -443,34 +453,42 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
             iter = leader_view_with_propose_msgs_.erase(iter);
         }
     }
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
 }
 
 Status Hotstuff::HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> pro_msg_wrap) {
+    auto msg_ptr = pro_msg_wrap->msg_ptr;
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     auto st = HandleProposeMsgStep_VerifyLeader(pro_msg_wrap);
     if (st != Status::kSuccess) {
         return st;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     st = HandleProposeMsgStep_VerifyViewBlock(pro_msg_wrap);
     if (st != Status::kSuccess) {
         return st;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     st = HandleProposeMsgStep_TxAccept(pro_msg_wrap);
     if (st != Status::kSuccess) {
         return st;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     st = HandleProposeMsgStep_ChainStore(pro_msg_wrap);
     if (st != Status::kSuccess) {
         return st;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     st = HandleProposeMsgStep_Vote(pro_msg_wrap);
     if (st != Status::kSuccess) {
         return st;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     return Status::kSuccess;
 }
 
