@@ -1178,6 +1178,7 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
 }
 
 void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     auto& pre_rst_timer_msg = msg_ptr->header.hotstuff().pre_reset_timer_msg();
     if (pre_rst_timer_msg.txs_size() == 0 && !pre_rst_timer_msg.has_single_tx()) {
         ZJC_DEBUG("pool: %d has proposed!", pool_idx_);
@@ -1201,6 +1202,7 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
         }
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     // TODO: Flow Control
     if (latest_qc_item_ptr_ != nullptr) {
         ZJC_DEBUG("reset timer propose message called view: %lu",
@@ -1215,7 +1217,9 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     Propose(latest_qc_item_ptr_, nullptr);
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     ZJC_DEBUG("reset timer success!");
 }
 
