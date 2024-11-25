@@ -444,9 +444,9 @@ void MultiThreadHandler::SaveKeyValue(const transport::protobuf::Header& msg, db
 }
 
 bool MultiThreadHandler::IsMessageUnique(uint64_t msg_hash) {
-    return unique_message_sets2_.Push(msg_hash);
+    // return unique_message_sets2_.Push(msg_hash);
     
-    // return unique_message_sets_.add(msg_hash);
+    return unique_message_sets_.add(msg_hash);
 }
 
 bool MultiThreadHandler::IsFromMessageUnique(const std::string& from_ip, uint64_t msg_hash) {
