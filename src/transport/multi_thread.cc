@@ -72,28 +72,13 @@ void ThreadHandler::HandleMessage() {
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
             ADD_DEBUG_PROCESS_TIMESTAMP();
             Processor::Instance()->HandleMessage(msg_ptr);
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             auto etime = common::TimeUtils::TimestampUs();
             if (etime - btime > 1000000) {
                 for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
-                    ZJC_DEBUG("over handle message debug timestamp: %lu, debug: %s", msg_ptr->times[i], msg_ptr->debug_str[i].c_str());
+                    ZJC_DEBUG("over handle message debug %lu timestamp: %lu, debug: %s",
+                        msg_ptr->header.hash64(), msg_ptr->times[i], msg_ptr->debug_str[i].c_str());
                 }
-
-                // ZJC_INFO("1 over handle message: %d, step: %d, times_idx: %d, thread: %d use: %lu us, all: %s",
-                //     msg_ptr->header.type(), 
-                //     msg_ptr->header.zbft().tx_bft().tx_type(), 
-                //     msg_ptr->times_idx, 
-                //     thread_idx, 
-                //     (etime - btime), 
-                //     t.c_str());
-
-                // ZJC_INFO("1 over handle message: %d, step: %d, times_idx: %d, thread: %d use: %lu us, all: %s, hash64: %lu",
-                //     msg_ptr->header.type(), 
-                //     msg_ptr->header.hotstuff().type(), 
-                //     msg_ptr->times_idx, 
-                //     thread_idx, 
-                //     (etime - btime), 
-                //     t.c_str(),
-                //     msg_ptr->header.hash64());                
             }
             ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
         }
