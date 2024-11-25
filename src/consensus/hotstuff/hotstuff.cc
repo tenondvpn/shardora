@@ -1534,8 +1534,6 @@ void Hotstuff::CommitInner(
 }
 
 Status Hotstuff::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
-    uint32_t replica_idx = vote_msg.replica_idx();
-
     if (vote_msg.view() < view_block_chain()->HighViewBlock()->qc().view()) {
         return Status::kError;
     }

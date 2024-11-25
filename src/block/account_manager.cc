@@ -194,7 +194,7 @@ void AccountManager::HandleNormalFromTx(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
-    ZJC_INFO("transfer from address new balance %s: %lu, height: %lu, pool: %u",
+    ZJC_DEBUG("transfer from address new balance %s: %lu, height: %lu, pool: %u",
         common::Encode::HexEncode(account_id).c_str(), tx.balance(),
         block.height(), view_block.qc().pool_index());
 }
@@ -228,7 +228,7 @@ void AccountManager::HandleCreateGenesisAcount(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
-    ZJC_INFO("transfer from address new balance %s: %lu, height: %lu, pool: %u",
+    ZJC_DEBUG("transfer from address new balance %s: %lu, height: %lu, pool: %u",
         common::Encode::HexEncode(account_id).c_str(), tx.balance(),
         block.height(), view_block.qc().pool_index());
 }

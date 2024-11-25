@@ -56,6 +56,8 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
             tx_list[i].step());
     }
 #endif
+        
+    std::unique_lock<std::mutex> lock(wait_mutex_);
     wait_con_.notify_one();
 }
 

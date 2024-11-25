@@ -77,7 +77,7 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
         }
 
         zjc_host.recorded_logs_.clear();
-        ZJC_WARN("handle tx success: %u_%u_%lu, tx step: %d, gid: %s",
+        ZJC_DEBUG("handle tx success: %u_%u_%lu, tx step: %d, gid: %s",
             view_block->qc().network_id(), 
             view_block->qc().pool_index(), 
             view_block->qc().view(), 
