@@ -36,7 +36,8 @@ ClickHouseClient::~ClickHouseClient() {
 bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& view_block_item) {
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     ZJC_INFO("add new block thread_idx: %u, max: %u", thread_idx, common::kMaxThreadCount);
-    block_queues_[thread_idx].push(view_block_item);
+    auto tmp_ptr = view_block_item;
+    // block_queues_[thread_idx].push(tmp_ptr);
 #ifndef NDEBUG
     auto* block_item = &view_block_item->block_info();
     const auto& tx_list = block_item->tx_list();
@@ -57,7 +58,6 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
     }
 #endif
         
-    std::unique_lock<std::mutex> lock(wait_mutex_);
     wait_con_.notify_one();
 }
 
