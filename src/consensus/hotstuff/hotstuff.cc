@@ -849,6 +849,9 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
         pro_msg_wrap->view_block_ptr->qc().view(),
         pro_msg_wrap->view_block_ptr->block_info().tx_list_size(),
         pro_msg_wrap->msg_ptr->header.hash64(), pro_msg_wrap->msg_ptr->header.debug().c_str());
+    auto msg_ptr = pro_msg_wrap->msg_ptr;
+    ADD_DEBUG_PROCESS_TIMESTAMP();
+
     auto trans_msg = std::make_shared<transport::TransportMessage>();
     auto& trans_header = trans_msg->header;
     trans_header.set_debug(pro_msg_wrap->msg_ptr->header.debug());
@@ -866,6 +869,7 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
         return Status::kError;
     }
     // Construct HotstuffMessage and send
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     s = ConstructHotstuffMsg(VOTE, nullptr, vote_msg, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, ConstructHotstuffMsg error %d, hash64: %lu",
@@ -873,11 +877,13 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
         return Status::kError;
     }
     
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (SendMsgToLeader(trans_msg, VOTE) != Status::kSuccess) {
         ZJC_ERROR("pool: %d, Send vote message is error.",
             pool_idx_, pro_msg_wrap->msg_ptr->header.hash64());
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (!pro_msg_wrap->msg_ptr->is_leader) {
         // 避免对 view 重复投票
         voted_msgs_[pro_msg_wrap->view_block_ptr->qc().view()] = trans_msg;
@@ -890,6 +896,7 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
         StopVoting(pro_msg_wrap->view_block_ptr->qc().view());
     }
     
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     has_user_tx_tag_ = false;
     return Status::kSuccess;
 }
