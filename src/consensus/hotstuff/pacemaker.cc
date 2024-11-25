@@ -414,6 +414,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
 #else
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
     Status s = crypto_->ReconstructAndVerifyThresSign(
+        msg_ptr,
         timeout_proto.elect_height(),
         timeout_proto.view(),
         timeout_proto.view_hash(),
