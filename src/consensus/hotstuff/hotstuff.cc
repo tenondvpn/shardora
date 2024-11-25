@@ -890,6 +890,7 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
 }
 
 void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     auto b = common::TimeUtils::TimestampMs();
     defer({
             auto e = common::TimeUtils::TimestampMs();
@@ -920,6 +921,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     ZJC_DEBUG("====2.1 pool: %d, onVote, hash: %s, view: %lu, hash64: %lu",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
@@ -932,6 +934,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();
 
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
 #ifdef USE_AGG_BLS
     auto qc_item_ptr = std::make_shared<QC>();
     QC& qc_item = *qc_item_ptr;
@@ -1055,15 +1058,19 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     
 #endif
     
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     view_block_chain()->UpdateHighViewBlock(qc_item);
     pacemaker()->NewQcView(qc_item.view());
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率:q高很多
     ZJC_DEBUG("NewView propose newview called pool: %u, qc_view: %lu, tc_view: %lu, propose_debug: %s",
         pool_idx_, view_block_chain()->HighViewBlock()->qc().view(), pacemaker()->HighTC()->view(), msg_ptr->header.debug().c_str());
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     auto s = Propose(qc_item_ptr, nullptr);
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     if (s != Status::kSuccess) {
         NewView(nullptr, qc_item_ptr, nullptr);
     }
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
 }
 
 Status Hotstuff::StoreVerifiedViewBlock(
