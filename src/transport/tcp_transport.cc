@@ -154,6 +154,9 @@ bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tne
         return false;
     }
 
+    auto now_thread_id_tmp = std::this_thread::get_id();
+    uint32_t now_thread_id = *(uint32_t*)&now_thread_id_tmp;
+    ZJC_INFO("get thread id: %u", now_thread_id);
     for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
         MessagePtr msg_ptr;
         while (local_messages_[i].pop(&msg_ptr)) {
