@@ -70,7 +70,7 @@ void ThreadHandler::HandleMessage() {
                 msg_ptr->header.hash64(), thread_idx);
             msg_ptr->times_idx = 0;
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
-            msg_ptr->times[msg_ptr->times_idx++] = btime;
+            ADD_DEBUG_PROCESS_TIMESTAMP("");
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
             if (etime - btime > 200000) {

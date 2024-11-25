@@ -27,7 +27,9 @@ public:
             return;
         }
 
+        ADD_DEBUG_PROCESS_TIMESTAMP();
         handler(msg_ptr);
+        ADD_DEBUG_PROCESS_TIMESTAMP();
     }
 
 private:
