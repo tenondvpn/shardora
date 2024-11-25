@@ -59,6 +59,9 @@ public:
         const std::string& ip,
         uint16_t port,
         const transport::protobuf::OldHeader& message);
+    void AddLocalMessage(transport::MessagePtr msg_ptr) {
+        msg_handler_->HandleMessage(msg_ptr);
+    }
 
 private:
     TcpTransport();

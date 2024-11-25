@@ -235,7 +235,9 @@ Status Hotstuff::Propose(
 
     latest_leader_propose_message_ = tmp_msg_ptr;
     SaveLatestProposeMessage();
+    transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
     network::Route::Instance()->Send(tmp_msg_ptr);
+    ZJC_DEBUG("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
     ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
         "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
@@ -261,7 +263,6 @@ Status Hotstuff::Propose(
 
     tmp_msg_ptr->is_leader = true;
     // HandleProposeMsg(tmp_msg_ptr);
-    ZJC_DEBUG("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
