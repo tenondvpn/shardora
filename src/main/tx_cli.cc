@@ -19,7 +19,7 @@ static const int shardnum = 3;
 static const int delayus = 0;
 static const bool multi_pool = false;
 static const std::string db_path = "./txclidb";
-static const std::string from_pk = "8b0c608166975a0f598eadaff2d99401a7b1976689203f4a8266edb40174a9bd";   
+static const std::string from_prikey = "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";   
 
 static void SignalCallback(int sig_int) { global_stop = true; }
 
@@ -223,7 +223,7 @@ int tx_main(int argc, char** argv) {
         return 1;
     }
 
-    std::string prikey = common::Encode::HexDecode(from_pk);
+    std::string prikey = common::Encode::HexDecode(from_prikey);
     std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
     uint32_t prikey_pos = 0;
     auto from_prikey = prikey;
@@ -338,7 +338,7 @@ int one_tx_main(int argc, char** argv) {
         return 1;
     }
 
-    std::string prikey = common::Encode::HexDecode(from_pk);
+    std::string prikey = common::Encode::HexDecode(from_prikey);
     uint32_t prikey_pos = 0;
     auto from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
     security->SetPrivateKey(from_prikey);
@@ -446,7 +446,7 @@ int create_library(int argc, char** argv) {
     }
 
     std::string gid = common::Random::RandomString(32);
-    std::string prikey = common::Encode::HexDecode(from_pk);
+    std::string prikey = common::Encode::HexDecode(from_prikey);
     uint32_t prikey_pos = 0;
     auto from_prikey = g_prikeys[254];
     security->SetPrivateKey(from_prikey);
@@ -523,7 +523,7 @@ int contract_main(int argc, char** argv) {
     }
 
     std::string gid = common::Random::RandomString(32);
-    std::string prikey = common::Encode::HexDecode(from_pk);
+    std::string prikey = common::Encode::HexDecode(from_prikey);
     uint32_t prikey_pos = 0;
     auto from_prikey = g_prikeys[254];
     security->SetPrivateKey(from_prikey);
@@ -608,7 +608,7 @@ int contract_set_prepayment(int argc, char** argv) {
     }
 
     std::string gid = common::Random::RandomString(32);
-    std::string prikey = common::Encode::HexDecode(from_pk);
+    std::string prikey = common::Encode::HexDecode(from_prikey);
     uint32_t prikey_pos = 0;
     auto from_prikey = g_prikeys[254];
     security->SetPrivateKey(from_prikey);
@@ -684,7 +684,7 @@ int contract_call(int argc, char** argv, bool more=false) {
     }
 
     std::string gid = common::Random::RandomString(32);
-    std::string prikey = common::Encode::HexDecode(from_pk);
+    std::string prikey = common::Encode::HexDecode(from_prikey);
     uint32_t prikey_pos = 0;
     auto from_prikey = g_prikeys[254];
     security->SetPrivateKey(from_prikey);
