@@ -419,7 +419,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
             break;
         }
 
-        auto& rehandle_view_item = *pro_msg_wrap->view_block_ptr;
+        auto& rehandle_view_item = *iter->second->view_block_ptr;
         rehandle_view_item.mutable_qc()->release_view_block_hash();
         ZJC_DEBUG("rehandle propose message begin HandleProposeMessageByStep called hash: %lu, "
             "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
