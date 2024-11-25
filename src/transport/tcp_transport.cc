@@ -28,6 +28,10 @@ TcpTransport::TcpTransport() {
 
 TcpTransport::~TcpTransport() {}
 
+void TcpTransport::AddLocalMessage(transport::MessagePtr msg_ptr) {
+    msg_handler_->HandleMessage(msg_ptr);
+}
+
 int TcpTransport::Init(
         const std::string& ip_port,
         int backlog,
