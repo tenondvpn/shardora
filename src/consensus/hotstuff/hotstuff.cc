@@ -861,6 +861,7 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
     assert(pro_msg_wrap->view_block_ptr->qc().elect_height() > 0);
     // Construct VoteMsg
     Status s = ConstructVoteMsg(
+        msg_ptr,
         vote_msg, 
         pro_msg_wrap->view_block_ptr->qc().elect_height(), 
         pro_msg_wrap->view_block_ptr);
@@ -1584,9 +1585,11 @@ Status Hotstuff::ConstructProposeMsg(hotstuff::protobuf::ProposeMsg* pro_msg) {
 }
 
 Status Hotstuff::ConstructVoteMsg(
+        const transport::MessagePtr& msg_ptr,
         hotstuff::protobuf::VoteMsg* vote_msg,
         uint64_t elect_height, 
         const std::shared_ptr<ViewBlock>& v_block) {
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto elect_item = elect_info_->GetElectItem(
         common::GlobalInfo::Instance()->network_id(), 
         elect_height);
@@ -1614,6 +1617,7 @@ Status Hotstuff::ConstructVoteMsg(
     assert(!prefix_db_->BlockExists(v_block->qc().view_block_hash()));
     qc_item.set_elect_height(elect_height);
     qc_item.set_leader_idx(v_block->qc().leader_idx());
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto qc_hash = GetQCMsgHash(qc_item);
 #ifdef USE_AGG_BLS
     AggregateSignature partial_sig;
@@ -1629,6 +1633,7 @@ Status Hotstuff::ConstructVoteMsg(
     vote_msg->mutable_partial_sig()->CopyFrom(partial_sig.DumpToProto());
 #else
     std::string sign_x, sign_y;
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (crypto()->PartialSign(
                 common::GlobalInfo::Instance()->network_id(),
                 elect_height,
@@ -1642,6 +1647,7 @@ Status Hotstuff::ConstructVoteMsg(
     vote_msg->set_sign_x(sign_x);
     vote_msg->set_sign_y(sign_y);
 #endif    
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
     wrapper()->GetTxsIdempotently(txs);
     for (size_t i = 0; i < txs.size(); i++) {
@@ -1649,6 +1655,7 @@ Status Hotstuff::ConstructVoteMsg(
         *tx_ptr = *(txs[i].get());
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
 
