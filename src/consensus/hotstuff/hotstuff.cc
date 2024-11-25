@@ -260,7 +260,8 @@ Status Hotstuff::Propose(
     }
 
     tmp_msg_ptr->is_leader = true;
-    HandleProposeMsg(tmp_msg_ptr);
+    // HandleProposeMsg(tmp_msg_ptr);
+    ZJC_DEBUG("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
