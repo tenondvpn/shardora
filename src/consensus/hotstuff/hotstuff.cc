@@ -1022,6 +1022,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d, view: %lu, qc_hash: %s, hash64: %lu, propose_debug: %s, replica: %lu, ",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
@@ -1041,6 +1042,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         qc_item.view());
 
     // store to ck
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     if (ck_client_) {
         auto elect_item = elect_info()->GetElectItemWithShardingId(
                 common::GlobalInfo::Instance()->network_id());
@@ -1060,7 +1062,6 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     }    
     
 #endif
-    
     ADD_DEBUG_PROCESS_TIMESTAMP("");
     view_block_chain()->UpdateHighViewBlock(qc_item);
     pacemaker()->NewQcView(qc_item.view());
