@@ -264,6 +264,7 @@ void HotstuffManager::OnNewElectBlock(uint64_t block_tm_ms, uint32_t sharding_id
 }
 
 void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     auto& header = msg_ptr->header;
     if (header.has_hotstuff_timeout_proto() ||
         (header.has_hotstuff() && header.hotstuff().type() == VOTE) ||
@@ -306,21 +307,29 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         {
         case PROPOSE:
         {
+            ADD_DEBUG_PROCESS_TIMESTAMP("");
             Status s = crypto(hotstuff_msg.pool_index())->VerifyMessage(msg_ptr);
             if (s != Status::kSuccess) {
                 return;
             }
             hotstuff(hotstuff_msg.pool_index())->HandleProposeMsg(msg_ptr);
+            ADD_DEBUG_PROCESS_TIMESTAMP("");
             break;
         }
         case VOTE:
+            ADD_DEBUG_PROCESS_TIMESTAMP("");
             hotstuff(hotstuff_msg.pool_index())->HandleVoteMsg(msg_ptr);
+            ADD_DEBUG_PROCESS_TIMESTAMP("");
             break;
         case NEWVIEW: // 接收 tc 和 qc
+            ADD_DEBUG_PROCESS_TIMESTAMP("");
             hotstuff(hotstuff_msg.pool_index())->HandleNewViewMsg(msg_ptr);
+            ADD_DEBUG_PROCESS_TIMESTAMP("");
             break;
         case PRE_RESET_TIMER:
+            ADD_DEBUG_PROCESS_TIMESTAMP("");
             hotstuff(hotstuff_msg.pool_index())->HandlePreResetTimerMsg(msg_ptr);
+            ADD_DEBUG_PROCESS_TIMESTAMP("");
             break;
         default:
             ZJC_WARN("consensus message type is error.");
@@ -329,10 +338,12 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     if (header.has_hotstuff_timeout_proto()) {
         auto pool_idx = header.hotstuff_timeout_proto().pool_idx();
         pacemaker(pool_idx)->OnRemoteTimeout(msg_ptr);
     }
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
 }
 
 void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
