@@ -62,6 +62,7 @@ Status Crypto::PartialSign(
 }
 
 Status Crypto::ReconstructAndVerifyThresSign(
+        const transport::MessagePtr& msg_ptr,
         uint64_t elect_height,
         View view,
         const HashStr& msg_hash,
@@ -69,6 +70,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
         const std::string& partial_sign_x,
         const std::string& partial_sign_y,
         std::shared_ptr<libff::alt_bn128_G1>& reconstructed_sign) try {
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto elect_item = GetElectItem(common::GlobalInfo::Instance()->network_id(), elect_height);
     if (!elect_item) {
         return Status::kError;
@@ -86,6 +88,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
         return Status::kInvalidArgument;
     }
         
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (!bls_collection_ || bls_collection_->view < view) {
         bls_collection_ = std::make_shared<BlsCollection>();
         bls_collection_->view = view; 
@@ -105,6 +108,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
         bls_collection_->handled = false;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto partial_sign = std::make_shared<libff::alt_bn128_G1>();
     try {
         partial_sign->X = libff::alt_bn128_Fq(partial_sign_x.c_str());
@@ -127,6 +131,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
         index,
         elect_height,
         pool_idx_);
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (collection_item->OkCount() < elect_item->t()) {
         return Status::kBlsVerifyWaiting;
     }
@@ -180,6 +185,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
 #endif
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     std::vector<libff::alt_bn128_Fr> lagrange_coeffs(elect_item->t());
     libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, elect_item->t(), lagrange_coeffs);
 #ifdef HOTSTUFF_TEST
@@ -191,11 +197,13 @@ Status Crypto::ReconstructAndVerifyThresSign(
             bls_instance.SignatureRecover(all_signs, lagrange_coeffs));
     collection_item->reconstructed_sign->to_affine_coordinates();
 #endif
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     Status s = VerifyThresSign(
         common::GlobalInfo::Instance()->network_id(), 
         elect_height, 
         msg_hash, 
         *collection_item->reconstructed_sign);
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (s == Status::kSuccess) {
         reconstructed_sign = collection_item->reconstructed_sign;
         bls_collection_->handled = true;
@@ -217,6 +225,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
             val.c_str(),
             agg_sign_str.c_str());
 #endif
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     return s;
 } catch (std::exception& e) {
     ZJC_ERROR("crypto verify exception %s", e.what());

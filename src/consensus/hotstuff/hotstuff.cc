@@ -1004,14 +1004,16 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     qc_item.set_elect_height(elect_height);
     qc_item.set_leader_idx(vote_msg.leader_idx());
     auto qc_hash = GetQCMsgHash(qc_item);
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     Status ret = crypto()->ReconstructAndVerifyThresSign(
-            elect_height,
-            vote_msg.view(),
-            qc_hash,
-            replica_idx, 
-            vote_msg.sign_x(),
-            vote_msg.sign_y(),
-            reconstructed_sign);
+        msg_ptr,
+        elect_height,
+        vote_msg.view(),
+        qc_hash,
+        replica_idx, 
+        vote_msg.sign_x(),
+        vote_msg.sign_y(),
+        reconstructed_sign);
     if (ret != Status::kSuccess) {
         if (ret == Status::kBlsVerifyWaiting) {
             ZJC_DEBUG("kBlsWaiting pool: %d, view: %lu, hash64: %lu",

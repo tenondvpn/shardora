@@ -69,6 +69,7 @@ public:
             std::string* sign_y);
     
     Status ReconstructAndVerifyThresSign(
+            const transport::MessagePtr& msg_ptr,
             uint64_t elect_height,
             View view,
             const HashStr& msg_hash,
