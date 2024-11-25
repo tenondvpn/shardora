@@ -577,23 +577,22 @@ void BlockAcceptor::commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr
     if (block->tx_list_size() > 0) {
         pools_mgr_->TxOver(queue_item_ptr->view_block_ptr->qc().pool_index(), block->tx_list());
         auto& txs = block->tx_list();
-        for (uint32_t i = 0; i < txs.size(); ++i) {
-            ZJC_DEBUG("commit block tx over step: %d, to: %s, gid: %s, "
-                "net: %d, pool: %d, height: %lu, propose_debug: %s", 
-                block->tx_list(i).step(),
-                common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
-                common::Encode::HexEncode(block->tx_list(i).gid()).c_str(),
-                queue_item_ptr->view_block_ptr->qc().network_id(),
-                queue_item_ptr->view_block_ptr->qc().pool_index(),
-                block->height(),
-                queue_item_ptr->view_block_ptr->debug().c_str());
-            if (pools::IsUserTransaction(txs[i].step())) {
-                ZJC_DEBUG("invalid tx add to consensus tx map: %d", txs[i].step());
-                continue;
-            }
-            
-            prefix_db_->SaveCommittedGids(txs);
-        }
+        // for (uint32_t i = 0; i < txs.size(); ++i) {
+        //     ZJC_DEBUG("commit block tx over step: %d, to: %s, gid: %s, "
+        //         "net: %d, pool: %d, height: %lu, propose_debug: %s", 
+        //         block->tx_list(i).step(),
+        //         common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
+        //         common::Encode::HexEncode(block->tx_list(i).gid()).c_str(),
+        //         queue_item_ptr->view_block_ptr->qc().network_id(),
+        //         queue_item_ptr->view_block_ptr->qc().pool_index(),
+        //         block->height(),
+        //         queue_item_ptr->view_block_ptr->debug().c_str());
+        //     if (pools::IsUserTransaction(txs[i].step())) {
+        //         ZJC_DEBUG("invalid tx add to consensus tx map: %d", txs[i].step());
+        //         continue;
+        //     }
+        // }
+        prefix_db_->SaveCommittedGids(txs);
     } else {
         ZJC_DEBUG("commit block tx over no tx, net: %d, pool: %d, height: %lu, propose_debug: %s", 
             queue_item_ptr->view_block_ptr->qc().network_id(),
