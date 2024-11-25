@@ -29,7 +29,8 @@ TcpTransport::TcpTransport() {
 TcpTransport::~TcpTransport() {}
 
 void TcpTransport::AddLocalMessage(transport::MessagePtr msg_ptr) {
-    msg_handler_->HandleMessage(msg_ptr);
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    local_messages_[thread_idx].push(msg_ptr);
 }
 
 int TcpTransport::Init(
@@ -122,6 +123,13 @@ void TcpTransport::Stop() {
 }
 
 bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tnet::Packet& packet) {
+    for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+        MessagePtr msg_ptr;
+        while (local_messages_[i].pop(&msg_ptr)) {
+            msg_handler_->HandleMessage(msg_ptr);
+        }
+    }
+    
     // ZJC_DEBUG("message coming");
     if (conn->GetSocket() == nullptr) {
         packet.Free();

@@ -96,6 +96,7 @@ private:
     uint64_t prev_erase_timestamp_ms_ = 0;
     common::ThreadSafeQueue<std::shared_ptr<tnet::TcpConnection>> in_check_queue_;
     common::ThreadSafeQueue<std::shared_ptr<tnet::TcpConnection>> out_check_queue_;
+    common::ThreadSafeQueue<transport::MessagePtr> local_messages_[common::kMaxThreadCount];
     std::deque<std::shared_ptr<tnet::TcpConnection>> waiting_check_queue_;
     common::Tick check_conn_tick_;
 };
