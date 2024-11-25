@@ -100,12 +100,13 @@ public:
     void HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr);
     void HandleVoteMsg(const transport::MessagePtr& msg_ptr);
     void NewView(
-            std::shared_ptr<tnet::TcpInterface> conn,
-            std::shared_ptr<TC> tc,
-            std::shared_ptr<AggregateQC> qc);
+        std::shared_ptr<tnet::TcpInterface> conn,
+        std::shared_ptr<TC> tc,
+        std::shared_ptr<AggregateQC> qc);
     Status Propose(
-            std::shared_ptr<TC> tc,
-            std::shared_ptr<AggregateQC> agg_qc);
+        std::shared_ptr<TC> tc,
+        std::shared_ptr<AggregateQC> agg_qc,
+        const transport::MessagePtr& msg_ptr);
     Status TryCommit(const QC& commit_qc, uint64_t t_idx = 9999999lu);
     Status HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> propose_msg_wrap);
     // 消费等待队列中的 ProposeMsg

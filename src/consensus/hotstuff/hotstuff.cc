@@ -91,14 +91,15 @@ Status Hotstuff::Start() {
         ZJC_ERROR("Get Leader is error.");
     } else if (leader->index == local_member->index) {
         ZJC_INFO("ViewBlock start propose");
-        Propose(nullptr, nullptr);
+        Propose(nullptr, nullptr, nullptr);
     }
     return Status::kSuccess;
 }
 
 Status Hotstuff::Propose(
         std::shared_ptr<TC> tc,
-        std::shared_ptr<AggregateQC> agg_qc) {
+        std::shared_ptr<AggregateQC> agg_qc,
+        const transport::MessagePtr& msg_ptr) {
 
     // TODO(HT): 打包的交易，超时后如何释放？
     // 打包参与共识中的交易，如何保证幂等
@@ -1065,7 +1066,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("NewView propose newview called pool: %u, qc_view: %lu, tc_view: %lu, propose_debug: %s",
         pool_idx_, view_block_chain()->HighViewBlock()->qc().view(), pacemaker()->HighTC()->view(), msg_ptr->header.debug().c_str());
     ADD_DEBUG_PROCESS_TIMESTAMP("");
-    auto s = Propose(qc_item_ptr, nullptr);
+    auto s = Propose(qc_item_ptr, nullptr, msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP("");
     if (s != Status::kSuccess) {
         NewView(nullptr, qc_item_ptr, nullptr);
@@ -1225,7 +1226,7 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP("");
-    Propose(latest_qc_item_ptr_, nullptr);
+    Propose(latest_qc_item_ptr_, nullptr, msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP("");
     ZJC_DEBUG("reset timer success!");
 }
@@ -1855,7 +1856,7 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
         if (leader) {
             auto local_idx = leader_rotation_->GetLocalMemberIdx();
             if (leader->index == local_idx) {
-                Propose(latest_qc_item_ptr_, nullptr);
+                Propose(latest_qc_item_ptr_, nullptr, nullptr);
                 if (latest_qc_item_ptr_) {
                     ZJC_DEBUG("leader do propose message: %d, pool index: %u, %u_%u_%lu", 
                         local_idx,
