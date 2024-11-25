@@ -482,15 +482,11 @@ private:
         auto debug_view_block = view_block;
         while (true) {
             auto iter = view_blocks_info_.find(debug_view_block->parent_hash());
-            auto pview_block = latest_committed_block_;
-            if (iter != view_blocks_info_.end()) {
-                pview_block = iter->second->view_block;
-            }
-
-            if (pview_block == nullptr) {
+            if (iter == view_blocks_info_.end()) {
                 break;
             }
 
+            auto pview_block = iter->second->view_block;
             debug_str += common::StringUtil::Format("%u_%u_%lu_%lu-_%u_%u_%lu_%lu-%s_%s-%s_%s --> ", 
                 debug_view_block->qc().network_id(),
                 debug_view_block->qc().pool_index(),
