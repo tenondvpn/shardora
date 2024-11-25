@@ -289,7 +289,7 @@ uint64_t KeyValueSync::SendSyncRequest(
 }
 
 void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& header = msg_ptr->header;
     assert(header.type() == common::kSyncMessage);
 //     ZJC_DEBUG("key value sync message coming req: %d, res: %d",
@@ -299,7 +299,7 @@ void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("queue size kv_msg_queue_: %d, hash: %lu",
         kv_msg_queue_.size(), msg_ptr->header.hash64());
     
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 void KeyValueSync::PopKvMessage() {

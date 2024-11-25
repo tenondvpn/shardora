@@ -414,7 +414,7 @@ int BlsManager::GetVerifyHash(
 }
 
 void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
     if (bls_msg.has_finish_req()) {
@@ -426,7 +426,7 @@ void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (waiting_bls_ != nullptr) {
         waiting_bls_->HandleMessage(msg_ptr);
     }
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 int BlsManager::GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g1_hash) {

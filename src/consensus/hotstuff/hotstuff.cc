@@ -100,7 +100,7 @@ Status Hotstuff::Propose(
         std::shared_ptr<TC> tc,
         std::shared_ptr<AggregateQC> agg_qc,
         const transport::MessagePtr& msg_ptr) {
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     // TODO(HT): 打包的交易，超时后如何释放？
     // 打包参与共识中的交易，如何保证幂等
     auto pre_v_block = view_block_chain()->HighViewBlock();
@@ -116,14 +116,14 @@ Status Hotstuff::Propose(
         return Status::kError;
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto readobly_dht = dht_ptr->readonly_hash_sort_dht();
     if (readobly_dht->size() < 2) {
         ZJC_DEBUG("pool %u not has readobly_dht->size() < 2", pool_idx_);
         return Status::kError;
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
     if (tc != nullptr) {
         if (latest_qc_item_ptr_ == nullptr || tc->view() >= latest_qc_item_ptr_->view()) {
@@ -178,7 +178,7 @@ Status Hotstuff::Propose(
 
     ZJC_DEBUG("1 now ontime called propose: %d", pool_idx_);
     auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& header = tmp_msg_ptr->header;
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     header.set_type(common::kHotstuffMessage);
@@ -192,7 +192,7 @@ Status Hotstuff::Propose(
         return s;
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
@@ -208,7 +208,7 @@ Status Hotstuff::Propose(
         auto broadcast = header.mutable_broadcast();
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 #ifndef NDEBUG
     std::string propose_debug_str = common::StringUtil::Format(
         "%u-%u-%lu", 
@@ -236,7 +236,7 @@ Status Hotstuff::Propose(
     latest_leader_propose_message_ = tmp_msg_ptr;
     SaveLatestProposeMessage();
     network::Route::Instance()->Send(tmp_msg_ptr);
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
         "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
         pool_idx_,
@@ -261,7 +261,7 @@ Status Hotstuff::Propose(
 
     tmp_msg_ptr->is_leader = true;
     HandleProposeMsg(tmp_msg_ptr);
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
 
@@ -352,7 +352,7 @@ void Hotstuff::NewView(
 }
 
 void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     assert(msg_ptr->header.hotstuff().pro_msg().view_item().qc().view_block_hash().empty());
     latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("handle propose called hash: %lu, %u_%u_%lu, "
@@ -395,7 +395,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         HandleTC(pro_msg_wrap);
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& view_item = *pro_msg_wrap->view_block_ptr;
     ZJC_DEBUG("HandleProposeMessageByStep called hash: %lu, "
         "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
@@ -407,7 +407,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto propose_view = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view();
     View handled_view = 0;
     for (auto iter = leader_view_with_propose_msgs_.begin();
@@ -437,9 +437,9 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         iter = leader_view_with_propose_msgs_.erase(iter);
     }
     
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     st = HandleProposeMessageByStep(pro_msg_wrap);
     if (st != Status::kSuccess) {
         ZJC_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
@@ -456,42 +456,42 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
             iter = leader_view_with_propose_msgs_.erase(iter);
         }
     }
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 Status Hotstuff::HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> pro_msg_wrap) {
     auto msg_ptr = pro_msg_wrap->msg_ptr;
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto st = HandleProposeMsgStep_VerifyLeader(pro_msg_wrap);
     if (st != Status::kSuccess) {
         return st;
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     st = HandleProposeMsgStep_VerifyViewBlock(pro_msg_wrap);
     if (st != Status::kSuccess) {
         return st;
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     st = HandleProposeMsgStep_TxAccept(pro_msg_wrap);
     if (st != Status::kSuccess) {
         return st;
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     st = HandleProposeMsgStep_ChainStore(pro_msg_wrap);
     if (st != Status::kSuccess) {
         return st;
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     st = HandleProposeMsgStep_Vote(pro_msg_wrap);
     if (st != Status::kSuccess) {
         return st;
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
 
@@ -893,7 +893,7 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
 }
 
 void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto b = common::TimeUtils::TimestampMs();
     defer({
             auto e = common::TimeUtils::TimestampMs();
@@ -924,7 +924,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("====2.1 pool: %d, onVote, hash: %s, view: %lu, hash64: %lu",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
@@ -937,7 +937,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();
 
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 #ifdef USE_AGG_BLS
     auto qc_item_ptr = std::make_shared<QC>();
     QC& qc_item = *qc_item_ptr;
@@ -1022,7 +1022,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d, view: %lu, qc_hash: %s, hash64: %lu, propose_debug: %s, replica: %lu, ",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
@@ -1042,7 +1042,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         qc_item.view());
 
     // store to ck
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (ck_client_) {
         auto elect_item = elect_info()->GetElectItemWithShardingId(
                 common::GlobalInfo::Instance()->network_id());
@@ -1062,19 +1062,19 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     }    
     
 #endif
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     view_block_chain()->UpdateHighViewBlock(qc_item);
     pacemaker()->NewQcView(qc_item.view());
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率:q高很多
     ZJC_DEBUG("NewView propose newview called pool: %u, qc_view: %lu, tc_view: %lu, propose_debug: %s",
         pool_idx_, view_block_chain()->HighViewBlock()->qc().view(), pacemaker()->HighTC()->view(), msg_ptr->header.debug().c_str());
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto s = Propose(qc_item_ptr, nullptr, msg_ptr);
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (s != Status::kSuccess) {
         NewView(nullptr, qc_item_ptr, nullptr);
     }
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 Status Hotstuff::StoreVerifiedViewBlock(
@@ -1189,7 +1189,7 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
 }
 
 void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& pre_rst_timer_msg = msg_ptr->header.hotstuff().pre_reset_timer_msg();
     if (pre_rst_timer_msg.txs_size() == 0 && !pre_rst_timer_msg.has_single_tx()) {
         ZJC_DEBUG("pool: %d has proposed!", pool_idx_);
@@ -1213,7 +1213,7 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
         }
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     // TODO: Flow Control
     if (latest_qc_item_ptr_ != nullptr) {
         ZJC_DEBUG("reset timer propose message called view: %lu",
@@ -1228,9 +1228,9 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     Propose(latest_qc_item_ptr_, nullptr, msg_ptr);
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("reset timer success!");
 }
 

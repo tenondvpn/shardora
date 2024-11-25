@@ -415,16 +415,16 @@ int NetworkInit::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 }
 
 void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (msg_ptr->header.init_proto().has_addr_req()) {
         HandleAddrReq(msg_ptr);
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (msg_ptr->header.init_proto().has_addr_res()) {
         HandleAddrRes(msg_ptr);
     }
-    ADD_DEBUG_PROCESS_TIMESTAMP("");
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
