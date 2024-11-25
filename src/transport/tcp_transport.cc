@@ -122,14 +122,7 @@ void TcpTransport::Stop() {
     }
 }
 
-bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tnet::Packet& packet) {
-    for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
-        MessagePtr msg_ptr;
-        while (local_messages_[i].pop(&msg_ptr)) {
-            msg_handler_->HandleMessage(msg_ptr);
-        }
-    }
-    
+bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tnet::Packet& packet) {    
     // ZJC_DEBUG("message coming");
     if (conn->GetSocket() == nullptr) {
         packet.Free();
@@ -159,6 +152,13 @@ bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tne
         packet.Free();
         ZJC_DEBUG("message coming failed 2 type: %d", packet.PacketType());
         return false;
+    }
+
+    for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+        MessagePtr msg_ptr;
+        while (local_messages_[i].pop(&msg_ptr)) {
+            msg_handler_->HandleMessage(msg_ptr);
+        }
     }
 
     // network message must free memory
