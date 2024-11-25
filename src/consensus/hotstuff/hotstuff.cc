@@ -177,9 +177,9 @@ Status Hotstuff::Propose(
     // }
 
     ZJC_DEBUG("1 now ontime called propose: %d", pool_idx_);
-    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
     ADD_DEBUG_PROCESS_TIMESTAMP("");
-    auto& header = msg_ptr->header;
+    auto& header = tmp_msg_ptr->header;
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     header.set_type(common::kHotstuffMessage);
     header.set_hop_count(0);
@@ -223,19 +223,19 @@ Status Hotstuff::Propose(
     header.set_debug(propose_debug_str);
     ZJC_DEBUG("leader begin propose_debug: %s", header.debug().c_str());
 #endif
-    dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
+    dht::DhtKeyManager dht_key(tmp_msg_ptr->header.src_sharding_id());
     header.set_des_dht_key(dht_key.StrKey());
     transport::TcpTransport::Instance()->SetMessageHash(header);
-    s = crypto()->SignMessage(msg_ptr);
+    s = crypto()->SignMessage(tmp_msg_ptr);
     if (s != Status::kSuccess) {
         ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
             pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
         return s;
     }
 
-    latest_leader_propose_message_ = msg_ptr;
+    latest_leader_propose_message_ = tmp_msg_ptr;
     SaveLatestProposeMessage();
-    network::Route::Instance()->Send(msg_ptr);
+    network::Route::Instance()->Send(tmp_msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP("");
     ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
         "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
@@ -259,8 +259,8 @@ Status Hotstuff::Propose(
             tc->view());
     }
 
-    msg_ptr->is_leader = true;
-    HandleProposeMsg(msg_ptr);
+    tmp_msg_ptr->is_leader = true;
+    HandleProposeMsg(tmp_msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP("");
     return Status::kSuccess;
 }
