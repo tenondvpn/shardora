@@ -46,6 +46,7 @@ Status Crypto::PartialSign(
         return Status::kError;
     }
 
+#ifndef NDEBUG
     auto member_bls_pk = libBLS::ThresholdUtils::fieldElementToString(
             elect_item->LocalMember()->bls_publick_key.X.c0);
     ZJC_DEBUG("bls parial sign t: %u, n: %u, member index: %u"
@@ -58,6 +59,7 @@ Status Crypto::PartialSign(
         sign_y->c_str(),
         common::Encode::HexEncode(msg_hash).c_str(),
         elect_height);
+#endif
     return Status::kSuccess;
 }
 
