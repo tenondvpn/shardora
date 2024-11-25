@@ -24,7 +24,7 @@ namespace hotstuff {
 using NewProposalFn = std::function<Status(
         std::shared_ptr<TC> tc,
         std::shared_ptr<AggregateQC> agg_qc,
-        const transport::MessagePtr& msg_ptr)>;
+        const transport::MessagePtr msg_ptr)>;
 using StopVotingFn = std::function<void(const View &view)>;
 using SyncPoolFn = std::function<void(const uint32_t &, const int32_t&)>;
 using NewViewFn = std::function<void(
