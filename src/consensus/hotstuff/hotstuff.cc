@@ -100,7 +100,7 @@ Status Hotstuff::Propose(
         std::shared_ptr<TC> tc,
         std::shared_ptr<AggregateQC> agg_qc,
         const transport::MessagePtr& msg_ptr) {
-
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     // TODO(HT): 打包的交易，超时后如何释放？
     // 打包参与共识中的交易，如何保证幂等
     auto pre_v_block = view_block_chain()->HighViewBlock();
@@ -116,12 +116,14 @@ Status Hotstuff::Propose(
         return Status::kError;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     auto readobly_dht = dht_ptr->readonly_hash_sort_dht();
     if (readobly_dht->size() < 2) {
         ZJC_DEBUG("pool %u not has readobly_dht->size() < 2", pool_idx_);
         return Status::kError;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP("");
     latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
     if (tc != nullptr) {
         if (latest_qc_item_ptr_ == nullptr || tc->view() >= latest_qc_item_ptr_->view()) {
