@@ -51,6 +51,7 @@ void BlsDkg::Destroy() {
 }
 
 void BlsDkg::TimerMessage() {
+    return;
 #ifdef USE_AGG_BLS
     return;
 #endif
@@ -147,6 +148,7 @@ void BlsDkg::OnNewElectionBlock(
 }
 
 void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    return;
     bls_msg_queue_.push(msg_ptr);
     ZJC_DEBUG("queue size bls_msg_queue_: %d", bls_msg_queue_.size());
 }

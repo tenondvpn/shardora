@@ -458,12 +458,12 @@ Status BlockAcceptor::GetAndAddTxsLocally(
     }
 
     if (txs_ptr->txs.size() != tx_propose.txs_size()) {
-#ifndef NDEBUG
-        for (uint32_t i = 0; i < uint32_t(tx_propose.txs_size()); i++) {
-            auto tx = &tx_propose.txs(i);
-            ZJC_DEBUG("leader tx step: %u, gid: %s", tx->step(), common::Encode::HexEncode(tx->gid()).c_str());
-        }
-#endif
+// #ifndef NDEBUG
+//         for (uint32_t i = 0; i < uint32_t(tx_propose.txs_size()); i++) {
+//             auto tx = &tx_propose.txs(i);
+//             ZJC_DEBUG("leader tx step: %u, gid: %s", tx->step(), common::Encode::HexEncode(tx->gid()).c_str());
+//         }
+// #endif
         ZJC_ERROR("invalid consensus, txs not equal to leader %u, %u",
             txs_ptr->txs.size(), tx_propose.txs_size());
         // assert(false);
@@ -517,49 +517,49 @@ Status BlockAcceptor::DoTransactions(
         return s;
     }
 
-#ifndef NDEBUG
-    if (!txs_ptr->txs.empty() && !network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
-        bool valid = true;
-        for (uint32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
-            auto& tx = view_block->block_info().tx_list(i);
-            ZJC_DEBUG("block tx from: %s, to: %s, amount: %lu, balance: %lu, %u_%u_%u, height: %lu",
-                (tx.from().empty() ? 
-                "" : 
-                common::Encode::HexEncode(tx.from()).c_str()), 
-                common::Encode::HexEncode(tx.to()).c_str(), 
-                tx.amount(),
-                tx.balance(),
-                view_block->qc().network_id(),
-                view_block->qc().pool_index(),
-                view_block->qc().view(),
-                view_block->block_info().height());
+// #ifndef NDEBUG
+//     if (!txs_ptr->txs.empty() && !network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
+//         bool valid = true;
+//         for (uint32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
+//             auto& tx = view_block->block_info().tx_list(i);
+//             ZJC_DEBUG("block tx from: %s, to: %s, amount: %lu, balance: %lu, %u_%u_%u, height: %lu",
+//                 (tx.from().empty() ? 
+//                 "" : 
+//                 common::Encode::HexEncode(tx.from()).c_str()), 
+//                 common::Encode::HexEncode(tx.to()).c_str(), 
+//                 tx.amount(),
+//                 tx.balance(),
+//                 view_block->qc().network_id(),
+//                 view_block->qc().pool_index(),
+//                 view_block->qc().view(),
+//                 view_block->block_info().height());
 
-            if (tx.amount() != 0) {
-                valid = false;
-                const std::string* addr = nullptr;
-                if (pools::IsTxUseFromAddress(tx.step())) {
-                    addr = &tx.from();
-                } else {
-                    addr = &tx.to();
-                }
+//             if (tx.amount() != 0) {
+//                 valid = false;
+//                 const std::string* addr = nullptr;
+//                 if (pools::IsTxUseFromAddress(tx.step())) {
+//                     addr = &tx.from();
+//                 } else {
+//                     addr = &tx.to();
+//                 }
 
-                auto addr_iter = balance_map.find(*addr);
-                if (addr_iter == balance_map.end()) {
-                    assert(false);
-                }
+//                 auto addr_iter = balance_map.find(*addr);
+//                 if (addr_iter == balance_map.end()) {
+//                     assert(false);
+//                 }
                     
-            ZJC_DEBUG("transaction balance map addr: %s, balance: %lu, view_block_hash: %s, prehash: %s",
-                    common::Encode::HexEncode(*addr).c_str(), addr_iter->second, 
-                    common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), 
-                    common::Encode::HexEncode(view_block->parent_hash()).c_str());
-            }
-        }
+//             ZJC_DEBUG("transaction balance map addr: %s, balance: %lu, view_block_hash: %s, prehash: %s",
+//                     common::Encode::HexEncode(*addr).c_str(), addr_iter->second, 
+//                     common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), 
+//                     common::Encode::HexEncode(view_block->parent_hash()).c_str());
+//             }
+//         }
 
-        if (balance_map.empty()) {
-            assert(valid);
-        }
-    }
-#endif
+//         if (balance_map.empty()) {
+//             assert(valid);
+//         }
+//     }
+// #endif
 
     return s;
 }

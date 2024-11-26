@@ -365,8 +365,8 @@ void BaseDht::SendToClosestNode(const transport::MessagePtr& msg_ptr) {
         closest_node->public_ip,
         closest_node->public_port,
         message);
-    ZJC_DEBUG("send to closest node: %s:%u, hash64: %lu",
-        closest_node->public_ip.c_str(), closest_node->public_port, message.hash64());
+    // ZJC_DEBUG("send to closest node: %s:%u, hash64: %lu",
+    //     closest_node->public_ip.c_str(), closest_node->public_port, message.hash64());
 }
 
 NodePtr BaseDht::FindNodeDirect(transport::protobuf::Header& message) {
@@ -397,31 +397,31 @@ void BaseDht::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
 void BaseDht::DhtDispatchMessage(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.dht_proto().has_bootstrap_req()) {
-        ZJC_DEBUG("has_bootstrap_req");
+        // ZJC_DEBUG("has_bootstrap_req");
         ProcessBootstrapRequest(msg_ptr);
         return;
     }
 
     if (msg_ptr->header.dht_proto().has_bootstrap_res()) {
-        ZJC_DEBUG("has_bootstrap_res");
+        // ZJC_DEBUG("has_bootstrap_res");
         ProcessBootstrapResponse(msg_ptr);
         return;
     }
 
     if (msg_ptr->header.dht_proto().has_refresh_neighbors_req()) {
-        ZJC_DEBUG("has_refresh_neighbors_req");
+        // ZJC_DEBUG("has_refresh_neighbors_req");
         ProcessRefreshNeighborsRequest(msg_ptr);
         return;
     }
 
     if (msg_ptr->header.dht_proto().has_refresh_neighbors_res()) {
-        ZJC_DEBUG("has_refresh_neighbors_res");
+        // ZJC_DEBUG("has_refresh_neighbors_res");
         ProcessRefreshNeighborsResponse(msg_ptr);
         return;
     }
 
     if (msg_ptr->header.dht_proto().has_connect_req()) {
-        ZJC_DEBUG("has_connect_req");
+        // ZJC_DEBUG("has_connect_req");
         ProcessConnectRequest(msg_ptr);
         return;
     }
@@ -582,13 +582,13 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         for (auto iter = closest_nodes.begin(); iter != closest_nodes.end(); ++iter) {
             // ZJC_DEBUG("port:%u, src_shard_id:%u, hash:%lu id:%s node_shard:%u", dht_msg.refresh_neighbors_req().public_port(), header.src_sharding_id(), (*iter)->dht_key_hash, common::Encode::HexSubstr((*iter)->id).c_str(), (*iter)->sharding_id);
             if (bloomfilter->Contain((*iter)->dht_key_hash)) {
-                ZJC_DEBUG("res refresh neighbers filter: %s:%u, hash: %lu",
-                    common::Encode::HexEncode((*iter)->dht_key).c_str(), msg_ptr->header.hash64());
+                // ZJC_DEBUG("res refresh neighbers filter: %s:%u, hash: %lu",
+                //     common::Encode::HexEncode((*iter)->dht_key).c_str(), msg_ptr->header.hash64());
                 continue;
             }
 
-            ZJC_DEBUG("res refresh neighbers new node: %s:%u, hash: %lu",
-                (*iter)->public_ip.c_str(), (*iter)->public_port, msg_ptr->header.hash64());
+            // ZJC_DEBUG("res refresh neighbers new node: %s:%u, hash: %lu",
+            //     (*iter)->public_ip.c_str(), (*iter)->public_port, msg_ptr->header.hash64());
             tmp_dht.push_back((*iter));
         }
 
@@ -604,7 +604,7 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         dhtkey.StrKey(),
         kRefreshNeighborsDefaultCount + 1);
     if (close_nodes.empty()) {
-        ZJC_DEBUG("res refresh neighbers filter empty %lu", msg_ptr->header.hash64());
+        // ZJC_DEBUG("res refresh neighbers filter empty %lu", msg_ptr->header.hash64());
         return;
     }
 
@@ -615,7 +615,7 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         close_nodes,
         res);
     transport::TcpTransport::Instance()->SetMessageHash(res);
-    ZJC_DEBUG("send refresh neighbers response hash: %lu", res.hash64());
+    // ZJC_DEBUG("send refresh neighbers response hash: %lu", res.hash64());
     msg_ptr->conn->Send(res.SerializeAsString());
 }
 
@@ -626,9 +626,9 @@ void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_p
 
     auto& header = msg_ptr->header;
     auto& dht_msg = header.dht_proto();
-    ZJC_DEBUG("receive refresh neighbers response hash: %lu, size: %u",
-        msg_ptr->header.hash64(),
-        dht_msg.refresh_neighbors_res().nodes_size());
+    // ZJC_DEBUG("receive refresh neighbers response hash: %lu, size: %u",
+    //     msg_ptr->header.hash64(),
+    //     dht_msg.refresh_neighbors_res().nodes_size());
     if (!dht_msg.has_refresh_neighbors_res()) {
         return;
     }
@@ -655,8 +655,8 @@ void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_p
     for (auto iter = waiting_refresh_nodes_map_.begin(); iter != waiting_refresh_nodes_map_.end(); ++iter) {
         if (iter->second.size() > 0) {
             NodePtr node = iter->second[0];
-            ZJC_DEBUG("connect neighbers new node: %s:%u",
-                      node->public_ip.c_str(), node->public_port);
+            // ZJC_DEBUG("connect neighbers new node: %s:%u",
+            //           node->public_ip.c_str(), node->public_port);
             Connect(
                 node->public_ip,
                 node->public_port,
@@ -1001,7 +1001,7 @@ void BaseDht::PrintDht() {
         ZJC_DEBUG("dht info sharding_id: %u, %s", local_node()->sharding_id, res.c_str());
     }
    
-    dht_tick_.CutOff(10000000lu, std::bind(&BaseDht::PrintDht, this));
+    // dht_tick_.CutOff(10000000lu, std::bind(&BaseDht::PrintDht, this));
 }
 
 }  // namespace dht

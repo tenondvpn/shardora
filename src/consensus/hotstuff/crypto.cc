@@ -46,20 +46,20 @@ Status Crypto::PartialSign(
         return Status::kError;
     }
 
-#ifndef NDEBUG
-    auto member_bls_pk = libBLS::ThresholdUtils::fieldElementToString(
-            elect_item->LocalMember()->bls_publick_key.X.c0);
-    ZJC_DEBUG("bls parial sign t: %u, n: %u, member index: %u"
-        "bls pk: %s, sign x: %s, y: %s, hash: %s, elect height: %lu",
-        elect_item->t(),
-        elect_item->n(),
-        elect_item->LocalMember()->index,
-        member_bls_pk.c_str(),
-        sign_x->c_str(),
-        sign_y->c_str(),
-        common::Encode::HexEncode(msg_hash).c_str(),
-        elect_height);
-#endif
+// #ifndef NDEBUG
+//     auto member_bls_pk = libBLS::ThresholdUtils::fieldElementToString(
+//             elect_item->LocalMember()->bls_publick_key.X.c0);
+//     ZJC_DEBUG("bls parial sign t: %u, n: %u, member index: %u"
+//         "bls pk: %s, sign x: %s, y: %s, hash: %s, elect height: %lu",
+//         elect_item->t(),
+//         elect_item->n(),
+//         elect_item->LocalMember()->index,
+//         member_bls_pk.c_str(),
+//         sign_x->c_str(),
+//         sign_y->c_str(),
+//         common::Encode::HexEncode(msg_hash).c_str(),
+//         elect_height);
+// #endif
     return Status::kSuccess;
 }
 
@@ -147,44 +147,44 @@ Status Crypto::ReconstructAndVerifyThresSign(
 
         all_signs.push_back(*collection_item->partial_signs[i]);
         idx_vec.push_back(i+1);
-#ifndef NDEBUG
-        auto part_sign_x = libBLS::ThresholdUtils::fieldElementToString(
-            collection_item->partial_signs[i]->X);
-        auto part_sign_y = libBLS::ThresholdUtils::fieldElementToString(
-            collection_item->partial_signs[i]->Y);
-        ZJC_DEBUG("hash: %s, valid index: %d, x: %s, y: %s", 
-            common::Encode::HexEncode(msg_hash).c_str(),
-            i, part_sign_x.c_str(), part_sign_y.c_str());
-        if (idx_vec.size() >= elect_item->t()) {
-            break;
-        }
+// #ifndef NDEBUG
+//         auto part_sign_x = libBLS::ThresholdUtils::fieldElementToString(
+//             collection_item->partial_signs[i]->X);
+//         auto part_sign_y = libBLS::ThresholdUtils::fieldElementToString(
+//             collection_item->partial_signs[i]->Y);
+//         ZJC_DEBUG("hash: %s, valid index: %d, x: %s, y: %s", 
+//             common::Encode::HexEncode(msg_hash).c_str(),
+//             i, part_sign_x.c_str(), part_sign_y.c_str());
+//         if (idx_vec.size() >= elect_item->t()) {
+//             break;
+//         }
 
-        libff::alt_bn128_G1 g1_hash;
-        GetG1Hash(msg_hash, &g1_hash);
-        std::string verify_hash;
-        auto member_bls_pk = libBLS::ThresholdUtils::fieldElementToString(
-            (*elect_item->Members())[i]->bls_publick_key.X.c0);
-        auto v_res = bls_mgr_->Verify(
-            elect_item->t(),
-            elect_item->n(), 
-            (*elect_item->Members())[i]->bls_publick_key, 
-            *collection_item->partial_signs[i], 
-            g1_hash, 
-            &verify_hash);
-        if (v_res != 0) {
-            ZJC_DEBUG("invalid bls parial sign t: %u, n: %u, index: %u, "
-                "bls pk: %s, sign x: %s, y: %s, hash: %s, elect height: %lu",
-                elect_item->t(),
-                elect_item->n(),
-                i,
-                member_bls_pk.c_str(),
-                part_sign_x.c_str(),
-                part_sign_y.c_str(),
-                common::Encode::HexEncode(msg_hash).c_str(),
-                elect_height);
-            assert(false);
-        }
-#endif
+//         libff::alt_bn128_G1 g1_hash;
+//         GetG1Hash(msg_hash, &g1_hash);
+//         std::string verify_hash;
+//         auto member_bls_pk = libBLS::ThresholdUtils::fieldElementToString(
+//             (*elect_item->Members())[i]->bls_publick_key.X.c0);
+//         auto v_res = bls_mgr_->Verify(
+//             elect_item->t(),
+//             elect_item->n(), 
+//             (*elect_item->Members())[i]->bls_publick_key, 
+//             *collection_item->partial_signs[i], 
+//             g1_hash, 
+//             &verify_hash);
+//         if (v_res != 0) {
+//             ZJC_DEBUG("invalid bls parial sign t: %u, n: %u, index: %u, "
+//                 "bls pk: %s, sign x: %s, y: %s, hash: %s, elect height: %lu",
+//                 elect_item->t(),
+//                 elect_item->n(),
+//                 i,
+//                 member_bls_pk.c_str(),
+//                 part_sign_x.c_str(),
+//                 part_sign_y.c_str(),
+//                 common::Encode::HexEncode(msg_hash).c_str(),
+//                 elect_height);
+//             assert(false);
+//         }
+// #endif
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -213,20 +213,20 @@ Status Crypto::ReconstructAndVerifyThresSign(
         assert(false);
     }
 
-#ifndef NDEBUG
-    auto val = libBLS::ThresholdUtils::fieldElementToString(
-        elect_item->common_pk().X.c0);
-    auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(
-        reconstructed_sign->X);
-    ZJC_DEBUG("success construct agg msg_hash: %s, net: %u, pool: %u, "
-            "elect height: %lu, common PK: %s, agg sign: %s", 
-            common::Encode::HexEncode(msg_hash).c_str(),
-            common::GlobalInfo::Instance()->network_id(), 
-            pool_idx_,
-            elect_height,
-            val.c_str(),
-            agg_sign_str.c_str());
-#endif
+// #ifndef NDEBUG
+//     auto val = libBLS::ThresholdUtils::fieldElementToString(
+//         elect_item->common_pk().X.c0);
+//     auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(
+//         reconstructed_sign->X);
+//     ZJC_DEBUG("success construct agg msg_hash: %s, net: %u, pool: %u, "
+//             "elect height: %lu, common PK: %s, agg sign: %s", 
+//             common::Encode::HexEncode(msg_hash).c_str(),
+//             common::GlobalInfo::Instance()->network_id(), 
+//             pool_idx_,
+//             elect_height,
+//             val.c_str(),
+//             agg_sign_str.c_str());
+// #endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return s;
 } catch (std::exception& e) {
@@ -292,23 +292,23 @@ Status Crypto::VerifyThresSign(
         return Status::kBlsVerifyFailed;
     }
 
-#ifndef NDEBUG
-    auto elect_item = GetElectItem(sharding_id, elect_height);
-    auto val = libBLS::ThresholdUtils::fieldElementToString(
-        elect_item->common_pk().X.c0);
-    auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(
-        reconstructed_sign.X);
-    ZJC_DEBUG("success verify agg sign %s, %s, msg_hash: %s, net: %u, pool: %u, "
-            "elect height: %lu, common PK: %s, agg sign: %s", 
-            common::Encode::HexEncode(verify_hash_a).c_str(),
-            common::Encode::HexEncode(verify_hash_b).c_str(),
-            common::Encode::HexEncode(msg_hash).c_str(),
-            sharding_id, 
-            pool_idx_,
-            elect_height,
-            val.c_str(),
-            agg_sign_str.c_str());
-#endif
+// #ifndef NDEBUG
+//     auto elect_item = GetElectItem(sharding_id, elect_height);
+//     auto val = libBLS::ThresholdUtils::fieldElementToString(
+//         elect_item->common_pk().X.c0);
+//     auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(
+//         reconstructed_sign.X);
+//     ZJC_DEBUG("success verify agg sign %s, %s, msg_hash: %s, net: %u, pool: %u, "
+//             "elect height: %lu, common PK: %s, agg sign: %s", 
+//             common::Encode::HexEncode(verify_hash_a).c_str(),
+//             common::Encode::HexEncode(verify_hash_b).c_str(),
+//             common::Encode::HexEncode(msg_hash).c_str(),
+//             sharding_id, 
+//             pool_idx_,
+//             elect_height,
+//             val.c_str(),
+//             agg_sign_str.c_str());
+// #endif
     return Status::kSuccess;
 }
 

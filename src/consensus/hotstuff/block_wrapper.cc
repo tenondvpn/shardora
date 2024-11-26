@@ -79,15 +79,15 @@ Status BlockWrapper::Wrap(
             auto* tx_info = tx_propose->add_txs();
             *tx_info = it->second->tx_info;
             assert(tx_info->gid().size() == 32);
-            ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, "
-                "step: %d, to: %s, gid: %s, tx info: %s",
-                view_block->qc().pool_index(),
-                common::Encode::HexEncode(view_block->parent_hash()).c_str(),
-                block->height(),
-                tx_info->step(),
-                common::Encode::HexEncode(tx_info->to()).c_str(),
-                common::Encode::HexEncode(tx_info->gid()).c_str(),
-                "ProtobufToJson(*tx_info).c_str()");
+            // ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, "
+            //     "step: %d, to: %s, gid: %s, tx info: %s",
+            //     view_block->qc().pool_index(),
+            //     common::Encode::HexEncode(view_block->parent_hash()).c_str(),
+            //     block->height(),
+            //     tx_info->step(),
+            //     common::Encode::HexEncode(tx_info->to()).c_str(),
+            //     common::Encode::HexEncode(tx_info->gid()).c_str(),
+            //     "ProtobufToJson(*tx_info).c_str()");
         }
         tx_propose->set_tx_type(txs_ptr->tx_type);
     }

@@ -55,35 +55,35 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         uint32_t pool_index,
         pools::CheckGidValidFunction gid_vlid_func) {
-    ZJC_DEBUG("get single tx pool: %u", pool_index);
+    // ZJC_DEBUG("get single tx pool: %u", pool_index);
     std::shared_ptr<WaitingTxsItem> txs_item = nullptr;
     if (pool_index == common::kRootChainPoolIndex) {
-        ZJC_DEBUG("leader get time tx tmblock_tx_ptr: %u", pool_index);
+        // ZJC_DEBUG("leader get time tx tmblock_tx_ptr: %u", pool_index);
         txs_item = GetTimeblockTx(pool_index, true);
-        ZJC_DEBUG("GetTimeblockTx: %d", (txs_item != nullptr));
+        // ZJC_DEBUG("GetTimeblockTx: %d", (txs_item != nullptr));
     }
 
     if (txs_item == nullptr && pool_index == common::kImmutablePoolSize) {
         auto gid = GetToTxGid();
         if (gid_vlid_func(gid)) {
             txs_item = GetToTxs(pool_index, "");
-            ZJC_DEBUG("GetToTxs: %d", (txs_item != nullptr));
-        } else {
-            ZJC_DEBUG("GetToTxGid failed: %d, gid: %s", 
-                (txs_item != nullptr), 
-                common::Encode::HexEncode(gid).c_str());
+            // ZJC_DEBUG("GetToTxs: %d", (txs_item != nullptr));
+        // } else {
+        //     ZJC_DEBUG("GetToTxGid failed: %d, gid: %s", 
+        //         (txs_item != nullptr), 
+        //         common::Encode::HexEncode(gid).c_str());
         }
     }
 
     if (txs_item == nullptr) {
-        if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
-            if (pool_index == common::kRootChainPoolIndex) {
-                ZJC_DEBUG("now get statistic tx leader now GetStatisticTx pool_index: %d", pool_index);
-            }
-        }
+        // if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
+        //     if (pool_index == common::kRootChainPoolIndex) {
+        //         ZJC_DEBUG("now get statistic tx leader now GetStatisticTx pool_index: %d", pool_index);
+        //     }
+        // }
         
         txs_item = GetStatisticTx(pool_index, "");
-        ZJC_DEBUG("GetStatisticTx: %d", (txs_item != nullptr));
+        // ZJC_DEBUG("GetStatisticTx: %d", (txs_item != nullptr));
     }
 
     if (txs_item == nullptr) {
