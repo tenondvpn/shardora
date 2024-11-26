@@ -55,7 +55,6 @@ public:
     virtual ~ElectTxItem() {}
     virtual int HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        std::shared_ptr<db::DbWriteBatch> &db_batch,
         zjcvm::ZjchainHost &zjc_host,
         std::unordered_map<std::string, int64_t> &acc_balance_map,
         block::protobuf::BlockTx &block_tx);
@@ -64,7 +63,6 @@ public:
 private:
   int processElect(shardora::pools::protobuf::ElectStatistic &elect_statistic,
                    const view_block::protobuf::ViewBlockItem& view_block,
-                   std::shared_ptr<shardora::db::DbWriteBatch> &db_batch,
                    shardora::block::protobuf::BlockTx &block_tx);
 
   int getMaxElectHeightInfo(shardora::pools::protobuf::ElectStatistic &elect_statistic, const shardora::pools::protobuf::PoolStatisticItem *&statistic, shardora::common::MembersPtr &members);
@@ -101,7 +99,6 @@ private:
       const std::vector<NodeDetailPtr> &elect_nodes,
       const pools::protobuf::ElectStatistic &elect_statistic,
       uint64_t gas_for_root,
-      std::shared_ptr<db::DbWriteBatch> &db_batch,
       block::protobuf::BlockTx &block_tx);
   void MiningToken(
       uint32_t statistic_sharding_id,
