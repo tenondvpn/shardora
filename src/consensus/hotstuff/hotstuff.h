@@ -159,7 +159,7 @@ public:
             // TODO: fix balance map and storage map
             view_block_chain()->UpdateHighViewBlock(vblock->qc());
             view_block_chain()->Store(vblock, true, nullptr, nullptr);
-            TryCommit(vblock->qc(), 99999999lu);
+            TryCommit(view_block_chain()->HighQC(), 99999999lu);
             if (latest_qc_item_ptr_ == nullptr ||
                     vblock->qc().view() >= latest_qc_item_ptr_->view()) {
 

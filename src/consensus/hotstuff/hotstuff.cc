@@ -607,7 +607,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
             pro_msg.tc().view());
         pacemaker()->NewQcView(pro_msg.tc().view());
         view_block_chain()->UpdateHighViewBlock(pro_msg.tc());
-        TryCommit(pro_msg.tc(), 99999999lu);
+        TryCommit(view_block_chain()->HighQC(), 99999999lu);
         if (latest_qc_item_ptr_ == nullptr ||
                 pro_msg.tc().view() >= latest_qc_item_ptr_->view()) {
             assert(IsQcTcValid(pro_msg.tc()));
@@ -1106,7 +1106,7 @@ Status Hotstuff::StoreVerifiedViewBlock(
         return s;
     }
 
-    TryCommit(v_block->qc(), 99999999lu);
+    TryCommit(view_block_chain()->HighQC(), 99999999lu);
     ZJC_DEBUG("success store v block pool: %u, hash: %s, prehash: %s",
         pool_idx_,
         common::Encode::HexEncode(v_block->qc().view_block_hash()).c_str(),
@@ -1165,7 +1165,7 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
             auto& qc = tc;
             pacemaker()->NewQcView(qc.view());
             view_block_chain()->UpdateHighViewBlock(qc);
-            TryCommit(qc, 99999999lu);
+            TryCommit(view_block_chain()->HighQC(), 99999999lu);
             if (latest_qc_item_ptr_ == nullptr ||
                     qc.view() >= latest_qc_item_ptr_->view()) {
                 if (IsQcTcValid(qc)) {
