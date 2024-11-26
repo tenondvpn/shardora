@@ -135,9 +135,10 @@ public:
         
         auto db_batch = std::make_shared<db::DbWriteBatch>();
         auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(vblock, db_batch);
-        ZJC_DEBUG("now handle synced view block %u_%u_%lu",
+        ZJC_DEBUG("now handle synced view block %u_%u_%lu, height: %lu",
             vblock->qc().network_id(),
             vblock->qc().pool_index(),
+            vblock->qc().view(),
             vblock->block_info().height());
         view_block_chain()->StoreToDb(vblock, 99999999lu, db_batch);
         if (network::IsSameToLocalShard(vblock->qc().network_id())) {
@@ -156,9 +157,9 @@ public:
             // }
 
             // TODO: fix balance map and storage map
-            TryCommit(vblock->qc(), 99999999lu);
             view_block_chain()->UpdateHighViewBlock(vblock->qc());
             view_block_chain()->Store(vblock, true, nullptr, nullptr);
+            TryCommit(vblock->qc(), 99999999lu);
             if (latest_qc_item_ptr_ == nullptr ||
                     vblock->qc().view() >= latest_qc_item_ptr_->view()) {
 

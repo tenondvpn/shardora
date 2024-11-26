@@ -27,7 +27,7 @@
 #ifndef NDEBUG
 #define CheckThreadIdValid() { \
     auto now_thread_id = std::this_thread::get_id(); \
-    ZJC_DEBUG("now handle thread id: %u, old: %u, count: %d, pool: %d", now_thread_id, local_thread_id_, local_thread_id_count_, pool_index_); \
+     \
     if (local_thread_id_count_ >= 1) { \
         assert(local_thread_id_ == now_thread_id); \
     } else { \
