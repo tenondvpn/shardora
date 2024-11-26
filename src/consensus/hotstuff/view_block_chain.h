@@ -380,17 +380,26 @@ private:
     void SetViewBlockToMap(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
         assert(!view_block_info->view_block->qc().view_block_hash().empty());
         auto it = view_blocks_info_.find(view_block_info->view_block->qc().view_block_hash());
-        if (it != view_blocks_info_.end()) {
+        if (it != view_blocks_info_.end() && it->second->view_block != nullptr) {
+            ZJC_DEBUG("exists, failed add view block: %s, %u_%u_%lu, height: %lu, parent hash: %s, tx size: %u, strings: %s",
+                common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
+                view_block_info->view_block->qc().network_id(),
+                view_block_info->view_block->qc().pool_index(),
+                view_block_info->view_block->qc().view(),
+                view_block_info->view_block->block_info().height(),
+                common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str(),
+                view_block_info->view_block->block_info().tx_list_size(),
+                String().c_str());
             return;
         }
 
         view_blocks_info_[view_block_info->view_block->qc().view_block_hash()] = view_block_info;
-        ZJC_DEBUG("success add view block: %s, %u_%u_%lu, view: %lu, parent hash: %s, tx size: %u, strings: %s",
+        ZJC_DEBUG("success add view block: %s, %u_%u_%lu, height: %lu, parent hash: %s, tx size: %u, strings: %s",
             common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
             view_block_info->view_block->qc().network_id(),
             view_block_info->view_block->qc().pool_index(),
-            view_block_info->view_block->block_info().height(),
             view_block_info->view_block->qc().view(),
+            view_block_info->view_block->block_info().height(),
             common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str(),
             view_block_info->view_block->block_info().tx_list_size(),
             String().c_str());
