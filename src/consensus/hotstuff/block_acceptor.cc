@@ -574,53 +574,52 @@ void BlockAcceptor::commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr
     new_block_cache_callback_(
             queue_item_ptr->view_block_ptr,
             *queue_item_ptr->final_db_batch);
-    block_mgr_->ConsensusAddBlock(queue_item_ptr);
-    if (!network::IsSameToLocalShard(queue_item_ptr->view_block_ptr->qc().network_id())) {
-        return;
-    }
+    if (network::IsSameToLocalShard(queue_item_ptr->view_block_ptr->qc().network_id())) {
+        if (block->tx_list_size() > 0) {
+            pools_mgr_->TxOver(queue_item_ptr->view_block_ptr->qc().pool_index(), block->tx_list());
+            // auto& txs = block->tx_list();
+            // for (uint32_t i = 0; i < txs.size(); ++i) {
+            //     ZJC_DEBUG("commit block tx over step: %d, to: %s, gid: %s, "
+            //         "net: %d, pool: %d, height: %lu, propose_debug: %s", 
+            //         block->tx_list(i).step(),
+            //         common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
+            //         common::Encode::HexEncode(block->tx_list(i).gid()).c_str(),
+            //         queue_item_ptr->view_block_ptr->qc().network_id(),
+            //         queue_item_ptr->view_block_ptr->qc().pool_index(),
+            //         block->height(),
+            //         queue_item_ptr->view_block_ptr->debug().c_str());
+            //     if (pools::IsUserTransaction(txs[i].step())) {
+            //         ZJC_DEBUG("invalid tx add to consensus tx map: %d", txs[i].step());
+            //         continue;
+            //     }
+            // }
+            prefix_db_->SaveCommittedGids(block->tx_list(), *queue_item_ptr->final_db_batch);
+        } else {
+            ZJC_DEBUG("commit block tx over no tx, net: %d, pool: %d, height: %lu, propose_debug: %s", 
+                queue_item_ptr->view_block_ptr->qc().network_id(),
+                queue_item_ptr->view_block_ptr->qc().pool_index(),
+                block->height(),
+                queue_item_ptr->view_block_ptr->debug().c_str());        
+        }
 
-    if (block->tx_list_size() > 0) {
-        pools_mgr_->TxOver(queue_item_ptr->view_block_ptr->qc().pool_index(), block->tx_list());
-        // auto& txs = block->tx_list();
-        // for (uint32_t i = 0; i < txs.size(); ++i) {
-        //     ZJC_DEBUG("commit block tx over step: %d, to: %s, gid: %s, "
-        //         "net: %d, pool: %d, height: %lu, propose_debug: %s", 
-        //         block->tx_list(i).step(),
-        //         common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
-        //         common::Encode::HexEncode(block->tx_list(i).gid()).c_str(),
-        //         queue_item_ptr->view_block_ptr->qc().network_id(),
-        //         queue_item_ptr->view_block_ptr->qc().pool_index(),
-        //         block->height(),
-        //         queue_item_ptr->view_block_ptr->debug().c_str());
-        //     if (pools::IsUserTransaction(txs[i].step())) {
-        //         ZJC_DEBUG("invalid tx add to consensus tx map: %d", txs[i].step());
-        //         continue;
-        //     }
-        // }
-        prefix_db_->SaveCommittedGids(block->tx_list(), *queue_item_ptr->final_db_batch);
-    } else {
-        ZJC_DEBUG("commit block tx over no tx, net: %d, pool: %d, height: %lu, propose_debug: %s", 
+        // tps measurement
+        CalculateTps(block->tx_list_size());    
+        ZJC_DEBUG("[NEW BLOCK] hash: %s, prehash: %s, view: %u_%u_%lu, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu, propose_debug: %s",
+            common::Encode::HexEncode(queue_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
+            common::Encode::HexEncode(queue_item_ptr->view_block_ptr->parent_hash()).c_str(),
+            queue_item_ptr->view_block_ptr->qc().network_id(),
+            queue_item_ptr->view_block_ptr->qc().pool_index(),
+            queue_item_ptr->view_block_ptr->qc().view(),
             queue_item_ptr->view_block_ptr->qc().network_id(),
             queue_item_ptr->view_block_ptr->qc().pool_index(),
             block->height(),
-            queue_item_ptr->view_block_ptr->debug().c_str());        
+            queue_item_ptr->view_block_ptr->qc().elect_height(),
+            block->timestamp(),
+            block->tx_list_size(),
+            queue_item_ptr->view_block_ptr->debug().c_str());
     }
-
-    // tps measurement
-    CalculateTps(block->tx_list_size());    
-    ZJC_DEBUG("[NEW BLOCK] hash: %s, prehash: %s, view: %u_%u_%lu, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu, propose_debug: %s",
-        common::Encode::HexEncode(queue_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
-        common::Encode::HexEncode(queue_item_ptr->view_block_ptr->parent_hash()).c_str(),
-        queue_item_ptr->view_block_ptr->qc().network_id(),
-        queue_item_ptr->view_block_ptr->qc().pool_index(),
-        queue_item_ptr->view_block_ptr->qc().view(),
-        queue_item_ptr->view_block_ptr->qc().network_id(),
-        queue_item_ptr->view_block_ptr->qc().pool_index(),
-        block->height(),
-        queue_item_ptr->view_block_ptr->qc().elect_height(),
-        block->timestamp(),
-        block->tx_list_size(),
-        queue_item_ptr->view_block_ptr->debug().c_str());
+    
+    block_mgr_->ConsensusAddBlock(queue_item_ptr);
 }
 
 } // namespace hotstuff
