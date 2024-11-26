@@ -592,7 +592,7 @@ void BlockAcceptor::commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr
         //         continue;
         //     }
         // }
-        prefix_db_->SaveCommittedGids(block->tx_list());
+        prefix_db_->SaveCommittedGids(block->tx_list(), *queue_item_ptr->db_batch);
     } else {
         ZJC_DEBUG("commit block tx over no tx, net: %d, pool: %d, height: %lu, propose_debug: %s", 
             queue_item_ptr->view_block_ptr->qc().network_id(),

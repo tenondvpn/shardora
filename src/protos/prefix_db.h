@@ -800,16 +800,12 @@ public:
         return db_->Exist(key);
     }
 
-    void SaveCommittedGids(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
-        db::DbWriteBatch db_batch;
+    void SaveCommittedGids(
+            const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list, 
+            db::DbWriteBatch& db_batch) {
         for (uint32_t i = 0; i < tx_list.size(); ++i) {
             std::string key = kGidPrefix + tx_list[i].gid();
             db_batch.Put(key, "1");
-        }
-
-        auto st = db_->Put(db_batch);
-        if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
     }
 
