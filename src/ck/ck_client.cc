@@ -371,7 +371,7 @@ void ClickHouseClient::FlushToCkWithData() try {
     }
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    if (batch_count_ >= kBatchCountToCk || (pre_time_out_ + 10000 < now_tm_ms)) {
+    if (batch_count_ >= kBatchCountToCk || (pre_time_out_ + 3000 < now_tm_ms)) {
         clickhouse::Block trans;
         clickhouse::Block blocks;
         clickhouse::Block accounts;
