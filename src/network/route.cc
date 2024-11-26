@@ -125,7 +125,6 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
 }
 
 bool Route::CheckPoolsMessage(const transport::MessagePtr& header_ptr, dht::BaseDhtPtr dht_ptr) {
-    ZJC_DEBUG("pools message check route coming.");
     auto& header = header_ptr->header;
     if (header.has_broadcast()) {
         assert(false);
@@ -145,14 +144,14 @@ bool Route::CheckPoolsMessage(const transport::MessagePtr& header_ptr, dht::Base
     // TODO: check is this node tx message or route to nearest consensus node
     if (header_ptr->address_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
         RouteByUniversal(header_ptr);
-        ZJC_DEBUG("pools message check route coming network invalid.");
+        // ZJC_DEBUG("pools message check route coming network invalid.");
         return false;
     }
 
     auto members = all_shard_members_[common::GlobalInfo::Instance()->network_id()];
     if (members == nullptr) {
         dht_ptr->SendToClosestNode(header_ptr);
-        ZJC_DEBUG("pools message check route coming no members.");
+        // ZJC_DEBUG("pools message check route coming no members.");
         return false;
     }
 

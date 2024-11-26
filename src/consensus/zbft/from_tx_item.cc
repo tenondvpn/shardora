@@ -75,19 +75,19 @@ int FromTxItem::HandleTx(
     acc_balance_map[from] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
-    ZJC_DEBUG("handle tx success: %s, %lu, %lu, status: %d, from: %s, to: %s, amount: %lu, src_banalce: %lu, %u_%u_%lu, height: %lu",
-        common::Encode::HexEncode(block_tx.gid()).c_str(),
-        block_tx.balance(),
-        block_tx.gas_used(),
-        block_tx.status(),
-        common::Encode::HexEncode(block_tx.from()).c_str(),
-        common::Encode::HexEncode(block_tx.to()).c_str(),
-        block_tx.amount(),
-        src_banalce,
-        view_block.qc().network_id(),
-        view_block.qc().pool_index(),
-        view_block.qc().view(),
-        view_block.block_info().height());
+    // ZJC_DEBUG("handle tx success: %s, %lu, %lu, status: %d, from: %s, to: %s, amount: %lu, src_banalce: %lu, %u_%u_%lu, height: %lu",
+    //     common::Encode::HexEncode(block_tx.gid()).c_str(),
+    //     block_tx.balance(),
+    //     block_tx.gas_used(),
+    //     block_tx.status(),
+    //     common::Encode::HexEncode(block_tx.from()).c_str(),
+    //     common::Encode::HexEncode(block_tx.to()).c_str(),
+    //     block_tx.amount(),
+    //     src_banalce,
+    //     view_block.qc().network_id(),
+    //     view_block.qc().pool_index(),
+    //     view_block.qc().view(),
+    //     view_block.block_info().height());
     return kConsensusSuccess;
 }
 
