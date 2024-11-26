@@ -186,7 +186,6 @@ std::shared_ptr<ViewBlock> ViewBlockChain::Get(uint64_t view) {
         }
     }
 
-    prefix_db_->GetViewBlockInfo()
     return nullptr;
 }
 
@@ -297,7 +296,7 @@ Status ViewBlockChain::PruneTo(
         if (iter->second->view_block == nullptr) {
             continue;
         }
-        
+
         if (iter->second->view_block->qc().view() <= current->qc().view()) {
             forked_blockes.push_back(iter->second->view_block);
             iter = view_blocks_info_.erase(iter);
