@@ -186,6 +186,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::Get(uint64_t view) {
         }
     }
 
+    prefix_db_->GetViewBlockInfo()
     return nullptr;
 }
 
@@ -286,7 +287,17 @@ Status ViewBlockChain::PruneTo(
         return Status::kError;
     }
 
+    ZJC_DEBUG("now prune view block %u_%u_%lu, prune_height_: %lu, views: %s", 
+        current->qc().network_id(), 
+        current->qc().pool_index(), 
+        current->qc().view(), 
+        prune_height_,
+        String().c_str());
     for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
+        if (iter->second->view_block == nullptr) {
+            continue;
+        }
+        
         if (iter->second->view_block->qc().view() <= current->qc().view()) {
             forked_blockes.push_back(iter->second->view_block);
             iter = view_blocks_info_.erase(iter);
@@ -295,12 +306,6 @@ Status ViewBlockChain::PruneTo(
         }
     }
 
-    ZJC_DEBUG("now prune view block %u_%u_%lu, prune_height_: %lu, views: %s", 
-        current->qc().network_id(), 
-        current->qc().pool_index(), 
-        current->qc().view(), 
-        prune_height_,
-        String().c_str());
     return Status::kSuccess;
 }
 

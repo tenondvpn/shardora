@@ -317,12 +317,12 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
 
     threads_message_queues_[thread_index][priority].push(msg_ptr);
     wait_con_[thread_index % all_thread_count_].notify_one();
-    ZJC_DEBUG("queue size message push success: %lu, queue_idx: %d, "
-        "priority: %d, thread queue size: %u, net: %u, type: %d",
-        msg_ptr->header.hash64(), thread_index, priority,
-        threads_message_queues_[thread_index][priority].size(),
-        common::GlobalInfo::Instance()->network_id(),
-        msg_ptr->header.type());
+    // ZJC_DEBUG("queue size message push success: %lu, queue_idx: %d, "
+    //     "priority: %d, thread queue size: %u, net: %u, type: %d",
+    //     msg_ptr->header.hash64(), thread_index, priority,
+    //     threads_message_queues_[thread_index][priority].size(),
+    //     common::GlobalInfo::Instance()->network_id(),
+    //     msg_ptr->header.type());
 }
 
 uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
@@ -514,8 +514,8 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool htt
             continue;
         }
 
-        ZJC_DEBUG("pop valid message hash: %lu, size: %u, thread: %u",
-            msg_obj->header.hash64(), threads_message_queues_[thread_idx][pri].size(), thread_idx);
+        // ZJC_DEBUG("pop valid message hash: %lu, size: %u, thread: %u",
+        //     msg_obj->header.hash64(), threads_message_queues_[thread_idx][pri].size(), thread_idx);
         return msg_obj;
     }
 
@@ -523,16 +523,16 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool htt
     if (http_svr_thread) {
         MessagePtr msg_obj;
         http_server_message_queue_.pop(&msg_obj);
-        if (msg_obj != nullptr) {
-            ZJC_DEBUG("get msg http transaction success %s, %s, hash64: %lu, step: %d, gid: %s, type: %d", 
-                common::Encode::HexEncode(
-                security_->GetAddress(msg_obj->header.tx_proto().pubkey())).c_str(),
-                common::Encode::HexEncode(msg_obj->header.tx_proto().to()).c_str(),
-                msg_obj->header.hash64(),
-                msg_obj->header.tx_proto().step(),
-                common::Encode::HexEncode(msg_obj->header.tx_proto().gid()).c_str(),
-                msg_obj->header.type());
-        }
+        // if (msg_obj != nullptr) {
+        //     ZJC_DEBUG("get msg http transaction success %s, %s, hash64: %lu, step: %d, gid: %s, type: %d", 
+        //         common::Encode::HexEncode(
+        //         security_->GetAddress(msg_obj->header.tx_proto().pubkey())).c_str(),
+        //         common::Encode::HexEncode(msg_obj->header.tx_proto().to()).c_str(),
+        //         msg_obj->header.hash64(),
+        //         msg_obj->header.tx_proto().step(),
+        //         common::Encode::HexEncode(msg_obj->header.tx_proto().gid()).c_str(),
+        //         msg_obj->header.type());
+        // }
         return msg_obj;
     }
     

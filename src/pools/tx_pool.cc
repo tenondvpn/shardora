@@ -281,7 +281,7 @@ void TxPool::GetTxIdempotently(
 
         res_map[iter->second->unique_tx_hash] = iter->second;
         assert(!iter->second->unique_tx_hash.empty());
-        ZJC_DEBUG("gid valid: %s", common::Encode::HexEncode(iter->second->tx_info.gid()).c_str());
+        // ZJC_DEBUG("gid valid: %s", common::Encode::HexEncode(iter->second->tx_info.gid()).c_str());
         ++iter;
     }    
 }

@@ -87,7 +87,7 @@ void TxPoolManager::InitCrossPools() {
 }
 
 int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
-    ZJC_DEBUG("pools message fierwall coming.");
+    // ZJC_DEBUG("pools message fierwall coming.");
     // return transport::kFirewallCheckSuccess;
     auto& header = msg_ptr->header;
     auto& tx_msg = header.tx_proto();
@@ -121,7 +121,7 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
         return transport::kFirewallCheckError;
     }
 
-    ZJC_DEBUG("pools message fierwall coming success.");
+    // ZJC_DEBUG("pools message fierwall coming success.");
     return transport::kFirewallCheckSuccess;
 }
 

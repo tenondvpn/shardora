@@ -393,6 +393,10 @@ private:
             return;
         }
 
+        if (it != view_blocks_info_.end()) {
+            view_block_info->children = it->second->children;
+        }
+        
         view_blocks_info_[view_block_info->view_block->qc().view_block_hash()] = view_block_info;
         ZJC_DEBUG("success add view block: %s, %u_%u_%lu, height: %lu, parent hash: %s, tx size: %u, strings: %s",
             common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
