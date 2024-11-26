@@ -402,14 +402,16 @@ private:
     }
 
     std::shared_ptr<ViewBlockInfo> GetViewBlockInfo(
-            const std::shared_ptr<ViewBlock>& view_block, 
+            std::shared_ptr<ViewBlock> view_block, 
             BalanceMapPtr acc_balance_map_ptr,
             std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr) {
         auto view_block_info_ptr = std::make_shared<ViewBlockInfo>();
-        ZJC_DEBUG("add new view block %s, leader: %d",
-            common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view());
-        for (uint32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
-            view_block_info_ptr->added_txs.insert(view_block->block_info().tx_list(i).gid());
+        if (view_block) {
+            ZJC_DEBUG("add new view block %s, leader: %d",
+                common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view());
+            for (uint32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
+                view_block_info_ptr->added_txs.insert(view_block->block_info().tx_list(i).gid());
+            }
         }
 
         view_block_info_ptr->view_block = view_block;
@@ -436,10 +438,6 @@ private:
 
         auto it = view_blocks_info_.find(parent_hash);
         if (it == view_blocks_info_.end()) {
-            if (view_block->qc().view() <= latest_committed_block_->qc().view()) {
-                return;
-            }
-            
             // if (latest_committed_block_ == nullptr || latest_locked_block_->qc().view_block_hash() != parent_hash) {
             //     ZJC_DEBUG("failed find parent hash: %s, latest_locked_block_ hash: %s",
             //         common::Encode::HexEncode(parent_hash).c_str(),
@@ -450,8 +448,6 @@ private:
             //     return;
             // }
 
-            auto balane_map_ptr = nullptr;//std::make_shared<BalanceMap>();
-            auto zjc_host_ptr = nullptr;//std::make_shared<zjcvm::ZjchainHost>();
             // for (uint32_t i = 0; i < latest_committed_block_->block_info().tx_list_size(); ++i) {
             //     auto& tx = latest_committed_block_->block_info().tx_list(i);
             //     for (auto storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
@@ -472,9 +468,14 @@ private:
             // }
 
             // TODO: fix storage map            
-            auto block_info_ptr = GetViewBlockInfo(latest_committed_block_, balane_map_ptr, zjc_host_ptr);
+            auto block_info_ptr = GetViewBlockInfo(nullptr, nullptr, nullptr);
             view_blocks_info_[parent_hash] = block_info_ptr;
-            assert(block_info_ptr->view_block->qc().view_block_hash() == parent_hash);
+            ZJC_DEBUG("add null parent view block: %u_%u_%lu, height: %lu",
+                view_block->qc().network_id(), 
+                view_block->qc().pool_index(), 
+                view_block->qc().view(), 
+                view_block->block_info().height());
+            // assert(block_info_ptr->view_block->qc().view_block_hash() == parent_hash);
         }
 
 // #ifndef NDEBUG
