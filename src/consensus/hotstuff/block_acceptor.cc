@@ -199,11 +199,15 @@ Status BlockAcceptor::addTxsToPool(
     BalanceMap prevs_balance_map;
     view_block_chain->MergeAllPrevStorageMap(parent_hash, zjc_host);
     view_block_chain->MergeAllPrevBalanceMap(parent_hash, prevs_balance_map);
-    ZJC_DEBUG("merge prev all balance size: %u", prevs_balance_map.size());
+    ZJC_DEBUG("merge prev all balance size: %u, tx size: %u",
+        prevs_balance_map.size(), txs.size());
     std::map<std::string, pools::TxItemPtr> txs_map;
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
         auto* tx = &txs[i];
         if (view_block_chain && !view_block_chain->CheckTxGidValid(tx->gid(), parent_hash)) {
+            ZJC_DEBUG("check tx gid failed: %s, phash: %s", 
+                common::Encode::HexEncode(tx->gid()).c_str(), 
+                common::Encode::HexEncode(parent_hash).c_str());
             return Status::kError;
         }
 
@@ -219,6 +223,7 @@ Status BlockAcceptor::addTxsToPool(
         }
 
         if (!address_info) {
+            ZJC_DEBUG("get address failed gid: %s", common::Encode::HexEncode(tx->gid()).c_str());
             return Status::kError;
         }
 
