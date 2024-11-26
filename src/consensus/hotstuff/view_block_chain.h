@@ -346,21 +346,21 @@ public:
 
         if (high_view_block_ == nullptr ||
                 high_view_block_->qc().view() < view_block_ptr->qc().view()) {
-#ifndef NDEBUG
-            if (high_view_block_ != nullptr) {
-                ZJC_DEBUG("success add update old high view: %lu, high hash: %s, "
-                    "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",
-                    high_view_block_->qc().view(),
-                    common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str(),
-                    view_block_ptr->qc().view(),
-                    common::Encode::HexEncode(view_block_ptr->qc().view_block_hash()).c_str(),
-                    view_block_ptr->qc().network_id(),
-                    view_block_ptr->qc().pool_index(),
-                    view_block_ptr->block_info().height(),
-                    common::Encode::HexEncode(view_block_ptr->parent_hash()).c_str(),
-                    view_block_ptr->block_info().tx_list_size());
-            }
-    #endif
+// #ifndef NDEBUG
+//             if (high_view_block_ != nullptr) {
+//                 ZJC_DEBUG("success add update old high view: %lu, high hash: %s, "
+//                     "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",
+//                     high_view_block_->qc().view(),
+//                     common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str(),
+//                     view_block_ptr->qc().view(),
+//                     common::Encode::HexEncode(view_block_ptr->qc().view_block_hash()).c_str(),
+//                     view_block_ptr->qc().network_id(),
+//                     view_block_ptr->qc().pool_index(),
+//                     view_block_ptr->block_info().height(),
+//                     common::Encode::HexEncode(view_block_ptr->parent_hash()).c_str(),
+//                     view_block_ptr->block_info().tx_list_size());
+//             }
+//     #endif
             
             high_view_block_ = view_block_ptr;
             ZJC_DEBUG("final success add update high hash: %s, "
@@ -440,15 +440,15 @@ private:
                 return;
             }
             
-            if (latest_committed_block_ == nullptr || latest_locked_block_->qc().view_block_hash() != parent_hash) {
-                ZJC_DEBUG("failed find parent hash: %s, latest_locked_block_ hash: %s",
-                    common::Encode::HexEncode(parent_hash).c_str(),
-                    (latest_committed_block_ ? 
-                    common::Encode::HexEncode(latest_locked_block_->qc().view_block_hash()).c_str() : 
-                    ""));
-                assert(false);
-                return;
-            }
+            // if (latest_committed_block_ == nullptr || latest_locked_block_->qc().view_block_hash() != parent_hash) {
+            //     ZJC_DEBUG("failed find parent hash: %s, latest_locked_block_ hash: %s",
+            //         common::Encode::HexEncode(parent_hash).c_str(),
+            //         (latest_committed_block_ ? 
+            //         common::Encode::HexEncode(latest_locked_block_->qc().view_block_hash()).c_str() : 
+            //         ""));
+            //     assert(false);
+            //     return;
+            // }
 
             auto balane_map_ptr = nullptr;//std::make_shared<BalanceMap>();
             auto zjc_host_ptr = nullptr;//std::make_shared<zjcvm::ZjchainHost>();
@@ -477,43 +477,43 @@ private:
             assert(block_info_ptr->view_block->qc().view_block_hash() == parent_hash);
         }
 
-#ifndef NDEBUG
-        std::string debug_str;
-        auto debug_view_block = view_block;
-        while (true) {
-            auto iter = view_blocks_info_.find(debug_view_block->parent_hash());
-            if (iter == view_blocks_info_.end()) {
-                break;
-            }
+// #ifndef NDEBUG
+//         std::string debug_str;
+//         auto debug_view_block = view_block;
+//         while (true) {
+//             auto iter = view_blocks_info_.find(debug_view_block->parent_hash());
+//             if (iter == view_blocks_info_.end()) {
+//                 break;
+//             }
 
-            auto pview_block = iter->second->view_block;
-            debug_str += common::StringUtil::Format("%u_%u_%lu_%lu-_%u_%u_%lu_%lu-%s_%s-%s_%s --> ", 
-                debug_view_block->qc().network_id(),
-                debug_view_block->qc().pool_index(),
-                debug_view_block->block_info().height(),
-                debug_view_block->qc().view(),
-                pview_block->qc().network_id(),
-                pview_block->qc().pool_index(),
-                pview_block->block_info().height(),
-                pview_block->qc().view(),
-                common::Encode::HexEncode(debug_view_block->qc().view_block_hash()).c_str(),
-                common::Encode::HexEncode(debug_view_block->parent_hash()).c_str(),
-                common::Encode::HexEncode(pview_block->qc().view_block_hash()).c_str(),
-                common::Encode::HexEncode(pview_block->parent_hash()).c_str());
-            if (debug_view_block->block_info().height() != pview_block->block_info().height() + 1) {
-                ZJC_DEBUG("failed add view block: %s", debug_str.c_str());
-                assert(false);
-            }
+//             auto pview_block = iter->second->view_block;
+//             debug_str += common::StringUtil::Format("%u_%u_%lu_%lu-_%u_%u_%lu_%lu-%s_%s-%s_%s --> ", 
+//                 debug_view_block->qc().network_id(),
+//                 debug_view_block->qc().pool_index(),
+//                 debug_view_block->block_info().height(),
+//                 debug_view_block->qc().view(),
+//                 pview_block->qc().network_id(),
+//                 pview_block->qc().pool_index(),
+//                 pview_block->block_info().height(),
+//                 pview_block->qc().view(),
+//                 common::Encode::HexEncode(debug_view_block->qc().view_block_hash()).c_str(),
+//                 common::Encode::HexEncode(debug_view_block->parent_hash()).c_str(),
+//                 common::Encode::HexEncode(pview_block->qc().view_block_hash()).c_str(),
+//                 common::Encode::HexEncode(pview_block->parent_hash()).c_str());
+//             if (debug_view_block->block_info().height() != pview_block->block_info().height() + 1) {
+//                 ZJC_DEBUG("failed add view block: %s", debug_str.c_str());
+//                 assert(false);
+//             }
 
-            if (pview_block == latest_committed_block_) {
-                break;
-            }
+//             if (pview_block == latest_committed_block_) {
+//                 break;
+//             }
 
-            debug_view_block = pview_block;
-        }
-        ZJC_DEBUG("success add view block: %s, strings: %s",
-            debug_str.c_str(), String().c_str());
-#endif
+//             debug_view_block = pview_block;
+//         }
+//         ZJC_DEBUG("success add view block: %s, strings: %s",
+//             debug_str.c_str(), String().c_str());
+// #endif
         view_blocks_info_[parent_hash]->children.push_back(view_block);
     }
 

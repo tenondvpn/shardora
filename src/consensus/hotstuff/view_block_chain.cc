@@ -75,31 +75,31 @@ Status ViewBlockChain::Store(
         }
     }
 
-#ifndef NDEBUG
-    if (balane_map_ptr && balane_map_ptr->size() > 0) {
-        for (auto iter = balane_map_ptr->begin(); iter != balane_map_ptr->end(); ++iter) {
-            ZJC_DEBUG("store view block %u_%u_%lu, height: %lu, from: %s, balance: %lu, propose_debug: %s", 
-                view_block->qc().network_id(), 
-                view_block->qc().pool_index(), 
-                view_block->qc().view(), 
-                view_block->block_info().height(), 
-                common::Encode::HexEncode(iter->first).c_str(), 
-                iter->second,
-                view_block->debug().c_str());
-        }
-    }
+// #ifndef NDEBUG
+//     if (balane_map_ptr && balane_map_ptr->size() > 0) {
+//         for (auto iter = balane_map_ptr->begin(); iter != balane_map_ptr->end(); ++iter) {
+//             ZJC_DEBUG("store view block %u_%u_%lu, height: %lu, from: %s, balance: %lu, propose_debug: %s", 
+//                 view_block->qc().network_id(), 
+//                 view_block->qc().pool_index(), 
+//                 view_block->qc().view(), 
+//                 view_block->block_info().height(), 
+//                 common::Encode::HexEncode(iter->first).c_str(), 
+//                 iter->second,
+//                 view_block->debug().c_str());
+//         }
+//     }
 
-    auto& zjc_host_prev_storages = zjc_host_ptr->prev_storages_map();
-    for (auto iter = zjc_host_prev_storages.begin(); iter != zjc_host_prev_storages.end(); ++iter) {
-        if (iter->first.size() > 40)
-        ZJC_DEBUG("step: %d, hash: %s, success add prev storage key: %s, value: %s, propose_debug: %s",
-            view_block->block_info().tx_list_size() > 0 ? view_block->block_info().tx_list(0).step() : -1,
-            common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
-            common::Encode::HexEncode(iter->first).c_str(),
-            common::Encode::HexEncode(iter->second).c_str(),
-            view_block->debug().c_str());
-    }
-#endif
+//     auto& zjc_host_prev_storages = zjc_host_ptr->prev_storages_map();
+//     for (auto iter = zjc_host_prev_storages.begin(); iter != zjc_host_prev_storages.end(); ++iter) {
+//         if (iter->first.size() > 40)
+//         ZJC_DEBUG("step: %d, hash: %s, success add prev storage key: %s, value: %s, propose_debug: %s",
+//             view_block->block_info().tx_list_size() > 0 ? view_block->block_info().tx_list(0).step() : -1,
+//             common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
+//             common::Encode::HexEncode(iter->first).c_str(),
+//             common::Encode::HexEncode(iter->second).c_str(),
+//             view_block->debug().c_str());
+//     }
+// #endif
 
     ZJC_DEBUG("merge prev all balance store size: %u, propose_debug: %s, "
         "%u_%u_%lu, %lu, hash: %s, prehash: %s",

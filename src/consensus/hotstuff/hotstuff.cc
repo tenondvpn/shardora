@@ -209,20 +209,20 @@ Status Hotstuff::Propose(
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-#ifndef NDEBUG
-    std::string propose_debug_str = common::StringUtil::Format(
-        "%u-%u-%lu", 
-        common::GlobalInfo::Instance()->network_id(), 
-        pool_idx_, 
-        propose_debug_index_++);
-    propose_debug_str += ", tx gids: ";
-    for (uint32_t tx_idx = 0; tx_idx < pb_pro_msg->tx_propose().txs_size(); ++tx_idx) {
-        propose_debug_str += common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).gid()) + " ";
-    }
+// #ifndef NDEBUG
+//     std::string propose_debug_str = common::StringUtil::Format(
+//         "%u-%u-%lu", 
+//         common::GlobalInfo::Instance()->network_id(), 
+//         pool_idx_, 
+//         propose_debug_index_++);
+//     propose_debug_str += ", tx gids: ";
+//     for (uint32_t tx_idx = 0; tx_idx < pb_pro_msg->tx_propose().txs_size(); ++tx_idx) {
+//         propose_debug_str += common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).gid()) + " ";
+//     }
 
-    header.set_debug(propose_debug_str);
-    ZJC_DEBUG("leader begin propose_debug: %s", header.debug().c_str());
-#endif
+//     header.set_debug(propose_debug_str);
+//     ZJC_DEBUG("leader begin propose_debug: %s", header.debug().c_str());
+// #endif
     dht::DhtKeyManager dht_key(tmp_msg_ptr->header.src_sharding_id());
     header.set_des_dht_key(dht_key.StrKey());
     transport::TcpTransport::Instance()->SetMessageHash(header);
@@ -914,11 +914,11 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
     std::string followers_gids;
 
-#ifndef NDEBUG
-    for (uint32_t i = 0; i < vote_msg.txs_size(); ++i) {
-        followers_gids += common::Encode::HexEncode(vote_msg.txs(i).gid()) + " ";
-    }
-#endif
+// #ifndef NDEBUG
+//     for (uint32_t i = 0; i < vote_msg.txs_size(); ++i) {
+//         followers_gids += common::Encode::HexEncode(vote_msg.txs(i).gid()) + " ";
+//     }
+// #endif
 
     ZJC_DEBUG("====2.0 pool: %d, onVote, hash: %s, view: %lu, "
         "local high view: %lu, replica: %lu, hash64: %lu, propose_debug: %s, followers_gids: %s",
@@ -1184,14 +1184,14 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-#ifndef NDEBUG
-    std::string gids;
-    for (uint32_t i = 0; i < pre_rst_timer_msg.txs_size(); ++i) {
-        gids += common::Encode::HexEncode(pre_rst_timer_msg.txs(i).gid()) + " ";
-    }
+// #ifndef NDEBUG
+//     std::string gids;
+//     for (uint32_t i = 0; i < pre_rst_timer_msg.txs_size(); ++i) {
+//         gids += common::Encode::HexEncode(pre_rst_timer_msg.txs(i).gid()) + " ";
+//     }
 
-    ZJC_DEBUG("pool: %u, reset timer get follower tx gids: %s", pool_idx_, gids.c_str());
-#endif
+//     ZJC_DEBUG("pool: %u, reset timer get follower tx gids: %s", pool_idx_, gids.c_str());
+// #endif
 
     if (pre_rst_timer_msg.txs_size() > 0) {
         Status s = acceptor()->AddTxs(pre_rst_timer_msg.txs());
