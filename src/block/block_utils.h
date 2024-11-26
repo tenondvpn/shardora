@@ -74,9 +74,9 @@ typedef std::shared_ptr<view_block::protobuf::ViewBlockItem> ViewBlockPtr;
 
 struct BlockToDbItem {
     BlockToDbItem(ViewBlockPtr& bptr, const std::shared_ptr<db::DbWriteBatch>& batch)
-        : view_block_ptr(bptr), db_batch(batch) {}
+        : view_block_ptr(bptr), final_db_batch(batch) {}
     ViewBlockPtr view_block_ptr;
-    std::shared_ptr<db::DbWriteBatch> db_batch;
+    std::shared_ptr<db::DbWriteBatch> final_db_batch;
 };
 
 struct LeaderWithToTxItem {
