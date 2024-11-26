@@ -27,7 +27,6 @@ RootToTxItem::~RootToTxItem() {}
 
 int RootToTxItem::HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
