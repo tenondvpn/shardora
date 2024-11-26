@@ -146,7 +146,7 @@ void BlockManager::HandleAllConsensusBlocks() {
                     common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
                     db_item_ptr->view_block_ptr->qc().elect_height(),
                     block_ptr->timeblock_height());
-            AddNewBlock(db_item_ptr->view_block_ptr, *db_item_ptr->db_batch);
+            AddNewBlock(db_item_ptr->view_block_ptr, *db_item_ptr->final_db_batch);
             ZJC_DEBUG("over from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
                     "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
                     db_item_ptr->view_block_ptr->qc().network_id(),
