@@ -27,7 +27,7 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) { 
         auto& tx_info = iter->second->tx_info;
         auto& block_tx = *tx_list->Add();
-        int res = iter->second->TxToBlockTx(tx_info, db_batch_, &block_tx);
+        int res = iter->second->TxToBlockTx(tx_info, &block_tx);
         if (res != consensus::kConsensusSuccess) {
             tx_list->RemoveLast();
             ZJC_WARN("handle tx failed: %u_%u_%lu, tx step: %d, gid: %s, res: %d",
@@ -50,7 +50,6 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
         block_tx.set_status(consensus::kConsensusSuccess);
         int do_tx_res = iter->second->HandleTx(
             *view_block,
-            db_batch_,
             zjc_host,
             acc_balance_map,
             block_tx);
