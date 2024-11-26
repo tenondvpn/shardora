@@ -209,20 +209,20 @@ Status Hotstuff::Propose(
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-#ifndef NDEBUG
-    std::string propose_debug_str = common::StringUtil::Format(
-        "%u-%u-%lu", 
-        common::GlobalInfo::Instance()->network_id(), 
-        pool_idx_, 
-        propose_debug_index_++);
-    propose_debug_str += ", tx gids: ";
-    for (uint32_t tx_idx = 0; tx_idx < pb_pro_msg->tx_propose().txs_size(); ++tx_idx) {
-        propose_debug_str += common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).gid()) + " ";
-    }
+// #ifndef NDEBUG
+//     std::string propose_debug_str = common::StringUtil::Format(
+//         "%u-%u-%lu", 
+//         common::GlobalInfo::Instance()->network_id(), 
+//         pool_idx_, 
+//         propose_debug_index_++);
+//     propose_debug_str += ", tx gids: ";
+//     for (uint32_t tx_idx = 0; tx_idx < pb_pro_msg->tx_propose().txs_size(); ++tx_idx) {
+//         propose_debug_str += common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).gid()) + " ";
+//     }
 
-    header.set_debug(propose_debug_str);
-    ZJC_DEBUG("leader begin propose_debug: %s", header.debug().c_str());
-#endif
+//     header.set_debug(propose_debug_str);
+//     ZJC_DEBUG("leader begin propose_debug: %s", header.debug().c_str());
+// #endif
     dht::DhtKeyManager dht_key(tmp_msg_ptr->header.src_sharding_id());
     header.set_des_dht_key(dht_key.StrKey());
     transport::TcpTransport::Instance()->SetMessageHash(header);
