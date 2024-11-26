@@ -573,7 +573,7 @@ void BlockAcceptor::commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr
     auto block = &queue_item_ptr->view_block_ptr->block_info();
     new_block_cache_callback_(
             queue_item_ptr->view_block_ptr,
-            *queue_item_ptr->db_batch);
+            *queue_item_ptr->final_db_batch);
     block_mgr_->ConsensusAddBlock(queue_item_ptr);
     if (!network::IsSameToLocalShard(queue_item_ptr->view_block_ptr->qc().network_id())) {
         return;
