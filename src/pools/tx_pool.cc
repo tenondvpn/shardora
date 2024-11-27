@@ -85,7 +85,7 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 //     prev_synced_time_ms_ = now_tm_ms + kSyncBlockPeriodMs;
     std::vector<uint64_t> invalid_heights;
     height_tree_ptr_->GetMissingHeights(&invalid_heights, latest_height_);
-    ZJC_DEBUG("get invalid heights size: %u, latest_height_: %lu", invalid_heights.size(), latest_height_);
+    ZJC_DEBUG("%u get invalid heights size: %u, latest_height_: %lu", pool_index_, invalid_heights.size(), latest_height_);
     if (invalid_heights.size() > 0) {
         auto net_id = common::GlobalInfo::Instance()->network_id();
         if (net_id >= network::kConsensusWaitingShardBeginNetworkId &&

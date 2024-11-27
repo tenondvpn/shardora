@@ -509,6 +509,12 @@ void KeyValueSync::CheckSyncTimeout() {
             continue;
         }
 
+        ZJC_DEBUG("remove sync key: %s, sync times: %d, "
+            "responsed_timeout_us: %lu, now_tm_us: %lu",
+            iter->second->key.c_str(), 
+            iter->second->sync_times, 
+            iter->second->responsed_timeout_us, 
+            now_tm_us);
         added_key_set_.erase(iter->second->key);
         prio_sync_queue_[iter->second->priority].push(iter->second);
         iter = synced_map_.erase(iter);
