@@ -416,7 +416,6 @@ int BlsManager::GetVerifyHash(
 }
 
 void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    return;
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();

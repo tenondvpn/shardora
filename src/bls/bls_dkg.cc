@@ -147,7 +147,6 @@ void BlsDkg::OnNewElectionBlock(
 }
 
 void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    return;
     bls_msg_queue_.push(msg_ptr);
     ZJC_DEBUG("queue size bls_msg_queue_: %d", bls_msg_queue_.size());
 }
@@ -716,12 +715,13 @@ void BlsDkg::BroadcastVerfify() try {
         return;
     }
 
-    ZJC_DEBUG("brd verify g2 success local net: %u, local: %d,  %s, %s",
+    CreateDkgMessage(msg_ptr);
+    ZJC_DEBUG("brd verify g2 success local net: %u, local: %d,  %s, %s, hash64: %lu",
         common::GlobalInfo::Instance()->network_id(),
         local_member_index_,
         common::Encode::HexEncode((*members_)[local_member_index_]->id).c_str(),
-        common::Encode::HexEncode(bls_msg.verify_brd().verify_vec(0).x_c0()).c_str());
-    CreateDkgMessage(msg_ptr);
+        common::Encode::HexEncode(bls_msg.verify_brd().verify_vec(0).x_c0()).c_str(),
+        msg_ptr->header.hash64());
 #ifdef ZJC_UNITTEST
     ver_brd_msg_ = msg_ptr;
 #else
@@ -766,8 +766,8 @@ void BlsDkg::SwapSecKey() try {
     }
 
     CreateDkgMessage(msg_ptr);
-    ZJC_DEBUG("success send swap seckey request local member index: %d, local net: %u",
-        local_member_index_, common::GlobalInfo::Instance()->network_id());
+    ZJC_DEBUG("success send swap seckey request local member index: %d, local net: %u, hash64: %lu",
+        local_member_index_, common::GlobalInfo::Instance()->network_id(), msg_ptr->header.hash64());
 #ifdef ZJC_UNITTEST
     sec_swap_msgs_ = msg_ptr;
     ZJC_DEBUG("success add swap msg");
