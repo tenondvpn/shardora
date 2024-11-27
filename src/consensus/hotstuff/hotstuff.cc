@@ -633,28 +633,27 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
 }
 
 Status Hotstuff::HandleProposeMsgStep_VerifyViewBlock(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
-    // 4 Verify ViewBlock
-    // ZJC_DEBUG("HandleProposeMsgStep_VerifyViewBlock called hash: %lu, propose_debug: %s",
-    //     pro_msg_wrap->msg_ptr->header.hash64(), pro_msg_wrap->msg_ptr->header.debug().c_str());
-    // auto* tc = &pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc();
-    // if (VerifyViewBlock(
-    //         *pro_msg_wrap->view_block_ptr,
-    //         view_block_chain(),
-    //         tc,
-    //         pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().elect_height()) != Status::kSuccess) {
-    //     ZJC_ERROR("pool: %d, Verify ViewBlock is error. hash: %s, hash64: %lu", pool_idx_,
-    //         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
-    //         pro_msg_wrap->msg_ptr->header.hash64());
-    //     return Status::kError;
-    // }
+    ZJC_DEBUG("HandleProposeMsgStep_VerifyViewBlock called hash: %lu, propose_debug: %s",
+        pro_msg_wrap->msg_ptr->header.hash64(), pro_msg_wrap->msg_ptr->header.debug().c_str());
+    auto* tc = &pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc();
+    if (VerifyViewBlock(
+            *pro_msg_wrap->view_block_ptr,
+            view_block_chain(),
+            tc,
+            pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().elect_height()) != Status::kSuccess) {
+        ZJC_ERROR("pool: %d, Verify ViewBlock is error. hash: %s, hash64: %lu", pool_idx_,
+            common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
+            pro_msg_wrap->msg_ptr->header.hash64());
+        return Status::kError;
+    }
     
-    // ZJC_DEBUG("====1.1 pool: %d, verify view block success, view: %lu, "
-    //     "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
-    //     pool_idx_,
-    //     pro_msg_wrap->view_block_ptr->qc().view(),
-    //     common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
-    //     view_block_chain()->HighViewBlock()->qc().view(),
-    //     pro_msg_wrap->msg_ptr->header.hash64(), pro_msg_wrap->msg_ptr->header.debug().c_str());        
+    ZJC_DEBUG("====1.1 pool: %d, verify view block success, view: %lu, "
+        "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
+        pool_idx_,
+        pro_msg_wrap->view_block_ptr->qc().view(),
+        common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
+        view_block_chain()->HighViewBlock()->qc().view(),
+        pro_msg_wrap->msg_ptr->header.hash64(), pro_msg_wrap->msg_ptr->header.debug().c_str());        
     return Status::kSuccess;
 }
 
@@ -1425,7 +1424,14 @@ Status Hotstuff::VerifyViewBlock(
                 v_block.qc().pool_index(), 
                 v_block.qc().view() - 1,
                 0);
+        } else {
+            kv_sync_->AddSyncHeight(
+                v_block.qc().network_id(), 
+                v_block.qc().pool_index(), 
+                v_block.block_info().height() - 1,
+                0);
         }
+        
         return Status::kError;
     }
 
