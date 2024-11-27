@@ -384,7 +384,7 @@ std::string ViewBlockChain::String() const {
 
     ZJC_DEBUG("get chain pool: %u, views: %s, block_height_str: %s",
         pool_index_, ret.c_str(), block_height_str.c_str());
-    assert(height_set.size() < 8);
+    assert(height_set.size() < 256);
     return ret;
 }
 
