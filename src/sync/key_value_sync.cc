@@ -167,8 +167,8 @@ void KeyValueSync::CheckSyncItem() {
                 height_item->set_pool_idx(item->pool_idx);
                 height_item->set_height(item->height);
                 height_item->set_tag(item->tag);
-                ZJC_DEBUG("try to sync normal block: %u_%u_%lu",
-                    item->network_id, item->pool_idx, item->height);
+                ZJC_DEBUG("try to sync normal block: %u_%u_%lu, tag: %d",
+                    item->network_id, item->pool_idx, item->height, item->tag);
             } else {
                 sync_req->add_keys(item->key);
             }
@@ -499,6 +499,12 @@ void KeyValueSync::CheckSyncTimeout() {
     for (auto iter = synced_map_.begin(); iter != synced_map_.end();) {
         if (iter->second->sync_times >= kSyncMaxRetryTimes ||
                 iter->second->responsed_timeout_us <= now_tm_us) {
+            ZJC_DEBUG("remove sync key: %s, sync times: %d, "
+                "responsed_timeout_us: %lu, now_tm_us: %lu",
+                iter->second->key.c_str(), 
+                iter->second->sync_times, 
+                iter->second->responsed_timeout_us, 
+                now_tm_us);
             added_key_set_.erase(iter->second->key);
             iter = synced_map_.erase(iter);
             continue;
@@ -509,7 +515,7 @@ void KeyValueSync::CheckSyncTimeout() {
             continue;
         }
 
-        ZJC_DEBUG("remove sync key: %s, sync times: %d, "
+        ZJC_DEBUG("remove sync key and retry: %s, sync times: %d, "
             "responsed_timeout_us: %lu, now_tm_us: %lu",
             iter->second->key.c_str(), 
             iter->second->sync_times, 
