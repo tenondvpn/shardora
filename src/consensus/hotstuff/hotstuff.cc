@@ -1423,7 +1423,7 @@ Status Hotstuff::VerifyViewBlock(
             v_block.qc().network_id(), 
             v_block.qc().pool_index(), 
             v_block.qc().view() - 1);
-        if (view_block_chain->HighQC().view() > v_block.qc().view() + 3) {
+        if (view_block_chain->HighQC().view() < v_block.qc().view() + 16) {
             kv_sync_->AddSyncViewHeight(
                 v_block.qc().network_id(), 
                 v_block.qc().pool_index(), 

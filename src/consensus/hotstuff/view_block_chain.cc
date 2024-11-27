@@ -297,8 +297,8 @@ Status ViewBlockChain::PruneTo(
             continue;
         }
 
-        if (iter->second->view_block->qc().view() <= current->qc().view()) {
-            forked_blockes.push_back(iter->second->view_block);
+        if (iter->second->view_block->qc().view() + 16 <= current->qc().view()) {
+            // forked_blockes.push_back(iter->second->view_block);
             iter = view_blocks_info_.erase(iter);
         } else {
             ++iter;
