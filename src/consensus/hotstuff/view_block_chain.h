@@ -156,6 +156,10 @@ public:
                     }
                 }
             }
+
+            if (!it->second->view_block) {
+                break;
+            }
             
             phash = it->second->view_block->parent_hash();
         }
