@@ -446,7 +446,8 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 key += "_" + std::to_string(iter->tag());
             }
 
-            ZJC_DEBUG("now handle kv response hash64: %lu, key: %s", msg_ptr->header.hash64(), key.c_str());
+            ZJC_DEBUG("now handle kv response hash64: %lu, key: %s, tag: %d",
+                msg_ptr->header.hash64(), key.c_str(), iter->tag());
             auto pb_vblock = std::make_shared<view_block::protobuf::ViewBlockItem>();
             if (!pb_vblock->ParseFromString(iter->value())) {
                 ZJC_ERROR("pb vblock parse failed");
