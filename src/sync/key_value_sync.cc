@@ -375,6 +375,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             res->set_pool_idx(req_height.pool_idx());
             res->set_height(req_height.height());
             res->set_value(pb_view_block.SerializeAsString());
+            res->set_tag(kBlockHeight);
             add_size += 16 + res->value().size();
             if (add_size >= kSyncPacketMaxSize) {
                 ZJC_DEBUG("handle sync value add_size failed request hash: %lu, "
@@ -397,6 +398,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                 res->set_pool_idx(req_height.pool_idx());
                 res->set_height(req_height.height());
                 res->set_value(view_block_ptr->SerializeAsString());
+                res->set_tag(kViewHeight);
                 add_size += 16 + res->value().size();
                 if (add_size >= kSyncPacketMaxSize) {
                     ZJC_DEBUG("handle sync value view add_size failed request hash: %lu, "
@@ -440,6 +442,10 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             key = std::to_string(iter->network_id()) + "_" +
                 std::to_string(iter->pool_idx()) + "_" +
                 std::to_string(iter->height());
+            if (iter->tag() == kViewHeight) {
+                key += "_" + std::to_string(iter->tag());
+            }
+
             ZJC_DEBUG("now handle kv response hash64: %lu, key: %s", msg_ptr->header.hash64(), key.c_str());
             auto pb_vblock = std::make_shared<view_block::protobuf::ViewBlockItem>();
             if (!pb_vblock->ParseFromString(iter->value())) {
