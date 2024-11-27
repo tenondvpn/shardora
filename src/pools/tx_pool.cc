@@ -68,6 +68,7 @@ void TxPool::InitHeightTree() {
 
 uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
     if (!height_tree_ptr_) {
+        ZJC_DEBUG("get invalid height_tree_ptr_ size: %u, latest_height_: %lu", 0, latest_height_);
         return 0;
     }
 
@@ -77,12 +78,14 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 // 
     if (latest_height_ == common::kInvalidUint64) {
         // sync latest height from neighbors
+        ZJC_DEBUG("get invalid heights size: %u, latest_height_: %lu", 0, latest_height_);
         return 0;
     }
 
 //     prev_synced_time_ms_ = now_tm_ms + kSyncBlockPeriodMs;
     std::vector<uint64_t> invalid_heights;
     height_tree_ptr_->GetMissingHeights(&invalid_heights, latest_height_);
+    ZJC_DEBUG("get invalid heights size: %u, latest_height_: %lu", invalid_heights.size(), latest_height_);
     if (invalid_heights.size() > 0) {
         auto net_id = common::GlobalInfo::Instance()->network_id();
         if (net_id >= network::kConsensusWaitingShardBeginNetworkId &&
