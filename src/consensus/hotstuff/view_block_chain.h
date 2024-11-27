@@ -187,6 +187,10 @@ public:
             }
 
             ++count;
+            if (!it->second->view_block) {
+                return false;
+            }
+            
             phash = it->second->view_block->parent_hash();
         }
 
