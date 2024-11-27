@@ -126,10 +126,20 @@ public:
     void HandleSyncedViewBlock(
             std::shared_ptr<view_block::protobuf::ViewBlockItem>& vblock) {
         if (view_block_chain_->Has(vblock->qc().view_block_hash())) {
+            ZJC_DEBUG("block hash exists %u_%u_%lu, height: %lu",
+                vblock->qc().network_id(), 
+                vblock->qc().pool_index(), 
+                vblock->qc().view(), 
+                vblock->block_info().height());
             return;
         }
 
         if (prefix_db_->BlockExists(vblock->qc().view_block_hash())) {
+            ZJC_DEBUG("block db exists %u_%u_%lu, height: %lu",
+                vblock->qc().network_id(), 
+                vblock->qc().pool_index(), 
+                vblock->qc().view(), 
+                vblock->block_info().height());
             return;
         }
         

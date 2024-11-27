@@ -474,14 +474,15 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             }
                 
             if (res == 0) {
-                ZJC_DEBUG("0 success handle network new view block: %u, %u, %lu, key: %s", 
+                ZJC_DEBUG("0 success handle network new view block: %u_%u_%lu, height: %lu key: %s", 
                     pb_vblock->qc().network_id(),
                     pb_vblock->qc().pool_index(),
+                    pb_vblock->qc().view(),
                     pb_vblock->block_info().height(),
                     key.c_str());
                 auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pb_vblock->qc().pool_index()];
                 vblock_queues_[thread_idx].push(pb_vblock);
-            }            
+            }       
         }
 
         auto tmp_iter = synced_map_.find(key);
