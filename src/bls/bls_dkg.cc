@@ -854,6 +854,7 @@ void BlsDkg::FinishBroadcast() try {
         }
 
         valid_seck_keys.push_back(libff::alt_bn128_Fr(seckey.c_str()));
+        valid_seck_keys_str_ += seckey + ",";
         common_public_key_ = common_public_key_ + for_common_pk_g2s_[i];
         bitmap.Set(i);
     }
@@ -872,7 +873,7 @@ void BlsDkg::FinishBroadcast() try {
     local_sec_key_ = dkg.SecretKeyShareCreate(valid_seck_keys);
     local_publick_key_ = dkg.GetPublicKeyFromSecretKey(local_sec_key_);
     DumpLocalPrivateKey();
-    BroadcastFinish(bitmap, valid_seck_keys);
+    BroadcastFinish(bitmap);
     finished_ = true;
 } catch (std::exception& e) {
     local_sec_key_ = libff::alt_bn128_Fr::zero();
@@ -896,9 +897,7 @@ void BlsDkg::DumpLocalPrivateKey() {
         enc_data);
 }
 
-void BlsDkg::BroadcastFinish(
-        const common::Bitmap& bitmap,
-        const std::vector<libff::alt_bn128_Fr>& valid_seck_keys) {
+void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
     auto& bls_msg = *msg.mutable_bls_proto();
@@ -958,13 +957,10 @@ void BlsDkg::BroadcastFinish(
         bls_mgr_->HandleMessage(msg_ptr);
     }
 #endif
-    
-    if (ck_client_) {
-        std::string swaped_sec_keys;
-        for (uint32_t i = 0; i < valid_seck_keys.size(); ++i) {
-            swaped_sec_keys += libBLS::ThresholdUtils::fieldElementToString(valid_seck_keys[i]) + ",";
-        }
+}
 
+void BlsDkg::FlushToCk(const libff::alt_bn128_G2& common_public_key) {
+    if (ck_client_) {
         std::string local_pub_keys;
         bls::protobuf::VerifyVecBrdReq req;
         auto res = prefix_db_->GetBlsVerifyG2(security_->GetAddress(), &req);
@@ -986,8 +982,8 @@ void BlsDkg::BroadcastFinish(
         info.local_pri_keys = BlsDkg::serializeSkContribution(local_src_secret_key_contribution_);
         info.local_pub_keys = local_pub_keys;
         info.local_sk = BlsDkg::serializeLocalSk(local_sec_key_);
-        info.common_pk = BlsDkg::serializeCommonPk(common_public_key_);
-        info.swaped_sec_keys = swaped_sec_keys;
+        info.common_pk = BlsDkg::serializeCommonPk(common_public_key);
+        info.swaped_sec_keys = valid_seck_keys_str_;
         ZJC_DEBUG("success insert bls elect info elect_hegiht_: %lu, "
             "local_member_index_: %u, shard_id: %u, local_pri_keys: %s, "
             "local_pub_keys: %s, local_sk: %s, common_pk: %s, swaped_sec_keys: %s", 
@@ -995,7 +991,7 @@ void BlsDkg::BroadcastFinish(
             info.local_pri_keys.c_str(), info.local_pub_keys.c_str(), 
             info.local_sk.c_str(), info.common_pk.c_str(), info.swaped_sec_keys.c_str());
         ck_client_->InsertBlsElectInfo(info);
-    }    
+    }
 }
 
 void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {

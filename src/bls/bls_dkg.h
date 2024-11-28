@@ -55,6 +55,9 @@ public:
         std::shared_ptr<TimeBlockItem>& latest_timeblock_info);
     void HandleMessage(const transport::MessagePtr& header);
     bool CheckBlsMessageValid(transport::MessagePtr& msg_ptr);
+    void Destroy();
+    void TimerMessage();
+    void FlushToCk(const libff::alt_bn128_G2& common_public_key);
 
     uint64_t elect_hegiht() {
         return elect_hegiht_;
@@ -75,13 +78,8 @@ public:
         return member_count_;
     }
 
-    void Destroy();
-
-    void TimerMessage();
-
     static std::string serializeCommonPk(const libff::alt_bn128_G2& common_pk) {
         auto pk = std::make_shared<bls::protobuf::BlsPublicKey>();
-
         pk->set_x_c0(
                 libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0));
         pk->set_x_c1(
@@ -90,7 +88,6 @@ public:
                 libBLS::ThresholdUtils::fieldElementToString(common_pk.Y.c0));
         pk->set_y_c1(
                 libBLS::ThresholdUtils::fieldElementToString(common_pk.Y.c1));
-
         return pk->SerializeAsString();
     }        
 
@@ -105,9 +102,7 @@ private:
     void FinishBroadcast();
     void CreateContribution(uint32_t valid_n, uint32_t valid_t);
     void CreateDkgMessage(transport::MessagePtr& msg_ptr);
-    void BroadcastFinish(
-        const common::Bitmap& bitmap, 
-        const std::vector<libff::alt_bn128_Fr>& valid_seck_keys);
+    void BroadcastFinish(const common::Bitmap& bitmap);
     void CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* seckey_len);
     void CheckVerifyAllValid();
     void SendGetVerifyInfo(int32_t index);
@@ -198,6 +193,7 @@ private:
     std::vector<libff::alt_bn128_G2> for_common_pk_g2s_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> bls_msg_queue_;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
+    std::string valid_seck_keys_str_;
 
 #ifdef ZJC_UNITTEST
     transport::MessagePtr ver_brd_msg_;

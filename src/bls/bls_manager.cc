@@ -156,7 +156,6 @@ void BlsManager::OnNewElectBlock(
     BLS_DEBUG("success add new bls dkg, elect_height: %lu", elect_height);
 }
 
-
 int BlsManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
@@ -984,6 +983,7 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
     }
 
     common_pk_iter->second.to_affine_coordinates();
+    waiting_bls_->FlushToCk(common_pk_iter->second);
     auto common_pk = pre_ec_members->mutable_common_pubkey();
     common_pk->set_x_c0(
         libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.X.c0));
