@@ -878,7 +878,7 @@ bool ClickHouseClient::CreateBlsElectInfoTable() {
 
 bool ClickHouseClient::InsertBlsElectInfo(const BlsElectInfo& info) try {
     bls_elect_queue_.push(std::make_shared<BlsElectInfo>(info));
-    ZJC_DEBUG("insert elect bls success.");
+    ZJC_DEBUG("insert elect bls success: %d", bls_elect_queue_.size());
     return true;
 } catch (std::exception& e) {
     ZJC_ERROR("add new block failed[%s]", e.what());
@@ -919,6 +919,7 @@ void ClickHouseClient::HandleBlsMessage() {
         HandleBlsBlockMessage(*bls_block);
     }
 
+    ZJC_DEBUG("call elect bls success: %d", bls_elect_queue_.size());
     std::shared_ptr<BlsElectInfo> elect_block;
     while (bls_elect_queue_.pop(&elect_block)) {
         ZJC_DEBUG("success pop elect bls success.");
