@@ -306,11 +306,8 @@ Status ViewBlockChain::PruneTo(
         prune_height_,
         String().c_str());
     for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
-        if (iter->second->view_block == nullptr) {
-            continue;
-        }
-
-        if (iter->second->view_block->qc().view() + 16 <= current->qc().view()) {
+        if (iter->second->view_block &&
+                iter->second->view_block->qc().view() + 16 <= current->qc().view()) {
             // forked_blockes.push_back(iter->second->view_block);
             iter = view_blocks_info_.erase(iter);
         } else {
