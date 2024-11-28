@@ -131,7 +131,7 @@ contract Ars {
         uint validLen = 0;
         bytes[] memory all_bytes = new bytes[](validLen + 2);
         all_bytes[0] = '[';
-        uint arrayLength = ars_map.length;
+        uint arrayLength = all_ids.length;
         for (uint i=0; i<arrayLength; i++) {
             all_bytes[i + 1] = GetArsJson(ars_map[all_ids[i]], (i == arrayLength - 1));
             ++validLen;
