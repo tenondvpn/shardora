@@ -92,12 +92,6 @@ message CheckSwapKeyReq {
     optional uint32 index = 1;
 }
 
-message NodeAllBlsMessage {
-    optional uint64 elect_height = 1;
-    optional LocalPolynomial local_polynomial = 2;
-    optional VerifyVecBrdReq verify_brd = 3;
-}
-
 message BlsMessage {
     optional VerifyVecBrdReq verify_brd = 1;
     optional SwapSecKeyReq swap_req = 2;
