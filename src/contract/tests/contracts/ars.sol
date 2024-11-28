@@ -118,7 +118,7 @@ contract Ars {
         all_bytes[filedCount++] = '","id":"';
         all_bytes[filedCount++] = ToHex(Bytes32toBytes(ars.id));
         all_bytes[filedCount++] = '","res":"';
-        all_bytes[filedCount++] = ToHex(Bytes32toBytes(ars.res));
+        all_bytes[filedCount++] = ToHex(Bytes32toBytes(ars.res_info));
         if (last) {
             all_bytes[filedCount++] = '"}';
         } else {
