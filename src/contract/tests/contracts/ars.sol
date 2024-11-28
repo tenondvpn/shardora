@@ -22,6 +22,10 @@ contract Ars {
        uint256 value
     );
 
+    event DebugEventBytes(
+       bytes value
+    );
+
     mapping(bytes32 => ArsInfo) public ars_map;
     bytes32[] all_ids;
 
@@ -81,6 +85,8 @@ contract Ars {
             }
         }
 
+        emit DebugEvent(9);
+        emit DebugEventBytes(bret)
         return bret;
     }
 
