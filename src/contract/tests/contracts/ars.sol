@@ -71,7 +71,7 @@ contract Ars {
         emit DebugEvent(8);
     }
 
-    function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
+    function bytesConcat(bytes[] memory arr, uint count) public returns (bytes memory){
         uint len = 0;
         for (uint i = 0; i < count; i++) {
             len += arr[i].length;
