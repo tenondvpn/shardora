@@ -23,6 +23,7 @@ contract Ars {
     );
 
     mapping(bytes32 => ArsInfo) public ars_map;
+    bytes32[] all_ids;
 
     // SetUp：初始化算法，需要用到pbc库
     constructor(bytes memory enc_init_param) {
@@ -46,6 +47,7 @@ contract Ars {
             res_info: res,
             exists: true
         });
+        all_ids.push(id);
         emit DebugEvent(2);
     }
 
@@ -102,12 +104,32 @@ contract Ars {
         assembly { mstore(add(b, 32), x) }
     }
 
-    function GetOrdersJson() public view returns(bytes memory) {
+    function GetArsJson(ArsInfo memory ars, bool last) public pure returns (bytes memory) {
+        bytes[] memory all_bytes = new bytes[](100);
+        uint filedCount = 0;
+        all_bytes[filedCount++] = '{"ring_size":"';
+        all_bytes[filedCount++] = ToHex(u256ToBytes(ars.ring_size));
+        all_bytes[filedCount++] = '","signer_count":"';
+        all_bytes[filedCount++] = ToHex(u256ToBytes(ars.signer_count));
+        all_bytes[filedCount++] = '","id":"';
+        all_bytes[filedCount++] = ToHex(toBytes(ars.id));
+        all_bytes[filedCount++] = '","res":"';
+        all_bytes[filedCount++] = ToHex(toBytes(ars.res));
+        if (last) {
+            all_bytes[filedCount++] = '"}';
+        } else {
+            all_bytes[filedCount++] = '"},';
+        }
+        return bytesConcat(all_bytes, filedCount);
+    }
+
+    function GetAllArsJson() public view returns(bytes memory) {
         uint validLen = 0;
         bytes[] memory all_bytes = new bytes[](validLen + 2);
         all_bytes[0] = '[';
-        uint arrayLength = 0;
+        uint arrayLength = ars_map.length;
         for (uint i=0; i<arrayLength; i++) {
+            all_bytes[i + 1] = GetArsJson(ars_map[all_ids[i]], (i == arrayLength - 1));
             ++validLen;
         }
 
