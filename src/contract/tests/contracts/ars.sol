@@ -104,6 +104,10 @@ contract Ars {
         assembly { mstore(add(b, 32), x) }
     }
 
+    function Bytes32toBytes(bytes32 _data) public pure returns (bytes) {
+        return abi.encodePacked(_data);
+    }
+
     function GetArsJson(ArsInfo memory ars, bool last) public pure returns (bytes memory) {
         bytes[] memory all_bytes = new bytes[](100);
         uint filedCount = 0;
@@ -112,9 +116,9 @@ contract Ars {
         all_bytes[filedCount++] = '","signer_count":"';
         all_bytes[filedCount++] = ToHex(u256ToBytes(ars.signer_count));
         all_bytes[filedCount++] = '","id":"';
-        all_bytes[filedCount++] = ToHex(toBytes(ars.id));
+        all_bytes[filedCount++] = ToHex(Bytes32toBytes(ars.id));
         all_bytes[filedCount++] = '","res":"';
-        all_bytes[filedCount++] = ToHex(toBytes(ars.res));
+        all_bytes[filedCount++] = ToHex(Bytes32toBytes(ars.res));
         if (last) {
             all_bytes[filedCount++] = '"}';
         } else {
