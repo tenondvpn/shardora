@@ -79,16 +79,12 @@ public:
     }
 
     static std::string serializeCommonPk(const libff::alt_bn128_G2& common_pk) {
-        auto pk = std::make_shared<bls::protobuf::BlsPublicKey>();
-        pk->set_x_c0(
-                libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0));
-        pk->set_x_c1(
-                libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c1));
-        pk->set_y_c0(
-                libBLS::ThresholdUtils::fieldElementToString(common_pk.Y.c0));
-        pk->set_y_c1(
-                libBLS::ThresholdUtils::fieldElementToString(common_pk.Y.c1));
-        return pk->SerializeAsString();
+        std::string pk;
+        pk += libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0) + ",";
+        pk += libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c1) + ",";
+        pk += libBLS::ThresholdUtils::fieldElementToString(common_pk.Y.c0) + ",";
+        pk += libBLS::ThresholdUtils::fieldElementToString(common_pk.Y.c1);
+        return pk;
     }        
 
 private:
