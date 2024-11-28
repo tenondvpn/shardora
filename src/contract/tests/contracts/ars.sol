@@ -134,7 +134,7 @@ contract Ars {
 
     function GetAllArsJson() public view returns(bytes memory) {
         uint validLen = 0;
-        bytes[] memory all_bytes = new bytes[](validLen + 2);
+        bytes[] memory all_bytes = new bytes[](all_ids.length + 2);
         all_bytes[0] = '[';
         uint arrayLength = all_ids.length;
         for (uint i=0; i<arrayLength; i++) {
