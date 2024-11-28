@@ -71,7 +71,7 @@ contract Ars {
         emit DebugEvent(8);
     }
 
-    function bytesConcat(bytes[] memory arr, uint count) public returns (bytes memory){
+    function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
         uint len = 0;
         for (uint i = 0; i < count; i++) {
             len += arr[i].length;
@@ -85,12 +85,10 @@ contract Ars {
             }
         }
 
-        emit DebugEvent(9);
-        emit DebugEventBytes(bret);
         return bret;
     }
 
-    function ToHex(bytes memory buffer) public returns (bytes memory) {
+    function ToHex(bytes memory buffer) public pure returns (bytes memory) {
         bytes memory converted = new bytes(buffer.length * 2);
         bytes memory _base = "0123456789abcdef";
         for (uint256 i = 0; i < buffer.length; i++) {
@@ -101,20 +99,20 @@ contract Ars {
         return converted;
     }
 
-    function toBytes(address a) public returns (bytes memory) {
+    function toBytes(address a) public pure returns (bytes memory) {
         return abi.encodePacked(a);
     }
 
-    function u256ToBytes(uint256 x) public returns (bytes memory b) {
+    function u256ToBytes(uint256 x) public pure returns (bytes memory b) {
         b = new bytes(32);
         assembly { mstore(add(b, 32), x) }
     }
 
-    function Bytes32toBytes(bytes32 _data) public returns (bytes memory) {
+    function Bytes32toBytes(bytes32 _data) public pure returns (bytes memory) {
         return abi.encodePacked(_data);
     }
 
-    function GetArsJson(ArsInfo memory ars, bool last) public returns (bytes memory) {
+    function GetArsJson(ArsInfo memory ars, bool last) public pure returns (bytes memory) {
         bytes[] memory all_bytes = new bytes[](100);
         uint filedCount = 0;
         all_bytes[filedCount++] = '{"ring_size":"';
@@ -133,7 +131,7 @@ contract Ars {
         return bytesConcat(all_bytes, filedCount);
     }
 
-    function GetAllArsJson() public returns(bytes memory) {
+    function GetAllArsJson() public view returns(bytes memory) {
         uint validLen = 0;
         bytes[] memory all_bytes = new bytes[](validLen + 2);
         all_bytes[0] = '[';
