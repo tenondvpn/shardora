@@ -957,6 +957,7 @@ void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {
         bls_mgr_->HandleMessage(msg_ptr);
     }
 #endif
+    FlushToCk(common_public_key_);
 }
 
 void BlsDkg::FlushToCk(const libff::alt_bn128_G2& common_public_key) {
