@@ -497,9 +497,9 @@ function AggSign(prev, key, value, id) {
 function GetAllArsJson() {
     var addParamCode = web3.eth.abi.encodeFunctionSignature('GetAllArsJson()');
     console.log("GetAllArsJson 0: " + addParamCode.substring(2));
-    call_contract(
+    QueryContract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2), 0);
+        addParamCode.substring(2));
 }
 
 const args = process.argv.slice(2)
