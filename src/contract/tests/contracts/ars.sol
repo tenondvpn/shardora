@@ -114,7 +114,7 @@ contract Ars {
         return abi.encodePacked(_data);
     }
 
-    function GetArsJson(ArsInfo memory ars, bool last) public pure returns (bytes memory) {
+    function GetArsJson(ArsInfo memory ars, bool last) public returns (bytes memory) {
         bytes[] memory all_bytes = new bytes[](100);
         uint filedCount = 0;
         all_bytes[filedCount++] = '{"ring_size":"';
