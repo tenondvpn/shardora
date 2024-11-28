@@ -369,7 +369,6 @@ private:
     std::map<View, std::shared_ptr<ProposeMsgWrapper>> leader_view_with_propose_msgs_;
     std::shared_ptr<transport::TransportMessage> latest_leader_propose_message_;
     std::shared_ptr<sync::KeyValueSync> kv_sync_;
-    // std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
 };
 
 } // namespace consensus

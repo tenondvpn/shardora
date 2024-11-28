@@ -944,7 +944,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         }
 
         account_mgr_ = std::make_shared<block::AccountManager>();
-        block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
+        block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, nullptr);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
         genesis_block.SetGenesisConfig(genesis_config);
         
@@ -990,7 +990,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         }
 
         account_mgr_ = std::make_shared<block::AccountManager>();
-        block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
+        block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, nullptr);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
         genesis_block.SetGenesisConfig(genesis_config);
 
