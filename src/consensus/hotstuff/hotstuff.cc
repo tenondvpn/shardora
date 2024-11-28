@@ -419,28 +419,28 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
             break;
         }
 
-        auto& rehandle_view_item = *iter->second->view_block_ptr;
-        ZJC_DEBUG(
-            "rehandle propose message begin HandleProposeMessageByStep called hash: %lu, "
-            "last_vote_view_: %lu, view_item.qc().view(): %lu, "
-            "propose_debug: %s, view_block_hash: %s",
-            iter->second->msg_ptr->header.hash64(), 
-            last_vote_view_, rehandle_view_item.qc().view(),
-            iter->second->msg_ptr->header.debug().c_str(),
-            common::Encode::HexEncode(rehandle_view_item.qc().view_block_hash()).c_str());
-        rehandle_view_item.mutable_qc()->release_view_block_hash();
-        auto st = HandleProposeMessageByStep(iter->second);
-        if (st != Status::kSuccess) {
-            ZJC_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
-                msg_ptr->header.hash64(),
-                msg_ptr->header.debug().c_str());
-            break;
-        }
+        // auto& rehandle_view_item = *iter->second->view_block_ptr;
+        // ZJC_DEBUG(
+        //     "rehandle propose message begin HandleProposeMessageByStep called hash: %lu, "
+        //     "last_vote_view_: %lu, view_item.qc().view(): %lu, "
+        //     "propose_debug: %s, view_block_hash: %s",
+        //     iter->second->msg_ptr->header.hash64(), 
+        //     last_vote_view_, rehandle_view_item.qc().view(),
+        //     iter->second->msg_ptr->header.debug().c_str(),
+        //     common::Encode::HexEncode(rehandle_view_item.qc().view_block_hash()).c_str());
+        // rehandle_view_item.mutable_qc()->release_view_block_hash();
+        // auto st = HandleProposeMessageByStep(iter->second);
+        // if (st != Status::kSuccess) {
+        //     ZJC_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
+        //         msg_ptr->header.hash64(),
+        //         msg_ptr->header.debug().c_str());
+        //     break;
+        // }
 
-        ZJC_DEBUG("rehandle propose message success HandleProposeMessageByStep called hash: %lu, "
-            "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
-            iter->second->msg_ptr->header.hash64(), last_vote_view_, rehandle_view_item.qc().view(),
-            iter->second->msg_ptr->header.debug().c_str());
+        // ZJC_DEBUG("rehandle propose message success HandleProposeMessageByStep called hash: %lu, "
+        //     "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
+        //     iter->second->msg_ptr->header.hash64(), last_vote_view_, rehandle_view_item.qc().view(),
+        //     iter->second->msg_ptr->header.debug().c_str());
         iter = leader_view_with_propose_msgs_.erase(iter);
     }
     
