@@ -878,9 +878,11 @@ bool ClickHouseClient::CreateBlsElectInfoTable() {
 
 bool ClickHouseClient::InsertBlsElectInfo(const BlsElectInfo& info) try {
     bls_elect_queue_.push(std::make_shared<BlsElectInfo>(info));
+    ZJC_DEBUG("insert elect bls success.");
     return true;
 } catch (std::exception& e) {
     ZJC_ERROR("add new block failed[%s]", e.what());
+    return false;
 }
 
 bool ClickHouseClient::CreateBlsBlockInfoTable() {
@@ -918,6 +920,7 @@ void ClickHouseClient::HandleBlsMessage() {
 
     std::shared_ptr<BlsElectInfo> elect_block;
     while (bls_elect_queue_.pop(&elect_block)) {
+        ZJC_DEBUG("success pop elect bls success.");
         HandleBlsElectMessage(*elect_block);
     }
 }
@@ -963,6 +966,7 @@ void ClickHouseClient::HandleBlsBlockMessage(const BlsBlockInfo& info) {
 }
 
 void ClickHouseClient::HandleBlsElectMessage(const BlsElectInfo& info) try {
+    ZJC_DEBUG("success handle elect bls success.");
     auto elect_height = std::make_shared<clickhouse::ColumnUInt64>();
     auto member_idx = std::make_shared<clickhouse::ColumnUInt32>();
     auto shard_id = std::make_shared<clickhouse::ColumnUInt32>();
