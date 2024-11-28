@@ -184,8 +184,14 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
-    block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
-    bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_);
+    auto ck_client = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "", db_, contract_mgr_);
+    auto block_ck_client = ck_client;
+    if (!common::GlobalInfo::Instance()->for_ck_server()) {
+        block_ck_client = nullptr;
+    }
+
+    block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, block_ck_client);
+    bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_, ck_client);
     elect_mgr_ = std::make_shared<elect::ElectManager>(
         vss_mgr_, account_mgr_, block_mgr_, security_, bls_mgr_, db_,
         nullptr);

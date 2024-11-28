@@ -27,7 +27,9 @@ static const std::string kShardElectPrefix = common::Encode::HexDecode(
 static const std::string kPoolStatisticTagPrefix = common::Encode::HexDecode(
     "7d501a4dda1b70eced7336fe49d6c1dbdf3dd2b8274981314cc959fe14552023");
 
-BlockManager::BlockManager(transport::MultiThreadHandler& net_handler) : net_handler_(net_handler) {
+BlockManager::BlockManager(
+        transport::MultiThreadHandler& net_handler, 
+        std::shared_ptr<ck::ClickHouseClient> ck_client) : net_handler_(net_handler), ck_client_(ck_client) {
 }
 
 BlockManager::~BlockManager() {
@@ -55,10 +57,6 @@ int BlockManager::Init(
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(
         db_, local_id, max_consensus_sharding_id_, pools_mgr_, account_mgr_);
-    if (common::GlobalInfo::Instance()->for_ck_server()) {
-        ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "", db, contract_mgr_);
-    }
-
     consensus_block_queues_ = new common::ThreadSafeQueue<BlockToDbItemPtr>[common::kMaxThreadCount];
     transport::Processor::Instance()->RegisterProcessor(
         common::kPoolTimerMessage,

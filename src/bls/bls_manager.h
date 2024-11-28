@@ -52,7 +52,8 @@ class BlsManager : public IBlsManager {
 public:
     BlsManager(
         std::shared_ptr<security::Security>& security,
-        std::shared_ptr<db::Db>& db);
+        std::shared_ptr<db::Db>& db,
+        std::shared_ptr<ck::ClickHouseClient> ck_client);
     ~BlsManager();
     void OnNewElectBlock(
         uint32_t sharding_id,
@@ -146,6 +147,7 @@ private:
     std::unordered_map<uint32_t, std::shared_ptr<ElectItem>> elect_members_;
     common::Tick bls_tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> finish_msg_queue_;
+    std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(BlsManager);
 };

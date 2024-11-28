@@ -34,7 +34,8 @@ void BlsDkg::Init(
         const libff::alt_bn128_Fr& local_sec_key,
         const libff::alt_bn128_G2 local_publick_key,
         const libff::alt_bn128_G2 common_public_key,
-        std::shared_ptr<db::Db>& db) {
+        std::shared_ptr<db::Db>& db,
+        std::shared_ptr<ck::ClickHouseClient> ck_client) {
     bls_mgr_ = bls_mgr;
     security_ = security;
     local_sec_key_ = local_sec_key;
@@ -42,7 +43,7 @@ void BlsDkg::Init(
     common_public_key_ = common_public_key;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-    ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "", db, nullptr);
+    ck_client_ = ck_client;
 }
 
 void BlsDkg::Destroy() {

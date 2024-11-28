@@ -38,8 +38,10 @@ void initLibSnark() noexcept {
 }
 
 BlsManager::BlsManager(
-    std::shared_ptr<security::Security>& security,
-    std::shared_ptr<db::Db>& db) : security_(security), db_(db) {
+        std::shared_ptr<security::Security>& security,
+        std::shared_ptr<db::Db>& db,
+        std::shared_ptr<ck::ClickHouseClient> ck_client) 
+        : security_(security), db_(db), ck_client_(ck_client) {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db);
     initLibSnark();
     network::Route::Instance()->RegisterMessage(
@@ -143,7 +145,8 @@ void BlsManager::OnNewElectBlock(
         libff::alt_bn128_Fr::zero(),
         libff::alt_bn128_G2::zero(),
         libff::alt_bn128_G2::zero(),
-        db_);
+        db_,
+        ck_client_);
 //     BLS_DEBUG("call OnNewElectionBlock success add new bls dkg, elect_height: %lu", elect_height);
     waiting_bls->OnNewElectionBlock(
         elect_height,

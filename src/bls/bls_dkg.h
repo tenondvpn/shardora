@@ -47,7 +47,8 @@ public:
         const libff::alt_bn128_Fr& local_sec_key,
         const libff::alt_bn128_G2 local_publick_key,
         const libff::alt_bn128_G2 common_public_key,
-        std::shared_ptr<db::Db>& db);
+        std::shared_ptr<db::Db>& db,
+        std::shared_ptr<ck::ClickHouseClient> ck_client);
     void OnNewElectionBlock(
         uint64_t elect_height,
         common::MembersPtr& members,

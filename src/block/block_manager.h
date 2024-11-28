@@ -33,7 +33,7 @@ namespace block {
 class AccountManager;
 class BlockManager {
 public:
-    BlockManager(transport::MultiThreadHandler& net_handler_);
+    BlockManager(transport::MultiThreadHandler& net_handler_, std::shared_ptr<ck::ClickHouseClient> ck_client);
     ~BlockManager();
     int Init(
         std::shared_ptr<AccountManager>& account_mgr,
