@@ -494,6 +494,14 @@ function AggSign(prev, key, value, id) {
         addParamCode.substring(2) + addParam.substring(2), 0);
 }
 
+function GetAllArsJson() {
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('GetAllArsJson()');
+    console.log("GetAllArsJson 0: " + addParamCode.substring(2));
+    call_contract(
+        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        addParamCode.substring(2), 0);
+}
+
 const args = process.argv.slice(2)
 if (process.env.contract_address != null) {
     contract_address = process.env.contract_address;
@@ -527,7 +535,5 @@ if (args[0] == 4) {
 
 // 测试合约查询
 if (args[0] == 30) {
-    QueryContract(
-        "b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d129", 
-        "cdfd45bb");
+    GetAllArsJson();
 }
