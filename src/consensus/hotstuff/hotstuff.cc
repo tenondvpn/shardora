@@ -420,11 +420,15 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         }
 
         auto& rehandle_view_item = *iter->second->view_block_ptr;
+        ZJC_DEBUG(
+            "rehandle propose message begin HandleProposeMessageByStep called hash: %lu, "
+            "last_vote_view_: %lu, view_item.qc().view(): %lu, "
+            "propose_debug: %s, view_block_hash: %s",
+            iter->second->msg_ptr->header.hash64(), 
+            last_vote_view_, rehandle_view_item.qc().view(),
+            iter->second->msg_ptr->header.debug().c_str(),
+            common::Encode::HexEncode(rehandle_view_item.qc().view_block_hash()).c_str());
         rehandle_view_item.mutable_qc()->release_view_block_hash();
-        ZJC_DEBUG("rehandle propose message begin HandleProposeMessageByStep called hash: %lu, "
-            "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
-            iter->second->msg_ptr->header.hash64(), last_vote_view_, rehandle_view_item.qc().view(),
-            iter->second->msg_ptr->header.debug().c_str());
         auto st = HandleProposeMessageByStep(iter->second);
         if (st != Status::kSuccess) {
             ZJC_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
@@ -1342,7 +1346,7 @@ Status Hotstuff::Commit(
                     tmp_block->qc().view() - 1, 
                     0);
             }
-            
+
             break;
         }
 

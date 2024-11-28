@@ -163,6 +163,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::Get(const HashStr &hash) {
     if (it != view_blocks_info_.end()) {
         // ZJC_DEBUG("get view block from store propose_debug: %s",
         //     it->second->view_block->debug().c_str());
+        assert(it->second->view_block->qc().view_block_hash() == hash);
         return it->second->view_block;
     }
 
@@ -184,7 +185,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::Get(uint64_t view) {
         if (!iter->second->view_block) {
             continue;
         }
-        
+
         if (iter->second->view_block->qc().view() == view && iter->second->view_block->qc().has_sign_x()) {
             return iter->second->view_block;
         }
