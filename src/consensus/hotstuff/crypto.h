@@ -126,24 +126,24 @@ public:
         return bls_mgr_->security();
     }
 
-    std::string serializedPartialSigns(uint64_t elect_height, const HashStr& msg_hash) {
-        std::string ret = "";
-        auto elect_item = GetElectItem(common::GlobalInfo::Instance()->network_id(), elect_height);
-        if (!elect_item) {
-            return ret;
-        }        
+    // std::string serializedPartialSigns(uint64_t elect_height, const HashStr& msg_hash) {
+    //     std::string ret = "";
+    //     auto elect_item = GetElectItem(common::GlobalInfo::Instance()->network_id(), elect_height);
+    //     if (!elect_item) {
+    //         return ret;
+    //     }        
 
-        auto partial_signs = bls_collection_item(msg_hash)->partial_signs;
-        for (uint32_t i = 0; i < elect_item->n(); i++) {
-            auto sign = partial_signs[i];
-            if (!sign) {
-                continue;
-            }
-            ret += serializedSign(*sign);
-        }
+    //     auto partial_signs = bls_collection_item(msg_hash)->partial_signs;
+    //     for (uint32_t i = 0; i < elect_item->n(); i++) {
+    //         auto sign = partial_signs[i];
+    //         if (!sign) {
+    //             continue;
+    //         }
+    //         ret += serializedSign(*sign);
+    //     }
 
-        return ret;
-    }
+    //     return ret;
+    // }
 
     std::string serializedSign(const libff::alt_bn128_G1& sign) {
         auto x = libBLS::ThresholdUtils::fieldElementToString(sign.X);
@@ -151,9 +151,9 @@ public:
         return "("+x+","+y+")";
     }
 
-    std::shared_ptr<BlsCollectionItem> bls_collection_item(const HashStr& msg_hash) {
-        return bls_collection_->GetItem(msg_hash);
-    }    
+    // std::shared_ptr<BlsCollectionItem> bls_collection_item(const HashStr& msg_hash) {
+    //     return bls_collection_->GetItem(msg_hash);
+    // }    
     
     Status VerifyThresSign(
         uint32_t sharding_id,
