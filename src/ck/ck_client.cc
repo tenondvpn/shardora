@@ -913,6 +913,7 @@ bool ClickHouseClient::CreateBlsBlockInfoTable() {
 }
 
 void ClickHouseClient::HandleBlsMessage() {
+    ZJC_DEBUG("call elect bls success.");
     std::shared_ptr<BlsBlockInfo> bls_block;
     while (bls_block_queue_.pop(&bls_block)) {
         HandleBlsBlockMessage(*bls_block);
