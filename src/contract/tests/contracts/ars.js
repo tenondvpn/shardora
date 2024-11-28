@@ -278,7 +278,7 @@ function QueryPostCode(path, data) {
         res.on('data', function (chunk) {
             console.log('Response: ' + chunk);
             var json_res = JSON.parse(chunk)
-            console.log('amount: ' + json_res.amount + ", tmp: " + json_res.tmp);
+            // console.log('amount: ' + json_res.amount + ", tmp: " + json_res.tmp);
         })
     });
 

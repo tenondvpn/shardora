@@ -53,6 +53,7 @@ contract Ars {
         });
         all_ids.push(id);
         emit DebugEvent(2);
+        emit DebugEvent(all_ids.length);
     }
 
     function SingleSign(bytes32 id, bytes memory params) public {
