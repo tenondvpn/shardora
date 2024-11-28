@@ -90,7 +90,7 @@ contract Ars {
         return bret;
     }
 
-    function ToHex(bytes memory buffer) public pure returns (bytes memory) {
+    function ToHex(bytes memory buffer) public returns (bytes memory) {
         bytes memory converted = new bytes(buffer.length * 2);
         bytes memory _base = "0123456789abcdef";
         for (uint256 i = 0; i < buffer.length; i++) {
@@ -101,16 +101,16 @@ contract Ars {
         return converted;
     }
 
-    function toBytes(address a) public pure returns (bytes memory) {
+    function toBytes(address a) public returns (bytes memory) {
         return abi.encodePacked(a);
     }
 
-    function u256ToBytes(uint256 x) public pure returns (bytes memory b) {
+    function u256ToBytes(uint256 x) public returns (bytes memory b) {
         b = new bytes(32);
         assembly { mstore(add(b, 32), x) }
     }
 
-    function Bytes32toBytes(bytes32 _data) public pure returns (bytes memory) {
+    function Bytes32toBytes(bytes32 _data) public returns (bytes memory) {
         return abi.encodePacked(_data);
     }
 
@@ -133,7 +133,7 @@ contract Ars {
         return bytesConcat(all_bytes, filedCount);
     }
 
-    function GetAllArsJson() public view returns(bytes memory) {
+    function GetAllArsJson() public returns(bytes memory) {
         uint validLen = 0;
         bytes[] memory all_bytes = new bytes[](validLen + 2);
         all_bytes[0] = '[';
