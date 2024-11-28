@@ -104,7 +104,7 @@ contract Ars {
         assembly { mstore(add(b, 32), x) }
     }
 
-    function Bytes32toBytes(bytes32 _data) public pure returns (bytes) {
+    function Bytes32toBytes(bytes32 _data) public pure returns (bytes memory) {
         return abi.encodePacked(_data);
     }
 
