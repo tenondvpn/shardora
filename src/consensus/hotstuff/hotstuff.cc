@@ -1252,6 +1252,8 @@ std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(const QC& qc) {
         ZJC_WARN("Failed get v block 1: %s, %u_%u_%lu",
             common::Encode::HexEncode(qc.view_block_hash()).c_str(),
             qc.network_id(), qc.pool_index(), qc.view());
+
+        kv_sync_->AddSyncViewHeight(qc.network_id(), qc.pool_index(), qc.view(), 0);
         // assert(false);
         return nullptr;
     }
@@ -1262,6 +1264,9 @@ std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(const QC& qc) {
     auto v_block2 = view_block_chain()->Get(v_block1->parent_hash());
     if (!v_block2) {
         ZJC_DEBUG("Failed get v block 2 ref: %s", common::Encode::HexEncode(v_block1->parent_hash()).c_str());
+        if (qc.view() > 1) {
+            kv_sync_->AddSyncViewHeight(qc.network_id(), qc.pool_index(), qc.view() - 1, 0);
+        }
         return nullptr;
     }
 
@@ -1281,6 +1286,10 @@ std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(const QC& qc) {
             qc.network_id(), 
             qc.pool_index(), 
             v_block1->block_info().height());
+        if (qc.view() > 2) {
+            kv_sync_->AddSyncViewHeight(qc.network_id(), qc.pool_index(), qc.view() - 2, 0);
+        }
+
         return nullptr;
     }
 
@@ -1326,6 +1335,14 @@ Status Hotstuff::Commit(
         std::shared_ptr<ViewBlock> parent_block = nullptr;
         parent_block = view_block_chain()->Get(tmp_block->parent_hash());
         if (parent_block == nullptr) {
+            if (latest_committed_block->qc().view() < tmp_block->qc().view() - 1) {
+                kv_sync_->AddSyncViewHeight(
+                    tmp_block->qc().network_id(), 
+                    tmp_block->qc().pool_index(), 
+                    tmp_block->qc().view() - 1, 
+                    0);
+            }
+            
             break;
         }
 
