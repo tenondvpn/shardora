@@ -160,11 +160,13 @@ Status ViewBlockChain::Store(
 
 std::shared_ptr<ViewBlock> ViewBlockChain::Get(const HashStr &hash) {
     auto it = view_blocks_info_.find(hash);
-    if (it != view_blocks_info_.end() || !it->second->view_block) {
+    if (it != view_blocks_info_.end()) {
         // ZJC_DEBUG("get view block from store propose_debug: %s",
         //     it->second->view_block->debug().c_str());
-        assert(it->second->view_block->qc().view_block_hash() == hash);
-        return it->second->view_block;
+        if (it->second->view_block) {
+            assert(it->second->view_block->qc().view_block_hash() == hash);
+            return it->second->view_block;
+        }
     }
 
     if (latest_committed_block_ && latest_committed_block_->qc().view_block_hash() == hash) {
