@@ -987,6 +987,12 @@ void BlsDkg::BroadcastFinish(
         info.local_sk = BlsDkg::serializeLocalSk(local_sec_key_);
         info.common_pk = BlsDkg::serializeCommonPk(common_public_key_);
         info.swaped_sec_keys = swaped_sec_keys;
+        ZJC_DEBUG("success insert bls elect info elect_hegiht_: %lu, "
+            "local_member_index_: %u, shard_id: %u, local_pri_keys: %s, "
+            "local_pub_keys: %s, local_sk: %s, common_pk: %s, swaped_sec_keys: %s", 
+            info.elect_height, info.member_idx, info.shard_id, 
+            info.local_pri_keys.c_str(), info.local_pub_keys.c_str(), 
+            info.local_sk.c_str(), info.common_pk.c_str(), info.swaped_sec_keys.c_str());
         ck_client_->InsertBlsElectInfo(info);
     }    
 }

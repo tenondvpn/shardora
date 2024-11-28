@@ -962,7 +962,7 @@ void ClickHouseClient::HandleBlsBlockMessage(const BlsBlockInfo& info) {
     ck_client.Insert(kClickhouseBlsBlockInfo, item);
 }
 
-void ClickHouseClient::HandleBlsElectMessage(const BlsElectInfo& info) {
+void ClickHouseClient::HandleBlsElectMessage(const BlsElectInfo& info) try {
     auto elect_height = std::make_shared<clickhouse::ColumnUInt64>();
     auto member_idx = std::make_shared<clickhouse::ColumnUInt32>();
     auto shard_id = std::make_shared<clickhouse::ColumnUInt32>();
@@ -991,12 +991,21 @@ void ClickHouseClient::HandleBlsElectMessage(const BlsElectInfo& info) {
     item.AppendColumn("local_sk", local_sk);
     item.AppendColumn("common_pk", common_pk);
 
+    ZJC_DEBUG("success insert bls elect info elect_hegiht_: %lu, "
+        "local_member_index_: %u, shard_id: %u, local_pri_keys: %s, "
+        "local_pub_keys: %s, local_sk: %s, common_pk: %s, swaped_sec_keys: %s", 
+        info.elect_height, info.member_idx, info.shard_id, 
+        info.local_pri_keys.c_str(), info.local_pub_keys.c_str(), 
+        info.local_sk.c_str(), info.common_pk.c_str(), info.swaped_sec_keys.c_str());
+
     clickhouse::Client ck_client(clickhouse::ClientOptions().
         SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client.Insert(kClickhouseBlsElectInfo, item);
+} catch (std::exception& e) {
+    ZJC_ERROR("add new block failed[%s]", e.what());
 }
 
 bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) try {
@@ -1004,7 +1013,6 @@ bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) try {
     return true;
 } catch (std::exception& e) {
     ZJC_ERROR("add new block failed[%s]", e.what());
-    printf("add new block failed[%s]", e.what());
     return false;
 }
 
