@@ -86,7 +86,7 @@ contract Ars {
         }
 
         emit DebugEvent(9);
-        emit DebugEventBytes(bret)
+        emit DebugEventBytes(bret);
         return bret;
     }
 
