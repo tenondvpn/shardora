@@ -40,7 +40,8 @@ public:
             if (it == msg_collection_map.end()) {
                 collection_item = std::make_shared<BlsCollectionItem>();
                 collection_item->msg_hash = msg_hash;
-                msg_collection_map[msg_hash] = collection_item; 
+                msg_collection_map[msg_hash] = collection_item;
+                assert(msg_collection_map.size() < 3);
             } else {
                 collection_item = it->second;
             }
