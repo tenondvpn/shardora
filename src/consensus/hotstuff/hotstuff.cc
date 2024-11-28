@@ -32,9 +32,9 @@ void Hotstuff::Init() {
 
     InitHandleProposeMsgPipeline();
 
-    if (common::GlobalInfo::Instance()->for_ck_server()) {
-        ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "", db_, nullptr);
-    }        
+    // if (common::GlobalInfo::Instance()->for_ck_server()) {
+    //     ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "", db_, nullptr);
+    // }        
 
     LoadLatestProposeMessage();
 }
@@ -1059,23 +1059,23 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
 
     // store to ck
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (ck_client_) {
-        auto elect_item = elect_info()->GetElectItemWithShardingId(
-                common::GlobalInfo::Instance()->network_id());
-        if (elect_item) {
-            ck::BlsBlockInfo info;
-            info.elect_height = elect_height;
-            info.view = vote_msg.view();
-            info.shard_id = common::GlobalInfo::Instance()->network_id();
-            info.pool_idx = pool_idx_;
-            info.leader_idx = elect_item->LocalMember()->index;
-            info.msg_hash = common::Encode::HexEncode(qc_hash);
-            info.partial_sign_map = crypto()->serializedPartialSigns(elect_height, qc_hash);
-            info.reconstructed_sign = crypto()->serializedSign(*reconstructed_sign);
-            info.common_pk = bls::BlsDkg::serializeCommonPk(elect_item->common_pk());
-            ck_client_->InsertBlsBlockInfo(info);
-        }        
-    }    
+    // if (ck_client_) {
+    //     auto elect_item = elect_info()->GetElectItemWithShardingId(
+    //             common::GlobalInfo::Instance()->network_id());
+    //     if (elect_item) {
+    //         ck::BlsBlockInfo info;
+    //         info.elect_height = elect_height;
+    //         info.view = vote_msg.view();
+    //         info.shard_id = common::GlobalInfo::Instance()->network_id();
+    //         info.pool_idx = pool_idx_;
+    //         info.leader_idx = elect_item->LocalMember()->index;
+    //         info.msg_hash = common::Encode::HexEncode(qc_hash);
+    //         info.partial_sign_map = crypto()->serializedPartialSigns(elect_height, qc_hash);
+    //         info.reconstructed_sign = crypto()->serializedSign(*reconstructed_sign);
+    //         info.common_pk = bls::BlsDkg::serializeCommonPk(elect_item->common_pk());
+    //         ck_client_->InsertBlsBlockInfo(info);
+    //     }        
+    // }    
     
 #endif
     ADD_DEBUG_PROCESS_TIMESTAMP();

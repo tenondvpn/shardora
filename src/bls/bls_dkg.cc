@@ -42,9 +42,7 @@ void BlsDkg::Init(
     common_public_key_ = common_public_key;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-    if (common::GlobalInfo::Instance()->for_ck_server()) {
-        ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "", db, nullptr);
-    }    
+    ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "", db, nullptr);
 }
 
 void BlsDkg::Destroy() {
@@ -873,7 +871,7 @@ void BlsDkg::FinishBroadcast() try {
     local_sec_key_ = dkg.SecretKeyShareCreate(valid_seck_keys);
     local_publick_key_ = dkg.GetPublicKeyFromSecretKey(local_sec_key_);
     DumpLocalPrivateKey();
-    BroadcastFinish(bitmap);
+    BroadcastFinish(bitmap, valid_seck_keys);
     finished_ = true;
 } catch (std::exception& e) {
     local_sec_key_ = libff::alt_bn128_Fr::zero();
@@ -897,7 +895,9 @@ void BlsDkg::DumpLocalPrivateKey() {
         enc_data);
 }
 
-void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {
+void BlsDkg::BroadcastFinish(
+        const common::Bitmap& bitmap,
+        const std::vector<libff::alt_bn128_Fr>& valid_seck_keys) {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
     auto& bls_msg = *msg.mutable_bls_proto();
@@ -958,15 +958,35 @@ void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {
     }
 #endif
     
-    // store to ck
-    ck::BlsElectInfo info;
-    info.elect_height = elect_hegiht_;
-    info.member_idx = local_member_index_;
-    info.shard_id = common::GlobalInfo::Instance()->network_id();
-    info.contribution_map = BlsDkg::serializeSkContribution(local_src_secret_key_contribution_);
-    info.local_sk = BlsDkg::serializeLocalSk(local_sec_key_);
-    info.common_pk = BlsDkg::serializeCommonPk(common_public_key_);
     if (ck_client_) {
+        std::string swaped_sec_keys;
+        for (uint32_t i = 0; i < valid_seck_keys.size(); ++i) {
+            swaped_sec_keys += libBLS::ThresholdUtils::fieldElementToString(valid_seck_keys[i]) + ",";
+        }
+
+        std::string local_pub_keys;
+        bls::protobuf::VerifyVecBrdReq req;
+        auto res = prefix_db_->GetBlsVerifyG2(security_->GetAddress(), &req);
+        if (res) {
+            auto& item = req.verify_vec(0);
+            local_pub_keys = common::Encode::HexEncode(item.x_c0()) + "," +
+                common::Encode::HexEncode(item.x_c1()) + "," +
+                common::Encode::HexEncode(item.y_c0()) + "," +
+                common::Encode::HexEncode(item.y_c1()) + "," +
+                common::Encode::HexEncode(item.z_c0()) + "," +
+                common::Encode::HexEncode(item.z_c1());
+        }
+
+        // store to ck
+        ck::BlsElectInfo info;
+        info.elect_height = elect_hegiht_;
+        info.member_idx = local_member_index_;
+        info.shard_id = common::GlobalInfo::Instance()->network_id();
+        info.local_pri_keys = BlsDkg::serializeSkContribution(local_src_secret_key_contribution_);
+        info.local_pub_keys = local_pub_keys;
+        info.local_sk = BlsDkg::serializeLocalSk(local_sec_key_);
+        info.common_pk = BlsDkg::serializeCommonPk(common_public_key_);
+        info.swaped_sec_keys = swaped_sec_keys;
         ck_client_->InsertBlsElectInfo(info);
     }    
 }

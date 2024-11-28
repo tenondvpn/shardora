@@ -856,7 +856,9 @@ bool ClickHouseClient::CreateBlsElectInfoTable() {
         "`elect_height` UInt64 COMMENT '' CODEC(T64, LZ4), "
         "`shard_id` UInt32 COMMENT '' CODEC(T64, LZ4), "
         "`member_idx` UInt32 COMMENT '' CODEC(T64, LZ4), "
-        "`contribution_map` String COMMENT  '' CODEC(LZ4),"
+        "`local_pri_keys` String COMMENT  '' CODEC(LZ4),"
+        "`local_pub_keys` String COMMENT  '' CODEC(LZ4),"
+        "`swap_sec_keys` String COMMENT  '' CODEC(LZ4),"
         "`local_sk` String COMMENT  '' CODEC(LZ4),"
         "`common_pk` String COMMENT  '' CODEC(LZ4),"
         "`update` DateTime DEFAULT now() COMMENT 'update' "
@@ -964,14 +966,18 @@ void ClickHouseClient::HandleBlsElectMessage(const BlsElectInfo& info) {
     auto elect_height = std::make_shared<clickhouse::ColumnUInt64>();
     auto member_idx = std::make_shared<clickhouse::ColumnUInt32>();
     auto shard_id = std::make_shared<clickhouse::ColumnUInt32>();
-    auto contribution_map = std::make_shared<clickhouse::ColumnString>();
+    auto local_pri_keys = std::make_shared<clickhouse::ColumnString>();
+    auto local_pub_keys = std::make_shared<clickhouse::ColumnString>();
+    auto swap_sec_keys = std::make_shared<clickhouse::ColumnString>();
     auto local_sk = std::make_shared<clickhouse::ColumnString>();
     auto common_pk = std::make_shared<clickhouse::ColumnString>();
 
     elect_height->Append(info.elect_height);
     member_idx->Append(info.member_idx);
     shard_id->Append(info.shard_id);
-    contribution_map->Append(info.contribution_map);
+    local_pri_keys->Append(info.local_pri_keys);
+    local_pub_keys->Append(info.local_pub_keys);
+    swap_sec_keys->Append(info.swaped_sec_keys);
     local_sk->Append(info.local_sk);
     common_pk->Append(info.common_pk);
 
@@ -979,7 +985,9 @@ void ClickHouseClient::HandleBlsElectMessage(const BlsElectInfo& info) {
     item.AppendColumn("elect_height", elect_height);
     item.AppendColumn("member_idx", member_idx);
     item.AppendColumn("shard_id", shard_id);
-    item.AppendColumn("contribution_map", contribution_map);
+    item.AppendColumn("local_pri_keys", local_pri_keys);
+    item.AppendColumn("local_pub_keys", local_pub_keys);
+    item.AppendColumn("swap_sec_keys", swap_sec_keys);
     item.AppendColumn("local_sk", local_sk);
     item.AppendColumn("common_pk", common_pk);
 

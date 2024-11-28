@@ -104,7 +104,9 @@ private:
     void FinishBroadcast();
     void CreateContribution(uint32_t valid_n, uint32_t valid_t);
     void CreateDkgMessage(transport::MessagePtr& msg_ptr);
-    void BroadcastFinish(const common::Bitmap& bitmap);
+    void BroadcastFinish(
+        const common::Bitmap& bitmap, 
+        const std::vector<libff::alt_bn128_Fr>& valid_seck_keys);
     void CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* seckey_len);
     void CheckVerifyAllValid();
     void SendGetVerifyInfo(int32_t index);

@@ -11,7 +11,3 @@ do
     node ars.js 3 $i
     sleep 1
 done
-
-
-
-
