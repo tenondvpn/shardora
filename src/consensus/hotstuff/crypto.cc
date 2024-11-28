@@ -121,7 +121,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
         return Status::kError;
     }
 
-    auto collection_item = bls_collection_->GetItem(msg_hash);
+    auto collection_item = bls_collection_->GetItem(msg_hash, index);
     // Reconstruct sign
     // TODO(HT): 先判断是否已经处理过的index
     collection_item->ok_bitmap.Set(index);
