@@ -76,7 +76,7 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
     msg.append((char*)&height, sizeof(height));
     uint64_t timeblock_height = block.timeblock_height();
     msg.append((char*)&timeblock_height, sizeof(timeblock_height));
-    uint64_t timestamp = 0;  // block.timestamp();
+    uint64_t timestamp = 0;  // block.timestamp(); // TODO: fix(重试导致时间戳不一致)
     msg.append((char*)&timestamp, sizeof(timestamp));  
     // msg.append(block.leader_ip());
     // msg.append((char*)&leader_port, sizeof(leader_port));

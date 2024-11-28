@@ -29,19 +29,33 @@ public:
     };
     // Bls vote collection
     struct BlsCollection {
+        BlsCollection() : view(0), handled(false), count(0) {
+        }
         View view;
         // may receive different msg_hashs per view because of unexpected inconsistency.
         std::unordered_map<HashStr, std::shared_ptr<BlsCollectionItem>> msg_collection_map;
+        HashStr index_with_hash[1024];
         bool handled;
+        uint32_t count;
 
-        std::shared_ptr<BlsCollectionItem> GetItem(const HashStr& msg_hash) {
+        std::shared_ptr<BlsCollectionItem> GetItem(const HashStr& msg_hash, uint32_t index) {
+            if (index_with_hash[index].empty()) {
+                ++count;
+                assert(count < 3);
+            } else {
+                auto it = msg_collection_map.find(index_with_hash[index]);
+                if (it != msg_collection_map.end()) {
+                    msg_collection_map.erase(it);
+                }
+            }
+            
+            index_with_hash[index] = msg_hash;
             std::shared_ptr<BlsCollectionItem> collection_item = nullptr;
             auto it = msg_collection_map.find(msg_hash);
             if (it == msg_collection_map.end()) {
                 collection_item = std::make_shared<BlsCollectionItem>();
                 collection_item->msg_hash = msg_hash;
                 msg_collection_map[msg_hash] = collection_item;
-                assert(msg_collection_map.size() < 3);
             } else {
                 collection_item = it->second;
             }
