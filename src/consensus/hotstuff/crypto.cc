@@ -122,6 +122,10 @@ Status Crypto::ReconstructAndVerifyThresSign(
     }
 
     auto collection_item = bls_collection_->GetItem(msg_hash, index);
+    auto invalid_count = elect_item->n() - elect_item->t() + 1;
+    if (bls_collection_->count > invalid_count) {
+        return Status::kInvalidOpposedCount;
+    }
     // Reconstruct sign
     // TODO(HT): 先判断是否已经处理过的index
     collection_item->ok_bitmap.Set(index);

@@ -50,6 +50,7 @@ enum class Status : int {
   kTxRepeated = 12,
   kLackOfParentBlock = 13,
   kNotExpectHash = 14,
+  kInvalidOpposedCount = 15,
 };
 
 enum WaitingBlockType {

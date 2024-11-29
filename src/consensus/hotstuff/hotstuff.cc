@@ -1023,6 +1023,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         vote_msg.sign_x(),
         vote_msg.sign_y(),
         reconstructed_sign);
+    assert(ret != Status::kInvalidOpposedCount);
     if (ret != Status::kSuccess) {
         if (ret == Status::kBlsVerifyWaiting) {
             ZJC_DEBUG("kBlsWaiting pool: %d, view: %lu, hash64: %lu",

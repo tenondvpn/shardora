@@ -37,11 +37,9 @@ public:
         HashStr index_with_hash[1024];
         bool handled;
         uint32_t count;
-
         std::shared_ptr<BlsCollectionItem> GetItem(const HashStr& msg_hash, uint32_t index) {
             if (index_with_hash[index].empty()) {
                 ++count;
-                assert(count < 3);
             } else {
                 auto it = msg_collection_map.find(index_with_hash[index]);
                 if (it != msg_collection_map.end()) {
