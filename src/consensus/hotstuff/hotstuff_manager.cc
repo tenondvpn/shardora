@@ -70,14 +70,16 @@ int HotstuffManager::Init(
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
 #ifdef USE_AGG_BLS
         auto crypto = std::make_shared<AggCrypto>(pool_idx, elect_info_, bls_mgr);
+        auto pcrypto = std::make_shared<AggCrypto>(pool_idx, elect_info_, bls_mgr);
 #else
         auto crypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
+        auto pcrypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
 #endif
         auto chain = std::make_shared<ViewBlockChain>(pool_idx, db_, account_mgr_);
         auto leader_rotation = std::make_shared<LeaderRotation>(pool_idx, chain, elect_info_);
         auto pacemaker = std::make_shared<Pacemaker>(
                 pool_idx,
-                crypto,
+                pcrypto,
                 leader_rotation,
                 std::make_shared<ViewDuration>(
                         pool_idx,
