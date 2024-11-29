@@ -123,12 +123,13 @@ Status Crypto::ReconstructAndVerifyThresSign(
 
     auto collection_item = bls_collection_->GetItem(msg_hash, index);
     auto invalid_count = elect_item->n() - elect_item->t() + 1;
-    if (bls_collection_->count > invalid_count) {
+    if (bls_collection_->msg_collection_map.size() > invalid_count ||
+            bls_collection_->invalid_diff_count() > invalid_count) {
         return Status::kInvalidOpposedCount;
     }
+
     // Reconstruct sign
     // TODO(HT): 先判断是否已经处理过的index
-    collection_item->ok_bitmap.Set(index);
     collection_item->partial_signs[index] = partial_sign;
     ZJC_DEBUG("msg hash: %s, ok count: %u, t: %u, index: %u, elect_height: %lu, pool: %u",
         common::Encode::HexEncode(msg_hash).c_str(), 

@@ -29,22 +29,17 @@ public:
     };
     // Bls vote collection
     struct BlsCollection {
-        BlsCollection() : view(0), handled(false), count(0) {
+        BlsCollection() : view(0), handled(false), count(0), max_hash_count(0) {
         }
-        View view;
-        // may receive different msg_hashs per view because of unexpected inconsistency.
-        std::unordered_map<HashStr, std::shared_ptr<BlsCollectionItem>> msg_collection_map;
-        HashStr index_with_hash[1024];
-        bool handled;
-        uint32_t count;
+
         std::shared_ptr<BlsCollectionItem> GetItem(const HashStr& msg_hash, uint32_t index) {
-            if (index_with_hash[index].empty()) {
-                ++count;
-            } else {
+            if (!index_with_hash[index].empty()) {
                 auto it = msg_collection_map.find(index_with_hash[index]);
                 if (it != msg_collection_map.end()) {
                     msg_collection_map.erase(it);
                 }
+
+                ++count;
             }
             
             index_with_hash[index] = msg_hash;
@@ -57,8 +52,26 @@ public:
             } else {
                 collection_item = it->second;
             }
+    
+            collection_item->ok_bitmap.Set(index);
+            if (max_hash_count < collection_item->OkCount()) {
+                max_hash_count = collection_item->OkCount();
+            }
+
             return collection_item;
         }
+
+        uint32_t invalid_diff_count() {
+            return count - max_hash_count;
+        }
+
+        View view;
+        // may receive different msg_hashs per view because of unexpected inconsistency.
+        std::unordered_map<HashStr, std::shared_ptr<BlsCollectionItem>> msg_collection_map;
+        HashStr index_with_hash[1024];
+        bool handled;
+        uint32_t count;
+        uint32_t max_hash_count;
     };
     
     Crypto(
