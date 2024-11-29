@@ -34,14 +34,12 @@ public:
 
         std::shared_ptr<BlsCollectionItem> GetItem(const HashStr& msg_hash, uint32_t index) {
             if (!index_with_hash[index].empty()) {
+                assert(msg_hash == index_with_hash[index]);
                 auto it = msg_collection_map.find(index_with_hash[index]);
-                if (it != msg_collection_map.end()) {
-                    msg_collection_map.erase(it);
-                }
-
-                ++count;
+                return it->second;
             }
             
+            ++count;
             index_with_hash[index] = msg_hash;
             std::shared_ptr<BlsCollectionItem> collection_item = nullptr;
             auto it = msg_collection_map.find(msg_hash);
@@ -58,6 +56,11 @@ public:
                 max_hash_count = collection_item->OkCount();
             }
 
+            ZJC_DEBUG("hash: %s, all count: %u, ok count: %d, index: %d",
+                common::Encode::HexEncode(msg_hash).c_str(), 
+                count, 
+                collection_item->OkCount(), 
+                index);
             return collection_item;
         }
 

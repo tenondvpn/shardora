@@ -125,6 +125,10 @@ Status Crypto::ReconstructAndVerifyThresSign(
     auto invalid_count = elect_item->n() - elect_item->t() + 1;
     if (bls_collection_->msg_collection_map.size() > invalid_count ||
             bls_collection_->invalid_diff_count() > invalid_count) {
+        ZJC_DEBUG("msg_collection_map.size: %d, invalid_diff_count: %d, invalid_count: %d",
+            bls_collection_->msg_collection_map.size(),
+            bls_collection_->invalid_diff_count(),
+            invalid_count);
         return Status::kInvalidOpposedCount;
     }
 
