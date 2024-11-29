@@ -34,6 +34,10 @@ public:
 
         std::shared_ptr<BlsCollectionItem> GetItem(const HashStr& msg_hash, uint32_t index) {
             if (!index_with_hash[index].empty()) {
+                ZJC_DEBUG("new hash coming index: %d, %s, %s", 
+                    index, 
+                    common::Encode::HexEncode(msg_hash).c_str(),
+                    common::Encode::HexEncode(index_with_hash[index]).c_str());
                 assert(msg_hash == index_with_hash[index]);
                 auto it = msg_collection_map.find(index_with_hash[index]);
                 return it->second;
