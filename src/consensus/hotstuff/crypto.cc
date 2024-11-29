@@ -101,13 +101,14 @@ Status Crypto::ReconstructAndVerifyThresSign(
 
     // 已经处理过
     if (bls_collection_->handled) {
-        auto collect_item = bls_collection_->GetItem(msg_hash, index);
-        if (collect_item != nullptr && collect_item->reconstructed_sign != nullptr) {
-            reconstructed_sign = collect_item->reconstructed_sign;
-            return Status::kBlsHandled;
-        }
+        return Status::kBlsHandled;
+        // auto collect_item = bls_collection_->GetItem(msg_hash, index);
+        // if (collect_item != nullptr && collect_item->reconstructed_sign != nullptr) {
+        //     reconstructed_sign = collect_item->reconstructed_sign;
+        //     return Status::kBlsHandled;
+        // }
         
-        bls_collection_->handled = false;
+        // bls_collection_->handled = false;
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();

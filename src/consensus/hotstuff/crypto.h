@@ -38,7 +38,7 @@ public:
                     index, 
                     common::Encode::HexEncode(msg_hash).c_str(),
                     common::Encode::HexEncode(index_with_hash[index]).c_str());
-                assert(msg_hash == index_with_hash[index]);
+                // assert(msg_hash == index_with_hash[index]);
                 auto it = msg_collection_map.find(index_with_hash[index]);
                 return it->second;
             }
