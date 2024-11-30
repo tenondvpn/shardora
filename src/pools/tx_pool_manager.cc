@@ -1252,7 +1252,7 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
         common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
 }
 
-void GetTxSyncToLeader(
+void TxPoolManager::GetTxSyncToLeader(
         uint32_t pool_index,
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
