@@ -80,6 +80,11 @@ public:
         thread_wait_con_.notify_one();
     }
 
+    void AddLocalBroadcastedMessages(uint64_t msg_hash) {
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        local_broadcast_messages_[thread_idx].push(msg_hash);
+    }
+
 private:
     struct SavedBlockQueueItem {
         SavedBlockQueueItem(uint32_t c_pool, uint64_t c_height, uint32_t p, uint64_t h)
@@ -128,6 +133,7 @@ private:
     common::LimitHashSet<uint64_t> from_unique_message_sets_{10240};
     std::condition_variable thread_wait_con_;
     std::mutex thread_wait_mutex_;
+    common::ThreadSafeQueue<uint64_t> local_broadcast_messages_[common::kMaxThreadCount];
 
 #ifndef NDEBUG
     uint32_t msg_type_count_[common::kMaxMessageTypeCount] = {0};
