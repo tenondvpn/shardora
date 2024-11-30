@@ -203,7 +203,10 @@ Status Hotstuff::Propose(
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-// #ifndef NDEBUG
+    dht::DhtKeyManager dht_key(tmp_msg_ptr->header.src_sharding_id());
+    header.set_des_dht_key(dht_key.StrKey());
+    transport::TcpTransport::Instance()->SetMessageHash(header);
+#ifndef NDEBUG
 //     std::string propose_debug_str = common::StringUtil::Format(
 //         "%u-%u-%lu", 
 //         common::GlobalInfo::Instance()->network_id(), 
@@ -214,12 +217,9 @@ Status Hotstuff::Propose(
 //         propose_debug_str += common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).gid()) + " ";
 //     }
 
-//     header.set_debug(propose_debug_str);
-//     ZJC_DEBUG("leader begin propose_debug: %s", header.debug().c_str());
-// #endif
-    dht::DhtKeyManager dht_key(tmp_msg_ptr->header.src_sharding_id());
-    header.set_des_dht_key(dht_key.StrKey());
-    transport::TcpTransport::Instance()->SetMessageHash(header);
+    header.set_debug(std::to_string(header.hash64()));
+    ZJC_DEBUG("leader begin propose_debug: %s", header.debug().c_str());
+#endif
     s = crypto()->SignMessage(tmp_msg_ptr);
     if (s != Status::kSuccess) {
         ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
