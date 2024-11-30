@@ -188,6 +188,26 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     return kPoolsSuccess;
 }
 
+void TxPool::GetTxSyncToLeader(
+        uint32_t count,
+        ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
+        pools::CheckGidValidFunction gid_vlid_func) {
+    CheckThreadIdValid();
+    auto iter = prio_map_.begin();
+    while (iter != prio_map_.end() && txs->size() < count) {
+        if (gid_vlid_func != nullptr && !gid_vlid_func(iter->second->tx_info.gid())) {
+            ZJC_DEBUG("gid invalid: %s", common::Encode::HexEncode(iter->second->tx_info.gid()).c_str());
+            ++iter;
+            continue;
+        }
+
+        auto* tx = txs->Add();
+        *tx = iter->second->tx_info;
+        assert(!iter->second->unique_tx_hash.empty());
+        ++iter;
+    }   
+}
+
 void TxPool::GetTxIdempotently(
         std::map<std::string, TxItemPtr>& res_map, 
         uint32_t count, 

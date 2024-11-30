@@ -36,6 +36,14 @@ public:
         return pool_mgr_->GetHeightInvalidChangeLeaderHashs(pool_index, height, hashs);
     }
 
+    void GetTxSyncToLeader(
+            uint32_t pool_index,
+            uint32_t count,
+            ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
+            pools::CheckGidValidFunction gid_vlid_func) {
+        pool_mgr_->GetTxSyncToLeader(pool_index, count, txs, gid_vlid_func);
+    }
+
     std::shared_ptr<WaitingTxsItem> LeaderGetValidTxsIdempotently(
         uint32_t pool_index, 
         pools::CheckGidValidFunction gid_vlid_func);

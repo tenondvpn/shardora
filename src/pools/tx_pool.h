@@ -65,7 +65,11 @@ public:
     void GetTxIdempotently(
         std::map<std::string, TxItemPtr>& res_map, 
         uint32_t count, 
-        pools::CheckGidValidFunction gid_vlid_func);    
+        pools::CheckGidValidFunction gid_vlid_func);
+    void GetTxSyncToLeader(
+        uint32_t count,
+        ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
+        pools::CheckGidValidFunction gid_vlid_func);
     void GetTxByIds(
             const std::vector<std::string>& gids,
             std::map<std::string, TxItemPtr>& res_map);    

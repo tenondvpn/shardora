@@ -43,7 +43,12 @@ public:
         uint32_t pool_index,
         uint32_t count,
         std::map<std::string, TxItemPtr>& res_map,
-        pools::CheckGidValidFunction gid_vlid_func);    
+        pools::CheckGidValidFunction gid_vlid_func);
+    void GetTxSyncToLeader(
+        uint32_t pool_index,
+        uint32_t count,
+        ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
+        pools::CheckGidValidFunction gid_vlid_func);
     void TxOver(
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
@@ -60,9 +65,9 @@ public:
         return tx_pool_[pool_index].GidValid(gid);
     }
     void GetTxByGids(
-            uint32_t pool_index,
-            std::vector<std::string> gids,
-            std::map<std::string, pools::TxItemPtr>& res_map);
+        uint32_t pool_index,
+        std::vector<std::string> gids,
+        std::map<std::string, pools::TxItemPtr>& res_map);
     int BackupConsensusAddTxs(uint32_t pool_index, const std::map<std::string, pools::TxItemPtr>& txs);
     void ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& address);
