@@ -83,7 +83,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         // }
         
         txs_item = GetStatisticTx(pool_index, "");
-        // ZJC_DEBUG("GetStatisticTx: %d", (txs_item != nullptr));
+        ZJC_DEBUG("GetStatisticTx: %d", (txs_item != nullptr));
     }
 
     if (txs_item == nullptr) {
