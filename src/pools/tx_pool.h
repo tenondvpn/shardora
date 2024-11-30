@@ -64,12 +64,10 @@ public:
     int AddTx(TxItemPtr& tx_ptr);
     void GetTx(
         std::map<std::string, TxItemPtr>& res_map, 
-        uint32_t count, 
-        std::unordered_map<std::string, std::string>& kvs);
+        uint32_t count);
     void GetTxIdempotently(
         std::map<std::string, TxItemPtr>& res_map, 
         uint32_t count, 
-        std::unordered_map<std::string, std::string>& kvs,
         pools::CheckGidValidFunction gid_vlid_func);    
     void GetTx(
         const std::map<std::string, pools::TxItemPtr>& invalid_txs, 
@@ -186,13 +184,11 @@ private:
     void GetTx(
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
-        uint32_t count,
-        std::unordered_map<std::string, std::string>& kvs);
+        uint32_t count);
     void GetTxIdempotently(
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count,
-        std::unordered_map<std::string, std::string>& kvs,
         pools::CheckGidValidFunction gid_vlid_func);    
     void GetTxByHash(
         std::map<std::string, TxItemPtr>& src_prio_map,

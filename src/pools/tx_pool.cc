@@ -216,46 +216,43 @@ void TxPool::GetTx(
 
 void TxPool::GetTx(
         std::map<std::string, TxItemPtr>& res_map, 
-        uint32_t count, 
-        std::unordered_map<std::string, std::string>& kvs) {
+        uint32_t count) {
     CheckThreadIdValid();
     ZJC_DEBUG("leader get tx universal_prio_map_: %u, prio_map_: %u, consensus_tx_map_: %u", 
         universal_prio_map_.size(), prio_map_.size(), consensus_tx_map_.size());
-    GetTx(universal_prio_map_, res_map, count, kvs);
+    GetTx(universal_prio_map_, res_map, count);
     if (!res_map.empty()) {
         return;
     }
 
-    GetTx(prio_map_, res_map, count, kvs);
-    GetTx(consensus_tx_map_, res_map, count, kvs);
+    GetTx(prio_map_, res_map, count);
+    GetTx(consensus_tx_map_, res_map, count);
 }
 
 void TxPool::GetTxIdempotently(
         std::map<std::string, TxItemPtr>& res_map, 
         uint32_t count, 
-        std::unordered_map<std::string, std::string>& kvs,
         pools::CheckGidValidFunction gid_vlid_func) {
     CheckThreadIdValid();
     ZJC_DEBUG("now get tx universal_prio_map_ size: %u, prio_map_: %u, consensus_tx_map_: %u",
         universal_prio_map_.size(),
         prio_map_.size(),
         consensus_tx_map_.size());
-    GetTxIdempotently(universal_prio_map_, res_map, count, kvs, gid_vlid_func);
+    GetTxIdempotently(universal_prio_map_, res_map, count, gid_vlid_func);
     if (!res_map.empty()) {
         ZJC_DEBUG("success get universal_prio_map_ size: %d", res_map.size());
         return;
     }
 
-    GetTxIdempotently(prio_map_, res_map, count, kvs, gid_vlid_func);
-    GetTxIdempotently(consensus_tx_map_, res_map, count, kvs, gid_vlid_func);    
+    GetTxIdempotently(prio_map_, res_map, count, gid_vlid_func);
+    GetTxIdempotently(consensus_tx_map_, res_map, count, gid_vlid_func);    
     ZJC_DEBUG("success get tx size: %d", res_map.size());
 }
 
 void TxPool::GetTx(
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
-        uint32_t count,
-        std::unordered_map<std::string, std::string>& kvs) {
+        uint32_t count) {
     auto iter = src_prio_map.begin();
     while (iter != src_prio_map.end() && res_map.size() < count) {
         res_map[iter->second->unique_tx_hash] = iter->second;
@@ -272,7 +269,6 @@ void TxPool::GetTxIdempotently(
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count,
-        std::unordered_map<std::string, std::string>& kvs,
         pools::CheckGidValidFunction gid_vlid_func) {
     auto iter = src_prio_map.begin();
     while (iter != src_prio_map.end() && res_map.size() < count) {
