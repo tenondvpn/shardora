@@ -112,18 +112,6 @@ Status BlockWrapper::Wrap(
     return Status::kSuccess;
 }
 
-Status BlockWrapper::GetTxsIdempotently(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>& txs) {
-    transport::protobuf::Header header;
-    std::map<std::string, pools::TxItemPtr> invalid_txs;
-    pools_mgr_->GetTx(pool_idx_, 1024, invalid_txs, header);
-    zbft::protobuf::TxBft& txbft = *header.mutable_zbft()->mutable_tx_bft();
-    for (auto it = txbft.txs().begin(); it != txbft.txs().end(); it++) {
-        txs.push_back(std::make_shared<pools::protobuf::TxMessage>(*it));
-    }
-
-    return Status::kSuccess;    
-}
-
 bool BlockWrapper::HasSingleTx(pools::CheckGidValidFunction gid_valid_fn) {
     return txs_pools_->HasSingleTx(pool_idx_, gid_valid_fn);
 }

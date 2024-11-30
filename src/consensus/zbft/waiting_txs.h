@@ -24,17 +24,6 @@ public:
         return LeaderGetTxsIdempotently(gid_vlid_func);
     }
 
-    std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
-            const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
-            std::vector<uint8_t>* invalid_txs) {
-        auto txs_items = pools_mgr_->GetTx(pool_index_, txs, invalid_txs);
-        if (txs_items != nullptr && txs_items->txs.empty()) {
-            txs_items = nullptr;
-        }
-
-        return txs_items;
-    }
-
 private:
     std::shared_ptr<WaitingTxsItem> LeaderGetTxs() {
         auto txs_items = std::make_shared<WaitingTxsItem>();

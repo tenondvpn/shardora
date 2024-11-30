@@ -243,19 +243,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(
     return nullptr;
 }
 
-std::shared_ptr<WaitingTxsItem> WaitingTxsPools::FollowerGetTxs(
-        uint32_t pool_index,
-        const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
-        std::vector<uint8_t>* invalid_txs) {
-    auto txs_item = wtxs[pool_index].FollowerGetTxs(txs, invalid_txs);
-    if (txs_item != nullptr) {
-        txs_item->pool_index = pool_index;
-        return txs_item;
-    }
-
-    return nullptr;
-}
-
 };  // namespace consensus
 
 };  // namespace shardora

@@ -1912,12 +1912,7 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
         return;
     }
 
-    std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
-    wrapper()->GetTxsIdempotently(txs);
-    if (txs.empty()) {
-        // ZJC_DEBUG("pool: %u txs.empty().", pool_idx_);
-        return;
-    }
+   
     
     // 存在内置交易或普通交易时尝试 reset timer
     // TODO 发送 PreResetPacemakerTimerMsg To Leader
@@ -1925,6 +1920,12 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     auto& header = trans_msg->header;
     auto* hotstuff_msg = header.mutable_hotstuff();
     auto* pre_rst_timer_msg = hotstuff_msg->mutable_pre_reset_timer_msg();
+     ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs = pre_rst_timer_msg->mutable_txs();
+    wrapper()->GetTxsIdempotently(txs);
+    if (txs.empty()) {
+        // ZJC_DEBUG("pool: %u txs.empty().", pool_idx_);
+        return;
+    }
     auto elect_item = elect_info_->GetElectItemWithShardingId(
         common::GlobalInfo::Instance()->network_id());
     if (!elect_item || !elect_item->IsValid()) {

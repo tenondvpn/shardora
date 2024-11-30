@@ -24,7 +24,6 @@ public:
             hotstuff::protobuf::TxPropose* tx_propose,
             const bool& no_tx_allowed,
             std::shared_ptr<ViewBlockChain>& view_block_chain) = 0;
-    virtual Status GetTxsIdempotently(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>& txs) = 0;
     virtual bool HasSingleTx(pools::CheckGidValidFunction gid_valid_fn) = 0;
 };
 
@@ -50,19 +49,10 @@ public:
             const bool& no_tx_allowed,
             std::shared_ptr<ViewBlockChain>& view_block_chain) override;
 
-    // 幂等，用于同步 replica 向 leader 同步交易
-    Status GetTxsIdempotently(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>& txs) override;
     // 是否存在内置交易
     bool HasSingleTx(pools::CheckGidValidFunction gid_valid_fn) override;
 
 private:
-    uint32_t pool_idx_;
-    std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
-    std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
-    std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
-    std::shared_ptr<ElectInfo> elect_info_ = nullptr;
-    std::shared_ptr<consensus::WaitingTxsPools> txs_pools_ = nullptr;
-
     Status LeaderGetTxsIdempotently(
             std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
             pools::CheckGidValidFunction gid_vlid_func) {
@@ -72,6 +62,34 @@ private:
         txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(pool_idx_, gid_vlid_func);
         return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;
     }
+
+    void GetTxSyncToLeader(
+            uint32_t leader_idx, 
+            std::shared_ptr<ViewBlockChain>& view_block_chain, 
+            const std::string& parent_hash,
+            ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs) {
+        auto gid_valid_func = [&](const std::string& gid) -> bool {
+            auto& tmp_set = leader_with_sent_gids_[leader_idx];
+            if (tmp_set.find(gid) != tmp_set.end()) {
+                return false;
+            }
+
+            tmp_set.insert(gid);
+            return view_block_chain->CheckTxGidValid(gid, parent_hash);
+        };
+
+        txs_pools_->GetUserTxToSync(pool_idx_, txs, gid_valid_func);
+    }
+
+    std::unordered_set<std::string> leader_with_sent_gids_[common::kEachShardMaxNodeCount];
+
+    uint32_t pool_idx_;
+    std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
+    std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
+    std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
+    std::shared_ptr<ElectInfo> elect_info_ = nullptr;
+    std::shared_ptr<consensus::WaitingTxsPools> txs_pools_ = nullptr;
+
 };
 
 } // namespace hotstuff

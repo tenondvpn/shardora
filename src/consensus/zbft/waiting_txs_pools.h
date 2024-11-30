@@ -43,10 +43,6 @@ public:
     std::shared_ptr<WaitingTxsItem> GetStatisticTx(uint32_t pool_index, const std::string& tx_hash);
     std::shared_ptr<WaitingTxsItem> GetTimeblockTx(uint32_t pool_index, bool leader);
     std::shared_ptr<WaitingTxsItem> GetElectTx(uint32_t pool_index, const std::string& tx_hash);
-    std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
-        uint32_t pool_index,
-        const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
-        std::vector<uint8_t>* invalid_txs);
     bool HasSingleTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn);
     std::string GetToTxGid();
 
