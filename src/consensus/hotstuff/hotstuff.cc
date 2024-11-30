@@ -208,17 +208,19 @@ Status Hotstuff::Propose(
     header.set_des_dht_key(dht_key.StrKey());
     transport::TcpTransport::Instance()->SetMessageHash(header);
 #ifndef NDEBUG
-//     std::string propose_debug_str = common::StringUtil::Format(
-//         "%u-%u-%lu", 
-//         common::GlobalInfo::Instance()->network_id(), 
-//         pool_idx_, 
-//         propose_debug_index_++);
+    std::string propose_debug_str = common::StringUtil::Format(
+        "%u_%u_%lu, hash64: %lu, %lu", 
+        common::GlobalInfo::Instance()->network_id(), 
+        pool_idx_, 
+        hotstuff_msg->pro_msg().view_item().qc().view(),
+        header.hash64(),
+        propose_debug_index_++);
 //     propose_debug_str += ", tx gids: ";
 //     for (uint32_t tx_idx = 0; tx_idx < pb_pro_msg->tx_propose().txs_size(); ++tx_idx) {
 //         propose_debug_str += common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).gid()) + " ";
 //     }
 
-    header.set_debug(std::to_string(header.hash64()));
+    header.set_debug(propose_debug_str);
     ZJC_DEBUG("leader begin propose_debug: %s", header.debug().c_str());
 #endif
     s = crypto()->SignMessage(tmp_msg_ptr);
