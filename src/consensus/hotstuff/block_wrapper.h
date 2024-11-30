@@ -24,6 +24,11 @@ public:
             hotstuff::protobuf::TxPropose* tx_propose,
             const bool& no_tx_allowed,
             std::shared_ptr<ViewBlockChain>& view_block_chain) = 0;
+    virtual void GetTxSyncToLeader(
+            uint32_t leader_idx, 
+            std::shared_ptr<ViewBlockChain>& view_block_chain, 
+            const std::string& parent_hash,
+            ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs) = 0;
     virtual bool HasSingleTx(pools::CheckGidValidFunction gid_valid_fn) = 0;
 };
 
@@ -55,7 +60,7 @@ public:
             uint32_t leader_idx, 
             std::shared_ptr<ViewBlockChain>& view_block_chain, 
             const std::string& parent_hash,
-            ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs) {
+            ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs) override {
         auto gid_valid_func = [&](const std::string& gid) -> bool {
             auto& tmp_set = leader_with_sent_gids_[leader_idx];
             if (tmp_set.find(gid) != tmp_set.end()) {
@@ -68,7 +73,7 @@ public:
 
         // txs_pools_->GetUserTxToSync(pool_idx_, txs, gid_valid_func);
     }
-    
+
 private:
     Status LeaderGetTxsIdempotently(
             std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
