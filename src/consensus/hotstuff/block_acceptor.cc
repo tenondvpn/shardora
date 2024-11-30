@@ -82,12 +82,15 @@ Status BlockAcceptor::Accept(
                 common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str());
             assert(view_block.qc().view_block_hash().empty());
             view_block.mutable_qc()->set_view_block_hash(GetBlockHash(view_block));
-            ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
+            ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu, "
+                "chain has hash: %d, db has hash: %d",
                 common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
                 common::Encode::HexEncode(view_block.parent_hash()).c_str(),
                 view_block.qc().network_id(),
                 view_block.qc().pool_index(),
-                view_block.qc().view());
+                view_block.qc().view(),
+                view_block_chain->Has(view_block.qc().view_block_hash()),
+                prefix_db_->BlockExists(view_block.qc().view_block_hash()));
             if (view_block_chain->Has(view_block.qc().view_block_hash())) {
                 return Status::kAcceptorBlockInvalid;
             }
