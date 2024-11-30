@@ -290,11 +290,20 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
     }
 
     if (CheckMessageValid(msg_ptr) != kFirewallCheckSuccess) {
-        ZJC_DEBUG("message filtered: %lu, type: %d, from: %s:%d",
-            msg_ptr->header.hash64(),
-            msg_ptr->header.type(),
-            msg_ptr->conn->PeerIp().c_str(),
-            msg_ptr->conn->PeerPort());
+        if (msg_ptr->conn) {
+            ZJC_DEBUG("message filtered: %lu, type: %d, from: %s:%d",
+                msg_ptr->header.hash64(),
+                msg_ptr->header.type(),
+                msg_ptr->conn->PeerIp().c_str(),
+                msg_ptr->conn->PeerPort());
+        } else {
+            ZJC_DEBUG("message filtered: %lu, type: %d, from: %s:%d",
+                msg_ptr->header.hash64(),
+                msg_ptr->header.type(),
+                "local_ip",
+                0);
+        }
+        
         return;
     }
 
@@ -457,6 +466,10 @@ int MultiThreadHandler::CheckMessageValid(MessagePtr& msg_ptr) {
             ZJC_DEBUG("check message id failed %d, %lu, from: %s:%d",
                 msg_ptr->header.type(), msg_ptr->header.hash64(),
                 msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort());
+        } else {
+            ZJC_DEBUG("check message id failed %d, %lu, from: %s:%d",
+                msg_ptr->header.type(), msg_ptr->header.hash64(),
+                "local_ip", 0);
         }
 
         return kFirewallCheckError;
