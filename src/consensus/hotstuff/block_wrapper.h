@@ -51,18 +51,6 @@ public:
 
     // 是否存在内置交易
     bool HasSingleTx(pools::CheckGidValidFunction gid_valid_fn) override;
-
-private:
-    Status LeaderGetTxsIdempotently(
-            std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-            pools::CheckGidValidFunction gid_vlid_func) {
-        pools_mgr_->PopTxs(pool_idx_, false, nullptr, nullptr);
-        pools_mgr_->CheckTimeoutTx(pool_idx_);
-        
-        txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(pool_idx_, gid_vlid_func);
-        return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;
-    }
-
     void GetTxSyncToLeader(
             uint32_t leader_idx, 
             std::shared_ptr<ViewBlockChain>& view_block_chain, 
@@ -78,8 +66,21 @@ private:
             return view_block_chain->CheckTxGidValid(gid, parent_hash);
         };
 
-        txs_pools_->GetUserTxToSync(pool_idx_, txs, gid_valid_func);
+        // txs_pools_->GetUserTxToSync(pool_idx_, txs, gid_valid_func);
     }
+    
+private:
+    Status LeaderGetTxsIdempotently(
+            std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
+            pools::CheckGidValidFunction gid_vlid_func) {
+        pools_mgr_->PopTxs(pool_idx_, false, nullptr, nullptr);
+        pools_mgr_->CheckTimeoutTx(pool_idx_);
+        
+        txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(pool_idx_, gid_vlid_func);
+        return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;
+    }
+
+    
 
     std::unordered_set<std::string> leader_with_sent_gids_[common::kEachShardMaxNodeCount];
 

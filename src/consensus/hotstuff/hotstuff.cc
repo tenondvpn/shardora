@@ -1660,13 +1660,12 @@ Status Hotstuff::ConstructVoteMsg(
     vote_msg->set_sign_y(sign_y);
 #endif    
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    std::vector<std::shared_ptr<pools::protobuf::TxMessage>> txs;
-    wrapper()->GetTxsIdempotently(txs);
-    for (size_t i = 0; i < txs.size(); i++) {
-        auto* tx_ptr = vote_msg->add_txs();
-        *tx_ptr = *(txs[i].get());
-    }
-
+    auto* txs = vote_msg->mutable_txs();
+    wrapper()->GetTxSyncToLeader(
+        v_block->qc().leader_idx(), 
+        view_block_chain_, 
+        view_block_chain_->HighQC().view_block_hash(), 
+        txs);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
@@ -1886,8 +1885,8 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
         return;
     }
 
+    auto leader = leader_rotation()->GetLeader();
     if (has_system_tx) {
-        auto leader = leader_rotation()->GetLeader();
         if (leader) {
             auto local_idx = leader_rotation_->GetLocalMemberIdx();
             if (leader->index == local_idx) {
@@ -1920,9 +1919,13 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     auto& header = trans_msg->header;
     auto* hotstuff_msg = header.mutable_hotstuff();
     auto* pre_rst_timer_msg = hotstuff_msg->mutable_pre_reset_timer_msg();
-     ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs = pre_rst_timer_msg->mutable_txs();
-    wrapper()->GetTxsIdempotently(txs);
-    if (txs.empty()) {
+    auto* txs = pre_rst_timer_msg->mutable_txs();
+    wrapper()->GetTxSyncToLeader(
+        leader->index, 
+        view_block_chain_, 
+        view_block_chain_->HighQC().view_block_hash(), 
+        txs);
+    if (txs->empty()) {
         // ZJC_DEBUG("pool: %u txs.empty().", pool_idx_);
         return;
     }
@@ -1934,11 +1937,6 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     }
     
     pre_rst_timer_msg->set_replica_idx(elect_item->LocalMember()->index);
-    for (size_t i = 0; i < txs.size(); i++) {
-        auto& tx_ptr = *(pre_rst_timer_msg->add_txs());
-        tx_ptr = *(txs[i].get());
-    }
-
     pre_rst_timer_msg->set_has_single_tx(has_system_tx);
     hotstuff_msg->set_type(PRE_RESET_TIMER);
     hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
