@@ -61,6 +61,8 @@ Status BlockAcceptor::Accept(
         bool directly_user_leader_txs,
         BalanceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host) {
+    auto& msg_ptr = pro_msg_wrap->msg_ptr;
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto b = common::TimeUtils::TimestampMs();
     defer({
             auto e = common::TimeUtils::TimestampMs();
@@ -103,6 +105,7 @@ Status BlockAcceptor::Accept(
         ZJC_DEBUG("propose_msg.txs().empty() error!");
         return no_tx_allowed ? Status::kSuccess : Status::kAcceptorTxsEmpty;
     }
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 
     // 1. verify block
     if (!IsBlockValid(view_block)) {
@@ -121,12 +124,14 @@ Status BlockAcceptor::Accept(
         txs_ptr, 
         balance_map,
         zjc_host);
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (s != Status::kSuccess) {
         ZJC_DEBUG("GetAndAddTxsLocally error!");
         return s;
     }
     
     // 3. Do txs and create block_tx
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     s = DoTransactions(txs_ptr, &view_block, balance_map, zjc_host);
     if (s != Status::kSuccess) {
         ZJC_DEBUG("DoTransactions error!");
@@ -147,6 +152,7 @@ Status BlockAcceptor::Accept(
         view_block.qc().network_id(),
         view_block.qc().pool_index(),
         view_block.qc().view());
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (prefix_db_->BlockExists(view_block.qc().view_block_hash())) {
         return Status::kAcceptorBlockInvalid;
     }

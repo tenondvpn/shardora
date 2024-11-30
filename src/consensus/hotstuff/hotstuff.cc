@@ -1806,11 +1806,12 @@ Status Hotstuff::SendMsgToLeader(
                 header_msg);
         }
     } else {
-        if (msg_type == VOTE) {
-            HandleVoteMsg(trans_msg);
-        } else if (msg_type == PRE_RESET_TIMER) {
-            HandlePreResetTimerMsg(trans_msg);
-        }
+        transport::TcpTransport::Instance()->AddLocalMessage(trans_msg);
+        // if (msg_type == VOTE) {
+        //     HandleVoteMsg(trans_msg);
+        // } else if (msg_type == PRE_RESET_TIMER) {
+        //     HandlePreResetTimerMsg(trans_msg);
+        // }
     }
 
 // #ifndef NDEBUG
