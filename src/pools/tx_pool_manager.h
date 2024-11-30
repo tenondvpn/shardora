@@ -39,10 +39,6 @@ public:
         std::shared_ptr<block::AccountManager>& acc_mgr);
     ~TxPoolManager();
     void HandleMessage(const transport::MessagePtr& msg);
-    void GetTx(
-        uint32_t pool_index,
-        uint32_t count,
-        std::map<std::string, TxItemPtr>& res_map);
     void GetTxIdempotently(
         uint32_t pool_index,
         uint32_t count,
@@ -63,12 +59,6 @@ public:
     bool GidValid(uint32_t pool_index, const std::string& gid) {
         return tx_pool_[pool_index].GidValid(gid);
     }
-
-    void GetTx(
-        uint32_t pool_index,
-        uint32_t count,
-        const std::map<std::string, pools::TxItemPtr>& invalid_txs,
-        transport::protobuf::Header& header);
     void GetTxByGids(
             uint32_t pool_index,
             std::vector<std::string> gids,
@@ -143,13 +133,6 @@ public:
         }
         
         cross_block_mgr_->UpdateMaxShardingId(sharding_id);
-    }
-
-    std::shared_ptr<consensus::WaitingTxsItem> GetTx(
-            uint32_t pool_index,
-            const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
-            std::vector<uint8_t>* invalid_txs) {
-        return tx_pool_[pool_index].GetTx(txs, invalid_txs);
     }
 
     void RegisterCreateTxFunction(uint32_t type, CreateConsensusItemFunction func) {

@@ -188,47 +188,6 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     return kPoolsSuccess;
 }
 
-void TxPool::GetTx(
-        const std::map<std::string, pools::TxItemPtr>& invalid_txs, 
-        transport::protobuf::Header& header,
-        uint32_t count) {
-    CheckThreadIdValid();
-    std::vector<TxItemPtr> recover_txs;
-    zbft::protobuf::TxBft* txbft = header.mutable_zbft()->mutable_tx_bft();
-    auto iter = prio_map_.begin();
-    while (iter != prio_map_.end() && txbft->txs_size() < count) {
-        auto invalid_iter = invalid_txs.find(iter->second->unique_tx_hash);
-        if (invalid_iter != invalid_txs.end()) {
-            ++iter;
-            continue;
-        }
-
-        auto* tx = txbft->add_txs();
-        *tx = iter->second->tx_info;
-        ZJC_DEBUG("backup success get local transfer to tx %u, %s, step: %d",
-            pool_index_, 
-            common::Encode::HexEncode(iter->second->unique_tx_hash).c_str(),
-            iter->second->tx_info.step());
-        assert(!iter->second->unique_tx_hash.empty());
-        ++iter;
-    }
-}
-
-void TxPool::GetTx(
-        std::map<std::string, TxItemPtr>& res_map, 
-        uint32_t count) {
-    CheckThreadIdValid();
-    ZJC_DEBUG("leader get tx universal_prio_map_: %u, prio_map_: %u, consensus_tx_map_: %u", 
-        universal_prio_map_.size(), prio_map_.size(), consensus_tx_map_.size());
-    GetTx(universal_prio_map_, res_map, count);
-    if (!res_map.empty()) {
-        return;
-    }
-
-    GetTx(prio_map_, res_map, count);
-    GetTx(consensus_tx_map_, res_map, count);
-}
-
 void TxPool::GetTxIdempotently(
         std::map<std::string, TxItemPtr>& res_map, 
         uint32_t count, 
@@ -247,22 +206,6 @@ void TxPool::GetTxIdempotently(
     GetTxIdempotently(prio_map_, res_map, count, gid_vlid_func);
     GetTxIdempotently(consensus_tx_map_, res_map, count, gid_vlid_func);    
     ZJC_DEBUG("success get tx size: %d", res_map.size());
-}
-
-void TxPool::GetTx(
-        std::map<std::string, TxItemPtr>& src_prio_map,
-        std::map<std::string, TxItemPtr>& res_map,
-        uint32_t count) {
-    auto iter = src_prio_map.begin();
-    while (iter != src_prio_map.end() && res_map.size() < count) {
-        res_map[iter->second->unique_tx_hash] = iter->second;
-        ZJC_DEBUG("leader success get local transfer to tx %u, %s, step: %d",
-            pool_index_, 
-            common::Encode::HexEncode(iter->second->unique_tx_hash).c_str(),
-            iter->second->tx_info.step());
-        assert(!iter->second->unique_tx_hash.empty());
-        iter = src_prio_map.erase(iter);
-    }
 }
 
 void TxPool::GetTxIdempotently(
@@ -763,40 +706,6 @@ double TxPool::CheckLeaderValid(bool get_factor, uint32_t* finished_count, uint3
     all_tx_count_ += gid_map_.size();
     finish_tx_count_ = 0;
     return factor;
-}
-
-
-std::shared_ptr<consensus::WaitingTxsItem> TxPool::GetTx(
-        const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
-        std::vector<uint8_t>* invalid_txs) {
-    auto txs_items = std::make_shared<consensus::WaitingTxsItem>();
-    auto& tx_map = txs_items->txs;
-    for (int32_t i = 0; i < txs.size(); ++i) {
-        auto txhash = "";  // txs[i].txhash();
-        auto iter = gid_map_.find(txhash);
-        if (iter == gid_map_.end()) {
-            ZJC_INFO("failed get tx %u, %s", pool_index_, common::Encode::HexEncode(txhash).c_str());
-            if (invalid_txs == nullptr) {
-                return nullptr;
-            }
-
-            invalid_txs->push_back(i);
-            continue;
-        }
-
-        if (invalid_txs != nullptr && !invalid_txs->empty()) {
-            continue;
-        }
-
-        ZJC_DEBUG("success get tx %u, %s", pool_index_, common::Encode::HexEncode(txhash).c_str());
-        tx_map[txhash] = iter->second;
-    }
-    
-    if (invalid_txs != nullptr && !invalid_txs->empty()) {
-        return nullptr;
-    }
-
-    return txs_items;
 }
 
 void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {

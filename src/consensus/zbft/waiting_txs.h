@@ -25,22 +25,6 @@ public:
     }
 
 private:
-    std::shared_ptr<WaitingTxsItem> LeaderGetTxs() {
-        auto txs_items = std::make_shared<WaitingTxsItem>();
-        auto& tx_vec = txs_items->txs;
-        if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-            pools_mgr_->GetTx(pool_index_, 1, tx_vec);
-        } else {
-            pools_mgr_->GetTx(pool_index_, kMaxTxCount, tx_vec);
-        }
-
-        if (txs_items->txs.empty()) {
-            txs_items = nullptr;
-        }
-
-        return txs_items;
-    }
-
     std::shared_ptr<WaitingTxsItem> LeaderGetTxsIdempotently(pools::CheckGidValidFunction gid_vlid_func) {
         transport::protobuf::Header header;
         auto txs_items = std::make_shared<WaitingTxsItem>();

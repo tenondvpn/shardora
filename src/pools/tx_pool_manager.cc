@@ -1252,34 +1252,6 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
         common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
 }
 
-
-void TxPoolManager::GetTx(
-        uint32_t pool_index,
-        uint32_t count,
-        const std::map<std::string, pools::TxItemPtr>& invalid_txs,
-        transport::protobuf::Header& header) {
-    if (count > common::kSingleBlockMaxTransactions) {
-        count = common::kSingleBlockMaxTransactions;
-    }
-
-    tx_pool_[pool_index].GetTx(invalid_txs, header, count);
-}
-
-void TxPoolManager::GetTx(
-        uint32_t pool_index,
-        uint32_t count,
-        std::map<std::string, TxItemPtr>& res_map) {
-    if (count > common::kSingleBlockMaxTransactions) {
-        count = common::kSingleBlockMaxTransactions;
-    }
-    
-    if (tx_pool_[pool_index].tx_size() < now_max_tx_count_) {
-        return;
-    }
-
-    tx_pool_[pool_index].GetTx(res_map, count);
-}
-
 void TxPoolManager::GetTxIdempotently(
         uint32_t pool_index,
         uint32_t count,
