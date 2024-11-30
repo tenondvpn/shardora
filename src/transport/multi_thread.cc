@@ -435,7 +435,7 @@ bool MultiThreadHandler::IsMessageUnique(uint64_t msg_hash) {
             unique_message_sets2_.Push(hash64);
         }
     }
-    
+
     return unique_message_sets2_.Push(msg_hash);
     
     // return unique_message_sets_.add(msg_hash);
@@ -453,9 +453,12 @@ int MultiThreadHandler::CheckMessageValid(MessagePtr& msg_ptr) {
 
     if (!IsMessageUnique(msg_ptr->header.hash64())) {
         // invalid msg id
-        ZJC_DEBUG("check message id failed %d, %lu, from: %s:%d",
-            msg_ptr->header.type(), msg_ptr->header.hash64(),
-            msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort());
+        if (msg_ptr->conn) {
+            ZJC_DEBUG("check message id failed %d, %lu, from: %s:%d",
+                msg_ptr->header.type(), msg_ptr->header.hash64(),
+                msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort());
+        }
+
         return kFirewallCheckError;
     }
 
