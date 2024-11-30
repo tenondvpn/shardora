@@ -76,10 +76,12 @@ void ThreadHandler::HandleMessage() {
             auto etime = common::TimeUtils::TimestampUs();
             if (etime - btime > 1000000) {
                 for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
-                    ZJC_DEBUG("over handle message debug %lu timestamp: %lu, debug: %s, "
-                        "thread_idx: %d, maping_thread_idx: %d",
-                        msg_ptr->header.hash64(), msg_ptr->times[i], 
-                        msg_ptr->debug_str[i].c_str(), thread_idx, maping_thread_idx);
+                    if (msg_ptr->times[i] > 500000) {
+                        ZJC_DEBUG("over handle message debug %lu timestamp: %lu, debug: %s, "
+                            "thread_idx: %d, maping_thread_idx: %d",
+                            msg_ptr->header.hash64(), msg_ptr->times[i], 
+                            msg_ptr->debug_str[i].c_str(), thread_idx, maping_thread_idx);
+                    }
                 }
             }
             // ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
