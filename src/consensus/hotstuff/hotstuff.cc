@@ -166,7 +166,7 @@ Status Hotstuff::Propose(
             header.debug().c_str(),
             latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view(),
             pacemaker_->CurView());
-        // assert(false);
+        assert(false);
         HandleProposeMsg(latest_leader_propose_message_);
         return s;
     }
