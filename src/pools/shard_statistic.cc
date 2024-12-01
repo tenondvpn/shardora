@@ -38,7 +38,9 @@ int ShardStatistic::Init() {
             common::GlobalInfo::Instance()->network_id(), 
             &statistic_info)) {
         latest_statisticed_height_ = statistic_info.height();
-        ZJC_INFO("success set latest statisticed height: %lu", latest_statisticed_height_);
+        ZJC_INFO("success set latest statisticed height: %lu, info: %s", 
+            latest_statisticed_height_, 
+            ProtobufToJson(statistic_info).c_str());
         if (statistic_info.pool_statisitcs_size() != common::kInvalidPoolIndex) {
             assert(false);
             return kPoolsError;
