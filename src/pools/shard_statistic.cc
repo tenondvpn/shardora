@@ -679,7 +679,7 @@ int ShardStatistic::StatisticWithHeights(
     if (piter->second.size() != common::kInvalidPoolIndex ||
             iter->second.size() != common::kInvalidPoolIndex) {
         std::string valid_pools = "";
-        for (auto titer = iter->second.begin(); titer != iter->second.end(); ++titer) {
+        for (auto titer = piter->second.begin(); titer != piter->second.end(); ++titer) {
             valid_pools += std::to_string(titer->first) + ":" + 
                 std::to_string(titer->second.statistic_min_height) + ":" + 
                 std::to_string(titer->second.statistic_max_height) + ",";
