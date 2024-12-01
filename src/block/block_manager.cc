@@ -1126,6 +1126,7 @@ void BlockManager::CreateStatisticTx() {
 
     pools::protobuf::ElectStatistic elect_statistic;
     uint64_t timeblock_height = prev_timeblock_height_;
+    ZJC_DEBUG("StatisticWithHeights called!");
     if (statistic_mgr_->StatisticWithHeights(
             elect_statistic,
             timeblock_height) != pools::kPoolsSuccess) {
