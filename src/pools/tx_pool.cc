@@ -618,7 +618,7 @@ uint64_t TxPool::UpdateLatestInfo(
         InitHeightTree();
     }
 
-    auto tmp_height_tree_ptr = height_tree_ptr_;
+    tmp_height_tree_ptr = height_tree_ptr_;
     if (tmp_height_tree_ptr) {
         ZJC_DEBUG("success set height, net: %u, pool: %u, height: %lu",
             common::GlobalInfo::Instance()->network_id(), pool_index_, height);
