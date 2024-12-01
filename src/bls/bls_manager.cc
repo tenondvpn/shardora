@@ -423,7 +423,8 @@ void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& bls_msg = header.bls_proto();
     if (bls_msg.has_finish_req()) {
         finish_msg_queue_.push(msg_ptr);
-        ZJC_WARN("queue size finish_msg_queue_: %d", finish_msg_queue_.size());
+        ZJC_WARN("queue size finish_msg_queue_: %d, hash64: %lu",
+            finish_msg_queue_.size(), msg_ptr->header.hash64());
         return;
     }
 
@@ -449,6 +450,7 @@ void BlsManager::PopFinishMessage() {
 }
 
 void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
+    ZJC_WARN("handle finish called hash64: %lu", msg_ptr->header.hash64());
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
     if (bls_msg.finish_req().network_id() < network::kRootCongressNetworkId ||
@@ -578,11 +580,11 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     auto max_iter = finish_item->max_bls_members.find(cpk_hash);
     if (max_iter != finish_item->max_bls_members.end()) {
         ++max_iter->second->count;
-//         ZJC_WARN("handle finish success count: %d sharding: %u, member index: %u, cpk_hash: %s.",
-//             max_iter->second->count,
-//             bls_msg.finish_req().network_id(),
-//             bls_msg.index(),
-//             common::Encode::HexEncode(cpk_hash).c_str());
+        ZJC_WARN("handle finish success count: %d sharding: %u, member index: %u, cpk_hash: %s.",
+            max_iter->second->count,
+            bls_msg.finish_req().network_id(),
+            bls_msg.index(),
+            common::Encode::HexEncode(cpk_hash).c_str());
         if (max_iter->second->count > finish_item->max_finish_count) {
             finish_item->max_finish_count = max_iter->second->count;
             finish_item->max_finish_hash = cpk_hash;
