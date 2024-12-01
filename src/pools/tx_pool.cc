@@ -613,14 +613,16 @@ uint64_t TxPool::UpdateLatestInfo(
         const std::string& prehash,
         const uint64_t timestamp) {
     CheckThreadIdValid();
-    if (!height_tree_ptr_) {
+    auto tmp_height_tree_ptr = height_tree_ptr_;
+    if (!tmp_height_tree_ptr) {
         InitHeightTree();
     }
 
-    if (height_tree_ptr_) {
+    auto tmp_height_tree_ptr = height_tree_ptr_;
+    if (tmp_height_tree_ptr) {
         ZJC_DEBUG("success set height, net: %u, pool: %u, height: %lu",
             common::GlobalInfo::Instance()->network_id(), pool_index_, height);
-        height_tree_ptr_->Set(height);
+        tmp_height_tree_ptr->Set(height);
     }
 
     if (latest_height_ == common::kInvalidUint64 || latest_height_ < height) {
