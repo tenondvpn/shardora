@@ -181,10 +181,13 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     oldest_timestamp_ = prio_map_.begin()->second->time_valid;
 #endif
     timeout_txs_.push(tx_ptr->tx_info.gid());
-    ZJC_DEBUG("pool: %d, success add tx step: %d, gid: %s", 
-        pool_index_, 
-        tx_ptr->tx_info.step(),
-        common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
+    if (pool_index_ == common::kImmutablePoolSize) {
+        ZJC_DEBUG("pool: %d, success add tx step: %d, gid: %s", 
+            pool_index_, 
+            tx_ptr->tx_info.step(),
+            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
+    }
+    
     return kPoolsSuccess;
 }
 
@@ -243,7 +246,12 @@ void TxPool::GetTxIdempotently(
 
         res_map[iter->second->unique_tx_hash] = iter->second;
         assert(!iter->second->unique_tx_hash.empty());
-        // ZJC_DEBUG("gid valid: %s", common::Encode::HexEncode(iter->second->tx_info.gid()).c_str());
+        if (pool_index_ == common::kImmutablePoolSize) {
+            ZJC_DEBUG("gid valid: %s, now size: %d", 
+                common::Encode::HexEncode(iter->second->tx_info.gid()).c_str(),
+                src_prio_map.size());
+        }
+
         ++iter;
     }    
 }
