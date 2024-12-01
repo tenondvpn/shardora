@@ -450,7 +450,7 @@ void BlsManager::PopFinishMessage() {
 }
 
 void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
-    ZJC_WARN("handle finish called hash64: %lu", msg_ptr->header.hash64());
+    ZJC_WARN("0 handle finish called hash64: %lu", msg_ptr->header.hash64());
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
     if (bls_msg.finish_req().network_id() < network::kRootCongressNetworkId ||
@@ -540,6 +540,7 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     }
 
     if (finish_item->verified[bls_msg.index()]) {
+        ZJC_WARN("1 handle finish called hash64: %lu", msg_ptr->header.hash64());
         return;
     }
 
