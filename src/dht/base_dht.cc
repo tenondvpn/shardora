@@ -990,8 +990,8 @@ void BaseDht::PrintDht() {
             auto node = *iter;
             assert(node != nullptr);
             std::string tmp_res = common::StringUtil::Format(
-                "\n%s, id: %u, %s:%u",
-                common::Encode::HexSubstr(node->id).c_str(),
+                "----%s, id: %u, %s:%u",
+                "",//common::Encode::HexSubstr(node->id).c_str(),
                 node->sharding_id,
                 node->public_ip.c_str(),
                 node->public_port);
@@ -1001,7 +1001,7 @@ void BaseDht::PrintDht() {
         ZJC_DEBUG("dht info sharding_id: %u, %s", local_node()->sharding_id, res.c_str());
     }
    
-    // dht_tick_.CutOff(10000000lu, std::bind(&BaseDht::PrintDht, this));
+    dht_tick_.CutOff(10000000lu, std::bind(&BaseDht::PrintDht, this));
 }
 
 }  // namespace dht

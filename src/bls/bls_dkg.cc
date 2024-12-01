@@ -949,9 +949,11 @@ void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {
     finish_msg->set_bls_sign_x(sign_x);
     finish_msg->set_bls_sign_y(sign_y);
 #ifndef ZJC_UNITTEST
-    ZJC_WARN("success broadcast finish message. t: %d, n: %d, msg hash: %s, pk: %s",
+    ZJC_WARN("success broadcast finish message. t: %d, n: %d, "
+        "msg hash: %s, pk: %s, hash64: %lu",
         min_aggree_member_count_, member_count_,
-        common::Encode::HexEncode(sign_hash).c_str(), pk.c_str());
+        common::Encode::HexEncode(sign_hash).c_str(), 
+        pk.c_str(), msg_ptr->header.hash64());
     network::Route::Instance()->Send(msg_ptr);
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         bls_mgr_->HandleMessage(msg_ptr);
