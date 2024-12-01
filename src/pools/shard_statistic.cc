@@ -678,10 +678,17 @@ int ShardStatistic::StatisticWithHeights(
 
     if (piter->second.size() != common::kInvalidPoolIndex ||
             iter->second.size() != common::kInvalidPoolIndex) {
-        ZJC_WARN("pool not full: %u, %u, now_size: %u", 
+        std::string valid_pools = "";
+        for (auto titer = iter->second.begin(); titer != iter->second.end(); ++iter) {
+            valid_pools += std::to_string(titer->first) + ":" + 
+                std::to_string(titer->second.statistic_min_height) + ":" + 
+                std::to_string(titer->second.statistic_max_height) + ",";
+        }
+        ZJC_WARN("pool not full: %u, %u, now_size: %u, %s", 
             piter->second.size(), 
             common::kInvalidPoolIndex, 
-            iter->second.size());
+            iter->second.size(),
+            valid_pools.c_str());
         return kPoolsError;
     }
 
