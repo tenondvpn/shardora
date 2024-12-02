@@ -27,6 +27,7 @@
 // #define ADD_DEBUG_PROCESS_TIMESTAMP()
 #define ADD_DEBUG_PROCESS_TIMESTAMP() { \
     if (msg_ptr) { \
+        assert(msg_ptr->times_idx < (sizeof(msg_ptr->times) / sizeof(msg_ptr->times[0]))); \
         auto btime = common::TimeUtils::TimestampUs(); \
         uint64_t diff_time = 0; \
         if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; } \
@@ -109,8 +110,8 @@ struct TransportMessage {
     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
     std::string msg_hash;
     bool retry;
-    uint64_t times[128];
-    std::string debug_str[128];
+    uint64_t times[256];
+    std::string debug_str[256];
     uint32_t times_idx;
     uint64_t handle_timeout;
     uint64_t timeout;
