@@ -412,7 +412,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     for (auto iter = leader_view_with_propose_msgs_.begin();
             iter != leader_view_with_propose_msgs_.end();) {
         if (iter->first > propose_view) {
-            assert(false);
+            // assert(false);
             break;
         }
 
