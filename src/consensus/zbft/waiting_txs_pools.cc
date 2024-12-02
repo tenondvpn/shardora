@@ -46,7 +46,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
             ZJC_DEBUG("success leader get single txs coming thread: %d, "
                 "pool index: %d, tx count: %d, gid: %s, step: %d", 
                 thread_id, pool_index, txs_item->txs.size(), 
-                common::Encode::HexEncode(txs_item->txs[0]->tx_info.gid()), 
+                common::Encode::HexEncode(txs_item->txs[0]->tx_info.gid()).c_str(), 
                 txs_item->txs[0]->tx_info.step());
         }
     } else {
