@@ -388,7 +388,7 @@ public:
         }
     }
 
-    void ViewBlockChain::ResetViewBlock(const HashStr& hash) {
+    void ResetViewBlock(const HashStr& hash) {
         auto it = view_blocks_info_.find(hash);
         if (it != view_blocks_info_.end() && 
                 it->second->view_block != nullptr && 
