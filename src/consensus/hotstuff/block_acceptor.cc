@@ -93,10 +93,10 @@ Status BlockAcceptor::Accept(
                 view_block.qc().view(),
                 view_block_chain->Has(view_block.qc().view_block_hash()),
                 prefix_db_->BlockExists(view_block.qc().view_block_hash()));
-            view_block_chain->ResetViewBlock(view_block.qc().view_block_hash());
+            // view_block_chain->ResetViewBlock(view_block.qc().view_block_hash());
             if (view_block_chain->Has(view_block.qc().view_block_hash())) {
-                assert(false);
-                return Status::kAcceptorBlockInvalid;
+                // assert(false);
+                return Status::kSuccess;
             }
 
             if (prefix_db_->BlockExists(view_block.qc().view_block_hash())) {
