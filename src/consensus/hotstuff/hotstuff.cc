@@ -136,25 +136,27 @@ Status Hotstuff::Propose(
 
     if (latest_leader_propose_message_ && 
             latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= pacemaker_->CurView()) {
-        latest_leader_propose_message_->header.release_broadcast();
-        auto broadcast = latest_leader_propose_message_->header.mutable_broadcast();
-        auto* hotstuff_msg = latest_leader_propose_message_->header.mutable_hotstuff();
+        auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*latest_leader_propose_message_);
+        tmp_msg_ptr->times_idx = 0;
+        tmp_msg_ptr->header.release_broadcast();
+        auto broadcast = tmp_msg_ptr->header.mutable_broadcast();
+        auto* hotstuff_msg = tmp_msg_ptr->header.mutable_hotstuff();
         if (tc != nullptr) {
             auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
             *pb_pro_msg->mutable_tc() = *tc;
         }
 
-        transport::TcpTransport::Instance()->SetMessageHash(latest_leader_propose_message_->header);
-        auto s = crypto()->SignMessage(latest_leader_propose_message_);
-        auto& header = latest_leader_propose_message_->header;
+        transport::TcpTransport::Instance()->SetMessageHash(tmp_msg_ptr->header);
+        auto s = crypto()->SignMessage(tmp_msg_ptr);
+        auto& header = tmp_msg_ptr->header;
         if (s != Status::kSuccess) {
             ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
                 pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
             return s;
         }
 
-        transport::TcpTransport::Instance()->AddLocalMessage(latest_leader_propose_message_);
-        network::Route::Instance()->Send(latest_leader_propose_message_);
+        transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
+        network::Route::Instance()->Send(tmp_msg_ptr);
         ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
             "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, msg view: %lu, cur view: %lu",
             pool_idx_,
@@ -165,7 +167,7 @@ Status Hotstuff::Propose(
             view_block_chain()->HighViewBlock()->qc().view(),
             header.hash64(),
             header.debug().c_str(),
-            latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view(),
+            tmp_msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
             pacemaker_->CurView());
         // HandleProposeMsg(latest_leader_propose_message_);
         return s;
@@ -520,7 +522,8 @@ Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>
                     pool_idx_, view_item.qc().view(),
                     last_vote_view_, pro_msg_wrap->msg_ptr->header.hash64(),
                     common::Encode::HexEncode(iter->second->header.hotstuff().vote_msg().view_block_hash()).c_str());
-                if (SendMsgToLeader(iter->second, VOTE) != Status::kSuccess) {
+                auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*iter->second);
+                if (SendMsgToLeader(tmp_msg_ptr, VOTE) != Status::kSuccess) {
                     ZJC_ERROR("pool: %d, Send vote message is error.",
                         pool_idx_, pro_msg_wrap->msg_ptr->header.hash64());
                 }

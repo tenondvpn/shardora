@@ -138,12 +138,13 @@ void Pacemaker::OnLocalTimeout() {
             last_timeout_->header.hotstuff_timeout_proto().view() >= CurView() &&
             last_timeout_->header.hotstuff_timeout_proto().view_hash() == tc_msg_hash) {
         last_timeout_->times_idx = 0;
+        auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*last_timeout_);
         ZJC_DEBUG("use exist local timeout message pool: %u, "
             "last_timeout_->header.hotstuff_timeout_proto().view(): %lu, cur view: %lu",
             pool_idx_, 
-            last_timeout_->header.hotstuff_timeout_proto().view(), 
+            tmp_msg_ptr->header.hotstuff_timeout_proto().view(), 
             CurView());
-        SendTimeout(last_timeout_);
+        SendTimeout(tmp_msg_ptr);
         return;
     }
 
