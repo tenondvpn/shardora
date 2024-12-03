@@ -66,14 +66,14 @@ Status BlockAcceptor::Accept(
     auto b = common::TimeUtils::TimestampMs();
     defer({
             auto e = common::TimeUtils::TimestampMs();
-            ZJC_DEBUG("pool: %d Accept duration: %lu ms", pool_idx_, e-b);
+            ZJC_WARN("pool: %d Accept duration: %lu ms", pool_idx_, e-b);
         });
 
     auto& propose_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tx_propose();
     auto& view_block = *pro_msg_wrap->view_block_ptr;
     if (propose_msg.txs().empty()) {
         if (no_tx_allowed) {
-            ZJC_DEBUG("success do transaction tx size: %u, add: %u, %u_%u_%lu, "
+            ZJC_WARN("success do transaction tx size: %u, add: %u, %u_%u_%lu, "
                 "height: %lu, view hash: %s", 
                 0, 
                 view_block.block_info().tx_list_size(), 
@@ -84,7 +84,7 @@ Status BlockAcceptor::Accept(
                 common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str());
             assert(view_block.qc().view_block_hash().empty());
             view_block.mutable_qc()->set_view_block_hash(GetBlockHash(view_block));
-            ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu, "
+            ZJC_WARN("success set view block hash: %s, parent: %s, %u_%u_%lu, "
                 "chain has hash: %d, db has hash: %d",
                 common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
                 common::Encode::HexEncode(view_block.parent_hash()).c_str(),
@@ -102,14 +102,14 @@ Status BlockAcceptor::Accept(
             }
         }
 
-        ZJC_DEBUG("propose_msg.txs().empty() error!");
+        ZJC_WARN("propose_msg.txs().empty() error!");
         return no_tx_allowed ? Status::kSuccess : Status::kAcceptorTxsEmpty;
     }
     ADD_DEBUG_PROCESS_TIMESTAMP();
 
     // 1. verify block
     if (!IsBlockValid(view_block)) {
-        ZJC_DEBUG("IsBlockValid error!");
+        ZJC_WARN("IsBlockValid error!");
         return Status::kAcceptorBlockInvalid;
     }
 
@@ -126,7 +126,7 @@ Status BlockAcceptor::Accept(
         zjc_host);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (s != Status::kSuccess) {
-        ZJC_DEBUG("GetAndAddTxsLocally error!");
+        ZJC_WARN("GetAndAddTxsLocally error!");
         return s;
     }
     
@@ -134,11 +134,11 @@ Status BlockAcceptor::Accept(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     s = DoTransactions(txs_ptr, &view_block, balance_map, zjc_host);
     if (s != Status::kSuccess) {
-        ZJC_DEBUG("DoTransactions error!");
+        ZJC_WARN("DoTransactions error!");
         return s;
     }
 
-    ZJC_DEBUG("success do transaction tx size: %u, add: %u, %u_%u_%lu, height: %lu", 
+    ZJC_WARN("success do transaction tx size: %u, add: %u, %u_%u_%lu, height: %lu", 
         txs_ptr->txs.size(), 
         view_block.block_info().tx_list_size(), 
         view_block.qc().network_id(), 
@@ -146,7 +146,7 @@ Status BlockAcceptor::Accept(
         view_block.qc().view(), 
         view_block.block_info().height());
     view_block.mutable_qc()->set_view_block_hash(GetBlockHash(view_block));
-    ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
+    ZJC_WARN("success set view block hash: %s, parent: %s, %u_%u_%lu",
         common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(view_block.parent_hash()).c_str(),
         view_block.qc().network_id(),
@@ -177,7 +177,7 @@ void BlockAcceptor::Commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr
 void BlockAcceptor::CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
     commit(queue_item_ptr);
     auto block_ptr = &queue_item_ptr->view_block_ptr->block_info();
-    ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+    ZJC_WARN("sync block message net: %u, pool: %u, height: %lu, block hash: %s",
         queue_item_ptr->view_block_ptr->qc().network_id(),
         queue_item_ptr->view_block_ptr->qc().pool_index(),
         block_ptr->height(),
@@ -208,13 +208,13 @@ Status BlockAcceptor::addTxsToPool(
     BalanceMap prevs_balance_map;
     view_block_chain->MergeAllPrevStorageMap(parent_hash, zjc_host);
     view_block_chain->MergeAllPrevBalanceMap(parent_hash, prevs_balance_map);
-    ZJC_DEBUG("merge prev all balance size: %u, tx size: %u",
+    ZJC_WARN("merge prev all balance size: %u, tx size: %u",
         prevs_balance_map.size(), txs.size());
     std::map<std::string, pools::TxItemPtr> txs_map;
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
         auto* tx = &txs[i];
         if (view_block_chain && !view_block_chain->CheckTxGidValid(tx->gid(), parent_hash)) {
-            ZJC_DEBUG("check tx gid failed: %s, phash: %s", 
+            ZJC_WARN("check tx gid failed: %s, phash: %s", 
                 common::Encode::HexEncode(tx->gid()).c_str(), 
                 common::Encode::HexEncode(parent_hash).c_str());
             return Status::kError;
@@ -232,7 +232,7 @@ Status BlockAcceptor::addTxsToPool(
         }
 
         if (!address_info) {
-            ZJC_DEBUG("get address failed gid: %s", common::Encode::HexEncode(tx->gid()).c_str());
+            ZJC_WARN("get address failed gid: %s", common::Encode::HexEncode(tx->gid()).c_str());
             return Status::kError;
         }
 
@@ -319,7 +319,7 @@ Status BlockAcceptor::addTxsToPool(
         case pools::protobuf::kStatistic:
         {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
-            ZJC_DEBUG("add tx now get statistic tx: %u", pool_idx());
+            ZJC_WARN("add tx now get statistic tx: %u", pool_idx());
             if (directly_user_leader_txs) {
                 tx_ptr = std::make_shared<consensus::StatisticTxItem>(
                     *tx, account_mgr_, security_ptr_, address_info);
@@ -342,7 +342,7 @@ Status BlockAcceptor::addTxsToPool(
         }
         case pools::protobuf::kConsensusRootElectShard:
         {
-            ZJC_DEBUG("now root elect shard coming: tx size: %u", txs.size());
+            ZJC_WARN("now root elect shard coming: tx size: %u", txs.size());
             if (directly_user_leader_txs) {
                 std::shared_ptr<bls::BlsManager> bls_mgr;
                 tx_ptr = std::make_shared<consensus::ElectTxItem>(
@@ -403,7 +403,7 @@ Status BlockAcceptor::addTxsToPool(
                 (*tx).pubkey(),
                 keypair->pk(),
                 keypair->proof());
-            ZJC_DEBUG("add tx now get join elect tx: %u", pool_idx());
+            ZJC_WARN("add tx now get join elect tx: %u", pool_idx());
             break;
         }
         case pools::protobuf::kPoolStatisticTag:
@@ -413,7 +413,7 @@ Status BlockAcceptor::addTxsToPool(
                 account_mgr_, 
                 security_ptr_, 
                 address_info);
-            ZJC_DEBUG("add tx now get kPoolStatisticTag tx: %u", pool_idx());
+            ZJC_WARN("add tx now get kPoolStatisticTag tx: %u", pool_idx());
             break;
         }
         default:
@@ -435,7 +435,7 @@ Status BlockAcceptor::addTxsToPool(
     }
 
     // 放入交易池并弹出（避免重复打包）
-    ZJC_DEBUG("success add txs size: %u", txs_map.size());
+    ZJC_WARN("success add txs size: %u", txs_map.size());
     int res = pools_mgr_->BackupConsensusAddTxs(pool_idx(), txs_map);
     if (res != pools::kPoolsSuccess) {
         ZJC_ERROR("invalid consensus, txs invalid.");
@@ -475,7 +475,7 @@ Status BlockAcceptor::GetAndAddTxsLocally(
 // #ifndef NDEBUG
 //         for (uint32_t i = 0; i < uint32_t(tx_propose.txs_size()); i++) {
 //             auto tx = &tx_propose.txs(i);
-//             ZJC_DEBUG("leader tx step: %u, gid: %s", tx->step(), common::Encode::HexEncode(tx->gid()).c_str());
+//             ZJC_WARN("leader tx step: %u, gid: %s", tx->step(), common::Encode::HexEncode(tx->gid()).c_str());
 //         }
 // #endif
         ZJC_ERROR("invalid consensus, txs not equal to leader %u, %u",
@@ -493,7 +493,7 @@ bool BlockAcceptor::IsBlockValid(const view_block::protobuf::ViewBlockItem& view
     auto* zjc_block = &view_block.block_info();
     uint64_t pool_height = pools_mgr_->latest_height(pool_idx());
     if (zjc_block->height() <= pool_height || pool_height == common::kInvalidUint64) {
-        ZJC_DEBUG("Accept height error: %lu, %lu", zjc_block->height(), pool_height);
+        ZJC_WARN("Accept height error: %lu, %lu", zjc_block->height(), pool_height);
         return false;
     }
 
@@ -501,7 +501,7 @@ bool BlockAcceptor::IsBlockValid(const view_block::protobuf::ViewBlockItem& view
     // 新块的时间戳必须大于上一个块的时间戳
     uint64_t preblock_time = pools_mgr_->latest_timestamp(pool_idx());
     if (zjc_block->timestamp() <= preblock_time && zjc_block->timestamp() + 10000lu >= cur_time) {
-        ZJC_DEBUG("Accept timestamp error: %lu, %lu, cur: %lu", zjc_block->timestamp(), preblock_time, cur_time);
+        ZJC_WARN("Accept timestamp error: %lu, %lu, cur: %lu", zjc_block->timestamp(), preblock_time, cur_time);
         return false;
     }
     
@@ -536,7 +536,7 @@ Status BlockAcceptor::DoTransactions(
 //         bool valid = true;
 //         for (uint32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
 //             auto& tx = view_block->block_info().tx_list(i);
-//             ZJC_DEBUG("block tx from: %s, to: %s, amount: %lu, balance: %lu, %u_%u_%u, height: %lu",
+//             ZJC_WARN("block tx from: %s, to: %s, amount: %lu, balance: %lu, %u_%u_%u, height: %lu",
 //                 (tx.from().empty() ? 
 //                 "" : 
 //                 common::Encode::HexEncode(tx.from()).c_str()), 
@@ -562,7 +562,7 @@ Status BlockAcceptor::DoTransactions(
 //                     assert(false);
 //                 }
                     
-//             ZJC_DEBUG("transaction balance map addr: %s, balance: %lu, view_block_hash: %s, prehash: %s",
+//             ZJC_WARN("transaction balance map addr: %s, balance: %lu, view_block_hash: %s, prehash: %s",
 //                     common::Encode::HexEncode(*addr).c_str(), addr_iter->second, 
 //                     common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), 
 //                     common::Encode::HexEncode(view_block->parent_hash()).c_str());
@@ -588,7 +588,7 @@ void BlockAcceptor::commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr
             pools_mgr_->TxOver(queue_item_ptr->view_block_ptr->qc().pool_index(), block->tx_list());
             // auto& txs = block->tx_list();
             // for (uint32_t i = 0; i < txs.size(); ++i) {
-            //     ZJC_DEBUG("commit block tx over step: %d, to: %s, gid: %s, "
+            //     ZJC_WARN("commit block tx over step: %d, to: %s, gid: %s, "
             //         "net: %d, pool: %d, height: %lu, propose_debug: %s", 
             //         block->tx_list(i).step(),
             //         common::Encode::HexEncode(block->tx_list(i).to()).c_str(),
@@ -598,13 +598,13 @@ void BlockAcceptor::commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr
             //         block->height(),
             //         queue_item_ptr->view_block_ptr->debug().c_str());
             //     if (pools::IsUserTransaction(txs[i].step())) {
-            //         ZJC_DEBUG("invalid tx add to consensus tx map: %d", txs[i].step());
+            //         ZJC_WARN("invalid tx add to consensus tx map: %d", txs[i].step());
             //         continue;
             //     }
             // }
             prefix_db_->SaveCommittedGids(block->tx_list(), *queue_item_ptr->final_db_batch);
         } else {
-            ZJC_DEBUG("commit block tx over no tx, net: %d, pool: %d, height: %lu, propose_debug: %s", 
+            ZJC_WARN("commit block tx over no tx, net: %d, pool: %d, height: %lu, propose_debug: %s", 
                 queue_item_ptr->view_block_ptr->qc().network_id(),
                 queue_item_ptr->view_block_ptr->qc().pool_index(),
                 block->height(),
@@ -613,7 +613,7 @@ void BlockAcceptor::commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr
 
         // tps measurement
         CalculateTps(block->tx_list_size());    
-        ZJC_DEBUG("[NEW BLOCK] hash: %s, prehash: %s, view: %u_%u_%lu, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu, propose_debug: %s",
+        ZJC_WARN("[NEW BLOCK] hash: %s, prehash: %s, view: %u_%u_%lu, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu, propose_debug: %s",
             common::Encode::HexEncode(queue_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
             common::Encode::HexEncode(queue_item_ptr->view_block_ptr->parent_hash()).c_str(),
             queue_item_ptr->view_block_ptr->qc().network_id(),
