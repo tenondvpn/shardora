@@ -388,6 +388,15 @@ public:
         }
     }
 
+    void ViewBlockChain::ResetViewBlock(const HashStr& hash) {
+        auto it = view_blocks_info_.find(hash);
+        if (it != view_blocks_info_.end() && 
+                it->second->view_block != nullptr && 
+                it->second->view_block->qc().sign_x().empty()) {
+            it->second->view_block = nullptr;
+        }
+    }
+
 private:
     void SetViewBlockToMap(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
         assert(!view_block_info->view_block->qc().view_block_hash().empty());
