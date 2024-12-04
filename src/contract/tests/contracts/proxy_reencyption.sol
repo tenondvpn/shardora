@@ -41,7 +41,7 @@ contract ProxyReencryption {
         require(!proxy_map[id].exists);
         emit DebugEvent(1);
         bytes32 res = ripemd160(params);
-        proxy_map[id] = ArsInfo({
+        proxy_map[id] = ProxyInfo({
             id: id,
             res_info: res,
             exists: true
