@@ -48,6 +48,7 @@ contract ProxyReencryption {
         });
         all_ids.push(id);
         emit DebugEvent(2);
+        emit DebugEvent(all_ids.length);
     }
 
     function CreateReEncryptionKeys(bytes32 id, bytes memory params) public {
@@ -93,7 +94,7 @@ contract ProxyReencryption {
     function Bytes32toBytes(bytes32 _data) public pure returns (bytes memory) {
         return abi.encodePacked(_data);
     }
-    
+
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
         uint len = 0;
         for (uint i = 0; i < count; i++) {
