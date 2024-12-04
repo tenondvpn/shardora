@@ -933,12 +933,14 @@ int ContractReEncryption::Decryption(
         const CallParameters& param, 
         const std::string& key, 
         const std::string& value) {
+    ZJC_WARN("called 0!");
     auto lines = common::Split<>(value.c_str(), ';');
     if (lines.Count() != 2) {
         ZJC_WARN("failed!");
         return kContractError;
     }
 
+    ZJC_WARN("called 1!");
     std::string id(lines[0]);
     auto& e = *pairing_ptr_;
     //密钥生成，这里生成10个用户。
@@ -960,6 +962,7 @@ int ContractReEncryption::Decryption(
         sk.push_back(x);
     }
 
+    ZJC_WARN("called 2!");
     std::string g1_str(common::Encode::HexDecode("7c8ae882453932ed180735e6eef3c983c93e0501dcfe6a1230fbfea4ac95f4c22795fe5a8137549d1a1b7427519b189431e794e365be5910fcd8e1c91bbc67fa00"));
     G1 g1(e, g1_str.c_str(), g1_str.size());
 
@@ -1029,6 +1032,7 @@ int ContractReEncryption::Decryption(
         }
     }
 
+    ZJC_WARN("called 3!");
     rc1.push_back(c1);
     rc2.push_back(c2);
     rc3.push_back(c3);
@@ -1118,6 +1122,7 @@ int ContractReEncryption::Decryption(
         rc6.push_back(tmp6);
     }
 
+    ZJC_WARN("called 4");
     vector<Zr> lag;
     for (int i = 0; i < t; i++) {
         auto key = id + "_" + std::string("create_enc_user_msg_lag_") + std::to_string(i);
@@ -1130,6 +1135,7 @@ int ContractReEncryption::Decryption(
         lag.push_back(Zr(e, (const unsigned char*)val.c_str(), val.size(), 0));
     }
 
+    ZJC_WARN("called 5");
     std::string test_data = "hello world!";
     GT m(e, test_data.c_str(), test_data.size());
     // 重加密密文的解密如下(为了方便，选前t个碎片解密)
@@ -1147,6 +1153,8 @@ int ContractReEncryption::Decryption(
             ZJC_WARN("user %d failed.", i);
         }
     }
+
+    ZJC_WARN("called 6");
     return kContractSuccess;
 }
 
