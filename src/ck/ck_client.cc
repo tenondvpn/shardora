@@ -150,7 +150,11 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         status->Append(tx.status());
         tx_hash->Append(common::Encode::HexEncode(tx.gid()));
         call_contract_step->Append(tx.step());
-        storages->Append("");
+        if (tx.storages_size() == 1) {
+            storages->Append(tx.storages(0).value());
+        } else {
+            storages->Append("");
+        }
         transfers->Append("");
         if (tx.step() == pools::protobuf::kNormalTo) {
             acc_account->Append(common::Encode::HexEncode(tx.to()));
