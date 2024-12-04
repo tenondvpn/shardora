@@ -1045,14 +1045,18 @@ int ContractReEncryption::Decryption(
         ZJC_WARN("called 3 0!");
         vector<G1> tmp1;
         for (int32_t tmp_idx = 0; tmp_idx < t; ++tmp_idx) {
+            ZJC_WARN("called 3 0 0!");
             auto key = id + "_" + std::string("create_reenc_user_msg_rc1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             std::string val;
+            ZJC_WARN("called 3 0 1!");
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
                 return kContractError;
             }
 
+            ZJC_WARN("called 3 0 2!");
             tmp1.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
+            ZJC_WARN("called 3 0 3!");
         }
 
         ZJC_WARN("called 3 1!");
