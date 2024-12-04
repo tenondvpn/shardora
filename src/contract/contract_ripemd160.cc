@@ -50,7 +50,7 @@ int Ripemd160::call(
         const CallParameters& param,
         uint64_t gas,
         const std::string& origin_address,
-        evmc_result* res) {
+        evmc_result* res) try {
     CONTRACT_ERROR("abe contract called decode: %s, src: %s",
         common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
     if (param.data.empty()) {
@@ -156,6 +156,9 @@ int Ripemd160::call(
     res->gas_left -= gas_used;
     ZJC_DEBUG("ripemd160: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str());
     return kContractSuccess;
+} catch(std::exception& e) {
+    ZJC_ERROR("catch error: %s", e.what());
+    DEFAULT_CALL_RESULT();
 }
 
 int Ripemd160::CreateArsKeys(
