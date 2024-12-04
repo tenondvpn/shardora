@@ -1042,6 +1042,7 @@ int ContractReEncryption::Decryption(
 
     //有nu-1个接受者，则需重加密nu-1次
     for (int i = 1; i < nu; i++) {
+        ZJC_WARN("called 3 0!");
         vector<G1> tmp1;
         for (int32_t tmp_idx = 0; tmp_idx < t; ++tmp_idx) {
             auto key = id + "_" + std::string("create_reenc_user_msg_rc1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -1054,6 +1055,7 @@ int ContractReEncryption::Decryption(
             tmp1.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
         }
 
+        ZJC_WARN("called 3 1!");
         vector<GT> tmp2;
         for (int32_t tmp_idx = 0; tmp_idx < t; ++tmp_idx) {
             auto key = id + "_" + std::string("create_reenc_user_msg_rc2_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -1066,6 +1068,7 @@ int ContractReEncryption::Decryption(
             tmp2.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
         }
 
+        ZJC_WARN("called 3 2!");
         vector<G1> tmp3;
         for (int32_t tmp_idx = 0; tmp_idx < t; ++tmp_idx) {
             auto key = id + "_" + std::string("create_reenc_user_msg_rc3_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -1078,6 +1081,7 @@ int ContractReEncryption::Decryption(
             tmp3.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
         }
 
+        ZJC_WARN("called 3 3!");
         vector<GT> tmp4;
         for (int32_t tmp_idx = 0; tmp_idx < t; ++tmp_idx) {
             auto key = id + "_" + std::string("create_reenc_user_msg_rc4_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -1090,6 +1094,7 @@ int ContractReEncryption::Decryption(
             tmp4.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
         }
 
+        ZJC_WARN("called 3 4!");
         vector<G1> tmp5;
         for (int32_t tmp_idx = 0; tmp_idx < 1; ++tmp_idx) {
             auto key = id + "_" + std::string("create_reenc_user_msg_rc5_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -1102,6 +1107,7 @@ int ContractReEncryption::Decryption(
             tmp5.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
         }
 
+        ZJC_WARN("called 3 5!");
         vector<GT> tmp6;
         for (int32_t tmp_idx = 0; tmp_idx < 1; ++tmp_idx) {
             auto key = id + "_" + std::string("create_reenc_user_msg_rc6_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -1114,12 +1120,14 @@ int ContractReEncryption::Decryption(
             tmp6.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
         }
 
+        ZJC_WARN("called 3 6!");
         rc1.push_back(tmp1);
         rc2.push_back(tmp2);
         rc3.push_back(tmp3);
         rc4.push_back(tmp4);
         rc5.push_back(tmp5);
         rc6.push_back(tmp6);
+        ZJC_WARN("called 3 7!");
     }
 
     ZJC_WARN("called 4");
