@@ -8,7 +8,7 @@ namespace shardora {
 
 namespace hotstuff {
 
-HashStr GetQCMsgHash(const view_block::protobuf::QcItem& qc_item) {
+HashStr GetQCMsgHash(const QC& qc_item) {
     auto* proto_qc = &qc_item;
     std::stringstream ss;    
     assert(proto_qc->network_id() <= network::kConsensusShardEndNetworkId);
@@ -30,12 +30,12 @@ HashStr GetQCMsgHash(const view_block::protobuf::QcItem& qc_item) {
     return msg_hash; 
 }
 
-HashStr GetTCMsgHash(const view_block::protobuf::QcItem& tc_item) {
+HashStr GetTCMsgHash(const TC& tc_item) {
     assert(!tc_item.has_view_block_hash());
     return GetQCMsgHash(tc_item);
 }
 
-bool IsQcTcValid(const view_block::protobuf::QcItem& qc_item) {
+bool IsQcTcValid(const QC& qc_item) {
 #ifdef USE_AGG_BLS
     return qc_item.has_agg_sig();
 #else
