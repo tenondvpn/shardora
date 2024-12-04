@@ -25,7 +25,7 @@ Ripemd160::~Ripemd160() {}
         create_address_.c_str(), \
         sizeof(res->create_address.bytes)); \
     res->gas_left -= 1000; \
-    ZJC_DEBUG("TestProxyReEncryption: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str()); \
+    ZJC_WARN("contract_reencryption TestProxyReEncryption: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str()); \
     return kContractSuccess; \
 }
 
