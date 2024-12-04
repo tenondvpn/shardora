@@ -83,36 +83,36 @@ int Ripemd160::call(
 
     if (param.data.substr(0, 6) == "tprenk") {
         GET_KEY_VALUE_FROM_PARAM();
-        // ContractReEncryption proxy_reenc;
-        // proxy_reenc.CreateReEncryptionKeys(param, key, val);
+        ContractReEncryption proxy_reenc;
+        proxy_reenc.CreateReEncryptionKeys(param, key, val);
         DEFAULT_CALL_RESULT();
     }
 
     if (param.data.substr(0, 6) == "tpencu") {
         GET_KEY_VALUE_FROM_PARAM();
-        // ContractReEncryption proxy_reenc;
-        // proxy_reenc.EncryptUserMessage(param, key, val);
+        ContractReEncryption proxy_reenc;
+        proxy_reenc.EncryptUserMessage(param, key, val);
         DEFAULT_CALL_RESULT();
     }
 
     if (param.data.substr(0, 6) == "tprenc") {
         GET_KEY_VALUE_FROM_PARAM();
-        // ContractReEncryption proxy_reenc;
-        // proxy_reenc.ReEncryptUserMessage(param, key, val);
+        ContractReEncryption proxy_reenc;
+        proxy_reenc.ReEncryptUserMessage(param, key, val);
         DEFAULT_CALL_RESULT();
     }
 
     if (param.data.substr(0, 6) == "mprenc") {
         GET_KEY_VALUE_FROM_PARAM();
-        // ContractReEncryption proxy_reenc;
-        // proxy_reenc.ReEncryptUserMessageWithMember(param, key, val);
+        ContractReEncryption proxy_reenc;
+        proxy_reenc.ReEncryptUserMessageWithMember(param, key, val);
         DEFAULT_CALL_RESULT();
     }
 
     if (param.data.substr(0, 6) == "tprdec") {
         GET_KEY_VALUE_FROM_PARAM();
-        // ContractReEncryption proxy_reenc;
-        // proxy_reenc.Decryption(param, key, val);
+        ContractReEncryption proxy_reenc;
+        proxy_reenc.Decryption(param, key, val);
         DEFAULT_CALL_RESULT();
     }
 
