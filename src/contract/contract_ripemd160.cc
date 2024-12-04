@@ -111,8 +111,8 @@ int Ripemd160::call(
 
     if (param.data.substr(0, 6) == "tprdec") {
         GET_KEY_VALUE_FROM_PARAM();
-        ContractReEncryption proxy_reenc;
-        proxy_reenc.Decryption(param, key, val);
+        // ContractReEncryption proxy_reenc;
+        // proxy_reenc.Decryption(param, key, val);
         DEFAULT_CALL_RESULT();
     }
 
