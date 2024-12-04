@@ -40,13 +40,10 @@ int AccountManager::Init(
     pools_mgr_ = pools_mgr;
     CreatePoolsAddressInfo();
     inited_ = true;
-    ZJC_DEBUG("thread init acc wait 0");
     update_acc_thread_ = std::make_shared<std::thread>(
         std::bind(&AccountManager::RunUpdateAccounts, this));
-    ZJC_DEBUG("thread init acc wait 1");
     std::unique_lock<std::mutex> lock(thread_wait_mutex_);
     thread_wait_conn_.wait_for(lock, std::chrono::milliseconds(1000));
-    ZJC_DEBUG("thread init acc wait 2");
     return kBlockSuccess;
 }
 
@@ -194,7 +191,7 @@ void AccountManager::HandleNormalFromTx(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
-    ZJC_INFO("transfer from address new balance %s: %lu, height: %lu, pool: %u",
+    ZJC_DEBUG("transfer from address new balance %s: %lu, height: %lu, pool: %u",
         common::Encode::HexEncode(account_id).c_str(), tx.balance(),
         block.height(), view_block.qc().pool_index());
 }
@@ -228,7 +225,7 @@ void AccountManager::HandleCreateGenesisAcount(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
-    ZJC_INFO("transfer from address new balance %s: %lu, height: %lu, pool: %u",
+    ZJC_DEBUG("transfer from address new balance %s: %lu, height: %lu, pool: %u",
         common::Encode::HexEncode(account_id).c_str(), tx.balance(),
         block.height(), view_block.qc().pool_index());
 }
@@ -649,14 +646,10 @@ void AccountManager::HandleJoinElectTx(
 }
 
 void AccountManager::RunUpdateAccounts() {
-    ZJC_DEBUG("thread init acc 0");
     {
         auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
-        ZJC_DEBUG("thread init acc 1");
-        std::unique_lock<std::mutex> lock(thread_wait_mutex_);
-        ZJC_DEBUG("thread init acc 2");
+        // std::unique_lock<std::mutex> lock(thread_wait_mutex_);
         thread_wait_conn_.notify_one();
-        ZJC_DEBUG("thread init acc 3");
     }
     
     while (!destroy_) {
@@ -677,8 +670,6 @@ void AccountManager::UpdateAccountsThread() {
             }
 
             updates_accounts_.push(account_info);
-            ZJC_DEBUG("success get update address %d, %s",
-                i, common::Encode::HexEncode(account_info->addr()).c_str());
         }
     }
 
@@ -691,8 +682,6 @@ void AccountManager::UpdateAccountsThread() {
         
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             thread_valid_accounts_queue_[i].push(account_info);
-            ZJC_DEBUG("success set update address %d, %s",
-                i, common::Encode::HexEncode(account_info->addr()).c_str());
         }
     }
 }
@@ -701,12 +690,12 @@ void AccountManager::NewBlockWithTx(
         const view_block::protobuf::ViewBlockItem& view_block_item,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    ZJC_DEBUG("now handle new block %u_%u_%lu %lu, gid: %s",
-        view_block_item.qc().network_id(), 
-        view_block_item.qc().pool_index(), 
-        view_block_item.qc().view(), 
-        view_block_item.block_info().height(),
-        common::Encode::HexEncode(tx.gid()).c_str());
+    // ZJC_DEBUG("now handle new block %u_%u_%lu %lu, gid: %s",
+    //     view_block_item.qc().network_id(), 
+    //     view_block_item.qc().pool_index(), 
+    //     view_block_item.qc().view(), 
+    //     view_block_item.block_info().height(),
+    //     common::Encode::HexEncode(tx.gid()).c_str());
     switch (tx.step()) {
     case pools::protobuf::kRootCreateAddress:
         HandleRootCreateAddressTx(view_block_item, tx, db_batch);

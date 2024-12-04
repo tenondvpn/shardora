@@ -9,7 +9,6 @@ namespace consensus {
 
 int ContractUserCreateCall::HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
@@ -131,7 +130,6 @@ int ContractUserCreateCall::HandleTx(
         int res = SaveContractCreateInfo(
             zjc_host,
             block_tx,
-            db_batch,
             contract_balance_add,
             caller_balance_add,
             gas_more);
@@ -187,7 +185,6 @@ int ContractUserCreateCall::HandleTx(
 int ContractUserCreateCall::SaveContractCreateInfo(
         zjcvm::ZjchainHost& zjc_host,
         block::protobuf::BlockTx& block_tx,
-        std::shared_ptr<db::DbWriteBatch>& db_batch,
         int64_t& contract_balance_add,
         int64_t& caller_balance_add,
         int64_t& gas_more) {
@@ -199,11 +196,6 @@ int ContractUserCreateCall::SaveContractCreateInfo(
             account_iter != zjc_host.accounts_.end(); ++account_iter) {
         for (auto storage_iter = account_iter->second.storage.begin();
             storage_iter != account_iter->second.storage.end(); ++storage_iter) {
-//             prefix_db_->SaveAddressStorage(
-//                 account_iter->first,
-//                 storage_iter->first,
-//                 storage_iter->second.value,
-//                 *db_batch);
             auto kv = block_tx.add_storages();
             auto str_key = std::string((char*)account_iter->first.bytes, sizeof(account_iter->first.bytes)) +
                 std::string((char*)storage_iter->first.bytes, sizeof(storage_iter->first.bytes));
@@ -220,11 +212,6 @@ int ContractUserCreateCall::SaveContractCreateInfo(
 
         for (auto storage_iter = account_iter->second.str_storage.begin();
                 storage_iter != account_iter->second.str_storage.end(); ++storage_iter) {
-//             prefix_db_->SaveAddressStringStorage(
-//                 account_iter->first,
-//                 storage_iter->first,
-//                 storage_iter->second.str_val,
-//                 *db_batch);
             auto kv = block_tx.add_storages();
             auto str_key = std::string(
                 (char*)account_iter->first.bytes,

@@ -67,13 +67,13 @@ public:
         std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr);
     // Get Block by hash value, fetch from neighbor nodes if necessary
     std::shared_ptr<ViewBlock> Get(const HashStr& hash);
-    std::shared_ptr<ViewBlock> Get(View view) {
-        if (view_blocks_at_height_[view].empty()) {
-            return nullptr;
+    std::shared_ptr<ViewBlock> Get(uint64_t view);
+    uint64_t GetMaxHeight() {
+        if (latest_committed_block_->has_block_info()) {
+            return latest_committed_block_->block_info().height();
         }
 
-        assert(view_blocks_at_height_[view].size() == 1);
-        return view_blocks_at_height_[view][0];
+        return 0;
     }
 
     // If has block
@@ -117,6 +117,10 @@ public:
                         common::Encode::HexEncode(iter->second).c_str());
                 }
             }
+
+            if (!it->second->view_block) {
+                break;
+            }
             
             phash = it->second->view_block->parent_hash();
         }
@@ -152,6 +156,10 @@ public:
                     }
                 }
             }
+
+            if (!it->second->view_block) {
+                break;
+            }
             
             phash = it->second->view_block->parent_hash();
         }
@@ -179,6 +187,10 @@ public:
             }
 
             ++count;
+            if (!it->second->view_block) {
+                return false;
+            }
+            
             phash = it->second->view_block->parent_hash();
         }
 
@@ -289,32 +301,9 @@ public:
     
     // If a chain is valid
     bool IsValid();
-
-    View GetMinHeight() const {
-        View min = std::numeric_limits<View>::max();
-        for (auto it = view_blocks_at_height_.begin(); it != view_blocks_at_height_.end(); it++) {
-            if (it->first < min) {
-                min = it->first;
-            }
-        }
-        return min;
-    }    
-
-    View GetMaxHeight() const {
-        View max = 0;
-        for (auto it = view_blocks_at_height_.begin(); it != view_blocks_at_height_.end(); it++) {
-            if (it->first > max) {
-                max = it->first;
-            }
-        }
-        return max;
-    }
-
     inline void Clear() {
         view_blocks_info_.clear();
-        view_blocks_at_height_.clear();
         prune_height_ = View(1);
-
         // latest_committed_block_ = nullptr;
         // latest_locked_block_ = nullptr;
         start_block_ = nullptr;        
@@ -363,27 +352,27 @@ public:
             StoreToDb(view_block_ptr, 999999, db_bach);
             auto st = db_->Put(*db_bach);
             if (!st.ok()) {
-                ZJC_FATAL("write data failed!");
+                ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
             }
         }
 
         if (high_view_block_ == nullptr ||
                 high_view_block_->qc().view() < view_block_ptr->qc().view()) {
-#ifndef NDEBUG
-            if (high_view_block_ != nullptr) {
-                ZJC_DEBUG("success add update old high view: %lu, high hash: %s, "
-                    "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",
-                    high_view_block_->qc().view(),
-                    common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str(),
-                    view_block_ptr->qc().view(),
-                    common::Encode::HexEncode(view_block_ptr->qc().view_block_hash()).c_str(),
-                    view_block_ptr->qc().network_id(),
-                    view_block_ptr->qc().pool_index(),
-                    view_block_ptr->block_info().height(),
-                    common::Encode::HexEncode(view_block_ptr->parent_hash()).c_str(),
-                    view_block_ptr->block_info().tx_list_size());
-            }
-    #endif
+// #ifndef NDEBUG
+//             if (high_view_block_ != nullptr) {
+//                 ZJC_DEBUG("success add update old high view: %lu, high hash: %s, "
+//                     "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",
+//                     high_view_block_->qc().view(),
+//                     common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str(),
+//                     view_block_ptr->qc().view(),
+//                     common::Encode::HexEncode(view_block_ptr->qc().view_block_hash()).c_str(),
+//                     view_block_ptr->qc().network_id(),
+//                     view_block_ptr->qc().pool_index(),
+//                     view_block_ptr->block_info().height(),
+//                     common::Encode::HexEncode(view_block_ptr->parent_hash()).c_str(),
+//                     view_block_ptr->block_info().tx_list_size());
+//             }
+//     #endif
             
             high_view_block_ = view_block_ptr;
             ZJC_DEBUG("final success add update high hash: %s, "
@@ -399,25 +388,46 @@ public:
         }
     }
 
+    void ResetViewBlock(const HashStr& hash) {
+        auto it = view_blocks_info_.find(hash);
+        if (it != view_blocks_info_.end() && 
+                it->second->view_block != nullptr && 
+                it->second->view_block->qc().sign_x().empty()) {
+            it->second->view_block = nullptr;
+        }
+    }
+
 private:
     void SetViewBlockToMap(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
         assert(!view_block_info->view_block->qc().view_block_hash().empty());
         auto it = view_blocks_info_.find(view_block_info->view_block->qc().view_block_hash());
-        if (it != view_blocks_info_.end()) {
+        if (it != view_blocks_info_.end() && it->second->view_block != nullptr) {
+            ZJC_DEBUG("exists, failed add view block: %s, %u_%u_%lu, height: %lu, parent hash: %s, tx size: %u, strings: %s",
+                common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
+                view_block_info->view_block->qc().network_id(),
+                view_block_info->view_block->qc().pool_index(),
+                view_block_info->view_block->qc().view(),
+                view_block_info->view_block->block_info().height(),
+                common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str(),
+                view_block_info->view_block->block_info().tx_list_size(),
+                String().c_str());
             return;
         }
 
+        if (it != view_blocks_info_.end()) {
+            view_block_info->children = it->second->children;
+        }
+        
         view_blocks_info_[view_block_info->view_block->qc().view_block_hash()] = view_block_info;
-        ZJC_DEBUG("success add view block: %s, %u_%u_%lu, view: %lu, parent hash: %s, tx size: %u, strings: %s",
+        ZJC_DEBUG("success add view block: %s, %u_%u_%lu, height: %lu, parent hash: %s, tx size: %u, strings: %s",
             common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
             view_block_info->view_block->qc().network_id(),
             view_block_info->view_block->qc().pool_index(),
-            view_block_info->view_block->block_info().height(),
             view_block_info->view_block->qc().view(),
+            view_block_info->view_block->block_info().height(),
             common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str(),
             view_block_info->view_block->block_info().tx_list_size(),
             String().c_str());
-
         auto& zjc_host_prev_storages = view_block_info->zjc_host_ptr->prev_storages_map();
         for (auto iter = zjc_host_prev_storages.begin(); iter != zjc_host_prev_storages.end(); ++iter) {
             ZJC_DEBUG("success add prev storage key: %s",
@@ -426,14 +436,16 @@ private:
     }
 
     std::shared_ptr<ViewBlockInfo> GetViewBlockInfo(
-            const std::shared_ptr<ViewBlock>& view_block, 
+            std::shared_ptr<ViewBlock> view_block, 
             BalanceMapPtr acc_balance_map_ptr,
             std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr) {
         auto view_block_info_ptr = std::make_shared<ViewBlockInfo>();
-        ZJC_DEBUG("add new view block %s, leader: %d",
-            common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view());
-        for (uint32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
-            view_block_info_ptr->added_txs.insert(view_block->block_info().tx_list(i).gid());
+        if (view_block) {
+            ZJC_DEBUG("add new view block %s, leader: %d",
+                common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view());
+            for (uint32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
+                view_block_info_ptr->added_txs.insert(view_block->block_info().tx_list(i).gid());
+            }
         }
 
         view_block_info_ptr->view_block = view_block;
@@ -460,22 +472,16 @@ private:
 
         auto it = view_blocks_info_.find(parent_hash);
         if (it == view_blocks_info_.end()) {
-            if (view_block->qc().view() <= latest_committed_block_->qc().view()) {
-                return;
-            }
-            
-            if (latest_committed_block_ == nullptr || latest_locked_block_->qc().view_block_hash() != parent_hash) {
-                ZJC_DEBUG("failed find parent hash: %s, latest_locked_block_ hash: %s",
-                    common::Encode::HexEncode(parent_hash).c_str(),
-                    (latest_committed_block_ ? 
-                    common::Encode::HexEncode(latest_locked_block_->qc().view_block_hash()).c_str() : 
-                    ""));
-                assert(false);
-                return;
-            }
+            // if (latest_committed_block_ == nullptr || latest_locked_block_->qc().view_block_hash() != parent_hash) {
+            //     ZJC_DEBUG("failed find parent hash: %s, latest_locked_block_ hash: %s",
+            //         common::Encode::HexEncode(parent_hash).c_str(),
+            //         (latest_committed_block_ ? 
+            //         common::Encode::HexEncode(latest_locked_block_->qc().view_block_hash()).c_str() : 
+            //         ""));
+            //     assert(false);
+            //     return;
+            // }
 
-            auto balane_map_ptr = nullptr;//std::make_shared<BalanceMap>();
-            auto zjc_host_ptr = nullptr;//std::make_shared<zjcvm::ZjchainHost>();
             // for (uint32_t i = 0; i < latest_committed_block_->block_info().tx_list_size(); ++i) {
             //     auto& tx = latest_committed_block_->block_info().tx_list(i);
             //     for (auto storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
@@ -496,68 +502,62 @@ private:
             // }
 
             // TODO: fix storage map            
-            auto block_info_ptr = GetViewBlockInfo(latest_committed_block_, balane_map_ptr, zjc_host_ptr);
+            auto block_info_ptr = GetViewBlockInfo(nullptr, nullptr, nullptr);
             view_blocks_info_[parent_hash] = block_info_ptr;
+            ZJC_DEBUG("add null parent view block: %u_%u_%lu, height: %lu",
+                view_block->qc().network_id(), 
+                view_block->qc().pool_index(), 
+                view_block->qc().view(), 
+                view_block->block_info().height());
+            // assert(block_info_ptr->view_block->qc().view_block_hash() == parent_hash);
         }
 
-#ifndef NDEBUG
-        std::string debug_str;
-        auto debug_view_block = view_block;
-        while (true) {
-            auto iter = view_blocks_info_.find(debug_view_block->parent_hash());
-            auto pview_block = latest_committed_block_;
-            if (iter != view_blocks_info_.end()) {
-                pview_block = iter->second->view_block;
-            }
+// #ifndef NDEBUG
+//         std::string debug_str;
+//         auto debug_view_block = view_block;
+//         while (true) {
+//             auto iter = view_blocks_info_.find(debug_view_block->parent_hash());
+//             if (iter == view_blocks_info_.end()) {
+//                 break;
+//             }
 
-            if (pview_block == nullptr) {
-                break;
-            }
+//             auto pview_block = iter->second->view_block;
+//             debug_str += common::StringUtil::Format("%u_%u_%lu_%lu-_%u_%u_%lu_%lu-%s_%s-%s_%s --> ", 
+//                 debug_view_block->qc().network_id(),
+//                 debug_view_block->qc().pool_index(),
+//                 debug_view_block->block_info().height(),
+//                 debug_view_block->qc().view(),
+//                 pview_block->qc().network_id(),
+//                 pview_block->qc().pool_index(),
+//                 pview_block->block_info().height(),
+//                 pview_block->qc().view(),
+//                 common::Encode::HexEncode(debug_view_block->qc().view_block_hash()).c_str(),
+//                 common::Encode::HexEncode(debug_view_block->parent_hash()).c_str(),
+//                 common::Encode::HexEncode(pview_block->qc().view_block_hash()).c_str(),
+//                 common::Encode::HexEncode(pview_block->parent_hash()).c_str());
+//             if (debug_view_block->block_info().height() != pview_block->block_info().height() + 1) {
+//                 ZJC_DEBUG("failed add view block: %s", debug_str.c_str());
+//                 assert(false);
+//             }
 
-            debug_str += common::StringUtil::Format("%u_%u_%lu_%lu-_%u_%u_%lu_%lu-%s_%s-%s_%s --> ", 
-                debug_view_block->qc().network_id(),
-                debug_view_block->qc().pool_index(),
-                debug_view_block->block_info().height(),
-                debug_view_block->qc().view(),
-                pview_block->qc().network_id(),
-                pview_block->qc().pool_index(),
-                pview_block->block_info().height(),
-                pview_block->qc().view(),
-                common::Encode::HexEncode(debug_view_block->qc().view_block_hash()).c_str(),
-                common::Encode::HexEncode(debug_view_block->parent_hash()).c_str(),
-                common::Encode::HexEncode(pview_block->qc().view_block_hash()).c_str(),
-                common::Encode::HexEncode(pview_block->parent_hash()).c_str());
-            if (debug_view_block->block_info().height() != pview_block->block_info().height() + 1) {
-                ZJC_DEBUG("failed add view block: %s", debug_str.c_str());
-                assert(false);
-            }
+//             if (pview_block == latest_committed_block_) {
+//                 break;
+//             }
 
-            if (pview_block == latest_committed_block_) {
-                break;
-            }
-
-            debug_view_block = pview_block;
-        }
-        ZJC_DEBUG("success add view block: %s, strings: %s",
-            debug_str.c_str(), String().c_str());
-#endif
+//             debug_view_block = pview_block;
+//         }
+//         ZJC_DEBUG("success add view block: %s, strings: %s",
+//             debug_str.c_str(), String().c_str());
+// #endif
         view_blocks_info_[parent_hash]->children.push_back(view_block);
     }
 
     // prune the branch starting from view_block
-    Status PruneFromBlockToTargetHash(
-        const std::shared_ptr<ViewBlock>& view_block, 
-        const std::unordered_set<HashStr>& hashes_of_branch, 
-        std::vector<std::shared_ptr<ViewBlock>>& forked_blocks, 
-        const HashStr& target_hash);
-    Status PruneHistoryTo(const std::shared_ptr<ViewBlock>&);
     Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
-    Status DeleteViewBlock(const std::shared_ptr<ViewBlock>& view_block);
     
     std::shared_ptr<ViewBlock> high_view_block_ = nullptr;
     View prune_height_ = 0;
     std::shared_ptr<ViewBlock> start_block_;
-    std::unordered_map<View, std::vector<std::shared_ptr<ViewBlock>>> view_blocks_at_height_; // 一般一个 view 只有一个块
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> view_blocks_info_;
     std::shared_ptr<ViewBlock> latest_committed_block_; // 最新 committed block
     std::shared_ptr<ViewBlock> latest_locked_block_; // locked_block_;

@@ -11,6 +11,7 @@
 #include <functional>
 
 #include "common/log.h"
+#include "common/string_utils.h"
 #include "common/time_utils.h"
 #include "protos/address.pb.h"
 #include "protos/transport.pb.h"
@@ -21,6 +22,24 @@
 #define TRANSPORT_INFO(fmt, ...) ZJC_INFO("[transport]" fmt, ## __VA_ARGS__)
 #define TRANSPORT_WARN(fmt, ...) ZJC_WARN("[transport]" fmt, ## __VA_ARGS__)
 #define TRANSPORT_ERROR(fmt, ...) ZJC_ERROR("[transport]" fmt, ## __VA_ARGS__)
+
+#ifndef NDEBUG
+// #define ADD_DEBUG_PROCESS_TIMESTAMP()
+#define ADD_DEBUG_PROCESS_TIMESTAMP() { \
+    if (msg_ptr) { \
+        assert(msg_ptr->times_idx < (sizeof(msg_ptr->times) / sizeof(msg_ptr->times[0]))); \
+        auto btime = common::TimeUtils::TimestampUs(); \
+        uint64_t diff_time = 0; \
+        if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; } \
+        std::string tmp_str = common::StringUtil::Format("%s:%s:%u, diff time: %lu", ZJC_LOG_FILE_NAME,  __FUNCTION__, __LINE__, diff_time); \
+        msg_ptr->times[msg_ptr->times_idx] = btime; \
+        msg_ptr->debug_str[msg_ptr->times_idx] = tmp_str; \
+        msg_ptr->times_idx++; \
+    } \
+}
+#else
+#define ADD_DEBUG_PROCESS_TIMESTAMP()
+#endif
 
 namespace shardora {
 
@@ -91,7 +110,8 @@ struct TransportMessage {
     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
     std::string msg_hash;
     bool retry;
-    uint64_t times[128];
+    uint64_t times[64];
+    std::string debug_str[64];
     uint32_t times_idx;
     uint64_t handle_timeout;
     uint64_t timeout;

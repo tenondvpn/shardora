@@ -8,6 +8,7 @@ src/contract/tests/contracts/c2c/solidity*.txt
 src/contract/tests/contracts/ElectPlegde
 third_party/libBLS_n
 third_party/libBLS/deps
+third_party/pbcwrapper
 cbuild_Debug
 cbuild_Release
 .vs

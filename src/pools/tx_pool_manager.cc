@@ -87,7 +87,7 @@ void TxPoolManager::InitCrossPools() {
 }
 
 int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
-    ZJC_DEBUG("pools message fierwall coming.");
+    // ZJC_DEBUG("pools message fierwall coming.");
     // return transport::kFirewallCheckSuccess;
     auto& header = msg_ptr->header;
     auto& tx_msg = header.tx_proto();
@@ -121,7 +121,7 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
         return transport::kFirewallCheckError;
     }
 
-    ZJC_DEBUG("pools message fierwall coming success.");
+    // ZJC_DEBUG("pools message fierwall coming success.");
     return transport::kFirewallCheckSuccess;
 }
 
@@ -173,8 +173,9 @@ void TxPoolManager::FlushHeightTree() {
     }
 
 //     ZJC_DEBUG("success call FlushHeightTree");
-    if (!db_->Put(db_batch).ok()) {
-        ZJC_FATAL("write db failed!");
+    auto st = db_->Put(db_batch);
+    if (!st.ok()) {
+        ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
     }
 }
 
@@ -392,6 +393,7 @@ void TxPoolManager::SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height) 
 }
 
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     // just one thread
     ZJC_DEBUG("success add message hash64: %lu, thread idx: %u, msg size: %u, max: %u",
@@ -404,12 +406,14 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     auto& header = msg_ptr->header;
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (header.has_sync_heights()) {
         ZJC_DEBUG("header.has_sync_heights()");
         HandleSyncPoolsMaxHeight(msg_ptr);
         return;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     assert(thread_idx < common::kMaxThreadCount);
     pools_msg_queue_[thread_idx].push(msg_ptr);
     pop_tx_con_.notify_one();
@@ -422,6 +426,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         prev_show_tm_ms_ = now_tm;
     }
 #endif
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 
@@ -441,10 +446,10 @@ int TxPoolManager::BackupConsensusAddTxs(
         }
 
         valid_txs.push_back(tx_ptr);
-        ZJC_DEBUG("succcess add tx step: %d, to: %s, gid: %s", 
-            tx_ptr->tx_info.step(), 
-            common::Encode::HexEncode(tx_ptr->tx_info.to()).c_str(), 
-            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
+        // ZJC_DEBUG("succcess add tx step: %d, to: %s, gid: %s", 
+        //     tx_ptr->tx_info.step(), 
+        //     common::Encode::HexEncode(tx_ptr->tx_info.to()).c_str(), 
+        //     common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
     }
     
     ZJC_DEBUG("success add consensus tx size: %u", valid_txs.size());
@@ -1247,50 +1252,28 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
         common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
 }
 
-
-void TxPoolManager::GetTx(
+void TxPoolManager::GetTxSyncToLeader(
         uint32_t pool_index,
         uint32_t count,
-        const std::map<std::string, pools::TxItemPtr>& invalid_txs,
-        transport::protobuf::Header& header) {
-    if (count > common::kSingleBlockMaxTransactions) {
-        count = common::kSingleBlockMaxTransactions;
-    }
-
-    tx_pool_[pool_index].GetTx(invalid_txs, header, count);
-}
-
-void TxPoolManager::GetTx(
-        uint32_t pool_index,
-        uint32_t count,
-        std::map<std::string, TxItemPtr>& res_map,
-        std::unordered_map<std::string, std::string>& kvs) {
-    if (count > common::kSingleBlockMaxTransactions) {
-        count = common::kSingleBlockMaxTransactions;
-    }
-    
-    if (tx_pool_[pool_index].tx_size() < now_max_tx_count_) {
-        return;
-    }
-
-    tx_pool_[pool_index].GetTx(res_map, count, kvs);
+        ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
+        pools::CheckGidValidFunction gid_vlid_func) {
+    tx_pool_[pool_index].GetTxSyncToLeader(count, txs, gid_vlid_func);    
 }
 
 void TxPoolManager::GetTxIdempotently(
         uint32_t pool_index,
         uint32_t count,
         std::map<std::string, TxItemPtr>& res_map,
-        std::unordered_map<std::string, std::string>& kvs,
         pools::CheckGidValidFunction gid_vlid_func) {
     if (count > common::kSingleBlockMaxTransactions) {
         count = common::kSingleBlockMaxTransactions;
     }
 
-    if (tx_pool_[pool_index].tx_size() < now_max_tx_count_) {
-        return;
-    }
+    // if (tx_pool_[pool_index].tx_size() < now_max_tx_count_) {
+    //     return;
+    // }
 
-    tx_pool_[pool_index].GetTxIdempotently(res_map, count, kvs, gid_vlid_func);    
+    tx_pool_[pool_index].GetTxIdempotently(res_map, count, gid_vlid_func);    
 }
 
 void TxPoolManager::GetTxByGids(

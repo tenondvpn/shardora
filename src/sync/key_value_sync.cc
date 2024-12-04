@@ -167,8 +167,8 @@ void KeyValueSync::CheckSyncItem() {
                 height_item->set_pool_idx(item->pool_idx);
                 height_item->set_height(item->height);
                 height_item->set_tag(item->tag);
-                ZJC_DEBUG("try to sync normal block: %u_%u_%lu",
-                    item->network_id, item->pool_idx, item->height);
+                ZJC_DEBUG("try to sync normal block: %u_%u_%lu, tag: %d",
+                    item->network_id, item->pool_idx, item->height, item->tag);
             } else {
                 sync_req->add_keys(item->key);
             }
@@ -289,6 +289,7 @@ uint64_t KeyValueSync::SendSyncRequest(
 }
 
 void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& header = msg_ptr->header;
     assert(header.type() == common::kSyncMessage);
 //     ZJC_DEBUG("key value sync message coming req: %d, res: %d",
@@ -298,6 +299,7 @@ void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("queue size kv_msg_queue_: %d, hash: %lu",
         kv_msg_queue_.size(), msg_ptr->header.hash64());
     
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 void KeyValueSync::PopKvMessage() {
@@ -373,6 +375,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             res->set_pool_idx(req_height.pool_idx());
             res->set_height(req_height.height());
             res->set_value(pb_view_block.SerializeAsString());
+            res->set_tag(kBlockHeight);
             add_size += 16 + res->value().size();
             if (add_size >= kSyncPacketMaxSize) {
                 ZJC_DEBUG("handle sync value add_size failed request hash: %lu, "
@@ -395,6 +398,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                 res->set_pool_idx(req_height.pool_idx());
                 res->set_height(req_height.height());
                 res->set_value(view_block_ptr->SerializeAsString());
+                res->set_tag(kViewHeight);
                 add_size += 16 + res->value().size();
                 if (add_size >= kSyncPacketMaxSize) {
                     ZJC_DEBUG("handle sync value view add_size failed request hash: %lu, "
@@ -438,7 +442,12 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             key = std::to_string(iter->network_id()) + "_" +
                 std::to_string(iter->pool_idx()) + "_" +
                 std::to_string(iter->height());
-            ZJC_DEBUG("now handle kv response hash64: %lu, key: %s", msg_ptr->header.hash64(), key.c_str());
+            if (iter->tag() == kViewHeight) {
+                key += "_" + std::to_string(iter->tag());
+            }
+
+            ZJC_DEBUG("now handle kv response hash64: %lu, key: %s, tag: %d",
+                msg_ptr->header.hash64(), key.c_str(), iter->tag());
             auto pb_vblock = std::make_shared<view_block::protobuf::ViewBlockItem>();
             if (!pb_vblock->ParseFromString(iter->value())) {
                 ZJC_ERROR("pb vblock parse failed");
@@ -465,14 +474,15 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             }
                 
             if (res == 0) {
-                ZJC_DEBUG("0 success handle network new view block: %u, %u, %lu, key: %s", 
+                ZJC_DEBUG("0 success handle network new view block: %u_%u_%lu, height: %lu key: %s", 
                     pb_vblock->qc().network_id(),
                     pb_vblock->qc().pool_index(),
+                    pb_vblock->qc().view(),
                     pb_vblock->block_info().height(),
                     key.c_str());
                 auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pb_vblock->qc().pool_index()];
                 vblock_queues_[thread_idx].push(pb_vblock);
-            }            
+            }       
         }
 
         auto tmp_iter = synced_map_.find(key);
@@ -497,6 +507,12 @@ void KeyValueSync::CheckSyncTimeout() {
     for (auto iter = synced_map_.begin(); iter != synced_map_.end();) {
         if (iter->second->sync_times >= kSyncMaxRetryTimes ||
                 iter->second->responsed_timeout_us <= now_tm_us) {
+            ZJC_DEBUG("remove sync key: %s, sync times: %d, "
+                "responsed_timeout_us: %lu, now_tm_us: %lu",
+                iter->second->key.c_str(), 
+                iter->second->sync_times, 
+                iter->second->responsed_timeout_us, 
+                now_tm_us);
             added_key_set_.erase(iter->second->key);
             iter = synced_map_.erase(iter);
             continue;
@@ -507,6 +523,12 @@ void KeyValueSync::CheckSyncTimeout() {
             continue;
         }
 
+        ZJC_DEBUG("remove sync key and retry: %s, sync times: %d, "
+            "responsed_timeout_us: %lu, now_tm_us: %lu",
+            iter->second->key.c_str(), 
+            iter->second->sync_times, 
+            iter->second->responsed_timeout_us, 
+            now_tm_us);
         added_key_set_.erase(iter->second->key);
         prio_sync_queue_[iter->second->priority].push(iter->second);
         iter = synced_map_.erase(iter);

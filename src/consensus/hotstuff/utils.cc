@@ -11,6 +11,8 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
     message.append(tx_info.gid());
     message.append(tx_info.from());
     message.append(tx_info.to());
+    uint64_t balance = tx_info.balance();
+    message.append(std::string((char*)&balance, sizeof(balance)));
     uint64_t amount = tx_info.amount();
     message.append(std::string((char*)&amount, sizeof(amount)));
     uint64_t gas_limit = tx_info.gas_limit();
@@ -24,26 +26,25 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
     message.append(std::string((char*)&gas_used, sizeof(gas_used)));
     uint32_t status = tx_info.status();
     message.append(std::string((char*)&status, sizeof(status)));
-    
-    
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
         message.append(tx_info.storages(i).key());
         message.append(tx_info.storages(i).value());
-        // ZJC_DEBUG("add tx key: %s, %s",
-        //     tx_info.storages(i).key().c_str(),
-        //     common::Encode::HexEncode(tx_info.storages(i).key()).c_str());
+        ZJC_WARN("add tx key: %s, %s, val: %s",
+            tx_info.storages(i).key().c_str(),
+            common::Encode::HexEncode(tx_info.storages(i).key()).c_str(), 
+            common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
     }
 
-    // ZJC_DEBUG("gid: %s, from: %s, to: %s, amount: %lu, gas_limit: %lu, "
-    //     "gas_price: %lu, step: %u, gas_used: %lu, status: %lu, block tx hash: %s, message: %s",
-    //     common::Encode::HexEncode(tx_info.gid()).c_str(),
-    //     common::Encode::HexEncode(tx_info.from()).c_str(),
-    //     common::Encode::HexEncode(tx_info.to()).c_str(),
-    //     amount, gas_limit, gas_price, step,
-    //     gas_used,
-    //     status,
-    //     common::Encode::HexEncode(common::Hash::keccak256(message)).c_str(),
-    //     common::Encode::HexEncode(message).c_str());
+    ZJC_WARN("gid: %s, from: %s, to: %s, balance: %lu, amount: %lu, gas_limit: %lu, "
+        "gas_price: %lu, step: %u, gas_used: %lu, status: %lu, block tx hash: %s, message: %s",
+        common::Encode::HexEncode(tx_info.gid()).c_str(),
+        common::Encode::HexEncode(tx_info.from()).c_str(),
+        common::Encode::HexEncode(tx_info.to()).c_str(),
+        balance, amount, gas_limit, gas_price, step,
+        gas_used,
+        status,
+        common::Encode::HexEncode(common::Hash::keccak256(message)).c_str(),
+        common::Encode::HexEncode(message).c_str());
 
     return common::Hash::keccak256(message);
 }
@@ -56,7 +57,7 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
         msg.append(GetTxMessageHash(block.tx_list(i)));
     }
 
-    // ZJC_DEBUG("get block hash txs message: %s, vss_random: %lu, height: %lu, "
+    // ZJC_WARN("get block hash txs message: %s, vss_random: %lu, height: %lu, "
     //     "tm height: %lu, tm: %lu, invalid hash size: %u",
     //     common::Encode::HexEncode(msg).c_str(), 
     //     block.consistency_random(), 
@@ -75,7 +76,7 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
     msg.append((char*)&height, sizeof(height));
     uint64_t timeblock_height = block.timeblock_height();
     msg.append((char*)&timeblock_height, sizeof(timeblock_height));
-    uint64_t timestamp = block.timestamp();
+    uint64_t timestamp = 0;  // block.timestamp(); // TODO: fix(重试导致时间戳不一致)
     msg.append((char*)&timestamp, sizeof(timestamp));  
     // msg.append(block.leader_ip());
     // msg.append((char*)&leader_port, sizeof(leader_port));
@@ -85,7 +86,16 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
         }
     }
 
-    return common::Hash::keccak256(msg);
+    auto hash = common::Hash::keccak256(msg);
+    ZJC_WARN("get block hash: %s, sharding_id: %u, pool_index: %u, "
+        "parent_hash: %s, vss_random: %lu, height: %lu, "
+        "timeblock_height: %lu, timestamp: %lu, msg: %s",
+        common::Encode::HexEncode(hash).c_str(),
+        sharding_id, pool_index, 
+        common::Encode::HexEncode(view_block.parent_hash()).c_str(), 
+        vss_random, height, timeblock_height, timestamp,
+        common::Encode::HexEncode(msg).c_str());
+    return hash;
 }
 
 } // namespace consensus

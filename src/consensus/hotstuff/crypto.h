@@ -29,23 +29,56 @@ public:
     };
     // Bls vote collection
     struct BlsCollection {
-        View view;
-        // may receive different msg_hashs per view because of unexpected inconsistency.
-        std::unordered_map<HashStr, std::shared_ptr<BlsCollectionItem>> msg_collection_map;
-        bool handled;
+        BlsCollection() : view(0), handled(false), count(0), max_hash_count(0) {
+        }
 
-        std::shared_ptr<BlsCollectionItem> GetItem(const HashStr& msg_hash) {
+        std::shared_ptr<BlsCollectionItem> GetItem(const HashStr& msg_hash, uint32_t index) {
+            if (!index_with_hash[index].empty()) {
+                ZJC_DEBUG("new hash coming index: %d, %s, %s", 
+                    index, 
+                    common::Encode::HexEncode(msg_hash).c_str(),
+                    common::Encode::HexEncode(index_with_hash[index]).c_str());
+                // assert(msg_hash == index_with_hash[index]);
+                auto it = msg_collection_map.find(index_with_hash[index]);
+                return it->second;
+            }
+            
+            ++count;
+            index_with_hash[index] = msg_hash;
             std::shared_ptr<BlsCollectionItem> collection_item = nullptr;
             auto it = msg_collection_map.find(msg_hash);
             if (it == msg_collection_map.end()) {
                 collection_item = std::make_shared<BlsCollectionItem>();
                 collection_item->msg_hash = msg_hash;
-                msg_collection_map[msg_hash] = collection_item; 
+                msg_collection_map[msg_hash] = collection_item;
             } else {
                 collection_item = it->second;
             }
+    
+            collection_item->ok_bitmap.Set(index);
+            if (max_hash_count < collection_item->OkCount()) {
+                max_hash_count = collection_item->OkCount();
+            }
+
+            ZJC_DEBUG("hash: %s, all count: %u, ok count: %d, index: %d",
+                common::Encode::HexEncode(msg_hash).c_str(), 
+                count, 
+                collection_item->OkCount(), 
+                index);
             return collection_item;
         }
+
+        uint32_t invalid_diff_count() {
+            return count - max_hash_count;
+        }
+
+        View view;
+        // may receive different msg_hashs per view because of unexpected inconsistency.
+        std::unordered_map<HashStr, std::shared_ptr<BlsCollectionItem>> msg_collection_map;
+        HashStr index_with_hash[1024];
+        bool handled;
+        uint32_t count;
+        uint32_t max_hash_count;
     };
     
     Crypto(
@@ -69,6 +102,7 @@ public:
             std::string* sign_y);
     
     Status ReconstructAndVerifyThresSign(
+            const transport::MessagePtr& msg_ptr,
             uint64_t elect_height,
             View view,
             const HashStr& msg_hash,
@@ -110,24 +144,24 @@ public:
         return bls_mgr_->security();
     }
 
-    std::string serializedPartialSigns(uint64_t elect_height, const HashStr& msg_hash) {
-        std::string ret = "";
-        auto elect_item = GetElectItem(common::GlobalInfo::Instance()->network_id(), elect_height);
-        if (!elect_item) {
-            return ret;
-        }        
+    // std::string serializedPartialSigns(uint64_t elect_height, const HashStr& msg_hash) {
+    //     std::string ret = "";
+    //     auto elect_item = GetElectItem(common::GlobalInfo::Instance()->network_id(), elect_height);
+    //     if (!elect_item) {
+    //         return ret;
+    //     }        
 
-        auto partial_signs = bls_collection_item(msg_hash)->partial_signs;
-        for (uint32_t i = 0; i < elect_item->n(); i++) {
-            auto sign = partial_signs[i];
-            if (!sign) {
-                continue;
-            }
-            ret += serializedSign(*sign);
-        }
+    //     auto partial_signs = bls_collection_item(msg_hash)->partial_signs;
+    //     for (uint32_t i = 0; i < elect_item->n(); i++) {
+    //         auto sign = partial_signs[i];
+    //         if (!sign) {
+    //             continue;
+    //         }
+    //         ret += serializedSign(*sign);
+    //     }
 
-        return ret;
-    }
+    //     return ret;
+    // }
 
     std::string serializedSign(const libff::alt_bn128_G1& sign) {
         auto x = libBLS::ThresholdUtils::fieldElementToString(sign.X);
@@ -135,9 +169,9 @@ public:
         return "("+x+","+y+")";
     }
 
-    std::shared_ptr<BlsCollectionItem> bls_collection_item(const HashStr& msg_hash) {
-        return bls_collection_->GetItem(msg_hash);
-    }    
+    // std::shared_ptr<BlsCollectionItem> bls_collection_item(const HashStr& msg_hash) {
+    //     return bls_collection_->GetItem(msg_hash);
+    // }    
     
     Status VerifyThresSign(
         uint32_t sharding_id,

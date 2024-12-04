@@ -36,6 +36,14 @@ public:
         return pool_mgr_->GetHeightInvalidChangeLeaderHashs(pool_index, height, hashs);
     }
 
+    void GetTxSyncToLeader(
+            uint32_t pool_index,
+            uint32_t count,
+            ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
+            pools::CheckGidValidFunction gid_vlid_func) {
+        pool_mgr_->GetTxSyncToLeader(pool_index, count, txs, gid_vlid_func);
+    }
+
     std::shared_ptr<WaitingTxsItem> LeaderGetValidTxsIdempotently(
         uint32_t pool_index, 
         pools::CheckGidValidFunction gid_vlid_func);
@@ -43,10 +51,6 @@ public:
     std::shared_ptr<WaitingTxsItem> GetStatisticTx(uint32_t pool_index, const std::string& tx_hash);
     std::shared_ptr<WaitingTxsItem> GetTimeblockTx(uint32_t pool_index, bool leader);
     std::shared_ptr<WaitingTxsItem> GetElectTx(uint32_t pool_index, const std::string& tx_hash);
-    std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
-        uint32_t pool_index,
-        const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
-        std::vector<uint8_t>* invalid_txs);
     bool HasSingleTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn);
     std::string GetToTxGid();
 

@@ -38,7 +38,7 @@ void FilterBroadcast::Broadcasting(
     //         bloomfilter->insert((*iter)->id_hash);
     //     }
 
-    //     ZJC_DEBUG("layer Broadcasting: %lu, size: %u", msg_ptr->header.hash64(), nodes.size());
+    //     // ZJC_DEBUG("layer Broadcasting: %lu, size: %u", msg_ptr->header.hash64(), nodes.size());
     //     LayerSend(dht_ptr, msg_ptr, nodes);
     // } else {
         auto nodes = GetRandomFilterNodes(dht_ptr, bloomfilter, message);
@@ -46,8 +46,8 @@ void FilterBroadcast::Broadcasting(
             bloomfilter->insert((*iter)->id_hash);
         }
 
-        ZJC_DEBUG("random Broadcasting: %lu, size: %u",
-            msg_ptr->header.hash64(), nodes.size());
+        // ZJC_DEBUG("random Broadcasting: %lu, size: %u",
+        //     msg_ptr->header.hash64(), nodes.size());
         assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
         Send(dht_ptr, msg_ptr, nodes);
     // }
@@ -99,11 +99,11 @@ std::vector<dht::NodePtr> FilterBroadcast::GetlayerNodes(
     uint32_t neighbor_count = GetNeighborCount(message);
     for (uint32_t i = 0; i < pos_vec.size(); ++i) {
         if (bloomfilter->find((*hash_order_dht)[pos_vec[i]]->id_hash) != bloomfilter->end()) {
-            ZJC_DEBUG("bloom filtered: %s:%d, %lu, hash64: %lu",
-                (*hash_order_dht)[pos_vec[i]]->public_ip.c_str(),
-                (*hash_order_dht)[pos_vec[i]]->public_port,
-                (*hash_order_dht)[pos_vec[i]]->id_hash,
-                message.hash64());
+            // ZJC_DEBUG("bloom filtered: %s:%d, %lu, hash64: %lu",
+            //     (*hash_order_dht)[pos_vec[i]]->public_ip.c_str(),
+            //     (*hash_order_dht)[pos_vec[i]]->public_port,
+            //     (*hash_order_dht)[pos_vec[i]]->id_hash,
+            //     message.hash64());
             continue;
         }
 
@@ -148,11 +148,11 @@ std::vector<dht::NodePtr> FilterBroadcast::GetRandomFilterNodes(
     uint32_t neighbor_count = GetNeighborCount(message);
     for (uint32_t i = 0; i < pos_vec.size(); ++i) {
         if (bloomfilter->find((*readobly_dht)[pos_vec[i]]->id_hash) != bloomfilter->end()) {
-            ZJC_DEBUG("bloom filtered: %s:%d, %lu, hash64: %lu",
-                (*readobly_dht)[pos_vec[i]]->public_ip.c_str(),
-                (*readobly_dht)[pos_vec[i]]->public_port,
-                (*readobly_dht)[pos_vec[i]]->id_hash,
-                message.hash64());
+            // ZJC_DEBUG("bloom filtered: %s:%d, %lu, hash64: %lu",
+            //     (*readobly_dht)[pos_vec[i]]->public_ip.c_str(),
+            //     (*readobly_dht)[pos_vec[i]]->public_port,
+            //     (*readobly_dht)[pos_vec[i]]->id_hash,
+            //     message.hash64());
             continue;
         }
 

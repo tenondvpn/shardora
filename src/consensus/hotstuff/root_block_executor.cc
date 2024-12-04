@@ -41,7 +41,7 @@ void RootBlockExecutor::RootDefaultTx(
     auto& tx = *tx_list->Add();
     auto iter = txs_ptr->txs.begin();
     balance_map[tx.to()] = 0;
-    iter->second->TxToBlockTx(iter->second->tx_info, db_batch_, &tx);
+    iter->second->TxToBlockTx(iter->second->tx_info, &tx);
 }
 
 void RootBlockExecutor::RootCreateAccountAddressBlock(
@@ -55,7 +55,7 @@ void RootBlockExecutor::RootCreateAccountAddressBlock(
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto& tx = *tx_list->Add();
         auto& src_tx = iter->second->tx_info;
-        iter->second->TxToBlockTx(src_tx, db_batch_, &tx);
+        iter->second->TxToBlockTx(src_tx, &tx);
         // create address must to and have transfer amount
         if (tx.step() == pools::protobuf::kRootCreateAddress) {
             if (!tx.has_contract_code() && tx.amount() <= 0) {
@@ -69,7 +69,6 @@ void RootBlockExecutor::RootCreateAccountAddressBlock(
 
         int do_tx_res = iter->second->HandleTx(
             *view_block,
-            db_batch_,
             zjc_host,
             acc_balance_map,
             tx);
@@ -101,10 +100,9 @@ void RootBlockExecutor::RootCreateElectConsensusShardBlock(
     auto* block = view_block->mutable_block_info();
     auto tx_list = block->mutable_tx_list();
     auto& tx = *tx_list->Add();
-    iter->second->TxToBlockTx(iter->second->tx_info, db_batch_, &tx);
+    iter->second->TxToBlockTx(iter->second->tx_info, &tx);
     int do_tx_res = iter->second->HandleTx(
         *view_block,
-        db_batch_,
         zjc_host,
         acc_balance_map,
         tx);

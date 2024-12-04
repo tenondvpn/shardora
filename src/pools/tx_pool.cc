@@ -68,6 +68,7 @@ void TxPool::InitHeightTree() {
 
 uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
     if (!height_tree_ptr_) {
+        ZJC_DEBUG("get invalid height_tree_ptr_ size: %u, latest_height_: %lu", 0, latest_height_);
         return 0;
     }
 
@@ -77,12 +78,14 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 // 
     if (latest_height_ == common::kInvalidUint64) {
         // sync latest height from neighbors
+        ZJC_DEBUG("get invalid heights size: %u, latest_height_: %lu", 0, latest_height_);
         return 0;
     }
 
 //     prev_synced_time_ms_ = now_tm_ms + kSyncBlockPeriodMs;
     std::vector<uint64_t> invalid_heights;
     height_tree_ptr_->GetMissingHeights(&invalid_heights, latest_height_);
+    ZJC_DEBUG("%u get invalid heights size: %u, latest_height_: %lu", pool_index_, invalid_heights.size(), latest_height_);
     if (invalid_heights.size() > 0) {
         auto net_id = common::GlobalInfo::Instance()->network_id();
         if (net_id >= network::kConsensusWaitingShardBeginNetworkId &&
@@ -178,98 +181,60 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     oldest_timestamp_ = prio_map_.begin()->second->time_valid;
 #endif
     timeout_txs_.push(tx_ptr->tx_info.gid());
-    ZJC_DEBUG("pool: %d, success add tx step: %d, gid: %s", 
-        pool_index_, 
-        tx_ptr->tx_info.step(),
-        common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
+    if (pool_index_ == common::kImmutablePoolSize) {
+        ZJC_DEBUG("pool: %d, success add tx step: %d, gid: %s", 
+            pool_index_, 
+            tx_ptr->tx_info.step(),
+            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
+    }
+    
     return kPoolsSuccess;
 }
 
-void TxPool::GetTx(
-        const std::map<std::string, pools::TxItemPtr>& invalid_txs, 
-        transport::protobuf::Header& header,
-        uint32_t count) {
+void TxPool::GetTxSyncToLeader(
+        uint32_t count,
+        ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
+        pools::CheckGidValidFunction gid_vlid_func) {
     CheckThreadIdValid();
-    std::vector<TxItemPtr> recover_txs;
-    zbft::protobuf::TxBft* txbft = header.mutable_zbft()->mutable_tx_bft();
     auto iter = prio_map_.begin();
-    while (iter != prio_map_.end() && txbft->txs_size() < count) {
-        auto invalid_iter = invalid_txs.find(iter->second->unique_tx_hash);
-        if (invalid_iter != invalid_txs.end()) {
+    while (iter != prio_map_.end() && txs->size() < count) {
+        if (gid_vlid_func != nullptr && !gid_vlid_func(iter->second->tx_info.gid())) {
+            ZJC_DEBUG("gid invalid: %s", common::Encode::HexEncode(iter->second->tx_info.gid()).c_str());
             ++iter;
             continue;
         }
 
-        auto* tx = txbft->add_txs();
+        auto* tx = txs->Add();
         *tx = iter->second->tx_info;
-        ZJC_DEBUG("backup success get local transfer to tx %u, %s, step: %d",
-            pool_index_, 
-            common::Encode::HexEncode(iter->second->unique_tx_hash).c_str(),
-            iter->second->tx_info.step());
         assert(!iter->second->unique_tx_hash.empty());
         ++iter;
-    }
-}
-
-void TxPool::GetTx(
-        std::map<std::string, TxItemPtr>& res_map, 
-        uint32_t count, 
-        std::unordered_map<std::string, std::string>& kvs) {
-    CheckThreadIdValid();
-    ZJC_DEBUG("leader get tx universal_prio_map_: %u, prio_map_: %u, consensus_tx_map_: %u", 
-        universal_prio_map_.size(), prio_map_.size(), consensus_tx_map_.size());
-    GetTx(universal_prio_map_, res_map, count, kvs);
-    if (!res_map.empty()) {
-        return;
-    }
-
-    GetTx(prio_map_, res_map, count, kvs);
-    GetTx(consensus_tx_map_, res_map, count, kvs);
+    }   
 }
 
 void TxPool::GetTxIdempotently(
         std::map<std::string, TxItemPtr>& res_map, 
         uint32_t count, 
-        std::unordered_map<std::string, std::string>& kvs,
         pools::CheckGidValidFunction gid_vlid_func) {
     CheckThreadIdValid();
     ZJC_DEBUG("now get tx universal_prio_map_ size: %u, prio_map_: %u, consensus_tx_map_: %u",
         universal_prio_map_.size(),
         prio_map_.size(),
         consensus_tx_map_.size());
-    GetTxIdempotently(universal_prio_map_, res_map, count, kvs, gid_vlid_func);
+    GetTxIdempotently(universal_prio_map_, res_map, count, gid_vlid_func);
     if (!res_map.empty()) {
         ZJC_DEBUG("success get universal_prio_map_ size: %d", res_map.size());
         return;
     }
 
-    GetTxIdempotently(prio_map_, res_map, count, kvs, gid_vlid_func);
-    GetTxIdempotently(consensus_tx_map_, res_map, count, kvs, gid_vlid_func);    
+    GetTxIdempotently(prio_map_, res_map, count, gid_vlid_func);
+    GetTxIdempotently(consensus_tx_map_, res_map, count, gid_vlid_func);    
     ZJC_DEBUG("success get tx size: %d", res_map.size());
-}
-
-void TxPool::GetTx(
-        std::map<std::string, TxItemPtr>& src_prio_map,
-        std::map<std::string, TxItemPtr>& res_map,
-        uint32_t count,
-        std::unordered_map<std::string, std::string>& kvs) {
-    auto iter = src_prio_map.begin();
-    while (iter != src_prio_map.end() && res_map.size() < count) {
-        res_map[iter->second->unique_tx_hash] = iter->second;
-        ZJC_DEBUG("leader success get local transfer to tx %u, %s, step: %d",
-            pool_index_, 
-            common::Encode::HexEncode(iter->second->unique_tx_hash).c_str(),
-            iter->second->tx_info.step());
-        assert(!iter->second->unique_tx_hash.empty());
-        iter = src_prio_map.erase(iter);
-    }
 }
 
 void TxPool::GetTxIdempotently(
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count,
-        std::unordered_map<std::string, std::string>& kvs,
         pools::CheckGidValidFunction gid_vlid_func) {
     auto iter = src_prio_map.begin();
     while (iter != src_prio_map.end() && res_map.size() < count) {
@@ -281,7 +246,12 @@ void TxPool::GetTxIdempotently(
 
         res_map[iter->second->unique_tx_hash] = iter->second;
         assert(!iter->second->unique_tx_hash.empty());
-        ZJC_DEBUG("gid valid: %s", common::Encode::HexEncode(iter->second->tx_info.gid()).c_str());
+        if (pool_index_ == common::kImmutablePoolSize) {
+            ZJC_DEBUG("gid valid: %s, now size: %d", 
+                common::Encode::HexEncode(iter->second->tx_info.gid()).c_str(),
+                src_prio_map.size());
+        }
+
         ++iter;
     }    
 }
@@ -651,14 +621,16 @@ uint64_t TxPool::UpdateLatestInfo(
         const std::string& prehash,
         const uint64_t timestamp) {
     CheckThreadIdValid();
-    if (!height_tree_ptr_) {
+    auto tmp_height_tree_ptr = height_tree_ptr_;
+    if (!tmp_height_tree_ptr) {
         InitHeightTree();
     }
 
-    if (height_tree_ptr_) {
+    tmp_height_tree_ptr = height_tree_ptr_;
+    if (tmp_height_tree_ptr) {
         ZJC_DEBUG("success set height, net: %u, pool: %u, height: %lu",
             common::GlobalInfo::Instance()->network_id(), pool_index_, height);
-        height_tree_ptr_->Set(height);
+        tmp_height_tree_ptr->Set(height);
     }
 
     if (latest_height_ == common::kInvalidUint64 || latest_height_ < height) {
@@ -764,40 +736,6 @@ double TxPool::CheckLeaderValid(bool get_factor, uint32_t* finished_count, uint3
     all_tx_count_ += gid_map_.size();
     finish_tx_count_ = 0;
     return factor;
-}
-
-
-std::shared_ptr<consensus::WaitingTxsItem> TxPool::GetTx(
-        const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
-        std::vector<uint8_t>* invalid_txs) {
-    auto txs_items = std::make_shared<consensus::WaitingTxsItem>();
-    auto& tx_map = txs_items->txs;
-    for (int32_t i = 0; i < txs.size(); ++i) {
-        auto txhash = "";  // txs[i].txhash();
-        auto iter = gid_map_.find(txhash);
-        if (iter == gid_map_.end()) {
-            ZJC_INFO("failed get tx %u, %s", pool_index_, common::Encode::HexEncode(txhash).c_str());
-            if (invalid_txs == nullptr) {
-                return nullptr;
-            }
-
-            invalid_txs->push_back(i);
-            continue;
-        }
-
-        if (invalid_txs != nullptr && !invalid_txs->empty()) {
-            continue;
-        }
-
-        ZJC_DEBUG("success get tx %u, %s", pool_index_, common::Encode::HexEncode(txhash).c_str());
-        tx_map[txhash] = iter->second;
-    }
-    
-    if (invalid_txs != nullptr && !invalid_txs->empty()) {
-        return nullptr;
-    }
-
-    return txs_items;
 }
 
 void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {

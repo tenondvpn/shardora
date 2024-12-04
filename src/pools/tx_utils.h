@@ -68,13 +68,11 @@ public:
 
     virtual int HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) = 0;
     virtual int TxToBlockTx(
         const pools::protobuf::TxMessage& tx_info,
-        std::shared_ptr<db::DbWriteBatch>& db_batch,
         block::protobuf::BlockTx* block_tx) = 0;
 
     uint64_t prev_consensus_tm_us;

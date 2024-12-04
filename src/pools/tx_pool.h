@@ -27,7 +27,7 @@
 #ifndef NDEBUG
 #define CheckThreadIdValid() { \
     auto now_thread_id = std::this_thread::get_id(); \
-    ZJC_DEBUG("now handle thread id: %u, old: %u, count: %d, pool: %d", now_thread_id, local_thread_id_, local_thread_id_count_, pool_index_); \
+     \
     if (local_thread_id_count_ >= 1) { \
         assert(local_thread_id_ == now_thread_id); \
     } else { \
@@ -62,19 +62,14 @@ public:
         const std::shared_ptr<db::Db>& db,
         std::shared_ptr<sync::KeyValueSync>& kv_sync);
     int AddTx(TxItemPtr& tx_ptr);
-    void GetTx(
-        std::map<std::string, TxItemPtr>& res_map, 
-        uint32_t count, 
-        std::unordered_map<std::string, std::string>& kvs);
     void GetTxIdempotently(
         std::map<std::string, TxItemPtr>& res_map, 
         uint32_t count, 
-        std::unordered_map<std::string, std::string>& kvs,
-        pools::CheckGidValidFunction gid_vlid_func);    
-    void GetTx(
-        const std::map<std::string, pools::TxItemPtr>& invalid_txs, 
-        transport::protobuf::Header& header, 
-        uint32_t count);
+        pools::CheckGidValidFunction gid_vlid_func);
+    void GetTxSyncToLeader(
+        uint32_t count,
+        ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
+        pools::CheckGidValidFunction gid_vlid_func);
     void GetTxByIds(
             const std::vector<std::string>& gids,
             std::map<std::string, TxItemPtr>& res_map);    
@@ -148,10 +143,6 @@ public:
         }
     }
 
-    std::shared_ptr<consensus::WaitingTxsItem> GetTx(
-            const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
-            std::vector<uint8_t>* invalid_txs);
-
     uint64_t latest_height() {
         if (latest_height_ == common::kInvalidUint64) {
             InitLatestInfo();
@@ -183,16 +174,10 @@ private:
             const std::string& id,
             const bls::protobuf::JoinElectInfo& join_info,
             std::string* new_hash);
-    void GetTx(
-        std::map<std::string, TxItemPtr>& src_prio_map,
-        std::map<std::string, TxItemPtr>& res_map,
-        uint32_t count,
-        std::unordered_map<std::string, std::string>& kvs);
     void GetTxIdempotently(
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count,
-        std::unordered_map<std::string, std::string>& kvs,
         pools::CheckGidValidFunction gid_vlid_func);    
     void GetTxByHash(
         std::map<std::string, TxItemPtr>& src_prio_map,

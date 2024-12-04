@@ -79,15 +79,15 @@ Status BlockWrapper::Wrap(
             auto* tx_info = tx_propose->add_txs();
             *tx_info = it->second->tx_info;
             assert(tx_info->gid().size() == 32);
-            ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, "
-                "step: %d, to: %s, gid: %s, tx info: %s",
-                view_block->qc().pool_index(),
-                common::Encode::HexEncode(view_block->parent_hash()).c_str(),
-                block->height(),
-                tx_info->step(),
-                common::Encode::HexEncode(tx_info->to()).c_str(),
-                common::Encode::HexEncode(tx_info->gid()).c_str(),
-                "ProtobufToJson(*tx_info).c_str()");
+            // ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, "
+            //     "step: %d, to: %s, gid: %s, tx info: %s",
+            //     view_block->qc().pool_index(),
+            //     common::Encode::HexEncode(view_block->parent_hash()).c_str(),
+            //     block->height(),
+            //     tx_info->step(),
+            //     common::Encode::HexEncode(tx_info->to()).c_str(),
+            //     common::Encode::HexEncode(tx_info->gid()).c_str(),
+            //     "ProtobufToJson(*tx_info).c_str()");
         }
         tx_propose->set_tx_type(txs_ptr->tx_type);
     }
@@ -110,18 +110,6 @@ Status BlockWrapper::Wrap(
         view_block->qc().pool_index(),
         view_block->qc().view());
     return Status::kSuccess;
-}
-
-Status BlockWrapper::GetTxsIdempotently(std::vector<std::shared_ptr<pools::protobuf::TxMessage>>& txs) {
-    transport::protobuf::Header header;
-    std::map<std::string, pools::TxItemPtr> invalid_txs;
-    pools_mgr_->GetTx(pool_idx_, 1024, invalid_txs, header);
-    zbft::protobuf::TxBft& txbft = *header.mutable_zbft()->mutable_tx_bft();
-    for (auto it = txbft.txs().begin(); it != txbft.txs().end(); it++) {
-        txs.push_back(std::make_shared<pools::protobuf::TxMessage>(*it));
-    }
-
-    return Status::kSuccess;    
 }
 
 bool BlockWrapper::HasSingleTx(pools::CheckGidValidFunction gid_valid_fn) {

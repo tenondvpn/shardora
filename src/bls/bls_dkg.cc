@@ -34,7 +34,8 @@ void BlsDkg::Init(
         const libff::alt_bn128_Fr& local_sec_key,
         const libff::alt_bn128_G2 local_publick_key,
         const libff::alt_bn128_G2 common_public_key,
-        std::shared_ptr<db::Db>& db) {
+        std::shared_ptr<db::Db>& db,
+        std::shared_ptr<ck::ClickHouseClient> ck_client) {
     bls_mgr_ = bls_mgr;
     security_ = security;
     local_sec_key_ = local_sec_key;
@@ -42,9 +43,7 @@ void BlsDkg::Init(
     common_public_key_ = common_public_key;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-    if (common::GlobalInfo::Instance()->for_ck_server()) {
-        ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "", db, nullptr);
-    }    
+    ck_client_ = ck_client;
 }
 
 void BlsDkg::Destroy() {
@@ -59,7 +58,7 @@ void BlsDkg::TimerMessage() {
     if (!has_broadcast_verify_ &&
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4) &&
             now_tm_us > (begin_time_us_ + ver_offset_)) {
-        ZJC_DEBUG("now call send verify g2.");
+        ZJC_WARN("now call send verify g2.");
         BroadcastVerfify();
         has_broadcast_verify_ = true;
     }
@@ -67,7 +66,7 @@ void BlsDkg::TimerMessage() {
     if (has_broadcast_verify_ && !has_broadcast_swapkey_ && 
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7) &&
             now_tm_us >(begin_time_us_ + swap_offset_)) {
-        ZJC_DEBUG("now call send swap sec key.");
+        ZJC_WARN("now call send swap sec key.");
         SwapSecKey();
         has_broadcast_swapkey_ = true;
     }
@@ -75,7 +74,7 @@ void BlsDkg::TimerMessage() {
     if (has_broadcast_swapkey_ && !has_finished_ &&
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 10) &&
             now_tm_us >(begin_time_us_ + finish_offset_)) {
-        ZJC_DEBUG("now call send finish.");
+        ZJC_WARN("now call send finish.");
         FinishBroadcast();
         has_finished_ = true;
     }
@@ -130,7 +129,7 @@ void BlsDkg::OnNewElectionBlock(
     ver_offset_ += (common::Random::RandomUint32() % (kDkgPeriodUs * 3 / 1000000lu)) * 1000000lu;
     swap_offset_ += (common::Random::RandomUint32() % (kDkgPeriodUs * 3 / 1000000lu)) * 1000000lu;
     finish_offset_ += (common::Random::RandomUint32() % (kDkgPeriodUs * 3 / 1000000lu)) * 1000000lu;
-    ZJC_DEBUG("bls time point now: %u, time block tm: %u, begin_time_sec_: %u, "
+    ZJC_WARN("bls time point now: %u, time block tm: %u, begin_time_sec_: %u, "
         "kDkgPeriodUs: %u, ver_offset_: %u, swap_offset_: %u, finish_offset_: %u",
         common::TimeUtils::TimestampSeconds(),
         latest_timeblock_info->lastest_time_block_tm,
@@ -148,7 +147,7 @@ void BlsDkg::OnNewElectionBlock(
 
 void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) {
     bls_msg_queue_.push(msg_ptr);
-    ZJC_DEBUG("queue size bls_msg_queue_: %d", bls_msg_queue_.size());
+    ZJC_WARN("queue size bls_msg_queue_: %d", bls_msg_queue_.size());
 }
 
 void BlsDkg::PopBlsMessage() {
@@ -199,7 +198,7 @@ void BlsDkg::HandleBlsMessage(const transport::MessagePtr& msg_ptr) try {
     }
 
     if (bls_msg.elect_height() == 0 || bls_msg.elect_height() != elect_hegiht_) {
-        BLS_DEBUG("bls_msg.elect_height() != elect_height: %lu, %lu",
+        ZJC_WARN("bls_msg.elect_height() != elect_height: %lu, %lu",
             bls_msg.elect_height(), elect_hegiht_);
         return;
     }
@@ -282,7 +281,7 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
     }
 
     prefix_db_->AddBlsVerifyG2((*members_)[bls_msg.index()]->id, bls_msg.verify_brd());
-    ZJC_DEBUG("save verify g2 success local: %d, %lu, %u, %u, %s, %s",
+    ZJC_WARN("save verify g2 success local: %d, %lu, %u, %u, %s, %s",
         local_member_index_, elect_hegiht_, bls_msg.index(), 0,
         common::Encode::HexEncode((*members_)[bls_msg.index()]->id).c_str(),
         common::Encode::HexEncode(bls_msg.verify_brd().verify_vec(0).x_c0()).c_str());
@@ -331,7 +330,7 @@ void BlsDkg::SendGetVerifyInfo(int32_t index) {
     msg.set_des_dht_key(dht->local_node()->dht_key);
     msg.set_type(common::kBlsMessage);
     dht->RandomSend(msg_ptr);
-    BLS_DEBUG("send get verify req elect_height: %lu, index: %d", elect_hegiht_, index);
+    ZJC_WARN("send get verify req elect_height: %lu, index: %d", elect_hegiht_, index);
 }
 
 void BlsDkg::CheckSwapKeyAllValid() {
@@ -371,7 +370,7 @@ void BlsDkg::SendGetSwapKey(int32_t index) {
     msg.set_des_dht_key(dht->local_node()->dht_key);
     msg.set_type(common::kBlsMessage);
     dht->RandomSend(msg_ptr);
-    BLS_DEBUG("send get swap key req elect_height: %lu, index: %d", elect_hegiht_, index);
+    ZJC_WARN("send get swap key req elect_height: %lu, index: %d", elect_hegiht_, index);
 }
 
 void BlsDkg::HandleCheckVerifyReq(const transport::MessagePtr& msg_ptr) {
@@ -470,7 +469,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
-    ZJC_DEBUG("swap verify success member: %d, index: %d, %s, min_aggree_member_count_: %u",
+    ZJC_WARN("swap verify success member: %d, index: %d, %s, min_aggree_member_count_: %u",
         local_member_index_, bls_msg.index(),
         libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
         min_aggree_member_count_);
@@ -515,7 +514,7 @@ bool BlsDkg::VerifySekkeyValid(
             return false;
         }
     } else {
-        ZJC_DEBUG("success get verified g2 local_member_index_: %d, id: %s, min_aggree_member_count_: %d, net: %d",
+        ZJC_WARN("success get verified g2 local_member_index_: %d, id: %s, min_aggree_member_count_: %d, net: %d",
             local_member_index_, 
             common::Encode::HexEncode((*members_)[peer_index]->id).c_str(), 
             min_aggree_member_count_, 
@@ -581,7 +580,7 @@ bool BlsDkg::VerifySekkeyValid(
     all_verified_val = all_verified_val - old_g2_val + new_g2_val;
     if (all_verified_val != seckey * libff::alt_bn128_G2::one()) {
         for_common_pk_g2s_[peer_index] = libff::alt_bn128_G2::zero();
-        ZJC_DEBUG("failed verified g2 local_member_index_: %d, id: %s, min_aggree_member_count_: %d, net: %d",
+        ZJC_WARN("failed verified g2 local_member_index_: %d, id: %s, min_aggree_member_count_: %d, net: %d",
             local_member_index_, 
             common::Encode::HexEncode((*members_)[peer_index]->id).c_str(), 
             min_aggree_member_count_, 
@@ -589,7 +588,7 @@ bool BlsDkg::VerifySekkeyValid(
         return false;
     }
 
-    ZJC_DEBUG("success verified g2 local_member_index_: %d, id: %s, min_aggree_member_count_: %d, net: %d",
+    ZJC_WARN("success verified g2 local_member_index_: %d, id: %s, min_aggree_member_count_: %d, net: %d",
         local_member_index_, 
         common::Encode::HexEncode((*members_)[peer_index]->id).c_str(), 
         min_aggree_member_count_, 
@@ -602,7 +601,7 @@ bool BlsDkg::CheckRecomputeG2s(
         bls::protobuf::JoinElectBlsInfo& verfy_final_vals) {
     bls::protobuf::JoinElectInfo join_info;
     if (!prefix_db_->GetNodeVerificationVector(id, &join_info)) {
-        ZJC_DEBUG("failed get verifcaton handle kElectJoin tx: %s", common::Encode::HexEncode(id).c_str());
+        ZJC_WARN("failed get verifcaton handle kElectJoin tx: %s", common::Encode::HexEncode(id).c_str());
         return false;
     }
 
@@ -663,7 +662,7 @@ bool BlsDkg::CheckRecomputeG2s(
             libBLS::ThresholdUtils::fieldElementToString(verify_g2s.Z.c1)));
         auto verified_val = verfy_final_vals.SerializeAsString();
         prefix_db_->SaveVerifiedG2s(local_member_index_, id, i + 1, verfy_final_vals);
-        ZJC_DEBUG("success save verified g2: %u, peer: %d, t: %d, %s, %s",
+        ZJC_WARN("success save verified g2: %u, peer: %d, t: %d, %s, %s",
             local_member_index_,
             join_info.member_idx(),
             i + 1,
@@ -678,7 +677,7 @@ libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t peer_mem_index, uint32_t*
     bls::protobuf::VerifyVecBrdReq req;
     auto res = prefix_db_->GetBlsVerifyG2((*members_)[peer_mem_index]->id, &req);
     if (!res) {
-        ZJC_DEBUG("get verify g2 failed local: %d, %lu, %u",
+        ZJC_WARN("get verify g2 failed local: %d, %lu, %u",
             local_member_index_, elect_hegiht_, peer_mem_index);
         return libff::alt_bn128_G2::zero();
     }
@@ -715,12 +714,13 @@ void BlsDkg::BroadcastVerfify() try {
         return;
     }
 
-    ZJC_DEBUG("brd verify g2 success local net: %u, local: %d,  %s, %s",
+    CreateDkgMessage(msg_ptr);
+    ZJC_WARN("brd verify g2 success local net: %u, local: %d,  %s, %s, hash64: %lu",
         common::GlobalInfo::Instance()->network_id(),
         local_member_index_,
         common::Encode::HexEncode((*members_)[local_member_index_]->id).c_str(),
-        common::Encode::HexEncode(bls_msg.verify_brd().verify_vec(0).x_c0()).c_str());
-    CreateDkgMessage(msg_ptr);
+        common::Encode::HexEncode(bls_msg.verify_brd().verify_vec(0).x_c0()).c_str(),
+        msg_ptr->header.hash64());
 #ifdef ZJC_UNITTEST
     ver_brd_msg_ = msg_ptr;
 #else
@@ -745,7 +745,7 @@ void BlsDkg::SwapSecKey() try {
         swap_item->set_sec_key("");
         swap_item->set_sec_key_len(0);
         if (valid_swaped_keys_[i]) {
-            BLS_DEBUG("valid_swaped_keys_: %d", i);
+            ZJC_WARN("valid_swaped_keys_: %d", i);
             continue;
         }
 
@@ -765,11 +765,11 @@ void BlsDkg::SwapSecKey() try {
     }
 
     CreateDkgMessage(msg_ptr);
-    ZJC_DEBUG("success send swap seckey request local member index: %d, local net: %u",
-        local_member_index_, common::GlobalInfo::Instance()->network_id());
+    ZJC_WARN("success send swap seckey request local member index: %d, local net: %u, hash64: %lu",
+        local_member_index_, common::GlobalInfo::Instance()->network_id(), msg_ptr->header.hash64());
 #ifdef ZJC_UNITTEST
     sec_swap_msgs_ = msg_ptr;
-    ZJC_DEBUG("success add swap msg");
+    ZJC_WARN("success add swap msg");
 #else
     network::Route::Instance()->Send(msg_ptr);
 #endif
@@ -827,14 +827,14 @@ void BlsDkg::FinishBroadcast() try {
         if (iter == valid_swapkey_set_.end()) {
             valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
             common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
-            BLS_DEBUG("elect_height: %d, invalid swapkey index: %d", elect_hegiht_, i);
+            ZJC_WARN("elect_height: %d, invalid swapkey index: %d", elect_hegiht_, i);
             continue;
         }
 
         if (for_common_pk_g2s_[i] == libff::alt_bn128_G2::zero()) {
             valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
             common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
-            BLS_DEBUG("elect_height: %d, invalid all_verification_vector index: %d",
+            ZJC_WARN("elect_height: %d, invalid all_verification_vector index: %d",
                 elect_hegiht_, i);
             continue;
         }
@@ -848,12 +848,13 @@ void BlsDkg::FinishBroadcast() try {
                 &seckey)) {
             valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
             common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
-            BLS_DEBUG("elect_height: %d, invalid secret_key_contribution_ index: %d",
+            ZJC_WARN("elect_height: %d, invalid secret_key_contribution_ index: %d",
                 elect_hegiht_, i);
             continue;
         }
 
         valid_seck_keys.push_back(libff::alt_bn128_Fr(seckey.c_str()));
+        valid_seck_keys_str_ += seckey + ",";
         common_public_key_ = common_public_key_ + for_common_pk_g2s_[i];
         bitmap.Set(i);
     }
@@ -948,26 +949,52 @@ void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {
     finish_msg->set_bls_sign_x(sign_x);
     finish_msg->set_bls_sign_y(sign_y);
 #ifndef ZJC_UNITTEST
-    ZJC_DEBUG("success broadcast finish message. t: %d, n: %d, msg hash: %s, pk: %s",
+    ZJC_WARN("success broadcast finish message. t: %d, n: %d, "
+        "msg hash: %s, pk: %s, hash64: %lu",
         min_aggree_member_count_, member_count_,
-        common::Encode::HexEncode(sign_hash).c_str(), pk.c_str());
+        common::Encode::HexEncode(sign_hash).c_str(), 
+        pk.c_str(), msg_ptr->header.hash64());
     network::Route::Instance()->Send(msg_ptr);
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         bls_mgr_->HandleMessage(msg_ptr);
     }
 #endif
-    
-    // store to ck
-    ck::BlsElectInfo info;
-    info.elect_height = elect_hegiht_;
-    info.member_idx = local_member_index_;
-    info.shard_id = common::GlobalInfo::Instance()->network_id();
-    info.contribution_map = BlsDkg::serializeSkContribution(local_src_secret_key_contribution_);
-    info.local_sk = BlsDkg::serializeLocalSk(local_sec_key_);
-    info.common_pk = BlsDkg::serializeCommonPk(common_public_key_);
+    FlushToCk(common_public_key_);
+}
+
+void BlsDkg::FlushToCk(const libff::alt_bn128_G2& common_public_key) {
     if (ck_client_) {
+        std::string local_pub_keys;
+        bls::protobuf::VerifyVecBrdReq req;
+        auto res = prefix_db_->GetBlsVerifyG2(security_->GetAddress(), &req);
+        if (res) {
+            auto& item = req.verify_vec(0);
+            local_pub_keys = common::Encode::HexEncode(item.x_c0()) + "," +
+                common::Encode::HexEncode(item.x_c1()) + "," +
+                common::Encode::HexEncode(item.y_c0()) + "," +
+                common::Encode::HexEncode(item.y_c1()) + "," +
+                common::Encode::HexEncode(item.z_c0()) + "," +
+                common::Encode::HexEncode(item.z_c1());
+        }
+
+        // store to ck
+        ck::BlsElectInfo info;
+        info.elect_height = elect_hegiht_;
+        info.member_idx = local_member_index_;
+        info.shard_id = common::GlobalInfo::Instance()->network_id();
+        info.local_pri_keys = BlsDkg::serializeSkContribution(local_src_secret_key_contribution_);
+        info.local_pub_keys = local_pub_keys;
+        info.local_sk = BlsDkg::serializeLocalSk(local_sec_key_);
+        info.common_pk = BlsDkg::serializeCommonPk(common_public_key);
+        info.swaped_sec_keys = valid_seck_keys_str_;
+        ZJC_WARN("success insert bls elect info elect_hegiht_: %lu, "
+            "local_member_index_: %u, shard_id: %u, local_pri_keys: %s, "
+            "local_pub_keys: %s, local_sk: %s, common_pk: %s, swaped_sec_keys: %s", 
+            info.elect_height, info.member_idx, info.shard_id, 
+            info.local_pri_keys.c_str(), info.local_pub_keys.c_str(), 
+            info.local_sk.c_str(), info.common_pk.c_str(), info.swaped_sec_keys.c_str());
         ck_client_->InsertBlsElectInfo(info);
-    }    
+    }
 }
 
 void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {

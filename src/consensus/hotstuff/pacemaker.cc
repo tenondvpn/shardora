@@ -137,12 +137,14 @@ void Pacemaker::OnLocalTimeout() {
     if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
             last_timeout_->header.hotstuff_timeout_proto().view() >= CurView() &&
             last_timeout_->header.hotstuff_timeout_proto().view_hash() == tc_msg_hash) {
+        last_timeout_->times_idx = 0;
+        auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*last_timeout_);
         ZJC_DEBUG("use exist local timeout message pool: %u, "
             "last_timeout_->header.hotstuff_timeout_proto().view(): %lu, cur view: %lu",
             pool_idx_, 
-            last_timeout_->header.hotstuff_timeout_proto().view(), 
+            tmp_msg_ptr->header.hotstuff_timeout_proto().view(), 
             CurView());
-        SendTimeout(last_timeout_);
+        SendTimeout(tmp_msg_ptr);
         return;
     }
 
@@ -403,7 +405,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     // New Propose
     if (new_proposal_fn_) {
         ZJC_DEBUG("now ontime called propose: %d", pool_idx_);
-        propose_st = new_proposal_fn_(new_tc, agg_qc);
+        propose_st = new_proposal_fn_(new_tc, agg_qc, msg_ptr);
     }
 
     if (propose_st != Status::kSuccess && new_view_fn_) {
@@ -414,6 +416,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
 #else
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
     Status s = crypto_->ReconstructAndVerifyThresSign(
+        msg_ptr,
         timeout_proto.elect_height(),
         timeout_proto.view(),
         timeout_proto.view_hash(),
@@ -464,7 +467,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     // New Propose
     if (new_proposal_fn_) {
         ZJC_DEBUG("now ontime called propose: %d", pool_idx_);
-        propose_st = new_proposal_fn_(new_tc, nullptr);
+        propose_st = new_proposal_fn_(new_tc, nullptr, msg_ptr);
     }
 
     ZJC_DEBUG("====4.1.1 pool: %d, create tc, view: %lu, member: %d, "

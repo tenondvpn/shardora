@@ -39,17 +39,16 @@ public:
         std::shared_ptr<block::AccountManager>& acc_mgr);
     ~TxPoolManager();
     void HandleMessage(const transport::MessagePtr& msg);
-    void GetTx(
-        uint32_t pool_index,
-        uint32_t count,
-        std::map<std::string, TxItemPtr>& res_map,
-        std::unordered_map<std::string, std::string>& kvs);
     void GetTxIdempotently(
         uint32_t pool_index,
         uint32_t count,
         std::map<std::string, TxItemPtr>& res_map,
-        std::unordered_map<std::string, std::string>& kvs,
-        pools::CheckGidValidFunction gid_vlid_func);    
+        pools::CheckGidValidFunction gid_vlid_func);
+    void GetTxSyncToLeader(
+        uint32_t pool_index,
+        uint32_t count,
+        ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
+        pools::CheckGidValidFunction gid_vlid_func);
     void TxOver(
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
@@ -65,16 +64,10 @@ public:
     bool GidValid(uint32_t pool_index, const std::string& gid) {
         return tx_pool_[pool_index].GidValid(gid);
     }
-
-    void GetTx(
-        uint32_t pool_index,
-        uint32_t count,
-        const std::map<std::string, pools::TxItemPtr>& invalid_txs,
-        transport::protobuf::Header& header);
     void GetTxByGids(
-            uint32_t pool_index,
-            std::vector<std::string> gids,
-            std::map<std::string, pools::TxItemPtr>& res_map);
+        uint32_t pool_index,
+        std::vector<std::string> gids,
+        std::map<std::string, pools::TxItemPtr>& res_map);
     int BackupConsensusAddTxs(uint32_t pool_index, const std::map<std::string, pools::TxItemPtr>& txs);
     void ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& address);
@@ -145,13 +138,6 @@ public:
         }
         
         cross_block_mgr_->UpdateMaxShardingId(sharding_id);
-    }
-
-    std::shared_ptr<consensus::WaitingTxsItem> GetTx(
-            uint32_t pool_index,
-            const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
-            std::vector<uint8_t>* invalid_txs) {
-        return tx_pool_[pool_index].GetTx(txs, invalid_txs);
     }
 
     void RegisterCreateTxFunction(uint32_t type, CreateConsensusItemFunction func) {

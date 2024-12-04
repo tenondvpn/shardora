@@ -7,10 +7,12 @@ pragma solidity >=0.7.0 <0.9.0;
 // 4. If the transaction is reported and the seller cannot redeem it, it will be locked,
 //    and the manager can release it according to the situation
 
-contract ProxyReencryption {
+contract Proxy {
     bytes32 test_ripdmd_;
     bytes32 enc_init_param_;
     struct ProxyInfo {
+        uint256 ring_size;
+        uint256 signer_count;
         bytes32 id;
         bytes32 res_info;
         bool exists;
@@ -24,7 +26,7 @@ contract ProxyReencryption {
        bytes value
     );
 
-    mapping(bytes32 => ProxyInfo) public proxy_map;
+    mapping(bytes32 => ProxyInfo) public ars_map;
     bytes32[] all_ids;
 
     // SetUp：初始化算法，需要用到pbc库
@@ -36,58 +38,38 @@ contract ProxyReencryption {
         test_ripdmd_ = ripemd160(params);
     }
 
-    function CreatePrivateAndPublicKeys(bytes32 id, bytes memory params) public {
+    function CreateNewProxy(uint ring_size, uint signer_count, bytes32 id, bytes memory params) public {
         emit DebugEvent(0);
-        require(!proxy_map[id].exists);
+
+        require(!ars_map[id].exists);
         emit DebugEvent(1);
         bytes32 res = ripemd160(params);
-        proxy_map[id] = ArsInfo({
+        ars_map[id] = ProxyInfo({
+            ring_size: ring_size,
+            signer_count: signer_count,
             id: id,
             res_info: res,
             exists: true
         });
         all_ids.push(id);
         emit DebugEvent(2);
+        emit DebugEvent(all_ids.length);
     }
 
-    function CreateReEncryptionKeys(bytes32 id, bytes memory params) public {
+    function SingleSign(bytes32 id, bytes memory params) public {
         emit DebugEvent(3);
-        require(proxy_map[id].exists);
+        require(ars_map[id].exists);
         emit DebugEvent(4);
         bytes32 res = ripemd160(params);
         emit DebugEvent(5);
     }
 
-    function EncryptUserMessage(bytes32 id, bytes memory params) public {
+    function AggSign(bytes32 id, bytes memory params) public {
         emit DebugEvent(6);
-        require(proxy_map[id].exists);
+        require(ars_map[id].exists);
         emit DebugEvent(7);
         bytes32 res = ripemd160(params);
         emit DebugEvent(8);
-    }
-
-    function ReEncryptUserMessage(bytes32 id, bytes memory params) public {
-        emit DebugEvent(9);
-        require(proxy_map[id].exists);
-        emit DebugEvent(10);
-        bytes32 res = ripemd160(params);
-        emit DebugEvent(11);
-    }
-
-    function ReEncryptUserMessageWithMember(bytes32 id, bytes memory params) public {
-        emit DebugEvent(12);
-        require(proxy_map[id].exists);
-        emit DebugEvent(13);
-        bytes32 res = ripemd160(params);
-        emit DebugEvent(14);
-    }
-
-    function Decryption(bytes32 id, bytes memory params) public {
-        emit DebugEvent(15);
-        require(proxy_map[id].exists);
-        emit DebugEvent(16);
-        bytes32 res = ripemd160(params);
-        emit DebugEvent(17);
     }
 
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
@@ -127,12 +109,36 @@ contract ProxyReencryption {
         assembly { mstore(add(b, 32), x) }
     }
 
-    function GetOrdersJson() public view returns(bytes memory) {
-        uint validLen = 0;
-        bytes[] memory all_bytes = new bytes[](validLen + 2);
+    function Bytes32toBytes(bytes32 _data) public pure returns (bytes memory) {
+        return abi.encodePacked(_data);
+    }
+
+    function GetProxyJson(ProxyInfo memory ars, bool last) public pure returns (bytes memory) {
+        bytes[] memory all_bytes = new bytes[](100);
+        uint filedCount = 0;
+        all_bytes[filedCount++] = '{"ring_size":"';
+        all_bytes[filedCount++] = ToHex(u256ToBytes(ars.ring_size));
+        all_bytes[filedCount++] = '","signer_count":"';
+        all_bytes[filedCount++] = ToHex(u256ToBytes(ars.signer_count));
+        all_bytes[filedCount++] = '","id":"';
+        all_bytes[filedCount++] = ToHex(Bytes32toBytes(ars.id));
+        all_bytes[filedCount++] = '","res":"';
+        all_bytes[filedCount++] = ToHex(Bytes32toBytes(ars.res_info));
+        if (last) {
+            all_bytes[filedCount++] = '"}';
+        } else {
+            all_bytes[filedCount++] = '"},';
+        }
+        return bytesConcat(all_bytes, filedCount);
+    }
+
+    function GetAllProxyJson() public view returns(bytes memory) {
+        uint validLen = 1;
+        bytes[] memory all_bytes = new bytes[](all_ids.length + 2);
         all_bytes[0] = '[';
-        uint arrayLength = 0;
+        uint arrayLength = all_ids.length;
         for (uint i=0; i<arrayLength; i++) {
+            all_bytes[i + 1] = GetProxyJson(ars_map[all_ids[i]], (i == arrayLength - 1));
             ++validLen;
         }
 

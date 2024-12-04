@@ -70,14 +70,16 @@ int HotstuffManager::Init(
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
 #ifdef USE_AGG_BLS
         auto crypto = std::make_shared<AggCrypto>(pool_idx, elect_info_, bls_mgr);
+        auto pcrypto = std::make_shared<AggCrypto>(pool_idx, elect_info_, bls_mgr);
 #else
         auto crypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
+        auto pcrypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
 #endif
         auto chain = std::make_shared<ViewBlockChain>(pool_idx, db_, account_mgr_);
         auto leader_rotation = std::make_shared<LeaderRotation>(pool_idx, chain, elect_info_);
         auto pacemaker = std::make_shared<Pacemaker>(
                 pool_idx,
-                crypto,
+                pcrypto,
                 leader_rotation,
                 std::make_shared<ViewDuration>(
                         pool_idx,
@@ -264,6 +266,7 @@ void HotstuffManager::OnNewElectBlock(uint64_t block_tm_ms, uint32_t sharding_id
 }
 
 void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& header = msg_ptr->header;
     if (header.has_hotstuff_timeout_proto() ||
         (header.has_hotstuff() && header.hotstuff().type() == VOTE) ||
@@ -289,8 +292,8 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    ZJC_DEBUG("hotstuff message coming from: %u:%d, hash64: %lu, type: %d", 
-        msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort(), 
+    ZJC_DEBUG("hotstuff message coming from: %s:%d, hash64: %lu, type: %d", 
+        msg_ptr->conn ? msg_ptr->conn->PeerIp().c_str() : "", msg_ptr->conn ? msg_ptr->conn->PeerPort() : 0, 
         header.hash64(), header.hotstuff().type());
     if (header.has_hotstuff()) {
         auto& hotstuff_msg = header.hotstuff();
@@ -306,21 +309,29 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         {
         case PROPOSE:
         {
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             Status s = crypto(hotstuff_msg.pool_index())->VerifyMessage(msg_ptr);
             if (s != Status::kSuccess) {
                 return;
             }
             hotstuff(hotstuff_msg.pool_index())->HandleProposeMsg(msg_ptr);
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             break;
         }
         case VOTE:
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             hotstuff(hotstuff_msg.pool_index())->HandleVoteMsg(msg_ptr);
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             break;
         case NEWVIEW: // 接收 tc 和 qc
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             hotstuff(hotstuff_msg.pool_index())->HandleNewViewMsg(msg_ptr);
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             break;
         case PRE_RESET_TIMER:
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             hotstuff(hotstuff_msg.pool_index())->HandlePreResetTimerMsg(msg_ptr);
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             break;
         default:
             ZJC_WARN("consensus message type is error.");
@@ -329,10 +340,12 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (header.has_hotstuff_timeout_proto()) {
         auto pool_idx = header.hotstuff_timeout_proto().pool_idx();
         pacemaker(pool_idx)->OnRemoteTimeout(msg_ptr);
     }
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {

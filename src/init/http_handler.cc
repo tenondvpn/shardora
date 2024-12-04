@@ -395,7 +395,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     }
 	
     std::string qdata((char*)result.output_data, result.output_size);
-    ZJC_DEBUG("LLLLLhttp: %s, size %d ", common::Encode::HexEncode(qdata).c_str(), result.output_size);
+    ZJC_DEBUG("LLLLLhttp: %s, size %d", common::Encode::HexEncode(qdata).c_str(), result.output_size);
     if (result.output_size < 64) {
         auto res = common::Encode::HexEncode(qdata); 
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
@@ -408,7 +408,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     std::string http_res(qdata.c_str() + 64, len);
     evbuffer_add(req->buffer_out, http_res.c_str(), http_res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
-    ZJC_INFO("query contract success");
+    ZJC_INFO("query contract success data: %s", http_res.c_str());
 }
 
 static void QueryAccount(evhtp_request_t* req, void* data) {

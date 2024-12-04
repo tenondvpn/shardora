@@ -1,5 +1,6 @@
 #pragma once
 
+#include "contract/contract_ars.h"
 #include "contract/contract_interface.h"
 #include "common/tick.h"
 
@@ -48,7 +49,29 @@ private:
         uint64_t gas,
         const std::string& origin_address,
         evmc_result* res);
-    void TestArs();
+
+    // ars
+    int CreateArsKeys(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value);
+    int SingleSign(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value);
+    int GetRing(
+        const std::string& id,
+        const CallParameters& param, 
+        ContractArs& ars, 
+        std::vector<element_t>& ring);
+    int AggSignAndVerify(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value);
+    void TestArs(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value);
 
     uint64_t gas_cast_{ 3000llu };
 

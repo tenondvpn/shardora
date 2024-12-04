@@ -28,6 +28,11 @@ TcpTransport::TcpTransport() {
 
 TcpTransport::~TcpTransport() {}
 
+void TcpTransport::AddLocalMessage(transport::MessagePtr msg_ptr) {
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    local_messages_[thread_idx].push(msg_ptr);
+}
+
 int TcpTransport::Init(
         const std::string& ip_port,
         int backlog,
@@ -117,7 +122,7 @@ void TcpTransport::Stop() {
     }
 }
 
-bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tnet::Packet& packet) {
+bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tnet::Packet& packet) {    
     // ZJC_DEBUG("message coming");
     if (conn->GetSocket() == nullptr) {
         packet.Free();
@@ -147,6 +152,13 @@ bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tne
         packet.Free();
         ZJC_DEBUG("message coming failed 2 type: %d", packet.PacketType());
         return false;
+    }
+
+    for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+        MessagePtr msg_ptr;
+        while (local_messages_[i].pop(&msg_ptr)) {
+            msg_handler_->HandleMessage(msg_ptr);
+        }
     }
 
     // network message must free memory
@@ -258,6 +270,10 @@ int TcpTransport::Send(
     output_item->des_ip = des_ip;
     output_item->port = des_port;
     output_item->hash64 = message.hash64();
+    // if (message.has_broadcast()) {
+    //     msg_handler_->AddLocalBroadcastedMessages(message.hash64());
+    // }
+
     message.SerializeToString(&output_item->msg);
     // assert(output_item->msg.size() < 1000000u);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
@@ -327,7 +343,7 @@ void TcpTransport::Output() {
                         continue;
                     }
 
-                    // TRANSPORT_DEBUG("send to tcp connection success[%s][%d][hash64: %llu] res: %d, tcp_conn: %lu",
+                    // TRANSPORT_WARN("send to tcp connection success[%s][%d][hash64: %llu] res: %d, tcp_conn: %lu",
                     //     item_ptr->des_ip.c_str(), item_ptr->port, item_ptr->hash64, res, tcp_conn.get());
                     break;
                 }
@@ -482,6 +498,10 @@ int TcpTransport::Send(
     output_item->des_ip = des_ip;
     output_item->port = des_port;
     output_item->hash64 = message.hash64();
+    // if (message.has_broadcast()) {
+    //     msg_handler_->AddLocalBroadcastedMessages(message.hash64());
+    // }
+
     output_item->msg = message.SerializeAsString();
     output_queues_[thread_idx].push(output_item);
     output_con_.notify_one();

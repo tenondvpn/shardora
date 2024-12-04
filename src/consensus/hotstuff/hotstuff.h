@@ -76,7 +76,7 @@ public:
         elect_info_(elect_info),
         db_(db) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-        pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1, std::placeholders::_2));
+        pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         pacemaker_->SetNewViewFn(std::bind(&Hotstuff::NewView, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));        
 
@@ -100,12 +100,13 @@ public:
     void HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr);
     void HandleVoteMsg(const transport::MessagePtr& msg_ptr);
     void NewView(
-            std::shared_ptr<tnet::TcpInterface> conn,
-            std::shared_ptr<TC> tc,
-            std::shared_ptr<AggregateQC> qc);
+        std::shared_ptr<tnet::TcpInterface> conn,
+        std::shared_ptr<TC> tc,
+        std::shared_ptr<AggregateQC> qc);
     Status Propose(
-            std::shared_ptr<TC> tc,
-            std::shared_ptr<AggregateQC> agg_qc);
+        std::shared_ptr<TC> tc,
+        std::shared_ptr<AggregateQC> agg_qc,
+        const transport::MessagePtr& msg_ptr);
     Status TryCommit(const QC& commit_qc, uint64_t t_idx = 9999999lu);
     Status HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> propose_msg_wrap);
     // 消费等待队列中的 ProposeMsg
@@ -125,18 +126,29 @@ public:
     void HandleSyncedViewBlock(
             std::shared_ptr<view_block::protobuf::ViewBlockItem>& vblock) {
         if (view_block_chain_->Has(vblock->qc().view_block_hash())) {
+            ZJC_DEBUG("block hash exists %u_%u_%lu, height: %lu",
+                vblock->qc().network_id(), 
+                vblock->qc().pool_index(), 
+                vblock->qc().view(), 
+                vblock->block_info().height());
             return;
         }
 
         if (prefix_db_->BlockExists(vblock->qc().view_block_hash())) {
+            ZJC_DEBUG("block db exists %u_%u_%lu, height: %lu",
+                vblock->qc().network_id(), 
+                vblock->qc().pool_index(), 
+                vblock->qc().view(), 
+                vblock->block_info().height());
             return;
         }
         
         auto db_batch = std::make_shared<db::DbWriteBatch>();
         auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(vblock, db_batch);
-        ZJC_DEBUG("now handle synced view block %u_%u_%lu",
+        ZJC_DEBUG("now handle synced view block %u_%u_%lu, height: %lu",
             vblock->qc().network_id(),
             vblock->qc().pool_index(),
+            vblock->qc().view(),
             vblock->block_info().height());
         view_block_chain()->StoreToDb(vblock, 99999999lu, db_batch);
         if (network::IsSameToLocalShard(vblock->qc().network_id())) {
@@ -155,9 +167,9 @@ public:
             // }
 
             // TODO: fix balance map and storage map
-            TryCommit(vblock->qc(), 99999999lu);
             view_block_chain()->UpdateHighViewBlock(vblock->qc());
             view_block_chain()->Store(vblock, true, nullptr, nullptr);
+            TryCommit(vblock->qc(), 99999999lu);
             if (latest_qc_item_ptr_ == nullptr ||
                     vblock->qc().view() >= latest_qc_item_ptr_->view()) {
 
@@ -282,7 +294,7 @@ private:
 
     bool HandleProposeMsgCondition(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
         // 仅新 v_block 才能允许执行
-        return pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().view_item().qc().view() > view_block_chain()->GetMaxHeight();
+        return false;// pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().view_item().qc().view() > view_block_chain()->GetMaxHeight();
     }
 
     Status HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
@@ -307,9 +319,10 @@ private:
             const uint32_t& elect_height);    
     Status ConstructProposeMsg(hotstuff::protobuf::ProposeMsg* pro_msg);
     Status ConstructVoteMsg(
-            hotstuff::protobuf::VoteMsg* vote_msg,
-            uint64_t elect_height, 
-            const std::shared_ptr<ViewBlock>& v_block);    
+        const transport::MessagePtr& msg_ptr,
+        hotstuff::protobuf::VoteMsg* vote_msg,
+        uint64_t elect_height, 
+        const std::shared_ptr<ViewBlock>& v_block);    
     Status ConstructViewBlock( 
             ViewBlock* view_block,
             hotstuff::protobuf::TxPropose* tx_propose);
@@ -356,7 +369,6 @@ private:
     std::map<View, std::shared_ptr<ProposeMsgWrapper>> leader_view_with_propose_msgs_;
     std::shared_ptr<transport::TransportMessage> latest_leader_propose_message_;
     std::shared_ptr<sync::KeyValueSync> kv_sync_;
-    std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
 };
 
 } // namespace consensus

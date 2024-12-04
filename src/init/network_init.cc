@@ -184,8 +184,14 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
-    block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
-    bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_);
+    auto ck_client = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "", db_, contract_mgr_);
+    auto block_ck_client = ck_client;
+    if (!common::GlobalInfo::Instance()->for_ck_server()) {
+        block_ck_client = nullptr;
+    }
+
+    block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, block_ck_client);
+    bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_, ck_client);
     elect_mgr_ = std::make_shared<elect::ElectManager>(
         vss_mgr_, account_mgr_, block_mgr_, security_, bls_mgr_, db_,
         nullptr);
@@ -415,13 +421,16 @@ int NetworkInit::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 }
 
 void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (msg_ptr->header.init_proto().has_addr_req()) {
         HandleAddrReq(msg_ptr);
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (msg_ptr->header.init_proto().has_addr_res()) {
         HandleAddrRes(msg_ptr);
     }
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
@@ -935,7 +944,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         }
 
         account_mgr_ = std::make_shared<block::AccountManager>();
-        block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
+        block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, nullptr);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
         genesis_block.SetGenesisConfig(genesis_config);
         
@@ -981,7 +990,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         }
 
         account_mgr_ = std::make_shared<block::AccountManager>();
-        block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
+        block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, nullptr);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
         genesis_block.SetGenesisConfig(genesis_config);
 
@@ -1175,7 +1184,7 @@ void NetworkInit::AddBlockItemToCache(
         case pools::protobuf::kNormalTo:
             account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
             gas_prepayment_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
-            ZJC_DEBUG("DDD txInfo: %s", ProtobufToJson(tx_list[i], true).c_str());
+            // ZJC_DEBUG("DDD txInfo: %s", ProtobufToJson(tx_list[i], true).c_str());
             zjcvm::Execution::Instance()->NewBlockWithTx(tx_list[i], db_batch);
             break;
         default:

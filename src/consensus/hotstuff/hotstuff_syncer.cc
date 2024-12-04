@@ -125,6 +125,12 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const int32_t& node_num)
         // 发送本地区块链，只发送 hash 和 parent_hash
         auto vb_item = req->add_view_blocks();
         vb_item->mutable_qc()->set_view_block_hash(vb->qc().view_block_hash());
+        ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
+            common::Encode::HexEncode(vb_item->qc().view_block_hash()).c_str(),
+            common::Encode::HexEncode(vb_item->parent_hash()).c_str(),
+            vb_item->qc().network_id(),
+            vb_item->qc().pool_index(),
+            vb_item->qc().view());
         // TODO: check valid
         // auto prefix_db = std::make_shared<protos::PrefixDb>(db_);
         // assert(!prefix_db->BlockExists(vb_item->qc().view_block_hash()));

@@ -66,37 +66,25 @@ void ThreadHandler::HandleMessage() {
                 break;
             }
 
-            ZJC_DEBUG("start message handled msg hash: %lu, thread idx: %d",
-                msg_ptr->header.hash64(), thread_idx);
+            // ZJC_DEBUG("start message handled msg hash: %lu, thread idx: %d",
+            //     msg_ptr->header.hash64(), thread_idx);
             msg_ptr->times_idx = 0;
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
-            msg_ptr->times[msg_ptr->times_idx++] = btime;
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             Processor::Instance()->HandleMessage(msg_ptr);
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             auto etime = common::TimeUtils::TimestampUs();
-            if (etime - btime > 200000) {
-                std::string t;
+            if (etime - btime > 1000000) {
                 for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
-                    t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
+                    if (msg_ptr->times[i] > 500000) {
+                        ZJC_DEBUG("over handle message debug %lu timestamp: %lu, debug: %s, "
+                            "thread_idx: %d, maping_thread_idx: %d",
+                            msg_ptr->header.hash64(), msg_ptr->times[i], 
+                            msg_ptr->debug_str[i].c_str(), thread_idx, maping_thread_idx);
+                    }
                 }
-
-                // ZJC_INFO("1 over handle message: %d, step: %d, times_idx: %d, thread: %d use: %lu us, all: %s",
-                //     msg_ptr->header.type(), 
-                //     msg_ptr->header.zbft().tx_bft().tx_type(), 
-                //     msg_ptr->times_idx, 
-                //     thread_idx, 
-                //     (etime - btime), 
-                //     t.c_str());
-
-                ZJC_INFO("1 over handle message: %d, step: %d, times_idx: %d, thread: %d use: %lu us, all: %s, hash64: %lu",
-                    msg_ptr->header.type(), 
-                    msg_ptr->header.hotstuff().type(), 
-                    msg_ptr->times_idx, 
-                    thread_idx, 
-                    (etime - btime), 
-                    t.c_str(),
-                    msg_ptr->header.hash64());                
             }
-            ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
+            // ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
         }
 
         auto btime = common::TimeUtils::TimestampUs();
@@ -104,8 +92,8 @@ void ThreadHandler::HandleMessage() {
 #ifndef ENABLE_HOTSTUFF            
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->header.set_type(common::kConsensusTimerMessage);
-            ZJC_DEBUG("start kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
-                msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
+            // ZJC_DEBUG("start kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
+            //     msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
             msg_ptr->times[msg_ptr->times_idx++] = btime;
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
@@ -119,8 +107,8 @@ void ThreadHandler::HandleMessage() {
                     msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
             }
 
-            ZJC_DEBUG("over kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
-                msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
+            // ZJC_DEBUG("over kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
+            //     msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
 
 #else
             // HotstuffSyncTimerMessage
@@ -143,8 +131,8 @@ void ThreadHandler::HandleMessage() {
             auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->header.set_type(common::kPoolTimerMessage);
-            ZJC_DEBUG("start kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
-                msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
+            // ZJC_DEBUG("start kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
+            //     msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
             msg_ptr->times[msg_ptr->times_idx++] = btime;
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
@@ -157,8 +145,8 @@ void ThreadHandler::HandleMessage() {
                 ZJC_INFO("kConsensusTimerMessage over handle message: %d, thread: %d use: %lu us, all: %s", 
                     msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
             }
-            ZJC_DEBUG("end kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
-                msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
+            // ZJC_DEBUG("end kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
+            //     msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
         }
 
         if (count >= kMaxHandleMessageCount) {
@@ -306,11 +294,20 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
     }
 
     if (CheckMessageValid(msg_ptr) != kFirewallCheckSuccess) {
-        ZJC_DEBUG("message filtered: %lu, type: %d, from: %s:%d",
-            msg_ptr->header.hash64(),
-            msg_ptr->header.type(),
-            msg_ptr->conn->PeerIp().c_str(),
-            msg_ptr->conn->PeerPort());
+        if (msg_ptr->conn) {
+            ZJC_DEBUG("message filtered: %lu, type: %d, from: %s:%d",
+                msg_ptr->header.hash64(),
+                msg_ptr->header.type(),
+                msg_ptr->conn->PeerIp().c_str(),
+                msg_ptr->conn->PeerPort());
+        } else {
+            ZJC_DEBUG("message filtered: %lu, type: %d, from: %s:%d",
+                msg_ptr->header.hash64(),
+                msg_ptr->header.type(),
+                "local_ip",
+                0);
+        }
+        
         return;
     }
 
@@ -445,6 +442,13 @@ void MultiThreadHandler::SaveKeyValue(const transport::protobuf::Header& msg, db
 }
 
 bool MultiThreadHandler::IsMessageUnique(uint64_t msg_hash) {
+    // for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+    //     uint64_t hash64;
+    //     while (local_broadcast_messages_[i].pop(&hash64)) {
+    //         unique_message_sets2_.Push(hash64);
+    //     }
+    // }
+
     return unique_message_sets2_.Push(msg_hash);
     
     // return unique_message_sets_.add(msg_hash);
@@ -462,9 +466,16 @@ int MultiThreadHandler::CheckMessageValid(MessagePtr& msg_ptr) {
 
     if (!IsMessageUnique(msg_ptr->header.hash64())) {
         // invalid msg id
-        ZJC_DEBUG("check message id failed %d, %lu, from: %s:%d",
-            msg_ptr->header.type(), msg_ptr->header.hash64(),
-            msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort());
+        if (msg_ptr->conn) {
+            ZJC_DEBUG("check message id failed %d, %lu, from: %s:%d",
+                msg_ptr->header.type(), msg_ptr->header.hash64(),
+                msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort());
+        } else {
+            ZJC_DEBUG("check message id failed %d, %lu, from: %s:%d",
+                msg_ptr->header.type(), msg_ptr->header.hash64(),
+                "local_ip", 0);
+        }
+
         return kFirewallCheckError;
     }
 
@@ -530,8 +541,8 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool htt
             continue;
         }
 
-        ZJC_DEBUG("pop valid message hash: %lu, size: %u, thread: %u",
-            msg_obj->header.hash64(), threads_message_queues_[thread_idx][pri].size(), thread_idx);
+        // ZJC_DEBUG("pop valid message hash: %lu, size: %u, thread: %u",
+        //     msg_obj->header.hash64(), threads_message_queues_[thread_idx][pri].size(), thread_idx);
         return msg_obj;
     }
 
@@ -539,16 +550,16 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool htt
     if (http_svr_thread) {
         MessagePtr msg_obj;
         http_server_message_queue_.pop(&msg_obj);
-        if (msg_obj != nullptr) {
-            ZJC_DEBUG("get msg http transaction success %s, %s, hash64: %lu, step: %d, gid: %s, type: %d", 
-                common::Encode::HexEncode(
-                security_->GetAddress(msg_obj->header.tx_proto().pubkey())).c_str(),
-                common::Encode::HexEncode(msg_obj->header.tx_proto().to()).c_str(),
-                msg_obj->header.hash64(),
-                msg_obj->header.tx_proto().step(),
-                common::Encode::HexEncode(msg_obj->header.tx_proto().gid()).c_str(),
-                msg_obj->header.type());
-        }
+        // if (msg_obj != nullptr) {
+        //     ZJC_DEBUG("get msg http transaction success %s, %s, hash64: %lu, step: %d, gid: %s, type: %d", 
+        //         common::Encode::HexEncode(
+        //         security_->GetAddress(msg_obj->header.tx_proto().pubkey())).c_str(),
+        //         common::Encode::HexEncode(msg_obj->header.tx_proto().to()).c_str(),
+        //         msg_obj->header.hash64(),
+        //         msg_obj->header.tx_proto().step(),
+        //         common::Encode::HexEncode(msg_obj->header.tx_proto().gid()).c_str(),
+        //         msg_obj->header.type());
+        // }
         return msg_obj;
     }
     

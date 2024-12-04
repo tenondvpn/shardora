@@ -24,9 +24,11 @@ struct BlsElectInfo {
     uint64_t elect_height;
     uint32_t member_idx;
     uint32_t shard_id;
-    std::string contribution_map;
+    std::string local_pri_keys;
+    std::string local_pub_keys;
     std::string local_sk;
     std::string common_pk;
+    std::string swaped_sec_keys;
 };
 
 struct BlsBlockInfo {

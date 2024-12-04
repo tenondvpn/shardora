@@ -22,7 +22,6 @@ inline bool ElectNodeBalanceDiffCompare(
 
 int ElectTxItem::HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        std::shared_ptr<db::DbWriteBatch>& db_batch,
         zjcvm::ZjchainHost& zjc_host,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
@@ -53,7 +52,7 @@ int ElectTxItem::HandleTx(
                     ZJC_DEBUG("LLLLL elect_statistic:%s", json_str.c_str() );
                 }
             }
-            return processElect(elect_statistic, view_block, db_batch, block_tx);
+            return processElect(elect_statistic, view_block, block_tx);
         }
     }
 
@@ -64,7 +63,6 @@ int ElectTxItem::HandleTx(
 int ElectTxItem::processElect(
         shardora::pools::protobuf::ElectStatistic &elect_statistic,
         const view_block::protobuf::ViewBlockItem& view_block,
-        std::shared_ptr<shardora::db::DbWriteBatch> &db_batch,
         shardora::block::protobuf::BlockTx &block_tx) {
     auto& block = view_block.block_info();
     const pools::protobuf::PoolStatisticItem *statistic = nullptr;
@@ -163,7 +161,6 @@ int ElectTxItem::processElect(
         elect_nodes,
         elect_statistic,
         gas_for_root,
-        db_batch,
         block_tx);
 
     {
@@ -601,12 +598,11 @@ uint64_t ElectTxItem::GetMiningMaxCount(uint64_t max_tx_count) {
 }
 
 int ElectTxItem::CreateNewElect(
-    const block::protobuf::Block &block,
-    const std::vector<NodeDetailPtr> &elect_nodes,
-    const pools::protobuf::ElectStatistic &elect_statistic,
-    uint64_t gas_for_root,
-    std::shared_ptr<db::DbWriteBatch> &db_batch,
-    block::protobuf::BlockTx &block_tx) {
+        const block::protobuf::Block &block,
+        const std::vector<NodeDetailPtr> &elect_nodes,
+        const pools::protobuf::ElectStatistic &elect_statistic,
+        uint64_t gas_for_root,
+        block::protobuf::BlockTx &block_tx) {
     elect::protobuf::ElectBlock elect_block;
     for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
         if (elect_nodes[i] == nullptr) {
