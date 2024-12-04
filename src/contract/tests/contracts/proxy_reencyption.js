@@ -570,7 +570,7 @@ function GetAllProxyJson() {
         addParamCode.substring(2));
 }
 
-var tmp_id = ""
+var tmp_id = args[1]
 var id = keccak256('7540498158068831994142082110286533992664756308802229570786251794' + contract_address + tmp_id).toString('hex');
 const args = process.argv.slice(2)
 // SetUp：初始化算法，需要用到pbc库
@@ -607,7 +607,7 @@ if (args[0] == 4) {
 // ReEnc：重加密，需要用到pbc库 (这一步包含一个分布式随机数生成协议，即多个代理协商出一个统一的随机数)
 if (args[0] == 5) {
     // add_pairing_param("mprenc", "mprenc", id+";"+args[1]);
-    ReEncryptUserMessageWithMember(id, args[1]);
+    ReEncryptUserMessageWithMember(id, args[2]);
 }
 
 // dec
