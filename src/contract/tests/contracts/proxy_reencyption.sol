@@ -90,6 +90,10 @@ contract ProxyReencryption {
         emit DebugEvent(17);
     }
 
+    function Bytes32toBytes(bytes32 _data) public pure returns (bytes memory) {
+        return abi.encodePacked(_data);
+    }
+    
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
         uint len = 0;
         for (uint i = 0; i < count; i++) {
@@ -148,7 +152,7 @@ contract ProxyReencryption {
         all_bytes[0] = '[';
         uint arrayLength = all_ids.length;
         for (uint i=0; i<arrayLength; i++) {
-            all_bytes[i + 1] = GetProxyJson(ars_map[all_ids[i]], (i == arrayLength - 1));
+            all_bytes[i + 1] = GetProxyJson(proxy_map[all_ids[i]], (i == arrayLength - 1));
             ++validLen;
         }
 
