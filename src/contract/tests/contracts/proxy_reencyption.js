@@ -436,6 +436,7 @@ function add_pairing_param(prev, key, value) {
         addParamCode.substring(2) + addParam.substring(2), 0);
 }
 
+var tmp_id = ""
 var id = keccak256('7540498158068831994142082110286533992664756308802229570786251794' + contract_address + tmp_id).toString('hex');
 const args = process.argv.slice(2)
 // SetUp：初始化算法，需要用到pbc库
