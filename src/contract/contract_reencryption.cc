@@ -33,9 +33,15 @@ int ContractReEncryption::CreatePrivateAndPublicKeys(
     G1 g1(e, g1_str.c_str(), g1_str.size());
     //密钥生成，这里生成10个用户。
     //下标为0的用户0作为加密者，其余用户(1~9)为接受者。
+    auto lines = common::Split<>(value.c_str(), ';');
+    if (lines.Count() != 2) {
+        return kContractError;
+    }
+
+    std::string id(lines[0]);
     vector<Zr> sk;
     vector<G1> pk;
-    auto sk_splits = common::Split<>(value.c_str(), ',');
+    auto sk_splits = common::Split<>(lines[1], ',');
     int nu = sk_splits.Count();
     for(int i = 0;i<nu;i++){
         auto sk_str = common::Encode::HexDecode(sk_splits[i]);
@@ -46,9 +52,9 @@ int ContractReEncryption::CreatePrivateAndPublicKeys(
         ZJC_DEBUG("create member private and public key: %d, sk: %s, pk: %s",
             i, common::Encode::HexEncode(x.toString()).c_str(),
             common::Encode::HexEncode(tmp_pk.toString(true)).c_str());
-        auto private_key = std::string("init_prikey_") + std::to_string(i);
+        auto private_key = id + "_" + std::string("init_prikey_") + std::to_string(i);
         param.zjc_host->SaveKeyValue(param.from, private_key, x.toString());
-        auto public_key = std::string("init_pubkey_") + std::to_string(i);
+        auto public_key = id + "_" + std::string("init_pubkey_") + std::to_string(i);
         param.zjc_host->SaveKeyValue(param.from, public_key, tmp_pk.toString(true));
     }
 
@@ -65,13 +71,19 @@ int ContractReEncryption::CreateReEncryptionKeys(
     std::string g1_str(common::Encode::HexDecode("7c8ae882453932ed180735e6eef3c983c93e0501dcfe6a1230fbfea4ac95f4c22795fe5a8137549d1a1b7427519b189431e794e365be5910fcd8e1c91bbc67fa00"));
     G1 g1(e, g1_str.c_str(), g1_str.size());
 
+    auto lines = common::Split<>(value.c_str(), ';');
+    if (lines.Count() != 2) {
+        return kContractError;
+    }
+
+    std::string id(lines[0]);
     //密钥生成，这里生成10个用户。
     //下标为0的用户0作为加密者，其余用户(1~9)为接受者。
     int nu = 10;
     vector<Zr> sk;
     vector<G1> pk;
     for(int i = 0;i<nu;i++){
-        auto private_key = std::string("init_prikey_") + std::to_string(i);
+        auto private_key = id + "_" + std::string("init_prikey_") + std::to_string(i);
         std::string val;
         if (param.zjc_host->GetKeyValue(param.from, private_key, &val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -80,7 +92,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
 
         Zr x(e, val.c_str(), val.size());
         sk.push_back(x);
-        auto public_key = std::string("init_pubkey_") + std::to_string(i);
+        auto public_key = id + "_" + std::string("init_pubkey_") + std::to_string(i);
         if (param.zjc_host->GetKeyValue(param.from, public_key, &val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", key.c_str());
             return kContractError;
@@ -92,7 +104,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
 
     //重加密密钥生成，假设代理总数为np，门限为t。
     //即只有不少于t个代理参与重加密，才能正确解密。
-    auto line_split = common::Split<>(value.c_str(), '\n');
+    auto line_split = common::Split<>(lines[1], '\n');
     if (line_split.Count() < 5) {
         return kContractError;
     }
@@ -110,7 +122,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
         proxyId.push_back(tmp_proxy_id);
         ZJC_DEBUG("create member proxy id: %d, proxy_id: %s",
             i, common::Encode::HexEncode(tmp_proxy_id.toString()).c_str());
-        auto key = std::string("create_renc_key_proxyid_") + std::to_string(i);
+        auto key = id + "_" + std::string("create_renc_key_proxyid_") + std::to_string(i);
         param.zjc_host->SaveKeyValue(param.from, key, tmp_proxy_id.toString());
     }
 
@@ -142,7 +154,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
         fid.push_back(resultf);
         hid.push_back(resulth);
         ZJC_DEBUG("create member hid: %d, hid: %s", i, common::Encode::HexEncode(resulth.toString()).c_str());
-        auto key = std::string("create_renc_key_hid_") + std::to_string(i);
+        auto key = id + "_" + std::string("create_renc_key_hid_") + std::to_string(i);
         param.zjc_host->SaveKeyValue(param.from, key, resulth.toString());
     }
 
@@ -170,13 +182,13 @@ int ContractReEncryption::CreateReEncryptionKeys(
         auto tmp_rk2 = g^r;
         rk2.push_back(tmp_rk2);
         ZJC_DEBUG("create member rk2: %d, rk2: %s", i, common::Encode::HexEncode(tmp_rk2.toString(true)).c_str());
-        auto rk2_key = std::string("create_renc_key_rk2_") + std::to_string(i);
+        auto rk2_key = id + "_" + std::string("create_renc_key_rk2_") + std::to_string(i);
         param.zjc_host->SaveKeyValue(param.from, rk2_key, tmp_rk2.toString(true));
 
         auto tmp_rk3 = X[i]*e(g1,pk[i]^r);
         rk3.push_back(tmp_rk3);
         ZJC_DEBUG("create member rk3: %d, rk3: %s", i, common::Encode::HexEncode(tmp_rk3.toString()).c_str());
-        auto rk3_key = std::string("create_renc_key_rk3_") + std::to_string(i);
+        auto rk3_key = id + "_" + std::string("create_renc_key_rk3_") + std::to_string(i);
         param.zjc_host->SaveKeyValue(param.from, rk3_key, tmp_rk3.toString());
         vector<G1> tmp;
         if(i==1){
@@ -193,7 +205,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
         for (int32_t tmp_idx = 0; tmp_idx < tmp.size(); ++tmp_idx) {
             ZJC_DEBUG("create member rk1: %d, %d, rk1: %s",
             i, tmp_idx, common::Encode::HexEncode(tmp[tmp_idx].toString(true)).c_str());
-            auto key = std::string("create_renc_key_rk1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_renc_key_rk1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             param.zjc_host->SaveKeyValue(param.from, key, tmp[tmp_idx].toString(true));
         }
 
@@ -213,13 +225,20 @@ int ContractReEncryption::EncryptUserMessage(
     std::string g1_str(common::Encode::HexDecode("7c8ae882453932ed180735e6eef3c983c93e0501dcfe6a1230fbfea4ac95f4c22795fe5a8137549d1a1b7427519b189431e794e365be5910fcd8e1c91bbc67fa00"));
     G1 g1(e, g1_str.c_str(), g1_str.size());
 
+    auto lines = common::Split<>(value.c_str(), ';');
+    if (lines.Count() != 2) {
+        return kContractError;
+    }
+
+    std::string id(lines[0]);
+
     //密钥生成，这里生成10个用户。
     //下标为0的用户0作为加密者，其余用户(1~9)为接受者。
     int nu = 10;
     vector<Zr> sk;
     vector<G1> pk;
     for(int i = 0;i<nu;i++){
-        auto private_key = std::string("init_prikey_") + std::to_string(i);
+        auto private_key = id + "_" + std::string("init_prikey_") + std::to_string(i);
         std::string val;
         if (param.zjc_host->GetKeyValue(param.from, private_key, &val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -228,7 +247,7 @@ int ContractReEncryption::EncryptUserMessage(
 
         Zr x(e, val.c_str(), val.size());
         sk.push_back(x);
-        auto public_key = std::string("init_pubkey_") + std::to_string(i);
+        auto public_key = id + "_" + std::string("init_pubkey_") + std::to_string(i);
         if (param.zjc_host->GetKeyValue(param.from, public_key, &val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", key.c_str());
             return kContractError;
@@ -245,7 +264,7 @@ int ContractReEncryption::EncryptUserMessage(
     int np=10,t=4;
     vector<Zr> proxyId, hid;
     for(int i = 0;i<np;i++){
-        auto key = std::string("create_renc_key_proxyid_") + std::to_string(i);
+        auto key = id + "_" + std::string("create_renc_key_proxyid_") + std::to_string(i);
         std::string val;
         if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -256,7 +275,7 @@ int ContractReEncryption::EncryptUserMessage(
     }
 
     for(int i = 0;i<np;i++){
-        auto key = std::string("create_renc_key_hid_") + std::to_string(i);
+        auto key = id + "_" + std::string("create_renc_key_hid_") + std::to_string(i);
         std::string val;
         if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -270,7 +289,7 @@ int ContractReEncryption::EncryptUserMessage(
     vector<GT> rk3;
     for(int i = 1; i < nu;i++){
         Zr r(e,true);
-        auto rk2_key = std::string("create_renc_key_rk2_") + std::to_string(i);
+        auto rk2_key = id + "_" + std::string("create_renc_key_rk2_") + std::to_string(i);
         std::string rk2_val;
         if (param.zjc_host->GetKeyValue(param.from, rk2_key, &rk2_val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", rk2_key.c_str());
@@ -278,7 +297,7 @@ int ContractReEncryption::EncryptUserMessage(
         }
 
         rk2.push_back(G1(e, rk2_val.c_str(), rk2_val.size()));
-        auto rk3_key = std::string("create_renc_key_rk3_") + std::to_string(i);
+        auto rk3_key = id + "_" + std::string("create_renc_key_rk3_") + std::to_string(i);
         std::string rk3_val;
         if (param.zjc_host->GetKeyValue(param.from, rk3_key, &rk3_val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", rk3_key.c_str());
@@ -288,7 +307,7 @@ int ContractReEncryption::EncryptUserMessage(
         rk3.push_back(GT(e, rk3_val.c_str(), rk3_val.size()));
         vector<G1> tmp;
         for(int j= 0; j<np; j++) {
-            auto key = std::string("create_renc_key_rk1_") + std::to_string(i) + "_" + std::to_string(j);
+            auto key = id + "_" + std::string("create_renc_key_rk1_") + std::to_string(i) + "_" + std::to_string(j);
             std::string rk1_val;
             if (param.zjc_host->GetKeyValue(param.from, key, &rk1_val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -364,32 +383,32 @@ int ContractReEncryption::EncryptUserMessage(
                 common::Encode::HexEncode(tmp_c5.toString(true)).c_str(),
                 common::Encode::HexEncode(tmp_c6.toString()).c_str());
         {
-            auto key = std::string("create_enc_user_msg_c1_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c1_") + std::to_string(i);
             param.zjc_host->SaveKeyValue(param.from, key, tmp_c1.toString(true));
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c2_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c2_") + std::to_string(i);
             param.zjc_host->SaveKeyValue(param.from, key, tmp_c2.toString());
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c3_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c3_") + std::to_string(i);
             param.zjc_host->SaveKeyValue(param.from, key, tmp_c3.toString(true));
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c4_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c4_") + std::to_string(i);
             param.zjc_host->SaveKeyValue(param.from, key, tmp_c4.toString());
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c5_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c5_") + std::to_string(i);
             param.zjc_host->SaveKeyValue(param.from, key, tmp_c5.toString(true));
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c6_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c6_") + std::to_string(i);
             param.zjc_host->SaveKeyValue(param.from, key, tmp_c6.toString());
         }
     }
@@ -409,7 +428,7 @@ int ContractReEncryption::EncryptUserMessage(
 
         lag.push_back(result);
         ZJC_DEBUG("create member lag: %d, lag: %s", i, common::Encode::HexEncode(result.toString()).c_str());
-        auto key = std::string("create_enc_user_msg_lag_") + std::to_string(i);
+        auto key = id + "_" + std::string("create_enc_user_msg_lag_") + std::to_string(i);
         param.zjc_host->SaveKeyValue(param.from, key, result.toString());
     }
 
@@ -435,6 +454,13 @@ int ContractReEncryption::ReEncryptUserMessage(
         const CallParameters& param, 
         const std::string& key, 
         const std::string& value) {
+    auto lines = common::Split<>(value.c_str(), ';');
+    if (lines.Count() != 2) {
+        return kContractError;
+    }
+
+    std::string id(lines[0]);
+
     auto& e = *pairing_ptr_;
     int nu = 10;
     int np=10,t=4;
@@ -442,7 +468,7 @@ int ContractReEncryption::ReEncryptUserMessage(
     vector<GT> c2,c4,c6;
     for (int i = 0; i < np; i++) {
         {
-            auto key = std::string("create_enc_user_msg_c1_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c1_") + std::to_string(i);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -452,7 +478,7 @@ int ContractReEncryption::ReEncryptUserMessage(
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c2_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c2_") + std::to_string(i);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -462,7 +488,7 @@ int ContractReEncryption::ReEncryptUserMessage(
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c3_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c3_") + std::to_string(i);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -472,7 +498,7 @@ int ContractReEncryption::ReEncryptUserMessage(
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c4_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c4_") + std::to_string(i);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -482,7 +508,7 @@ int ContractReEncryption::ReEncryptUserMessage(
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c5_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c5_") + std::to_string(i);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -492,7 +518,7 @@ int ContractReEncryption::ReEncryptUserMessage(
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c6_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c6_") + std::to_string(i);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -507,7 +533,7 @@ int ContractReEncryption::ReEncryptUserMessage(
     vector<GT> rk3;
     for(int i = 1; i < nu;i++){
         Zr r(e,true);
-        auto rk2_key = std::string("create_renc_key_rk2_") + std::to_string(i);
+        auto rk2_key = id + "_" + std::string("create_renc_key_rk2_") + std::to_string(i);
         std::string rk2_val;
         if (param.zjc_host->GetKeyValue(param.from, rk2_key, &rk2_val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", rk2_key.c_str());
@@ -515,7 +541,7 @@ int ContractReEncryption::ReEncryptUserMessage(
         }
 
         rk2.push_back(G1(e, (const unsigned char*)rk2_val.c_str(), rk2_val.size(), true, 0));
-        auto rk3_key = std::string("create_renc_key_rk3_") + std::to_string(i);
+        auto rk3_key = id + "_" + std::string("create_renc_key_rk3_") + std::to_string(i);
         std::string rk3_val;
         if (param.zjc_host->GetKeyValue(param.from, rk3_key, &rk3_val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", rk3_key.c_str());
@@ -525,7 +551,7 @@ int ContractReEncryption::ReEncryptUserMessage(
         rk3.push_back(GT(e, (const unsigned char*)rk3_val.c_str(), rk3_val.size(), 0));
         vector<G1> tmp;
         for(int j= 0; j<np; j++) {
-            auto key = std::string("create_renc_key_rk1_") + std::to_string(i) + "_" + std::to_string(j);
+            auto key = id + "_" + std::string("create_renc_key_rk1_") + std::to_string(i) + "_" + std::to_string(j);
             std::string rk1_val;
             if (param.zjc_host->GetKeyValue(param.from, key, &rk1_val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -604,7 +630,7 @@ int ContractReEncryption::ReEncryptUserMessage(
             ZJC_DEBUG("create member reenc data: %d, %d, tmp1: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp1[tmp_idx].toString(true)).c_str());
-            auto key = std::string("create_reenc_user_msg_rc1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_reenc_user_msg_rc1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             param.zjc_host->SaveKeyValue(param.from, key, tmp1[tmp_idx].toString(true));
         }
 
@@ -612,7 +638,7 @@ int ContractReEncryption::ReEncryptUserMessage(
             ZJC_DEBUG("create member reenc data: %d, %d, tmp2: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp2[tmp_idx].toString()).c_str());
-            auto key = std::string("create_reenc_user_msg_rc2_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_reenc_user_msg_rc2_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             param.zjc_host->SaveKeyValue(param.from, key, tmp2[tmp_idx].toString());
         }
 
@@ -620,7 +646,7 @@ int ContractReEncryption::ReEncryptUserMessage(
             ZJC_DEBUG("create member reenc data: %d, %d, tmp3: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp3[tmp_idx].toString(true)).c_str());
-            auto key = std::string("create_reenc_user_msg_rc3_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_reenc_user_msg_rc3_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             param.zjc_host->SaveKeyValue(param.from, key, tmp3[tmp_idx].toString(true));
         }
 
@@ -628,7 +654,7 @@ int ContractReEncryption::ReEncryptUserMessage(
             ZJC_DEBUG("create member reenc data: %d, %d, tmp4: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp4[tmp_idx].toString()).c_str());
-            auto key = std::string("create_reenc_user_msg_rc4_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_reenc_user_msg_rc4_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             param.zjc_host->SaveKeyValue(param.from, key, tmp4[tmp_idx].toString());
         }
 
@@ -636,7 +662,7 @@ int ContractReEncryption::ReEncryptUserMessage(
             ZJC_DEBUG("create member reenc data: %d, %d, tmp5: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp5[tmp_idx].toString(true)).c_str());
-            auto key = std::string("create_reenc_user_msg_rc5_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_reenc_user_msg_rc5_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             param.zjc_host->SaveKeyValue(param.from, key, tmp5[tmp_idx].toString(true));
         }
 
@@ -644,7 +670,7 @@ int ContractReEncryption::ReEncryptUserMessage(
             ZJC_DEBUG("create member reenc data: %d, %d, tmp6: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp6[tmp_idx].toString()).c_str());
-            auto key = std::string("create_reenc_user_msg_rc6_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_reenc_user_msg_rc6_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             param.zjc_host->SaveKeyValue(param.from, key, tmp6[tmp_idx].toString());
         }
     }
@@ -656,6 +682,13 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
         const CallParameters& param, 
         const std::string& key, 
         const std::string& value) {
+    auto lines = common::Split<>(value.c_str(), ';');
+    if (lines.Count() != 2) {
+        return kContractError;
+    }
+
+    std::string id(lines[0]);
+
     int32_t member_idx = -1;
     if (!common::StringUtil::ToInt32(value, &member_idx)) {
         ZJC_DEBUG("member index failed!");
@@ -673,7 +706,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
     vector<GT> c2,c4,c6;
     for (int i = 0; i < np; i++) {
         {
-            auto key = std::string("create_enc_user_msg_c1_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c1_") + std::to_string(i);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -683,7 +716,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c2_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c2_") + std::to_string(i);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -693,7 +726,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c3_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c3_") + std::to_string(i);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -703,7 +736,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c4_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c4_") + std::to_string(i);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -713,7 +746,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c5_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c5_") + std::to_string(i);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -723,7 +756,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c6_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c6_") + std::to_string(i);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -741,7 +774,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
             continue;
         }
 
-        auto rk2_key = std::string("create_renc_key_rk2_") + std::to_string(i);
+        auto rk2_key = id + "_" + std::string("create_renc_key_rk2_") + std::to_string(i);
         std::string rk2_val;
         if (param.zjc_host->GetKeyValue(param.from, rk2_key, &rk2_val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", rk2_key.c_str());
@@ -749,7 +782,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
         }
 
         rk2.push_back(G1(e, (const unsigned char*)rk2_val.c_str(), rk2_val.size(), true, 0));
-        auto rk3_key = std::string("create_renc_key_rk3_") + std::to_string(i);
+        auto rk3_key = id + "_" + std::string("create_renc_key_rk3_") + std::to_string(i);
         std::string rk3_val;
         if (param.zjc_host->GetKeyValue(param.from, rk3_key, &rk3_val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", rk3_key.c_str());
@@ -759,7 +792,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
         rk3.push_back(GT(e, (const unsigned char*)rk3_val.c_str(), rk3_val.size(), 0));
         vector<G1> tmp;
         for(int j= 0; j<np; j++) {
-            auto key = std::string("create_renc_key_rk1_") + std::to_string(i) + "_" + std::to_string(j);
+            auto key = id + "_" + std::string("create_renc_key_rk1_") + std::to_string(i) + "_" + std::to_string(j);
             std::string rk1_val;
             if (param.zjc_host->GetKeyValue(param.from, key, &rk1_val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -842,7 +875,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
             ZJC_DEBUG("create member reenc data: %d, %d, tmp1: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp1[tmp_idx].toString(true)).c_str());
-            auto key = std::string("create_reenc_user_msg_rc1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_reenc_user_msg_rc1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             param.zjc_host->SaveKeyValue(param.from, key, tmp1[tmp_idx].toString(true));
         }
 
@@ -850,7 +883,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
             ZJC_DEBUG("create member reenc data: %d, %d, tmp2: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp2[tmp_idx].toString()).c_str());
-            auto key = std::string("create_reenc_user_msg_rc2_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_reenc_user_msg_rc2_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             param.zjc_host->SaveKeyValue(param.from, key, tmp2[tmp_idx].toString());
         }
 
@@ -858,7 +891,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
             ZJC_DEBUG("create member reenc data: %d, %d, tmp3: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp3[tmp_idx].toString(true)).c_str());
-            auto key = std::string("create_reenc_user_msg_rc3_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_reenc_user_msg_rc3_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             param.zjc_host->SaveKeyValue(param.from, key, tmp3[tmp_idx].toString(true));
         }
 
@@ -866,7 +899,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
             ZJC_DEBUG("create member reenc data: %d, %d, tmp4: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp4[tmp_idx].toString()).c_str());
-            auto key = std::string("create_reenc_user_msg_rc4_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_reenc_user_msg_rc4_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             param.zjc_host->SaveKeyValue(param.from, key, tmp4[tmp_idx].toString());
         }
 
@@ -874,7 +907,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
             ZJC_DEBUG("create member reenc data: %d, %d, tmp5: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp5[tmp_idx].toString(true)).c_str());
-            auto key = std::string("create_reenc_user_msg_rc5_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_reenc_user_msg_rc5_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             param.zjc_host->SaveKeyValue(param.from, key, tmp5[tmp_idx].toString(true));
         }
 
@@ -882,7 +915,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
             ZJC_DEBUG("create member reenc data: %d, %d, tmp6: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp6[tmp_idx].toString()).c_str());
-            auto key = std::string("create_reenc_user_msg_rc6_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_reenc_user_msg_rc6_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             param.zjc_host->SaveKeyValue(param.from, key, tmp6[tmp_idx].toString());
         }
     }
@@ -894,6 +927,12 @@ int ContractReEncryption::Decryption(
         const CallParameters& param, 
         const std::string& key, 
         const std::string& value) {
+    auto lines = common::Split<>(value.c_str(), ';');
+    if (lines.Count() != 2) {
+        return kContractError;
+    }
+
+    std::string id(lines[0]);
     auto& e = *pairing_ptr_;
     //密钥生成，这里生成10个用户。
     //下标为0的用户0作为加密者，其余用户(1~9)为接受者。
@@ -903,7 +942,7 @@ int ContractReEncryption::Decryption(
     vector<Zr> sk;
     vector<G1> pk;
     for(int i = 0;i<nu;i++){
-        auto private_key = std::string("init_prikey_") + std::to_string(i);
+        auto private_key = id + "_" + std::string("init_prikey_") + std::to_string(i);
         std::string val;
         if (param.zjc_host->GetKeyValue(param.from, private_key, &val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -923,7 +962,7 @@ int ContractReEncryption::Decryption(
     vector<GT> c2,c4,c6;
     for(int i = 0;i<np;i++){
         {
-            auto key = std::string("create_enc_user_msg_c1_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c1_") + std::to_string(i);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -933,7 +972,7 @@ int ContractReEncryption::Decryption(
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c2_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c2_") + std::to_string(i);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -943,7 +982,7 @@ int ContractReEncryption::Decryption(
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c3_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c3_") + std::to_string(i);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -953,7 +992,7 @@ int ContractReEncryption::Decryption(
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c4_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c4_") + std::to_string(i);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -963,7 +1002,7 @@ int ContractReEncryption::Decryption(
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c5_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c5_") + std::to_string(i);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -973,7 +1012,7 @@ int ContractReEncryption::Decryption(
         }
 
         {
-            auto key = std::string("create_enc_user_msg_c6_") + std::to_string(i);
+            auto key = id + "_" + std::string("create_enc_user_msg_c6_") + std::to_string(i);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -994,7 +1033,7 @@ int ContractReEncryption::Decryption(
     for (int i = 1; i < nu; i++) {
         vector<G1> tmp1;
         for (int32_t tmp_idx = 0; tmp_idx < t; ++tmp_idx) {
-            auto key = std::string("create_reenc_user_msg_rc1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_reenc_user_msg_rc1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -1006,7 +1045,7 @@ int ContractReEncryption::Decryption(
 
         vector<GT> tmp2;
         for (int32_t tmp_idx = 0; tmp_idx < t; ++tmp_idx) {
-            auto key = std::string("create_reenc_user_msg_rc2_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_reenc_user_msg_rc2_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -1018,7 +1057,7 @@ int ContractReEncryption::Decryption(
 
         vector<G1> tmp3;
         for (int32_t tmp_idx = 0; tmp_idx < t; ++tmp_idx) {
-            auto key = std::string("create_reenc_user_msg_rc3_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_reenc_user_msg_rc3_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -1030,7 +1069,7 @@ int ContractReEncryption::Decryption(
 
         vector<GT> tmp4;
         for (int32_t tmp_idx = 0; tmp_idx < t; ++tmp_idx) {
-            auto key = std::string("create_reenc_user_msg_rc4_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_reenc_user_msg_rc4_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -1042,7 +1081,7 @@ int ContractReEncryption::Decryption(
 
         vector<G1> tmp5;
         for (int32_t tmp_idx = 0; tmp_idx < 1; ++tmp_idx) {
-            auto key = std::string("create_reenc_user_msg_rc5_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_reenc_user_msg_rc5_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -1054,7 +1093,7 @@ int ContractReEncryption::Decryption(
 
         vector<GT> tmp6;
         for (int32_t tmp_idx = 0; tmp_idx < 1; ++tmp_idx) {
-            auto key = std::string("create_reenc_user_msg_rc6_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
+            auto key = id + "_" + std::string("create_reenc_user_msg_rc6_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             std::string val;
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
@@ -1074,7 +1113,7 @@ int ContractReEncryption::Decryption(
 
     vector<Zr> lag;
     for (int i = 0; i < t; i++) {
-        auto key = std::string("create_enc_user_msg_lag_") + std::to_string(i);
+        auto key = id + "_" + std::string("create_enc_user_msg_lag_") + std::to_string(i);
         std::string val;
         if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", key.c_str());
