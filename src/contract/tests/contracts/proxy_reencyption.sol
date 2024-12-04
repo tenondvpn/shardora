@@ -127,12 +127,28 @@ contract ProxyReencryption {
         assembly { mstore(add(b, 32), x) }
     }
 
-    function GetOrdersJson() public view returns(bytes memory) {
-        uint validLen = 0;
-        bytes[] memory all_bytes = new bytes[](validLen + 2);
+    function GetProxyJson(ProxyInfo memory ars, bool last) public pure returns (bytes memory) {
+        bytes[] memory all_bytes = new bytes[](100);
+        uint filedCount = 0;
+        all_bytes[filedCount++] = '{"id":"';
+        all_bytes[filedCount++] = ToHex(Bytes32toBytes(ars.id));
+        all_bytes[filedCount++] = '","res":"';
+        all_bytes[filedCount++] = ToHex(Bytes32toBytes(ars.res_info));
+        if (last) {
+            all_bytes[filedCount++] = '"}';
+        } else {
+            all_bytes[filedCount++] = '"},';
+        }
+        return bytesConcat(all_bytes, filedCount);
+    }
+
+    function GetAllProxyJson() public view returns(bytes memory) {
+        uint validLen = 1;
+        bytes[] memory all_bytes = new bytes[](all_ids.length + 2);
         all_bytes[0] = '[';
-        uint arrayLength = 0;
+        uint arrayLength = all_ids.length;
         for (uint i=0; i<arrayLength; i++) {
+            all_bytes[i + 1] = GetProxyJson(ars_map[all_ids[i]], (i == arrayLength - 1));
             ++validLen;
         }
 
