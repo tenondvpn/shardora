@@ -50,6 +50,8 @@ public:
     static bool ToFloat(const std::string& str, float* res);
     static bool ToDouble(const std::string& str, double* res);
 
+    static bool IsHexStr(const std::string& str);
+
     template<typename ... Args>
     static std::string Format(const std::string& format, Args ... args) {
         size_t size = ::snprintf(nullptr, 0, format.c_str(), args ...) + 1;
