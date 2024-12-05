@@ -216,18 +216,18 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
     // var message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
     //     amount_buf, gas_limit_buf, gas_price_buf, step_buf, prepay_buf]);
 
-    var buffer_array = [ethereumjs.Buffer.Buffer.from(gid, 'hex'),
-        ethereumjs.Buffer.Buffer.from(frompk, 'hex'),
-        ethereumjs.Buffer.Buffer.from(to, 'hex'),
+    var buffer_array = [Buffer.from(gid, 'hex'),
+        Buffer.from(frompk, 'hex'),
+        Buffer.from(to, 'hex'),
         amount_buf, gas_limit_buf, gas_price_buf, step_buf];
     if (key != null && key != "") {
-        buffer_array.push(ethereumjs.Buffer.Buffer.from(key));
+        buffer_array.push(Buffer.from(key));
         if (value != null && value != "") {
-            buffer_array.push(ethereumjs.Buffer.Buffer.from(value));
+            buffer_array.push(Buffer.from(value));
         }
     }
 
-    var message_buf = ethereumjs.Buffer.Buffer.concat(buffer_array);
+    var message_buf = Buffer.concat(buffer_array);
     
     var kechash = keccak256(message_buf)
     var digest = Secp256k1.uint256(kechash, 16)
