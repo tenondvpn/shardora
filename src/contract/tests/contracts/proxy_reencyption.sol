@@ -247,12 +247,16 @@ contract ProxyReencryption {
             if (tx_gid_map[all_gids[i]].id != id) {
                 continue;
             }
-            
+
             all_bytes[i + 1] = GetGidProxyJson(tx_gid_map[all_gids[i]], (i == arrayLength - 1));
             ++validLen;
         }
 
         all_bytes[validLen] = ']';
         return bytesConcat(all_bytes, validLen + 1);
+    }
+
+    function JustCallRipemd160(bytes32 id) public view returns(bytes memory) {
+        bytes32 res = ripemd160(params);
     }
 }

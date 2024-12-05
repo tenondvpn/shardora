@@ -609,6 +609,29 @@ function GetAllGidJson(id) {
         addParamCode.substring(2));
 }
 
+function JustCallRipemd160(id) {
+    var key = "tprdec"
+    var value = id+";";
+    var key_len = key.length.toString();
+    if (key.length <= 9) {
+        key_len = "0" + key_len;
+    }
+
+    var param = key + key_len + key + value;
+    var hexparam = web3.utils.toHex(param);
+    content = web3.utils.toHex(content);
+    // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
+    var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
+    var addParam = web3.eth.abi.encodeParameters(
+        ['bytes32', 'bytes32', 'bytes',  'bytes'], 
+        ['0x' + id, '0x' + gid, content, hexparam]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('Decryption(bytes32,bytes32,bytes,bytes)');
+    console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+    QueryContract(
+        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        addParamCode.substring(2) + addParam.substring(2));
+}
+
 const args = process.argv.slice(2)
 var tmp_id = args[1]
 var id = keccak256('7540498158068831994142082110286533992664756308802229570786251794' + contract_address + tmp_id).toString('hex');
@@ -655,31 +678,7 @@ if (args[0] == 6) {
 
 // 测试合约查询
 if (args[0] == 30) {
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('GetAllProxyJson()');
-    var input = addParamCode.substring(2);
-    var str_prikey = "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";
-    var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
-    var self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
-    var self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
-    var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
-    var address = keccak256(pk_bytes).toString('hex')
-    var address = address.slice(address.length - 40, address.length)
-    var data = {
-        "input": input,
-        'address': contract_address,
-        'from': address,
-    };
-
-    let res = co(function* () {
-        let json_res = yield sendHttpRequest('/query_contract', data);
-        console.log("json_res: ")
-        console.log(json_res)
-        for (var item in json_res) {
-            var sub_json = GetAllGidJson(item.id);
-            console.log("sub_json: ")
-            console.log(sub_json)
-        }
-    });
-
-    
+    JustCallRipemd160(id, "test");
+    GetAllProxyJson();
+    GetAllGidJson(id);
 }
