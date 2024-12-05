@@ -329,7 +329,7 @@ function QueryContract(str_prikey, input) {
         'from': address,
     };
 
-    sendHttpRequest('/query_contract', data);
+    QueryPostCode('/query_contract', data);
 }
 
 function Prepayment(str_prikey, prepay) {
@@ -672,6 +672,4 @@ if (args[0] == 6) {
 // 测试合约查询
 if (args[0] == 30) {
     JustCallRipemd160(id, "test");
-    GetAllProxyJson();
-    GetAllGidJson(id);
 }
