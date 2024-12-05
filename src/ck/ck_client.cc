@@ -150,7 +150,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         status->Append(tx.status());
         tx_hash->Append(common::Encode::HexEncode(tx.gid()));
         call_contract_step->Append(tx.step());
-        if (tx.storages_size() == 1) {
+        if (tx.storages_size() > 0) {
             storages->Append(tx.storages(0).value());
         } else {
             storages->Append("");
