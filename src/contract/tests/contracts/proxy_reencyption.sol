@@ -258,6 +258,11 @@ contract ProxyReencryption {
 
     function JustCallRipemd160(bytes memory params) public view returns(bytes memory) {
         bytes32 res = ripemd160(params);
-        return GetAllProxyJson();
+        bytes[] memory all_bytes = new bytes[](100);
+        uint filedCount = 0;
+        all_bytes[filedCount++] = '{"res":"';
+        all_bytes[filedCount++] = ToHex(Bytes32toBytes(res));
+        all_bytes[filedCount++] = '"}';
+        return bytesConcat(all_bytes, filedCount);
     }
 }
