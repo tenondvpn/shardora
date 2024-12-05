@@ -8,6 +8,8 @@ var querystring = require('querystring');
 var http = require('http');
 var fs = require('fs');
 const util = require('util')
+let co = require('co');
+
 const kTestSellerCount = 11;  // real: kTestSellerCount - 10
 const kTestBuyerCount = 11;  // real: kTestBuyerCount - 10
 const contract_address = "48e1eab96c9e759daa3aff82b40e77cd615a41d0";
@@ -254,11 +256,6 @@ function call_contract(str_prikey, input, amount) {
     PostCode(data);
 }
 
-function do_transaction(str_prikey, to_addr, amount, gas_limit, gas_price) {
-    var data = create_tx(str_prikey, to_addr, amount, gas_limit, gas_price, 0, 0);
-    PostCode(data);
-}
-
 function QueryPostCode(path, data) {
     var post_data = querystring.stringify(data);
     var post_options = {
@@ -276,14 +273,47 @@ function QueryPostCode(path, data) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
             var json_res = JSON.parse(chunk)
-            console.log('amount: ' + json_res.amount + ", tmp: " + json_res.tmp);
-            console.log('Response: ' + chunk);
+            console.log(chunk);
             return json_res;
         })
     });
 
     post_req.write(post_data);
     post_req.end();
+}
+
+function sendHttpRequest(path, in_data, encoding = 'utf8') {
+    let options = {
+        host: '127.0.0.1',
+        port: '23001',
+        path: path,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Length': Buffer.byteLength(post_data)
+        }
+    };
+    
+    let data = "";
+    var post_data = querystring.stringify(in_data);
+    return new Promise(function (resolve, reject) {
+        let req = http.request(options, function(res) {
+            res.setEncoding(encoding);
+            res.on('data', function(chunk) {
+                data += chunk;
+            });
+ 
+            res.on('end', function() {
+                resolve({result: true, data: data});
+            });
+        });
+ 
+        req.write(post_data);
+        req.on('error', (e) => {
+            resolve({result: false, errmsg: e.message});
+        });
+        req.end();
+    });
 }
 
 function QueryContract(str_prikey, input) {
@@ -299,7 +329,12 @@ function QueryContract(str_prikey, input) {
         'from': address,
     };
 
-    QueryPostCode('/query_contract', data);
+    let res = co(function* () {
+        let req_res = yield sendHttpRequest('/query_contract', data);
+        console.log(req_res);
+    });
+
+    return res
 }
 
 function Prepayment(str_prikey, prepay) {
