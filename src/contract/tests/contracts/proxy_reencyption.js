@@ -221,7 +221,7 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
     var buffer_array = [Buffer.from(gid, 'hex'),
         Buffer.from(frompk, 'hex'),
         Buffer.from(to, 'hex'),
-        amount_buf, gas_limit_buf, gas_price_buf, step_buf];
+        amount_buf, gas_limit_buf, gas_price_buf, step_buf, prepay_buf];
     if (key != null && key != "") {
         buffer_array.push(Buffer.from(key));
         if (value != null && value != "") {
