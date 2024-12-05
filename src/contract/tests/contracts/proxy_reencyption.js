@@ -136,9 +136,9 @@ function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_pri
         Buffer.from(input, 'hex'), 
         prepay_buf];
     if (key != null && key != "") {
-        buffer_array.push(Buffer.from(key, 'hex'));
+        buffer_array.push(Buffer.from(key));
         if (value != null && value != "") {
-            buffer_array.push(Buffer.from(value, 'hex'));
+            buffer_array.push(Buffer.from(value));
         }
     }
 
@@ -223,9 +223,9 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
         Buffer.from(to, 'hex'),
         amount_buf, gas_limit_buf, gas_price_buf, step_buf, prepay_buf];
     if (key != null && key != "") {
-        buffer_array.push(Buffer.from(key, 'hex'));
+        buffer_array.push(Buffer.from(key));
         if (value != null && value != "") {
-            buffer_array.push(Buffer.from(value, 'hex'));
+            buffer_array.push(Buffer.from(value));
         }
     }
 
@@ -369,12 +369,7 @@ function QueryContract(str_prikey, input) {
 }
 
 function Prepayment(str_prikey, prepay) {
-    var data = create_tx(str_prikey, contract_address, 0, 100000, 1, prepay, 7);
-    PostCode(data);
-}
-
-function Prepayment(str_prikey, prepay) {
-    var data = create_tx(str_prikey, contract_address, 0, 100000, 1, prepay, 7);
+    var data = create_tx(str_prikey, contract_address, 0, 100000, 1, prepay, 7, "key", "value");
     PostCode(data);
 }
 
