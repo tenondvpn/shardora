@@ -136,13 +136,13 @@ function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_pri
         Buffer.from(input, 'hex'), 
         prepay_buf];
     if (key != null && key != "") {
-        buffer_array.push(ethereumjs.Buffer.Buffer.from(key));
+        buffer_array.push(Buffer.from(key));
         if (value != null && value != "") {
-            buffer_array.push(ethereumjs.Buffer.Buffer.from(value));
+            buffer_array.push(Buffer.from(value));
         }
     }
 
-    var message_buf = ethereumjs.Buffer.Buffer.concat(buffer_array);
+    var message_buf = Buffer.concat(buffer_array);
     
     var kechash = keccak256(message_buf)
     var digest = Secp256k1.uint256(kechash, 16)
