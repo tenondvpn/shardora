@@ -53,7 +53,7 @@ contract ProxyReencryption {
             exists: true
         });
 
-        tx_gid_map[gid] = ProxyInfo({
+        tx_gid_map[gid] = TxGidInfo({
             gid: gid,
             id: id,
             content: content,
@@ -72,7 +72,7 @@ contract ProxyReencryption {
         emit DebugEvent(4);
         bytes32 res = ripemd160(params);
         require(!tx_gid_map[gid].exists);
-        tx_gid_map[gid] = ProxyInfo({
+        tx_gid_map[gid] = TxGidInfo({
             gid: gid,
             id: id,
             content: content,
@@ -89,7 +89,7 @@ contract ProxyReencryption {
         emit DebugEvent(7);
         bytes32 res = ripemd160(params);
         require(!tx_gid_map[gid].exists);
-        tx_gid_map[gid] = ProxyInfo({
+        tx_gid_map[gid] = TxGidInfo({
             gid: gid,
             id: id,
             content: content,
@@ -106,7 +106,7 @@ contract ProxyReencryption {
         emit DebugEvent(10);
         bytes32 res = ripemd160(params);
         require(!tx_gid_map[gid].exists);
-        tx_gid_map[gid] = ProxyInfo({
+        tx_gid_map[gid] = TxGidInfo({
             gid: gid,
             id: id,
             content: content,
@@ -123,7 +123,7 @@ contract ProxyReencryption {
         emit DebugEvent(13);
         bytes32 res = ripemd160(params);
         require(!tx_gid_map[gid].exists);
-        tx_gid_map[gid] = ProxyInfo({
+        tx_gid_map[gid] = TxGidInfo({
             gid: gid,
             id: id,
             content: content,
@@ -140,7 +140,7 @@ contract ProxyReencryption {
         emit DebugEvent(16);
         bytes32 res = ripemd160(params);
         require(!tx_gid_map[gid].exists);
-        tx_gid_map[gid] = ProxyInfo({
+        tx_gid_map[gid] = TxGidInfo({
             gid: gid,
             id: id,
             content: content,
