@@ -617,5 +617,4 @@ if (args[0] == 6) {
 // 测试合约查询
 if (args[0] == 30) {
     GetAllProxyJson();
-    GetAllGidJson();
 }
