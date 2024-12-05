@@ -136,9 +136,9 @@ function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_pri
         Buffer.from(input, 'hex'), 
         prepay_buf];
     if (key != null && key != "") {
-        buffer_array.push(Buffer.from(key));
+        buffer_array.push(Buffer.from(key, 'hex'));
         if (value != null && value != "") {
-            buffer_array.push(Buffer.from(value));
+            buffer_array.push(Buffer.from(value, 'hex'));
         }
     }
 
@@ -223,9 +223,9 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
         Buffer.from(to, 'hex'),
         amount_buf, gas_limit_buf, gas_price_buf, step_buf, prepay_buf];
     if (key != null && key != "") {
-        buffer_array.push(Buffer.from(key));
+        buffer_array.push(Buffer.from(key, 'hex'));
         if (value != null && value != "") {
-            buffer_array.push(Buffer.from(value));
+            buffer_array.push(Buffer.from(value, 'hex'));
         }
     }
 
@@ -503,7 +503,7 @@ function CreatePrivateAndPublicKeys(id, content) {
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2) + addParam.substring(2), 0, "def", content);
+        addParamCode.substring(2) + addParam.substring(2), 0, web3.utils.toHex("def"), content);
 }
 
 function CreateReEncryptionKeys(id, content) {
@@ -526,7 +526,7 @@ function CreateReEncryptionKeys(id, content) {
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2) + addParam.substring(2), 0, "def", content);
+        addParamCode.substring(2) + addParam.substring(2), 0, web3.utils.toHex("def"), content);
 }
 
 function EncryptUserMessage(id, content) {
@@ -549,7 +549,7 @@ function EncryptUserMessage(id, content) {
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2) + addParam.substring(2), 0, "def", content);
+        addParamCode.substring(2) + addParam.substring(2), 0, web3.utils.toHex("def"), content);
 }
 
 function ReEncryptUserMessage(id, content) {
@@ -572,7 +572,7 @@ function ReEncryptUserMessage(id, content) {
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2) + addParam.substring(2), 0, "def", content);
+        addParamCode.substring(2) + addParam.substring(2), 0, web3.utils.toHex("def"), content);
 }
 
 function ReEncryptUserMessageWithMember(id, index, content) {
@@ -595,7 +595,7 @@ function ReEncryptUserMessageWithMember(id, index, content) {
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2) + addParam.substring(2), 0, "def", content);
+        addParamCode.substring(2) + addParam.substring(2), 0,web3.utils.toHex("def"), content);
 }
 
 function Decryption(id, content) {
@@ -618,7 +618,7 @@ function Decryption(id, content) {
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2) + addParam.substring(2), 0, "def", content);
+        addParamCode.substring(2) + addParam.substring(2), 0, web3.utils.toHex("def"), content);
 }
 
 function GetAllProxyJson() {
