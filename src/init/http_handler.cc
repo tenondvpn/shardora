@@ -291,7 +291,7 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     }
     
     transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header);
-    ZJC_DEBUG("http handler success get http server thread index: %d, address: %s, hash64: %lu", 
+    ZJC_WARN("http handler success get http server thread index: %d, address: %s, hash64: %lu", 
         thread_index, 
         common::Encode::HexEncode(
             http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk))).c_str(),
@@ -300,7 +300,7 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     std::string res = std::string("ok");
     evbuffer_add(req->buffer_out, res.c_str(), res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
-    ZJC_DEBUG("http transaction success %s, %s, gid: %s", common::Encode::HexEncode(
+    ZJC_WARN("http transaction success %s, %s, gid: %s", common::Encode::HexEncode(
             http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk))).c_str(), to, gid);
 }
 
