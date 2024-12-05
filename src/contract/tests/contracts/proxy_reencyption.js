@@ -488,12 +488,12 @@ function CreatePrivateAndPublicKeys(id, content) {
 
     var param = key + key_len + key + value;
     var hexparam = web3.utils.toHex(param);
-    content = web3.utils.toHex(content);
+    hex_content = web3.utils.toHex(content);
     // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var addParam = web3.eth.abi.encodeParameters(
         ['bytes32', 'bytes32', 'bytes', 'bytes'], 
-        ['0x' + id, '0x' + gid, content, hexparam]);
+        ['0x' + id, '0x' + gid, hex_content, hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('CreatePrivateAndPublicKeys(bytes32,bytes32,bytes,bytes)');
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
@@ -511,12 +511,12 @@ function CreateReEncryptionKeys(id, content) {
 
     var param = key + key_len + key + value;
     var hexparam = web3.utils.toHex(param);
-    content = web3.utils.toHex(content);
+    hex_content = web3.utils.toHex(content);
     // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var addParam = web3.eth.abi.encodeParameters(
         ['bytes32', 'bytes32', 'bytes',  'bytes'], 
-        ['0x' + id, '0x' + gid, content, hexparam]);
+        ['0x' + id, '0x' + gid, hex_content, hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('CreateReEncryptionKeys(bytes32,bytes32,bytes,bytes)');
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
@@ -534,12 +534,12 @@ function EncryptUserMessage(id, content) {
 
     var param = key + key_len + key + value;
     var hexparam = web3.utils.toHex(param);
-    content = web3.utils.toHex(content);
+    hex_content = web3.utils.toHex(content);
     // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var addParam = web3.eth.abi.encodeParameters(
         ['bytes32', 'bytes32', 'bytes', 'bytes'], 
-        ['0x' + id, '0x' + gid, content, hexparam]);
+        ['0x' + id, '0x' + gid, hex_content, hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('EncryptUserMessage(bytes32,bytes32,bytes,bytes)');
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
@@ -557,12 +557,12 @@ function ReEncryptUserMessage(id, content) {
 
     var param = key + key_len + key + value;
     var hexparam = web3.utils.toHex(param);
-    content = web3.utils.toHex(content);
+    hex_content = web3.utils.toHex(content);
     // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var addParam = web3.eth.abi.encodeParameters(
         ['bytes32', 'bytes32', 'bytes',  'bytes'], 
-        ['0x' + id, '0x' + gid, content, hexparam]);
+        ['0x' + id, '0x' + gid, hex_content, hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('ReEncryptUserMessage(bytes32,bytes32,bytes,bytes)');
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
@@ -580,12 +580,12 @@ function ReEncryptUserMessageWithMember(id, index, content) {
 
     var param = key + key_len + key + value;
     var hexparam = web3.utils.toHex(param);
-    content = web3.utils.toHex(content);
+    hex_content = web3.utils.toHex(content);
     // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var addParam = web3.eth.abi.encodeParameters(
         ['bytes32', 'bytes32', 'bytes',  'bytes'], 
-        ['0x' + id, '0x' + gid, content, hexparam]);
+        ['0x' + id, '0x' + gid, hex_content, hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('ReEncryptUserMessageWithMember(bytes32,bytes32,bytes,bytes)');
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
@@ -603,12 +603,12 @@ function Decryption(id, content) {
 
     var param = key + key_len + key + value;
     var hexparam = web3.utils.toHex(param);
-    content = web3.utils.toHex(content);
+    hex_content = web3.utils.toHex(content);
     // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var addParam = web3.eth.abi.encodeParameters(
         ['bytes32', 'bytes32', 'bytes',  'bytes'], 
-        ['0x' + id, '0x' + gid, content, hexparam]);
+        ['0x' + id, '0x' + gid, hex_content, hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('Decryption(bytes32,bytes32,bytes,bytes)');
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
