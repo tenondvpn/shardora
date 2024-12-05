@@ -329,12 +329,7 @@ function QueryContract(str_prikey, input) {
         'from': address,
     };
 
-    let res = co(function* () {
-        let req_res = yield sendHttpRequest('/query_contract', data);
-        console.log(req_res);
-    });
-
-    return res
+    sendHttpRequest('/query_contract', data);
 }
 
 function Prepayment(str_prikey, prepay) {
