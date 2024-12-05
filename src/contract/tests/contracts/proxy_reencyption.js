@@ -283,6 +283,7 @@ function QueryPostCode(path, data) {
 }
 
 function sendHttpRequest(path, in_data, encoding = 'utf8') {
+    var post_data = querystring.stringify(in_data);
     let options = {
         host: '127.0.0.1',
         port: '23001',
@@ -295,7 +296,6 @@ function sendHttpRequest(path, in_data, encoding = 'utf8') {
     };
     
     let data = "";
-    var post_data = querystring.stringify(in_data);
     return new Promise(function (resolve, reject) {
         let req = http.request(options, function(res) {
             res.setEncoding(encoding);
