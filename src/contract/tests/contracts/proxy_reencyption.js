@@ -426,6 +426,7 @@ function CreatePrivateAndPublicKeys(id, content) {
 
     var param = key + key_len + key + value;
     var hexparam = web3.utils.toHex(param);
+    content = web3.utils.toHex(content);
     // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var addParam = web3.eth.abi.encodeParameters(
@@ -448,6 +449,7 @@ function CreateReEncryptionKeys(id, content) {
 
     var param = key + key_len + key + value;
     var hexparam = web3.utils.toHex(param);
+    content = web3.utils.toHex(content);
     // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var addParam = web3.eth.abi.encodeParameters(
@@ -470,6 +472,7 @@ function EncryptUserMessage(id, content) {
 
     var param = key + key_len + key + value;
     var hexparam = web3.utils.toHex(param);
+    content = web3.utils.toHex(content);
     // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var addParam = web3.eth.abi.encodeParameters(
@@ -492,6 +495,7 @@ function ReEncryptUserMessage(id, content) {
 
     var param = key + key_len + key + value;
     var hexparam = web3.utils.toHex(param);
+    content = web3.utils.toHex(content);
     // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var addParam = web3.eth.abi.encodeParameters(
@@ -514,6 +518,7 @@ function ReEncryptUserMessageWithMember(id, index, content) {
 
     var param = key + key_len + key + value;
     var hexparam = web3.utils.toHex(param);
+    content = web3.utils.toHex(content);
     // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var addParam = web3.eth.abi.encodeParameters(
@@ -536,6 +541,7 @@ function Decryption(id, content) {
 
     var param = key + key_len + key + value;
     var hexparam = web3.utils.toHex(param);
+    content = web3.utils.toHex(content);
     // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var addParam = web3.eth.abi.encodeParameters(
