@@ -215,7 +215,7 @@ contract ProxyReencryption {
         all_bytes[filedCount++] = '","gid":"';
         all_bytes[filedCount++] = ToHex(Bytes32toBytes(ars.gid));
         all_bytes[filedCount++] = '","content":"';
-        all_bytes[filedCount++] = ToHex(ars.content);
+        all_bytes[filedCount++] = ars.content;
         if (last) {
             all_bytes[filedCount++] = '"}';
         } else {
