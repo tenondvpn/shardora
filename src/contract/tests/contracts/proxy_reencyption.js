@@ -556,6 +556,14 @@ function GetAllProxyJson() {
         addParamCode.substring(2));
 }
 
+function GetAllGidJson() {
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('GetAllGidJson()');
+    console.log("GetAllGidJson 0: " + addParamCode.substring(2));
+    QueryContract(
+        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        addParamCode.substring(2));
+}
+
 const args = process.argv.slice(2)
 var tmp_id = args[1]
 var id = keccak256('7540498158068831994142082110286533992664756308802229570786251794' + contract_address + tmp_id).toString('hex');
@@ -603,4 +611,5 @@ if (args[0] == 6) {
 // 测试合约查询
 if (args[0] == 30) {
     GetAllProxyJson();
+    GetAllGidJson();
 }
