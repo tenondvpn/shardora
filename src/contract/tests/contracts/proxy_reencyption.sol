@@ -14,8 +14,6 @@ contract ProxyReencryption {
         bytes32 id;
         bytes32 res_info;
         bool exists;
-        mapping(bytes32 => TxGidInfo) tx_gid_map;
-        bytes32[] all_gids;
     }
 
     struct TxGidInfo {
@@ -34,7 +32,9 @@ contract ProxyReencryption {
     );
 
     mapping(bytes32 => ProxyInfo) public proxy_map;
+    mapping(bytes32 => TxGidInfo) public tx_gid_map;
     bytes32[] all_ids;
+    bytes32[] all_gids;
 
     // SetUp：初始化算法，需要用到pbc库
     constructor(bytes memory enc_init_param) {
@@ -44,6 +44,7 @@ contract ProxyReencryption {
     function CreatePrivateAndPublicKeys(bytes32 id, bytes32 gid, bytes memory content, bytes memory params) public {
         emit DebugEvent(0);
         require(!proxy_map[id].exists);
+        require(!tx_gid_map[gid].exists);
         emit DebugEvent(1);
         bytes32 res = ripemd160(params);
         proxy_map[id] = ProxyInfo({
@@ -52,7 +53,7 @@ contract ProxyReencryption {
             exists: true
         });
 
-        proxy_map[id].tx_gid_map[gid] = TxGidInfo({
+        tx_gid_map[gid] = TxGidInfo({
             gid: gid,
             id: id,
             content: content,
@@ -60,7 +61,7 @@ contract ProxyReencryption {
         });
 
         all_ids.push(id);
-        proxy_map[id].all_gids.push(gid);
+        all_gids.push(gid);
         emit DebugEvent(2);
         emit DebugEvent(all_ids.length);
     }
@@ -70,15 +71,15 @@ contract ProxyReencryption {
         require(proxy_map[id].exists);
         emit DebugEvent(4);
         bytes32 res = ripemd160(params);
-        require(!proxy_map[id].tx_gid_map[gid].exists);
-        proxy_map[id].tx_gid_map[gid] = TxGidInfo({
+        require(!tx_gid_map[gid].exists);
+        tx_gid_map[gid] = TxGidInfo({
             gid: gid,
             id: id,
             content: content,
             exists: true
         });
 
-        proxy_map[id].all_gids.push(gid);
+        all_gids.push(gid);
         emit DebugEvent(5);
     }
 
@@ -87,15 +88,15 @@ contract ProxyReencryption {
         require(proxy_map[id].exists);
         emit DebugEvent(7);
         bytes32 res = ripemd160(params);
-        require(!proxy_map[id].tx_gid_map[gid].exists);
-        proxy_map[id].tx_gid_map[gid] = TxGidInfo({
+        require(!tx_gid_map[gid].exists);
+        tx_gid_map[gid] = TxGidInfo({
             gid: gid,
             id: id,
             content: content,
             exists: true
         });
 
-        proxy_map[id].all_gids.push(gid);
+        all_gids.push(gid);
         emit DebugEvent(8);
     }
 
@@ -104,15 +105,15 @@ contract ProxyReencryption {
         require(proxy_map[id].exists);
         emit DebugEvent(10);
         bytes32 res = ripemd160(params);
-        require(!proxy_map[id].tx_gid_map[gid].exists);
-        proxy_map[id].tx_gid_map[gid] = TxGidInfo({
+        require(!tx_gid_map[gid].exists);
+        tx_gid_map[gid] = TxGidInfo({
             gid: gid,
             id: id,
             content: content,
             exists: true
         });
 
-        proxy_map[id].all_gids.push(gid);
+        all_gids.push(gid);
         emit DebugEvent(11);
     }
 
@@ -121,15 +122,15 @@ contract ProxyReencryption {
         require(proxy_map[id].exists);
         emit DebugEvent(13);
         bytes32 res = ripemd160(params);
-        require(!proxy_map[id].tx_gid_map[gid].exists);
-        proxy_map[id].tx_gid_map[gid] = TxGidInfo({
+        require(!tx_gid_map[gid].exists);
+        tx_gid_map[gid] = TxGidInfo({
             gid: gid,
             id: id,
             content: content,
             exists: true
         });
 
-        proxy_map[id].all_gids.push(gid);
+        all_gids.push(gid);
         emit DebugEvent(14);
     }
 
@@ -138,15 +139,15 @@ contract ProxyReencryption {
         require(proxy_map[id].exists);
         emit DebugEvent(16);
         bytes32 res = ripemd160(params);
-        require(!proxy_map[id].tx_gid_map[gid].exists);
-        proxy_map[id].tx_gid_map[gid] = TxGidInfo({
+        require(!tx_gid_map[gid].exists);
+        tx_gid_map[gid] = TxGidInfo({
             gid: gid,
             id: id,
             content: content,
             exists: true
         });
 
-        proxy_map[id].all_gids.push(gid);
+        all_gids.push(gid);
         emit DebugEvent(17);
     }
 
@@ -191,6 +192,21 @@ contract ProxyReencryption {
         assembly { mstore(add(b, 32), x) }
     }
 
+    function GetProxyJson(ProxyInfo memory ars, bool last) public pure returns (bytes memory) {
+        bytes[] memory all_bytes = new bytes[](100);
+        uint filedCount = 0;
+        all_bytes[filedCount++] = '{"id":"';
+        all_bytes[filedCount++] = ToHex(Bytes32toBytes(ars.id));
+        all_bytes[filedCount++] = '","res":"';
+        all_bytes[filedCount++] = ToHex(Bytes32toBytes(ars.res_info));
+        if (last) {
+            all_bytes[filedCount++] = '"}';
+        } else {
+            all_bytes[filedCount++] = '"},';
+        }
+        return bytesConcat(all_bytes, filedCount);
+    }
+
     function GetGidProxyJson(TxGidInfo memory ars, bool last) public pure returns (bytes memory) {
         bytes[] memory all_bytes = new bytes[](100);
         uint filedCount = 0;
@@ -208,37 +224,6 @@ contract ProxyReencryption {
         return bytesConcat(all_bytes, filedCount);
     }
 
-    function GetAllGidJson(bytes memory id) public view returns(bytes memory) {
-        uint validLen = 1;
-        bytes[] memory all_bytes = new bytes[](proxy_map[id].all_gids.length + 2);
-        all_bytes[0] = '[';
-        uint arrayLength = proxy_map[id].all_gids.length;
-        for (uint i=0; i<arrayLength; i++) {
-            all_bytes[i + 1] = GetGidProxyJson(proxy_map[id].tx_gid_map[proxy_map[id].all_gids[i]], (i == arrayLength - 1));
-            ++validLen;
-        }
-
-        all_bytes[validLen] = ']';
-        return bytesConcat(all_bytes, validLen + 1);
-    }
-
-    function GetProxyJson(ProxyInfo memory ars, bool last) public pure returns (bytes memory) {
-        bytes[] memory all_bytes = new bytes[](100);
-        uint filedCount = 0;
-        all_bytes[filedCount++] = '{"id":"';
-        all_bytes[filedCount++] = ToHex(Bytes32toBytes(ars.id));
-        all_bytes[filedCount++] = '","res":"';
-        all_bytes[filedCount++] = ToHex(Bytes32toBytes(ars.res_info));
-        all_bytes[filedCount++] = '","gids":"';
-        all_bytes[filedCount++] = GetAllGidJson(ars.id);
-        if (last) {
-            all_bytes[filedCount++] = '"}';
-        } else {
-            all_bytes[filedCount++] = '"},';
-        }
-        return bytesConcat(all_bytes, filedCount);
-    }
-
     function GetAllProxyJson() public view returns(bytes memory) {
         uint validLen = 1;
         bytes[] memory all_bytes = new bytes[](all_ids.length + 2);
@@ -246,6 +231,24 @@ contract ProxyReencryption {
         uint arrayLength = all_ids.length;
         for (uint i=0; i<arrayLength; i++) {
             all_bytes[i + 1] = GetProxyJson(proxy_map[all_ids[i]], (i == arrayLength - 1));
+            ++validLen;
+        }
+
+        all_bytes[validLen] = ']';
+        return bytesConcat(all_bytes, validLen + 1);
+    }
+
+    function GetAllGidJson(bytes32 id) public view returns(bytes memory) {
+        uint validLen = 1;
+        bytes[] memory all_bytes = new bytes[](all_gids.length + 2);
+        all_bytes[0] = '[';
+        uint arrayLength = all_gids.length;
+        for (uint i=0; i<arrayLength; i++) {
+            if (tx_gid_map[all_gids[i]].id != id) {
+                continue;
+            }
+            
+            all_bytes[i + 1] = GetGidProxyJson(tx_gid_map[all_gids[i]], (i == arrayLength - 1));
             ++validLen;
         }
 
