@@ -82,7 +82,7 @@ function GetValidHexString(uint256_bytes) {
     return str_res;
 }
 
-function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_price, contract_bytes, input, prepay) {
+function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_price, contract_bytes, input, prepay, key="", value="") {
     var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
     var from_private_key = Secp256k1.uint256(privateKeyBuf, 16)
     var from_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(from_private_key)
@@ -118,14 +118,32 @@ function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_pri
     prepay_buf.writeUInt32LE(big, 4)
     prepay_buf.writeUInt32LE(low, 0)
 
-    var message_buf = Buffer.concat([
+    // var message_buf = Buffer.concat([
+    //     Buffer.from(gid, 'hex'), 
+    //     Buffer.from(frompk, 'hex'), 
+    //     Buffer.from(to, 'hex'),
+    //     amount_buf, gas_limit_buf, gas_price_buf, step_buf, 
+    //     Buffer.from(contract_bytes, 'hex'), 
+    //     Buffer.from(input, 'hex'), 
+    //     prepay_buf]);
+
+    var buffer_array = [
         Buffer.from(gid, 'hex'), 
         Buffer.from(frompk, 'hex'), 
         Buffer.from(to, 'hex'),
         amount_buf, gas_limit_buf, gas_price_buf, step_buf, 
         Buffer.from(contract_bytes, 'hex'), 
         Buffer.from(input, 'hex'), 
-        prepay_buf]);
+        prepay_buf];
+    if (key != null && key != "") {
+        buffer_array.push(ethereumjs.Buffer.Buffer.from(key));
+        if (value != null && value != "") {
+            buffer_array.push(ethereumjs.Buffer.Buffer.from(value));
+        }
+    }
+
+    var message_buf = ethereumjs.Buffer.Buffer.concat(buffer_array);
+    
     var kechash = keccak256(message_buf)
     var digest = Secp256k1.uint256(kechash, 16)
     var sig = Secp256k1.ecsign(from_private_key, digest)
@@ -160,7 +178,7 @@ function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_pri
     }
 }
 
-function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type) {
+function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type, key="", value="") {
     var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
     var from_private_key = Secp256k1.uint256(privateKeyBuf, 16)
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
@@ -195,8 +213,22 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
     prepay_buf.writeUInt32LE(big, 4)
     prepay_buf.writeUInt32LE(low, 0)
 
-    var message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
-        amount_buf, gas_limit_buf, gas_price_buf, step_buf, prepay_buf]);
+    // var message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
+    //     amount_buf, gas_limit_buf, gas_price_buf, step_buf, prepay_buf]);
+
+    var buffer_array = [ethereumjs.Buffer.Buffer.from(gid, 'hex'),
+        ethereumjs.Buffer.Buffer.from(frompk, 'hex'),
+        ethereumjs.Buffer.Buffer.from(to, 'hex'),
+        amount_buf, gas_limit_buf, gas_price_buf, step_buf];
+    if (key != null && key != "") {
+        buffer_array.push(ethereumjs.Buffer.Buffer.from(key));
+        if (value != null && value != "") {
+            buffer_array.push(ethereumjs.Buffer.Buffer.from(value));
+        }
+    }
+
+    var message_buf = ethereumjs.Buffer.Buffer.concat(buffer_array);
+    
     var kechash = keccak256(message_buf)
     var digest = Secp256k1.uint256(kechash, 16)
     var sig = Secp256k1.ecsign(from_private_key, digest)
@@ -239,7 +271,7 @@ function new_contract(from_str_prikey, contract_bytes) {
     return contract_address;
 }
 
-function call_contract(str_prikey, input, amount) {
+function call_contract(str_prikey, input, amount, key, value) {
     console.log("contract_address: " + contract_address);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var data = param_contract(
@@ -252,7 +284,9 @@ function call_contract(str_prikey, input, amount) {
         1,
         "",
         input,
-        0);
+        0,
+        key,
+        value);
     PostCode(data);
 }
 
@@ -465,7 +499,7 @@ function CreatePrivateAndPublicKeys(id, content) {
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2) + addParam.substring(2), 0);
+        addParamCode.substring(2) + addParam.substring(2), 0, "def", content);
 }
 
 function CreateReEncryptionKeys(id, content) {
@@ -488,7 +522,7 @@ function CreateReEncryptionKeys(id, content) {
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2) + addParam.substring(2), 0);
+        addParamCode.substring(2) + addParam.substring(2), 0, "def", content);
 }
 
 function EncryptUserMessage(id, content) {
@@ -511,7 +545,7 @@ function EncryptUserMessage(id, content) {
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2) + addParam.substring(2), 0);
+        addParamCode.substring(2) + addParam.substring(2), 0, "def", content);
 }
 
 function ReEncryptUserMessage(id, content) {
@@ -534,7 +568,7 @@ function ReEncryptUserMessage(id, content) {
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2) + addParam.substring(2), 0);
+        addParamCode.substring(2) + addParam.substring(2), 0, "def", content);
 }
 
 function ReEncryptUserMessageWithMember(id, index, content) {
@@ -557,7 +591,7 @@ function ReEncryptUserMessageWithMember(id, index, content) {
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2) + addParam.substring(2), 0);
+        addParamCode.substring(2) + addParam.substring(2), 0, "def", content);
 }
 
 function Decryption(id, content) {
@@ -580,7 +614,7 @@ function Decryption(id, content) {
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2) + addParam.substring(2), 0);
+        addParamCode.substring(2) + addParam.substring(2), 0, "def", content);
 }
 
 function GetAllProxyJson() {
