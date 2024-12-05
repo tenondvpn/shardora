@@ -14,7 +14,7 @@ contract ProxyReencryption {
         bytes32 id;
         bytes32 res_info;
         bool exists;
-        mapping(bytes32 => TxGidInfo) public tx_gid_map;
+        mapping(bytes32 => TxGidInfo) tx_gid_map;
         bytes32[] all_gids;
     }
 
