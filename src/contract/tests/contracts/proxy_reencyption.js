@@ -619,13 +619,11 @@ function JustCallRipemd160(id) {
 
     var param = key + key_len + key + value;
     var hexparam = web3.utils.toHex(param);
-    content = web3.utils.toHex(content);
     // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
-    var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var addParam = web3.eth.abi.encodeParameters(
-        ['bytes32', 'bytes32', 'bytes',  'bytes'], 
-        ['0x' + id, '0x' + gid, content, hexparam]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('Decryption(bytes32,bytes32,bytes,bytes)');
+        ['bytes'], 
+        [hexparam]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('JustCallRipemd160(bytes)');
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     QueryContract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 

@@ -256,7 +256,7 @@ contract ProxyReencryption {
         return bytesConcat(all_bytes, validLen + 1);
     }
 
-    function JustCallRipemd160(bytes32 id) public view returns(bytes memory) {
+    function JustCallRipemd160(bytes memory) public view returns(bytes memory) {
         bytes32 res = ripemd160(params);
     }
 }
