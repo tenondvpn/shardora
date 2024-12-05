@@ -278,6 +278,7 @@ function QueryPostCode(path, data) {
             var json_res = JSON.parse(chunk)
             console.log('amount: ' + json_res.amount + ", tmp: " + json_res.tmp);
             console.log('Response: ' + chunk);
+            return json_res;
         })
     });
 
@@ -562,9 +563,12 @@ function GetAllProxyJson() {
         addParamCode.substring(2));
 }
 
-function GetAllGidJson() {
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('GetAllGidJson()');
-    console.log("GetAllGidJson 0: " + addParamCode.substring(2));
+function GetAllGidJson(id) {
+    var addParam = web3.eth.abi.encodeParameters(
+        ['bytes32'], 
+        ['0x' + id]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('GetAllGidJson(bytes32)');
+    console.log("GetAllGidJson 0: " + addParamCode.substring(2) + addParam.substring(2));
     QueryContract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2));
@@ -616,5 +620,12 @@ if (args[0] == 6) {
 
 // 测试合约查询
 if (args[0] == 30) {
-    GetAllProxyJson();
+    var json_res = GetAllProxyJson();
+    console.log("json_res: ")
+    console.log(json_res)
+    for (var item in json_res) {
+        var sub_json = GetAllGidJson(item.id);
+        console.log("sub_json: ")
+        console.log(sub_json)
+    }
 }
