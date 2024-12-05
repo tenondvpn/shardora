@@ -208,7 +208,7 @@ contract ProxyReencryption {
         return bytesConcat(all_bytes, filedCount);
     }
 
-    function GetAllGidJson(id) public view returns(bytes memory) {
+    function GetAllGidJson(bytes memory id) public view returns(bytes memory) {
         uint validLen = 1;
         bytes[] memory all_bytes = new bytes[](proxy_map[id].all_gids.length + 2);
         all_bytes[0] = '[';
