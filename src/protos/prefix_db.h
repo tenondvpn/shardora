@@ -393,22 +393,22 @@ public:
     }
 
     bool SaveBlock(const view_block::protobuf::ViewBlockItem& view_block, db::DbWriteBatch& batch) {
-        assert(!view_block.qc().view_block_hash().empty());
-        if (BlockExists(view_block.qc().view_block_hash())) {
+        assert(!view_block.hash().empty());
+        if (BlockExists(view_block.hash())) {
             auto* block_item = &view_block.block_info();
-            ZJC_DEBUG("view_block.qc().view_block_hash() exists: %s, "
+            ZJC_DEBUG("view_block.hash() exists: %s, "
                 "new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
                 "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
-                common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
+                common::Encode::HexEncode(view_block.hash()).c_str(),
                 view_block.qc().network_id(),
                 view_block.qc().pool_index(),
                 block_item->height(),
                 view_block.qc().network_id(),
                 view_block.qc().pool_index(),
-                view_block.qc().view(),
+                view_block.view(),
                 block_item->tx_list_size(),
-                common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
-                view_block.qc().elect_height(),
+                common::Encode::HexEncode(view_block.hash()).c_str(),
+                view_block.elect_height(),
                 block_item->timeblock_height());
             std::string block_hash;
             assert(GetBlockHashWithBlockHeight(
@@ -422,13 +422,13 @@ public:
         std::string key;
         key.reserve(48);
         key.append(kBlockPrefix);
-        key.append(view_block.qc().view_block_hash());
+        key.append(view_block.hash());
         auto& block = view_block.block_info();
         SaveBlockHashWithBlockHeight(
             view_block.qc().network_id(),
             view_block.qc().pool_index(),
             block.height(),
-            view_block.qc().view_block_hash(),
+            view_block.hash(),
             batch);
         batch.Put(key, view_block.SerializeAsString());
         return true;
@@ -669,17 +669,17 @@ public:
             std::shared_ptr<db::DbWriteBatch>& db_batch) {
         std::string hash_key;
         hash_key.append(kViewBlockHashKeyPrefix);
-        hash_key.append(pb_view_block.qc().view_block_hash());
+        hash_key.append(pb_view_block.hash());
         db_batch->Put(hash_key, pb_view_block.SerializeAsString());
         std::string pre_hash_key;
         auto* view_block = &pb_view_block;
-        if (pb_view_block.qc().view() > 0) {
+        if (pb_view_block.view() > 0) {
             if (pb_view_block.parent_hash().empty()) {
                 ZJC_FATAL("success save view block, init load view block %u_%u_%lu, "
                     "%lu, hash: %s, phash: %s, prefix: %s, hash key: %s",
                     view_block->qc().network_id(), view_block->qc().pool_index(), 
-                    view_block->qc().view(), view_block->block_info().height(),
-                    common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
+                    view_block->view(), view_block->block_info().height(),
+                    common::Encode::HexEncode(view_block->hash()).c_str(),
                     common::Encode::HexEncode(view_block->parent_hash()).c_str(),
                     common::Encode::HexEncode(pre_hash_key).c_str(),
                     common::Encode::HexEncode(hash_key).c_str());
@@ -687,15 +687,15 @@ public:
 
             pre_hash_key.append(kViewBlockParentHashKeyPrefix);
             pre_hash_key.append(pb_view_block.parent_hash());
-            pre_hash_key.append(pb_view_block.qc().view_block_hash());
+            pre_hash_key.append(pb_view_block.hash());
             db_batch->Put(pre_hash_key, hash_key);
         }
         
         ZJC_DEBUG("success save view block, init load view block %u_%u_%lu, "
             "%lu, hash: %s, phash: %s, prefix: %s, hash key: %s",
             view_block->qc().network_id(), view_block->qc().pool_index(), 
-            view_block->qc().view(), view_block->block_info().height(),
-            common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
+            view_block->view(), view_block->block_info().height(),
+            common::Encode::HexEncode(view_block->hash()).c_str(),
             common::Encode::HexEncode(view_block->parent_hash()).c_str(),
             common::Encode::HexEncode(pre_hash_key).c_str(),
             common::Encode::HexEncode(hash_key).c_str());

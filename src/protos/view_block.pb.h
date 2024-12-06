@@ -433,10 +433,25 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
 
   // accessors -------------------------------------------------------
 
-  // optional bytes parent_hash = 1;
+  // optional bytes hash = 1;
+  bool has_hash() const;
+  void clear_hash();
+  static const int kHashFieldNumber = 1;
+  const ::std::string& hash() const;
+  void set_hash(const ::std::string& value);
+  #if LANG_CXX11
+  void set_hash(::std::string&& value);
+  #endif
+  void set_hash(const char* value);
+  void set_hash(const void* value, size_t size);
+  ::std::string* mutable_hash();
+  ::std::string* release_hash();
+  void set_allocated_hash(::std::string* hash);
+
+  // optional bytes parent_hash = 2;
   bool has_parent_hash() const;
   void clear_parent_hash();
-  static const int kParentHashFieldNumber = 1;
+  static const int kParentHashFieldNumber = 2;
   const ::std::string& parent_hash() const;
   void set_parent_hash(const ::std::string& value);
   #if LANG_CXX11
@@ -448,10 +463,10 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::std::string* release_parent_hash();
   void set_allocated_parent_hash(::std::string* parent_hash);
 
-  // optional bytes debug = 5;
+  // optional bytes debug = 10;
   bool has_debug() const;
   void clear_debug();
-  static const int kDebugFieldNumber = 5;
+  static const int kDebugFieldNumber = 10;
   const ::std::string& debug() const;
   void set_debug(const ::std::string& value);
   #if LANG_CXX11
@@ -463,10 +478,10 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::std::string* release_debug();
   void set_allocated_debug(::std::string* debug);
 
-  // optional .shardora.block.protobuf.Block block_info = 2;
+  // optional .shardora.block.protobuf.Block block_info = 3;
   bool has_block_info() const;
   void clear_block_info();
-  static const int kBlockInfoFieldNumber = 2;
+  static const int kBlockInfoFieldNumber = 3;
   private:
   const ::shardora::block::protobuf::Block& _internal_block_info() const;
   public:
@@ -475,10 +490,10 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::shardora::block::protobuf::Block* mutable_block_info();
   void set_allocated_block_info(::shardora::block::protobuf::Block* block_info);
 
-  // optional .shardora.view_block.protobuf.QcItem qc = 3;
+  // optional .shardora.view_block.protobuf.QcItem qc = 4;
   bool has_qc() const;
   void clear_qc();
-  static const int kQcFieldNumber = 3;
+  static const int kQcFieldNumber = 4;
   private:
   const ::shardora::view_block::protobuf::QcItem& _internal_qc() const;
   public:
@@ -487,10 +502,10 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::shardora::view_block::protobuf::QcItem* mutable_qc();
   void set_allocated_qc(::shardora::view_block::protobuf::QcItem* qc);
 
-  // optional .shardora.view_block.protobuf.MemberConsensusStat leader_consen_stat = 4;
+  // optional .shardora.view_block.protobuf.MemberConsensusStat leader_consen_stat = 5;
   bool has_leader_consen_stat() const;
   void clear_leader_consen_stat();
-  static const int kLeaderConsenStatFieldNumber = 4;
+  static const int kLeaderConsenStatFieldNumber = 5;
   private:
   const ::shardora::view_block::protobuf::MemberConsensusStat& _internal_leader_consen_stat() const;
   public:
@@ -499,8 +514,43 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::shardora::view_block::protobuf::MemberConsensusStat* mutable_leader_consen_stat();
   void set_allocated_leader_consen_stat(::shardora::view_block::protobuf::MemberConsensusStat* leader_consen_stat);
 
+  // optional .shardora.view_block.protobuf.QcItem self_commit_qc = 9;
+  bool has_self_commit_qc() const;
+  void clear_self_commit_qc();
+  static const int kSelfCommitQcFieldNumber = 9;
+  private:
+  const ::shardora::view_block::protobuf::QcItem& _internal_self_commit_qc() const;
+  public:
+  const ::shardora::view_block::protobuf::QcItem& self_commit_qc() const;
+  ::shardora::view_block::protobuf::QcItem* release_self_commit_qc();
+  ::shardora::view_block::protobuf::QcItem* mutable_self_commit_qc();
+  void set_allocated_self_commit_qc(::shardora::view_block::protobuf::QcItem* self_commit_qc);
+
+  // optional uint64 view = 6;
+  bool has_view() const;
+  void clear_view();
+  static const int kViewFieldNumber = 6;
+  ::google::protobuf::uint64 view() const;
+  void set_view(::google::protobuf::uint64 value);
+
+  // optional uint64 elect_height = 7;
+  bool has_elect_height() const;
+  void clear_elect_height();
+  static const int kElectHeightFieldNumber = 7;
+  ::google::protobuf::uint64 elect_height() const;
+  void set_elect_height(::google::protobuf::uint64 value);
+
+  // optional uint32 leader_idx = 8;
+  bool has_leader_idx() const;
+  void clear_leader_idx();
+  static const int kLeaderIdxFieldNumber = 8;
+  ::google::protobuf::uint32 leader_idx() const;
+  void set_leader_idx(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.ViewBlockItem)
  private:
+  void set_has_hash();
+  void clear_has_hash();
   void set_has_parent_hash();
   void clear_has_parent_hash();
   void set_has_block_info();
@@ -509,17 +559,30 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   void clear_has_qc();
   void set_has_leader_consen_stat();
   void clear_has_leader_consen_stat();
+  void set_has_view();
+  void clear_has_view();
+  void set_has_elect_height();
+  void clear_has_elect_height();
+  void set_has_leader_idx();
+  void clear_has_leader_idx();
+  void set_has_self_commit_qc();
+  void clear_has_self_commit_qc();
   void set_has_debug();
   void clear_has_debug();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::internal::ArenaStringPtr hash_;
   ::google::protobuf::internal::ArenaStringPtr parent_hash_;
   ::google::protobuf::internal::ArenaStringPtr debug_;
   ::shardora::block::protobuf::Block* block_info_;
   ::shardora::view_block::protobuf::QcItem* qc_;
   ::shardora::view_block::protobuf::MemberConsensusStat* leader_consen_stat_;
+  ::shardora::view_block::protobuf::QcItem* self_commit_qc_;
+  ::google::protobuf::uint64 view_;
+  ::google::protobuf::uint64 elect_height_;
+  ::google::protobuf::uint32 leader_idx_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -2264,15 +2327,81 @@ inline void QcItem::set_allocated_agg_sig(::shardora::view_block::protobuf::Aggr
 
 // ViewBlockItem
 
-// optional bytes parent_hash = 1;
-inline bool ViewBlockItem::has_parent_hash() const {
+// optional bytes hash = 1;
+inline bool ViewBlockItem::has_hash() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void ViewBlockItem::set_has_parent_hash() {
+inline void ViewBlockItem::set_has_hash() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void ViewBlockItem::clear_has_parent_hash() {
+inline void ViewBlockItem::clear_has_hash() {
   _has_bits_[0] &= ~0x00000001u;
+}
+inline void ViewBlockItem::clear_hash() {
+  hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_hash();
+}
+inline const ::std::string& ViewBlockItem::hash() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockItem.hash)
+  return hash_.GetNoArena();
+}
+inline void ViewBlockItem::set_hash(const ::std::string& value) {
+  set_has_hash();
+  hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockItem.hash)
+}
+#if LANG_CXX11
+inline void ViewBlockItem::set_hash(::std::string&& value) {
+  set_has_hash();
+  hash_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.view_block.protobuf.ViewBlockItem.hash)
+}
+#endif
+inline void ViewBlockItem::set_hash(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_hash();
+  hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.view_block.protobuf.ViewBlockItem.hash)
+}
+inline void ViewBlockItem::set_hash(const void* value, size_t size) {
+  set_has_hash();
+  hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.view_block.protobuf.ViewBlockItem.hash)
+}
+inline ::std::string* ViewBlockItem::mutable_hash() {
+  set_has_hash();
+  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.ViewBlockItem.hash)
+  return hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ViewBlockItem::release_hash() {
+  // @@protoc_insertion_point(field_release:shardora.view_block.protobuf.ViewBlockItem.hash)
+  if (!has_hash()) {
+    return NULL;
+  }
+  clear_has_hash();
+  return hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ViewBlockItem::set_allocated_hash(::std::string* hash) {
+  if (hash != NULL) {
+    set_has_hash();
+  } else {
+    clear_has_hash();
+  }
+  hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), hash);
+  // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockItem.hash)
+}
+
+// optional bytes parent_hash = 2;
+inline bool ViewBlockItem::has_parent_hash() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ViewBlockItem::set_has_parent_hash() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ViewBlockItem::clear_has_parent_hash() {
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void ViewBlockItem::clear_parent_hash() {
   parent_hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -2330,15 +2459,15 @@ inline void ViewBlockItem::set_allocated_parent_hash(::std::string* parent_hash)
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockItem.parent_hash)
 }
 
-// optional .shardora.block.protobuf.Block block_info = 2;
+// optional .shardora.block.protobuf.Block block_info = 3;
 inline bool ViewBlockItem::has_block_info() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void ViewBlockItem::set_has_block_info() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void ViewBlockItem::clear_has_block_info() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline const ::shardora::block::protobuf::Block& ViewBlockItem::_internal_block_info() const {
   return *block_info_;
@@ -2384,15 +2513,15 @@ inline void ViewBlockItem::set_allocated_block_info(::shardora::block::protobuf:
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockItem.block_info)
 }
 
-// optional .shardora.view_block.protobuf.QcItem qc = 3;
+// optional .shardora.view_block.protobuf.QcItem qc = 4;
 inline bool ViewBlockItem::has_qc() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void ViewBlockItem::set_has_qc() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void ViewBlockItem::clear_has_qc() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void ViewBlockItem::clear_qc() {
   if (qc_ != NULL) qc_->Clear();
@@ -2442,15 +2571,15 @@ inline void ViewBlockItem::set_allocated_qc(::shardora::view_block::protobuf::Qc
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockItem.qc)
 }
 
-// optional .shardora.view_block.protobuf.MemberConsensusStat leader_consen_stat = 4;
+// optional .shardora.view_block.protobuf.MemberConsensusStat leader_consen_stat = 5;
 inline bool ViewBlockItem::has_leader_consen_stat() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void ViewBlockItem::set_has_leader_consen_stat() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void ViewBlockItem::clear_has_leader_consen_stat() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void ViewBlockItem::clear_leader_consen_stat() {
   if (leader_consen_stat_ != NULL) leader_consen_stat_->Clear();
@@ -2500,15 +2629,145 @@ inline void ViewBlockItem::set_allocated_leader_consen_stat(::shardora::view_blo
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockItem.leader_consen_stat)
 }
 
-// optional bytes debug = 5;
+// optional uint64 view = 6;
+inline bool ViewBlockItem::has_view() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void ViewBlockItem::set_has_view() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void ViewBlockItem::clear_has_view() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void ViewBlockItem::clear_view() {
+  view_ = GOOGLE_ULONGLONG(0);
+  clear_has_view();
+}
+inline ::google::protobuf::uint64 ViewBlockItem::view() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockItem.view)
+  return view_;
+}
+inline void ViewBlockItem::set_view(::google::protobuf::uint64 value) {
+  set_has_view();
+  view_ = value;
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockItem.view)
+}
+
+// optional uint64 elect_height = 7;
+inline bool ViewBlockItem::has_elect_height() const {
+  return (_has_bits_[0] & 0x00000100u) != 0;
+}
+inline void ViewBlockItem::set_has_elect_height() {
+  _has_bits_[0] |= 0x00000100u;
+}
+inline void ViewBlockItem::clear_has_elect_height() {
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline void ViewBlockItem::clear_elect_height() {
+  elect_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_elect_height();
+}
+inline ::google::protobuf::uint64 ViewBlockItem::elect_height() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockItem.elect_height)
+  return elect_height_;
+}
+inline void ViewBlockItem::set_elect_height(::google::protobuf::uint64 value) {
+  set_has_elect_height();
+  elect_height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockItem.elect_height)
+}
+
+// optional uint32 leader_idx = 8;
+inline bool ViewBlockItem::has_leader_idx() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void ViewBlockItem::set_has_leader_idx() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void ViewBlockItem::clear_has_leader_idx() {
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline void ViewBlockItem::clear_leader_idx() {
+  leader_idx_ = 0u;
+  clear_has_leader_idx();
+}
+inline ::google::protobuf::uint32 ViewBlockItem::leader_idx() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockItem.leader_idx)
+  return leader_idx_;
+}
+inline void ViewBlockItem::set_leader_idx(::google::protobuf::uint32 value) {
+  set_has_leader_idx();
+  leader_idx_ = value;
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockItem.leader_idx)
+}
+
+// optional .shardora.view_block.protobuf.QcItem self_commit_qc = 9;
+inline bool ViewBlockItem::has_self_commit_qc() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void ViewBlockItem::set_has_self_commit_qc() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void ViewBlockItem::clear_has_self_commit_qc() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void ViewBlockItem::clear_self_commit_qc() {
+  if (self_commit_qc_ != NULL) self_commit_qc_->Clear();
+  clear_has_self_commit_qc();
+}
+inline const ::shardora::view_block::protobuf::QcItem& ViewBlockItem::_internal_self_commit_qc() const {
+  return *self_commit_qc_;
+}
+inline const ::shardora::view_block::protobuf::QcItem& ViewBlockItem::self_commit_qc() const {
+  const ::shardora::view_block::protobuf::QcItem* p = self_commit_qc_;
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockItem.self_commit_qc)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::view_block::protobuf::QcItem*>(
+      &::shardora::view_block::protobuf::_QcItem_default_instance_);
+}
+inline ::shardora::view_block::protobuf::QcItem* ViewBlockItem::release_self_commit_qc() {
+  // @@protoc_insertion_point(field_release:shardora.view_block.protobuf.ViewBlockItem.self_commit_qc)
+  clear_has_self_commit_qc();
+  ::shardora::view_block::protobuf::QcItem* temp = self_commit_qc_;
+  self_commit_qc_ = NULL;
+  return temp;
+}
+inline ::shardora::view_block::protobuf::QcItem* ViewBlockItem::mutable_self_commit_qc() {
+  set_has_self_commit_qc();
+  if (self_commit_qc_ == NULL) {
+    auto* p = CreateMaybeMessage<::shardora::view_block::protobuf::QcItem>(GetArenaNoVirtual());
+    self_commit_qc_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.ViewBlockItem.self_commit_qc)
+  return self_commit_qc_;
+}
+inline void ViewBlockItem::set_allocated_self_commit_qc(::shardora::view_block::protobuf::QcItem* self_commit_qc) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete self_commit_qc_;
+  }
+  if (self_commit_qc) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      self_commit_qc = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, self_commit_qc, submessage_arena);
+    }
+    set_has_self_commit_qc();
+  } else {
+    clear_has_self_commit_qc();
+  }
+  self_commit_qc_ = self_commit_qc;
+  // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockItem.self_commit_qc)
+}
+
+// optional bytes debug = 10;
 inline bool ViewBlockItem::has_debug() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void ViewBlockItem::set_has_debug() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void ViewBlockItem::clear_has_debug() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void ViewBlockItem::clear_debug() {
   debug_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());

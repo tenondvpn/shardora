@@ -287,33 +287,81 @@ Status ViewBlockChain::GetRecursiveChildren(HashStr hash, std::vector<std::share
     return Status::kSuccess;
 }
 
-// 剪掉从上次 prune_height 到 height 之间，latest_committed 之前的所有分叉，并返回这些分叉上的 blocks
+// // 剪掉从上次 prune_height 到 height 之间，latest_committed 之前的所有分叉，并返回这些分叉上的 blocks
+// Status ViewBlockChain::PruneTo(
+//         const HashStr& target_hash, 
+//         std::vector<std::shared_ptr<ViewBlock>>& forked_blockes, 
+//         bool include_history) {
+//     std::shared_ptr<ViewBlock> current = Get(target_hash);
+//     if (!current) {
+//         ZJC_DEBUG("failed prune view block: %s", common::Encode::HexEncode(target_hash).c_str());
+//         assert(false);
+//         return Status::kError;
+//     }
+
+//     ZJC_DEBUG("now prune view block %u_%u_%lu, prune_height_: %lu, views: %s", 
+//         current->qc().network_id(), 
+//         current->qc().pool_index(), 
+//         current->qc().view(), 
+//         prune_height_,
+//         String().c_str());
+//     for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
+//         if (iter->second->view_block &&
+//                 iter->second->view_block->qc().view() + 16 <= current->qc().view()) {
+//             // forked_blockes.push_back(iter->second->view_block);
+//             iter = view_blocks_info_.erase(iter);
+//         } else {
+//             ++iter;
+//         }
+//     }
+
+//     return Status::kSuccess;
+// }
+
 Status ViewBlockChain::PruneTo(
         const HashStr& target_hash, 
         std::vector<std::shared_ptr<ViewBlock>>& forked_blockes, 
         bool include_history) {
     std::shared_ptr<ViewBlock> current = Get(target_hash);
     if (!current) {
-        ZJC_DEBUG("failed prune view block: %s", common::Encode::HexEncode(target_hash).c_str());
-        assert(false);
         return Status::kError;
     }
 
-    ZJC_DEBUG("now prune view block %u_%u_%lu, prune_height_: %lu, views: %s", 
-        current->qc().network_id(), 
-        current->qc().pool_index(), 
-        current->qc().view(), 
-        prune_height_,
-        String().c_str());
-    for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
-        if (iter->second->view_block &&
-                iter->second->view_block->qc().view() + 16 <= current->qc().view()) {
-            // forked_blockes.push_back(iter->second->view_block);
-            iter = view_blocks_info_.erase(iter);
-        } else {
-            ++iter;
-        }
+    auto target_block = current;
+    
+    auto target_height = current->view();
+    if (prune_height_ >= target_height) {
+        return Status::kSuccess;
     }
+    
+    std::unordered_set<HashStr> hashes_of_branch;
+    hashes_of_branch.insert(current->hash());
+    
+    Status s = Status::kSuccess;
+    while (s == Status::kSuccess && current->view() > prune_height_) {
+        current = Get(current->parent_hash());
+        if (current) {
+            hashes_of_branch.insert(current->hash());
+            continue;
+        }
+        return Status::kError;
+    }
+    
+    auto start_blocks = view_blocks_at_height_[prune_height_];
+    if (start_blocks.empty()) {
+        return Status::kError;
+    }
+    
+    auto start_block = start_blocks[0];
+
+    PruneFromBlockToTargetHash(start_block, hashes_of_branch, forked_blockes, target_hash);
+    prune_height_ = target_height;
+
+    if (include_history) {
+        PruneHistoryTo(target_block);
+    }
+
+    start_block_ = target_block;
 
     return Status::kSuccess;
 }
@@ -350,6 +398,7 @@ bool ViewBlockChain::IsValid() {
     return num == 1;
 }
 
+
 void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent) const {
     std::cout << indent << block->qc().view() << ":"
               << common::Encode::HexEncode(block->qc().view_block_hash()).c_str() << "[status]:"
@@ -380,14 +429,14 @@ std::string ViewBlockChain::String() const {
             view_blocks.begin(), 
             view_blocks.end(), 
             [](const std::shared_ptr<ViewBlock>& a, const std::shared_ptr<ViewBlock>& b) {
-        return a->qc().view() < b->qc().view();
+        return a->view() < b->view();
     });
 
     std::string ret;
     std::string block_height_str;
     std::set<uint64_t> height_set;
     for (const auto& vb : view_blocks) {
-        ret += "," + std::to_string(vb->qc().view());
+        ret += "," + std::to_string(vb->view());
         block_height_str += "," + std::to_string(vb->block_info().height());
         height_set.insert(vb->block_info().height());
     }
@@ -402,7 +451,8 @@ std::string ViewBlockChain::String() const {
 Status GetLatestViewBlockFromDb(
         const std::shared_ptr<db::Db>& db,
         const uint32_t& pool_index,
-        std::shared_ptr<ViewBlock>& view_block) {
+        std::shared_ptr<ViewBlock>& view_block,
+        std::shared_ptr<QC>& self_commit_qc) {
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
     uint32_t sharding_id = common::GlobalInfo::Instance()->network_id();
     pools::protobuf::PoolLatestInfo pool_info;
@@ -415,9 +465,6 @@ Status GetLatestViewBlockFromDb(
     }
 
     // 获取 block 对应的 view_block 所打包的 qc 信息，如果没有，说明是创世块
-    View view = GenesisView;
-    uint32_t leader_idx = 0;
-    HashStr parent_hash = "";
     auto& pb_view_block = *view_block;
     auto r = prefix_db->GetBlockWithHeight(
         sharding_id, 
@@ -430,7 +477,7 @@ Status GetLatestViewBlockFromDb(
         assert(false);
         return Status::kError;
     }
-
+    
     ZJC_DEBUG("pool: %d, latest vb from db2, hash: %s, view: %lu, "
         "leader: %d, parent_hash: %s, sign x: %s, sign y: %s",
         pool_index,
