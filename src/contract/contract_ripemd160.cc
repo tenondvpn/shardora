@@ -277,18 +277,18 @@ int Ripemd160::SingleSign(
 
     auto splits = common::Split<>(line_splits[0], ',');
     if (splits.Count() < 3) {
-        assert(false);
+        ZJC_WARN("invalid splits count: %s", value.c_str());
         return kContractError;
     }
 
     int signer_idx = 0;
     if (!common::StringUtil::ToInt32(splits[0], &signer_idx)) {
-        assert(false);
+        ZJC_WARN("invalid splits count: %s", value.c_str());
         return kContractError;
     }
 
     if (signer_idx < 0 || signer_idx >= ars.signer_count()) {
-        assert(false);
+        ZJC_WARN("invalid splits count: %s", value.c_str());
         return kContractError;
     }
 
