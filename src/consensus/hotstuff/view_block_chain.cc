@@ -447,12 +447,12 @@ std::string ViewBlockChain::String() const {
     return ret;
 }
 
-// 获取 db 中最新块的信息和它的 QC
+// Get the latest view block from database, it must contain a self commit qc because only
+// committed view blocks can be stored to the disk
 Status GetLatestViewBlockFromDb(
         const std::shared_ptr<db::Db>& db,
         const uint32_t& pool_index,
-        std::shared_ptr<ViewBlock>& view_block,
-        std::shared_ptr<QC>& self_commit_qc) {
+        std::shared_ptr<ViewBlock>& view_block) {
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
     uint32_t sharding_id = common::GlobalInfo::Instance()->network_id();
     pools::protobuf::PoolLatestInfo pool_info;
@@ -464,7 +464,7 @@ Status GetLatestViewBlockFromDb(
         return Status::kError;
     }
 
-    // 获取 block 对应的 view_block 所打包的 qc 信息，如果没有，说明是创世块
+    // get the view block by latest pool info height, it could be a genesis block if the node is new
     auto& pb_view_block = *view_block;
     auto r = prefix_db->GetBlockWithHeight(
         sharding_id, 
@@ -481,8 +481,8 @@ Status GetLatestViewBlockFromDb(
     ZJC_DEBUG("pool: %d, latest vb from db2, hash: %s, view: %lu, "
         "leader: %d, parent_hash: %s, sign x: %s, sign y: %s",
         pool_index,
-        common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
-        pb_view_block.qc().view(), pb_view_block.qc().leader_idx(),
+        common::Encode::HexEncode(view_block->hash()).c_str(),
+        pb_view_block.view(), pb_view_block.leader_idx(),
         common::Encode::HexEncode(pb_view_block.parent_hash()).c_str(),
         common::Encode::HexEncode(view_block->qc().sign_x()).c_str(),
         common::Encode::HexEncode(view_block->qc().sign_y()).c_str());    

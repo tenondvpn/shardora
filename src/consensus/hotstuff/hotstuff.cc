@@ -16,16 +16,16 @@ namespace shardora {
 namespace hotstuff {
 
 void Hotstuff::Init() {
-    // set pacemaker timeout callback function
-    last_vote_view_ = 0lu;
+    last_vote_view_ = GenesisView;
     auto latest_view_block = std::make_shared<ViewBlock>();
-    // 从 db 中获取最后一个有 QC 的 ViewBlock
+    // get the latest view block stored in db
     Status s = GetLatestViewBlockFromDb(db_, pool_idx_, latest_view_block);
     if (s == Status::kSuccess) {
         view_block_chain_->SetLatestLockedBlock(latest_view_block);
         view_block_chain_->SetLatestCommittedBlock(latest_view_block);
         InitAddNewViewBlock(latest_view_block);
-        LoadAllViewBlockWithLatestCommitedBlock(latest_view_block);
+        // TODO 有什么用？latest_view_block 已经是最新的提交块了
+        // LoadAllViewBlockWithLatestCommitedBlock(latest_view_block);
     } else {
         ZJC_WARN("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
     }
@@ -37,9 +37,7 @@ void Hotstuff::Init() {
 void Hotstuff::LoadAllViewBlockWithLatestCommitedBlock(
         std::shared_ptr<ViewBlock>& view_block) {
     std::vector<std::shared_ptr<ViewBlock>> children_view_blocks;
-    prefix_db_->GetChildrenViewBlock(
-        view_block->qc().view_block_hash(), 
-        children_view_blocks);
+    prefix_db_->GetChildrenViewBlock(view_block->hash(), children_view_blocks);
     ZJC_WARN("init load view block %u_%u_%lu, %lu, hash: %s, phash: %s, size: %u",
         view_block->qc().network_id(), view_block->qc().pool_index(), 
         view_block->qc().view(), view_block->block_info().height(),
@@ -47,29 +45,25 @@ void Hotstuff::LoadAllViewBlockWithLatestCommitedBlock(
         common::Encode::HexEncode(view_block->parent_hash()).c_str(),
         children_view_blocks.size());
     for (auto iter = children_view_blocks.begin(); iter != children_view_blocks.end(); ++iter) {
-        assert(!view_block_chain_->Has((*iter)->qc().view_block_hash()));
+        assert(!view_block_chain_->Has((*iter)->hash()));
         InitAddNewViewBlock(*iter);
         LoadAllViewBlockWithLatestCommitedBlock(*iter);
     }
 }
     
 void Hotstuff::InitAddNewViewBlock(std::shared_ptr<ViewBlock>& latest_view_block) {
-    ZJC_WARN("pool: %d, latest vb from db, vb view: %lu",
-            pool_idx_, 
-            latest_view_block->qc().view());
-        // 初始状态，使用 db 中最后一个 view_block 初始化视图链
-        // TODO: check valid
-        view_block_chain_->Store(latest_view_block, true, nullptr, nullptr);
-        view_block_chain_->UpdateHighViewBlock(latest_view_block->qc());
-        StopVoting(latest_view_block->qc().view());
-        // 开启第一个视图
-        ZJC_WARN("success new set qc view: %lu, %u_%u_%lu, hash: %s",
-            latest_view_block->qc().view(),
-            latest_view_block->qc().network_id(),
-            latest_view_block->qc().pool_index(),
-            latest_view_block->qc().view(),
-            common::Encode::HexEncode(latest_view_block->qc().view_block_hash()).c_str());
-        pacemaker_->NewQcView(latest_view_block->qc().view());
+    // add latest view block to the chain
+    view_block_chain_->Store(latest_view_block, true, nullptr, nullptr);
+    StopVoting(latest_view_block->view());
+    // 开启第一个视图
+    ZJC_WARN("success new set qc view: %lu, %u_%u_%lu, hash: %s",
+        latest_view_block->qc().view(),
+        latest_view_block->qc().network_id(),
+        latest_view_block->qc().pool_index(),
+        latest_view_block->qc().view(),
+        common::Encode::HexEncode(latest_view_block->qc().view_block_hash()).c_str());
+    auto latest_qc = std::make_shared<QC>(latest_view_block->self_commit_qc()); 
+    pacemaker_->AdvanceView(new_sync_info()->WithQC(latest_qc));
 }
 
 Status Hotstuff::Start() {
@@ -91,180 +85,236 @@ Status Hotstuff::Start() {
     return Status::kSuccess;
 }
 
-Status Hotstuff::Propose(
-        std::shared_ptr<TC> tc,
-        std::shared_ptr<AggregateQC> agg_qc,
-        const transport::MessagePtr& msg_ptr) {
-    ADD_DEBUG_PROCESS_TIMESTAMP();
+Status Hotstuff::Propose(const std::shared_ptr<SyncInfo>& sync_info) {
     // TODO(HT): 打包的交易，超时后如何释放？
     // 打包参与共识中的交易，如何保证幂等
-    auto pre_v_block = view_block_chain()->HighViewBlock();
-    if (!pre_v_block) {
-        ZJC_WARN("pool %u not has prev view block.", pool_idx_);
-        return Status::kError;
-    }
-
-    auto dht_ptr = network::DhtManager::Instance()->GetDht(
-        common::GlobalInfo::Instance()->network_id());
-    if (!dht_ptr) {
-        ZJC_WARN("pool %u not has dht ptr.", pool_idx_);
-        return Status::kError;
-    }
-
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto readobly_dht = dht_ptr->readonly_hash_sort_dht();
-    if (readobly_dht->size() < 2) {
-        ZJC_WARN("pool %u not has readobly_dht->size() < 2", pool_idx_);
-        return Status::kError;
-    }
-
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
-    if (tc != nullptr) {
-        if (latest_qc_item_ptr_ == nullptr || tc->view() >= latest_qc_item_ptr_->view()) {
-            assert(tc->pool_index() == pool_idx_);
-            assert(tc->network_id() == common::GlobalInfo::Instance()->network_id());
-            assert(IsQcTcValid(*tc));
-            latest_qc_item_ptr_ = tc;
-        }
-
-        if (latest_leader_propose_message_ && 
-                latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() <= tc->view()) {
-            latest_leader_propose_message_ = nullptr;
-        }
-    }
-
-    if (latest_leader_propose_message_ && 
-            latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= pacemaker_->CurView()) {
-        auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*latest_leader_propose_message_);
-        tmp_msg_ptr->times_idx = 0;
-        tmp_msg_ptr->header.release_broadcast();
-        auto broadcast = tmp_msg_ptr->header.mutable_broadcast();
-        auto* hotstuff_msg = tmp_msg_ptr->header.mutable_hotstuff();
-        if (tc != nullptr) {
-            auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
-            *pb_pro_msg->mutable_tc() = *tc;
-        }
-
-        transport::TcpTransport::Instance()->SetMessageHash(tmp_msg_ptr->header);
-        auto s = crypto()->SignMessage(tmp_msg_ptr);
-        auto& header = tmp_msg_ptr->header;
-        if (s != Status::kSuccess) {
-            ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
-                pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
-            return s;
-        }
-
-        transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
-        network::Route::Instance()->Send(tmp_msg_ptr);
-        ZJC_WARN("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
-            "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, msg view: %lu, cur view: %lu",
-            pool_idx_,
-            header.hotstuff().pool_index(),
-            hotstuff_msg->pro_msg().tx_propose().txs_size(),
-            hotstuff_msg->pro_msg().view_item().qc().view(),
-            common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
-            view_block_chain()->HighViewBlock()->qc().view(),
-            header.hash64(),
-            header.debug().c_str(),
-            tmp_msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
-            pacemaker_->CurView());
-        // HandleProposeMsg(latest_leader_propose_message_);
-        return s;
-    }
-
-    ZJC_WARN("1 now ontime called propose: %d", pool_idx_);
-    auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto& header = tmp_msg_ptr->header;
+    ZJC_DEBUG("1 now ontime called propose: %d", pool_idx_);
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& header = msg_ptr->header;
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     header.set_type(common::kHotstuffMessage);
     header.set_hop_count(0);
     auto* hotstuff_msg = header.mutable_hotstuff();
     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
-    Status s = ConstructProposeMsg(pb_pro_msg);
+    Status s = ConstructProposeMsg(sync_info, pb_pro_msg);
     if (s != Status::kSuccess) {
-        ZJC_WARN("pool: %d construct propose msg failed, %d",
-            pool_idx_, s);
+        ZJC_WARN("pool: %d construct propose msg failed, %d, member_index: %d",
+            pool_idx_, s, 
+            elect_info_->GetElectItemWithShardingId(
+                common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
         return s;
     }
-
-    ADD_DEBUG_PROCESS_TIMESTAMP();
     s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
-            pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
+            pool_idx_, hotstuff_msg->pro_msg().view_item().view());
         return s;
     }
-
-    if (tc != nullptr) {
-        *pb_pro_msg->mutable_tc() = *tc;
-    }
-
+    header.mutable_hotstuff()->CopyFrom(*hotstuff_msg);
     if (!header.has_broadcast()) {
         auto broadcast = header.mutable_broadcast();
-    }
-
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    dht::DhtKeyManager dht_key(tmp_msg_ptr->header.src_sharding_id());
+    }    
+    dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
     header.set_des_dht_key(dht_key.StrKey());
     transport::TcpTransport::Instance()->SetMessageHash(header);
-#ifndef NDEBUG
-    std::string propose_debug_str = common::StringUtil::Format(
-        "%u_%u_%lu, hash64: %lu, %lu", 
-        common::GlobalInfo::Instance()->network_id(), 
-        pool_idx_, 
-        hotstuff_msg->pro_msg().view_item().qc().view(),
-        header.hash64(),
-        propose_debug_index_++);
-//     propose_debug_str += ", tx gids: ";
-//     for (uint32_t tx_idx = 0; tx_idx < pb_pro_msg->tx_propose().txs_size(); ++tx_idx) {
-//         propose_debug_str += common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).gid()) + " ";
-//     }
-
-    header.set_debug(propose_debug_str);
-    ZJC_WARN("leader begin propose_debug: %s", header.debug().c_str());
-#endif
-    s = crypto()->SignMessage(tmp_msg_ptr);
+    s = crypto()->SignMessage(msg_ptr);
     if (s != Status::kSuccess) {
         ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
-            pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
+            pool_idx_, hotstuff_msg->pro_msg().view_item().view());
         return s;
     }
 
-    latest_leader_propose_message_ = tmp_msg_ptr;
-    SaveLatestProposeMessage();
-    transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
-    network::Route::Instance()->Send(tmp_msg_ptr);
-    ZJC_WARN("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_WARN("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
-        "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
+    network::Route::Instance()->Send(msg_ptr);
+    ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+        "hash: %s, qc_view: %lu, hash64: %lu, gid: %s",
         pool_idx_,
         header.hotstuff().pool_index(),
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
-        hotstuff_msg->pro_msg().view_item().qc().view(),
-        common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
-        view_block_chain()->HighViewBlock()->qc().view(),
+        hotstuff_msg->pro_msg().view_item().view(),
+        common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().hash()).c_str(),
+        pacemaker()->HighQC()->view(),
         header.hash64(),
-        header.debug().c_str());
-
-    if (tc != nullptr && IsQcTcValid(*tc)) {
-        ZJC_WARN("new prev qc coming: %s, %u_%u_%lu, parent hash: %s, tx size: %u, view: %lu",
-            common::Encode::HexEncode(tc->view_block_hash()).c_str(), 
-            tc->network_id(), 
-            tc->pool_index(), 
-            pb_pro_msg->view_item().block_info().height(), 
-            "", 
-            pb_pro_msg->tx_propose().txs_size(),
-            tc->view());
-    }
-
-    tmp_msg_ptr->is_leader = true;
-    // HandleProposeMsg(tmp_msg_ptr);
-    ADD_DEBUG_PROCESS_TIMESTAMP();
+        (hotstuff_msg->pro_msg().tx_propose().txs_size() > 0 ? 
+        common::Encode::HexEncode(hotstuff_msg->pro_msg().tx_propose().txs(0).gid()).c_str() :
+        ""));
+    HandleProposeMsg(header);
     return Status::kSuccess;
 }
+
+// Status Hotstuff::Propose(
+//         std::shared_ptr<TC> tc,
+//         std::shared_ptr<AggregateQC> agg_qc,
+//         const transport::MessagePtr& msg_ptr) {
+//     ADD_DEBUG_PROCESS_TIMESTAMP();
+//     // TODO(HT): 打包的交易，超时后如何释放？
+//     // 打包参与共识中的交易，如何保证幂等
+//     auto pre_v_block = view_block_chain()->HighViewBlock();
+//     if (!pre_v_block) {
+//         ZJC_WARN("pool %u not has prev view block.", pool_idx_);
+//         return Status::kError;
+//     }
+
+//     auto dht_ptr = network::DhtManager::Instance()->GetDht(
+//         common::GlobalInfo::Instance()->network_id());
+//     if (!dht_ptr) {
+//         ZJC_WARN("pool %u not has dht ptr.", pool_idx_);
+//         return Status::kError;
+//     }
+
+//     ADD_DEBUG_PROCESS_TIMESTAMP();
+//     auto readobly_dht = dht_ptr->readonly_hash_sort_dht();
+//     if (readobly_dht->size() < 2) {
+//         ZJC_WARN("pool %u not has readobly_dht->size() < 2", pool_idx_);
+//         return Status::kError;
+//     }
+
+//     // ADD_DEBUG_PROCESS_TIMESTAMP();
+//     latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
+//     if (tc != nullptr) {
+//         if (latest_qc_item_ptr_ == nullptr || tc->view() >= latest_qc_item_ptr_->view()) {
+//             assert(tc->pool_index() == pool_idx_);
+//             assert(tc->network_id() == common::GlobalInfo::Instance()->network_id());
+//             assert(IsQcTcValid(*tc));
+//             latest_qc_item_ptr_ = tc;
+//         }
+
+//         if (latest_leader_propose_message_ && 
+//                 latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() <= tc->view()) {
+//             latest_leader_propose_message_ = nullptr;
+//         }
+//     }
+
+//     if (latest_leader_propose_message_ && 
+//             latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= pacemaker_->CurView()) {
+//         auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*latest_leader_propose_message_);
+//         tmp_msg_ptr->times_idx = 0;
+//         tmp_msg_ptr->header.release_broadcast();
+//         auto broadcast = tmp_msg_ptr->header.mutable_broadcast();
+//         auto* hotstuff_msg = tmp_msg_ptr->header.mutable_hotstuff();
+//         if (tc != nullptr) {
+//             auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
+//             *pb_pro_msg->mutable_tc() = *tc;
+//         }
+
+//         transport::TcpTransport::Instance()->SetMessageHash(tmp_msg_ptr->header);
+//         auto s = crypto()->SignMessage(tmp_msg_ptr);
+//         auto& header = tmp_msg_ptr->header;
+//         if (s != Status::kSuccess) {
+//             ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
+//                 pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
+//             return s;
+//         }
+
+//         transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
+//         network::Route::Instance()->Send(tmp_msg_ptr);
+//         ZJC_WARN("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+//             "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, msg view: %lu, cur view: %lu",
+//             pool_idx_,
+//             header.hotstuff().pool_index(),
+//             hotstuff_msg->pro_msg().tx_propose().txs_size(),
+//             hotstuff_msg->pro_msg().view_item().qc().view(),
+//             common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
+//             view_block_chain()->HighViewBlock()->qc().view(),
+//             header.hash64(),
+//             header.debug().c_str(),
+//             tmp_msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
+//             pacemaker_->CurView());
+//         // HandleProposeMsg(latest_leader_propose_message_);
+//         return s;
+//     }
+
+//     ZJC_WARN("1 now ontime called propose: %d", pool_idx_);
+//     auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
+//     ADD_DEBUG_PROCESS_TIMESTAMP();
+//     auto& header = tmp_msg_ptr->header;
+//     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+//     header.set_type(common::kHotstuffMessage);
+//     header.set_hop_count(0);
+//     auto* hotstuff_msg = header.mutable_hotstuff();
+//     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
+//     Status s = ConstructProposeMsg(pb_pro_msg);
+//     if (s != Status::kSuccess) {
+//         ZJC_WARN("pool: %d construct propose msg failed, %d",
+//             pool_idx_, s);
+//         return s;
+//     }
+
+//     ADD_DEBUG_PROCESS_TIMESTAMP();
+//     s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
+//     if (s != Status::kSuccess) {
+//         ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
+//             pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
+//         return s;
+//     }
+
+//     if (tc != nullptr) {
+//         *pb_pro_msg->mutable_tc() = *tc;
+//     }
+
+//     if (!header.has_broadcast()) {
+//         auto broadcast = header.mutable_broadcast();
+//     }
+
+//     ADD_DEBUG_PROCESS_TIMESTAMP();
+//     dht::DhtKeyManager dht_key(tmp_msg_ptr->header.src_sharding_id());
+//     header.set_des_dht_key(dht_key.StrKey());
+//     transport::TcpTransport::Instance()->SetMessageHash(header);
+// #ifndef NDEBUG
+//     std::string propose_debug_str = common::StringUtil::Format(
+//         "%u_%u_%lu, hash64: %lu, %lu", 
+//         common::GlobalInfo::Instance()->network_id(), 
+//         pool_idx_, 
+//         hotstuff_msg->pro_msg().view_item().qc().view(),
+//         header.hash64(),
+//         propose_debug_index_++);
+// //     propose_debug_str += ", tx gids: ";
+// //     for (uint32_t tx_idx = 0; tx_idx < pb_pro_msg->tx_propose().txs_size(); ++tx_idx) {
+// //         propose_debug_str += common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).gid()) + " ";
+// //     }
+
+//     header.set_debug(propose_debug_str);
+//     ZJC_WARN("leader begin propose_debug: %s", header.debug().c_str());
+// #endif
+//     s = crypto()->SignMessage(tmp_msg_ptr);
+//     if (s != Status::kSuccess) {
+//         ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
+//             pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
+//         return s;
+//     }
+
+//     latest_leader_propose_message_ = tmp_msg_ptr;
+//     SaveLatestProposeMessage();
+//     transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
+//     network::Route::Instance()->Send(tmp_msg_ptr);
+//     ZJC_WARN("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
+//     ADD_DEBUG_PROCESS_TIMESTAMP();
+//     ZJC_WARN("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+//         "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
+//         pool_idx_,
+//         header.hotstuff().pool_index(),
+//         hotstuff_msg->pro_msg().tx_propose().txs_size(),
+//         hotstuff_msg->pro_msg().view_item().qc().view(),
+//         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
+//         view_block_chain()->HighViewBlock()->qc().view(),
+//         header.hash64(),
+//         header.debug().c_str());
+
+//     if (tc != nullptr && IsQcTcValid(*tc)) {
+//         ZJC_WARN("new prev qc coming: %s, %u_%u_%lu, parent hash: %s, tx size: %u, view: %lu",
+//             common::Encode::HexEncode(tc->view_block_hash()).c_str(), 
+//             tc->network_id(), 
+//             tc->pool_index(), 
+//             pb_pro_msg->view_item().block_info().height(), 
+//             "", 
+//             pb_pro_msg->tx_propose().txs_size(),
+//             tc->view());
+//     }
+
+//     tmp_msg_ptr->is_leader = true;
+//     // HandleProposeMsg(tmp_msg_ptr);
+//     ADD_DEBUG_PROCESS_TIMESTAMP();
+//     return Status::kSuccess;
+// }
 
 void Hotstuff::SaveLatestProposeMessage() {
     prefix_db_->SaveLatestLeaderProposeMessage(latest_leader_propose_message_->header);
@@ -332,7 +382,7 @@ void Hotstuff::NewView(
     header.set_des_dht_key(dht_key.StrKey());
     transport::TcpTransport::Instance()->SetMessageHash(header);
     if (conn) {
-        header.release_broadcast();
+        header.release_broadcast(); // ???????????? why not broadcasting
         transport::TcpTransport::Instance()->Send(conn.get(), msg_ptr->header);
     } else {
         network::Route::Instance()->Send(msg_ptr);
@@ -356,17 +406,6 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     assert(msg_ptr->header.hotstuff().pro_msg().view_item().qc().view_block_hash().empty());
     latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
-    ZJC_WARN("handle propose called hash: %lu, %u_%u_%lu, "
-        "view block hash: %s, sign x: %s, propose_debug: %s", 
-        msg_ptr->header.hash64(), 
-        msg_ptr->header.hotstuff().pro_msg().view_item().qc().network_id(), 
-        msg_ptr->header.hotstuff().pro_msg().view_item().qc().pool_index(),
-        msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
-        common::Encode::HexEncode(
-        msg_ptr->header.hotstuff().pro_msg().view_item().qc().view_block_hash()).c_str(),
-        common::Encode::HexEncode(
-        msg_ptr->header.hotstuff().pro_msg().view_item().qc().sign_x()).c_str(),
-        msg_ptr->header.debug().c_str());
     if (leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32) {
         return;
     }
@@ -414,32 +453,8 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     for (auto iter = leader_view_with_propose_msgs_.begin();
             iter != leader_view_with_propose_msgs_.end();) {
         if (iter->first > propose_view) {
-            // assert(false);
             break;
         }
-
-        // auto& rehandle_view_item = *iter->second->view_block_ptr;
-        // ZJC_WARN(
-        //     "rehandle propose message begin HandleProposeMessageByStep called hash: %lu, "
-        //     "last_vote_view_: %lu, view_item.qc().view(): %lu, "
-        //     "propose_debug: %s, view_block_hash: %s",
-        //     iter->second->msg_ptr->header.hash64(), 
-        //     last_vote_view_, rehandle_view_item.qc().view(),
-        //     iter->second->msg_ptr->header.debug().c_str(),
-        //     common::Encode::HexEncode(rehandle_view_item.qc().view_block_hash()).c_str());
-        // rehandle_view_item.mutable_qc()->release_view_block_hash();
-        // auto st = HandleProposeMessageByStep(iter->second);
-        // if (st != Status::kSuccess) {
-        //     ZJC_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
-        //         msg_ptr->header.hash64(),
-        //         msg_ptr->header.debug().c_str());
-        //     break;
-        // }
-
-        // ZJC_WARN("rehandle propose message success HandleProposeMessageByStep called hash: %lu, "
-        //     "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
-        //     iter->second->msg_ptr->header.hash64(), last_vote_view_, rehandle_view_item.qc().view(),
-        //     iter->second->msg_ptr->header.debug().c_str());
         iter = leader_view_with_propose_msgs_.erase(iter);
     }
     

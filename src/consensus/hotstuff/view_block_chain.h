@@ -523,8 +523,7 @@ private:
 Status GetLatestViewBlockFromDb(
         const std::shared_ptr<db::Db>& db,
         const uint32_t& pool_index,
-        std::shared_ptr<ViewBlock>& view_block,
-        std::shared_ptr<QC>& self_commit_qc);
+        std::shared_ptr<ViewBlock>& view_block);
 void GetQCWrappedByGenesis(uint32_t pool_index, QC* qc);
         
 } // namespace consensus
