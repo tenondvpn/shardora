@@ -67,11 +67,11 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
     var low = (tx_type % MAX_UINT32) - big
     step_buf.writeUInt32LE(big, 0)
     step_buf.writeUInt32LE(low, 0)
-    var prepay_buf = new Buffer(8);
-    var big = ~~(prepay / MAX_UINT32)
-    var low = (prepay % MAX_UINT32) - big
-    prepay_buf.writeUInt32LE(big, 4)
-    prepay_buf.writeUInt32LE(low, 0)
+    // var prepay_buf = new Buffer(8);
+    // var big = ~~(prepay / MAX_UINT32)
+    // var low = (prepay % MAX_UINT32) - big
+    // prepay_buf.writeUInt32LE(big, 4)
+    // prepay_buf.writeUInt32LE(low, 0)
 
     var buffer_array = [Buffer.from(gid, 'hex'),
         Buffer.from(frompk, 'hex'),
@@ -105,7 +105,7 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
         'sign_r': sigR.toString(16),
         'sign_s': sigS.toString(16),
         'sign_v': sig.v,
-        'pepay': prepay
+        // 'pepay': prepay
     }
 
     var post_data = querystring.stringify(data);
@@ -124,9 +124,9 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
             if (chunk != "ok") {
-                console.log('Response: ' + chunk + ", " + data);
+                console.log('Response: ' + chunk);
             } else {
-                console.log('Response: ' + chunk + ", " + data);
+                console.log('Response: ' + chunk);
             }
         })
     });
