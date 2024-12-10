@@ -231,7 +231,7 @@ function get_confirm_tx_list(args) {
     });
 }
 
-function sleep(ms) {
+async function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
