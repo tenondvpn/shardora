@@ -464,7 +464,7 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
 
 
 static void GetProxyReencInfo(evhtp_request_t* req, void* data) {
-    ZJC_DEBUG("query account.");
+    ZJC_WARN("GetProxyReencInfo 0.");
     auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
     auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
     auto header3 = evhtp_header_new(
@@ -482,6 +482,7 @@ static void GetProxyReencInfo(evhtp_request_t* req, void* data) {
         return;
     }
 
+    ZJC_WARN("GetProxyReencInfo 1.");
     const char* contract = evhtp_kv_find(req->uri->query, "contract");
     if (contract == nullptr) {
         std::string res = common::StringUtil::Format("param contract is null");
@@ -490,6 +491,7 @@ static void GetProxyReencInfo(evhtp_request_t* req, void* data) {
         return;
     }
 
+    ZJC_WARN("GetProxyReencInfo 2.");
     const char* count_str = evhtp_kv_find(req->uri->query, "count");
     if (count_str == nullptr) {
         std::string res = common::StringUtil::Format("param count is null");
@@ -498,6 +500,7 @@ static void GetProxyReencInfo(evhtp_request_t* req, void* data) {
         return;
     }
 
+    ZJC_WARN("GetProxyReencInfo 3.");
     std::string proxy_id = common::Encode::HexDecode(id);
     std::string contract_str = common::Encode::HexDecode(contract);
     uint32_t count = 0;
@@ -513,6 +516,7 @@ static void GetProxyReencInfo(evhtp_request_t* req, void* data) {
     res_json["status"] = 0;
     res_json["msg"] = "success";
     zjcvm::ZjchainHost zjc_host;
+    ZJC_WARN("GetProxyReencInfo 4.");
     for (uint32_t i = 0; i < count; ++i) {
         auto private_key = proxy_id + "_" + std::string("init_prikey_") + std::to_string(i);
         std::string prikey;
@@ -527,10 +531,12 @@ static void GetProxyReencInfo(evhtp_request_t* req, void* data) {
         bls_pk_json.push_back(item);
     }
    
+    ZJC_WARN("GetProxyReencInfo 5.");
     res_json["value"] = bls_pk_json;
     auto json_str = res_json.dump();
     evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
+    ZJC_WARN("GetProxyReencInfo 6.");
     return;
 }
 
