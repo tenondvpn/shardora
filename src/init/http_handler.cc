@@ -514,17 +514,17 @@ static void GetProxyReencInfo(evhtp_request_t* req, void* data) {
     res_json["msg"] = "success";
     zjcvm::ZjchainHost zjc_host;
     for (uint32_t i = 0; i < count; ++i) {
-        auto private_key = id + "_" + std::string("init_prikey_") + std::to_string(i);
+        auto private_key = proxy_id + "_" + std::string("init_prikey_") + std::to_string(i);
         std::string prikey;
         zjc_host.GetKeyValue(contract_str, private_key, &prikey);
-        auto public_key = id + "_" + std::string("init_pubkey_") + std::to_string(i);
+        auto public_key = proxy_id + "_" + std::string("init_pubkey_") + std::to_string(i);
         std::string pubkey;
         zjc_host.GetKeyValue(contract_str, public_key, &pubkey);
         nlohmann::json item;
         item["node_index"] = i;
         item["private_key"] = prikey;
         item["public_key"] = pubkey;
-        bls_pk_json.push(item);
+        bls_pk_json.push_back(item);
     }
    
     res_json["value"] = bls_pk_json;
