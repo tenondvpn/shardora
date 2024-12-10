@@ -497,7 +497,7 @@ static void GetProxyReencInfo(evhtp_request_t* req, void* data) {
         return;
     }
 
-    std::string proxy_id = common::Encode::HexDecode(id);
+    std::string proxy_id = id;
     std::string contract_str = common::Encode::HexDecode(contract);
     uint32_t count = 0;
     if (!common::StringUtil::ToUint32(count_str, &count) || count > 10) {
