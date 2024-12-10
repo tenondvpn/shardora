@@ -93,7 +93,6 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
     var sigS = Secp256k1.uint256(sig.s, 16)
     var pubX = Secp256k1.uint256(from_public_key.x, 16)
     var pubY = Secp256k1.uint256(from_public_key.y, 16)
-    console.log("gid: " + gid.toString(16))
     var data = {
         'gid': gid,
         'pubkey': '04' + from_public_key.x.toString(16) + from_public_key.y.toString(16),
@@ -134,7 +133,6 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
         })
     });
 
-    //console.log("req data: " + post_data);
     post_req.write(post_data);
     post_req.end();
 }
@@ -261,7 +259,7 @@ if (args[0] == "4") {
 }
 
 if (args[0] == "5") {
-    create_tx("cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", "a0793c84fb3133c0df1b9a6ccccbbfe5e7545138", 0, 100000, 1, 0, 7, "key", "confirm data")
+    create_tx("cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", "a0793c84fb3133c0df1b9a6ccccbbfe5e7545138", 0, 100000, 1, 0, 0, "key", "confirm data")
     sleep(2000)
     get_confirm_tx_list(args);
 }
