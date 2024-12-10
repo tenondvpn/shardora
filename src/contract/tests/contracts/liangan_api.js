@@ -83,7 +83,7 @@ function get_tx_list(args) {
         'height': -1,
         'shard': -1,
         'pool': -1,
-        'limit': "",
+        'limit': args[1],
     });
 }
 
