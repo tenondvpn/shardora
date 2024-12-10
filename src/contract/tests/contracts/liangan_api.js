@@ -28,20 +28,88 @@ const contract_address = "48e1eab96c9e759daa3aff82b40e77cd615a41d0";
     console.log = newLog;
     console.error = newError;
 }
-  
-function str_to_hex(str) {
-    var arr1 = [];
-    for (var n = 0; n < str.length; n++) {
-        var hex = Number(str.charCodeAt(n)).toString(16);
-        arr1.push(hex);
+
+function GetValidHexString(uint256_bytes) {
+    var str_res = uint256_bytes.toString(16)
+    while (str_res.length < 64) {
+        str_res = "0" + str_res;
     }
-    return arr1.join('');
+
+    return str_res;
 }
 
-function hexToBytes(hex) {
-    for (var bytes = [], c = 0; c < hex.length; c += 2)
-        bytes.push(parseInt(hex.substr(c, 2), 16));
-    return bytes;
+function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type, key="", value="") {
+    var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
+    var from_private_key = Secp256k1.uint256(privateKeyBuf, 16)
+    var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
+    var from_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(from_private_key)
+    var frompk = '04' + from_public_key.x.toString(16) + from_public_key.y.toString(16);
+    const MAX_UINT32 = 0xFFFFFFFF;
+    var amount_buf = new Buffer(8);
+    var big = ~~(amount / MAX_UINT32)
+    var low = (amount % MAX_UINT32) - big
+    amount_buf.writeUInt32LE(big, 4)
+    amount_buf.writeUInt32LE(low, 0)
+
+    var gas_limit_buf = new Buffer(8);
+    var big = ~~(gas_limit / MAX_UINT32)
+    var low = (gas_limit % MAX_UINT32) - big
+    gas_limit_buf.writeUInt32LE(big, 4)
+    gas_limit_buf.writeUInt32LE(low, 0)
+
+    var gas_price_buf = new Buffer(8);
+    var big = ~~(gas_price / MAX_UINT32)
+    var low = (gas_price % MAX_UINT32) - big
+    gas_price_buf.writeUInt32LE(big, 4)
+    gas_price_buf.writeUInt32LE(low, 0)
+    var step_buf = new Buffer(8);
+    var big = ~~(tx_type / MAX_UINT32)
+    var low = (tx_type % MAX_UINT32) - big
+    step_buf.writeUInt32LE(big, 0)
+    step_buf.writeUInt32LE(low, 0)
+    var prepay_buf = new Buffer(8);
+    var big = ~~(prepay / MAX_UINT32)
+    var low = (prepay % MAX_UINT32) - big
+    prepay_buf.writeUInt32LE(big, 4)
+    prepay_buf.writeUInt32LE(low, 0)
+
+    var buffer_array = [Buffer.from(gid, 'hex'),
+        Buffer.from(frompk, 'hex'),
+        Buffer.from(to, 'hex'),
+        amount_buf, gas_limit_buf, gas_price_buf, step_buf, prepay_buf];
+    if (key != null && key != "") {
+        buffer_array.push(Buffer.from(key));
+        if (value != null && value != "") {
+            buffer_array.push(Buffer.from(value));
+        }
+    }
+
+    var message_buf = Buffer.concat(buffer_array);
+    
+    var kechash = keccak256(message_buf)
+    var digest = Secp256k1.uint256(kechash, 16)
+    var sig = Secp256k1.ecsign(from_private_key, digest)
+    var sigR = Secp256k1.uint256(sig.r, 16)
+    var sigS = Secp256k1.uint256(sig.s, 16)
+    var pubX = Secp256k1.uint256(from_public_key.x, 16)
+    var pubY = Secp256k1.uint256(from_public_key.y, 16)
+    console.log("gid: " + gid.toString(16))
+    return {
+        'gid': gid,
+        'pubkey': '04' + from_public_key.x.toString(16) + from_public_key.y.toString(16),
+        'to': to,
+        'amount': amount,
+        'gas_limit': gas_limit,
+        'gas_price': gas_price,
+        'type': tx_type,
+        'shard_id': 3,
+        "key": key,
+        "val": value,
+        'sign_r': sigR.toString(16),
+        'sign_s': sigS.toString(16),
+        'sign_v': sig.v,
+        'pepay': prepay
+    }
 }
 
 function PostCode(path, data) {
@@ -140,6 +208,10 @@ function get_confirm_tx_list(args) {
     });
 }
 
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 const args = process.argv.slice(2)
 if (args[0] == "0") {
     get_all_nodes_bls_info(args);
@@ -162,5 +234,6 @@ if (args[0] == "4") {
 }
 
 if (args[0] == "5") {
+    create_tx("cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", "a0793c84fb3133c0df1b9a6ccccbbfe5e7545138", 0, 100000, 1, 0, 7, "key", "confirm data")
     get_confirm_tx_list(args);
 }
