@@ -67,16 +67,16 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
     var low = (tx_type % MAX_UINT32) - big
     step_buf.writeUInt32LE(big, 0)
     step_buf.writeUInt32LE(low, 0)
-    // var prepay_buf = new Buffer(8);
-    // var big = ~~(prepay / MAX_UINT32)
-    // var low = (prepay % MAX_UINT32) - big
-    // prepay_buf.writeUInt32LE(big, 4)
-    // prepay_buf.writeUInt32LE(low, 0)
+    var prepay_buf = new Buffer(8);
+    var big = ~~(prepay / MAX_UINT32)
+    var low = (prepay % MAX_UINT32) - big
+    prepay_buf.writeUInt32LE(big, 4)
+    prepay_buf.writeUInt32LE(low, 0)
 
     var buffer_array = [Buffer.from(gid, 'hex'),
         Buffer.from(frompk, 'hex'),
         Buffer.from(to, 'hex'),
-        amount_buf, gas_limit_buf, gas_price_buf, step_buf];
+        amount_buf, gas_limit_buf, gas_price_buf, step_buf, prepay_buf];
     if (key != null && key != "") {
         buffer_array.push(Buffer.from(key));
         if (value != null && value != "") {
@@ -105,7 +105,7 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
         'sign_r': sigR.toString(16),
         'sign_s': sigS.toString(16),
         'sign_v': sig.v,
-        // 'pepay': prepay
+        'pepay': prepay
     }
 
     var post_data = querystring.stringify(data);

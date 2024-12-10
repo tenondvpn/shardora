@@ -138,7 +138,7 @@ static int CreateTransactionWithAttr(
     }
 
     if (key != nullptr && val != nullptr) {
-        ZJC_DEBUG("create transaction key: %s, value: %s", key, val);
+        ZJC_WARN("create transaction key: %s, value: %s", key, val);
     }
     
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
@@ -146,7 +146,7 @@ static int CreateTransactionWithAttr(
     sign[64] = char(sign_v);
     if (http_handler->security_ptr()->Verify(
             tx_hash, from_pk, sign) != security::kSecuritySuccess) {
-        ZJC_DEBUG("verify signature failed tx_hash: %s, "
+        ZJC_ERROR("verify signature failed tx_hash: %s, "
             "sign_r: %s, sign_s: %s, sign_v: %d, pk: %s, hash64: %lu",
             common::Encode::HexEncode(tx_hash).c_str(),
             common::Encode::HexEncode(sign_r).c_str(),
