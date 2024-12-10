@@ -50,12 +50,12 @@ int ContractReEncryption::CreatePrivateAndPublicKeys(
         sk.push_back(x);
         auto tmp_pk = g^x;
         pk.push_back(tmp_pk);
-        ZJC_WARN("create member private and public key: %d, sk: %s, pk: %s",
-            i, common::Encode::HexEncode(x.toString()).c_str(),
-            common::Encode::HexEncode(tmp_pk.toString(true)).c_str());
         auto private_key = id + "_" + std::string("init_prikey_") + std::to_string(i);
-        param.zjc_host->SaveKeyValue(param.from, private_key, x.toString());
         auto public_key = id + "_" + std::string("init_pubkey_") + std::to_string(i);
+        ZJC_WARN("create member private and public key: %s, %s sk: %s, pk: %s",
+            private_key.c_str(), public_key.c_str(), common::Encode::HexEncode(x.toString()).c_str(),
+            common::Encode::HexEncode(tmp_pk.toString(true)).c_str());
+        param.zjc_host->SaveKeyValue(param.from, private_key, x.toString());
         param.zjc_host->SaveKeyValue(param.from, public_key, tmp_pk.toString(true));
     }
 
