@@ -83,14 +83,14 @@ function GetValidHexString(uint256_bytes) {
 }
 
 const args = process.argv.slice(2)
-var tmp_id = args[1]
-
 function get_all_nodes_bls_info(args) {
     PostCode({
-        'elect_height': 0,
-        'offset': 0,
-        'step': 1,
+        'elect_height': parseInt(args[1]),
+        'offset': parseInt(args[2]),
+        'step': parseInt(args[3]),
     });
 }
 
-get_all_nodes_bls_info(args);
+if (args[0] == "0") {
+    get_all_nodes_bls_info(args);
+}
