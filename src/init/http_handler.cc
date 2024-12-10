@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#include <json/json.hpp>
+
 #include "common/encode.h"
 #include "common/string_utils.h"
 #include "dht/dht_key.h"
@@ -460,6 +462,78 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
     return;
 }
 
+
+static void GetProxyReencInfo(evhtp_request_t* req, void* data) {
+    ZJC_DEBUG("query account.");
+    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
+    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
+    auto header3 = evhtp_header_new(
+        "Access-Control-Allow-Headers",
+        "x-requested-with,content-type", 0, 0);
+    evhtp_headers_add_header(req->headers_out, header1);
+    evhtp_headers_add_header(req->headers_out, header2);
+    evhtp_headers_add_header(req->headers_out, header3);
+
+    const char* id = evhtp_kv_find(req->uri->query, "id");
+    if (id == nullptr) {
+        std::string res = common::StringUtil::Format("param address is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    const char* contract = evhtp_kv_find(req->uri->query, "contract");
+    if (contract == nullptr) {
+        std::string res = common::StringUtil::Format("param contract is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    const char* count_str = evhtp_kv_find(req->uri->query, "count");
+    if (count_str == nullptr) {
+        std::string res = common::StringUtil::Format("param count is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    std::string proxy_id = common::Encode::HexDecode(id);
+    std::string contract_str = common::Encode::HexDecode(contract);
+    uint32_t count = 0;
+    if (!common::StringUtil::ToUint32(count_str, &count) || count > 10) {
+        std::string res = common::StringUtil::Format("param count is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+    
+    nlohmann::json res_json;
+    auto bls_pk_json = nlohmann::json::array();
+    res_json["status"] = 0;
+    res_json["msg"] = "success";
+    zjcvm::ZjchainHost zjc_host;
+    for (uint32_t i = 0; i < count; ++i) {
+        auto private_key = id + "_" + std::string("init_prikey_") + std::to_string(i);
+        std::string prikey;
+        zjc_host.GetKeyValue(contract_str, private_key, &prikey);
+        auto public_key = id + "_" + std::string("init_pubkey_") + std::to_string(i);
+        std::string pubkey;
+        zjc_host.GetKeyValue(contract_str, public_key, &pubkey);
+        nlohmann::json item;
+        item["node_index"] = i;
+        item["private_key"] = prikey;
+        item["public_key"] = pubkey;
+        bls_pk_json.push(item);
+    }
+   
+    res_json["value"] = bls_pk_json;
+    auto json_str = res_json.dump();
+    evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+    return;
+}
+
 static void QueryInit(evhtp_request_t* req, void* data) {
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     std::string res = "ok";
@@ -489,6 +563,7 @@ void HttpHandler::Init(
     http_server.AddCallback("/query_contract", QueryContract);
     http_server.AddCallback("/query_account", QueryAccount);
     http_server.AddCallback("/query_init", QueryInit);
+    http_server.AddCallback("/get_proxy_reenc_info", GetProxyReencInfo);
 }
 
 };  // namespace init
