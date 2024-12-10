@@ -235,5 +235,6 @@ if (args[0] == "4") {
 
 if (args[0] == "5") {
     create_tx("cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", "a0793c84fb3133c0df1b9a6ccccbbfe5e7545138", 0, 100000, 1, 0, 7, "key", "confirm data")
+    sleep(2);
     get_confirm_tx_list(args);
 }
