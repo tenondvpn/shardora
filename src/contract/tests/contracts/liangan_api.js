@@ -235,6 +235,12 @@ function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function penc_create_sec_keys(args) {
+    PostCode('/zjchain/penc_create_sec_keys/', {
+        "content": "content",
+    });
+}
+
 const args = process.argv.slice(2)
 if (args[0] == "0") {
     get_all_nodes_bls_info(args);
@@ -258,6 +264,10 @@ if (args[0] == "4") {
 
 if (args[0] == "5") {
     create_tx("cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", "a0793c84fb3133c0df1b9a6ccccbbfe5e7545138", 0, 100000, 1, 0, 0, "key", "confirm_data")
-    sleep(2000)
+    await sleep(2000)
     get_confirm_tx_list(args);
+}
+
+if (args[0] == "6") {
+    penc_create_sec_keys(args);
 }
