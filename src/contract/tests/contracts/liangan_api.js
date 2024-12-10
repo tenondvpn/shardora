@@ -129,6 +129,16 @@ function get_block_detail(args) {
     GetCode('/zjchain/get_block_detail/' + args[1] + "/");
 }
 
+function get_confirm_tx_list(args) {
+    PostCode('/zjchain/transactions/', {
+        'search': "a0793c84fb3133c0df1b9a6ccccbbfe5e7545138",
+        'height': -1,
+        'shard': -1,
+        'pool': -1,
+        'type': parseInt(args[1]),
+        'limit': args[2],
+    });
+}
 
 const args = process.argv.slice(2)
 if (args[0] == "0") {
@@ -149,4 +159,8 @@ if (args[0] == "3") {
 
 if (args[0] == "4") {
     get_block_detail(args);
+}
+
+if (args[0] == "5") {
+    get_confirm_tx_list(args);
 }
