@@ -44,12 +44,12 @@ function hexToBytes(hex) {
     return bytes;
 }
 
-function PostCode(data) {
+function PostCode(path, data) {
     var post_data = querystring.stringify(data);
     var post_options = {
         host: '127.0.0.1',
         port: '801',
-        path: '/zjchain/get_all_nodes_bls_info/',
+        path: path,
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -60,11 +60,7 @@ function PostCode(data) {
     var post_req = http.request(post_options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
-            if (chunk != "ok") {
-                console.log('Response: ' + chunk + ", " + data);
-            } else {
-                console.log('Response: ' + chunk + ", " + data);
-            }
+            console.log('Response: ' + chunk);
         })
     });
 
@@ -73,24 +69,29 @@ function PostCode(data) {
     post_req.end();
 }
 
-function GetValidHexString(uint256_bytes) {
-    var str_res = uint256_bytes.toString(16)
-    while (str_res.length < 64) {
-        str_res = "0" + str_res;
-    }
-
-    return str_res;
-}
-
-const args = process.argv.slice(2)
 function get_all_nodes_bls_info(args) {
-    PostCode({
+    PostCode('/zjchain/get_all_nodes_bls_info/', {
         'elect_height': parseInt(args[1]),
         'offset': parseInt(args[2]),
         'step': parseInt(args[3]),
     });
 }
 
+function get_tx_list(args) {
+    PostCode('/zjchain/transactions/', {
+        'search': "",
+        'height': -1,
+        'shard': -1,
+        'pool': -1,
+        'limit': "",
+    });
+}
+
+const args = process.argv.slice(2)
 if (args[0] == "0") {
     get_all_nodes_bls_info(args);
+}
+
+if (args[0] == "1") {
+    get_tx_list(args);
 }
