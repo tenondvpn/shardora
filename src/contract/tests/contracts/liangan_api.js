@@ -112,7 +112,7 @@ function get_tx_list(args) {
 }
 
 function get_address_info(args) {
-    GetCode('/zjchain/get_balance/$id/?id=' + args[1]);
+    GetCode('/zjchain/get_balance/' + args[1]);
 }
 
 const args = process.argv.slice(2)
