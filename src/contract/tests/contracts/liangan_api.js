@@ -69,6 +69,29 @@ function PostCode(path, data) {
     post_req.end();
 }
 
+function GetCode(path) {
+    var post_options = {
+        host: '127.0.0.1',
+        port: '801',
+        path: path,
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Length': 0
+        }
+    };
+
+    var post_req = http.request(post_options, function (res) {
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+            console.log('Response: ' + chunk);
+        })
+    });
+
+    //console.log("req data: " + post_data);
+    post_req.end();
+}
+
 function get_all_nodes_bls_info(args) {
     PostCode('/zjchain/get_all_nodes_bls_info/', {
         'elect_height': parseInt(args[1]),
@@ -88,6 +111,10 @@ function get_tx_list(args) {
     });
 }
 
+function get_address_info(args) {
+    GetCode('/zjchain/get_balance/$id/?id=' + args[1]);
+}
+
 const args = process.argv.slice(2)
 if (args[0] == "0") {
     get_all_nodes_bls_info(args);
@@ -95,4 +122,8 @@ if (args[0] == "0") {
 
 if (args[0] == "1") {
     get_tx_list(args);
+}
+
+if (args[0] == "2") {
+    get_address_info(args);
 }
