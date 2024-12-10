@@ -38,7 +38,12 @@ function GetValidHexString(uint256_bytes) {
     return str_res;
 }
 
-function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type, key="", value="") {
+
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type, key="", value="") {
     var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
     var from_private_key = Secp256k1.uint256(privateKeyBuf, 16)
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
@@ -133,6 +138,7 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
 
     post_req.write(post_data);
     post_req.end();
+    await sleep(2000)
 }
 
 function PostCode(path, data) {
@@ -231,10 +237,6 @@ function get_confirm_tx_list(args) {
     });
 }
 
-async function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 function penc_create_sec_keys(args) {
     PostCode('/zjchain/penc_create_sec_keys/', {
         "content": "content",
@@ -264,7 +266,6 @@ if (args[0] == "4") {
 
 if (args[0] == "5") {
     create_tx("cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", "a0793c84fb3133c0df1b9a6ccccbbfe5e7545138", 0, 100000, 1, 0, 0, "key", "confirm_data")
-    await sleep(2000)
     get_confirm_tx_list(args);
 }
 
