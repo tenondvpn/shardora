@@ -115,6 +115,16 @@ function get_address_info(args) {
     GetCode('/zjchain/get_balance/' + args[1] + "/");
 }
 
+function get_accounts(args) {
+    PostCode('/zjchain/accounts/', {
+        'search': "",
+        'shard': -1,
+        'pool': -1,
+        'order': "order by balance desc",
+        'limit': "0,100",
+    });
+}
+
 const args = process.argv.slice(2)
 if (args[0] == "0") {
     get_all_nodes_bls_info(args);
@@ -126,4 +136,8 @@ if (args[0] == "1") {
 
 if (args[0] == "2") {
     get_address_info(args);
+}
+
+if (args[0] == "3") {
+    get_accounts(args);
 }
