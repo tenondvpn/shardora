@@ -125,6 +125,11 @@ function get_accounts(args) {
     });
 }
 
+function get_block_detail(args) {
+    GetCode('/zjchain/get_block_detail/' + args[1] + "/");
+}
+
+
 const args = process.argv.slice(2)
 if (args[0] == "0") {
     get_all_nodes_bls_info(args);
@@ -140,4 +145,8 @@ if (args[0] == "2") {
 
 if (args[0] == "3") {
     get_accounts(args);
+}
+
+if (args[0] == "4") {
+    get_block_detail(args);
 }
