@@ -131,6 +131,7 @@ static int CreateTransactionWithAttr(
     if (pepay != nullptr) {
         uint64_t pepay_val = 0;
         if (!common::StringUtil::ToUint64(std::string(pepay), &pepay_val)) {
+            ZJC_WARN("get prepay failed %s", pepay);
             return kSignatureInvalid;
         }
 
