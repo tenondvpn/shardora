@@ -278,6 +278,34 @@ function penc_transactions() {
     });
 }
 
+function penc_get_sec_and_encdata(data) {
+    var post_data = querystring.stringify(data);
+    var post_options = {
+        host: '127.0.0.1',
+        port: '23001',
+        path: '/get_seckey_and_encrypt_data',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Length': Buffer.byteLength(post_data)
+        }
+    };
+
+    var post_req = http.request(post_options, function (res) {
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+            if (chunk != "ok") {
+                console.log('Response: ' + chunk);
+            } else {
+                console.log('Response: ' + chunk);
+            }
+        })
+    });
+
+    post_req.write(post_data);
+    post_req.end();
+}
+
 async function wait_get_penc_sec_keys() {
     for (var i = 0; i < 10; ++i) {
         await sleep(1000);
@@ -349,4 +377,8 @@ if (args[0] == "9") {
 
 if (args[0] == "10") {
     penc_transactions();
+}
+
+if (args[0] == "11") {
+    penc_get_sec_and_encdata({"data": "src_content_3ac30e977ecc873e18f5e3bf1f8e46e775e55520f69b3c560bca75a40f16915c_dsfasdfasdfasdfasd"});
 }
