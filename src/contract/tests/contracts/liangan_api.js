@@ -251,11 +251,10 @@ function penc_get_sec_keys(id) {
     });
 }
 
-function penc_share_new_data(id, seckey, encdata) {
+function penc_share_new_data(id, content) {
     PostCode('/zjchain/penc_share_new_data/', {
         "id": id,
-        "seckey": seckey,
-        "encdata": encdata,
+        "content": content
     });
 }
 
@@ -266,10 +265,11 @@ function penc_vote(id, content) {
     });
 }
 
-function penc_get_share_data(id, content) {
+function penc_get_share_data(id, seckey, encdata) {
     PostCode('/zjchain/penc_get_share_data/', {
         "id": id,
-        "content": content
+        "seckey": seckey,
+        "encdata": encdata,
     });
 }
 
