@@ -586,7 +586,6 @@ static void GetSecAndEncData(evhtp_request_t* req, void* req_data) {
     std::string sec_data;
     secptr->Encrypt(data, hash256, &sec_data);
     nlohmann::json res_json;
-    auto bls_pk_json = res_json["value"];
     res_json["status"] = 0;
     res_json["seckey"] = common::Encode::HexEncode(m.toString());
     res_json["hash_seckey"] = common::Encode::HexEncode(hash256);
