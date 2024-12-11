@@ -609,8 +609,8 @@ static void ProxDecryption(evhtp_request_t* req, void* req_data) {
     evhtp_headers_add_header(req->headers_out, header1);
     evhtp_headers_add_header(req->headers_out, header2);
     evhtp_headers_add_header(req->headers_out, header3);
-    const char* data = evhtp_kv_find(req->uri->query, "data");
-    if (data == nullptr) {
+    const char* id = evhtp_kv_find(req->uri->query, "id");
+    if (id == nullptr) {
         std::string res = common::StringUtil::Format("param data is null");
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
@@ -628,7 +628,7 @@ static void ProxDecryption(evhtp_request_t* req, void* req_data) {
 
     ZJC_WARN("ProxDecryption coming 2.");
     std::string res_data;
-    prox_renc.Decryption(param, "", std::string(data), &res_data);
+    prox_renc.Decryption(param, "", std::string(id) + ";", &res_data);
     std::string hash256 = common::Hash::Hash256(res_data);
     std::string dec_data;
     secptr->Decrypt(common::Encode::HexDecode(enc_data), hash256, &dec_data);
