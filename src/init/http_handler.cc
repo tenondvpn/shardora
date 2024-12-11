@@ -596,7 +596,7 @@ static void GetSecAndEncData(evhtp_request_t* req, void* req_data) {
 }
 
 static void ProxDecryption(evhtp_request_t* req, void* req_data) {
-    ZJC_DEBUG("http transaction coming.");
+    ZJC_WARN("ProxDecryption coming 0.");
     contract::ContractReEncryption prox_renc;
     zjcvm::ZjchainHost zjc_host;
     contract::CallParameters param;
@@ -617,6 +617,7 @@ static void ProxDecryption(evhtp_request_t* req, void* req_data) {
         return;
     }
 
+    ZJC_WARN("ProxDecryption coming 1.");
     const char* enc_data = evhtp_kv_find(req->uri->query, "enc_data");
     if (enc_data == nullptr) {
         std::string res = common::StringUtil::Format("param enc_data is null");
@@ -625,6 +626,7 @@ static void ProxDecryption(evhtp_request_t* req, void* req_data) {
         return;
     }
 
+    ZJC_WARN("ProxDecryption coming 2.");
     std::string res_data;
     prox_renc.Decryption(param, "", std::string(data), &res_data);
     std::string hash256 = common::Hash::Hash256(res_data);
@@ -643,8 +645,10 @@ static void ProxDecryption(evhtp_request_t* req, void* req_data) {
     res_json["hash_seckey"] = common::Encode::HexEncode(hash256);
     res_json["decdata"] = dec_data;
     auto json_str = res_json.dump();
+    ZJC_WARN("ProxDecryption coming 3.");
     evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
+    ZJC_WARN("ProxDecryption coming 4.");
 }
 
 static void QueryInit(evhtp_request_t* req, void* data) {
