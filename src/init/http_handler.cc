@@ -588,8 +588,8 @@ static void GetSecAndEncData(evhtp_request_t* req, void* req_data) {
     nlohmann::json res_json;
     auto bls_pk_json = res_json["value"];
     res_json["status"] = 0;
-    res_json["seckey"] = hash256;
-    res_json["secdata"] = sec_data;
+    res_json["seckey"] = common::Encode::HexEncode(hash256);
+    res_json["secdata"] = common::Encode::HexEncode(sec_data);
     auto json_str = res_json.dump();
     evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
