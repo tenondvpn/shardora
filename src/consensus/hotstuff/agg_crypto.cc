@@ -60,13 +60,13 @@ Status AggCrypto::VerifyAndAggregateSig(
     }
 
     if (bls_collection_->handled) {
-        auto collect_item = bls_collection_->GetItem(msg_hash);
-        if (collect_item != nullptr && collect_item->agg_sig != nullptr) {
-            agg_sig = *collect_item->agg_sig;
-            return Status::kBlsHandled;
-        }
+        // auto collect_item = bls_collection_->GetItem(msg_hash);
+        // if (collect_item != nullptr && collect_item->agg_sig != nullptr) {
+        //     agg_sig = *collect_item->agg_sig;
+        return Status::kBlsHandled;
+        // }
         
-        bls_collection_->handled = false;
+        // bls_collection_->handled = false;
     }
 
     auto elect_item = GetElectItem(common::GlobalInfo::Instance()->network_id(), elect_height);
@@ -93,7 +93,13 @@ Status AggCrypto::VerifyAndAggregateSig(
     for (auto partial_sig : collection_item->partial_sigs) {
         partial_sigs.push_back(std::make_shared<AggregateSignature>(partial_sig));
     }
-    return AggregateSigs(partial_sigs, &agg_sig);
+    s = AggregateSigs(partial_sigs, &agg_sig);
+    if (s == Status::kSuccess) {
+        bls_collection_->handled = true;
+    } else {
+        assert(false);
+    }
+    
 }
 
 Status AggCrypto::VerifyQC(uint32_t sharding_id, const QC& qc) {    
