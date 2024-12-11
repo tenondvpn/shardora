@@ -60,13 +60,13 @@ Status AggCrypto::VerifyAndAggregateSig(
     }
 
     if (bls_collection_->handled) {
-        // auto collect_item = bls_collection_->GetItem(msg_hash);
-        // if (collect_item != nullptr && collect_item->agg_sig != nullptr) {
-        //     agg_sig = *collect_item->agg_sig;
-        return Status::kBlsHandled;
-        // }
+        auto collect_item = bls_collection_->GetItem(msg_hash);
+        if (collect_item != nullptr && collect_item->agg_sig != nullptr) {
+            agg_sig = *collect_item->agg_sig;
+            return Status::kBlsHandled;
+        }
         
-        // bls_collection_->handled = false;
+        bls_collection_->handled = false;
     }
 
     auto elect_item = GetElectItem(common::GlobalInfo::Instance()->network_id(), elect_height);
@@ -97,6 +97,7 @@ Status AggCrypto::VerifyAndAggregateSig(
     }
     s = AggregateSigs(partial_sigs, &agg_sig);
     if (s == Status::kSuccess) {
+        collection_item->agg_sig = &agg_sig;
         bls_collection_->handled = true;
     } else {
         assert(false);
