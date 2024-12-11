@@ -591,7 +591,7 @@ static void GetSecAndEncData(evhtp_request_t* req, void* req_data) {
     res_json["seckey"] = common::Encode::HexEncode(m.toString());
     res_json["hash_seckey"] = common::Encode::HexEncode(hash256);
     res_json["secdata"] = common::Encode::HexEncode(sec_data);
-    prefix_db->SaveTemporaryKv(std::string("proxy_reenc_") + hash256, sec_data);
+    prefix_db->SaveTemporaryKv(std::string("proxy_reenc_") + seckey, sec_data);
     auto json_str = res_json.dump();
     evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
