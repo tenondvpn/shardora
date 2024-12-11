@@ -1151,8 +1151,6 @@ int ContractReEncryption::Decryption(
     }
 
     ZJC_WARN("called 5");
-    std::string test_data = lines[1];
-    GT m(e, test_data.c_str(), test_data.size());
     // 重加密密文的解密如下(为了方便，选前t个碎片解密)
     for(int i = 1; i<nu; i++){
         GT Xi = rc6[i][0] / e(g1 ^ sk[i], rc5[i][0]);
@@ -1162,13 +1160,10 @@ int ContractReEncryption::Decryption(
         }
 
         GT result2 = tempc2 / e(rc1[i][0], G1(e, Xi.toString().c_str(), Xi.getElementSize()));
-        if (m == result2) {
-            ZJC_WARN("user %d success, data: %s, res2 data: %s", i, (const char*)m.getElement()->field->data, (const char*)result2.getElement()->field->data);
-            if (res != nullptr) {
-                *res = m.toString();
-            }
-        } else {
-            ZJC_WARN("user %d failed.", i);
+        if (res != nullptr) {
+            *res = result2.toString();
+            ZJC_WARN("called 6");
+            return kContractSuccess;
         }
     }
 
