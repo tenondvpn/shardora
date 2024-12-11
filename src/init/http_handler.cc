@@ -508,7 +508,7 @@ static void GetProxyReencInfo(evhtp_request_t* req, void* data) {
     }
     
     nlohmann::json res_json;
-    auto bls_pk_json = nlohmann::json::array();
+    auto bls_pk_json = res_json["value"];
     res_json["status"] = 0;
     res_json["msg"] = "success";
     ZJC_WARN("GetProxyReencInfo 4.");
@@ -525,14 +525,12 @@ static void GetProxyReencInfo(evhtp_request_t* req, void* data) {
             common::Encode::HexEncode(prikey).c_str(),
             common::Encode::HexEncode(pubkey).c_str());
 
-        nlohmann::json item;
-        item["node_index"] = i;
-        item["private_key"] = prikey;
-        item["public_key"] = pubkey;
-        bls_pk_json.push_back(item);
+        
+        res_json["value"][i]["node_index"] = i;
+        res_json["value"][i]["private_key"] = common::Encode::HexEncode(prikey);
+        res_json["value"][i]["public_key"] = common::Encode::HexEncode(pubkey);
     }
    
-    res_json["value"] = bls_pk_json;
     auto json_str = res_json.dump();
     evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
