@@ -934,7 +934,8 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
 int ContractReEncryption::Decryption(
         const CallParameters& param, 
         const std::string& key, 
-        const std::string& value) {
+        const std::string& value,
+        std::string* res) {
     ZJC_WARN("called 0!");
     auto lines = common::Split<>(value.c_str(), ';');
     if (lines.Count() != 2) {
@@ -1163,6 +1164,9 @@ int ContractReEncryption::Decryption(
         GT result2 = tempc2 / e(rc1[i][0], G1(e, Xi.toString().c_str(), Xi.getElementSize()));
         if (m == result2) {
             ZJC_WARN("user %d success, data: %s, res2 data: %s", i, (const char*)m.getElement()->field->data, (const char*)result2.getElement()->field->data);
+            if (res != nullptr) {
+                *res = m.toString();
+            }
         } else {
             ZJC_WARN("user %d failed.", i);
         }

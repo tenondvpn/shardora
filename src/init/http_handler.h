@@ -42,6 +42,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
+    std::unordered_map<std::string, std::string> proxy_sec_data_map;
 
     DISALLOW_COPY_AND_ASSIGN(HttpHandler);
 };

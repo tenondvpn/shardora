@@ -55,7 +55,7 @@ public:
         const CallParameters& param, 
         const std::string& key, 
         const std::string& value);
-    int Decryption(const CallParameters& param, const std::string& key, const std::string& value);
+    int Decryption(const CallParameters& param, const std::string& key, const std::string& value, std::string* res = nullptr);
 
 private:
     std::shared_ptr<Pairing> pairing_ptr_;

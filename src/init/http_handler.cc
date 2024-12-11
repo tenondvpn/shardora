@@ -595,6 +595,59 @@ static void GetSecAndEncData(evhtp_request_t* req, void* req_data) {
     evhtp_send_reply(req, EVHTP_RES_OK);
 }
 
+static void ProxDecryption(evhtp_request_t* req, void* req_data) {
+    ZJC_DEBUG("http transaction coming.");
+    contract::ContractReEncryption prox_renc;
+    zjcvm::ZjchainHost zjc_host;
+    contract::CallParameters param;
+    param.zjc_host = &zjc_host;
+    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
+    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
+    auto header3 = evhtp_header_new(
+        "Access-Control-Allow-Headers",
+        "x-requested-with,content-type", 0, 0);
+    evhtp_headers_add_header(req->headers_out, header1);
+    evhtp_headers_add_header(req->headers_out, header2);
+    evhtp_headers_add_header(req->headers_out, header3);
+    const char* data = evhtp_kv_find(req->uri->query, "data");
+    if (data == nullptr) {
+        std::string res = common::StringUtil::Format("param data is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    const char* enc_data = evhtp_kv_find(req->uri->query, "enc_data");
+    if (enc_data == nullptr) {
+        std::string res = common::StringUtil::Format("param enc_data is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    std::string res_data;
+    prox_renc.Decryption(param, "", std::string(data), &res_data);
+    std::string hash256 = common::Hash::Hash256(res_data);
+    std::string dec_data;
+    secptr->Decrypt(common::Encode::HexDecode(enc_data), hash256, &dec_data);
+    ZJC_WARN("get m data: %s, %s, %s, hash sec: %s, %s", 
+        test_data.c_str(), 
+        m.toString().c_str(),
+        common::Encode::HexEncode(m.toString()).c_str(), 
+        common::Encode::HexEncode(hash256).c_str(),
+        (const char*)m.getElement()->data);
+    std::string sec_data;
+    secptr->Encrypt(data, hash256, &sec_data);
+    nlohmann::json res_json;
+    res_json["status"] = 0;
+    res_json["seckey"] = common::Encode::HexEncode(res_data);
+    res_json["hash_seckey"] = common::Encode::HexEncode(hash256);
+    res_json["decdata"] = dec_data;
+    auto json_str = res_json.dump();
+    evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+}
+
 static void QueryInit(evhtp_request_t* req, void* data) {
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     std::string res = "ok";
@@ -623,6 +676,7 @@ void HttpHandler::Init(
     contract_mgr = tmp_contract_mgr;
     http_server.AddCallback("/transaction", HttpTransaction);
     http_server.AddCallback("/get_seckey_and_encrypt_data", GetSecAndEncData);
+    http_server.AddCallback("/proxy_decrypt", ProxDecryption);
     http_server.AddCallback("/query_contract", QueryContract);
     http_server.AddCallback("/query_account", QueryAccount);
     http_server.AddCallback("/query_init", QueryInit);
