@@ -333,7 +333,7 @@ int ContractReEncryption::EncryptUserMessage(
     std::string test_data = lines[1];
     GT m(e, test_data.c_str(), test_data.size());
     ZJC_WARN("enc m data src: %s, tom: %s",
-        common::Encode::HexEncode(test_data).c_str(), 
+        test_data.c_str(), 
         common::Encode::HexEncode(m.toString()).c_str());
     ZJC_WARN("get m data: %s, %s, %s", 
         test_data.c_str(), 
@@ -1164,11 +1164,11 @@ int ContractReEncryption::Decryption(
         lag.push_back(Zr(e, (const unsigned char*)val.c_str(), val.size(), 0));
     }
 
-    // std::string test_data = lines[1];
-    // GT m(e, test_data.c_str(), test_data.size());
-    // ZJC_WARN("dec m data src: %s, tom: %s",
-    //     common::Encode::HexEncode(test_data).c_str(), 
-    //     common::Encode::HexEncode(m.toString()).c_str());
+    std::string test_data = "c266fb329ddc5736dedf2de994d2eeb314cd5e6b288a3653c6179f5fcc926591";
+    GT m(e, test_data.c_str(), test_data.size());
+    ZJC_WARN("dec m data src: %s, tom: %s",
+        common::Encode::HexEncode(test_data).c_str(), 
+        common::Encode::HexEncode(m.toString()).c_str());
     // 重加密密文的解密如下(为了方便，选前t个碎片解密)
     for(int i = 1; i<nu; i++){
         GT Xi = rc6[i][0] / e(g1 ^ sk[i], rc5[i][0]);
@@ -1178,15 +1178,19 @@ int ContractReEncryption::Decryption(
         }
 
         GT result2 = tempc2 / e(rc1[i][0], G1(e, Xi.toString().c_str(), Xi.getElementSize()));
-        // if (m == result2) {
-            // ZJC_WARN("user %d success, data: %s, res2 data: %s", i, (const char*)m.getElement()->field->data, (const char*)result2.getElement()->field->data);
+        ZJC_WARN("get m data user %d success, data: %s, res2 data: %s, eq: %d", 
+            i, 
+            common::Encode::HexEncode(m.toString()).c_str(), 
+            common::Encode::HexEncode(result2.toString()).c_str(),
+            (m == result2));
+        if (m == result2) {
             if (res != nullptr) {
                 *res = result2.toString();
                 return kContractSuccess;
             }
-        // } else {
-        //     ZJC_WARN("user %d failed.", i);
-        // }
+        } else {
+            ZJC_WARN("user %d failed.", i);
+        }
     }
 
     ZJC_WARN("called 6");
