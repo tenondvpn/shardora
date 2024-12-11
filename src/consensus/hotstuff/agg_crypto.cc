@@ -85,7 +85,7 @@ Status AggCrypto::VerifyAndAggregateSig(
     collection_item->ok_bitmap.Set(member_idx);
     collection_item->partial_sigs[member_idx] = partial_sig;
 
-    ZJC_WARN("====7.0 msg_hash: %s, member_idx: %d, okcount: %d, t: %d, view: %d", common::Encode::HexEncode(msg_hash).c_str(), member_idx, collection_item->OkCount(), elect_item->t(), bls_collection_->view);
+    ZJC_WARN("====7.0 msg_hash: %s, member_idx: %d", common::Encode::HexEncode(msg_hash).c_str(), member_idx);
     
     if (collection_item->OkCount() < elect_item->t()) {
         return Status::kBlsVerifyWaiting;
