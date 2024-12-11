@@ -330,7 +330,7 @@ int ContractReEncryption::EncryptUserMessage(
     //c=(c1,c2,c3,c4,c5,c6),每项又包含np个，用于分发给np个代理
     vector<G1> c1,c3,c5;
     vector<GT> c2,c4,c6;
-    std::string test_data = "hello world!";
+    std::string test_data = lines[1];
     GT m(e, test_data.c_str(), test_data.size());
     ZJC_WARN("get m data: %s, %s, %s", 
         test_data.c_str(), 
@@ -1150,7 +1150,7 @@ int ContractReEncryption::Decryption(
     }
 
     ZJC_WARN("called 5");
-    std::string test_data = "hello world!";
+    std::string test_data = lines[1];
     GT m(e, test_data.c_str(), test_data.size());
     // 重加密密文的解密如下(为了方便，选前t个碎片解密)
     for(int i = 1; i<nu; i++){

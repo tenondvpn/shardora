@@ -43,6 +43,10 @@ public:
         const CallParameters& param, 
         const std::string& key, 
         const std::string& value);
+    int GetEncryptUserMessageData(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value);
     int ReEncryptUserMessage(
         const CallParameters& param, 
         const std::string& key, 
