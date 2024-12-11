@@ -394,6 +394,11 @@ int ContractReEncryption::EncryptUserMessage(
         {
             auto key = id + "_" + std::string("create_enc_user_msg_c1_") + std::to_string(i);
             param.zjc_host->SaveKeyValue(param.from, key, tmp_c1.toString(true));
+            ZJC_WARN("save now create g1 i: %d, from:%s, key: %s, val: %s",
+                i, 
+                common::Encode::HexEncode(param.from).c_str(), 
+                key.c_str(), 
+                common::Encode::HexEncode(tmp_c1.toString(true)).c_str());
         }
 
         {
@@ -984,6 +989,12 @@ int ContractReEncryption::Decryption(
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
                 return kContractError;
             }
+
+            ZJC_WARN("now create g1 i: %d, from:%s, key: %s, val: %s",
+                i, 
+                common::Encode::HexEncode(param.from).c_str(), 
+                key.c_str(), 
+                common::Encode::HexEncode(val).c_str());
             c1.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
         }
 
