@@ -265,10 +265,10 @@ function penc_vote(id, content) {
     });
 }
 
-function penc_get_share_data(id, seckey, encdata) {
+function penc_get_share_data(id, encdata) {
     PostCode('/zjchain/penc_get_share_data/', {
         "id": id,
-        "seckey": seckey,
+        "seckey": "",
         "encdata": encdata,
     });
 }
@@ -374,7 +374,7 @@ if (args[0] == "8") {
 }
 
 if (args[0] == "9") {
-    penc_get_share_data(args[1], args[2], args[3]);
+    penc_get_share_data(args[1], args[2]);
 }
 
 if (args[0] == "10") {
