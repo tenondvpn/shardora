@@ -84,6 +84,8 @@ Status AggCrypto::VerifyAndAggregateSig(
     auto collection_item = bls_collection_->GetItem(msg_hash);
     collection_item->ok_bitmap.Set(member_idx);
     collection_item->partial_sigs[member_idx] = partial_sig;
+
+    ZJC_WARN("====7.0 msg_hash: %s, member_idx: %d", common::Encode::HexEncode(msg_hash).c_str(), member_idx);
     
     if (collection_item->OkCount() < elect_item->t()) {
         return Status::kBlsVerifyWaiting;
@@ -99,7 +101,7 @@ Status AggCrypto::VerifyAndAggregateSig(
     } else {
         assert(false);
     }
-    
+    return s
 }
 
 Status AggCrypto::VerifyQC(uint32_t sharding_id, const QC& qc) {    
