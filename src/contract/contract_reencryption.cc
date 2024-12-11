@@ -942,7 +942,7 @@ int ContractReEncryption::Decryption(
     ZJC_WARN("called 0!");
     auto lines = common::Split<>(value.c_str(), ';');
     if (lines.Count() != 2) {
-        ZJC_WARN("failed!");
+        ZJC_WARN("failed: %s, count: %d", value.c_str(), lines.Count());
         return kContractError;
     }
 
