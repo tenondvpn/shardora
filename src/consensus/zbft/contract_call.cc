@@ -297,7 +297,7 @@ int ContractCall::SaveContractCreateInfo(
             kv->set_key(str_key);
             kv->set_value(storage_iter->second.str_val);
             if (str_key.size() > 40)
-            ZJC_DEBUG("1 save storage to block tx prev storage key: %s, value: %s",
+            ZJC_WARN("1 save storage to block tx prev storage key: %s, value: %s",
                 common::Encode::HexEncode(str_key).c_str(),
                 common::Encode::HexEncode(kv->value()).c_str());
             zjc_host.SavePrevStorages(str_key, kv->value(), true);

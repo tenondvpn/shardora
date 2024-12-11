@@ -521,7 +521,9 @@ static void GetProxyReencInfo(evhtp_request_t* req, void* data) {
         std::string pubkey;
         prefix_db->GetTemporaryKv(public_key, &pubkey);
         ZJC_WARN("contract_reencryption get member private and public key: %s, %s sk: %s, pk: %s",
-            private_key.c_str(), public_key.c_str(), common::Encode::HexEncode(prikey).c_str(),
+            common::Encode::HexEncode(private_key).c_str(), 
+            common::Encode::HexEncode(public_key).c_str(), 
+            common::Encode::HexEncode(prikey).c_str(),
             common::Encode::HexEncode(pubkey).c_str());
 
         nlohmann::json item;
