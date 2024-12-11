@@ -591,7 +591,7 @@ static void GetSecAndEncData(evhtp_request_t* req, void* req_data) {
     res_json["seckey"] = common::Encode::HexEncode(m.toString());
     res_json["hash_seckey"] = common::Encode::HexEncode(hash256);
     res_json["secdata"] = common::Encode::HexEncode(sec_data);
-    prefix_db->SaveTemporaryKv(std::string("proxy_reenc_") + id, sec_data);
+    prefix_db->SaveTemporaryKv(std::string("proxy_reenc_") + hash256, sec_data);
     auto json_str = res_json.dump();
     evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
@@ -620,18 +620,18 @@ static void ProxDecryption(evhtp_request_t* req, void* req_data) {
         return;
     }
 
+    ZJC_WARN("ProxDecryption coming 2.");
+    std::string res_data;
+    prox_renc.Decryption(param, "", std::string(id) + ";", &res_data);
+    std::string hash256 = common::Hash::Hash256(res_data);
     std::string encdata;
-    if (!prefix_db->GetTemporaryKv(std::string("proxy_reenc_") + id, &encdata)) {
+    if (!prefix_db->GetTemporaryKv(std::string("proxy_reenc_") + hash256, &encdata)) {
         std::string res = common::StringUtil::Format("get encdata is null");
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
         return;
     }
 
-    ZJC_WARN("ProxDecryption coming 2.");
-    std::string res_data;
-    prox_renc.Decryption(param, "", std::string(id) + ";", &res_data);
-    std::string hash256 = common::Hash::Hash256(res_data);
     std::string dec_data;
     secptr->Decrypt(encdata, hash256, &dec_data);
     ZJC_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
@@ -644,6 +644,7 @@ static void ProxDecryption(evhtp_request_t* req, void* req_data) {
     res_json["status"] = 0;
     res_json["seckey"] = common::Encode::HexEncode(res_data);
     res_json["hash_seckey"] = common::Encode::HexEncode(hash256);
+    res_json["encdata"] = common::Encode::HexEncode(encdata);
     res_json["decdata"] = std::string(dec_data.c_str());
     auto json_str = res_json.dump();
     ZJC_WARN("ProxDecryption coming 3.");
