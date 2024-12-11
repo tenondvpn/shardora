@@ -156,14 +156,15 @@ bool Execution::GetStorage(
         const evmc::address& addr,
         const std::string& key,
         std::string* val) {
-    auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) + key;
-    return GetStorage(str_key, key, val);
+    auto str_id = std::string((char*)addr.bytes, sizeof(addr.bytes));
+    return GetStorage(str_id, key, val);
 }
 
 bool Execution::GetStorage(
-        const std::string& str_key,
+        const std::string& str_id,
         const std::string& key,
         std::string* val) {
+    auto str_key = str_id + key;
     auto res = true;
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
