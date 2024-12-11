@@ -541,7 +541,7 @@ static void GetProxyReencInfo(evhtp_request_t* req, void* data) {
 }
 
 
-static void GetSecAndEncData(evhtp_request_t* req, void* data) {
+static void GetSecAndEncData(evhtp_request_t* req, void* req_data) {
     ZJC_DEBUG("http transaction coming.");
     contract::ContractReEncryption prox_renc;
     zjcvm::ZjchainHost zjc_host;
