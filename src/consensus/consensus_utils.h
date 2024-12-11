@@ -102,7 +102,7 @@ enum BftRole {
 };
 
 static const uint32_t kMaxTxCount = 8192u;
-static const uint32_t kSyncToLeaderTxCount = 1024u;
+static const uint32_t kSyncToLeaderTxCount = 256u;
 static const uint32_t kBitcountWithItemCount = 20u;  // m/n, k = 8, error ratio = 0.000009
 static const uint32_t kHashCount = 6u;  // k
 static const uint32_t kDirectTxCount = kBitcountWithItemCount * 8 / 32;
