@@ -169,7 +169,7 @@ Status Hotstuff::Propose(
             header.debug().c_str(),
             tmp_msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
             pacemaker_->CurView());
-        // HandleProposeMsg(latest_leader_propose_message_);
+        HandleProposeMsg(latest_leader_propose_message_);
         return s;
     }
 
@@ -261,7 +261,7 @@ Status Hotstuff::Propose(
     }
 
     tmp_msg_ptr->is_leader = true;
-    // HandleProposeMsg(tmp_msg_ptr);
+    HandleProposeMsg(tmp_msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
@@ -841,7 +841,6 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
 }
 
 Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
-    ZJC_WARN("HandleProposeMsgStep_Vote called hash: %lu", pro_msg_wrap->msg_ptr->header.hash64());
     // NOTICE: pipeline 重试时，protobuf 结构体被析构，因此 pro_msg_wrap->header.hash64() 是 0
     ZJC_WARN("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, "
         "curView: %lu, vblock: %lu, txs: %lu, hash64: %lu, propose_debug: %s",
