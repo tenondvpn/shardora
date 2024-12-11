@@ -251,10 +251,11 @@ function penc_get_sec_keys(id) {
     });
 }
 
-function penc_share_new_data(id, content) {
+function penc_share_new_data(id, seckey, encdata) {
     PostCode('/zjchain/penc_share_new_data/', {
         "id": id,
-        "content": content
+        "seckey": seckey,
+        "encdata": encdata,
     });
 }
 
@@ -318,6 +319,7 @@ async function wait_get_penc_sec_keys() {
                 await sleep(1000);
                 if (global_resonse != null) {
                     var json_res = JSON.parse(global_resonse);
+                    console.log('penc_sec_keys: ' + global_resonse);
                     if (json_res.value[0].private_key != "") {
                         break
                     }
@@ -364,15 +366,15 @@ if (args[0] == "6") {
 }
 
 if (args[0] == "7") {
-    penc_share_new_data("3ac30e977ecc873e18f5e3bf1f8e46e775e55520f69b3c560bca75a40f16915c", "penc_share_new_data");
+    penc_share_new_data(args[1], "penc_share_new_data");
 }
 
 if (args[0] == "8") {
-    penc_vote("3ac30e977ecc873e18f5e3bf1f8e46e775e55520f69b3c560bca75a40f16915c", "penc_vote");
+    penc_vote(args[1], "penc_vote");
 }
 
 if (args[0] == "9") {
-    penc_get_share_data("3ac30e977ecc873e18f5e3bf1f8e46e775e55520f69b3c560bca75a40f16915c", "penc_get_share_data");
+    penc_get_share_data(args[1], args[2], args[3]);
 }
 
 if (args[0] == "10") {
