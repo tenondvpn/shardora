@@ -251,6 +251,13 @@ function penc_get_sec_keys(id) {
     });
 }
 
+function penc_share_new_data(id, content) {
+    PostCode('/zjchain/penc_share_new_data/', {
+        "id": id,
+        "content": content
+    });
+}
+
 async function wait_get_penc_sec_keys() {
     for (var i = 0; i < 10; ++i) {
         await sleep(1000);
@@ -306,4 +313,8 @@ if (args[0] == "5") {
 if (args[0] == "6") {
     penc_create_sec_keys(args);
     wait_get_penc_sec_keys(args);
+}
+
+if (args[0] == "7") {
+    penc_share_new_data("3ac30e977ecc873e18f5e3bf1f8e46e775e55520f69b3c560bca75a40f16915c", "content");
 }
