@@ -577,14 +577,15 @@ static void GetSecAndEncData(evhtp_request_t* req, void* req_data) {
     auto& e = *pairing_ptr;
     GT m(e, test_data.c_str(), test_data.size());
     std::string hash256 = common::Hash::Hash256(m.toString());
-    ZJC_WARN("get m data: %s, %s, %s, hash sec: %s, %s", 
-        test_data.c_str(), 
-        m.toString().c_str(),
-        common::Encode::HexEncode(m.toString()).c_str(), 
-        common::Encode::HexEncode(hash256).c_str(),
-        (const char*)m.getElement()->data);
+   
     std::string sec_data;
     secptr->Encrypt(data, hash256, &sec_data);
+    ZJC_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
+        data.c_str(), 
+        common::Encode::HexEncode(data).c_str(),
+        common::Encode::HexEncode(m.toString()).c_str(), 
+        common::Encode::HexEncode(hash256).c_str(),
+        common::Encode::HexEncode(sec_data).c_str());
     nlohmann::json res_json;
     res_json["status"] = 0;
     res_json["seckey"] = common::Encode::HexEncode(m.toString());
@@ -633,12 +634,12 @@ static void ProxDecryption(evhtp_request_t* req, void* req_data) {
     std::string hash256 = common::Hash::Hash256(res_data);
     std::string dec_data;
     secptr->Decrypt(common::Encode::HexDecode(enc_data), hash256, &dec_data);
-    ZJC_WARN("get m data: %s, %s, %s, %s, hash sec: %s", 
+    ZJC_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
         dec_data.c_str(), 
-        common::Encode::HexEncode(dec_data).c_str(), 
-        res_data.c_str(),
+        common::Encode::HexEncode(dec_data).c_str(),
         common::Encode::HexEncode(res_data).c_str(), 
-        common::Encode::HexEncode(hash256).c_str());
+        common::Encode::HexEncode(hash256).c_str(),
+        enc_data.c_str());
     nlohmann::json res_json;
     res_json["status"] = 0;
     res_json["seckey"] = common::Encode::HexEncode(res_data);
