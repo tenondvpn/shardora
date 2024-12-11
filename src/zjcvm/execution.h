@@ -56,6 +56,10 @@ public:
             const evmc::address& addr,
             const std::string& key,
             std::string* val);
+    bool GetStorage(
+            const std::string& addr,
+            const std::string& key,
+            std::string* val);
 
 private:
     Execution();

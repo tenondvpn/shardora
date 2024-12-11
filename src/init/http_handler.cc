@@ -511,15 +511,14 @@ static void GetProxyReencInfo(evhtp_request_t* req, void* data) {
     auto bls_pk_json = nlohmann::json::array();
     res_json["status"] = 0;
     res_json["msg"] = "success";
-    zjcvm::ZjchainHost zjc_host;
     ZJC_WARN("GetProxyReencInfo 4.");
     for (uint32_t i = 0; i < count; ++i) {
         auto private_key = contract_str + proxy_id + "_" + std::string("init_prikey_") + std::to_string(i);
         std::string prikey;
-        prefix_db->GetTemporaryKv(private_key, &prikey);
+        zjcvm::Execution::Instance()->GetStorage(contract_str, private_key, &prikey);
         auto public_key = contract_str + proxy_id + "_" + std::string("init_pubkey_") + std::to_string(i);
         std::string pubkey;
-        prefix_db->GetTemporaryKv(public_key, &pubkey);
+        zjcvm::Execution::Instance()->GetStorage(contract_str, public_key, &pubkey);
         ZJC_WARN("contract_reencryption get member private and public key: %s, %s sk: %s, pk: %s",
             common::Encode::HexEncode(private_key).c_str(), 
             common::Encode::HexEncode(public_key).c_str(), 
