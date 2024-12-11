@@ -576,17 +576,19 @@ static void GetSecAndEncData(evhtp_request_t* req, void* req_data) {
     auto pairing_ptr = std::make_shared<Pairing>(pair_param.c_str(), pair_param.size());
     auto& e = *pairing_ptr;
     GT m(e, test_data.c_str(), test_data.size());
-    ZJC_WARN("get m data: %s, %s, %s, %s", 
+    std::string hash256 = common::Hash::Hash256(m.toString());
+    ZJC_WARN("get m data: %s, %s, %s, hash sec: %s, %s", 
         test_data.c_str(), 
         m.toString().c_str(),
         common::Encode::HexEncode(m.toString()).c_str(), 
+        common::Encode::HexEncode(hash256).c_str(),
         (const char*)m.getElement()->data);
     std::string sec_data;
-    secptr->Encrypt(data, m.toString(), &sec_data);
+    secptr->Encrypt(data, hash256, &sec_data);
     nlohmann::json res_json;
     auto bls_pk_json = res_json["value"];
     res_json["status"] = 0;
-    res_json["seckey"] = m.toString();
+    res_json["seckey"] = hash256;
     res_json["secdata"] = sec_data;
     auto json_str = res_json.dump();
     evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
