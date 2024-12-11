@@ -5,8 +5,8 @@ cd cbuild_Release && make hotstuff
 sleep 3
 nohup ./hotstuff 2>&1 &
 
-echo "[TESTING] Please wait 30s..."
-sleep 30
+echo "[TESTING] Please wait 15s..."
+sleep 15
 
 last_line=$(grep "pool: 15, tps" /root/zjnodes/s3_4/log/zjchain.log | tail -n 1)
 tps_value=$(echo "$last_line" | grep -oP 'tps: \K[0-9]+\.[0-9]+')

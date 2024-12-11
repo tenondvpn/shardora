@@ -26,7 +26,7 @@ Status AggCrypto::PartialSign(
             msg_hash,
             &g1_sig);
 
-    ZJC_DEBUG("partial sign sk: %s, real sk: %s, msg_hash: %s, sig: %s",
+    ZJC_WARN("partial sign sk: %s, real sk: %s, msg_hash: %s, sig: %s",
         libBLS::ThresholdUtils::fieldElementToString(elect_item->local_sk()).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(bls::AggBls::Instance()->agg_sk()).c_str(),
         common::Encode::HexEncode(msg_hash).c_str(),
@@ -84,6 +84,8 @@ Status AggCrypto::VerifyAndAggregateSig(
     auto collection_item = bls_collection_->GetItem(msg_hash);
     collection_item->ok_bitmap.Set(member_idx);
     collection_item->partial_sigs[member_idx] = partial_sig;
+
+    // ZJC_WARN("====7.0 msg_hash: %s, member_idx: %d", common::Encode::HexEncode(msg_hash).c_str(), member_idx);
     
     if (collection_item->OkCount() < elect_item->t()) {
         return Status::kBlsVerifyWaiting;
@@ -93,7 +95,14 @@ Status AggCrypto::VerifyAndAggregateSig(
     for (auto partial_sig : collection_item->partial_sigs) {
         partial_sigs.push_back(std::make_shared<AggregateSignature>(partial_sig));
     }
-    return AggregateSigs(partial_sigs, &agg_sig);
+    s = AggregateSigs(partial_sigs, &agg_sig);
+    if (s == Status::kSuccess) {
+        collection_item->agg_sig = &agg_sig;
+        bls_collection_->handled = true;
+    } else {
+        assert(false);
+    }
+    return s;
 }
 
 Status AggCrypto::VerifyQC(uint32_t sharding_id, const QC& qc) {    
@@ -227,7 +236,7 @@ Status AggCrypto::VerifyMessage(const transport::MessagePtr& msg_ptr) {
     }
     auto mem_ptr = elect_item->GetMemberByIdx(msg_ptr->header.hotstuff().pro_msg().view_item().qc().leader_idx());
     if (mem_ptr->bls_publick_key == libff::alt_bn128_G2::zero()) {
-        ZJC_DEBUG("verify sign failed, backup invalid bls pk: %s",
+        ZJC_WARN("verify sign failed, backup invalid bls pk: %s",
             common::Encode::HexEncode(mem_ptr->id).c_str());
         return Status::kError;
     }
@@ -237,7 +246,7 @@ Status AggCrypto::VerifyMessage(const transport::MessagePtr& msg_ptr) {
             msg_hash,
             mem_ptr->pubkey,
             msg_ptr->header.sign()) != security::kSecuritySuccess) {
-        ZJC_DEBUG("verify leader sign failed: %s", common::Encode::HexEncode(mem_ptr->id).c_str());
+        ZJC_WARN("verify leader sign failed: %s", common::Encode::HexEncode(mem_ptr->id).c_str());
         return Status::kError;
     }
 
