@@ -169,7 +169,7 @@ Status Hotstuff::Propose(
             header.debug().c_str(),
             tmp_msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
             pacemaker_->CurView());
-        // HandleProposeMsg(latest_leader_propose_message_);
+        HandleProposeMsg(latest_leader_propose_message_);
         return s;
     }
 
@@ -261,7 +261,7 @@ Status Hotstuff::Propose(
     }
 
     tmp_msg_ptr->is_leader = true;
-    // HandleProposeMsg(tmp_msg_ptr);
+    HandleProposeMsg(tmp_msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
@@ -841,7 +841,6 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
 }
 
 Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
-    ZJC_WARN("HandleProposeMsgStep_Vote called hash: %lu", pro_msg_wrap->msg_ptr->header.hash64());
     // NOTICE: pipeline 重试时，protobuf 结构体被析构，因此 pro_msg_wrap->header.hash64() 是 0
     ZJC_WARN("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, "
         "curView: %lu, vblock: %lu, txs: %lu, hash64: %lu, propose_debug: %s",
@@ -1009,11 +1008,6 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     qc_item.set_pool_index(pool_idx_);
     qc_item.set_view(vote_msg.view());
     qc_item.set_view_block_hash(vote_msg.view_block_hash());
-    ZJC_WARN("success set view block hash: %s, %u_%u_%lu",
-        common::Encode::HexEncode(qc_item.view_block_hash()).c_str(),
-        qc_item.network_id(),
-        qc_item.pool_index(),
-        qc_item.view());
     assert(!prefix_db_->BlockExists(qc_item.view_block_hash()));
     qc_item.set_elect_height(elect_height);
     qc_item.set_leader_idx(vote_msg.leader_idx());
@@ -1304,8 +1298,7 @@ std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(const QC& qc) {
 
         return nullptr;
     }
-
-    ZJC_WARN("success get v block 3 propose_debug: %s", v_block3->debug().c_str());
+    
     ZJC_WARN("success get v block hash: %s, %s, %s, %s, now: %s",
         common::Encode::HexEncode(v_block1->parent_hash()).c_str(),
         common::Encode::HexEncode(v_block2->qc().view_block_hash()).c_str(),
