@@ -600,6 +600,7 @@ static void ProxDecryption(evhtp_request_t* req, void* req_data) {
     contract::ContractReEncryption prox_renc;
     zjcvm::ZjchainHost zjc_host;
     contract::CallParameters param;
+    param.from = common::Encode::HexDecode("48e1eab96c9e759daa3aff82b40e77cd615a41d0");
     param.zjc_host = &zjc_host;
     auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
     auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
