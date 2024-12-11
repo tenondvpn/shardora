@@ -135,7 +135,7 @@ public:
                 return Status::kSuccess;
             }
             auto sig_x_str = libBLS::ThresholdUtils::fieldElementToString(sig.signature().X);
-            ZJC_DEBUG("agg sig verify failed, sig.x is %s, msg_hash: %s, member: %d", sig_x_str.c_str(), common::Encode::HexEncode(msg_hash).c_str(), member_idx);
+            ZJC_WARN("agg sig verify failed, sig.x is %s, msg_hash: %s, member: %d", sig_x_str.c_str(), common::Encode::HexEncode(msg_hash).c_str(), member_idx);
             return Status::kBlsVerifyFailed;
         }
 
