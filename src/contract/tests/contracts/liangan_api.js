@@ -257,8 +257,21 @@ async function wait_get_penc_sec_keys() {
         if (global_resonse != null) {
             var json_res = JSON.parse(global_resonse);
             global_resonse = null;
-            penc_get_sec_keys(json_res.id);
-            break;
+            var tmp_id = json_res.id;
+            penc_get_sec_keys(tmp_id);
+            for (var i = 0; i < 10; ++i) {
+                await sleep(1000);
+                if (global_resonse != null) {
+                    var json_res = JSON.parse(global_resonse);
+                    if (json_res.value[0].private_key != "") {
+                        break
+                    }
+                    global_resonse = null;
+                    penc_get_sec_keys(tmp_id);
+                }
+            }
+
+            break
         }
     }
 }
