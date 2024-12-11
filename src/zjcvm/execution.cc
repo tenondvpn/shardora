@@ -107,7 +107,7 @@ void Execution::UpdateStorage(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     storage_map_[thread_idx].Insert(key, val);
     prefix_db_->SaveTemporaryKv(key, val, db_batch);
-    ZJC_DEBUG("update storage: %s, %s", common::Encode::HexEncode(key).c_str(), common::Encode::HexEncode(val).c_str());
+    ZJC_WARN("update storage: %s, %s", common::Encode::HexEncode(key).c_str(), common::Encode::HexEncode(val).c_str());
 }
 
 bool Execution::GetStorage(
@@ -179,7 +179,7 @@ bool Execution::GetStorage(
         }
     }
 
-    ZJC_DEBUG("get storage: %s, %s", common::Encode::HexEncode(str_key).c_str(), common::Encode::HexEncode(*val).c_str());
+    ZJC_WARN("get storage: %s, %s", common::Encode::HexEncode(str_key).c_str(), common::Encode::HexEncode(*val).c_str());
     return res;
 }
         
