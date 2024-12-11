@@ -258,6 +258,13 @@ function penc_share_new_data(id, content) {
     });
 }
 
+function penc_vote(id, content) {
+    PostCode('/zjchain/penc_vote/', {
+        "id": id,
+        "content": content
+    });
+}
+
 async function wait_get_penc_sec_keys() {
     for (var i = 0; i < 10; ++i) {
         await sleep(1000);
@@ -316,5 +323,9 @@ if (args[0] == "6") {
 }
 
 if (args[0] == "7") {
-    penc_share_new_data("3ac30e977ecc873e18f5e3bf1f8e46e775e55520f69b3c560bca75a40f16915c", "content");
+    penc_share_new_data("3ac30e977ecc873e18f5e3bf1f8e46e775e55520f69b3c560bca75a40f16915c", "penc_share_new_data");
+}
+
+if (args[0] == "8") {
+    penc_vote("3ac30e977ecc873e18f5e3bf1f8e46e775e55520f69b3c560bca75a40f16915c", "penc_vote");
 }
