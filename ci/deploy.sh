@@ -2,7 +2,9 @@
 # 修改配置文件
 # 确保服务器安装了 sshpass
 cp -r ./zjnodes/zjchain ./ci/zjnodes/
+rm -rf ./zjnodes_old
 mv ./zjnodes ./zjnodes_old
+rm -rf ./conf_old
 mv ./conf ./conf_old
 cp -r ./ci/zjnodes ./
 cp -r ./ci/conf ./
@@ -64,6 +66,6 @@ done
 
 echo "==== STEP3: DONE ===="
 
-rm ./zjnodes ./conf
+rm -rf ./zjnodes ./conf
 mv ./zjnodes_old ./zjnodes
 mv ./conf_old ./conf
