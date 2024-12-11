@@ -13,6 +13,7 @@ let co = require('co');
 const kTestSellerCount = 11;  // real: kTestSellerCount - 10
 const kTestBuyerCount = 11;  // real: kTestBuyerCount - 10
 const contract_address = "48e1eab96c9e759daa3aff82b40e77cd615a41d0";
+var global_resonse = null;
 
 {
     const newLog = function () {
@@ -157,6 +158,7 @@ function PostCode(path, data) {
     var post_req = http.request(post_options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
+            global_resonse = chunk;
             console.log('Response: ' + chunk);
         })
     });
@@ -243,6 +245,25 @@ function penc_create_sec_keys(args) {
     });
 }
 
+function penc_get_sec_keys(id) {
+    PostCode('/zjchain/penc_get_sec_keys/', {
+        "id": id,
+    });
+}
+
+async function wait_get_penc_sec_keys() {
+    for (var i = 0; i < 10; ++i) {
+        await sleep(1000);
+        if (global_resonse != null) {
+            var json_res = JSON.parse(global_resonse);
+            global_resonse = null;
+            penc_get_sec_keys(json_res.id);
+            break;
+        }
+    }
+}
+
+global_resonse = null;
 const args = process.argv.slice(2)
 if (args[0] == "0") {
     get_all_nodes_bls_info(args);
@@ -271,4 +292,5 @@ if (args[0] == "5") {
 
 if (args[0] == "6") {
     penc_create_sec_keys(args);
+    wait_get_penc_sec_keys(args);
 }
