@@ -632,8 +632,9 @@ static void ProxDecryption(evhtp_request_t* req, void* req_data) {
     std::string hash256 = common::Hash::Hash256(res_data);
     std::string dec_data;
     secptr->Decrypt(common::Encode::HexDecode(enc_data), hash256, &dec_data);
-    ZJC_WARN("get m data: %s, %s, %s, hash sec: %s", 
+    ZJC_WARN("get m data: %s, %s, %s, %s, hash sec: %s", 
         dec_data.c_str(), 
+        common::Encode::HexEncode(dec_data).c_str(), 
         res_data.c_str(),
         common::Encode::HexEncode(res_data).c_str(), 
         common::Encode::HexEncode(hash256).c_str());
@@ -643,7 +644,7 @@ static void ProxDecryption(evhtp_request_t* req, void* req_data) {
     res_json["status"] = 0;
     res_json["seckey"] = common::Encode::HexEncode(res_data);
     res_json["hash_seckey"] = common::Encode::HexEncode(hash256);
-    res_json["decdata"] = dec_data;
+    res_json["decdata"] = common::Encode::HexEncode(dec_data);
     auto json_str = res_json.dump();
     ZJC_WARN("ProxDecryption coming 3.");
     evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
