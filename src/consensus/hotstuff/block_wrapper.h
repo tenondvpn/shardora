@@ -71,7 +71,7 @@ public:
             return view_block_chain->CheckTxGidValid(gid, parent_hash);
         };
 
-        txs_pools_->GetTxSyncToLeader(pool_idx_, 64, txs, gid_valid_func);
+        txs_pools_->GetTxSyncToLeader(pool_idx_, consensus::kSyncToLeaderTxCount, txs, gid_valid_func);
     }
 
 private:
