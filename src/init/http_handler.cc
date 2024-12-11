@@ -577,8 +577,9 @@ static void GetSecAndEncData(evhtp_request_t* req, void* req_data) {
     auto pairing_ptr = std::make_shared<Pairing>(pair_param.c_str(), pair_param.size());
     auto& e = *pairing_ptr;
     GT m(e, test_data.c_str(), test_data.size());
+    auto seckey = common::Hash::Hash256(m.toString());
     std::string sec_data;
-    secptr->Encrypt(data, hash256, &sec_data);
+    secptr->Encrypt(data, seckey, &sec_data);
     ZJC_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
         test_data.c_str(), 
         common::Encode::HexEncode(test_data).c_str(),
