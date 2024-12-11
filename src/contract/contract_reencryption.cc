@@ -1167,7 +1167,7 @@ int ContractReEncryption::Decryption(
     std::string test_data = "c266fb329ddc5736dedf2de994d2eeb314cd5e6b288a3653c6179f5fcc926591";
     GT m(e, test_data.c_str(), test_data.size());
     ZJC_WARN("dec m data src: %s, tom: %s",
-        common::Encode::HexEncode(test_data).c_str(), 
+        test_data.c_str(), 
         common::Encode::HexEncode(m.toString()).c_str());
     // 重加密密文的解密如下(为了方便，选前t个碎片解密)
     for(int i = 1; i<nu; i++){

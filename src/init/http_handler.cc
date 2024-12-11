@@ -564,7 +564,8 @@ static void GetSecAndEncData(evhtp_request_t* req, void* req_data) {
         return;
     }
 
-    std::string test_data(data);
+    std::string hash256 = common::Hash::Hash256(m.toString());
+    std::string test_data(common::Encode::HexEncode(hash256));
     std::string pair_param = ("type a\n"
         "q 8780710799663312522437781984754049815806883199414208211028653399266475630880222957078625179422662221423155858769582317459277713367317481324925129998224791\n"
         "h 12016012264891146079388821366740534204802954401251311822919615131047207289359704531102844802183906537786776\n"
@@ -576,8 +577,6 @@ static void GetSecAndEncData(evhtp_request_t* req, void* req_data) {
     auto pairing_ptr = std::make_shared<Pairing>(pair_param.c_str(), pair_param.size());
     auto& e = *pairing_ptr;
     GT m(e, test_data.c_str(), test_data.size());
-    std::string hash256 = common::Hash::Hash256(m.toString());
-   
     std::string sec_data;
     secptr->Encrypt(data, hash256, &sec_data);
     ZJC_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
