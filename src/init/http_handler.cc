@@ -639,7 +639,7 @@ static void ProxDecryption(evhtp_request_t* req, void* req_data) {
         common::Encode::HexEncode(dec_data).c_str(),
         common::Encode::HexEncode(res_data).c_str(), 
         common::Encode::HexEncode(hash256).c_str(),
-        enc_data);
+        common::Encode::HexEncode(encdata).c_str());
     nlohmann::json res_json;
     res_json["status"] = 0;
     res_json["seckey"] = common::Encode::HexEncode(res_data);
