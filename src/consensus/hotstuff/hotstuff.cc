@@ -129,50 +129,50 @@ Status Hotstuff::Propose(
             latest_qc_item_ptr_ = tc;
         }
 
-        // if (latest_leader_propose_message_ && 
-        //         latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() <= tc->view()) {
-        //     latest_leader_propose_message_ = nullptr;
-        // }
+        if (latest_leader_propose_message_ && 
+                latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() <= tc->view()) {
+            latest_leader_propose_message_ = nullptr;
+        }
     }
 
-    // if (latest_leader_propose_message_ && 
-    //         latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= pacemaker_->CurView()) {
-    //     auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*latest_leader_propose_message_);
-    //     tmp_msg_ptr->times_idx = 0;
-    //     tmp_msg_ptr->header.release_broadcast();
-    //     auto broadcast = tmp_msg_ptr->header.mutable_broadcast();
-    //     auto* hotstuff_msg = tmp_msg_ptr->header.mutable_hotstuff();
-    //     if (tc != nullptr) {
-    //         auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
-    //         *pb_pro_msg->mutable_tc() = *tc;
-    //     }
+    if (latest_leader_propose_message_ && 
+            latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= pacemaker_->CurView()) {
+        auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*latest_leader_propose_message_);
+        tmp_msg_ptr->times_idx = 0;
+        tmp_msg_ptr->header.release_broadcast();
+        auto broadcast = tmp_msg_ptr->header.mutable_broadcast();
+        auto* hotstuff_msg = tmp_msg_ptr->header.mutable_hotstuff();
+        if (tc != nullptr) {
+            auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
+            *pb_pro_msg->mutable_tc() = *tc;
+        }
 
-    //     transport::TcpTransport::Instance()->SetMessageHash(tmp_msg_ptr->header);
-    //     auto s = crypto()->SignMessage(tmp_msg_ptr);
-    //     auto& header = tmp_msg_ptr->header;
-    //     if (s != Status::kSuccess) {
-    //         ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
-    //             pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
-    //         return s;
-    //     }
+        transport::TcpTransport::Instance()->SetMessageHash(tmp_msg_ptr->header);
+        auto s = crypto()->SignMessage(tmp_msg_ptr);
+        auto& header = tmp_msg_ptr->header;
+        if (s != Status::kSuccess) {
+            ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
+                pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
+            return s;
+        }
 
-    //     transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
-    //     network::Route::Instance()->Send(tmp_msg_ptr);
-    //     ZJC_WARN("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
-    //         "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, msg view: %lu, cur view: %lu",
-    //         pool_idx_,
-    //         header.hotstuff().pool_index(),
-    //         hotstuff_msg->pro_msg().tx_propose().txs_size(),
-    //         hotstuff_msg->pro_msg().view_item().qc().view(),
-    //         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
-    //         view_block_chain()->HighViewBlock()->qc().view(),
-    //         header.hash64(),
-    //         header.debug().c_str(),
-    //         tmp_msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
-    //         pacemaker_->CurView());
-    //     HandleProposeMsg(latest_leader_propose_message_);
-    //     return s;
-    // }
+        transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
+        network::Route::Instance()->Send(tmp_msg_ptr);
+        ZJC_WARN("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+            "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, msg view: %lu, cur view: %lu",
+            pool_idx_,
+            header.hotstuff().pool_index(),
+            hotstuff_msg->pro_msg().tx_propose().txs_size(),
+            hotstuff_msg->pro_msg().view_item().qc().view(),
+            common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
+            view_block_chain()->HighViewBlock()->qc().view(),
+            header.hash64(),
+            header.debug().c_str(),
+            tmp_msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
+            pacemaker_->CurView());
+        HandleProposeMsg(latest_leader_propose_message_);
+        return s;
+    }
 
     ZJC_WARN("1 now ontime called propose: %d", pool_idx_);
     auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -229,7 +229,7 @@ Status Hotstuff::Propose(
         return s;
     }
 
-    // latest_leader_propose_message_ = tmp_msg_ptr;
+    latest_leader_propose_message_ = tmp_msg_ptr;
     SaveLatestProposeMessage();
     transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
     network::Route::Instance()->Send(tmp_msg_ptr);
@@ -263,18 +263,18 @@ Status Hotstuff::Propose(
 }
 
 void Hotstuff::SaveLatestProposeMessage() {
-    // prefix_db_->SaveLatestLeaderProposeMessage(latest_leader_propose_message_->header);
+    prefix_db_->SaveLatestLeaderProposeMessage(latest_leader_propose_message_->header);
 }
 
 void Hotstuff::LoadLatestProposeMessage() {
-    // auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    // if (prefix_db_->GetLatestLeaderProposeMessage(
-    //         common::GlobalInfo::Instance()->network_id(), 
-    //         pool_idx_, 
-    //         &msg_ptr->header)) {
-    //     msg_ptr->is_leader = true;
-    //     latest_leader_propose_message_ = msg_ptr;
-    // }
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    if (prefix_db_->GetLatestLeaderProposeMessage(
+            common::GlobalInfo::Instance()->network_id(), 
+            pool_idx_, 
+            &msg_ptr->header)) {
+        msg_ptr->is_leader = true;
+        latest_leader_propose_message_ = msg_ptr;
+    }
 }
 
 void Hotstuff::NewView(
