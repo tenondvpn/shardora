@@ -807,11 +807,11 @@ public:
     bool CheckAndSaveGidExists(const std::string& gid) {
         std::string key = kGidPrefix + gid;
         if (db_->Exist(key)) {
-            return true;
+            return false;
         }
         
         db_->Put(key, "1");
-        return false;
+        return true;
     }
 
     void SaveCommittedGids(

@@ -153,14 +153,14 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         tx_ptr->unique_tx_hash = pools::GetTxMessageHash(tx_ptr->tx_info);
     }
 
-//     assert(tx_ptr != nullptr);
-//     auto iter = gid_map_.find(tx_ptr->tx_info.gid());
-//     if (iter != gid_map_.end()) {
-// #ifndef ENABLE_HOTSTUFF
-//         // assert(false);
-// #endif
-//         return kPoolsTxAdded;
-//     }
+    assert(tx_ptr != nullptr);
+    auto iter = gid_map_.find(tx_ptr->tx_info.gid());
+    if (iter != gid_map_.end()) {
+#ifndef ENABLE_HOTSTUFF
+        // assert(false);
+#endif
+        return kPoolsTxAdded;
+    }
 
     if (tx_ptr->step == pools::protobuf::kCreateLibrary) {
         universal_prio_map_[tx_ptr->prio_key] = tx_ptr;
