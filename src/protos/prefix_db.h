@@ -804,14 +804,14 @@ public:
         return false;
     }
 
-    bool CheckAndSaveGidExists(const std::string& gid) {
+    bool qCheckAndSaveGidExists(const std::string& gid) {
         std::string key = kGidPrefix + gid;
         if (db_->Exist(key)) {
-            return false;
+            return true;
         }
         
         db_->Put(key, "1");
-        return true;
+        return false;
     }
 
     void SaveCommittedGids(
