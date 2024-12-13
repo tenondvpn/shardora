@@ -590,7 +590,7 @@ void BlockAcceptor::commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr
         if (block->tx_list_size() > 0) {
             pools_mgr_->TxOver(queue_item_ptr->view_block_ptr->qc().pool_index(), block->tx_list());
 
-            prefix_db_->SaveCommittedGids(block->tx_list(), *queue_item_ptr->final_db_batch);
+            // prefix_db_->SaveCommittedGids(block->tx_list(), *queue_item_ptr->final_db_batch);
         } else {
             ZJC_WARN("commit block tx over no tx, net: %d, pool: %d, height: %lu, propose_debug: %s", 
                 queue_item_ptr->view_block_ptr->qc().network_id(),

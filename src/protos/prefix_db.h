@@ -804,7 +804,7 @@ public:
         return false;
     }
 
-    bool qCheckAndSaveGidExists(const std::string& gid) {
+    bool CheckAndSaveGidExists(const std::string& gid) {
         std::string key = kGidPrefix + gid;
         if (db_->Exist(key)) {
             return true;
@@ -814,14 +814,14 @@ public:
         return false;
     }
 
-    void SaveCommittedGids(
-            const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list, 
-            db::DbWriteBatch& db_batch) {
-        for (uint32_t i = 0; i < tx_list.size(); ++i) {
-            std::string key = kGidPrefix + tx_list[i].gid();
-            db_batch.Put(key, "1");
-        }
-    }
+    // void SaveCommittedGids(
+    //         const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list, 
+    //         db::DbWriteBatch& db_batch) {
+    //     for (uint32_t i = 0; i < tx_list.size(); ++i) {
+    //         std::string key = kGidPrefix + tx_list[i].gid();
+    //         db_batch.Put(key, "1");
+    //     }
+    // }
 
     void SaveContractUserPrepayment(
             const std::string& contract_addr,
