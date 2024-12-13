@@ -1713,8 +1713,9 @@ Status Hotstuff::ConstructViewBlock(
         qc->view(),
         pre_v_block->qc().view(),
         last_vote_view_);
-    if (last_vote_view_ >= pacemaker()->CurView()) {
-        assert(last_vote_view_ < pacemaker()->CurView());
+    // TODO 有问题，由于上面已经生成了新 qc，但 CurView 还没有更新，所以 CurView 目前还是上一次投票的 View
+    if (last_vote_view_ > pacemaker()->CurView()) {
+        assert(last_vote_view_ <= pacemaker()->CurView());
         return Status::kError;
     }
 
