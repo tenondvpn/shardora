@@ -1866,21 +1866,21 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     }
 
     if (!has_user_tx_tag_ && !has_system_tx) {
-        // ZJC_WARN("!has_user_tx_tag_ && !has_system_tx, pool: %u", pool_idx_);
+        ZJC_WARN("!has_user_tx_tag_ && !has_system_tx, pool: %u", pool_idx_);
         return;
     }
 
     if (leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32) {
-        // ZJC_WARN("leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32, pool: %u", pool_idx_);
+        ZJC_WARN("leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32, pool: %u", pool_idx_);
         return;
     }
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (now_tm_ms < latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs) {
-        // ZJC_WARN("pool: %u now_tm_ms < latest_propose_msg_tm_ms_ + "
-        //     "kLatestPoposeSendTxToLeaderPeriodMs: %lu, %lu",
-        //     pool_idx_, now_tm_ms, 
-        //     (latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs));
+        ZJC_WARN("pool: %u now_tm_ms < latest_propose_msg_tm_ms_ + "
+            "kLatestPoposeSendTxToLeaderPeriodMs: %lu, %lu",
+            pool_idx_, now_tm_ms, 
+            (latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs));
         return;
     }
 
@@ -1914,12 +1914,10 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     }
 
     if (!has_user_tx_tag_) {
-        // ZJC_WARN("pool: %u not has_user_tx_tag_.", pool_idx_);
+        ZJC_WARN("pool: %u not has_user_tx_tag_.", pool_idx_);
         return;
     }
 
-   
-    
     // 存在内置交易或普通交易时尝试 reset timer
     // TODO 发送 PreResetPacemakerTimerMsg To Leader
     auto trans_msg = std::make_shared<transport::TransportMessage>();
@@ -1933,7 +1931,7 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
         view_block_chain_->HighQC().view_block_hash(), 
         txs);
     if (txs->empty()) {
-        // ZJC_WARN("pool: %u txs.empty().", pool_idx_);
+        ZJC_WARN("pool: %u txs.empty().", pool_idx_);
         return;
     }
     auto elect_item = elect_info_->GetElectItemWithShardingId(
