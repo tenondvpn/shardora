@@ -107,7 +107,7 @@ void Execution::UpdateStorage(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     storage_map_[thread_idx].Insert(key, val);
     prefix_db_->SaveTemporaryKv(key, val, db_batch);
-    ZJC_DEBUG("update storage: %s, %s", common::Encode::HexEncode(key).c_str(), common::Encode::HexEncode(val).c_str());
+    ZJC_WARN("update storage: %s, %s", common::Encode::HexEncode(key).c_str(), common::Encode::HexEncode(val).c_str());
 }
 
 bool Execution::GetStorage(
@@ -156,7 +156,15 @@ bool Execution::GetStorage(
         const evmc::address& addr,
         const std::string& key,
         std::string* val) {
-    auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) + key;
+    auto str_id = std::string((char*)addr.bytes, sizeof(addr.bytes));
+    return GetStorage(str_id, key, val);
+}
+
+bool Execution::GetStorage(
+        const std::string& str_id,
+        const std::string& key,
+        std::string* val) {
+    auto str_key = str_id + key;
     auto res = true;
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
@@ -172,10 +180,10 @@ bool Execution::GetStorage(
         }
     }
 
-    ZJC_DEBUG("get storage: %s, %s", common::Encode::HexEncode(str_key).c_str(), common::Encode::HexEncode(*val).c_str());
+    ZJC_WARN("get storage: %s, %s", common::Encode::HexEncode(str_key).c_str(), common::Encode::HexEncode(*val).c_str());
     return res;
 }
-
+        
 int Execution::execute(
         const std::string& bytes_code,
         const std::string& str_input,

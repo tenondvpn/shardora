@@ -35,21 +35,37 @@ public:
     // 将一个 element_t 类型的群元素转换为字符串格式
     std::string element_to_string(element_t &element);
     // 单签名生成
-    void SingleSign(const std::string &message, element_t &x_i, element_t &y_i,
-                    std::vector<element_t> &ring, element_t &delta_prime_i,
-                    element_t &y_prime_i, std::vector<element_t> &pi_i);
+    void SingleSign(
+        const std::string &message, 
+        element_t &x_i, 
+        element_t &y_i,
+        std::vector<element_t> &ring, 
+        element_t &delta_prime_i,
+        element_t &y_prime_i, 
+        std::vector<element_t> &pi_i);
     // 聚合签名生成
-    void AggreSign(const std::vector<std::string> &messages, std::vector<element_t> &y_primes,
-                   std::vector<element_t> &delta_primes, std::vector<std::vector<element_t>*> &pi_i,
-                   std::vector<element_t> &ring, element_t &agg_signature);
+    void AggreSign(
+        const std::vector<std::string> &messages, 
+        std::vector<element_t> &y_primes,
+        std::vector<element_t> &delta_primes, 
+        std::vector<std::vector<element_t>*> &pi_i,
+        std::vector<element_t> &ring, 
+        element_t &agg_signature);
     // 聚合签名验证
-    bool AggreVerify(const std::vector<std::string> &messages, element_t &agg_signature,
-                     std::vector<element_t> &y_primes);
+    bool AggreVerify(
+        const std::vector<std::string> &messages, 
+        element_t &agg_signature,
+        std::vector<element_t> &y_primes);
     // Sigma 证明验证
     bool VerifyProof(std::vector<element_t> &pi, element_t &y_prime,
-                     element_t &delta_prime, const std::string &message,
-                     std::vector<element_t> &ring, element_t &y_i);
+        element_t &delta_prime, const std::string &message,
+        std::vector<element_t> &ring, element_t &y_i);
+    int GetEncryptUserMessageData(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value);
     pairing_t &get_pairing();
+    
     int ring_size() const {
         return ring_size_;
     }

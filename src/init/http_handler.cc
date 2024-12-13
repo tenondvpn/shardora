@@ -2,8 +2,14 @@
 
 #include <functional>
 
+#include <cpppbc/GT.h>
+#include <cpppbc/Pairing.h>
+#include <json/json.hpp>
+
 #include "common/encode.h"
 #include "common/string_utils.h"
+#include "contract/contract_ars.h"
+#include "contract/contract_reencryption.h"
 #include "dht/dht_key.h"
 #include "network/route.h"
 #include "pools/tx_utils.h"
@@ -22,6 +28,7 @@ namespace init {
 static HttpHandler* http_handler = nullptr;
 static std::shared_ptr<protos::PrefixDb> prefix_db = nullptr;
 std::shared_ptr<contract::ContractManager> contract_mgr = nullptr;
+static std::shared_ptr<security::Security> secptr = nullptr;
 
 enum HttpStatusCode : int32_t {
     kHttpSuccess = 0,
@@ -131,6 +138,7 @@ static int CreateTransactionWithAttr(
     if (pepay != nullptr) {
         uint64_t pepay_val = 0;
         if (!common::StringUtil::ToUint64(std::string(pepay), &pepay_val)) {
+            ZJC_WARN("get prepay failed %s", pepay);
             return kSignatureInvalid;
         }
 
@@ -138,7 +146,7 @@ static int CreateTransactionWithAttr(
     }
 
     if (key != nullptr && val != nullptr) {
-        ZJC_DEBUG("create transaction key: %s, value: %s", key, val);
+        ZJC_WARN("create transaction key: %s, value: %s", key, val);
     }
     
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
@@ -146,7 +154,7 @@ static int CreateTransactionWithAttr(
     sign[64] = char(sign_v);
     if (http_handler->security_ptr()->Verify(
             tx_hash, from_pk, sign) != security::kSecuritySuccess) {
-        ZJC_DEBUG("verify signature failed tx_hash: %s, "
+        ZJC_ERROR("verify signature failed tx_hash: %s, "
             "sign_r: %s, sign_s: %s, sign_v: %d, pk: %s, hash64: %lu",
             common::Encode::HexEncode(tx_hash).c_str(),
             common::Encode::HexEncode(sign_r).c_str(),
@@ -291,7 +299,7 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     }
     
     transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header);
-    ZJC_DEBUG("http handler success get http server thread index: %d, address: %s, hash64: %lu", 
+    ZJC_WARN("http handler success get http server thread index: %d, address: %s, hash64: %lu", 
         thread_index, 
         common::Encode::HexEncode(
             http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk))).c_str(),
@@ -300,7 +308,7 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     std::string res = std::string("ok");
     evbuffer_add(req->buffer_out, res.c_str(), res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
-    ZJC_DEBUG("http transaction success %s, %s, gid: %s", common::Encode::HexEncode(
+    ZJC_WARN("http transaction success %s, %s, gid: %s", common::Encode::HexEncode(
             http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk))).c_str(), to, gid);
 }
 
@@ -459,6 +467,264 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
     return;
 }
 
+
+static void GetProxyReencInfo(evhtp_request_t* req, void* data) {
+    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
+    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
+    auto header3 = evhtp_header_new(
+        "Access-Control-Allow-Headers",
+        "x-requested-with,content-type", 0, 0);
+    evhtp_headers_add_header(req->headers_out, header1);
+    evhtp_headers_add_header(req->headers_out, header2);
+    evhtp_headers_add_header(req->headers_out, header3);
+
+    const char* id = evhtp_kv_find(req->uri->query, "id");
+    if (id == nullptr) {
+        std::string res = common::StringUtil::Format("param address is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    const char* contract = evhtp_kv_find(req->uri->query, "contract");
+    if (contract == nullptr) {
+        std::string res = common::StringUtil::Format("param contract is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    const char* count_str = evhtp_kv_find(req->uri->query, "count");
+    if (count_str == nullptr) {
+        std::string res = common::StringUtil::Format("param count is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    std::string proxy_id = id;
+    std::string contract_str = common::Encode::HexDecode(contract);
+    uint32_t count = 0;
+    if (!common::StringUtil::ToUint32(count_str, &count) || count > 10) {
+        std::string res = common::StringUtil::Format("param count is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+    
+    nlohmann::json res_json;
+    auto bls_pk_json = res_json["value"];
+    res_json["status"] = 0;
+    res_json["msg"] = "success";
+    ZJC_WARN("GetProxyReencInfo 4.");
+    for (uint32_t i = 0; i < count; ++i) {
+        auto private_key = proxy_id + "_" + std::string("init_prikey_") + std::to_string(i);
+        std::string prikey;
+        zjcvm::Execution::Instance()->GetStorage(contract_str, private_key, &prikey);
+        auto public_key = proxy_id + "_" + std::string("init_pubkey_") + std::to_string(i);
+        std::string pubkey;
+        zjcvm::Execution::Instance()->GetStorage(contract_str, public_key, &pubkey);
+        ZJC_WARN("contract_reencryption get member private and public key: %s, %s sk: %s, pk: %s",
+            common::Encode::HexEncode(private_key).c_str(), 
+            common::Encode::HexEncode(public_key).c_str(), 
+            common::Encode::HexEncode(prikey).c_str(),
+            common::Encode::HexEncode(pubkey).c_str());
+
+        
+        res_json["value"][i]["node_index"] = i;
+        res_json["value"][i]["private_key"] = common::Encode::HexEncode(prikey);
+        res_json["value"][i]["public_key"] = common::Encode::HexEncode(pubkey);
+    }
+   
+    auto json_str = res_json.dump();
+    evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+    return;
+}
+
+
+static void GetSecAndEncData(evhtp_request_t* req, void* req_data) {
+    ZJC_DEBUG("http transaction coming.");
+    contract::ContractReEncryption prox_renc;
+    zjcvm::ZjchainHost zjc_host;
+    contract::CallParameters param;
+    param.zjc_host = &zjc_host;
+    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
+    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
+    auto header3 = evhtp_header_new(
+        "Access-Control-Allow-Headers",
+        "x-requested-with,content-type", 0, 0);
+    evhtp_headers_add_header(req->headers_out, header1);
+    evhtp_headers_add_header(req->headers_out, header2);
+    evhtp_headers_add_header(req->headers_out, header3);
+    const char* data = evhtp_kv_find(req->uri->query, "data");
+    if (data == nullptr) {
+        std::string res = common::StringUtil::Format("param data is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    std::string hash256 = common::Hash::Hash256(data);
+    std::string test_data(common::Encode::HexEncode(hash256));
+    std::string pair_param = ("type a\n"
+        "q 8780710799663312522437781984754049815806883199414208211028653399266475630880222957078625179422662221423155858769582317459277713367317481324925129998224791\n"
+        "h 12016012264891146079388821366740534204802954401251311822919615131047207289359704531102844802183906537786776\n"
+        "r 730750818665451621361119245571504901405976559617\n"
+        "exp2 159\n"
+        "exp1 107\n"
+        "sign1 1\n"
+        "sign0 1\n");
+    auto pairing_ptr = std::make_shared<Pairing>(pair_param.c_str(), pair_param.size());
+    auto& e = *pairing_ptr;
+    GT m(e, test_data.c_str(), test_data.size());
+    auto seckey = common::Hash::Hash256(m.toString());
+    std::string sec_data;
+    secptr->Encrypt(data, seckey, &sec_data);
+    ZJC_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
+        test_data.c_str(), 
+        common::Encode::HexEncode(test_data).c_str(),
+        common::Encode::HexEncode(m.toString()).c_str(), 
+        common::Encode::HexEncode(hash256).c_str(),
+        common::Encode::HexEncode(sec_data).c_str());
+    nlohmann::json res_json;
+    res_json["status"] = 0;
+    res_json["seckey"] = common::Encode::HexEncode(m.toString());
+    res_json["hash_seckey"] = common::Encode::HexEncode(hash256);
+    res_json["secdata"] = common::Encode::HexEncode(sec_data);
+    prefix_db->SaveTemporaryKv(std::string("proxy_reenc_") + seckey, sec_data);
+    auto json_str = res_json.dump();
+    evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+}
+
+static void ProxDecryption(evhtp_request_t* req, void* req_data) {
+    ZJC_WARN("ProxDecryption coming 0.");
+    contract::ContractReEncryption prox_renc;
+    zjcvm::ZjchainHost zjc_host;
+    contract::CallParameters param;
+    param.from = common::Encode::HexDecode("48e1eab96c9e759daa3aff82b40e77cd615a41d0");
+    param.zjc_host = &zjc_host;
+    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
+    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
+    auto header3 = evhtp_header_new(
+        "Access-Control-Allow-Headers",
+        "x-requested-with,content-type", 0, 0);
+    evhtp_headers_add_header(req->headers_out, header1);
+    evhtp_headers_add_header(req->headers_out, header2);
+    evhtp_headers_add_header(req->headers_out, header3);
+    const char* id = evhtp_kv_find(req->uri->query, "id");
+    if (id == nullptr) {
+        std::string res = common::StringUtil::Format("param data is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    ZJC_WARN("ProxDecryption coming 2.");
+    std::string res_data;
+    prox_renc.Decryption(param, "", std::string(id) + ";", &res_data);
+    std::string hash256 = common::Hash::Hash256(res_data);
+    std::string encdata;
+    if (!prefix_db->GetTemporaryKv(std::string("proxy_reenc_") + hash256, &encdata)) {
+        std::string res = common::StringUtil::Format("get encdata is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    std::string dec_data;
+    secptr->Decrypt(encdata, hash256, &dec_data);
+    ZJC_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
+        dec_data.c_str(), 
+        common::Encode::HexEncode(dec_data).c_str(),
+        common::Encode::HexEncode(res_data).c_str(), 
+        common::Encode::HexEncode(hash256).c_str(),
+        common::Encode::HexEncode(encdata).c_str());
+    nlohmann::json res_json;
+    res_json["status"] = 0;
+    res_json["seckey"] = common::Encode::HexEncode(res_data);
+    res_json["hash_seckey"] = common::Encode::HexEncode(hash256);
+    res_json["encdata"] = common::Encode::HexEncode(encdata);
+    res_json["decdata"] = std::string(dec_data.c_str());
+    auto json_str = res_json.dump();
+    ZJC_WARN("ProxDecryption coming 3.");
+    evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+    ZJC_WARN("ProxDecryption coming 4.");
+}
+
+static void ArsCreateSecKeys(evhtp_request_t* req, void* req_data) {
+    ZJC_WARN("ArsCreateSecKeys coming 0.");
+    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
+    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
+    auto header3 = evhtp_header_new(
+        "Access-Control-Allow-Headers",
+        "x-requested-with,content-type", 0, 0);
+    evhtp_headers_add_header(req->headers_out, header1);
+    evhtp_headers_add_header(req->headers_out, header2);
+    evhtp_headers_add_header(req->headers_out, header3);
+    const char* keys = evhtp_kv_find(req->uri->query, "keys");
+    if (keys == nullptr) {
+        std::string res = common::StringUtil::Format("param keys is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    const char* tmp_signer_count = evhtp_kv_find(req->uri->query, "signer_count");
+    if (tmp_signer_count == nullptr) {
+        std::string res = common::StringUtil::Format("param signer_count is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    contract::ContractArs ars;
+    auto signer_count = 0;
+    if (!common::StringUtil::ToInt32(tmp_signer_count, &signer_count)) {
+        std::string res = common::StringUtil::Format("get signer_count is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    if (signer_count <= 0 || signer_count >= ars.ring_size()) {
+        std::string res = common::StringUtil::Format("get signer_count is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    // 创建环中的公钥和私钥对
+    std::vector<element_t> private_keys(ars.ring_size());
+    std::vector<element_t> public_keys(ars.ring_size());
+    nlohmann::json res_json;
+    res_json["status"] = 0;
+    auto nodes = res_json["nodes"];
+    auto keys_splits = common::Split<>(keys, '-');
+    ars.set_ring_size(keys_splits.Count());
+    for (int i = 0; i < ars.ring_size(); ++i) {
+        ars.KeyGen(keys_splits[i], private_keys[i], public_keys[i]);
+        unsigned char bytes_data[10240] = {0};
+        auto len = element_to_bytes(bytes_data, private_keys[i]);
+        std::string x_i_str((char*)bytes_data, len);
+        len = element_to_bytes_compressed(bytes_data, public_keys[i]);
+        std::string y_i_str((char*)bytes_data, len);
+        res_json["nodes"][i]["node_index"] = i;
+        res_json["nodes"][i]["private_key"] = common::Encode::HexEncode(x_i_str);
+        res_json["nodes"][i]["public_key"] = common::Encode::HexEncode(y_i_str);
+        element_clear(private_keys[i]);
+        element_clear(public_keys[i]);
+    }
+
+    auto json_str = res_json.dump();
+    ZJC_WARN("ArsCreateSecKeys coming 3.");
+    evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+    ZJC_WARN("ArsCreateSecKeys coming 4.");
+}
+
 static void QueryInit(evhtp_request_t* req, void* data) {
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     std::string res = "ok";
@@ -482,12 +748,17 @@ void HttpHandler::Init(
     acc_mgr_ = acc_mgr;
     net_handler_ = net_handler;
     security_ptr_ = security_ptr;
+    secptr = security_ptr;
     prefix_db = tmp_prefix_db;
     contract_mgr = tmp_contract_mgr;
     http_server.AddCallback("/transaction", HttpTransaction);
+    http_server.AddCallback("/get_seckey_and_encrypt_data", GetSecAndEncData);
+    http_server.AddCallback("/proxy_decrypt", ProxDecryption);
     http_server.AddCallback("/query_contract", QueryContract);
     http_server.AddCallback("/query_account", QueryAccount);
     http_server.AddCallback("/query_init", QueryInit);
+    http_server.AddCallback("/get_proxy_reenc_info", GetProxyReencInfo);
+    http_server.AddCallback("/ars_create_sec_keys", ArsCreateSecKeys);
 }
 
 };  // namespace init

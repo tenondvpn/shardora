@@ -25,7 +25,7 @@ Ripemd160::~Ripemd160() {}
         create_address_.c_str(), \
         sizeof(res->create_address.bytes)); \
     res->gas_left -= 1000; \
-    ZJC_DEBUG("TestProxyReEncryption: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str()); \
+    ZJC_WARN("contract_reencryption TestProxyReEncryption: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str()); \
     return kContractSuccess; \
 }
 
@@ -50,7 +50,7 @@ int Ripemd160::call(
         const CallParameters& param,
         uint64_t gas,
         const std::string& origin_address,
-        evmc_result* res) {
+        evmc_result* res) try {
     CONTRACT_ERROR("abe contract called decode: %s, src: %s",
         common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
     if (param.data.empty()) {
@@ -156,6 +156,9 @@ int Ripemd160::call(
     res->gas_left -= gas_used;
     ZJC_DEBUG("ripemd160: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str());
     return kContractSuccess;
+} catch(std::exception& e) {
+    ZJC_ERROR("catch error: %s", e.what());
+    DEFAULT_CALL_RESULT();
 }
 
 int Ripemd160::CreateArsKeys(
@@ -241,6 +244,7 @@ int Ripemd160::SingleSign(
         const std::string& value) {
     auto line_splits = common::Split<>(value.c_str(), '-');
     if (line_splits.Count() < 2) {
+        ZJC_WARN("line_splits.Count() < 2 failed");
         return kContractError;
     }
 
@@ -255,11 +259,13 @@ int Ripemd160::SingleSign(
     auto ring_and_signer_count_splits = common::Split<>(val.c_str(), ',');
     int32_t ring_size = 0;
     if (!common::StringUtil::ToInt32(ring_and_signer_count_splits[0], &ring_size)) {
+        ZJC_WARN("ring_size failed");
         return kContractError;
     }
 
     int32_t signer_count = 0;
     if (!common::StringUtil::ToInt32(ring_and_signer_count_splits[1], &signer_count)) {
+        ZJC_WARN("signer_count failed");
         return kContractError;
     }
 
@@ -269,23 +275,24 @@ int Ripemd160::SingleSign(
     // 设置环的大小和签名者数量
     std::vector<element_t> ring(ars.ring_size());
     if (GetRing(id, param, ars, ring) != kContractSuccess) {
+        ZJC_WARN("GetRing failed");
         return kContractError;
     }
 
     auto splits = common::Split<>(line_splits[0], ',');
     if (splits.Count() < 3) {
-        assert(false);
+        ZJC_WARN("invalid splits count: %s", value.c_str());
         return kContractError;
     }
 
     int signer_idx = 0;
     if (!common::StringUtil::ToInt32(splits[0], &signer_idx)) {
-        assert(false);
+        ZJC_WARN("invalid splits count: %s", value.c_str());
         return kContractError;
     }
 
     if (signer_idx < 0 || signer_idx >= ars.signer_count()) {
-        assert(false);
+        ZJC_WARN("invalid splits count: %s", value.c_str());
         return kContractError;
     }
 
@@ -318,12 +325,13 @@ int Ripemd160::SingleSign(
     }
 
     param.zjc_host->SaveKeyValue(param.from, tmp_key, val);
-    ZJC_DEBUG("single sign success: %d, %s, from: %s, key: %s",
+    ZJC_WARN("single sign success: %d, %s, from: %s, key: %s",
         signer_idx, val.c_str(), 
         common::Encode::HexEncode(param.from).c_str(), tmp_key.c_str());
     element_clear(delta_prime);
     element_clear(y_prime);
     element_clear(private_key);
+    AggSignAndVerify(param, key, line_splits[1]);
     return kContractSuccess;
 }
 
@@ -378,6 +386,7 @@ int Ripemd160::AggSignAndVerify(
         auto items = common::Split<1024>(val.c_str(), ',');
         if (items.Count() < 4) {
             ret = kContractError;
+            ZJC_WARN("items.Count() < 4: %s", val.c_str());
             break;
         }
 
@@ -414,14 +423,14 @@ int Ripemd160::AggSignAndVerify(
         auto len = element_to_bytes_compressed(data, agg_signature);
         auto val = common::Encode::HexEncode(std::string((char*)data, len)) + ",";
         param.zjc_host->SaveKeyValue(param.from, tmp_key, val);
-        ZJC_DEBUG("agg sign success: %s", val.c_str());
+        ZJC_WARN("agg sign success: %s", val.c_str());
 
         // 聚合签名验证
         bool is_aggregate_valid = ars.AggreVerify(messages, agg_signature, y_primes);
         if (is_aggregate_valid) {
-            ZJC_DEBUG("Aggregate signature verification passed!");
+            ZJC_WARN("Aggregate signature verification passed!");
         } else {
-            ZJC_DEBUG("Aggregate signature verification failed!");
+            ZJC_WARN("Aggregate signature verification failed!");
         }
 
         element_clear(agg_signature);
