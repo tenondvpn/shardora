@@ -327,6 +327,7 @@ int Ripemd160::SingleSign(
     element_clear(delta_prime);
     element_clear(y_prime);
     element_clear(private_key);
+    AggSignAndVerify(param, key, line_splits[1]);
     return kContractSuccess;
 }
 
