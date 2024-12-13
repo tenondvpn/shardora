@@ -519,7 +519,8 @@ void BlockAcceptor::MarkBlockTxsAsUsed(const block::protobuf::Block& block) {
         gids.push_back(gid);
     }
 
-    pools_mgr_->GetTxByGids(pool_idx(), gids, _);    
+    std::map<std::string, pools::TxItemPtr> res_map;
+    pools_mgr_->GetTxByGids(pool_idx(), gids, res_map);    
 }
 
 Status BlockAcceptor::DoTransactions(
