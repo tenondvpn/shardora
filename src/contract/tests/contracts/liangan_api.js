@@ -251,6 +251,32 @@ function penc_get_sec_keys(id) {
     });
 }
 
+async function wait_get_penc_sec_keys() {
+    for (var i = 0; i < 10; ++i) {
+        await sleep(1000);
+        if (global_resonse != null) {
+            var json_res = JSON.parse(global_resonse);
+            global_resonse = null;
+            var tmp_id = json_res.id;
+            penc_get_sec_keys(tmp_id);
+            for (var i = 0; i < 10; ++i) {
+                await sleep(1000);
+                if (global_resonse != null) {
+                    var json_res = JSON.parse(global_resonse);
+                    console.log('penc_sec_keys: ' + global_resonse);
+                    if (json_res.value[0].private_key != "") {
+                        break
+                    }
+                    global_resonse = null;
+                    penc_get_sec_keys(tmp_id);
+                }
+            }
+
+            break
+        }
+    }
+}
+
 function penc_share_new_data(id, content) {
     PostCode('/zjchain/penc_share_new_data/', {
         "id": id,
@@ -279,52 +305,37 @@ function penc_transactions() {
     });
 }
 
-function penc_get_sec_and_encdata(data) {
-    var post_data = querystring.stringify(data);
-    var post_options = {
-        host: '127.0.0.1',
-        port: '23001',
-        path: '/get_seckey_and_encrypt_data',
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Content-Length': Buffer.byteLength(post_data)
-        }
-    };
 
-    var post_req = http.request(post_options, function (res) {
-        res.setEncoding('utf8');
-        res.on('data', function (chunk) {
-            if (chunk != "ok") {
-                console.log('Response: ' + chunk);
-            } else {
-                console.log('Response: ' + chunk);
-            }
-        })
+function ars_create_sec_keys(args) {
+    PostCode('/zjchain/ars_create_sec_keys/', {
+        "content": "content",
     });
-
-    post_req.write(post_data);
-    post_req.end();
 }
 
-async function wait_get_penc_sec_keys() {
+function ars_get_sec_keys(id) {
+    PostCode('/zjchain/ars_get_sec_keys/', {
+        "id": id,
+    });
+}
+
+async function wait_get_ars_sec_keys() {
     for (var i = 0; i < 10; ++i) {
         await sleep(1000);
         if (global_resonse != null) {
             var json_res = JSON.parse(global_resonse);
             global_resonse = null;
             var tmp_id = json_res.id;
-            penc_get_sec_keys(tmp_id);
+            ars_get_sec_keys(tmp_id);
             for (var i = 0; i < 10; ++i) {
                 await sleep(1000);
                 if (global_resonse != null) {
                     var json_res = JSON.parse(global_resonse);
-                    console.log('penc_sec_keys: ' + global_resonse);
+                    console.log('ars_sec_keys: ' + global_resonse);
                     if (json_res.value[0].private_key != "") {
                         break
                     }
                     global_resonse = null;
-                    penc_get_sec_keys(tmp_id);
+                    ars_get_sec_keys(tmp_id);
                 }
             }
 
@@ -382,5 +393,6 @@ if (args[0] == "10") {
 }
 
 if (args[0] == "11") {
-    penc_get_sec_and_encdata({"data": "src_content_3ac30e977ecc873e18f5e3bf1f8e46e775e55520f69b3c560bca75a40f16915c_dsfasdfasdfasdfasd"});
+    ars_create_sec_keys(args);
+    wait_get_ars_sec_keys(args);
 }

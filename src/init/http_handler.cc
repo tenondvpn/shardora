@@ -8,6 +8,7 @@
 
 #include "common/encode.h"
 #include "common/string_utils.h"
+#include "contract/contract_ars.h"
 #include "contract/contract_reencryption.h"
 #include "dht/dht_key.h"
 #include "network/route.h"
@@ -653,6 +654,86 @@ static void ProxDecryption(evhtp_request_t* req, void* req_data) {
     ZJC_WARN("ProxDecryption coming 4.");
 }
 
+static void ArsCreateSecKeys(evhtp_request_t* req, void* req_data) {
+    ZJC_WARN("ArsCreateSecKeys coming 0.");
+    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
+    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
+    auto header3 = evhtp_header_new(
+        "Access-Control-Allow-Headers",
+        "x-requested-with,content-type", 0, 0);
+    evhtp_headers_add_header(req->headers_out, header1);
+    evhtp_headers_add_header(req->headers_out, header2);
+    evhtp_headers_add_header(req->headers_out, header3);
+    const char* keys = evhtp_kv_find(req->uri->query, "keys");
+    if (keys == nullptr) {
+        std::string res = common::StringUtil::Format("param keys is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    const char* tmp_id = evhtp_kv_find(req->uri->query, "id");
+    if (tmp_id == nullptr) {
+        std::string res = common::StringUtil::Format("param id is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    const char* tmp_signer_count = evhtp_kv_find(req->uri->query, "signer_count");
+    if (tmp_signer_count == nullptr) {
+        std::string res = common::StringUtil::Format("param signer_count is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    contract::ContractArs ars;
+    auto signer_count = 0;
+    if (!common::StringUtil::ToInt32(tmp_signer_count, &signer_count)) {
+        std::string res = common::StringUtil::Format("get signer_count is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    if (signer_count <= 0 || signer_count >= ars.ring_size()) {
+        std::string res = common::StringUtil::Format("get signer_count is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    auto id = common::Encode::HexDecode(tmp_id);
+    // 创建环中的公钥和私钥对
+    std::vector<element_t> private_keys(ars.ring_size());
+    std::vector<element_t> public_keys(ars.ring_size());
+    nlohmann::json res_json;
+    res_json["status"] = 0;
+    auto nodes = res_json["nodes"];
+    auto keys_splits = common::Split<>(keys, ',');
+    ars.set_ring_size(keys_splits.Count());
+    for (int i = 0; i < ars.ring_size(); ++i) {
+        ars.KeyGen(keys_splits[i], private_keys[i], public_keys[i]);
+        unsigned char bytes_data[10240] = {0};
+        auto len = element_to_bytes(bytes_data, private_keys[i]);
+        std::string x_i_str((char*)bytes_data, len);
+        len = element_to_bytes_compressed(bytes_data, public_keys[i]);
+        std::string y_i_str((char*)bytes_data, len);
+        res_json["nodes"][i]["node_index"] = i;
+        res_json["nodes"][i]["private_key"] = x_i_str;
+        res_json["nodes"][i]["public_key"] = y_i_str;
+        element_clear(private_keys[i]);
+        element_clear(public_keys[i]);
+    }
+
+    auto json_str = res_json.dump();
+    ZJC_WARN("ArsCreateSecKeys coming 3.");
+    evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+    ZJC_WARN("ArsCreateSecKeys coming 4.");
+}
+
 static void QueryInit(evhtp_request_t* req, void* data) {
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     std::string res = "ok";
@@ -686,6 +767,7 @@ void HttpHandler::Init(
     http_server.AddCallback("/query_account", QueryAccount);
     http_server.AddCallback("/query_init", QueryInit);
     http_server.AddCallback("/get_proxy_reenc_info", GetProxyReencInfo);
+    http_server.AddCallback("/ars_create_sec_keys", ArsCreateSecKeys);
 }
 
 };  // namespace init
