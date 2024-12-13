@@ -651,12 +651,7 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
         pro_msg_wrap->msg_ptr->header.hash64(), 
         (pro_msg_wrap->view_block_ptr->qc().sign_x().empty() || 
         pro_msg_wrap->view_block_ptr->qc().sign_y().empty()));
-    // if (pro_msg_wrap->view_block_ptr->qc().sign_x().empty() ||
-    //         pro_msg_wrap->view_block_ptr->qc().sign_y().empty()) {
-    //     return Status::kSuccess;
-    // }
-    
-    // 6 add view block
+
     ZJC_WARN("store v block pool: %u, hash: %s, prehash: %s, %u_%u_%lu, propose_debug: %s",
         pool_idx_,
         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
@@ -1109,6 +1104,8 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
                         qc.pool_index(),
                         qc.view());
                     pacemaker()->NewQcView(qc.view());
+                    // xufeisofly
+                    view_block_chain()->UpdateHighViewBlock(qc);
                 }
             }
         }
