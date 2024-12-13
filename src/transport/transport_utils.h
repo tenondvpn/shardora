@@ -43,8 +43,7 @@
 
 #ifndef NDEBUG
 #define CHECK_MEMORY_SIZE(data_map) { \
-    std::string tmp_str = common::StringUtil::Format("%s:%s:%u, size: %lu", ZJC_LOG_FILE_NAME,  __FUNCTION__, __LINE__, data_map.size()); \
-    ZJC_WARN(tmp_str); \
+    ZJC_WARN("data size: %s", data_map.size()); \
 }
 #else
 #define CHECK_MEMORY_SIZE(data_map)

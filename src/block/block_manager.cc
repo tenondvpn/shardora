@@ -241,6 +241,7 @@ void BlockManager::HandleStatisticTx(
             if (iter != shard_statistics_map_.end()) {
                 ZJC_DEBUG("success remove shard statistic block tm height: %lu", iter->first);
                 shard_statistics_map_.erase(iter);
+                CHECK_MEMORY_SIZE(shard_statistics_map_);
                 auto tmp_ptr = std::make_shared<StatisticMap>(shard_statistics_map_);
                 shard_statistics_map_ptr_queue_.push(tmp_ptr);
             }
@@ -1469,7 +1470,6 @@ bool BlockManager::HasSingleTx(uint32_t pool_index, pools::CheckGidValidFunction
 void BlockManager::PopTxTicker() {
     std::shared_ptr<StatisticMap> static_tmp_map = nullptr;
     while (shard_statistics_map_ptr_queue_.pop(&static_tmp_map)) {}
-    CHECK_MEMORY_SIZE(shard_statistics_map_ptr_queue_);
     if (static_tmp_map != nullptr) {
         for (auto iter = static_tmp_map->begin(); iter != static_tmp_map->end(); ++iter) {
             ZJC_DEBUG("now pop statistic tx tx hash: %s, tm height: %lu",
