@@ -309,18 +309,20 @@ function ars_create_sec_keys() {
     PostCode('/zjchain/ars_create_sec_keys/', {});
 }
 
-function ars_create_new_vote(content) {
+function ars_create_new_vote(username, addr, now_credit, add_credit) {
     PostCode('/zjchain/ars_create_new_vote/', {
-        "content": "content"
+        "username": username,
+        "addr": addr,
+        "now_credit": parseInt(now_credit),
+        "add_credit": parseInt(add_credit),
     });
 }
 
-function ars_vote(id, data, index, content) {
+function ars_vote(id, index, group_info) {
     PostCode('/zjchain/ars_vote/', {
         "id": id,
-        "data": data,
         "index": index,
-        "content": content
+        "group_info": group_info
     });
 }
 
@@ -377,9 +379,9 @@ if (args[0] == "11") {
 }
 
 if (args[0] == "12") {
-    ars_create_new_vote("create_new_vote");
+    ars_create_new_vote("username", "a0793c84fb3133c0df1b9a6ccccbbfe5e7545138", "0", 10);
 }
 
 if (args[0] == "13") {
-    ars_vote(args[1], args[2], args[3], "content");
+    ars_vote(args[1], args[2], "group_info");
 }
