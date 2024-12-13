@@ -318,7 +318,6 @@ function ars_create_new_vote(content) {
 function ars_vote(id, data, index, content) {
     PostCode('/zjchain/ars_vote/', {
         "id": id,
-        "addr": addr,
         "data": data,
         "index": index,
         "content": content
