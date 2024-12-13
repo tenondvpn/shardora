@@ -160,6 +160,7 @@ public:
             }
             
             pacemaker_->NewQcView(vblock->qc().view());
+            StopVoting(vblock->qc().view());
             // auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
             // if (!latest_committed_block ||
             //         latest_committed_block->qc().view() < vblock->qc().view()) {

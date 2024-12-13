@@ -414,32 +414,8 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     for (auto iter = leader_view_with_propose_msgs_.begin();
             iter != leader_view_with_propose_msgs_.end();) {
         if (iter->first > propose_view) {
-            // assert(false);
             break;
         }
-
-        // auto& rehandle_view_item = *iter->second->view_block_ptr;
-        // ZJC_WARN(
-        //     "rehandle propose message begin HandleProposeMessageByStep called hash: %lu, "
-        //     "last_vote_view_: %lu, view_item.qc().view(): %lu, "
-        //     "propose_debug: %s, view_block_hash: %s",
-        //     iter->second->msg_ptr->header.hash64(), 
-        //     last_vote_view_, rehandle_view_item.qc().view(),
-        //     iter->second->msg_ptr->header.debug().c_str(),
-        //     common::Encode::HexEncode(rehandle_view_item.qc().view_block_hash()).c_str());
-        // rehandle_view_item.mutable_qc()->release_view_block_hash();
-        // auto st = HandleProposeMessageByStep(iter->second);
-        // if (st != Status::kSuccess) {
-        //     ZJC_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
-        //         msg_ptr->header.hash64(),
-        //         msg_ptr->header.debug().c_str());
-        //     break;
-        // }
-
-        // ZJC_WARN("rehandle propose message success HandleProposeMessageByStep called hash: %lu, "
-        //     "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
-        //     iter->second->msg_ptr->header.hash64(), last_vote_view_, rehandle_view_item.qc().view(),
-        //     iter->second->msg_ptr->header.debug().c_str());
         iter = leader_view_with_propose_msgs_.erase(iter);
     }
     
@@ -577,15 +553,6 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
             assert(IsQcTcValid(*tc_ptr));
             latest_qc_item_ptr_ = tc_ptr;
         }
-// #ifndef NDEBUG
-//         auto msg_hash = GetTCMsgHash(pro_msg.tc());
-//         ZJC_WARN("HandleTC success verify tc %u_%u_%lu, hash: %s called hash: %lu, propose_debug: %s",
-//             tc_ptr->network_id(), 
-//             tc_ptr->pool_index(), 
-//             tc_ptr->view(), 
-//             common::Encode::HexEncode(msg_hash).c_str(), 
-//             pro_msg_wrap->msg_ptr->header.hash64(), pro_msg_wrap->msg_ptr->header.debug().c_str());
-// #endif
     }
 
     return Status::kSuccess;
@@ -617,20 +584,6 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
             assert(IsQcTcValid(pro_msg.tc()));
             latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(pro_msg.tc());
         }
-// #ifndef NDEBUG
-//         auto msg_hash = GetQCMsgHash(pro_msg.tc());
-//         auto* tc_ptr = &pro_msg.tc();
-//         ZJC_WARN("HandleProposeMsgStep_VerifyQC success verify qc %u_%u_%lu, hash: %s, "
-//             "view block hash: %s, sign x: %s called hash: %lu, propose_debug: %s",
-//             tc_ptr->network_id(), 
-//             tc_ptr->pool_index(), 
-//             tc_ptr->view(), 
-//             common::Encode::HexEncode(msg_hash).c_str(), 
-//             common::Encode::HexEncode(tc_ptr->view_block_hash()).c_str(), 
-//             common::Encode::HexEncode(tc_ptr->sign_x()).c_str(), 
-//             pro_msg_wrap->msg_ptr->header.hash64(),
-//             pro_msg_wrap->msg_ptr->header.debug().c_str());
-// #endif
     }
     
     return Status::kSuccess;
@@ -1713,10 +1666,9 @@ Status Hotstuff::ConstructViewBlock(
         qc->view(),
         pre_v_block->qc().view(),
         last_vote_view_);
-    // TODO 有问题，由于 qc.view 的含义变更为本次 view 而非上一个视图的 view
-    // 因此 CurView 此时还没有增加，还是上一次投票的 View，正常来说此时 last_vote_view_ == pacemaker()->CurView()
+    // leader 可能重复 Propose 一个 view，这个 view 可能该 leader 已经成功投票并 StopVoting
+    // 但最终没有达成共识，因此可能 last_vote_view_ == pacemaker()->CurView()
     if (last_vote_view_ > pacemaker()->CurView()) {
-        assert(last_vote_view_ <= pacemaker()->CurView());
         return Status::kError;
     }
 
@@ -1866,15 +1818,13 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
         return;
     }
 
+    // 1 秒还没有 Propose 认为 stuck
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (now_tm_ms < latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs) {
-        // ZJC_WARN("pool: %u now_tm_ms < latest_propose_msg_tm_ms_ + "
-        //     "kLatestPoposeSendTxToLeaderPeriodMs: %lu, %lu",
-        //     pool_idx_, now_tm_ms, 
-        //     (latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs));
         return;
     }
 
+    // 限流 2 s
     auto stuck_st = IsStuck();
     if (stuck_st != 0) {
         if (stuck_st != 1) {
