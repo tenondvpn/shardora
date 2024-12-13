@@ -309,6 +309,22 @@ function ars_create_sec_keys() {
     PostCode('/zjchain/ars_create_sec_keys/', {});
 }
 
+function ars_create_new_vote(content) {
+    PostCode('/zjchain/ars_create_new_vote/', {
+        "content": "content"
+    });
+}
+
+function ars_vote(id, addr, data, index, content) {
+    PostCode('/zjchain/ars_vote/', {
+        "id": id,
+        "addr": addr,
+        "data": data,
+        "index": parseInt(index),
+        "content": content
+    });
+}
+
 global_resonse = null;
 const args = process.argv.slice(2)
 if (args[0] == "0") {
@@ -359,4 +375,12 @@ if (args[0] == "10") {
 
 if (args[0] == "11") {
     ars_create_sec_keys(args);
+}
+
+if (args[0] == "12") {
+    ars_create_new_vote("create_new_vote");
+}
+
+if (args[0] == "13") {
+    ars_vote(args[1], args[2], args[3], args[4], "content");
 }
