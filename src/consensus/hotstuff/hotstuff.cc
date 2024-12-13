@@ -894,6 +894,12 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
     if (!pro_msg_wrap->msg_ptr->is_leader) {
         // 避免对 view 重复投票
         voted_msgs_[pro_msg_wrap->view_block_ptr->qc().view()] = trans_msg;
+        auto iter = voted_msgs_.begin();
+        auto riter = voted_msgs_.rbegin();
+        if (iter->first + 16 < riter->first) {
+            voted_msgs_.erase(iter);
+        }
+        
         CHECK_MEMORY_SIZE(voted_msgs_);
         ZJC_WARN("pool: %d, Send vote message is success., hash64: %lu, "
             "last_vote_view_: %lu, send to leader tx size: %u, last_vote_view_: %lu",

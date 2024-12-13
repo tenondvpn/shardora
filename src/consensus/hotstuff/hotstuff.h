@@ -360,7 +360,7 @@ private:
     View last_vote_view_ = 0;
     SyncPoolFn sync_pool_fn_ = nullptr;
     Pipeline handle_propose_pipeline_;
-    std::unordered_map<View, transport::MessagePtr> voted_msgs_;
+    std::map<View, transport::MessagePtr> voted_msgs_;
     uint64_t latest_propose_msg_tm_ms_ = 0;
     std::shared_ptr<view_block::protobuf::QcItem> latest_qc_item_ptr_;
     uint64_t propose_debug_index_ = 0;
