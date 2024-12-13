@@ -23,31 +23,6 @@
 #define TRANSPORT_WARN(fmt, ...) ZJC_WARN("[transport]" fmt, ## __VA_ARGS__)
 #define TRANSPORT_ERROR(fmt, ...) ZJC_ERROR("[transport]" fmt, ## __VA_ARGS__)
 
-#ifndef NDEBUG
-// #define ADD_DEBUG_PROCESS_TIMESTAMP()
-#define ADD_DEBUG_PROCESS_TIMESTAMP() { \
-    if (msg_ptr) { \
-        assert(msg_ptr->times_idx < (sizeof(msg_ptr->times) / sizeof(msg_ptr->times[0]))); \
-        auto btime = common::TimeUtils::TimestampUs(); \
-        uint64_t diff_time = 0; \
-        if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; } \
-        std::string tmp_str = common::StringUtil::Format("%s:%s:%u, diff time: %lu", ZJC_LOG_FILE_NAME,  __FUNCTION__, __LINE__, diff_time); \
-        msg_ptr->times[msg_ptr->times_idx] = btime; \
-        msg_ptr->debug_str[msg_ptr->times_idx] = tmp_str; \
-        msg_ptr->times_idx++; \
-    } \
-}
-#else
-#define ADD_DEBUG_PROCESS_TIMESTAMP()
-#endif
-
-#ifndef NDEBUG
-#define CHECK_MEMORY_SIZE(data_map) { \
-    ZJC_WARN("data size: %s", data_map.size()); \
-}
-#else
-#define CHECK_MEMORY_SIZE(data_map)
-#endif
 namespace shardora {
 
 namespace transport {

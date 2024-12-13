@@ -48,6 +48,7 @@ int ShardStatistic::Init() {
 
         std::map<uint32_t, StatisticInfoItem> tmp_pool_map;
         statistic_pool_info_[statistic_info.height()] = tmp_pool_map;
+        CHECK_MEMORY_SIZE(statistic_pool_info_);
         auto& pool_map = statistic_pool_info_[statistic_info.height()];
         for (uint32_t i = 0; i < statistic_info.pool_statisitcs_size(); ++i) {
             StatisticInfoItem statistic_item;
@@ -201,6 +202,7 @@ void ShardStatistic::HandleStatisticBlock(
                     
                 ZJC_WARN("erase statistic height: %lu", st_iter->first);
                 st_iter = statistic_pool_info_.erase(st_iter);
+                CHECK_MEMORY_SIZE(statistic_pool_info_);
             }
 
             latest_statisticed_height_ = elect_statistic.statistic_height();
@@ -303,6 +305,7 @@ void ShardStatistic::HandleStatistic(
                     std::map<uint32_t, StatisticInfoItem> pool_map;
                     pool_map[pool_idx] = statistic_item;
                     statistic_pool_info_[statistic_height] = pool_map;
+                    CHECK_MEMORY_SIZE(statistic_pool_info_);
                     ZJC_WARN(
                         "new success handle kPoolStatisticTag tx statistic_height: %lu, "
                         "pool: %u, height: %lu, statistic_max_height: %lu, gid: %s", 
@@ -445,6 +448,7 @@ void ShardStatistic::HandleStatistic(
                             auto acc_iter = accout_poce_info_map_.find(addr);
                             if (acc_iter == accout_poce_info_map_.end()) {
                                 accout_poce_info_map_[addr] = std::make_shared<AccoutPoceInfoItem>();
+                                CHECK_MEMORY_SIZE(accout_poce_info_map_);
                                 acc_iter = accout_poce_info_map_.find(addr);
                             }
 
@@ -611,31 +615,6 @@ void ShardStatistic::OnTimeBlock(
         latest_timeblock_height_, latest_time_block_height);
     prev_timeblock_height_ = latest_timeblock_height_;
     latest_timeblock_height_ = latest_time_block_height;
-}
-
-bool ShardStatistic::CheckAllBlockStatisticed(uint32_t local_net_id) {
-    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
-        if (pools_consensus_blocks_[pool_idx]->blocks.empty()) {
-            continue;
-        }
-        
-        auto& first_block = pools_consensus_blocks_[pool_idx]->blocks.begin()->second;
-        for (auto tm_iter = node_height_count_map_[pool_idx].begin(); 
-                tm_iter != node_height_count_map_[pool_idx].end(); ++tm_iter) {
-            if (tm_iter->first < latest_timeblock_height_) {
-                if (tm_iter->first >= first_block->block_info().timeblock_height()) {
-                    ZJC_WARN("failed check timeblock height %lu, %lu, pool: %u, "
-                        "height: %lu, consensused max_height: %lu",
-                        tm_iter->first, first_block->block_info().timeblock_height(),
-                        pool_idx, first_block->block_info().height(),
-                        tm_iter->second->max_height);
-                    return false;
-                }
-            }
-        }
-    }
-
-    return true;
 }
 
 int ShardStatistic::StatisticWithHeights(
@@ -917,6 +896,7 @@ int ShardStatistic::StatisticWithHeights(
         tx_count_debug_str.c_str());
     assert(piter->first > iter->first);
     statistic_height_map_[iter->first] = elect_statistic;
+    CHECK_MEMORY_SIZE(statistic_height_map_);
     auto eiter = statistic_pool_info_.find(iter->first);
     statistic_pool_info_.erase(eiter);
     return kPoolsSuccess;
@@ -1118,6 +1098,7 @@ void ShardStatistic::setElectStatistics(
             auto node_info = node_info_map.emplace(id, StatisticMemberInfoItem()).first->second;
             auto node_poce_info = accout_poce_info_map_.try_emplace(
                 id, std::make_shared<AccoutPoceInfoItem>()).first->second;
+            CHECK_MEMORY_SIZE(accout_poce_info_map_);
             statistic_item.add_credit(0);  // (node_poce_info->credit);
             statistic_item.add_consensus_gap(0);  // (node_poce_info->consensus_gap);
             statistic_item.add_tx_count(node_info.tx_count);

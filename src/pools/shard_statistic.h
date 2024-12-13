@@ -87,7 +87,6 @@ public:
     void HandleStatistic(const std::shared_ptr<view_block::protobuf::ViewBlockItem> &block_ptr);
     std::string getLeaderIdFromBlock(const view_block::protobuf::ViewBlockItem &block);
     bool LoadAndStatisticBlock(uint32_t poll_index, uint64_t height);
-    bool CheckAllBlockStatisticed(uint32_t local_net_id);
     void cleanUpBlocks(PoolBlocksInfo& pool_blocks_info);
 
     static const uint32_t kLofRation = 5;
@@ -99,9 +98,7 @@ public:
     uint64_t latest_timeblock_height_ = 0;
     uint64_t prev_timeblock_height_ = 0;
     uint64_t pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };
-    std::map<uint64_t, std::shared_ptr<HeightStatisticInfo>> node_height_count_map_[common::kInvalidPoolIndex];
     std::shared_ptr<PoolBlocksInfo> pools_consensus_blocks_[common::kInvalidPoolIndex];
-    std::unordered_map<uint32_t, std::shared_ptr<common::Point>> point_ptr_map_;
     std::unordered_set<uint64_t> added_heights_[common::kInvalidPoolIndex];
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint64_t prev_elect_height_ = 0;

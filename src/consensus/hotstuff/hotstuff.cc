@@ -441,6 +441,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         //     iter->second->msg_ptr->header.hash64(), last_vote_view_, rehandle_view_item.qc().view(),
         //     iter->second->msg_ptr->header.debug().c_str());
         iter = leader_view_with_propose_msgs_.erase(iter);
+        CHECK_MEMORY_SIZE(leader_view_with_propose_msgs_);
     }
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -452,6 +453,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
             msg_ptr->header.hash64(),
             msg_ptr->header.debug().c_str());
         leader_view_with_propose_msgs_[propose_view] = pro_msg_wrap;
+        CHECK_MEMORY_SIZE(leader_view_with_propose_msgs_);
     } else {
         for (auto iter = leader_view_with_propose_msgs_.begin();
                 iter != leader_view_with_propose_msgs_.end();) {
@@ -460,6 +462,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
             }
 
             iter = leader_view_with_propose_msgs_.erase(iter);
+            CHECK_MEMORY_SIZE(leader_view_with_propose_msgs_);
         }
     }
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -891,6 +894,7 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
     if (!pro_msg_wrap->msg_ptr->is_leader) {
         // 避免对 view 重复投票
         voted_msgs_[pro_msg_wrap->view_block_ptr->qc().view()] = trans_msg;
+        CHECK_MEMORY_SIZE(voted_msgs_);
         ZJC_WARN("pool: %d, Send vote message is success., hash64: %lu, "
             "last_vote_view_: %lu, send to leader tx size: %u, last_vote_view_: %lu",
             pool_idx_, pro_msg_wrap->msg_ptr->header.hash64(),

@@ -101,6 +101,7 @@ public:
                 }                                                                                                                                                                                                                                              
                 
                 leader_view_with_propose_msgs_.erase(iter);
+                CHECK_MEMORY_SIZE(leader_view_with_propose_msgs_);
             }
         }
 
@@ -114,6 +115,7 @@ public:
                 std::string key = std::to_string(qc.leader_idx()) + "_" + 
                     std::to_string(qc.view());
                 leader_view_with_propose_msgs_[key] = pro_msg_wrap;
+                CHECK_MEMORY_SIZE(leader_view_with_propose_msgs_);
                 ZJC_DEBUG("success store invalid message: %u_%u_%lu, hash: %s, phash: %s, "
                     "hash64: %lu, block timestamp: %lu",
                     qc.network_id(), qc.pool_index(), qc.view(),

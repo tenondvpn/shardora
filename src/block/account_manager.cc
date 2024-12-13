@@ -102,6 +102,7 @@ void AccountManager::InitLoadAllAddress() {
     prefix_db_->GetAllAddressInfo(&addr_map);
     for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
         thread_address_map_[i] = addr_map;
+        CHECK_MEMORY_SIZE(thread_address_map_[i]);
     }
 }
 
@@ -116,6 +117,7 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(
         }
 
         thread_address_map_[thread_idx][address_info->addr()] = address_info;
+        CHECK_MEMORY_SIZE(thread_address_map_[thread_idx]);
     }
    
     auto iter = thread_address_map_[thread_idx].find(addr);

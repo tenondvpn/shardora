@@ -419,6 +419,7 @@ private:
         }
         
         view_blocks_info_[view_block_info->view_block->qc().view_block_hash()] = view_block_info;
+        CHECK_MEMORY_SIZE(view_blocks_info_);
         ZJC_DEBUG("success add view block: %s, %u_%u_%lu, height: %lu, parent hash: %s, tx size: %u, strings: %s",
             common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
             view_block_info->view_block->qc().network_id(),
@@ -504,6 +505,7 @@ private:
             // TODO: fix storage map            
             auto block_info_ptr = GetViewBlockInfo(nullptr, nullptr, nullptr);
             view_blocks_info_[parent_hash] = block_info_ptr;
+            CHECK_MEMORY_SIZE(view_blocks_info_);
             ZJC_DEBUG("add null parent view block: %u_%u_%lu, height: %lu",
                 view_block->qc().network_id(), 
                 view_block->qc().pool_index(), 

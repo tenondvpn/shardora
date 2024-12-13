@@ -1174,6 +1174,8 @@ void BlockManager::CreateStatisticTx() {
             //     common::Encode::HexEncode(gid).c_str(),
             //     timeblock_height);
             shard_statistics_map_[timeblock_height] = tx_ptr;
+            CHECK_MEMORY_SIZE(shard_statistics_map_);
+
             auto tmp_ptr = std::make_shared<StatisticMap>(shard_statistics_map_);
             shard_statistics_map_ptr_queue_.push(tmp_ptr);
         }
@@ -1341,6 +1343,7 @@ pools::TxItemPtr BlockManager::GetToTx(
     auto tx_ptr = HandleToTxsMessage(heights);
     if (tx_ptr != nullptr) {
         heights_str_map_[height_hash] = tx_ptr;
+        CHECK_MEMORY_SIZE(heights_str_map_);
         ZJC_DEBUG("success get to tx tx info: %s, gid: %s, val: %s, heights: %s",
             ProtobufToJson(tx_ptr->tx_info).c_str(),
             common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(), 

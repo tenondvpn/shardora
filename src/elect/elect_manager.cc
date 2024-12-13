@@ -95,6 +95,7 @@ int ElectManager::Join(uint32_t network_id) {
     }
 
     elect_network_map_[network_id] = elect_node_ptr_;
+    CHECK_MEMORY_SIZE(elect_network_map_);
     return kElectSuccess;
 }
 
@@ -110,6 +111,7 @@ int ElectManager::Quit(uint32_t network_id) {
 
         elect_node = iter->second;
         elect_network_map_.erase(iter);
+        CHECK_MEMORY_SIZE(elect_network_map_);
     }
 
     elect_node->Destroy();
@@ -635,6 +637,7 @@ void ElectManager::AddNewNodeWithIdAndIp(
         const std::string& id) {
     std::lock_guard<std::mutex> guard(added_net_id_set_mutex_);
     added_net_id_set_[network_id].insert(id);
+    CHECK_MEMORY_SIZE(added_net_id_set_[network_id]);
 }
 
 }  // namespace elect

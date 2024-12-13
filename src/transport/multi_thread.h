@@ -126,7 +126,6 @@ private:
     uint8_t robin_index_ = 0;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    std::unordered_map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_check_block_map_[common::kInvalidPoolIndex];
     std::unordered_set<uint64_t> committed_heights_[common::kInvalidPoolIndex];
     std::shared_ptr<security::Security> security_ = nullptr;
     FirewallCheckCallback firewall_checks_[common::kMaxMessageTypeCount] = { nullptr };

@@ -310,6 +310,7 @@ Status ViewBlockChain::PruneTo(
                 iter->second->view_block->qc().view() + 16 <= current->qc().view()) {
             // forked_blockes.push_back(iter->second->view_block);
             iter = view_blocks_info_.erase(iter);
+            CHECK_MEMORY_SIZE(view_blocks_info_);
         } else {
             ++iter;
         }

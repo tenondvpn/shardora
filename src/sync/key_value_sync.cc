@@ -193,6 +193,7 @@ void KeyValueSync::CheckSyncItem() {
 
             ++(item->sync_times);
             synced_map_.insert(std::make_pair(item->key, item));
+            CHECK_MEMORY_SIZE(synced_map_);
             item->sync_tm_us = now_tm;
             if (synced_map_.size() > kSyncMaxKeyCount) {
                 stop = true;
@@ -515,6 +516,7 @@ void KeyValueSync::CheckSyncTimeout() {
                 now_tm_us);
             added_key_set_.erase(iter->second->key);
             iter = synced_map_.erase(iter);
+            CHECK_MEMORY_SIZE(synced_map_);
             continue;
         }
 
@@ -532,6 +534,7 @@ void KeyValueSync::CheckSyncTimeout() {
         added_key_set_.erase(iter->second->key);
         prio_sync_queue_[iter->second->priority].push(iter->second);
         iter = synced_map_.erase(iter);
+        CHECK_MEMORY_SIZE(synced_map_);
     }
 }
 

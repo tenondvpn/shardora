@@ -73,6 +73,7 @@ void ToTxsPools::NewBlock(
         (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).step() : -1),
         (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).status() : -1));
     added_heights_[view_block_ptr->qc().pool_index()].insert(std::make_pair(block.height(), view_block_ptr));
+    CHECK_MEMORY_SIZE(added_heights_[view_block_ptr->qc().pool_index()]);
     valided_heights_[view_block_ptr->qc().pool_index()].insert(block.height());
 }
 
@@ -98,6 +99,7 @@ bool ToTxsPools::PreStatisticTos(
         } else {
             view_block_ptr = iter->second;
             added_heights_[pool_idx].erase(iter);
+            CHECK_MEMORY_SIZE(added_heights_[pool_idx]);
             has_statistic_height_[pool_idx] = height;
         }
 
@@ -161,6 +163,7 @@ bool ToTxsPools::PreStatisticTos(
 
         if (!cross_map.empty()) {
             cross_sharding_map_[view_block_ptr->qc().pool_index()][block.height()] = cross_map;
+            CHECK_MEMORY_SIZE(cross_sharding_map_[view_block_ptr->qc().pool_index()]);
         }
     }
 

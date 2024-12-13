@@ -313,6 +313,7 @@ void TcpTransport::Output() {
             
             std::string key = conn->PeerIp() + ":" + std::to_string(conn->PeerPort());
             from_conn_map_[key] = conn;
+            CHECK_MEMORY_SIZE(from_conn_map_);
         }
 
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
@@ -380,12 +381,14 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
         }
 
         from_conn_map_.erase(from_iter);
+        CHECK_MEMORY_SIZE(from_conn_map_);
     }
 
     auto iter = conn_map_.find(peer_spec);
     if (iter != conn_map_.end()) {
         if (iter->second->ShouldReconnect()) {
             conn_map_.erase(iter);
+            CHECK_MEMORY_SIZE(conn_map_);
         } else {
             return iter->second;
         }
@@ -404,6 +407,7 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
     tcp_conn->set_client();
     ZJC_DEBUG("success connect send message %s:%d, conn map size: %d", ip.c_str(), port, conn_map_.size());
     conn_map_[peer_spec] = tcp_conn;
+    CHECK_MEMORY_SIZE(conn_map_);
     in_check_queue_.push(tcp_conn);
     while (!destroy_) {
         std::shared_ptr<TcpConnection> out_conn = nullptr;
@@ -417,6 +421,7 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
         auto iter = conn_map_.find(key);
         if (iter != conn_map_.end()) {
             conn_map_.erase(iter);
+            CHECK_MEMORY_SIZE(conn_map_);
             ZJC_DEBUG("remove accept connection: %s", key.c_str());
         }
     }

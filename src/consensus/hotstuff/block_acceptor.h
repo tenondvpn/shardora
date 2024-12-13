@@ -197,8 +197,6 @@ private:
     double cur_tps_ = 0;
     common::SpinMutex prev_count_mutex_;
 
-    std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_blocks_[common::kInvalidPoolIndex];
-
 };
 
 } // namespace hotstuff

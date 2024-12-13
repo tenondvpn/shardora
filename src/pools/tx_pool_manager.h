@@ -313,7 +313,6 @@ private:
     std::condition_variable pop_tx_con_;
     std::mutex pop_tx_mu_;
     volatile bool destroy_ = false;
-    std::unordered_map<std::string, std::shared_ptr<InvalidGidItem>> invalid_gids_;
     common::ThreadSafeQueue<std::shared_ptr<InvalidGidItem>> invalid_gid_queues_[common::kInvalidPoolIndex];
     uint32_t min_valid_tx_count_ = 1;
     uint64_t min_valid_timestamp_ = 0;

@@ -79,6 +79,7 @@ void BlsManager::OnNewElectBlock(
     auto iter = finish_networks_map_.find(sharding_id);
     if (iter != finish_networks_map_.end()) {
         finish_networks_map_.erase(iter);
+        CHECK_MEMORY_SIZE(finish_networks_map_);
     }
 
     auto elect_iter = elect_members_.find(sharding_id);
@@ -108,6 +109,7 @@ void BlsManager::OnNewElectBlock(
 
     elect_item->members = members;
     elect_members_[sharding_id] = elect_item;
+    CHECK_MEMORY_SIZE(elect_members_);
 //     ZJC_WARN("sharding: %u, success add new bls dkg, elect_height: %lu",
 //         sharding_id, elect_height);
     if (sharding_id != common::GlobalInfo::Instance()->network_id() &&
@@ -535,6 +537,7 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     if (iter == finish_networks_map_.end()) {
         finish_item = std::make_shared<BlsFinishItem>();
         finish_networks_map_[bls_msg.finish_req().network_id()] = finish_item;
+        CHECK_MEMORY_SIZE(finish_networks_map_);
     } else {
         finish_item = iter->second;
     }
