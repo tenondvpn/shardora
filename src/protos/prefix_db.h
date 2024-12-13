@@ -800,6 +800,15 @@ public:
         if (db_->Exist(key)) {
             return true;
         }
+
+        return false;
+    }
+
+    bool CheckAndSaveGidExists(const std::string& gid) {
+        std::string key = kGidPrefix + gid;
+        if (db_->Exist(key)) {
+            return true;
+        }
         
         db_->Put(key, "1");
         return false;

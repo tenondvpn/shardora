@@ -101,7 +101,7 @@ public:
             return false;
         }
 
-        if (prefix_db_->JustCheckGidExists(gid)) {
+        if (prefix_db_->CheckAndSaveGidExists(gid)) {
             return false;
         }
 
