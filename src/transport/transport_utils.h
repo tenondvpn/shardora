@@ -41,6 +41,14 @@
 #define ADD_DEBUG_PROCESS_TIMESTAMP()
 #endif
 
+#ifndef NDEBUG
+#define CHECK_MEMORY_SIZE(data_map) { \
+    std::string tmp_str = common::StringUtil::Format("%s:%s:%u, size: %lu", ZJC_LOG_FILE_NAME,  __FUNCTION__, __LINE__, data_map.size()); \
+    ZJC_WARN(tmp_str); \
+}
+#else
+#define CHECK_MEMORY_SIZE(data_map)
+#endif
 namespace shardora {
 
 namespace transport {
