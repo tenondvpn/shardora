@@ -315,12 +315,12 @@ function ars_create_new_vote(content) {
     });
 }
 
-function ars_vote(id, addr, data, index, content) {
+function ars_vote(id, data, index, content) {
     PostCode('/zjchain/ars_vote/', {
         "id": id,
         "addr": addr,
         "data": data,
-        "index": parseInt(index),
+        "index": index,
         "content": content
     });
 }
@@ -382,5 +382,5 @@ if (args[0] == "12") {
 }
 
 if (args[0] == "13") {
-    ars_vote(args[1], args[2], args[3], args[4], "content");
+    ars_vote(args[1], args[2], args[3], "content");
 }
