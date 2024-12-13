@@ -326,6 +326,10 @@ function ars_vote(id, index, group_info) {
     });
 }
 
+function ars_transactions() {
+    PostCode('/zjchain/ars_transactions/', {});
+}
+
 global_resonse = null;
 const args = process.argv.slice(2)
 if (args[0] == "0") {
@@ -384,4 +388,8 @@ if (args[0] == "12") {
 
 if (args[0] == "13") {
     ars_vote(args[1], args[2], "group_info");
+}
+
+if (args[0] == "14") {
+    ars_transactions();
 }
