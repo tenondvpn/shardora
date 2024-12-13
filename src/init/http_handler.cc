@@ -712,8 +712,8 @@ static void ArsCreateSecKeys(evhtp_request_t* req, void* req_data) {
         len = element_to_bytes_compressed(bytes_data, public_keys[i]);
         std::string y_i_str((char*)bytes_data, len);
         res_json["nodes"][i]["node_index"] = i;
-        res_json["nodes"][i]["private_key"] = x_i_str;
-        res_json["nodes"][i]["public_key"] = y_i_str;
+        res_json["nodes"][i]["private_key"] = common::Encode::HexEncode(x_i_str);
+        res_json["nodes"][i]["public_key"] = common::Encode::HexEncode(y_i_str);
         element_clear(private_keys[i]);
         element_clear(public_keys[i]);
     }
