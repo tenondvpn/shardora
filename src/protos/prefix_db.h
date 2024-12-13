@@ -797,7 +797,12 @@ public:
 
     bool JustCheckGidExists(const std::string& gid) {
         std::string key = kGidPrefix + gid;
-        return db_->Exist(key);
+        if (db_->Exist(key)) {
+            return true;
+        }
+        
+        db_->Put(key, "1");
+        return false;
     }
 
     void SaveCommittedGids(
