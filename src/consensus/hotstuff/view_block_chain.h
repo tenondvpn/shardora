@@ -344,36 +344,16 @@ public:
             return;
         }
 
-
         if (!IsQcTcValid(view_block_ptr->qc())) {
             view_block_ptr->mutable_qc()->set_sign_x(qc_item.sign_x());
             view_block_ptr->mutable_qc()->set_sign_y(qc_item.sign_y());
             auto db_bach = std::make_shared<db::DbWriteBatch>();
             StoreToDb(view_block_ptr, 999999, db_bach);
-            auto st = db_->Put(*db_bach);
-            if (!st.ok()) {
-                ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
-            }
+            db_->Put(*db_bach);
         }
 
         if (high_view_block_ == nullptr ||
                 high_view_block_->qc().view() < view_block_ptr->qc().view()) {
-// #ifndef NDEBUG
-//             if (high_view_block_ != nullptr) {
-//                 ZJC_DEBUG("success add update old high view: %lu, high hash: %s, "
-//                     "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",
-//                     high_view_block_->qc().view(),
-//                     common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str(),
-//                     view_block_ptr->qc().view(),
-//                     common::Encode::HexEncode(view_block_ptr->qc().view_block_hash()).c_str(),
-//                     view_block_ptr->qc().network_id(),
-//                     view_block_ptr->qc().pool_index(),
-//                     view_block_ptr->block_info().height(),
-//                     common::Encode::HexEncode(view_block_ptr->parent_hash()).c_str(),
-//                     view_block_ptr->block_info().tx_list_size());
-//             }
-//     #endif
-            
             high_view_block_ = view_block_ptr;
             ZJC_DEBUG("final success add update high hash: %s, "
                 "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",

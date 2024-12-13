@@ -159,16 +159,11 @@ public:
                 elect_item->consensus_stat(pool_idx_)->Commit(vblock);
             }
             
-            pacemaker_->NewQcView(vblock->qc().view());
+            // pacemaker_->NewQcView(vblock->qc().view());
+            // view_block_chain()->UpdateHighViewBlock(vblock->qc());
+            UpdateQC(vblock->qc());
             StopVoting(vblock->qc().view());
-            // auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
-            // if (!latest_committed_block ||
-            //         latest_committed_block->qc().view() < vblock->qc().view()) {
-            //     view_block_chain()->SetLatestCommittedBlock(vblock);        
-            // }
-
-            // TODO: fix balance map and storage map
-            view_block_chain()->UpdateHighViewBlock(vblock->qc());
+            
             view_block_chain()->Store(vblock, true, nullptr, nullptr);
             TryCommit(vblock->qc(), 99999999lu);
             if (latest_qc_item_ptr_ == nullptr ||
@@ -181,6 +176,12 @@ public:
         } else {
             acceptor()->CommitSynced(queue_item_ptr);
         }
+    }
+
+    void UpdateQC(const QC& qc) {
+        view_block_chain()->UpdateHighViewBlock(qc);
+        // 不应该根据 qc 进行视图切换，而应该根据 high_qc，避免 qc 对应的 viewblock 不存在，导致 high view block 是旧的而 CurView 是新的
+        pacemaker()->NewQcView(pacemaker()->HighQC().view());
     }
 
     // 已经投票
