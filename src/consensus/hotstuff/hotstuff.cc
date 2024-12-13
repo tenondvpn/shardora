@@ -1877,10 +1877,10 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (now_tm_ms < latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs) {
-        ZJC_WARN("pool: %u now_tm_ms < latest_propose_msg_tm_ms_ + "
-            "kLatestPoposeSendTxToLeaderPeriodMs: %lu, %lu",
-            pool_idx_, now_tm_ms, 
-            (latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs));
+        // ZJC_WARN("pool: %u now_tm_ms < latest_propose_msg_tm_ms_ + "
+        //     "kLatestPoposeSendTxToLeaderPeriodMs: %lu, %lu",
+        //     pool_idx_, now_tm_ms, 
+        //     (latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs));
         return;
     }
 
