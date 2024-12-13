@@ -72,7 +72,7 @@ struct Construct {
 
 #ifndef NDEBUG
 #define CHECK_MEMORY_SIZE(data_map) { \
-    ZJC_WARN("data size: %s", data_map.size()); \
+    ZJC_WARN("data size: %u", data_map.size()); \
 }
 #else
 #define CHECK_MEMORY_SIZE(data_map)
