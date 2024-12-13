@@ -383,7 +383,7 @@ void NetworkInit::AddCmds() {
             return;
         }
 
-        std::cout << "highQC: " << chain->HighViewBlock()->qc().view()
+        std::cout << "highQC: " << pacemaker->HighQC()->view()
                   << ",highTC: " << pacemaker->HighTC()->view()
                   << ",chainSize: " << chain->Size()
                   << ",commitView: " << chain->LatestCommittedBlock()->qc().view()

@@ -34,6 +34,7 @@ enum MsgType {
   VOTE,
   NEWVIEW,
   PRE_RESET_TIMER,
+  RESET_TIMER,
 };
 
 typedef hotstuff::protobuf::ProposeMsg  pb_ProposeMsg;
@@ -98,6 +99,7 @@ public:
     void HandleProposeMsg(const transport::MessagePtr& msg_ptr);
     void HandleNewViewMsg(const transport::MessagePtr& msg_ptr);
     void HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr);
+    void HandleResetTimerMsg(const transport::protobuf::Header& header);
     void HandleVoteMsg(const transport::MessagePtr& msg_ptr);
     void NewView(
         std::shared_ptr<tnet::TcpInterface> conn,
@@ -107,6 +109,7 @@ public:
         std::shared_ptr<TC> tc,
         std::shared_ptr<AggregateQC> agg_qc,
         const transport::MessagePtr& msg_ptr);
+    Status ResetReplicaTimers();
     Status TryCommit(const QC& commit_qc, uint64_t t_idx = 9999999lu);
     Status HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> propose_msg_wrap);
     // 消费等待队列中的 ProposeMsg
@@ -159,15 +162,9 @@ public:
                 elect_item->consensus_stat(pool_idx_)->Commit(vblock);
             }
             
-            pacemaker_->NewQcView(vblock->qc().view());
-            // auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
-            // if (!latest_committed_block ||
-            //         latest_committed_block->qc().view() < vblock->qc().view()) {
-            //     view_block_chain()->SetLatestCommittedBlock(vblock);        
-            // }
-
-            // TODO: fix balance map and storage map
-            view_block_chain()->UpdateHighViewBlock(vblock->qc());
+            pacemaker()->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(vblock->qc())));
+            StopVoting(vblock->qc().view());
+            
             view_block_chain()->Store(vblock, true, nullptr, nullptr);
             TryCommit(vblock->qc(), 99999999lu);
             if (latest_qc_item_ptr_ == nullptr ||
@@ -221,40 +218,61 @@ public:
         return elect_info_;
     }
 
+    // int IsStuck() {
+    //     auto now_tm_us = common::TimeUtils::TimestampUs();
+    //     // 超时时间必须大于阈值
+    //     if (recover_from_stuck_timeout_ >= now_tm_us) {
+    //         return 1;
+    //     }
+
+    //     recover_from_stuck_timeout_ = now_tm_us + STUCK_PACEMAKER_DURATION_MIN_US;
+    //     return 0;
+    //     // highqc 之前连续三个块都是空交易，则认为 stuck
+    //     // auto v_block1 = view_block_chain()->HighViewBlock();
+    //     // if (!v_block1) {
+    //     //     return 0;
+    //     // }
+
+    //     // if (v_block1->block_info().tx_list_size() > 0) {
+    //     //     return 2;
+    //     // }
+
+    //     // auto v_block2 = view_block_chain()->ParentBlock(*v_block1);
+    //     // if (!v_block2) {
+    //     //     return 0;
+    //     // }
+
+    //     // if (v_block2->block_info().tx_list_size() > 0) {
+    //     //     return 3;
+    //     // }
+
+    //     // auto v_block3 = view_block_chain()->ParentBlock(*v_block2);
+    //     // if (v_block3 && v_block3->block_info().tx_list_size() > 0) {
+    //     //     return 4;
+    //     // }
+
+    //     // return 0;   
+    // }
+
     int IsStuck() {
-        auto now_tm_us = common::TimeUtils::TimestampUs();
         // 超时时间必须大于阈值
-        if (recover_from_stuck_timeout_ >= now_tm_us) {
+        if (pacemaker()->DurationUs() < STUCK_PACEMAKER_DURATION_MIN_US) {
             return 1;
         }
-
-        recover_from_stuck_timeout_ = now_tm_us + STUCK_PACEMAKER_DURATION_MIN_US;
-        return 0;
-        // highqc 之前连续三个块都是空交易，则认为 stuck
-        // auto v_block1 = view_block_chain()->HighViewBlock();
-        // if (!v_block1) {
-        //     return 0;
-        // }
-
-        // if (v_block1->block_info().tx_list_size() > 0) {
-        //     return 2;
-        // }
-
-        // auto v_block2 = view_block_chain()->ParentBlock(*v_block1);
-        // if (!v_block2) {
-        //     return 0;
-        // }
-
-        // if (v_block2->block_info().tx_list_size() > 0) {
-        //     return 3;
-        // }
-
-        // auto v_block3 = view_block_chain()->ParentBlock(*v_block2);
-        // if (v_block3 && v_block3->block_info().tx_list_size() > 0) {
-        //     return 4;
-        // }
-
-        // return 0;   
+        // highqc 之前连续三个块都是空交易，则认为 stuck        
+        auto v_block1 = view_block_chain()->Get(pacemaker()->HighQC().view_block_hash());
+        if (!v_block1 || v_block1->block_info().tx_list_size() > 0) {
+            return 2;
+        }
+        auto v_block2 = view_block_chain()->ParentBlock(*v_block1);
+        if (!v_block2 || v_block2->block_info().tx_list_size() > 0) {
+            return 3;
+        }
+        auto v_block3 = view_block_chain()->ParentBlock(*v_block2);
+        if (!v_block3 || v_block3->block_info().tx_list_size() > 0) {
+            return 4;
+        }
+        return 0;           
     }
 
     inline uint64_t max_view() {

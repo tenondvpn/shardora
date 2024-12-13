@@ -86,9 +86,7 @@ int HotstuffManager::Init(
                         ViewDurationSampleSize,
                         ViewDurationStartTimeoutMs,
                         ViewDurationMaxTimeoutMs,
-                        ViewDurationMultiplier),
-                std::bind(&ViewBlockChain::HighQC, chain),
-                std::bind(&ViewBlockChain::UpdateHighViewBlock, chain, std::placeholders::_1));
+                        ViewDurationMultiplier));
         auto acceptor = std::make_shared<BlockAcceptor>(
                 pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
                 contract_mgr, db, gas_prepayment, pool_mgr, block_mgr,
@@ -333,6 +331,9 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             hotstuff(hotstuff_msg.pool_index())->HandlePreResetTimerMsg(msg_ptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
             break;
+        case RESET_TIMER:
+            hotstuff(hotstuff_msg.pool_index())->HandleResetTimerMsg(header);
+            break;                      
         default:
             ZJC_WARN("consensus message type is error.");
             break;

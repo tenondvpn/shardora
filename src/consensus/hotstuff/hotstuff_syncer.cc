@@ -101,17 +101,12 @@ void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr)
 }
 
 void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const int32_t& node_num) {
-    auto latest_view_block = view_block_chain(pool_idx)->HighViewBlock();
-    if (!latest_view_block) {
-        return;
-    }
-
     // TODO(HT): test
     auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
     auto req = vb_msg.mutable_view_block_req();
     req->set_pool_idx(pool_idx);
     req->set_network_id(common::GlobalInfo::Instance()->network_id());
-    req->set_high_qc_view(latest_view_block->qc().view());
+    req->set_high_qc_view(pacemaker(pool_idx)->HighQC()->view());
     req->set_high_tc_view(pacemaker(pool_idx)->HighTC()->view());
 
     View max_view = 0;
@@ -301,7 +296,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     view_block_res->set_pool_idx(pool_idx);
 
     // src 节点的 highqc 或 hightc 落后，尝试同步
-    if (view_block_chain(pool_idx)->HighViewBlock()->qc().view() > src_high_qc_view) {
+    if (pacemaker(pool_idx)->HighQC()->view() > src_high_qc_view) {
         shouldSyncQC = true;
     }
 
@@ -389,7 +384,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     }
 
     if (shouldSyncQC) {
-        *view_block_res->mutable_high_view_block() = *view_block_chain(pool_idx)->HighViewBlock();
+        *view_block_res->mutable_high_qc();
     }
 
     // TODO LatestCommittedblock 如果限于 Propose 消息使得 Leader 变更，则会导致 replica VerifyLeader 失败，从而无法继续参与共识
@@ -569,7 +564,8 @@ Status HotstuffSyncer::processResponseQcTc(
             high_view_block->qc().network_id(),
             high_view_block->qc().pool_index(),
             high_view_block->qc().view());
-        pm->NewQcView(high_view_block->qc().view());
+        // pm->NewQcView(high_view_block->qc().view());
+        pm->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(high_view_block->qc())));
         hotstuff_mgr_->hotstuff(pool_idx)->TryCommit(high_view_block->qc());
     }
 
@@ -727,7 +723,8 @@ Status HotstuffSyncer::MergeChain(
             high_commit_qc.qc().network_id(),
             high_commit_qc.qc().pool_index(),
             high_commit_qc.qc().view());
-    pacemaker(pool_idx)->NewQcView(high_commit_qc.qc().view());
+    // pacemaker(pool_idx)->NewQcView(high_commit_qc.qc().view());
+    pacemaker(pool_idx)->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(high_commit_qc.qc())));
     return Status::kSuccess;
 }
 
@@ -748,7 +745,8 @@ Status HotstuffSyncer::onRecViewBlock(
         view_block_ptr->qc().network_id(),
         view_block_ptr->qc().pool_index(),
         view_block_ptr->qc().view());
-    hotstuff->pacemaker()->NewQcView(view_block_ptr->qc().view());
+    // hotstuff->pacemaker()->NewQcView(view_block_ptr->qc().view());
+    hotstuff->pacemaker()->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(view_block_ptr->qc())));
     hotstuff->TryCommit(view_block.qc());
     // 如果已经有此块，则直接返回
     if (view_block_chain(pool_idx)->Has(view_block.qc().view_block_hash())) {
