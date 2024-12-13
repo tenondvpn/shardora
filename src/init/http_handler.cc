@@ -702,7 +702,7 @@ static void ArsCreateSecKeys(evhtp_request_t* req, void* req_data) {
     nlohmann::json res_json;
     res_json["status"] = 0;
     auto nodes = res_json["nodes"];
-    auto keys_splits = common::Split<>(keys, ',');
+    auto keys_splits = common::Split<>(keys, '-');
     ars.set_ring_size(keys_splits.Count());
     for (int i = 0; i < ars.ring_size(); ++i) {
         ars.KeyGen(keys_splits[i], private_keys[i], public_keys[i]);
