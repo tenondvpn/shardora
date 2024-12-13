@@ -132,13 +132,16 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
 //     common::AutoSpinLock auto_lock(mutex_);
-    CheckThreadIdValid();
-    if (removed_gid_.find(tx_ptr->tx_info.gid()) != removed_gid_.end()) {
-#ifndef ENABLE_HOTSTUFF        
-        // assert(false);
-#endif
+    if (!GidValid(tx_ptr->tx_info.gid())) {
         return kPoolsTxAdded;
     }
+    CheckThreadIdValid();
+//     if (removed_gid_.find(tx_ptr->tx_info.gid()) != removed_gid_.end()) {
+// #ifndef ENABLE_HOTSTUFF        
+//         // assert(false);
+// #endif
+//         return kPoolsTxAdded;
+//     }
 
     if (gid_map_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
         ZJC_WARN("add failed extend 1024");
@@ -150,14 +153,14 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         tx_ptr->unique_tx_hash = pools::GetTxMessageHash(tx_ptr->tx_info);
     }
 
-    assert(tx_ptr != nullptr);
-    auto iter = gid_map_.find(tx_ptr->tx_info.gid());
-    if (iter != gid_map_.end()) {
-#ifndef ENABLE_HOTSTUFF
-        // assert(false);
-#endif
-        return kPoolsTxAdded;
-    }
+//     assert(tx_ptr != nullptr);
+//     auto iter = gid_map_.find(tx_ptr->tx_info.gid());
+//     if (iter != gid_map_.end()) {
+// #ifndef ENABLE_HOTSTUFF
+//         // assert(false);
+// #endif
+//         return kPoolsTxAdded;
+//     }
 
     if (tx_ptr->step == pools::protobuf::kCreateLibrary) {
         universal_prio_map_[tx_ptr->prio_key] = tx_ptr;
