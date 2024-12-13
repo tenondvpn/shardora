@@ -672,14 +672,6 @@ static void ArsCreateSecKeys(evhtp_request_t* req, void* req_data) {
         return;
     }
 
-    const char* tmp_id = evhtp_kv_find(req->uri->query, "id");
-    if (tmp_id == nullptr) {
-        std::string res = common::StringUtil::Format("param id is null");
-        evbuffer_add(req->buffer_out, res.c_str(), res.size());
-        evhtp_send_reply(req, EVHTP_RES_BADREQ);
-        return;
-    }
-
     const char* tmp_signer_count = evhtp_kv_find(req->uri->query, "signer_count");
     if (tmp_signer_count == nullptr) {
         std::string res = common::StringUtil::Format("param signer_count is null");
@@ -704,7 +696,6 @@ static void ArsCreateSecKeys(evhtp_request_t* req, void* req_data) {
         return;
     }
 
-    auto id = common::Encode::HexDecode(tmp_id);
     // 创建环中的公钥和私钥对
     std::vector<element_t> private_keys(ars.ring_size());
     std::vector<element_t> public_keys(ars.ring_size());

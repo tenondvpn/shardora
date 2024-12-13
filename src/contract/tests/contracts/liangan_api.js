@@ -305,43 +305,8 @@ function penc_transactions() {
     });
 }
 
-
-function ars_create_sec_keys(args) {
-    PostCode('/zjchain/ars_create_sec_keys/', {
-        "content": "content",
-    });
-}
-
-function ars_get_sec_keys(id) {
-    PostCode('/zjchain/ars_get_sec_keys/', {
-        "id": id,
-    });
-}
-
-async function wait_get_ars_sec_keys() {
-    for (var i = 0; i < 10; ++i) {
-        await sleep(1000);
-        if (global_resonse != null) {
-            var json_res = JSON.parse(global_resonse);
-            global_resonse = null;
-            var tmp_id = json_res.id;
-            ars_get_sec_keys(tmp_id);
-            for (var i = 0; i < 10; ++i) {
-                await sleep(1000);
-                if (global_resonse != null) {
-                    var json_res = JSON.parse(global_resonse);
-                    console.log('ars_sec_keys: ' + global_resonse);
-                    if (json_res.value[0].private_key != "") {
-                        break
-                    }
-                    global_resonse = null;
-                    ars_get_sec_keys(tmp_id);
-                }
-            }
-
-            break
-        }
-    }
+function ars_create_sec_keys() {
+    PostCode('/zjchain/ars_create_sec_keys/', {});
 }
 
 global_resonse = null;
@@ -394,5 +359,4 @@ if (args[0] == "10") {
 
 if (args[0] == "11") {
     ars_create_sec_keys(args);
-    wait_get_ars_sec_keys(args);
 }
