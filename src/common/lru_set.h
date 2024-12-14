@@ -23,19 +23,19 @@ public:
         if (item_map_.count(data)) {
             item_list_.erase(item_map_[data]);
             item_map_.erase(data);
-            // CHECK_MEMORY_SIZE(item_map_);
+            // CHECK_MEMORY_SIZE(item_list_);
             ret = false;
         }
 
         item_list_.push_front(data);
         item_map_[data] = item_list_.begin();
-        // CHECK_MEMORY_SIZE(item_map_);
+        CHECK_MEMORY_SIZE(item_list_);
 
         if (item_list_.size() > max_size_) {
             Type last = item_list_.back();
             item_list_.pop_back();
             item_map_.erase(last);
-            // CHECK_MEMORY_SIZE(item_map_);
+            // CHECK_MEMORY_SIZE(item_list_);
         }
 
         return ret;
