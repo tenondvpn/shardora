@@ -169,7 +169,7 @@ Status Hotstuff::Propose(
             header.debug().c_str(),
             tmp_msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
             pacemaker_->CurView());
-        HandleProposeMsg(latest_leader_propose_message_);
+        // HandleProposeMsg(latest_leader_propose_message_);
         return s;
     }
 
@@ -262,7 +262,7 @@ Status Hotstuff::Propose(
     }
 
     tmp_msg_ptr->is_leader = true;
-    HandleProposeMsg(tmp_msg_ptr);
+    // HandleProposeMsg(tmp_msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
