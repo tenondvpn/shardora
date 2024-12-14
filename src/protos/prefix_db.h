@@ -90,6 +90,7 @@ static const std::string kViewBlockHashKeyPrefix = "au\x01";
 static const std::string kViewBlockParentHashKeyPrefix = "av\x01";
 static const std::string kLatestLeaderProposeMessage = "aw\x01";
 static const std::string kAggBlsPrivateKeyPrefix = "ax\x01";
+static const std::string kCommitedGidPrefix = "ay\x01";
 
 class PrefixDb {
 public:
@@ -795,8 +796,8 @@ public:
         return true;
     }
 
-    bool JustCheckGidExists(const std::string& gid) {
-        std::string key = kGidPrefix + gid;
+    bool JustCheckCommitedGidExists(const std::string& gid) {
+        std::string key = kCommitedGidPrefix + gid;
         if (db_->Exist(key)) {
             return true;
         }
@@ -814,14 +815,14 @@ public:
         return false;
     }
 
-    // void SaveCommittedGids(
-    //         const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list, 
-    //         db::DbWriteBatch& db_batch) {
-    //     for (uint32_t i = 0; i < tx_list.size(); ++i) {
-    //         std::string key = kGidPrefix + tx_list[i].gid();
-    //         db_batch.Put(key, "1");
-    //     }
-    // }
+    void SaveCommittedGids(
+            const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list, 
+            db::DbWriteBatch& db_batch) {
+        for (uint32_t i = 0; i < tx_list.size(); ++i) {
+            std::string key = kCommitedGidPrefix + tx_list[i].gid();
+            db_batch.Put(key, "1");
+        }
+    }
 
     void SaveContractUserPrepayment(
             const std::string& contract_addr,
