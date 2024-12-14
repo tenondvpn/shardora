@@ -1265,9 +1265,10 @@ void TxPoolManager::GetTxIdempotently(
         count = common::kSingleBlockMaxTransactions;
     }
 
-    // if (tx_pool_[pool_index].tx_size() < now_max_tx_count_) {
-    //     return;
-    // }
+    // TODO: check latency
+    if (tx_pool_[pool_index].tx_size() < now_max_tx_count_) {
+        return;
+    }
 
     tx_pool_[pool_index].GetTxIdempotently(res_map, count, gid_vlid_func);    
 }
