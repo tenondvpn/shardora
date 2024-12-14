@@ -120,6 +120,10 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(
         CHECK_MEMORY_SIZE(thread_address_map_[thread_idx]);
     }
    
+    if (addr.empty()) {
+        return nullptr;
+    }
+    
     auto iter = thread_address_map_[thread_idx].find(addr);
     if (iter != thread_address_map_[thread_idx].end()) {
         return iter->second;
