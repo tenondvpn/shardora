@@ -411,26 +411,22 @@ void TxPool::RemoveTx(const std::string& gid) {
     auto prio_iter = prio_map_.find(giter->second->prio_key);
     if (prio_iter != prio_map_.end()) {
         prio_map_.erase(prio_iter);
-        CHECK_MEMORY_SIZE(prio_map_);
     }
 
     auto universal_prio_iter = universal_prio_map_.find(giter->second->prio_key);
     if (universal_prio_iter != universal_prio_map_.end()) {
         universal_prio_map_.erase(universal_prio_iter);
-        CHECK_MEMORY_SIZE(universal_prio_map_);
     }
 
     auto cons_iter = consensus_tx_map_.find(giter->second->unique_tx_hash);
     if (cons_iter != consensus_tx_map_.end()) {
         consensus_tx_map_.erase(cons_iter);
-        CHECK_MEMORY_SIZE(consensus_tx_map_);
     }
 
     // ZJC_DEBUG("remove tx success gid: %s, tx hash: %s",
     //     common::Encode::HexEncode(giter->second->tx_info.gid()).c_str(),
     //     common::Encode::HexEncode(giter->second->unique_tx_hash).c_str());
     gid_map_.erase(giter);
-    CHECK_MEMORY_SIZE(gid_map_);
 #ifdef LATENCY    
     if (!prio_map_.empty()) {
         oldest_timestamp_ = prio_map_.begin()->second->time_valid;
@@ -442,6 +438,10 @@ void TxPool::RemoveTx(const std::string& gid) {
 
 void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
     CheckThreadIdValid();
+    CHECK_MEMORY_SIZE_WITH_MESSAGE(gid_map_, (std::string("pool index:") + std::to_string(pool_index_)).c_str());
+    CHECK_MEMORY_SIZE_WITH_MESSAGE(prio_map_, (std::string("pool index:") + std::to_string(pool_index_)).c_str());
+    CHECK_MEMORY_SIZE_WITH_MESSAGE(universal_prio_map_, (std::string("pool index:") + std::to_string(pool_index_)).c_str());
+    CHECK_MEMORY_SIZE_WITH_MESSAGE(consensus_tx_map_, (std::string("pool index:") + std::to_string(pool_index_)).c_str());
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         auto& gid = tx_list[i].gid(); 
         RemoveTx(gid);
@@ -466,6 +466,10 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
 #endif
     }
 
+    CHECK_MEMORY_SIZE_WITH_MESSAGE(gid_map_, (std::string("pool index:") + std::to_string(pool_index_)).c_str());
+    CHECK_MEMORY_SIZE_WITH_MESSAGE(prio_map_, (std::string("pool index:") + std::to_string(pool_index_)).c_str());
+    CHECK_MEMORY_SIZE_WITH_MESSAGE(universal_prio_map_, (std::string("pool index:") + std::to_string(pool_index_)).c_str());
+    CHECK_MEMORY_SIZE_WITH_MESSAGE(consensus_tx_map_, (std::string("pool index:") + std::to_string(pool_index_)).c_str());
     finish_tx_count_ += tx_list.size();
 }
 
