@@ -71,11 +71,29 @@ struct Construct {
 #endif
 
 #ifndef NDEBUG
-#define CHECK_MEMORY_SIZE(data_map) { \
+
+#define get5th(a1, a2, a3, a4, a5, ...) a5
+#define leftBracket (
+#define eatComma(...) ,##__VA_ARGS__
+
+#define select0_3(m0, m1, m2, m3, ...) get5th leftBracket eatComma(__VA_ARGS__), m3, m2, m1, m0)
+
+#define CHECK_MEMORY_SIZE_1(data_map, test_str, a, b) { \
     if (data_map.size() > 256) { \
-        ZJC_WARN("data size: %u", data_map.size()); \
+        if (test_str != std::string("")) { \
+            ZJC_WARN("data size: %u", data_map.size()); \
+        } else { \
+            ZJC_WARN("data size: %u, test str: %s", data_map.size(), test_str); \
+        } \
     } \
 }
+
+#define CHECK_MEMORY_SIZE(data_map, ...) select0_3(CHECK_MEMORY_SIZE_1(data_map, "", "", ""),           \
+                              CHECK_MEMORY_SIZE_1(data_map, __VA_ARGS__, "", ""), \
+                              CHECK_MEMORY_SIZE_1(data_map, __VA_ARGS__, ""),    \
+                              CHECK_MEMORY_SIZE_1(data_map, __VA_ARGS__),       \
+                              __VA_ARGS__)   
+
 #else
 #define CHECK_MEMORY_SIZE(data_map)
 #endif
