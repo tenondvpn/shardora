@@ -783,10 +783,10 @@ void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
         }
 
         gid_map_[txs[i]->tx_info.gid()] = txs[i];
-        CHECK_MEMORY_SIZE(gid_map_);
+        CHECK_MEMORY_SIZE_WITH_MESSAGE(gid_map_, (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
         txs[i]->is_consensus_add_tx = true;
         consensus_tx_map_[txs[i]->unique_tx_hash] = txs[i];
-        CHECK_MEMORY_SIZE(consensus_tx_map_);
+        CHECK_MEMORY_SIZE_WITH_MESSAGE(consensus_tx_map_, (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
         ZJC_DEBUG("pool: %d, success add tx step: %d, to: %s, gid: %s, txhash: %s", 
             pool_index_,
             txs[i]->tx_info.step(), 
