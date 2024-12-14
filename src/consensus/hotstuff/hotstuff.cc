@@ -1448,6 +1448,13 @@ Status Hotstuff::VerifyViewBlock(
         return Status::kError;
     }
 
+    if (v_block.block_info().height() <= view_block_chain->LatestCommittedBlock()->block_info().height()) {
+        ZJC_ERROR("new view block height error: %lu, last commited block height: %lu", 
+            v_block.block_info().height(),
+            view_block_chain->LatestCommittedBlock()->block_info().height());
+        return Status::kError;
+    }
+
     // hotstuff condition
     std::shared_ptr<ViewBlock> qc_view_block = view_block_chain->Get(v_block.parent_hash());
     if (!qc_view_block) {
