@@ -169,6 +169,7 @@ uint32_t LeafHeightTree::GetAlignMaxLevel() {
     }
 
     ZJC_INFO("get leaf height max level data size: %u", tmp);
+    assert(tmp < 77670656);
     return tmp;
 }
 
