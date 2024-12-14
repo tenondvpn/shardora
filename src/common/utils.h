@@ -80,7 +80,7 @@ struct Construct {
 
 #define CHECK_MEMORY_SIZE_WITH_MESSAGE(data_map, msg) { \
     if (data_map.size() > 2024) { \
-        ZJC_WARN("data size: %u, msg: %s", data_map.size(), msg); \
+        ZJC_WARN("%s data size: %u, msg: %s", ##data_map, data_map.size(), msg); \
     } \
 }
 // #else
