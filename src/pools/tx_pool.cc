@@ -313,13 +313,14 @@ void TxPool::CheckTimeoutTx() {
         return;
     }
 
-    prev_check_tx_timeout_tm_ = now_tm + 10000000lu;
+    prev_check_tx_timeout_tm_ = now_tm + 1000000lu;
     uint32_t count = 0;
-    while (!timeout_txs_.empty() && count++ < 64) {
+    while (!timeout_txs_.empty() && count++ < 1024) {
         auto& gid = timeout_txs_.front();
         auto iter = gid_map_.find(gid);
         if (iter == gid_map_.end()) {
             timeout_txs_.pop();
+            CHECK_MEMORY_SIZE_WITH_MESSAGE(timeout_txs_, "timeout txs pop");
             continue;
         }
 
