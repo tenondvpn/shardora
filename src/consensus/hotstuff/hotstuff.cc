@@ -925,6 +925,10 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         });
     
     auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
+    if (!prefix_db_->BlockExists(vote_msg.view_block_hash())) {
+        return;
+    }
+    
     std::string followers_gids;
 
 // #ifndef NDEBUG
