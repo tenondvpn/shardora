@@ -72,6 +72,7 @@ int BlockManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 }
 
 void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& message) {
+    account_mgr_->GetAccountInfo("");
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (prev_timer_ms_ + 100lu > now_tm_ms) {
         return;
