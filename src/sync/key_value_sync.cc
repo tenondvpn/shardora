@@ -120,6 +120,7 @@ void KeyValueSync::PopItems() {
             // }
 
             prio_sync_queue_[item->priority].push(item);
+            CHECK_MEMORY_SIZE(prio_sync_queue_[item->priority]);
             ZJC_DEBUG("add new sync item key: %s, priority: %u",
                 item->key.c_str(), item->priority);
         }
@@ -136,6 +137,7 @@ void KeyValueSync::CheckSyncItem() {
         while (!prio_sync_queue_[i].empty()) {
             SyncItemPtr item = prio_sync_queue_[i].front();
             prio_sync_queue_[i].pop();
+            CHECK_MEMORY_SIZE(prio_sync_queue_[i]);
             auto& block_map = net_with_pool_blocks_[item->network_id].pool_blocks[item->pool_idx];
             auto block_iter = block_map.find(item->height);
             if (block_iter != block_map.end()) {
@@ -533,6 +535,7 @@ void KeyValueSync::CheckSyncTimeout() {
             now_tm_us);
         added_key_set_.erase(iter->second->key);
         prio_sync_queue_[iter->second->priority].push(iter->second);
+        CHECK_MEMORY_SIZE(prio_sync_queue_[iter->second->priority]);
         iter = synced_map_.erase(iter);
         CHECK_MEMORY_SIZE(synced_map_);
     }

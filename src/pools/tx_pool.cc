@@ -188,6 +188,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     oldest_timestamp_ = prio_map_.begin()->second->time_valid;
 #endif
     timeout_txs_.push(tx_ptr->tx_info.gid());
+    CHECK_MEMORY_SIZE(timeout_txs_);
     if (pool_index_ == common::kImmutablePoolSize) {
         ZJC_DEBUG("pool: %d, success add tx step: %d, gid: %s", 
             pool_index_, 
@@ -330,7 +331,9 @@ void TxPool::CheckTimeoutTx() {
         }
 
         timeout_txs_.pop();
+        CHECK_MEMORY_SIZE(timeout_txs_);
         timeout_remove_txs_.push(gid);
+        CHECK_MEMORY_SIZE(timeout_remove_txs_);
     }
 
     count = 0;
@@ -350,6 +353,7 @@ void TxPool::CheckTimeoutTx() {
 
         RemoveTx(gid);
         timeout_remove_txs_.pop();
+        CHECK_MEMORY_SIZE(timeout_remove_txs_);
         ZJC_DEBUG("timeout remove gid: %s, tx hash: %s",
             common::Encode::HexEncode(gid).c_str(),
             common::Encode::HexEncode(iter->second->unique_tx_hash).c_str());

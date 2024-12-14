@@ -29,7 +29,7 @@ public:
 
         item_list_.push_front(data);
         item_map_[data] = item_list_.begin();
-        CHECK_MEMORY_SIZE(item_list_);
+        // CHECK_MEMORY_SIZE(item_list_);
 
         if (item_list_.size() > max_size_) {
             Type last = item_list_.back();

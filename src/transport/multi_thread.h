@@ -111,7 +111,6 @@ private:
 
     static const int kQueueObjectCount = 1024 * 1024;
 
-    std::queue<std::shared_ptr<protobuf::Header>> local_queue_;
     std::vector<ThreadHandlerPtr> thread_vec_;
     bool inited_{ false };
     common::UniqueSet<uint64_t, 10240, 64> unique_message_sets_;
