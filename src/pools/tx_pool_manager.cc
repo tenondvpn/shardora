@@ -351,10 +351,6 @@ void TxPoolManager::SyncRootBlockWithMaxHeights(uint32_t pool_idx, uint64_t heig
         network::kRootCongressNetworkId,
         pool_idx,
         height);
-    ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
-        network::kRootCongressNetworkId,
-        pool_idx,
-        height);
     kv_sync_->AddSyncHeight(
         network::kRootCongressNetworkId,
         pool_idx,
