@@ -1739,7 +1739,7 @@ Status Hotstuff::ConstructViewBlock(
         pre_v_block->qc().view(),
         last_vote_view_);
     if (last_vote_view_ >= pacemaker()->CurView()) {
-        assert(last_vote_view_ < pacemaker()->CurView());
+        // assert(last_vote_view_ < pacemaker()->CurView());
         return Status::kError;
     }
 
