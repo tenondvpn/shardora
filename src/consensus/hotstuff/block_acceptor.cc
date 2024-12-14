@@ -591,7 +591,7 @@ void BlockAcceptor::commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr
             pools_mgr_->TxOver(queue_item_ptr->view_block_ptr->qc().pool_index(), block->tx_list());
             prefix_db_->SaveCommittedGids(block->tx_list(), *queue_item_ptr->final_db_batch);
         } else {
-            ZJC_WARN("commit block tx over no tx, net: %d, pool: %d, height: %lu, propose_debug: %s", 
+            ZJC_DEBUG("commit block tx over no tx, net: %d, pool: %d, height: %lu, propose_debug: %s", 
                 queue_item_ptr->view_block_ptr->qc().network_id(),
                 queue_item_ptr->view_block_ptr->qc().pool_index(),
                 block->height(),
@@ -600,7 +600,7 @@ void BlockAcceptor::commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr
 
         // tps measurement
         CalculateTps(block->tx_list_size());    
-        ZJC_DEBUG("[NEW BLOCK] hash: %s, prehash: %s, view: %u_%u_%lu, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu, propose_debug: %s",
+        ZJC_INFO("[NEW BLOCK] hash: %s, prehash: %s, view: %u_%u_%lu, key: %u_%u_%u_%u, timestamp:%lu, txs: %lu, propose_debug: %s",
             common::Encode::HexEncode(queue_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
             common::Encode::HexEncode(queue_item_ptr->view_block_ptr->parent_hash()).c_str(),
             queue_item_ptr->view_block_ptr->qc().network_id(),
