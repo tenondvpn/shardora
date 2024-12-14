@@ -36,7 +36,7 @@ Status ViewBlockChain::Store(
     }
 
     if (Has(view_block->qc().view_block_hash())) {
-        ZJC_ERROR("view block already stored, hash: %s, view: %lu, propose_debug: %s",
+        ZJC_DEBUG("view block already stored, hash: %s, view: %lu, propose_debug: %s",
             common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view(),
             view_block->debug().c_str());        
         return Status::kSuccess;
