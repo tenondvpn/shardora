@@ -123,7 +123,7 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(
     if (addr.empty()) {
         return nullptr;
     }
-    
+
     auto iter = thread_address_map_[thread_idx].find(addr);
     if (iter != thread_address_map_[thread_idx].end()) {
         return iter->second;
@@ -687,6 +687,7 @@ void AccountManager::UpdateAccountsThread() {
         }
         
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+            CHECK_MEMORY_SIZE_WITH_MESSAGE(thread_valid_accounts_queue_[i], (std::string("thread index: ") + std::to_string(i)).c_str())
             thread_valid_accounts_queue_[i].push(account_info);
         }
     }
