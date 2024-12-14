@@ -101,7 +101,7 @@ enum BftRole {
     kConsensusShard = 1,
 };
 
-static const uint32_t kMaxTxCount = 64u;
+static const uint32_t kMaxTxCount = 4096u;
 static const uint32_t kSyncToLeaderTxCount = 64u; // consensus can be slow if it's large
 static const uint32_t kBitcountWithItemCount = 20u;  // m/n, k = 8, error ratio = 0.000009
 static const uint32_t kHashCount = 6u;  // k

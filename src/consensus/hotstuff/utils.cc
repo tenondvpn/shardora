@@ -94,7 +94,7 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
         sharding_id, pool_index, 
         common::Encode::HexEncode(view_block.parent_hash()).c_str(), 
         vss_random, height, timeblock_height, timestamp,
-        common::Encode::HexEncode(msg).c_str());
+        "common::Encode::HexEncode(msg).c_str()");
     return hash;
 }
 
