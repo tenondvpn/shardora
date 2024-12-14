@@ -109,6 +109,7 @@ void AccountManager::InitLoadAllAddress() {
 protos::AddressInfoPtr AccountManager::GetAccountInfo(
         const std::string& addr) {
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    thread_valid_[thread_idx] = true;
     while (true) {
         std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
         thread_valid_accounts_queue_[thread_idx].pop(&address_info);
@@ -687,6 +688,10 @@ void AccountManager::UpdateAccountsThread() {
         }
         
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+            if (thread_valid_accounts_queue_[i].size() >= 1024 && !thread_valid_[i]) {
+                continue;
+            }
+
             CHECK_MEMORY_SIZE_WITH_MESSAGE(thread_valid_accounts_queue_[i], (std::string("thread index: ") + std::to_string(i)).c_str())
             thread_valid_accounts_queue_[i].push(account_info);
         }
