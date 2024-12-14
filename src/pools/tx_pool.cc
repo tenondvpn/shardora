@@ -230,13 +230,14 @@ void TxPool::GetTxIdempotently(
         consensus_tx_map_.size());
     GetTxIdempotently(universal_prio_map_, res_map, count, gid_vlid_func);
     if (!res_map.empty()) {
-        ZJC_DEBUG("success get universal_prio_map_ size: %d", res_map.size());
+        ZJC_DEBUG("pool index: %u, success get tx size: %d", pool_index_, res_map.size());
         return;
     }
 
     GetTxIdempotently(prio_map_, res_map, count, gid_vlid_func);
     GetTxIdempotently(consensus_tx_map_, res_map, count, gid_vlid_func);    
-    ZJC_DEBUG("success get tx size: %d", res_map.size());
+    ZJC_DEBUG("pool index: %u, success get tx size: %d, all size: %u",
+        pool_index_, res_map.size(), tx_size());
 }
 
 void TxPool::GetTxIdempotently(
