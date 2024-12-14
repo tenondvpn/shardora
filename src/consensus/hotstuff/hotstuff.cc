@@ -1886,9 +1886,9 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
 
     auto stuck_st = IsStuck();
     if (stuck_st != 0) {
-        // if (stuck_st != 1) {
+        if (stuck_st != 1) {
             ZJC_WARN("pool: %u stuck_st != 0: %d", pool_idx_, stuck_st);
-        // }
+        }
         return;
     }
 
