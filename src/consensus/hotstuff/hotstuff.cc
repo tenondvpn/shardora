@@ -251,7 +251,7 @@ Status Hotstuff::Propose(
         header.debug().c_str());
 
     if (tc != nullptr && IsQcTcValid(*tc)) {
-        ZJC_WARN("new prev qc coming: %s, %u_%u_%lu, parent hash: %s, tx size: %u, view: %lu",
+        ZJC_DEBUG("new prev qc coming: %s, %u_%u_%lu, parent hash: %s, tx size: %u, view: %lu",
             common::Encode::HexEncode(tc->view_block_hash()).c_str(), 
             tc->network_id(), 
             tc->pool_index(), 
@@ -1042,7 +1042,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     assert(ret != Status::kInvalidOpposedCount);
     if (ret != Status::kSuccess) {
         if (ret == Status::kBlsVerifyWaiting) {
-            ZJC_WARN("kBlsWaiting pool: %d, view: %lu, hash64: %lu",
+            ZJC_DEBUG("kBlsWaiting pool: %d, view: %lu, hash64: %lu",
                 pool_idx_, vote_msg.view(), msg_ptr->header.hash64());
             return;
         }

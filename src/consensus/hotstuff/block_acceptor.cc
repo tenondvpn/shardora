@@ -66,14 +66,14 @@ Status BlockAcceptor::Accept(
     auto b = common::TimeUtils::TimestampMs();
     defer({
             auto e = common::TimeUtils::TimestampMs();
-            ZJC_WARN("pool: %d Accept duration: %lu ms", pool_idx_, e-b);
+            ZJC_DEBUG("pool: %d Accept duration: %lu ms", pool_idx_, e-b);
         });
 
     auto& propose_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tx_propose();
     auto& view_block = *pro_msg_wrap->view_block_ptr;
     if (propose_msg.txs().empty()) {
         if (no_tx_allowed) {
-            ZJC_WARN("success do transaction tx size: %u, add: %u, %u_%u_%lu, "
+            ZJC_DEBUG("success do transaction tx size: %u, add: %u, %u_%u_%lu, "
                 "height: %lu, view hash: %s", 
                 0, 
                 view_block.block_info().tx_list_size(), 
@@ -84,7 +84,7 @@ Status BlockAcceptor::Accept(
                 common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str());
             assert(view_block.qc().view_block_hash().empty());
             view_block.mutable_qc()->set_view_block_hash(GetBlockHash(view_block));
-            ZJC_WARN("success set view block hash: %s, parent: %s, %u_%u_%lu, "
+            ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu, "
                 "chain has hash: %d, db has hash: %d",
                 common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
                 common::Encode::HexEncode(view_block.parent_hash()).c_str(),
@@ -105,7 +105,7 @@ Status BlockAcceptor::Accept(
             }
         }
 
-        ZJC_WARN("propose_msg.txs().empty() error!");
+        ZJC_DEBUG("propose_msg.txs().empty() error!");
         return no_tx_allowed ? Status::kSuccess : Status::kAcceptorTxsEmpty;
     }
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -141,7 +141,7 @@ Status BlockAcceptor::Accept(
         return s;
     }
 
-    ZJC_WARN("success do transaction tx size: %u, add: %u, %u_%u_%lu, height: %lu", 
+    ZJC_DEBUG("success do transaction tx size: %u, add: %u, %u_%u_%lu, height: %lu", 
         txs_ptr->txs.size(), 
         view_block.block_info().tx_list_size(), 
         view_block.qc().network_id(), 
@@ -149,7 +149,7 @@ Status BlockAcceptor::Accept(
         view_block.qc().view(), 
         view_block.block_info().height());
     view_block.mutable_qc()->set_view_block_hash(GetBlockHash(view_block));
-    ZJC_WARN("success set view block hash: %s, parent: %s, %u_%u_%lu",
+    ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
         common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(view_block.parent_hash()).c_str(),
         view_block.qc().network_id(),
@@ -180,7 +180,7 @@ void BlockAcceptor::Commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr
 void BlockAcceptor::CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
     commit(queue_item_ptr);
     auto block_ptr = &queue_item_ptr->view_block_ptr->block_info();
-    ZJC_WARN("sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+    ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s",
         queue_item_ptr->view_block_ptr->qc().network_id(),
         queue_item_ptr->view_block_ptr->qc().pool_index(),
         block_ptr->height(),
@@ -211,7 +211,7 @@ Status BlockAcceptor::addTxsToPool(
     BalanceMap prevs_balance_map;
     view_block_chain->MergeAllPrevStorageMap(parent_hash, zjc_host);
     view_block_chain->MergeAllPrevBalanceMap(parent_hash, prevs_balance_map);
-    ZJC_WARN("merge prev all balance size: %u, tx size: %u",
+    ZJC_DEBUG("merge prev all balance size: %u, tx size: %u",
         prevs_balance_map.size(), txs.size());
     std::map<std::string, pools::TxItemPtr> txs_map;
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
@@ -438,7 +438,7 @@ Status BlockAcceptor::addTxsToPool(
     }
 
     // 放入交易池并弹出（避免重复打包）
-    ZJC_WARN("success add txs size: %u", txs_map.size());
+    ZJC_DEBUG("success add txs size: %u", txs_map.size());
     int res = pools_mgr_->BackupConsensusAddTxs(pool_idx(), txs_map);
     if (res != pools::kPoolsSuccess) {
         ZJC_ERROR("invalid consensus, txs invalid.");
