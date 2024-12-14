@@ -944,7 +944,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         msg_ptr->header.debug().c_str(),
         followers_gids.c_str());
     if (VerifyVoteMsg(vote_msg) != Status::kSuccess) {
-        ZJC_WARN("vote message is error: hash64: %lu", msg_ptr->header.hash64());
+        ZJC_DEBUG("vote message is error: hash64: %lu", msg_ptr->header.hash64());
         return;
     }
 
