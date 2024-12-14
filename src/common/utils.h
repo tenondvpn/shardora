@@ -78,7 +78,7 @@ struct Construct {
 
 #define select0_3(m0, m1, m2, m3, ...) get5th leftBracket eatComma(__VA_ARGS__), m3, m2, m1, m0)
 
-#define CHECK_MEMORY_SIZE_1(data_map, test_str, a, b) { \
+#define CHECK_MEMORY_SIZE_1(data_map, test_str, a, b, ...) { \
     if (data_map.size() > 256) { \
         if (test_str != std::string("")) { \
             ZJC_WARN("data size: %u", data_map.size()); \
