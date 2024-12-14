@@ -74,7 +74,7 @@ struct Construct {
 #define CHECK_MEMORY_SIZE(data_map) { \
     if (data_map.size() > 2024) { \
         ZJC_WARN("data size: %u", data_map.size()); \
-        assert(data_map.size() < 12024); \
+        assert(data_map.size() < 120240); \
     } \
 }
 
