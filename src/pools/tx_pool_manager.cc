@@ -1200,7 +1200,7 @@ void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx,
         }
 
         DispatchTx(pool_index, msg_ptr);
-        if (!pop_all && ++count >= 64) {
+        if (!pop_all && ++count >= 1024) {
             break;
         }
         
