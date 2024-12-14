@@ -1683,11 +1683,13 @@ Status Hotstuff::ConstructViewBlock(
     auto local_elect_item = elect_info_->GetElectItemWithShardingId(
         common::GlobalInfo::Instance()->network_id());
     if (local_elect_item == nullptr) {
+        ZJC_WARN("pool index: %d, local_elect_item == nullptr", pool_idx_);
         return Status::kError;
     }
 
     auto local_member = local_elect_item->LocalMember();
     if (local_member == nullptr) {
+        ZJC_WARN("pool index: %d, local_member == nullptr", pool_idx_);
         return Status::kError;
     }
 
