@@ -171,7 +171,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     gid_map_[tx_ptr->tx_info.gid()] = tx_ptr;
-    CHECK_MEMORY_SIZE(gid_map_);
+    CHECK_MEMORY_SIZE_WITH_MESSAGE(gid_map_, (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
 #ifdef LATENCY
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tx_count_tm_us_ == 0) {
