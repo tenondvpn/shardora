@@ -184,7 +184,7 @@ Status Hotstuff::Propose(
     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
     Status s = ConstructProposeMsg(pb_pro_msg);
     if (s != Status::kSuccess) {
-        ZJC_WARN("pool: %d construct propose msg failed, %d",
+        ZJC_DEBUG("pool: %d construct propose msg failed, %d",
             pool_idx_, s);
         return s;
     }
@@ -1901,14 +1901,12 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
             if (leader->index == local_idx) {
                 Propose(latest_qc_item_ptr_, nullptr, nullptr);
                 if (latest_qc_item_ptr_) {
-                    ZJC_WARN("leader do propose message: %d, pool index: %u, %u_%u_%lu", 
+                    ZJC_DEBUG("leader do propose message: %d, pool index: %u, %u_%u_%lu", 
                         local_idx,
                         pool_idx_,
                         latest_qc_item_ptr_->network_id(), 
                         latest_qc_item_ptr_->pool_index(), 
                         latest_qc_item_ptr_->view());
-                } else {
-                    ZJC_WARN("normal restart.");
                 }
                 return;
             }
