@@ -83,7 +83,6 @@ fi
 #	cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/${node}/db
 #done
 
-
 # 压缩 zjnodes/zjchain，便于网络传输
 
 clickhouse-client --host 82.156.224.174 --port 9000 -q "drop table zjc_ck_account_key_value_table"
