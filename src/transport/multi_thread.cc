@@ -336,11 +336,13 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
     threads_message_queues_[thread_index][priority].push(msg_ptr);
     wait_con_[thread_index % all_thread_count_].notify_one();
     ZJC_DEBUG("queue size message push success: %lu, queue_idx: %d, "
-        "priority: %d, thread queue size: %u, net: %u, type: %d",
+        "priority: %d, thread queue size: %u, net: %u, type: %d, from: %s:%d",
         msg_ptr->header.hash64(), thread_index, priority,
         threads_message_queues_[thread_index][priority].size(),
         common::GlobalInfo::Instance()->network_id(),
-        msg_ptr->header.type());
+        msg_ptr->header.type(),
+        msg_ptr->conn->PeerIp().c_str(),
+        msg_ptr->conn->PeerPort());
 }
 
 uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
