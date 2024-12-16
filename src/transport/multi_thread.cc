@@ -37,7 +37,7 @@ void ThreadHandler::Join() {
 }
 
 void ThreadHandler::HandleMessage() {
-    static const uint32_t kMaxHandleMessageCount = 16u;
+    static const uint32_t kMaxHandleMessageCount = 1024u;
     uint8_t thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     uint8_t maping_thread_idx = common::GlobalInfo::Instance()->SetConsensusRealThreadIdx(thread_idx);
     ZJC_DEBUG("thread handler thread index coming thread_idx: %d, "
