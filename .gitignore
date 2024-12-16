@@ -1,3 +1,6 @@
+src/contract/tests/contracts/nohup.out
+src/contract/tests/contracts/node_modules/.staging/
+nohup.out
 src/contract/tests/contracts/c2c/solidity*.pptx
 src/contract/tests/contracts/*.md
 src/contract/tests/contracts/*.txt

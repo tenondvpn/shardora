@@ -1,6 +1,6 @@
 node proxy_reencyption.js 0 0
 
-for ((i=0;i<=1;i++));
+for ((i=0;i<1;i++));
 do
     node proxy_reencyption.js 1 $i test_content_1_$i
     sleep 3

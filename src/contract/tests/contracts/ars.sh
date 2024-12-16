@@ -1,7 +1,7 @@
 
 node ars.js 0 0
 
-for ((i=0;i<=10;i++));
+for ((i=30;i<=100;i++));
 do
     node ars.js 1 $i
     sleep 1
