@@ -341,8 +341,8 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
         threads_message_queues_[thread_index][priority].size(),
         common::GlobalInfo::Instance()->network_id(),
         msg_ptr->header.type(),
-        msg_ptr->conn->PeerIp().c_str(),
-        msg_ptr->conn->PeerPort());
+        (msg_ptr->conn ? msg_ptr->conn->PeerIp().c_str() : "0"),
+        (msg_ptr->conn? msg_ptr->conn->PeerPort() : 0));
 }
 
 uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
