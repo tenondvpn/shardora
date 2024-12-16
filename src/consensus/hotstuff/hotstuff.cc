@@ -156,6 +156,7 @@ Status Hotstuff::Propose(
         }
 
         transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
+        ZJC_DEBUG("0 success add local message: %lu", tmp_msg_ptr->header.hash64());
         network::Route::Instance()->Send(tmp_msg_ptr);
         ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
             "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, msg view: %lu, cur view: %lu",
@@ -236,6 +237,7 @@ Status Hotstuff::Propose(
     latest_leader_propose_message_ = tmp_msg_ptr;
     SaveLatestProposeMessage();
     transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
+    ZJC_DEBUG("1 success add local message: %lu", tmp_msg_ptr->header.hash64());
     network::Route::Instance()->Send(tmp_msg_ptr);
     ZJC_DEBUG("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -1831,6 +1833,7 @@ Status Hotstuff::SendMsgToLeader(
         }
     } else {
         transport::TcpTransport::Instance()->AddLocalMessage(trans_msg);
+        ZJC_DEBUG("2 success add local message: %lu", trans_msg->header.hash64());
         // if (msg_type == VOTE) {
         //     HandleVoteMsg(trans_msg);
         // } else if (msg_type == PRE_RESET_TIMER) {
