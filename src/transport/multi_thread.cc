@@ -136,7 +136,7 @@ void ThreadHandler::HandleMessage() {
             auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->header.set_type(common::kPoolTimerMessage);
-            // ZJC_DEBUG("start kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
+            // ZJC_DEBUG("start kPoolTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
             //     msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
             msg_ptr->times[msg_ptr->times_idx++] = btime;
             Processor::Instance()->HandleMessage(msg_ptr);
@@ -147,10 +147,10 @@ void ThreadHandler::HandleMessage() {
                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
                 }
 
-                ZJC_INFO("kConsensusTimerMessage over handle message: %d, thread: %d use: %lu us, all: %s", 
+                ZJC_INFO("kPoolTimerMessage over handle message: %d, thread: %d use: %lu us, all: %s", 
                     msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
             }
-            // ZJC_DEBUG("end kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
+            // ZJC_DEBUG("end kPoolTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
             //     msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
         }
 
