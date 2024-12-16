@@ -85,12 +85,3 @@ fi
 
 # 压缩 zjnodes/zjchain，便于网络传输
 
-clickhouse-client --host 82.156.224.174 --port 9000 -q "drop table zjc_ck_account_key_value_table"
-clickhouse-client --host 82.156.224.174 --port 9000 -q "drop table zjc_ck_account_table"
-clickhouse-client --host 82.156.224.174 --port 9000 -q "drop table zjc_ck_block_table"
-clickhouse-client --host 82.156.224.174 --port 9000 -q "drop table zjc_ck_statistic_table"
-clickhouse-client --host 82.156.224.174 --port 9000 -q "drop table zjc_ck_transaction_table"
-clickhouse-client --host 82.156.224.174 --port 9000 -q "drop table bls_elect_info"
-clickhouse-client --host 82.156.224.174 --port 9000 -q "drop table bls_block_info"
-clickhouse-client --host 82.156.224.174 --port 9000 -q "drop table zjc_ck_prepayment_table"
-clickhouse-client --host 82.156.224.174 --port 9000 -q "drop table zjc_ck_c2c_table"
