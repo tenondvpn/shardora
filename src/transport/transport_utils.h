@@ -85,6 +85,7 @@ struct TransportMessage {
         prev_timestamp = common::TimeUtils::TimestampUs() + kMessagePeriodUs;
         memset(times, 0, sizeof(times));
         times_idx = 0;
+        thread_index = -1;
     }
 
     protobuf::Header header;
@@ -100,6 +101,7 @@ struct TransportMessage {
     uint64_t prev_timestamp;
     bool handled;
     bool is_leader;
+    int32_t thread_index;
 };
 
 typedef std::shared_ptr<TransportMessage> MessagePtr;
