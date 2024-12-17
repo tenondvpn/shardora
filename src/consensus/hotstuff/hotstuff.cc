@@ -1622,8 +1622,20 @@ Status Hotstuff::ConstructViewBlock(
     }
 
     auto leader_idx = local_member->index;
-    auto pre_v_block = view_block_chain()->HighViewBlock();
-    view_block->set_parent_hash(pre_v_block->qc().view_block_hash());
+
+    view_block->set_parent_hash(pacemaker()->HighQC()->view_block_hash());
+    auto pre_v_block = view_block_chain()->Get(view_block->parent_hash());
+    if (!pre_v_block) {
+        ZJC_ERROR("parent view block has not found, pool: %d, view: %lu, "
+            "parent_view: %lu, leader: %lu, chain: %s",
+            pool_idx_,
+            pacemaker()->CurView(),
+            pacemaker()->HighQC()->view(),
+            leader_idx,
+            view_block_chain()->String().c_str());
+        return Status::kError;
+    }
+    
     ZJC_WARN("get prev block hash: %s, height: %lu", 
         common::Encode::HexEncode(view_block->parent_hash()).c_str(), 
         pre_v_block->block_info().height());

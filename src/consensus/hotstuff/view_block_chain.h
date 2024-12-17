@@ -330,43 +330,43 @@ public:
         return nullptr;
     }
 
-    inline std::shared_ptr<ViewBlock> HighViewBlock() const {
-        return high_view_block_;
-    }
+    // inline std::shared_ptr<ViewBlock> HighViewBlock() const {
+    //     return high_view_block_;
+    // }
 
-    inline QC HighQC() const {
-        return high_view_block_->qc();
-    }
+    // inline QC HighQC() const {
+    //     return high_view_block_->qc();
+    // }
 
-    void UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item) {
-        auto view_block_ptr = Get(qc_item.view_block_hash());
-        if (!view_block_ptr) {
-            return;
-        }
+    // void UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item) {
+    //     auto view_block_ptr = Get(qc_item.view_block_hash());
+    //     if (!view_block_ptr) {
+    //         return;
+    //     }
 
-        if (!IsQcTcValid(view_block_ptr->qc())) {
-            view_block_ptr->mutable_qc()->set_sign_x(qc_item.sign_x());
-            view_block_ptr->mutable_qc()->set_sign_y(qc_item.sign_y());
-            auto db_bach = std::make_shared<db::DbWriteBatch>();
-            StoreToDb(view_block_ptr, 999999, db_bach);
-            db_->Put(*db_bach);
-        }
+    //     if (!IsQcTcValid(view_block_ptr->qc())) {
+    //         view_block_ptr->mutable_qc()->set_sign_x(qc_item.sign_x());
+    //         view_block_ptr->mutable_qc()->set_sign_y(qc_item.sign_y());
+    //         auto db_bach = std::make_shared<db::DbWriteBatch>();
+    //         StoreToDb(view_block_ptr, 999999, db_bach);
+    //         db_->Put(*db_bach);
+    //     }
 
-        if (high_view_block_ == nullptr ||
-                high_view_block_->qc().view() < view_block_ptr->qc().view()) {
-            high_view_block_ = view_block_ptr;
-            ZJC_DEBUG("final success add update high hash: %s, "
-                "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",
-                common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str(),
-                high_view_block_->qc().view(),
-                common::Encode::HexEncode(view_block_ptr->qc().view_block_hash()).c_str(),
-                high_view_block_->qc().network_id(),
-                high_view_block_->qc().pool_index(),
-                high_view_block_->block_info().height(),
-                common::Encode::HexEncode(high_view_block_->parent_hash()).c_str(),
-                high_view_block_->block_info().tx_list_size());
-        }
-    }
+    //     if (high_view_block_ == nullptr ||
+    //             high_view_block_->qc().view() < view_block_ptr->qc().view()) {
+    //         high_view_block_ = view_block_ptr;
+    //         ZJC_DEBUG("final success add update high hash: %s, "
+    //             "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",
+    //             common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str(),
+    //             high_view_block_->qc().view(),
+    //             common::Encode::HexEncode(view_block_ptr->qc().view_block_hash()).c_str(),
+    //             high_view_block_->qc().network_id(),
+    //             high_view_block_->qc().pool_index(),
+    //             high_view_block_->block_info().height(),
+    //             common::Encode::HexEncode(high_view_block_->parent_hash()).c_str(),
+    //             high_view_block_->block_info().tx_list_size());
+    //     }
+    // }
 
     void ResetViewBlock(const HashStr& hash) {
         auto it = view_blocks_info_.find(hash);
