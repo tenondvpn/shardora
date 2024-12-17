@@ -569,7 +569,7 @@ Status HotstuffSyncer::processResponseQcTc(
             high_view_block->qc().network_id(),
             high_view_block->qc().pool_index(),
             high_view_block->qc().view());
-        pm->NewQcView(high_view_block->qc().view());
+        pm->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(high_view_block->qc())));
         hotstuff_mgr_->hotstuff(pool_idx)->TryCommit(high_view_block->qc());
     }
 
@@ -727,7 +727,7 @@ Status HotstuffSyncer::MergeChain(
             high_commit_qc.qc().network_id(),
             high_commit_qc.qc().pool_index(),
             high_commit_qc.qc().view());
-    pacemaker(pool_idx)->NewQcView(high_commit_qc.qc().view());
+    pacemaker(pool_idx)->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(high_commit_qc.qc())));
     return Status::kSuccess;
 }
 
@@ -748,7 +748,7 @@ Status HotstuffSyncer::onRecViewBlock(
         view_block_ptr->qc().network_id(),
         view_block_ptr->qc().pool_index(),
         view_block_ptr->qc().view());
-    hotstuff->pacemaker()->NewQcView(view_block_ptr->qc().view());
+    hotstuff->pacemaker()->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(view_block_ptr->qc())));
     hotstuff->TryCommit(view_block.qc());
     // 如果已经有此块，则直接返回
     if (view_block_chain(pool_idx)->Has(view_block.qc().view_block_hash())) {

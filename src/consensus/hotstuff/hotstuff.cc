@@ -60,8 +60,7 @@ void Hotstuff::InitAddNewViewBlock(std::shared_ptr<ViewBlock>& latest_view_block
         // 初始状态，使用 db 中最后一个 view_block 初始化视图链
         // TODO: check valid
         view_block_chain_->Store(latest_view_block, true, nullptr, nullptr);
-        UpdateQC(latest_view_block->qc());
-        // view_block_chain_->UpdateHighViewBlock(latest_view_block->qc());
+        pacemaker()->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(latest_view_block->qc())));
         StopVoting(latest_view_block->qc().view());
         // 开启第一个视图
         ZJC_WARN("success new set qc view: %lu, %u_%u_%lu, hash: %s",
@@ -70,7 +69,6 @@ void Hotstuff::InitAddNewViewBlock(std::shared_ptr<ViewBlock>& latest_view_block
             latest_view_block->qc().pool_index(),
             latest_view_block->qc().view(),
             common::Encode::HexEncode(latest_view_block->qc().view_block_hash()).c_str());
-        // pacemaker_->NewQcView(latest_view_block->qc().view());
 }
 
 Status Hotstuff::Start() {
@@ -542,8 +540,9 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
             return Status::kError;
         }
 
-        auto tc_ptr = std::make_shared<view_block::protobuf::QcItem>(pro_msg.tc());
-        pacemaker()->NewTc(tc_ptr);
+        auto tc_ptr = std::make_shared<TC>(pro_msg.tc());
+        // pacemaker()->NewTc(tc_ptr);
+        pacemaker()->AdvanceView(new_sync_info()->WithTC(tc_ptr));
         if (latest_qc_item_ptr_ == nullptr ||
                 tc_ptr->view() >= latest_qc_item_ptr_->view()) {
             assert(IsQcTcValid(*tc_ptr));
@@ -572,9 +571,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
             pro_msg.tc().network_id(),
             pro_msg.tc().pool_index(),
             pro_msg.tc().view());
-        UpdateQC(pro_msg.tc());
-        // pacemaker()->NewQcView(pro_msg.tc().view());
-        // view_block_chain()->UpdateHighViewBlock(pro_msg.tc());
+        pacemaker()->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(pro_msg.tc())));
         TryCommit(pro_msg.tc(), 99999999lu);
         if (latest_qc_item_ptr_ == nullptr ||
                 pro_msg.tc().view() >= latest_qc_item_ptr_->view()) {
@@ -1025,9 +1022,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     
 #endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    UpdateQC(qc_item);
-    // view_block_chain()->UpdateHighViewBlock(qc_item);
-    // pacemaker()->NewQcView(qc_item.view());
+    pacemaker()->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(qc_item)));
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率:q高很多
     ZJC_WARN("NewView propose newview called pool: %u, qc_view: %lu, tc_view: %lu, propose_debug: %s",
         pool_idx_, view_block_chain()->HighViewBlock()->qc().view(), pacemaker()->HighTC()->view(), msg_ptr->header.debug().c_str());
@@ -1091,8 +1086,8 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
                     ZJC_ERROR("VerifyTC error.");
                     return;
                 }
-
-                pacemaker()->NewTc(tc_ptr);
+                
+                pacemaker()->AdvanceView(new_sync_info()->WithTC(tc_ptr));
             } else {
                 auto& qc = tc;
                 if (qc.view() > view_block_chain()->HighViewBlock()->qc().view()) {
@@ -1106,19 +1101,14 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
                         qc.network_id(),
                         qc.pool_index(),
                         qc.view());
-                    UpdateQC(qc);
-                    // pacemaker()->NewQcView(qc.view());
-                    // // xufeisofly
-                    // view_block_chain()->UpdateHighViewBlock(qc);
+                    pacemaker()->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(qc)));
                 }
             }
         }
             
         if (tc.has_view_block_hash()) {
             auto& qc = tc;
-            UpdateQC(qc);
-            // pacemaker()->NewQcView(qc.view());
-            // view_block_chain()->UpdateHighViewBlock(qc);
+            pacemaker()->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(qc)));
             TryCommit(qc, 99999999lu);
             if (latest_qc_item_ptr_ == nullptr ||
                     qc.view() >= latest_qc_item_ptr_->view()) {
@@ -1369,8 +1359,9 @@ Status Hotstuff::VerifyTC(const TC& tc) {
             ZJC_ERROR("VerifyTC error.");
             return Status::kError;
         }
-        auto tc_ptr = std::make_shared<view_block::protobuf::QcItem>(tc);
-        pacemaker()->NewTc(tc_ptr);
+        auto tc_ptr = std::make_shared<TC>(tc);
+        
+        pacemaker()->AdvanceView(new_sync_info()->WithTC(tc_ptr));
     }
 
     return Status::kSuccess;

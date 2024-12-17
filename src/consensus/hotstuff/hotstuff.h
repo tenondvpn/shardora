@@ -161,7 +161,7 @@ public:
             
             // pacemaker_->NewQcView(vblock->qc().view());
             // view_block_chain()->UpdateHighViewBlock(vblock->qc());
-            UpdateQC(vblock->qc());
+            pacemaker()->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(vblock->qc())));
             StopVoting(vblock->qc().view());
             
             view_block_chain()->Store(vblock, true, nullptr, nullptr);
@@ -176,12 +176,6 @@ public:
         } else {
             acceptor()->CommitSynced(queue_item_ptr);
         }
-    }
-
-    void UpdateQC(const QC& qc) {
-        view_block_chain()->UpdateHighViewBlock(qc);
-        // 不应该根据 qc 进行视图切换，而应该根据 high_qc，避免 qc 对应的 viewblock 不存在，导致 high view block 是旧的而 CurView 是新的
-        pacemaker()->NewQcView(pacemaker()->HighQC().view());
     }
 
     // 已经投票
