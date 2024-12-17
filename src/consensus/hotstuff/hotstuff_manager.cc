@@ -350,7 +350,6 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
 void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
-    ZJC_DEBUG("handle thread index account %d", thread_index);
     account_mgr_->GetAccountInfo("");
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {

@@ -70,23 +70,23 @@ struct Construct {
 #define ADD_DEBUG_PROCESS_TIMESTAMP()
 #endif
 
-// #ifndef NDEBUG
+#ifndef NDEBUG
 #define CHECK_MEMORY_SIZE(data_map) { \
-    if (data_map.size() > 0) { \
+    if (data_map.size() > 1024) { \
         ZJC_ERROR("data size: %u", data_map.size()); \
         assert(data_map.size() < 120240); \
     } \
 }
 
 #define CHECK_MEMORY_SIZE_WITH_MESSAGE(data_map, msg) { \
-    if (data_map.size() > 0) { \
+    if (data_map.size() > 1024) { \
         ZJC_ERROR("%s data size: %u, msg: %s", #data_map, data_map.size(), msg); \
     } \
 }
-// #else
-// #define CHECK_MEMORY_SIZE(data_map)
-// #define CHECK_MEMORY_SIZE_WITH_MESSAGE(data_map, msg)
-// #endif
+#else
+#define CHECK_MEMORY_SIZE(data_map)
+#define CHECK_MEMORY_SIZE_WITH_MESSAGE(data_map, msg)
+#endif
 
 namespace shardora {
 
