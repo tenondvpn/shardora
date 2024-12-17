@@ -299,9 +299,10 @@ function penc_get_share_data(id, encdata) {
     });
 }
 
-function penc_transactions() {
+function penc_transactions(type) {
     PostCode('/zjchain/penc_transactions/', {
-        "search": "48e1eab96c9e759daa3aff82b40e77cd615a41d0"
+        "search": "48e1eab96c9e759daa3aff82b40e77cd615a41d0",
+        "type": type
     });
 }
 
@@ -326,8 +327,10 @@ function ars_vote(id, index, group_info) {
     });
 }
 
-function ars_transactions() {
-    PostCode('/zjchain/ars_transactions/', {});
+function ars_transactions(type) {
+    PostCode('/zjchain/ars_transactions/', {
+        "type": type,
+    });
 }
 
 global_resonse = null;
@@ -375,7 +378,7 @@ if (args[0] == "9") {
 }
 
 if (args[0] == "10") {
-    penc_transactions();
+    penc_transactions(parseInt(args[1]));
 }
 
 if (args[0] == "11") {
@@ -391,5 +394,5 @@ if (args[0] == "13") {
 }
 
 if (args[0] == "14") {
-    ars_transactions();
+    ars_transactions(parseInt(args[1]));
 }

@@ -166,12 +166,8 @@ public:
     }
 
     bool CheckTxGidValid(const std::string& gid, const std::string& parent_hash) {
-        return true;
         std::string phash = parent_hash;
         uint32_t count = 0;
-#ifndef NDEBUG
-        std::string gid_size_str;
-#endif
         while (true) {
             if (phash.empty()) {
                 break;
@@ -182,9 +178,6 @@ public:
                 break;
             }
 
-#ifndef NDEBUG
-            gid_size_str += std::to_string(it->second->added_txs.size()) + ",";
-#endif
             auto iter = it->second->added_txs.find(gid);
             if (iter != it->second->added_txs.end()) {
                 // ZJC_DEBUG("failed check tx gid: %s, phash: %s",
@@ -201,9 +194,6 @@ public:
             phash = it->second->view_block->parent_hash();
         }
 
-#ifndef NDEBUG
-        ZJC_DEBUG("pool: %d, has added gid size: %s", pool_index_, gid_size_str.c_str());
-#endif
         if (prefix_db_->JustCheckCommitedGidExists(gid)) {
             // ZJC_DEBUG("failed check tx gid exists in db: %s", common::Encode::HexEncode(gid).c_str());
             return false;
