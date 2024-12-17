@@ -227,8 +227,19 @@ function get_accounts(args) {
 function get_block_detail(args) {
     GetCode('/zjchain/get_block_detail/' + args[1] + "/");
 }
-
 function get_confirm_tx_list(args) {
+    if (args[1] == "1") {
+        PostCode('/zjchain/transactions/', {
+            'search': "",
+            'height': -1,
+            'shard': -1,
+            'pool': -1,
+            'type': parseInt(args[1]),
+            'limit': args[2],
+        });
+        return;
+    }
+
     PostCode('/zjchain/transactions/', {
         'search': "a0793c84fb3133c0df1b9a6ccccbbfe5e7545138",
         'height': -1,
