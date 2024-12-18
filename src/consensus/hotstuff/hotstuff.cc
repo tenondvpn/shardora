@@ -258,7 +258,7 @@ Status Hotstuff::Propose(
     }
 
     tmp_msg_ptr->is_leader = true;
-    HandleProposeMsg(tmp_msg_ptr);
+    // HandleProposeMsg(tmp_msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
@@ -1465,6 +1465,7 @@ Status Hotstuff::VerifyViewBlock(
             v_block.qc().network_id(), 
             v_block.qc().pool_index(), 
             v_block.qc().view() - 1);
+        // xufeisofly !!! 同步策略不对，谁说 v_block().parent 的视图号是 v_block.view - 1？有了 TC 之后就不是了
         if (view_block_chain->HighQC().view() < v_block.qc().view() + 16) {
             kv_sync_->AddSyncViewHeight(
                 v_block.qc().network_id(), 
