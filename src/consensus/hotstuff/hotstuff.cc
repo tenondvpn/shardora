@@ -1603,7 +1603,7 @@ Status Hotstuff::ConstructProposeMsg(hotstuff::protobuf::ProposeMsg* pro_msg) {
     Status s = ConstructViewBlock(new_view_block, tx_propose);
     if (s != Status::kSuccess) {
         ZJC_WARN("pool: %d construct view block failed, view: %lu, %d, member_index: %d",
-            pool_idx_, view_block_chain()->HighViewBlock()->qc().view(), s, 
+            pool_idx_, pacemaker()->CurView(), s, 
             elect_item->LocalMember()->index);        
         return s;
     }

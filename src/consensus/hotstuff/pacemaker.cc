@@ -88,26 +88,6 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
     return Status::kSuccess;
 }
 
-// void Pacemaker::NewTc(const std::shared_ptr<view_block::protobuf::QcItem>& tc) {
-//     StopTimeoutTimer();
-//     if (IsQcTcValid(*tc)) {
-//         if (cur_view_ < tc->view() + 1) {
-//             cur_view_ = tc->view() + 1;
-//             ZJC_DEBUG("success new tc view: %lu, %u_%u_%lu, pool index: %u",
-//                 cur_view_, tc->network_id(), tc->pool_index(), tc->view(), pool_idx_);
-//         }
-
-//         if (high_tc_->view() < tc->view()) {
-//             high_tc_ = tc;
-//         }
-            
-//         duration_->ViewSucceeded();
-//         duration_->ViewStarted();
-//     }
-   
-//     ZJC_DEBUG("local time set start duration is new tc called start timeout: %lu", pool_idx_);
-//     StartTimeoutTimer();
-// }
 
 // void Pacemaker::NewAggQc(const std::shared_ptr<AggregateQC>& agg_qc) {
 // #ifdef USE_AGG_BLS 
@@ -129,13 +109,7 @@ Status Pacemaker::AdvanceView(const std::shared_ptr<SyncInfo>& sync_info) {
 // #endif
 // }
 
-// void Pacemaker::NewQcView(uint64_t qc_view) {
-//     if (cur_view_ < qc_view + 1) {
-//         cur_view_ = qc_view + 1;
-//         ZJC_DEBUG("success new qc view: %lu, %u_%u_%lu, pool index: %u",
-//             qc_view, common::GlobalInfo::Instance()->network_id(), pool_idx_, qc_view, pool_idx_);
-//     }
-// }
+
 
 void Pacemaker::OnLocalTimeout() {
     // TODO(HT): test
@@ -491,11 +465,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         "tc view: %lu, cur view: %lu, high_tc_: %lu",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
         tc.view(), CurView(), high_tc_->view());
-    // NewTc(new_tc);
-    ZJC_DEBUG("====4.1.0 pool: %d, create tc, view: %lu, member: %d, "
-        "tc view: %lu, cur view: %lu, high_tc_: %lu",
-        pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
-        tc.view(), CurView(), high_tc_->view());
+    AdvanceView(new_sync_info()->WithTC(new_tc));
     // NewView msg broadcast
     // TC 在 Propose 之前单独同步，不然假设 Propose 卡死，Replicas 就会一直卡死在这个视图
     // 广播 TC 的同时也应该广播 HighQC，防止只有 Leader 拥有该 HighQC，这会出现如下情况：
