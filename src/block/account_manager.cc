@@ -111,7 +111,7 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(const std::string& addr) {
     thread_valid_[thread_idx] = true;
     while (true) {
         std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
-        if (thread_valid_accounts_queue_[thread_idx].pop(&address_info) && address_info) {
+        if (!thread_valid_accounts_queue_[thread_idx].pop(&address_info)) {
             break;
         }
 
