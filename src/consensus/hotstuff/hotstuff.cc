@@ -1601,7 +1601,7 @@ Status Hotstuff::ConstructVoteMsg(
     wrapper()->GetTxSyncToLeader(
         v_block->qc().leader_idx(), 
         view_block_chain_, 
-        view_block_chain_->HighQC().view_block_hash(), 
+        pacemaker()->HighQC()->view_block_hash(), 
         txs);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
