@@ -180,9 +180,9 @@ public:
 
             auto iter = it->second->added_txs.find(gid);
             if (iter != it->second->added_txs.end()) {
-                // ZJC_DEBUG("failed check tx gid: %s, phash: %s",
-                //     common::Encode::HexEncode(gid).c_str(),
-                //     common::Encode::HexEncode(phash).c_str());
+                ZJC_DEBUG("failed check tx gid: %s, phash: %s",
+                    common::Encode::HexEncode(gid).c_str(),
+                    common::Encode::HexEncode(phash).c_str());
                 return false;
             }
 
@@ -195,11 +195,11 @@ public:
         }
 
         if (prefix_db_->JustCheckCommitedGidExists(gid)) {
-            // ZJC_DEBUG("failed check tx gid exists in db: %s", common::Encode::HexEncode(gid).c_str());
+            ZJC_DEBUG("failed check tx gid exists in db: %s", common::Encode::HexEncode(gid).c_str());
             return false;
         }
 
-        // ZJC_DEBUG("success check tx gid not exists in db: %s, phash: %s", common::Encode::HexEncode(gid).c_str(), common::Encode::HexEncode(parent_hash).c_str());
+        ZJC_DEBUG("success check tx gid not exists in db: %s, phash: %s", common::Encode::HexEncode(gid).c_str(), common::Encode::HexEncode(parent_hash).c_str());
         return true;
     }
 
