@@ -333,6 +333,9 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             hotstuff(hotstuff_msg.pool_index())->HandlePreResetTimerMsg(msg_ptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
             break;
+        case RESET_TIMER:
+            hotstuff(hotstuff_msg.pool_index())->HandleResetTimerMsg(header);
+            break;                      
         default:
             ZJC_WARN("consensus message type is error.");
             break;

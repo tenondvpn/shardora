@@ -31,7 +31,7 @@ void Hotstuff::Init() {
     }
 
     InitHandleProposeMsgPipeline();
-    LoadLatestProposeMessage();
+    // LoadLatestProposeMessage();
 }
 
 void Hotstuff::LoadAllViewBlockWithLatestCommitedBlock(
@@ -130,50 +130,50 @@ Status Hotstuff::Propose(
             latest_qc_item_ptr_ = tc;
         }
 
-        if (latest_leader_propose_message_ && 
-                latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() <= tc->view()) {
-            latest_leader_propose_message_ = nullptr;
-        }
+        // if (latest_leader_propose_message_ && 
+        //         latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() <= tc->view()) {
+        //     latest_leader_propose_message_ = nullptr;
+        // }
     }
 
-    if (latest_leader_propose_message_ && 
-            latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= pacemaker_->CurView()) {
-        auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*latest_leader_propose_message_);
-        tmp_msg_ptr->times_idx = 0;
-        tmp_msg_ptr->header.release_broadcast();
-        auto broadcast = tmp_msg_ptr->header.mutable_broadcast();
-        auto* hotstuff_msg = tmp_msg_ptr->header.mutable_hotstuff();
-        if (tc != nullptr) {
-            auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
-            *pb_pro_msg->mutable_tc() = *tc;
-        }
+    // if (latest_leader_propose_message_ && 
+    //         latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= pacemaker_->CurView()) {
+    //     auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*latest_leader_propose_message_);
+    //     tmp_msg_ptr->times_idx = 0;
+    //     tmp_msg_ptr->header.release_broadcast();
+    //     auto broadcast = tmp_msg_ptr->header.mutable_broadcast();
+    //     auto* hotstuff_msg = tmp_msg_ptr->header.mutable_hotstuff();
+    //     if (tc != nullptr) {
+    //         auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
+    //         *pb_pro_msg->mutable_tc() = *tc;
+    //     }
 
-        transport::TcpTransport::Instance()->SetMessageHash(tmp_msg_ptr->header);
-        auto s = crypto()->SignMessage(tmp_msg_ptr);
-        auto& header = tmp_msg_ptr->header;
-        if (s != Status::kSuccess) {
-            ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
-                pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
-            return s;
-        }
+    //     transport::TcpTransport::Instance()->SetMessageHash(tmp_msg_ptr->header);
+    //     auto s = crypto()->SignMessage(tmp_msg_ptr);
+    //     auto& header = tmp_msg_ptr->header;
+    //     if (s != Status::kSuccess) {
+    //         ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
+    //             pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
+    //         return s;
+    //     }
 
-        transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
-        network::Route::Instance()->Send(tmp_msg_ptr);
-        ZJC_WARN("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
-            "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, msg view: %lu, cur view: %lu",
-            pool_idx_,
-            header.hotstuff().pool_index(),
-            hotstuff_msg->pro_msg().tx_propose().txs_size(),
-            hotstuff_msg->pro_msg().view_item().qc().view(),
-            common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
-            view_block_chain()->HighViewBlock()->qc().view(),
-            header.hash64(),
-            header.debug().c_str(),
-            tmp_msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
-            pacemaker_->CurView());
-        HandleProposeMsg(latest_leader_propose_message_);
-        return s;
-    }
+    //     transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
+    //     network::Route::Instance()->Send(tmp_msg_ptr);
+    //     ZJC_WARN("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+    //         "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, msg view: %lu, cur view: %lu",
+    //         pool_idx_,
+    //         header.hotstuff().pool_index(),
+    //         hotstuff_msg->pro_msg().tx_propose().txs_size(),
+    //         hotstuff_msg->pro_msg().view_item().qc().view(),
+    //         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
+    //         view_block_chain()->HighViewBlock()->qc().view(),
+    //         header.hash64(),
+    //         header.debug().c_str(),
+    //         tmp_msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
+    //         pacemaker_->CurView());
+    //     HandleProposeMsg(latest_leader_propose_message_);
+    //     return s;
+    // }
 
     ZJC_WARN("1 now ontime called propose: %d", pool_idx_);
     auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -230,8 +230,8 @@ Status Hotstuff::Propose(
         return s;
     }
 
-    latest_leader_propose_message_ = tmp_msg_ptr;
-    SaveLatestProposeMessage();
+    // latest_leader_propose_message_ = tmp_msg_ptr;
+    // SaveLatestProposeMessage();
     transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
     network::Route::Instance()->Send(tmp_msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -1143,15 +1143,6 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-// #ifndef NDEBUG
-//     std::string gids;
-//     for (uint32_t i = 0; i < pre_rst_timer_msg.txs_size(); ++i) {
-//         gids += common::Encode::HexEncode(pre_rst_timer_msg.txs(i).gid()) + " ";
-//     }
-
-//     ZJC_WARN("pool: %u, reset timer get follower tx gids: %s", pool_idx_, gids.c_str());
-// #endif
-
     if (pre_rst_timer_msg.txs_size() > 0) {
         Status s = acceptor()->AddTxs(pre_rst_timer_msg.txs());
         if (s != Status::kSuccess) {
@@ -1176,10 +1167,83 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    Propose(latest_qc_item_ptr_, nullptr, msg_ptr);
+    ResetReplicaTimers();
+    // Propose(latest_qc_item_ptr_, nullptr, msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_WARN("reset timer success!");
 }
+
+Status Hotstuff::ResetReplicaTimers() {
+    // Reset timer msg broadcast
+    auto rst_timer_msg = std::make_shared<hotstuff::protobuf::ResetTimerMsg>();
+    auto local_index = leader_rotation()->GetLocalMemberIdx();
+    if (local_index == common::kInvalidUint32) {
+        return Status::kError;
+    }
+
+    rst_timer_msg->set_leader_idx(local_index);
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& header = msg_ptr->header;
+    header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    header.set_type(common::kHotstuffMessage);
+    header.set_hop_count(0);
+    
+    auto* hotstuff_msg = header.mutable_hotstuff();
+    hotstuff_msg->set_type(RESET_TIMER);
+    hotstuff_msg->mutable_reset_timer_msg()->CopyFrom(*rst_timer_msg);
+    hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
+    hotstuff_msg->set_pool_index(pool_idx_);
+    if (!header.has_broadcast()) {
+        auto broadcast = header.mutable_broadcast();
+    }
+
+    dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
+    header.set_des_dht_key(dht_key.StrKey());
+    transport::TcpTransport::Instance()->SetMessageHash(header);
+
+    network::Route::Instance()->Send(msg_ptr);
+    HandleResetTimerMsg(header);
+    return Status::kSuccess;
+}
+
+void Hotstuff::HandleResetTimerMsg(const transport::protobuf::Header& header) {
+    auto& rst_timer_msg = header.hotstuff().reset_timer_msg();
+    auto elect_item = elect_info_->GetElectItemWithShardingId(
+            common::GlobalInfo::Instance()->network_id());
+    if (elect_item == nullptr) {
+        assert(false);
+        return;
+    }
+
+    if (elect_item->LocalMember() == nullptr) {
+
+        return;
+    }
+
+    ZJC_DEBUG("====5.1 pool: %d, onResetTimer leader_idx: %u, local_idx: %u, hash64: %lu",
+        pool_idx_, rst_timer_msg.leader_idx(),
+        elect_item->LocalMember()->index,
+        header.hash64());
+
+    // 必须处于 stuck 状态
+    auto stuck_st = IsStuck();
+    if (stuck_st != 0) {
+        ZJC_DEBUG("reset timer failed: %u, hash64: %lu, status: %d",
+            pool_idx_, header.hash64(), stuck_st);
+        return;
+    }
+    ZJC_DEBUG("====5.2 pool: %d, ResetTimer", pool_idx_);
+    // reset pacemaker view duration
+    pacemaker()->ResetViewDuration(std::make_shared<ViewDuration>(
+                pool_idx_,
+                ViewDurationSampleSize,
+                ViewDurationStartTimeoutMs,
+                ViewDurationMaxTimeoutMs,
+                ViewDurationMultiplier));
+    ZJC_DEBUG("reset timer success: %u, hash64: %lu", pool_idx_, header.hash64());
+    return;
+}
+
 
 Status Hotstuff::TryCommit(const QC& commit_qc, uint64_t test_index) {
     assert(commit_qc.has_view_block_hash());
@@ -1830,25 +1894,25 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     }
 
     auto leader = leader_rotation()->GetLeader();
-    if (has_system_tx) {
-        if (leader) {
-            auto local_idx = leader_rotation_->GetLocalMemberIdx();
-            if (leader->index == local_idx) {
-                Propose(latest_qc_item_ptr_, nullptr, nullptr);
-                if (latest_qc_item_ptr_) {
-                    ZJC_WARN("leader do propose message: %d, pool index: %u, %u_%u_%lu", 
-                        local_idx,
-                        pool_idx_,
-                        latest_qc_item_ptr_->network_id(), 
-                        latest_qc_item_ptr_->pool_index(), 
-                        latest_qc_item_ptr_->view());
-                } else {
-                    ZJC_WARN("normal restart.");
-                }
-                return;
-            }
-        }
-    }
+    // if (has_system_tx) {
+    //     if (leader) {
+    //         auto local_idx = leader_rotation_->GetLocalMemberIdx();
+    //         if (leader->index == local_idx) {
+    //             Propose(latest_qc_item_ptr_, nullptr, nullptr);
+    //             if (latest_qc_item_ptr_) {
+    //                 ZJC_WARN("leader do propose message: %d, pool index: %u, %u_%u_%lu", 
+    //                     local_idx,
+    //                     pool_idx_,
+    //                     latest_qc_item_ptr_->network_id(), 
+    //                     latest_qc_item_ptr_->pool_index(), 
+    //                     latest_qc_item_ptr_->view());
+    //             } else {
+    //                 ZJC_WARN("normal restart.");
+    //             }
+    //             return;
+    //         }
+    //     }
+    // }
 
     if (!has_user_tx_tag_) {
         // ZJC_WARN("pool: %u not has_user_tx_tag_.", pool_idx_);
