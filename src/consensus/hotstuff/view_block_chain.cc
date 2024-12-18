@@ -18,6 +18,10 @@ ViewBlockChain::ViewBlockChain(
         std::shared_ptr<block::AccountManager> account_mgr) : 
         db_(db), pool_index_(pool_idx), account_mgr_(account_mgr) {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+    high_view_block_ = std::make_shared<ViewBlock>();
+    QC qc_before_genesis;
+    GetQCWrappedByGenesis(pool_index_, &qc_before_genesis);
+    high_view_block_->mutable_qc()->CopyFrom(qc_before_genesis);
 }
 
 ViewBlockChain::~ViewBlockChain(){}
