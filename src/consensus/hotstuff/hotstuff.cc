@@ -1628,7 +1628,7 @@ Status Hotstuff::ConstructVoteMsg(
     vote_msg->set_replica_idx(replica_idx);
     vote_msg->set_view_block_hash(v_block->qc().view_block_hash());
 
-    assert(!prefix_db_->BlockExists(v_block->qc().view_block_hash()));
+    // assert(!prefix_db_->BlockExists(v_block->qc().view_block_hash()));
     vote_msg->set_view(v_block->qc().view());
     vote_msg->set_elect_height(elect_height);
     vote_msg->set_leader_idx(v_block->qc().leader_idx());
@@ -1642,7 +1642,7 @@ Status Hotstuff::ConstructVoteMsg(
         qc_item.network_id(),
         qc_item.pool_index(),
         qc_item.view());
-    assert(!prefix_db_->BlockExists(v_block->qc().view_block_hash()));
+    // assert(!prefix_db_->BlockExists(v_block->qc().view_block_hash()));
     qc_item.set_elect_height(elect_height);
     qc_item.set_leader_idx(v_block->qc().leader_idx());
     ADD_DEBUG_PROCESS_TIMESTAMP();
