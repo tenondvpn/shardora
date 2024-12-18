@@ -161,7 +161,7 @@ public:
             
             // pacemaker_->NewQcView(vblock->qc().view());
             // view_block_chain()->UpdateHighViewBlock(vblock->qc());
-            UpdateQC(vblock->qc());
+            pacemaker()->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(vblock->qc())));
             StopVoting(vblock->qc().view());
             
             view_block_chain()->Store(vblock, true, nullptr, nullptr);

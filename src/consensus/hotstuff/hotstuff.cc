@@ -60,7 +60,8 @@ void Hotstuff::InitAddNewViewBlock(std::shared_ptr<ViewBlock>& latest_view_block
         // 初始状态，使用 db 中最后一个 view_block 初始化视图链
         // TODO: check valid
         view_block_chain_->Store(latest_view_block, true, nullptr, nullptr);
-        UpdateQC(latest_view_block->qc());
+        pacemaker()->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(latest_view_block->qc())));
+        // UpdateQC(latest_view_block->qc());
         // view_block_chain_->UpdateHighViewBlock(latest_view_block->qc());
         StopVoting(latest_view_block->qc().view());
         // 开启第一个视图
@@ -573,7 +574,8 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
             pro_msg.tc().network_id(),
             pro_msg.tc().pool_index(),
             pro_msg.tc().view());
-        UpdateQC(pro_msg.tc());
+        
+        pacemaker()->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(pro_msg.tc())));
         // pacemaker()->NewQcView(pro_msg.tc().view());
         // view_block_chain()->UpdateHighViewBlock(pro_msg.tc());
         TryCommit(pro_msg.tc(), 99999999lu);
@@ -1026,7 +1028,8 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     
 #endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    UpdateQC(qc_item);
+    
+    pacemaker()->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(qc_item)));
     // view_block_chain()->UpdateHighViewBlock(qc_item);
     // pacemaker()->NewQcView(qc_item.view());
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率:q高很多
