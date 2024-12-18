@@ -1386,7 +1386,7 @@ Status Hotstuff::VerifyViewBlock(
             v_block.qc().network_id(), 
             v_block.qc().pool_index(), 
             v_block.qc().view() - 1);
-        if (view_block_chain->HighQC().view() < v_block.qc().view() + 16) {
+        if (pacemaker()->HighQC()->view() < v_block.qc().view() + 16) {
             kv_sync_->AddSyncViewHeight(
                 v_block.qc().network_id(), 
                 v_block.qc().pool_index(), 
@@ -1864,7 +1864,7 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     wrapper()->GetTxSyncToLeader(
         leader->index, 
         view_block_chain_, 
-        view_block_chain_->HighQC().view_block_hash(), 
+        pacemaker()->HighQC()->view_block_hash(), 
         txs);
     if (txs->empty()) {
         // ZJC_WARN("pool: %u txs.empty().", pool_idx_);
