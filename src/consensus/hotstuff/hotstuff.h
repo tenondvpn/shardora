@@ -178,12 +178,6 @@ public:
         }
     }
 
-    void UpdateQC(const QC& qc) {
-        view_block_chain()->UpdateHighViewBlock(qc);
-        // 不应该根据 qc 进行视图切换，而应该根据 high_qc，避免 qc 对应的 viewblock 不存在，导致 high view block 是旧的而 CurView 是新的
-        pacemaker()->NewQcView(pacemaker()->HighQC().view());
-    }
-
     // 已经投票
     inline bool HasVoted(const View& view) {
         return last_vote_view_ >= view;

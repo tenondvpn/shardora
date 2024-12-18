@@ -543,7 +543,8 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
         }
 
         auto tc_ptr = std::make_shared<view_block::protobuf::QcItem>(pro_msg.tc());
-        pacemaker()->NewTc(tc_ptr);
+        pacemaker()->AdvanceView(new_sync_info()->WithTC(tc_ptr));
+        // pacemaker()->NewTc(tc_ptr);
         if (latest_qc_item_ptr_ == nullptr ||
                 tc_ptr->view() >= latest_qc_item_ptr_->view()) {
             assert(IsQcTcValid(*tc_ptr));
@@ -1092,7 +1093,8 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
                     return;
                 }
 
-                pacemaker()->NewTc(tc_ptr);
+                pacemaker()->AdvanceView(new_sync_info()->WithTC(tc_ptr));
+                // pacemaker()->NewTc(tc_ptr);
             } else {
                 auto& qc = tc;
                 if (qc.view() > view_block_chain()->HighViewBlock()->qc().view()) {
@@ -1106,7 +1108,7 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
                         qc.network_id(),
                         qc.pool_index(),
                         qc.view());
-                    UpdateQC(qc);
+                    pacemaker()->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(qc)));
                     // pacemaker()->NewQcView(qc.view());
                     // // xufeisofly
                     // view_block_chain()->UpdateHighViewBlock(qc);
@@ -1116,7 +1118,7 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
             
         if (tc.has_view_block_hash()) {
             auto& qc = tc;
-            UpdateQC(qc);
+            pacemaker()->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(qc)));
             // pacemaker()->NewQcView(qc.view());
             // view_block_chain()->UpdateHighViewBlock(qc);
             TryCommit(qc, 99999999lu);
@@ -1370,7 +1372,8 @@ Status Hotstuff::VerifyTC(const TC& tc) {
             return Status::kError;
         }
         auto tc_ptr = std::make_shared<view_block::protobuf::QcItem>(tc);
-        pacemaker()->NewTc(tc_ptr);
+        // pacemaker()->NewTc(tc_ptr);
+        pacemaker()->AdvanceView(new_sync_info()->WithTC(tc_ptr));
     }
 
     return Status::kSuccess;
