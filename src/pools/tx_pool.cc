@@ -133,6 +133,9 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
 //     common::AutoSpinLock auto_lock(mutex_);
     if (!GidValid(tx_ptr->tx_info.gid())) {
+        ZJC_DEBUG("failed add tx pool: %d, gid: %s", 
+            pool_index_, 
+            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
         return kPoolsTxAdded;
     }
     CheckThreadIdValid();
@@ -159,6 +162,9 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
 #ifndef ENABLE_HOTSTUFF
         // assert(false);
 #endif
+        ZJC_DEBUG("failed add tx pool: %d, gid: %s", 
+            pool_index_, 
+            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
         return kPoolsTxAdded;
     }
 
