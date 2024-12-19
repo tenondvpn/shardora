@@ -94,14 +94,27 @@ public:
     void RecoverTx(const std::string& gid);
     bool GidValid(const std::string& gid) {
         if (gid_map_.find(gid) != gid_map_.end()) {
+            ZJC_DEBUG("gid_map_.find(gid) != gid_map_.end() pool: %d, gid: %s", 
+                pool_index_, 
+                common::Encode::HexEncode(gid).c_str());
             return false;
         }
 
         if (removed_gid_.find(gid) != removed_gid_.end()) {
+            ZJC_DEBUG("removed_gid_.find(gid) != removed_gid_.end() pool: %d, gid: %s", 
+                pool_index_, 
+                common::Encode::HexEncode(gid).c_str());
             return false;
         }
 
-        if (prefix_db_->JustCheckGidExists(gid)) {
+        ZJC_DEBUG("0 prefix_db_->CheckAndSaveGidExists(gid) pool: %d, gid: %s", 
+                pool_index_, 
+                common::Encode::HexEncode(gid).c_str());
+        auto res = prefix_db_->CheckAndSaveGidExists(gid);
+        if (res) {
+            ZJC_DEBUG("1 prefix_db_->CheckAndSaveGidExists(gid) pool: %d, gid: %s", 
+                pool_index_, 
+                common::Encode::HexEncode(gid).c_str());
             return false;
         }
 

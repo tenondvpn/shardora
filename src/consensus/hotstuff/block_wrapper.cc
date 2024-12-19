@@ -30,6 +30,7 @@ Status BlockWrapper::Wrap(
         std::shared_ptr<ViewBlockChain>& view_block_chain) {
     auto* prev_block = &prev_view_block->block_info();
     if (!prev_block) {
+        ZJC_WARN("get prev block failed, pool index: %d", pool_idx_);
         return Status::kInvalidArgument;
     }
 
@@ -41,6 +42,7 @@ Status BlockWrapper::Wrap(
         view_block->qc().network_id(), view_block->qc().pool_index(), 
         block->height(), prev_block->height());
     if (block->height() <= 0) {
+        ZJC_WARN("block->height() <= 0, pool index: %d", pool_idx_);
         return Status::kInvalidArgument;
     }
 

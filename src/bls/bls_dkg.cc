@@ -210,14 +210,6 @@ void BlsDkg::HandleBlsMessage(const transport::MessagePtr& msg_ptr) try {
     if (bls_msg.has_swap_req()) {
         HandleSwapSecKey(msg_ptr);
     }
-
-    if (bls_msg.has_check_verify_req()) {
-        HandleCheckVerifyReq(msg_ptr);
-    }
-
-    if (bls_msg.has_check_swapkey_req()) {
-        HandleCheckSwapKeyReq(msg_ptr);
-    }
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
 }
@@ -289,29 +281,6 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
     BLS_ERROR("catch error: %s", e.what());
 }
 
-void BlsDkg::CheckVerifyAllValid() {
-    auto now_tm_us = common::TimeUtils::TimestampUs();
-    if (now_tm_us > (begin_time_us_ + kDkgPeriodUs * 2 + 5) &&
-            now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4 - 5)) {
-        for (uint32_t i = 0; i < member_count_; ++i) {
-            if (i == local_member_index_) {
-                continue;
-            }
-
-            auto iter = verify_map_.find(i);
-            if (iter == verify_map_.end()) {
-                SendGetVerifyInfo(i);
-            }
-        }
-    }
-// 
-//     if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4 - 5)) {
-//         check_verify_brd_timer_.CutOff(
-//             3000000l,
-//             std::bind(&BlsDkg::CheckVerifyAllValid, this, std::placeholders::_1));
-//     }
-}
-
 void BlsDkg::SendGetVerifyInfo(int32_t index) {
     auto dht = network::DhtManager::Instance()->GetDht(
         common::GlobalInfo::Instance()->network_id());
@@ -371,40 +340,6 @@ void BlsDkg::SendGetSwapKey(int32_t index) {
     msg.set_type(common::kBlsMessage);
     dht->RandomSend(msg_ptr);
     ZJC_WARN("send get swap key req elect_height: %lu, index: %d", elect_hegiht_, index);
-}
-
-void BlsDkg::HandleCheckVerifyReq(const transport::MessagePtr& msg_ptr) {
-    auto& header = msg_ptr->header;
-    auto& bls_msg = header.bls_proto();
-    auto iter = verify_map_.find(bls_msg.check_verify_req().index());
-    if (iter == verify_map_.end()) {
-        return;
-    }
-
-    transport::protobuf::Header msg;
-    auto& res_bls_msg = *msg.mutable_bls_proto();
-    res_bls_msg.ParseFromString(iter->second);
-    msg.set_src_sharding_id(dht::DhtKeyManager::DhtKeyGetNetId(header.des_dht_key()));
-    msg.set_des_dht_key(header.des_dht_key());
-    msg.set_type(common::kBlsMessage);
-    msg_ptr->conn->Send(msg.SerializeAsString());
-}
-
-void BlsDkg::HandleCheckSwapKeyReq(const transport::MessagePtr& msg_ptr) {
-    auto& header = msg_ptr->header;
-    auto& bls_msg = header.bls_proto();
-    auto iter = swap_key_map_.find(bls_msg.check_swapkey_req().index());
-    if (iter == swap_key_map_.end()) {
-        return;
-    }
-
-    transport::protobuf::Header msg;
-    auto& res_bls_msg = *msg.mutable_bls_proto();
-    res_bls_msg.ParseFromString(iter->second);
-    msg.set_src_sharding_id(dht::DhtKeyManager::DhtKeyGetNetId(header.des_dht_key()));
-    msg.set_des_dht_key(header.des_dht_key());
-    msg.set_type(common::kBlsMessage);
-    msg_ptr->conn->Send(msg.SerializeAsString());
 }
 
 void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {

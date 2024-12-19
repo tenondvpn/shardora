@@ -307,13 +307,11 @@ private:
     std::shared_ptr<CrossBlockManager> cross_block_mgr_ = nullptr;
     common::Tick tools_tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_[common::kMaxThreadCount];
-    std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>> invalid_pools_;
     uint64_t prev_elect_height_ = common::kInvalidUint64;
     std::shared_ptr<std::thread> pop_message_thread_ = nullptr;
     std::condition_variable pop_tx_con_;
     std::mutex pop_tx_mu_;
     volatile bool destroy_ = false;
-    std::unordered_map<std::string, std::shared_ptr<InvalidGidItem>> invalid_gids_;
     common::ThreadSafeQueue<std::shared_ptr<InvalidGidItem>> invalid_gid_queues_[common::kInvalidPoolIndex];
     uint32_t min_valid_tx_count_ = 1;
     uint64_t min_valid_timestamp_ = 0;

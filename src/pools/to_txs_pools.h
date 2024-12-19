@@ -92,6 +92,7 @@ private:
         auto iter = added_heights_[pool_idx].find(height);
         if (iter != added_heights_[pool_idx].end()) {
             added_heights_[pool_idx].erase(iter);
+            CHECK_MEMORY_SIZE(added_heights_[pool_idx]);
         }
     }
 
@@ -116,7 +117,6 @@ private:
     PoolMap network_txs_pools_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    std::unordered_map<uint32_t, std::shared_ptr<pools::protobuf::ShardToTxItem>> handled_map_;
     std::string local_id_;
     uint64_t pool_consensus_heihgts_[common::kInvalidPoolIndex] = { 0 };
     uint64_t pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };

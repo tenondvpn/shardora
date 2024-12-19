@@ -180,9 +180,9 @@ public:
 
             auto iter = it->second->added_txs.find(gid);
             if (iter != it->second->added_txs.end()) {
-                // ZJC_DEBUG("failed check tx gid: %s, phash: %s",
-                //     common::Encode::HexEncode(gid).c_str(),
-                //     common::Encode::HexEncode(phash).c_str());
+                ZJC_DEBUG("failed check tx gid: %s, phash: %s",
+                    common::Encode::HexEncode(gid).c_str(),
+                    common::Encode::HexEncode(phash).c_str());
                 return false;
             }
 
@@ -194,12 +194,12 @@ public:
             phash = it->second->view_block->parent_hash();
         }
 
-        if (prefix_db_->JustCheckGidExists(gid)) {
-            // ZJC_DEBUG("failed check tx gid exists in db: %s", common::Encode::HexEncode(gid).c_str());
+        if (prefix_db_->JustCheckCommitedGidExists(gid)) {
+            ZJC_DEBUG("failed check tx gid exists in db: %s", common::Encode::HexEncode(gid).c_str());
             return false;
         }
 
-        // ZJC_DEBUG("success check tx gid not exists in db: %s, phash: %s", common::Encode::HexEncode(gid).c_str(), common::Encode::HexEncode(parent_hash).c_str());
+        ZJC_DEBUG("success check tx gid not exists in db: %s, phash: %s", common::Encode::HexEncode(gid).c_str(), common::Encode::HexEncode(parent_hash).c_str());
         return true;
     }
 
@@ -419,6 +419,7 @@ private:
         }
         
         view_blocks_info_[view_block_info->view_block->qc().view_block_hash()] = view_block_info;
+        CHECK_MEMORY_SIZE(view_blocks_info_);
         ZJC_DEBUG("success add view block: %s, %u_%u_%lu, height: %lu, parent hash: %s, tx size: %u, strings: %s",
             common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
             view_block_info->view_block->qc().network_id(),
@@ -504,6 +505,7 @@ private:
             // TODO: fix storage map            
             auto block_info_ptr = GetViewBlockInfo(nullptr, nullptr, nullptr);
             view_blocks_info_[parent_hash] = block_info_ptr;
+            CHECK_MEMORY_SIZE(view_blocks_info_);
             ZJC_DEBUG("add null parent view block: %u_%u_%lu, height: %lu",
                 view_block->qc().network_id(), 
                 view_block->qc().pool_index(), 

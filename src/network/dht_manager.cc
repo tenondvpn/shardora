@@ -54,6 +54,7 @@ void DhtManager::RegisterDht(uint32_t net_id, dht::BaseDhtPtr& dht) {
 
     dhts_[net_id] = dht;
     dht_map_[net_id] = dht;
+    CHECK_MEMORY_SIZE(dht_map_);
     dht_map_ptr_ = std::make_shared<std::unordered_map<uint32_t, dht::BaseDhtPtr>>(dht_map_);
 }
 
@@ -72,6 +73,7 @@ void DhtManager::UnRegisterDht(uint32_t net_id) {
     auto iter = dht_map_.find(net_id);
     if (iter != dht_map_.end()) {
         dht_map_.erase(iter);
+        CHECK_MEMORY_SIZE(dht_map_);
     }
 
     dht_map_ptr_ = std::make_shared<std::unordered_map<uint32_t, dht::BaseDhtPtr>>(dht_map_);

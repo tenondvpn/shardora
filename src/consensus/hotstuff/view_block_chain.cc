@@ -36,7 +36,7 @@ Status ViewBlockChain::Store(
     }
 
     if (Has(view_block->qc().view_block_hash())) {
-        ZJC_ERROR("view block already stored, hash: %s, view: %lu, propose_debug: %s",
+        ZJC_DEBUG("view block already stored, hash: %s, view: %lu, propose_debug: %s",
             common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view(),
             view_block->debug().c_str());        
         return Status::kSuccess;
@@ -310,6 +310,7 @@ Status ViewBlockChain::PruneTo(
                 iter->second->view_block->qc().view() + 16 <= current->qc().view()) {
             // forked_blockes.push_back(iter->second->view_block);
             iter = view_blocks_info_.erase(iter);
+            CHECK_MEMORY_SIZE(view_blocks_info_);
         } else {
             ++iter;
         }

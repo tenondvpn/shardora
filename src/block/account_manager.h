@@ -128,6 +128,7 @@ private:
     std::shared_ptr<std::thread> update_acc_thread_ = nullptr;
     std::condition_variable thread_wait_conn_;
     std::mutex thread_wait_mutex_;
+    volatile bool thread_valid_[common::kMaxThreadCount] = {false};
 
     DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };

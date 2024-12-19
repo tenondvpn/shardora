@@ -90,8 +90,6 @@ public:
 private:
     void HandleVerifyBroadcast(const transport::MessagePtr& header);
     void HandleSwapSecKey(const transport::MessagePtr& header);
-    void HandleCheckVerifyReq(const transport::MessagePtr& header);
-    void HandleCheckSwapKeyReq(const transport::MessagePtr& header);
     bool IsSignValid(const transport::MessagePtr& msg_ptr, std::string* msg_hash);
     void BroadcastVerfify();
     void SwapSecKey();
@@ -169,15 +167,12 @@ private:
     std::shared_ptr<std::mt19937> random_ptr_;
     bool finished_{ false };
     uint32_t valid_sec_key_count_{ 0 };
-    std::unordered_map<std::string, std::shared_ptr<MaxBlsMemberItem>> max_bls_members_;
     std::string max_finish_hash_;
     uint32_t max_finish_count_{ 0 };
     std::unordered_set<uint32_t> valid_swapkey_set_;
     bool valid_swaped_keys_[common::kEachShardMaxNodeCount];
     bool has_swaped_keys_[common::kEachShardMaxNodeCount];
     uint64_t begin_time_us_{ 0 };
-    std::unordered_map<int32_t, std::string> verify_map_;
-    std::unordered_map<int32_t, std::string> swap_key_map_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint64_t ver_offset_ = 0;

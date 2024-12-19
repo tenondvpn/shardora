@@ -64,10 +64,12 @@ public:
         auto gid_valid_func = [&](const std::string& gid) -> bool {
             auto& tmp_set = leader_with_sent_gids_[leader_idx];
             if (tmp_set.find(gid) != tmp_set.end()) {
+                ZJC_DEBUG("failed check gid: %s", common::Encode::HexEncode(gid).c_str());
                 return false;
             }
 
             tmp_set.insert(gid);
+            ZJC_DEBUG("success check gid: %s", common::Encode::HexEncode(gid).c_str());
             return view_block_chain->CheckTxGidValid(gid, parent_hash);
         };
 

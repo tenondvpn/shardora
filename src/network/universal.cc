@@ -249,6 +249,7 @@ void Universal::OnNewElectBlock(
     }
 
     sharding_latest_height_map_[sharding_id] = new_item;
+    CHECK_MEMORY_SIZE(sharding_latest_height_map_);
     auto waiting_shard_id = sharding_id + network::kConsensusWaitingShardOffset;
     auto uni_net = UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
     auto dht_ptr = uni_net->readonly_hash_sort_dht();

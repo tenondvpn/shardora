@@ -351,10 +351,6 @@ void TxPoolManager::SyncRootBlockWithMaxHeights(uint32_t pool_idx, uint64_t heig
         network::kRootCongressNetworkId,
         pool_idx,
         height);
-    ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
-        network::kRootCongressNetworkId,
-        pool_idx,
-        height);
     kv_sync_->AddSyncHeight(
         network::kRootCongressNetworkId,
         pool_idx,
@@ -482,18 +478,18 @@ void TxPoolManager::ConsensusAddTxs(uint32_t pool_index, const std::vector<pools
             continue;
         }
 
-        if (!tx_pool_[pool_index].GidValid(tx_ptr->unique_tx_hash)) {
-            // avoid save gid different tx
-            ZJC_DEBUG("tx msg hash exists: %s failed!",
-                common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str());
-            continue;
-        }
+        // if (!tx_pool_[pool_index].GidValid(tx_ptr->unique_tx_hash)) {
+        //     // avoid save gid different tx
+        //     ZJC_DEBUG("tx msg hash exists: %s failed!",
+        //         common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str());
+        //     continue;
+        // }
 
-        if (!tx_pool_[pool_index].GidValid(tx_ptr->tx_info.gid())) {
-            ZJC_DEBUG("tx gid exists: %s failed!", 
-                common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
-            continue;
-        }
+        // if (!tx_pool_[pool_index].GidValid(tx_ptr->tx_info.gid())) {
+        //     ZJC_DEBUG("tx gid exists: %s failed!", 
+        //         common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
+        //     continue;
+        // }
 
         valid_txs.push_back(tx_ptr);
     }
@@ -852,17 +848,17 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     
     auto pool_index = msg_ptr->address_info->pool_index();
     // TODO msg_ptr->msg_hash 为空
-    if (!tx_pool_[pool_index].GidValid(msg_ptr->msg_hash)) {
-        // avoid save gid different tx
-        ZJC_DEBUG("tx msg hash exists: %s failed!",
-            common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
-        return;
-    }
+    // if (!tx_pool_[pool_index].GidValid(msg_ptr->msg_hash)) {
+    //     // avoid save gid different tx
+    //     ZJC_DEBUG("tx msg hash exists: %s failed!",
+    //         common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
+    //     return;
+    // }
 
-    if (!tx_pool_[pool_index].GidValid(tx_msg.gid())) {
-        ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
-        return;
-    }
+    // if (!tx_pool_[pool_index].GidValid(tx_msg.gid())) {
+    //     ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
+    //     return;
+    // }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
 //     ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
@@ -967,19 +963,19 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
 
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
     auto pool_index = msg_ptr->address_info->pool_index();
-    if (!tx_pool_[pool_index].GidValid(msg_ptr->msg_hash)) {
-        // avoid save gid different tx
-        ZJC_ERROR("tx msg hash exists: %s failed!",
-            common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
-        ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
-        return;
-    }
+    // if (!tx_pool_[pool_index].GidValid(msg_ptr->msg_hash)) {
+    //     // avoid save gid different tx
+    //     ZJC_ERROR("tx msg hash exists: %s failed!",
+    //         common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
+    //     ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+    //     return;
+    // }
 
-    if (!tx_pool_[pool_index].GidValid(tx_msg.gid())) {
-        ZJC_ERROR("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
-        ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
-        return;
-    }
+    // if (!tx_pool_[pool_index].GidValid(tx_msg.gid())) {
+    //     ZJC_ERROR("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
+    //     ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+    //     return;
+    // }
 
     if (security_->Verify(
             msg_ptr->msg_hash,
@@ -1204,7 +1200,7 @@ void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx,
         }
 
         DispatchTx(pool_index, msg_ptr);
-        if (!pop_all && ++count >= 64) {
+        if (!pop_all && ++count >= 1024) {
             break;
         }
         
@@ -1265,13 +1261,10 @@ void TxPoolManager::GetTxIdempotently(
         uint32_t count,
         std::map<std::string, TxItemPtr>& res_map,
         pools::CheckGidValidFunction gid_vlid_func) {
-    if (count > common::kSingleBlockMaxTransactions) {
-        count = common::kSingleBlockMaxTransactions;
+    // TODO: check latency
+    if (tx_pool_[pool_index].tx_size() < now_max_tx_count_) {
+        return;
     }
-
-    // if (tx_pool_[pool_index].tx_size() < now_max_tx_count_) {
-    //     return;
-    // }
 
     tx_pool_[pool_index].GetTxIdempotently(res_map, count, gid_vlid_func);    
 }

@@ -345,6 +345,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     }
     
     high_qcs_.insert(std::make_pair(timeout_proto.member_id(), high_qc_of_node));
+    CHECK_MEMORY_SIZE(high_qcs_);
     high_qc_sigs_.push_back(high_qc_sig_of_node);
     
     // 生成 TC

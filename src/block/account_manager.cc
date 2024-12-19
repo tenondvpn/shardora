@@ -102,22 +102,28 @@ void AccountManager::InitLoadAllAddress() {
     prefix_db_->GetAllAddressInfo(&addr_map);
     for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
         thread_address_map_[i] = addr_map;
+        CHECK_MEMORY_SIZE(thread_address_map_[i]);
     }
 }
 
-protos::AddressInfoPtr AccountManager::GetAccountInfo(
-        const std::string& addr) {
+protos::AddressInfoPtr AccountManager::GetAccountInfo(const std::string& addr) {
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    thread_valid_[thread_idx] = true;
     while (true) {
         std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
-        thread_valid_accounts_queue_[thread_idx].pop(&address_info);
-        if (address_info == nullptr) {
+        CHECK_MEMORY_SIZE_WITH_MESSAGE(thread_valid_accounts_queue_[thread_idx], (std::string("pop thread index: ") + std::to_string(thread_idx)).c_str())
+        if (!thread_valid_accounts_queue_[thread_idx].pop(&address_info)) {
             break;
         }
 
         thread_address_map_[thread_idx][address_info->addr()] = address_info;
+        CHECK_MEMORY_SIZE(thread_address_map_[thread_idx]);
     }
    
+    if (addr.empty()) {
+        return nullptr;
+    }
+
     auto iter = thread_address_map_[thread_idx].find(addr);
     if (iter != thread_address_map_[thread_idx].end()) {
         return iter->second;
@@ -681,6 +687,11 @@ void AccountManager::UpdateAccountsThread() {
         }
         
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+            if (thread_valid_accounts_queue_[i].size() >= 1024 && !thread_valid_[i]) {
+                continue;
+            }
+
+            CHECK_MEMORY_SIZE_WITH_MESSAGE(thread_valid_accounts_queue_[i], (std::string("push thread index: ") + std::to_string(i)).c_str())
             thread_valid_accounts_queue_[i].push(account_info);
         }
     }

@@ -52,6 +52,42 @@ struct Construct {
 #define ZJC_NETWORK_DEBUG_FOR_PROTOMESSAGE(message, append)
 #endif
 
+#ifndef NDEBUG
+// #define ADD_DEBUG_PROCESS_TIMESTAMP()
+#define ADD_DEBUG_PROCESS_TIMESTAMP() { \
+    if (msg_ptr) { \
+        assert(msg_ptr->times_idx < (sizeof(msg_ptr->times) / sizeof(msg_ptr->times[0]))); \
+        auto btime = common::TimeUtils::TimestampUs(); \
+        uint64_t diff_time = 0; \
+        if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; } \
+        std::string tmp_str = common::StringUtil::Format("thread: %d, %s:%s:%u, diff time: %lu", msg_ptr->thread_index, ZJC_LOG_FILE_NAME,  __FUNCTION__, __LINE__, diff_time); \
+        msg_ptr->times[msg_ptr->times_idx] = btime; \
+        msg_ptr->debug_str[msg_ptr->times_idx] = tmp_str; \
+        msg_ptr->times_idx++; \
+    } \
+}
+#else
+#define ADD_DEBUG_PROCESS_TIMESTAMP()
+#endif
+
+#ifndef NDEBUG
+#define CHECK_MEMORY_SIZE(data_map) { \
+    if (data_map.size() > 1024) { \
+        ZJC_ERROR("data size: %u", data_map.size()); \
+        assert(data_map.size() < 120240); \
+    } \
+}
+
+#define CHECK_MEMORY_SIZE_WITH_MESSAGE(data_map, msg) { \
+    if (data_map.size() > 1024) { \
+        ZJC_ERROR("%s data size: %u, msg: %s", #data_map, data_map.size(), msg); \
+    } \
+}
+#else
+#define CHECK_MEMORY_SIZE(data_map)
+#define CHECK_MEMORY_SIZE_WITH_MESSAGE(data_map, msg)
+#endif
+
 namespace shardora {
 
 namespace common {
@@ -182,12 +218,6 @@ static const uint32_t kInvalidInt32 = (std::numeric_limits<int32_t>::max)();
 static const uint32_t kInvalidFloat = (std::numeric_limits<float>::max)();
 static const uint8_t kMaxThreadCount = 16;
 
-#ifdef ENABLE_HOTSTUFF
-// TODO Chained HotStuff 由于要同步 4-5 个块，块中的交易目前不能过大，实测 8192 会造成同步失败，在同步逻辑优化完成前不要修改
-static const uint32_t kSingleBlockMaxTransactions = 4096u; // 1M 大约 4000+ 交易
-#else
-static const uint32_t kSingleBlockMaxTransactions = 8192u; // 1M 大约 4000+ 交易
-#endif
 static const uint32_t kSingleBlockMaxMBytes = 2u;
 static const uint32_t kVpnShareStakingPrice = 1u;
 

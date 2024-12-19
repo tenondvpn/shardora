@@ -32,6 +32,7 @@ int WsServer::Init(
     prefix_db_->GetAllOrder(&orders);
     for (auto iter = orders.begin(); iter != orders.end(); ++iter) {
         order_map_[(*iter)->buyer()] = *iter;
+        CHECK_MEMORY_SIZE(order_map_);
         ZJC_DEBUG("success init get order: %s, buyer: %s, all: %lu, price: %lu, status: %d", 
             common::Encode::HexEncode((*iter)->seller()).c_str(), 
             common::Encode::HexEncode((*iter)->buyer()).c_str(),
@@ -42,6 +43,7 @@ int WsServer::Init(
 
     for (auto iter = sells.begin(); iter != sells.end(); ++iter) {
         sell_map_[(*iter)->seller()] = *iter;
+        CHECK_MEMORY_SIZE(sell_map_);
         ZJC_DEBUG("success init get sell: %s, buyer: %s, all: %lu, price: %lu, status: %d", 
             common::Encode::HexEncode((*iter)->seller()).c_str(), 
             common::Encode::HexEncode((*iter)->buyer()).c_str(),
@@ -120,6 +122,7 @@ void WsServer::GetAllTxs() {
                     auto type = ck_block[8]->As<clickhouse::ColumnUInt32>()->At(i);
                     if (type != ws::protobuf::kContractExcute) {
                         user_balance_[user_info->id] = user_info->balance;
+                        CHECK_MEMORY_SIZE(user_balance_);
                     }
 
                     ZJC_INFO("new tx coming: %s, %s, %lu, realid: %s", 
@@ -622,6 +625,7 @@ void WsServer::GetAllBalance() {
                         std::string id = common::Encode::HexDecode(from_str);
                         uint64_t balance = ck_block[1]->As<clickhouse::ColumnUInt64>()->At(i);
                         user_balance_[id] = balance;
+                        CHECK_MEMORY_SIZE(user_balance_);
                         ZJC_INFO("get balance: %s, balance: %lu", from_str.c_str(), balance);
                     }
                 }
@@ -661,6 +665,7 @@ void WsServer::NewBandwidthMessage(websocketpp::connection_hdl hdl, const std::s
         if (all_bw > valid_free_bandwidth()) {
             if (iter == invalid_users_.end()) {
                 invalid_users_[bw.id()] = true;
+                CHECK_MEMORY_SIZE(invalid_users_);
             }
 
             auto res_item = bw_res.add_bws();
@@ -669,6 +674,7 @@ void WsServer::NewBandwidthMessage(websocketpp::connection_hdl hdl, const std::s
         } else {
             if (iter != invalid_users_.end()) {
                 invalid_users_.erase(iter);
+                CHECK_MEMORY_SIZE(invalid_users_);
             }
         }
         
@@ -1016,10 +1022,12 @@ void WsServer::PopUserInfo() {
         user_info_queue_.pop(&user_info);
         if (user_info->balance > 0) {
             user_balance_[user_info->id] = user_info->balance;
+            CHECK_MEMORY_SIZE(user_balance_);
         }
 
         if (user_info->prepayment > 0) {
             contract_prepayment_[user_info->id] = user_info->prepayment;
+            CHECK_MEMORY_SIZE(contract_prepayment_);
         }
 
         ZJC_DEBUG("update balance %s, %lu, %lu", 
@@ -1171,6 +1179,7 @@ void WsServer::C2cPrepayment(websocketpp::connection_hdl hdl, const std::string&
     {
         std::lock_guard<std::mutex> g(sell_map_mutex_);
         sell_map_[seller] = sell_ptr;
+        CHECK_MEMORY_SIZE(sell_map_);
     }
     
     C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellWaitingPrepayment, "ok");
@@ -1556,6 +1565,7 @@ void WsServer::Purchase(websocketpp::connection_hdl hdl, const std::string& enco
     {
         std::lock_guard<std::mutex> g(sell_map_mutex_);
         order_map_[c2c_msg.c2c().order().buyer()] = order_ptr;
+        CHECK_MEMORY_SIZE(order_map_);
     }
     ws::protobuf::WsMessage ws_msg;
     auto* sell_info = ws_msg.mutable_init_info()->mutable_c2c()->add_sells();

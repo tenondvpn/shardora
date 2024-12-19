@@ -72,6 +72,7 @@ int BlockManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 }
 
 void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& message) {
+    account_mgr_->GetAccountInfo("");
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (prev_timer_ms_ + 100lu > now_tm_ms) {
         return;
@@ -79,7 +80,7 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& message) {
 
     prev_timer_ms_ = now_tm_ms;
     auto now_tm = common::TimeUtils::TimestampUs();
-    ZJC_WARN("now check CreateStatisticTx %lu, %lu",
+    ZJC_DEBUG("now check CreateStatisticTx %lu, %lu",
         prev_create_statistic_tx_tm_us_, now_tm);
     if (prev_create_statistic_tx_tm_us_ < now_tm) {
         prev_create_statistic_tx_tm_us_ = now_tm + 10000000lu;
@@ -241,6 +242,7 @@ void BlockManager::HandleStatisticTx(
             if (iter != shard_statistics_map_.end()) {
                 ZJC_DEBUG("success remove shard statistic block tm height: %lu", iter->first);
                 shard_statistics_map_.erase(iter);
+                CHECK_MEMORY_SIZE(shard_statistics_map_);
                 auto tmp_ptr = std::make_shared<StatisticMap>(shard_statistics_map_);
                 shard_statistics_map_ptr_queue_.push(tmp_ptr);
             }
@@ -1173,6 +1175,8 @@ void BlockManager::CreateStatisticTx() {
             //     common::Encode::HexEncode(gid).c_str(),
             //     timeblock_height);
             shard_statistics_map_[timeblock_height] = tx_ptr;
+            CHECK_MEMORY_SIZE(shard_statistics_map_);
+
             auto tmp_ptr = std::make_shared<StatisticMap>(shard_statistics_map_);
             shard_statistics_map_ptr_queue_.push(tmp_ptr);
         }
@@ -1340,6 +1344,7 @@ pools::TxItemPtr BlockManager::GetToTx(
     auto tx_ptr = HandleToTxsMessage(heights);
     if (tx_ptr != nullptr) {
         heights_str_map_[height_hash] = tx_ptr;
+        CHECK_MEMORY_SIZE(heights_str_map_);
         ZJC_DEBUG("success get to tx tx info: %s, gid: %s, val: %s, heights: %s",
             ProtobufToJson(tx_ptr->tx_info).c_str(),
             common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(), 

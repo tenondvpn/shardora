@@ -182,9 +182,6 @@ private:
     uint64_t latest_timeblock_tm_sec_ = 0;
     uint64_t prev_timeblock_height_ = 0;
     uint64_t consensused_timeblock_height_ = 0;
-    std::unordered_map<uint32_t, std::map<
-        uint64_t,
-        std::shared_ptr<pools::protobuf::ElectStatistic>>> shard_timeblock_statistic_;
     transport::MultiThreadHandler& net_handler_;
     std::shared_ptr<pools::protobuf::ToTxHeights> statistic_heights_ptr_ = nullptr;
 //     std::shared_ptr<pools::protobuf::ToTxHeights> to_tx_heights_ptr_ = nullptr;

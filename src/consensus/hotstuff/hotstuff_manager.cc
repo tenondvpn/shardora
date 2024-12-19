@@ -350,6 +350,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
 void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+    account_mgr_->GetAccountInfo("");
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
             pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
@@ -386,7 +387,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         if (tps >= 0.000001) {
-            ZJC_WARN("tps: %.2f", tps);
+            ZJC_ERROR("tps: %.2f", tps);
         }
     }
 }

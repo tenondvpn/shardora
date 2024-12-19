@@ -22,6 +22,8 @@ public:
     void push(T e) {
         // auto btime = common::TimeUtils::TimestampUs();
         rw_queue_.enqueue(e);
+        auto& tmp_item = *this;
+        CHECK_MEMORY_SIZE(tmp_item);
         // while (!rw_queue_.try_enqueue(e) && !common::GlobalInfo::Instance()->global_stoped()) {
         //     std::unique_lock<std::mutex> lock(mutex_);
         //     con_.wait_for(lock, std::chrono::milliseconds(100));
@@ -42,6 +44,8 @@ public:
         //     }
         // }
 
+        auto& tmp_item = *this;
+        CHECK_MEMORY_SIZE(tmp_item);
         return res;
     }
 

@@ -56,6 +56,7 @@ public:
     void Put(const std::string& key, const std::string& value) {
         if (data_map_.find(key) == data_map_.end()) {
             data_map_[key] = value;
+            CHECK_MEMORY_SIZE(data_map_);
         }
 
         db_batch_.Put(key, value);
@@ -79,6 +80,7 @@ public:
         auto iter = data_map_.find(key);
         if (iter != data_map_.end()) {
             data_map_.erase(iter);
+            CHECK_MEMORY_SIZE(data_map_);
             db_batch_.Delete(key);
         }
     }

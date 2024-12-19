@@ -37,7 +37,7 @@ void ThreadHandler::Join() {
 }
 
 void ThreadHandler::HandleMessage() {
-    static const uint32_t kMaxHandleMessageCount = 16u;
+    static const uint32_t kMaxHandleMessageCount = 1024u;
     uint8_t thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     uint8_t maping_thread_idx = common::GlobalInfo::Instance()->SetConsensusRealThreadIdx(thread_idx);
     ZJC_DEBUG("thread handler thread index coming thread_idx: %d, "
@@ -70,6 +70,11 @@ void ThreadHandler::HandleMessage() {
             //     msg_ptr->header.hash64(), thread_idx);
             msg_ptr->times_idx = 0;
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
+            if (msg_ptr->thread_index != -1) {
+                assert(msg_ptr->thread_index == thread_idx);
+            } else {
+                msg_ptr->thread_index = thread_idx;
+            }
             ADD_DEBUG_PROCESS_TIMESTAMP();
             Processor::Instance()->HandleMessage(msg_ptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -131,7 +136,7 @@ void ThreadHandler::HandleMessage() {
             auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->header.set_type(common::kPoolTimerMessage);
-            // ZJC_DEBUG("start kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
+            // ZJC_DEBUG("start kPoolTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
             //     msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
             msg_ptr->times[msg_ptr->times_idx++] = btime;
             Processor::Instance()->HandleMessage(msg_ptr);
@@ -142,10 +147,10 @@ void ThreadHandler::HandleMessage() {
                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
                 }
 
-                ZJC_INFO("kConsensusTimerMessage over handle message: %d, thread: %d use: %lu us, all: %s", 
+                ZJC_INFO("kPoolTimerMessage over handle message: %d, thread: %d use: %lu us, all: %s", 
                     msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
             }
-            // ZJC_DEBUG("end kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
+            // ZJC_DEBUG("end kPoolTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
             //     msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
         }
 
@@ -331,11 +336,13 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
     threads_message_queues_[thread_index][priority].push(msg_ptr);
     wait_con_[thread_index % all_thread_count_].notify_one();
     ZJC_DEBUG("queue size message push success: %lu, queue_idx: %d, "
-        "priority: %d, thread queue size: %u, net: %u, type: %d",
+        "priority: %d, thread queue size: %u, net: %u, type: %d, from: %s:%d",
         msg_ptr->header.hash64(), thread_index, priority,
         threads_message_queues_[thread_index][priority].size(),
         common::GlobalInfo::Instance()->network_id(),
-        msg_ptr->header.type());
+        msg_ptr->header.type(),
+        (msg_ptr->conn ? msg_ptr->conn->PeerIp().c_str() : "0"),
+        (msg_ptr->conn? msg_ptr->conn->PeerPort() : 0));
 }
 
 uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
