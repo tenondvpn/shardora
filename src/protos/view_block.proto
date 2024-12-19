@@ -52,11 +52,10 @@ message ViewBlockSyncResponse {
     optional uint32 network_id = 1;
     optional uint32 pool_idx = 2;
     repeated ViewBlockItem view_block_items = 3;
-    optional ViewBlockItem high_view_block = 4;
-    optional QcItem high_qc = 5;
-    optional QcItem high_tc = 6;
-    optional bytes query_hash = 7; // single request 中的 query hash
-    optional ViewBlockItem latest_committed_block = 8; // 保证 leader 一致性
+    optional QcItem high_qc = 4;
+    optional QcItem high_tc = 5;
+    optional bytes query_hash = 6; // single request 中的 query hash
+    optional ViewBlockItem latest_committed_block = 7; // 保证 leader 一致性
 }
 
 message SingleViewBlockSyncRequest {

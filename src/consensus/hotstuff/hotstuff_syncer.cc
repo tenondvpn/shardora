@@ -384,7 +384,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     }
 
     if (shouldSyncQC) {
-        *view_block_res->mutable_high_qc();
+        *view_block_res->mutable_high_qc() = *pacemaker(pool_idx)->HighQC();
     }
 
     // TODO LatestCommittedblock 如果限于 Propose 消息使得 Leader 变更，则会导致 replica VerifyLeader 失败，从而无法继续参与共识
@@ -522,53 +522,41 @@ Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
     return Status::kSuccess;
 }
 
+// TODO 临时屏蔽，反正也不走这部分逻辑
 Status HotstuffSyncer::processResponseQcTc(
         const uint32_t& pool_idx,
         const view_block::protobuf::ViewBlockSyncResponse& view_block_res) {
     // 更新 highqc 和 hightc
-    if (!view_block_res.has_high_view_block() && !view_block_res.has_high_tc()) {
-        return Status::kSuccess;
-    }
+    // if (!view_block_res.has_high_qc() && !view_block_res.has_high_tc()) {
+    //     return Status::kSuccess;
+    // }
+    // auto pm = pacemaker(pool_idx);
+    // if (!pm) {
+    //     return Status::kError;
+    // }
+    // auto highqc = view_block_res.high_qc();
+    // auto hightc = view_block_res.high_tc();
 
-    auto pm = pacemaker(pool_idx);
-    if (!pm) {
-        return Status::kError;
-    }
+    // if ((highqc.network_id() > 0 && highqc->network_id() != common::GlobalInfo::Instance()->network_id()) ||
+    //         (hightc->network_id() > 0 && hightc->network_id() != common::GlobalInfo::Instance()->network_id())) {
+    //     ZJC_DEBUG("error network id hight qc: %u, hight tc: %u, local: %u",
+    //         highqc->network_id(), hightc->network_id(), 
+    //         common::GlobalInfo::Instance()->network_id());
+    //     assert(false);
+    //     return Status::kError;
+    // }
 
-    std::shared_ptr<ViewBlock> high_view_block = nullptr;
-    if (view_block_res.has_high_view_block()) {
-        auto high_view_block = std::make_shared<ViewBlock>(view_block_res.high_view_block());
-        if (high_view_block->qc().network_id() != common::GlobalInfo::Instance()->network_id() ||
-                (view_block_res.has_high_tc() &&
-                view_block_res.high_tc().network_id() != common::GlobalInfo::Instance()->network_id())) {
-            ZJC_DEBUG("error network id hight qc: %u, hight tc: %u, local: %u",
-                high_view_block->qc().network_id(), view_block_res.high_tc().network_id(), 
-                common::GlobalInfo::Instance()->network_id());
-            assert(false);
-            return Status::kError;
-        }
+    // // 设置 view_block 的 qc
+    // view_block_chain(pool_idx)->SetQcOf(highqc->view_block_hash(), highqc);
 
-        // 设置 view_block 的 qc
-        // view_block_chain(pool_idx)->SetQcOf(highqc->view_block_hash(), highqc);
-        ZJC_DEBUG("response received qctc pool_idx: %d, tc: %d, qc: %d",
-            pool_idx, view_block_res.high_tc().view(), high_view_block->qc().view());
-    }
+    // ZJC_DEBUG("response received qctc pool_idx: %d, tc: %d, qc: %d",
+    //     pool_idx, hightc->view(), highqc->view());
+
+    // // TODO 验证 qc 和 tc
+    // pm->AdvanceView(new_sync_info()->WithQC(highqc)->WithTC(hightc));
+    // // 尝试做 commit
+    // hotstuff_mgr_->hotstuff(pool_idx)->TryCommit(highqc);
     
-    // TODO 验证 qc 和 tc
-    // auto tc_ptr = std::make_shared<view_block::protobuf::QcItem>(view_block_res.high_tc());
-    // pm->NewTc(tc_ptr);
-    // 尝试做 commit
-    if (high_view_block) {
-        ZJC_DEBUG("success new set qc view: %lu, %u_%u_%lu",
-            high_view_block->qc().view(),
-            high_view_block->qc().network_id(),
-            high_view_block->qc().pool_index(),
-            high_view_block->qc().view());
-        // pm->NewQcView(high_view_block->qc().view());
-        pm->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(high_view_block->qc())));
-        hotstuff_mgr_->hotstuff(pool_idx)->TryCommit(high_view_block->qc());
-    }
-
     return Status::kSuccess;
 }
 

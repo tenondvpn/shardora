@@ -98,12 +98,6 @@ Status Hotstuff::Propose(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     // TODO(HT): 打包的交易，超时后如何释放？
     // 打包参与共识中的交易，如何保证幂等
-    auto pre_v_block = view_block_chain()->HighViewBlock();
-    if (!pre_v_block) {
-        ZJC_DEBUG("pool %u not has prev view block.", pool_idx_);
-        return Status::kError;
-    }
-
     auto dht_ptr = network::DhtManager::Instance()->GetDht(
         common::GlobalInfo::Instance()->network_id());
     if (!dht_ptr) {
@@ -244,7 +238,7 @@ Status Hotstuff::Propose(
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
         hotstuff_msg->pro_msg().view_item().qc().view(),
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
-        view_block_chain()->HighViewBlock()->qc().view(),
+        pacemaker()->HighQC()->view(),
         header.hash64(),
         header.debug().c_str());
 
@@ -344,7 +338,7 @@ void Hotstuff::NewView(
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
         hotstuff_msg->pro_msg().view_item().qc().view(),
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
-        view_block_chain()->HighViewBlock()->qc().view(),
+        pacemaker()->HighQC()->view(),
         pacemaker()->HighTC()->view(),
         header.hash64());
     HandleNewViewMsg(msg_ptr);
@@ -612,7 +606,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyViewBlock(std::shared_ptr<ProposeMsg
         pool_idx_,
         pro_msg_wrap->view_block_ptr->qc().view(),
         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
-        view_block_chain()->HighViewBlock()->qc().view(),
+        pacemaker()->HighQC()->view(),
         pro_msg_wrap->msg_ptr->header.hash64(), pro_msg_wrap->msg_ptr->header.debug().c_str());        
     return Status::kSuccess;
 }
@@ -643,18 +637,18 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
             pool_idx_,
             proto_msg.view_item().qc().view(),
             common::Encode::HexEncode(proto_msg.view_item().qc().view_block_hash()).c_str(),
-            view_block_chain()->HighViewBlock()->qc().view(),
+            pacemaker()->HighQC()->view(),
             pro_msg_wrap->msg_ptr->header.hash64());
         return Status::kError;
     }
 
     ZJC_DEBUG("====1.1.2 success Accept pool: %d, verify view block, "
-            "view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
-            pool_idx_,
-            proto_msg.view_item().qc().view(),
-            common::Encode::HexEncode(proto_msg.view_item().qc().view_block_hash()).c_str(),
-            view_block_chain()->HighViewBlock()->qc().view(),
-            pro_msg_wrap->msg_ptr->header.hash64());
+        "view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
+        pool_idx_,
+        proto_msg.view_item().qc().view(),
+        common::Encode::HexEncode(proto_msg.view_item().qc().view_block_hash()).c_str(),
+        pacemaker()->HighQC()->view(),
+        pro_msg_wrap->msg_ptr->header.hash64());
     ZJC_DEBUG("HandleProposeMsgStep_ChainStore called hash: %lu, sign empty: %d", 
         pro_msg_wrap->msg_ptr->header.hash64(), 
         (pro_msg_wrap->view_block_ptr->qc().sign_x().empty() || 
@@ -734,20 +728,20 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
             pool_idx_,
             proto_msg.view_item().qc().view(),
             common::Encode::HexEncode(proto_msg.view_item().qc().view_block_hash()).c_str(),
-            view_block_chain()->HighViewBlock()->qc().view(),
+            pacemaker()->HighQC()->view(),
             pro_msg_wrap->msg_ptr->header.hash64(),
             pro_msg_wrap->msg_ptr->header.debug().c_str());
         return Status::kError;
     }
 
     ZJC_DEBUG("====1.1.2 success Accept pool: %d, verify view block, "
-            "view: %lu, hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
-            pool_idx_,
-            proto_msg.view_item().qc().view(),
-            common::Encode::HexEncode(proto_msg.view_item().qc().view_block_hash()).c_str(),
-            view_block_chain()->HighViewBlock()->qc().view(),
-            pro_msg_wrap->msg_ptr->header.hash64(),
-            pro_msg_wrap->msg_ptr->header.debug().c_str());
+        "view: %lu, hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
+        pool_idx_,
+        proto_msg.view_item().qc().view(),
+        common::Encode::HexEncode(proto_msg.view_item().qc().view_block_hash()).c_str(),
+        pacemaker()->HighQC()->view(),
+        pro_msg_wrap->msg_ptr->header.hash64(),
+        pro_msg_wrap->msg_ptr->header.debug().c_str());
     return Status::kSuccess;
 }
 
@@ -802,7 +796,7 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
     ZJC_DEBUG("pacemaker pool: %d, highQC: %lu, highTC: %lu, chainSize: %lu, "
         "curView: %lu, vblock: %lu, txs: %lu, hash64: %lu, propose_debug: %s",
         pool_idx_,
-        view_block_chain()->HighViewBlock()->qc().view(),
+        pacemaker()->HighQC()->view(),
         pacemaker()->HighTC()->view(),
         view_block_chain()->Size(),
         pacemaker()->CurView(),
@@ -895,7 +889,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
         vote_msg.view(),
-        view_block_chain()->HighViewBlock()->qc().view(),
+        pacemaker()->HighQC()->view(),
         vote_msg.replica_idx(),
         msg_ptr->header.hash64(),
         msg_ptr->header.debug().c_str(),
@@ -1052,7 +1046,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     pacemaker()->AdvanceView(new_sync_info()->WithQC(std::make_shared<QC>(qc_item)));
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率:q高很多
     ZJC_DEBUG("NewView propose newview called pool: %u, qc_view: %lu, tc_view: %lu, propose_debug: %s",
-        pool_idx_, view_block_chain()->HighViewBlock()->qc().view(), pacemaker()->HighTC()->view(), msg_ptr->header.debug().c_str());
+        pool_idx_, pacemaker()->HighQC()->view(), pacemaker()->HighTC()->view(), msg_ptr->header.debug().c_str());
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto s = Propose(qc_item_ptr, nullptr, msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -1118,7 +1112,7 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
                 // pacemaker()->NewTc(tc_ptr);
             } else {
                 auto& qc = tc;
-                if (qc.view() > view_block_chain()->HighViewBlock()->qc().view()) {
+                if (qc.view() > pacemaker()->HighQC()->view()) {
                     if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
                         ZJC_ERROR("VerifyQC error.");
                         return;
@@ -1431,7 +1425,7 @@ Status Hotstuff::VerifyQC(const QC& qc) {
         return Status::kError;
     }
 
-    if (qc.view() > view_block_chain()->HighViewBlock()->qc().view()) {        
+    if (qc.view() > pacemaker()->HighQC()->view()) {        
         if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
             return Status::kError; 
         }
@@ -1585,7 +1579,7 @@ void Hotstuff::CommitInner(
 }
 
 Status Hotstuff::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
-    if (vote_msg.view() < view_block_chain()->HighViewBlock()->qc().view()) {
+    if (vote_msg.view() < pacemaker()->HighQC()->view()) {
         return Status::kError;
     }
     
@@ -1715,6 +1709,8 @@ Status Hotstuff::ConstructVoteMsg(
 Status Hotstuff::ConstructViewBlock( 
         ViewBlock* view_block,
         hotstuff::protobuf::TxPropose* tx_propose) {
+    view_block->set_parent_hash(pacemaker()->HighQC()->view_block_hash());
+    
     auto local_elect_item = elect_info_->GetElectItemWithShardingId(
         common::GlobalInfo::Instance()->network_id());
     if (local_elect_item == nullptr) {
@@ -1729,8 +1725,16 @@ Status Hotstuff::ConstructViewBlock(
     }
 
     auto leader_idx = local_member->index;
-    auto pre_v_block = view_block_chain()->HighViewBlock();
-    view_block->set_parent_hash(pre_v_block->qc().view_block_hash());
+    auto pre_v_block = view_block_chain_->Get(view_block->parent_hash());
+    if (!pre_v_block) {
+        ZJC_ERROR("parent view block has not found, pool: %d, view: %lu, "
+            "parent_view: %lu, leader: %lu, chain: %s",
+            pool_idx_,
+            pacemaker()->CurView(),
+            pacemaker()->HighQC()->view(),
+            leader_idx,
+            view_block_chain()->String().c_str());        
+    }
     ZJC_DEBUG("get prev block hash: %s, height: %lu", 
         common::Encode::HexEncode(view_block->parent_hash()).c_str(), 
         pre_v_block->block_info().height());
