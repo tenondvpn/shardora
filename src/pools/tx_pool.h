@@ -107,8 +107,12 @@ public:
             return false;
         }
 
-        if (prefix_db_->CheckAndSaveGidExists(gid)) {
-            ZJC_DEBUG("prefix_db_->CheckAndSaveGidExists(gid) pool: %d, gid: %s", 
+        ZJC_DEBUG("0 prefix_db_->CheckAndSaveGidExists(gid) pool: %d, gid: %s", 
+                pool_index_, 
+                common::Encode::HexEncode(gid).c_str());
+        auto res = prefix_db_->CheckAndSaveGidExists(gid);
+        if (res) {
+            ZJC_DEBUG("1 prefix_db_->CheckAndSaveGidExists(gid) pool: %d, gid: %s", 
                 pool_index_, 
                 common::Encode::HexEncode(gid).c_str());
             return false;

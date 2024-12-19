@@ -812,7 +812,7 @@ public:
         }
         
         db_->Put(key, "1");
-        ZJC_DEBUG("success save tx gid: %s", common::Encode::HexEncode(gid).c_str());
+        ZJC_DEBUG("success save tx gid: %s, res: %d", common::Encode::HexEncode(gid).c_str(), false);
         return false;
     }
 
