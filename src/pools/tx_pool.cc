@@ -196,6 +196,9 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
             common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
     }
     
+    ZJC_DEBUG("success add tx pool: %d, gid: %s", 
+        pool_index_, 
+        common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
     return kPoolsSuccess;
 }
 
