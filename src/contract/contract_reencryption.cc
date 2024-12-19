@@ -943,7 +943,7 @@ int ContractReEncryption::Decryption(
         const CallParameters& param, 
         const std::string& key, 
         const std::string& value,
-        std::string* res) {
+        std::string* res) try {
     ZJC_WARN("called 0!");
     auto lines = common::Split<>(value.c_str(), ';');
     if (lines.Count() != 2) {
@@ -1195,11 +1195,10 @@ int ContractReEncryption::Decryption(
 
     ZJC_WARN("called 6");
     return kContractSuccess;
-} 
-// catch (std::exception& e) {
-//     CONTRACT_ERROR("get exception failed: %s", e.what());
-//     return kContractError;
-// }
+}  catch (std::exception& e) {
+    CONTRACT_ERROR("get exception failed: %s", e.what());
+    return kContractError;
+}
 
 }  // namespace contract
 
