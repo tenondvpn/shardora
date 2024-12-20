@@ -1164,7 +1164,7 @@ int ContractReEncryption::Decryption(
         lag.push_back(Zr(e, (const unsigned char*)val.c_str(), val.size(), 0));
     }
 
-    std::string test_data = "e49b72939ac609cf50e1773ea4af277b29f048981ec6438a45ac38b8c7f489ff";
+    std::string test_data = lines[1];//"e49b72939ac609cf50e1773ea4af277b29f048981ec6438a45ac38b8c7f489ff";
     GT m(e, test_data.c_str(), test_data.size());
     ZJC_WARN("dec m data src: %s, tom: %s",
         test_data.c_str(), 
