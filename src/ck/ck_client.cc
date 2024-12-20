@@ -153,8 +153,6 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         std::string storage_str;
         if (tx.storages_size() > 0 && tx.storages(0).value().size() < 2048) {
             storage_str = common::Encode::HexEncode(tx.storages(0).value());
-        } else {
-            storages->Append("");
         }
 
         if (tx.step() == pools::protobuf::kContractExcute) {
