@@ -150,11 +150,20 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         status->Append(tx.status());
         tx_hash->Append(common::Encode::HexEncode(tx.gid()));
         call_contract_step->Append(tx.step());
+        std::string storage_str;
         if (tx.storages_size() > 0 && tx.storages(0).value().size() < 2048) {
-            storages->Append(common::Encode::HexEncode(tx.storages(0).value()));
-        } else {
-            storages->Append("");
+            storage_str = common::Encode::HexEncode(tx.storages(0).value());
         }
+
+        if (tx.step() == pools::protobuf::kContractExcute) {
+            for (uint32_t st_idx = 0; st_idx < tx.storages_size(); ++st_idx) {
+                if (tx.storages(st_idx).key().find_first_of("ars_create_agg_sign") > 0) {
+                    storage_str += "," + common::Encode::HexEncode(tx.storages(st_idx).value());
+                }
+            }
+        }
+      
+        storages->Append(storage_str);
         transfers->Append("");
         if (tx.step() == pools::protobuf::kNormalTo) {
             acc_account->Append(common::Encode::HexEncode(tx.to()));
