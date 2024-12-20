@@ -157,8 +157,11 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
 
         if (tx.step() == pools::protobuf::kContractExcute) {
             for (uint32_t st_idx = 0; st_idx < tx.storages_size(); ++st_idx) {
-                if (tx.storages(st_idx).key().find_first_of("ars_create_agg_sign") > 0) {
+                if (tx.storages(st_idx).key().find_first_of("ars_create_agg_sign") > 0 && tx.storages(st_idx).value().size() < 2048) {
                     storage_str += "," + tx.storages(st_idx).value();
+                    ZJC_DEBUG("success get key: %s, value: %s",
+                        tx.storages(st_idx).key().c_str(), 
+                        tx.storages(st_idx).value().c_str());
                 }
             }
         }
