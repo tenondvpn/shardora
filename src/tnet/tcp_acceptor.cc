@@ -194,19 +194,7 @@ bool TcpAcceptor::OnRead() {
                 break;
             }
 
-            if (out_conn->GetSocket() == nullptr) {
-                ZJC_DEBUG("remove accept connection failed: %d, %s:%d", 
-                    conn_map_.size(), 
-                    out_conn->socket_ip().c_str(), 
-                    out_conn->socket_port());
-                // assert(false);
-                break;
-            }
-
-            std::string from_ip;
-            uint16_t from_port;
-            out_conn->GetSocket()->GetIpPort(&from_ip, &from_port);
-            auto key = from_ip + std::to_string(from_port);
+            auto key = out_conn->socket_ip() + std::to_string(out_conn->socket_port());
             auto iter = conn_map_.find(key);
             if (iter != conn_map_.end()) {
                 conn_map_.erase(iter);

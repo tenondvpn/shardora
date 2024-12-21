@@ -415,9 +415,7 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
             break;
         }
 
-        std::string from_ip = out_conn->socket_ip();
-        uint16_t from_port = out_conn->socket_port();
-        auto key = from_ip + std::to_string(from_port);
+        auto key = out_conn->socket_ip() + std::to_string(out_conn->socket_port());
         auto iter = conn_map_.find(key);
         if (iter != conn_map_.end()) {
             conn_map_.erase(iter);
