@@ -196,7 +196,7 @@ void TxPoolManager::ConsensusTimerMessage() {
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         test_str += std::to_string(tx_pool_[i].tx_size()) + ",";
         tx_count_queue.push(tx_pool_[i].tx_size());
-        if (tx_count_queue.size() > 3) {
+        if (tx_count_queue.size() > 2) {
             tx_count_queue.pop();
         }
     }
