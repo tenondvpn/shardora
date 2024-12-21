@@ -195,7 +195,11 @@ bool TcpAcceptor::OnRead() {
             }
 
             if (out_conn->GetSocket() == nullptr) {
-                assert(false);
+                ZJC_DEBUG("remove accept connection failed: %d, %s:%d", 
+                    conn_map_.size(), 
+                    out_conn->socket_ip().c_str(), 
+                    out_conn->socket_port());
+                // assert(false);
                 break;
             }
 
