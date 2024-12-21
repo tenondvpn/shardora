@@ -383,7 +383,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
 
 void ClickHouseClient::FlushToCkWithData() try {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    if (batch_count_ >= kBatchCountToCk || (pre_time_out_ + 3000 < now_tm_ms)) {
+    if (batch_count_ >= kBatchCountToCk || (pre_time_out_ + 1000 < now_tm_ms)) {
         if (batch_count_ > 0) {
             clickhouse::Block trans;
             clickhouse::Block blocks;

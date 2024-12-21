@@ -411,7 +411,7 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
     in_check_queue_.push(tcp_conn);
     while (!destroy_) {
         std::shared_ptr<TcpConnection> out_conn = nullptr;
-        if (!out_check_queue_.pop(&out_conn) || out_conn == nullptr) {
+        if (!out_check_queue_.pop(&out_conn)) {
             break;
         }
 
@@ -445,6 +445,7 @@ void TcpTransport::CheckConnectionValid() {
     while (check_count < kEachCheckConnectionCount && check_count < length && !destroy_) {
         ++check_count;
         auto conn = waiting_check_queue_.front();
+        waiting_check_queue_.pop_front();
         if (conn->ShouldReconnect()) {
             out_check_queue_.push(conn);
         } else {

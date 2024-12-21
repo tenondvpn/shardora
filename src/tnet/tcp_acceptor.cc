@@ -195,6 +195,7 @@ bool TcpAcceptor::OnRead() {
             }
 
             if (out_conn->GetSocket() == nullptr) {
+                assert(false);
                 break;
             }
 
@@ -229,6 +230,7 @@ void TcpAcceptor::CheckConnectionValid() {
     while (check_count < kEachCheckConnectionCount && check_count < length && destroy_ == 0) {
         ++check_count;
         auto conn = waiting_check_queue_.front();
+        waiting_check_queue_.pop_front();
         if (conn->ShouldReconnect()) {
             out_check_queue_.push(conn);
         } else {
