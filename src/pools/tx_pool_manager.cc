@@ -202,6 +202,7 @@ void TxPoolManager::ConsensusTimerMessage() {
     }
 
     now_max_tx_count_ = tx_count_queue.top();
+    ZJC_DEBUG("set max txcount: %u, test str: %s", now_max_tx_count_, test_str.c_str());
     if (prev_sync_check_ms_ < now_tm_ms) {
         SyncMinssingHeights(now_tm_ms);
         SyncMinssingRootHeights(now_tm_ms);
