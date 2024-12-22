@@ -313,7 +313,7 @@ private:
             const QC& commit_qc,
             uint64_t test_index);
     std::shared_ptr<ViewBlock> CheckCommit(const QC& qc);
-    void CommitInner(
+    bool CommitInner(
         const std::shared_ptr<ViewBlock>& v_block,
         uint64_t test_index,
         std::shared_ptr<block::BlockToDbItem>&);

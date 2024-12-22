@@ -1353,7 +1353,10 @@ Status Hotstuff::Commit(
         auto db_batch = std::make_shared<db::DbWriteBatch>();
         auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(tmp_block, db_batch);
         view_block_chain()->StoreToDb(tmp_block, test_index, db_batch);
-        CommitInner(tmp_block, test_index, queue_item_ptr);
+        if (!CommitInner(tmp_block, test_index, queue_item_ptr)) {
+            break;
+        }
+        
         std::shared_ptr<ViewBlock> parent_block = nullptr;
         parent_block = view_block_chain()->Get(tmp_block->parent_hash());
         if (parent_block == nullptr) {
@@ -1504,7 +1507,7 @@ Status Hotstuff::VerifyViewBlock(
     return ret;
 }
 
-void Hotstuff::CommitInner(
+bool Hotstuff::CommitInner(
         const std::shared_ptr<ViewBlock>& v_block, 
         uint64_t test_index, 
         std::shared_ptr<block::BlockToDbItem>& queue_block_item) {
@@ -1527,7 +1530,7 @@ void Hotstuff::CommitInner(
             latest_committed_block->qc().view(),
             v_block->qc().view(),
             v_block->debug().c_str());
-        return;
+        return false;
     }
 
     if (!latest_committed_block && v_block->qc().view() == GenesisView) {
@@ -1536,7 +1539,7 @@ void Hotstuff::CommitInner(
             pool_idx_, 0, v_block->qc().view(),
             v_block->qc().network_id(), v_block->qc().pool_index(), 
             block_info.height(), v_block->debug().c_str());
-        return;
+        return false;
     }
 
     // ZJC_DEBUG("1 NEW BLOCK CommitInner coming pool: %d, commit coming s: %d, "
@@ -1565,6 +1568,7 @@ void Hotstuff::CommitInner(
         pool_idx_, v_block->qc().leader_idx(),
         0,
         test_index);
+    return true;
 }
 
 Status Hotstuff::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
