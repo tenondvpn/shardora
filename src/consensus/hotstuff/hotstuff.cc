@@ -1356,7 +1356,7 @@ Status Hotstuff::Commit(
         if (!CommitInner(tmp_block, test_index, queue_item_ptr)) {
             break;
         }
-        
+
         std::shared_ptr<ViewBlock> parent_block = nullptr;
         parent_block = view_block_chain()->Get(tmp_block->parent_hash());
         if (parent_block == nullptr) {
@@ -1521,15 +1521,15 @@ bool Hotstuff::CommitInner(
     //     v_block->debug().c_str());
     auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
     if (latest_committed_block && latest_committed_block->qc().view() >= v_block->qc().view()) {
-        ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, "
-            "vb view: %lu, %u_%u_%lu, latest_committed_block: %d, "
-            "latest_committed_block->view: %lu, v_block->view: %lu, propose_debug: %s",
-            pool_idx_, 0, v_block->qc().view(),
-            v_block->qc().network_id(), v_block->qc().pool_index(), block_info.height(),
-            (latest_committed_block != nullptr),
-            latest_committed_block->qc().view(),
-            v_block->qc().view(),
-            v_block->debug().c_str());
+        // ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, "
+        //     "vb view: %lu, %u_%u_%lu, latest_committed_block: %d, "
+        //     "latest_committed_block->view: %lu, v_block->view: %lu, propose_debug: %s",
+        //     pool_idx_, 0, v_block->qc().view(),
+        //     v_block->qc().network_id(), v_block->qc().pool_index(), block_info.height(),
+        //     (latest_committed_block != nullptr),
+        //     latest_committed_block->qc().view(),
+        //     v_block->qc().view(),
+        //     v_block->debug().c_str());
         return false;
     }
 
