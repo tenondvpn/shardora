@@ -60,7 +60,7 @@ Status BlockWrapper::Wrap(
         return view_block_chain->CheckTxGidValid(gid, prev_view_block->qc().view_block_hash());
     };
 
-    Status s = LeaderGetTxsIdempotently(txs_ptr, gid_valid_func);
+    Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, gid_valid_func);
     if (s != Status::kSuccess && !no_tx_allowed) {
         // 允许 3 个连续的空交易块
         ZJC_DEBUG("leader get txs failed check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u",
