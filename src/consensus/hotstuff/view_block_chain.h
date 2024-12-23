@@ -166,7 +166,6 @@ public:
     }
 
     bool CheckTxGidValid(const std::string& gid, const std::string& parent_hash) {
-        return true;
         std::string phash = parent_hash;
         uint32_t count = 0;
         while (true) {
