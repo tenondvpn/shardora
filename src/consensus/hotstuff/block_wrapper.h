@@ -86,9 +86,9 @@ private:
         // ADD_DEBUG_PROCESS_TIMESTAMP();
         // pools_mgr_->PopTxs(pool_idx_, false, nullptr, nullptr);
         // ADD_DEBUG_PROCESS_TIMESTAMP();
-        pools_mgr_->CheckTimeoutTx(pool_idx_);
+        // pools_mgr_->CheckTimeoutTx(pool_idx_);
         
-        ADD_DEBUG_PROCESS_TIMESTAMP();
+        // ADD_DEBUG_PROCESS_TIMESTAMP();
         txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(pool_idx_, gid_vlid_func);
         ADD_DEBUG_PROCESS_TIMESTAMP();
         return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;
