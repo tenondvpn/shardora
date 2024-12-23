@@ -806,6 +806,8 @@ public:
     }
 
     bool CheckAndSaveGidExists(const std::string& gid) {
+        // TODO: remove 
+        return false;
         std::string key = kGidPrefix + gid;
         if (db_->Exist(key)) {
             return true;
