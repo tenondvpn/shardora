@@ -260,7 +260,7 @@ void TxPool::GetTxIdempotently(
                 src_prio_map.size());
         }
 
-        ++iter;
+        iter = src_prio_map.erase(iter);
     }    
 }
 
