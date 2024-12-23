@@ -1190,7 +1190,6 @@ void TxPoolManager::BftCheckInvalidGids(
 void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx, bool* has_system_tx) {
     uint32_t count = 0;
     while (!destroy_) {
-        auto now_tm_ms = common::TimeUtils::TimestampMs();
         transport::MessagePtr msg_ptr = nullptr;
         if (!msg_queues_[pool_index].pop(&msg_ptr)) {
             break;
@@ -1206,6 +1205,7 @@ void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx,
             }
         }
 
+        auto now_tm_ms = common::TimeUtils::TimestampMs();
         DispatchTx(pool_index, msg_ptr);
         if (!pop_all && ++count >= 1024) {
             break;
