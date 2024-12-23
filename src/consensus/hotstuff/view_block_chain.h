@@ -188,9 +188,9 @@ public:
 
             ++count;
             if (count >= 4) {
-                return false;
+                break;
             }
-            
+
             if (!it->second->view_block) {
                 return false;
             }
