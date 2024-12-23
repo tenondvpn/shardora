@@ -47,6 +47,7 @@ public:
 
     // 会改变交易的状态，标记已打包
     Status Wrap(
+            const transport::MessagePtr& msg_ptr, 
             const std::shared_ptr<ViewBlock>& prev_block,
             const uint32_t& leader_idx,
             view_block::protobuf::ViewBlockItem* view_block,

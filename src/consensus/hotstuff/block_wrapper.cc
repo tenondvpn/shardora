@@ -22,12 +22,14 @@ BlockWrapper::~BlockWrapper(){};
 
 // 打包一个新的 block 和 txs
 Status BlockWrapper::Wrap(
+        const transport::MessagePtr& msg_ptr, 
         const std::shared_ptr<ViewBlock>& prev_view_block,
         const uint32_t& leader_idx,
         view_block::protobuf::ViewBlockItem* view_block,
         hotstuff::protobuf::TxPropose* tx_propose,
         const bool& no_tx_allowed,
         std::shared_ptr<ViewBlockChain>& view_block_chain) {
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto* prev_block = &prev_view_block->block_info();
     if (!prev_block) {
         ZJC_WARN("get prev block failed, pool index: %d", pool_idx_);
@@ -50,6 +52,7 @@ Status BlockWrapper::Wrap(
     block->set_timestamp(prev_block->timestamp() > cur_time ? prev_block->timestamp() + 1 : cur_time);
 
     // 打包交易
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
     // ZJC_INFO("pool: %d, txs count, all: %lu, valid: %lu, leader: %lu",
     //     pool_idx_, pools_mgr_->all_tx_size(pool_idx_), pools_mgr_->tx_size(pool_idx_), leader_idx);
@@ -69,6 +72,7 @@ Status BlockWrapper::Wrap(
         return s;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("leader get txs success check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u",
         s, pool_idx_, 
         view_block->qc().network_id(), 
@@ -94,6 +98,7 @@ Status BlockWrapper::Wrap(
         tx_propose->set_tx_type(txs_ptr->tx_type);
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto elect_item = elect_info_->GetElectItemWithShardingId(common::GlobalInfo::Instance()->network_id());
     if (!elect_item) {
         return Status::kElectItemNotFound;
@@ -111,6 +116,7 @@ Status BlockWrapper::Wrap(
         view_block->qc().network_id(),
         view_block->qc().pool_index(),
         view_block->qc().view());
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
 

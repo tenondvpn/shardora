@@ -327,15 +327,16 @@ private:
             const std::shared_ptr<ViewBlockChain>& view_block_chain,
             const TC* tc,
             const uint32_t& elect_height);    
-    Status ConstructProposeMsg(hotstuff::protobuf::ProposeMsg* pro_msg);
+    Status ConstructProposeMsg(const transport::MessagePtr& msg_ptr, hotstuff::protobuf::ProposeMsg* pro_msg);
     Status ConstructVoteMsg(
         const transport::MessagePtr& msg_ptr,
         hotstuff::protobuf::VoteMsg* vote_msg,
         uint64_t elect_height, 
         const std::shared_ptr<ViewBlock>& v_block);    
     Status ConstructViewBlock( 
-            ViewBlock* view_block,
-            hotstuff::protobuf::TxPropose* tx_propose);
+        const transport::MessagePtr& msg_ptr, 
+        ViewBlock* view_block,
+        hotstuff::protobuf::TxPropose* tx_propose);
     Status ConstructHotstuffMsg(
             const MsgType msg_type, 
             pb_ProposeMsg* pb_pro_msg, 

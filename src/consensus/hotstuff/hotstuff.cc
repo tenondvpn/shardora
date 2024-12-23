@@ -183,7 +183,7 @@ Status Hotstuff::Propose(
     header.set_hop_count(0);
     auto* hotstuff_msg = header.mutable_hotstuff();
     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
-    Status s = ConstructProposeMsg(pb_pro_msg);
+    Status s = ConstructProposeMsg(msg_ptr, pb_pro_msg);
     if (s != Status::kSuccess) {
         ZJC_DEBUG("pool: %d construct propose msg failed, %d",
             pool_idx_, s);
@@ -1600,7 +1600,7 @@ Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
     return Status::kSuccess;
 }
 
-Status Hotstuff::ConstructProposeMsg(hotstuff::protobuf::ProposeMsg* pro_msg) {
+Status Hotstuff::ConstructProposeMsg(const transport::MessagePtr& msg_ptr, hotstuff::protobuf::ProposeMsg* pro_msg) {
     auto elect_item = elect_info_->GetElectItemWithShardingId(
         common::GlobalInfo::Instance()->network_id());
     if (!elect_item || !elect_item->IsValid()) {
@@ -1609,7 +1609,7 @@ Status Hotstuff::ConstructProposeMsg(hotstuff::protobuf::ProposeMsg* pro_msg) {
 
     auto new_view_block = pro_msg->mutable_view_item();
     auto* tx_propose = pro_msg->mutable_tx_propose();
-    Status s = ConstructViewBlock(new_view_block, tx_propose);
+    Status s = ConstructViewBlock(msg_ptr, new_view_block, tx_propose);
     if (s != Status::kSuccess) {
         ZJC_DEBUG("pool: %d construct view block failed, view: %lu, %d, member_index: %d",
             pool_idx_, view_block_chain()->HighViewBlock()->qc().view(), s, 
@@ -1700,7 +1700,8 @@ Status Hotstuff::ConstructVoteMsg(
     return Status::kSuccess;
 }
 
-Status Hotstuff::ConstructViewBlock( 
+Status Hotstuff::ConstructViewBlock(
+        const transport::MessagePtr& msg_ptr, 
         ViewBlock* view_block,
         hotstuff::protobuf::TxPropose* tx_propose) {
     auto local_elect_item = elect_info_->GetElectItemWithShardingId(
@@ -1716,6 +1717,7 @@ Status Hotstuff::ConstructViewBlock(
         return Status::kError;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto leader_idx = local_member->index;
     auto pre_v_block = view_block_chain()->HighViewBlock();
     view_block->set_parent_hash(pre_v_block->qc().view_block_hash());
@@ -1730,12 +1732,14 @@ Status Hotstuff::ConstructViewBlock(
     qc->set_pool_index(pool_idx_);
     // TODO 如果单分支最多连续打包三个默认交易
     auto s = wrapper()->Wrap(
+        msg_ptr,
         pre_v_block, 
         leader_idx, 
         view_block, 
         tx_propose, 
         IsEmptyBlockAllowed(*pre_v_block), 
         view_block_chain_);
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (s != Status::kSuccess) {
         ZJC_DEBUG("pool: %d wrap failed, %d", pool_idx_, static_cast<int>(s));
         return s;
@@ -1763,6 +1767,7 @@ Status Hotstuff::ConstructViewBlock(
         return Status::kError;
     }
     
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
 
