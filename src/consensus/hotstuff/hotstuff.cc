@@ -212,7 +212,8 @@ Status Hotstuff::Propose(
     transport::TcpTransport::Instance()->SetMessageHash(header);
 #ifndef NDEBUG
     std::string propose_debug_str = common::StringUtil::Format(
-        "%u_%u_%lu, hash64: %lu, %lu, tx size: %u", 
+        "%lu, %u_%u_%lu, hash64: %lu, %lu, tx size: %u", 
+        common::TimeUtils::TimestampMs(),
         common::GlobalInfo::Instance()->network_id(), 
         pool_idx_, 
         hotstuff_msg->pro_msg().view_item().qc().view(),
