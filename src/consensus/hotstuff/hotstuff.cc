@@ -629,6 +629,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
             assert(IsQcTcValid(pro_msg.tc()));
             latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(pro_msg.tc());
         }
+        
         ADD_DEBUG_PROCESS_TIMESTAMP();
 // #ifndef NDEBUG
 //         auto msg_hash = GetQCMsgHash(pro_msg.tc());
