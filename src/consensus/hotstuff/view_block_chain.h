@@ -198,7 +198,6 @@ public:
             phash = it->second->view_block->parent_hash();
         }
 
-        // TODO: fix recover
         if (prefix_db_->JustCheckCommitedGidExists(gid)) {
             ZJC_DEBUG("failed check tx gid exists in db: %s", 
                 common::Encode::HexEncode(gid).c_str());
