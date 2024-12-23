@@ -81,7 +81,8 @@ void ThreadHandler::HandleMessage() {
             auto etime = common::TimeUtils::TimestampUs();
             if (etime - btime > 1000000) {
                 for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
-                    if (msg_ptr->times[i] > 500000) {
+                    auto diff_time = msg_ptr->times[i] - msg_ptr->times[i - 1];
+                    if (diff_time > 500000) {
                         ZJC_DEBUG("over handle message debug %lu timestamp: %lu, debug: %s, "
                             "thread_idx: %d, maping_thread_idx: %d",
                             msg_ptr->header.hash64(), msg_ptr->times[i], 
