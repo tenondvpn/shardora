@@ -107,7 +107,7 @@ public:
         std::shared_ptr<TC> tc,
         std::shared_ptr<AggregateQC> agg_qc,
         const transport::MessagePtr& msg_ptr);
-    Status TryCommit(const QC& commit_qc, uint64_t t_idx = 9999999lu);
+    Status TryCommit(const transport::MessagePtr& msg_ptr, const QC& commit_qc, uint64_t t_idx = 9999999lu);
     Status HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> propose_msg_wrap);
     // 消费等待队列中的 ProposeMsg
     int TryWaitingProposeMsgs() {
@@ -169,7 +169,8 @@ public:
             // TODO: fix balance map and storage map
             view_block_chain()->UpdateHighViewBlock(vblock->qc());
             view_block_chain()->Store(vblock, true, nullptr, nullptr);
-            TryCommit(vblock->qc(), 99999999lu);
+            transport::MessagePtr msg_ptr;
+            TryCommit(msg_ptr, vblock->qc(), 99999999lu);
             if (latest_qc_item_ptr_ == nullptr ||
                     vblock->qc().view() >= latest_qc_item_ptr_->view()) {
 
@@ -309,9 +310,10 @@ private:
 
     Status HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
     Status Commit(
-            const std::shared_ptr<ViewBlock>& v_block,
-            const QC& commit_qc,
-            uint64_t test_index);
+        const transport::MessagePtr& msg_ptr,
+        const std::shared_ptr<ViewBlock>& v_block,
+        const QC& commit_qc,
+        uint64_t test_index);
     std::shared_ptr<ViewBlock> CheckCommit(const QC& qc);
     bool CommitInner(
         const std::shared_ptr<ViewBlock>& v_block,

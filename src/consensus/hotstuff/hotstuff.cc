@@ -623,13 +623,13 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
         ADD_DEBUG_PROCESS_TIMESTAMP();
         view_block_chain()->UpdateHighViewBlock(pro_msg.tc());
         ADD_DEBUG_PROCESS_TIMESTAMP();
-        TryCommit(pro_msg.tc(), 99999999lu);
+        TryCommit(msg_ptr, pro_msg.tc(), 99999999lu);
         if (latest_qc_item_ptr_ == nullptr ||
                 pro_msg.tc().view() >= latest_qc_item_ptr_->view()) {
             assert(IsQcTcValid(pro_msg.tc()));
             latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(pro_msg.tc());
         }
-        
+
         ADD_DEBUG_PROCESS_TIMESTAMP();
 // #ifndef NDEBUG
 //         auto msg_hash = GetQCMsgHash(pro_msg.tc());
@@ -1194,7 +1194,7 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
             auto& qc = tc;
             pacemaker()->NewQcView(qc.view());
             view_block_chain()->UpdateHighViewBlock(qc);
-            TryCommit(qc, 99999999lu);
+            TryCommit(msg_ptr, qc, 99999999lu);
             if (latest_qc_item_ptr_ == nullptr ||
                     qc.view() >= latest_qc_item_ptr_->view()) {
                 if (IsQcTcValid(qc)) {
@@ -1251,21 +1251,16 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("reset timer success!");
 }
 
-Status Hotstuff::TryCommit(const QC& commit_qc, uint64_t test_index) {
+Status Hotstuff::TryCommit(const transport::MessagePtr& msg_ptr, const QC& commit_qc, uint64_t test_index) {
     assert(commit_qc.has_view_block_hash());
-    auto b = common::TimeUtils::TimestampMs();
-    defer({
-        auto e = common::TimeUtils::TimestampMs();
-        ZJC_DEBUG("pool: %d TryCommit duration: %lu ms, %u_%u_%lu",
-            pool_idx_, e-b, commit_qc.network_id(), commit_qc.pool_index(), commit_qc.view());
-    });
-
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto v_block_to_commit = CheckCommit(commit_qc);
     if (v_block_to_commit) {
         ZJC_DEBUG("commit tx size: %u, propose_debug: %s", 
             v_block_to_commit->block_info().tx_list_size(), 
             v_block_to_commit->debug().c_str());
-        Status s = Commit(v_block_to_commit, commit_qc, test_index);
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+        Status s = Commit(msg_ptr, v_block_to_commit, commit_qc, test_index);
         if (s != Status::kSuccess) {
             ZJC_ERROR("commit view_block failed, view: %lu hash: %s, propose_debug: %s",
                 v_block_to_commit->qc().view(),
@@ -1273,6 +1268,7 @@ Status Hotstuff::TryCommit(const QC& commit_qc, uint64_t test_index) {
                 v_block_to_commit->debug().c_str());
             return s;
         }
+        ADD_DEBUG_PROCESS_TIMESTAMP();
     }
     return Status::kSuccess;
 }
@@ -1339,16 +1335,11 @@ std::shared_ptr<ViewBlock> Hotstuff::CheckCommit(const QC& qc) {
 }
 
 Status Hotstuff::Commit(
+        const transport::MessagePtr& msg_ptr,
         const std::shared_ptr<ViewBlock>& v_block,
         const QC& commit_qc,
         uint64_t test_index) {
-    auto b = common::TimeUtils::TimestampMs();
-    defer({
-            auto e = common::TimeUtils::TimestampMs();
-            ZJC_DEBUG("pool: %d Commit duration: %lu ms, test_index: %lu, "
-                "propose_debug: %s", pool_idx_, e-b, test_index, v_block->debug().c_str());
-        });
-
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
     if (latest_committed_block && latest_committed_block->qc().view() >= v_block->qc().view()) {
         ZJC_DEBUG("commit failed latest view: %lu, noew view: %lu", 
@@ -1358,6 +1349,7 @@ Status Hotstuff::Commit(
     
     auto tmp_block = v_block;
     while (tmp_block != nullptr) {
+        ADD_DEBUG_PROCESS_TIMESTAMP();
         auto db_batch = std::make_shared<db::DbWriteBatch>();
         auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(tmp_block, db_batch);
         view_block_chain()->StoreToDb(tmp_block, test_index, db_batch);
@@ -1380,10 +1372,13 @@ Status Hotstuff::Commit(
         }
 
         tmp_block = parent_block;
+        ADD_DEBUG_PROCESS_TIMESTAMP();
     }
     
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     view_block_chain()->SetLatestCommittedBlock(v_block);
     // 剪枝
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
     ZJC_DEBUG("success commit view block %u_%u_%lu, height: %lu, now chain: %s",
         v_block->qc().network_id(), 
@@ -1403,6 +1398,7 @@ Status Hotstuff::Commit(
         return s;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("PruneTo success, success commit view block %u_%u_%lu, height: %lu, now chain: %s",
         v_block->qc().network_id(), 
         v_block->qc().pool_index(), 
@@ -1410,6 +1406,7 @@ Status Hotstuff::Commit(
         v_block->block_info().height(),
         view_block_chain()->String().c_str());
     // 归还分支交易
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     for (const auto& forked_block : forked_blockes) {
         s = acceptor()->Return(forked_block);
         if (s != Status::kSuccess) {
@@ -1417,6 +1414,7 @@ Status Hotstuff::Commit(
         }
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
 
