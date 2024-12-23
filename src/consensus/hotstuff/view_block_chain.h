@@ -167,6 +167,7 @@ public:
 
     bool CheckTxGidValid(const std::string& gid, const std::string& parent_hash) {
         std::string phash = parent_hash;
+        uint32_t count = 0;
         while (true) {
             if (phash.empty()) {
                 break;
@@ -185,6 +186,11 @@ public:
                 return false;
             }
 
+            ++count;
+            if (count >= 4) {
+                return false;
+            }
+            
             if (!it->second->view_block) {
                 return false;
             }
