@@ -1205,25 +1205,25 @@ void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx,
             }
         }
 
-        auto now_tm_ms = common::TimeUtils::TimestampMs();
+        // auto now_tm_ms = common::TimeUtils::TimestampMs();
         DispatchTx(pool_index, msg_ptr);
         if (!pop_all && ++count >= 1024) {
             break;
         }
         
-        auto use_time = common::TimeUtils::TimestampMs() - now_tm_ms;
-        if (use_time > 10) {
-            ZJC_DEBUG("pool_index: %d, size: %d, success pop tx: %s, %lu, "
-                "step: %d, has_user_tx: %d, has_system_tx: %d, over handle message debug use ms: %lu", 
-                pool_index, 
-                msg_queues_[pool_index].size(), 
-                common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(), 
-                msg_ptr->header.hash64(),
-                msg_ptr->header.tx_proto().step(),
-                (has_user_tx != nullptr ? *has_user_tx : false),
-                (has_system_tx != nullptr ? *has_system_tx: false),
-                use_time);
-        }
+        // auto use_time = common::TimeUtils::TimestampMs() - now_tm_ms;
+        // if (use_time > 10) {
+        //     ZJC_DEBUG("pool_index: %d, size: %d, success pop tx: %s, %lu, "
+        //         "step: %d, has_user_tx: %d, has_system_tx: %d, over handle message debug use ms: %lu", 
+        //         pool_index, 
+        //         msg_queues_[pool_index].size(), 
+        //         common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(), 
+        //         msg_ptr->header.hash64(),
+        //         msg_ptr->header.tx_proto().step(),
+        //         (has_user_tx != nullptr ? *has_user_tx : false),
+        //         (has_system_tx != nullptr ? *has_system_tx: false),
+        //         use_time);
+        // }
     }
 }
 
