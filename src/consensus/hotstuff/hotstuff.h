@@ -316,6 +316,7 @@ private:
         uint64_t test_index);
     std::shared_ptr<ViewBlock> CheckCommit(const QC& qc);
     bool CommitInner(
+        const transport::MessagePtr& msg_ptr,
         const std::shared_ptr<ViewBlock>& v_block,
         uint64_t test_index,
         std::shared_ptr<block::BlockToDbItem>&);

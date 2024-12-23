@@ -1354,10 +1354,12 @@ Status Hotstuff::Commit(
         auto db_batch = std::make_shared<db::DbWriteBatch>();
         auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(tmp_block, db_batch);
         view_block_chain()->StoreToDb(tmp_block, test_index, db_batch);
-        if (!CommitInner(tmp_block, test_index, queue_item_ptr)) {
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+        if (!CommitInner(msg_ptr, tmp_block, test_index, queue_item_ptr)) {
             break;
         }
 
+        ADD_DEBUG_PROCESS_TIMESTAMP();
         std::shared_ptr<ViewBlock> parent_block = nullptr;
         parent_block = view_block_chain()->Get(tmp_block->parent_hash());
         if (parent_block == nullptr) {
@@ -1515,9 +1517,11 @@ Status Hotstuff::VerifyViewBlock(
 }
 
 bool Hotstuff::CommitInner(
+        const transport::MessagePtr& msg_ptr,
         const std::shared_ptr<ViewBlock>& v_block, 
         uint64_t test_index, 
         std::shared_ptr<block::BlockToDbItem>& queue_block_item) {
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& block_info = v_block->block_info();
     // ZJC_WARN("NEW BLOCK CommitInner coming pool: %d, commit coming s: %d, "
     //     "vb view: %lu, %u_%u_%lu, cur chain: %s, test_index: %lu, propose_debug: %s",
@@ -1555,6 +1559,7 @@ bool Hotstuff::CommitInner(
     //     v_block->qc().network_id(), v_block->qc().pool_index(), block_info.height(),
     //     view_block_chain()->String().c_str(),
     //     test_index, v_block->debug().c_str());
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     acceptor()->Commit(queue_block_item);
     // ZJC_DEBUG("2 NEW BLOCK CommitInner coming pool: %d, commit coming s: %d, "
     //     "vb view: %lu, %u_%u_%lu, cur chain: %s, test_index: %lu",
@@ -1564,13 +1569,16 @@ bool Hotstuff::CommitInner(
     //     test_index);
 
     // 提交 v_block->consensus_stat 共识数据
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto elect_item = elect_info()->GetElectItem(
             v_block->qc().network_id(),
             v_block->qc().elect_height());
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (elect_item && elect_item->IsValid()) {
         elect_item->consensus_stat(pool_idx_)->Commit(v_block);
     }    
     
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("pool: %d consensus stat, leader: %lu, succ: %lu, test_index: %lu",
         pool_idx_, v_block->qc().leader_idx(),
         0,
