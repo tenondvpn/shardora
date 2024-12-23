@@ -1248,8 +1248,6 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
     tx_ptr->unique_tx_hash = msg_ptr->msg_hash;
     // 交易池增加 msg 中的交易
     tx_pool_[pool_index].AddTx(tx_ptr);
-    ZJC_DEBUG("push queue index pool_index: %u, tx size: %d, latest tm: %lu",
-        pool_index, tx_pool_[pool_index].tx_size(), tx_pool_[pool_index].oldest_timestamp());
     ZJC_DEBUG("success add local transfer to tx pool: %u, step: %d, %s, gid: %s, from pk: %s, to: %s",
         pool_index,
         msg_ptr->header.tx_proto().step(),
