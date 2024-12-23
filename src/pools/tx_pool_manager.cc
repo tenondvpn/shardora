@@ -1192,8 +1192,7 @@ void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx,
     while (!destroy_) {
         auto now_tm_ms = common::TimeUtils::TimestampMs();
         transport::MessagePtr msg_ptr = nullptr;
-        msg_queues_[pool_index].pop(&msg_ptr);
-        if (msg_ptr == nullptr) {
+        if (!msg_queues_[pool_index].pop(&msg_ptr)) {
             break;
         }
 
