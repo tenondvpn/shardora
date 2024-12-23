@@ -599,31 +599,37 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
 }
 
 Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
-    auto& pro_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
+    auto& msg_ptr = pro_msg_wrap->msg_ptr;
+    auto& pro_msg = msg_ptr->header.hotstuff().pro_msg();
     ZJC_DEBUG("HandleProposeMsgStep_VerifyQC called hash: %lu, view_block_hash: %s, propose_debug: %s",
-        pro_msg_wrap->msg_ptr->header.hash64(), 
+        msg_ptr->header.hash64(), 
         common::Encode::HexEncode(pro_msg.tc().view_block_hash()).c_str(),
-        pro_msg_wrap->msg_ptr->header.debug().c_str());
+        msg_ptr->header.debug().c_str());
     if (pro_msg.has_tc() && pro_msg.tc().has_view_block_hash() && IsQcTcValid(pro_msg.tc())) {
+        ADD_DEBUG_PROCESS_TIMESTAMP();
         if (VerifyQC(pro_msg.tc()) != Status::kSuccess) {
             ZJC_ERROR("pool: %d verify qc failed: %lu", pool_idx_, pro_msg.tc().view());
             assert(false);
             return Status::kError;
         }
 
+        ADD_DEBUG_PROCESS_TIMESTAMP();
         ZJC_DEBUG("success new set qc view: %lu, %u_%u_%lu",
             pro_msg.tc().view(),
             pro_msg.tc().network_id(),
             pro_msg.tc().pool_index(),
             pro_msg.tc().view());
         pacemaker()->NewQcView(pro_msg.tc().view());
+        ADD_DEBUG_PROCESS_TIMESTAMP();
         view_block_chain()->UpdateHighViewBlock(pro_msg.tc());
+        ADD_DEBUG_PROCESS_TIMESTAMP();
         TryCommit(pro_msg.tc(), 99999999lu);
         if (latest_qc_item_ptr_ == nullptr ||
                 pro_msg.tc().view() >= latest_qc_item_ptr_->view()) {
             assert(IsQcTcValid(pro_msg.tc()));
             latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(pro_msg.tc());
         }
+        ADD_DEBUG_PROCESS_TIMESTAMP();
 // #ifndef NDEBUG
 //         auto msg_hash = GetQCMsgHash(pro_msg.tc());
 //         auto* tc_ptr = &pro_msg.tc();
