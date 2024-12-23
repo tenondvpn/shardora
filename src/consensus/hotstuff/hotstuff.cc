@@ -1135,7 +1135,8 @@ Status Hotstuff::StoreVerifiedViewBlock(
         return s;
     }
 
-    TryCommit(*qc, 99999999lu);
+    transport::MessagePtr msg_ptr;
+    TryCommit(msg_ptr, *qc, 99999999lu);
     ZJC_DEBUG("success store v block pool: %u, hash: %s, prehash: %s",
         pool_idx_,
         common::Encode::HexEncode(v_block->qc().view_block_hash()).c_str(),
