@@ -206,16 +206,16 @@ void TxPool::GetTxSyncToLeader(
     while (iter != prio_map_.end() && txs->size() < count) {
         if (gid_vlid_func != nullptr && !gid_vlid_func(iter->second->tx_info.gid())) {
             ZJC_DEBUG("gid invalid: %s", common::Encode::HexEncode(iter->second->tx_info.gid()).c_str());
-            ++iter;
-            continue;
+        } else {
+            ZJC_DEBUG("gid valid: %s", common::Encode::HexEncode(iter->second->tx_info.gid()).c_str());
+            auto* tx = txs->Add();
+            *tx = iter->second->tx_info;
+            assert(!iter->second->unique_tx_hash.empty());
+
         }
 
-        ZJC_DEBUG("gid valid: %s", common::Encode::HexEncode(iter->second->tx_info.gid()).c_str());
-        auto* tx = txs->Add();
-        *tx = iter->second->tx_info;
-        assert(!iter->second->unique_tx_hash.empty());
-        ++iter;
-    }   
+        iter = prio_map_.erase(iter);
+    }
 }
 
 void TxPool::GetTxIdempotently(

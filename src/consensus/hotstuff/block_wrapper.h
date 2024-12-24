@@ -64,14 +64,6 @@ public:
             const std::string& parent_hash,
             ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs) override {
         auto gid_valid_func = [&](const std::string& gid) -> bool {
-            auto& tmp_set = leader_with_sent_gids_[leader_idx];
-            if (tmp_set.find(gid) != tmp_set.end()) {
-                ZJC_DEBUG("failed check gid: %s", common::Encode::HexEncode(gid).c_str());
-                return false;
-            }
-
-            tmp_set.insert(gid);
-            ZJC_DEBUG("success check gid: %s", common::Encode::HexEncode(gid).c_str());
             return view_block_chain->CheckTxGidValid(gid, parent_hash);
         };
 
@@ -94,10 +86,7 @@ private:
         return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;
     }
 
-    
-
-    std::unordered_set<std::string> leader_with_sent_gids_[common::kEachShardMaxNodeCount];
-
+  
     uint32_t pool_idx_;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
