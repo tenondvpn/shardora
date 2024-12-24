@@ -780,9 +780,9 @@ void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
             continue;
         }
 
-        if (!GidValid(txs[i]->tx_info.gid())) {
-            continue;
-        }
+        // if (!GidValid(txs[i]->tx_info.gid())) {
+        //     continue;
+        // }
 
         gid_map_[txs[i]->tx_info.gid()] = txs[i];
         CHECK_MEMORY_SIZE_WITH_MESSAGE(
