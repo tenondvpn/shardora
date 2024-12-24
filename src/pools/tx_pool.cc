@@ -261,7 +261,10 @@ void TxPool::GetTxIdempotently(
         }
 
         iter = src_prio_map.erase(iter);
-    }    
+    }
+    
+    ZJC_DEBUG("success get tx pool: %u, count: %u, get count: %u, exists count: %u",
+        pool_index_, count, res_map.size(), src_prio_map.size());
 }
 
 void TxPool::GetTxByIds(
