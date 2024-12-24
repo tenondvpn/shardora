@@ -1252,7 +1252,10 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("reset timer success!");
 }
 
-Status Hotstuff::TryCommit(const transport::MessagePtr& msg_ptr, const QC& commit_qc, uint64_t test_index) {
+Status Hotstuff::TryCommit(
+        const transport::MessagePtr& msg_ptr, 
+        const QC& commit_qc, 
+        uint64_t test_index) {
     assert(commit_qc.has_view_block_hash());
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto v_block_to_commit = CheckCommit(commit_qc);
@@ -1604,7 +1607,8 @@ Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
     if (leader_idx != leader->index) {
         auto eleader = leader_rotation()->GetExpectedLeader();
         if (!eleader || leader_idx != eleader->index) {
-            ZJC_ERROR("pool: %d, leader_idx message is error, %d, %d", pool_idx_, leader_idx, leader->index);
+            ZJC_ERROR("pool: %d, leader_idx message is error, %d, %d",
+                pool_idx_, leader_idx, leader->index);
             // assert(false);
             return Status::kError;
         }
@@ -1614,7 +1618,9 @@ Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
     return Status::kSuccess;
 }
 
-Status Hotstuff::ConstructProposeMsg(const transport::MessagePtr& msg_ptr, hotstuff::protobuf::ProposeMsg* pro_msg) {
+Status Hotstuff::ConstructProposeMsg(
+        const transport::MessagePtr& msg_ptr, 
+        hotstuff::protobuf::ProposeMsg* pro_msg) {
     auto elect_item = elect_info_->GetElectItemWithShardingId(
         common::GlobalInfo::Instance()->network_id());
     if (!elect_item || !elect_item->IsValid()) {
