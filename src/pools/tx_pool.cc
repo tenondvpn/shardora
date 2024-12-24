@@ -138,8 +138,13 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
             common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
         return kPoolsTxAdded;
     }
-    
     CheckThreadIdValid();
+//     if (removed_gid_.find(tx_ptr->tx_info.gid()) != removed_gid_.end()) {
+// #ifndef ENABLE_HOTSTUFF        
+//         // assert(false);
+// #endif
+//         return kPoolsTxAdded;
+//     }
 
     if (gid_map_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
         ZJC_WARN("add failed extend 1024");
