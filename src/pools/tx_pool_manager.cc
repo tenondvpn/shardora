@@ -440,30 +440,10 @@ int TxPoolManager::BackupConsensusAddTxs(
     std::vector<pools::TxItemPtr> valid_txs;
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
         auto tx_ptr = iter->second;
-        // if (!tx_pool_[pool_index].GidValid(tx_ptr->tx_info.gid())) {
-        //     continue;
-        // }
-
-        if (tx_pool_[pool_index].TxExists(tx_ptr->tx_info.gid())) {
+        if (!tx_pool_[pool_index].GidValid(tx_ptr->tx_info.gid())) {
             continue;
         }
 
-        valid_txs.push_back(tx_ptr);
-        // ZJC_DEBUG("succcess add tx step: %d, to: %s, gid: %s", 
-        //     tx_ptr->tx_info.step(), 
-        //     common::Encode::HexEncode(tx_ptr->tx_info.to()).c_str(), 
-        //     common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
-    }
-    
-    ZJC_DEBUG("success add consensus tx size: %u", valid_txs.size());
-    tx_pool_[pool_index].ConsensusAddTxs(valid_txs);
-    return res;
-}
-
-void TxPoolManager::ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs) {
-    std::vector<pools::TxItemPtr> valid_txs;
-    for (uint32_t i = 0; i < txs.size(); ++i) {
-        auto tx_ptr = txs[i];
         if (tx_ptr->tx_info.pubkey().empty() || tx_ptr->tx_info.sign().empty()) {
             valid_txs.push_back(tx_ptr);
             continue;
@@ -485,23 +465,12 @@ void TxPoolManager::ConsensusAddTxs(uint32_t pool_index, const std::vector<pools
             continue;
         }
 
-        // if (!tx_pool_[pool_index].GidValid(tx_ptr->unique_tx_hash)) {
-        //     // avoid save gid different tx
-        //     ZJC_DEBUG("tx msg hash exists: %s failed!",
-        //         common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str());
-        //     continue;
-        // }
-
-        // if (!tx_pool_[pool_index].GidValid(tx_ptr->tx_info.gid())) {
-        //     ZJC_DEBUG("tx gid exists: %s failed!", 
-        //         common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
-        //     continue;
-        // }
-
         valid_txs.push_back(tx_ptr);
     }
     
+    ZJC_DEBUG("success add consensus tx size: %u", valid_txs.size());
     tx_pool_[pool_index].ConsensusAddTxs(valid_txs);
+    return res;
 }
 
 void TxPoolManager::PopPoolsMessage() {

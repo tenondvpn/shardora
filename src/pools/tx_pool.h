@@ -93,25 +93,6 @@ public:
     double CheckLeaderValid(bool get_factor, uint32_t* finished_count, uint32_t* tx_count);
     void RecoverTx(const std::string& gid);
     bool GidValid(const std::string& gid) {
-        // auto res = added_gids_.insert(gid);
-        // return res.second;
-        // if (gid_map_.find(gid) != gid_map_.end()) {
-        //     ZJC_DEBUG("gid_map_.find(gid) != gid_map_.end() pool: %d, gid: %s", 
-        //         pool_index_, 
-        //         common::Encode::HexEncode(gid).c_str());
-        //     return false;
-        // }
-
-        // if (removed_gid_.find(gid) != removed_gid_.end()) {
-        //     ZJC_DEBUG("removed_gid_.find(gid) != removed_gid_.end() pool: %d, gid: %s", 
-        //         pool_index_, 
-        //         common::Encode::HexEncode(gid).c_str());
-        //     return false;
-        // }
-
-        // ZJC_DEBUG("0 prefix_db_->CheckAndSaveGidExists(gid) pool: %d, gid: %s", 
-        //         pool_index_, 
-        //         common::Encode::HexEncode(gid).c_str());
         auto res = prefix_db_->CheckAndSaveGidExists(gid);
         if (res) {
             ZJC_DEBUG("1 prefix_db_->CheckAndSaveGidExists(gid) pool: %d, gid: %s", 
@@ -121,18 +102,6 @@ public:
         }
 
         return true;
-    }
-
-    bool TxExists(const std::string& gid) {
-        if (gid_map_.find(gid) != gid_map_.end()) {
-            return true;
-        }
-
-        if (removed_gid_.find(gid) != removed_gid_.end()) {
-            return true;
-        }
-
-        return false;
     }
 
     uint32_t all_tx_size() const {
