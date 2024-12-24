@@ -499,6 +499,13 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::shardora::view_block::protobuf::MemberConsensusStat* mutable_leader_consen_stat();
   void set_allocated_leader_consen_stat(::shardora::view_block::protobuf::MemberConsensusStat* leader_consen_stat);
 
+  // optional uint64 debug_timestamps = 6;
+  bool has_debug_timestamps() const;
+  void clear_debug_timestamps();
+  static const int kDebugTimestampsFieldNumber = 6;
+  ::google::protobuf::uint64 debug_timestamps() const;
+  void set_debug_timestamps(::google::protobuf::uint64 value);
+
   // @@protoc_insertion_point(class_scope:shardora.view_block.protobuf.ViewBlockItem)
  private:
   void set_has_parent_hash();
@@ -511,6 +518,8 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   void clear_has_leader_consen_stat();
   void set_has_debug();
   void clear_has_debug();
+  void set_has_debug_timestamps();
+  void clear_has_debug_timestamps();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -520,6 +529,7 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::shardora::block::protobuf::Block* block_info_;
   ::shardora::view_block::protobuf::QcItem* qc_;
   ::shardora::view_block::protobuf::MemberConsensusStat* leader_consen_stat_;
+  ::google::protobuf::uint64 debug_timestamps_;
   friend struct ::protobuf_protos_2fview_5fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -2564,6 +2574,30 @@ inline void ViewBlockItem::set_allocated_debug(::std::string* debug) {
   }
   debug_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), debug);
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockItem.debug)
+}
+
+// optional uint64 debug_timestamps = 6;
+inline bool ViewBlockItem::has_debug_timestamps() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void ViewBlockItem::set_has_debug_timestamps() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void ViewBlockItem::clear_has_debug_timestamps() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void ViewBlockItem::clear_debug_timestamps() {
+  debug_timestamps_ = GOOGLE_ULONGLONG(0);
+  clear_has_debug_timestamps();
+}
+inline ::google::protobuf::uint64 ViewBlockItem::debug_timestamps() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockItem.debug_timestamps)
+  return debug_timestamps_;
+}
+inline void ViewBlockItem::set_debug_timestamps(::google::protobuf::uint64 value) {
+  set_has_debug_timestamps();
+  debug_timestamps_ = value;
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockItem.debug_timestamps)
 }
 
 // -------------------------------------------------------------------
