@@ -116,8 +116,6 @@ public:
 
     void SetSocket(Socket& socket) {
         socket_ = &socket;
-        std::string from_ip;
-        uint16_t from_port;
         socket_->GetIpPort(&socket_ip_, &socket_port_);
     }
 

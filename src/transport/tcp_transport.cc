@@ -411,13 +411,11 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
     in_check_queue_.push(tcp_conn);
     while (!destroy_) {
         std::shared_ptr<TcpConnection> out_conn = nullptr;
-        if (!out_check_queue_.pop(&out_conn) || out_conn == nullptr) {
+        if (!out_check_queue_.pop(&out_conn)) {
             break;
         }
 
-        std::string from_ip = out_conn->socket_ip();
-        uint16_t from_port = out_conn->socket_port();
-        auto key = from_ip + std::to_string(from_port);
+        auto key = out_conn->socket_ip() + std::to_string(out_conn->socket_port());
         auto iter = conn_map_.find(key);
         if (iter != conn_map_.end()) {
             conn_map_.erase(iter);
@@ -445,6 +443,7 @@ void TcpTransport::CheckConnectionValid() {
     while (check_count < kEachCheckConnectionCount && check_count < length && !destroy_) {
         ++check_count;
         auto conn = waiting_check_queue_.front();
+        waiting_check_queue_.pop_front();
         if (conn->ShouldReconnect()) {
             out_check_queue_.push(conn);
         } else {

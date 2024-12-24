@@ -192,16 +192,23 @@ void TxPoolManager::ConsensusTimerMessage() {
     // }
 
     std::priority_queue<uint32_t, std::vector<uint32_t>, std::greater<uint32_t>> tx_count_queue;
+#ifndef NDEBUG
     std::string test_str;
+    uint32_t max_count = 0;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
+        if (tx_pool_[i].tx_size() > max_count) {
+            max_count = tx_pool_[i].tx_size();
+        }
         test_str += std::to_string(tx_pool_[i].tx_size()) + ",";
         tx_count_queue.push(tx_pool_[i].tx_size());
-        if (tx_count_queue.size() > common::kImmutablePoolSize / 3) {
+        if (tx_count_queue.size() > 2) {
             tx_count_queue.pop();
         }
     }
 
-    now_max_tx_count_ = tx_count_queue.top();
+    // now_max_tx_count_ = max_count * 2 / 3;
+    ZJC_DEBUG("set max txcount: %u, test str: %s", tx_count_queue.top(), test_str.c_str());
+#endif
     if (prev_sync_check_ms_ < now_tm_ms) {
         SyncMinssingHeights(now_tm_ms);
         SyncMinssingRootHeights(now_tm_ms);
@@ -1184,8 +1191,7 @@ void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx,
     uint32_t count = 0;
     while (!destroy_) {
         transport::MessagePtr msg_ptr = nullptr;
-        msg_queues_[pool_index].pop(&msg_ptr);
-        if (msg_ptr == nullptr) {
+        if (!msg_queues_[pool_index].pop(&msg_ptr)) {
             break;
         }
 
@@ -1199,20 +1205,25 @@ void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx,
             }
         }
 
+        // auto now_tm_ms = common::TimeUtils::TimestampMs();
         DispatchTx(pool_index, msg_ptr);
         if (!pop_all && ++count >= 1024) {
             break;
         }
         
-        ZJC_DEBUG("pool_index: %d, size: %d, success pop tx: %s, %lu, "
-            "step: %d, has_user_tx: %d, has_system_tx: %d", 
-            pool_index, 
-            msg_queues_[pool_index].size(), 
-            common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(), 
-            msg_ptr->header.hash64(),
-            msg_ptr->header.tx_proto().step(),
-            (has_user_tx != nullptr ? *has_user_tx : false),
-            (has_system_tx != nullptr ? *has_system_tx: false));
+        // auto use_time = common::TimeUtils::TimestampMs() - now_tm_ms;
+        // if (use_time > 10) {
+        //     ZJC_DEBUG("pool_index: %d, size: %d, success pop tx: %s, %lu, "
+        //         "step: %d, has_user_tx: %d, has_system_tx: %d, over handle message debug use ms: %lu", 
+        //         pool_index, 
+        //         msg_queues_[pool_index].size(), 
+        //         common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(), 
+        //         msg_ptr->header.hash64(),
+        //         msg_ptr->header.tx_proto().step(),
+        //         (has_user_tx != nullptr ? *has_user_tx : false),
+        //         (has_system_tx != nullptr ? *has_system_tx: false),
+        //         use_time);
+        // }
     }
 }
 
@@ -1237,15 +1248,13 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
     tx_ptr->unique_tx_hash = msg_ptr->msg_hash;
     // 交易池增加 msg 中的交易
     tx_pool_[pool_index].AddTx(tx_ptr);
-    ZJC_DEBUG("push queue index pool_index: %u, tx size: %d, latest tm: %lu",
-        pool_index, tx_pool_[pool_index].tx_size(), tx_pool_[pool_index].oldest_timestamp());
-    ZJC_DEBUG("success add local transfer to tx pool: %u, step: %d, %s, gid: %s, from pk: %s, to: %s",
-        pool_index,
-        msg_ptr->header.tx_proto().step(),
-        common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
-        common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(),
-        common::Encode::HexEncode(msg_ptr->header.tx_proto().pubkey()).c_str(),
-        common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
+    // ZJC_DEBUG("success add local transfer to tx pool: %u, step: %d, %s, gid: %s, from pk: %s, to: %s",
+    //     pool_index,
+    //     msg_ptr->header.tx_proto().step(),
+    //     common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
+    //     common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(),
+    //     common::Encode::HexEncode(msg_ptr->header.tx_proto().pubkey()).c_str(),
+    //     common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
 }
 
 void TxPoolManager::GetTxSyncToLeader(

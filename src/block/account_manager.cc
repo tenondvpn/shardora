@@ -693,6 +693,9 @@ void AccountManager::UpdateAccountsThread() {
 
             CHECK_MEMORY_SIZE_WITH_MESSAGE(thread_valid_accounts_queue_[i], (std::string("push thread index: ") + std::to_string(i)).c_str())
             thread_valid_accounts_queue_[i].push(account_info);
+            if (thread_valid_accounts_queue_[i].size() >= 2024) {
+                thread_valid_[i] = false;
+            }
         }
     }
 }

@@ -107,7 +107,7 @@ public:
         std::shared_ptr<TC> tc,
         std::shared_ptr<AggregateQC> agg_qc,
         const transport::MessagePtr& msg_ptr);
-    Status TryCommit(const QC& commit_qc, uint64_t t_idx = 9999999lu);
+    Status TryCommit(const transport::MessagePtr& msg_ptr, const QC& commit_qc, uint64_t t_idx = 9999999lu);
     Status HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> propose_msg_wrap);
     // 消费等待队列中的 ProposeMsg
     int TryWaitingProposeMsgs() {
@@ -169,7 +169,8 @@ public:
             // TODO: fix balance map and storage map
             view_block_chain()->UpdateHighViewBlock(vblock->qc());
             view_block_chain()->Store(vblock, true, nullptr, nullptr);
-            TryCommit(vblock->qc(), 99999999lu);
+            transport::MessagePtr msg_ptr;
+            TryCommit(msg_ptr, vblock->qc(), 99999999lu);
             if (latest_qc_item_ptr_ == nullptr ||
                     vblock->qc().view() >= latest_qc_item_ptr_->view()) {
 
@@ -309,11 +310,13 @@ private:
 
     Status HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
     Status Commit(
-            const std::shared_ptr<ViewBlock>& v_block,
-            const QC& commit_qc,
-            uint64_t test_index);
+        const transport::MessagePtr& msg_ptr,
+        const std::shared_ptr<ViewBlock>& v_block,
+        const QC& commit_qc,
+        uint64_t test_index);
     std::shared_ptr<ViewBlock> CheckCommit(const QC& qc);
-    void CommitInner(
+    bool CommitInner(
+        const transport::MessagePtr& msg_ptr,
         const std::shared_ptr<ViewBlock>& v_block,
         uint64_t test_index,
         std::shared_ptr<block::BlockToDbItem>&);
@@ -327,15 +330,16 @@ private:
             const std::shared_ptr<ViewBlockChain>& view_block_chain,
             const TC* tc,
             const uint32_t& elect_height);    
-    Status ConstructProposeMsg(hotstuff::protobuf::ProposeMsg* pro_msg);
+    Status ConstructProposeMsg(const transport::MessagePtr& msg_ptr, hotstuff::protobuf::ProposeMsg* pro_msg);
     Status ConstructVoteMsg(
         const transport::MessagePtr& msg_ptr,
         hotstuff::protobuf::VoteMsg* vote_msg,
         uint64_t elect_height, 
         const std::shared_ptr<ViewBlock>& v_block);    
     Status ConstructViewBlock( 
-            ViewBlock* view_block,
-            hotstuff::protobuf::TxPropose* tx_propose);
+        const transport::MessagePtr& msg_ptr, 
+        ViewBlock* view_block,
+        hotstuff::protobuf::TxPropose* tx_propose);
     Status ConstructHotstuffMsg(
             const MsgType msg_type, 
             pb_ProposeMsg* pb_pro_msg, 
@@ -351,7 +355,7 @@ private:
     void SaveLatestProposeMessage();
     void LoadLatestProposeMessage();
 
-    static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 1000lu;
+    static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 10000lu;
 
     uint32_t pool_idx_;
 #ifdef USE_AGG_BLS

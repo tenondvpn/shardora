@@ -298,7 +298,7 @@ function penc_share_new_data(id, content) {
 function penc_vote(id, content) {
     PostCode('/zjchain/penc_vote/', {
         "id": id,
-        "content": content
+        "group_info": content
     });
 }
 

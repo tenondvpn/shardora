@@ -570,7 +570,8 @@ Status HotstuffSyncer::processResponseQcTc(
             high_view_block->qc().pool_index(),
             high_view_block->qc().view());
         pm->NewQcView(high_view_block->qc().view());
-        hotstuff_mgr_->hotstuff(pool_idx)->TryCommit(high_view_block->qc());
+        transport::MessagePtr msg_ptr;
+        hotstuff_mgr_->hotstuff(pool_idx)->TryCommit(msg_ptr, high_view_block->qc());
     }
 
     return Status::kSuccess;
@@ -721,7 +722,8 @@ Status HotstuffSyncer::MergeChain(
 
     // 单独对 high_commit_qc 提交
     // 保证落后节点虽然没有最新的提案，但是有最新的 qc，并且 leader 一致
-    hotstuff_mgr_->hotstuff(pool_idx)->TryCommit(high_commit_qc.qc());
+    transport::MessagePtr msg_ptr;
+    hotstuff_mgr_->hotstuff(pool_idx)->TryCommit(msg_ptr, high_commit_qc.qc());
     ZJC_DEBUG("0 success new set qc view: %lu, %u_%u_%lu",
             high_commit_qc.qc().view(),
             high_commit_qc.qc().network_id(),
@@ -749,7 +751,8 @@ Status HotstuffSyncer::onRecViewBlock(
         view_block_ptr->qc().pool_index(),
         view_block_ptr->qc().view());
     hotstuff->pacemaker()->NewQcView(view_block_ptr->qc().view());
-    hotstuff->TryCommit(view_block.qc());
+    transport::MessagePtr msg_ptr;
+    hotstuff->TryCommit(msg_ptr, view_block.qc());
     // 如果已经有此块，则直接返回
     if (view_block_chain(pool_idx)->Has(view_block.qc().view_block_hash())) {
         return Status::kSuccess;

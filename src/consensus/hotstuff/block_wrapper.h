@@ -18,6 +18,7 @@ public:
     virtual ~IBlockWrapper() {};
 
     virtual Status Wrap(
+            const transport::MessagePtr& msg_ptr, 
             const std::shared_ptr<ViewBlock>& prev_block,
             const uint32_t& leader_idx,
             view_block::protobuf::ViewBlockItem* view_block,
@@ -47,12 +48,13 @@ public:
 
     // 会改变交易的状态，标记已打包
     Status Wrap(
-            const std::shared_ptr<ViewBlock>& prev_block,
-            const uint32_t& leader_idx,
-            view_block::protobuf::ViewBlockItem* view_block,
-            hotstuff::protobuf::TxPropose* tx_propose,
-            const bool& no_tx_allowed,
-            std::shared_ptr<ViewBlockChain>& view_block_chain) override;
+        const transport::MessagePtr& msg_ptr, 
+        const std::shared_ptr<ViewBlock>& prev_block,
+        const uint32_t& leader_idx,
+        view_block::protobuf::ViewBlockItem* view_block,
+        hotstuff::protobuf::TxPropose* tx_propose,
+        const bool& no_tx_allowed,
+        std::shared_ptr<ViewBlockChain>& view_block_chain) override;
 
     // 是否存在内置交易
     bool HasSingleTx(pools::CheckGidValidFunction gid_valid_fn) override;
@@ -78,12 +80,17 @@ public:
 
 private:
     Status LeaderGetTxsIdempotently(
+            const transport::MessagePtr& msg_ptr, 
             std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
             pools::CheckGidValidFunction gid_vlid_func) {
-        pools_mgr_->PopTxs(pool_idx_, false, nullptr, nullptr);
-        pools_mgr_->CheckTimeoutTx(pool_idx_);
+        // ADD_DEBUG_PROCESS_TIMESTAMP();
+        // pools_mgr_->PopTxs(pool_idx_, false, nullptr, nullptr);
+        // ADD_DEBUG_PROCESS_TIMESTAMP();
+        // pools_mgr_->CheckTimeoutTx(pool_idx_);
         
+        // ADD_DEBUG_PROCESS_TIMESTAMP();
         txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(pool_idx_, gid_vlid_func);
+        ADD_DEBUG_PROCESS_TIMESTAMP();
         return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;
     }
 

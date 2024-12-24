@@ -53,7 +53,7 @@ bool Db::Init(const std::string& db_path) {
     // }
 
     // options.max_open_files = max_open_files;
-    // options.filter_policy = leveldb::NewBloomFilterPolicy(10);
+    options.filter_policy = leveldb::NewBloomFilterPolicy(10);
     // options.block_cache = leveldb::NewLRUCache(cache_size * 1048576);
     // options.block_size = 32 * 1024;
     // options.write_buffer_size = 64 * 1024 * 1024;

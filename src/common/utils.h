@@ -72,15 +72,16 @@ struct Construct {
 
 #ifndef NDEBUG
 #define CHECK_MEMORY_SIZE(data_map) { \
-    if (data_map.size() > 1024) { \
-        ZJC_ERROR("data size: %u", data_map.size()); \
-        assert(data_map.size() < 120240); \
+    if (data_map.size() >= 12024) { \
+        ZJC_DEBUG("data size: %u", data_map.size()); \
+        assert(data_map.size() < 12024); \
     } \
 }
 
 #define CHECK_MEMORY_SIZE_WITH_MESSAGE(data_map, msg) { \
-    if (data_map.size() > 1024) { \
-        ZJC_ERROR("%s data size: %u, msg: %s", #data_map, data_map.size(), msg); \
+    if (data_map.size() >= 12024) { \
+        ZJC_DEBUG("%s data size: %u, msg: %s", #data_map, data_map.size(), msg); \
+        assert(data_map.size() < 12024); \
     } \
 }
 #else
