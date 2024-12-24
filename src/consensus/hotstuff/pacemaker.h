@@ -22,17 +22,13 @@ namespace shardora {
 namespace hotstuff {
 
 using NewProposalFn = std::function<Status(
-        std::shared_ptr<TC> tc,
-        std::shared_ptr<AggregateQC> agg_qc,
+        const std::shared_ptr<SyncInfo>& sync_info,
         const transport::MessagePtr msg_ptr)>;
 using StopVotingFn = std::function<void(const View &view)>;
 using SyncPoolFn = std::function<void(const uint32_t &, const int32_t&)>;
 using NewViewFn = std::function<void(
-    const std::shared_ptr<tnet::TcpInterface> conn, 
-    std::shared_ptr<TC> tc,
-    std::shared_ptr<AggregateQC> agg_qc)>;
-using GetHighQCFn = std::function<QC()>;
-using UpdateHighQCFn = std::function<void(const QC&)>;
+    const std::shared_ptr<tnet::TcpInterface> conn,
+    const std::shared_ptr<SyncInfo>& sync_info)>;
 
 class Pacemaker {
 public:
@@ -44,9 +40,7 @@ public:
             const std::shared_ptr<Crypto>& crypto,
 #endif
             std::shared_ptr<LeaderRotation>& leader_rotation,
-            const std::shared_ptr<ViewDuration>& duration,
-            GetHighQCFn get_high_qc_fn,
-            UpdateHighQCFn update_high_qc_fn);
+            const std::shared_ptr<ViewDuration>& duration);
     ~Pacemaker();
 
     Pacemaker(const Pacemaker&) = delete;
@@ -74,10 +68,15 @@ public:
     // 收到超时消息
     void OnRemoteTimeout(const transport::MessagePtr& msg_ptr);
     // 视图切换
-    void NewTc(const std::shared_ptr<TC>& tc);
-    void NewAggQc(const std::shared_ptr<AggregateQC>& agg_qc);
-    void NewQcView(uint64_t qc_view);
+    Status AdvanceView(const std::shared_ptr<SyncInfo>& sync_info);
+    // void NewTc(const std::shared_ptr<TC>& tc);
+    // void NewAggQc(const std::shared_ptr<AggregateQC>& agg_qc);
+    // void NewQcView(uint64_t qc_view);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
+
+    inline std::shared_ptr<QC> HighQC() const {
+        return high_qc_;
+    }    
 
     inline std::shared_ptr<TC> HighTC() const {
         return high_tc_;
@@ -87,20 +86,11 @@ public:
         return cur_view_;
     }
 
-    inline QC HighQC() const {
-        return get_high_qc_fn_();
-    }
-
-    void UpdateHighQC(const QC& qc) {
-        update_high_qc_fn_(qc);
-    }
-
     // 重置超时实例
     void ResetViewDuration(const std::shared_ptr<ViewDuration>& dur) {
         duration_ = dur;
         
         StopTimeoutTimer();
-        ZJC_DEBUG("local time set start duration is reset view duration called start timeout: %lu", pool_idx_);
         StartTimeoutTimer();
     }
 
@@ -109,30 +99,34 @@ public:
     }
 
 private:
+    void UpdateHighQC(const std::shared_ptr<QC>& qc) {
+        if (high_qc_->view() < qc->view()) {
+            high_qc_ = qc;
+        }
+    }
+
+    void UpdateHighTC(const std::shared_ptr<TC>& tc) {
+        if (high_tc_->view() < tc->view()) {
+            high_tc_ = tc;
+            // leader_rotation_->SetExtraNonce(std::to_string(high_tc_->view()));
+        }
+    }
+    
     void SendTimeout(const std::shared_ptr<transport::TransportMessage>& msg_ptr);
 
     inline void StartTimeoutTimer() {
         last_time_us_ = common::TimeUtils::TimestampUs();
         duration_us_ = duration_->Duration();
-        ZJC_DEBUG("pool: %d local time set start duration is %lu ms", pool_idx_, duration_us_/1000);
+        ZJC_DEBUG("pool: %d duration is %lu ms", pool_idx_, duration_us_/1000);
     }
 
     inline void StopTimeoutTimer() {
         last_time_us_ = 0;
         duration_us_ = 0;
-        ZJC_DEBUG("pool: %d local time set stop timer called!", pool_idx_);
     }
 
     inline bool IsTimeout() {
-        // duration_us_ = 0;
-        bool timeout = (last_time_us_ != 0 && 
-            (common::TimeUtils::TimestampUs() - last_time_us_) > (duration_us_ + 10000000lu));
-        // ZJC_DEBUG("pool: %u, local time last_time_us_: %lu, duration_us_: %lu, now time: %lu, dec: %lu, timeout: %d",
-        //     pool_idx_, last_time_us_, duration_us_, 
-        //     common::TimeUtils::TimestampUs(), 
-        //     (common::TimeUtils::TimestampUs() - last_time_us_),
-        //     timeout);
-        return timeout;
+        return (last_time_us_ != 0 && common::TimeUtils::TimestampUs() - last_time_us_ > duration_us_);
     }
 
     inline std::shared_ptr<ElectItem> elect_item(uint32_t sharding_id, uint64_t elect_height) {
@@ -141,9 +135,8 @@ private:
     
 
     uint32_t pool_idx_;
+    std::shared_ptr<QC> high_qc_ = nullptr;
     std::shared_ptr<TC> high_tc_ = nullptr;
-    GetHighQCFn get_high_qc_fn_ = nullptr;
-    UpdateHighQCFn update_high_qc_fn_ = nullptr;
     View cur_view_ = 0llu;
 
 #ifdef USE_AGG_BLS

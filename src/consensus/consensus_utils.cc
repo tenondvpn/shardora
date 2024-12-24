@@ -18,11 +18,11 @@ namespace consensus {
 //     msg.append((char*)&height, sizeof(height));
 //     uint64_t timeblock_height = block.timeblock_height();
 //     msg.append((char*)&timeblock_height, sizeof(timeblock_height));
-//     uint64_t elect_height = view_block.qc().elect_height();
+//     uint64_t elect_height = view_block.elect_height();
 //     msg.append((char*)&elect_height, sizeof(elect_height));
 //     uint64_t timestamp = block.timestamp();
 //     msg.append((char*)&timestamp, sizeof(timestamp));  
-//     uint32_t leader_idx = view_block.qc().leader_idx();
+//     uint32_t leader_idx = view_block.leader_idx();
 //     msg.append((char*)&leader_idx, sizeof(leader_idx));
 //     if (block.change_leader_invalid_hashs_size() > 0) {
 //         for (int32_t i = 0; i < block.change_leader_invalid_hashs_size(); ++i) {

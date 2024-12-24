@@ -39,25 +39,25 @@ void ToTxsPools::NewBlock(
     return;
 #endif
     auto& block = view_block_ptr->block_info();
-    if (view_block_ptr->qc().network_id() != common::GlobalInfo::Instance()->network_id() &&
-            view_block_ptr->qc().network_id() + network::kConsensusWaitingShardOffset !=
+    if (view_block_ptr->network_id() != common::GlobalInfo::Instance()->network_id() &&
+            view_block_ptr->network_id() + network::kConsensusWaitingShardOffset !=
             common::GlobalInfo::Instance()->network_id()) {
-        ZJC_DEBUG("network invalid: %d, local: %d", view_block_ptr->qc().network_id(), common::GlobalInfo::Instance()->network_id());
+        ZJC_DEBUG("network invalid: %d, local: %d", view_block_ptr->network_id(), common::GlobalInfo::Instance()->network_id());
         return;
     }
 
     // 更新 pool 的 max height
-    if (block.height() > pool_max_heihgts_[view_block_ptr->qc().pool_index()]) {
-        pool_max_heihgts_[view_block_ptr->qc().pool_index()] = block.height();
+    if (block.height() > pool_max_heihgts_[view_block_ptr->pool_index()]) {
+        pool_max_heihgts_[view_block_ptr->pool_index()] = block.height();
     }
 
-    if (pool_consensus_heihgts_[view_block_ptr->qc().pool_index()] + 1 == block.height()) {
-        ++pool_consensus_heihgts_[view_block_ptr->qc().pool_index()];
-        for (; pool_consensus_heihgts_[view_block_ptr->qc().pool_index()] <= pool_max_heihgts_[view_block_ptr->qc().pool_index()];
-                ++pool_consensus_heihgts_[view_block_ptr->qc().pool_index()]) {
-            auto iter = added_heights_[view_block_ptr->qc().pool_index()].find(
-                    pool_consensus_heihgts_[view_block_ptr->qc().pool_index()] + 1);
-            if (iter == added_heights_[view_block_ptr->qc().pool_index()].end()) {
+    if (pool_consensus_heihgts_[view_block_ptr->pool_index()] + 1 == block.height()) {
+        ++pool_consensus_heihgts_[view_block_ptr->pool_index()];
+        for (; pool_consensus_heihgts_[view_block_ptr->pool_index()] <= pool_max_heihgts_[view_block_ptr->pool_index()];
+                ++pool_consensus_heihgts_[view_block_ptr->pool_index()]) {
+            auto iter = added_heights_[view_block_ptr->pool_index()].find(
+                    pool_consensus_heihgts_[view_block_ptr->pool_index()] + 1);
+            if (iter == added_heights_[view_block_ptr->pool_index()].end()) {
                 break;
             }
         }
@@ -67,16 +67,16 @@ void ToTxsPools::NewBlock(
     cons_debug.ParseFromString( view_block_ptr->debug());
     ZJC_DEBUG("to txs new block coming pool: %u, height: %lu, "
         "cons height: %lu, tx size: %d, propose_debug: %s, step: %d, tx status: %d",
-        view_block_ptr->qc().pool_index(), 
+        view_block_ptr->pool_index(), 
         block.height(), 
-        pool_consensus_heihgts_[view_block_ptr->qc().pool_index()], 
+        pool_consensus_heihgts_[view_block_ptr->pool_index()], 
         view_block_ptr->block_info().tx_list_size(),
         ProtobufToJson(cons_debug).c_str(),
         (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).step() : -1),
         (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).status() : -1));
-    added_heights_[view_block_ptr->qc().pool_index()].insert(std::make_pair(block.height(), view_block_ptr));
-    CHECK_MEMORY_SIZE(added_heights_[view_block_ptr->qc().pool_index()]);
-    valided_heights_[view_block_ptr->qc().pool_index()].insert(block.height());
+    added_heights_[view_block_ptr->pool_index()].insert(std::make_pair(block.height(), view_block_ptr));
+    CHECK_MEMORY_SIZE(added_heights_[view_block_ptr->pool_index()]);
+    valided_heights_[view_block_ptr->pool_index()].insert(block.height());
 }
 
 bool ToTxsPools::PreStatisticTos(
@@ -124,8 +124,8 @@ bool ToTxsPools::PreStatisticTos(
             if (tx_list[i].status() != consensus::kConsensusSuccess) {
                 ZJC_INFO("tx status error: %d, gid: %s, net: %u, pool: %u, height: %lu, hash: %s",
                     tx_list[i].status(), common::Encode::HexEncode(tx_list[i].gid()).c_str(),
-                    view_block_ptr->qc().network_id(), view_block_ptr->qc().pool_index(), block.height(),
-                    common::Encode::HexEncode(view_block_ptr->qc().view_block_hash()).c_str());
+                    view_block_ptr->network_id(), view_block_ptr->pool_index(), block.height(),
+                    common::Encode::HexEncode(view_block_ptr->hash()).c_str());
 //                 assert(false);
                 continue;
             }
@@ -164,8 +164,8 @@ bool ToTxsPools::PreStatisticTos(
         }
 
         if (!cross_map.empty()) {
-            cross_sharding_map_[view_block_ptr->qc().pool_index()][block.height()] = cross_map;
-            CHECK_MEMORY_SIZE(cross_sharding_map_[view_block_ptr->qc().pool_index()]);
+            cross_sharding_map_[view_block_ptr->pool_index()][block.height()] = cross_map;
+            CHECK_MEMORY_SIZE(cross_sharding_map_[view_block_ptr->pool_index()]);
         }
     }
 
@@ -188,7 +188,7 @@ void ToTxsPools::HandleJoinElect(
                 tx.step(),
                 0,
                 network::kRootCongressNetworkId,
-                view_block.qc().pool_index(),
+                view_block.pool_index(),
                 tx.storages(i).value(), "", "", 0);
         }
     }
@@ -289,7 +289,7 @@ void ToTxsPools::HandleCreateContractUserCall(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx) {
     uint32_t sharding_id = network::kRootCongressNetworkId;
-    uint32_t pool_index = view_block.qc().pool_index();
+    uint32_t pool_index = view_block.pool_index();
     AddTxToMap(view_block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", "", "", 0);
     for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
         uint32_t sharding_id = common::kInvalidUint32;
@@ -314,7 +314,7 @@ void ToTxsPools::HandleCreateContractByRootFrom(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx) {
     uint32_t sharding_id = network::kRootCongressNetworkId;
-    uint32_t pool_index = view_block.qc().pool_index();
+    uint32_t pool_index = view_block.pool_index();
 
     std::string bytes_code;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
@@ -373,11 +373,11 @@ void ToTxsPools::AddTxToMap(
     memcpy(tmp_to_data + 4, in_to.c_str(), in_to.size());
     uint32_t* tmp_data = (uint32_t*)tmp_to_data;
     tmp_data[0] = type;
-    auto pool_iter = network_txs_pools_.find(view_block.qc().pool_index());
+    auto pool_iter = network_txs_pools_.find(view_block.pool_index());
     if (pool_iter == network_txs_pools_.end()) {
         HeightMap height_map;
-        network_txs_pools_[view_block.qc().pool_index()] = height_map;
-        pool_iter = network_txs_pools_.find(view_block.qc().pool_index());
+        network_txs_pools_[view_block.pool_index()] = height_map;
+        pool_iter = network_txs_pools_.find(view_block.pool_index());
     }
 
     auto height_iter = pool_iter->second.find(view_block.block_info().height());
@@ -386,7 +386,7 @@ void ToTxsPools::AddTxToMap(
         pool_iter->second[view_block.block_info().height()] = tx_map;
         height_iter = pool_iter->second.find(view_block.block_info().height());
         ZJC_DEBUG("success add block pool: %u, height: %lu",
-            view_block.qc().pool_index(), view_block.block_info().height());
+            view_block.pool_index(), view_block.block_info().height());
     }
 
     auto to_iter = height_iter->second.find(to);
@@ -411,9 +411,9 @@ void ToTxsPools::AddTxToMap(
     height_iter->second[to].amount += amount;
     ZJC_DEBUG("to block pool: %u, height: %lu, success add block pool: %u, "
         "height: %lu, id: %s, amount: %lu, all amount: %lu, step: %u",
-        view_block.qc().pool_index(), 
+        view_block.pool_index(), 
         view_block.block_info().height(), 
-        view_block.qc().pool_index(), 
+        view_block.pool_index(), 
         view_block.block_info().height(), 
         common::Encode::HexEncode(to).c_str(), 
         amount, 
@@ -662,7 +662,7 @@ void ToTxsPools::HandleCrossShard(
         std::unordered_map<uint32_t, std::unordered_set<CrossItem, CrossItemRecordHash>>& cross_map) {
     if (tx.status() != consensus::kConsensusSuccess) {
         ZJC_DEBUG("success handle block pool: %u, height: %lu, tm height: %lu, status: %d, step: %d",
-            view_block.qc().pool_index(), view_block.block_info().height(), view_block.block_info().timeblock_height(), tx.status(), tx.step());
+            view_block.pool_index(), view_block.block_info().height(), view_block.block_info().timeblock_height(), tx.status(), tx.step());
         return;
     }
 
@@ -679,7 +679,7 @@ void ToTxsPools::HandleCrossShard(
 
                     cross_item = CrossStatisticItem(to_tx.to_heights().sharding_id());
                     ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
-                        tx.step(), view_block.qc().pool_index(), view_block.block_info().height(), to_tx.to_heights().sharding_id());
+                        tx.step(), view_block.pool_index(), view_block.block_info().height(), to_tx.to_heights().sharding_id());
                     break;
                 }
             }
@@ -703,7 +703,7 @@ void ToTxsPools::HandleCrossShard(
                 break;
             }
             ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
-                tx.step(), view_block.qc().pool_index(), view_block.block_info().height(), 0);
+                tx.step(), view_block.pool_index(), view_block.block_info().height(), 0);
         }
         break;
     }
@@ -711,7 +711,7 @@ void ToTxsPools::HandleCrossShard(
         if (!is_root) {
             cross_item = CrossStatisticItem(network::kRootCongressNetworkId);
             ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
-                tx.step(), view_block.qc().pool_index(), view_block.block_info().height(), network::kRootCongressNetworkId);
+                tx.step(), view_block.pool_index(), view_block.block_info().height(), network::kRootCongressNetworkId);
         }
         
         break;
@@ -724,7 +724,7 @@ void ToTxsPools::HandleCrossShard(
         }
 
         ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
-            tx.step(), view_block.qc().pool_index(), view_block.block_info().height(),
+            tx.step(), view_block.pool_index(), view_block.block_info().height(),
             cross_item.des_net);
         break;
     }
@@ -736,7 +736,7 @@ void ToTxsPools::HandleCrossShard(
 
         cross_item = CrossStatisticItem(network::kNodeNetworkId);
         ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
-            tx.step(), view_block.qc().pool_index(), view_block.block_info().height(), network::kNodeNetworkId);
+            tx.step(), view_block.pool_index(), view_block.block_info().height(), network::kNodeNetworkId);
         break;
     }
     default:
@@ -750,10 +750,10 @@ void ToTxsPools::HandleCrossShard(
     }
 
     if (cross_item.des_net != 0) {
-        CrossItem tmp_cross_item{src_shard, view_block.qc().pool_index(), view_block.block_info().height()};
+        CrossItem tmp_cross_item{src_shard, view_block.pool_index(), view_block.block_info().height()};
         cross_map[cross_item.des_net].insert(tmp_cross_item);
         ZJC_DEBUG("succcess add cross statistic shard: %u, pool: %u, height: %lu, des: %u",
-            src_shard, view_block.qc().pool_index(), view_block.block_info().height(), cross_item.des_net);
+            src_shard, view_block.pool_index(), view_block.block_info().height(), cross_item.des_net);
     } else if (cross_item.cross_ptr != nullptr) {
         for (int32_t i = 0; i < cross_item.cross_ptr->crosses_size(); ++i) {
             CrossItem tmp_cross_item{
