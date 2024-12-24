@@ -1563,7 +1563,7 @@ bool Hotstuff::CommitInner(
     //     view_block_chain()->String().c_str(),
     //     test_index, v_block->debug().c_str());
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    acceptor()->Commit(queue_block_item);
+    acceptor()->Commit(msg_ptr, queue_block_item);
     // ZJC_DEBUG("2 NEW BLOCK CommitInner coming pool: %d, commit coming s: %d, "
     //     "vb view: %lu, %u_%u_%lu, cur chain: %s, test_index: %lu",
     //     pool_idx_, 0, v_block->qc().view(),
