@@ -35,7 +35,8 @@ message BroadcastParam {
 
 message ConsensusDebug {
     repeated string messages = 1;
-    repeated uint64 timestamps = 2;
+    repeated uint64 vote_timestamps = 2;
+    optional uint64 begin_timestamp = 3;
 };
 
 message Header {

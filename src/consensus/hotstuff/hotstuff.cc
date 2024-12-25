@@ -229,7 +229,11 @@ Status Hotstuff::Propose(
 
     transport::protobuf::ConsensusDebug consensus_debug;
     consensus_debug.add_messages(propose_debug_str);
-    consensus_debug.add_timestamps(common::TimeUtils::TimestampMs());
+    for (uint32_t i = 0; i < common::kEachShardMaxNodeCount; ++i) {
+        consensus_debug.add_vote_timestamps(0);
+    }
+
+    consensus_debug.set_begin_timestamp(common::TimeUtils::TimestampMs());
     header.set_debug(consensus_debug.SerializeAsString());
     ZJC_DEBUG("leader begin propose_debug: %s", ProtobufToJson(consensus_debug).c_str());
 #endif
@@ -915,7 +919,6 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
     cons_debug.add_timestamps(
         now_tm_ms - 
         cons_debug.timestamps(0));
-    trans_header.set_debug(cons_debug.SerializeAsString());
     auto* hotstuff_msg = trans_header.mutable_hotstuff();
     auto* vote_msg = hotstuff_msg->mutable_vote_msg();
     assert(pro_msg_wrap->view_block_ptr->qc().elect_height() > 0);
@@ -1149,12 +1152,16 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     //     }        
     // }    
     
-#endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto view_block_ptr = view_block_chain()->Get(qc_item.view_block_hash());
     if (view_block_ptr) {
+        auto b = common::TimeUtils::TimestampMs();
+        transport::protobuf::ConsensusDebug cons_debug;
+        cons_debug.ParseFromString(view_block_ptr->debug());
+        cons_debug.set_vote_timestamps(vote_msg.replica_idx(), b - cons_debug.begin_timestamp());
         view_block_ptr->set_debug(cons_debug.SerializeAsString());
     }
+#endif
 
     view_block_chain()->UpdateHighViewBlock(qc_item);
     pacemaker()->NewQcView(qc_item.view());
