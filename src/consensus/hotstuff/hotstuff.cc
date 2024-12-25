@@ -372,7 +372,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     cons_debug.ParseFromString(msg_ptr->header.debug());
     cons_debug.add_timestamps(
         latest_propose_msg_tm_ms_ - 
-        cons_debug.timestamps(cons_debug.timestamps_size() - 1));
+        cons_debug.timestamps(0));
     ZJC_DEBUG("handle propose called hash: %lu, %u_%u_%lu, "
         "view block hash: %s, sign x: %s, propose_debug: %s", 
         msg_ptr->header.hash64(), 
@@ -914,7 +914,7 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     cons_debug.add_timestamps(
         now_tm_ms - 
-        cons_debug.timestamps(cons_debug.timestamps_size() - 1));
+        cons_debug.timestamps(0));
     trans_header.set_debug(cons_debug.SerializeAsString());
     auto* hotstuff_msg = trans_header.mutable_hotstuff();
     auto* vote_msg = hotstuff_msg->mutable_vote_msg();
@@ -992,7 +992,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(msg_ptr->header.debug());
     cons_debug.add_timestamps(
-        b - cons_debug.timestamps(cons_debug.timestamps_size() - 1));
+        b - cons_debug.timestamps(0));
     ZJC_DEBUG("====2.0 pool: %d, onVote, hash: %s, view: %lu, "
         "local high view: %lu, replica: %lu, hash64: %lu, propose_debug: %s, followers_gids: %s",
         pool_idx_,
