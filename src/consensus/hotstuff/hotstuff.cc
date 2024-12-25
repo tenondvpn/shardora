@@ -367,9 +367,12 @@ void Hotstuff::NewView(
 void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     assert(msg_ptr->header.hotstuff().pro_msg().view_item().qc().view_block_hash().empty());
-    latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
     transport::protobuf::ConsensusDebug cons_debug;
+    latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
     cons_debug.ParseFromString(msg_ptr->header.debug());
+    cons_debug.add_timestamps(
+        latest_propose_msg_tm_ms_ - 
+        cons_debug.timestamps(cons_debug.timestamps_size() - 1));
     ZJC_DEBUG("handle propose called hash: %lu, %u_%u_%lu, "
         "view block hash: %s, sign x: %s, propose_debug: %s", 
         msg_ptr->header.hash64(), 
@@ -394,7 +397,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     auto pro_msg_wrap = std::make_shared<ProposeMsgWrapper>(msg_ptr);
     pro_msg_wrap->view_block_ptr = std::make_shared<ViewBlock>(
         msg_ptr->header.hotstuff().pro_msg().view_item());
-    pro_msg_wrap->view_block_ptr->set_debug(msg_ptr->header.debug());
+    pro_msg_wrap->view_block_ptr->set_debug(cons_debug.SerializeAsString());
     ZJC_DEBUG("handle new propose message parent hash: %s, %u_%u_%lu, view hash: %s, "
         "hash64: %lu, block timestamp: %lu, propose_debug: %s",
         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->parent_hash()).c_str(), 
@@ -908,7 +911,11 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
 
     auto trans_msg = std::make_shared<transport::TransportMessage>();
     auto& trans_header = trans_msg->header;
-    trans_header.set_debug(pro_msg_wrap->msg_ptr->header.debug());
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    cons_debug.add_timestamps(
+        now_tm_ms - 
+        cons_debug.timestamps(cons_debug.timestamps_size() - 1));
+    trans_header.set_debug(cons_debug.SerializeAsString());
     auto* hotstuff_msg = trans_header.mutable_hotstuff();
     auto* vote_msg = hotstuff_msg->mutable_vote_msg();
     assert(pro_msg_wrap->view_block_ptr->qc().elect_height() > 0);
@@ -977,7 +984,6 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     }
 
     std::string followers_gids;
-
 // #ifndef NDEBUG
 //     for (uint32_t i = 0; i < vote_msg.txs_size(); ++i) {
 //         followers_gids += common::Encode::HexEncode(vote_msg.txs(i).gid()) + " ";
@@ -985,7 +991,8 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
 // #endif
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(msg_ptr->header.debug());
-
+    cons_debug.add_timestamps(
+        b - cons_debug.timestamps(cons_debug.timestamps_size() - 1));
     ZJC_DEBUG("====2.0 pool: %d, onVote, hash: %s, view: %lu, "
         "local high view: %lu, replica: %lu, hash64: %lu, propose_debug: %s, followers_gids: %s",
         pool_idx_,
@@ -1144,6 +1151,11 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     
 #endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
+    auto view_block_ptr = view_block_chain()->Get(qc_item.view_block_hash());
+    if (view_block_ptr) {
+        view_block_ptr->set_debug(cons_debug.SerializeAsString());
+    }
+
     view_block_chain()->UpdateHighViewBlock(qc_item);
     pacemaker()->NewQcView(qc_item.view());
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率:q高很多
