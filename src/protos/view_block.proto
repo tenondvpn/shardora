@@ -22,7 +22,6 @@ message ViewBlockItem {
     optional QcItem qc = 3;
     optional MemberConsensusStat leader_consen_stat = 4;
     optional bytes debug = 5;
-    optional uint64 debug_timestamps = 6;
 }
 
 message MemberConsensusStat {
