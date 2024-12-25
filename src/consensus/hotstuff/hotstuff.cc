@@ -374,9 +374,6 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     transport::protobuf::ConsensusDebug cons_debug;
     latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
     cons_debug.ParseFromString(msg_ptr->header.debug());
-    cons_debug.add_timestamps(
-        latest_propose_msg_tm_ms_ - 
-        cons_debug.timestamps(0));
     ZJC_DEBUG("handle propose called hash: %lu, %u_%u_%lu, "
         "view block hash: %s, sign x: %s, propose_debug: %s", 
         msg_ptr->header.hash64(), 
@@ -916,9 +913,6 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
     auto trans_msg = std::make_shared<transport::TransportMessage>();
     auto& trans_header = trans_msg->header;
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    cons_debug.add_timestamps(
-        now_tm_ms - 
-        cons_debug.timestamps(0));
     auto* hotstuff_msg = trans_header.mutable_hotstuff();
     auto* vote_msg = hotstuff_msg->mutable_vote_msg();
     assert(pro_msg_wrap->view_block_ptr->qc().elect_height() > 0);
