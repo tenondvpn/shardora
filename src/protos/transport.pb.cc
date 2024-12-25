@@ -249,9 +249,11 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::transport::protobuf::ConsensusDebug, messages_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::transport::protobuf::ConsensusDebug, timestamps_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::transport::protobuf::ConsensusDebug, vote_timestamps_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::transport::protobuf::ConsensusDebug, begin_timestamp_),
   ~0u,
   ~0u,
+  0,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::transport::protobuf::Header, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::transport::protobuf::Header, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -391,9 +393,9 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 19, sizeof(::shardora::transport::protobuf::BroadcastParam)},
-  { 33, 40, sizeof(::shardora::transport::protobuf::ConsensusDebug)},
-  { 42, 80, sizeof(::shardora::transport::protobuf::Header)},
-  { 113, 148, sizeof(::shardora::transport::protobuf::OldHeader)},
+  { 33, 41, sizeof(::shardora::transport::protobuf::ConsensusDebug)},
+  { 44, 82, sizeof(::shardora::transport::protobuf::Header)},
+  { 115, 150, sizeof(::shardora::transport::protobuf::OldHeader)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -440,87 +442,88 @@ void AddDescriptorsImpl() {
       "1\022\016\n\006header\030\t \001(\014\022\014\n\004body\030\n \001(\014\022\023\n\013net_c"
       "rossed\030\013 \001(\010\022\023\n\013bloomfilter\030\014 \003(\004\022\024\n\tevi"
       "l_rate\030\r \001(\002:\0010\022\036\n\023ign_bloomfilter_hop\030\016"
-      " \001(\r:\0011\"6\n\016ConsensusDebug\022\020\n\010messages\030\001 "
-      "\003(\014\022\022\n\ntimestamps\030\002 \003(\004\"\302\014\n\006Header\022\027\n\017sr"
-      "c_sharding_id\030\001 \001(\005\022\023\n\013des_dht_key\030\002 \001(\014"
-      "\022\024\n\thop_count\030\003 \001(\r:\0010\022\r\n\005debug\030\004 \001(\014\022\016\n"
-      "\006hash64\030\005 \001(\004\022\014\n\004type\030\006 \001(\r\022>\n\tbroadcast"
-      "\030\007 \001(\0132+.shardora.transport.protobuf.Bro"
-      "adcastParam\022\014\n\004sign\030\010 \001(\014\022\022\n\007version\030\t \001"
-      "(\005:\0010\022@\n\rnetwork_proto\030\n \001(\0132).shardora."
-      "network.protobuf.NetworkMessage\0224\n\tdht_p"
-      "roto\030\013 \001(\0132!.shardora.dht.protobuf.DhtMe"
-      "ssage\0224\n\tbls_proto\030\014 \001(\0132!.shardora.bls."
-      "protobuf.BlsMessage\0224\n\010tx_proto\030\r \001(\0132\"."
-      "shardora.pools.protobuf.TxMessage\022C\n\016con"
-      "tract_proto\030\016 \001(\0132+.shardora.contract.pr"
-      "otobuf.ContractMessage\022:\n\013elect_proto\030\017 "
-      "\001(\0132%.shardora.elect.protobuf.ElectMessa"
-      "ge\0221\n\004zbft\030\020 \001(\0132#.shardora.zbft.protobu"
-      "f.ZbftMessage\022:\n\013block_proto\030\021 \001(\0132%.sha"
-      "rdora.block.protobuf.BlockMessage\022;\n\rto_"
-      "tx_heights\030\022 \001(\0132$.shardora.pools.protob"
-      "uf.ToTxHeights\022.\n\004sync\030\023 \001(\0132 .shardora."
-      "sync.protobuf.SyncInfo\0227\n\nsync_proto\030\024 \001"
-      "(\0132#.shardora.sync.protobuf.SyncMessage\022"
-      "4\n\tvss_proto\030\025 \001(\0132!.shardora.vss.protob"
-      "uf.VssMessage\022C\n\tcross_tos\030\026 \001(\01320.shard"
-      "ora.block.protobuf.CrossShardingTosMessa"
-      "ge\022O\n\017cross_statistic\030\027 \001(\01326.shardora.b"
-      "lock.protobuf.CrossShardingStatisticMess"
-      "age\022\?\n\013elect_block\030\030 \001(\0132*.shardora.bloc"
-      "k.protobuf.ElectBlockMessage\0227\n\ninit_pro"
-      "to\030\031 \001(\0132#.shardora.init.protobuf.InitMe"
-      "ssage\022A\n\014sync_heights\030\032 \001(\0132+.shardora.p"
-      "ools.protobuf.SyncPoolsMaxHeight\022-\n\005bloc"
-      "k\030\033 \001(\0132\036.shardora.block.protobuf.Block\022"
-      "\030\n\020from_public_port\030\035 \001(\r\022.\n\003c2c\030\036 \001(\0132!"
-      ".shardora.c2c.protobuf.C2cMessage\022\016\n\006pub"
-      "key\030\037 \001(\014\022L\n\020view_block_proto\030  \001(\01322.sh"
-      "ardora.view_block.protobuf.ViewBlockSync"
-      "Message\022L\n\026hotstuff_timeout_proto\030! \001(\0132"
-      ",.shardora.view_block.protobuf.TimeoutMe"
-      "ssage\022=\n\010hotstuff\030\" \001(\0132+.shardora.hotst"
-      "uff.protobuf.HotstuffMessage\"\230\013\n\tOldHead"
-      "er\022\027\n\017src_sharding_id\030\001 \001(\005\022\023\n\013des_dht_k"
-      "ey\030\002 \001(\014\022\024\n\thop_count\030\003 \001(\r:\0010\022\r\n\005debug\030"
-      "\004 \001(\014\022\016\n\006hash64\030\005 \001(\004\022\014\n\004type\030\006 \001(\r\022>\n\tb"
-      "roadcast\030\007 \001(\0132+.shardora.transport.prot"
-      "obuf.BroadcastParam\022\014\n\004sign\030\010 \001(\014\022\022\n\007ver"
-      "sion\030\t \001(\005:\0010\022@\n\rnetwork_proto\030\n \001(\0132).s"
-      "hardora.network.protobuf.NetworkMessage\022"
-      "4\n\tdht_proto\030\013 \001(\0132!.shardora.dht.protob"
-      "uf.DhtMessage\0224\n\tbls_proto\030\014 \001(\0132!.shard"
-      "ora.bls.protobuf.BlsMessage\0224\n\010tx_proto\030"
-      "\r \001(\0132\".shardora.pools.protobuf.TxMessag"
-      "e\022C\n\016contract_proto\030\016 \001(\0132+.shardora.con"
-      "tract.protobuf.ContractMessage\022:\n\013elect_"
-      "proto\030\017 \001(\0132%.shardora.elect.protobuf.El"
-      "ectMessage\0221\n\004zbft\030\020 \001(\0132#.shardora.zbft"
-      ".protobuf.ZbftMessage\022:\n\013block_proto\030\021 \001"
-      "(\0132%.shardora.block.protobuf.BlockMessag"
-      "e\022;\n\rto_tx_heights\030\022 \001(\0132$.shardora.pool"
-      "s.protobuf.ToTxHeights\022.\n\004sync\030\023 \001(\0132 .s"
-      "hardora.sync.protobuf.SyncInfo\0227\n\nsync_p"
-      "roto\030\024 \001(\0132#.shardora.sync.protobuf.Sync"
-      "Message\0224\n\tvss_proto\030\025 \001(\0132!.shardora.vs"
-      "s.protobuf.VssMessage\022C\n\tcross_tos\030\026 \001(\013"
-      "20.shardora.block.protobuf.CrossSharding"
-      "TosMessage\022O\n\017cross_statistic\030\027 \001(\01326.sh"
-      "ardora.block.protobuf.CrossShardingStati"
-      "sticMessage\022\?\n\013elect_block\030\030 \001(\0132*.shard"
-      "ora.block.protobuf.ElectBlockMessage\0227\n\n"
-      "init_proto\030\031 \001(\0132#.shardora.init.protobu"
-      "f.InitMessage\022A\n\014sync_heights\030\032 \001(\0132+.sh"
-      "ardora.pools.protobuf.SyncPoolsMaxHeight"
-      "\022-\n\005block\030\033 \001(\0132\036.shardora.block.protobu"
-      "f.Block\022<\n\014invalid_bfts\030\034 \003(\0132&.shardora"
-      ".pools.protobuf.ShardToTxItem\022\030\n\020from_pu"
+      " \001(\r:\0011\"T\n\016ConsensusDebug\022\020\n\010messages\030\001 "
+      "\003(\t\022\027\n\017vote_timestamps\030\002 \003(\004\022\027\n\017begin_ti"
+      "mestamp\030\003 \001(\004\"\302\014\n\006Header\022\027\n\017src_sharding"
+      "_id\030\001 \001(\005\022\023\n\013des_dht_key\030\002 \001(\014\022\024\n\thop_co"
+      "unt\030\003 \001(\r:\0010\022\r\n\005debug\030\004 \001(\014\022\016\n\006hash64\030\005 "
+      "\001(\004\022\014\n\004type\030\006 \001(\r\022>\n\tbroadcast\030\007 \001(\0132+.s"
+      "hardora.transport.protobuf.BroadcastPara"
+      "m\022\014\n\004sign\030\010 \001(\014\022\022\n\007version\030\t \001(\005:\0010\022@\n\rn"
+      "etwork_proto\030\n \001(\0132).shardora.network.pr"
+      "otobuf.NetworkMessage\0224\n\tdht_proto\030\013 \001(\013"
+      "2!.shardora.dht.protobuf.DhtMessage\0224\n\tb"
+      "ls_proto\030\014 \001(\0132!.shardora.bls.protobuf.B"
+      "lsMessage\0224\n\010tx_proto\030\r \001(\0132\".shardora.p"
+      "ools.protobuf.TxMessage\022C\n\016contract_prot"
+      "o\030\016 \001(\0132+.shardora.contract.protobuf.Con"
+      "tractMessage\022:\n\013elect_proto\030\017 \001(\0132%.shar"
+      "dora.elect.protobuf.ElectMessage\0221\n\004zbft"
+      "\030\020 \001(\0132#.shardora.zbft.protobuf.ZbftMess"
+      "age\022:\n\013block_proto\030\021 \001(\0132%.shardora.bloc"
+      "k.protobuf.BlockMessage\022;\n\rto_tx_heights"
+      "\030\022 \001(\0132$.shardora.pools.protobuf.ToTxHei"
+      "ghts\022.\n\004sync\030\023 \001(\0132 .shardora.sync.proto"
+      "buf.SyncInfo\0227\n\nsync_proto\030\024 \001(\0132#.shard"
+      "ora.sync.protobuf.SyncMessage\0224\n\tvss_pro"
+      "to\030\025 \001(\0132!.shardora.vss.protobuf.VssMess"
+      "age\022C\n\tcross_tos\030\026 \001(\01320.shardora.block."
+      "protobuf.CrossShardingTosMessage\022O\n\017cros"
+      "s_statistic\030\027 \001(\01326.shardora.block.proto"
+      "buf.CrossShardingStatisticMessage\022\?\n\013ele"
+      "ct_block\030\030 \001(\0132*.shardora.block.protobuf"
+      ".ElectBlockMessage\0227\n\ninit_proto\030\031 \001(\0132#"
+      ".shardora.init.protobuf.InitMessage\022A\n\014s"
+      "ync_heights\030\032 \001(\0132+.shardora.pools.proto"
+      "buf.SyncPoolsMaxHeight\022-\n\005block\030\033 \001(\0132\036."
+      "shardora.block.protobuf.Block\022\030\n\020from_pu"
       "blic_port\030\035 \001(\r\022.\n\003c2c\030\036 \001(\0132!.shardora."
-      "c2c.protobuf.C2cMessage"
+      "c2c.protobuf.C2cMessage\022\016\n\006pubkey\030\037 \001(\014\022"
+      "L\n\020view_block_proto\030  \001(\01322.shardora.vie"
+      "w_block.protobuf.ViewBlockSyncMessage\022L\n"
+      "\026hotstuff_timeout_proto\030! \001(\0132,.shardora"
+      ".view_block.protobuf.TimeoutMessage\022=\n\010h"
+      "otstuff\030\" \001(\0132+.shardora.hotstuff.protob"
+      "uf.HotstuffMessage\"\230\013\n\tOldHeader\022\027\n\017src_"
+      "sharding_id\030\001 \001(\005\022\023\n\013des_dht_key\030\002 \001(\014\022\024"
+      "\n\thop_count\030\003 \001(\r:\0010\022\r\n\005debug\030\004 \001(\014\022\016\n\006h"
+      "ash64\030\005 \001(\004\022\014\n\004type\030\006 \001(\r\022>\n\tbroadcast\030\007"
+      " \001(\0132+.shardora.transport.protobuf.Broad"
+      "castParam\022\014\n\004sign\030\010 \001(\014\022\022\n\007version\030\t \001(\005"
+      ":\0010\022@\n\rnetwork_proto\030\n \001(\0132).shardora.ne"
+      "twork.protobuf.NetworkMessage\0224\n\tdht_pro"
+      "to\030\013 \001(\0132!.shardora.dht.protobuf.DhtMess"
+      "age\0224\n\tbls_proto\030\014 \001(\0132!.shardora.bls.pr"
+      "otobuf.BlsMessage\0224\n\010tx_proto\030\r \001(\0132\".sh"
+      "ardora.pools.protobuf.TxMessage\022C\n\016contr"
+      "act_proto\030\016 \001(\0132+.shardora.contract.prot"
+      "obuf.ContractMessage\022:\n\013elect_proto\030\017 \001("
+      "\0132%.shardora.elect.protobuf.ElectMessage"
+      "\0221\n\004zbft\030\020 \001(\0132#.shardora.zbft.protobuf."
+      "ZbftMessage\022:\n\013block_proto\030\021 \001(\0132%.shard"
+      "ora.block.protobuf.BlockMessage\022;\n\rto_tx"
+      "_heights\030\022 \001(\0132$.shardora.pools.protobuf"
+      ".ToTxHeights\022.\n\004sync\030\023 \001(\0132 .shardora.sy"
+      "nc.protobuf.SyncInfo\0227\n\nsync_proto\030\024 \001(\013"
+      "2#.shardora.sync.protobuf.SyncMessage\0224\n"
+      "\tvss_proto\030\025 \001(\0132!.shardora.vss.protobuf"
+      ".VssMessage\022C\n\tcross_tos\030\026 \001(\01320.shardor"
+      "a.block.protobuf.CrossShardingTosMessage"
+      "\022O\n\017cross_statistic\030\027 \001(\01326.shardora.blo"
+      "ck.protobuf.CrossShardingStatisticMessag"
+      "e\022\?\n\013elect_block\030\030 \001(\0132*.shardora.block."
+      "protobuf.ElectBlockMessage\0227\n\ninit_proto"
+      "\030\031 \001(\0132#.shardora.init.protobuf.InitMess"
+      "age\022A\n\014sync_heights\030\032 \001(\0132+.shardora.poo"
+      "ls.protobuf.SyncPoolsMaxHeight\022-\n\005block\030"
+      "\033 \001(\0132\036.shardora.block.protobuf.Block\022<\n"
+      "\014invalid_bfts\030\034 \003(\0132&.shardora.pools.pro"
+      "tobuf.ShardToTxItem\022\030\n\020from_public_port\030"
+      "\035 \001(\r\022.\n\003c2c\030\036 \001(\0132!.shardora.c2c.protob"
+      "uf.C2cMessage"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 3743);
+      descriptor, 3773);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/transport.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fnetwork_2eproto::AddDescriptors();
@@ -1314,7 +1317,8 @@ void ConsensusDebug::InitAsDefaultInstance() {
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int ConsensusDebug::kMessagesFieldNumber;
-const int ConsensusDebug::kTimestampsFieldNumber;
+const int ConsensusDebug::kVoteTimestampsFieldNumber;
+const int ConsensusDebug::kBeginTimestampFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ConsensusDebug::ConsensusDebug()
@@ -1329,12 +1333,14 @@ ConsensusDebug::ConsensusDebug(const ConsensusDebug& from)
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_),
       messages_(from.messages_),
-      timestamps_(from.timestamps_) {
+      vote_timestamps_(from.vote_timestamps_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  begin_timestamp_ = from.begin_timestamp_;
   // @@protoc_insertion_point(copy_constructor:shardora.transport.protobuf.ConsensusDebug)
 }
 
 void ConsensusDebug::SharedCtor() {
+  begin_timestamp_ = GOOGLE_ULONGLONG(0);
 }
 
 ConsensusDebug::~ConsensusDebug() {
@@ -1366,7 +1372,8 @@ void ConsensusDebug::Clear() {
   (void) cached_has_bits;
 
   messages_.Clear();
-  timestamps_.Clear();
+  vote_timestamps_.Clear();
+  begin_timestamp_ = GOOGLE_ULONGLONG(0);
   _has_bits_.Clear();
   _internal_metadata_.Clear();
 }
@@ -1381,31 +1388,50 @@ bool ConsensusDebug::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated bytes messages = 1;
+      // repeated string messages = 1;
       case 1: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->add_messages()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            this->messages(this->messages_size() - 1).data(),
+            static_cast<int>(this->messages(this->messages_size() - 1).length()),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "shardora.transport.protobuf.ConsensusDebug.messages");
         } else {
           goto handle_unusual;
         }
         break;
       }
 
-      // repeated uint64 timestamps = 2;
+      // repeated uint64 vote_timestamps = 2;
       case 2: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
                    ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
-                 1, 16u, input, this->mutable_timestamps())));
+                 1, 16u, input, this->mutable_vote_timestamps())));
         } else if (
             static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
                    ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
-                 input, this->mutable_timestamps())));
+                 input, this->mutable_vote_timestamps())));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint64 begin_timestamp = 3;
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u /* 24 & 0xFF */)) {
+          set_has_begin_timestamp();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &begin_timestamp_)));
         } else {
           goto handle_unusual;
         }
@@ -1438,16 +1464,26 @@ void ConsensusDebug::SerializeWithCachedSizes(
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // repeated bytes messages = 1;
+  // repeated string messages = 1;
   for (int i = 0, n = this->messages_size(); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteBytes(
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->messages(i).data(), static_cast<int>(this->messages(i).length()),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "shardora.transport.protobuf.ConsensusDebug.messages");
+    ::google::protobuf::internal::WireFormatLite::WriteString(
       1, this->messages(i), output);
   }
 
-  // repeated uint64 timestamps = 2;
-  for (int i = 0, n = this->timestamps_size(); i < n; i++) {
+  // repeated uint64 vote_timestamps = 2;
+  for (int i = 0, n = this->vote_timestamps_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(
-      2, this->timestamps(i), output);
+      2, this->vote_timestamps(i), output);
+  }
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint64 begin_timestamp = 3;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(3, this->begin_timestamp(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1464,15 +1500,25 @@ void ConsensusDebug::SerializeWithCachedSizes(
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // repeated bytes messages = 1;
+  // repeated string messages = 1;
   for (int i = 0, n = this->messages_size(); i < n; i++) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->messages(i).data(), static_cast<int>(this->messages(i).length()),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "shardora.transport.protobuf.ConsensusDebug.messages");
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteBytesToArray(1, this->messages(i), target);
+      WriteStringToArray(1, this->messages(i), target);
   }
 
-  // repeated uint64 timestamps = 2;
+  // repeated uint64 vote_timestamps = 2;
   target = ::google::protobuf::internal::WireFormatLite::
-    WriteUInt64ToArray(2, this->timestamps_, target);
+    WriteUInt64ToArray(2, this->vote_timestamps_, target);
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint64 begin_timestamp = 3;
+  if (cached_has_bits & 0x00000001u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(3, this->begin_timestamp(), target);
+  }
 
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
@@ -1491,21 +1537,28 @@ size_t ConsensusDebug::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  // repeated bytes messages = 1;
+  // repeated string messages = 1;
   total_size += 1 *
       ::google::protobuf::internal::FromIntSize(this->messages_size());
   for (int i = 0, n = this->messages_size(); i < n; i++) {
-    total_size += ::google::protobuf::internal::WireFormatLite::BytesSize(
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
       this->messages(i));
   }
 
-  // repeated uint64 timestamps = 2;
+  // repeated uint64 vote_timestamps = 2;
   {
     size_t data_size = ::google::protobuf::internal::WireFormatLite::
-      UInt64Size(this->timestamps_);
+      UInt64Size(this->vote_timestamps_);
     total_size += 1 *
-                  ::google::protobuf::internal::FromIntSize(this->timestamps_size());
+                  ::google::protobuf::internal::FromIntSize(this->vote_timestamps_size());
     total_size += data_size;
+  }
+
+  // optional uint64 begin_timestamp = 3;
+  if (has_begin_timestamp()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->begin_timestamp());
   }
 
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
@@ -1536,7 +1589,10 @@ void ConsensusDebug::MergeFrom(const ConsensusDebug& from) {
   (void) cached_has_bits;
 
   messages_.MergeFrom(from.messages_);
-  timestamps_.MergeFrom(from.timestamps_);
+  vote_timestamps_.MergeFrom(from.vote_timestamps_);
+  if (from.has_begin_timestamp()) {
+    set_begin_timestamp(from.begin_timestamp());
+  }
 }
 
 void ConsensusDebug::CopyFrom(const ::google::protobuf::Message& from) {
@@ -1564,7 +1620,8 @@ void ConsensusDebug::Swap(ConsensusDebug* other) {
 void ConsensusDebug::InternalSwap(ConsensusDebug* other) {
   using std::swap;
   messages_.InternalSwap(CastToBase(&other->messages_));
-  timestamps_.InternalSwap(&other->timestamps_);
+  vote_timestamps_.InternalSwap(&other->vote_timestamps_);
+  swap(begin_timestamp_, other->begin_timestamp_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }

@@ -448,7 +448,7 @@ class ConsensusDebug : public ::google::protobuf::Message /* @@protoc_insertion_
 
   // accessors -------------------------------------------------------
 
-  // repeated bytes messages = 1;
+  // repeated string messages = 1;
   int messages_size() const;
   void clear_messages();
   static const int kMessagesFieldNumber = 1;
@@ -459,37 +459,47 @@ class ConsensusDebug : public ::google::protobuf::Message /* @@protoc_insertion_
   void set_messages(int index, ::std::string&& value);
   #endif
   void set_messages(int index, const char* value);
-  void set_messages(int index, const void* value, size_t size);
+  void set_messages(int index, const char* value, size_t size);
   ::std::string* add_messages();
   void add_messages(const ::std::string& value);
   #if LANG_CXX11
   void add_messages(::std::string&& value);
   #endif
   void add_messages(const char* value);
-  void add_messages(const void* value, size_t size);
+  void add_messages(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& messages() const;
   ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_messages();
 
-  // repeated uint64 timestamps = 2;
-  int timestamps_size() const;
-  void clear_timestamps();
-  static const int kTimestampsFieldNumber = 2;
-  ::google::protobuf::uint64 timestamps(int index) const;
-  void set_timestamps(int index, ::google::protobuf::uint64 value);
-  void add_timestamps(::google::protobuf::uint64 value);
+  // repeated uint64 vote_timestamps = 2;
+  int vote_timestamps_size() const;
+  void clear_vote_timestamps();
+  static const int kVoteTimestampsFieldNumber = 2;
+  ::google::protobuf::uint64 vote_timestamps(int index) const;
+  void set_vote_timestamps(int index, ::google::protobuf::uint64 value);
+  void add_vote_timestamps(::google::protobuf::uint64 value);
   const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
-      timestamps() const;
+      vote_timestamps() const;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
-      mutable_timestamps();
+      mutable_vote_timestamps();
+
+  // optional uint64 begin_timestamp = 3;
+  bool has_begin_timestamp() const;
+  void clear_begin_timestamp();
+  static const int kBeginTimestampFieldNumber = 3;
+  ::google::protobuf::uint64 begin_timestamp() const;
+  void set_begin_timestamp(::google::protobuf::uint64 value);
 
   // @@protoc_insertion_point(class_scope:shardora.transport.protobuf.ConsensusDebug)
  private:
+  void set_has_begin_timestamp();
+  void clear_has_begin_timestamp();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::std::string> messages_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > timestamps_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > vote_timestamps_;
+  ::google::protobuf::uint64 begin_timestamp_;
   friend struct ::protobuf_protos_2ftransport_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -2045,7 +2055,7 @@ inline void BroadcastParam::set_ign_bloomfilter_hop(::google::protobuf::uint32 v
 
 // ConsensusDebug
 
-// repeated bytes messages = 1;
+// repeated string messages = 1;
 inline int ConsensusDebug::messages_size() const {
   return messages_.size();
 }
@@ -2075,7 +2085,7 @@ inline void ConsensusDebug::set_messages(int index, const char* value) {
   messages_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:shardora.transport.protobuf.ConsensusDebug.messages)
 }
-inline void ConsensusDebug::set_messages(int index, const void* value, size_t size) {
+inline void ConsensusDebug::set_messages(int index, const char* value, size_t size) {
   messages_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:shardora.transport.protobuf.ConsensusDebug.messages)
@@ -2099,7 +2109,7 @@ inline void ConsensusDebug::add_messages(const char* value) {
   messages_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:shardora.transport.protobuf.ConsensusDebug.messages)
 }
-inline void ConsensusDebug::add_messages(const void* value, size_t size) {
+inline void ConsensusDebug::add_messages(const char* value, size_t size) {
   messages_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:shardora.transport.protobuf.ConsensusDebug.messages)
 }
@@ -2114,34 +2124,58 @@ ConsensusDebug::mutable_messages() {
   return &messages_;
 }
 
-// repeated uint64 timestamps = 2;
-inline int ConsensusDebug::timestamps_size() const {
-  return timestamps_.size();
+// repeated uint64 vote_timestamps = 2;
+inline int ConsensusDebug::vote_timestamps_size() const {
+  return vote_timestamps_.size();
 }
-inline void ConsensusDebug::clear_timestamps() {
-  timestamps_.Clear();
+inline void ConsensusDebug::clear_vote_timestamps() {
+  vote_timestamps_.Clear();
 }
-inline ::google::protobuf::uint64 ConsensusDebug::timestamps(int index) const {
-  // @@protoc_insertion_point(field_get:shardora.transport.protobuf.ConsensusDebug.timestamps)
-  return timestamps_.Get(index);
+inline ::google::protobuf::uint64 ConsensusDebug::vote_timestamps(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.transport.protobuf.ConsensusDebug.vote_timestamps)
+  return vote_timestamps_.Get(index);
 }
-inline void ConsensusDebug::set_timestamps(int index, ::google::protobuf::uint64 value) {
-  timestamps_.Set(index, value);
-  // @@protoc_insertion_point(field_set:shardora.transport.protobuf.ConsensusDebug.timestamps)
+inline void ConsensusDebug::set_vote_timestamps(int index, ::google::protobuf::uint64 value) {
+  vote_timestamps_.Set(index, value);
+  // @@protoc_insertion_point(field_set:shardora.transport.protobuf.ConsensusDebug.vote_timestamps)
 }
-inline void ConsensusDebug::add_timestamps(::google::protobuf::uint64 value) {
-  timestamps_.Add(value);
-  // @@protoc_insertion_point(field_add:shardora.transport.protobuf.ConsensusDebug.timestamps)
+inline void ConsensusDebug::add_vote_timestamps(::google::protobuf::uint64 value) {
+  vote_timestamps_.Add(value);
+  // @@protoc_insertion_point(field_add:shardora.transport.protobuf.ConsensusDebug.vote_timestamps)
 }
 inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
-ConsensusDebug::timestamps() const {
-  // @@protoc_insertion_point(field_list:shardora.transport.protobuf.ConsensusDebug.timestamps)
-  return timestamps_;
+ConsensusDebug::vote_timestamps() const {
+  // @@protoc_insertion_point(field_list:shardora.transport.protobuf.ConsensusDebug.vote_timestamps)
+  return vote_timestamps_;
 }
 inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
-ConsensusDebug::mutable_timestamps() {
-  // @@protoc_insertion_point(field_mutable_list:shardora.transport.protobuf.ConsensusDebug.timestamps)
-  return &timestamps_;
+ConsensusDebug::mutable_vote_timestamps() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.transport.protobuf.ConsensusDebug.vote_timestamps)
+  return &vote_timestamps_;
+}
+
+// optional uint64 begin_timestamp = 3;
+inline bool ConsensusDebug::has_begin_timestamp() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ConsensusDebug::set_has_begin_timestamp() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ConsensusDebug::clear_has_begin_timestamp() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ConsensusDebug::clear_begin_timestamp() {
+  begin_timestamp_ = GOOGLE_ULONGLONG(0);
+  clear_has_begin_timestamp();
+}
+inline ::google::protobuf::uint64 ConsensusDebug::begin_timestamp() const {
+  // @@protoc_insertion_point(field_get:shardora.transport.protobuf.ConsensusDebug.begin_timestamp)
+  return begin_timestamp_;
+}
+inline void ConsensusDebug::set_begin_timestamp(::google::protobuf::uint64 value) {
+  set_has_begin_timestamp();
+  begin_timestamp_ = value;
+  // @@protoc_insertion_point(field_set:shardora.transport.protobuf.ConsensusDebug.begin_timestamp)
 }
 
 // -------------------------------------------------------------------
