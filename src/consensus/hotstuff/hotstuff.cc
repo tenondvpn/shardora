@@ -988,8 +988,8 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
 // #endif
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(msg_ptr->header.debug());
-    cons_debug.add_timestamps(
-        b - cons_debug.timestamps(0));
+    // cons_debug.add_timestamps(
+    //     b - cons_debug.timestamps(0));
     ZJC_DEBUG("====2.0 pool: %d, onVote, hash: %s, view: %lu, "
         "local high view: %lu, replica: %lu, hash64: %lu, propose_debug: %s, followers_gids: %s",
         pool_idx_,
