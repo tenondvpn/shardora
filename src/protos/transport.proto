@@ -34,7 +34,7 @@ message BroadcastParam {
 }
 
 message ConsensusDebug {
-    repeated bytes messages = 1;
+    repeated string messages = 1;
     repeated uint64 timestamps = 2;
 };
 
