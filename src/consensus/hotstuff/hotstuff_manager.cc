@@ -356,7 +356,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
             bool has_user_tx = false;
             bool has_system_tx = false;
-            if (now_tm_ms >= prev_check_timer_single_tm_ms_ + 3000lu) {
+            // if (now_tm_ms >= prev_check_timer_single_tm_ms_ + 3000lu) {
                 prev_check_timer_single_tm_ms_ = now_tm_ms;
                 pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
                 auto gid_valid_func = [&](const std::string& gid) -> bool {
@@ -371,7 +371,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
                 };
 
                 has_system_tx = block_wrapper(pool_idx)->HasSingleTx(gid_valid_func);
-            }
+            // }
 
             pools_mgr_->PopTxs(pool_idx, false, &has_user_tx, &has_system_tx);
             pools_mgr_->CheckTimeoutTx(pool_idx);
