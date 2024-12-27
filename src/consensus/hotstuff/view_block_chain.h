@@ -330,8 +330,7 @@ public:
             common::Encode::HexEncode(v_block->hash()).c_str());
         return Status::kSuccess;
     }
-
-    std::shared_ptr<QC> GetCommitQcFromDb(const HashStr& hash) const;
+    
     // If a chain is valid
     bool IsValid();
     inline void Clear() {

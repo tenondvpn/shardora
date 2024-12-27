@@ -456,21 +456,6 @@ void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const s
 
 void ViewBlockChain::Print() const { PrintBlock(start_block_); }
 
-// 获取某 vblock 的 commit qc
-std::shared_ptr<QC> ViewBlockChain::GetCommitQcFromDb(const HashStr& hash) const {
-    ViewBlock vblock;
-    bool ok = prefix_db_->GetViewBlockInfo(hash, vblock);
-    if (!ok) {
-        return nullptr;
-    }
-
-    if (!vblock.has_self_commit_qc()) {
-        return nullptr;
-    }
-
-    return std::make_shared<QC>(vblock.self_commit_qc());
-}
-
 std::string ViewBlockChain::String() const {
     std::vector<std::shared_ptr<ViewBlock>> view_blocks;
     for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
