@@ -807,7 +807,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         qc_item.network_id(),
         qc_item.pool_index(),
         qc_item.view());
-
+#endif
     // store to ck
     ADD_DEBUG_PROCESS_TIMESTAMP();
     // if (ck_client_) {
