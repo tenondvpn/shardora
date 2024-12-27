@@ -1119,13 +1119,13 @@ Status Hotstuff::Commit(
 
         // set commit_qc to vblock and store to database
         ADD_DEBUG_PROCESS_TIMESTAMP();
-
-        tmp_block->mutable_self_commit_qc()->CopyFrom(commit_qc);
-        view_block_chain()->StoreToDb(tmp_block, test_index, db_batch);
         
         if (!CommitInner(msg_ptr, tmp_block, test_index, queue_item_ptr)) {
             break;
-        }        
+        }
+
+        tmp_block->mutable_self_commit_qc()->CopyFrom(commit_qc);
+        view_block_chain()->StoreToDb(tmp_block, test_index, db_batch);        
 
         ADD_DEBUG_PROCESS_TIMESTAMP();
         
