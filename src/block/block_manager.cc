@@ -1454,17 +1454,17 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
 
 bool BlockManager::HasSingleTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn) {
     if (HasToTx(pool_index, gid_valid_fn)) {
-        // ZJC_DEBUG("success check has to tx.");
+        ZJC_DEBUG("success check has to tx. pool: %d", pool_index);
         return true;
     }
 
     if (HasStatisticTx(pool_index, gid_valid_fn)) {
-        // ZJC_DEBUG("success check has statistic tx.");
+        ZJC_DEBUG("success check has statistic tx. pool: %d", pool_index);
         return true;
     }
 
     if (HasElectTx(pool_index, gid_valid_fn)) {
-        // ZJC_DEBUG("success check has elect tx.");
+        ZJC_DEBUG("success check has elect tx. pool: %d", pool_index);
         return true;
     }
 
@@ -1544,9 +1544,9 @@ bool BlockManager::HasStatisticTx(uint32_t pool_index, pools::CheckGidValidFunct
             return false;
         }
 
-        // ZJC_DEBUG("has statistic %u, tx gid: %s", 
-        //     pool_index, 
-        //     common::Encode::HexEncode(iter->second->tx_ptr->tx_info.gid()).c_str());
+        ZJC_DEBUG("has statistic %u, tx gid: %s", 
+            pool_index, 
+            common::Encode::HexEncode(iter->second->tx_ptr->tx_info.gid()).c_str());
         return true;
     }
 

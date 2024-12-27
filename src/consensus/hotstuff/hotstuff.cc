@@ -1690,8 +1690,7 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     if (has_system_tx) {
         if (leader->index == local_idx) {            
             ZJC_DEBUG("pool: %d, directly reset timer msg from: %lu, has_single_tx: %d, has_user_tx_tag: %d",
-                pool_idx_, local_idx, 
-                leader->index, has_system_tx, has_user_tx_tag_);            
+                pool_idx_, local_idx, has_system_tx, has_user_tx_tag_);            
             ResetReplicaTimers();
             return;
         }
