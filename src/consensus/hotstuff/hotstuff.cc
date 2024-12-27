@@ -672,8 +672,6 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     // cons_debug.add_timestamps(
     //     b - cons_debug.timestamps(0));
 
-    auto elect_item = elect_info()->GetElectItem(common::GlobalInfo::Instance()->network_id(), vote_msg.elect_height());
-
     ZJC_DEBUG("====2.0 pool: %d, onVote, hash: %s, view: %lu, "
         "local high view: %lu, replica: %lu, hash64: %lu, propose_debug: %s, followers_gids: %s, local idx: %lu",
         pool_idx_,
@@ -684,7 +682,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         msg_ptr->header.hash64(),
         ProtobufToJson(cons_debug).c_str(),
         followers_gids.c_str(),
-        elect_item->LocalMember()->index);
+        leader_rotation()->GetLocalMemberIdx());
 
     if (VerifyVoteMsg(vote_msg) != Status::kSuccess) {
         ZJC_DEBUG("vote message is error: hash64: %lu", msg_ptr->header.hash64());
@@ -738,7 +736,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }    
 
-    ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d, view: %lu, qc_hash: %s, hash64: %lu, propose_debug: %s, replica: %lu, ",
+    ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d, view: %lu, qc_hash: %s, hash64: %lu, propose_debug: %s, replica: %lu, local: %lu",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
         agg_sig.IsValid(),
@@ -746,7 +744,8 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         common::Encode::HexEncode(qc_hash).c_str(),
         msg_ptr->header.hash64(),
         ProtobufToJson(cons_debug).c_str(),
-        vote_msg.replica_idx());
+        vote_msg.replica_idx(),
+        leader_rotation()->GetLocalMemberIdx());
     qc_item.mutable_agg_sig()->CopyFrom(agg_sig.DumpToProto());
     // 切换视图
     ZJC_DEBUG("success new set qc view: %lu, %u_%u_%lu",
@@ -794,7 +793,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d, view: %lu, qc_hash: %s, hash64: %lu, propose_debug: %s, replica: %lu, ",
+    ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d, view: %lu, qc_hash: %s, hash64: %lu, propose_debug: %s, replica: %lu, local: %lu",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
         reconstructed_sign == nullptr,
@@ -802,7 +801,8 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         common::Encode::HexEncode(qc_hash).c_str(),
         msg_ptr->header.hash64(),
         ProtobufToJson(cons_debug).c_str(),
-        vote_msg.replica_idx());
+        vote_msg.replica_idx(),
+        leader_rotation()->GetLocalMemberIdx());
     qc_item.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(reconstructed_sign->X));
     qc_item.set_sign_y(libBLS::ThresholdUtils::fieldElementToString(reconstructed_sign->Y));
     // 切换视图
@@ -1688,7 +1688,10 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     auto local_idx = leader_rotation_->GetLocalMemberIdx();    
 
     if (has_system_tx) {
-        if (leader->index == local_idx) {
+        if (leader->index == local_idx) {            
+            ZJC_DEBUG("pool: %d, directly reset timer msg from: %lu, has_single_tx: %d, has_user_tx_tag: %d",
+                pool_idx_, local_idx, 
+                leader->index, has_system_tx, has_user_tx_tag_);            
             ResetReplicaTimers();
             return;
         }
