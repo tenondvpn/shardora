@@ -590,8 +590,11 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
         pro_msg_wrap->view_block_ptr->view(),
         pro_msg_wrap->view_block_ptr->block_info().tx_list_size(),
         pro_msg_wrap->msg_ptr->header.hash64(),
+#ifndef XUFEI
+        ProtobufToJson(cons_debug).c_str());
+#else
         "");
-        // ProtobufToJson(cons_debug).c_str());
+#endif
     auto msg_ptr = pro_msg_wrap->msg_ptr;
     ADD_DEBUG_PROCESS_TIMESTAMP();
 

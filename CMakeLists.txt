@@ -108,6 +108,7 @@ add_definitions(
 	-DDISABLE_GENESIS_BLS_VERIFY
 	#-DTEST_NO_CROSS
 	#-DUSE_AGG_BLS
+	#-DXUFEI
 )
 
 add_compile_options(-fPIC)
