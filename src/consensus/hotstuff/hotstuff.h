@@ -253,19 +253,19 @@ public:
         if (pacemaker()->DurationUs() < STUCK_PACEMAKER_DURATION_MIN_US) {
             return 1;
         }
-        // highqc 之前连续三个块都是空交易，则认为 stuck        
-        auto v_block1 = view_block_chain()->Get(pacemaker()->HighQC()->view_block_hash());
-        if (!v_block1 || v_block1->block_info().tx_list_size() > 0) {
-            return 2;
-        }
-        auto v_block2 = view_block_chain()->ParentBlock(*v_block1);
-        if (!v_block2 || v_block2->block_info().tx_list_size() > 0) {
-            return 3;
-        }
-        auto v_block3 = view_block_chain()->ParentBlock(*v_block2);
-        if (!v_block3 || v_block3->block_info().tx_list_size() > 0) {
-            return 4;
-        }
+        // // highqc 之前连续三个块都是空交易，则认为 stuck        
+        // auto v_block1 = view_block_chain()->Get(pacemaker()->HighQC()->view_block_hash());
+        // if (!v_block1 || v_block1->block_info().tx_list_size() > 0) {
+        //     return 2;
+        // }
+        // auto v_block2 = view_block_chain()->ParentBlock(*v_block1);
+        // if (!v_block2 || v_block2->block_info().tx_list_size() > 0) {
+        //     return 3;
+        // }
+        // auto v_block3 = view_block_chain()->ParentBlock(*v_block2);
+        // if (!v_block3 || v_block3->block_info().tx_list_size() > 0) {
+        //     return 4;
+        // }
         return 0;           
     }
 
