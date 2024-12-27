@@ -1125,7 +1125,7 @@ Status Hotstuff::Commit(
         }
 
         tmp_block->mutable_self_commit_qc()->CopyFrom(commit_qc);
-        view_block_chain()->StoreToDb(tmp_block, test_index, db_batch);        
+        view_block_chain()->StoreToDb(tmp_block, test_index, db_batch);
 
         ADD_DEBUG_PROCESS_TIMESTAMP();
         
