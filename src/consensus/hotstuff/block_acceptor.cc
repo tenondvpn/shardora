@@ -172,13 +172,16 @@ Status BlockAcceptor::AcceptSync(const view_block::protobuf::ViewBlockItem& view
     return Status::kSuccess;
 }
 
-void BlockAcceptor::Commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
+void BlockAcceptor::Commit(
+        transport::MessagePtr msg_ptr, 
+        std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
     // commit block
-    commit(queue_item_ptr);
+    commit(msg_ptr, queue_item_ptr);
 }
 
 void BlockAcceptor::CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
-    commit(queue_item_ptr);
+    transport::MessagePtr msg_ptr;
+    commit(msg_ptr, queue_item_ptr);
     auto block_ptr = &queue_item_ptr->view_block_ptr->block_info();
     ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s",
         queue_item_ptr->view_block_ptr->qc().network_id(),
@@ -581,29 +584,37 @@ Status BlockAcceptor::DoTransactions(
     return s;
 }
 
-void BlockAcceptor::commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
+void BlockAcceptor::commit(
+        transport::MessagePtr msg_ptr, 
+        std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
     auto block = &queue_item_ptr->view_block_ptr->block_info();
     new_block_cache_callback_(
             queue_item_ptr->view_block_ptr,
             *queue_item_ptr->final_db_batch);
     if (network::IsSameToLocalShard(queue_item_ptr->view_block_ptr->qc().network_id())) {
         if (block->tx_list_size() > 0) {
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             pools_mgr_->TxOver(queue_item_ptr->view_block_ptr->qc().pool_index(), block->tx_list());
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             prefix_db_->SaveCommittedGids(block->tx_list(), *queue_item_ptr->final_db_batch);
+            ADD_DEBUG_PROCESS_TIMESTAMP();
         } else {
+            transport::protobuf::ConsensusDebug cons_debug;
+            cons_debug.ParseFromString(queue_item_ptr->view_block_ptr->debug());
             ZJC_DEBUG("commit block tx over no tx, net: %d, pool: %d, height: %lu, propose_debug: %s", 
                 queue_item_ptr->view_block_ptr->qc().network_id(),
                 queue_item_ptr->view_block_ptr->qc().pool_index(),
                 block->height(),
-                queue_item_ptr->view_block_ptr->debug().c_str());        
+                ProtobufToJson(cons_debug).c_str());        
         }
 
         // tps measurement
+        ADD_DEBUG_PROCESS_TIMESTAMP();
         CalculateTps(block->tx_list_size());
 #ifndef NDEBUG
         auto now_ms = common::TimeUtils::TimestampMs();
-        if (!queue_item_ptr->view_block_ptr->debug().empty())
-#endif
+        transport::protobuf::ConsensusDebug cons_debug;
+        cons_debug.ParseFromString(queue_item_ptr->view_block_ptr->debug());
         ZJC_INFO("[NEW BLOCK] hash: %s, prehash: %s, view: %u_%u_%lu, "
             "key: %u_%u_%u_%u, timestamp:%lu, txs: %lu, propose_debug: %s, use time ms: %lu",
             common::Encode::HexEncode(queue_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
@@ -617,10 +628,14 @@ void BlockAcceptor::commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr
             queue_item_ptr->view_block_ptr->qc().elect_height(),
             block->timestamp(),
             block->tx_list_size(),
-            queue_item_ptr->view_block_ptr->debug().c_str());
+            ProtobufToJson(cons_debug).c_str());
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+#endif
     }
     
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     block_mgr_->ConsensusAddBlock(queue_item_ptr);
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 } // namespace hotstuff

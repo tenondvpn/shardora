@@ -1197,10 +1197,8 @@ void NetworkInit::AddBlockItemToCache(
 bool NetworkInit::DbNewBlockCallback(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
         db::DbWriteBatch& db_batch) {
-    ZJC_DEBUG("new block coming.");
     auto* block = &view_block->block_info();
     for (int32_t i = 0; i < block->tx_list_size(); ++i) {
-        ZJC_DEBUG("new block coming step: %u", block->tx_list(i).step());
         switch (block->tx_list(i).step()) {
         case pools::protobuf::kConsensusRootTimeBlock:
             HandleTimeBlock(view_block, block->tx_list(i), db_batch);

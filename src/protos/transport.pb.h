@@ -52,7 +52,7 @@ namespace protobuf_protos_2ftransport_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[3];
+  static const ::google::protobuf::internal::ParseTable schema[4];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -65,6 +65,9 @@ namespace protobuf {
 class BroadcastParam;
 class BroadcastParamDefaultTypeInternal;
 extern BroadcastParamDefaultTypeInternal _BroadcastParam_default_instance_;
+class ConsensusDebug;
+class ConsensusDebugDefaultTypeInternal;
+extern ConsensusDebugDefaultTypeInternal _ConsensusDebug_default_instance_;
 class Header;
 class HeaderDefaultTypeInternal;
 extern HeaderDefaultTypeInternal _Header_default_instance_;
@@ -77,6 +80,7 @@ extern OldHeaderDefaultTypeInternal _OldHeader_default_instance_;
 namespace google {
 namespace protobuf {
 template<> ::shardora::transport::protobuf::BroadcastParam* Arena::CreateMaybeMessage<::shardora::transport::protobuf::BroadcastParam>(Arena*);
+template<> ::shardora::transport::protobuf::ConsensusDebug* Arena::CreateMaybeMessage<::shardora::transport::protobuf::ConsensusDebug>(Arena*);
 template<> ::shardora::transport::protobuf::Header* Arena::CreateMaybeMessage<::shardora::transport::protobuf::Header>(Arena*);
 template<> ::shardora::transport::protobuf::OldHeader* Arena::CreateMaybeMessage<::shardora::transport::protobuf::OldHeader>(Arena*);
 }  // namespace protobuf
@@ -350,6 +354,156 @@ class BroadcastParam : public ::google::protobuf::Message /* @@protoc_insertion_
 };
 // -------------------------------------------------------------------
 
+class ConsensusDebug : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.transport.protobuf.ConsensusDebug) */ {
+ public:
+  ConsensusDebug();
+  virtual ~ConsensusDebug();
+
+  ConsensusDebug(const ConsensusDebug& from);
+
+  inline ConsensusDebug& operator=(const ConsensusDebug& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  ConsensusDebug(ConsensusDebug&& from) noexcept
+    : ConsensusDebug() {
+    *this = ::std::move(from);
+  }
+
+  inline ConsensusDebug& operator=(ConsensusDebug&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ConsensusDebug& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ConsensusDebug* internal_default_instance() {
+    return reinterpret_cast<const ConsensusDebug*>(
+               &_ConsensusDebug_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    1;
+
+  void Swap(ConsensusDebug* other);
+  friend void swap(ConsensusDebug& a, ConsensusDebug& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ConsensusDebug* New() const final {
+    return CreateMaybeMessage<ConsensusDebug>(NULL);
+  }
+
+  ConsensusDebug* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<ConsensusDebug>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const ConsensusDebug& from);
+  void MergeFrom(const ConsensusDebug& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ConsensusDebug* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated string messages = 1;
+  int messages_size() const;
+  void clear_messages();
+  static const int kMessagesFieldNumber = 1;
+  const ::std::string& messages(int index) const;
+  ::std::string* mutable_messages(int index);
+  void set_messages(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_messages(int index, ::std::string&& value);
+  #endif
+  void set_messages(int index, const char* value);
+  void set_messages(int index, const char* value, size_t size);
+  ::std::string* add_messages();
+  void add_messages(const ::std::string& value);
+  #if LANG_CXX11
+  void add_messages(::std::string&& value);
+  #endif
+  void add_messages(const char* value);
+  void add_messages(const char* value, size_t size);
+  const ::google::protobuf::RepeatedPtrField< ::std::string>& messages() const;
+  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_messages();
+
+  // repeated uint64 vote_timestamps = 2;
+  int vote_timestamps_size() const;
+  void clear_vote_timestamps();
+  static const int kVoteTimestampsFieldNumber = 2;
+  ::google::protobuf::uint64 vote_timestamps(int index) const;
+  void set_vote_timestamps(int index, ::google::protobuf::uint64 value);
+  void add_vote_timestamps(::google::protobuf::uint64 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+      vote_timestamps() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+      mutable_vote_timestamps();
+
+  // optional uint64 begin_timestamp = 3;
+  bool has_begin_timestamp() const;
+  void clear_begin_timestamp();
+  static const int kBeginTimestampFieldNumber = 3;
+  ::google::protobuf::uint64 begin_timestamp() const;
+  void set_begin_timestamp(::google::protobuf::uint64 value);
+
+  // @@protoc_insertion_point(class_scope:shardora.transport.protobuf.ConsensusDebug)
+ private:
+  void set_has_begin_timestamp();
+  void clear_has_begin_timestamp();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> messages_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > vote_timestamps_;
+  ::google::protobuf::uint64 begin_timestamp_;
+  friend struct ::protobuf_protos_2ftransport_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.transport.protobuf.Header) */ {
  public:
   Header();
@@ -392,7 +546,7 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
                &_Header_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    1;
+    2;
 
   void Swap(Header* other);
   friend void swap(Header& a, Header& b) {
@@ -973,7 +1127,7 @@ class OldHeader : public ::google::protobuf::Message /* @@protoc_insertion_point
                &_OldHeader_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    2;
+    3;
 
   void Swap(OldHeader* other);
   friend void swap(OldHeader& a, OldHeader& b) {
@@ -1895,6 +2049,133 @@ inline void BroadcastParam::set_ign_bloomfilter_hop(::google::protobuf::uint32 v
   set_has_ign_bloomfilter_hop();
   ign_bloomfilter_hop_ = value;
   // @@protoc_insertion_point(field_set:shardora.transport.protobuf.BroadcastParam.ign_bloomfilter_hop)
+}
+
+// -------------------------------------------------------------------
+
+// ConsensusDebug
+
+// repeated string messages = 1;
+inline int ConsensusDebug::messages_size() const {
+  return messages_.size();
+}
+inline void ConsensusDebug::clear_messages() {
+  messages_.Clear();
+}
+inline const ::std::string& ConsensusDebug::messages(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.transport.protobuf.ConsensusDebug.messages)
+  return messages_.Get(index);
+}
+inline ::std::string* ConsensusDebug::mutable_messages(int index) {
+  // @@protoc_insertion_point(field_mutable:shardora.transport.protobuf.ConsensusDebug.messages)
+  return messages_.Mutable(index);
+}
+inline void ConsensusDebug::set_messages(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:shardora.transport.protobuf.ConsensusDebug.messages)
+  messages_.Mutable(index)->assign(value);
+}
+#if LANG_CXX11
+inline void ConsensusDebug::set_messages(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:shardora.transport.protobuf.ConsensusDebug.messages)
+  messages_.Mutable(index)->assign(std::move(value));
+}
+#endif
+inline void ConsensusDebug::set_messages(int index, const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  messages_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:shardora.transport.protobuf.ConsensusDebug.messages)
+}
+inline void ConsensusDebug::set_messages(int index, const char* value, size_t size) {
+  messages_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:shardora.transport.protobuf.ConsensusDebug.messages)
+}
+inline ::std::string* ConsensusDebug::add_messages() {
+  // @@protoc_insertion_point(field_add_mutable:shardora.transport.protobuf.ConsensusDebug.messages)
+  return messages_.Add();
+}
+inline void ConsensusDebug::add_messages(const ::std::string& value) {
+  messages_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:shardora.transport.protobuf.ConsensusDebug.messages)
+}
+#if LANG_CXX11
+inline void ConsensusDebug::add_messages(::std::string&& value) {
+  messages_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:shardora.transport.protobuf.ConsensusDebug.messages)
+}
+#endif
+inline void ConsensusDebug::add_messages(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  messages_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:shardora.transport.protobuf.ConsensusDebug.messages)
+}
+inline void ConsensusDebug::add_messages(const char* value, size_t size) {
+  messages_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:shardora.transport.protobuf.ConsensusDebug.messages)
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+ConsensusDebug::messages() const {
+  // @@protoc_insertion_point(field_list:shardora.transport.protobuf.ConsensusDebug.messages)
+  return messages_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+ConsensusDebug::mutable_messages() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.transport.protobuf.ConsensusDebug.messages)
+  return &messages_;
+}
+
+// repeated uint64 vote_timestamps = 2;
+inline int ConsensusDebug::vote_timestamps_size() const {
+  return vote_timestamps_.size();
+}
+inline void ConsensusDebug::clear_vote_timestamps() {
+  vote_timestamps_.Clear();
+}
+inline ::google::protobuf::uint64 ConsensusDebug::vote_timestamps(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.transport.protobuf.ConsensusDebug.vote_timestamps)
+  return vote_timestamps_.Get(index);
+}
+inline void ConsensusDebug::set_vote_timestamps(int index, ::google::protobuf::uint64 value) {
+  vote_timestamps_.Set(index, value);
+  // @@protoc_insertion_point(field_set:shardora.transport.protobuf.ConsensusDebug.vote_timestamps)
+}
+inline void ConsensusDebug::add_vote_timestamps(::google::protobuf::uint64 value) {
+  vote_timestamps_.Add(value);
+  // @@protoc_insertion_point(field_add:shardora.transport.protobuf.ConsensusDebug.vote_timestamps)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+ConsensusDebug::vote_timestamps() const {
+  // @@protoc_insertion_point(field_list:shardora.transport.protobuf.ConsensusDebug.vote_timestamps)
+  return vote_timestamps_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+ConsensusDebug::mutable_vote_timestamps() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.transport.protobuf.ConsensusDebug.vote_timestamps)
+  return &vote_timestamps_;
+}
+
+// optional uint64 begin_timestamp = 3;
+inline bool ConsensusDebug::has_begin_timestamp() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ConsensusDebug::set_has_begin_timestamp() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ConsensusDebug::clear_has_begin_timestamp() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ConsensusDebug::clear_begin_timestamp() {
+  begin_timestamp_ = GOOGLE_ULONGLONG(0);
+  clear_has_begin_timestamp();
+}
+inline ::google::protobuf::uint64 ConsensusDebug::begin_timestamp() const {
+  // @@protoc_insertion_point(field_get:shardora.transport.protobuf.ConsensusDebug.begin_timestamp)
+  return begin_timestamp_;
+}
+inline void ConsensusDebug::set_begin_timestamp(::google::protobuf::uint64 value) {
+  set_has_begin_timestamp();
+  begin_timestamp_ = value;
+  // @@protoc_insertion_point(field_set:shardora.transport.protobuf.ConsensusDebug.begin_timestamp)
 }
 
 // -------------------------------------------------------------------
@@ -5015,6 +5296,8 @@ inline void OldHeader::set_allocated_c2c(::shardora::c2c::protobuf::C2cMessage* 
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

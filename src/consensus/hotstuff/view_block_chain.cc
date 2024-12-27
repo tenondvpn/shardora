@@ -35,10 +35,13 @@ Status ViewBlockChain::Store(
         return Status::kSuccess;
     }
 
+    transport::protobuf::ConsensusDebug cons_debug;
+    cons_debug.ParseFromString(view_block->debug());
+
     if (Has(view_block->qc().view_block_hash())) {
         ZJC_DEBUG("view block already stored, hash: %s, view: %lu, propose_debug: %s",
             common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view(),
-            view_block->debug().c_str());        
+            ProtobufToJson(cons_debug).c_str());        
         return Status::kSuccess;
     }
 
@@ -103,7 +106,7 @@ Status ViewBlockChain::Store(
 
     ZJC_DEBUG("merge prev all balance store size: %u, propose_debug: %s, "
         "%u_%u_%lu, %lu, hash: %s, prehash: %s",
-        balane_map_ptr ? balane_map_ptr->size() : 0, view_block->debug().c_str(),
+        balane_map_ptr ? balane_map_ptr->size() : 0, ProtobufToJson(cons_debug).c_str(),
         view_block->qc().network_id(), view_block->qc().pool_index(), 
         view_block->qc().view(), view_block->block_info().height(),
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
@@ -154,7 +157,7 @@ Status ViewBlockChain::Store(
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), 
         common::Encode::HexEncode(view_block->parent_hash()).c_str(), 
         view_block->qc().network_id(), view_block->qc().pool_index(), 
-        view_block->qc().view(), view_block->debug().c_str());
+        view_block->qc().view(), ProtobufToJson(cons_debug).c_str());
     return Status::kSuccess;
 }
 

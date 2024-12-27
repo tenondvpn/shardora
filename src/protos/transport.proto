@@ -31,8 +31,14 @@ message BroadcastParam {
     repeated uint64 bloomfilter = 12;
     optional float evil_rate = 13 [default=0];
     optional uint32 ign_bloomfilter_hop = 14 [default=1];
-
 }
+
+message ConsensusDebug {
+    repeated string messages = 1;
+    repeated uint64 vote_timestamps = 2;
+    optional uint64 begin_timestamp = 3;
+};
+
 message Header {
     optional int32 src_sharding_id = 1;
     optional bytes des_dht_key = 2;

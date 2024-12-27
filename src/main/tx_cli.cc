@@ -4,6 +4,7 @@
 
 #include "common/random.h"
 #include "common/split.h"
+#include "common/string_utils.h"
 #include "db/db.h"
 #include "dht/dht_key.h"
 #include "pools/tx_utils.h"
@@ -112,27 +113,13 @@ static transport::MessagePtr CreateTransactionWithAttr(
         return nullptr;
     }
 
-//     std::string test_sign = common::Encode::HexDecode("24e113bf95efa71f9ac4fe941a00091a241cd55dfba119675aa5e48adf680c60") +
-//         common::Encode::HexDecode("4d74b3e55148ef7ecc4404f3514c94b0bd4a9ac9d207e7b5a9085e070db8231c") + "\0";
-//     std::string test_pk = common::Encode::HexDecode("04847869854f544cb4bdc20a32a2cb4c284e8f6eb43d3fd4fbe6c0fa130202e4dee60a2969442beadc9cf5dd8464ef98873a8cba950b9134058e6e1224de7b8d57");
-//     if (security->Verify(tx_hash, test_pk, test_sign) != security::kSecuritySuccess) {
-
-//         std::cout << "verify test sign failed!" << std::endl;
-
-//         assert(false);
-
-//         return nullptr;
-
-//     }
-
-
-    // std::cout << "tx gid: " << common::Encode::HexEncode(new_tx->gid())
-    //     << " tx pukey: " << common::Encode::HexEncode(new_tx->pubkey())
-    //     << " tx to: " << common::Encode::HexEncode(new_tx->to())
-    //     << " tx hash: " << common::Encode::HexEncode(tx_hash)
-    //     << " tx sign: " << common::Encode::HexEncode(sign)
-    //     << " hash64: " << msg.hash64()
-    //     << std::endl;
+    std::cout << "tx gid: " << common::Encode::HexEncode(new_tx->gid())
+        << " tx pukey: " << common::Encode::HexEncode(new_tx->pubkey())
+        << " tx to: " << common::Encode::HexEncode(new_tx->to())
+        << " tx hash: " << common::Encode::HexEncode(tx_hash)
+        << " tx sign: " << common::Encode::HexEncode(sign)
+        << " hash64: " << msg.hash64()
+        << std::endl;
     new_tx->set_sign(sign);
     assert(new_tx->gas_price() > 0);
     return msg_ptr;
@@ -305,19 +292,11 @@ int one_tx_main(int argc, char** argv) {
     transport::MultiThreadHandler net_handler;
     std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
     auto db_ptr = std::make_shared<db::Db>();
-    if (!db_ptr->Init("./txclidb")) {
+    if (!db_ptr->Init(db_path)) {
         std::cout << "init db failed!" << std::endl;
         return 1;
     }
 
-    std::string val;
-    uint64_t pos = 0;
-    if (db_ptr->Get("txcli_pos", &val).ok()) {
-        if (!common::StringUtil::ToUint64(val, &pos)) {
-            std::cout << "get pos failed!" << std::endl;
-            return 1;
-        }
-    }
 
     if (net_handler.Init(db_ptr, security) != 0) {
         std::cout << "init net handler failed!" << std::endl;
@@ -325,7 +304,7 @@ int one_tx_main(int argc, char** argv) {
     }
 
     if (transport::TcpTransport::Instance()->Init(
-            "127.0.0.1:8301",
+            "127.0.0.1:13791",
             128,
             false,
             &net_handler) != 0) {
@@ -338,66 +317,50 @@ int one_tx_main(int argc, char** argv) {
         return 1;
     }
 
-    std::string prikey = common::Encode::HexDecode(from_prikey);
-    uint32_t prikey_pos = 0;
-    auto from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
-    security->SetPrivateKey(from_prikey);
-    uint64_t now_tm_us = common::TimeUtils::TimestampUs();
-    uint32_t count = 0;
-    uint32_t step_num = 1000;
+    std::cout << argv[2] << ", "
+        << argv[3] << ", "
+        << argv[4] << ", "
+        << argv[5] << ", "
+        << argv[6] << std::endl;
 
-    for (int i = 2; i < argc ; ++i) {
-        std::string to = common::Encode::HexDecode(argv[i]);
-
-        std::string gid = common::Random::RandomString(32);
-        uint64_t* gid_int = (uint64_t*)gid.data();
-        gid_int[0] = pos;
-        ++prikey_pos;
-        from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
-        security->SetPrivateKey(from_prikey);
-        if (g_pri_addrs_map[from_prikey] == to) {
-            ++prikey_pos;
-            from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
-            security->SetPrivateKey(from_prikey);
-        }
-        auto invalid_from_accouts = std::make_shared<std::set<std::string>>();
-        invalid_from_accouts->insert(common::Encode::HexDecode("f1cd7abb586966d500d91329658ec48aa2094702"));
-        invalid_from_accouts->insert(common::Encode::HexDecode("5ebeffea73aff876d9706c725ac5dd0978d4ff79"));
-        if (invalid_from_accouts->find(security->GetAddress()) != invalid_from_accouts->end()) {
-      
-            ++prikey_pos;
-            from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
-            security->SetPrivateKey(from_prikey);
-        }
-
-        auto tx_msg_ptr = CreateTransactionWithAttr(
-                security,
-                gid,
-                from_prikey,
-                to,
-                "",
-                "",
-                10000000000lu,
-                10000000,
-                ((uint32_t)(1000 - pos)) % 1000 + 1,
-                3);
-        if (transport::TcpTransport::Instance()->Send(kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
-            std::cout << "send tcp client failed!" << std::endl;
-            return 1;
-        }
-        std::cout << "send tx from: " << common::Encode::HexEncode(security->GetAddress() ) << " to addr :" << argv[i] 
-            << " gid :" << common::Encode::HexEncode(gid)
-            << " count: " << i -1  << ", gas limit: " << tx_msg_ptr->header.tx_proto().gas_limit() << std::endl;
-        // if(i % 10 == 0) {
-        //     usleep(5*1000 * 1000);
-        // } else {
-        //     usleep(1*1000);
-        // }
-
+    uint64_t amount = 0;
+    if (!common::StringUtil::ToUint64(argv[3], &amount)) {
+        std::cout << "invalid amount: " << argv[3] << std::endl;
+        return 1;
     }
 
-    if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {
-        std::cout << "save pos failed!" << std::endl;
+    uint64_t gas_limit = 0;
+    if (!common::StringUtil::ToUint64(argv[4], &gas_limit)) {
+        std::cout << "invalid gas_limit: " << argv[3] << std::endl;
+        return 1;
+    }
+
+    std::string key = "";
+    std::string val = "";
+    if (argc >= 7) {
+        key = argv[5];
+        val = argv[6];
+    }
+
+    std::string prikey = common::Encode::HexDecode(from_prikey);
+    std::string to = common::Encode::HexDecode(argv[2]);
+    uint32_t prikey_pos = 0;
+    auto from_prikey = prikey;
+    security->SetPrivateKey(from_prikey);
+    std::string gid = common::Random::RandomString(32);
+    auto tx_msg_ptr = CreateTransactionWithAttr(
+        security,
+        gid,
+        from_prikey,
+        to,
+        key,
+        val,
+        amount,
+        gas_limit,
+        1,
+        shardnum);
+    if (transport::TcpTransport::Instance()->Send(kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
+        std::cout << "send tcp client failed!" << std::endl;
         return 1;
     }
 

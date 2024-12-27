@@ -64,7 +64,7 @@ public:
     // Accept a block and txs in it from sync msg.
     virtual Status AcceptSync(const view_block::protobuf::ViewBlockItem& block) = 0;
     // Commit a block
-    virtual void Commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) = 0;
+    virtual void Commit(transport::MessagePtr msg_ptr, std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) = 0;
     // Add txs to local pool
     virtual Status AddTxs(const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) = 0;
     // Return block txs to pool
@@ -106,7 +106,7 @@ public:
     // Accept a synced block.
     Status AcceptSync(const view_block::protobuf::ViewBlockItem& block) override;
     // Commit a block and execute its txs.
-    void Commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) override;
+    void Commit(transport::MessagePtr msg_ptr, std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) override;
     // Add txs from hotstuff msg to local pool
     Status AddTxs(const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) override;
     void CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) override;
@@ -151,7 +151,9 @@ private:
         std::shared_ptr<consensus::WaitingTxsItem>&,
         BalanceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host);
-    void commit(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr);
+    void commit(
+        transport::MessagePtr msg_ptr, 
+        std::shared_ptr<block::BlockToDbItem>& queue_item_ptr);
 
     void CalculateTps(uint64_t tx_list_size) {
         auto now_tm_us = common::TimeUtils::TimestampUs();

@@ -63,13 +63,15 @@ void ToTxsPools::NewBlock(
         }
     }
 
+    transport::protobuf::ConsensusDebug cons_debug;
+    cons_debug.ParseFromString( view_block_ptr->debug());
     ZJC_DEBUG("to txs new block coming pool: %u, height: %lu, "
         "cons height: %lu, tx size: %d, propose_debug: %s, step: %d, tx status: %d",
         view_block_ptr->qc().pool_index(), 
         block.height(), 
         pool_consensus_heihgts_[view_block_ptr->qc().pool_index()], 
         view_block_ptr->block_info().tx_list_size(),
-        view_block_ptr->debug().c_str(),
+        ProtobufToJson(cons_debug).c_str(),
         (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).step() : -1),
         (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).status() : -1));
     added_heights_[view_block_ptr->qc().pool_index()].insert(std::make_pair(block.height(), view_block_ptr));

@@ -440,13 +440,33 @@ int TxPoolManager::BackupConsensusAddTxs(
     std::vector<pools::TxItemPtr> valid_txs;
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
         auto tx_ptr = iter->second;
-        // if (!tx_pool_[pool_index].GidValid(tx_ptr->tx_info.gid())) {
-        //     continue;
-        // }
-
-        if (tx_pool_[pool_index].TxExists(tx_ptr->tx_info.gid())) {
+        if (!tx_pool_[pool_index].GidValid(tx_ptr->tx_info.gid())) {
             continue;
         }
+
+        if (tx_ptr->tx_info.pubkey().empty() || tx_ptr->tx_info.sign().empty()) {
+            // valid_txs.push_back(tx_ptr);
+            continue;
+        }
+
+        if (security_->Verify(
+                tx_ptr->unique_tx_hash,
+                tx_ptr->tx_info.pubkey(),
+                tx_ptr->tx_info.sign()) != security::kSecuritySuccess) {
+            ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
+                "prepayment: %lu, default call contract gas: %lu, txid: %s, step: %d",
+                tx_ptr->address_info->balance(),
+                tx_ptr->tx_info.amount(),
+                tx_ptr->tx_info.contract_prepayment(),
+                consensus::kCallContractDefaultUseGas,
+                common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(),
+                tx_ptr->tx_info.step());
+            assert(false);
+            continue;
+        }
+        // if (tx_pool_[pool_index].TxExists(tx_ptr->tx_info.gid())) {
+        //     continue;
+        // }
 
         valid_txs.push_back(tx_ptr);
         // ZJC_DEBUG("succcess add tx step: %d, to: %s, gid: %s", 
