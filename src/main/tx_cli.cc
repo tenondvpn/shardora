@@ -113,12 +113,12 @@ static transport::MessagePtr CreateTransactionWithAttr(
         return nullptr;
     }
 
-    std::cout << "tx gid: " << common::Encode::HexEncode(new_tx->gid())
-        << " tx pukey: " << common::Encode::HexEncode(new_tx->pubkey())
-        << " tx to: " << common::Encode::HexEncode(new_tx->to())
-        << " tx hash: " << common::Encode::HexEncode(tx_hash)
-        << " tx sign: " << common::Encode::HexEncode(sign)
-        << " hash64: " << msg.hash64()
+    std::cout << "tx gid: " << common::Encode::HexEncode(new_tx->gid()) << std::endl
+        << " tx pukey: " << common::Encode::HexEncode(new_tx->pubkey()) << std::endl
+        << " tx to: " << common::Encode::HexEncode(new_tx->to()) << std::endl
+        << " tx hash: " << common::Encode::HexEncode(tx_hash) << std::endl
+        << " tx sign: " << common::Encode::HexEncode(sign) << std::endl
+        << " hash64: " << msg.hash64() << std::endl
         << std::endl;
     new_tx->set_sign(sign);
     assert(new_tx->gas_price() > 0);
