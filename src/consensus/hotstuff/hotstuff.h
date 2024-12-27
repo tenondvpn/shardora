@@ -269,16 +269,6 @@ public:
         return 0;           
     }
 
-    inline uint64_t max_view() {
-        if (last_vote_view_ > pacemaker()->CurView()) {
-            return last_vote_view_;
-        } else if (last_vote_view_ == pacemaker()->CurView()) {
-            return last_vote_view_ + 1;
-        }
-
-        return pacemaker()->CurView();
-    }
-
     void TryRecoverFromStuck(bool has_new_tx, bool has_system_tx);
 
     std::shared_ptr<QC> GetQcOf(const std::shared_ptr<ViewBlock>& v_block) {

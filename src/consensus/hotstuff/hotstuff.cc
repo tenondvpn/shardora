@@ -1686,7 +1686,9 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
 
     auto leader = leader_rotation()->GetLeader();
     auto local_idx = leader_rotation_->GetLocalMemberIdx();
-    if (!leader || leader->index == local_idx) {
+    if (leader->index == local_idx) {
+        // TODO 直接广播 ResetTimerMsg
+        ResetReplicaTimers();
         return;
     }
 
