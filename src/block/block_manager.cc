@@ -1503,9 +1503,9 @@ bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckGidValidFunction gid
         return false;
     }
 
-    // ZJC_DEBUG("has to tx %u, tx gid: %s", 
-    //     pool_index, 
-    //     common::Encode::HexEncode(GetToTxGid()).c_str());
+    ZJC_DEBUG("has to tx %u, tx gid: %s", 
+        pool_index, 
+        common::Encode::HexEncode(GetToTxGid()).c_str());
     return true;
 }
 
