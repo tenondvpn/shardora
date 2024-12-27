@@ -108,7 +108,7 @@ private:
     void UpdateHighTC(const std::shared_ptr<TC>& tc) {
         if (high_tc_->view() < tc->view()) {
             high_tc_ = tc;
-            // leader_rotation_->SetExtraNonce(std::to_string(high_tc_->view()));
+            leader_rotation_->SetExtraNonce(std::to_string(high_tc_->view()));
         }
     }
     
