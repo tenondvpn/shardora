@@ -1685,10 +1685,22 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     }
 
     auto leader = leader_rotation()->GetLeader();
-    auto local_idx = leader_rotation_->GetLocalMemberIdx();
+    auto local_idx = leader_rotation_->GetLocalMemberIdx();    
+
+    if (has_system_tx) {
+        if (leader->index == local_idx) {
+            ResetReplicaTimers();
+            return;
+        }
+    }
+
+    if (!has_user_tx_tag_) {
+        ZJC_DEBUG("pool: %u not has_user_tx_tag_.", pool_idx_);
+        return;
+    }    
+
+
     if (leader->index == local_idx) {
-        // TODO 直接广播 ResetTimerMsg
-        ResetReplicaTimers();
         return;
     }
 
