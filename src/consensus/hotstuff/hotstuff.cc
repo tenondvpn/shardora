@@ -589,8 +589,9 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
         pacemaker()->CurView(),
         pro_msg_wrap->view_block_ptr->view(),
         pro_msg_wrap->view_block_ptr->block_info().tx_list_size(),
-        pro_msg_wrap->msg_ptr->header.hash64(), 
-        ProtobufToJson(cons_debug).c_str());
+        pro_msg_wrap->msg_ptr->header.hash64(),
+        "");
+        // ProtobufToJson(cons_debug).c_str());
     auto msg_ptr = pro_msg_wrap->msg_ptr;
     ADD_DEBUG_PROCESS_TIMESTAMP();
 
