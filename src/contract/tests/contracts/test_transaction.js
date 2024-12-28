@@ -747,7 +747,7 @@ async function main() {
 		const times = 10;
 		for (var i = 0; i < times; i++) {
 			// await test_contracts_by_root();
-			// await test_contracts_by_local();
+			await test_contracts_by_local();
 			await test_transfers();
 		}
 		
