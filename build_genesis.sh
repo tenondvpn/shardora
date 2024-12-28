@@ -45,8 +45,9 @@ then
 	sudo mv -f /mnt/zjchain /root/zjnodes/
 fi
 root=("r1" "r2" "r3")
-shard3=("s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_6" "s3_7" "s3_8" "s3_9" "s3_10")
-nodes=("r1" "r2" "r3" "s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_6" "s3_7" "s3_8" "s3_9" "s3_10")
+shard3=("s3_1" "s3_2" "s3_3" "s3_4" "s3_5")
+shard4=("s4_1" "s4_2" "s4_3" "s4_4" "s4_5")
+nodes=("r1" "r2" "r3" "s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s4_1" "s4_2" "s4_3" "s4_4" "s4_5")
 
 for node in "${nodes[@]}"; do
     mkdir -p "/root/zjnodes/${node}/log"
@@ -71,6 +72,7 @@ if test $NO_BUILD = 0
 then
     cd /root/zjnodes/zjchain && ./zjchain -U
     cd /root/zjnodes/zjchain && ./zjchain -S 3 &
+    cd /root/zjnodes/zjchain && ./zjchain -S 4 &
     wait
 fi
 
@@ -81,6 +83,11 @@ fi
 
 #for node in "${shard3[@]}"; do
 #	cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/${node}/db
+#done
+
+
+#for node in "${shard4[@]}"; do
+#	cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/${node}/db
 #done
 
 
