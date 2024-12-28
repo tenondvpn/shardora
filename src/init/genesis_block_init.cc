@@ -842,7 +842,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
 
     GenerateRootAccounts();
     uint64_t root_single_block_height = 0llu;
-    hotstuff::View root_single_block_view = 0;
+    hotstuff::View root_single_block_view = hotstuff::GenesisView;
     // for root single block chain
     // 呃，这个账户不是已经创建了么
     auto root_pool_addr = common::kRootPoolsAddress;
@@ -1115,7 +1115,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     std::string prehashes[common::kImmutablePoolSize]; // 256
     std::string vb_prehashes[common::kImmutablePoolSize] = {""};
     // view 从 0 开始
-    hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
+    hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {hotstuff::GenesisView};
     
     // 为创世账户在 root 网络中创建创世块
     // 创世块中包含：创建初始账户，以及节点选举类型的交易
@@ -1808,7 +1808,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     std::unordered_map<uint32_t, hotstuff::HashStr> pool_prev_vb_hash_map;
     // view 从 0 开始
-    hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
+    hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {hotstuff::GenesisView};
     
     uint32_t idx = 0;
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
